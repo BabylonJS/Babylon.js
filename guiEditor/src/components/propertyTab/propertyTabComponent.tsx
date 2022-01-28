@@ -122,7 +122,6 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             }
         });
         this.props.globalState.onResizeObservable.add((newSize) => {
-            // this.props.globalState.workbench.artBoardBackground._markAsDirty(true);
             this.forceUpdate();
         });
 

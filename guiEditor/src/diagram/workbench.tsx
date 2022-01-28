@@ -71,6 +71,17 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         return this._visibleRegionContainer;
     }
     private _trueRootContainer: Container;
+    public set trueRootContainer(value: Container) {
+        if (value === this._trueRootContainer) return;
+        this._visibleRegionContainer.children.forEach(child => this._visibleRegionContainer.removeControl(child));
+        this._visibleRegionContainer.addControl(value);
+        this._trueRootContainer = value;
+        this._trueRootContainer.isPointerBlocker = false;
+        value._host = this.props.globalState.guiTexture;
+    }
+    public get trueRootContainer() {
+        return this._trueRootContainer;
+    }
     private _nextLiveGuiRender = -1;
     private _liveGuiRerenderDelay = 100;
     private _defaultGUISize: ISize = {width: 1024, height: 1024};
@@ -115,19 +126,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         }
         this._trueRootContainer.clipContent = true;
         this._trueRootContainer.clipChildren = true;
-    }
-
-    private set trueRootContainer(value: Container) {
-        if (value === this._trueRootContainer) return;
-        this._visibleRegionContainer.children.forEach(child => this._visibleRegionContainer.removeControl(child));
-        this._visibleRegionContainer.addControl(value);
-        this._trueRootContainer = value;
-        this._trueRootContainer.isPointerBlocker = false;
-        value._host = this.props.globalState.guiTexture;
-    }
-
-    public get trueRootContainer() {
-        return this._trueRootContainer;
     }
 
     public get globalState() {
