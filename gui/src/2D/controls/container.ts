@@ -502,7 +502,7 @@ export class Container extends Control {
         }
 
         // checks if the picking position is within the container
-        const contains = super.contains(x,y);
+        const contains = super.contains(x, y);
 
         // if clipChildren is off, we should still pass picking events to children even if we don't contain the pointer
         if (!contains && this.clipChildren) {
