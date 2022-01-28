@@ -496,16 +496,16 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
     private _dragLocalBounds(toPosition: Vector2) {
         const scalePoint = this.state.scalePoints[this.state.scalePointDragging];
         if (scalePoint.horizontalPosition === ScalePointPosition.Left) {
-            this._localBounds.left = toPosition.x;
+            this._localBounds.left = Math.min(this._localBounds.right, toPosition.x);
         }
         if (scalePoint.horizontalPosition === ScalePointPosition.Right) {
-            this._localBounds.right = toPosition.x;
+            this._localBounds.right = Math.max(this._localBounds.left, toPosition.x);
         }
         if (scalePoint.verticalPosition === ScalePointPosition.Left) {
-            this._localBounds.top = toPosition.y;
+            this._localBounds.top = Math.min(this._localBounds.bottom, toPosition.y);
         }
         if (scalePoint.verticalPosition === ScalePointPosition.Bottom) {
-            this._localBounds.bottom = toPosition.y;
+            this._localBounds.bottom = Math.max(this._localBounds.top, toPosition.y);
         }
     }
 
