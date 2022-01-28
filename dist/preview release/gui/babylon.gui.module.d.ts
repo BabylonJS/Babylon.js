@@ -583,7 +583,7 @@ declare module "babylonjs-gui/2D/advancedDynamicTexture" {
          * @param samplingMode defines the texture sampling mode (Texture.NEAREST_SAMPLINGMODE by default)
          * @param invertY defines if the texture needs to be inverted on the y axis during loading (true by default)
          */
-        constructor(name: string, width: number | undefined, height: number | undefined, scene: Nullable<Scene>, generateMipMaps?: boolean, samplingMode?: number, invertY?: boolean);
+        constructor(name: string, width?: number, height?: number, scene?: Nullable<Scene>, generateMipMaps?: boolean, samplingMode?: number, invertY?: boolean);
         /**
          * Get the current class name of the texture useful for serialization or dynamic coding.
          * @returns "AdvancedDynamicTexture"
@@ -4798,7 +4798,7 @@ declare module "babylonjs-gui/3D/materials/fluent/fluentMaterial" {
          * @param name defines the name of the material
          * @param scene defines the hosting scene
          */
-        constructor(name: string, scene: Scene);
+        constructor(name: string, scene?: Scene);
         needAlphaBlending(): boolean;
         needAlphaTesting(): boolean;
         getAlphaTestTexture(): Nullable<BaseTexture>;
@@ -5085,7 +5085,7 @@ declare module "babylonjs-gui/3D/materials/fluentButton/fluentButtonMaterial" {
          */
         globalRightIndexTipPosition: Vector3;
         private _blobTexture;
-        constructor(name: string, scene: Scene);
+        constructor(name: string, scene?: Scene);
         needAlphaBlending(): boolean;
         needAlphaTesting(): boolean;
         getAlphaTestTexture(): Nullable<BaseTexture>;
@@ -5691,7 +5691,7 @@ declare module "babylonjs-gui/3D/materials/fluentBackplate/fluentBackplateMateri
          */
         globalRightIndexTipPosition: Vector3;
         private _globalRightIndexTipPosition4;
-        constructor(name: string, scene: Scene);
+        constructor(name: string, scene?: Scene);
         needAlphaBlending(): boolean;
         needAlphaTesting(): boolean;
         getAlphaTestTexture(): Nullable<BaseTexture>;
@@ -6353,7 +6353,7 @@ declare module "babylonjs-gui/3D/materials/mrdl/mrdlSliderBarMaterial" {
          * @hidden
          */
         globalRightIndexMiddlePosition: Vector4;
-        constructor(name: string, scene: Scene);
+        constructor(name: string, scene?: Scene);
         needAlphaBlending(): boolean;
         needAlphaTesting(): boolean;
         getAlphaTestTexture(): Nullable<BaseTexture>;
@@ -6702,7 +6702,7 @@ declare module "babylonjs-gui/3D/materials/mrdl/mrdlSliderThumbMaterial" {
          * @hidden
          */
         globalRightIndexMiddlePosition: Vector4;
-        constructor(name: string, scene: Scene);
+        constructor(name: string, scene?: Scene);
         needAlphaBlending(): boolean;
         needAlphaTesting(): boolean;
         getAlphaTestTexture(): Nullable<BaseTexture>;
@@ -6865,7 +6865,7 @@ declare module "babylonjs-gui/3D/materials/mrdl/mrdlBackplateMaterial" {
          * Gets or sets the edge width of the backplate.
          */
         edgeLineGradientBlend: number;
-        constructor(name: string, scene: Scene);
+        constructor(name: string, scene?: Scene);
         needAlphaBlending(): boolean;
         needAlphaTesting(): boolean;
         getAlphaTestTexture(): Nullable<BaseTexture>;
@@ -7716,7 +7716,7 @@ declare module BABYLON.GUI {
          * @param samplingMode defines the texture sampling mode (Texture.NEAREST_SAMPLINGMODE by default)
          * @param invertY defines if the texture needs to be inverted on the y axis during loading (true by default)
          */
-        constructor(name: string, width: number | undefined, height: number | undefined, scene: BABYLON.Nullable<BABYLON.Scene>, generateMipMaps?: boolean, samplingMode?: number, invertY?: boolean);
+        constructor(name: string, width?: number, height?: number, scene?: BABYLON.Nullable<BABYLON.Scene>, generateMipMaps?: boolean, samplingMode?: number, invertY?: boolean);
         /**
          * Get the current class name of the texture useful for serialization or dynamic coding.
          * @returns "AdvancedDynamicTexture"
@@ -11654,7 +11654,7 @@ declare module BABYLON.GUI {
          * @param name defines the name of the material
          * @param scene defines the hosting scene
          */
-        constructor(name: string, scene: BABYLON.Scene);
+        constructor(name: string, scene?: BABYLON.Scene);
         needAlphaBlending(): boolean;
         needAlphaTesting(): boolean;
         getAlphaTestTexture(): BABYLON.Nullable<BABYLON.BaseTexture>;
@@ -11921,7 +11921,7 @@ declare module BABYLON.GUI {
          */
         globalRightIndexTipPosition: BABYLON.Vector3;
         private _blobTexture;
-        constructor(name: string, scene: BABYLON.Scene);
+        constructor(name: string, scene?: BABYLON.Scene);
         needAlphaBlending(): boolean;
         needAlphaTesting(): boolean;
         getAlphaTestTexture(): BABYLON.Nullable<BABYLON.BaseTexture>;
@@ -12482,7 +12482,7 @@ declare module BABYLON.GUI {
          */
         globalRightIndexTipPosition: BABYLON.Vector3;
         private _globalRightIndexTipPosition4;
-        constructor(name: string, scene: BABYLON.Scene);
+        constructor(name: string, scene?: BABYLON.Scene);
         needAlphaBlending(): boolean;
         needAlphaTesting(): boolean;
         getAlphaTestTexture(): BABYLON.Nullable<BABYLON.BaseTexture>;
@@ -13088,7 +13088,7 @@ declare module BABYLON.GUI {
          * @hidden
          */
         globalRightIndexMiddlePosition: BABYLON.Vector4;
-        constructor(name: string, scene: BABYLON.Scene);
+        constructor(name: string, scene?: BABYLON.Scene);
         needAlphaBlending(): boolean;
         needAlphaTesting(): boolean;
         getAlphaTestTexture(): BABYLON.Nullable<BABYLON.BaseTexture>;
@@ -13424,7 +13424,7 @@ declare module BABYLON.GUI {
          * @hidden
          */
         globalRightIndexMiddlePosition: BABYLON.Vector4;
-        constructor(name: string, scene: BABYLON.Scene);
+        constructor(name: string, scene?: BABYLON.Scene);
         needAlphaBlending(): boolean;
         needAlphaTesting(): boolean;
         getAlphaTestTexture(): BABYLON.Nullable<BABYLON.BaseTexture>;
@@ -13575,7 +13575,7 @@ declare module BABYLON.GUI {
          * Gets or sets the edge width of the backplate.
          */
         edgeLineGradientBlend: number;
-        constructor(name: string, scene: BABYLON.Scene);
+        constructor(name: string, scene?: BABYLON.Scene);
         needAlphaBlending(): boolean;
         needAlphaTesting(): boolean;
         getAlphaTestTexture(): BABYLON.Nullable<BABYLON.BaseTexture>;

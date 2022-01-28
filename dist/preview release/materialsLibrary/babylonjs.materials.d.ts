@@ -23,7 +23,7 @@ declare module BABYLON {
         disableLighting: boolean;
         private _maxSimultaneousLights;
         maxSimultaneousLights: number;
-        constructor(name: string, scene: BABYLON.Scene);
+        constructor(name: string, scene?: BABYLON.Scene);
         needAlphaBlending(): boolean;
         needAlphaTesting(): boolean;
         getAlphaTestTexture(): BABYLON.Nullable<BABYLON.BaseTexture>;
@@ -83,7 +83,7 @@ declare module BABYLON {
         AttachAfterBind(mesh: BABYLON.Mesh | undefined, effect: BABYLON.Effect): void;
         ReviewUniform(name: string, arr: string[]): string[];
         Builder(shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: BABYLON.MaterialDefines | string[], attributes?: string[]): string;
-        constructor(name: string, scene: BABYLON.Scene);
+        constructor(name: string, scene?: BABYLON.Scene);
         AddUniform(name: string, kind: string, param: any): CustomMaterial;
         AddAttribute(name: string): CustomMaterial;
         Fragment_Begin(shaderPart: string): CustomMaterial;
@@ -146,7 +146,7 @@ declare module BABYLON {
         AttachAfterBind(mesh: BABYLON.Mesh | undefined, effect: BABYLON.Effect): void;
         ReviewUniform(name: string, arr: string[]): string[];
         Builder(shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: BABYLON.MaterialDefines | string[], attributes?: string[], options?: BABYLON.ICustomShaderNameResolveOptions): string;
-        constructor(name: string, scene: BABYLON.Scene);
+        constructor(name: string, scene?: BABYLON.Scene);
         AddUniform(name: string, kind: string, param: any): PBRCustomMaterial;
         AddAttribute(name: string): PBRCustomMaterial;
         Fragment_Begin(shaderPart: string): PBRCustomMaterial;
@@ -196,7 +196,7 @@ declare module BABYLON {
         speed: number;
         private _scaledDiffuse;
         private _lastTime;
-        constructor(name: string, scene: BABYLON.Scene);
+        constructor(name: string, scene?: BABYLON.Scene);
         needAlphaBlending(): boolean;
         needAlphaTesting(): boolean;
         getAlphaTestTexture(): BABYLON.Nullable<BABYLON.BaseTexture>;
@@ -250,7 +250,7 @@ declare module BABYLON {
         highLevelFur: boolean;
         _meshes: BABYLON.AbstractMesh[];
         private _furTime;
-        constructor(name: string, scene: BABYLON.Scene);
+        constructor(name: string, scene?: BABYLON.Scene);
         get furTime(): number;
         set furTime(furTime: number);
         needAlphaBlending(): boolean;
@@ -298,7 +298,7 @@ declare module BABYLON {
         smoothness: number;
         private _disableLighting;
         disableLighting: boolean;
-        constructor(name: string, scene: BABYLON.Scene);
+        constructor(name: string, scene?: BABYLON.Scene);
         needAlphaBlending(): boolean;
         needAlphaTesting(): boolean;
         getAlphaTestTexture(): BABYLON.Nullable<BABYLON.BaseTexture>;
@@ -376,7 +376,7 @@ declare module BABYLON {
          * @param name The name given to the material in order to identify it afterwards.
          * @param scene The scene the material is used in.
          */
-        constructor(name: string, scene: BABYLON.Scene);
+        constructor(name: string, scene?: BABYLON.Scene);
         /**
          * Returns wehter or not the grid requires alpha blending.
          */
@@ -428,7 +428,7 @@ declare module BABYLON {
         private _maxSimultaneousLights;
         maxSimultaneousLights: number;
         private _scaledDiffuse;
-        constructor(name: string, scene: BABYLON.Scene);
+        constructor(name: string, scene?: BABYLON.Scene);
         needAlphaBlending(): boolean;
         needAlphaTesting(): boolean;
         getAlphaTestTexture(): BABYLON.Nullable<BABYLON.BaseTexture>;
@@ -496,7 +496,7 @@ declare module BABYLON {
         disableLighting: boolean;
         private _maxSimultaneousLights;
         maxSimultaneousLights: number;
-        constructor(name: string, scene: BABYLON.Scene);
+        constructor(name: string, scene?: BABYLON.Scene);
         needAlphaBlending(): boolean;
         needAlphaTesting(): boolean;
         getAlphaTestTexture(): BABYLON.Nullable<BABYLON.BaseTexture>;
@@ -535,7 +535,7 @@ declare module BABYLON {
         disableLighting: boolean;
         private _maxSimultaneousLights;
         maxSimultaneousLights: number;
-        constructor(name: string, scene: BABYLON.Scene);
+        constructor(name: string, scene?: BABYLON.Scene);
         needAlphaBlending(): boolean;
         needAlphaBlendingForMesh(mesh: BABYLON.AbstractMesh): boolean;
         needAlphaTesting(): boolean;
@@ -570,7 +570,7 @@ declare module BABYLON {
     export class ShadowOnlyMaterial extends BABYLON.PushMaterial {
         private _activeLight;
         private _needAlphaBlending;
-        constructor(name: string, scene: BABYLON.Scene);
+        constructor(name: string, scene?: BABYLON.Scene);
         shadowColor: BABYLON.Color3;
         needAlphaBlending(): boolean;
         needAlphaTesting(): boolean;
@@ -609,7 +609,7 @@ declare module BABYLON {
         disableLighting: boolean;
         private _maxSimultaneousLights;
         maxSimultaneousLights: number;
-        constructor(name: string, scene: BABYLON.Scene);
+        constructor(name: string, scene?: BABYLON.Scene);
         needAlphaBlending(): boolean;
         needAlphaTesting(): boolean;
         getAlphaTestTexture(): BABYLON.Nullable<BABYLON.BaseTexture>;
@@ -708,7 +708,7 @@ declare module BABYLON {
          * @param name Define the name of the material in the scene
          * @param scene Define the scene the material belong to
          */
-        constructor(name: string, scene: BABYLON.Scene);
+        constructor(name: string, scene?: BABYLON.Scene);
         /**
          * Specifies if the material will require alpha blending
          * @returns a boolean specifying if alpha blending is needed
@@ -814,7 +814,7 @@ declare module BABYLON {
         disableLighting: boolean;
         private _maxSimultaneousLights;
         maxSimultaneousLights: number;
-        constructor(name: string, scene: BABYLON.Scene);
+        constructor(name: string, scene?: BABYLON.Scene);
         needAlphaBlending(): boolean;
         needAlphaTesting(): boolean;
         getAlphaTestTexture(): BABYLON.Nullable<BABYLON.BaseTexture>;
@@ -867,7 +867,7 @@ declare module BABYLON {
         disableLighting: boolean;
         private _maxSimultaneousLights;
         maxSimultaneousLights: number;
-        constructor(name: string, scene: BABYLON.Scene);
+        constructor(name: string, scene?: BABYLON.Scene);
         needAlphaBlending(): boolean;
         needAlphaTesting(): boolean;
         getAlphaTestTexture(): BABYLON.Nullable<BABYLON.BaseTexture>;
@@ -991,7 +991,7 @@ declare module BABYLON {
         /**
         * Constructor
         */
-        constructor(name: string, scene: BABYLON.Scene, renderTargetSize?: BABYLON.Vector2);
+        constructor(name: string, scene?: BABYLON.Scene, renderTargetSize?: BABYLON.Vector2);
         get useLogarithmicDepth(): boolean;
         set useLogarithmicDepth(value: boolean);
         get refractionTexture(): BABYLON.Nullable<BABYLON.RenderTargetTexture>;
