@@ -6,11 +6,12 @@ import { Color4 } from "babylonjs/Maths/math.color";
 import { WorkbenchComponent } from "./diagram/workbench";
 import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
 import { PropertyChangedEvent } from "./sharedUiComponents/propertyChangedEvent";
-import { Vector2 } from "babylonjs/Maths/math.vector";
 import { Scene } from "babylonjs/scene";
 import { Control } from "babylonjs-gui/2D/controls/control";
 import { LockObject } from "./sharedUiComponents/tabs/propertyGrids/lockObject";
 import { GuiGizmoComponent } from "./diagram/guiGizmo";
+import { ISize } from "babylonjs/Maths/math";
+import { CoordinateHelper } from "./diagram/coordinateHelper";
 
 export enum DragOverLocation {
     ABOVE = 0,
@@ -27,7 +28,7 @@ export class GlobalState {
     hostDocument: HTMLDocument;
     hostWindow: Window;
     onSelectionChangedObservable = new Observable<Nullable<Control>>();
-    onResizeObservable = new Observable<Vector2>();
+    onResizeObservable = new Observable<ISize>();
     onBuiltObservable = new Observable<void>();
     onResetRequiredObservable = new Observable<void>();
     onUpdateRequiredObservable = new Observable<void>();
@@ -63,6 +64,7 @@ export class GlobalState {
     onDraggingStartObservable = new Observable<void>();
     onWindowResizeObservable = new Observable<void>();
     onGizmoUpdateRequireObservable = new Observable<void>();
+    onArtBoardUpdateRequiredObservable = new Observable<void>();
     draggedControl: Nullable<Control> = null;
     draggedControlDirection: DragOverLocation;
     isSaving = false;
@@ -78,5 +80,7 @@ export class GlobalState {
         let g = DataStorage.ReadNumber("BackgroundColorG", 0.09803921568627451);
         let b = DataStorage.ReadNumber("BackgroundColorB", 0.25098039215686274);
         this.backgroundColor = new Color4(r, g, b, 1.0);
+
+        CoordinateHelper.globalState = this;
     }
 }

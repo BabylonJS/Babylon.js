@@ -92,7 +92,7 @@ export class TreeItemSelectableComponent extends React.Component<
         this.props.globalState.selectionLock = true;
     }
 
-    renderChildren(isExpanded: boolean) {
+    renderChildren(isExpanded: boolean, offset = true) {
         const entity = this.props.entity;
         if ((!entity.getChildren && !entity.children) || !isExpanded) {
             return null;
@@ -113,7 +113,7 @@ export class TreeItemSelectableComponent extends React.Component<
                     extensibilityGroups={this.props.extensibilityGroups}
                     selectedEntity={this.props.selectedEntity}
                     key={i}
-                    offset={this.props.offset + 2}
+                    offset={this.props.offset + (offset ? 2 : 0)}
                     entity={item}
                     filter={this.props.filter}
                 />
@@ -122,6 +122,9 @@ export class TreeItemSelectableComponent extends React.Component<
     }
 
     render() {
+        if (this.props.entity === this.props.globalState.workbench.trueRootContainer || this.props.entity === this.props.globalState.workbench.visibleRegionContainer) {
+            return this.renderChildren(true, false);
+        }
         const marginStyle = {
             paddingLeft: 10 * (this.props.offset + 0.5) - 20 + "px",
         };
