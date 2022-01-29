@@ -1697,7 +1697,8 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
             subMesh.verticesStart,
             !!subMesh.getMaterial(),
             this,
-            this._shouldConvertRHS()
+            this._shouldConvertRHS(),
+            subMesh.getMaterial()?.fillMode === Constants.MATERIAL_TriangleStripDrawMode
         );
         return this;
     }
