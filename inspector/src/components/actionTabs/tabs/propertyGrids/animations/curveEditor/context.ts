@@ -8,6 +8,10 @@ import { AnimationGroup, TargetedAnimation } from "babylonjs/Animations/animatio
 import { Animatable } from "babylonjs/Animations/animatable";
 import { AnimationKeyInterpolation } from "babylonjs/Animations/animationKey";
 
+
+export interface IActiveAnimationChangedOptions {
+    frame?: boolean;
+};
 export class Context {
     title: string;
     animations: Nullable<Animation[] | TargetedAnimation[]>;
@@ -34,7 +38,7 @@ export class Context {
 
     focusedInput = false;
 
-    onActiveAnimationChanged = new Observable<void>();
+    onActiveAnimationChanged = new Observable<IActiveAnimationChangedOptions>();
     onActiveKeyPointChanged = new Observable<void>();
     onHostWindowResized = new Observable<void>();
     onSelectAllKeys = new Observable<void>();

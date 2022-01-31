@@ -2,7 +2,7 @@ import { Observer } from "babylonjs/Misc/observable";
 import { Nullable } from "babylonjs/types";
 import * as React from "react";
 import { GlobalState } from "../../../../../globalState";
-import { Context } from "./context";
+import { Context, IActiveAnimationChangedOptions } from "./context";
 import { ActionButtonComponent } from "./controls/actionButtonComponent";
 import { TextInputComponent } from "./controls/textInputComponent";
 
@@ -32,7 +32,7 @@ interface ITopBarComponentState {
 export class TopBarComponent extends React.Component<ITopBarComponentProps, ITopBarComponentState> {
     private _onFrameSetObserver: Nullable<Observer<number>>;
     private _onValueSetObserver: Nullable<Observer<number>>;
-    private _onActiveAnimationChangedObserver: Nullable<Observer<void>>;
+    private _onActiveAnimationChangedObserver: Nullable<Observer<IActiveAnimationChangedOptions>>;
     private onActiveKeyPointChanged: Nullable<Observer<void>>;
 
     constructor(props: ITopBarComponentProps) {

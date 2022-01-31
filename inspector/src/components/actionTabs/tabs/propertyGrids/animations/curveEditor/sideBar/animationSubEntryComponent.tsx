@@ -1,6 +1,6 @@
 import * as React from "react";
 import { GlobalState } from "../../../../../../globalState";
-import { Context } from "../context";
+import { Context, IActiveAnimationChangedOptions } from "../context";
 import { Animation } from "babylonjs/Animations/animation";
 import { Nullable } from "babylonjs/types";
 import { Observer } from "babylonjs/Misc/observable";
@@ -21,7 +21,7 @@ interface IAnimationSubEntryComponentState {
 }
 
 export class AnimationSubEntryComponent extends React.Component<IAnimationSubEntryComponentProps, IAnimationSubEntryComponentState> {
-    private _onActiveAnimationChangedObserver: Nullable<Observer<void>>;
+    private _onActiveAnimationChangedObserver: Nullable<Observer<IActiveAnimationChangedOptions>>;
     private _onActiveKeyPointChangedObserver: Nullable<Observer<void>>;
 
     constructor(props: IAnimationSubEntryComponentProps) {
@@ -39,7 +39,7 @@ export class AnimationSubEntryComponent extends React.Component<IAnimationSubEnt
 
         this.state = { isSelected: isSelected };
 
-        this._onActiveAnimationChangedObserver = props.context.onActiveAnimationChanged.add((animation) => {
+        this._onActiveAnimationChangedObserver = props.context.onActiveAnimationChanged.add(() => {
             this.forceUpdate();
         });
 
@@ -89,7 +89,7 @@ export class AnimationSubEntryComponent extends React.Component<IAnimationSubEnt
             }
         }
         this.props.context.enableChannel(this.props.animation, this.props.color);
-        this.props.context.onActiveAnimationChanged.notifyObservers();
+        this.props.context.onActiveAnimationChanged.notifyObservers({});
     }
 
     public render() {

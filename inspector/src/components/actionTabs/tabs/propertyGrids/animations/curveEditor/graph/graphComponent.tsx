@@ -1,6 +1,6 @@
 import * as React from "react";
 import { GlobalState } from "../../../../../../globalState";
-import { Context } from "../context";
+import { Context, IActiveAnimationChangedOptions } from "../context";
 import { Animation } from "babylonjs/Animations/animation";
 import { Curve } from "./curve";
 import { KeyPointComponent } from "./keyPoint";
@@ -53,7 +53,7 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
     private _selectionStartX: number;
     private _selectionStartY: number;
 
-    private _onActiveAnimationChangedObserver: Nullable<Observer<void>>;
+    private _onActiveAnimationChangedObserver: Nullable<Observer<IActiveAnimationChangedOptions>>;
 
     constructor(props: IGraphComponentProps) {
         super(props);
@@ -70,8 +70,8 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
             this._computeSizes();
         });
 
-        this._onActiveAnimationChangedObserver = this.props.context.onActiveAnimationChanged.add(() => {
-            this._evaluateKeys();
+        this._onActiveAnimationChangedObserver = this.props.context.onActiveAnimationChanged.add(({frame}) => {
+            this._evaluateKeys(frame);
             this._computeSizes();
             this.forceUpdate();
         });
@@ -123,7 +123,7 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
                 this.props.context.activeKeyPoints = [];
             }
 
-            this.props.context.onActiveAnimationChanged.notifyObservers();
+            this.props.context.onActiveAnimationChanged.notifyObservers({frame: false});
         });
 
         // Create or Update keypoint
@@ -259,7 +259,7 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
 
             this.props.context.activeKeyPoints = [];
             this.props.context.onActiveKeyPointChanged.notifyObservers();
-            this.props.context.onActiveAnimationChanged.notifyObservers();
+            this.props.context.onActiveAnimationChanged.notifyObservers({frame: false});
             this.forceUpdate();
         });
     }
@@ -951,12 +951,19 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
             }
 
             let keys = animation.getKeys();
-            // Only keep selected keys
-            if (this.props.context.activeKeyPoints && this.props.context.activeKeyPoints.length > 1) {
+            // Only keep selected keys, the previous sibling to the first key, and the next sibling of the last key
+            if (this.props.context.activeKeyPoints && this.props.context.activeKeyPoints.length > 0) {
                 let newKeys = [];
-                for (var keyPoint of this.props.context.activeKeyPoints) {
+
+                for (let i = 0; i < this.props.context.activeKeyPoints.length; i++) {
+                    const keyPoint = this.props.context.activeKeyPoints[i];
                     if (keyPoint.props.curve.animation === animation) {
                         newKeys.push(keys[keyPoint.props.keyId]);
+                        if (i === 0 && keyPoint.props.keyId >= 1) {
+                            newKeys.unshift(keys[keyPoint.props.keyId - 1]);
+                        } if (i === this.props.context.activeKeyPoints.length - 1 && keyPoint.props.keyId < keys.length - 1) {
+                            newKeys.push(keys[keyPoint.props.keyId + 1]);
+                        }
                     }
                 }
 
