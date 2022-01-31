@@ -4223,8 +4223,10 @@ export class Matrix {
      */
     public get m(): DeepImmutable<Float32Array | Array<number>> { return this._m; }
 
-    /** @hidden */
-    public _markAsUpdated() {
+    /**
+     * Update the updateFlag to indicate that the matrix has been updated
+     */
+    public markAsUpdated() {
         this.updateFlag = Matrix._updateFlagSeed++;
         this._isIdentity = false;
         this._isIdentity3x2 = false;
@@ -4249,7 +4251,7 @@ export class Matrix {
 
         this._m = new PerformanceConfigurator.MatrixCurrentType(16);
 
-        this._markAsUpdated();
+        this.markAsUpdated();
     }
 
     // Properties
@@ -4397,7 +4399,7 @@ export class Matrix {
         for (var index = 0; index < 16; index++) {
             resultM[index] = m[index] + otherM[index];
         }
-        result._markAsUpdated();
+        result.markAsUpdated();
         return this;
     }
 
@@ -4412,7 +4414,7 @@ export class Matrix {
         for (var index = 0; index < 16; index++) {
             m[index] += otherM[index];
         }
-        this._markAsUpdated();
+        this.markAsUpdated();
         return this;
     }
 
@@ -4502,7 +4504,7 @@ export class Matrix {
      */
     public addAtIndex(index: number, value: number): Matrix {
         this._m[index] += value;
-        this._markAsUpdated();
+        this.markAsUpdated();
         return this;
     }
 
@@ -4514,7 +4516,7 @@ export class Matrix {
      */
     public multiplyAtIndex(index: number, value: number): Matrix {
         this._m[index] *= value;
-        this._markAsUpdated();
+        this.markAsUpdated();
         return this;
     }
 
@@ -4529,7 +4531,7 @@ export class Matrix {
         this._m[12] = x;
         this._m[13] = y;
         this._m[14] = z;
-        this._markAsUpdated();
+        this.markAsUpdated();
         return this;
     }
 
@@ -4544,7 +4546,7 @@ export class Matrix {
         this._m[12] += x;
         this._m[13] += y;
         this._m[14] += z;
-        this._markAsUpdated();
+        this.markAsUpdated();
         return this;
     }
 
@@ -4663,7 +4665,7 @@ export class Matrix {
         }
 
         this.multiplyToArray(other, result._m, 0);
-        result._markAsUpdated();
+        result.markAsUpdated();
         return this;
     }
 
@@ -4906,7 +4908,7 @@ export class Matrix {
         this._m[i + 2] = z;
         this._m[i + 3] = w;
 
-        this._markAsUpdated();
+        this.markAsUpdated();
         return this;
     }
 
@@ -4931,7 +4933,7 @@ export class Matrix {
         for (var index = 0; index < 16; index++) {
             result._m[index] = this._m[index] * scale;
         }
-        result._markAsUpdated();
+        result.markAsUpdated();
         return this;
     }
 
@@ -4945,7 +4947,7 @@ export class Matrix {
         for (var index = 0; index < 16; index++) {
             result._m[index] += this._m[index] * scale;
         }
-        result._markAsUpdated();
+        result.markAsUpdated();
         return this;
     }
 
@@ -5011,7 +5013,7 @@ export class Matrix {
         m[8] *= -1;
         m[9] *= -1;
         m[14] *= -1;
-        this._markAsUpdated();
+        this.markAsUpdated();
     }
 
     /**
@@ -5023,7 +5025,7 @@ export class Matrix {
         m[9] *= -1;
         m[10] *= -1;
         m[11] *= -1;
-        this._markAsUpdated();
+        this.markAsUpdated();
     }
 
     // Statics
@@ -5049,7 +5051,7 @@ export class Matrix {
         for (var index = 0; index < 16; index++) {
             result._m[index] = array[index + offset];
         }
-        result._markAsUpdated();
+        result.markAsUpdated();
     }
 
     /**
@@ -5063,7 +5065,7 @@ export class Matrix {
         for (var index = 0; index < 16; index++) {
             result._m[index] = array[index + offset] * scale;
         }
-        result._markAsUpdated();
+        result.markAsUpdated();
     }
 
     /**
@@ -5104,7 +5106,7 @@ export class Matrix {
         m[8] = initialM31; m[9] = initialM32; m[10] = initialM33; m[11] = initialM34;
         m[12] = initialM41; m[13] = initialM42; m[14] = initialM43; m[15] = initialM44;
 
-        result._markAsUpdated();
+        result.markAsUpdated();
     }
 
     /**
@@ -5138,7 +5140,7 @@ export class Matrix {
         m[4] = initialM21; m[5] = initialM22; m[6] = initialM23; m[7] = initialM24;
         m[8] = initialM31; m[9] = initialM32; m[10] = initialM33; m[11] = initialM34;
         m[12] = initialM41; m[13] = initialM42; m[14] = initialM43; m[15] = initialM44;
-        result._markAsUpdated();
+        result.markAsUpdated();
         return result;
     }
 
@@ -5192,7 +5194,7 @@ export class Matrix {
         m[14] = translation._z;
         m[15] = 1;
 
-        result._markAsUpdated();
+        result.markAsUpdated();
     }
 
     /**
@@ -5384,7 +5386,7 @@ export class Matrix {
         m[14] = 0.0;
         m[15] = 1.0;
 
-        result._markAsUpdated();
+        result.markAsUpdated();
     }
 
     /**
@@ -5413,7 +5415,7 @@ export class Matrix {
             m[8] = v._x * v._z * k - v._y; m[9] = v._y * v._z * k + v._x; m[10] = v._z * v._z * k + c; m[11] = 0;
         }
         m[12] = 0; m[13] = 0; m[14] = 0; m[15] = 1;
-        result._markAsUpdated();
+        result.markAsUpdated();
     }
 
     /**
@@ -5531,7 +5533,7 @@ export class Matrix {
         for (var index = 0; index < 16; index++) {
             resultM[index] = startM[index] * (1.0 - gradient) + endM[index] * gradient;
         }
-        result._markAsUpdated();
+        result.markAsUpdated();
     }
 
     /**
@@ -5870,7 +5872,7 @@ export class Matrix {
             result.multiplyToRef(mtxConvertNDCToHalfZRange, result);
         }
 
-        result._markAsUpdated();
+        result.markAsUpdated();
     }
 
     /**
@@ -5903,7 +5905,7 @@ export class Matrix {
      */
     public static OrthoOffCenterRHToRef(left: number, right: number, bottom: number, top: number, znear: number, zfar: number, result: Matrix, halfZRange?: boolean): void {
         Matrix.OrthoOffCenterLHToRef(left, right, bottom, top, znear, zfar, result, halfZRange);
-        result._m[10] *= -1; // No need to call _markAsUpdated as previous function already called it and let _isIdentityDirty to true
+        result._m[10] *= -1; // No need to call markAsUpdated as previous function already called it and let _isIdentityDirty to true
     }
 
     /**
@@ -6160,7 +6162,7 @@ export class Matrix {
             result.multiplyToRef(mtxConvertNDCToHalfZRange, result);
         }
 
-        result._markAsUpdated();
+        result.markAsUpdated();
     }
 
     /**
@@ -6255,7 +6257,7 @@ export class Matrix {
         rm[14] = mm[11];
         rm[15] = mm[15];
 
-        result._markAsUpdated();
+        result.markAsUpdated();
 
         // identity-ness does not change when transposing
         result._updateIdentityStatus((matrix as Matrix)._isIdentity, (matrix as Matrix)._isIdentityDirty);
@@ -6347,7 +6349,7 @@ export class Matrix {
         result._m[14] = 0.0;
         result._m[15] = 1.0;
 
-        result._markAsUpdated();
+        result.markAsUpdated();
     }
 }
 
