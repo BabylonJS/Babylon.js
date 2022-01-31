@@ -4613,7 +4613,7 @@ export class Matrix {
     public copyFrom(other: DeepImmutable<Matrix>): Matrix {
         other.copyToArray(this._m);
         const o = (other as Matrix);
-        this.updateFlag = o.updateFlag;
+        this.updateFlag++;
         this._updateIdentityStatus(o._isIdentity, o._isIdentityDirty, o._isIdentity3x2, o._isIdentity3x2Dirty);
         return this;
     }
