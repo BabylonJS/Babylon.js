@@ -394,8 +394,67 @@ export class Collider {
     }
 
     /** @hidden */
-    public _collide(trianglePlaneArray: Array<Plane>, pts: Vector3[], indices: IndicesArray, indexStart: number, indexEnd: number, decal: number, hasMaterial: boolean, hostMesh: AbstractMesh, invertTriangles?: boolean): void {
-        if (!indices || indices.length === 0) {
+    public _collide(trianglePlaneArray: Array<Plane>,
+        pts: Vector3[],
+        indices: IndicesArray,
+        indexStart: number,
+        indexEnd: number,
+        decal: number,
+        hasMaterial: boolean,
+        hostMesh: AbstractMesh,
+        invertTriangles?: boolean,
+        triangleStrip: boolean = false): void {
+
+        if (triangleStrip) {
+            if (!indices || indices.length === 0) {
+                for (let i = 0; i < pts.length - 2; i += 1) {
+                    const p1 = pts[i];
+                    const p2 = pts[i + 1];
+                    const p3 = pts[i + 2];
+
+                    // stay defensive and don't check against undefined positions.
+                    if (!p1 || !p2 || !p3) {
+                        continue;
+                    }
+                    // Handles strip faces one on two is reversed
+                    if ((invertTriangles ? 1 : 0) ^ (i % 2)) {
+                        this._testTriangle(i, trianglePlaneArray, p1, p2, p3, hasMaterial, hostMesh);
+                    }
+                    else {
+                        this._testTriangle(i, trianglePlaneArray, p2, p1, p3, hasMaterial, hostMesh);
+                    }
+                }
+            } else {
+                for (let i = indexStart; i < indexEnd - 2; i += 1) {
+                    const indexA = indices[i];
+                    const indexB = indices[i + 1];
+                    const indexC = indices[i + 2];
+
+                    if (indexC === 0xffffffff) {
+                        i += 2;
+                        continue;
+                    }
+
+                    const p1 = pts[indexA];
+                    const p2 = pts[indexB];
+                    const p3 = pts[indexC];
+
+                    // stay defensive and don't check against undefined positions.
+                    if (!p1 || !p2 || !p3) {
+                        continue;
+                    }
+
+                    // Handles strip faces one on two is reversed
+                    if ((invertTriangles ? 1 : 0) ^ (i % 2)) {
+                        this._testTriangle(i, trianglePlaneArray, p1, p2, p3, hasMaterial, hostMesh);
+                    }
+                    else {
+                        this._testTriangle(i, trianglePlaneArray, p2, p1, p3, hasMaterial, hostMesh);
+                    }
+                }
+            }
+        }
+        else if (!indices || indices.length === 0) {
             for (let i = 0; i < pts.length; i += 3) {
                 const p1 = pts[i];
                 const p2 = pts[i + 1];
