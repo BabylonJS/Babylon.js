@@ -153,6 +153,7 @@ export interface WebVROptions {
 /**
  * This represents a WebVR camera.
  * The WebVR camera is Babylon's simple interface to interaction with Windows Mixed Reality, HTC Vive and Oculus Rift.
+ * @deprecated Use WebXR instead - https://doc.babylonjs.com/divingDeeper/webXR
  * @example https://doc.babylonjs.com/how_to/webvr_camera
  */
 export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
