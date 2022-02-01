@@ -123,7 +123,7 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
                 this.props.context.activeKeyPoints = [];
             }
 
-            this.props.context.onActiveAnimationChanged.notifyObservers({frame: false});
+            this.props.context.onActiveAnimationChanged.notifyObservers({});
         });
 
         // Create or Update keypoint
@@ -259,7 +259,7 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
 
             this.props.context.activeKeyPoints = [];
             this.props.context.onActiveKeyPointChanged.notifyObservers();
-            this.props.context.onActiveAnimationChanged.notifyObservers({frame: false});
+            this.props.context.onActiveAnimationChanged.notifyObservers({});
             this.forceUpdate();
         });
     }
