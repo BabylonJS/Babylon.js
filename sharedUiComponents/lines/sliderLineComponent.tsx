@@ -7,7 +7,7 @@ import { LockObject } from "../tabs/propertyGrids/lockObject";
 
 interface ISliderLineComponentProps {
     label: string;
-    target?: any;
+    targets: any[];
     propertyName?: string;
     minimum: number;
     maximum: number;
@@ -34,13 +34,20 @@ export class SliderLineComponent extends React.Component<ISliderLineComponentPro
                 value: this.props.directValue,
             };
         } else {
-            let value = this.props.target![this.props.propertyName!];
-
-            if (value === undefined) {
-                value = this.props.maximum;
-            }
-            this.state = { value: value };
+            this.state = { value: this.getValue() };
         }
+    }
+
+    getValue(props?: ISliderLineComponentProps) {
+        if (!props) props = this.props;
+        if (props.targets.length === 0) return this.props.maximum;
+        const firstValue = props.targets[0][props.propertyName!];
+        for(const target of props.targets) {
+            if (target[props.propertyName!] !== firstValue) {
+                return props.maximum;
+            }
+        }
+        return firstValue;
     }
 
     shouldComponentUpdate(nextProps: ISliderLineComponentProps, nextState: { value: number }) {
@@ -49,10 +56,7 @@ export class SliderLineComponent extends React.Component<ISliderLineComponentPro
             return true;
         }
 
-        let currentState = nextProps.target![nextProps.propertyName!];
-        if (currentState === undefined) {
-            currentState = nextProps.maximum;
-        }
+        let currentState = this.getValue(nextProps);
 
         if (currentState !== nextState.value || this._localChange || nextProps.maximum !== this.props.maximum || nextProps.minimum !== this.props.minimum) {
             nextState.value = currentState;
@@ -70,17 +74,16 @@ export class SliderLineComponent extends React.Component<ISliderLineComponentPro
             newValue = Tools.ToRadians(newValue);
         }
 
-        if (this.props.target) {
-            if (this.props.onPropertyChangedObservable) {
+        if (this.props.onPropertyChangedObservable) {
+            for (const target of this.props.targets) {
                 this.props.onPropertyChangedObservable.notifyObservers({
-                    object: this.props.target,
+                    object: target,
                     property: this.props.propertyName!,
                     value: newValue,
                     initialValue: this.state.value,
                 });
+                target[this.props.propertyName!] = newValue;
             }
-
-            this.props.target[this.props.propertyName!] = newValue;
         }
 
         if (this.props.onChange) {
@@ -109,6 +112,8 @@ export class SliderLineComponent extends React.Component<ISliderLineComponentPro
         return value;
     }
 
+
+
     render() {
         return (
             <div className="sliderLine">
@@ -123,7 +128,7 @@ export class SliderLineComponent extends React.Component<ISliderLineComponentPro
                     isInteger={this.props.decimalCount === 0}
                     smallUI={true}
                     label=""
-                    target={this.state}
+                    targets={[this.state]}
                     digits={this.props.decimalCount === undefined ? 4 : this.props.decimalCount}
                     propertyName="value"
                     min={this.props.minimum}
