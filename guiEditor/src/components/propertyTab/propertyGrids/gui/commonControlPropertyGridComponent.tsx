@@ -10,10 +10,10 @@ import { LockObject } from "../../../../sharedUiComponents/tabs/propertyGrids/lo
 import { CommandButtonComponent } from "../../../commandButtonComponent";
 import { Image } from "babylonjs-gui/2D/controls/image";
 import { TextBlock } from "babylonjs-gui/2D/controls/textBlock";
-import { Color3LineComponent } from "../../../../sharedUiComponents/lines/color3LineComponent";
 import { Container } from "babylonjs-gui/2D/controls/container";
 import { CheckBoxLineComponent } from "../../../../sharedUiComponents/lines/checkBoxLineComponent";
 import { ValueAndUnit } from "babylonjs-gui/2D/valueAndUnit";
+import { Color4LineComponent } from "../../../../sharedUiComponents/lines/color4LineComponent";
 
 const sizeIcon: string = require("../../../../sharedUiComponents/imgs/sizeIcon.svg");
 const verticalMarginIcon: string = require("../../../../sharedUiComponents/imgs/verticalMarginIcon.svg");
@@ -41,75 +41,83 @@ const vAlignBottomIcon: string = require("../../../../sharedUiComponents/imgs/vA
 const descendantsOnlyPaddingIcon: string = require("../../../../sharedUiComponents/imgs/descendantsOnlyPaddingIcon.svg");
 
 interface ICommonControlPropertyGridComponentProps {
-    control: Control;
+    controls: Control[];
     lockObject: LockObject;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
 
 export class CommonControlPropertyGridComponent extends React.Component<ICommonControlPropertyGridComponentProps> {
-    private _width = this.props.control.width;
-    private _height = this.props.control.height;
+    private _width : String | Number = 0;
+    private _height : String | Number = 0;
 
     constructor(props: ICommonControlPropertyGridComponentProps) {
         super(props);
     }
 
     private _updateAlignment(alignment: string, value: number) {
-        const control = this.props.control;
-        if (control.typeName === "TextBlock" && (this.props.control as TextBlock).resizeToFit === false) {
-            (this.props.control as any)["text" + alignment.charAt(0).toUpperCase() + alignment.slice(1)] = value;
-        } else {
-            (this.props.control as any)[alignment] = value;
+        for (const control of this.props.controls) {
+            if (control.typeName === "TextBlock" && (control as TextBlock).resizeToFit === false) {
+                (control as any)["text" + alignment.charAt(0).toUpperCase() + alignment.slice(1)] = value;
+            } else {
+                (control as any)[alignment] = value;
+            }
         }
         this.forceUpdate();
     }
 
     private _checkAndUpdateValues(propertyName: string, value: string) {
 
-        // checking the previous value unit to see what it was.
-        const vau = (this.props.control as any)["_" +propertyName];
-        let percentage = (vau as ValueAndUnit).isPercentage;
-        
-        // now checking if the new string contains either a px or a % sign in case we need to change the unit.
-        let negative = value.charAt(0) === "-";
-        if (value.charAt(value.length - 1) === "%") {
-            percentage = true;
-        } else if (value.charAt(value.length - 1) === "x" && value.charAt(value.length - 2) === "p") {
-            percentage = false;
-        }
+        for (const control of this.props.controls) {
+            // checking the previous value unit to see what it was.
+            const vau = (control as any)["_" +propertyName];
+            let percentage = (vau as ValueAndUnit).isPercentage;
+            
+            // now checking if the new string contains either a px or a % sign in case we need to change the unit.
+            let negative = value.charAt(0) === "-";
+            if (value.charAt(value.length - 1) === "%") {
+                percentage = true;
+            } else if (value.charAt(value.length - 1) === "x" && value.charAt(value.length - 2) === "p") {
+                percentage = false;
+            }
 
-        if (this.props.control.parent?.typeName === "StackPanel") {
-            percentage = false;
-        }
+            if (control.parent?.typeName === "StackPanel") {
+                percentage = false;
+            }
 
-        let newValue = value.match(/([\d\.\,]+)/g)?.[0];
-        if (!newValue) {
-            newValue = "0";
-        }
-        newValue = (negative ? "-" : "") + newValue;
-        newValue += percentage ? "%" : "px";
+            let newValue = value.match(/([\d\.\,]+)/g)?.[0];
+            if (!newValue) {
+                newValue = "0";
+            }
+            newValue = (negative ? "-" : "") + newValue;
+            newValue += percentage ? "%" : "px";
 
-        (this.props.control as any)[propertyName] = newValue;
+            (control as any)[propertyName] = newValue;
+        }
         this.forceUpdate();
     }
 
     private _markChildrenAsDirty() {
-        if (this.props.control instanceof Container)
-            (this.props.control as Container)._children.forEach(child => {
-                child._markAsDirty();
+        for(const control of this.props.controls) {
+            if (control instanceof Container)
+                (control as Container)._children.forEach(child => {
+                    child._markAsDirty();
             });
+        }
     }
 
     render() {
-        const control = this.props.control;
-        var horizontalAlignment = this.props.control.horizontalAlignment;
-        var verticalAlignment = this.props.control.verticalAlignment;
-        if (control.typeName === "TextBlock" && (this.props.control as TextBlock).resizeToFit === false) {
-            horizontalAlignment = (this.props.control as TextBlock).textHorizontalAlignment;
-            verticalAlignment = (this.props.control as TextBlock).textVerticalAlignment;
+        const controls = this.props.controls;
+        const firstControl = controls[0];
+        var horizontalAlignment = firstControl.horizontalAlignment;
+        var verticalAlignment = firstControl.verticalAlignment;
+        if (firstControl.typeName === "TextBlock" && (firstControl as TextBlock).resizeToFit === false) {
+            horizontalAlignment = (firstControl as TextBlock).textHorizontalAlignment;
+            verticalAlignment = (firstControl as TextBlock).textVerticalAlignment;
         }
-        this._width = this.props.control.width;
-        this._height = this.props.control.height;
+        this._width = firstControl.width;
+        this._height = firstControl.height;
+
+        const showTextProperties = (firstControl instanceof Container || firstControl.typeName === "TextBlock");
 
         return (
             <div>
@@ -176,7 +184,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         icon={positionIcon}
                         lockObject={this.props.lockObject}
                         label="X"
-                        target={control}
+                        targets={controls}
                         delayInput={true}
                         propertyName="left"
                         onChange={(newValue) => this._checkAndUpdateValues("left", newValue)}
@@ -186,7 +194,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         numbersOnly={true}
                         lockObject={this.props.lockObject}
                         label="Y"
-                        target={control}
+                        targets={controls}
                         delayInput={true}
                         propertyName="top"
                         onChange={(newValue) => this._checkAndUpdateValues("top", newValue)}
@@ -200,20 +208,22 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         icon={sizeIcon}
                         lockObject={this.props.lockObject}
                         label="W"
-                        target={this}
+                        targets={[this]}
                         delayInput={true}
                         propertyName="_width"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         onChange={(newValue) => {
-                            if (control.typeName === "Image") {
-                                (control as Image).autoScale = false;
-                            }
-                            else if (control instanceof Container) {
-                                (control as Container).adaptWidthToChildren = false;
-                            }
-                            else if (this.props.control.typeName === "ColorPicker") {
-                                if (newValue === "0" || newValue === "-") {
-                                    newValue = "1";
+                            for(const control of controls) {
+                                if (control.typeName === "Image") {
+                                    (control as Image).autoScale = false;
+                                }
+                                else if (control instanceof Container) {
+                                    (control as Container).adaptWidthToChildren = false;
+                                }
+                                else if (control.typeName === "ColorPicker") {
+                                    if (newValue === "0" || newValue === "-") {
+                                        newValue = "1";
+                                    }
                                 }
                             }
                             this._width = newValue;
@@ -224,20 +234,22 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         numbersOnly={true}
                         lockObject={this.props.lockObject}
                         label="H"
-                        target={this}
+                        targets={[this]}
                         delayInput={true}
                         propertyName="_height"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         onChange={(newValue) => {
-                            if (control.typeName === "Image") {
-                                (control as Image).autoScale = false;
-                            }
-                            else if (control instanceof Container) {
-                                (control as Container).adaptHeightToChildren = false;
-                            }
-                            else if (this.props.control.typeName === "ColorPicker") {
-                                if (newValue === "0" || newValue === "-") {
-                                    newValue = "1";
+                            for(const control of controls) {
+                                if (control.typeName === "Image") {
+                                    (control as Image).autoScale = false;
+                                }
+                                else if (control instanceof Container) {
+                                    (control as Container).adaptHeightToChildren = false;
+                                }
+                                else if (control.typeName === "ColorPicker") {
+                                    if (newValue === "0" || newValue === "-") {
+                                        newValue = "1";
+                                    }
                                 }
                             }
                             this._height = newValue;
@@ -252,20 +264,26 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         icon={verticalMarginIcon}
                         lockObject={this.props.lockObject}
                         label="B"
-                        target={control}
+                        targets={controls}
                         propertyName="paddingBottom"
                         delayInput={true}
-                        onChange={(newValue) => { this._checkAndUpdateValues("paddingBottom", newValue); this._markChildrenAsDirty(); }}
+                        onChange={(newValue) => {
+                            this._checkAndUpdateValues("paddingBottom", newValue);
+                            this._markChildrenAsDirty();
+                        }}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <TextInputLineComponent
                         numbersOnly={true}
                         lockObject={this.props.lockObject}
                         label="T"
-                        target={control}
+                        targets={controls}
                         propertyName="paddingTop"
                         delayInput={true}
-                        onChange={(newValue) => { this._checkAndUpdateValues("paddingTop", newValue); this._markChildrenAsDirty(); }}
+                        onChange={(newValue) => {
+                            this._checkAndUpdateValues("paddingTop", newValue);
+                            this._markChildrenAsDirty();
+                        }}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                 </div>
@@ -276,7 +294,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         icon={horizontalMarginIcon}
                         lockObject={this.props.lockObject}
                         label="L"
-                        target={control}
+                        targets={controls}
                         propertyName="paddingLeft"
                         delayInput={true}
                         onChange={(newValue) => { this._checkAndUpdateValues("paddingLeft", newValue); this._markChildrenAsDirty(); }}
@@ -286,7 +304,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         numbersOnly={true}
                         lockObject={this.props.lockObject}
                         label="R"
-                        target={control}
+                        targets={controls}
                         delayInput={true}
                         propertyName="paddingRight"
                         onChange={(newValue) => { this._checkAndUpdateValues("paddingRight", newValue); this._markChildrenAsDirty(); }}
@@ -298,7 +316,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         iconLabel={"Padding does not affect the parameters of this control, only the descendants of this control."}
                         icon={descendantsOnlyPaddingIcon}
                         label=""
-                        target={control}
+                        targets={controls}
                         propertyName="descendentsOnlyPadding"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
@@ -311,14 +329,14 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         icon={positionIcon}
                         lockObject={this.props.lockObject}
                         label="X"
-                        target={control}
+                        targets={controls}
                         propertyName="transformCenterX"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <FloatLineComponent
                         lockObject={this.props.lockObject}
                         label="Y"
-                        target={control}
+                        targets={controls}
                         propertyName="transformCenterY"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
@@ -329,14 +347,14 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         icon={scaleIcon}
                         lockObject={this.props.lockObject}
                         label="X"
-                        target={control}
+                        targets={controls}
                         propertyName="scaleX"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <FloatLineComponent
                         lockObject={this.props.lockObject}
                         label="Y"
-                        target={control}
+                        targets={controls}
                         propertyName="scaleY"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
@@ -346,7 +364,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                     lockObject={this.props.lockObject}
                     icon={rotationIcon}
                     label="R"
-                    target={control}
+                    targets={controls}
                     decimalCount={2}
                     propertyName="rotation"
                     minimum={0}
@@ -356,25 +374,25 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                 />
                 <hr className="ge" />
                 <TextLineComponent tooltip="" label="APPEARANCE" value=" " color="grey"></TextLineComponent>
-                {((control as any).color !== undefined && control.typeName !== "Image" &&
-                    control.typeName !== "ImageBasedSlider" && control.typeName !== "ColorPicker") && (
-                        <Color3LineComponent
+                {((firstControl as any).color !== undefined && firstControl.typeName !== "Image" &&
+                    firstControl.typeName !== "ImageBasedSlider" && firstControl.typeName !== "ColorPicker") && (
+                        <Color4LineComponent
                             iconLabel={"Color"}
                             icon={colorIcon}
                             lockObject={this.props.lockObject}
                             label=""
-                            target={control}
+                            targets={controls}
                             propertyName="color"
                             onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         />
                     )}
-                {(control as any).background !== undefined && (
-                    <Color3LineComponent
+                {controls.some(control => (control as any).background !== undefined) && (
+                    <Color4LineComponent
                         iconLabel={"Background"}
                         icon={fillColorIcon}
                         lockObject={this.props.lockObject}
                         label=""
-                        target={control}
+                        targets={controls}
                         propertyName="background"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
@@ -384,19 +402,19 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                     iconLabel={"Alpha"}
                     icon={alphaIcon}
                     label=""
-                    target={control}
+                    targets={controls}
                     propertyName="alpha"
                     minimum={0}
                     maximum={1}
                     step={0.01}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
-                <Color3LineComponent
+                <Color4LineComponent
                     iconLabel={"Shadow Color"}
                     icon={shadowColorIcon}
                     lockObject={this.props.lockObject}
                     label=""
-                    target={control}
+                    targets={controls}
                     propertyName="shadowColor"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
@@ -406,7 +424,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         icon={shadowOffsetXIcon}
                         lockObject={this.props.lockObject}
                         label=""
-                        target={control}
+                        targets={controls}
                         propertyName="shadowOffsetX"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
@@ -415,7 +433,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         icon={shadowOffsetYIcon}
                         lockObject={this.props.lockObject}
                         label=""
-                        target={control}
+                        targets={controls}
                         propertyName="shadowOffsetY"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
@@ -426,12 +444,12 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         icon={shadowBlurIcon}
                         lockObject={this.props.lockObject}
                         label=""
-                        target={control}
+                        targets={controls}
                         propertyName="shadowBlur"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                 </div>
-                {(control instanceof Container || control.typeName === "TextBlock") && <>
+                {showTextProperties && <>
                     <hr className="ge" />
                     <TextLineComponent tooltip="" label="FONT STYLE" value=" " color="grey"></TextLineComponent>
                     <div className="ge-divider">
@@ -440,7 +458,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                             icon={fontFamilyIcon}
                             lockObject={this.props.lockObject}
                             label=""
-                            target={control}
+                            targets={controls}
                             propertyName="fontFamily"
                             onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         />
@@ -449,7 +467,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                             icon={fontSizeIcon}
                             lockObject={this.props.lockObject}
                             label=""
-                            target={control}
+                            targets={controls}
                             numbersOnly={true}
                             propertyName="fontSize"
                             onChange={(newValue) => this._checkAndUpdateValues("fontSize", newValue)}
@@ -462,7 +480,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                             icon={shadowBlurIcon}
                             lockObject={this.props.lockObject}
                             label=""
-                            target={control}
+                            targets={controls}
                             propertyName="fontWeight"
                             onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         />
@@ -471,7 +489,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                             icon={fontStyleIcon}
                             lockObject={this.props.lockObject}
                             label=""
-                            target={control}
+                            targets={controls}
                             propertyName="fontStyle"
                             onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         />
