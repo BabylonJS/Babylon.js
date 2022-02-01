@@ -40463,8 +40463,10 @@ declare module BABYLON {
          * Gets the internal data of the matrix
          */
         get m(): DeepImmutable<Float32Array | Array<number>>;
-        /** @hidden */
-        _markAsUpdated(): void;
+        /**
+         * Update the updateFlag to indicate that the matrix has been updated
+         */
+        markAsUpdated(): void;
         private _updateIdentityStatus;
         /**
          * Creates an empty matrix (filled with zeros)
