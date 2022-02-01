@@ -21,7 +21,7 @@ export class ControlPropertyGridComponent extends React.Component<IControlProper
 
         return (
             <div className="pane">
-                <CommonControlPropertyGridComponent lockObject={this.props.lockObject} control={control} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <CommonControlPropertyGridComponent lockObject={this.props.lockObject} controls={[control]} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
             </div>
         );
     }
