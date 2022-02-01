@@ -222,7 +222,12 @@ export class ToolsTabComponent extends PaneComponent {
     }
 
     shouldExport(node: Node): boolean {
-        // No skybox
+        // Exclude disabled
+        if (!node.isEnabled()) {
+            return false;
+        }
+
+        // Exclude skybox
         if (node instanceof Mesh) {
             if (node.material) {
                 const material = node.material as PBRMaterial | StandardMaterial | BackgroundMaterial;
