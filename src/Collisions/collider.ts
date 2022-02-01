@@ -416,7 +416,6 @@ export class Collider {
                     if (!p1 || !p2 || !p3) {
                         continue;
                     }
-    
                     // Handles strip faces one on two is reversed
                     if ((invertTriangles ? 1 : 0) ^ (i % 2)) {
                         this._testTriangle(i, trianglePlaneArray, p1, p2, p3, hasMaterial, hostMesh);
