@@ -191,7 +191,7 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
         if (element) {
             this._contextMenuBind = this.onContextMenu.bind(this);
             element.addEventListener("contextmenu", this._contextMenuBind, false); // TODO: We need to figure out how to handle this for Native
-        }        
+        }
     }
 
     /**
