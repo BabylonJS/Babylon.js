@@ -2001,6 +2001,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 /**
  * Converts Babylon Scene into glTF 2.0.
  * @hidden
@@ -2020,6 +2021,10 @@ var _Exporter = /** @class */ (function () {
         this._glTF = {
             asset: { generator: "BabylonJS", version: "2.0" }
         };
+        babylonScene = babylonScene || babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Engine"].LastCreatedScene;
+        if (!babylonScene) {
+            return;
+        }
         this._babylonScene = babylonScene;
         this._bufferViews = [];
         this._accessors = [];

@@ -1136,7 +1136,7 @@ export class Control {
         };
         recursivelyFirePointerOut(this);
     }
-    /** Gets or sets background color of control if it's disabled */
+    /** Gets or sets background color of control if it's disabled. Only applies to Button class. */
     @serialize()
     public get disabledColor(): string {
         return this._disabledColor;
@@ -1150,7 +1150,7 @@ export class Control {
         this._disabledColor = value;
         this._markAsDirty();
     }
-    /** Gets or sets front color of control if it's disabled */
+    /** Gets or sets front color of control if it's disabled. Only applies to Checkbox class. */
     @serialize()
     public get disabledColorItem(): string {
         return this._disabledColorItem;
