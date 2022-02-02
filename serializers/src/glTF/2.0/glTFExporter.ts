@@ -27,6 +27,7 @@ import { _GLTFUtilities } from "./glTFUtilities";
 import { GLTFData } from "./glTFData";
 import { _GLTFAnimation } from "./glTFAnimation";
 import { Camera } from "babylonjs/Cameras/camera";
+import { EngineStore } from "babylonjs/Engines/engineStore";
 
 /**
  * Utility interface for storing vertex attribute data
@@ -292,7 +293,7 @@ export class _Exporter {
         this._glTF = {
             asset: { generator: "BabylonJS", version: "2.0" }
         };
-        babylonScene = babylonScene || Engine.LastCreatedScene;
+        babylonScene = babylonScene || EngineStore.LastCreatedScene;
         if (!babylonScene) {
             return;
         }

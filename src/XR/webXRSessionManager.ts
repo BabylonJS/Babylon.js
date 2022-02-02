@@ -11,6 +11,7 @@ import { Viewport } from "../Maths/math.viewport";
 import { WebXRLayerWrapper } from "./webXRLayerWrapper";
 import { NativeXRLayerWrapper, NativeXRRenderTarget } from "./native/nativeXRRenderTarget";
 import { WebXRWebGLLayerWrapper } from "./webXRWebGLLayer";
+import { ThinEngine } from "../Engines/thinEngine";
 
 /**
  * Manages an XRSession to work with Babylon's engine
@@ -23,6 +24,7 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
     private _baseLayerRTTProvider: Nullable<WebXRLayerRenderTargetTextureProvider>;
     private _xrNavigator: any;
     private _sessionMode: XRSessionMode;
+    private _onEngineDisposedObserver: Observable<ThinEngine>;
 
     /**
      * The base reference space from which the session started. good if you want to reset your
@@ -83,7 +85,7 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
         public scene: Scene
     ) {
         this._engine = scene.getEngine();
-        this._engine.onDisposeObservable.addOnce(() => {
+        this._onEngineDisposedObserver = this._engine.onDisposeObservable.addOnce(() => {
             this._engine = null;
         });
     }
