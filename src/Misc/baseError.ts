@@ -11,14 +11,29 @@ export class BaseError extends Error {
     protected static _setPrototypeOf: (o: any, proto: object | null) => any =
         (Object as any).setPrototypeOf || ((o, proto) => { o.__proto__ = proto; return o; });
 
+    /**
+     * The error code
+     */
     protected errorCode?: ErrorCodesString;
 
+    /**
+     * The exception that caused the outer exception
+     */
     protected innerException?: Error;
 
+    /**
+     * Creates a new BaseError
+     * @param message defines the message of the error
+     * @param errorCode the error code
+     * @param innerException the exception that caused the outer exception
+     */
     public constructor(message: string, errorCode?: ErrorCodesString, innerException?: Error) {
         super(message);
 
         this.errorCode = errorCode;
         this.innerException = innerException;
+
+        this.name = "BaseError";
+        BaseError._setPrototypeOf(this, BaseError.prototype);
     }
 }

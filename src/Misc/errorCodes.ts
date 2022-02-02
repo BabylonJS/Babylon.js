@@ -1,5 +1,5 @@
 /**
- * Error codes for babylon JS
+ * Error codes for babylon JS errors
  */
 export const ErrorCodes = Object.freeze({
     // Mesh validation
