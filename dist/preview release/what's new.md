@@ -160,6 +160,10 @@
 
 - Start render loop before creating scene to make stopping it more convenient ([BlakeOne](https://github.com/BlakeOne))
 - Added tooltips for menubar buttons ([darraghjburke](https://github.com/darraghjburke))
+- Fixed squiggles not working for deprecated members ([sailro](https://github.com/sailro))
+- Removed legacy code for formatting deprecated members display ([sailro](https://github.com/sailro))
+- Fixed deprecated members info display ([sailro](https://github.com/sailro))
+- Added support for experimental/beta members ([sailro](https://github.com/sailro))
 
 ### NME
 
@@ -402,6 +406,8 @@
 - Fix issue with physics impostors'unique ID not set correctly if an impostor was disposed ([RaananW](https://github.com/RaananW))
 - Fix memory leak and incorrect data copy in KTX2 ([bghgary](https://github.com/bghgary))
 - Fix keypoint selection in ACE ([carolhmj](https://github.com/carolhmj))
+- Fix keypoint drag in ACE ([carolhmj](https://github.com/carolhmj))
+- Fix spherical harmonics computation ([Meakk](https://github.com/Meakk))
 
 ## Breaking changes
 
@@ -428,4 +434,4 @@
 - Rework of the inner working of render targets. Those are mostly internal changes. From the end user standpoint, the most visible change is that the `PostProcess` class is now dealing with `RenderTargetWrapper` instead of `InternalTexture` objects. So, if you are directly updating the `inputTexture` property with a render target texture that you previously rendered, you will need to pass a `RenderTargetWrapper` instead of an `InternalTexture`: you will get it by doing `rtt.renderTarget`, where `rtt` is the instance of your `RenderTargetTexture`. ([Popov72](https://github.com/Popov72))
 - `ShaderMaterial` is now storing the effect on submeshes by default. It may be a breaking change in some special cases where one creates a `ShaderMaterial` not to be used as the material property of a mesh but instead to handle it "by hand" by calling `ShaderMaterial.isReady` / `ShaderMaterial.bind` directly. If you are doing that, you may want to pass `false` as the 5th parameter of the `ShaderMaterial` constructor to disable storing the effect on submeshes.
 - The `glTFLoader.rootBabylonMesh` getter now has a nullable return type (glTF files without mesh data) ([simonihmig](https://github.com/simonihmig))
-
+- When updating the `m` array of the `Matrix` class directly, you must call `markAsUpdated()` explicitly or the matrix changes may not take effect ([Popov72](https://github.com/Popov72), [Deltakosh](https://github.com/deltakosh), [bghgary](https://github.com/bghgary), [Sebavan](https://github.com/sebavan))

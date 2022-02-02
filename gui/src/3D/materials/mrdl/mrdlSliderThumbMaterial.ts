@@ -478,7 +478,7 @@ export class MRDLSliderThumbMaterial extends PushMaterial {
      */
     public globalRightIndexMiddlePosition = new Vector4(0.0, 0.0, 0.0, 1.0);
 
-    constructor(name: string, scene: Scene) {
+    constructor(name: string, scene?: Scene) {
         super(name, scene);
         this.alphaMode = Constants.ALPHA_DISABLE;
         this.backFaceCulling = false;

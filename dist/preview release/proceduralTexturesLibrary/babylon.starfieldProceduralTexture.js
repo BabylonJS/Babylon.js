@@ -493,6 +493,7 @@ __webpack_require__.r(__webpack_exports__);
 var StarfieldProceduralTexture = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(StarfieldProceduralTexture, _super);
     function StarfieldProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {
+        if (scene === void 0) { scene = null; }
         var _this = _super.call(this, name, size, "starfieldProceduralTexture", scene, fallbackTexture, generateMipMaps) || this;
         _this._time = 1;
         _this._alpha = 0.5;

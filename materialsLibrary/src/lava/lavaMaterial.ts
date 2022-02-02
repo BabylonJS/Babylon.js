@@ -137,7 +137,7 @@ export class LavaMaterial extends PushMaterial {
 
     private _scaledDiffuse = new Color3();
 
-    constructor(name: string, scene: Scene) {
+    constructor(name: string, scene?: Scene) {
         super(name, scene);
     }
 

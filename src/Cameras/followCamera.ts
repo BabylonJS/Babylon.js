@@ -115,7 +115,7 @@ export class FollowCamera extends TargetCamera {
      * @param scene Define the scene the camera belong to
      * @param lockedTarget Define the target of the camera
      */
-    constructor(name: string, position: Vector3, scene: Scene, lockedTarget: Nullable<AbstractMesh> = null) {
+    constructor(name: string, position: Vector3, scene?: Scene, lockedTarget: Nullable<AbstractMesh> = null) {
         super(name, position, scene);
 
         this.lockedTarget = lockedTarget;

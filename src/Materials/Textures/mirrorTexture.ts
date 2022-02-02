@@ -116,7 +116,7 @@ export class MirrorTexture extends RenderTargetTexture {
     }
 
     private _updateGammaSpace() {
-        this.gammaSpace = !this.scene.imageProcessingConfiguration.isEnabled || !this.scene.imageProcessingConfiguration.applyByPostProcess;
+        this.gammaSpace = !this.scene!.imageProcessingConfiguration.isEnabled || !this.scene!.imageProcessingConfiguration.applyByPostProcess;
     }
 
     private _imageProcessingConfigChangeObserver: Nullable<Observer<ImageProcessingConfiguration>>;
@@ -148,9 +148,14 @@ export class MirrorTexture extends RenderTargetTexture {
      * @param samplingMode
      * @param generateDepthBuffer
      */
-    constructor(name: string, size: number | { width: number, height: number } | { ratio: number }, private scene: Scene, generateMipMaps?: boolean, type: number = Constants.TEXTURETYPE_UNSIGNED_INT, samplingMode = Texture.BILINEAR_SAMPLINGMODE, generateDepthBuffer = true) {
+    constructor(name: string, size: number | { width: number, height: number } | { ratio: number }, private scene?: Scene, generateMipMaps?: boolean, type: number = Constants.TEXTURETYPE_UNSIGNED_INT, samplingMode = Texture.BILINEAR_SAMPLINGMODE, generateDepthBuffer = true) {
         super(name, size, scene, generateMipMaps, true, type, false, samplingMode, generateDepthBuffer);
 
+        this.scene = <Scene>this.getScene();
+
+        if (!scene) {
+            return this;
+        }
         this.ignoreCameraViewport = true;
 
         this._updateGammaSpace();
@@ -158,7 +163,7 @@ export class MirrorTexture extends RenderTargetTexture {
             this._updateGammaSpace();
         });
 
-        const engine = this.getScene()!.getEngine();
+        const engine = scene.getEngine();
 
         if (engine.supportsUniformBuffers) {
             this._sceneUBO = scene.createSceneUniformBuffer(`Scene for Mirror Texture (name "${name}")`);
@@ -300,7 +305,7 @@ export class MirrorTexture extends RenderTargetTexture {
      */
     public dispose() {
         super.dispose();
-        this.scene.imageProcessingConfiguration.onUpdateParameters.remove(this._imageProcessingConfigChangeObserver);
+        this.scene!.imageProcessingConfiguration.onUpdateParameters.remove(this._imageProcessingConfigChangeObserver);
         this._sceneUBO?.dispose();
     }
 }

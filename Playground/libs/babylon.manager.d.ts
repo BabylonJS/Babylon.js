@@ -193,9 +193,17 @@ declare module BABYLON {
         /** Get the last created scene instance */
         static GetLastCreatedScene(): BABYLON.Scene;
         /** Get managed asset container. */
+        static GetImportMeshes(scene: BABYLON.Scene, name: string): BABYLON.AbstractMesh[];
+        /** Get managed asset container map. */
+        static GetImportMeshMap(scene: BABYLON.Scene): Map<string, BABYLON.AbstractMesh[]>;
+        /** Clear all managed asset containers. */
+        static ClearImportMeshes(scene: BABYLON.Scene): void;
+        /** Set managed asset container. */
+        static RegisterImportMeshes(scene: BABYLON.Scene, name: string, meshes: BABYLON.AbstractMesh[]): void;
+        /** Get managed asset container. */
         static GetAssetContainer(scene: BABYLON.Scene, name: string): BABYLON.AssetContainer;
         /** Get managed asset container map. */
-        static GetAssetContainers(scene: BABYLON.Scene): Map<string, BABYLON.AssetContainer>;
+        static GetAssetContainerMap(scene: BABYLON.Scene): Map<string, BABYLON.AssetContainer>;
         /** Clear all managed asset containers. */
         static ClearAssetContainers(scene: BABYLON.Scene): void;
         /** Set managed asset container. */
@@ -252,6 +260,8 @@ declare module BABYLON {
         static DestroyScriptComponent(instance: BABYLON.ScriptComponent): void;
         /** Validates a network entity on the transform node. */
         static HasNetworkEntity(transform: BABYLON.TransformNode): boolean;
+        /** Gets the network entity on the transform node. */
+        static GetNetworkEntity(transform: BABYLON.TransformNode): BABYLON.IColyseusNetworkEntity;
         /** Gets the network entity id on the transform node. */
         static GetNetworkEntityId(transform: BABYLON.TransformNode): string;
         /** Gets the network entity type on the transform node. */
@@ -725,6 +735,8 @@ declare module BABYLON {
         getChildrenWithScript(klass: string, directDecendantsOnly?: boolean, predicate?: (node: BABYLON.Node) => boolean): BABYLON.TransformNode[];
         /** Validates a network entity on the transform node. */
         hasNetworkEntity(): boolean;
+        /** Gets the network entity on the transform node. */
+        getNetworkEntity(): BABYLON.IColyseusNetworkEntity;
         /** Gets the network entity id on the transform node. */
         getNetworkEntityId(): string;
         /** Gets the network entity type on the transform node. */
@@ -925,6 +937,7 @@ declare module BABYLON {
         Kph2Mph = 0.621371,
         Mph2Kph = 1.60934,
         Mps2Kph = 3.6,
+        Mps2Mph = 2.23694,
         Meter2Inch = 39.3701,
         Inch2Meter = 0.0254,
         Gravity = 9.81,
@@ -1308,6 +1321,9 @@ declare module BABYLON {
         xVel: number;
         yVel: number;
         zVel: number;
+        xAngle: number;
+        yAngle: number;
+        zAngle: number;
         timestamp: number;
         attributes: Map<string, string>;
     }
@@ -1322,6 +1338,7 @@ declare module BABYLON {
     interface IColyseusRoomState {
         networkEntities: Map<string, BABYLON.IColyseusNetworkEntity>;
         networkUsers: Map<string, BABYLON.IColyseusNetworkUser>;
+        serverTime: number;
         attributes: Map<string, string>;
     }
     class ColyseusTransformData {
@@ -1338,8 +1355,18 @@ declare module BABYLON {
         xVel: number;
         yVel: number;
         zVel: number;
+        xAngle: number;
+        yAngle: number;
+        zAngle: number;
+        private localPositionDelta;
+        private prevLocalPosition;
+        private currLocalPosition;
+        private localRotationDelta;
+        private prevLocalRotation;
+        private currLocalRotation;
+        private localAngularVelocity;
         constructor();
-        set(transform: BABYLON.TransformNode): void;
+        update(transform: BABYLON.TransformNode, deltaTime: number): void;
         copy(data: BABYLON.ColyseusTransformData): void;
         reset(): void;
         dirty(): void;
@@ -1540,12 +1567,12 @@ declare module BABYLON {
         static Approximately(a: number, b: number): boolean;
         static GetVertexDataFromMesh(mesh: BABYLON.Mesh): BABYLON.VertexData;
         static UpdateAbstractMeshMaterial(mesh: BABYLON.AbstractMesh, material: BABYLON.Material, materialIndex: number): void;
-        static MoveTowardsVector2(current: BABYLON.Vector2, target: BABYLON.Vector2, maxDelta: number): BABYLON.Vector2;
-        static MoveTowardsVector2ToRef(current: BABYLON.Vector2, target: BABYLON.Vector2, maxDelta: number, result: BABYLON.Vector2): void;
-        static MoveTowardsVector3(current: BABYLON.Vector3, target: BABYLON.Vector3, maxDelta: number): BABYLON.Vector3;
-        static MoveTowardsVector3ToRef(current: BABYLON.Vector3, target: BABYLON.Vector3, maxDelta: number, result: BABYLON.Vector3): void;
-        static MoveTowardsVector4(current: BABYLON.Vector4, target: BABYLON.Vector4, maxDelta: number): BABYLON.Vector4;
-        static MoveTowardsVector4ToRef(current: BABYLON.Vector4, target: BABYLON.Vector4, maxDelta: number, result: BABYLON.Vector4): void;
+        static MoveTowardsVector2(current: BABYLON.Vector2, target: BABYLON.Vector2, maxDistanceDelta: number): BABYLON.Vector2;
+        static MoveTowardsVector2ToRef(current: BABYLON.Vector2, target: BABYLON.Vector2, maxDistanceDelta: number, result: BABYLON.Vector2): void;
+        static MoveTowardsVector3(current: BABYLON.Vector3, target: BABYLON.Vector3, maxDistanceDelta: number): BABYLON.Vector3;
+        static MoveTowardsVector3ToRef(current: BABYLON.Vector3, target: BABYLON.Vector3, maxDistanceDelta: number, result: BABYLON.Vector3): void;
+        static MoveTowardsVector4(current: BABYLON.Vector4, target: BABYLON.Vector4, maxDistanceDelta: number): BABYLON.Vector4;
+        static MoveTowardsVector4ToRef(current: BABYLON.Vector4, target: BABYLON.Vector4, maxDistanceDelta: number, result: BABYLON.Vector4): void;
         /**  Clamps a vector2 magnitude to a max length. */
         static ClampMagnitudeVector2(vector: BABYLON.Vector2, length: number): BABYLON.Vector2;
         /**  Clamps a vector2 magnitude to a max length. */

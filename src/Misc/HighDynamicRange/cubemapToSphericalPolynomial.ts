@@ -99,6 +99,14 @@ export class CubeMapToSphericalPolynomialTools {
     }
 
     /**
+     * Compute the area on the unit sphere of the rectangle defined by (x,y) and the origin
+     * See https://www.rorydriscoll.com/2012/01/15/cubemap-texel-solid-angle/
+     */
+    private static _AreaElement(x: number, y: number): number {
+        return Math.atan2(x * y, Math.sqrt(x * x + y * y + 1));
+    }
+
+    /**
      * Converts a cubemap to the according Spherical Polynomial data.
      * This extracts the first 3 orders only as they are the only one used in the lighting.
      *
@@ -113,8 +121,10 @@ export class CubeMapToSphericalPolynomialTools {
         var du = 2.0 / cubeInfo.size;
         var dv = du;
 
+        var halfTexel = 0.5 * du;
+
         // The (u,v) of the first texel is half a texel from the corner (-1,-1).
-        var minUV = du * 0.5 - 1.0;
+        var minUV = halfTexel - 1.0;
 
         for (var faceIndex = 0; faceIndex < 6; faceIndex++) {
             var fileFace = this.FileFaces[faceIndex];
@@ -136,7 +146,11 @@ export class CubeMapToSphericalPolynomialTools {
                                 fileFace.worldAxisForNormal);
                     worldDirection.normalize();
 
-                    var deltaSolidAngle = Math.pow(1.0 + u * u + v * v, -3.0 / 2.0);
+                    var deltaSolidAngle =
+                        this._AreaElement(u - halfTexel, v - halfTexel) -
+                        this._AreaElement(u - halfTexel, v + halfTexel) -
+                        this._AreaElement(u + halfTexel, v - halfTexel) +
+                        this._AreaElement(u + halfTexel, v + halfTexel);
 
                     var r = dataArray[(y * cubeInfo.size * stride) + (x * stride) + 0];
                     var g = dataArray[(y * cubeInfo.size * stride) + (x * stride) + 1];

@@ -116,7 +116,7 @@ export class FluentMaterial extends PushMaterial {
      * @param name defines the name of the material
      * @param scene defines the hosting scene
      */
-    constructor(name: string, scene: Scene) {
+    constructor(name: string, scene?: Scene) {
         super(name, scene);
     }
 

@@ -6145,7 +6145,7 @@ declare module BABYLON {
          * in order to make a correct use of the texture.
          * @param sceneOrEngine Define the scene or engine the texture belongs to
          */
-        constructor(sceneOrEngine: Nullable<Scene | ThinEngine>);
+        constructor(sceneOrEngine?: Nullable<Scene | ThinEngine>);
         /**
          * Get the scene the texture belongs to.
          * @returns the scene or null if undefined
@@ -8901,7 +8901,7 @@ declare module BABYLON {
         /** @hidden */
         _testTriangle(faceIndex: number, trianglePlaneArray: Array<Plane>, p1: Vector3, p2: Vector3, p3: Vector3, hasMaterial: boolean, hostMesh: AbstractMesh): void;
         /** @hidden */
-        _collide(trianglePlaneArray: Array<Plane>, pts: Vector3[], indices: IndicesArray, indexStart: number, indexEnd: number, decal: number, hasMaterial: boolean, hostMesh: AbstractMesh, invertTriangles?: boolean): void;
+        _collide(trianglePlaneArray: Array<Plane>, pts: Vector3[], indices: IndicesArray, indexStart: number, indexEnd: number, decal: number, hasMaterial: boolean, hostMesh: AbstractMesh, invertTriangles?: boolean, triangleStrip?: boolean): void;
         /** @hidden */
         _getResponse(pos: Vector3, vel: Vector3): void;
     }
@@ -9180,7 +9180,7 @@ declare module BABYLON {
          * @param updatable defines if geometry must be updatable (false by default)
          * @param mesh defines the mesh that will be associated with the geometry
          */
-        constructor(id: string, scene: Scene, vertexData?: VertexData, updatable?: boolean, mesh?: Nullable<Mesh>);
+        constructor(id: string, scene?: Scene, vertexData?: VertexData, updatable?: boolean, mesh?: Nullable<Mesh>);
         /**
          * Gets the current extend of the geometry
          */
@@ -11770,7 +11770,7 @@ declare module BABYLON {
          * Creates a new action manager
          * @param scene defines the hosting scene
          */
-        constructor(scene: Scene);
+        constructor(scene?: Nullable<Scene>);
         /**
          * Releases all associated resources
          */
@@ -13773,11 +13773,14 @@ declare module BABYLON {
         particleEmitterType: IParticleEmitterType;
         /** @hidden */
         _isSubEmitter: boolean;
+        /** @hidden */
+        _billboardMode: number;
         /**
          * Gets or sets the billboard mode to use when isBillboardBased = true.
          * Value can be: ParticleSystem.BILLBOARDMODE_ALL, ParticleSystem.BILLBOARDMODE_Y, ParticleSystem.BILLBOARDMODE_STRETCHED
          */
-        billboardMode: number;
+        get billboardMode(): number;
+        set billboardMode(value: number);
         /** @hidden */
         _isBillboardBased: boolean;
         /**
@@ -16490,7 +16493,7 @@ declare module BABYLON {
     export class PushMaterial extends Material {
         protected _activeEffect: Effect;
         protected _normalMatrix: Matrix;
-        constructor(name: string, scene: Scene, storeEffectOnSubMeshes?: boolean);
+        constructor(name: string, scene?: Scene, storeEffectOnSubMeshes?: boolean);
         getEffect(): Effect;
         isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean;
         protected _isReadyForSubMesh(subMesh: SubMesh): boolean;
@@ -18392,7 +18395,7 @@ declare module BABYLON {
          * @param scene Define the scene the material belongs to
          * @param options Options used to create the wrapper
          */
-        constructor(baseMaterial: Material, scene: Scene, options?: IIOptionShadowDepthMaterial);
+        constructor(baseMaterial: Material, scene?: Scene, options?: IIOptionShadowDepthMaterial);
         /**
          * Gets the effect to use to generate the depth map
          * @param subMesh subMesh to get the effect for
@@ -18758,7 +18761,7 @@ declare module BABYLON {
          * @param options Define the options used to create the multi render target
          * @param textureNames Define the names to set to the textures (if count > 0 - optional)
          */
-        constructor(name: string, size: any, count: number, scene: Scene, options?: IMultiRenderTargetOptions, textureNames?: string[]);
+        constructor(name: string, size: any, count: number, scene?: Scene, options?: IMultiRenderTargetOptions, textureNames?: string[]);
         private _initTypes;
         /** @hidden */
         _rebuild(forceFullRebuild?: boolean, textureNames?: string[]): void;
@@ -19042,7 +19045,7 @@ declare module BABYLON {
           * If this is `null`, it means this prePassRenderTarget is associated with the scene
           */
         renderTargetTexture: Nullable<RenderTargetTexture>;
-        constructor(name: string, renderTargetTexture: Nullable<RenderTargetTexture>, size: any, count: number, scene: Scene, options?: IMultiRenderTargetOptions | undefined);
+        constructor(name: string, renderTargetTexture: Nullable<RenderTargetTexture>, size: any, count: number, scene?: Scene, options?: IMultiRenderTargetOptions | undefined);
         /**
          * Creates a composition effect for this RT
          * @hidden
@@ -20169,7 +20172,7 @@ declare module BABYLON {
          * @param scene defines the scene to reference
          * @param doNotAdd specifies if the material should be added to the scene
          */
-        constructor(name: string, scene: Scene, doNotAdd?: boolean);
+        constructor(name: string, scene?: Nullable<Scene>, doNotAdd?: boolean);
         /**
          * Returns a string representation of the current material
          * @param fullDetails defines a boolean indicating which levels of logging is desired
@@ -20496,7 +20499,7 @@ declare module BABYLON {
          * @param name Define the name in the scene
          * @param scene Define the scene the material belongs to
          */
-        constructor(name: string, scene: Scene);
+        constructor(name: string, scene?: Scene);
         private _hookArray;
         /**
          * Get one of the submaterial by its index in the submaterials array
@@ -22662,7 +22665,7 @@ declare module BABYLON {
          * @param scene Defines the scene the camera belongs to
          * @param setActiveOnSceneIfNoneActive Defines whether the camera should be marked as active if not other active cameras have been defined
          */
-        constructor(name: string, position: Vector3, scene: Scene, setActiveOnSceneIfNoneActive?: boolean);
+        constructor(name: string, position: Vector3, scene?: Scene, setActiveOnSceneIfNoneActive?: boolean);
         /**
          * Gets the position in front of the camera at a given distance.
          * @param distance The distance from the camera we want the position to be
@@ -23727,7 +23730,7 @@ declare module BABYLON {
          * @param scene Define the scene the camera belongs to
          * @param setActiveOnSceneIfNoneActive Defines whether the camera should be marked as active if not other active cameras have been defined
          */
-        constructor(name: string, position: Vector3, scene: Scene, setActiveOnSceneIfNoneActive?: boolean);
+        constructor(name: string, position: Vector3, scene?: Scene, setActiveOnSceneIfNoneActive?: boolean);
         /**
          * Attach the input controls to a specific dom element to get the input from.
          * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
@@ -24370,7 +24373,7 @@ declare module BABYLON {
          * @param scene scene used with the render target
          * @param size the size of the render target (used for each view)
          */
-        constructor(scene: Scene, size?: number | {
+        constructor(scene?: Scene, size?: number | {
             width: number;
             height: number;
         } | {
@@ -24736,7 +24739,7 @@ declare module BABYLON {
          * @param scene The scene the camera belongs to
          * @param webVROptions a set of customizable options for the webVRCamera
          */
-        constructor(name: string, position: Vector3, scene: Scene, webVROptions?: WebVROptions);
+        constructor(name: string, position: Vector3, scene?: Scene, webVROptions?: WebVROptions);
         protected _setRigMode: any;
         /**
          * Gets the device distance from the ground in meters.
@@ -25347,7 +25350,7 @@ declare module BABYLON {
      * @see https://doc.babylonjs.com/how_to/reflect#mirrors
      */
     export class MirrorTexture extends RenderTargetTexture {
-        private scene;
+        private scene?;
         /**
          * Define the reflection plane we want to use. The mirrorPlane is usually set to the constructed reflector.
          * It is possible to directly set the mirrorPlane by directly using a Plane(a, b, c, d) where a, b and c give the plane normal vector (a, b, c) and d is a scalar displacement from the mirrorPlane to the origin. However in all but the very simplest of situations it is more straight forward to set it to the reflector as stated in the doc.
@@ -25415,7 +25418,7 @@ declare module BABYLON {
             height: number;
         } | {
             ratio: number;
-        }, scene: Scene, generateMipMaps?: boolean, type?: number, samplingMode?: number, generateDepthBuffer?: boolean);
+        }, scene?: Scene | undefined, generateMipMaps?: boolean, type?: number, samplingMode?: number, generateDepthBuffer?: boolean);
         private _preparePostProcesses;
         /**
          * Clone the mirror texture.
@@ -25681,7 +25684,7 @@ declare module BABYLON {
          * @param loaderOptions options to be passed to the loader
          * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
          */
-        constructor(url: Nullable<string>, sceneOrEngine: Nullable<Scene | ThinEngine>, noMipmapOrOptions?: boolean | ITextureCreationOptions, invertY?: boolean, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message?: string, exception?: any) => void>, buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap>, deleteBuffer?: boolean, format?: number, mimeType?: string, loaderOptions?: any, creationFlags?: number);
+        constructor(url: Nullable<string>, sceneOrEngine?: Nullable<Scene | ThinEngine>, noMipmapOrOptions?: boolean | ITextureCreationOptions, invertY?: boolean, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message?: string, exception?: any) => void>, buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap>, deleteBuffer?: boolean, format?: number, mimeType?: string, loaderOptions?: any, creationFlags?: number);
         /**
          * Update the url (and optional buffer) of this texture if url was null during construction.
          * @param url the url of the texture
@@ -27957,7 +27960,7 @@ declare module BABYLON {
         _minZ: number;
         /** @hidden */
         _maxZ: number;
-        constructor(name: string, scene: Scene);
+        constructor(name: string, scene?: Scene);
         /**
          * "GroundMesh"
          * @returns "GroundMesh"
@@ -31709,7 +31712,7 @@ declare module BABYLON {
          * Creates a new BakedVertexAnimationManager
          * @param scene defines the current scene
          */
-        constructor(scene: Scene);
+        constructor(scene?: Nullable<Scene>);
         /** @hidden */
         _markSubMeshesAsAttributesDirty(): void;
         /**
@@ -34437,7 +34440,7 @@ declare module BABYLON {
          * @param name The material name
          * @param scene The scene the material will be use in.
          */
-        constructor(name: string, scene: Scene);
+        constructor(name: string, scene?: Scene);
         /**
          * Gets a boolean indicating that current material needs to register RTT
          */
@@ -35122,7 +35125,7 @@ declare module BABYLON {
          * @param name Define the name of the material in the scene
          * @param scene Define the scene the material belong to
          */
-        constructor(name: string, scene: Scene);
+        constructor(name: string, scene?: Scene);
         /**
          * Gets a boolean indicating that current material needs to register RTT
          */
@@ -40460,8 +40463,10 @@ declare module BABYLON {
          * Gets the internal data of the matrix
          */
         get m(): DeepImmutable<Float32Array | Array<number>>;
-        /** @hidden */
-        _markAsUpdated(): void;
+        /**
+         * Update the updateFlag to indicate that the matrix has been updated
+         */
+        markAsUpdated(): void;
         private _updateIdentityStatus;
         /**
          * Creates an empty matrix (filled with zeros)
@@ -41624,7 +41629,7 @@ declare module BABYLON {
          * @param scene Defines the scene the camera belongs too
          * @param setActiveOnSceneIfNoneActive Defines if the camera should be set as active after creation if no other camera have been defined in the scene
          */
-        constructor(name: string, position: Vector3, scene: Scene, setActiveOnSceneIfNoneActive?: boolean);
+        constructor(name: string, position: Vector3, scene?: Scene, setActiveOnSceneIfNoneActive?: boolean);
         /**
          * Store current camera state (fov, position, etc..)
          * @returns the camera
@@ -42217,7 +42222,7 @@ declare module BABYLON {
             layers?: number;
         } | {
             ratio: number;
-        }, scene: Nullable<Scene>, generateMipMaps?: boolean, doNotChangeAspectRatio?: boolean, type?: number, isCube?: boolean, samplingMode?: number, generateDepthBuffer?: boolean, generateStencilBuffer?: boolean, isMulti?: boolean, format?: number, delayAllocation?: boolean, samples?: number, creationFlags?: number);
+        }, scene?: Nullable<Scene>, generateMipMaps?: boolean, doNotChangeAspectRatio?: boolean, type?: number, isCube?: boolean, samplingMode?: number, generateDepthBuffer?: boolean, generateStencilBuffer?: boolean, isMulti?: boolean, format?: number, delayAllocation?: boolean, samples?: number, creationFlags?: number);
         /**
          * Creates a depth stencil texture.
          * This is only available in WebGL 2 or with the depth texture extension available.
@@ -43719,7 +43724,7 @@ declare module BABYLON {
          * Creates a new analyser
          * @param scene defines hosting scene
          */
-        constructor(scene: Scene);
+        constructor(scene?: Nullable<Scene>);
         /**
          * Get the number of data values you will have to play with for the visualization
          * @see https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode/frequencyBinCount
@@ -47071,6 +47076,7 @@ declare module BABYLON {
         createTexture(): WebGLTexture;
         loadTexture(texture: WebGLTexture, data: ArrayBufferView, generateMips: boolean, invertY: boolean, srgb: boolean, onSuccess: () => void, onError: () => void): void;
         loadRawTexture(texture: WebGLTexture, data: ArrayBufferView, width: number, height: number, format: number, generateMips: boolean, invertY: boolean): void;
+        loadRawTexture2DArray(texture: WebGLTexture, data: Nullable<ArrayBufferView>, width: number, height: number, depth: number, format: number, generateMipMaps: boolean, invertY: boolean): void;
         loadCubeTexture(texture: WebGLTexture, data: Array<ArrayBufferView>, generateMips: boolean, invertY: boolean, srgb: boolean, onSuccess: () => void, onError: () => void): void;
         loadCubeTextureWithMips(texture: WebGLTexture, data: Array<Array<ArrayBufferView>>, invertY: boolean, srgb: boolean, onSuccess: () => void, onError: () => void): void;
         getTextureWidth(texture: WebGLTexture): number;
@@ -48561,7 +48567,7 @@ declare module BABYLON {
          * Creates a new InputManager
          * @param scene defines the hosting scene
          */
-        constructor(scene: Scene);
+        constructor(scene?: Scene);
         /**
          * Gets the mesh that is currently under the pointer
          */
@@ -51620,7 +51626,7 @@ declare module BABYLON {
          * Instantiates an AssetContainer.
          * @param scene The scene the AssetContainer belongs to.
          */
-        constructor(scene: Scene);
+        constructor(scene?: Nullable<Scene>);
         /**
          * Instantiate or clone all meshes and add the new ones to the scene.
          * Skeletons and animation groups will all be cloned
@@ -52002,7 +52008,7 @@ declare module BABYLON {
          * @param readyToPlayCallback Provide a callback function if you'd like to load your code once the sound is ready to be played
          * @param options Objects to provide with the current available options: autoplay, loop, volume, spatialSound, maxDistance, rolloffFactor, refDistance, distanceModel, panningModel, streaming
          */
-        constructor(name: string, urlOrArrayBuffer: any, scene: Scene, readyToPlayCallback?: Nullable<() => void>, options?: ISoundOptions);
+        constructor(name: string, urlOrArrayBuffer: any, scene?: Nullable<Scene>, readyToPlayCallback?: Nullable<() => void>, options?: ISoundOptions);
         /**
          * Release the sound and its associated resources
          */
@@ -52496,7 +52502,7 @@ declare module BABYLON {
          * @param scene Define the scene the sound track belongs to
          * @param options
          */
-        constructor(scene: Scene, options?: ISoundTrackOptions);
+        constructor(scene?: Nullable<Scene>, options?: ISoundTrackOptions);
         private _initializeSoundTrackAudioGraph;
         /**
          * Release the sound track and its associated resources
@@ -52633,7 +52639,7 @@ declare module BABYLON {
          * Creates a new instance of the component for the given scene
          * @param scene Defines the scene to register the component in
          */
-        constructor(scene: Scene);
+        constructor(scene?: Nullable<Scene>);
         /**
          * Registers the component in a given scene
          */
@@ -53792,7 +53798,7 @@ declare module BABYLON {
          * @param scene Defines the scene the camera belongs to
          * @param setActiveOnSceneIfNoneActive Defines whether the camera should be marked as active if not other active cameras have been defined
          */
-        constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, scene: Scene, setActiveOnSceneIfNoneActive?: boolean);
+        constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, scene?: Scene, setActiveOnSceneIfNoneActive?: boolean);
         /** @hidden */
         _initCache(): void;
         /** @hidden */
@@ -57579,7 +57585,7 @@ declare module BABYLON {
          * @param position Define the start position of the camera in the scene
          * @param scene Define the scene the camera belongs to
          */
-        constructor(name: string, position: Vector3, scene: Scene);
+        constructor(name: string, position: Vector3, scene?: Scene);
         /**
          * Gets the current object class name.
          * @return the class name
@@ -58350,7 +58356,7 @@ declare module BABYLON {
          * @param position Define the start position of the camera in the scene
          * @param scene Define the scene the camera belongs to
          */
-        constructor(name: string, position: Vector3, scene: Scene);
+        constructor(name: string, position: Vector3, scene?: Scene);
         /**
          * Gets the current object class name.
          * @return the class name
@@ -59094,7 +59100,7 @@ declare module BABYLON {
          * @param scene Define the scene the camera belongs to.
          * @param setActiveOnSceneIfNoneActive Defines whether the camera should be marked as active, if no other camera has been defined as active.
         */
-        constructor(name: string, position: Vector3, scene: Scene, setActiveOnSceneIfNoneActive?: boolean);
+        constructor(name: string, position: Vector3, scene?: Scene, setActiveOnSceneIfNoneActive?: boolean);
         /**
          * Attach the input controls to a specific dom element to get the input from.
          * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
@@ -59458,7 +59464,7 @@ declare module BABYLON {
          * @param scene Define the scene the camera belong to
          * @param lockedTarget Define the target of the camera
          */
-        constructor(name: string, position: Vector3, scene: Scene, lockedTarget?: Nullable<AbstractMesh>);
+        constructor(name: string, position: Vector3, scene?: Scene, lockedTarget?: Nullable<AbstractMesh>);
         private _follow;
         /**
          * Attach the input controls to a specific dom element to get the input from.
@@ -60003,7 +60009,7 @@ declare module BABYLON {
          * @param position The start position camera
          * @param scene The scene the camera belongs to
          */
-        constructor(name: string, position: Vector3, scene: Scene);
+        constructor(name: string, position: Vector3, scene?: Scene);
         /**
          * Gets or sets a boolean indicating that pointer input must be disabled on first orientation sensor update (Default: true)
          */
@@ -60049,7 +60055,7 @@ declare module BABYLON {
          * @param position Define the start position of the camera in the scene
          * @param scene Define the scene the camera belongs to
          */
-        constructor(name: string, position: Vector3, scene: Scene);
+        constructor(name: string, position: Vector3, scene?: Scene);
         /**
          * Gets the current object class name.
          * @return the class name
@@ -60109,7 +60115,7 @@ declare module BABYLON {
          * @param interaxialDistance defines distance between each color axis
          * @param scene defines the hosting scene
          */
-        constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, interaxialDistance: number, scene: Scene);
+        constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, interaxialDistance: number, scene?: Scene);
         /**
          * Gets camera class name
          * @returns AnaglyphArcRotateCamera
@@ -60131,7 +60137,7 @@ declare module BABYLON {
          * @param interaxialDistance defines distance between each color axis
          * @param scene defines the hosting scene
          */
-        constructor(name: string, position: Vector3, interaxialDistance: number, scene: Scene);
+        constructor(name: string, position: Vector3, interaxialDistance: number, scene?: Scene);
         /**
          * Gets camera class name
          * @returns AnaglyphFreeCamera
@@ -60153,7 +60159,7 @@ declare module BABYLON {
          * @param interaxialDistance defines distance between each color axis
          * @param scene defines the hosting scene
          */
-        constructor(name: string, position: Vector3, interaxialDistance: number, scene: Scene);
+        constructor(name: string, position: Vector3, interaxialDistance: number, scene?: Scene);
         /**
          * Gets camera class name
          * @returns AnaglyphGamepadCamera
@@ -60175,7 +60181,7 @@ declare module BABYLON {
          * @param interaxialDistance defines distance between each color axis
          * @param scene defines the hosting scene
          */
-        constructor(name: string, position: Vector3, interaxialDistance: number, scene: Scene);
+        constructor(name: string, position: Vector3, interaxialDistance: number, scene?: Scene);
         /**
          * Gets camera class name
          * @returns AnaglyphUniversalCamera
@@ -60261,7 +60267,7 @@ declare module BABYLON {
          * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
          * @param scene defines the hosting scene
          */
-        constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
+        constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene?: Scene);
         /**
          * Gets camera class name
          * @returns StereoscopicArcRotateCamera
@@ -60284,7 +60290,7 @@ declare module BABYLON {
          * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
          * @param scene defines the hosting scene
          */
-        constructor(name: string, position: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
+        constructor(name: string, position: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene?: Scene);
         /**
          * Gets camera class name
          * @returns StereoscopicFreeCamera
@@ -60307,7 +60313,7 @@ declare module BABYLON {
          * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
          * @param scene defines the hosting scene
          */
-        constructor(name: string, position: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
+        constructor(name: string, position: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene?: Scene);
         /**
          * Gets camera class name
          * @returns StereoscopicGamepadCamera
@@ -60330,7 +60336,7 @@ declare module BABYLON {
          * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
          * @param scene defines the hosting scene
          */
-        constructor(name: string, position: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene: Scene);
+        constructor(name: string, position: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene?: Scene);
         /**
          * Gets camera class name
          * @returns StereoscopicUniversalCamera
@@ -60365,7 +60371,7 @@ declare module BABYLON {
          * @param distanceToProjectionPlane defines distance between each color axis. The rig cameras will receive this as their negative z position!
          * @param distanceBetweenEyes defines is stereoscopic is done side by side or over under
          */
-        constructor(name: string, position: Vector3, scene: Scene, distanceToProjectionPlane?: number, distanceBetweenEyes?: number);
+        constructor(name: string, position: Vector3, scene?: Scene, distanceToProjectionPlane?: number, distanceBetweenEyes?: number);
         /**
          * Gets camera class name
          * @returns StereoscopicScreenUniversalCamera
@@ -60400,7 +60406,7 @@ declare module BABYLON {
          * @param position Define the start position of the camera in the scene
          * @param scene Define the scene the camera belongs to
          */
-        constructor(name: string, position: Vector3, scene: Scene);
+        constructor(name: string, position: Vector3, scene?: Scene);
         /**
          * Gets the current object class name.
          * @return the class name
@@ -60560,7 +60566,7 @@ declare module BABYLON {
          * @param compensateDistortion defines if the camera needs to compensate the lens distortion
          * @param vrCameraMetrics defines the vr metrics associated to the camera
          */
-        constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, scene: Scene, compensateDistortion?: boolean, vrCameraMetrics?: VRCameraMetrics);
+        constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, scene?: Scene, compensateDistortion?: boolean, vrCameraMetrics?: VRCameraMetrics);
         /**
          * Gets camera class name
          * @returns VRDeviceOrientationArcRotateCamera
@@ -60583,7 +60589,7 @@ declare module BABYLON {
          * @param compensateDistortion defines if the camera needs to compensate the lens distortion
          * @param vrCameraMetrics defines the vr metrics associated to the camera
          */
-        constructor(name: string, position: Vector3, scene: Scene, compensateDistortion?: boolean, vrCameraMetrics?: VRCameraMetrics);
+        constructor(name: string, position: Vector3, scene?: Scene, compensateDistortion?: boolean, vrCameraMetrics?: VRCameraMetrics);
         /**
          * Gets camera class name
          * @returns VRDeviceOrientationFreeCamera
@@ -60606,7 +60612,7 @@ declare module BABYLON {
          * @param compensateDistortion defines if the camera needs to compensate the lens distortion
          * @param vrCameraMetrics defines the vr metrics associated to the camera
          */
-        constructor(name: string, position: Vector3, scene: Scene, compensateDistortion?: boolean, vrCameraMetrics?: VRCameraMetrics);
+        constructor(name: string, position: Vector3, scene?: Scene, compensateDistortion?: boolean, vrCameraMetrics?: VRCameraMetrics);
         /**
          * Gets camera class name
          * @returns VRDeviceOrientationGamepadCamera
@@ -63322,7 +63328,7 @@ declare module BABYLON {
          * Creates a new instance of the component for the given scene
          * @param scene Defines the scene to register the component in
          */
-        constructor(scene: Scene);
+        constructor(scene?: Scene);
         /**
          * Registers the component in a given scene
          */
@@ -64475,7 +64481,7 @@ declare module BABYLON.Debug {
          * @param yAxis defines the node hierarchy used to render the y-axis
          * @param zAxis defines the node hierarchy used to render the z-axis
          */
-        constructor(scene: Scene, scaleLines?: number, renderingGroupId?: Nullable<number>, xAxis?: TransformNode, yAxis?: TransformNode, zAxis?: TransformNode);
+        constructor(scene?: Scene, scaleLines?: number, renderingGroupId?: Nullable<number>, xAxis?: TransformNode, yAxis?: TransformNode, zAxis?: TransformNode);
         /**
          * Force the viewer to update
          * @param position defines the position of the viewer
@@ -64671,7 +64677,7 @@ declare module BABYLON {
          * @see https://doc.babylonjs.com/features/playground_debuglayer
          * @param scene Defines the scene to inspect
          */
-        constructor(scene: Scene);
+        constructor(scene?: Scene);
         /** Creates the inspector window. */
         private _createInspector;
         /**
@@ -64730,7 +64736,7 @@ declare module BABYLON.Debug {
          * Creates a new PhysicsViewer
          * @param scene defines the hosting scene
          */
-        constructor(scene: Scene);
+        constructor(scene?: Scene);
         /** @hidden */
         protected _updateDebugMeshes(): void;
         /**
@@ -66875,6 +66881,7 @@ declare module BABYLON {
         createVideoElement(constraints: MediaTrackConstraints): any;
         updateVideoTexture(texture: Nullable<InternalTexture>, video: HTMLVideoElement, invertY: boolean): void;
         createRawTexture(data: Nullable<ArrayBufferView>, width: number, height: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression?: Nullable<string>, type?: number): InternalTexture;
+        createRawTexture2DArray(data: Nullable<ArrayBufferView>, width: number, height: number, depth: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression?: Nullable<string>, textureType?: number): InternalTexture;
         updateRawTexture(texture: Nullable<InternalTexture>, bufferView: Nullable<ArrayBufferView>, format: number, invertY: boolean, compression?: Nullable<string>, type?: number): void;
         /**
          * Usually called from Texture.ts.
@@ -70584,7 +70591,7 @@ declare module BABYLON {
          * @param name The friendly name of the material
          * @param scene The scene to add the material to
          */
-        constructor(name: string, scene: Scene);
+        constructor(name: string, scene?: Scene);
         /**
          * Gets a boolean indicating that current material needs to register RTT
          */
@@ -71601,7 +71608,7 @@ declare module BABYLON {
          * @param name The material name
          * @param scene The scene the material will be use in.
          */
-        constructor(name: string, scene: Scene);
+        constructor(name: string, scene?: Scene);
         /**
          * Returns the name of this material class.
          */
@@ -72435,7 +72442,7 @@ declare module BABYLON {
          */
         constructor(
         /** The Friendly of the effect in the scene */
-        name: string, scene: Scene);
+        name: string, scene?: Scene);
         /**
          * Get the effect name of the layer.
          * @return The effect name
@@ -72636,7 +72643,7 @@ declare module BABYLON {
          * Creates a new instance of the component for the given scene
          * @param scene Defines the scene to register the component in
          */
-        constructor(scene: Scene);
+        constructor(scene?: Scene);
         /**
          * Registers the component in a given scene
          */
@@ -72800,7 +72807,7 @@ declare module BABYLON {
          * @param scene The scene to use the layer in
          * @param options Sets of none mandatory options to use with the layer (see IGlowLayerOptions for more information)
          */
-        constructor(name: string, scene: Scene, options?: Partial<IGlowLayerOptions>);
+        constructor(name: string, scene?: Scene, options?: Partial<IGlowLayerOptions>);
         /**
          * Get the effect name of the layer.
          * @return The effect name
@@ -73055,7 +73062,7 @@ declare module BABYLON {
          * @param scene The scene to use the layer in
          * @param options Sets of none mandatory options to use with the layer (see IHighlightLayerOptions for more information)
          */
-        constructor(name: string, scene: Scene, options?: Partial<IHighlightLayerOptions>);
+        constructor(name: string, scene?: Scene, options?: Partial<IHighlightLayerOptions>);
         /**
          * Get the effect name of the layer.
          * @return The effect name
@@ -73206,7 +73213,7 @@ declare module BABYLON {
          * Creates a new instance of the component for the given scene
          * @param scene Defines the scene to register the component in
          */
-        constructor(scene: Scene);
+        constructor(scene?: Scene);
         /**
          * Registers the component in a given scene
          */
@@ -73268,7 +73275,7 @@ declare module BABYLON {
         /**
          * Define the texture the layer should display.
          */
-        texture: Nullable<Texture>;
+        texture: Nullable<BaseTexture>;
         /**
          * Is the layer in background or foreground.
          */
@@ -75510,7 +75517,7 @@ declare module BABYLON {
          * @param name The material name
          * @param scene The scene the material will be use in.
          */
-        constructor(name: string, scene: Scene);
+        constructor(name: string, scene?: Scene);
         getClassName(): string;
     }
 }
@@ -75555,7 +75562,7 @@ declare module BABYLON {
          * @param name The material name
          * @param scene The scene the material will be use in.
          */
-        constructor(name: string, scene: Scene);
+        constructor(name: string, scene?: Scene);
         /**
          * Return the current class name of the material.
          */
@@ -75614,7 +75621,7 @@ declare module BABYLON {
          * @param name The material name
          * @param scene The scene the material will be use in.
          */
-        constructor(name: string, scene: Scene);
+        constructor(name: string, scene?: Scene);
         /**
          * Return the current class name of the material.
          */
@@ -76549,7 +76556,7 @@ declare module BABYLON {
          * @param scene Define the scene the refraction belongs to
          * @param generateMipMaps Define if we need to generate mips level for the refraction
          */
-        constructor(name: string, size: number, scene: Scene, generateMipMaps?: boolean);
+        constructor(name: string, size: number, scene?: Scene, generateMipMaps?: boolean);
         /**
          * Clone the refraction texture.
          * @returns the cloned texture
@@ -79979,7 +79986,7 @@ declare module BABYLON {
          * @param length Length of trailing mesh. Default is 60.
          * @param autoStart Automatically start trailing mesh. Default true.
          */
-        constructor(name: string, generator: TransformNode, scene: Scene, diameter?: number, length?: number, autoStart?: boolean);
+        constructor(name: string, generator: TransformNode, scene?: Scene, diameter?: number, length?: number, autoStart?: boolean);
         /**
          * "TrailMesh"
          * @returns "TrailMesh"
@@ -87967,7 +87974,7 @@ declare module BABYLON {
          * Creates a new AssetsManager
          * @param scene defines the scene to work on
          */
-        constructor(scene: Scene);
+        constructor(scene?: Scene);
         /**
          * Add a ContainerAssetTask to the list of active tasks
          * @param taskName defines the name of the new task

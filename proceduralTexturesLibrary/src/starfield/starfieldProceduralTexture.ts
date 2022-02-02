@@ -3,7 +3,7 @@ import { Texture } from "babylonjs/Materials/Textures/texture";
 import { ProceduralTexture } from "babylonjs/Materials/Textures/Procedurals/proceduralTexture";
 import { Scene } from "babylonjs/scene";
 import { RegisterClass } from 'babylonjs/Misc/typeStore';
-
+import { Nullable } from "babylonjs/types";
 import "./starfieldProceduralTexture.fragment";
 
 export class StarfieldProceduralTexture extends ProceduralTexture {
@@ -19,7 +19,7 @@ export class StarfieldProceduralTexture extends ProceduralTexture {
     private _distfading = 0.730;
     private _saturation = 0.850;
 
-    constructor(name: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean) {
+    constructor(name: string, size: number, scene: Nullable<Scene> = null, fallbackTexture?: Texture, generateMipMaps?: boolean) {
         super(name, size, "starfieldProceduralTexture", scene, fallbackTexture, generateMipMaps);
         this.updateShaderUniforms();
     }

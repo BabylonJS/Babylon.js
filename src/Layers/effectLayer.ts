@@ -193,10 +193,10 @@ export abstract class EffectLayer {
     constructor(
         /** The Friendly of the effect in the scene */
         name: string,
-        scene: Scene) {
+        scene?: Scene) {
         this.name = name;
 
-        this._scene = scene || EngineStore.LastCreatedScene;
+        this._scene = scene || <Scene>EngineStore.LastCreatedScene;
         EffectLayer._SceneComponentInitialization(this._scene);
 
         this._engine = this._scene.getEngine();
@@ -782,7 +782,7 @@ export abstract class EffectLayer {
 
         // Culling
         let sideOrientation = renderingMesh.overrideMaterialSideOrientation ?? material.sideOrientation;
-        const mainDeterminant = renderingMesh._getWorldMatrixDeterminant();
+        const mainDeterminant = effectiveMesh._getWorldMatrixDeterminant();
         if (mainDeterminant < 0) {
             sideOrientation = (sideOrientation === Material.ClockWiseSideOrientation ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation);
         }

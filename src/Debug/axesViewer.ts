@@ -5,6 +5,7 @@ import { TransformNode } from "../Meshes/transformNode";
 import { StandardMaterial } from "../Materials/standardMaterial";
 import { AxisDragGizmo } from "../Gizmos/axisDragGizmo";
 import { Color3 } from '../Maths/math.color';
+import { EngineStore } from "../Engines/engineStore";
 
 /**
      * The Axes viewer will show 3 axes in a specific point in space
@@ -51,7 +52,11 @@ export class AxesViewer {
      * @param yAxis defines the node hierarchy used to render the y-axis
      * @param zAxis defines the node hierarchy used to render the z-axis
      */
-    constructor(scene: Scene, scaleLines = 1, renderingGroupId: Nullable<number> = 2, xAxis?: TransformNode, yAxis?: TransformNode, zAxis?: TransformNode) {
+    constructor(scene?: Scene, scaleLines = 1, renderingGroupId: Nullable<number> = 2, xAxis?: TransformNode, yAxis?: TransformNode, zAxis?: TransformNode) {
+        scene = scene || <Scene>EngineStore.LastCreatedScene;
+        if (!scene) {
+            return;
+        }
         this.scaleLines = scaleLines;
 
         if (!xAxis) {

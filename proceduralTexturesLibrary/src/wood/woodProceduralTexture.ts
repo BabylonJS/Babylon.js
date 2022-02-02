@@ -4,14 +4,14 @@ import { Texture } from "babylonjs/Materials/Textures/texture";
 import { ProceduralTexture } from "babylonjs/Materials/Textures/Procedurals/proceduralTexture";
 import { Scene } from "babylonjs/scene";
 import { RegisterClass } from 'babylonjs/Misc/typeStore';
-
+import { Nullable } from "babylonjs/types";
 import "./woodProceduralTexture.fragment";
 
 export class WoodProceduralTexture extends ProceduralTexture {
     private _ampScale: number = 100.0;
     private _woodColor: Color3 = new Color3(0.32, 0.17, 0.09);
 
-    constructor(name: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean) {
+    constructor(name: string, size: number, scene: Nullable<Scene> = null, fallbackTexture?: Texture, generateMipMaps?: boolean) {
         super(name, size, "woodProceduralTexture", scene, fallbackTexture, generateMipMaps);
         this.updateShaderUniforms();
     }

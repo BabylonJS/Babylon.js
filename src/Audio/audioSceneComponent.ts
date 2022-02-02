@@ -303,7 +303,11 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
      * Creates a new instance of the component for the given scene
      * @param scene Defines the scene to register the component in
      */
-    constructor(scene: Scene) {
+    constructor(scene?: Nullable<Scene>) {
+        scene = scene || Engine.LastCreatedScene;
+        if (!scene) {
+            return;
+        }
         this.scene = scene;
 
         scene.soundTracks = new Array<SoundTrack>();

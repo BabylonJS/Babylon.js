@@ -1697,7 +1697,8 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
             subMesh.verticesStart,
             !!subMesh.getMaterial(),
             this,
-            this._shouldConvertRHS()
+            this._shouldConvertRHS(),
+            subMesh.getMaterial()?.fillMode === Constants.MATERIAL_TriangleStripDrawMode
         );
         return this;
     }
@@ -1809,7 +1810,8 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
                 material.fillMode == Constants.MATERIAL_TriangleStripDrawMode ||
                 material.fillMode == Constants.MATERIAL_TriangleFillMode ||
                 material.fillMode == Constants.MATERIAL_WireFrameFillMode ||
-                material.fillMode == Constants.MATERIAL_PointFillMode
+                material.fillMode == Constants.MATERIAL_PointFillMode ||
+                material.fillMode == Constants.MATERIAL_LineListDrawMode
             ) {
                 anySubmeshSupportIntersect = true;
                 break;

@@ -10189,7 +10189,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default()(_node_modules_css_loader_dist_runtime_cssWithMappingToString_js__WEBPACK_IMPORTED_MODULE_0___default.a);
 // Module
-___CSS_LOADER_EXPORT___.push([module.i, ":root {\n  --blackBarHeight: 55px; }\n\n#gui-editor-workbench-root {\n  display: grid;\n  grid-template-rows: calc(100% - 55px);\n  height: 100%;\n  width: 100%;\n  background: #e2e2e2;\n  font: 14px \"acumin-pro-condensed\"; }\n\n.wait-screen {\n  display: grid;\n  justify-content: center;\n  align-content: center;\n  height: 100%;\n  width: 100%;\n  background: #464646;\n  opacity: 0.95;\n  color: white;\n  font: 24px \"acumin-pro-condensed\";\n  position: absolute;\n  top: 0;\n  left: 0; }\n  .wait-screen.hidden {\n    visibility: hidden; }\n\n#leftGrab {\n  grid-row: 1 / span 2;\n  grid-column: 2;\n  cursor: ew-resize; }\n\n#rightGrab {\n  grid-row: 1 / span 2;\n  grid-column: 5;\n  cursor: ew-resize; }\n\n#toolbarGrab {\n  background: #333333;\n  grid-row: 1 / span 3;\n  grid-column: 3;\n  height: 100%; }\n  #toolbarGrab .blackLine {\n    height: 5px;\n    background: black; }\n  #toolbarGrab .toolbar-label {\n    color: white;\n    font-size: 18px;\n    display: grid;\n    align-items: center;\n    cursor: pointer;\n    user-select: none;\n    grid-template-columns: 1fr 20px;\n    grid-template-rows: 100%;\n    position: relative; }\n    #toolbarGrab .toolbar-label.active {\n      font-weight: bold;\n      font-size: 20px; }\n    #toolbarGrab .toolbar-label:hover {\n      background: var(--selectionGrey); }\n      #toolbarGrab .toolbar-label:hover .sub-items {\n        display: block; }\n  #toolbarGrab .toolbar-icon {\n    width: 40px;\n    height: 40px; }\n\n.diagram-container {\n  position: relative;\n  display: grid;\n  grid-row: 1;\n  grid-column: 4;\n  background: #5f5b60;\n  width: 100%;\n  height: 100%; }\n  .diagram-container .diagram {\n    display: none;\n    width: 100%;\n    height: 100%; }\n\n.right-panel {\n  grid-row: 1 / span 2;\n  grid-column: 6;\n  display: grid;\n  grid-template-rows: 1fr 40px auto 40px;\n  grid-template-columns: 100%;\n  height: calc(100% - var(--blackBarHeight));\n  overflow-y: auto; }\n  .right-panel #propertyTab {\n    grid-row: 1;\n    grid-column: 1; }\n  .right-panel .button {\n    display: grid;\n    justify-content: center;\n    align-content: center;\n    height: auto;\n    width: calc(100% / 7);\n    cursor: pointer; }\n    .right-panel .button:hover {\n      background: #337ab7;\n      color: white;\n      opacity: 0.8; }\n    .right-panel .button.selected {\n      background: #337ab7;\n      color: white; }\n    .right-panel .button.align {\n      justify-content: stretch;\n      text-align: center; }\n\n.blocker {\n  visibility: hidden;\n  position: absolute;\n  width: calc(100% - 40px);\n  height: 100%;\n  top: 0;\n  left: 0;\n  background: rgba(20, 20, 20, 0.95);\n  font-family: \"acumin-pro-condensed\";\n  color: white;\n  font-size: 24px;\n  display: grid;\n  align-content: center;\n  justify-content: center;\n  user-select: none;\n  padding: 20px;\n  text-align: center; }\n\n#log-console {\n  grid-row: 2;\n  grid-column: 4;\n  display: none; }\n\n.dialog-container {\n  position: absolute;\n  width: 100%;\n  height: 100%;\n  background: rgba(0, 0, 0, 0.6);\n  display: grid;\n  font-family: \"acumin-pro-condensed\";\n  top: 0; }\n  .dialog-container .dialog {\n    align-self: center;\n    justify-self: center;\n    min-height: 140px;\n    max-width: 400px;\n    border-radius: 10px;\n    background: white;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: calc(100% - 50px) 50px; }\n    .dialog-container .dialog .dialog-message {\n      grid-row: 1;\n      grid-column: 1;\n      margin-top: 20px;\n      padding: 10px;\n      font-size: 18px;\n      color: black; }\n    .dialog-container .dialog .dialog-buttons {\n      grid-row: 2;\n      grid-column: 1;\n      display: grid;\n      grid-template-rows: 100%;\n      grid-template-columns: 100%;\n      color: white; }\n      .dialog-container .dialog .dialog-buttons .dialog-button-ok {\n        cursor: pointer;\n        justify-self: center;\n        background: green;\n        min-width: 80px;\n        justify-content: center;\n        display: grid;\n        align-content: center;\n        align-self: center;\n        height: 35px;\n        border-radius: 10px; }\n        .dialog-container .dialog .dialog-buttons .dialog-button-ok:hover {\n          opacity: 0.8; }\n        .dialog-container .dialog .dialog-buttons .dialog-button-ok.error {\n          background: red; }\n\n.gizmo .bounding-box-line {\n  background-color: black;\n  position: absolute;\n  line-height: 1px;\n  height: 1px;\n  pointer-events: none; }\n\n.gizmo .scale-point-container {\n  position: absolute;\n  width: 30px;\n  height: 30px; }\n  .gizmo .scale-point-container .scale-point {\n    top: 10px;\n    left: 10px;\n    position: absolute;\n    width: 10px;\n    height: 10px;\n    background: transparent;\n    outline: #7d7d7d 2px solid; }\n  .gizmo .scale-point-container .rotate-click-area {\n    width: 20px;\n    height: 20px;\n    position: absolute; }\n  .gizmo .scale-point-container .scale-click-area {\n    width: 20px;\n    height: 20px;\n    position: absolute; }\n\n.gizmo .pivot-point {\n  width: 30px;\n  height: 30px;\n  background: transparent;\n  position: absolute; }\n", "",{"version":3,"sources":["webpack://./main.scss"],"names":[],"mappings":"AAAA;EACI,sBAAiB,EAAA;;AAGrB;EACI,aAAa;EACb,qCAAqC;EACrC,YAAY;EACZ,WAAW;EACX,mBAAmB;EACnB,iCAAiC,EAAA;;AAGrC;EACI,aAAa;EACb,uBAAuB;EACvB,qBAAqB;EACrB,YAAY;EACZ,WAAW;EACX,mBAAmB;EACnB,aAAa;EACb,YAAW;EACX,iCAAiC;EACjC,kBAAkB;EAClB,MAAM;EACN,OAAO,EAAA;EAZX;IAeQ,kBAAkB,EAAA;;AAI1B;EACI,oBAAoB;EACpB,cAAc;EACd,iBAAiB,EAAA;;AAGrB;EACI,oBAAoB;EACpB,cAAc;EACd,iBAAiB,EAAA;;AAIrB;EACI,mBAAmB;EACnB,oBAAoB;EACpB,cAAc;EACd,YAAY,EAAA;EAJhB;IAOQ,WAAY;IACZ,iBAAiB,EAAA;EARzB;IAWQ,YAAW;IACX,eAAe;IACf,aAAa;IACb,mBAAmB;IACnB,eAAe;IACf,iBAAiB;IACjB,+BAA+B;IAC/B,wBAAwB;IACxB,kBAAkB,EAAA;IAnB1B;MAsBY,iBAAiB;MACjB,eAAe,EAAA;IAvB3B;MA2BY,gCAAgC,EAAA;MA3B5C;QA6BgB,cAAc,EAAA;EA7B9B;IAkCQ,WAAW;IACX,YAAY,EAAA;;AAIpB;EACI,kBAAkB;EAClB,aAAa;EACb,WAAW;EACX,cAAc;EACd,mBAAmB;EACnB,WAAW;EACX,YAAY,EAAA;EAPhB;IAUQ,aAAa;IACb,WAAW;IACX,YAAY,EAAA;;AAIpB;EACI,oBAAoB;EACpB,cAAc;EACd,aAAa;EACb,sCAAsC;EACtC,2BAA2B;EAC3B,0CAA0C;EAC1C,gBAAgB,EAAA;EAPpB;IAUQ,WAAW;IACX,cAAc,EAAA;EAXtB;IAeQ,aAAa;IACb,uBAAuB;IACvB,qBAAqB;IACrB,YAAY;IACZ,qBAAqB;IACrB,eAAe,EAAA;IApBvB;MAuBY,mBAA6B;MAC7B,YAAY;MACZ,YAAY,EAAA;IAzBxB;MA6BY,mBAA6B;MAC7B,YAAY,EAAA;IA9BxB;MAkCY,wBAAwB;MACxB,kBAAkB,EAAA;;AAK9B;EACI,kBAAkB;EAClB,kBAAkB;EAClB,wBAAwB;EACxB,YAAY;EACZ,MAAM;EACN,OAAO;EAEP,kCAAkC;EAClC,mCAAmC;EACnC,YAAY;EACZ,eAAe;EAEf,aAAa;EACb,qBAAqB;EACrB,uBAAuB;EAEvB,iBAAiB;EAEjB,aAAa;EACb,kBAAkB,EAAA;;AAGtB;EACI,WAAW;EACX,cAAc;EACd,aAAa,EAAA;;AAGjB;EACI,kBAAkB;EAClB,WAAW;EACX,YAAY;EACZ,8BAAoC;EACpC,aAAa;EACb,mCAAmC;EACnC,MAAK,EAAA;EAPT;IAUQ,kBAAkB;IAClB,oBAAoB;IACpB,iBAAiB;IACjB,gBAAgB;IAChB,mBAAmB;IACnB,iBAAiB;IAEjB,aAAa;IACb,2BAA2B;IAC3B,0CAA0C,EAAA;IAnBlD;MAsBY,WAAW;MACX,cAAc;MACd,gBAAgB;MAChB,aAAa;MACb,eAAe;MACf,YAAY,EAAA;IA3BxB;MA+BY,WAAW;MACX,cAAc;MACd,aAAa;MACb,wBAAwB;MACxB,2BAA2B;MAC3B,YAAY,EAAA;MApCxB;QAuCgB,eAAe;QACf,oBAAoB;QACpB,iBAAgB;QAChB,eAAe;QACf,uBAAuB;QACvB,aAAa;QACb,qBAAqB;QACrB,kBAAkB;QAClB,YAAY;QACZ,mBAAmB,EAAA;QAhDnC;UAmDoB,YAAY,EAAA;QAnDhC;UAuDoB,eAAe,EAAA;;AAMnC;EAEQ,uBAAuB;EACvB,kBAAkB;EAClB,gBAAgB;EAChB,WAAW;EACX,oBAAoB,EAAA;;AAN5B;EASQ,kBAAkB;EAClB,WAAW;EACX,YAAY,EAAA;EAXpB;IAaY,SAAS;IACT,UAAU;IACV,kBAAkB;IAClB,WAAW;IACX,YAAY;IACZ,uBAAuB;IACvB,0BAAqC,EAAA;EAnBjD;IAsBY,WAAW;IACX,YAAY;IACZ,kBAAkB,EAAA;EAxB9B;IA2BY,WAAW;IACX,YAAY;IACZ,kBAAkB,EAAA;;AA7B9B;EAiCQ,WAAW;EACX,YAAY;EACZ,uBAAuB;EACvB,kBAAkB,EAAA","sourcesContent":[":root {\r\n    --blackBarHeight: 55px;\r\n}\r\n\r\n#gui-editor-workbench-root {\r\n    display: grid;\r\n    grid-template-rows: calc(100% - 55px);\r\n    height: 100%;\r\n    width: 100%;\r\n    background: #e2e2e2;\r\n    font: 14px \"acumin-pro-condensed\";   \r\n}\r\n\r\n.wait-screen {\r\n    display: grid;\r\n    justify-content: center;\r\n    align-content: center;\r\n    height: 100%;\r\n    width: 100%;\r\n    background: #464646;\r\n    opacity: 0.95;\r\n    color:white;\r\n    font: 24px \"acumin-pro-condensed\";  \r\n    position: absolute;\r\n    top: 0;\r\n    left: 0; \r\n\r\n    &.hidden {\r\n        visibility: hidden;\r\n    }\r\n}\r\n\r\n#leftGrab {\r\n    grid-row: 1 / span 2;\r\n    grid-column: 2;\r\n    cursor: ew-resize;\r\n}\r\n\r\n#rightGrab {\r\n    grid-row: 1 / span 2;\r\n    grid-column: 5;\r\n    cursor: ew-resize;\r\n}\r\n\r\n\r\n#toolbarGrab {\r\n    background: #333333;\r\n    grid-row: 1 / span 3;\r\n    grid-column: 3;\r\n    height: 100%;\r\n\r\n    .blackLine {\r\n        height:  5px;\r\n        background: black;\r\n    }\r\n    .toolbar-label {\r\n        color:white;\r\n        font-size: 18px;\r\n        display: grid;\r\n        align-items: center;\r\n        cursor: pointer;\r\n        user-select: none;\r\n        grid-template-columns: 1fr 20px;\r\n        grid-template-rows: 100%;\r\n        position: relative;\r\n\r\n        &.active {\r\n            font-weight: bold;\r\n            font-size: 20px;\r\n        }\r\n\r\n        &:hover {\r\n            background: var(--selectionGrey);\r\n            .sub-items {\r\n                display: block;\r\n            }\r\n        } \r\n    }\r\n    .toolbar-icon {\r\n        width: 40px;\r\n        height: 40px;\r\n    }\r\n}\r\n\r\n.diagram-container {\r\n    position: relative;\r\n    display: grid;\r\n    grid-row: 1;\r\n    grid-column: 4;\r\n    background: #5f5b60;\r\n    width: 100%;\r\n    height: 100%;\r\n\r\n    .diagram {\r\n        display: none;\r\n        width: 100%;\r\n        height: 100%;\r\n    }\r\n}\r\n\r\n.right-panel {\r\n    grid-row: 1 / span 2;\r\n    grid-column: 6;\r\n    display: grid;\r\n    grid-template-rows: 1fr 40px auto 40px;\r\n    grid-template-columns: 100%;\r\n    height: calc(100% - var(--blackBarHeight));\r\n    overflow-y: auto;\r\n\r\n    #propertyTab {\r\n        grid-row: 1;\r\n        grid-column: 1;\r\n    }        \r\n    \r\n    .button {\r\n        display: grid;\r\n        justify-content: center;\r\n        align-content: center;\r\n        height: auto;\r\n        width: calc(100% / 7);\r\n        cursor: pointer;\r\n\r\n        &:hover {\r\n            background: rgb(51, 122, 183);\r\n            color: white;\r\n            opacity: 0.8;\r\n        }\r\n\r\n        &.selected {\r\n            background: rgb(51, 122, 183);\r\n            color: white;\r\n        }\r\n        \r\n        &.align {\r\n            justify-content: stretch;\r\n            text-align: center;\r\n        }\r\n    }    \r\n}\r\n\r\n.blocker {\r\n    visibility: hidden;\r\n    position: absolute;\r\n    width: calc(100% - 40px);\r\n    height: 100%;\r\n    top: 0;\r\n    left: 0;\r\n\r\n    background: rgba(20, 20, 20, 0.95);    \r\n    font-family: \"acumin-pro-condensed\";\r\n    color: white;\r\n    font-size: 24px;\r\n\r\n    display: grid;\r\n    align-content: center;\r\n    justify-content: center;\r\n\r\n    user-select: none;\r\n\r\n    padding: 20px;\r\n    text-align: center;\r\n}\r\n\r\n#log-console {\r\n    grid-row: 2;\r\n    grid-column: 4;\r\n    display: none;\r\n}\r\n\r\n.dialog-container {\r\n    position: absolute;\r\n    width: 100%;\r\n    height: 100%;\r\n    background: rgba(0.1, 0.1, 0.1, 0.6);\r\n    display: grid;\r\n    font-family: \"acumin-pro-condensed\";\r\n    top:0;\r\n\r\n    .dialog {\r\n        align-self: center;\r\n        justify-self: center;\r\n        min-height: 140px;\r\n        max-width: 400px;\r\n        border-radius: 10px;\r\n        background: white;\r\n\r\n        display: grid;\r\n        grid-template-columns: 100%;\r\n        grid-template-rows: calc(100% - 50px) 50px;\r\n\r\n        .dialog-message {\r\n            grid-row: 1;\r\n            grid-column: 1;\r\n            margin-top: 20px;\r\n            padding: 10px;\r\n            font-size: 18px;\r\n            color: black;\r\n        }\r\n\r\n        .dialog-buttons {\r\n            grid-row: 2;\r\n            grid-column: 1;\r\n            display: grid;\r\n            grid-template-rows: 100%;\r\n            grid-template-columns: 100%;\r\n            color: white;\r\n\r\n            .dialog-button-ok {\r\n                cursor: pointer;\r\n                justify-self: center;\r\n                background:green;\r\n                min-width: 80px;\r\n                justify-content: center;\r\n                display: grid;\r\n                align-content: center;\r\n                align-self: center;\r\n                height: 35px;      \r\n                border-radius: 10px;\r\n\r\n                &:hover {\r\n                    opacity: 0.8;\r\n                }\r\n\r\n                &.error {\r\n                    background: red;\r\n                }\r\n            }\r\n        }\r\n    }\r\n}\r\n.gizmo {\r\n    .bounding-box-line {\r\n        background-color: black;\r\n        position: absolute;\r\n        line-height: 1px;\r\n        height: 1px;\r\n        pointer-events: none;\r\n    }\r\n    .scale-point-container {\r\n        position: absolute;\r\n        width: 30px;\r\n        height: 30px;\r\n        .scale-point {\r\n            top: 10px;\r\n            left: 10px;\r\n            position: absolute;\r\n            width: 10px;\r\n            height: 10px;\r\n            background: transparent;\r\n            outline: rgb(125, 125, 125) 2px solid;\r\n        }\r\n        .rotate-click-area {\r\n            width: 20px;\r\n            height: 20px;\r\n            position: absolute;\r\n        }\r\n        .scale-click-area {\r\n            width: 20px;\r\n            height: 20px;\r\n            position: absolute;\r\n        }\r\n    }\r\n    .pivot-point {\r\n        width: 30px;\r\n        height: 30px;\r\n        background: transparent;\r\n        position: absolute;\r\n    }\r\n}"],"sourceRoot":""}]);
+___CSS_LOADER_EXPORT___.push([module.i, ":root {\n  --blackBarHeight: 55px; }\n\n#gui-editor-workbench-root {\n  display: grid;\n  grid-template-rows: calc(100% - 55px);\n  height: 100%;\n  width: 100%;\n  background: #e2e2e2;\n  font: 14px \"acumin-pro-condensed\"; }\n\n.wait-screen {\n  display: grid;\n  justify-content: center;\n  align-content: center;\n  height: 100%;\n  width: 100%;\n  background: #464646;\n  opacity: 0.95;\n  color: white;\n  font: 24px \"acumin-pro-condensed\";\n  position: absolute;\n  top: 0;\n  left: 0; }\n  .wait-screen.hidden {\n    visibility: hidden; }\n\n#leftGrab {\n  grid-row: 1 / span 2;\n  grid-column: 2;\n  cursor: ew-resize; }\n\n#rightGrab {\n  grid-row: 1 / span 2;\n  grid-column: 5;\n  cursor: ew-resize; }\n\n#toolbarGrab {\n  background: #333333;\n  grid-row: 1 / span 3;\n  grid-column: 3;\n  height: 100%; }\n  #toolbarGrab .blackLine {\n    height: 5px;\n    background: black; }\n  #toolbarGrab .toolbar-label {\n    color: white;\n    font-size: 18px;\n    display: grid;\n    align-items: center;\n    cursor: pointer;\n    user-select: none;\n    grid-template-columns: 1fr 20px;\n    grid-template-rows: 100%;\n    position: relative; }\n    #toolbarGrab .toolbar-label.active {\n      font-weight: bold;\n      font-size: 20px; }\n    #toolbarGrab .toolbar-label:hover {\n      background: var(--selectionGrey); }\n      #toolbarGrab .toolbar-label:hover .sub-items {\n        display: block; }\n  #toolbarGrab .toolbar-icon {\n    width: 40px;\n    height: 40px; }\n\n.diagram-container {\n  position: relative;\n  display: grid;\n  grid-row: 1;\n  grid-column: 4;\n  background: #CCCCCC;\n  width: 100%;\n  height: 100%;\n  overflow: hidden; }\n  .diagram-container .diagram {\n    display: none;\n    width: 100%;\n    height: 100%; }\n\n.right-panel {\n  grid-row: 1 / span 2;\n  grid-column: 6;\n  display: grid;\n  grid-template-rows: 1fr 40px auto 40px;\n  grid-template-columns: 100%;\n  height: calc(100% - var(--blackBarHeight));\n  overflow-y: auto; }\n  .right-panel #propertyTab {\n    grid-row: 1;\n    grid-column: 1; }\n  .right-panel .button {\n    display: grid;\n    justify-content: center;\n    align-content: center;\n    height: auto;\n    width: calc(100% / 7);\n    cursor: pointer; }\n    .right-panel .button:hover {\n      background: #337ab7;\n      color: white;\n      opacity: 0.8; }\n    .right-panel .button.selected {\n      background: #337ab7;\n      color: white; }\n    .right-panel .button.align {\n      justify-content: stretch;\n      text-align: center; }\n\n.blocker {\n  visibility: hidden;\n  position: absolute;\n  width: calc(100% - 40px);\n  height: 100%;\n  top: 0;\n  left: 0;\n  background: rgba(20, 20, 20, 0.95);\n  font-family: \"acumin-pro-condensed\";\n  color: white;\n  font-size: 24px;\n  display: grid;\n  align-content: center;\n  justify-content: center;\n  user-select: none;\n  padding: 20px;\n  text-align: center; }\n\n#log-console {\n  grid-row: 2;\n  grid-column: 4;\n  display: none; }\n\n.dialog-container {\n  position: absolute;\n  width: 100%;\n  height: 100%;\n  background: rgba(0, 0, 0, 0.6);\n  display: grid;\n  font-family: \"acumin-pro-condensed\";\n  top: 0; }\n  .dialog-container .dialog {\n    align-self: center;\n    justify-self: center;\n    min-height: 140px;\n    max-width: 400px;\n    border-radius: 10px;\n    background: white;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: calc(100% - 50px) 50px; }\n    .dialog-container .dialog .dialog-message {\n      grid-row: 1;\n      grid-column: 1;\n      margin-top: 20px;\n      padding: 10px;\n      font-size: 18px;\n      color: black; }\n    .dialog-container .dialog .dialog-buttons {\n      grid-row: 2;\n      grid-column: 1;\n      display: grid;\n      grid-template-rows: 100%;\n      grid-template-columns: 100%;\n      color: white; }\n      .dialog-container .dialog .dialog-buttons .dialog-button-ok {\n        cursor: pointer;\n        justify-self: center;\n        background: green;\n        min-width: 80px;\n        justify-content: center;\n        display: grid;\n        align-content: center;\n        align-self: center;\n        height: 35px;\n        border-radius: 10px; }\n        .dialog-container .dialog .dialog-buttons .dialog-button-ok:hover {\n          opacity: 0.8; }\n        .dialog-container .dialog .dialog-buttons .dialog-button-ok.error {\n          background: red; }\n\n.gizmo .bounding-box-line {\n  background-color: black;\n  position: absolute;\n  line-height: 1px;\n  height: 1px;\n  pointer-events: none; }\n\n.gizmo .scale-point-container {\n  position: absolute;\n  width: 30px;\n  height: 30px; }\n  .gizmo .scale-point-container .scale-point {\n    top: 10px;\n    left: 10px;\n    position: absolute;\n    width: 10px;\n    height: 10px;\n    background: transparent;\n    outline: #7d7d7d 2px solid; }\n  .gizmo .scale-point-container .rotate-click-area {\n    width: 20px;\n    height: 20px;\n    position: absolute; }\n  .gizmo .scale-point-container .scale-click-area {\n    width: 20px;\n    height: 20px;\n    position: absolute; }\n\n.gizmo .pivot-point {\n  width: 30px;\n  height: 30px;\n  background: transparent;\n  position: absolute; }\n\n#workbench-canvas {\n  position: relative; }\n\n.artboard-stroke {\n  outline: 1px solid black;\n  position: absolute;\n  z-index: 5;\n  pointer-events: none; }\n\n.artboard-background {\n  position: absolute;\n  background: repeating-conic-gradient(#E2E2E2 0% 25%, white 0% 50%) 50%/20px 20px;\n  width: 100%;\n  height: 100%; }\n", "",{"version":3,"sources":["webpack://./main.scss"],"names":[],"mappings":"AAAA;EACI,sBAAiB,EAAA;;AAGrB;EACI,aAAa;EACb,qCAAqC;EACrC,YAAY;EACZ,WAAW;EACX,mBAAmB;EACnB,iCAAiC,EAAA;;AAGrC;EACI,aAAa;EACb,uBAAuB;EACvB,qBAAqB;EACrB,YAAY;EACZ,WAAW;EACX,mBAAmB;EACnB,aAAa;EACb,YAAW;EACX,iCAAiC;EACjC,kBAAkB;EAClB,MAAM;EACN,OAAO,EAAA;EAZX;IAeQ,kBAAkB,EAAA;;AAI1B;EACI,oBAAoB;EACpB,cAAc;EACd,iBAAiB,EAAA;;AAGrB;EACI,oBAAoB;EACpB,cAAc;EACd,iBAAiB,EAAA;;AAIrB;EACI,mBAAmB;EACnB,oBAAoB;EACpB,cAAc;EACd,YAAY,EAAA;EAJhB;IAOQ,WAAY;IACZ,iBAAiB,EAAA;EARzB;IAWQ,YAAW;IACX,eAAe;IACf,aAAa;IACb,mBAAmB;IACnB,eAAe;IACf,iBAAiB;IACjB,+BAA+B;IAC/B,wBAAwB;IACxB,kBAAkB,EAAA;IAnB1B;MAsBY,iBAAiB;MACjB,eAAe,EAAA;IAvB3B;MA2BY,gCAAgC,EAAA;MA3B5C;QA6BgB,cAAc,EAAA;EA7B9B;IAkCQ,WAAW;IACX,YAAY,EAAA;;AAIpB;EACI,kBAAkB;EAClB,aAAa;EACb,WAAW;EACX,cAAc;EACd,mBAAmB;EACnB,WAAW;EACX,YAAY;EACZ,gBAAgB,EAAA;EARpB;IAWQ,aAAa;IACb,WAAW;IACX,YAAY,EAAA;;AAIpB;EACI,oBAAoB;EACpB,cAAc;EACd,aAAa;EACb,sCAAsC;EACtC,2BAA2B;EAC3B,0CAA0C;EAC1C,gBAAgB,EAAA;EAPpB;IAUQ,WAAW;IACX,cAAc,EAAA;EAXtB;IAeQ,aAAa;IACb,uBAAuB;IACvB,qBAAqB;IACrB,YAAY;IACZ,qBAAqB;IACrB,eAAe,EAAA;IApBvB;MAuBY,mBAA6B;MAC7B,YAAY;MACZ,YAAY,EAAA;IAzBxB;MA6BY,mBAA6B;MAC7B,YAAY,EAAA;IA9BxB;MAkCY,wBAAwB;MACxB,kBAAkB,EAAA;;AAK9B;EACI,kBAAkB;EAClB,kBAAkB;EAClB,wBAAwB;EACxB,YAAY;EACZ,MAAM;EACN,OAAO;EAEP,kCAAkC;EAClC,mCAAmC;EACnC,YAAY;EACZ,eAAe;EAEf,aAAa;EACb,qBAAqB;EACrB,uBAAuB;EAEvB,iBAAiB;EAEjB,aAAa;EACb,kBAAkB,EAAA;;AAGtB;EACI,WAAW;EACX,cAAc;EACd,aAAa,EAAA;;AAGjB;EACI,kBAAkB;EAClB,WAAW;EACX,YAAY;EACZ,8BAAoC;EACpC,aAAa;EACb,mCAAmC;EACnC,MAAK,EAAA;EAPT;IAUQ,kBAAkB;IAClB,oBAAoB;IACpB,iBAAiB;IACjB,gBAAgB;IAChB,mBAAmB;IACnB,iBAAiB;IAEjB,aAAa;IACb,2BAA2B;IAC3B,0CAA0C,EAAA;IAnBlD;MAsBY,WAAW;MACX,cAAc;MACd,gBAAgB;MAChB,aAAa;MACb,eAAe;MACf,YAAY,EAAA;IA3BxB;MA+BY,WAAW;MACX,cAAc;MACd,aAAa;MACb,wBAAwB;MACxB,2BAA2B;MAC3B,YAAY,EAAA;MApCxB;QAuCgB,eAAe;QACf,oBAAoB;QACpB,iBAAgB;QAChB,eAAe;QACf,uBAAuB;QACvB,aAAa;QACb,qBAAqB;QACrB,kBAAkB;QAClB,YAAY;QACZ,mBAAmB,EAAA;QAhDnC;UAmDoB,YAAY,EAAA;QAnDhC;UAuDoB,eAAe,EAAA;;AAMnC;EAEQ,uBAAuB;EACvB,kBAAkB;EAClB,gBAAgB;EAChB,WAAW;EACX,oBAAoB,EAAA;;AAN5B;EASQ,kBAAkB;EAClB,WAAW;EACX,YAAY,EAAA;EAXpB;IAaY,SAAS;IACT,UAAU;IACV,kBAAkB;IAClB,WAAW;IACX,YAAY;IACZ,uBAAuB;IACvB,0BAAqC,EAAA;EAnBjD;IAsBY,WAAW;IACX,YAAY;IACZ,kBAAkB,EAAA;EAxB9B;IA2BY,WAAW;IACX,YAAY;IACZ,kBAAkB,EAAA;;AA7B9B;EAiCQ,WAAW;EACX,YAAY;EACZ,uBAAuB;EACvB,kBAAkB,EAAA;;AAG1B;EACI,kBAAkB,EAAA;;AAEtB;EACI,wBAAwB;EACxB,kBAAkB;EAClB,UAAU;EACV,oBAAoB,EAAA;;AAExB;EACI,kBAAkB;EAClB,gFACe;EACf,WAAW;EACX,YAAY,EAAA","sourcesContent":[":root {\r\n    --blackBarHeight: 55px;\r\n}\r\n\r\n#gui-editor-workbench-root {\r\n    display: grid;\r\n    grid-template-rows: calc(100% - 55px);\r\n    height: 100%;\r\n    width: 100%;\r\n    background: #e2e2e2;\r\n    font: 14px \"acumin-pro-condensed\";   \r\n}\r\n\r\n.wait-screen {\r\n    display: grid;\r\n    justify-content: center;\r\n    align-content: center;\r\n    height: 100%;\r\n    width: 100%;\r\n    background: #464646;\r\n    opacity: 0.95;\r\n    color:white;\r\n    font: 24px \"acumin-pro-condensed\";  \r\n    position: absolute;\r\n    top: 0;\r\n    left: 0; \r\n\r\n    &.hidden {\r\n        visibility: hidden;\r\n    }\r\n}\r\n\r\n#leftGrab {\r\n    grid-row: 1 / span 2;\r\n    grid-column: 2;\r\n    cursor: ew-resize;\r\n}\r\n\r\n#rightGrab {\r\n    grid-row: 1 / span 2;\r\n    grid-column: 5;\r\n    cursor: ew-resize;\r\n}\r\n\r\n\r\n#toolbarGrab {\r\n    background: #333333;\r\n    grid-row: 1 / span 3;\r\n    grid-column: 3;\r\n    height: 100%;\r\n\r\n    .blackLine {\r\n        height:  5px;\r\n        background: black;\r\n    }\r\n    .toolbar-label {\r\n        color:white;\r\n        font-size: 18px;\r\n        display: grid;\r\n        align-items: center;\r\n        cursor: pointer;\r\n        user-select: none;\r\n        grid-template-columns: 1fr 20px;\r\n        grid-template-rows: 100%;\r\n        position: relative;\r\n\r\n        &.active {\r\n            font-weight: bold;\r\n            font-size: 20px;\r\n        }\r\n\r\n        &:hover {\r\n            background: var(--selectionGrey);\r\n            .sub-items {\r\n                display: block;\r\n            }\r\n        } \r\n    }\r\n    .toolbar-icon {\r\n        width: 40px;\r\n        height: 40px;\r\n    }\r\n}\r\n\r\n.diagram-container {\r\n    position: relative;\r\n    display: grid;\r\n    grid-row: 1;\r\n    grid-column: 4;\r\n    background: #CCCCCC;\r\n    width: 100%;\r\n    height: 100%;\r\n    overflow: hidden;\r\n\r\n    .diagram {\r\n        display: none;\r\n        width: 100%;\r\n        height: 100%;\r\n    }\r\n}\r\n\r\n.right-panel {\r\n    grid-row: 1 / span 2;\r\n    grid-column: 6;\r\n    display: grid;\r\n    grid-template-rows: 1fr 40px auto 40px;\r\n    grid-template-columns: 100%;\r\n    height: calc(100% - var(--blackBarHeight));\r\n    overflow-y: auto;\r\n\r\n    #propertyTab {\r\n        grid-row: 1;\r\n        grid-column: 1;\r\n    }        \r\n    \r\n    .button {\r\n        display: grid;\r\n        justify-content: center;\r\n        align-content: center;\r\n        height: auto;\r\n        width: calc(100% / 7);\r\n        cursor: pointer;\r\n\r\n        &:hover {\r\n            background: rgb(51, 122, 183);\r\n            color: white;\r\n            opacity: 0.8;\r\n        }\r\n\r\n        &.selected {\r\n            background: rgb(51, 122, 183);\r\n            color: white;\r\n        }\r\n        \r\n        &.align {\r\n            justify-content: stretch;\r\n            text-align: center;\r\n        }\r\n    }    \r\n}\r\n\r\n.blocker {\r\n    visibility: hidden;\r\n    position: absolute;\r\n    width: calc(100% - 40px);\r\n    height: 100%;\r\n    top: 0;\r\n    left: 0;\r\n\r\n    background: rgba(20, 20, 20, 0.95);    \r\n    font-family: \"acumin-pro-condensed\";\r\n    color: white;\r\n    font-size: 24px;\r\n\r\n    display: grid;\r\n    align-content: center;\r\n    justify-content: center;\r\n\r\n    user-select: none;\r\n\r\n    padding: 20px;\r\n    text-align: center;\r\n}\r\n\r\n#log-console {\r\n    grid-row: 2;\r\n    grid-column: 4;\r\n    display: none;\r\n}\r\n\r\n.dialog-container {\r\n    position: absolute;\r\n    width: 100%;\r\n    height: 100%;\r\n    background: rgba(0.1, 0.1, 0.1, 0.6);\r\n    display: grid;\r\n    font-family: \"acumin-pro-condensed\";\r\n    top:0;\r\n\r\n    .dialog {\r\n        align-self: center;\r\n        justify-self: center;\r\n        min-height: 140px;\r\n        max-width: 400px;\r\n        border-radius: 10px;\r\n        background: white;\r\n\r\n        display: grid;\r\n        grid-template-columns: 100%;\r\n        grid-template-rows: calc(100% - 50px) 50px;\r\n\r\n        .dialog-message {\r\n            grid-row: 1;\r\n            grid-column: 1;\r\n            margin-top: 20px;\r\n            padding: 10px;\r\n            font-size: 18px;\r\n            color: black;\r\n        }\r\n\r\n        .dialog-buttons {\r\n            grid-row: 2;\r\n            grid-column: 1;\r\n            display: grid;\r\n            grid-template-rows: 100%;\r\n            grid-template-columns: 100%;\r\n            color: white;\r\n\r\n            .dialog-button-ok {\r\n                cursor: pointer;\r\n                justify-self: center;\r\n                background:green;\r\n                min-width: 80px;\r\n                justify-content: center;\r\n                display: grid;\r\n                align-content: center;\r\n                align-self: center;\r\n                height: 35px;      \r\n                border-radius: 10px;\r\n\r\n                &:hover {\r\n                    opacity: 0.8;\r\n                }\r\n\r\n                &.error {\r\n                    background: red;\r\n                }\r\n            }\r\n        }\r\n    }\r\n}\r\n.gizmo {\r\n    .bounding-box-line {\r\n        background-color: black;\r\n        position: absolute;\r\n        line-height: 1px;\r\n        height: 1px;\r\n        pointer-events: none;\r\n    }\r\n    .scale-point-container {\r\n        position: absolute;\r\n        width: 30px;\r\n        height: 30px;\r\n        .scale-point {\r\n            top: 10px;\r\n            left: 10px;\r\n            position: absolute;\r\n            width: 10px;\r\n            height: 10px;\r\n            background: transparent;\r\n            outline: rgb(125, 125, 125) 2px solid;\r\n        }\r\n        .rotate-click-area {\r\n            width: 20px;\r\n            height: 20px;\r\n            position: absolute;\r\n        }\r\n        .scale-click-area {\r\n            width: 20px;\r\n            height: 20px;\r\n            position: absolute;\r\n        }\r\n    }\r\n    .pivot-point {\r\n        width: 30px;\r\n        height: 30px;\r\n        background: transparent;\r\n        position: absolute;\r\n    }\r\n}\r\n#workbench-canvas {\r\n    position: relative;\r\n}\r\n.artboard-stroke {\r\n    outline: 1px solid black;\r\n    position: absolute;\r\n    z-index: 5;\r\n    pointer-events: none;\r\n}\r\n.artboard-background {\r\n    position: absolute;\r\n    background: repeating-conic-gradient(#E2E2E2 0% 25%, white 0% 50%) \r\n    50% / 20px 20px;\r\n    width: 100%;\r\n    height: 100%;\r\n}"],"sourceRoot":""}]);
 // Exports
 /* harmony default export */ __webpack_exports__["default"] = (___CSS_LOADER_EXPORT___);
 
@@ -45193,7 +45193,6 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-
 __webpack_require__(/*! ./propertyTab.scss */ "./components/propertyTab/propertyTab.scss");
 var adtIcon = __webpack_require__(/*! ../../../public/imgs/adtIcon.svg */ "../public/imgs/adtIcon.svg");
 var responsiveIcon = __webpack_require__(/*! ../../../public/imgs/responsiveIcon.svg */ "../public/imgs/responsiveIcon.svg");
@@ -45333,7 +45332,6 @@ var PropertyTabComponent = /** @class */ (function (_super) {
             }
         });
         this.props.globalState.onResizeObservable.add(function (newSize) {
-            _this.props.globalState.workbench.artBoardBackground._markAsDirty(true);
             _this.forceUpdate();
         });
         this._onBuiltObserver = this.props.globalState.onBuiltObservable.add(function () {
@@ -45353,16 +45351,10 @@ var PropertyTabComponent = /** @class */ (function (_super) {
         }, undefined, true);
     };
     PropertyTabComponent.prototype.save = function (saveCallback) {
-        //removing the art board background from the adt.
-        this.props.globalState.guiTexture.removeControl(this.props.globalState.workbench.artBoardBackground);
+        this.props.globalState.workbench.removeEditorTransformation();
+        var size = this.props.globalState.workbench.guiSize;
+        this.props.globalState.guiTexture.scaleTo(size.width, size.height);
         saveCallback();
-        //readding the art board at the front of the list so it will be the first thing rendered.
-        if (this.props.globalState.guiTexture.getChildren()[0].children.length) {
-            this.props.globalState.guiTexture.getChildren()[0].children.unshift(this.props.globalState.workbench.artBoardBackground);
-        }
-        else {
-            this.props.globalState.guiTexture.getChildren()[0].children.push(this.props.globalState.workbench.artBoardBackground);
-        }
     };
     PropertyTabComponent.prototype.loadFromSnippet = function () {
         var snippedId = this.props.globalState.hostWindow.prompt("Please enter the snippet ID to use");
@@ -45371,73 +45363,82 @@ var PropertyTabComponent = /** @class */ (function (_super) {
         }
         this.props.globalState.workbench.loadFromSnippet(snippedId);
     };
-    PropertyTabComponent.prototype.renderProperties = function () {
-        var _this = this;
+    PropertyTabComponent.prototype.renderNode = function (node) {
         var _a;
-        var className = (_a = this.state.currentNode) === null || _a === void 0 ? void 0 : _a.getClassName();
+        return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "header" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { id: "logo", src: this.renderControlIcon(node) }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "title" },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_28__["TextInputLineComponent"], { noUnderline: true, lockObject: this._lockObject, label: "", target: node, propertyName: "name", onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }))),
+            this.renderProperties(node),
+            ((_a = node === null || node === void 0 ? void 0 : node.parent) === null || _a === void 0 ? void 0 : _a.typeName) === "Grid" && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_parentingPropertyGridComponent__WEBPACK_IMPORTED_MODULE_29__["ParentingPropertyGridComponent"], { control: node, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable, lockObject: this._lockObject })));
+    };
+    PropertyTabComponent.prototype.renderProperties = function (node) {
+        var _this = this;
+        var className = node.getClassName();
         switch (className) {
             case "TextBlock": {
-                var textBlock = this.state.currentNode;
+                var textBlock = node;
                 return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_textBlockPropertyGridComponent__WEBPACK_IMPORTED_MODULE_12__["TextBlockPropertyGridComponent"], { textBlock: textBlock, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }));
             }
             case "InputText": {
-                var inputText = this.state.currentNode;
+                var inputText = node;
                 return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_inputTextPropertyGridComponent__WEBPACK_IMPORTED_MODULE_13__["InputTextPropertyGridComponent"], { inputText: inputText, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }));
             }
             case "ColorPicker": {
-                var colorPicker = this.state.currentNode;
+                var colorPicker = node;
                 return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_colorPickerPropertyGridComponent__WEBPACK_IMPORTED_MODULE_14__["ColorPickerPropertyGridComponent"], { colorPicker: colorPicker, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }));
             }
             case "Image": {
-                var image = this.state.currentNode;
+                var image = node;
                 return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_imagePropertyGridComponent__WEBPACK_IMPORTED_MODULE_15__["ImagePropertyGridComponent"], { image: image, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
             }
             case "Slider": {
-                var slider = this.state.currentNode;
+                var slider = node;
                 return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_sliderGenericPropertyGridComponent__WEBPACK_IMPORTED_MODULE_9__["SliderGenericPropertyGridComponent"], { slider: slider, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }));
             }
             case "ImageBasedSlider": {
-                var imageBasedSlider = this.state.currentNode;
+                var imageBasedSlider = node;
                 return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_imageBasedSliderPropertyGridComponent__WEBPACK_IMPORTED_MODULE_16__["ImageBasedSliderPropertyGridComponent"], { imageBasedSlider: imageBasedSlider, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }));
             }
             case "Rectangle": {
-                var rectangle = this.state.currentNode;
+                var rectangle = node;
                 return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_rectanglePropertyGridComponent__WEBPACK_IMPORTED_MODULE_17__["RectanglePropertyGridComponent"], { rectangle: rectangle, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }));
             }
             case "StackPanel": {
-                var stackPanel = this.state.currentNode;
+                var stackPanel = node;
                 return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_stackPanelPropertyGridComponent__WEBPACK_IMPORTED_MODULE_18__["StackPanelPropertyGridComponent"], { stackPanel: stackPanel, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }));
             }
             case "Grid": {
-                var grid = this.state.currentNode;
+                var grid = node;
                 return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_gridPropertyGridComponent__WEBPACK_IMPORTED_MODULE_19__["GridPropertyGridComponent"], { grid: grid, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
             }
             case "ScrollViewer": {
-                var scrollViewer = this.state.currentNode;
+                var scrollViewer = node;
                 return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_scrollViewerPropertyGridComponent__WEBPACK_IMPORTED_MODULE_20__["ScrollViewerPropertyGridComponent"], { scrollViewer: scrollViewer, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }));
             }
             case "Ellipse": {
-                var ellipse = this.state.currentNode;
+                var ellipse = node;
                 return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_ellipsePropertyGridComponent__WEBPACK_IMPORTED_MODULE_21__["EllipsePropertyGridComponent"], { ellipse: ellipse, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }));
             }
             case "Checkbox": {
-                var checkbox = this.state.currentNode;
+                var checkbox = node;
                 return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_checkboxPropertyGridComponent__WEBPACK_IMPORTED_MODULE_22__["CheckboxPropertyGridComponent"], { checkbox: checkbox, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }));
             }
             case "RadioButton": {
-                var radioButton = this.state.currentNode;
+                var radioButton = node;
                 return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_radioButtonPropertyGridComponent__WEBPACK_IMPORTED_MODULE_11__["RadioButtonPropertyGridComponent"], { radioButton: radioButton, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }));
             }
             case "Line": {
-                var line = this.state.currentNode;
+                var line = node;
                 return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_linePropertyGridComponent__WEBPACK_IMPORTED_MODULE_10__["LinePropertyGridComponent"], { line: line, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
             }
             case "DisplayGrid": {
-                var displayGrid = this.state.currentNode;
+                var displayGrid = node;
                 return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_displayGridPropertyGridComponent__WEBPACK_IMPORTED_MODULE_30__["DisplayGridPropertyGridComponent"], { displayGrid: displayGrid, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }));
             }
             case "Button": {
-                var button_1 = this.state.currentNode;
+                var button_1 = node;
                 return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_buttonPropertyGridComponent__WEBPACK_IMPORTED_MODULE_31__["ButtonPropertyGridComponent"], { key: "buttonMenu", rectangle: button_1, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable, onAddComponent: function (value) {
                         var guiElement = _guiNodeTools__WEBPACK_IMPORTED_MODULE_32__["GUINodeTools"].CreateControlFromString(value);
                         var newGuiNode = _this.props.globalState.workbench.createNewGuiNode(guiElement);
@@ -45447,14 +45448,13 @@ var PropertyTabComponent = /** @class */ (function (_super) {
             }
         }
         if (className !== "") {
-            var control = this.state.currentNode;
+            var control = node;
             return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_controlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_24__["ControlPropertyGridComponent"], { control: control, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }));
         }
         return null;
     };
-    PropertyTabComponent.prototype.renderControlIcon = function () {
-        var _a;
-        var className = (_a = this.state.currentNode) === null || _a === void 0 ? void 0 : _a.getClassName();
+    PropertyTabComponent.prototype.renderControlIcon = function (node) {
+        var className = node.getClassName();
         switch (className) {
             case "TextBlock": {
                 return textBoxIcon;
@@ -45507,27 +45507,29 @@ var PropertyTabComponent = /** @class */ (function (_super) {
             case "Button": {
                 return buttonIcon;
             }
+            case "Container": {
+                return rectangleIcon;
+            }
         }
         return adtIcon;
     };
     PropertyTabComponent.prototype.render = function () {
         var _this = this;
-        var _a, _b;
         if (this.props.globalState.guiTexture == undefined)
             return null;
         var _sizeValues = [
-            new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["Vector2"](1920, 1080),
-            new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["Vector2"](1366, 768),
-            new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["Vector2"](1280, 800),
-            new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["Vector2"](3840, 2160),
-            new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["Vector2"](750, 1334),
-            new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["Vector2"](1125, 2436),
-            new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["Vector2"](1170, 2532),
-            new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["Vector2"](1284, 2778),
-            new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["Vector2"](1080, 2220),
-            new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["Vector2"](1080, 2340),
-            new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["Vector2"](1024, 1024),
-            new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["Vector2"](2048, 2048),
+            { width: 1920, height: 1080 },
+            { width: 1366, height: 768 },
+            { width: 1280, height: 800 },
+            { width: 3840, height: 2160 },
+            { width: 750, height: 1334 },
+            { width: 1125, height: 2436 },
+            { width: 1170, height: 2532 },
+            { width: 1284, height: 2778 },
+            { width: 1080, height: 2220 },
+            { width: 1080, height: 2340 },
+            { width: 1024, height: 1024 },
+            { width: 2048, height: 2048 },
         ];
         var _sizeOptions = [
             { label: "Web (1920)", value: 0 },
@@ -45543,21 +45545,14 @@ var PropertyTabComponent = /** @class */ (function (_super) {
             { label: "Square (1024)", value: 10 },
             { label: "Square (2048)", value: 11 },
         ];
-        var size = this.props.globalState.guiTexture.getSize();
-        var textureSize = new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["Vector2"](size.width, size.height);
-        this._sizeOption = _sizeValues.findIndex(function (value) { return value.x == textureSize.x && value.y == textureSize.y; });
+        var size = Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])({}, this.props.globalState.workbench.guiSize);
+        this._sizeOption = _sizeValues.findIndex(function (value) { return value.width == size.width && value.height == size.height; });
         if (this._sizeOption < 0) {
             this.props.globalState.onResponsiveChangeObservable.notifyObservers(false);
             babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["DataStorage"].WriteBoolean("Responsive", false);
         }
         if (this.state.currentNode && this.props.globalState.workbench.selectedGuiNodes.length === 1) {
-            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "ge-propertyTab" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "header" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { id: "logo", src: this.renderControlIcon() }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "title" },
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_28__["TextInputLineComponent"], { noUnderline: true, lockObject: this._lockObject, label: "", target: this.state.currentNode, propertyName: "name", onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }))),
-                this.renderProperties(),
-                ((_b = (_a = this.state.currentNode) === null || _a === void 0 ? void 0 : _a.parent) === null || _b === void 0 ? void 0 : _b.typeName) === "Grid" && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_parentingPropertyGridComponent__WEBPACK_IMPORTED_MODULE_29__["ParentingPropertyGridComponent"], { control: this.state.currentNode, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable, lockObject: this._lockObject }))));
+            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "ge-propertyTab" }, this.renderNode(this.state.currentNode)));
         }
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "ge-propertyTab" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "header" },
@@ -45574,7 +45569,7 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                         _this._sizeOption = _sizeOptions.length;
                         if (value) {
                             _this._sizeOption = 0;
-                            _this.props.globalState.workbench.resizeGuiTexture(_sizeValues[_this._sizeOption]);
+                            _this.props.globalState.workbench.guiSize = _sizeValues[_this._sizeOption];
                         }
                         _this.forceUpdate();
                     } }),
@@ -45582,19 +45577,19 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                         _this._sizeOption = value;
                         if (_this._sizeOption !== _sizeOptions.length) {
                             var newSize = _sizeValues[_this._sizeOption];
-                            _this.props.globalState.workbench.resizeGuiTexture(newSize);
+                            _this.props.globalState.workbench.guiSize = newSize;
                         }
                         _this.forceUpdate();
                     } })),
                 !babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["DataStorage"].ReadBoolean("Responsive", true) && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_26__["FloatLineComponent"], { icon: canvasSizeIcon, iconLabel: "Canvas Size", label: "W", target: textureSize, propertyName: "x", isInteger: true, min: 1, max: MAX_TEXTURE_SIZE, onChange: function (newvalue) {
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_26__["FloatLineComponent"], { icon: canvasSizeIcon, iconLabel: "Canvas Size", label: "W", target: size, propertyName: "width", isInteger: true, min: 1, max: MAX_TEXTURE_SIZE, onChange: function (newvalue) {
                             if (!isNaN(newvalue)) {
-                                _this.props.globalState.workbench.resizeGuiTexture(new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["Vector2"](newvalue, textureSize.y));
+                                _this.props.globalState.workbench.guiSize = { width: newvalue, height: size.height };
                             }
                         } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_26__["FloatLineComponent"], { icon: canvasSizeIcon, label: "H", target: textureSize, propertyName: "y", isInteger: true, min: 1, max: MAX_TEXTURE_SIZE, onChange: function (newvalue) {
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_26__["FloatLineComponent"], { icon: canvasSizeIcon, label: "H", target: size, propertyName: "height", isInteger: true, min: 1, max: MAX_TEXTURE_SIZE, onChange: function (newvalue) {
                             if (!isNaN(newvalue)) {
-                                _this.props.globalState.workbench.resizeGuiTexture(new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["Vector2"](textureSize.x, newvalue));
+                                _this.props.globalState.workbench.guiSize = { width: size.width, height: newvalue };
                             }
                         } }))),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", { className: "ge" }),
@@ -45608,7 +45603,9 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Load from snippet server", onClick: function () { return _this.loadFromSnippet(); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Save to snippet server", onClick: function () {
                         _this.props.globalState.onSnippetSaveObservable.notifyObservers();
-                    } }))));
+                    } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", { className: "ge" }),
+                this.renderNode(this.props.globalState.workbench.trueRootContainer))));
     };
     return PropertyTabComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -45942,6 +45939,7 @@ var SceneExplorerComponent = /** @class */ (function (_super) {
                 return;
                 break;
             case "Delete":
+            case "Backspace":
                 if (this.state.selectedEntity !== this.props.globalState.guiTexture.getChildren()[0]) {
                     this.state.selectedEntity.dispose();
                     this.forceUpdate();
@@ -46268,8 +46266,9 @@ var TreeItemSelectableComponent = /** @class */ (function (_super) {
         this.props.globalState.onSelectionChangedObservable.notifyObservers(entity);
         this.props.globalState.selectionLock = true;
     };
-    TreeItemSelectableComponent.prototype.renderChildren = function (isExpanded) {
+    TreeItemSelectableComponent.prototype.renderChildren = function (isExpanded, offset) {
         var _this = this;
+        if (offset === void 0) { offset = true; }
         var entity = this.props.entity;
         if ((!entity.getChildren && !entity.children) || !isExpanded) {
             return null;
@@ -46282,11 +46281,14 @@ var TreeItemSelectableComponent = /** @class */ (function (_super) {
             if (item.name == "Art-Board-Background") {
                 return null;
             }
-            return (react__WEBPACK_IMPORTED_MODULE_3__["createElement"](TreeItemSelectableComponent, { globalState: _this.props.globalState, mustExpand: _this.props.mustExpand, extensibilityGroups: _this.props.extensibilityGroups, selectedEntity: _this.props.selectedEntity, key: i, offset: _this.props.offset + 2, entity: item, filter: _this.props.filter }));
+            return (react__WEBPACK_IMPORTED_MODULE_3__["createElement"](TreeItemSelectableComponent, { globalState: _this.props.globalState, mustExpand: _this.props.mustExpand, extensibilityGroups: _this.props.extensibilityGroups, selectedEntity: _this.props.selectedEntity, key: i, offset: _this.props.offset + (offset ? 2 : 0), entity: item, filter: _this.props.filter }));
         });
     };
     TreeItemSelectableComponent.prototype.render = function () {
         var _this = this;
+        if (this.props.entity === this.props.globalState.workbench.trueRootContainer || this.props.entity === this.props.globalState.workbench.visibleRegionContainer) {
+            return this.renderChildren(true, false);
+        }
         var marginStyle = {
             paddingLeft: 10 * (this.props.offset + 0.5) - 20 + "px",
         };
@@ -46391,1682 +46393,82 @@ var TreeItemSelectableComponent = /** @class */ (function (_super) {
 
 /***/ }),
 
-/***/ "./diagram/GUIEditorNodeMaterial.ts":
-/*!******************************************!*\
-  !*** ./diagram/GUIEditorNodeMaterial.ts ***!
-  \******************************************/
-/*! exports provided: GUIEditorNodeMaterial */
+/***/ "./diagram/artBoard.tsx":
+/*!******************************!*\
+  !*** ./diagram/artBoard.tsx ***!
+  \******************************/
+/*! exports provided: ArtBoardComponent */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "GUIEditorNodeMaterial", function() { return GUIEditorNodeMaterial; });
-var GUIEditorNodeMaterial = {
-    "tags": null,
-    "ignoreAlpha": false,
-    "maxSimultaneousLights": 4,
-    "mode": 0,
-    "id": "node",
-    "name": "node",
-    "checkReadyOnEveryCall": false,
-    "checkReadyOnlyOnce": false,
-    "state": "",
-    "alpha": 1,
-    "backFaceCulling": true,
-    "cullBackFaces": true,
-    "sideOrientation": 1,
-    "alphaMode": 2,
-    "_needDepthPrePass": false,
-    "disableDepthWrite": false,
-    "disableColorWrite": false,
-    "forceDepthWrite": false,
-    "depthFunction": 0,
-    "separateCullingPass": false,
-    "fogEnabled": true,
-    "pointSize": 1,
-    "zOffset": 0,
-    "zOffsetUnits": 0,
-    "pointsCloud": false,
-    "fillMode": 0,
-    "editorData": {
-        "locations": [
-            {
-                "blockId": 211,
-                "x": -1460,
-                "y": -100
-            },
-            {
-                "blockId": 212,
-                "x": -1740,
-                "y": -100
-            },
-            {
-                "blockId": 213,
-                "x": -2000,
-                "y": -160
-            },
-            {
-                "blockId": 214,
-                "x": -2260,
-                "y": -180
-            },
-            {
-                "blockId": 215,
-                "x": -2240,
-                "y": -80
-            },
-            {
-                "blockId": 216,
-                "x": -2000,
-                "y": -20
-            },
-            {
-                "blockId": 217,
-                "x": 3380,
-                "y": 740
-            },
-            {
-                "blockId": 218,
-                "x": 2720,
-                "y": 540
-            },
-            {
-                "blockId": 219,
-                "x": 2960,
-                "y": 200
-            },
-            {
-                "blockId": 220,
-                "x": 2400,
-                "y": 320
-            },
-            {
-                "blockId": 221,
-                "x": 2080,
-                "y": 320
-            },
-            {
-                "blockId": 222,
-                "x": 1600,
-                "y": 560
-            },
-            {
-                "blockId": 223,
-                "x": 1320,
-                "y": 500
-            },
-            {
-                "blockId": 224,
-                "x": 1080,
-                "y": 420
-            },
-            {
-                "blockId": 225,
-                "x": 820,
-                "y": 520
-            },
-            {
-                "blockId": 226,
-                "x": 540,
-                "y": 520
-            },
-            {
-                "blockId": 227,
-                "x": 280,
-                "y": 520
-            },
-            {
-                "blockId": 228,
-                "x": -60,
-                "y": 440
-            },
-            {
-                "blockId": 229,
-                "x": -340,
-                "y": 420
-            },
-            {
-                "blockId": 230,
-                "x": -620,
-                "y": 340
-            },
-            {
-                "blockId": 231,
-                "x": -880,
-                "y": 340
-            },
-            {
-                "blockId": 232,
-                "x": -1160,
-                "y": 160
-            },
-            {
-                "blockId": 233,
-                "x": -1480,
-                "y": 260
-            },
-            {
-                "blockId": 234,
-                "x": -1160,
-                "y": 460
-            },
-            {
-                "blockId": 235,
-                "x": -880,
-                "y": 480
-            },
-            {
-                "blockId": 236,
-                "x": -60,
-                "y": 700
-            },
-            {
-                "blockId": 237,
-                "x": -340,
-                "y": 700
-            },
-            {
-                "blockId": 238,
-                "x": -620,
-                "y": 700
-            },
-            {
-                "blockId": 239,
-                "x": -300,
-                "y": 920
-            },
-            {
-                "blockId": 240,
-                "x": 540,
-                "y": 420
-            },
-            {
-                "blockId": 241,
-                "x": 820,
-                "y": 660
-            },
-            {
-                "blockId": 242,
-                "x": 540,
-                "y": 660
-            },
-            {
-                "blockId": 243,
-                "x": 280,
-                "y": 660
-            },
-            {
-                "blockId": 244,
-                "x": 1340,
-                "y": 660
-            },
-            {
-                "blockId": 245,
-                "x": 1080,
-                "y": 800
-            },
-            {
-                "blockId": 246,
-                "x": 2160,
-                "y": 160
-            },
-            {
-                "blockId": 247,
-                "x": 2280,
-                "y": 1000
-            },
-            {
-                "blockId": 248,
-                "x": 2040,
-                "y": 780
-            },
-            {
-                "blockId": 249,
-                "x": 2860,
-                "y": 840
-            }
-        ],
-        "frames": [
-            {
-                "x": 1920,
-                "y": 80,
-                "width": 1859.67,
-                "height": 1260,
-                "color": [
-                    0.2823529411764706,
-                    0.2823529411764706,
-                    0.2823529411764706
-                ],
-                "name": "Checkered",
-                "isCollapsed": false,
-                "blocks": [
-                    221,
-                    246,
-                    220,
-                    219,
-                    248,
-                    247,
-                    218,
-                    249,
-                    217
-                ]
-            }
-        ],
-        "x": 155.3919960630531,
-        "y": 164.5512292933413,
-        "zoom": 0.2532192552683995
-    },
-    "customType": "BABYLON.NodeMaterial",
-    "outputNodes": [
-        211,
-        217
-    ],
-    "blocks": [
-        {
-            "customType": "BABYLON.VertexOutputBlock",
-            "id": 211,
-            "name": "VertexOutput",
-            "comments": "",
-            "visibleInInspector": false,
-            "visibleOnFrame": false,
-            "target": 1,
-            "inputs": [
-                {
-                    "name": "vector",
-                    "inputName": "vector",
-                    "targetBlockId": 212,
-                    "targetConnectionName": "output",
-                    "isExposedOnFrame": true,
-                    "exposedPortPosition": -1
-                }
-            ],
-            "outputs": []
-        },
-        {
-            "customType": "BABYLON.TransformBlock",
-            "id": 212,
-            "name": "WorldPos * ViewProjectionTransform",
-            "comments": "",
-            "visibleInInspector": false,
-            "visibleOnFrame": false,
-            "target": 1,
-            "inputs": [
-                {
-                    "name": "vector",
-                    "inputName": "vector",
-                    "targetBlockId": 213,
-                    "targetConnectionName": "output",
-                    "isExposedOnFrame": true,
-                    "exposedPortPosition": -1
-                },
-                {
-                    "name": "transform",
-                    "inputName": "transform",
-                    "targetBlockId": 216,
-                    "targetConnectionName": "output",
-                    "isExposedOnFrame": true,
-                    "exposedPortPosition": -1
-                }
-            ],
-            "outputs": [
-                {
-                    "name": "output"
-                },
-                {
-                    "name": "xyz"
-                }
-            ],
-            "complementZ": 0,
-            "complementW": 1
-        },
-        {
-            "customType": "BABYLON.TransformBlock",
-            "id": 213,
-            "name": "WorldPos",
-            "comments": "",
-            "visibleInInspector": false,
-            "visibleOnFrame": false,
-            "target": 1,
-            "inputs": [
-                {
-                    "name": "vector",
-                    "inputName": "vector",
-                    "targetBlockId": 214,
-                    "targetConnectionName": "output",
-                    "isExposedOnFrame": true,
-                    "exposedPortPosition": -1
-                },
-                {
-                    "name": "transform",
-                    "inputName": "transform",
-                    "targetBlockId": 215,
-                    "targetConnectionName": "output",
-                    "isExposedOnFrame": true,
-                    "exposedPortPosition": -1
-                }
-            ],
-            "outputs": [
-                {
-                    "name": "output"
-                },
-                {
-                    "name": "xyz"
-                }
-            ],
-            "complementZ": 0,
-            "complementW": 1
-        },
-        {
-            "customType": "BABYLON.InputBlock",
-            "id": 214,
-            "name": "position",
-            "comments": "",
-            "visibleInInspector": false,
-            "visibleOnFrame": false,
-            "target": 1,
-            "inputs": [],
-            "outputs": [
-                {
-                    "name": "output"
-                }
-            ],
-            "type": 8,
-            "mode": 1,
-            "animationType": 0,
-            "min": 0,
-            "max": 0,
-            "isBoolean": false,
-            "matrixMode": 0,
-            "isConstant": false,
-            "groupInInspector": "",
-            "convertToGammaSpace": false,
-            "convertToLinearSpace": false
-        },
-        {
-            "customType": "BABYLON.InputBlock",
-            "id": 215,
-            "name": "World",
-            "comments": "",
-            "visibleInInspector": false,
-            "visibleOnFrame": false,
-            "target": 1,
-            "inputs": [],
-            "outputs": [
-                {
-                    "name": "output"
-                }
-            ],
-            "type": 128,
-            "mode": 0,
-            "systemValue": 1,
-            "animationType": 0,
-            "min": 0,
-            "max": 0,
-            "isBoolean": false,
-            "matrixMode": 0,
-            "isConstant": false,
-            "groupInInspector": "",
-            "convertToGammaSpace": false,
-            "convertToLinearSpace": false
-        },
-        {
-            "customType": "BABYLON.InputBlock",
-            "id": 216,
-            "name": "ViewProjection",
-            "comments": "",
-            "visibleInInspector": false,
-            "visibleOnFrame": false,
-            "target": 1,
-            "inputs": [],
-            "outputs": [
-                {
-                    "name": "output"
-                }
-            ],
-            "type": 128,
-            "mode": 0,
-            "systemValue": 4,
-            "animationType": 0,
-            "min": 0,
-            "max": 0,
-            "isBoolean": false,
-            "matrixMode": 0,
-            "isConstant": false,
-            "groupInInspector": "",
-            "convertToGammaSpace": false,
-            "convertToLinearSpace": false
-        },
-        {
-            "customType": "BABYLON.FragmentOutputBlock",
-            "id": 217,
-            "name": "FragmentOutput",
-            "comments": "",
-            "visibleInInspector": false,
-            "visibleOnFrame": false,
-            "target": 2,
-            "inputs": [
-                {
-                    "name": "rgba",
-                    "displayName": "rgba"
-                },
-                {
-                    "name": "rgb",
-                    "displayName": "rgb",
-                    "inputName": "rgb",
-                    "targetBlockId": 218,
-                    "targetConnectionName": "output",
-                    "isExposedOnFrame": true,
-                    "exposedPortPosition": -1
-                },
-                {
-                    "name": "a",
-                    "displayName": "a",
-                    "inputName": "a",
-                    "targetBlockId": 249,
-                    "targetConnectionName": "output",
-                    "isExposedOnFrame": true,
-                    "exposedPortPosition": -1
-                }
-            ],
-            "outputs": [],
-            "convertToGammaSpace": false,
-            "convertToLinearSpace": false
-        },
-        {
-            "customType": "BABYLON.LerpBlock",
-            "id": 218,
-            "name": "Lerp",
-            "comments": "",
-            "visibleInInspector": false,
-            "visibleOnFrame": false,
-            "target": 4,
-            "inputs": [
-                {
-                    "name": "left",
-                    "displayName": "left",
-                    "inputName": "left",
-                    "targetBlockId": 219,
-                    "targetConnectionName": "rgb",
-                    "isExposedOnFrame": true,
-                    "exposedPortPosition": -1
-                },
-                {
-                    "name": "right",
-                    "displayName": "right",
-                    "inputName": "right",
-                    "targetBlockId": 247,
-                    "targetConnectionName": "rgb",
-                    "isExposedOnFrame": true,
-                    "exposedPortPosition": -1
-                },
-                {
-                    "name": "gradient",
-                    "displayName": "gradient",
-                    "inputName": "gradient",
-                    "targetBlockId": 247,
-                    "targetConnectionName": "a",
-                    "isExposedOnFrame": true,
-                    "exposedPortPosition": -1
-                }
-            ],
-            "outputs": [
-                {
-                    "name": "output",
-                    "displayName": "output"
-                }
-            ]
-        },
-        {
-            "customType": "BABYLON.ColorSplitterBlock",
-            "id": 219,
-            "name": "ColorSplitter",
-            "comments": "",
-            "visibleInInspector": false,
-            "visibleOnFrame": false,
-            "target": 4,
-            "inputs": [
-                {
-                    "name": "rgba",
-                    "displayName": "rgba",
-                    "inputName": "rgba",
-                    "targetBlockId": 220,
-                    "targetConnectionName": "output",
-                    "isExposedOnFrame": true,
-                    "exposedPortPosition": -1
-                },
-                {
-                    "name": "rgb ",
-                    "displayName": "rgb ",
-                    "isExposedOnFrame": true,
-                    "exposedPortPosition": 3
-                }
-            ],
-            "outputs": [
-                {
-                    "name": "rgb",
-                    "displayName": "rgb"
-                },
-                {
-                    "name": "r",
-                    "displayName": "r"
-                },
-                {
-                    "name": "g",
-                    "displayName": "g"
-                },
-                {
-                    "name": "b",
-                    "displayName": "b"
-                },
-                {
-                    "name": "a",
-                    "displayName": "a"
-                }
-            ]
-        },
-        {
-            "customType": "BABYLON.MaxBlock",
-            "id": 220,
-            "name": "Max",
-            "comments": "",
-            "visibleInInspector": false,
-            "visibleOnFrame": false,
-            "target": 4,
-            "inputs": [
-                {
-                    "name": "left",
-                    "displayName": "left",
-                    "inputName": "left",
-                    "targetBlockId": 221,
-                    "targetConnectionName": "rgba",
-                    "isExposedOnFrame": true,
-                    "exposedPortPosition": -1
-                },
-                {
-                    "name": "right",
-                    "displayName": "right",
-                    "inputName": "right",
-                    "targetBlockId": 246,
-                    "targetConnectionName": "output",
-                    "isExposedOnFrame": true,
-                    "exposedPortPosition": -1
-                }
-            ],
-            "outputs": [
-                {
-                    "name": "output",
-                    "displayName": "output"
-                }
-            ]
-        },
-        {
-            "customType": "BABYLON.ColorMergerBlock",
-            "id": 221,
-            "name": "ColorMerger",
-            "comments": "",
-            "visibleInInspector": false,
-            "visibleOnFrame": false,
-            "target": 4,
-            "inputs": [
-                {
-                    "name": "rgb ",
-                    "displayName": "rgb "
-                },
-                {
-                    "name": "r",
-                    "displayName": "r",
-                    "inputName": "r",
-                    "targetBlockId": 222,
-                    "targetConnectionName": "output",
-                    "isExposedOnFrame": true,
-                    "exposedPortPosition": 0
-                },
-                {
-                    "name": "g",
-                    "displayName": "g",
-                    "inputName": "g",
-                    "targetBlockId": 222,
-                    "targetConnectionName": "output",
-                    "isExposedOnFrame": true,
-                    "exposedPortPosition": 1
-                },
-                {
-                    "name": "b",
-                    "displayName": "b",
-                    "inputName": "b",
-                    "targetBlockId": 222,
-                    "targetConnectionName": "output",
-                    "isExposedOnFrame": true,
-                    "exposedPortPosition": 2
-                },
-                {
-                    "name": "a",
-                    "displayName": "a"
-                }
-            ],
-            "outputs": [
-                {
-                    "name": "rgba",
-                    "displayName": "rgba"
-                },
-                {
-                    "name": "rgb",
-                    "displayName": "rgb"
-                }
-            ],
-            "rSwizzle": "r",
-            "gSwizzle": "g",
-            "bSwizzle": "b",
-            "aSwizzle": "a"
-        },
-        {
-            "customType": "BABYLON.MaxBlock",
-            "id": 222,
-            "name": "Max",
-            "comments": "",
-            "visibleInInspector": false,
-            "visibleOnFrame": false,
-            "target": 4,
-            "inputs": [
-                {
-                    "name": "left",
-                    "inputName": "left",
-                    "targetBlockId": 223,
-                    "targetConnectionName": "output",
-                    "isExposedOnFrame": true,
-                    "exposedPortPosition": -1
-                },
-                {
-                    "name": "right",
-                    "inputName": "right",
-                    "targetBlockId": 244,
-                    "targetConnectionName": "output",
-                    "isExposedOnFrame": true,
-                    "exposedPortPosition": -1
-                }
-            ],
-            "outputs": [
-                {
-                    "name": "output"
-                }
-            ]
-        },
-        {
-            "customType": "BABYLON.MultiplyBlock",
-            "id": 223,
-            "name": "Multiply",
-            "comments": "",
-            "visibleInInspector": false,
-            "visibleOnFrame": false,
-            "target": 4,
-            "inputs": [
-                {
-                    "name": "left",
-                    "inputName": "left",
-                    "targetBlockId": 224,
-                    "targetConnectionName": "output",
-                    "isExposedOnFrame": true,
-                    "exposedPortPosition": -1
-                },
-                {
-                    "name": "right",
-                    "inputName": "right",
-                    "targetBlockId": 241,
-                    "targetConnectionName": "output",
-                    "isExposedOnFrame": true,
-                    "exposedPortPosition": -1
-                }
-            ],
-            "outputs": [
-                {
-                    "name": "output"
-                }
-            ]
-        },
-        {
-            "customType": "BABYLON.OneMinusBlock",
-            "id": 224,
-            "name": "One minus",
-            "comments": "",
-            "visibleInInspector": false,
-            "visibleOnFrame": false,
-            "target": 4,
-            "inputs": [
-                {
-                    "name": "input",
-                    "inputName": "input",
-                    "targetBlockId": 225,
-                    "targetConnectionName": "output",
-                    "isExposedOnFrame": true,
-                    "exposedPortPosition": -1
-                }
-            ],
-            "outputs": [
-                {
-                    "name": "output"
-                }
-            ]
-        },
-        {
-            "customType": "BABYLON.ModBlock",
-            "id": 225,
-            "name": "Mod",
-            "comments": "",
-            "visibleInInspector": false,
-            "visibleOnFrame": false,
-            "target": 4,
-            "inputs": [
-                {
-                    "name": "left",
-                    "inputName": "left",
-                    "targetBlockId": 226,
-                    "targetConnectionName": "output",
-                    "isExposedOnFrame": true,
-                    "exposedPortPosition": -1
-                },
-                {
-                    "name": "right",
-                    "inputName": "right",
-                    "targetBlockId": 240,
-                    "targetConnectionName": "output",
-                    "isExposedOnFrame": true,
-                    "exposedPortPosition": -1
-                }
-            ],
-            "outputs": [
-                {
-                    "name": "output"
-                }
-            ]
-        },
-        {
-            "customType": "BABYLON.TrigonometryBlock",
-            "id": 226,
-            "name": "Round",
-            "comments": "",
-            "visibleInInspector": false,
-            "visibleOnFrame": false,
-            "target": 4,
-            "inputs": [
-                {
-                    "name": "input",
-                    "inputName": "input",
-                    "targetBlockId": 227,
-                    "targetConnectionName": "output",
-                    "isExposedOnFrame": true,
-                    "exposedPortPosition": -1
-                }
-            ],
-            "outputs": [
-                {
-                    "name": "output"
-                }
-            ],
-            "operation": 5
-        },
-        {
-            "customType": "BABYLON.MultiplyBlock",
-            "id": 227,
-            "name": "Multiply",
-            "comments": "",
-            "visibleInInspector": false,
-            "visibleOnFrame": false,
-            "target": 4,
-            "inputs": [
-                {
-                    "name": "left",
-                    "inputName": "left",
-                    "targetBlockId": 228,
-                    "targetConnectionName": "x",
-                    "isExposedOnFrame": true,
-                    "exposedPortPosition": -1
-                },
-                {
-                    "name": "right",
-                    "inputName": "right",
-                    "targetBlockId": 236,
-                    "targetConnectionName": "output",
-                    "isExposedOnFrame": true,
-                    "exposedPortPosition": -1
-                }
-            ],
-            "outputs": [
-                {
-                    "name": "output"
-                }
-            ]
-        },
-        {
-            "customType": "BABYLON.VectorSplitterBlock",
-            "id": 228,
-            "name": "VectorSplitter",
-            "comments": "",
-            "visibleInInspector": false,
-            "visibleOnFrame": false,
-            "target": 4,
-            "inputs": [
-                {
-                    "name": "xyzw"
-                },
-                {
-                    "name": "xyz "
-                },
-                {
-                    "name": "xy ",
-                    "inputName": "xy ",
-                    "targetBlockId": 229,
-                    "targetConnectionName": "output",
-                    "isExposedOnFrame": true,
-                    "exposedPortPosition": -1
-                }
-            ],
-            "outputs": [
-                {
-                    "name": "xyz"
-                },
-                {
-                    "name": "xy"
-                },
-                {
-                    "name": "zw"
-                },
-                {
-                    "name": "x"
-                },
-                {
-                    "name": "y"
-                },
-                {
-                    "name": "z"
-                },
-                {
-                    "name": "w"
-                }
-            ]
-        },
-        {
-            "customType": "BABYLON.AddBlock",
-            "id": 229,
-            "name": "Add",
-            "comments": "",
-            "visibleInInspector": false,
-            "visibleOnFrame": false,
-            "target": 4,
-            "inputs": [
-                {
-                    "name": "left",
-                    "inputName": "left",
-                    "targetBlockId": 230,
-                    "targetConnectionName": "output",
-                    "isExposedOnFrame": true,
-                    "exposedPortPosition": -1
-                },
-                {
-                    "name": "right",
-                    "inputName": "right",
-                    "targetBlockId": 235,
-                    "targetConnectionName": "output",
-                    "isExposedOnFrame": true,
-                    "exposedPortPosition": -1
-                }
-            ],
-            "outputs": [
-                {
-                    "name": "output"
-                }
-            ]
-        },
-        {
-            "customType": "BABYLON.MultiplyBlock",
-            "id": 230,
-            "name": "Multiply",
-            "comments": "",
-            "visibleInInspector": false,
-            "visibleOnFrame": false,
-            "target": 4,
-            "inputs": [
-                {
-                    "name": "left",
-                    "inputName": "left",
-                    "targetBlockId": 231,
-                    "targetConnectionName": "output",
-                    "isExposedOnFrame": true,
-                    "exposedPortPosition": -1
-                },
-                {
-                    "name": "right",
-                    "inputName": "right",
-                    "targetBlockId": 235,
-                    "targetConnectionName": "output",
-                    "isExposedOnFrame": true,
-                    "exposedPortPosition": -1
-                }
-            ],
-            "outputs": [
-                {
-                    "name": "output"
-                }
-            ]
-        },
-        {
-            "customType": "BABYLON.DivideBlock",
-            "id": 231,
-            "name": "Divide",
-            "comments": "",
-            "visibleInInspector": false,
-            "visibleOnFrame": false,
-            "target": 4,
-            "inputs": [
-                {
-                    "name": "left",
-                    "inputName": "left",
-                    "targetBlockId": 232,
-                    "targetConnectionName": "xy",
-                    "isExposedOnFrame": true,
-                    "exposedPortPosition": -1
-                },
-                {
-                    "name": "right",
-                    "inputName": "right",
-                    "targetBlockId": 234,
-                    "targetConnectionName": "xy",
-                    "isExposedOnFrame": true,
-                    "exposedPortPosition": -1
-                }
-            ],
-            "outputs": [
-                {
-                    "name": "output"
-                }
-            ]
-        },
-        {
-            "customType": "BABYLON.VectorMergerBlock",
-            "id": 232,
-            "name": "VectorMerger",
-            "comments": "",
-            "visibleInInspector": false,
-            "visibleOnFrame": false,
-            "target": 4,
-            "inputs": [
-                {
-                    "name": "xyzw "
-                },
-                {
-                    "name": "xyz "
-                },
-                {
-                    "name": "xy "
-                },
-                {
-                    "name": "zw "
-                },
-                {
-                    "name": "x",
-                    "inputName": "x",
-                    "targetBlockId": 233,
-                    "targetConnectionName": "x",
-                    "isExposedOnFrame": true,
-                    "exposedPortPosition": -1
-                },
-                {
-                    "name": "y",
-                    "inputName": "y",
-                    "targetBlockId": 233,
-                    "targetConnectionName": "y",
-                    "isExposedOnFrame": true,
-                    "exposedPortPosition": -1
-                },
-                {
-                    "name": "z"
-                },
-                {
-                    "name": "w"
-                }
-            ],
-            "outputs": [
-                {
-                    "name": "xyzw"
-                },
-                {
-                    "name": "xyz"
-                },
-                {
-                    "name": "xy"
-                },
-                {
-                    "name": "zw"
-                }
-            ],
-            "xSwizzle": "x",
-            "ySwizzle": "y",
-            "zSwizzle": "z",
-            "wSwizzle": "w"
-        },
-        {
-            "customType": "BABYLON.VectorSplitterBlock",
-            "id": 233,
-            "name": "VectorSplitter",
-            "comments": "",
-            "visibleInInspector": false,
-            "visibleOnFrame": false,
-            "target": 4,
-            "inputs": [
-                {
-                    "name": "xyzw",
-                    "inputName": "xyzw",
-                    "targetBlockId": 212,
-                    "targetConnectionName": "output",
-                    "isExposedOnFrame": true,
-                    "exposedPortPosition": -1
-                },
-                {
-                    "name": "xyz ",
-                    "isExposedOnFrame": true,
-                    "exposedPortPosition": -1
-                },
-                {
-                    "name": "xy "
-                }
-            ],
-            "outputs": [
-                {
-                    "name": "xyz"
-                },
-                {
-                    "name": "xy"
-                },
-                {
-                    "name": "zw"
-                },
-                {
-                    "name": "x"
-                },
-                {
-                    "name": "y"
-                },
-                {
-                    "name": "z"
-                },
-                {
-                    "name": "w"
-                }
-            ]
-        },
-        {
-            "customType": "BABYLON.VectorMergerBlock",
-            "id": 234,
-            "name": "VectorMerger",
-            "comments": "",
-            "visibleInInspector": false,
-            "visibleOnFrame": false,
-            "target": 4,
-            "inputs": [
-                {
-                    "name": "xyzw "
-                },
-                {
-                    "name": "xyz "
-                },
-                {
-                    "name": "xy "
-                },
-                {
-                    "name": "zw "
-                },
-                {
-                    "name": "x",
-                    "inputName": "x",
-                    "targetBlockId": 233,
-                    "targetConnectionName": "w",
-                    "isExposedOnFrame": true,
-                    "exposedPortPosition": -1
-                },
-                {
-                    "name": "y",
-                    "inputName": "y",
-                    "targetBlockId": 233,
-                    "targetConnectionName": "w",
-                    "isExposedOnFrame": true,
-                    "exposedPortPosition": -1
-                },
-                {
-                    "name": "z"
-                },
-                {
-                    "name": "w"
-                }
-            ],
-            "outputs": [
-                {
-                    "name": "xyzw"
-                },
-                {
-                    "name": "xyz"
-                },
-                {
-                    "name": "xy"
-                },
-                {
-                    "name": "zw"
-                }
-            ],
-            "xSwizzle": "x",
-            "ySwizzle": "y",
-            "zSwizzle": "z",
-            "wSwizzle": "w"
-        },
-        {
-            "customType": "BABYLON.InputBlock",
-            "id": 235,
-            "name": "Vector2",
-            "comments": "",
-            "visibleInInspector": false,
-            "visibleOnFrame": false,
-            "target": 1,
-            "inputs": [],
-            "outputs": [
-                {
-                    "name": "output"
-                }
-            ],
-            "type": 4,
-            "mode": 0,
-            "animationType": 0,
-            "min": 0,
-            "max": 0,
-            "isBoolean": false,
-            "matrixMode": 0,
-            "isConstant": false,
-            "groupInInspector": "",
-            "convertToGammaSpace": false,
-            "convertToLinearSpace": false,
-            "valueType": "BABYLON.Vector2",
-            "value": [
-                0.5,
-                0.5
-            ]
-        },
-        {
-            "customType": "BABYLON.MultiplyBlock",
-            "id": 236,
-            "name": "Multiply",
-            "comments": "",
-            "visibleInInspector": false,
-            "visibleOnFrame": false,
-            "target": 4,
-            "inputs": [
-                {
-                    "name": "left",
-                    "inputName": "left",
-                    "targetBlockId": 237,
-                    "targetConnectionName": "output",
-                    "isExposedOnFrame": true,
-                    "exposedPortPosition": -1
-                },
-                {
-                    "name": "right",
-                    "inputName": "right",
-                    "targetBlockId": 239,
-                    "targetConnectionName": "output",
-                    "isExposedOnFrame": true,
-                    "exposedPortPosition": -1
-                }
-            ],
-            "outputs": [
-                {
-                    "name": "output"
-                }
-            ]
-        },
-        {
-            "customType": "BABYLON.DivideBlock",
-            "id": 237,
-            "name": "Divide",
-            "comments": "",
-            "visibleInInspector": false,
-            "visibleOnFrame": false,
-            "target": 4,
-            "inputs": [
-                {
-                    "name": "left",
-                    "inputName": "left",
-                    "targetBlockId": 238,
-                    "targetConnectionName": "x",
-                    "isExposedOnFrame": true,
-                    "exposedPortPosition": -1
-                },
-                {
-                    "name": "right",
-                    "inputName": "right",
-                    "targetBlockId": 238,
-                    "targetConnectionName": "y",
-                    "isExposedOnFrame": true,
-                    "exposedPortPosition": -1
-                }
-            ],
-            "outputs": [
-                {
-                    "name": "output"
-                }
-            ]
-        },
-        {
-            "customType": "BABYLON.ScreenSizeBlock",
-            "id": 238,
-            "name": "ScreenSize",
-            "comments": "",
-            "visibleInInspector": false,
-            "visibleOnFrame": false,
-            "target": 2,
-            "inputs": [],
-            "outputs": [
-                {
-                    "name": "xy"
-                },
-                {
-                    "name": "x"
-                },
-                {
-                    "name": "y"
-                }
-            ]
-        },
-        {
-            "customType": "BABYLON.InputBlock",
-            "id": 239,
-            "name": "resolution",
-            "comments": "",
-            "visibleInInspector": false,
-            "visibleOnFrame": false,
-            "target": 1,
-            "inputs": [],
-            "outputs": [
-                {
-                    "name": "output"
-                }
-            ],
-            "type": 1,
-            "mode": 0,
-            "animationType": 0,
-            "min": 0,
-            "max": 0,
-            "isBoolean": false,
-            "matrixMode": 0,
-            "isConstant": false,
-            "groupInInspector": "",
-            "convertToGammaSpace": false,
-            "convertToLinearSpace": false,
-            "valueType": "number",
-            "value": 100
-        },
-        {
-            "customType": "BABYLON.InputBlock",
-            "id": 240,
-            "name": "Float",
-            "comments": "",
-            "visibleInInspector": false,
-            "visibleOnFrame": false,
-            "target": 1,
-            "inputs": [],
-            "outputs": [
-                {
-                    "name": "output"
-                }
-            ],
-            "type": 1,
-            "mode": 0,
-            "animationType": 0,
-            "min": 0,
-            "max": 0,
-            "isBoolean": false,
-            "matrixMode": 0,
-            "isConstant": false,
-            "groupInInspector": "",
-            "convertToGammaSpace": false,
-            "convertToLinearSpace": false,
-            "valueType": "number",
-            "value": 2
-        },
-        {
-            "customType": "BABYLON.ModBlock",
-            "id": 241,
-            "name": "Mod",
-            "comments": "",
-            "visibleInInspector": false,
-            "visibleOnFrame": false,
-            "target": 4,
-            "inputs": [
-                {
-                    "name": "left",
-                    "inputName": "left",
-                    "targetBlockId": 242,
-                    "targetConnectionName": "output",
-                    "isExposedOnFrame": true,
-                    "exposedPortPosition": -1
-                },
-                {
-                    "name": "right",
-                    "inputName": "right",
-                    "targetBlockId": 240,
-                    "targetConnectionName": "output",
-                    "isExposedOnFrame": true,
-                    "exposedPortPosition": -1
-                }
-            ],
-            "outputs": [
-                {
-                    "name": "output"
-                }
-            ]
-        },
-        {
-            "customType": "BABYLON.TrigonometryBlock",
-            "id": 242,
-            "name": "Round",
-            "comments": "",
-            "visibleInInspector": false,
-            "visibleOnFrame": false,
-            "target": 4,
-            "inputs": [
-                {
-                    "name": "input",
-                    "inputName": "input",
-                    "targetBlockId": 243,
-                    "targetConnectionName": "output",
-                    "isExposedOnFrame": true,
-                    "exposedPortPosition": -1
-                }
-            ],
-            "outputs": [
-                {
-                    "name": "output"
-                }
-            ],
-            "operation": 5
-        },
-        {
-            "customType": "BABYLON.MultiplyBlock",
-            "id": 243,
-            "name": "Multiply",
-            "comments": "",
-            "visibleInInspector": false,
-            "visibleOnFrame": false,
-            "target": 4,
-            "inputs": [
-                {
-                    "name": "left",
-                    "inputName": "left",
-                    "targetBlockId": 228,
-                    "targetConnectionName": "y",
-                    "isExposedOnFrame": true,
-                    "exposedPortPosition": -1
-                },
-                {
-                    "name": "right",
-                    "inputName": "right",
-                    "targetBlockId": 239,
-                    "targetConnectionName": "output",
-                    "isExposedOnFrame": true,
-                    "exposedPortPosition": -1
-                }
-            ],
-            "outputs": [
-                {
-                    "name": "output"
-                }
-            ]
-        },
-        {
-            "customType": "BABYLON.MultiplyBlock",
-            "id": 244,
-            "name": "Multiply",
-            "comments": "",
-            "visibleInInspector": false,
-            "visibleOnFrame": false,
-            "target": 4,
-            "inputs": [
-                {
-                    "name": "left",
-                    "inputName": "left",
-                    "targetBlockId": 225,
-                    "targetConnectionName": "output",
-                    "isExposedOnFrame": true,
-                    "exposedPortPosition": -1
-                },
-                {
-                    "name": "right",
-                    "inputName": "right",
-                    "targetBlockId": 245,
-                    "targetConnectionName": "output",
-                    "isExposedOnFrame": true,
-                    "exposedPortPosition": -1
-                }
-            ],
-            "outputs": [
-                {
-                    "name": "output"
-                }
-            ]
-        },
-        {
-            "customType": "BABYLON.OneMinusBlock",
-            "id": 245,
-            "name": "One minus",
-            "comments": "",
-            "visibleInInspector": false,
-            "visibleOnFrame": false,
-            "target": 4,
-            "inputs": [
-                {
-                    "name": "input",
-                    "inputName": "input",
-                    "targetBlockId": 241,
-                    "targetConnectionName": "output",
-                    "isExposedOnFrame": true,
-                    "exposedPortPosition": -1
-                }
-            ],
-            "outputs": [
-                {
-                    "name": "output"
-                }
-            ]
-        },
-        {
-            "customType": "BABYLON.InputBlock",
-            "id": 246,
-            "name": "Color4",
-            "comments": "",
-            "visibleInInspector": false,
-            "visibleOnFrame": false,
-            "target": 1,
-            "inputs": [],
-            "outputs": [
-                {
-                    "name": "output"
-                }
-            ],
-            "type": 64,
-            "mode": 0,
-            "animationType": 0,
-            "min": 0,
-            "max": 0,
-            "isBoolean": false,
-            "matrixMode": 0,
-            "isConstant": false,
-            "groupInInspector": "",
-            "convertToGammaSpace": false,
-            "convertToLinearSpace": false,
-            "valueType": "BABYLON.Color4",
-            "value": [
-                0.8862745098039215,
-                0.8862745098039215,
-                0.8862745098039215,
-                1
-            ]
-        },
-        {
-            "customType": "BABYLON.TextureBlock",
-            "id": 247,
-            "name": "Texture",
-            "comments": "",
-            "visibleInInspector": false,
-            "visibleOnFrame": false,
-            "target": 3,
-            "inputs": [
-                {
-                    "name": "uv",
-                    "displayName": "uv",
-                    "inputName": "uv",
-                    "targetBlockId": 248,
-                    "targetConnectionName": "output",
-                    "isExposedOnFrame": true,
-                    "exposedPortPosition": -1
-                },
-                {
-                    "name": "source",
-                    "displayName": "source"
-                }
-            ],
-            "outputs": [
-                {
-                    "name": "rgba",
-                    "displayName": "rgba"
-                },
-                {
-                    "name": "rgb",
-                    "displayName": "rgb"
-                },
-                {
-                    "name": "r",
-                    "displayName": "r"
-                },
-                {
-                    "name": "g",
-                    "displayName": "g"
-                },
-                {
-                    "name": "b",
-                    "displayName": "b"
-                },
-                {
-                    "name": "a",
-                    "displayName": "a"
-                },
-                {
-                    "name": "level",
-                    "displayName": "level"
-                }
-            ],
-            "convertToGammaSpace": false,
-            "convertToLinearSpace": false,
-            "fragmentOnly": false,
-            "disableLevelMultiplication": false
-        },
-        {
-            "customType": "BABYLON.InputBlock",
-            "id": 248,
-            "name": "uv",
-            "comments": "",
-            "visibleInInspector": false,
-            "visibleOnFrame": false,
-            "target": 1,
-            "inputs": [],
-            "outputs": [
-                {
-                    "name": "output"
-                }
-            ],
-            "type": 4,
-            "mode": 1,
-            "animationType": 0,
-            "min": 0,
-            "max": 0,
-            "isBoolean": false,
-            "matrixMode": 0,
-            "isConstant": false,
-            "groupInInspector": "",
-            "convertToGammaSpace": false,
-            "convertToLinearSpace": false
-        },
-        {
-            "customType": "BABYLON.AddBlock",
-            "id": 249,
-            "name": "Add",
-            "comments": "",
-            "visibleInInspector": false,
-            "visibleOnFrame": false,
-            "target": 4,
-            "inputs": [
-                {
-                    "name": "left",
-                    "displayName": "left",
-                    "inputName": "left",
-                    "targetBlockId": 219,
-                    "targetConnectionName": "a",
-                    "isExposedOnFrame": true,
-                    "exposedPortPosition": -1
-                },
-                {
-                    "name": "right",
-                    "displayName": "right",
-                    "inputName": "right",
-                    "targetBlockId": 247,
-                    "targetConnectionName": "a",
-                    "isExposedOnFrame": true,
-                    "exposedPortPosition": -1
-                }
-            ],
-            "outputs": [
-                {
-                    "name": "output",
-                    "displayName": "output"
-                }
-            ]
-        }
-    ]
-};
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ArtBoardComponent", function() { return ArtBoardComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _coordinateHelper__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./coordinateHelper */ "./diagram/coordinateHelper.tsx");
+
+
+
+var ArtBoardComponent = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ArtBoardComponent, _super);
+    function ArtBoardComponent(props) {
+        var _this = _super.call(this, props) || this;
+        _this.state = {
+            bounds: new _coordinateHelper__WEBPACK_IMPORTED_MODULE_2__["Rect"](0, 0, 0, 0)
+        };
+        _this.props.globalState.onArtBoardUpdateRequiredObservable.add(function () { return _this.update(); });
+        return _this;
+    }
+    ArtBoardComponent.prototype.update = function () {
+        var visibleRegion = this.props.globalState.workbench.visibleRegionContainer;
+        if (!visibleRegion)
+            return;
+        var localBounds = _coordinateHelper__WEBPACK_IMPORTED_MODULE_2__["CoordinateHelper"].computeLocalBounds(visibleRegion);
+        var topLeftRTT = _coordinateHelper__WEBPACK_IMPORTED_MODULE_2__["CoordinateHelper"].nodeToRTTSpace(visibleRegion, localBounds.left, localBounds.top, undefined);
+        var topLeftCanvas = _coordinateHelper__WEBPACK_IMPORTED_MODULE_2__["CoordinateHelper"].rttToCanvasSpace(topLeftRTT.x, topLeftRTT.y);
+        var bottomRightRTT = _coordinateHelper__WEBPACK_IMPORTED_MODULE_2__["CoordinateHelper"].nodeToRTTSpace(visibleRegion, localBounds.right, localBounds.bottom, undefined);
+        var bottomRightCanvas = _coordinateHelper__WEBPACK_IMPORTED_MODULE_2__["CoordinateHelper"].rttToCanvasSpace(bottomRightRTT.x, bottomRightRTT.y);
+        this.setState({
+            bounds: new _coordinateHelper__WEBPACK_IMPORTED_MODULE_2__["Rect"](topLeftCanvas.x, topLeftCanvas.y, bottomRightCanvas.x, bottomRightCanvas.y)
+        });
+    };
+    ArtBoardComponent.prototype.render = function () {
+        var style = {
+            top: "".concat(this.state.bounds.top, "px"),
+            left: "".concat(this.state.bounds.left, "px"),
+            width: "".concat(this.state.bounds.width, "px"),
+            height: "".concat(this.state.bounds.height, "px")
+        };
+        return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "artboard-stroke", style: style }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "artboard-background", style: style }));
+    };
+    return ArtBoardComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
 
 
 /***/ }),
 
-/***/ "./diagram/guiGizmo.tsx":
-/*!******************************!*\
-  !*** ./diagram/guiGizmo.tsx ***!
-  \******************************/
-/*! exports provided: GuiGizmoComponent */
+/***/ "./diagram/coordinateHelper.tsx":
+/*!**************************************!*\
+  !*** ./diagram/coordinateHelper.tsx ***!
+  \**************************************/
+/*! exports provided: Rect, CoordinateHelper */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "GuiGizmoComponent", function() { return GuiGizmoComponent; });
-/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs-gui/2D/controls/control */ "babylonjs-gui/2D/controls/button");
-/* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Maths/math.axis */ "babylonjs/Misc/observable");
-/* harmony import */ var babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Rect", function() { return Rect; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "CoordinateHelper", function() { return CoordinateHelper; });
+/* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs-gui/2D/controls/control */ "babylonjs-gui/2D/controls/button");
+/* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Maths/math.vector */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__);
 
 
 
-
-
-
-
-
-__webpack_require__(/*! ./workbenchCanvas.scss */ "./diagram/workbenchCanvas.scss");
-var gizmoPivotIcon = __webpack_require__(/*! ../../public/imgs/gizmoPivotIcon.svg */ "../public/imgs/gizmoPivotIcon.svg");
-// which side of the bounding box are we on?
-var ScalePointPosition;
-(function (ScalePointPosition) {
-    ScalePointPosition[ScalePointPosition["Top"] = -1] = "Top";
-    ScalePointPosition[ScalePointPosition["Left"] = -1] = "Left";
-    ScalePointPosition[ScalePointPosition["Center"] = 0] = "Center";
-    ScalePointPosition[ScalePointPosition["Right"] = 1] = "Right";
-    ScalePointPosition[ScalePointPosition["Bottom"] = 1] = "Bottom";
-})(ScalePointPosition || (ScalePointPosition = {}));
 var Rect = /** @class */ (function () {
     function Rect(left, top, right, bottom) {
         this.left = left;
@@ -48076,8 +46478,8 @@ var Rect = /** @class */ (function () {
     }
     Object.defineProperty(Rect.prototype, "center", {
         get: function () {
-            var topLeft = new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"](this.left, this.top);
-            return topLeft.addInPlace(new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"](this.right, this.bottom).subtractInPlace(topLeft).multiplyByFloats(0.5, 0.5));
+            var topLeft = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector2"](this.left, this.top);
+            return topLeft.addInPlace(new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector2"](this.right, this.bottom).subtractInPlace(topLeft).multiplyByFloats(0.5, 0.5));
         },
         enumerable: false,
         configurable: true
@@ -48098,6 +46500,219 @@ var Rect = /** @class */ (function () {
     });
     return Rect;
 }());
+
+var roundFactor = 100;
+var round = function (value) { return Math.round(value * roundFactor) / roundFactor; };
+var CoordinateHelper = /** @class */ (function () {
+    function CoordinateHelper() {
+    }
+    /**
+     * Get the scaling of a specific GUI control
+     * @param node the node for which we are getting the scaling
+     * @param relative should we return only the relative scaling (relative to the parent)
+     * @returns an X,Y vector of the scaling
+     */
+    CoordinateHelper.getScale = function (node, relative) {
+        var x = node.scaleX;
+        var y = node.scaleY;
+        if (relative) {
+            return new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector2"](x, y);
+        }
+        var parent = node.parent;
+        while (parent) {
+            x *= parent.scaleX;
+            y *= parent.scaleY;
+            parent = parent.parent;
+        }
+        return new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector2"](x, y);
+    };
+    CoordinateHelper.getRotation = function (node, relative) {
+        // Gets rotate of a control account for all of it's parents rotations
+        var rotation = node.rotation;
+        if (relative) {
+            return rotation;
+        }
+        var parent = node.parent;
+        while (parent) {
+            rotation += parent.rotation;
+            parent = parent.parent;
+        }
+        return rotation;
+    };
+    /**
+     * This function calculates a local matrix for a node, including it's full transformation and pivot point
+     *
+     * @param node the node to calculate the matrix for
+     * @param useStoredValues should the stored (cached) values be used to calculate the matrix
+     * @returns a new matrix for the control
+     */
+    CoordinateHelper.getNodeMatrix = function (node, storedValues) {
+        var size = this.globalState.guiTexture.getSize();
+        // parent should always be defined, but stay safe
+        var parentWidth = node.parent ? node.parent._currentMeasure.width : size.width;
+        var parentHeight = node.parent ? node.parent._currentMeasure.height : size.height;
+        var x = 0;
+        var y = 0;
+        var width = storedValues ? storedValues.width : node.widthInPixels;
+        var height = storedValues ? storedValues.height : node.heightInPixels;
+        var left = storedValues ? storedValues.left : node.leftInPixels;
+        var top = storedValues ? storedValues.top : node.topInPixels;
+        switch (node.horizontalAlignment) {
+            case babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_0__["Control"].HORIZONTAL_ALIGNMENT_LEFT:
+                x = -(parentWidth - width) / 2;
+                break;
+            case babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_0__["Control"].HORIZONTAL_ALIGNMENT_RIGHT:
+                x = (parentWidth - width) / 2;
+                break;
+            case babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_0__["Control"].HORIZONTAL_ALIGNMENT_CENTER:
+                x = 0;
+                break;
+        }
+        switch (node.verticalAlignment) {
+            case babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_0__["Control"].VERTICAL_ALIGNMENT_TOP:
+                y = -(parentHeight - height) / 2;
+                break;
+            case babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_0__["Control"].VERTICAL_ALIGNMENT_BOTTOM:
+                y = (parentHeight - height) / 2;
+                break;
+            case babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_0__["Control"].VERTICAL_ALIGNMENT_CENTER:
+                y = 0;
+                break;
+        }
+        this.resetMatrixArray();
+        var m2d = this._matrixCache[0];
+        var translateTo = this._matrixCache[1];
+        // as this is used later it needs to persist
+        var resultMatrix = babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_0__["Matrix2D"].Identity();
+        // the pivot point around which the object transforms
+        var offsetX = width * node.transformCenterX - width / 2;
+        var offsetY = height * node.transformCenterY - height / 2;
+        // pivot changes this point's position! but only in legacy pivot mode
+        if (!node.descendantsOnlyPadding) {
+            // TODO - padding needs to also take scaling into account?
+            offsetX -= ((node.paddingRightInPixels - node.paddingLeftInPixels) * 1) / 2;
+            offsetY -= ((node.paddingBottomInPixels - node.paddingTopInPixels) * 1) / 2;
+        }
+        // Set the translation
+        babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_0__["Matrix2D"].TranslationToRef(x + left, y + top, translateTo);
+        // without parents scaling and rotation, calculate world matrix for each
+        var rotation = this.getRotation(node, true);
+        var scaling = this.getScale(node, true);
+        // COmpose doesn't actually translate, but creates a form of pivot in a specific position
+        babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_0__["Matrix2D"].ComposeToRef(-offsetX, -offsetY, rotation, scaling.x, scaling.y, null, m2d);
+        // actually compose the matrix
+        resultMatrix.multiplyToRef(m2d, resultMatrix);
+        resultMatrix.multiplyToRef(translateTo, resultMatrix);
+        return resultMatrix;
+    };
+    /**
+     * Using the node's tree, calculate its world matrix and return it
+     * @param node the node to calculate the matrix for
+     * @param useStoredValuesIfPossible used stored valued (cached when pointer down is clicked)
+     * @returns the world matrix for this node
+     */
+    CoordinateHelper.nodeToRTTWorldMatrix = function (node, storedValues) {
+        var _this = this;
+        var listOfNodes = [node];
+        var parent = node.parent;
+        var child = node;
+        while (parent) {
+            if (parent.typeName === "Grid") {
+                var cellInfo = parent.getChildCellInfo(child);
+                var cell = parent.cells[cellInfo];
+                listOfNodes.push(cell);
+            }
+            listOfNodes.push(parent);
+            child = parent;
+            parent = parent.parent;
+        }
+        this.resetMatrixArray();
+        var matrices = listOfNodes.map(function (node, index) { return _this.getNodeMatrix(node, index === 0 ? storedValues : undefined); });
+        return matrices.reduce(function (acc, cur) {
+            acc.multiplyToRef(cur, acc);
+            return acc;
+        }, this._matrixCache[2]);
+    };
+    CoordinateHelper.nodeToRTTSpace = function (node, x, y, reference, storedValues) {
+        if (reference === void 0) { reference = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector2"](); }
+        var worldMatrix = this.nodeToRTTWorldMatrix(node, storedValues);
+        worldMatrix.transformCoordinates(x, y, reference);
+        // round
+        reference.x = round(reference.x);
+        reference.y = round(reference.y);
+        return reference;
+    };
+    CoordinateHelper.rttToLocalNodeSpace = function (node, x, y, reference, storedValues) {
+        if (reference === void 0) { reference = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector2"](); }
+        var worldMatrix = this.nodeToRTTWorldMatrix(node, storedValues);
+        var inv = this._matrixCache[3];
+        worldMatrix.invertToRef(inv);
+        inv.transformCoordinates(x, y, reference);
+        // round
+        reference.x = round(reference.x);
+        reference.y = round(reference.y);
+        return reference;
+    };
+    CoordinateHelper.rttToCanvasSpace = function (x, y) {
+        var engine = this.globalState.workbench._scene.getEngine();
+        return new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector2"](x + engine.getRenderWidth() / 2, y + engine.getRenderHeight() / 2);
+    };
+    CoordinateHelper.mousePointerToRTTSpace = function (node, x, y) {
+        var scene = this.globalState.workbench._scene;
+        var engine = scene.getEngine();
+        return new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector2"]((x || scene.pointerX) - engine.getRenderWidth() / 2, (y || scene.pointerY) - engine.getRenderHeight() / 2);
+    };
+    CoordinateHelper.resetMatrixArray = function () {
+        this._matrixCache.forEach(function (matrix) {
+            babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_0__["Matrix2D"].IdentityToRef(matrix);
+        });
+    };
+    CoordinateHelper.computeLocalBounds = function (node) {
+        return new Rect(-node.widthInPixels * 0.5, -node.heightInPixels * 0.5, node.widthInPixels * 0.5, node.heightInPixels * 0.5);
+    };
+    CoordinateHelper._matrixCache = [babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_0__["Matrix2D"].Identity(), babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_0__["Matrix2D"].Identity(), babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_0__["Matrix2D"].Identity(), babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_0__["Matrix2D"].Identity()];
+    return CoordinateHelper;
+}());
+
+
+
+/***/ }),
+
+/***/ "./diagram/guiGizmo.tsx":
+/*!******************************!*\
+  !*** ./diagram/guiGizmo.tsx ***!
+  \******************************/
+/*! exports provided: GuiGizmoComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "GuiGizmoComponent", function() { return GuiGizmoComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs-gui/2D/controls/control */ "babylonjs-gui/2D/controls/button");
+/* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Maths/math.vector */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var _coordinateHelper__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./coordinateHelper */ "./diagram/coordinateHelper.tsx");
+
+
+
+
+
+
+__webpack_require__(/*! ./workbenchCanvas.scss */ "./diagram/workbenchCanvas.scss");
+var gizmoPivotIcon = __webpack_require__(/*! ../../public/imgs/gizmoPivotIcon.svg */ "../public/imgs/gizmoPivotIcon.svg");
+// which side of the bounding box are we on?
+var ScalePointPosition;
+(function (ScalePointPosition) {
+    ScalePointPosition[ScalePointPosition["Top"] = -1] = "Top";
+    ScalePointPosition[ScalePointPosition["Left"] = -1] = "Left";
+    ScalePointPosition[ScalePointPosition["Center"] = 0] = "Center";
+    ScalePointPosition[ScalePointPosition["Right"] = 1] = "Right";
+    ScalePointPosition[ScalePointPosition["Bottom"] = 1] = "Bottom";
+})(ScalePointPosition || (ScalePointPosition = {}));
 var roundFactor = 100;
 var round = function (value) { return Math.round(value * roundFactor) / roundFactor; };
 // this defines the lines that link the corners, making up the bounding box
@@ -48127,13 +46742,11 @@ var GuiGizmoComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(GuiGizmoComponent, _super);
     function GuiGizmoComponent(props) {
         var _this = _super.call(this, props) || this;
-        // used for scaling computations
-        _this._initH = 0;
-        _this._initW = 0;
-        _this._initX = 0;
-        _this._initY = 0;
-        _this._plane = babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Plane"].FromPositionAndNormal(babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Zero(), babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Axis"].Y);
         _this._onUp = function (evt) {
+            // if left is still pressed, don't release
+            if (evt && (evt.buttons & 1)) {
+                return;
+            }
             // cleanup on pointer up
             _this.setState({ scalePointDragging: -1, isRotating: false });
         };
@@ -48143,8 +46756,8 @@ var GuiGizmoComponent = /** @class */ (function (_super) {
             if (_this.state.scalePointDragging !== -1) {
                 if (selectedGuiNodes.length === 1) {
                     var node = selectedGuiNodes[0];
-                    var inRTT = _this._mousePointerToRTTSpace(node, scene.pointerX, scene.pointerY);
-                    var inNodeSpace = _this._rttToLocalNodeSpace(node, inRTT.x, inRTT.y, undefined, true);
+                    var inRTT = _coordinateHelper__WEBPACK_IMPORTED_MODULE_4__["CoordinateHelper"].mousePointerToRTTSpace(node, scene.pointerX, scene.pointerY);
+                    var inNodeSpace = _coordinateHelper__WEBPACK_IMPORTED_MODULE_4__["CoordinateHelper"].rttToLocalNodeSpace(node, inRTT.x, inRTT.y, undefined, _this._storedValues);
                     _this._dragLocalBounds(inNodeSpace);
                     _this._updateNodeFromLocalBounds(node, _this.state.scalePointDragging);
                     //convert to percentage
@@ -48169,11 +46782,8 @@ var GuiGizmoComponent = /** @class */ (function (_super) {
             _this.setState({ scalePointDragging: scalePointIndex });
             if (selectedGuiNodes.length > 0) {
                 var node = selectedGuiNodes[0];
-                _this._localBounds = _this._computeLocalBounds(node);
-                _this._initW = node.widthInPixels;
-                _this._initH = node.heightInPixels;
-                _this._initY = node.topInPixels;
-                _this._initX = node.leftInPixels;
+                _this._localBounds = _coordinateHelper__WEBPACK_IMPORTED_MODULE_4__["CoordinateHelper"].computeLocalBounds(node);
+                _this._storedValues = new _coordinateHelper__WEBPACK_IMPORTED_MODULE_4__["Rect"](node.leftInPixels, node.topInPixels, node.leftInPixels + node.widthInPixels, node.topInPixels + node.heightInPixels);
             }
         };
         _this._beginRotate = function () {
@@ -48182,10 +46792,10 @@ var GuiGizmoComponent = /** @class */ (function (_super) {
             var pivot;
             if (selectedGuiNodes.length === 1) {
                 var node = selectedGuiNodes[0];
-                var nodeSpace = new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"](node.transformCenterX, node.transformCenterY);
-                var rtt = _this._nodeToRTTSpace(node, nodeSpace.x, nodeSpace.y, undefined, false);
-                var canvas = _this._rttToCanvasSpace(rtt.x, rtt.y);
-                pivot = new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"](canvas.x, canvas.y);
+                var nodeSpace = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_2__["Vector2"](node.transformCenterX, node.transformCenterY);
+                var rtt = _coordinateHelper__WEBPACK_IMPORTED_MODULE_4__["CoordinateHelper"].nodeToRTTSpace(node, nodeSpace.x, nodeSpace.y, undefined);
+                var canvas = _coordinateHelper__WEBPACK_IMPORTED_MODULE_4__["CoordinateHelper"].rttToCanvasSpace(rtt.x, rtt.y);
+                pivot = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_2__["Vector2"](canvas.x, canvas.y);
             }
             else {
                 pivot = _this.state.canvasBounds.center;
@@ -48203,18 +46813,17 @@ var GuiGizmoComponent = /** @class */ (function (_super) {
             _this.setState({ isRotating: true });
         };
         _this.props.globalState.guiGizmo = _this;
-        _this._responsive = babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].ReadBoolean("Responsive", true);
-        _this._matrixCache = [babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__["Matrix2D"].Identity(), babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__["Matrix2D"].Identity(), babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__["Matrix2D"].Identity(), babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__["Matrix2D"].Identity()];
+        _this._responsive = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].ReadBoolean("Responsive", true);
         var scalePoints = [];
         for (var vertical = ScalePointPosition.Top; vertical <= ScalePointPosition.Bottom; vertical++) {
             for (var horizontal = ScalePointPosition.Left; horizontal <= ScalePointPosition.Right; horizontal++) {
                 var isPivot = horizontal === ScalePointPosition.Center && vertical === ScalePointPosition.Center;
-                scalePoints.push({ position: new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"](), horizontalPosition: horizontal, verticalPosition: vertical, rotation: 0, isPivot: isPivot });
+                scalePoints.push({ position: new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_2__["Vector2"](), horizontalPosition: horizontal, verticalPosition: vertical, rotation: 0, isPivot: isPivot });
             }
         }
-        _this._localBounds = new Rect(0, 0, 0, 0);
+        _this._localBounds = new _coordinateHelper__WEBPACK_IMPORTED_MODULE_4__["Rect"](0, 0, 0, 0);
         _this.state = {
-            canvasBounds: new Rect(0, 0, 0, 0),
+            canvasBounds: new _coordinateHelper__WEBPACK_IMPORTED_MODULE_4__["Rect"](0, 0, 0, 0),
             scalePoints: scalePoints,
             scalePointDragging: -1,
             isRotating: false
@@ -48242,11 +46851,11 @@ var GuiGizmoComponent = /** @class */ (function (_super) {
         if (selectedGuiNodes.length > 0 && (force || this.state.scalePointDragging !== -1)) {
             // Calculating the offsets for each scale point.
             var half_1 = 1 / 2;
-            var canvasBounds_1 = new Rect(Number.MAX_VALUE, Number.MAX_VALUE, 0, 0);
+            var canvasBounds_1 = new _coordinateHelper__WEBPACK_IMPORTED_MODULE_4__["Rect"](Number.MAX_VALUE, Number.MAX_VALUE, 0, 0);
             selectedGuiNodes.forEach(function (node) {
-                var localBounds = _this._computeLocalBounds(node);
+                var localBounds = _coordinateHelper__WEBPACK_IMPORTED_MODULE_4__["CoordinateHelper"].computeLocalBounds(node);
                 _this.state.scalePoints.forEach(function (scalePoint) {
-                    var nodeSpace = new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"]();
+                    var nodeSpace = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_2__["Vector2"]();
                     switch (scalePoint.horizontalPosition) {
                         case ScalePointPosition.Left:
                             nodeSpace.x = localBounds.left;
@@ -48276,8 +46885,8 @@ var GuiGizmoComponent = /** @class */ (function (_super) {
                         nodeSpace.x = node.widthInPixels * half_1 * pivotX;
                         nodeSpace.y = node.heightInPixels * half_1 * pivotY;
                     }
-                    var rtt = _this._nodeToRTTSpace(node, nodeSpace.x, nodeSpace.y, undefined, false);
-                    var canvas = _this._rttToCanvasSpace(rtt.x, rtt.y);
+                    var rtt = _coordinateHelper__WEBPACK_IMPORTED_MODULE_4__["CoordinateHelper"].nodeToRTTSpace(node, nodeSpace.x, nodeSpace.y, undefined);
+                    var canvas = _coordinateHelper__WEBPACK_IMPORTED_MODULE_4__["CoordinateHelper"].rttToCanvasSpace(rtt.x, rtt.y);
                     if (canvas.x < canvasBounds_1.left) {
                         canvasBounds_1.left = canvas.x;
                     }
@@ -48294,7 +46903,7 @@ var GuiGizmoComponent = /** @class */ (function (_super) {
                     if (selectedGuiNodes.length === 1) {
                         scalePoint.position.x = canvas.x;
                         scalePoint.position.y = canvas.y;
-                        scalePoint.rotation = _this.getRotation(node) * (180 / Math.PI);
+                        scalePoint.rotation = _coordinateHelper__WEBPACK_IMPORTED_MODULE_4__["CoordinateHelper"].getRotation(node) * (180 / Math.PI);
                     }
                 });
             });
@@ -48335,178 +46944,6 @@ var GuiGizmoComponent = /** @class */ (function (_super) {
             this.forceUpdate();
         }
     };
-    GuiGizmoComponent.prototype._resetMatrixArray = function () {
-        this._matrixCache.forEach(function (matrix) {
-            babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__["Matrix2D"].IdentityToRef(matrix);
-        });
-    };
-    /**
-     * This function calculates a local matrix for a node, including it's full transformation and pivot point
-     *
-     * @param node the node to calculate the matrix for
-     * @param useStoredValues should the stored (cached) values be used to calculate the matrix
-     * @returns a new matrix for the control
-     */
-    GuiGizmoComponent.prototype._getNodeMatrix = function (node, useStoredValues) {
-        var size = this.props.globalState.guiTexture.getSize();
-        // parent should always be defined, but stay safe
-        var parentWidth = node.parent ? node.parent._currentMeasure.width : size.width;
-        var parentHeight = node.parent ? node.parent._currentMeasure.height : size.height;
-        var x = 0;
-        var y = 0;
-        var width = useStoredValues ? this._initW : node.widthInPixels;
-        var height = useStoredValues ? this._initH : node.heightInPixels;
-        var left = useStoredValues ? this._initX : node.leftInPixels;
-        var top = useStoredValues ? this._initY : node.topInPixels;
-        switch (node.horizontalAlignment) {
-            case babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__["Control"].HORIZONTAL_ALIGNMENT_LEFT:
-                x = -(parentWidth - width) / 2;
-                break;
-            case babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__["Control"].HORIZONTAL_ALIGNMENT_RIGHT:
-                x = (parentWidth - width) / 2;
-                break;
-            case babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__["Control"].HORIZONTAL_ALIGNMENT_CENTER:
-                x = 0;
-                break;
-        }
-        switch (node.verticalAlignment) {
-            case babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__["Control"].VERTICAL_ALIGNMENT_TOP:
-                y = -(parentHeight - height) / 2;
-                break;
-            case babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__["Control"].VERTICAL_ALIGNMENT_BOTTOM:
-                y = (parentHeight - height) / 2;
-                break;
-            case babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__["Control"].VERTICAL_ALIGNMENT_CENTER:
-                y = 0;
-                break;
-        }
-        this._resetMatrixArray();
-        var m2d = this._matrixCache[0];
-        var translateTo = this._matrixCache[1];
-        // as this is used later it needs to persist
-        var resultMatrix = babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__["Matrix2D"].Identity();
-        // the pivot point around which the object transforms
-        var offsetX = width * node.transformCenterX - width / 2;
-        var offsetY = height * node.transformCenterY - height / 2;
-        // pivot changes this point's position! but only in legacy pivot mode
-        if (!node.descendantsOnlyPadding) {
-            // TODO - padding needs to also take scaling into account?
-            offsetX -= ((node.paddingRightInPixels - node.paddingLeftInPixels) * 1) / 2;
-            offsetY -= ((node.paddingBottomInPixels - node.paddingTopInPixels) * 1) / 2;
-        }
-        // Set the translation
-        babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__["Matrix2D"].TranslationToRef(x + left, y + top, translateTo);
-        // without parents scaling and rotation, calculate world matrix for each
-        var rotation = this.getRotation(node, true);
-        var scaling = this.getScale(node, true);
-        // COmpose doesn't actually translate, but creates a form of pivot in a specific position
-        babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__["Matrix2D"].ComposeToRef(-offsetX, -offsetY, rotation, scaling.x, scaling.y, null, m2d);
-        // actually compose the matrix
-        resultMatrix.multiplyToRef(m2d, resultMatrix);
-        resultMatrix.multiplyToRef(translateTo, resultMatrix);
-        return resultMatrix;
-    };
-    /**
-     * Using the node's tree, calculate its world matrix and return it
-     * @param node the node to calculate the matrix for
-     * @param useStoredValuesIfPossible used stored valued (cached when pointer down is clicked)
-     * @returns the world matrix for this node
-     */
-    GuiGizmoComponent.prototype._nodeToRTTWorldMatrix = function (node, useStoredValuesIfPossible) {
-        var _this = this;
-        var listOfNodes = [node];
-        var parent = node.parent;
-        var child = node;
-        while (parent) {
-            if (parent.typeName === "Grid") {
-                var cellInfo = parent.getChildCellInfo(child);
-                var cell = parent.cells[cellInfo];
-                listOfNodes.push(cell);
-            }
-            listOfNodes.push(parent);
-            child = parent;
-            parent = parent.parent;
-        }
-        this._resetMatrixArray();
-        var matrices = listOfNodes.map(function (node, index) { return _this._getNodeMatrix(node, index === 0 && _this.state.scalePointDragging !== -1 && useStoredValuesIfPossible); });
-        return matrices.reduce(function (acc, cur) {
-            acc.multiplyToRef(cur, acc);
-            return acc;
-        }, this._matrixCache[2]);
-    };
-    GuiGizmoComponent.prototype._nodeToRTTSpace = function (node, x, y, reference, useStoredValuesIfPossible) {
-        if (reference === void 0) { reference = new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"](); }
-        var worldMatrix = this._nodeToRTTWorldMatrix(node, useStoredValuesIfPossible);
-        worldMatrix.transformCoordinates(x, y, reference);
-        // round
-        reference.x = round(reference.x);
-        reference.y = round(reference.y);
-        return reference;
-    };
-    GuiGizmoComponent.prototype._rttToLocalNodeSpace = function (node, x, y, reference, useStoredValuesIfPossible) {
-        if (reference === void 0) { reference = new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"](); }
-        var worldMatrix = this._nodeToRTTWorldMatrix(node, useStoredValuesIfPossible);
-        var inv = this._matrixCache[3];
-        worldMatrix.invertToRef(inv);
-        inv.transformCoordinates(x, y, reference);
-        // round
-        reference.x = round(reference.x);
-        reference.y = round(reference.y);
-        return reference;
-    };
-    GuiGizmoComponent.prototype._rttToCanvasSpace = function (x, y) {
-        var tmpVec = new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector3"](x, 0, -y);
-        // Get the final projection in view space
-        var camera = this.props.globalState.workbench._camera;
-        var scene = this.props.globalState.workbench._scene;
-        var engine = scene.getEngine();
-        // TODO - to ref
-        var projected = babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Project(tmpVec, babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Matrix"].Identity(), scene.getTransformMatrix(), camera.viewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight()));
-        // round to 1 decimal points
-        projected.x = round(projected.x);
-        projected.y = round(projected.y);
-        return projected;
-    };
-    GuiGizmoComponent.prototype._mousePointerToRTTSpace = function (node, x, y) {
-        var camera = this.props.globalState.workbench._camera;
-        var scene = this.props.globalState.workbench._scene;
-        var newPosition = this.props.globalState.workbench.getPosition(scene, camera, this._plane, x !== null && x !== void 0 ? x : scene.pointerX, y || scene.pointerY);
-        newPosition.z *= -1;
-        return new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"](round(newPosition.x), round(newPosition.z));
-    };
-    /**
-     * Get the scaling of a specific GUI control
-     * @param node the node for which we are getting the scaling
-     * @param relative should we return only the relative scaling (relative to the parent)
-     * @returns an X,Y vector of the scaling
-     */
-    GuiGizmoComponent.prototype.getScale = function (node, relative) {
-        var x = node.scaleX;
-        var y = node.scaleY;
-        if (relative) {
-            return new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"](x, y);
-        }
-        var parent = node.parent;
-        while (parent) {
-            x *= parent.scaleX;
-            y *= parent.scaleY;
-            parent = parent.parent;
-        }
-        return new babylonjs_Maths_math_axis__WEBPACK_IMPORTED_MODULE_2__["Vector2"](x, y);
-    };
-    GuiGizmoComponent.prototype.getRotation = function (node, relative) {
-        // Gets rotate of a control account for all of it's parents rotations
-        var rotation = node.rotation;
-        if (relative) {
-            return rotation;
-        }
-        var parent = node.parent;
-        while (parent) {
-            rotation += parent.rotation;
-            parent = parent.parent;
-        }
-        return rotation;
-    };
     GuiGizmoComponent.prototype.onUp = function (evt) {
         this._onUp(evt);
     };
@@ -48519,22 +46956,19 @@ var GuiGizmoComponent = /** @class */ (function (_super) {
             y: (x - centerX) * Math.sin(angle) + (y - centerY) * Math.cos(angle) + centerY,
         };
     };
-    GuiGizmoComponent.prototype._computeLocalBounds = function (node) {
-        return new Rect(-node.widthInPixels * 0.5, -node.heightInPixels * 0.5, node.widthInPixels * 0.5, node.heightInPixels * 0.5);
-    };
     GuiGizmoComponent.prototype._dragLocalBounds = function (toPosition) {
         var scalePoint = this.state.scalePoints[this.state.scalePointDragging];
         if (scalePoint.horizontalPosition === ScalePointPosition.Left) {
-            this._localBounds.left = toPosition.x;
+            this._localBounds.left = Math.min(this._localBounds.right, toPosition.x);
         }
         if (scalePoint.horizontalPosition === ScalePointPosition.Right) {
-            this._localBounds.right = toPosition.x;
+            this._localBounds.right = Math.max(this._localBounds.left, toPosition.x);
         }
         if (scalePoint.verticalPosition === ScalePointPosition.Left) {
-            this._localBounds.top = toPosition.y;
+            this._localBounds.top = Math.min(this._localBounds.bottom, toPosition.y);
         }
         if (scalePoint.verticalPosition === ScalePointPosition.Bottom) {
-            this._localBounds.bottom = toPosition.y;
+            this._localBounds.bottom = Math.max(this._localBounds.top, toPosition.y);
         }
     };
     GuiGizmoComponent.prototype._updateNodeFromLocalBounds = function (node, scalePointIndex) {
@@ -48544,8 +46978,8 @@ var GuiGizmoComponent = /** @class */ (function (_super) {
         var left = scalePoint.horizontalPosition === ScalePointPosition.Left && scalePoint.verticalPosition !== ScalePointPosition.Center;
         var top = scalePoint.verticalPosition === ScalePointPosition.Top && scalePoint.horizontalPosition !== ScalePointPosition.Center;
         // calculate the center point
-        var localRotation = this.getRotation(node, true);
-        var localScaling = this.getScale(node, true);
+        var localRotation = _coordinateHelper__WEBPACK_IMPORTED_MODULE_4__["CoordinateHelper"].getRotation(node, true);
+        var localScaling = _coordinateHelper__WEBPACK_IMPORTED_MODULE_4__["CoordinateHelper"].getScale(node, true);
         var absoluteCenter = this._localBounds.center;
         var center = absoluteCenter.clone();
         // move to pivot
@@ -48554,8 +46988,8 @@ var GuiGizmoComponent = /** @class */ (function (_super) {
         var sinRotation = Math.sin(localRotation);
         var cosRotation180 = Math.cos(localRotation + Math.PI);
         var sinRotation180 = Math.sin(localRotation + Math.PI);
-        var widthDelta = (this._initW - width) * 0.5;
-        var heightDelta = (this._initH - height) * 0.5;
+        var widthDelta = (this._storedValues.width - width) * 0.5;
+        var heightDelta = (this._storedValues.height - height) * 0.5;
         // alignment compensation
         switch (node.horizontalAlignment) {
             case babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__["Control"].HORIZONTAL_ALIGNMENT_LEFT:
@@ -48580,8 +47014,8 @@ var GuiGizmoComponent = /** @class */ (function (_super) {
         // rotate the center around 0,0
         var rotatedCenter = this._rotate(center.x, center.y, 0, 0, localRotation);
         // round the values and set them
-        node.leftInPixels = round(this._initX + rotatedCenter.x);
-        node.topInPixels = round(this._initY + rotatedCenter.y);
+        node.leftInPixels = round(this._storedValues.left + rotatedCenter.x);
+        node.topInPixels = round(this._storedValues.top + rotatedCenter.y);
         node.widthInPixels = round(Math.max(10, width));
         node.heightInPixels = round(Math.max(10, height));
         if (node.typeName === "Image") {
@@ -48652,11 +47086,16 @@ var GuiGizmoComponent = /** @class */ (function (_super) {
                 };
                 return (react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", { key: index, style: style, className: "scale-point-container" },
                     react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", { className: "rotate-click-area", onPointerDown: function () { return _this._beginRotate(); }, style: rotateClickAreaStyle }),
-                    react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", { className: "scale-click-area", draggable: true, onDragStart: function (evt) { return evt.preventDefault(); }, onPointerDown: function () {
-                            _this._beginDraggingScalePoint(index);
+                    react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", { className: "scale-click-area", draggable: true, onDragStart: function (evt) { return evt.preventDefault(); }, onPointerDown: function (event) {
+                            // if left mouse button down
+                            if (event.buttons & 1) {
+                                _this._beginDraggingScalePoint(index);
+                            }
                         }, onPointerUp: _this._onUp, style: scaleClickAreaStyle }),
-                    react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", { className: "scale-point", draggable: true, onDragStart: function (evt) { return evt.preventDefault(); }, onPointerDown: function () {
-                            _this._beginDraggingScalePoint(index);
+                    react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", { className: "scale-point", draggable: true, onDragStart: function (evt) { return evt.preventDefault(); }, onPointerDown: function (event) {
+                            if (event.buttons & 1) {
+                                _this._beginDraggingScalePoint(index);
+                            }
                         }, onPointerUp: _this._onUp, style: { cursor: cursor } })));
             })));
     };
@@ -48687,11 +47126,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs/Maths/math.vector */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__);
 /* harmony import */ var _tools__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../tools */ "./tools.ts");
-/* harmony import */ var _GUIEditorNodeMaterial__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./GUIEditorNodeMaterial */ "./diagram/GUIEditorNodeMaterial.ts");
-
-
-
-
 
 
 
@@ -48736,12 +47170,20 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         _this._isOverGUINode = [];
         _this._clipboard = [];
         _this._selectAll = false;
-        _this._cameraMaxRadiasFactor = 16384; // 2^13
         _this._mainSelection = null;
         _this._selectionDepth = 0;
         _this._doubleClick = null;
         _this._lockMainSelection = false;
         _this._liveGuiTextureRerender = true;
+        _this._anyControlClicked = true;
+        _this._nextLiveGuiRender = -1;
+        _this._liveGuiRerenderDelay = 100;
+        _this._defaultGUISize = { width: 1024, height: 1024 };
+        _this._initialPanningOffset = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Vector2"](0, 0);
+        _this._panningOffset = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Vector2"](0, 0);
+        _this._zoomFactor = 1;
+        _this._zoomModeIncrement = 0.2;
+        _this._guiSize = _this._defaultGUISize;
         _this.keyEvent = function (evt) {
             _this._ctrlKeyIsPressed = evt.ctrlKey;
             _this._altKeyIsPressed = evt.altKey;
@@ -48752,7 +47194,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
                 _this._setConstraintDirection = false;
                 _this._constraintDirection = ConstraintDirection.NONE;
             }
-            if (evt.key === "Delete") {
+            if (evt.key === "Delete" || evt.key === "Backspace") {
                 if (!_this.props.globalState.lockObject.lock) {
                     _this._selectedGuiNodes.forEach(function (guiNode) {
                         var _a;
@@ -48844,7 +47286,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
                 _this._canvas.style.cursor = "grab";
             }
             _this.updateHitTest(_this.globalState.guiTexture.getChildren()[0], _this._forceSelecting);
-            _this.artBoardBackground.isHitTestVisible = true;
+            // this.artBoardBackground.isHitTestVisible = true;
         });
         props.globalState.onSelectionButtonObservable.add(function () {
             _this._forceSelecting = !_this._forceSelecting;
@@ -48852,7 +47294,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
             _this._forceZooming = false;
             _this._canvas.style.cursor = "default";
             _this.updateHitTest(_this.globalState.guiTexture.getChildren()[0], _this._forceSelecting);
-            _this.artBoardBackground.isHitTestVisible = true;
+            // this.artBoardBackground.isHitTestVisible = true;
         });
         props.globalState.onZoomObservable.add(function () {
             _this._forceZooming = !_this._forceZooming;
@@ -48865,16 +47307,13 @@ var WorkbenchComponent = /** @class */ (function (_super) {
                 _this._canvas.style.cursor = "zoom-in";
             }
             _this.updateHitTest(_this.globalState.guiTexture.getChildren()[0], _this._forceSelecting);
-            _this.artBoardBackground.isHitTestVisible = true;
+            // this.artBoardBackground.isHitTestVisible = true;
         });
         props.globalState.onFitToWindowObservable.add(function () {
-            _this.setCameraRadius();
-            for (var i = 0; i < 2; ++i) {
-                _this._camera.alpha = -Math.PI / 2;
-                _this._camera.beta = 0;
-                _this._camera.radius = _this._cameraRadias;
-                _this._camera.target = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Vector3"].Zero();
-            }
+            _this._panningOffset = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Vector2"](0, 0);
+            var xFactor = _this._engine.getRenderWidth() / _this.guiSize.width;
+            var yFactor = _this._engine.getRenderHeight() / _this.guiSize.height;
+            _this._zoomFactor = Math.min(xFactor, yFactor) * 0.9;
         });
         props.globalState.onOutlinesObservable.add(function () {
             _this._outlines = !_this._outlines;
@@ -48891,11 +47330,75 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         _this.props.globalState.hostDocument.defaultView.addEventListener("blur", _this.blurEvent, false);
         props.globalState.onWindowResizeObservable.add(function () {
             _this.props.globalState.onGizmoUpdateRequireObservable.notifyObservers();
+            _this.props.globalState.onArtBoardUpdateRequiredObservable.notifyObservers();
             _this._engine.resize();
         });
         _this.props.globalState.workbench = _this;
         return _this;
     }
+    Object.defineProperty(WorkbenchComponent.prototype, "visibleRegionContainer", {
+        get: function () {
+            return this._visibleRegionContainer;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(WorkbenchComponent.prototype, "trueRootContainer", {
+        get: function () {
+            return this._trueRootContainer;
+        },
+        set: function (value) {
+            var _this = this;
+            if (value === this._trueRootContainer)
+                return;
+            this._visibleRegionContainer.children.forEach(function (child) { return _this._visibleRegionContainer.removeControl(child); });
+            this._visibleRegionContainer.addControl(value);
+            this._trueRootContainer = value;
+            this._trueRootContainer.isPointerBlocker = false;
+            value._host = this.props.globalState.guiTexture;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(WorkbenchComponent.prototype, "guiSize", {
+        get: function () {
+            return this._guiSize;
+        },
+        // sets the size of the GUI and makes all neccessary adjustments
+        set: function (value) {
+            this._guiSize = Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])({}, value);
+            this._visibleRegionContainer.widthInPixels = this._guiSize.width;
+            this._visibleRegionContainer.heightInPixels = this._guiSize.height;
+            this.globalState.onResizeObservable.notifyObservers(this._guiSize);
+            this.globalState.onFitToWindowObservable.notifyObservers();
+            this.globalState.onArtBoardUpdateRequiredObservable.notifyObservers();
+        },
+        enumerable: false,
+        configurable: true
+    });
+    WorkbenchComponent.prototype.applyEditorTransformation = function () {
+        var adt = this.globalState.guiTexture;
+        if (adt._rootContainer != this._panAndZoomContainer) {
+            adt._rootContainer = this._panAndZoomContainer;
+            this._visibleRegionContainer.addControl(this._trueRootContainer);
+            console.log(adt._rootContainer.name, this._panAndZoomContainer.host, this._visibleRegionContainer.host, this._trueRootContainer.host);
+        }
+        if (adt.getSize().width !== this._engine.getRenderWidth() || adt.getSize().height !== this._engine.getRenderHeight()) {
+            adt.scaleTo(this._engine.getRenderWidth(), this._engine.getRenderHeight());
+        }
+        this._trueRootContainer.clipContent = false;
+        this._trueRootContainer.clipChildren = false;
+    };
+    WorkbenchComponent.prototype.removeEditorTransformation = function () {
+        var adt = this.globalState.guiTexture;
+        if (adt._rootContainer != this._trueRootContainer) {
+            this._visibleRegionContainer.removeControl(this._trueRootContainer);
+            adt._rootContainer = this._trueRootContainer;
+            console.log(adt._rootContainer.name, this._panAndZoomContainer.host, this._visibleRegionContainer.host, this._trueRootContainer.host);
+        }
+        this._trueRootContainer.clipContent = true;
+        this._trueRootContainer.clipChildren = true;
+    };
     Object.defineProperty(WorkbenchComponent.prototype, "globalState", {
         get: function () {
             return this.props.globalState;
@@ -48950,7 +47453,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
                     selection = this._getParentWithDepth(selection);
                 }
                 else {
-                    selection = this._getMaxParent(selection, this.globalState.guiTexture._rootContainer);
+                    selection = this._getMaxParent(selection, this.trueRootContainer);
                 }
                 this._mainSelection = selection;
             }
@@ -48973,11 +47476,6 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         this.selectedGuiNodes.forEach(function (control) {
             control.isHitTestVisible = value;
         });
-    };
-    WorkbenchComponent.prototype.setCameraRadius = function () {
-        var size = this.props.globalState.guiTexture.getSize();
-        this._cameraRadias = size.width > size.height ? size.width : size.height;
-        this._cameraRadias += this._cameraRadias - this._cameraRadias / 1.5;
     };
     WorkbenchComponent.prototype.copyToClipboard = function () {
         var _this = this;
@@ -49062,6 +47560,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
     };
     WorkbenchComponent.prototype.loadFromJson = function (serializationObject) {
         var _a;
+        this.removeEditorTransformation();
         this.globalState.onSelectionChangedObservable.notifyObservers(null);
         if (this.props.globalState.liveGuiTexture) {
             (_a = this.globalState.liveGuiTexture) === null || _a === void 0 ? void 0 : _a.parseContent(serializationObject, true);
@@ -49070,6 +47569,8 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         else {
             this.globalState.guiTexture.parseContent(serializationObject, true);
         }
+        this.trueRootContainer = this.props.globalState.guiTexture._rootContainer;
+        this.guiSize = this.globalState.guiTexture.getSize();
         this.loadToEditor();
     };
     WorkbenchComponent.prototype.loadFromSnippet = function (snippetId) {
@@ -49078,6 +47579,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
             return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__generator"])(this, function (_b) {
                 switch (_b.label) {
                     case 0:
+                        this.removeEditorTransformation();
                         this.globalState.onSelectionChangedObservable.notifyObservers(null);
                         if (!this.props.globalState.liveGuiTexture) return [3 /*break*/, 2];
                         return [4 /*yield*/, ((_a = this.globalState.liveGuiTexture) === null || _a === void 0 ? void 0 : _a.parseFromSnippetAsync(snippetId, true))];
@@ -49090,6 +47592,8 @@ var WorkbenchComponent = /** @class */ (function (_super) {
                         _b.sent();
                         _b.label = 4;
                     case 4:
+                        this.trueRootContainer = this.props.globalState.guiTexture._rootContainer;
+                        this.guiSize = this.globalState.guiTexture.getSize();
                         this.loadToEditor();
                         if (this.props.globalState.customLoad) {
                             this.props.globalState.customLoad.action(this.globalState.guiTexture.snippetId).catch(function (err) {
@@ -49104,20 +47608,18 @@ var WorkbenchComponent = /** @class */ (function (_super) {
     };
     WorkbenchComponent.prototype.loadToEditor = function () {
         var _this = this;
-        var size = this.globalState.guiTexture.getSize();
-        this.resizeGuiTexture(new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Vector2"](size.width, size.height));
         this.globalState.guiTexture.rootContainer.children.forEach(function (guiElement) {
             if (guiElement.name === "Art-Board-Background" && guiElement.typeName === "Rectangle") {
-                _this.artBoardBackground = guiElement;
+                // this.artBoardBackground = guiElement as Rectangle;
                 return;
             }
             _this.createNewGuiNode(guiElement);
         });
         if (this.props.globalState.guiTexture.getChildren()[0].children.length) {
-            this.props.globalState.guiTexture.getChildren()[0].children.unshift(this.props.globalState.workbench.artBoardBackground);
+            // this.props.globalState.guiTexture.getChildren()[0].children.unshift(this.props.globalState.workbench.artBoardBackground);
         }
         else {
-            this.props.globalState.guiTexture.getChildren()[0].children.push(this.props.globalState.workbench.artBoardBackground);
+            // this.props.globalState.guiTexture.getChildren()[0].children.push(this.props.globalState.workbench.artBoardBackground);
         }
         this._isOverGUINode = [];
     };
@@ -49135,14 +47637,6 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         });
         this.updateHitTestForSelection(value);
     };
-    WorkbenchComponent.prototype.resizeGuiTexture = function (newvalue) {
-        this._textureMesh.scaling.x = newvalue.x;
-        this._textureMesh.scaling.z = newvalue.y;
-        this.globalState.guiTexture.scaleTo(newvalue.x, newvalue.y);
-        this.globalState.guiTexture.markAsDirty();
-        this.globalState.onResizeObservable.notifyObservers(newvalue);
-        this.globalState.onFitToWindowObservable.notifyObservers();
-    };
     WorkbenchComponent.prototype.findNodeFromGuiElement = function (guiControl) {
         return this.nodes.filter(function (n) { return n === guiControl; })[0];
     };
@@ -49151,7 +47645,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
             this.globalState.liveGuiTexture.addControl(guiElement);
         }
         var newGuiNode = this.createNewGuiNode(guiElement);
-        this.globalState.guiTexture.addControl(guiElement);
+        this.trueRootContainer.addControl(guiElement);
         return newGuiNode;
     };
     //is the
@@ -49171,6 +47665,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
             _this.clicked = false;
         });
         var onPointerDown = guiControl.onPointerDownObservable.add(function (evt) {
+            _this._anyControlClicked = true;
             if (!_this.isUp || evt.buttonIndex > 0)
                 return;
             if (_this._forceSelecting) {
@@ -49271,7 +47766,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
                     }
                     else {
                         draggedControlParent.removeControl(draggedControl);
-                        this.props.globalState.guiTexture.addControl(draggedControl);
+                        this.trueRootContainer.addControl(draggedControl);
                     }
                 }
                 else {
@@ -49361,8 +47856,8 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         return true;
     };
     WorkbenchComponent.prototype.convertToPercentage = function (guiControl, includeScale) {
-        var ratioX = this._textureMesh.scaling.x;
-        var ratioY = this._textureMesh.scaling.z;
+        var ratioX = 1; //this._textureMesh.scaling.x;
+        var ratioY = 1; //this._textureMesh.scaling.z;
         if (guiControl.parent) {
             if (guiControl.parent.typeName === "Grid") {
                 var cellInfo = guiControl.parent.getChildCellInfo(guiControl);
@@ -49393,7 +47888,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
     };
     WorkbenchComponent.prototype.onMove = function (evt) {
         var _this = this;
-        var pos = this.getGroundPosition();
+        var pos = this.getScaledPointerPosition();
         // Move or guiNodes
         if (this._mouseStartPointX != null && this._mouseStartPointY != null && !this._panning) {
             var x = this._mouseStartPointX;
@@ -49401,23 +47896,19 @@ var WorkbenchComponent = /** @class */ (function (_super) {
             var selected_1 = false;
             this.selectedGuiNodes.forEach(function (element) {
                 if (pos) {
-                    selected_1 = _this._onMove(element, new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Vector2"](pos.x, -pos.z), new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Vector2"](x, y), false) || selected_1;
+                    selected_1 = _this._onMove(element, new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Vector2"](pos.x, pos.y), new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Vector2"](x, y), false) || selected_1;
                 }
             });
             this._mouseStartPointX = pos ? pos.x : this._mouseStartPointX;
-            this._mouseStartPointY = pos ? pos.z * -1 : this._mouseStartPointY;
+            this._mouseStartPointY = pos ? pos.y : this._mouseStartPointY;
         }
     };
-    WorkbenchComponent.prototype.getGroundPosition = function () {
-        var tex = this._textureMesh;
-        // Use a predicate to get position on the ground
-        var pickinfo = this._scene.pick(this._scene.pointerX, this._scene.pointerY, function (mesh) {
-            return mesh == tex;
-        });
-        if (pickinfo === null || pickinfo === void 0 ? void 0 : pickinfo.hit) {
-            return pickinfo.pickedPoint;
-        }
-        return null;
+    WorkbenchComponent.prototype._screenToTexturePosition = function (screenPos) {
+        var zoomVector = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Vector2"](this._zoomFactor, this._zoomFactor);
+        return screenPos.divideInPlace(zoomVector).add(this._panningOffset);
+    };
+    WorkbenchComponent.prototype.getScaledPointerPosition = function () {
+        return this._screenToTexturePosition(new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Vector2"](this._scene.pointerX, this._scene.pointerY));
     };
     WorkbenchComponent.prototype.onDown = function (evt) {
         var _a;
@@ -49428,13 +47919,10 @@ var WorkbenchComponent = /** @class */ (function (_super) {
             }
             return;
         }
-        var pos = this.getGroundPosition();
-        if (pos === null && this._forceSelecting && !evt.button) {
-            this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
-        }
+        var pos = this.getScaledPointerPosition();
         if (this._forceSelecting) {
             this._mouseStartPointX = pos ? pos.x : this._mouseStartPointX;
-            this._mouseStartPointY = pos ? -pos.z : this._mouseStartPointY;
+            this._mouseStartPointY = pos ? pos.y : this._mouseStartPointY;
         }
     };
     WorkbenchComponent.prototype.onUp = function (evt) {
@@ -49455,60 +47943,65 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         // Create our first scene.
         this._scene = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Scene"](this._engine);
         var clearColor = 204 / 255.0;
-        this._scene.clearColor = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Color4"](clearColor, clearColor, clearColor, 1.0);
+        this._scene.clearColor = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Color4"](clearColor, clearColor, clearColor, 0.0);
         var light = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["HemisphericLight"]("light1", babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Axis"].Y, this._scene);
         light.intensity = 0.9;
-        var textureSize = 1024;
-        this._textureMesh = Object(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["CreateGround"])("GuiCanvas", { width: 1, height: 1, subdivisions: 1 }, this._scene);
-        this._textureMesh.scaling.x = textureSize;
-        this._textureMesh.scaling.z = textureSize;
-        this.globalState.guiTexture = babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["AdvancedDynamicTexture"].CreateForMesh(this._textureMesh, textureSize, textureSize, true);
-        this.globalState.guiTexture.rootContainer.clipChildren = false;
-        this.globalState.guiTexture.useInvalidateRectOptimization = false;
-        this.globalState.guiTexture.onEndRenderObservable.add(function () { return _this.props.globalState.onGizmoUpdateRequireObservable.notifyObservers(); });
-        this._textureMesh.showBoundingBox = true;
-        this.artBoardBackground = new babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["Rectangle"]("Art-Board-Background");
-        this.artBoardBackground.width = "100%";
-        this.artBoardBackground.height = "100%";
-        this.artBoardBackground.background = "transparent";
-        this.artBoardBackground.thickness = 0;
-        this.globalState.guiTexture.addControl(this.artBoardBackground);
+        this._guiSize = this._defaultGUISize;
+        this._panAndZoomContainer = new babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["Container"]("panAndZoom");
+        this._panAndZoomContainer.clipContent = false;
+        this._panAndZoomContainer.clipChildren = false;
+        this._visibleRegionContainer = new babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["Container"]("visibleRegion");
+        this._visibleRegionContainer.clipChildren = false;
+        this._visibleRegionContainer.clipContent = false;
+        this._visibleRegionContainer.widthInPixels = this.guiSize.width;
+        this._visibleRegionContainer.heightInPixels = this.guiSize.height;
+        this._panAndZoomContainer.addControl(this._visibleRegionContainer);
+        var adt = this.globalState.guiTexture =
+            this._visibleRegionContainer._host =
+                this._panAndZoomContainer._host =
+                    babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["AdvancedDynamicTexture"].CreateFullscreenUI("guiTexture", true, this._scene, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Texture"].NEAREST_NEAREST_MIPNEAREST, false);
+        adt.useInvalidateRectOptimization = false;
+        this.trueRootContainer = adt.rootContainer;
+        adt.onEndRenderObservable.add(function () { return _this.props.globalState.onGizmoUpdateRequireObservable.notifyObservers(); });
         this.synchronizeLiveGUI();
-        var nodeMaterial = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["NodeMaterial"]("NodeMaterial", this._scene);
-        nodeMaterial.loadFromSerialization(_GUIEditorNodeMaterial__WEBPACK_IMPORTED_MODULE_6__["GUIEditorNodeMaterial"]);
-        nodeMaterial.build(true);
-        this._textureMesh.material = nodeMaterial;
-        if (nodeMaterial) {
-            var block = nodeMaterial.getBlockByName("Texture");
-            block.texture = this.globalState.guiTexture;
-        }
-        this.setCameraRadius();
-        this._camera = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["ArcRotateCamera"]("Camera", -Math.PI / 2, 0, this._cameraRadias, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Vector3"].Zero(), this._scene);
-        this._camera.maxZ = this._cameraMaxRadiasFactor * 2;
-        // This attaches the camera to the canvas
-        this.addControls(this._scene, this._camera);
+        new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["ArcRotateCamera"]("Camera", 0, 0, 0, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Vector3"].Zero(), this._scene);
+        // This attaches the mouse controls
+        this.addControls(this._scene);
         this._scene.getEngine().onCanvasPointerOutObservable.clear();
         this._scene.doNotHandleCursors = true;
         // Watch for browser/canvas resize events
         this.globalState.hostWindow.addEventListener("resize", function () {
-            _this._engine.resize();
+            _this.props.globalState.onWindowResizeObservable.notifyObservers();
         });
         this._engine.resize();
+        this.globalState.guiTexture.onBeginRenderObservable.add(function () {
+            _this.applyEditorTransformation();
+        });
+        this.globalState.onPropertyChangedObservable.add(function (ev) {
+            ev.object.markAsDirty(false);
+        });
         // Every time the original ADT re-renders, we must also re-render, so that layout information is computed correctly
         // also, every time *we* re-render (due to a change in the GUI), we must re-render the original ADT
         // to prevent an infite loop, we flip a boolean flag
         if (this.globalState.liveGuiTexture) {
             this._guiRenderObserver = this.globalState.guiTexture.onBeginRenderObservable.add(function () {
-                var _a;
                 if (_this._liveGuiTextureRerender) {
-                    (_a = _this.globalState.liveGuiTexture) === null || _a === void 0 ? void 0 : _a.markAsDirty();
+                    _this._nextLiveGuiRender = Date.now() + _this._liveGuiRerenderDelay;
                 }
                 _this._liveGuiTextureRerender = true;
             });
             this._liveRenderObserver = this.globalState.liveGuiTexture.onEndRenderObservable.add(function () {
                 var _a;
+                // return the GUI to the editor mode
                 (_a = _this.globalState.guiTexture) === null || _a === void 0 ? void 0 : _a.markAsDirty();
                 _this._liveGuiTextureRerender = false;
+            });
+            this._scene.onAfterRenderObservable.add(function () {
+                var _a;
+                if (_this._nextLiveGuiRender > 0 && Date.now() > _this._nextLiveGuiRender) {
+                    _this._nextLiveGuiRender = -1;
+                    (_a = _this.globalState.liveGuiTexture) === null || _a === void 0 ? void 0 : _a.markAsDirty();
+                }
             });
         }
         this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers("Welcome to the GUI Editor Alpha. This editor is still a work in progress. Icons are currently temporary. Please submit feedback using the \"Give feedback\" button in the menu. ");
@@ -49517,6 +48010,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         });
         this.globalState.onNewSceneObservable.notifyObservers(this.globalState.guiTexture.getScene());
         this.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
+        this.props.globalState.onFitToWindowObservable.notifyObservers();
     };
     // removes all controls from both GUIs, and re-adds the controls from the original to the GUI editor
     WorkbenchComponent.prototype.synchronizeLiveGUI = function () {
@@ -49531,65 +48025,58 @@ var WorkbenchComponent = /** @class */ (function (_super) {
             this.globalState.guiTexture.snippetId = this.globalState.liveGuiTexture.snippetId;
         }
     };
-    //Add map-like controls to an ArcRotate camera
-    WorkbenchComponent.prototype.addControls = function (scene, camera) {
+    //Add zoom and pan controls
+    WorkbenchComponent.prototype.addControls = function (scene) {
         var _this = this;
-        var _a;
-        camera.inertia = 0.7;
-        camera.lowerRadiusLimit = 10;
-        camera.upperRadiusLimit = this._cameraMaxRadiasFactor;
-        camera.upperBetaLimit = Math.PI / 2 - 0.1;
-        camera.angularSensibilityX = camera.angularSensibilityY = 500;
-        var plane = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Plane"].FromPositionAndNormal(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Vector3"].Zero(), babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Axis"].Y);
-        var inertialPanning = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Vector3"].Zero();
-        var initialPos = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Vector3"](0, 0, 0);
-        var panningFn = function () {
-            var pos = _this.getPosition(scene, camera, plane);
-            _this.panning(pos, initialPos, camera.inertia, inertialPanning);
+        var _a, _b, _c, _d;
+        var zoomFnScrollWheel = function (e) {
+            var delta = _this.zoomWheel(e);
+            _this.zooming(1 + (delta / 1000));
         };
-        var inertialPanningFn = function () {
-            if (inertialPanning.x !== 0 || inertialPanning.y !== 0 || inertialPanning.z !== 0) {
-                camera.target.addInPlace(inertialPanning);
-                inertialPanning.scaleInPlace(camera.inertia);
-                _this.zeroIfClose(inertialPanning);
-                _this.props.globalState.onGizmoUpdateRequireObservable.notifyObservers();
-            }
+        var panningFn = function () { return _this.panning(); };
+        var startPanning = function () {
+            _this._scene.onPointerObservable.add(panningFn, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["PointerEventTypes"].POINTERMOVE);
+            _this._panning = true;
+            _this._initialPanningOffset = _this.getScaledPointerPosition();
+            _this._panAndZoomContainer.getDescendants().forEach(function (desc) {
+                desc.isPointerBlocker = false;
+            });
         };
-        var wheelPrecisionFn = function () {
-            camera.wheelPrecision = (1 / camera.radius) * 1000;
-        };
-        var zoomFnScrollWheel = function (p, e) {
-            var delta = _this.zoomWheel(p, e, camera);
-            _this.zooming(delta, scene, camera, plane, inertialPanning);
-        };
-        var zoomFnMouse = function (p, e) {
-            _this.zooming(_this._altKeyIsPressed ? -10 : 10, scene, camera, plane, inertialPanning);
+        var endPanning = function () {
+            _this._panning = false;
+            _this._panAndZoomContainer.getDescendants().forEach(function (desc) {
+                desc.isPointerBlocker = true;
+            });
         };
         var removeObservers = function () {
             scene.onPointerObservable.removeCallback(panningFn);
-            scene.onPointerObservable.removeCallback(zoomFnMouse);
         };
-        scene.onPointerObservable.add(function (p, e) {
+        (_a = this._rootContainer.current) === null || _a === void 0 ? void 0 : _a.addEventListener("wheel", zoomFnScrollWheel);
+        (_b = this._rootContainer.current) === null || _b === void 0 ? void 0 : _b.addEventListener("pointerdown", function (event) {
+            console.log(event);
             removeObservers();
-            if (p.event.button !== 0 || _this._forcePanning) {
-                initialPos = _this.getPosition(scene, camera, plane);
-                scene.onPointerObservable.add(panningFn, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["PointerEventTypes"].POINTERMOVE);
-                _this._panning = true;
-            }
-            else if (_this._forceZooming) {
-                initialPos = _this.getPosition(scene, camera, plane);
-                scene.onPointerObservable.add(zoomFnMouse, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["PointerEventTypes"].POINTERMOVE);
-                _this._panning = false;
+            if (event.button !== 0 || _this._forcePanning) {
+                startPanning();
             }
             else {
-                _this._panning = false;
+                if (_this._forceZooming) {
+                    _this.zooming(1.0 + (_this._altKeyIsPressed ? -_this._zoomModeIncrement : _this._zoomModeIncrement));
+                }
+                endPanning();
+                // if we click in the scene and we don't hit any controls, deselect all
+                _this._scene.onAfterRenderObservable.addOnce(function () {
+                    if (!_this._anyControlClicked) {
+                        _this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+                    }
+                    _this._anyControlClicked = false;
+                });
             }
-        }, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["PointerEventTypes"].POINTERDOWN);
-        scene.onPointerObservable.add(function (p, e) {
+        });
+        (_c = this._rootContainer.current) === null || _c === void 0 ? void 0 : _c.addEventListener("pointerup", function (event) {
             _this._panning = false;
             removeObservers();
             _this.props.globalState.guiGizmo.onUp();
-        }, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["PointerEventTypes"].POINTERUP);
+        });
         scene.onKeyboardObservable.add(function (k, e) {
             switch (k.event.key) {
                 case "s": //select
@@ -49619,38 +48106,39 @@ var WorkbenchComponent = /** @class */ (function (_super) {
                     break;
             }
         }, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["KeyboardEventTypes"].KEYDOWN);
-        scene.onAfterRenderObservable.add(function () { if (_this._camera.inertialRadiusOffset != 0)
-            _this.props.globalState.onGizmoUpdateRequireObservable.notifyObservers(); });
-        scene.onPointerObservable.add(zoomFnScrollWheel, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["PointerEventTypes"].POINTERWHEEL);
-        scene.onBeforeRenderObservable.add(inertialPanningFn);
-        scene.onBeforeRenderObservable.add(wheelPrecisionFn);
+        scene.onBeforeRenderObservable.add(function () {
+            if (_this._panAndZoomContainer.scaleX !== _this._zoomFactor) {
+                _this._panAndZoomContainer.scaleX = _this._zoomFactor;
+                _this._panAndZoomContainer.scaleY = _this._zoomFactor;
+                _this.globalState.onArtBoardUpdateRequiredObservable.notifyObservers();
+                _this.globalState.onGizmoUpdateRequireObservable.notifyObservers();
+            }
+            var left = _this._zoomFactor * _this._panningOffset.x;
+            var top = _this._zoomFactor * -_this._panningOffset.y;
+            if (_this._panAndZoomContainer.leftInPixels !== left || _this._panAndZoomContainer.topInPixels !== top) {
+                _this._panAndZoomContainer.leftInPixels = left;
+                _this._panAndZoomContainer.topInPixels = top;
+                _this.globalState.onArtBoardUpdateRequiredObservable.notifyObservers();
+                _this.globalState.onGizmoUpdateRequireObservable.notifyObservers();
+            }
+        });
         // stop context menu showing on canvas right click
-        (_a = scene
+        (_d = scene
             .getEngine()
-            .getRenderingCanvas()) === null || _a === void 0 ? void 0 : _a.addEventListener("contextmenu", function (e) {
+            .getRenderingCanvas()) === null || _d === void 0 ? void 0 : _d.addEventListener("contextmenu", function (e) {
             e.preventDefault();
         });
     };
-    //Get pos on plane
-    WorkbenchComponent.prototype.getPosition = function (scene, camera, plane, x, y) {
-        if (x === void 0) { x = scene.pointerX; }
-        if (y === void 0) { y = scene.pointerY; }
-        var ray = scene.createPickingRay(x, y, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Matrix"].Identity(), camera, false);
-        var distance = ray.intersectsPlane(plane);
-        //not using this ray again, so modifying its vectors here is fine
-        return distance !== null ? ray.origin.addInPlace(ray.direction.scaleInPlace(distance)) : babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Vector3"].Zero();
-    };
     //Return offsets for inertial panning given initial and current pointer positions
-    WorkbenchComponent.prototype.panning = function (newPos, initialPos, inertia, ref) {
-        var directionToZoomLocation = initialPos.subtract(newPos);
-        var panningX = directionToZoomLocation.x * (1 - inertia);
-        var panningZ = directionToZoomLocation.z * (1 - inertia);
-        ref.copyFromFloats(panningX, 0, panningZ);
-        return ref;
+    WorkbenchComponent.prototype.panning = function () {
+        var panningDelta = this.getScaledPointerPosition().subtract(this._initialPanningOffset).multiplyByFloats(1, -1);
+        this._panningOffset = this._panningOffset.add(panningDelta);
+        this._initialPanningOffset = this.getScaledPointerPosition();
+        this.props.globalState.onArtBoardUpdateRequiredObservable.notifyObservers();
+        this.props.globalState.onGizmoUpdateRequireObservable.notifyObservers();
     };
-    //Get the wheel delta divided by the camera wheel precision
-    WorkbenchComponent.prototype.zoomWheel = function (p, e, camera) {
-        var event = p.event;
+    //Get the wheel delta
+    WorkbenchComponent.prototype.zoomWheel = function (event) {
         event.preventDefault();
         var delta = 0;
         if (event.deltaY) {
@@ -49659,37 +48147,11 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         else if (event.detail) {
             delta = -event.detail;
         }
-        delta /= camera.wheelPrecision;
         return delta;
     };
     //Zoom to pointer position. Zoom amount determined by delta
-    WorkbenchComponent.prototype.zooming = function (delta, scene, camera, plane, ref) {
-        var lr = camera.lowerRadiusLimit;
-        var ur = camera.upperRadiusLimit;
-        if (!lr || !ur) {
-            return;
-        }
-        if (camera.radius - lr < 1 && delta > 0) {
-            return;
-        }
-        else if (ur - camera.radius < 1 && delta < 0) {
-            return;
-        }
-        var inertiaComp = 1 - camera.inertia;
-        if (camera.radius - (camera.inertialRadiusOffset + delta) / inertiaComp < lr) {
-            delta = (camera.radius - lr) * inertiaComp - camera.inertialRadiusOffset;
-        }
-        else if (camera.radius - (camera.inertialRadiusOffset + delta) / inertiaComp > ur) {
-            delta = (camera.radius - ur) * inertiaComp - camera.inertialRadiusOffset;
-        }
-        var zoomDistance = delta / inertiaComp;
-        var ratio = zoomDistance / camera.radius;
-        var vec = this.getPosition(scene, camera, plane);
-        var directionToZoomLocation = vec.subtract(camera.target);
-        var offset = directionToZoomLocation.scale(ratio);
-        offset.scaleInPlace(inertiaComp);
-        ref.addInPlace(offset);
-        camera.inertialRadiusOffset += delta;
+    WorkbenchComponent.prototype.zooming = function (delta) {
+        this._zoomFactor *= delta;
     };
     //Sets x y or z of passed in vector to zero if less than Epsilon
     WorkbenchComponent.prototype.zeroIfClose = function (vec) {
@@ -49767,6 +48229,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _sharedUiComponents_tabs_propertyGrids_lockObject__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./sharedUiComponents/tabs/propertyGrids/lockObject */ "./sharedUiComponents/tabs/propertyGrids/lockObject.ts");
+/* harmony import */ var _diagram_coordinateHelper__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./diagram/coordinateHelper */ "./diagram/coordinateHelper.tsx");
+
 
 
 
@@ -49811,6 +48275,7 @@ var GlobalState = /** @class */ (function () {
         this.onDraggingStartObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onWindowResizeObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onGizmoUpdateRequireObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onArtBoardUpdateRequiredObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.draggedControl = null;
         this.isSaving = false;
         this.lockObject = new _sharedUiComponents_tabs_propertyGrids_lockObject__WEBPACK_IMPORTED_MODULE_1__["LockObject"]();
@@ -49819,6 +48284,7 @@ var GlobalState = /** @class */ (function () {
         var g = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].ReadNumber("BackgroundColorG", 0.09803921568627451);
         var b = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].ReadNumber("BackgroundColorB", 0.25098039215686274);
         this.backgroundColor = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Color4"](r, g, b, 1.0);
+        _diagram_coordinateHelper__WEBPACK_IMPORTED_MODULE_2__["CoordinateHelper"].globalState = this;
     }
     return GlobalState;
 }());
@@ -52594,6 +51060,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _components_sceneExplorer_sceneExplorerComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./components/sceneExplorer/sceneExplorerComponent */ "./components/sceneExplorer/sceneExplorerComponent.tsx");
 /* harmony import */ var _components_commandBarComponent__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./components/commandBarComponent */ "./components/commandBarComponent.tsx");
 /* harmony import */ var _diagram_guiGizmo__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./diagram/guiGizmo */ "./diagram/guiGizmo.tsx");
+/* harmony import */ var _diagram_artBoard__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./diagram/artBoard */ "./diagram/artBoard.tsx");
+
 
 
 
@@ -52797,6 +51265,7 @@ var WorkbenchEditor = /** @class */ (function (_super) {
                     }, onDragOver: function (event) {
                         event.preventDefault();
                     } },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_diagram_artBoard__WEBPACK_IMPORTED_MODULE_12__["ArtBoardComponent"], { globalState: this.props.globalState }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_diagram_workbench__WEBPACK_IMPORTED_MODULE_7__["WorkbenchComponent"], { ref: "workbenchCanvas", globalState: this.props.globalState }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_diagram_guiGizmo__WEBPACK_IMPORTED_MODULE_11__["GuiGizmoComponent"], { globalState: this.props.globalState })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "rightGrab", onPointerDown: function (evt) { return _this.onPointerDown(evt); }, onPointerUp: function (evt) { return _this.onPointerUp(evt); }, onPointerMove: function (evt) { return _this.resizeColumns(evt, false); } }),
