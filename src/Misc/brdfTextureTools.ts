@@ -39,7 +39,7 @@ export const GetEnvironmentBRDFTexture = (scene: Scene): BaseTexture => {
 
         RGBDTextureTools.ExpandRGBDTexture(texture);
 
-        scene.getEngine().onContextRestoredObservable.add(() => {
+        const observer = scene.getEngine().onContextRestoredObservable.add(() => {
             texture.isRGBD = true;
             const checkReady = () => {
                 if (texture.isReady()) {
@@ -50,6 +50,10 @@ export const GetEnvironmentBRDFTexture = (scene: Scene): BaseTexture => {
             };
             checkReady();
         });
+
+        scene.onDisposeObservable.add(() => {
+            scene.getEngine().onContextRestoredObservable.remove(observer);
+        })
     }
 
     return scene.environmentBRDFTexture;
