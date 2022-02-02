@@ -75,6 +75,7 @@ declare module "../scene" {
          * Creates a new VREXperienceHelper
          * @see https://doc.babylonjs.com/divingDeeper/cameras/webVRHelper
          * @param webVROptions defines the options used to create the new VREXperienceHelper
+         * @deprecated Please use createDefaultXRExperienceAsync instead
          * @returns a new VREXperienceHelper
          */
         createDefaultVRExperience(webVROptions?: VRExperienceHelperOptions): VRExperienceHelper;
