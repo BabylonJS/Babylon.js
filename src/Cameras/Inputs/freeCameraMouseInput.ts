@@ -45,6 +45,8 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
 
     private _currentActiveButton: number = -1;
 
+    private _contextMenuBind: () => void;
+
     /**
      * Manage the mouse inputs to control the movement of a free camera.
      * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
@@ -186,7 +188,10 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
 
         this._observer = this.camera.getScene().onPointerObservable.add(this._pointerInput, PointerEventTypes.POINTERDOWN | PointerEventTypes.POINTERUP | PointerEventTypes.POINTERMOVE);
 
-        element && element.addEventListener("contextmenu", <EventListener>this.onContextMenu.bind(this), false); // TODO: We need to figure out how to handle this for Native
+        if (element) {
+            this._contextMenuBind = this.onContextMenu.bind(this);
+            element.addEventListener("contextmenu", this._contextMenuBind, false); // TODO: We need to figure out how to handle this for Native
+        }        
     }
 
     /**
@@ -210,10 +215,10 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
         if (this._observer) {
             this.camera.getScene().onPointerObservable.remove(this._observer);
 
-            if (this.onContextMenu) {
+            if (this._contextMenuBind) {
                 const engine = this.camera.getEngine();
                 const element = engine.getInputElement();
-                element && element.removeEventListener("contextmenu", <EventListener>this.onContextMenu);
+                element && element.removeEventListener("contextmenu", this._contextMenuBind);
             }
 
             if (this.onPointerMovedObservable) {
