@@ -3,6 +3,7 @@
 	attribute vec4 world1;
 	attribute vec4 world2;
 	attribute vec4 world3;
+    attribute vec4 instanceColor;
     #if defined(THIN_INSTANCES) && !defined(WORLD_UBO)
         uniform mat4 world;
     #endif

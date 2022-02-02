@@ -1244,7 +1244,11 @@ export class StandardMaterial extends PushMaterial {
             }
 
             if (defines.VERTEXCOLOR) {
-                attribs.push(VertexBuffer.ColorKind);
+                if (defines.INSTANCES) {
+                    attribs.push(VertexBuffer.ColorInstanceKind);
+                } else {
+                    attribs.push(VertexBuffer.ColorKind);
+                }
             }
 
             MaterialHelper.PrepareAttributesForBones(attribs, mesh, defines, fallbacks);
