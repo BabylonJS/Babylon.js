@@ -70,14 +70,18 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
             this._computeSizes();
         });
 
-        this._onActiveAnimationChangedObserver = this.props.context.onActiveAnimationChanged.add(({frame}) => {
-            this._evaluateKeys(frame);
+        this._onActiveAnimationChangedObserver = this.props.context.onActiveAnimationChanged.add(({frame = true}) => {
+            if (frame) {
+                this._evaluateKeys();
+            } else {
+                this._evaluateKeys(false, true, 0, 30);
+            }
             this._computeSizes();
             this.forceUpdate();
         });
 
         this.props.context.onFrameRequired.add(() => {
-            this._frame();
+            this._frameFromActiveKeys();
             this.forceUpdate();
         });
 
@@ -259,7 +263,7 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
 
             this.props.context.activeKeyPoints = [];
             this.props.context.onActiveKeyPointChanged.notifyObservers();
-            this.props.context.onActiveAnimationChanged.notifyObservers({});
+            this.props.context.onActiveAnimationChanged.notifyObservers({frame: false});
             this.forceUpdate();
         });
     }
@@ -293,7 +297,7 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
         }
     }
 
-    private _evaluateKeys(frame = true, range = true) {
+    private _evaluateKeys(frame = true, range = true, from?: number, to?: number) {
         if (this.props.context.activeAnimations.length === 0) {
             this._curves = [];
             return;
@@ -499,8 +503,10 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
             }
         }
 
-        if (frame) {
-            this._frame();
+        if (from !== undefined && to !== undefined) {
+            this._frameFromFrameRange(from, to)
+        } else if (frame) {
+            this._frameFromActiveKeys();
         }
     }
 
@@ -925,7 +931,177 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
         });
     }
 
-    private _frame() {
+    private _frameFromFrameRange(from: number, to: number) {
+        if (this.props.context.activeAnimations.length === 0) {
+            return;
+        }
+
+        this._offsetX = 20;
+        this._offsetY = 20;
+
+        this._minValue = Number.MAX_VALUE;
+        this._maxValue = -Number.MAX_VALUE;
+
+        this._minFrame = from;
+        this._maxFrame = to;
+        
+        for (const animation of this.props.context.activeAnimations) {
+            let propertyFilter: string | undefined = undefined;
+            const activeChannel = this.props.context.getActiveChannel(animation);
+            if (activeChannel) {
+                const activeCurve = this._curves.filter((c) => c.color === activeChannel)[0];
+                
+                if (activeCurve) {
+                    propertyFilter = activeCurve.property;
+                }
+            }
+
+            let keys = animation.getKeys();
+            // Only keep keys between to and from
+            if (keys && keys.length > 0) {
+                let newKeys = [];
+                
+                for (let i = 0; i < keys.length; i++) {
+                    const key = keys[i];
+                    if (key.frame > from && key.frame < to) {
+                        newKeys.push(key);
+                    }
+                }
+
+                keys = newKeys;
+            }
+
+            if (keys.length === 0) {
+                continue;
+            }
+
+            let values = this._extractValuesFromKeys(keys, animation.dataType, undefined, propertyFilter);
+            
+            let valAtFrom = this._extractValueFromFrame(animation, animation.dataType, from, propertyFilter);
+            let valAtTo = this._extractValueFromFrame(animation, animation.dataType, to, propertyFilter);
+
+            this._minValue = Math.min(this._minValue, values.min, valAtFrom.min, valAtTo.min);
+            this._maxValue = Math.max(this._maxValue, values.max, valAtFrom.max, valAtTo.max);
+        }
+        
+        this.props.context.referenceMinFrame = this._minFrame;
+        this.props.context.referenceMaxFrame = this._maxFrame;
+
+        const frameConvert = Math.abs(this._convertX(this._maxFrame) - this._convertX(this._minFrame)) + this._offsetX * 2;
+        const valueConvert = this._minValue !== this._maxValue ? Math.abs(this._convertY(this._minValue) - this._convertY(this._maxValue)) + this._offsetY * 2 : 1;
+
+        let scaleWidth = frameConvert / this._viewCurveWidth;
+        let scaleHeight = valueConvert / this._viewHeight;
+
+        this._viewScale = scaleWidth * this._viewHeight < valueConvert ? scaleHeight : scaleWidth;
+
+        this.props.context.onGraphMoved.notifyObservers(this._offsetX);
+        this.props.context.onGraphScaled.notifyObservers(this._viewScale);
+    }
+
+    private _extractValueFromFrame(animation: Animation, dataType: number, frame: number, propertyFilter?: string) {
+        const interpolatedValue = animation.evaluate(frame);
+        let minValue = Number.MAX_VALUE;
+        let maxValue = -Number.MAX_VALUE;
+
+        switch (dataType) {
+            case Animation.ANIMATIONTYPE_FLOAT:
+                minValue = Math.min(minValue, interpolatedValue.value);
+                maxValue = Math.max(maxValue, interpolatedValue.value);
+                break;
+            case Animation.ANIMATIONTYPE_VECTOR2:
+                if (!propertyFilter || propertyFilter === "x") {
+                    minValue = Math.min(minValue, interpolatedValue.x);
+                    maxValue = Math.max(maxValue, interpolatedValue.x);
+                }
+                if (!propertyFilter || propertyFilter === "y") {
+                    minValue = Math.min(minValue, interpolatedValue.y);
+                    maxValue = Math.max(maxValue, interpolatedValue.y);
+                }
+                break;
+            case Animation.ANIMATIONTYPE_VECTOR3:
+                if (!propertyFilter || propertyFilter === "x") {
+                    minValue = Math.min(minValue, interpolatedValue.x);
+                    maxValue = Math.max(maxValue, interpolatedValue.x);
+                }
+
+                if (!propertyFilter || propertyFilter === "y") {
+                    minValue = Math.min(minValue, interpolatedValue.y);
+                    maxValue = Math.max(maxValue, interpolatedValue.y);
+                }
+
+                if (!propertyFilter || propertyFilter === "z") {
+                    minValue = Math.min(minValue, interpolatedValue.z);
+                    maxValue = Math.max(maxValue, interpolatedValue.z);
+                }
+                break;
+            case Animation.ANIMATIONTYPE_COLOR3:
+                if (!propertyFilter || propertyFilter === "r") {
+                    minValue = Math.min(minValue, interpolatedValue.r);
+                    maxValue = Math.max(maxValue, interpolatedValue.r);
+                }
+
+                if (!propertyFilter || propertyFilter === "g") {
+                    minValue = Math.min(minValue, interpolatedValue.g);
+                    maxValue = Math.max(maxValue, interpolatedValue.g);
+                }
+
+                if (!propertyFilter || propertyFilter === "b") {
+                    minValue = Math.min(minValue, interpolatedValue.b);
+                    maxValue = Math.max(maxValue, interpolatedValue.b);
+                }
+            break;
+            case Animation.ANIMATIONTYPE_QUATERNION:
+                if (!propertyFilter || propertyFilter === "x") {
+                    minValue = Math.min(minValue, interpolatedValue.x);
+                    maxValue = Math.max(maxValue, interpolatedValue.x);
+                }
+
+                if (!propertyFilter || propertyFilter === "y") {
+                    minValue = Math.min(minValue, interpolatedValue.y);
+                    maxValue = Math.max(maxValue, interpolatedValue.y);
+                }
+
+                if (!propertyFilter || propertyFilter === "z") {
+                    minValue = Math.min(minValue, interpolatedValue.z);
+                    maxValue = Math.max(maxValue, interpolatedValue.z);
+                }
+
+                if (!propertyFilter || propertyFilter === "w") {
+                    minValue = Math.min(minValue, interpolatedValue.w);
+                    maxValue = Math.max(maxValue, interpolatedValue.w);
+                }
+            break;
+            case Animation.ANIMATIONTYPE_COLOR4:
+                if (!propertyFilter || propertyFilter === "r") {
+                    minValue = Math.min(minValue, interpolatedValue.r);
+                    maxValue = Math.max(maxValue, interpolatedValue.r);
+                }
+
+                if (!propertyFilter || propertyFilter === "g") {
+                    minValue = Math.min(minValue, interpolatedValue.g);
+                    maxValue = Math.max(maxValue, interpolatedValue.g);
+                }
+
+                if (!propertyFilter || propertyFilter === "b") {
+                    minValue = Math.min(minValue, interpolatedValue.b);
+                    maxValue = Math.max(maxValue, interpolatedValue.b);
+                }
+
+                if (!propertyFilter || propertyFilter === "a") {
+                    minValue = Math.min(minValue, interpolatedValue.a);
+                    maxValue = Math.max(maxValue, interpolatedValue.a);
+                }
+            break;
+        }
+
+        return {
+            min: minValue,
+            max: maxValue,
+        };
+    }
+
+    private _frameFromActiveKeys() {
         if (this.props.context.activeAnimations.length === 0) {
             return;
         }
