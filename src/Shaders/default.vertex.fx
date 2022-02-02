@@ -172,7 +172,11 @@ void main(void) {
 
 #ifdef VERTEXCOLOR
 	// Vertex color
-	vColor = color;
+    #ifdef INSTANCES
+        vColor = instanceColor;
+    #else
+	    vColor = color;
+    #endif
 #endif
 
 #include<pointCloudVertex>

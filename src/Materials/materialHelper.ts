@@ -266,7 +266,7 @@ export class MaterialHelper {
         }
 
         if (useVertexColor) {
-            var hasVertexColors = mesh.useVertexColors && mesh.isVerticesDataPresent(VertexBuffer.ColorKind);
+            var hasVertexColors = mesh.useVertexColors && (mesh.isVerticesDataPresent(VertexBuffer.ColorKind) || mesh.isVerticesDataPresent(VertexBuffer.ColorInstanceKind));
             defines["VERTEXCOLOR"] = hasVertexColors;
             defines["VERTEXALPHA"] = mesh.hasVertexAlpha && hasVertexColors && useVertexAlpha;
         }
