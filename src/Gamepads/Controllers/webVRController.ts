@@ -7,6 +7,7 @@ import { Nullable } from '../../types';
 
 /**
  * Defines the WebVRController object that represents controllers tracked in 3D space
+ * @deprecated Use WebXR instead
  */
 export abstract class WebVRController extends PoseEnabledController {
     /**

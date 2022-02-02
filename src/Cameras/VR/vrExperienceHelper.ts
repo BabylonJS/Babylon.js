@@ -333,6 +333,7 @@ export class OnAfterEnteringVRObservableEvent {
 /**
  * Helps to quickly add VR support to an existing scene.
  * See https://doc.babylonjs.com/divingDeeper/cameras/webVRHelper
+ * @deprecated
  */
 export class VRExperienceHelper {
     private _scene: Scene;
