@@ -94,7 +94,6 @@ SubMesh.prototype.projectToRef = function (vector: Vector3, positions: Vector3[]
 
     switch (material.fillMode) {
         case Constants.MATERIAL_PointListDrawMode:
-        case Constants.MATERIAL_LineListDrawMode:
         case Constants.MATERIAL_LineLoopDrawMode:
         case Constants.MATERIAL_LineStripDrawMode:
         case Constants.MATERIAL_TriangleFanDrawMode:
@@ -108,7 +107,7 @@ SubMesh.prototype.projectToRef = function (vector: Vector3, positions: Vector3[]
     }
 
     // LineMesh first as it's also a Mesh...
-    if ((this as any)._mesh.getClassName() === "InstancedLinesMesh" || (this as any)._mesh.getClassName() === "LinesMesh") {
+    if (material.fillMode === Constants.MATERIAL_LineListDrawMode) {
         return -1;
     } else {
         // Check if mesh is unindexed
