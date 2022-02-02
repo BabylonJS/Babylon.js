@@ -1,9 +1,7 @@
 import { EngineInstrumentation } from "../../Instrumentation/engineInstrumentation";
 import { Scene } from "../../scene";
 import { PrecisionDate } from "../precisionDate";
-
-const _absoluteFpsAccFrames = 10;
-const _absoluteFpsAccuracy = 0.001;
+import { SceneInstrumentation } from "../../Instrumentation/sceneInstrumentation";
 
 /**
  * Defines the general structure of what is necessary for a collection strategy.
@@ -239,34 +237,15 @@ export class PerfCollectionStrategy {
      */
     public static AbsoluteFpsStrategy(): PerfStrategyInitialization {
         return (scene) => {
-            let startTime = PrecisionDate.Now;
-            let timeTaken = 0;
-            let frameCount = 0;
-            const onBeforeAnimationsObserver = scene.onBeforeAnimationsObservable.add(() => {
-                if (frameCount === _absoluteFpsAccFrames) {
-                    frameCount = 0;
-                    timeTaken = 0;
-                }
-                startTime = PrecisionDate.Now;
-            });
-
-            const onAfterRenderObserver = scene.onAfterRenderObservable.add(() => {
-                timeTaken += PrecisionDate.Now - startTime;
-                frameCount += 1;
-            });
+            const sceneInstrumentation = new SceneInstrumentation(scene);
+            sceneInstrumentation.captureFrameTime = true;
 
             return {
                 id: "Absolute FPS",
                 getData: () => {
-                    if (timeTaken < _absoluteFpsAccuracy) {
-                        timeTaken = _absoluteFpsAccuracy;
-                    }
-                    return (_absoluteFpsAccFrames * 1000.0) / timeTaken
+                    return 1000.0 / sceneInstrumentation.frameTimeCounter.lastSecAverage;
                 },
-                dispose: () => {
-                    scene.onBeforeAnimationsObservable.remove(onBeforeAnimationsObserver);
-                    scene.onAfterRenderObservable.remove(onAfterRenderObserver);
-                },
+                dispose: defaultDisposeImpl,
             };
         };
     }
