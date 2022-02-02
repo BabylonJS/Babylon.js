@@ -16,7 +16,7 @@ import { Matrix2D, Vector2WithInfo } from "../math2D";
 import { RegisterClass } from "babylonjs/Misc/typeStore";
 import { SerializationHelper, serialize } from "babylonjs/Misc/decorators";
 import { ICanvasRenderingContext } from "babylonjs/Engines/ICanvas";
-import { Engine } from "babylonjs/Engines/engine";
+import { EngineStore } from "babylonjs/Engines/engineStore";
 
 /**
  * Root class used for all 2D controls
@@ -2323,7 +2323,7 @@ export class Control {
             return Control._FontHeightSizes[font];
         }
 
-        const engine = Engine.LastCreatedEngine;
+        const engine = EngineStore.LastCreatedEngine;
         if (!engine) {
             throw new Error("Invalid engine. Unable to create a canvas.");
         }

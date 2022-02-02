@@ -17,10 +17,11 @@ import { Color3 } from "../../Maths/math.color";
 import { NodeMaterial } from "../../Materials/Node/nodeMaterial";
 import { InputBlock } from "../../Materials/Node/Blocks/Input/inputBlock";
 import { Material } from "../../Materials/material";
-import { Engine } from "../../Engines/engine";
 import { CreateIcoSphere } from "../../Meshes/Builders/icoSphereBuilder";
 import { TransformNode } from "../../Meshes/transformNode";
 import { Axis } from "../../Maths/math.axis";
+import { EngineStore } from "../../Engines/engineStore";
+import { Constants } from "../../Engines/constants";
 
 declare const XRHand: XRHand;
 
@@ -579,7 +580,7 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
             // depth prepass and alpha mode
             handShader.needDepthPrePass = true;
             handShader.transparencyMode = Material.MATERIAL_ALPHABLEND;
-            handShader.alphaMode = Engine.ALPHA_COMBINE;
+            handShader.alphaMode = Constants.ALPHA_COMBINE;
 
             // build node materials
             handShader.build(false);
@@ -785,7 +786,7 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
 
         // If they didn't supply custom meshes and are not disabling the default meshes...
         if (!this.options.handMeshes?.customMeshes && !this.options.handMeshes?.disableDefaultMeshes) {
-            WebXRHandTracking._generateDefaultHandMeshesAsync(Engine.LastCreatedScene!, this.options).then((defaultHandMeshes) => {
+            WebXRHandTracking._generateDefaultHandMeshesAsync(EngineStore.LastCreatedScene!, this.options).then((defaultHandMeshes) => {
                 this._handResources.handMeshes = defaultHandMeshes;
                 this._handResources.rigMappings = {
                     left: WebXRHandTracking._generateDefaultHandMeshRigMapping("left"),

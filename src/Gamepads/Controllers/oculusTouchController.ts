@@ -5,7 +5,7 @@ import { SceneLoader } from "../../Loading/sceneLoader";
 import { WebVRController } from "./webVRController";
 import { PoseEnabledControllerType, ExtendedGamepadButton, PoseEnabledControllerHelper } from "./poseEnabledController";
 import { GamepadButtonChanges } from "../../Gamepads/gamepad";
-import { Engine } from '../../Engines/engine';
+import { EngineStore } from "../../Engines/engineStore";
 /**
  * Oculus Touch Controller
  */
@@ -198,7 +198,7 @@ export class OculusTouchController extends WebVRController {
 PoseEnabledControllerHelper._ControllerFactories.push({
     canCreate: (gamepadInfo) => {
         // If the headset reports being an Oculus Quest, use the Quest controller models
-        if (Engine.LastCreatedEngine && Engine.LastCreatedEngine._vrDisplay && Engine.LastCreatedEngine._vrDisplay.displayName === "Oculus Quest") {
+        if (EngineStore.LastCreatedEngine && EngineStore.LastCreatedEngine._vrDisplay && EngineStore.LastCreatedEngine._vrDisplay.displayName === "Oculus Quest") {
             OculusTouchController._IsQuest = true;
         }
         return gamepadInfo.id.indexOf('Oculus Touch') !== -1;

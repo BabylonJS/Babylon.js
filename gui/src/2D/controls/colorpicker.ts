@@ -14,7 +14,7 @@ import { Color3 } from 'babylonjs/Maths/math.color';
 import { PointerInfoBase } from 'babylonjs/Events/pointerEvents';
 import { serialize } from 'babylonjs/Misc/decorators';
 import { ICanvas, ICanvasRenderingContext } from "babylonjs/Engines/ICanvas";
-import { Engine } from "babylonjs/Engines/engine";
+import { EngineStore } from "babylonjs/Engines/engineStore";
 
 /** Class used to create color pickers */
 export class ColorPicker extends Control {
@@ -217,7 +217,7 @@ export class ColorPicker extends Control {
 
     private _createColorWheelCanvas(radius: number, thickness: number): ICanvas {
         // Shoudl abstract platform instead of using LastCreatedEngine
-        const engine = Engine.LastCreatedEngine;
+        const engine = EngineStore.LastCreatedEngine;
         if (!engine) {
             throw new Error("Invalid engine. Unable to create a canvas.");
         }
