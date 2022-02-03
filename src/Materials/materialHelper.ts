@@ -271,6 +271,10 @@ export class MaterialHelper {
             defines["VERTEXALPHA"] = mesh.hasVertexAlpha && hasVertexColors && useVertexAlpha;
         }
 
+        if (mesh.isVerticesDataPresent(VertexBuffer.ColorInstanceKind)) {
+            defines["INSTANCESCOLOR"] = true;
+        }
+
         if (useBones) {
             this.PrepareDefinesForBones(mesh, defines);
         }
