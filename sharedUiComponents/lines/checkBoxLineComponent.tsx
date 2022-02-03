@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 export interface ICheckBoxLineComponentProps {
     label?: string;
-    targets?: any[];
+    target?: any;
     propertyName?: string;
     isSelected?: () => boolean;
     onSelect?: (value: boolean) => void;
@@ -30,7 +30,7 @@ export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponen
         if (this.props.isSelected) {
             this.state = { isSelected: this.props.isSelected() };
         } else {
-            this.state = { isSelected: this.props.targets?.every(target => target[this.props.propertyName!] == true) || false };
+            this.state = { isSelected: this.props.target[this.props.propertyName!] == true };
         }
 
         if (this.props.disabled) {
@@ -44,7 +44,7 @@ export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponen
         if (nextProps.isSelected) {
             currentState = nextProps.isSelected!();
         } else {
-            currentState = nextProps.targets?.every(target => target[nextProps.propertyName!] == true) || false;
+            currentState = nextProps.target[nextProps.propertyName!] == true;
         }
 
         if (currentState !== nextState.isSelected || this._localChange) {
@@ -57,7 +57,7 @@ export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponen
             return true;
         }
 
-        return nextProps.label !== this.props.label || nextProps.targets !== this.props.targets || nextProps.targets?.length !== this.props.targets?.length || (nextProps.targets?.every((value, index) => value === this.props.targets![index]) || false);
+        return nextProps.label !== this.props.label || nextProps.target !== this.props.target;
     }
 
     onChange() {
@@ -67,16 +67,14 @@ export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponen
         } else {
             if (this.props.onPropertyChangedObservable) {
                 this.props.onPropertyChangedObservable.notifyObservers({
-                    object: this.props.targets,
+                    object: this.props.target,
                     property: this.props.propertyName!,
                     value: !this.state.isSelected,
                     initialValue: this.state.isSelected,
                 });
             }
 
-            for (const target of this.props.targets || []) {
-                target[this.props.propertyName!] = !this.state.isSelected;
-            }
+            this.props.target[this.props.propertyName!] = !this.state.isSelected;
         }
 
         if (this.props.onValueChanged) {

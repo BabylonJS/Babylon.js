@@ -24,7 +24,7 @@ export class ColorPickerLineComponent extends React.Component<IColorPickerCompon
     constructor(props: IColorPickerComponentProps) {
         super(props);
 
-        this.state = { pickerEnabled: false, color: this.props.value, hex: this.props.value.toHexString() };
+        this.state = { pickerEnabled: false, color: this.props.value, hex: this.getHexString(props) };
 
         this._floatRef = React.createRef();
         this._floatHostRef = React.createRef();
@@ -54,14 +54,18 @@ export class ColorPickerLineComponent extends React.Component<IColorPickerCompon
     }
 
     shouldComponentUpdate(nextProps: IColorPickerComponentProps, nextState: IColorPickerComponentState) {
-        let diffProps = nextProps.value.toHexString() !== this.props.value.toHexString();
+        let diffProps = this.getHexString(nextProps) !== this.getHexString();
 
         if (diffProps) {
             nextState.color = nextProps.value;
-            nextState.hex = nextProps.value.toHexString();
+            nextState.hex = this.getHexString(nextProps);
         }
 
         return diffProps || nextState.hex !== this.state.hex || nextState.pickerEnabled !== this.state.pickerEnabled;
+    }
+
+    getHexString(props = this.props) {
+        return props.value.toHexString();
     }
 
     componentDidUpdate() {
@@ -73,12 +77,12 @@ export class ColorPickerLineComponent extends React.Component<IColorPickerCompon
     }
 
     render() {
-        var color = this.state.color;
-
         return (
             <div className="color-picker">
                 {this.props.icon && <img src={this.props.icon} title={this.props.iconLabel} alt={this.props.iconLabel} className="icon" />}
-                <div className="color-rect" ref={this._floatHostRef} style={{ background: this.state.hex }} onClick={() => this.setState({ pickerEnabled: true })}></div>
+                <div className="color-rect-background" ref={this._floatHostRef} onClick={() => this.setState({ pickerEnabled: true })}>
+                    <div className="color-rect" style={{ background: this.state.hex }}></div>
+                </div>
                 {this.state.pickerEnabled && (
                     <>
                         <div
@@ -92,7 +96,7 @@ export class ColorPickerLineComponent extends React.Component<IColorPickerCompon
                         >
                             <div className="color-picker-float" ref={this._floatRef}>
                                 <ColorPicker
-                                    color={color}
+                                    color={this.state.color}
                                     linearhint={this.props.linearHint}
                                     onColorChanged={(color: Color3 | Color4) => {
                                         const hex: string = color.toHexString();

@@ -379,10 +379,14 @@ hr.ge {
         height: 150px;
         width: 15px;
 
-        .color-rect {
+        .color-rect-background {
             height: 15px;
             border: 1px black solid;
             cursor: pointer;
+            background: repeating-conic-gradient(#E2E2E2 0% 25%, white 0% 50%) 50% / 10px 10px;
+            .color-rect {
+                height: 100%;
+            }
         }
 
         .color-picker-cover {
