@@ -19,9 +19,7 @@ uniform mat4 viewProjection;
 #endif
 
 // Output
-#ifdef VERTEXCOLOR
-varying vec4 vColor;
-#elif INSTANCESCOLOR
+#if defined(VERTEXCOLOR) || defined(INSTANCESCOLOR)
 varying vec4 vColor;
 #endif
 
