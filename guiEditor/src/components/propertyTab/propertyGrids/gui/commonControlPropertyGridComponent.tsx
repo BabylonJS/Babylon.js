@@ -13,7 +13,8 @@ import { TextBlock } from "babylonjs-gui/2D/controls/textBlock";
 import { Container } from "babylonjs-gui/2D/controls/container";
 import { CheckBoxLineComponent } from "../../../../sharedUiComponents/lines/checkBoxLineComponent";
 import { ValueAndUnit } from "babylonjs-gui/2D/valueAndUnit";
-import { Color4LineComponent } from "../../../../sharedUiComponents/lines/color4LineComponent";
+import { ColorLineComponent } from "../../../../sharedUiComponents/lines/colorLineComponent";
+import { makeTargetsProxy } from "../../../../sharedUiComponents/lines/targetsProxy";
 
 const sizeIcon: string = require("../../../../sharedUiComponents/imgs/sizeIcon.svg");
 const verticalMarginIcon: string = require("../../../../sharedUiComponents/imgs/verticalMarginIcon.svg");
@@ -184,7 +185,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         icon={positionIcon}
                         lockObject={this.props.lockObject}
                         label="X"
-                        targets={controls}
+                        target={makeTargetsProxy(controls, "", this.props.onPropertyChangedObservable)}
                         delayInput={true}
                         propertyName="left"
                         onChange={(newValue) => this._checkAndUpdateValues("left", newValue)}
@@ -194,7 +195,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         numbersOnly={true}
                         lockObject={this.props.lockObject}
                         label="Y"
-                        targets={controls}
+                        target={makeTargetsProxy(controls, "", this.props.onPropertyChangedObservable)}
                         delayInput={true}
                         propertyName="top"
                         onChange={(newValue) => this._checkAndUpdateValues("top", newValue)}
@@ -208,7 +209,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         icon={sizeIcon}
                         lockObject={this.props.lockObject}
                         label="W"
-                        targets={[this]}
+                        target={this}
                         delayInput={true}
                         propertyName="_width"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
@@ -234,7 +235,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         numbersOnly={true}
                         lockObject={this.props.lockObject}
                         label="H"
-                        targets={[this]}
+                        target={this}
                         delayInput={true}
                         propertyName="_height"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
@@ -264,7 +265,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         icon={verticalMarginIcon}
                         lockObject={this.props.lockObject}
                         label="B"
-                        targets={controls}
+                        target={makeTargetsProxy(controls, "", this.props.onPropertyChangedObservable)}
                         propertyName="paddingBottom"
                         delayInput={true}
                         onChange={(newValue) => {
@@ -277,7 +278,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         numbersOnly={true}
                         lockObject={this.props.lockObject}
                         label="T"
-                        targets={controls}
+                        target={makeTargetsProxy(controls, "", this.props.onPropertyChangedObservable)}
                         propertyName="paddingTop"
                         delayInput={true}
                         onChange={(newValue) => {
@@ -294,7 +295,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         icon={horizontalMarginIcon}
                         lockObject={this.props.lockObject}
                         label="L"
-                        targets={controls}
+                        target={makeTargetsProxy(controls, "", this.props.onPropertyChangedObservable)}
                         propertyName="paddingLeft"
                         delayInput={true}
                         onChange={(newValue) => { this._checkAndUpdateValues("paddingLeft", newValue); this._markChildrenAsDirty(); }}
@@ -304,7 +305,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         numbersOnly={true}
                         lockObject={this.props.lockObject}
                         label="R"
-                        targets={controls}
+                        target={makeTargetsProxy(controls, "", this.props.onPropertyChangedObservable)}
                         delayInput={true}
                         propertyName="paddingRight"
                         onChange={(newValue) => { this._checkAndUpdateValues("paddingRight", newValue); this._markChildrenAsDirty(); }}
@@ -316,7 +317,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         iconLabel={"Padding does not affect the parameters of this control, only the descendants of this control."}
                         icon={descendantsOnlyPaddingIcon}
                         label=""
-                        targets={controls}
+                        target={makeTargetsProxy(controls, false, this.props.onPropertyChangedObservable)}
                         propertyName="descendentsOnlyPadding"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
@@ -329,14 +330,14 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         icon={positionIcon}
                         lockObject={this.props.lockObject}
                         label="X"
-                        targets={controls}
+                        target={makeTargetsProxy(controls, "", this.props.onPropertyChangedObservable)}
                         propertyName="transformCenterX"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <FloatLineComponent
                         lockObject={this.props.lockObject}
                         label="Y"
-                        targets={controls}
+                        target={makeTargetsProxy(controls, "", this.props.onPropertyChangedObservable)}
                         propertyName="transformCenterY"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
@@ -347,14 +348,14 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         icon={scaleIcon}
                         lockObject={this.props.lockObject}
                         label="X"
-                        targets={controls}
+                        target={makeTargetsProxy(controls, "", this.props.onPropertyChangedObservable)}
                         propertyName="scaleX"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <FloatLineComponent
                         lockObject={this.props.lockObject}
                         label="Y"
-                        targets={controls}
+                        target={makeTargetsProxy(controls, "", this.props.onPropertyChangedObservable)}
                         propertyName="scaleY"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
@@ -364,7 +365,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                     lockObject={this.props.lockObject}
                     icon={rotationIcon}
                     label="R"
-                    targets={controls}
+                    target={makeTargetsProxy(controls, Math.PI, this.props.onPropertyChangedObservable)}
                     decimalCount={2}
                     propertyName="rotation"
                     minimum={0}
@@ -374,25 +375,24 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                 />
                 <hr className="ge" />
                 <TextLineComponent tooltip="" label="APPEARANCE" value=" " color="grey"></TextLineComponent>
-                {((firstControl as any).color !== undefined && firstControl.typeName !== "Image" &&
-                    firstControl.typeName !== "ImageBasedSlider" && firstControl.typeName !== "ColorPicker") && (
-                        <Color4LineComponent
+                {(controls.every(control => control.color !== undefined && control.typeName !== "Image" && control.typeName !== "ImageBasedSlider" && control.typeName !== "ColorPicker") && (
+                        <ColorLineComponent
                             iconLabel={"Color"}
                             icon={colorIcon}
                             lockObject={this.props.lockObject}
-                            label=""
-                            targets={controls}
+                            label="Outline Color"
+                            target={makeTargetsProxy(controls, "", this.props.onPropertyChangedObservable)}
                             propertyName="color"
                             onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         />
                     )}
-                {controls.some(control => (control as any).background !== undefined) && (
-                    <Color4LineComponent
+                {controls.every(control => (control as any).background !== undefined) && (
+                    <ColorLineComponent
                         iconLabel={"Background"}
                         icon={fillColorIcon}
                         lockObject={this.props.lockObject}
-                        label=""
-                        targets={controls}
+                        label="Background Color"
+                        target={makeTargetsProxy(controls, "", this.props.onPropertyChangedObservable)}
                         propertyName="background"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
@@ -402,21 +402,22 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                     iconLabel={"Alpha"}
                     icon={alphaIcon}
                     label=""
-                    targets={controls}
+                    target={makeTargetsProxy(controls, "", this.props.onPropertyChangedObservable)}
                     propertyName="alpha"
                     minimum={0}
                     maximum={1}
                     step={0.01}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
-                <Color4LineComponent
+                <ColorLineComponent
                     iconLabel={"Shadow Color"}
                     icon={shadowColorIcon}
                     lockObject={this.props.lockObject}
                     label=""
-                    targets={controls}
+                    target={makeTargetsProxy(controls, "", this.props.onPropertyChangedObservable)}
                     propertyName="shadowColor"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    disableAlpha={true}
                 />
                 <div className="ge-divider">
                     <FloatLineComponent
@@ -424,7 +425,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         icon={shadowOffsetXIcon}
                         lockObject={this.props.lockObject}
                         label=""
-                        targets={controls}
+                        target={makeTargetsProxy(controls, "", this.props.onPropertyChangedObservable)}
                         propertyName="shadowOffsetX"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
@@ -433,7 +434,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         icon={shadowOffsetYIcon}
                         lockObject={this.props.lockObject}
                         label=""
-                        targets={controls}
+                        target={makeTargetsProxy(controls, "", this.props.onPropertyChangedObservable)}
                         propertyName="shadowOffsetY"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
@@ -444,7 +445,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         icon={shadowBlurIcon}
                         lockObject={this.props.lockObject}
                         label=""
-                        targets={controls}
+                        target={makeTargetsProxy(controls, "", this.props.onPropertyChangedObservable)}
                         propertyName="shadowBlur"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
@@ -458,7 +459,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                             icon={fontFamilyIcon}
                             lockObject={this.props.lockObject}
                             label=""
-                            targets={controls}
+                            target={makeTargetsProxy(controls, "", this.props.onPropertyChangedObservable)}
                             propertyName="fontFamily"
                             onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         />
@@ -467,7 +468,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                             icon={fontSizeIcon}
                             lockObject={this.props.lockObject}
                             label=""
-                            targets={controls}
+                            target={makeTargetsProxy(controls, "", this.props.onPropertyChangedObservable)}
                             numbersOnly={true}
                             propertyName="fontSize"
                             onChange={(newValue) => this._checkAndUpdateValues("fontSize", newValue)}
@@ -480,7 +481,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                             icon={shadowBlurIcon}
                             lockObject={this.props.lockObject}
                             label=""
-                            targets={controls}
+                            target={makeTargetsProxy(controls, "", this.props.onPropertyChangedObservable)}
                             propertyName="fontWeight"
                             onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         />
@@ -489,7 +490,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                             icon={fontStyleIcon}
                             lockObject={this.props.lockObject}
                             label=""
-                            targets={controls}
+                            target={makeTargetsProxy(controls, "", this.props.onPropertyChangedObservable)}
                             propertyName="fontStyle"
                             onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         />

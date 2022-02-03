@@ -10,6 +10,7 @@ import { FloatLineComponent } from "../../../lines/floatLineComponent";
 import { TextInputLineComponent } from "../../../lines/textInputLineComponent";
 import { LockObject } from "../../../tabs/propertyGrids/lockObject";
 import { OptionsLineComponent } from "../../../lines/optionsLineComponent";
+import { makeTargetsProxy } from "../../../lines/targetsProxy";
 
 interface ICommonControlPropertyGridComponentProps {
     controls: Control[];
@@ -73,14 +74,14 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                     <TextInputLineComponent
                         lockObject={this.props.lockObject}
                         label="Name"
-                        targets={controls}
+                        target={makeTargetsProxy(controls, "", this.props.onPropertyChangedObservable)}
                         propertyName="name"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <TextLineComponent label="Unique ID" value={control.uniqueId.toString()} />
                     <SliderLineComponent
                         label="Alpha"
-                        targets={controls}
+                        target={makeTargetsProxy(controls, "", this.props.onPropertyChangedObservable)}
                         propertyName="alpha"
                         minimum={0}
                         maximum={1}
@@ -91,7 +92,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         <TextInputLineComponent
                             lockObject={this.props.lockObject}
                             label="Color"
-                            targets={controls}
+                            target={makeTargetsProxy(controls, "", this.props.onPropertyChangedObservable)}
                             propertyName="color"
                             onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         />
@@ -100,7 +101,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         <TextInputLineComponent
                             lockObject={this.props.lockObject}
                             label="Background"
-                            targets={controls}
+                            target={makeTargetsProxy(controls, "", this.props.onPropertyChangedObservable)}
                             propertyName="background"
                             onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         />
@@ -108,7 +109,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                     <FloatLineComponent
                         lockObject={this.props.lockObject}
                         label="ZIndex"
-                        targets={controls}
+                        target={makeTargetsProxy(controls, "", this.props.onPropertyChangedObservable)}
                         propertyName="zIndex"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
@@ -118,14 +119,14 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                     <OptionsLineComponent
                         label="Horizontal"
                         options={horizontalOptions}
-                        targets={controls}
+                        target={makeTargetsProxy(controls, "", this.props.onPropertyChangedObservable)}
                         propertyName="horizontalAlignment"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <OptionsLineComponent
                         label="Vertical"
                         options={verticalOptions}
-                        targets={controls}
+                        target={makeTargetsProxy(controls, "", this.props.onPropertyChangedObservable)}
                         propertyName="verticalAlignment"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
@@ -134,56 +135,56 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                     <TextInputLineComponent
                         lockObject={this.props.lockObject}
                         label="Left"
-                        targets={controls}
+                        target={makeTargetsProxy(controls, "", this.props.onPropertyChangedObservable)}
                         propertyName="left"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <TextInputLineComponent
                         lockObject={this.props.lockObject}
                         label="Top"
-                        targets={controls}
+                        target={makeTargetsProxy(controls, "", this.props.onPropertyChangedObservable)}
                         propertyName="top"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <TextInputLineComponent
                         lockObject={this.props.lockObject}
                         label="Width"
-                        targets={controls}
+                        target={makeTargetsProxy(controls, "", this.props.onPropertyChangedObservable)}
                         propertyName="width"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <TextInputLineComponent
                         lockObject={this.props.lockObject}
                         label="Height"
-                        targets={controls}
+                        target={makeTargetsProxy(controls, "", this.props.onPropertyChangedObservable)}
                         propertyName="height"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <TextInputLineComponent
                         lockObject={this.props.lockObject}
                         label="Padding left"
-                        targets={controls}
+                        target={makeTargetsProxy(controls, "", this.props.onPropertyChangedObservable)}
                         propertyName="paddingLeft"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <TextInputLineComponent
                         lockObject={this.props.lockObject}
                         label="Padding top"
-                        targets={controls}
+                        target={makeTargetsProxy(controls, "", this.props.onPropertyChangedObservable)}
                         propertyName="paddingTop"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <TextInputLineComponent
                         lockObject={this.props.lockObject}
                         label="Padding right"
-                        targets={controls}
+                        target={makeTargetsProxy(controls, "", this.props.onPropertyChangedObservable)}
                         propertyName="paddingRight"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <TextInputLineComponent
                         lockObject={this.props.lockObject}
                         label="Padding bottom"
-                        targets={controls}
+                        target={makeTargetsProxy(controls, "", this.props.onPropertyChangedObservable)}
                         propertyName="paddingBottom"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
@@ -192,20 +193,20 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                     <FloatLineComponent
                         lockObject={this.props.lockObject}
                         label="ScaleX"
-                        targets={controls}
+                        target={makeTargetsProxy(controls, "", this.props.onPropertyChangedObservable)}
                         propertyName="scaleX"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <FloatLineComponent
                         lockObject={this.props.lockObject}
                         label="ScaleY"
-                        targets={controls}
+                        target={makeTargetsProxy(controls, "", this.props.onPropertyChangedObservable)}
                         propertyName="scaleY"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <SliderLineComponent
                         label="Rotation"
-                        targets={controls}
+                        target={makeTargetsProxy(controls, "", this.props.onPropertyChangedObservable)}
                         propertyName="rotation"
                         minimum={0}
                         maximum={2 * Math.PI}
@@ -215,14 +216,14 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                     <FloatLineComponent
                         lockObject={this.props.lockObject}
                         label="Transform center X"
-                        targets={controls}
+                        target={makeTargetsProxy(controls, "", this.props.onPropertyChangedObservable)}
                         propertyName="transformCenterX"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <FloatLineComponent
                         lockObject={this.props.lockObject}
                         label="Transform center Y"
-                        targets={controls}
+                        target={makeTargetsProxy(controls, "", this.props.onPropertyChangedObservable)}
                         propertyName="transformCenterY"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
@@ -231,28 +232,28 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                     <TextInputLineComponent
                         lockObject={this.props.lockObject}
                         label="Family"
-                        targets={controls}
+                        target={makeTargetsProxy(controls, "", this.props.onPropertyChangedObservable)}
                         propertyName="fontFamily"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <TextInputLineComponent
                         lockObject={this.props.lockObject}
                         label="Size"
-                        targets={controls}
+                        target={makeTargetsProxy(controls, "", this.props.onPropertyChangedObservable)}
                         propertyName="fontSize"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <TextInputLineComponent
                         lockObject={this.props.lockObject}
                         label="Weight"
-                        targets={controls}
+                        target={makeTargetsProxy(controls, "", this.props.onPropertyChangedObservable)}
                         propertyName="fontWeight"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <TextInputLineComponent
                         lockObject={this.props.lockObject}
                         label="Style"
-                        targets={controls}
+                        target={makeTargetsProxy(controls, "", this.props.onPropertyChangedObservable)}
                         propertyName="fontStyle"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
@@ -261,28 +262,28 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                     <TextInputLineComponent
                         lockObject={this.props.lockObject}
                         label="Color"
-                        targets={controls}
+                        target={makeTargetsProxy(controls, "", this.props.onPropertyChangedObservable)}
                         propertyName="shadowColor"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <FloatLineComponent
                         lockObject={this.props.lockObject}
                         label="Offset X"
-                        targets={controls}
+                        target={makeTargetsProxy(controls, "", this.props.onPropertyChangedObservable)}
                         propertyName="shadowOffsetX"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <FloatLineComponent
                         lockObject={this.props.lockObject}
                         label="Offset Y"
-                        targets={controls}
+                        target={makeTargetsProxy(controls, "", this.props.onPropertyChangedObservable)}
                         propertyName="shadowOffsetY"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <FloatLineComponent
                         lockObject={this.props.lockObject}
                         label="Blur"
-                        targets={controls}
+                        target={makeTargetsProxy(controls, "", this.props.onPropertyChangedObservable)}
                         propertyName="shadowBlur"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />

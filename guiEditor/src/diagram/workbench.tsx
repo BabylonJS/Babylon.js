@@ -845,8 +845,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         // Create our first scene.
         this._scene = new Scene(this._engine);
 
-        const clearColor = 204 / 255.0;
-        this._scene.clearColor = new Color4(clearColor, clearColor, clearColor, 0.0);
+        this._scene.clearColor = new Color4(0, 0, 0, 0);
         const light = new HemisphericLight("light1", Axis.Y, this._scene);
         light.intensity = 0.9;
 
