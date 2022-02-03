@@ -3658,7 +3658,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             }
 
             if (!this._frustumPlanes) {
-                this.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix());
+                this.updateTransformMatrix();
             }
 
             this._evaluateActiveMeshes();
@@ -3881,7 +3881,14 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         if (!this.activeCamera) {
             return;
         }
-        this.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix(force));
+        var useMultiview = this.activeCamera._renderingMultiview;
+        if (useMultiview) {
+            const leftCamera = this.activeCamera._rigCameras[0];
+            const rightCamera = this.activeCamera._rigCameras[1];
+            this.setTransformMatrix(leftCamera.getViewMatrix(), leftCamera.getProjectionMatrix(force), rightCamera.getViewMatrix(), rightCamera.getProjectionMatrix(force));
+        } else {
+            this.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix(force));
+        }
     }
 
     private _bindFrameBuffer(camera: Nullable<Camera>, clear = true) {
@@ -3949,12 +3956,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             this._bindFrameBuffer(this._activeCamera);
         }
 
-        var useMultiview = camera._renderingMultiview;
-        if (useMultiview) {
-            this.setTransformMatrix(camera._rigCameras[0].getViewMatrix(), camera._rigCameras[0].getProjectionMatrix(), camera._rigCameras[1].getViewMatrix(), camera._rigCameras[1].getProjectionMatrix());
-        } else {
-            this.updateTransformMatrix();
-        }
+        this.updateTransformMatrix();
 
         this.onBeforeCameraRenderObservable.notifyObservers(this.activeCamera);
 
@@ -4083,7 +4085,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
         // Use _activeCamera instead of activeCamera to avoid onActiveCameraChanged
         this._activeCamera = camera;
-        this.setTransformMatrix(this._activeCamera.getViewMatrix(), this._activeCamera.getProjectionMatrix());
+        this.updateTransformMatrix();
         this.onAfterRenderCameraObservable.notifyObservers(camera);
     }
 
