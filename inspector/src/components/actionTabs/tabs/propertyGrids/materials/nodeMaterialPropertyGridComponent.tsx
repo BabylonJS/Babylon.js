@@ -124,7 +124,7 @@ export class NodeMaterialPropertyGridComponent extends React.Component<INodeMate
                     <Color4LineComponent
                         key={block.name}
                         label={block.name}
-                        target={block}
+                        targets={[block]}
                         propertyName="value"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
