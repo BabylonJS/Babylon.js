@@ -6,8 +6,8 @@ import { Control } from "./control";
 import { Measure } from "../measure";
 import { RegisterClass } from "babylonjs/Misc/typeStore";
 import { serialize } from "babylonjs/Misc/decorators";
-import { Engine } from "babylonjs/Engines/engine";
 import { ICanvas, ICanvasRenderingContext, IImage } from "babylonjs/Engines/ICanvas";
+import { EngineStore } from "babylonjs/Engines/engineStore";
 
 /**
  * Class used to create 2D images
@@ -313,7 +313,7 @@ export class Image extends Control {
         const height = this._domImage.height;
 
         // Should abstract platform instead of using LastCreatedEngine
-        const engine = this._host?.getScene()?.getEngine() || Engine.LastCreatedEngine;
+        const engine = this._host?.getScene()?.getEngine() || EngineStore.LastCreatedEngine;
         if (!engine) {
             throw new Error("Invalid engine. Unable to create a canvas.");
         }
@@ -400,7 +400,7 @@ export class Image extends Control {
         const height = this._domImage.height;
 
         if (!this._workingCanvas) {
-            const engine = this._host?.getScene()?.getEngine() || Engine.LastCreatedEngine;
+            const engine = this._host?.getScene()?.getEngine() || EngineStore.LastCreatedEngine;
             if (!engine) {
                 throw new Error("Invalid engine. Unable to create a canvas.");
             }
@@ -512,7 +512,7 @@ export class Image extends Control {
         }
 
         // Should abstract platform instead of using LastCreatedEngine
-        const engine = this._host?.getScene()?.getEngine() || Engine.LastCreatedEngine;
+        const engine = this._host?.getScene()?.getEngine() || EngineStore.LastCreatedEngine;
         if (!engine) {
             throw new Error("Invalid engine. Unable to create a canvas.");
         }
@@ -765,7 +765,7 @@ export class Image extends Control {
         const height = this._currentMeasure.height;
 
         if (!this._workingCanvas) {
-            const engine = this._host?.getScene()?.getEngine() || Engine.LastCreatedEngine;
+            const engine = this._host?.getScene()?.getEngine() || EngineStore.LastCreatedEngine;
             if (!engine) {
                 throw new Error("Invalid engine. Unable to create a canvas.");
             }

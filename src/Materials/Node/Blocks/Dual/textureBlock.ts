@@ -13,11 +13,11 @@ import { RegisterClass } from '../../../../Misc/typeStore';
 import { Texture } from '../../../Textures/texture';
 import { Scene } from '../../../../scene';
 import { NodeMaterialModes } from '../../Enums/nodeMaterialModes';
-import { Engine } from "../../../../Engines/engine";
 import { Constants } from '../../../../Engines/constants';
 import "../../../../Shaders/ShadersInclude/helperFunctions";
 import { ImageSourceBlock } from './imageSourceBlock';
 import { NodeMaterialConnectionPointCustomObject } from '../../nodeMaterialConnectionPointCustomObject';
+import { EngineStore } from '../../../../Engines/engineStore';
 
 /**
  * Block used to read a texture from a sampler
@@ -52,7 +52,7 @@ export class TextureBlock extends NodeMaterialBlock {
             return;
         }
 
-        const scene = texture?.getScene() ?? Engine.LastCreatedScene;
+        const scene = texture?.getScene() ?? EngineStore.LastCreatedScene;
 
         if (!texture && scene) {
             scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {

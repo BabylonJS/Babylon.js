@@ -14,12 +14,12 @@ import { RegisterClass } from '../Misc/typeStore';
 import { Color3, Color4 } from '../Maths/math.color';
 import { EffectFallbacks } from './effectFallbacks';
 import { WebRequest } from '../Misc/webRequest';
-import { Engine } from '../Engines/engine';
 import { ShaderLanguage } from "./shaderLanguage";
 import { UniformBuffer } from "./uniformBuffer";
 import { TextureSampler } from "./Textures/textureSampler";
 import { StorageBuffer } from "../Buffers/storageBuffer";
 import { PushMaterial } from "./pushMaterial";
+import { EngineStore } from "../Engines/engineStore";
 
 declare type ExternalTexture = import("./Textures/externalTexture").ExternalTexture;
 
@@ -1623,7 +1623,7 @@ export class ShaderMaterial extends PushMaterial {
                 if (request.readyState == 4) {
                     if (request.status == 200) {
                         let serializationObject = JSON.parse(request.responseText);
-                        let output = this.Parse(serializationObject, scene || Engine.LastCreatedScene, rootUrl);
+                        let output = this.Parse(serializationObject, scene || EngineStore.LastCreatedScene, rootUrl);
 
                         if (name) {
                             output.name = name;
@@ -1656,7 +1656,7 @@ export class ShaderMaterial extends PushMaterial {
                     if (request.status == 200) {
                         var snippet = JSON.parse(JSON.parse(request.responseText).jsonPayload);
                         let serializationObject = JSON.parse(snippet.shaderMaterial);
-                        let output = this.Parse(serializationObject, scene || Engine.LastCreatedScene, rootUrl);
+                        let output = this.Parse(serializationObject, scene || EngineStore.LastCreatedScene, rootUrl);
 
                         output.snippetId = snippetId;
 

@@ -227,7 +227,7 @@
         },
         {
             "title": "Gizmos",
-            "playgroundId": "#8GY6J8#48",
+            "playgroundId": "#8GY6J8#196",
             "renderCount": 50,
             "referenceImage": "Gizmos.png"
         },
@@ -1109,7 +1109,7 @@
         {
             "title": "Prepass + mirror, with postprocesses",
             "renderCount": 10,
-            "playgroundId": "#PIZ1GK#213",
+            "playgroundId": "#PIZ1GK#337",
             "excludedEngines": ["webgl1"],
             "referenceImage": "prepass-mirror-with-pp.png"
         },
