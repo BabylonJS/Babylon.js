@@ -4195,6 +4195,10 @@ declare module BABYLON {
          */
         static readonly ColorKind: string;
         /**
+         * Instance Colors
+         */
+        static readonly ColorInstanceKind: string;
+        /**
          * Matrix indices (for bones)
          */
         static readonly MatricesIndicesKind: string;
@@ -6715,7 +6719,7 @@ declare module BABYLON {
             /**
              * @hidden
              */
-            _setCubeMapTextureParams(texture: InternalTexture, loadMipmap: boolean): void;
+            _setCubeMapTextureParams(texture: InternalTexture, loadMipmap: boolean, maxLevel?: number): void;
         }
 }
 declare module BABYLON {
@@ -23221,6 +23225,7 @@ declare module BABYLON {
          */
         _allowCameraRotation: boolean;
         private _currentActiveButton;
+        private _contextMenuBind;
         /**
          * Manage the mouse inputs to control the movement of a free camera.
          * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
@@ -24207,6 +24212,7 @@ declare module BABYLON {
 declare module BABYLON {
     /**
      * Defines the WebVRController object that represents controllers tracked in 3D space
+     * @deprecated Use WebXR instead
      */
     export abstract class WebVRController extends PoseEnabledController {
         /**
@@ -24673,6 +24679,7 @@ declare module BABYLON {
     /**
      * This represents a WebVR camera.
      * The WebVR camera is Babylon's simple interface to interaction with Windows Mixed Reality, HTC Vive and Oculus Rift.
+     * @deprecated Use WebXR instead - https://doc.babylonjs.com/divingDeeper/webXR
      * @example https://doc.babylonjs.com/how_to/webvr_camera
      */
     export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
@@ -32931,6 +32938,11 @@ declare module BABYLON {
          */
         static ConvertCubeMapTextureToSphericalPolynomial(texture: BaseTexture): Nullable<Promise<SphericalPolynomial>>;
         /**
+         * Compute the area on the unit sphere of the rectangle defined by (x,y) and the origin
+         * See https://www.rorydriscoll.com/2012/01/15/cubemap-texel-solid-angle/
+         */
+        private static _AreaElement;
+        /**
          * Converts a cubemap to the according Spherical Polynomial data.
          * This extracts the first 3 orders only as they are the only one used in the lighting.
          *
@@ -33868,6 +33880,7 @@ declare module BABYLON {
         HORIZONOCCLUSION: boolean;
         INSTANCES: boolean;
         THIN_INSTANCES: boolean;
+        INSTANCESCOLOR: boolean;
         PREPASS: boolean;
         PREPASS_IRRADIANCE: boolean;
         PREPASS_IRRADIANCE_INDEX: number;
@@ -34683,6 +34696,7 @@ declare module BABYLON {
         BONES_VELOCITY_ENABLED: boolean;
         INSTANCES: boolean;
         THIN_INSTANCES: boolean;
+        INSTANCESCOLOR: boolean;
         GLOSSINESS: boolean;
         ROUGHNESS: boolean;
         EMISSIVEASILLUMINATION: boolean;
@@ -44866,6 +44880,8 @@ declare module BABYLON {
         supportSRGBBuffers: boolean;
         /** Defines if transform feedbacks are supported */
         supportTransformFeedbacks: boolean;
+        /** Defines if texture max level are supported */
+        textureMaxLevel: boolean;
     }
 }
 declare module BABYLON {
@@ -47068,7 +47084,7 @@ declare module BABYLON {
         recordIndexBuffer(vertexArray: NativeData, indexBuffer: NativeData): void;
         updateDynamicIndexBuffer(buffer: NativeData, bytes: ArrayBuffer, byteOffset: number, byteLength: number, startIndex: number): void;
         createVertexBuffer(bytes: ArrayBuffer, byteOffset: number, byteLength: number, dynamic: boolean): NativeData;
-        recordVertexBuffer(vertexArray: NativeData, vertexBuffer: NativeData, location: number, byteOffset: number, byteStride: number, numElements: number, type: number, normalized: boolean): void;
+        recordVertexBuffer(vertexArray: NativeData, vertexBuffer: NativeData, location: number, byteOffset: number, byteStride: number, numElements: number, type: number, normalized: boolean, instanceDivisor: number): void;
         updateDynamicVertexBuffer(vertexBuffer: NativeData, bytes: ArrayBuffer, byteOffset: number, byteLength: number): void;
         createProgram(vertexShader: string, fragmentShader: string): any;
         getUniforms(shaderProgram: any, uniformsNames: string[]): WebGLUniformLocation[];
@@ -55109,6 +55125,7 @@ declare module BABYLON {
         private _baseLayerRTTProvider;
         private _xrNavigator;
         private _sessionMode;
+        private _onEngineDisposedObserver;
         /**
          * The base reference space from which the session started. good if you want to reset your
          * reference space
@@ -62326,6 +62343,7 @@ declare module BABYLON {
     /**
      * Helps to quickly add VR support to an existing scene.
      * See https://doc.babylonjs.com/divingDeeper/cameras/webVRHelper
+     * @deprecated
      */
     export class VRExperienceHelper {
         /** Options to modify the vr experience helper's behavior. */
@@ -72067,6 +72085,7 @@ declare module BABYLON {
              * Creates a new VREXperienceHelper
              * @see https://doc.babylonjs.com/divingDeeper/cameras/webVRHelper
              * @param webVROptions defines the options used to create the new VREXperienceHelper
+             * @deprecated Please use createDefaultXRExperienceAsync instead
              * @returns a new VREXperienceHelper
              */
             createDefaultVRExperience(webVROptions?: VRExperienceHelperOptions): VRExperienceHelper;
@@ -91394,6 +91413,7 @@ interface WebGLRenderingContext {
     readonly TEXTURE_2D_ARRAY: number;
     readonly TEXTURE_COMPARE_FUNC: number;
     readonly TEXTURE_COMPARE_MODE: number;
+    readonly TEXTURE_MAX_LEVEL: number;
     readonly COMPARE_REF_TO_TEXTURE: number;
     readonly TEXTURE_WRAP_R: number;
     readonly HALF_FLOAT: number;
