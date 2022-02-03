@@ -4,10 +4,10 @@ import { Vector3, Vector2 } from "../Maths/math.vector";
 import { VertexBuffer } from "../Buffers/buffer";
 import { Mesh } from "../Meshes/mesh";
 import { VertexData } from "../Meshes/mesh.vertexData";
-import { Engine } from "../Engines/engine";
 import { Nullable } from "../types";
 import { Path2 } from '../Maths/math.path';
 import { Epsilon } from '../Maths/math.constants';
+import { EngineStore } from "../Engines/engineStore";
 
 declare var earcut: any;
 /**
@@ -182,7 +182,7 @@ export class PolygonMeshBuilder {
     constructor(name: string, contours: Path2 | Vector2[] | any, scene?: Scene, earcutInjection = earcut) {
         this.bjsEarcut = earcutInjection;
         this._name = name;
-        this._scene = scene || Engine.LastCreatedScene;
+        this._scene = scene || EngineStore.LastCreatedScene;
 
         var points: Vector2[];
         if (contours instanceof Path2) {

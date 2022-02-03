@@ -11,6 +11,7 @@ import { AssetContainer } from "../assetContainer";
 
 import "./audioEngine";
 import { PrecisionDate } from '../Misc/precisionDate';
+import { EngineStore } from "../Engines/engineStore";
 
 // Adds the parser to the scene parsers.
 AbstractScene.AddParser(SceneComponentConstants.NAME_AUDIO, (parsedData: any, scene: Scene, container: AssetContainer, rootUrl: string) => {
@@ -304,7 +305,7 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
      * @param scene Defines the scene to register the component in
      */
     constructor(scene?: Nullable<Scene>) {
-        scene = scene || Engine.LastCreatedScene;
+        scene = scene || EngineStore.LastCreatedScene;
         if (!scene) {
             return;
         }
