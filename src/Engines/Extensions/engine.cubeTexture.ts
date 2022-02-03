@@ -220,7 +220,7 @@ ThinEngine.prototype._partialLoadImg = function (url: string, index: number, loa
     }
 };
 
-ThinEngine.prototype._setCubeMapTextureParams = function (texture: InternalTexture, loadMipmap: boolean, maxLevel: number): void {
+ThinEngine.prototype._setCubeMapTextureParams = function (texture: InternalTexture, loadMipmap: boolean, maxLevel?: number): void {
     var gl = this._gl;
     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, loadMipmap ? gl.LINEAR_MIPMAP_LINEAR : gl.LINEAR);
@@ -228,8 +228,9 @@ ThinEngine.prototype._setCubeMapTextureParams = function (texture: InternalTextu
     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     texture.samplingMode = loadMipmap ? Constants.TEXTURE_TRILINEAR_SAMPLINGMODE : Constants.TEXTURE_LINEAR_LINEAR;
 
-    if (loadMipmap && this.getCaps().textureMaxLevel && maxLevel > 0) {
+    if (loadMipmap && this.getCaps().textureMaxLevel && maxLevel !== undefined && maxLevel > 0) {
         gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAX_LEVEL, maxLevel);
+        texture._maxLodLevel = maxLevel;
     }
 
     this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, null);

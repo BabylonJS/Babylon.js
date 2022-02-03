@@ -65,8 +65,11 @@ WebGPUEngine.prototype.createCubeTexture = function (rootUrl: string, scene: Nul
     );
 };
 
-WebGPUEngine.prototype._setCubeMapTextureParams = function (texture: InternalTexture, loadMipmap: boolean) {
+WebGPUEngine.prototype._setCubeMapTextureParams = function (texture: InternalTexture, loadMipmap: boolean, maxLevel?: number) {
     texture.samplingMode = loadMipmap ? Constants.TEXTURE_TRILINEAR_SAMPLINGMODE : Constants.TEXTURE_BILINEAR_SAMPLINGMODE;
     texture._cachedWrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
     texture._cachedWrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+    if (maxLevel) {
+        texture._maxLodLevel = maxLevel;
+    }
 };
