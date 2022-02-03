@@ -23,9 +23,7 @@ varying vec3 vPositionW;
 varying vec3 vNormalW;
 #endif
 
-#ifdef VERTEXCOLOR
-varying vec4 vColor;
-#elif INSTANCESCOLOR
+#if defined(VERTEXCOLOR) || defined(INSTANCESCOLOR)
 varying vec4 vColor;
 #endif
 
@@ -152,9 +150,7 @@ void main(void) {
 
 #include<depthPrePass>
 
-#ifdef VERTEXCOLOR
-	baseColor.rgb *= vColor.rgb;
-#elif INSTANCESCOLOR
+#if defined(VERTEXCOLOR) || defined(INSTANCESCOLOR)
 	baseColor.rgb *= vColor.rgb;
 #endif
 

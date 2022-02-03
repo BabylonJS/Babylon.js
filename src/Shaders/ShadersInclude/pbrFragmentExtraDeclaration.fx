@@ -14,8 +14,6 @@ varying vec3 vPositionW;
     #endif
 #endif
 
-#ifdef VERTEXCOLOR
-    varying vec4 vColor;
-#elif INSTANCESCOLOR
+#if defined(VERTEXCOLOR) || defined(INSTANCESCOLOR)
     varying vec4 vColor;
 #endif
