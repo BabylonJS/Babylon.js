@@ -19,7 +19,7 @@ varying vec3 vPositionW;
 varying vec3 vNormalW;
 #endif
 
-#ifdef VERTEXCOLOR
+#if defined(VERTEXCOLOR) || defined(INSTANCESCOLOR)
 varying vec4 vColor;
 #endif
 
@@ -111,8 +111,8 @@ void main(void) {
 	vec3 bumpColor = vec3(1.0);
 #endif
 
-#ifdef VERTEXCOLOR
-	baseColor.rgb *= vColor.rgb;
+#if defined(VERTEXCOLOR) || defined(INSTANCESCOLOR)
+    baseColor.rgb *= vColor.rgb;
 #endif
 
 	// Bump
