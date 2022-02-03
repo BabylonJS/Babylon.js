@@ -1266,10 +1266,10 @@ declare module "babylonjs-gui/2D/controls/control" {
         /** Gets or sets if control is Enabled */
         get isEnabled(): boolean;
         set isEnabled(value: boolean);
-        /** Gets or sets background color of control if it's disabled */
+        /** Gets or sets background color of control if it's disabled. Only applies to Button class. */
         get disabledColor(): string;
         set disabledColor(value: string);
-        /** Gets or sets front color of control if it's disabled */
+        /** Gets or sets front color of control if it's disabled. Only applies to Checkbox class. */
         get disabledColorItem(): string;
         set disabledColorItem(value: string);
         /**
@@ -8386,10 +8386,10 @@ declare module BABYLON.GUI {
         /** Gets or sets if control is Enabled */
         get isEnabled(): boolean;
         set isEnabled(value: boolean);
-        /** Gets or sets background color of control if it's disabled */
+        /** Gets or sets background color of control if it's disabled. Only applies to Button class. */
         get disabledColor(): string;
         set disabledColor(value: string);
-        /** Gets or sets front color of control if it's disabled */
+        /** Gets or sets front color of control if it's disabled. Only applies to Checkbox class. */
         get disabledColorItem(): string;
         set disabledColorItem(value: string);
         /**
