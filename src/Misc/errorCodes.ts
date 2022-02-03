@@ -1,16 +1,19 @@
 /**
  * Error codes for babylon JS errors
  */
-export const ErrorCodes = Object.freeze({
+export const ErrorCodes = {
     // Mesh validation
     MeshInvalidPositionsError: "MeshInvalidPositionsError",
 
-    // Texture validation
+    // Material validation
     UnsupportedTextureError: "UnsupportedTextureError",
 
     // GLTF Loader errors
     GLTFLoaderUnexpectedMagicError: "GLTFLoaderUnexpectedMagicError",
-});
+
+    // Scene Load errors
+    SceneLoaderError: "SceneLoaderError",
+} as const;
 
 /**
  * Error code type

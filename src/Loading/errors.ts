@@ -10,7 +10,7 @@ export class SceneLoaderError extends BaseError {
      * @param innerException the exception that caused the outer exception
      */
     constructor(message: string, innerException?: Error) {
-        super(message, undefined, innerException);
+        super(message, "SceneLoaderError", innerException);
 
         this.name = "SceneLoaderError";
         BaseError._setPrototypeOf(this, SceneLoaderError.prototype);

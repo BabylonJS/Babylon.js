@@ -1,9 +1,16 @@
 import { ErrorCodesString } from "./errorCodes";
 
 /**
+ * BabylonJS error internal class wrapper. Extending Error for a class with docs
+ * fails typedoc validation, because lib.es5.d.ts does not have any docs for Error.
+ * @ignore
+ */
+class BabylonJSErrorWrapper extends Error {}
+
+/**
  * Base Error class for babylonjs errors
  */
-export class BaseError extends Error {
+export class BaseError extends BabylonJSErrorWrapper {
     // See https://stackoverflow.com/questions/12915412/how-do-i-extend-a-host-object-e-g-error-in-typescript
     // and https://github.com/Microsoft/TypeScript/wiki/Breaking-Changes#extending-built-ins-like-error-array-and-map-may-no-longer-work
 

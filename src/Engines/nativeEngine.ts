@@ -30,7 +30,7 @@ import { IStencilState } from "../States/IStencilState";
 import { RenderTargetWrapper } from "./renderTargetWrapper";
 import { NativeData, NativeDataStream } from "./Native/nativeDataStream";
 import { INative, INativeCamera, INativeEngine } from "./Native/nativeInterfaces";
-import { BaseError } from "..";
+import { BaseError } from "../Misc/baseError";
 
 declare const _native: INative;
 
