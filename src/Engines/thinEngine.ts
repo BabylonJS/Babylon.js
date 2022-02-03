@@ -190,14 +190,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@5.0.0-beta.5";
+        return "babylonjs@5.0.0-beta.6";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "5.0.0-beta.5";
+        return "5.0.0-beta.6";
     }
 
     /**
@@ -1104,7 +1104,8 @@ export class ThinEngine {
             canUseGLVertexID: this._webGLVersion > 1,
             supportComputeShaders: false,
             supportSRGBBuffers: false,
-            supportTransformFeedbacks: this._webGLVersion > 1
+            supportTransformFeedbacks: this._webGLVersion > 1,
+            textureMaxLevel: this._webGLVersion > 1
         };
 
         // Infos

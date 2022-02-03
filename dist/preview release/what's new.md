@@ -30,6 +30,7 @@
 - Added ability to enable/disable `ArcRotateCamera` zoom on multiTouch event ([NicolasBuecher](https://github.com/NicolasBuecher))
 - Moving button to shared uI folder.([msDestiny14](https://github.com/msDestiny14))
 - Added `collisionRetryCount` to improved collision detection ([CedricGuillemet](https://github.com/CedricGuillemet))
+- Added color/instance color differenciation in shaders for thin instances ([CedricGuillemet](https://github.com/CedricGuillemet))
 - Added sleepBody support for ammojs ([CedricGuillemet](https://github.com/CedricGuillemet)
 - Moved sharedUI component to shared UI folder. ([msDestiny14](https://github.com/msDestiny14))
 - Added `encapsulate` and `encapsulateBoundingInfo` methods to `BoundingInfo`. ([Tolo789](https://github.com/Tolo789))
@@ -409,6 +410,7 @@
 - Fix keypoint selection in ACE ([carolhmj](https://github.com/carolhmj))
 - Fix keypoint drag in ACE ([carolhmj](https://github.com/carolhmj))
 - Fix spherical harmonics computation ([Meakk](https://github.com/Meakk))
+- Fix KTX and DDS loading with baked mipmaps ([Meakk](https://github.com/Meakk))
 
 ## Breaking changes
 

@@ -170,6 +170,7 @@ export class PBRMaterialDefines extends MaterialDefines
 
     public INSTANCES = false;
     public THIN_INSTANCES = false;
+    public INSTANCESCOLOR = false;
 
     public PREPASS = false;
     public PREPASS_IRRADIANCE = false;

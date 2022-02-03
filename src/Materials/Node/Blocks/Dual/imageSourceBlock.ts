@@ -6,13 +6,13 @@ import { NodeMaterialBlockTargets } from '../../Enums/nodeMaterialBlockTargets';
 import { RegisterClass } from '../../../../Misc/typeStore';
 import { Nullable } from '../../../../types';
 import { Texture } from '../../../Textures/texture';
-import { Engine } from '../../../../Engines/engine';
 import { Constants } from '../../../../Engines/constants';
 import { Effect } from '../../../effect';
 import { NodeMaterial } from '../../nodeMaterial';
 import { Mesh } from '../../../../Meshes/mesh';
 import { Scene } from '../../../../scene';
 import { NodeMaterialConnectionPointCustomObject } from '../../nodeMaterialConnectionPointCustomObject';
+import { EngineStore } from '../../../../Engines/engineStore';
 /**
  * Block used to provide an image for a TextureBlock
  */
@@ -31,7 +31,7 @@ export class ImageSourceBlock extends NodeMaterialBlock {
             return;
         }
 
-        const scene = texture?.getScene() ?? Engine.LastCreatedScene;
+        const scene = texture?.getScene() ?? EngineStore.LastCreatedScene;
 
         if (!texture && scene) {
             scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {

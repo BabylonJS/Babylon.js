@@ -17,7 +17,7 @@ import { Constants } from '../../../../Engines/constants';
 import "../../../../Shaders/ShadersInclude/reflectionFunction";
 import { CubeTexture } from '../../../Textures/cubeTexture';
 import { Texture } from '../../../Textures/texture';
-import { Engine } from "../../../../Engines/engine";
+import { EngineStore } from '../../../../Engines/engineStore';
 
 /**
  * Base block used to read a reflection texture from a sampler
@@ -78,7 +78,7 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
             return;
         }
 
-        const scene = texture?.getScene() ?? Engine.LastCreatedScene;
+        const scene = texture?.getScene() ?? EngineStore.LastCreatedScene;
 
         if (!texture && scene) {
             scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {

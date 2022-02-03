@@ -1,5 +1,5 @@
 ﻿
-#ifdef VERTEXCOLOR
+#if defined(VERTEXCOLOR) || defined(INSTANCESCOLOR)
 varying vec4 vColor;
 #else
 uniform vec4 color;
@@ -16,8 +16,8 @@ void main(void) {
 
 #include<clipPlaneFragment>
 
-#ifdef VERTEXCOLOR
-	gl_FragColor = vColor;
+#if defined(VERTEXCOLOR) || defined(INSTANCESCOLOR)
+    gl_FragColor = vColor;
 #else
 	gl_FragColor = color;
 #endif

@@ -102,4 +102,6 @@ export interface EngineCapabilities {
     supportSRGBBuffers: boolean;
     /** Defines if transform feedbacks are supported */
     supportTransformFeedbacks: boolean;
+    /** Defines if texture max level are supported */
+    textureMaxLevel: boolean;
 }
