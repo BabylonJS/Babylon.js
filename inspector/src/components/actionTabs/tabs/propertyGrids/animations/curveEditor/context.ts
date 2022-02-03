@@ -10,7 +10,9 @@ import { AnimationKeyInterpolation } from "babylonjs/Animations/animationKey";
 
 
 export interface IActiveAnimationChangedOptions {
+    evaluateKeys?: boolean;
     frame?: boolean;
+    range?: boolean;
 };
 export class Context {
     title: string;

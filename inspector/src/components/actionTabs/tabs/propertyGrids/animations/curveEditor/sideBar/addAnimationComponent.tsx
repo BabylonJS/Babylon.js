@@ -180,7 +180,7 @@ export class AddAnimationComponent extends React.Component<IAddAnimationComponen
         }
         context.activeAnimations.push(animation);
         context.prepare();
-        context.onActiveAnimationChanged.notifyObservers({frame: true});
+        context.onActiveAnimationChanged.notifyObservers({});
         context.onAnimationsLoaded.notifyObservers();
     }
 
