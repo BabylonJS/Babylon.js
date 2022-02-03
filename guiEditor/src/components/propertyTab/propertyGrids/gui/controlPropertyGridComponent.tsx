@@ -6,7 +6,7 @@ import { CommonControlPropertyGridComponent } from "../gui/commonControlProperty
 import { LockObject } from "../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 
 interface IControlPropertyGridComponentProps {
-    control: Control;
+    controls: Control[];
     lockObject: LockObject;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
@@ -17,11 +17,11 @@ export class ControlPropertyGridComponent extends React.Component<IControlProper
     }
 
     render() {
-        const control = this.props.control;
+        const controls = this.props.controls;
 
         return (
             <div className="pane">
-                <CommonControlPropertyGridComponent lockObject={this.props.lockObject} controls={[control]} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <CommonControlPropertyGridComponent lockObject={this.props.lockObject} controls={controls} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
             </div>
         );
     }
