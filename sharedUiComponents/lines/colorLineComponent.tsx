@@ -25,7 +25,13 @@ export interface IColorLineComponentProps {
     disableAlpha?: boolean;
 }
 
-export class ColorLineComponent extends React.Component<IColorLineComponentProps, { isExpanded: boolean; color: Color4; colorString: string; }> {
+interface IColorLineComponentState {
+    isExpanded: boolean;
+    color: Color4;
+    colorString: string;
+}
+
+export class ColorLineComponent extends React.Component<IColorLineComponentProps, IColorLineComponentState> {
     constructor(props: IColorLineComponentProps) {
         super(props);
 
@@ -39,6 +45,27 @@ export class ColorLineComponent extends React.Component<IColorLineComponentProps
 
         const target = this.props.target;
         target._isLinearColor = props.isLinear; // so that replayRecorder can append toLinearSpace() as appropriate
+    }
+
+    shouldComponentUpdate(nextProps: IColorLineComponentProps, nextState: IColorLineComponentState) {
+        const stateString = nextState.colorString;
+        const stateColor = nextState.color;
+        const propsString = this.getValueAsString(nextProps);
+        const propsColor = this.getValue(nextProps);
+        if (stateString !== this.state.colorString || stateColor !== this.state.color) {
+            nextState.colorString = stateString;
+            nextState.color = stateColor;
+            return true;
+        }
+        if (propsString !== this.state.colorString || propsColor !== this.state.color) {
+            nextState.colorString = propsString;
+            nextState.color = propsColor;
+            return true;
+        }
+        if (nextState.isExpanded !== this.state.isExpanded) {
+            return true;
+        }
+        return false;
     }
 
     getValue(props = this.props): Color4 {
@@ -68,19 +95,19 @@ export class ColorLineComponent extends React.Component<IColorLineComponentProps
         if (this.props.isLinear) {
             color = color.toLinearSpace();
         }
-        console.log(color, colorString);
-        this.setState({color, colorString}, () => this.updateColor())
+        this.updateColor(color);
+        this.setState({color, colorString})
     }
 
-    setColor(newColor: Color4) {
+    setColor(color: Color4) {
         if (this.props.isLinear) {
-            newColor = newColor.toLinearSpace();
+            color = color.toLinearSpace();
         }
-        this.setState({color: newColor, colorString: newColor.toHexString()}, () => this.updateColor());
+        this.updateColor(color);
+        this.setState({color, colorString: color.toHexString()});
     }
 
-    updateColor() {
-        const newColor = this.state.color;
+    updateColor(newColor: Color4) {
         // whether to set properties to color3 or color4
         const setColor = this.props.disableAlpha ? this.toColor3(newColor) : newColor;
 

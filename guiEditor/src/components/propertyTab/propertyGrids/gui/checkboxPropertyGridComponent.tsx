@@ -7,12 +7,13 @@ import { Checkbox } from "babylonjs-gui/2D/controls/checkbox";
 import { FloatLineComponent } from "../../../../sharedUiComponents/lines/floatLineComponent";
 import { CheckBoxLineComponent } from "../../../../sharedUiComponents/lines/checkBoxLineComponent";
 import { TextLineComponent } from "../../../../sharedUiComponents/lines/textLineComponent";
+import { makeTargetsProxy } from "../../../../sharedUiComponents/lines/targetsProxy";
 
 const fillColorIcon: string = require("../../../../sharedUiComponents/imgs/fillColorIcon.svg");
 const sizeIcon: string = require("../../../../sharedUiComponents/imgs/sizeIcon.svg");
 
 interface ICheckboxPropertyGridComponentProps {
-    checkbox: Checkbox;
+    checkboxes: Checkbox[];
     lockObject: LockObject;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
@@ -23,11 +24,11 @@ export class CheckboxPropertyGridComponent extends React.Component<ICheckboxProp
     }
 
     render() {
-        const checkbox = this.props.checkbox;
+        const checkboxes = this.props.checkboxes;
 
         return (
             <div className="pane">
-                <CommonControlPropertyGridComponent lockObject={this.props.lockObject} control={checkbox} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <CommonControlPropertyGridComponent lockObject={this.props.lockObject} controls={checkboxes} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <hr />
                 <TextLineComponent label="CHECKBOX" value=" " color="grey"></TextLineComponent>
                 <FloatLineComponent
@@ -35,7 +36,7 @@ export class CheckboxPropertyGridComponent extends React.Component<ICheckboxProp
                     icon={sizeIcon}
                     lockObject={this.props.lockObject}
                     label=""
-                    target={checkbox}
+                    target={makeTargetsProxy(checkboxes, "",this.props.onPropertyChangedObservable)}
                     propertyName="checkSizeRatio"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
@@ -43,7 +44,7 @@ export class CheckboxPropertyGridComponent extends React.Component<ICheckboxProp
                     iconLabel={"Checked"}
                     icon={fillColorIcon}
                     label="CHECKED"
-                    target={checkbox}
+                    target={makeTargetsProxy(checkboxes, "",this.props.onPropertyChangedObservable)}
                     propertyName="isChecked"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />

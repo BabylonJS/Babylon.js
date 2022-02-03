@@ -109,14 +109,30 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
     render() {
         const controls = this.props.controls;
         const firstControl = controls[0];
-        var horizontalAlignment = firstControl.horizontalAlignment;
-        var verticalAlignment = firstControl.verticalAlignment;
-        if (firstControl.typeName === "TextBlock" && (firstControl as TextBlock).resizeToFit === false) {
+        let horizontalAlignment = firstControl.horizontalAlignment;
+        let verticalAlignment = firstControl.verticalAlignment;
+        for (const control of controls) {
+            if (control.horizontalAlignment !== horizontalAlignment) {
+                horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
+            }
+            if (control.verticalAlignment !== verticalAlignment) {
+                verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
+            }
+        }
+        if (controls.every(control => control.typeName === "TextBlock" && (control as TextBlock).resizeToFit === false)) {
             horizontalAlignment = (firstControl as TextBlock).textHorizontalAlignment;
             verticalAlignment = (firstControl as TextBlock).textVerticalAlignment;
         }
         this._width = firstControl.width;
         this._height = firstControl.height;
+        for (const control of controls) {
+            if (control.width !== this._width) {
+                this._width = "";
+            }
+            if (control.height !== this._height) {
+                this._height = "";
+            }
+        }
 
         const showTextProperties = (firstControl instanceof Container || firstControl.typeName === "TextBlock");
 
@@ -330,14 +346,14 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         icon={positionIcon}
                         lockObject={this.props.lockObject}
                         label="X"
-                        target={makeTargetsProxy(controls, "", this.props.onPropertyChangedObservable)}
+                        target={makeTargetsProxy(controls, 0.5, this.props.onPropertyChangedObservable)}
                         propertyName="transformCenterX"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <FloatLineComponent
                         lockObject={this.props.lockObject}
                         label="Y"
-                        target={makeTargetsProxy(controls, "", this.props.onPropertyChangedObservable)}
+                        target={makeTargetsProxy(controls, 0.5, this.props.onPropertyChangedObservable)}
                         propertyName="transformCenterY"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
@@ -365,7 +381,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                     lockObject={this.props.lockObject}
                     icon={rotationIcon}
                     label="R"
-                    target={makeTargetsProxy(controls, Math.PI, this.props.onPropertyChangedObservable)}
+                    target={makeTargetsProxy(controls, 0, this.props.onPropertyChangedObservable)}
                     decimalCount={2}
                     propertyName="rotation"
                     minimum={0}
@@ -375,17 +391,17 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                 />
                 <hr className="ge" />
                 <TextLineComponent tooltip="" label="APPEARANCE" value=" " color="grey"></TextLineComponent>
-                {(controls.every(control => control.color !== undefined && control.typeName !== "Image" && control.typeName !== "ImageBasedSlider" && control.typeName !== "ColorPicker") && (
-                        <ColorLineComponent
-                            iconLabel={"Color"}
-                            icon={colorIcon}
-                            lockObject={this.props.lockObject}
-                            label="Outline Color"
-                            target={makeTargetsProxy(controls, "", this.props.onPropertyChangedObservable)}
-                            propertyName="color"
-                            onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                        />
-                    )}
+                {controls.every(control => control.color !== undefined && control.typeName !== "Image" && control.typeName !== "ImageBasedSlider" && control.typeName !== "ColorPicker") && (
+                    <ColorLineComponent
+                        iconLabel={"Color"}
+                        icon={colorIcon}
+                        lockObject={this.props.lockObject}
+                        label="Outline Color"
+                        target={makeTargetsProxy(controls, "", this.props.onPropertyChangedObservable)}
+                        propertyName="color"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                )}
                 {controls.every(control => (control as any).background !== undefined) && (
                     <ColorLineComponent
                         iconLabel={"Background"}
