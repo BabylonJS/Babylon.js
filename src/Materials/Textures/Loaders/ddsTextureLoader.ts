@@ -36,6 +36,7 @@ export class _DDSTextureLoader implements IInternalTextureLoader {
         var engine = texture.getEngine() as Engine;
         var info: DDSInfo | undefined;
         var loadMipmap: boolean = false;
+        var maxLevel: number = 1000;
         if (Array.isArray(imgs)) {
             for (let index = 0; index < imgs.length; index++) {
                 let data = imgs[index];
@@ -52,6 +53,10 @@ export class _DDSTextureLoader implements IInternalTextureLoader {
 
                 if (!info.isFourCC && info.mipmapCount === 1) {
                     engine.generateMipMapsForCubemap(texture);
+                }
+                else
+                {
+                    maxLevel = info.mipmapCount - 1;
                 }
             }
         }
@@ -75,8 +80,12 @@ export class _DDSTextureLoader implements IInternalTextureLoader {
                 // Do not unbind as we still need to set the parameters.
                 engine.generateMipMapsForCubemap(texture, false);
             }
+            else
+            {
+                maxLevel = info.mipmapCount - 1;
+            }
         }
-        engine._setCubeMapTextureParams(texture, loadMipmap);
+        engine._setCubeMapTextureParams(texture, loadMipmap, maxLevel);
         texture.isReady = true;
         texture.onLoadedObservable.notifyObservers(texture);
         texture.onLoadedObservable.clear();

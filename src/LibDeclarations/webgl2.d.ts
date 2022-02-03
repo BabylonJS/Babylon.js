@@ -10,6 +10,7 @@ interface WebGLRenderingContext {
     readonly TEXTURE_2D_ARRAY: number;
     readonly TEXTURE_COMPARE_FUNC: number;
     readonly TEXTURE_COMPARE_MODE: number;
+    readonly TEXTURE_MAX_LEVEL: number;
     readonly COMPARE_REF_TO_TEXTURE: number;
     readonly TEXTURE_WRAP_R: number;
     readonly HALF_FLOAT: number;
