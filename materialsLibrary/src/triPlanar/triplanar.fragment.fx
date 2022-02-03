@@ -13,6 +13,8 @@ varying vec3 vPositionW;
 
 #ifdef VERTEXCOLOR
 varying vec4 vColor;
+#elif INSTANCESCOLOR
+varying vec4 vColor;
 #endif
 
 // Helper functions
@@ -118,6 +120,8 @@ void main(void) {
 
 #ifdef VERTEXCOLOR
 	baseColor.rgb *= vColor.rgb;
+#elif INSTANCESCOLOR
+    baseColor.rgb *= vColor.rgb;
 #endif
 
 	// Lighting

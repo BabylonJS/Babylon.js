@@ -42,6 +42,8 @@ void albedoOpacityBlock(
 
     #ifdef VERTEXCOLOR
         surfaceAlbedo *= vColor.rgb;
+    #elif INSTANCESCOLOR
+        surfaceAlbedo *= vColor.rgb;
     #endif
 
     #ifdef DETAIL
