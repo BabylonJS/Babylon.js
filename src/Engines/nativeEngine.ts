@@ -1049,7 +1049,8 @@ export class NativeEngine extends Engine {
                             vertexBuffer.byteStride,
                             vertexBuffer.getSize(),
                             this._getNativeAttribType(vertexBuffer.type),
-                            vertexBuffer.normalized);
+                            vertexBuffer.normalized,
+                            vertexBuffer.getInstanceDivisor());
                     }
                 }
             }

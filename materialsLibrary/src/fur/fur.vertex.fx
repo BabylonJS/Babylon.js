@@ -169,6 +169,8 @@ float r = Rand(position);
 	// Vertex color
 #ifdef VERTEXCOLOR
 	vColor = color;
+#elif INSTANCESCOLOR
+	vColor = instanceColor;
 #endif
 
 	// Point size
