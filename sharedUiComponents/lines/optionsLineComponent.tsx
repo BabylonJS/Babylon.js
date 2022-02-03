@@ -7,7 +7,7 @@ export const Null_Value = Number.MAX_SAFE_INTEGER;
 
 export interface IOptionsLineComponentProps {
     label: string;
-    targets: any[];
+    target: any;
     propertyName: string;
     options: IInspectableOptions[];
     noDirectUpdate?: boolean;
@@ -17,7 +17,6 @@ export interface IOptionsLineComponentProps {
     allowNullValue?: boolean;
     icon?: string;
     iconLabel?: string;
-    conflictingPlaceholderLabel?: string;
 }
 
 export class OptionsLineComponent extends React.Component<IOptionsLineComponentProps, { value: number }> {
@@ -31,23 +30,10 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
         return this.props.allowNullValue && value === Null_Value ? null : value;
     }
 
-    getValue(props?: IOptionsLineComponentProps) {
-        if (!props) props = this.props;
-        if (this.props.extractValue) return this.props.extractValue();
-        if (props.targets.length === 0) return props.conflictingPlaceholderLabel || "";
-        const firstValue = props.targets[0][props.propertyName];
-        for(const target of props.targets) {
-            if (target[props.propertyName] !== firstValue) {
-                return props.conflictingPlaceholderLabel || "";
-            }
-        }
-        return firstValue;
-    }
-
     constructor(props: IOptionsLineComponentProps) {
         super(props);
 
-        this.state = { value: this.remapValueIn(this.getValue()) };
+        this.state = { value: this.remapValueIn(this.props.extractValue ? this.props.extractValue() : props.target[props.propertyName]) };
     }
 
     shouldComponentUpdate(nextProps: IOptionsLineComponentProps, nextState: { value: number }) {
@@ -56,7 +42,7 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
             return true;
         }
 
-        let newValue = this.remapValueIn(this.getValue(nextProps));
+        let newValue = this.remapValueIn(nextProps.extractValue ? nextProps.extractValue() : nextProps.target[nextProps.propertyName]);
         if (newValue != null && newValue !== nextState.value) {
             nextState.value = newValue;
             return true;
@@ -69,27 +55,23 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
             return;
         }
 
-        for (const target of this.props.targets) {
-            this.props.onPropertyChangedObservable.notifyObservers({
-                object: target,
-                property: this.props.propertyName,
-                value: newValue,
-                initialValue: previousValue,
-                allowNullValue: this.props.allowNullValue,
-            });
-        }
+        this.props.onPropertyChangedObservable.notifyObservers({
+            object: this.props.target,
+            property: this.props.propertyName,
+            value: newValue,
+            initialValue: previousValue,
+            allowNullValue: this.props.allowNullValue,
+        });
     }
 
     updateValue(valueString: string) {
         const value = parseInt(valueString);
         this._localChange = true;
 
-        const store = this.getValue();
+        const store = this.props.extractValue ? this.props.extractValue() : this.props.target[this.props.propertyName];
 
         if (!this.props.noDirectUpdate) {
-            for(const target of this.props.targets) {
-                target[this.props.propertyName] = this.remapValueOut(value);
-            }
+            this.props.target[this.props.propertyName] = this.remapValueOut(value);
         }
         this.setState({ value: value });
 
@@ -97,7 +79,7 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
             this.props.onSelect(value);
         }
 
-        const newValue = this.getValue();
+        const newValue = this.props.extractValue ? this.props.extractValue() : this.props.target[this.props.propertyName];
 
         this.raiseOnPropertyChanged(newValue, store);
     }

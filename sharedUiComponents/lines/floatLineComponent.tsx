@@ -8,7 +8,7 @@ import { Tools } from "babylonjs/Misc/tools";
 
 interface IFloatLineComponentProps {
     label: string;
-    targets: any[];
+    target: any;
     propertyName: string;
     lockObject?: LockObject;
     onChange?: (newValue: number) => void;
@@ -34,7 +34,7 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
     constructor(props: IFloatLineComponentProps) {
         super(props);
 
-        let currentValue = this.getValue();
+        let currentValue = this.props.target[this.props.propertyName];
         this.state = { value: currentValue ? (this.props.isInteger ? currentValue.toFixed(0) : currentValue.toFixed(this.props.digits || 4)) : "0" };
         this._store = currentValue;
     }
@@ -49,7 +49,7 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
             return true;
         }
 
-        const newValue = this.getValue(nextProps);
+        const newValue = nextProps.target[nextProps.propertyName];
         const newValueString = newValue ? (this.props.isInteger ? newValue.toFixed(0) : newValue.toFixed(this.props.digits || 4)) : "0";
 
         if (newValueString !== nextState.value) {
@@ -67,14 +67,12 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
         if (!this.props.onPropertyChangedObservable) {
             return;
         }
-        for (const target of this.props.targets) {
-            this.props.onPropertyChangedObservable.notifyObservers({
-                object: target,
-                property: this.props.propertyName,
-                value: newValue,
-                initialValue: previousValue,
-            });
-        }
+        this.props.onPropertyChangedObservable.notifyObservers({
+            object: this.props.target,
+            property: this.props.propertyName,
+            value: newValue,
+            initialValue: previousValue,
+        });
     }
 
     updateValue(valueString: string) {
@@ -114,9 +112,7 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
             return;
         }
 
-        for (const target of this.props.targets) {
-            target[this.props.propertyName] = valueAsNumber;
-        }
+        this.props.target[this.props.propertyName] = valueAsNumber;
         this.raiseOnPropertyChanged(valueAsNumber, this._store);
 
         this._store = valueAsNumber;
@@ -132,18 +128,6 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
         if (this.props.lockObject) {
             this.props.lockObject.lock = false;
         }
-    }
-    
-    getValue(props?: IFloatLineComponentProps) {
-        if (!props) props = this.props;
-        if (props.targets.length === 0) return props.defaultValue || "";
-        const firstValue = props.targets[0][props.propertyName];
-        for(const target of props.targets) {
-            if (target[props.propertyName] !== firstValue) {
-                return props.defaultValue || "";
-            }
-        }
-        return firstValue;
     }
 
     render() {
@@ -201,7 +185,6 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
                         step={0.1}
                         directValue={Tools.ToDegrees(valueAsNumber)}
                         onChange={(value) => this.updateValue(Tools.ToRadians(value).toString())}
-                        targets={[]}
                     />
                 )}
             </>

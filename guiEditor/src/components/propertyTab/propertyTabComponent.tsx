@@ -43,7 +43,7 @@ import { ControlPropertyGridComponent } from "./propertyGrids/gui/controlPropert
 import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
 import { OptionsLineComponent } from "../../sharedUiComponents/lines/optionsLineComponent";
 import { FloatLineComponent } from "../../sharedUiComponents/lines/floatLineComponent";
-import { Color4LineComponent } from "../../sharedUiComponents/lines/color4LineComponent";
+import { ColorLineComponent } from "../../sharedUiComponents/lines/colorLineComponent";
 
 import { TextInputLineComponent } from "../../sharedUiComponents/lines/textInputLineComponent";
 import { ParentingPropertyGridComponent } from "../parentingPropertyGridComponent";
@@ -53,6 +53,7 @@ import { Button } from "babylonjs-gui/2D/controls/button";
 import { ButtonPropertyGridComponent } from "./propertyGrids/gui/buttonPropertyGridComponent";
 import { GUINodeTools } from "../../guiNodeTools";
 import { CommonControlPropertyGridComponent } from "./propertyGrids/gui/commonControlPropertyGridComponent";
+import { makeTargetsProxy } from "../../sharedUiComponents/lines/targetsProxy";
 
 require("./propertyTab.scss");
 const adtIcon: string = require("../../../public/imgs/adtIcon.svg");
@@ -255,7 +256,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                     noUnderline={true}
                     lockObject={this._lockObject}
                     label=""
-                    targets={nodes}
+                    target={makeTargetsProxy(nodes, "", this.props.globalState.onPropertyChangedObservable)}
                     propertyName="name"
                     onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable}
                 />
@@ -272,6 +273,21 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         </>;
     }
 
+    /** 
+     * returns the class name of a list of controls if they share a class, or an empty string if not
+     */
+    getControlsCommonClassName(nodes: Control[]) {
+        if (nodes.length === 0) return "";
+        const firstNode = nodes[0];
+        const firstClass = firstNode.getClassName();
+        for(const node of nodes) {
+            if (node.getClassName() !== firstClass) {
+                return "";
+            }
+        }
+        return firstClass;
+    }
+
     renderProperties(nodes: Control[]) {
         if (nodes.length == 0) return;
         if (nodes.length > 1) {
@@ -282,7 +298,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             );
         }
         const node = nodes[0];
-        const className = node.getClassName();
+        const className = this.getControlsCommonClassName(nodes);
         switch (className) {
             case "TextBlock": {
                 const textBlock = node as TextBlock;
@@ -335,10 +351,9 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 );
             }
             case "Rectangle": {
-                const rectangle = node as Rectangle;
                 return (
                     <RectanglePropertyGridComponent
-                        rectangle={rectangle}
+                        rectangles={nodes as Rectangle[]}
                         lockObject={this._lockObject}
                         onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable}
                     />
@@ -557,14 +572,14 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 <div>
                     <TextLineComponent tooltip="" label="ART BOARD" value=" " color="grey"></TextLineComponent>
                     {this.props.globalState.workbench._scene !== undefined && (
-                        <Color4LineComponent
+                        <ColorLineComponent
                             iconLabel={"Background Color"}
                             lockObject={this._lockObject}
                             icon={artboardColorIcon}
                             label=""
-                            targets={[this.props.globalState.workbench._scene]}
-                            propertyName="clearColor"
-                            onChange={() => this.props.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers()}
+                            target={this.props.globalState}
+                            propertyName="backgroundColor"
+                            disableAlpha={true}
                         />
                     )}
                     <hr className="ge" />
@@ -591,7 +606,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                             iconLabel="Size"
                             options={_sizeOptions}
                             icon={canvasSizeIcon}
-                            targets={[this]}
+                            target={this}
                             propertyName={"_sizeOption"}
                             noDirectUpdate={true}
                             onSelect={(value: any) => {
@@ -610,7 +625,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                                 icon={canvasSizeIcon}
                                 iconLabel="Canvas Size"
                                 label="W"
-                                targets={[size]}
+                                target={size}
                                 propertyName="width"
                                 isInteger={true}
                                 min={1}
@@ -624,7 +639,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                             <FloatLineComponent
                                 icon={canvasSizeIcon}
                                 label="H"
-                                targets={[size]}
+                                target={size}
                                 propertyName="height"
                                 isInteger={true}
                                 min={1}
