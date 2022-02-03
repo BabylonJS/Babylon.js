@@ -8,6 +8,7 @@ import { FloatLineComponent } from "../../../../sharedUiComponents/lines/floatLi
 import { CheckBoxLineComponent } from "../../../../sharedUiComponents/lines/checkBoxLineComponent";
 import { TextLineComponent } from "../../../../sharedUiComponents/lines/textLineComponent";
 import { CommandButtonComponent } from "../../../commandButtonComponent";
+import { makeTargetsProxy } from "../../../../sharedUiComponents/lines/targetsProxy";
 
 const conerRadiusIcon: string = require("../../../../sharedUiComponents/imgs/conerRadiusIcon.svg");
 const clipContentsIcon: string = require("../../../../sharedUiComponents/imgs/clipContentsIcon.svg");
@@ -16,7 +17,7 @@ const addImageButtonIcon: string = require("../../../../sharedUiComponents/imgs/
 const addTextButtonIcon: string = require("../../../../sharedUiComponents/imgs/addTextButtonIcon.svg");
 
 interface IButtonPropertyGridComponentProps {
-    rectangle: Rectangle;
+    rectangles: Rectangle[];
     lockObject: LockObject;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     onAddComponent: (newComponent: string) => void;
@@ -28,18 +29,18 @@ export class ButtonPropertyGridComponent extends React.Component<IButtonProperty
     }
 
     render() {
-        const rectangle = this.props.rectangle;
+        const rectangles = this.props.rectangles;
 
         return (
             <div className="pane">
-                <CommonControlPropertyGridComponent lockObject={this.props.lockObject} control={rectangle} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <CommonControlPropertyGridComponent lockObject={this.props.lockObject} controls={rectangles} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <hr />
                 <TextLineComponent label="RECTANGLE" value=" " color="grey"></TextLineComponent>
                 <CheckBoxLineComponent
                     label="CLIP CONTENT"
                     iconLabel="Clip Content"
                     icon={clipContentsIcon}
-                    target={rectangle}
+                    target={makeTargetsProxy(rectangles, true, this.props.onPropertyChangedObservable)}
                     propertyName="clipChildren"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
@@ -49,7 +50,7 @@ export class ButtonPropertyGridComponent extends React.Component<IButtonProperty
                         icon={strokeWeightIcon}
                         lockObject={this.props.lockObject}
                         label=""
-                        target={rectangle}
+                        target={makeTargetsProxy(rectangles, "", this.props.onPropertyChangedObservable)}
                         propertyName="thickness"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
@@ -58,7 +59,7 @@ export class ButtonPropertyGridComponent extends React.Component<IButtonProperty
                         icon={conerRadiusIcon}
                         lockObject={this.props.lockObject}
                         label=""
-                        target={rectangle}
+                        target={makeTargetsProxy(rectangles, "", this.props.onPropertyChangedObservable)}
                         propertyName="cornerRadius"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
