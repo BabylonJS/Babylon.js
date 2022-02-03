@@ -119,6 +119,9 @@ export class WebXRDefaultExperience {
      */
     public static CreateAsync(scene: Scene, options: WebXRDefaultExperienceOptions = {}) {
         var result = new WebXRDefaultExperience();
+        scene.onDisposeObservable.addOnce(() => {
+            result.dispose();
+        });
         // init the UI right after construction
         if (!options.disableDefaultUI) {
             const uiOptions: WebXREnterExitUIOptions = {

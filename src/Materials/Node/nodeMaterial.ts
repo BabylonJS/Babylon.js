@@ -52,6 +52,7 @@ import { AnimatedInputBlockTypes } from './Blocks/Input/animatedInputBlockTypes'
 import { TrigonometryBlock, TrigonometryBlockOperations } from './Blocks/trigonometryBlock';
 import { NodeMaterialSystemValues } from './Enums/nodeMaterialSystemValues';
 import { ImageSourceBlock } from './Blocks/Dual/imageSourceBlock';
+import { EngineStore } from '../../Engines/engineStore';
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -297,7 +298,7 @@ export class NodeMaterial extends PushMaterial {
      * @param options defines creation option
      */
     constructor(name: string, scene?: Scene, options: Partial<INodeMaterialOptions> = {}) {
-        super(name, scene || Engine.LastCreatedScene!);
+        super(name, scene || EngineStore.LastCreatedScene!);
 
         this._options = {
             emitComments: false,

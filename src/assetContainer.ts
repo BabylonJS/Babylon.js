@@ -14,7 +14,6 @@ import { Nullable } from './types';
 import { Node } from './node';
 import { Observer } from "./Misc/observable";
 import { ThinEngine } from "./Engines/thinEngine";
-import { Engine } from "./Engines/engine";
 
 /**
  * Set of assets to keep when moving a scene into an asset container.
@@ -59,7 +58,7 @@ export class AssetContainer extends AbstractScene {
      */
     constructor(scene?: Nullable<Scene>) {
         super();
-        scene = scene || Engine.LastCreatedScene;
+        scene = scene || EngineStore.LastCreatedScene;
         if (!scene) {
             return;
         }

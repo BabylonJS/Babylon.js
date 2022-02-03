@@ -56,8 +56,8 @@ export class WebXRExperienceHelper implements IDisposable {
         this.camera = new WebXRCamera("webxr", scene, this.sessionManager);
         this.featuresManager = new WebXRFeaturesManager(this.sessionManager);
 
-        scene.onDisposeObservable.add(() => {
-            this.exitXRAsync();
+        scene.onDisposeObservable.addOnce(() => {
+            this.dispose();
         });
     }
 
@@ -85,6 +85,7 @@ export class WebXRExperienceHelper implements IDisposable {
      * Disposes of the experience helper
      */
     public dispose() {
+        this.exitXRAsync();
         this.camera.dispose();
         this.onStateChangedObservable.clear();
         this.onInitialXRPoseSetObservable.clear();

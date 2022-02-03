@@ -10,11 +10,11 @@ import { Texture } from "../Materials/Textures/texture";
 import { SceneComponentConstants } from "../sceneComponent";
 import { Logger } from "../Misc/logger";
 import { Tools } from "../Misc/tools";
-import { Engine } from '../Engines/engine';
 import { WebRequest } from '../Misc/webRequest';
 import { SpriteRenderer } from './spriteRenderer';
 import { ThinSprite } from './thinSprite';
 import { ISize } from '../Maths/math.size';
+import { EngineStore } from "../Engines/engineStore";
 
 declare type Ray = import("../Culling/ray").Ray;
 
@@ -252,7 +252,7 @@ export class SpriteManager implements ISpriteManager {
         imgUrl: string, capacity: number, cellSize: any, scene: Scene, epsilon: number = 0.01, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, fromPacked: boolean = false, spriteJSON: any | null = null) {
 
         if (!scene) {
-            scene = Engine.LastCreatedScene!;
+            scene = EngineStore.LastCreatedScene!;
         }
 
         if (!scene._getComponent(SceneComponentConstants.NAME_SPRITE)) {
@@ -696,7 +696,7 @@ export class SpriteManager implements ISpriteManager {
                 if (request.readyState == 4) {
                     if (request.status == 200) {
                         let serializationObject = JSON.parse(request.responseText);
-                        let output = SpriteManager.Parse(serializationObject, scene || Engine.LastCreatedScene, rootUrl);
+                        let output = SpriteManager.Parse(serializationObject, scene || EngineStore.LastCreatedScene, rootUrl);
 
                         if (name) {
                             output.name = name;
@@ -733,7 +733,7 @@ export class SpriteManager implements ISpriteManager {
                     if (request.status == 200) {
                         var snippet = JSON.parse(JSON.parse(request.responseText).jsonPayload);
                         let serializationObject = JSON.parse(snippet.spriteManager);
-                        let output = SpriteManager.Parse(serializationObject, scene || Engine.LastCreatedScene, rootUrl);
+                        let output = SpriteManager.Parse(serializationObject, scene || EngineStore.LastCreatedScene, rootUrl);
 
                         output.snippetId = snippetId;
 

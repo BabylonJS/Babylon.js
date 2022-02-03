@@ -9,6 +9,7 @@ import { TransformNode } from "../Meshes/transformNode";
 import { Logger } from "../Misc/logger";
 import { _WarnImport } from "../Misc/devTools";
 import { ISoundOptions } from './Interfaces/ISoundOptions';
+import { EngineStore } from "../Engines/engineStore";
 
 /**
  * Defines a sound that can be played in the application.
@@ -163,7 +164,7 @@ export class Sound {
      */
     constructor(name: string, urlOrArrayBuffer: any, scene?: Nullable<Scene>, readyToPlayCallback: Nullable<() => void> = null, options?: ISoundOptions) {
         this.name = name;
-        scene = scene || Engine.LastCreatedScene;
+        scene = scene || EngineStore.LastCreatedScene;
         if (!scene) {
             return;
         }
