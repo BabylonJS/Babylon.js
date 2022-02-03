@@ -461,9 +461,11 @@ export class DDSTools {
                     break;
                 case FOURCC_D3DFMT_R16G16B16A16F:
                     computeFormats = true;
+                    bpp = 64;
                     break;
                 case FOURCC_D3DFMT_R32G32B32A32F:
                     computeFormats = true;
+                    bpp = 128;
                     break;
                 case FOURCC_DX10:
                     // There is an additionnal header so dataOffset need to be changed
@@ -472,8 +474,13 @@ export class DDSTools {
                     let supported = false;
                     switch (info.dxgiFormat) {
                         case DXGI_FORMAT_R16G16B16A16_FLOAT:
+                            computeFormats = true;
+                            bpp = 64;
+                            supported = true;
+                            break;
                         case DXGI_FORMAT_R32G32B32A32_FLOAT:
                             computeFormats = true;
+                            bpp = 128;
                             supported = true;
                             break;
                         case DXGI_FORMAT_B8G8R8X8_UNORM:

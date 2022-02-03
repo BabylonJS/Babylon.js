@@ -297,6 +297,7 @@ export default function webglSupport() {
         TEXTURE_MIN_FILTER: 0x2801,
         TEXTURE_WRAP_S: 0x2802,
         TEXTURE_WRAP_T: 0x2803,
+        TEXTURE_MAX_LEVEL: 0x813D,
 
         /* TextureTarget */
         TEXTURE_2D: 0x0DE1,

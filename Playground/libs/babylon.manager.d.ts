@@ -937,6 +937,7 @@ declare module BABYLON {
         Kph2Mph = 0.621371,
         Mph2Kph = 1.60934,
         Mps2Kph = 3.6,
+        Mps2Mph = 2.23694,
         Meter2Inch = 39.3701,
         Inch2Meter = 0.0254,
         Gravity = 9.81,
@@ -1320,6 +1321,9 @@ declare module BABYLON {
         xVel: number;
         yVel: number;
         zVel: number;
+        xAngle: number;
+        yAngle: number;
+        zAngle: number;
         timestamp: number;
         attributes: Map<string, string>;
     }
@@ -1351,8 +1355,16 @@ declare module BABYLON {
         xVel: number;
         yVel: number;
         zVel: number;
+        xAngle: number;
+        yAngle: number;
+        zAngle: number;
         private localPositionDelta;
         private prevLocalPosition;
+        private currLocalPosition;
+        private localRotationDelta;
+        private prevLocalRotation;
+        private currLocalRotation;
+        private localAngularVelocity;
         constructor();
         update(transform: BABYLON.TransformNode, deltaTime: number): void;
         copy(data: BABYLON.ColyseusTransformData): void;

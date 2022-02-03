@@ -407,6 +407,8 @@
 - Fix memory leak and incorrect data copy in KTX2 ([bghgary](https://github.com/bghgary))
 - Fix keypoint selection in ACE ([carolhmj](https://github.com/carolhmj))
 - Fix keypoint drag in ACE ([carolhmj](https://github.com/carolhmj))
+- Fix spherical harmonics computation ([Meakk](https://github.com/Meakk))
+- Fix KTX and DDS loading with baked mipmaps ([Meakk](https://github.com/Meakk))
 
 ## Breaking changes
 

@@ -6,7 +6,7 @@ import { RegisterClass } from "babylonjs/Misc/typeStore";
 import { Nullable } from "babylonjs/types";
 import { serialize } from 'babylonjs/Misc/decorators';
 import { ICanvasRenderingContext } from 'babylonjs/Engines/ICanvas';
-import { Engine } from 'babylonjs/Engines/engine';
+import { EngineStore } from "babylonjs/Engines/engineStore";
 
 /**
  * Enum that determines the text-wrapping mode to use.
@@ -568,7 +568,7 @@ export class TextBlock extends Control {
     public computeExpectedHeight(): number {
         if (this.text && this.widthInPixels) {
             // Should abstract platform instead of using LastCreatedEngine
-            const context = Engine.LastCreatedEngine?.createCanvas(0, 0).getContext("2d");
+            const context = EngineStore.LastCreatedEngine?.createCanvas(0, 0).getContext("2d");
             if (context) {
                 this._applyStates(context);
                 if (!this._fontOffset) {
