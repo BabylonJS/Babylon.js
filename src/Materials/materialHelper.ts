@@ -266,9 +266,13 @@ export class MaterialHelper {
         }
 
         if (useVertexColor) {
-            var hasVertexColors = mesh.useVertexColors && (mesh.isVerticesDataPresent(VertexBuffer.ColorKind) || mesh.isVerticesDataPresent(VertexBuffer.ColorInstanceKind));
+            var hasVertexColors = mesh.useVertexColors && mesh.isVerticesDataPresent(VertexBuffer.ColorKind);
             defines["VERTEXCOLOR"] = hasVertexColors;
             defines["VERTEXALPHA"] = mesh.hasVertexAlpha && hasVertexColors && useVertexAlpha;
+        }
+
+        if (mesh.isVerticesDataPresent(VertexBuffer.ColorInstanceKind)) {
+            defines["INSTANCESCOLOR"] = true;
         }
 
         if (useBones) {
