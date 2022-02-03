@@ -632,6 +632,10 @@ export class ShaderMaterial extends PushMaterial {
             MaterialHelper.PushAttributesForInstances(attribs);
             if (mesh?.hasThinInstances) {
                 defines.push("#define THIN_INSTANCES");
+                if (mesh && mesh.isVerticesDataPresent(VertexBuffer.ColorInstanceKind)) {
+                    attribs.push(VertexBuffer.ColorInstanceKind);
+                    defines.push("#define INSTANCESCOLOR");
+                }
             }
         }
 

@@ -48,12 +48,9 @@ void main(void) {
 #include<clipPlaneVertex>
 
 #ifdef VERTEXCOLOR
-	// Vertex color
-    #ifdef INSTANCES
-        vColor = instanceColor;
-    #else
-	    vColor = color;
-    #endif
+	vColor = color;
+#elif INSTANCESCOLOR
+	vColor = instanceColor;
 #endif
 
 #define CUSTOM_VERTEX_MAIN_END

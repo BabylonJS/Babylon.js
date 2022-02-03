@@ -171,12 +171,9 @@ void main(void) {
 #include<shadowsVertex>[0..maxSimultaneousLights]
 
 #ifdef VERTEXCOLOR
-	// Vertex color
-    #ifdef INSTANCES
-        vColor = instanceColor;
-    #else
-	    vColor = color;
-    #endif
+	vColor = color;
+#elif INSTANCESCOLOR
+	vColor = instanceColor;
 #endif
 
 #include<pointCloudVertex>
