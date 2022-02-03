@@ -2123,17 +2123,10 @@ export class ThinEngine {
 
                 if (overrideVertexBuffers) {
                     vertexBuffer = overrideVertexBuffers[ai];
-                    if (!vertexBuffer && ai === VertexBuffer.ColorInstanceKind) {
-                        vertexBuffer = overrideVertexBuffers[VertexBuffer.ColorKind];
-                    }
                 }
 
                 if (!vertexBuffer) {
                     vertexBuffer = vertexBuffers[ai];
-                }
-
-                if (!vertexBuffer && ai === VertexBuffer.ColorInstanceKind) {
-                    vertexBuffer = vertexBuffers[VertexBuffer.ColorKind];
                 }
 
                 if (!vertexBuffer) {

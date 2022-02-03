@@ -48,6 +48,8 @@ varying vec3 vNormalW;
 
 #ifdef VERTEXCOLOR
 varying vec4 vColor;
+#elif INSTANCESCOLOR
+varying vec4 vColor;
 #endif
 
 #include<bumpVertexDeclaration>
