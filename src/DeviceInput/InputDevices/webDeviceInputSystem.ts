@@ -208,7 +208,9 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
      * @param currentY Current Y at point of adding
      */
     private _addPointerDevice(deviceType: DeviceType, deviceSlot: number, currentX: number, currentY: number): void {
-        this._pointerActive = true;
+        if (!this._pointerActive) {
+            this._pointerActive = true;
+        }
         this._registerDevice(deviceType, deviceSlot, MAX_POINTER_INPUTS);
         const pointer = this._inputs[deviceType][deviceSlot]; /* initialize our pointer position immediately after registration */
         pointer[0] = currentX;
@@ -810,21 +812,17 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
         this._elementToAttachTo.removeEventListener("blur", this._pointerBlurEvent);
 
         // Keyboard Events
-        if (this._keyboardActive) {
-            this._elementToAttachTo.removeEventListener("keydown", this._keyboardDownEvent);
-            this._elementToAttachTo.removeEventListener("keyup", this._keyboardUpEvent);
-        }
+        this._elementToAttachTo.removeEventListener("keydown", this._keyboardDownEvent);
+        this._elementToAttachTo.removeEventListener("keyup", this._keyboardUpEvent);
 
         // Pointer Events
-        if (this._pointerActive) {
-            this._elementToAttachTo.removeEventListener(this._eventPrefix + "move", this._pointerMoveEvent);
-            this._elementToAttachTo.removeEventListener(this._eventPrefix + "down", this._pointerDownEvent);
-            this._elementToAttachTo.removeEventListener(this._eventPrefix + "up", this._pointerUpEvent);
-            this._elementToAttachTo.removeEventListener(this._wheelEventName, this._pointerWheelEvent);
+        this._elementToAttachTo.removeEventListener(this._eventPrefix + "move", this._pointerMoveEvent);
+        this._elementToAttachTo.removeEventListener(this._eventPrefix + "down", this._pointerDownEvent);
+        this._elementToAttachTo.removeEventListener(this._eventPrefix + "up", this._pointerUpEvent);
+        this._elementToAttachTo.removeEventListener(this._wheelEventName, this._pointerWheelEvent);
 
-            if (this._pointerInputClearObserver) {
-                this._engine.onEndFrameObservable.remove(this._pointerInputClearObserver);
-            }
+        if (this._pointerInputClearObserver) {
+            this._engine.onEndFrameObservable.remove(this._pointerInputClearObserver);
         }
     }
 }

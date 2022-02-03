@@ -5,6 +5,7 @@ import LogoImage from "../imgs/logo.svg";
 import { Engine } from "babylonjs/Engines/engine";
 import { CommandBarComponent } from "./commandBarComponent";
 import { Utilities } from "../tools/utilities";
+import { EngineStore } from "babylonjs/Engines/engineStore";
 
 require("../scss/header.scss");
 
@@ -33,8 +34,8 @@ export class HeaderComponent extends React.Component<IHeaderComponentProps> {
     updateDescription() {
         this._refVersionNumber.current!.innerHTML = Engine.Version;
 
-        if (Engine.LastCreatedEngine && Engine.LastCreatedEngine.name) {
-            this._refVersionNumber.current!.innerHTML += ` (${Engine.LastCreatedEngine.name}${Engine.LastCreatedEngine.version > 1 ? Engine.LastCreatedEngine.version : ""})`;
+        if (EngineStore.LastCreatedEngine && EngineStore.LastCreatedEngine.name) {
+            this._refVersionNumber.current!.innerHTML += ` (${EngineStore.LastCreatedEngine.name}${EngineStore.LastCreatedEngine.version > 1 ? EngineStore.LastCreatedEngine.version : ""})`;
         }
     }
 

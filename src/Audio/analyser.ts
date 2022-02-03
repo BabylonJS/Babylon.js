@@ -3,6 +3,7 @@ import { Scene } from "../scene";
 import { Engine } from "../Engines/engine";
 import { IAudioEngine } from "./Interfaces/IAudioEngine";
 import { Tools } from "../Misc/tools";
+import { EngineStore } from "../Engines/engineStore";
 
 /**
  * Class used to work with sound analyzer using fast fourier transform (FFT)
@@ -50,7 +51,7 @@ export class Analyser {
      * @param scene defines hosting scene
      */
     constructor(scene?: Nullable<Scene>) {
-        scene = scene || Engine.LastCreatedScene;
+        scene = scene || EngineStore.LastCreatedScene;
         if (!scene) {
             return;
         }

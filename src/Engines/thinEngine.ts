@@ -1104,7 +1104,8 @@ export class ThinEngine {
             canUseGLVertexID: this._webGLVersion > 1,
             supportComputeShaders: false,
             supportSRGBBuffers: false,
-            supportTransformFeedbacks: this._webGLVersion > 1
+            supportTransformFeedbacks: this._webGLVersion > 1,
+            textureMaxLevel: this._webGLVersion > 1
         };
 
         // Infos
