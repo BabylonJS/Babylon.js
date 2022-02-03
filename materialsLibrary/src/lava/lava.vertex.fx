@@ -221,11 +221,9 @@ void main(void) {
 
 	// Vertex color
 #ifdef VERTEXCOLOR
-    #ifdef INSTANCES
-        vColor = instanceColor;
-    #else
-	    vColor = color;
-    #endif
+	vColor = color;
+#elif INSTANCESCOLOR
+	vColor = instanceColor;
 #endif
 
 	// Point size
