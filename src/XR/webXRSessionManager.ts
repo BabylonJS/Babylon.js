@@ -1,5 +1,5 @@
 import { Logger } from "../Misc/logger";
-import { Observable } from "../Misc/observable";
+import { Observable, Observer } from "../Misc/observable";
 import { Nullable } from "../types";
 import { IDisposable, Scene } from "../scene";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
@@ -24,7 +24,7 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
     private _baseLayerRTTProvider: Nullable<WebXRLayerRenderTargetTextureProvider>;
     private _xrNavigator: any;
     private _sessionMode: XRSessionMode;
-    private _onEngineDisposedObserver: Observable<ThinEngine>;
+    private _onEngineDisposedObserver: Nullable<Observer<ThinEngine>>;
 
     /**
      * The base reference space from which the session started. good if you want to reset your
@@ -88,6 +88,9 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
         this._onEngineDisposedObserver = this._engine.onDisposeObservable.addOnce(() => {
             this._engine = null;
         });
+        scene.onDisposeObservable.addOnce(() => {
+            this.dispose();
+        });
     }
 
     /**
@@ -126,6 +129,7 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
         this.onXRSessionEnded.clear();
         this.onXRReferenceSpaceChanged.clear();
         this.onXRSessionInit.clear();
+        this._engine?.onDisposeObservable.remove(this._onEngineDisposedObserver);
     }
 
     /**
