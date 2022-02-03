@@ -10,7 +10,7 @@ import { LockObject } from "../tabs/propertyGrids/lockObject";
 import { TextInputLineComponent } from "./textInputLineComponent";
 
 const copyIcon: string = require("./copy.svg");
-const emptyColor = new Color4(1, 1, 1, 0);
+const emptyColor = new Color4(0, 0, 0, 0);
 
 export interface IColorLineComponentProps {
     label: string;
@@ -25,13 +25,13 @@ export interface IColorLineComponentProps {
     disableAlpha?: boolean;
 }
 
-export class ColorLineComponent extends React.Component<IColorLineComponentProps, { isExpanded: boolean; color: Color4 }> {
-    private _localChange = false;
+export class ColorLineComponent extends React.Component<IColorLineComponentProps, { isExpanded: boolean; color: Color4; colorString: string; }> {
     constructor(props: IColorLineComponentProps) {
         super(props);
 
-        const currentColor = this.getValue();
-        this.state = { isExpanded: false, color: currentColor };
+        const colorString = this.getValueAsString();
+        const color = this.getValue();
+        this.state = { isExpanded: false, color, colorString };
 
         if (props.isLinear) {
             this.state.color.toGammaSpaceToRef(this.state.color);
@@ -41,21 +41,6 @@ export class ColorLineComponent extends React.Component<IColorLineComponentProps
         target._isLinearColor = props.isLinear; // so that replayRecorder can append toLinearSpace() as appropriate
     }
 
-    shouldComponentUpdate(nextProps: IColorLineComponentProps, nextState: { color: Color4 }) {
-        const currentColor = this.getValue();
-
-        if (this.props.isLinear) {
-            currentColor.toGammaSpaceToRef(currentColor as any);
-        }
-
-        if (!currentColor.equals(nextState.color) || this._localChange) {
-            // nextState.color = currentColor.clone();
-            this._localChange = false;
-            return true;
-        }
-        return false;
-    }
-
     getValue(props = this.props): Color4 {
         const target = props.target;
         const property = target[props.propertyName];
@@ -63,22 +48,44 @@ export class ColorLineComponent extends React.Component<IColorLineComponentProps
         if (typeof property === "string") {
             return this.convertToColor(property);
         } else {
-            return property as Color4;
+            return property;
         }
+    }
+ 
+    getValueAsString(props = this.props): string {
+        const target = props.target;
+        const property = target[props.propertyName];
+        if (!property) return "";
+        if (typeof property === "string") {
+            return property;
+        } else {
+            return property.toHexString();
+        }
+    }
+
+    setColorFromString(colorString: string) {
+        let color = this.convertToColor(colorString);
+        if (this.props.isLinear) {
+            color = color.toLinearSpace();
+        }
+        console.log(color, colorString);
+        this.setState({color, colorString}, () => this.updateColor())
     }
 
     setColor(newColor: Color4) {
         if (this.props.isLinear) {
             newColor = newColor.toLinearSpace();
         }
-        this._localChange = true;
-        this.setState({color: newColor});
+        this.setState({color: newColor, colorString: newColor.toHexString()}, () => this.updateColor());
+    }
 
+    updateColor() {
+        const newColor = this.state.color;
         // whether to set properties to color3 or color4
         const setColor = this.props.disableAlpha ? this.toColor3(newColor) : newColor;
 
         const target = this.props.target;
-        const previousValue = target[this.props.propertyName];
+        const initialValue = target[this.props.propertyName];
         const value = typeof target[this.props.propertyName] === "string" ? setColor.toHexString() : setColor;
         // make the change
         target[this.props.propertyName] = value;
@@ -88,7 +95,7 @@ export class ColorLineComponent extends React.Component<IColorLineComponentProps
                 object: target,
                 property: this.props.propertyName,
                 value,
-                previousValue
+                initialValue
             });
         }
         
@@ -98,7 +105,6 @@ export class ColorLineComponent extends React.Component<IColorLineComponentProps
     }
 
     switchExpandState() {
-        this._localChange = true;
         this.setState({ isExpanded: !this.state.isExpanded });
     }
 
@@ -137,13 +143,11 @@ export class ColorLineComponent extends React.Component<IColorLineComponentProps
         element.remove();
     }
 
-    private getColorString() {
-        const hexString = (this.state.color as Color4).toHexString();
-        if (this.props.disableAlpha) {
-            return hexString.substring(0, 7);
-        }
-        return hexString;
+    public get colorString() {
+        return this.state.colorString;
     }
+
+    public set colorString(_: string) {}
 
     private convertToColor(color: string): Color4 {
         if (color === "" || color === "transparent") {
@@ -179,12 +183,9 @@ export class ColorLineComponent extends React.Component<IColorLineComponentProps
         return new Color3(color.r, color.g, color.b);
     }
 
-    private _colorStringSaved: string;
-    private _colorPickerOpen: boolean;
-    private _colorString: string;
     render() {
         const chevron = this.state.isExpanded ? <FontAwesomeIcon icon={faMinus} /> : <FontAwesomeIcon icon={faPlus} />;
-        this._colorString = this.getColorString();
+        
         return (
             <div className="color3Line">
                 <div className="firstLine">
@@ -197,10 +198,6 @@ export class ColorLineComponent extends React.Component<IColorLineComponentProps
                             linearHint={this.props.isLinear}
                             value={this.props.disableAlpha ? this.toColor3(this.state.color) : this.state.color}
                             onColorChanged={(color) => {
-                                if (!this._colorPickerOpen) {
-                                    this._colorStringSaved = this._colorString;
-                                }
-                                this._colorPickerOpen = true;
                                 this.setColor(this.convertToColor(color));
                             }}
                         />
@@ -210,10 +207,9 @@ export class ColorLineComponent extends React.Component<IColorLineComponentProps
                             lockObject={this.props.lockObject}
                             label=""
                             target={this}
-                            propertyName="_colorString"
+                            propertyName="colorString"
                             onChange={(newValue) => {
-                                this._colorPickerOpen = false;
-                                this.setColor(this.convertToColor(newValue));
+                                this.setColorFromString(newValue);
                             }}
                             onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         />
