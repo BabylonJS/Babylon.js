@@ -1663,7 +1663,7 @@ export class ThinEngine {
         let height: number;
 
         // Requery hardware scaling level to handle zoomed-in resizing.
-        if(this._adaptToDeviceRatio) {
+        if (this._adaptToDeviceRatio) {
             const devicePixelRatio = IsWindowObjectExist() ? (window.devicePixelRatio || 1.0) : 1.0;
             var limitDeviceRatio = this._creationOptions.limitDeviceRatio || devicePixelRatio;
             this._hardwareScalingLevel = this._adaptToDeviceRatio ? 1.0 / Math.min(limitDeviceRatio, devicePixelRatio) : 1.0;
