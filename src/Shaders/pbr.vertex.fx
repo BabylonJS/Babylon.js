@@ -78,6 +78,8 @@ varying vec3 vPositionW;
 
 #ifdef VERTEXCOLOR
 varying vec4 vColor;
+#elif INSTANCESCOLOR
+varying vec4 vColor;
 #endif
 
 #include<bumpVertexDeclaration>

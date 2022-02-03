@@ -44,6 +44,8 @@ varying mat3 tangentSpace;
 
 #ifdef VERTEXCOLOR
 varying vec4 vColor;
+#elif INSTANCESCOLOR
+varying vec4 vColor;
 #endif
 
 #include<clipPlaneVertexDeclaration>
