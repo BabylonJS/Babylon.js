@@ -43,7 +43,7 @@ varying vec3 vPositionW;
 varying vec3 vNormalW;
 #endif
 
-#ifdef VERTEXCOLOR
+#if defined(VERTEXCOLOR) || defined(INSTANCESCOLOR)
 varying vec4 vColor;
 #endif
 
@@ -126,6 +126,8 @@ void main(void) {
 	// Vertex color
 #ifdef VERTEXCOLOR
 	vColor = color;
+#elif INSTANCESCOLOR
+	vColor = instanceColor;
 #endif
 
 	// Point size

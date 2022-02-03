@@ -49,6 +49,7 @@ class WaterMaterialDefines extends MaterialDefines implements IImageProcessingCo
     public NUM_BONE_INFLUENCERS = 0;
     public BonesPerMesh = 0;
     public INSTANCES = false;
+    public INSTANCESCOLOR = false;
     public SPECULARTERM = false;
     public LOGARITHMICDEPTH = false;
     public USE_REVERSE_DEPTHBUFFER = false;
