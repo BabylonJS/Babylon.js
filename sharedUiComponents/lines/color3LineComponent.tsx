@@ -6,7 +6,7 @@ import { ColorLineComponent } from "./colorLineComponent";
 
 export interface IColor3LineComponentProps {
     label: string;
-    target: any[];
+    target: any;
     propertyName: string;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     isLinear?: boolean;

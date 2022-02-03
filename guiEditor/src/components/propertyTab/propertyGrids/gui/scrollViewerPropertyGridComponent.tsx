@@ -6,7 +6,8 @@ import { LockObject } from "../../../../sharedUiComponents/tabs/propertyGrids/lo
 import { ScrollViewer } from "babylonjs-gui/2D/controls/scrollViewers/scrollViewer";
 import { FloatLineComponent } from "../../../../sharedUiComponents/lines/floatLineComponent";
 import { TextLineComponent } from "../../../../sharedUiComponents/lines/textLineComponent";
-import { Color3LineComponent } from "../../../../sharedUiComponents/lines/color3LineComponent";
+import { ColorLineComponent } from "../../../../sharedUiComponents/lines/colorLineComponent";
+import { makeTargetsProxy } from "../../../../sharedUiComponents/lines/targetsProxy";
 
 const fillColorIcon: string = require("../../../../sharedUiComponents/imgs/fillColorIcon.svg");
 const sizeIcon: string = require("../../../../sharedUiComponents/imgs/sizeIcon.svg");
@@ -14,7 +15,7 @@ const conerRadiusIcon: string = require("../../../../sharedUiComponents/imgs/con
 const strokeWeightIcon: string = require("../../../../sharedUiComponents/imgs/strokeWeightIcon.svg");
 
 interface IScrollViewerPropertyGridComponentProps {
-    scrollViewer: ScrollViewer;
+    scrollViewers: ScrollViewer[];
     lockObject: LockObject;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
@@ -25,13 +26,13 @@ export class ScrollViewerPropertyGridComponent extends React.Component<IScrollVi
     }
 
     render() {
-        const scrollViewer = this.props.scrollViewer;
+        const scrollViewers = this.props.scrollViewers;
 
         return (
             <div className="pane">
                 <CommonControlPropertyGridComponent
                     lockObject={this.props.lockObject}
-                    control={scrollViewer}
+                    controls={scrollViewers}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
                 <hr />
@@ -42,7 +43,7 @@ export class ScrollViewerPropertyGridComponent extends React.Component<IScrollVi
                         icon={strokeWeightIcon}
                         lockObject={this.props.lockObject}
                         label=""
-                        target={scrollViewer}
+                        target={makeTargetsProxy(scrollViewers, "", this.props.onPropertyChangedObservable)}
                         propertyName="thickness"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
@@ -51,7 +52,7 @@ export class ScrollViewerPropertyGridComponent extends React.Component<IScrollVi
                         icon={conerRadiusIcon}
                         lockObject={this.props.lockObject}
                         label=""
-                        target={scrollViewer}
+                        target={makeTargetsProxy(scrollViewers, "", this.props.onPropertyChangedObservable)}
                         propertyName="cornerRadius"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
@@ -64,7 +65,7 @@ export class ScrollViewerPropertyGridComponent extends React.Component<IScrollVi
                         icon={sizeIcon}
                         lockObject={this.props.lockObject}
                         label=""
-                        target={scrollViewer}
+                        target={makeTargetsProxy(scrollViewers, "", this.props.onPropertyChangedObservable)}
                         propertyName="wheelPrecision"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
@@ -73,26 +74,26 @@ export class ScrollViewerPropertyGridComponent extends React.Component<IScrollVi
                         icon={sizeIcon}
                         lockObject={this.props.lockObject}
                         label=""
-                        target={scrollViewer}
+                        target={makeTargetsProxy(scrollViewers, "", this.props.onPropertyChangedObservable)}
                         propertyName="barSize"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                 </div>
-                <Color3LineComponent
+                <ColorLineComponent
                     iconLabel={"Bar color"}
                     icon={fillColorIcon}
                     lockObject={this.props.lockObject}
                     label=""
-                    target={scrollViewer}
+                    target={makeTargetsProxy(scrollViewers, "", this.props.onPropertyChangedObservable)}
                     propertyName="barColor"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
-                <Color3LineComponent
+                <ColorLineComponent
                     iconLabel={"Bar background"}
                     icon={fillColorIcon}
                     lockObject={this.props.lockObject}
                     label=""
-                    target={scrollViewer}
+                    target={makeTargetsProxy(scrollViewers, "", this.props.onPropertyChangedObservable)}
                     propertyName="barBackground"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />

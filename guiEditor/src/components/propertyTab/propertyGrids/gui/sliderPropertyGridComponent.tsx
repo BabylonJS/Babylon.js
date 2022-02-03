@@ -7,8 +7,9 @@ import { FloatLineComponent } from "../../../../sharedUiComponents/lines/floatLi
 import { CheckBoxLineComponent } from "../../../../sharedUiComponents/lines/checkBoxLineComponent";
 import { TextInputLineComponent } from "../../../../sharedUiComponents/lines/textInputLineComponent";
 import { TextLineComponent } from "../../../../sharedUiComponents/lines/textLineComponent";
-import { Color3LineComponent } from "../../../../sharedUiComponents/lines/color3LineComponent";
+import { ColorLineComponent } from "../../../../sharedUiComponents/lines/colorLineComponent";
 import { ImageBasedSlider } from "babylonjs-gui/2D/controls/sliders/imageBasedSlider";
+import { makeTargetsProxy } from "../../../../sharedUiComponents/lines/targetsProxy";
 
 const colorIcon: string = require("../../../../sharedUiComponents/imgs/colorIcon.svg");
 const verticalSliderIcon: string = require("../../../../sharedUiComponents/imgs/verticalSliderIcon.svg");
@@ -22,7 +23,7 @@ const barOffsetIcon: string = require("../../../../sharedUiComponents/imgs/barOf
 const thumbCircleIcon: string = require("../../../../sharedUiComponents/imgs/thumbCircleIcon.svg");
 
 interface ISliderPropertyGridComponentProps {
-    slider: Slider | ImageBasedSlider;
+    sliders: (Slider | ImageBasedSlider)[];
     lockObject: LockObject;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
@@ -33,18 +34,18 @@ export class SliderPropertyGridComponent extends React.Component<ISliderProperty
     }
 
     render() {
-        const slider = this.props.slider;
+        const sliders = this.props.sliders;
 
         return (
             <div className="pane">
                 <hr />
                 <TextLineComponent label="SLIDER" value=" " color="grey"></TextLineComponent>
-                {slider.typeName === "Slider" && <Color3LineComponent
+                {sliders.every(slider => slider.typeName === "Slider") && <ColorLineComponent
                     iconLabel={"Border color"}
                     icon={colorIcon}
                     lockObject={this.props.lockObject}
                     label=""
-                    target={slider}
+                    target={makeTargetsProxy(sliders, "", this.props.onPropertyChangedObservable)}
                     propertyName="borderColor"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />}
@@ -52,7 +53,7 @@ export class SliderPropertyGridComponent extends React.Component<ISliderProperty
                     iconLabel={"Display thumb"}
                     icon={showThumbIcon}
                     label="DISPLAY THUMB"
-                    target={slider}
+                    target={makeTargetsProxy(sliders, true, this.props.onPropertyChangedObservable)}
                     propertyName="displayThumb"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
@@ -60,7 +61,7 @@ export class SliderPropertyGridComponent extends React.Component<ISliderProperty
                     iconLabel={"Thumb circle"}
                     icon={thumbCircleIcon}
                     label="THUMB CIRCLE"
-                    target={slider}
+                    target={makeTargetsProxy(sliders, false, this.props.onPropertyChangedObservable)}
                     propertyName="isThumbCircle"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
@@ -68,7 +69,7 @@ export class SliderPropertyGridComponent extends React.Component<ISliderProperty
                     iconLabel={"Thumb clamped"}
                     icon={clampSliderValueIcon}
                     label="THUMB CLAMPED"
-                    target={slider}
+                    target={makeTargetsProxy(sliders, "", this.props.onPropertyChangedObservable)}
                     propertyName="isThumbClamped"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
@@ -76,7 +77,7 @@ export class SliderPropertyGridComponent extends React.Component<ISliderProperty
                     iconLabel={"Vertical"}
                     icon={verticalSliderIcon}
                     label="VERTICAL"
-                    target={slider}
+                    target={makeTargetsProxy(sliders, false, this.props.onPropertyChangedObservable)}
                     propertyName="isVertical"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
@@ -86,7 +87,7 @@ export class SliderPropertyGridComponent extends React.Component<ISliderProperty
                     icon={thumbWidthIcon}
                     lockObject={this.props.lockObject}
                     label=""
-                    target={slider}
+                    target={makeTargetsProxy(sliders, "20px", this.props.onPropertyChangedObservable)}
                     propertyName="thumbWidth"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
@@ -95,7 +96,7 @@ export class SliderPropertyGridComponent extends React.Component<ISliderProperty
                     icon={barOffsetIcon}
                     lockObject={this.props.lockObject}
                     label=""
-                    target={slider}
+                    target={makeTargetsProxy(sliders, "15px", this.props.onPropertyChangedObservable)}
                     propertyName="barOffset"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
@@ -106,7 +107,7 @@ export class SliderPropertyGridComponent extends React.Component<ISliderProperty
                     icon={sliderValueMinimumIcon}
                     lockObject={this.props.lockObject}
                     label=""
-                    target={slider}
+                    target={makeTargetsProxy(sliders, 0, this.props.onPropertyChangedObservable)}
                     propertyName="minimum"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
@@ -115,7 +116,7 @@ export class SliderPropertyGridComponent extends React.Component<ISliderProperty
                     icon={sliderValueMaximumIcon}
                     lockObject={this.props.lockObject}
                     label=""
-                    target={slider}
+                    target={makeTargetsProxy(sliders, 100, this.props.onPropertyChangedObservable)}
                     propertyName="maximum"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
@@ -126,7 +127,7 @@ export class SliderPropertyGridComponent extends React.Component<ISliderProperty
                     icon={sliderValueIcon}
                     lockObject={this.props.lockObject}
                     label=""
-                    target={slider}
+                    target={makeTargetsProxy(sliders, 50, this.props.onPropertyChangedObservable)}
                     propertyName="value"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />

@@ -6,9 +6,10 @@ import { ColorPicker } from "babylonjs-gui/2D/controls/colorpicker";
 import { Color3LineComponent } from "../../../../sharedUiComponents/lines/color3LineComponent";
 import { LockObject } from "../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { TextLineComponent } from "../../../../sharedUiComponents/lines/textLineComponent";
+import { makeTargetsProxy } from "../../../../sharedUiComponents/lines/targetsProxy";
 
 interface IColorPickerPropertyGridComponentProps {
-    colorPicker: ColorPicker;
+    colorPickers: ColorPicker[];
     lockObject: LockObject;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
@@ -19,14 +20,14 @@ export class ColorPickerPropertyGridComponent extends React.Component<IColorPick
     }
 
     render() {
-        const colorPicker = this.props.colorPicker;
+        const colorPickers = this.props.colorPickers;
 
         return (
             <div className="pane">
-                <CommonControlPropertyGridComponent lockObject={this.props.lockObject} control={colorPicker} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <CommonControlPropertyGridComponent lockObject={this.props.lockObject} controls={colorPickers} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <hr />
                 <TextLineComponent label="COLORPICKER" value=" " color="grey"></TextLineComponent>
-                <Color3LineComponent label="Color" target={colorPicker} propertyName="value" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <Color3LineComponent label="Color" target={makeTargetsProxy(colorPickers, "", this.props.onPropertyChangedObservable)} propertyName="value" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
             </div>
         );
     }

@@ -979,7 +979,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
         this._rootContainer.current?.addEventListener("wheel",  zoomFnScrollWheel);
         this._rootContainer.current?.addEventListener("pointerdown", (event) => {
-            console.log(event);
             removeObservers();
             if (event.button !== 0 || this._forcePanning) {
                 startPanning();
