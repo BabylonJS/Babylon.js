@@ -104,7 +104,7 @@ export enum DualShockInput {
 }
 
 /**
- * Enum for Dual Shock Gamepad
+ * Enum for Dual Sense Gamepad
  */
  export enum DualSenseInput {
     /** Cross */
