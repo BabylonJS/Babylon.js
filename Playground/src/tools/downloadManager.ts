@@ -90,8 +90,7 @@ export class DownloadManager {
         if (textures[index].video) {
             url = textures[index].video.currentSrc;
         } else {
-            // url = textures[index].name;
-            url = textures[index].url ? textures[index].url : textures[index].name;
+            url = textures[index].url;
         }
 
         var name = textures[index].name.replace("textures/", "");
