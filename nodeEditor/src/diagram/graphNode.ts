@@ -314,7 +314,7 @@ export class GraphNode {
         this._comments.innerHTML = this.block.comments || "";
         this._comments.title = this.block.comments || "";
 
-        if (this.block.willBeGeneratedIntoVertexShaderFromFragmentShader) {
+        if (this.block.getClassName() !== "ElbowBlock" && this.block.willBeGeneratedIntoVertexShaderFromFragmentShader) {
             this._promotionWarning.classList.add("visible");
         } else {
             this._promotionWarning.classList.remove("visible");
