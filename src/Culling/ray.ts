@@ -722,7 +722,7 @@ Scene.prototype._internalPick = function (rayFunction: (world: Matrix, enableDis
             continue;
         }
 
-        let world = mesh.skeleton && mesh.skeleton.overrideMesh ? mesh.skeleton.overrideMesh.getWorldMatrix() : mesh.getWorldMatrix();
+        let world = mesh.getWorldMatrix();
 
         if (mesh.hasThinInstances && (mesh as Mesh).thinInstanceEnablePicking) {
             // first check if the ray intersects the whole bounding box/sphere of the mesh
@@ -782,7 +782,7 @@ Scene.prototype._internalMultiPick = function (rayFunction: (world: Matrix, enab
             continue;
         }
 
-        let world = mesh.skeleton && mesh.skeleton.overrideMesh ? mesh.skeleton.overrideMesh.getWorldMatrix() : mesh.getWorldMatrix();
+        let world = mesh.getWorldMatrix();
 
         if (mesh.hasThinInstances && (mesh as Mesh).thinInstanceEnablePicking) {
             let result = this._internalPickForMesh(null, rayFunction, mesh, world, true, true, trianglePredicate);

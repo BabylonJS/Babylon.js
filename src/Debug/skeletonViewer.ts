@@ -520,7 +520,7 @@ export class SkeletonViewer {
     private _getLinesForBonesWithLength(bones: Bone[], meshMat: Matrix): void {
         var len = bones.length;
 
-        let mesh = this.mesh._effectiveMesh;
+        let mesh = this.mesh;
         var meshPos = mesh.position;
         let idx = 0;
         for (var i = 0; i < len; i++) {
@@ -546,7 +546,7 @@ export class SkeletonViewer {
         var len = bones.length;
         var boneNum = 0;
 
-        let mesh = this.mesh._effectiveMesh;
+        let mesh = this.mesh;
         var meshPos = mesh.position;
         for (var i = len - 1; i >= 0; i--) {
             var childBone = bones[i];
@@ -850,12 +850,10 @@ export class SkeletonViewer {
             this.skeleton.computeAbsoluteTransforms();
         }
 
-        let mesh = this.mesh._effectiveMesh;
-
         if (this.skeleton.bones[0].length === undefined) {
             this._getLinesForBonesNoLength(this.skeleton.bones);
         } else {
-            this._getLinesForBonesWithLength(this.skeleton.bones, mesh.getWorldMatrix());
+            this._getLinesForBonesWithLength(this.skeleton.bones, this.mesh.getWorldMatrix());
         }
 
         const targetScene = this._utilityLayer.utilityLayerScene;
