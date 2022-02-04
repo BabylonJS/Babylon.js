@@ -880,12 +880,7 @@ export class InputManager {
                 }
 
                 if (attachMove) {
-                    if (
-                        eventData.inputIndex === PointerInput.Horizontal ||
-                        eventData.inputIndex === PointerInput.Vertical ||
-                        eventData.inputIndex === PointerInput.DeltaHorizontal ||
-                        eventData.inputIndex === PointerInput.DeltaVertical
-                    ) {
+                    if (eventData.inputIndex === PointerInput.Move) {
                         this._onPointerMove(evt as IPointerEvent);
                     } else if (eventData.inputIndex === PointerInput.MouseWheelX || eventData.inputIndex === PointerInput.MouseWheelY || eventData.inputIndex === PointerInput.MouseWheelZ) {
                         this._onPointerMove(evt as IWheelEvent);
