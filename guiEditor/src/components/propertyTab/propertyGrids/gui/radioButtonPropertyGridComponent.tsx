@@ -39,7 +39,7 @@ export class RadioButtonPropertyGridComponent extends React.Component<IRadioButt
                         icon={strokeWeightIcon}
                         lockObject={this.props.lockObject}
                         label=""
-                        target={makeTargetsProxy(radioButtons, "", this.props.onPropertyChangedObservable)}
+                        target={makeTargetsProxy(radioButtons, this.props.onPropertyChangedObservable)}
                         propertyName="thickness"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
@@ -48,7 +48,7 @@ export class RadioButtonPropertyGridComponent extends React.Component<IRadioButt
                         icon={scaleIcon}
                         lockObject={this.props.lockObject}
                         label=""
-                        target={makeTargetsProxy(radioButtons, "", this.props.onPropertyChangedObservable)}
+                        target={makeTargetsProxy(radioButtons, this.props.onPropertyChangedObservable)}
                         propertyName="checkSizeRatio"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
@@ -58,7 +58,7 @@ export class RadioButtonPropertyGridComponent extends React.Component<IRadioButt
                     icon={strokeWeightIcon}
                     lockObject={this.props.lockObject}
                     label=""
-                    target={makeTargetsProxy(radioButtons, "", this.props.onPropertyChangedObservable)}
+                    target={makeTargetsProxy(radioButtons, this.props.onPropertyChangedObservable)}
                     propertyName="group"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
@@ -66,7 +66,7 @@ export class RadioButtonPropertyGridComponent extends React.Component<IRadioButt
                     iconLabel="Is Checked"
                     icon={checkboxIcon}
                     label="CHECKED"
-                    target={makeTargetsProxy(radioButtons, false, this.props.onPropertyChangedObservable)}
+                    target={makeTargetsProxy(radioButtons, this.props.onPropertyChangedObservable)}
                     propertyName="isChecked"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />

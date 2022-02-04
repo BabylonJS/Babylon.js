@@ -40,7 +40,7 @@ export class ButtonPropertyGridComponent extends React.Component<IButtonProperty
                     label="CLIP CONTENT"
                     iconLabel="Clip Content"
                     icon={clipContentsIcon}
-                    target={makeTargetsProxy(rectangles, true, this.props.onPropertyChangedObservable)}
+                    target={makeTargetsProxy(rectangles, this.props.onPropertyChangedObservable)}
                     propertyName="clipChildren"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
@@ -50,7 +50,7 @@ export class ButtonPropertyGridComponent extends React.Component<IButtonProperty
                         icon={strokeWeightIcon}
                         lockObject={this.props.lockObject}
                         label=""
-                        target={makeTargetsProxy(rectangles, "", this.props.onPropertyChangedObservable)}
+                        target={makeTargetsProxy(rectangles, this.props.onPropertyChangedObservable)}
                         propertyName="thickness"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
@@ -59,7 +59,7 @@ export class ButtonPropertyGridComponent extends React.Component<IButtonProperty
                         icon={conerRadiusIcon}
                         lockObject={this.props.lockObject}
                         label=""
-                        target={makeTargetsProxy(rectangles, "", this.props.onPropertyChangedObservable)}
+                        target={makeTargetsProxy(rectangles, this.props.onPropertyChangedObservable)}
                         propertyName="cornerRadius"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />

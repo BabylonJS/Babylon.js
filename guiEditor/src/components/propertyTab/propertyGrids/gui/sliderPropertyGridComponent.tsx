@@ -45,7 +45,7 @@ export class SliderPropertyGridComponent extends React.Component<ISliderProperty
                     icon={colorIcon}
                     lockObject={this.props.lockObject}
                     label=""
-                    target={makeTargetsProxy(sliders, "", this.props.onPropertyChangedObservable)}
+                    target={makeTargetsProxy(sliders, this.props.onPropertyChangedObservable)}
                     propertyName="borderColor"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />}
@@ -53,7 +53,7 @@ export class SliderPropertyGridComponent extends React.Component<ISliderProperty
                     iconLabel={"Display thumb"}
                     icon={showThumbIcon}
                     label="DISPLAY THUMB"
-                    target={makeTargetsProxy(sliders, true, this.props.onPropertyChangedObservable)}
+                    target={makeTargetsProxy(sliders, this.props.onPropertyChangedObservable)}
                     propertyName="displayThumb"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
@@ -61,7 +61,7 @@ export class SliderPropertyGridComponent extends React.Component<ISliderProperty
                     iconLabel={"Thumb circle"}
                     icon={thumbCircleIcon}
                     label="THUMB CIRCLE"
-                    target={makeTargetsProxy(sliders, false, this.props.onPropertyChangedObservable)}
+                    target={makeTargetsProxy(sliders, this.props.onPropertyChangedObservable)}
                     propertyName="isThumbCircle"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
@@ -69,7 +69,7 @@ export class SliderPropertyGridComponent extends React.Component<ISliderProperty
                     iconLabel={"Thumb clamped"}
                     icon={clampSliderValueIcon}
                     label="THUMB CLAMPED"
-                    target={makeTargetsProxy(sliders, "", this.props.onPropertyChangedObservable)}
+                    target={makeTargetsProxy(sliders, this.props.onPropertyChangedObservable)}
                     propertyName="isThumbClamped"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
@@ -77,7 +77,7 @@ export class SliderPropertyGridComponent extends React.Component<ISliderProperty
                     iconLabel={"Vertical"}
                     icon={verticalSliderIcon}
                     label="VERTICAL"
-                    target={makeTargetsProxy(sliders, false, this.props.onPropertyChangedObservable)}
+                    target={makeTargetsProxy(sliders, this.props.onPropertyChangedObservable)}
                     propertyName="isVertical"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
@@ -87,7 +87,7 @@ export class SliderPropertyGridComponent extends React.Component<ISliderProperty
                     icon={thumbWidthIcon}
                     lockObject={this.props.lockObject}
                     label=""
-                    target={makeTargetsProxy(sliders, "20px", this.props.onPropertyChangedObservable)}
+                    target={makeTargetsProxy(sliders, this.props.onPropertyChangedObservable)}
                     propertyName="thumbWidth"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
@@ -96,7 +96,7 @@ export class SliderPropertyGridComponent extends React.Component<ISliderProperty
                     icon={barOffsetIcon}
                     lockObject={this.props.lockObject}
                     label=""
-                    target={makeTargetsProxy(sliders, "15px", this.props.onPropertyChangedObservable)}
+                    target={makeTargetsProxy(sliders, this.props.onPropertyChangedObservable)}
                     propertyName="barOffset"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
@@ -107,7 +107,7 @@ export class SliderPropertyGridComponent extends React.Component<ISliderProperty
                     icon={sliderValueMinimumIcon}
                     lockObject={this.props.lockObject}
                     label=""
-                    target={makeTargetsProxy(sliders, 0, this.props.onPropertyChangedObservable)}
+                    target={makeTargetsProxy(sliders, this.props.onPropertyChangedObservable)}
                     propertyName="minimum"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
@@ -116,7 +116,7 @@ export class SliderPropertyGridComponent extends React.Component<ISliderProperty
                     icon={sliderValueMaximumIcon}
                     lockObject={this.props.lockObject}
                     label=""
-                    target={makeTargetsProxy(sliders, 100, this.props.onPropertyChangedObservable)}
+                    target={makeTargetsProxy(sliders, this.props.onPropertyChangedObservable)}
                     propertyName="maximum"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
@@ -127,7 +127,7 @@ export class SliderPropertyGridComponent extends React.Component<ISliderProperty
                     icon={sliderValueIcon}
                     lockObject={this.props.lockObject}
                     label=""
-                    target={makeTargetsProxy(sliders, 50, this.props.onPropertyChangedObservable)}
+                    target={makeTargetsProxy(sliders, this.props.onPropertyChangedObservable)}
                     propertyName="value"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />

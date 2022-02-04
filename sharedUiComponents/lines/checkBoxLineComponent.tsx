@@ -3,6 +3,7 @@ import { Observable } from "babylonjs/Misc/observable";
 import { PropertyChangedEvent } from "./../propertyChangedEvent";
 import { IconDefinition } from "@fortawesome/fontawesome-common-types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { conflictingValuesPlaceholder } from "./targetsProxy";
 
 export interface ICheckBoxLineComponentProps {
     label?: string;
@@ -18,7 +19,7 @@ export interface ICheckBoxLineComponentProps {
     faIcons?: {enabled: IconDefinition, disabled: IconDefinition}
 }
 
-export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponentProps, { isSelected: boolean; isDisabled?: boolean }> {
+export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponentProps, { isSelected: boolean; isDisabled?: boolean; isConflict: boolean }> {
     private static _UniqueIdSeed = 0;
     private _uniqueId: number;
     private _localChange = false;
@@ -28,9 +29,9 @@ export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponen
         this._uniqueId = CheckBoxLineComponent._UniqueIdSeed++;
 
         if (this.props.isSelected) {
-            this.state = { isSelected: this.props.isSelected() };
+            this.state = { isSelected: this.props.isSelected(), isConflict: false };
         } else {
-            this.state = { isSelected: this.props.target[this.props.propertyName!] == true };
+            this.state = { isSelected: this.props.target[this.props.propertyName!] === true, isConflict: this.props.target[this.props.propertyName!] === conflictingValuesPlaceholder };
         }
 
         if (this.props.disabled) {
@@ -38,13 +39,16 @@ export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponen
         }
     }
 
-    shouldComponentUpdate(nextProps: ICheckBoxLineComponentProps, nextState: { isSelected: boolean; isDisabled: boolean }) {
-        var currentState: boolean;
+    shouldComponentUpdate(nextProps: ICheckBoxLineComponentProps, nextState: { isSelected: boolean; isDisabled: boolean; isConflict: boolean }) {
+        let currentState: boolean;
 
         if (nextProps.isSelected) {
             currentState = nextProps.isSelected!();
         } else {
-            currentState = nextProps.target[nextProps.propertyName!] == true;
+            currentState = nextProps.target[nextProps.propertyName!] === true;
+            if (nextProps.target[nextProps.propertyName!] === conflictingValuesPlaceholder) {
+                nextState.isConflict = true;
+            }
         }
 
         if (currentState !== nextState.isSelected || this._localChange) {
@@ -57,7 +61,7 @@ export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponen
             return true;
         }
 
-        return nextProps.label !== this.props.label || nextProps.target !== this.props.target;
+        return nextProps.label !== this.props.label || nextProps.target !== this.props.target || nextState.isConflict !== this.state.isConflict;
     }
 
     onChange() {
@@ -81,7 +85,7 @@ export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponen
             this.props.onValueChanged();
         }
 
-        this.setState({ isSelected: !this.state.isSelected });
+        this.setState({ isSelected: !this.state.isSelected, isConflict: false });
     }
 
     render() {
@@ -97,7 +101,7 @@ export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponen
                     <input
                         type="checkbox"
                         id={"checkbox" + this._uniqueId}
-                        className="cbx hidden"
+                        className={`cbx hidden ${this.state.isConflict ? "conflict" : ""}`}
                         checked={this.state.isSelected}
                         onChange={() => this.onChange()}
                         disabled={!!this.props.disabled}

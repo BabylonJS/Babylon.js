@@ -1,6 +1,8 @@
 import { PropertyChangedEvent } from "../propertyChangedEvent";
 import { Observable } from "babylonjs/Misc/observable";
 
+export const conflictingValuesPlaceholder = "—";
+
 /**
  * 
  * @param propertyName the property that the input changes
@@ -9,19 +11,20 @@ import { Observable } from "babylonjs/Misc/observable";
  * @param setter an optional setter function to override the default setter behavior
  * @returns a proxy object that can be passed as a target into the input
  */
-export function makeTargetsProxy(targets: any[], defaultValue: any, onPropertyChangedObservable?: Observable<PropertyChangedEvent>) {
+export function makeTargetsProxy(targets: any[], onPropertyChangedObservable?: Observable<PropertyChangedEvent>) {
     return new Proxy({}, {
         get(_, name) {
-            if (targets.length === 0) return defaultValue;
+            if (targets.length === 0) return conflictingValuesPlaceholder;
             const firstValue = targets[0][name];
             for (const target of targets) {
                 if (target[name] !== firstValue) {
-                    return defaultValue;
+                    return conflictingValuesPlaceholder;
                 }
             }
             return firstValue;
         },
         set(_, name, value, __) {
+            if (value === "—") return true;
             for(const target of targets) {
                 const initialValue = target[name];
                 target[name] = value;

@@ -8,6 +8,7 @@ import { PropertyChangedEvent } from "../propertyChangedEvent";
 import { ColorPickerLineComponent } from "./colorPickerComponent";
 import { LockObject } from "../tabs/propertyGrids/lockObject";
 import { TextInputLineComponent } from "./textInputLineComponent";
+import { conflictingValuesPlaceholder } from "./targetsProxy";
 
 const copyIcon: string = require("./copy.svg");
 const emptyColor = new Color4(0, 0, 0, 0);
@@ -37,7 +38,7 @@ export class ColorLineComponent extends React.Component<IColorLineComponentProps
 
         const colorString = this.getValueAsString();
         const color = this.getValue();
-        this.state = { isExpanded: false, color, colorString };
+        this.state = { isExpanded: false, color, colorString};
 
         if (props.isLinear) {
             this.state.color.toGammaSpaceToRef(this.state.color);
@@ -73,6 +74,9 @@ export class ColorLineComponent extends React.Component<IColorLineComponentProps
         const property = target[props.propertyName];
         if (!property) return emptyColor;
         if (typeof property === "string") {
+            if (property === conflictingValuesPlaceholder) {
+                return emptyColor;
+            }
             return this.convertToColor(property);
         } else {
             return property;
@@ -91,6 +95,7 @@ export class ColorLineComponent extends React.Component<IColorLineComponentProps
     }
 
     setColorFromString(colorString: string) {
+        if (colorString === conflictingValuesPlaceholder) return;
         let color = this.convertToColor(colorString);
         if (this.props.isLinear) {
             color = color.toLinearSpace();
@@ -104,7 +109,8 @@ export class ColorLineComponent extends React.Component<IColorLineComponentProps
             color = color.toLinearSpace();
         }
         this.updateColor(color);
-        this.setState({color, colorString: color.toHexString()});
+        const colorString = this.props.disableAlpha ? this.toColor3(color).toHexString() : color.toHexString();
+        this.setState({color, colorString});
     }
 
     updateColor(newColor: Color4) {

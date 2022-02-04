@@ -36,7 +36,7 @@ export class RectanglePropertyGridComponent extends React.Component<IRectanglePr
                     iconLabel="Clip Content"
                     icon={clipContentsIcon}
                     label="CLIP CONTENT"
-                    target={makeTargetsProxy(rectangles, "", this.props.onPropertyChangedObservable)}
+                    target={makeTargetsProxy(rectangles, this.props.onPropertyChangedObservable)}
                     propertyName="clipChildren"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
@@ -46,7 +46,7 @@ export class RectanglePropertyGridComponent extends React.Component<IRectanglePr
                         icon={strokeWeightIcon}
                         lockObject={this.props.lockObject}
                         label=""
-                        target={makeTargetsProxy(rectangles, "", this.props.onPropertyChangedObservable)}
+                        target={makeTargetsProxy(rectangles, this.props.onPropertyChangedObservable)}
                         propertyName="thickness"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
@@ -55,7 +55,7 @@ export class RectanglePropertyGridComponent extends React.Component<IRectanglePr
                         icon={conerRadiusIcon}
                         lockObject={this.props.lockObject}
                         label=""
-                        target={makeTargetsProxy(rectangles, "", this.props.onPropertyChangedObservable)}
+                        target={makeTargetsProxy(rectangles, this.props.onPropertyChangedObservable)}
                         propertyName="cornerRadius"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />

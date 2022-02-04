@@ -40,7 +40,7 @@ export class ImageBasedSliderPropertyGridComponent extends React.Component<IImag
                     icon={thumbImageLinkIcon}
                     lockObject={this.props.lockObject}
                     iconLabel="Thumb Image Link"
-                    target={makeTargetsProxy(imageBasedSliders.map(slider => slider.thumbImage), "", this.props.onPropertyChangedObservable)}
+                    target={makeTargetsProxy(imageBasedSliders.map(slider => slider.thumbImage), this.props.onPropertyChangedObservable)}
                     label=""
                     propertyName="source"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
@@ -49,7 +49,7 @@ export class ImageBasedSliderPropertyGridComponent extends React.Component<IImag
                     icon={valueBarImageLinkIcon}
                     lockObject={this.props.lockObject}
                     iconLabel="Value Bar Image Link"
-                    target={makeTargetsProxy(imageBasedSliders.map(slider => slider.valueBarImage), "", this.props.onPropertyChangedObservable)}
+                    target={makeTargetsProxy(imageBasedSliders.map(slider => slider.valueBarImage), this.props.onPropertyChangedObservable)}
                     label=""
                     propertyName="source"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
@@ -58,7 +58,7 @@ export class ImageBasedSliderPropertyGridComponent extends React.Component<IImag
                     icon={sliderBackgroundImageIcon}
                     lockObject={this.props.lockObject}
                     iconLabel="Background Image Link"
-                    target={makeTargetsProxy(imageBasedSliders.map(slider => slider.backgroundImage), "", this.props.onPropertyChangedObservable)}
+                    target={makeTargetsProxy(imageBasedSliders.map(slider => slider.backgroundImage), this.props.onPropertyChangedObservable)}
                     label=""
                     propertyName="source"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}

@@ -27,7 +27,7 @@ export class ColorPickerPropertyGridComponent extends React.Component<IColorPick
                 <CommonControlPropertyGridComponent lockObject={this.props.lockObject} controls={colorPickers} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <hr />
                 <TextLineComponent label="COLORPICKER" value=" " color="grey"></TextLineComponent>
-                <Color3LineComponent label="Color" target={makeTargetsProxy(colorPickers, "", this.props.onPropertyChangedObservable)} propertyName="value" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <Color3LineComponent label="Color" target={makeTargetsProxy(colorPickers, this.props.onPropertyChangedObservable)} propertyName="value" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
             </div>
         );
     }

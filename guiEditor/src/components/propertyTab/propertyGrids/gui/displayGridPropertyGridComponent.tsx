@@ -41,7 +41,7 @@ export class DisplayGridPropertyGridComponent extends React.Component<IDisplayGr
                         isInteger={true}
                         lockObject={this.props.lockObject}
                         label="W"
-                        target={makeTargetsProxy(displayGrids, 1, this.props.onPropertyChangedObservable)}
+                        target={makeTargetsProxy(displayGrids, this.props.onPropertyChangedObservable)}
                         propertyName="cellWidth"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
@@ -50,7 +50,7 @@ export class DisplayGridPropertyGridComponent extends React.Component<IDisplayGr
                         isInteger={true}
                         lockObject={this.props.lockObject}
                         label="H"
-                        target={makeTargetsProxy(displayGrids, 1, this.props.onPropertyChangedObservable)}
+                        target={makeTargetsProxy(displayGrids, this.props.onPropertyChangedObservable)}
                         propertyName="cellHeight"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
@@ -62,7 +62,7 @@ export class DisplayGridPropertyGridComponent extends React.Component<IDisplayGr
                     isInteger={true}
                     lockObject={this.props.lockObject}
                     label=""
-                    target={makeTargetsProxy(displayGrids, 1, this.props.onPropertyChangedObservable)}
+                    target={makeTargetsProxy(displayGrids, this.props.onPropertyChangedObservable)}
                     propertyName="minorLineTickness"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
@@ -71,7 +71,7 @@ export class DisplayGridPropertyGridComponent extends React.Component<IDisplayGr
                     icon={colorIcon}
                     lockObject={this.props.lockObject}
                     label=""
-                    target={makeTargetsProxy(displayGrids, "", this.props.onPropertyChangedObservable)}
+                    target={makeTargetsProxy(displayGrids, this.props.onPropertyChangedObservable)}
                     propertyName="minorLineColor"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
@@ -82,7 +82,7 @@ export class DisplayGridPropertyGridComponent extends React.Component<IDisplayGr
                     isInteger={true}
                     lockObject={this.props.lockObject}
                     label=""
-                    target={makeTargetsProxy(displayGrids, 1, this.props.onPropertyChangedObservable)}
+                    target={makeTargetsProxy(displayGrids, this.props.onPropertyChangedObservable)}
                     propertyName="majorLineTickness"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
@@ -91,7 +91,7 @@ export class DisplayGridPropertyGridComponent extends React.Component<IDisplayGr
                     icon={colorIcon}
                     lockObject={this.props.lockObject}
                     label=""
-                    target={makeTargetsProxy(displayGrids, "", this.props.onPropertyChangedObservable)}
+                    target={makeTargetsProxy(displayGrids, this.props.onPropertyChangedObservable)}
                     propertyName="majorLineColor"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
@@ -102,7 +102,7 @@ export class DisplayGridPropertyGridComponent extends React.Component<IDisplayGr
                     isInteger={true}
                     lockObject={this.props.lockObject}
                     label=""
-                    target={makeTargetsProxy(displayGrids, 1, this.props.onPropertyChangedObservable)}
+                    target={makeTargetsProxy(displayGrids, this.props.onPropertyChangedObservable)}
                     propertyName="majorLineFrequency"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />

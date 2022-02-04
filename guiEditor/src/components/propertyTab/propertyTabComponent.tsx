@@ -255,7 +255,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                     noUnderline={true}
                     lockObject={this._lockObject}
                     label=""
-                    target={makeTargetsProxy(nodes, "", this.props.globalState.onPropertyChangedObservable)}
+                    target={makeTargetsProxy(nodes, this.props.globalState.onPropertyChangedObservable)}
                     propertyName="name"
                     onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable}
                 />
@@ -439,13 +439,10 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             }
         }
 
-        if (className !== "") {
-            const controls = nodes as Control[];
-            return (
-                <ControlPropertyGridComponent controls={controls} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />
-            );
-        }
-        return null;
+        const controls = nodes as Control[];
+        return (
+            <ControlPropertyGridComponent controls={controls} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />
+        );
     }
 
     renderControlIcon(nodes: Control[]) {
