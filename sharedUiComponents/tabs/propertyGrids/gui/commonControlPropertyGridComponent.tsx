@@ -13,7 +13,8 @@ import { OptionsLineComponent } from "../../../lines/optionsLineComponent";
 import { makeTargetsProxy } from "../../../lines/targetsProxy";
 
 interface ICommonControlPropertyGridComponentProps {
-    controls: Control[];
+    controls?: Control[];
+    control?: Control;
     lockObject: LockObject;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
@@ -52,8 +53,15 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
     }
 
     render() {
-        const controls = this.props.controls;
-        const control = this.props.controls[0];
+        let controls: Control[];
+        if (this.props.controls) {
+            controls = this.props.controls;
+        } else if (this.props.control) {
+            controls = [this.props.control];
+        } else {
+            return;
+        }
+        const control = controls[0];
 
         var horizontalOptions = [
             { label: "Left", value: Control.HORIZONTAL_ALIGNMENT_LEFT },
