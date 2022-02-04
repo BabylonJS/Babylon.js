@@ -35,7 +35,7 @@ export class EllipsePropertyGridComponent extends React.Component<IEllipseProper
                     iconLabel="Clip Content"
                     icon={clipContentsIcon}
                     label="CLIP CONTENT"
-                    target={makeTargetsProxy(ellipses, false, this.props.onPropertyChangedObservable)}
+                    target={makeTargetsProxy(ellipses, this.props.onPropertyChangedObservable)}
                     propertyName="clipChildren"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
@@ -44,7 +44,7 @@ export class EllipsePropertyGridComponent extends React.Component<IEllipseProper
                     icon={strokeWeightIcon}
                     lockObject={this.props.lockObject}
                     label=""
-                    target={makeTargetsProxy(ellipses, "", this.props.onPropertyChangedObservable)}
+                    target={makeTargetsProxy(ellipses, this.props.onPropertyChangedObservable)}
                     propertyName="thickness"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />

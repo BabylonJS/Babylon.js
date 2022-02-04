@@ -958,6 +958,8 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             this._panning = true;
             this._initialPanningOffset = this.getScaledPointerPosition();
             this._panAndZoomContainer.getDescendants().forEach(desc => {
+
+                if (!desc.metadata) desc.metadata = {};
                 desc.metadata.isPointerBlocker = desc.isPointerBlocker;
                 desc.isPointerBlocker = false;
             })
@@ -966,7 +968,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         const endPanning = () => {
             this._panning = false;
             this._panAndZoomContainer.getDescendants().forEach(desc => {
-                if (desc.metadata.isPointerBlocker !== undefined) {
+                if (desc.metadata && desc.metadata.isPointerBlocker !== undefined) {
                     desc.isPointerBlocker = desc.metadata.isPointerBlocker;
                     delete desc.metadata.isPointerBlocker;
                 }

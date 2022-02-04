@@ -43,7 +43,7 @@ export class ScrollViewerPropertyGridComponent extends React.Component<IScrollVi
                         icon={strokeWeightIcon}
                         lockObject={this.props.lockObject}
                         label=""
-                        target={makeTargetsProxy(scrollViewers, "", this.props.onPropertyChangedObservable)}
+                        target={makeTargetsProxy(scrollViewers, this.props.onPropertyChangedObservable)}
                         propertyName="thickness"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
@@ -52,7 +52,7 @@ export class ScrollViewerPropertyGridComponent extends React.Component<IScrollVi
                         icon={conerRadiusIcon}
                         lockObject={this.props.lockObject}
                         label=""
-                        target={makeTargetsProxy(scrollViewers, "", this.props.onPropertyChangedObservable)}
+                        target={makeTargetsProxy(scrollViewers, this.props.onPropertyChangedObservable)}
                         propertyName="cornerRadius"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
@@ -65,7 +65,7 @@ export class ScrollViewerPropertyGridComponent extends React.Component<IScrollVi
                         icon={sizeIcon}
                         lockObject={this.props.lockObject}
                         label=""
-                        target={makeTargetsProxy(scrollViewers, "", this.props.onPropertyChangedObservable)}
+                        target={makeTargetsProxy(scrollViewers, this.props.onPropertyChangedObservable)}
                         propertyName="wheelPrecision"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
@@ -74,7 +74,7 @@ export class ScrollViewerPropertyGridComponent extends React.Component<IScrollVi
                         icon={sizeIcon}
                         lockObject={this.props.lockObject}
                         label=""
-                        target={makeTargetsProxy(scrollViewers, "", this.props.onPropertyChangedObservable)}
+                        target={makeTargetsProxy(scrollViewers, this.props.onPropertyChangedObservable)}
                         propertyName="barSize"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
@@ -84,7 +84,7 @@ export class ScrollViewerPropertyGridComponent extends React.Component<IScrollVi
                     icon={fillColorIcon}
                     lockObject={this.props.lockObject}
                     label=""
-                    target={makeTargetsProxy(scrollViewers, "", this.props.onPropertyChangedObservable)}
+                    target={makeTargetsProxy(scrollViewers, this.props.onPropertyChangedObservable)}
                     propertyName="barColor"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
@@ -93,7 +93,7 @@ export class ScrollViewerPropertyGridComponent extends React.Component<IScrollVi
                     icon={fillColorIcon}
                     lockObject={this.props.lockObject}
                     label=""
-                    target={makeTargetsProxy(scrollViewers, "", this.props.onPropertyChangedObservable)}
+                    target={makeTargetsProxy(scrollViewers, this.props.onPropertyChangedObservable)}
                     propertyName="barBackground"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />

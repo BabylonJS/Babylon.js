@@ -35,7 +35,7 @@ export class StackPanelPropertyGridComponent extends React.Component<IStackPanel
                     iconLabel={"Clip children"}
                     icon={clipContentsIcon}
                     label="CLIP CHILDREN"
-                    target={makeTargetsProxy(stackPanels, false, this.props.onPropertyChangedObservable)}
+                    target={makeTargetsProxy(stackPanels, this.props.onPropertyChangedObservable)}
                     propertyName="clipChildren"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
@@ -43,7 +43,7 @@ export class StackPanelPropertyGridComponent extends React.Component<IStackPanel
                     iconLabel={"Vertical"}
                     icon={verticalMarginIcon}
                     label="VERTICAL"
-                    target={makeTargetsProxy(stackPanels, false, this.props.onPropertyChangedObservable)}
+                    target={makeTargetsProxy(stackPanels, this.props.onPropertyChangedObservable)}
                     propertyName="isVertical"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
@@ -52,7 +52,7 @@ export class StackPanelPropertyGridComponent extends React.Component<IStackPanel
                     label=""
                     icon={verticalMarginIcon}
                     iconLabel="spacing"
-                    target={makeTargetsProxy(stackPanels, "", this.props.onPropertyChangedObservable)}
+                    target={makeTargetsProxy(stackPanels, this.props.onPropertyChangedObservable)}
                     propertyName="spacing"
                     defaultValue={0}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}

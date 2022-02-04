@@ -44,7 +44,7 @@ export class InputTextPropertyGridComponent extends React.Component<IInputTextPr
                     icon={fontFamilyIcon}
                     lockObject={this.props.lockObject}
                     label=""
-                    target={makeTargetsProxy(inputTexts, "", this.props.onPropertyChangedObservable)}
+                    target={makeTargetsProxy(inputTexts, this.props.onPropertyChangedObservable)}
                     propertyName="text"
                 />
                 <TextInputLineComponent
@@ -52,7 +52,7 @@ export class InputTextPropertyGridComponent extends React.Component<IInputTextPr
                     icon={fontFamilyIcon}
                     lockObject={this.props.lockObject}
                     label=""
-                    target={makeTargetsProxy(inputTexts, "", this.props.onPropertyChangedObservable)}
+                    target={makeTargetsProxy(inputTexts, this.props.onPropertyChangedObservable)}
                     propertyName="promptMessage"
                 />
                 <TextInputLineComponent
@@ -60,7 +60,7 @@ export class InputTextPropertyGridComponent extends React.Component<IInputTextPr
                     icon={sizeIcon}
                     lockObject={this.props.lockObject}
                     label=""
-                    target={makeTargetsProxy(inputTexts, "", this.props.onPropertyChangedObservable)}
+                    target={makeTargetsProxy(inputTexts, this.props.onPropertyChangedObservable)}
                     propertyName="maxWidth"
                 />
                 <ColorLineComponent
@@ -68,7 +68,7 @@ export class InputTextPropertyGridComponent extends React.Component<IInputTextPr
                     icon={fillColorIcon}
                     lockObject={this.props.lockObject}
                     label=""
-                    target={makeTargetsProxy(inputTexts, "", this.props.onPropertyChangedObservable)}
+                    target={makeTargetsProxy(inputTexts, this.props.onPropertyChangedObservable)}
                     propertyName="textHighlightColor"
                 />
                 <SliderLineComponent
@@ -78,14 +78,14 @@ export class InputTextPropertyGridComponent extends React.Component<IInputTextPr
                     minimum={0}
                     maximum={1}
                     step={0.01}
-                    target={makeTargetsProxy(inputTexts, "", this.props.onPropertyChangedObservable)}
+                    target={makeTargetsProxy(inputTexts, this.props.onPropertyChangedObservable)}
                     propertyName="highligherOpacity"
                 />
                 <CheckBoxLineComponent
                     iconLabel={"On focus select all"}
                     icon={verticalMarginIcon}
                     label="ON FOCUS SELECT ALL"
-                    target={makeTargetsProxy(inputTexts, false, this.props.onPropertyChangedObservable)}
+                    target={makeTargetsProxy(inputTexts, this.props.onPropertyChangedObservable)}
                     propertyName="onFocusSelectAll"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
@@ -94,7 +94,7 @@ export class InputTextPropertyGridComponent extends React.Component<IInputTextPr
                     icon={colorIcon}
                     lockObject={this.props.lockObject}
                     label=""
-                    target={makeTargetsProxy(inputTexts, "", this.props.onPropertyChangedObservable)}
+                    target={makeTargetsProxy(inputTexts, this.props.onPropertyChangedObservable)}
                     propertyName="focusedBackground"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
@@ -103,7 +103,7 @@ export class InputTextPropertyGridComponent extends React.Component<IInputTextPr
                     icon={verticalMarginIcon}
                     lockObject={this.props.lockObject}
                     label=""
-                    target={makeTargetsProxy(inputTexts, "#", this.props.onPropertyChangedObservable)}
+                    target={makeTargetsProxy(inputTexts, this.props.onPropertyChangedObservable)}
                     propertyName="margin"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
@@ -111,7 +111,7 @@ export class InputTextPropertyGridComponent extends React.Component<IInputTextPr
                     iconLabel={"Auto stretch width"}
                     icon={sizeIcon}
                     label="AUTO STRETCH"
-                    target={makeTargetsProxy(inputTexts, true, this.props.onPropertyChangedObservable)}
+                    target={makeTargetsProxy(inputTexts, this.props.onPropertyChangedObservable, false)}
                     propertyName="autoStretchWidth"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
@@ -120,7 +120,7 @@ export class InputTextPropertyGridComponent extends React.Component<IInputTextPr
                     icon={strokeWeightIcon}
                     lockObject={this.props.lockObject}
                     label=""
-                    target={makeTargetsProxy(inputTexts, "", this.props.onPropertyChangedObservable)}
+                    target={makeTargetsProxy(inputTexts, this.props.onPropertyChangedObservable)}
                     propertyName="thickness"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
@@ -129,7 +129,7 @@ export class InputTextPropertyGridComponent extends React.Component<IInputTextPr
                     icon={fontFamilyIcon}
                     lockObject={this.props.lockObject}
                     label=""
-                    target={makeTargetsProxy(inputTexts, "", this.props.onPropertyChangedObservable)}
+                    target={makeTargetsProxy(inputTexts, this.props.onPropertyChangedObservable)}
                     propertyName="placeholderText"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
@@ -138,7 +138,7 @@ export class InputTextPropertyGridComponent extends React.Component<IInputTextPr
                     icon={fillColorIcon}
                     lockObject={this.props.lockObject}
                     label=""
-                    target={makeTargetsProxy(inputTexts, "", this.props.onPropertyChangedObservable)}
+                    target={makeTargetsProxy(inputTexts, this.props.onPropertyChangedObservable)}
                     propertyName="placeholderColor"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />

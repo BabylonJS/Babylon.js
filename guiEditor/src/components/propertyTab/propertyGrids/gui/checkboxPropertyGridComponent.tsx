@@ -36,7 +36,7 @@ export class CheckboxPropertyGridComponent extends React.Component<ICheckboxProp
                     icon={sizeIcon}
                     lockObject={this.props.lockObject}
                     label=""
-                    target={makeTargetsProxy(checkboxes, "",this.props.onPropertyChangedObservable)}
+                    target={makeTargetsProxy(checkboxes, this.props.onPropertyChangedObservable)}
                     propertyName="checkSizeRatio"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
@@ -44,7 +44,7 @@ export class CheckboxPropertyGridComponent extends React.Component<ICheckboxProp
                     iconLabel={"Checked"}
                     icon={fillColorIcon}
                     label="CHECKED"
-                    target={makeTargetsProxy(checkboxes, "",this.props.onPropertyChangedObservable)}
+                    target={makeTargetsProxy(checkboxes, this.props.onPropertyChangedObservable)}
                     propertyName="isChecked"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />

@@ -5,6 +5,7 @@ import { PropertyChangedEvent } from "../propertyChangedEvent";
 import { LockObject } from "../tabs/propertyGrids/lockObject";
 import { SliderLineComponent } from "./sliderLineComponent";
 import { Tools } from "babylonjs/Misc/tools";
+import { conflictingValuesPlaceholder } from "./targetsProxy";
 
 interface IFloatLineComponentProps {
     label: string;
@@ -35,12 +36,26 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
         super(props);
 
         let currentValue = this.props.target[this.props.propertyName];
-        this.state = { value: currentValue ? (this.props.isInteger ? currentValue.toFixed(0) : currentValue.toFixed(this.props.digits || 4)) : "0" };
+        this.state = { value: this.getValueString(currentValue) };
         this._store = currentValue;
     }
 
     componentWillUnmount() {
         this.unlock();
+    }
+
+    getValueString(value: any): string {
+        if (value) {
+            if (value === conflictingValuesPlaceholder) {
+                return conflictingValuesPlaceholder;
+            }
+            else if (this.props.isInteger) {
+                return value.toFixed(0);
+            } else {
+                return value.toFixed(this.props.digits || 4);
+            }
+        }
+        return "0";
     }
 
     shouldComponentUpdate(nextProps: IFloatLineComponentProps, nextState: { value: string }) {
@@ -50,7 +65,7 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
         }
 
         const newValue = nextProps.target[nextProps.propertyName];
-        const newValueString = newValue ? (this.props.isInteger ? newValue.toFixed(0) : newValue.toFixed(this.props.digits || 4)) : "0";
+        const newValueString = this.getValueString(newValue);
 
         if (newValueString !== nextState.value) {
             nextState.value = newValueString;
@@ -141,6 +156,8 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
 
         let className = this.props.smallUI ? "short" : "value";
 
+        const value = this.state.value === conflictingValuesPlaceholder ? "" : this.state.value;
+        const placeholder = this.state.value === conflictingValuesPlaceholder ? conflictingValuesPlaceholder : "";
         return (
             <>
                 {!this.props.useEuler && (
@@ -153,7 +170,7 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
                         )}
                         <div className={className}>
                             <input
-                                type="number"
+                                type={"number"}
                                 step={this.props.step || this.props.isInteger ? "1" : "0.01"}
                                 className="numeric-input"
                                 onKeyDown={(evt) => {
@@ -164,13 +181,14 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
                                         this.props.onEnter(this._store);
                                     }
                                 }}
-                                value={this.state.value}
+                                value={value}
                                 onBlur={() => {
                                     this.unlock();
                                     if (this.props.onEnter) {
                                         this.props.onEnter(this._store);
                                     }
                                 }}
+                                placeholder={placeholder}
                                 onFocus={() => this.lock()}
                                 onChange={(evt) => this.updateValue(evt.target.value)}
                             />

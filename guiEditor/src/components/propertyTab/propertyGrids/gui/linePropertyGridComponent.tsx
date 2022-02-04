@@ -69,14 +69,14 @@ export class LinePropertyGridComponent extends React.Component<ILinePropertyGrid
                         icon={positionIcon}
                         lockObject={this.props.lockObject}
                         label="X"
-                        target={makeTargetsProxy(lines, "", this.props.onPropertyChangedObservable)}
+                        target={makeTargetsProxy(lines, this.props.onPropertyChangedObservable)}
                         propertyName="x1"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <TextInputLineComponent
                         lockObject={this.props.lockObject}
                         label="Y"
-                        target={makeTargetsProxy(lines, "", this.props.onPropertyChangedObservable)}
+                        target={makeTargetsProxy(lines, this.props.onPropertyChangedObservable)}
                         propertyName="y1"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
@@ -87,14 +87,14 @@ export class LinePropertyGridComponent extends React.Component<ILinePropertyGrid
                         icon={positionIcon}
                         lockObject={this.props.lockObject}
                         label="X"
-                        target={makeTargetsProxy(lines, "", this.props.onPropertyChangedObservable)}
+                        target={makeTargetsProxy(lines, this.props.onPropertyChangedObservable)}
                         propertyName="x2"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <TextInputLineComponent
                         lockObject={this.props.lockObject}
                         label="Y"
-                        target={makeTargetsProxy(lines, "", this.props.onPropertyChangedObservable)}
+                        target={makeTargetsProxy(lines, this.props.onPropertyChangedObservable)}
                         propertyName="y2"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
@@ -104,7 +104,7 @@ export class LinePropertyGridComponent extends React.Component<ILinePropertyGrid
                     icon={positionIcon}
                     lockObject={this.props.lockObject}
                     label=""
-                    target={makeTargetsProxy(lines, "", this.props.onPropertyChangedObservable)}
+                    target={makeTargetsProxy(lines, this.props.onPropertyChangedObservable)}
                     propertyName="lineWidth"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
@@ -113,7 +113,7 @@ export class LinePropertyGridComponent extends React.Component<ILinePropertyGrid
                     icon={positionIcon}
                     lockObject={this.props.lockObject}
                     label=""
-                    target={makeTargetsProxy(lines, "", this.props.onPropertyChangedObservable)}
+                    target={makeTargetsProxy(lines, this.props.onPropertyChangedObservable)}
                     value={dashString}
                     onChange={(newValue) => this.onDashChange(newValue)}
                 />

@@ -872,6 +872,11 @@ hr.ge {
                 border-width: thin;
             }
 
+            .cbx.conflict ~ label:after {
+                left: 10px;
+                background: repeating-linear-gradient(45deg, transparent, transparent 5px, black 5px, black 10px);
+            }
+
             .cbx:checked ~ label.disabled { 
                 background: rgb(0, 0, 0);
                 cursor: pointer;
