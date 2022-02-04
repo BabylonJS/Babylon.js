@@ -50,12 +50,7 @@ export class DeviceEventFactory {
 
         evt.pointerId = deviceType === DeviceType.Mouse ? 1 : deviceSlot;
 
-        if (
-            inputIndex === PointerInput.Horizontal ||
-            inputIndex === PointerInput.Vertical ||
-            inputIndex === PointerInput.DeltaHorizontal ||
-            inputIndex === PointerInput.DeltaVertical
-        ) {
+        if (inputIndex === PointerInput.Move) {
             evt.type = "pointermove";
         }
         else if (inputIndex >= PointerInput.LeftClick && inputIndex <= PointerInput.RightClick) {

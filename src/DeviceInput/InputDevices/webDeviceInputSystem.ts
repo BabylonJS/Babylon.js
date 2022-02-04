@@ -353,12 +353,6 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
 
             const pointer = this._inputs[deviceType][deviceSlot];
             if (pointer) {
-                // Store previous values for event
-                const previousHorizontal = pointer[PointerInput.Horizontal];
-                const previousVertical = pointer[PointerInput.Vertical];
-                const previousDeltaHorizontal = pointer[PointerInput.DeltaHorizontal];
-                const previousDeltaVertical = pointer[PointerInput.DeltaVertical];
-
                 pointer[PointerInput.Horizontal] = evt.clientX;
                 pointer[PointerInput.Vertical] = evt.clientY;
                 pointer[PointerInput.DeltaHorizontal] = evt.movementX;
@@ -367,38 +361,10 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                 let deviceEvent = evt as IDeviceEvent;
                 deviceEvent.deviceType = deviceType;
                 deviceEvent.deviceSlot = deviceSlot;
+                deviceEvent.inputIndex = PointerInput.Move;
 
-                // The browser might use a move event in case
-                // of simultaneous mouse buttons click for instance. So
-                // in this case we stil need to propagate it.
-                if (previousHorizontal !== evt.clientX) {
-                    deviceEvent.inputIndex = PointerInput.Horizontal;
-                    deviceEvent.previousState = previousHorizontal;
-                    deviceEvent.currentState = pointer[PointerInput.Horizontal];
+                this.onInputChanged(deviceEvent);
 
-                    this.onInputChanged(deviceEvent);
-                }
-                if (previousVertical !== evt.clientY) {
-                    deviceEvent.inputIndex = PointerInput.Vertical;
-                    deviceEvent.previousState = previousVertical;
-                    deviceEvent.currentState = pointer[PointerInput.Vertical];
-
-                    this.onInputChanged(deviceEvent);
-                }
-                if (pointer[PointerInput.DeltaHorizontal] !== 0) {
-                    deviceEvent.inputIndex = PointerInput.DeltaHorizontal;
-                    deviceEvent.previousState = previousDeltaHorizontal;
-                    deviceEvent.currentState = pointer[PointerInput.DeltaHorizontal];
-
-                    this.onInputChanged(deviceEvent);
-                }
-                if (pointer[PointerInput.DeltaVertical] !== 0) {
-                    deviceEvent.inputIndex = PointerInput.DeltaVertical;
-                    deviceEvent.previousState = previousDeltaVertical;
-                    deviceEvent.currentState = pointer[PointerInput.DeltaVertical];
-
-                    this.onInputChanged(deviceEvent);
-                }
                 // Lets Propagate the event for move with same position.
                 if (!this._usingSafari && evt.button !== -1) {
                     deviceEvent.inputIndex = evt.button + 2;
@@ -491,17 +457,8 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                 deviceEvent.currentState = pointer[deviceEvent.inputIndex];
                 this.onInputChanged(deviceEvent);
 
-                if (previousHorizontal !== evt.clientX) {
-                    deviceEvent.inputIndex = PointerInput.Horizontal;
-                    deviceEvent.previousState = previousHorizontal;
-                    deviceEvent.currentState = pointer[PointerInput.Horizontal];
-
-                    this.onInputChanged(deviceEvent);
-                }
-                if (previousVertical !== evt.clientY) {
-                    deviceEvent.inputIndex = PointerInput.Vertical;
-                    deviceEvent.previousState = previousVertical;
-                    deviceEvent.currentState = pointer[PointerInput.Vertical];
+                if (previousHorizontal !== evt.clientX || previousVertical !== evt.clientY) {
+                    deviceEvent.inputIndex = PointerInput.Move;
 
                     this.onInputChanged(deviceEvent);
                 }
@@ -535,17 +492,8 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                 deviceEvent.deviceType = deviceType;
                 deviceEvent.deviceSlot = deviceSlot;
 
-                if (previousHorizontal !== evt.clientX) {
-                    deviceEvent.inputIndex = PointerInput.Horizontal;
-                    deviceEvent.previousState = previousHorizontal;
-                    deviceEvent.currentState = pointer[PointerInput.Horizontal];
-
-                    this.onInputChanged(deviceEvent);
-                }
-                if (previousVertical !== evt.clientY) {
-                    deviceEvent.inputIndex = PointerInput.Vertical;
-                    deviceEvent.previousState = previousVertical;
-                    deviceEvent.currentState = pointer[PointerInput.Vertical];
+                if (previousHorizontal !== evt.clientX || previousVertical !== evt.clientY) {
+                    deviceEvent.inputIndex = PointerInput.Move;
 
                     this.onInputChanged(deviceEvent);
                 }

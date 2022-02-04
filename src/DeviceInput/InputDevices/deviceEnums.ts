@@ -49,6 +49,8 @@ export enum PointerInput {
     DeltaHorizontal = 10,
     /** Delta Y */
     DeltaVertical = 11,
+    /** Move Catch-all */
+    Move = 12,
 }
 
 /**
