@@ -7,7 +7,7 @@
 - Added support for ConditionalBlock for NodeMaterial ([Deltakosh](https://github.com/deltakosh))
 - Improved performance when using the shadow / cascacaded shadow generator ([Popov72](https://github.com/Popov72))
 - Add support for up to 6 uv sets in the standard, PBR and node materials ([Popov72](https://github.com/Popov72))
-- Added GUI Editor to easily build GUI controls ([msDestiny14](https://github.com/msDestiny14))
+- Added GUI Editor to easily build GUI controls ([msDestiny14](https://github.com/msDestiny14)) ([darraghjburke](https://github.com/darraghjburke))
 - Added support for Order Independent Transparency on simple scenes. `scene.useOrderIndependentTransparency = true` now makes transparent meshes shade correctly when stacked onto each other. ([CraigFeldspar](https://github.com/CraigFeldspar))
 - Added vertex animation textures with `BakedVertexAnimationManager` ([brunobg](https://github.com/brunobg), [Popov72](https://github.com/Popov72), [raggar](https://github.com/raggar))
 - Added `MaterialPluginManager` ([brunobg](https://github.com/brunobg), [Popov72](https://github.com/Popov72))
@@ -179,6 +179,7 @@
 - Added a `SceneDepth` block to access the scene depth buffer ([Popov72](https://github.com/Popov72))
 - Added support for custom blocks ([BlakeOne](https://github.com/BlakeOne), [Popov72](https://github.com/Popov72))
 - Added a `ClipPlanes` block to support scene clip planes ([Popov72](https://github.com/Popov72))
+- Added `ElbowBlock` to let users control the graph organization ([Deltakosh](https://github.com/Deltakosh))
 
 ### GUI
 
@@ -422,6 +423,7 @@
 - `Mesh.createInstance` no longer make a unique `Geometry` for the Mesh so updating one `Geometry` can affect more meshes than before. Use `Mesh.makeUniqueGeometry` for old behaviour. ([breakin](https://github.com/breakin))
 - Ammo.js needs to be initialized before creating the plugin with `await Ammo();` since Ammo introduced an async init in their library. ([sebavan](https://github.com/sebavan))
 - Recast.js needs to be initialized before creating the plugin with `await Recast();` since Recast introduced an async init in their library. ([CedricGuillemet](https://github.com/CedricGuillemet))
+- Custom shaders using instancing must use `instanceColor` instead of `color` so mesh vertex colors can be used with instancing. ([CedricGuillemet](https://github.com/CedricGuillemet))
 - Fixed spelling of `EventState.initialize` ([seritools](https://github.com/seritools))
 - `SkeletonViewer` is now enabled by default ([Deltakosh](https://github.com/deltakosh))
 - `BindEyePosition` has been moved from `Material` to `Scene` to avoid a circular dependency problem and is now a non-static method (`bindEyePosition`) ([Popov72](https://github.com/Popov72))

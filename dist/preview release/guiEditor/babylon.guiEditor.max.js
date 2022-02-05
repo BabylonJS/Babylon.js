@@ -47381,7 +47381,6 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         if (adt._rootContainer != this._panAndZoomContainer) {
             adt._rootContainer = this._panAndZoomContainer;
             this._visibleRegionContainer.addControl(this._trueRootContainer);
-            console.log(adt._rootContainer.name, this._panAndZoomContainer.host, this._visibleRegionContainer.host, this._trueRootContainer.host);
         }
         if (adt.getSize().width !== this._engine.getRenderWidth() || adt.getSize().height !== this._engine.getRenderHeight()) {
             adt.scaleTo(this._engine.getRenderWidth(), this._engine.getRenderHeight());
@@ -47394,7 +47393,6 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         if (adt._rootContainer != this._trueRootContainer) {
             this._visibleRegionContainer.removeControl(this._trueRootContainer);
             adt._rootContainer = this._trueRootContainer;
-            console.log(adt._rootContainer.name, this._panAndZoomContainer.host, this._visibleRegionContainer.host, this._trueRootContainer.host);
         }
         this._trueRootContainer.clipContent = true;
         this._trueRootContainer.clipChildren = true;
@@ -48039,13 +48037,17 @@ var WorkbenchComponent = /** @class */ (function (_super) {
             _this._panning = true;
             _this._initialPanningOffset = _this.getScaledPointerPosition();
             _this._panAndZoomContainer.getDescendants().forEach(function (desc) {
+                desc.metadata.isPointerBlocker = desc.isPointerBlocker;
                 desc.isPointerBlocker = false;
             });
         };
         var endPanning = function () {
             _this._panning = false;
             _this._panAndZoomContainer.getDescendants().forEach(function (desc) {
-                desc.isPointerBlocker = true;
+                if (desc.metadata.isPointerBlocker !== undefined) {
+                    desc.isPointerBlocker = desc.metadata.isPointerBlocker;
+                    delete desc.metadata.isPointerBlocker;
+                }
             });
         };
         var removeObservers = function () {

@@ -190,14 +190,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@5.0.0-beta.5";
+        return "babylonjs@5.0.0-beta.6";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "5.0.0-beta.5";
+        return "5.0.0-beta.6";
     }
 
     /**
@@ -527,6 +527,9 @@ export class ThinEngine {
     private _activeRequests = new Array<IFileRequest>();
 
     /** @hidden */
+    private _adaptToDeviceRatio: boolean = false;
+
+    /** @hidden */
     public _transformTextureUrl: Nullable<(url: string) => string> = null;
 
     /**
@@ -707,6 +710,9 @@ export class ThinEngine {
         options = options || {};
 
         this._creationOptions = options;
+
+        // Save this off for use in resize().
+        this._adaptToDeviceRatio = adaptToDeviceRatio ?? false;
 
         this._stencilStateComposer.stencilGlobal = this._stencilState;
 
@@ -1656,6 +1662,13 @@ export class ThinEngine {
     public resize(forceSetSize = false): void {
         let width: number;
         let height: number;
+
+        // Requery hardware scaling level to handle zoomed-in resizing.
+        if (this._adaptToDeviceRatio) {
+            const devicePixelRatio = IsWindowObjectExist() ? (window.devicePixelRatio || 1.0) : 1.0;
+            var limitDeviceRatio = this._creationOptions.limitDeviceRatio || devicePixelRatio;
+            this._hardwareScalingLevel = this._adaptToDeviceRatio ? 1.0 / Math.min(limitDeviceRatio, devicePixelRatio) : 1.0;
+        }
 
         if (IsWindowObjectExist()) {
             width = this._renderingCanvas ? (this._renderingCanvas.clientWidth || this._renderingCanvas.width) : window.innerWidth;
