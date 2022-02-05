@@ -1450,7 +1450,7 @@ export class Material implements IAnimatable {
             }
             for (const subMesh of mesh.subMeshes) {
                 // We want to skip the submeshes which are not using this material or which have not yet rendered at least once
-                if (subMesh._renderId === 0 || subMesh.getMaterial() !== this) {
+                if (mesh._renderId === 0 || subMesh.getMaterial() !== this) {
 
                     continue;
                 }
