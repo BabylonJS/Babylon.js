@@ -800,7 +800,9 @@ declare module BABYLON {
         /** Delta X */
         DeltaHorizontal = 10,
         /** Delta Y */
-        DeltaVertical = 11
+        DeltaVertical = 11,
+        /** Move Catch-all */
+        Move = 12
     }
     /**
      * Enum for Dual Shock Gamepad
@@ -852,7 +854,7 @@ declare module BABYLON {
         RStickYAxis = 21
     }
     /**
-     * Enum for Dual Shock Gamepad
+     * Enum for Dual Sense Gamepad
      */
     export enum DualSenseInput {
         /** Cross */
@@ -45688,6 +45690,8 @@ declare module BABYLON {
         private _maxSimultaneousTextures;
         private _activeRequests;
         /** @hidden */
+        private _adaptToDeviceRatio;
+        /** @hidden */
         _transformTextureUrl: Nullable<(url: string) => string>;
         /**
          * Gets information about the current host
@@ -47002,6 +47006,8 @@ declare module BABYLON {
         _irradianceTexture: Nullable<BaseTexture>;
         /** @hidden */
         _hardwareTexture: Nullable<HardwareTextureWrapper>;
+        /** @hidden */
+        _maxLodLevel: Nullable<number>;
         /** @hidden */
         _references: number;
         /** @hidden */
