@@ -1,6 +1,6 @@
 import { Nullable } from "../../types";
 import { DeviceEventFactory } from "../Helpers/eventFactory";
-import { DeviceType } from "./deviceEnums";
+import { DeviceType, PointerInput } from "./deviceEnums";
 import { IDeviceEvent, IDeviceInputSystem, INativeInput } from "./inputInterfaces";
 
 /** @hidden */
@@ -23,12 +23,13 @@ export class NativeDeviceInputSystem implements IDeviceInputSystem {
         };
 
         this._nativeInput.onInputChanged = (deviceType, deviceSlot, inputIndex, previousState, currentState, eventData) => {
+            const idx = (inputIndex === PointerInput.Horizontal || inputIndex === PointerInput.Vertical || inputIndex === PointerInput.DeltaHorizontal || inputIndex === PointerInput.DeltaVertical) ? PointerInput.Move : inputIndex;
             const evt = DeviceEventFactory.CreateDeviceEvent(deviceType, deviceSlot, inputIndex, currentState, this);
 
             let deviceEvent = evt as IDeviceEvent;
             deviceEvent.deviceType = deviceType;
             deviceEvent.deviceSlot = deviceSlot;
-            deviceEvent.inputIndex = inputIndex;
+            deviceEvent.inputIndex = idx;
             deviceEvent.previousState = previousState;
             deviceEvent.currentState = currentState;
 
