@@ -63,6 +63,7 @@ export class SliderLineComponent extends React.Component<ISliderLineComponentPro
     }
 
     onChange(newValueString: any) {
+        if (newValueString === "—") return;
         this._localChange = true;
         let newValue = parseFloat(newValueString);
 

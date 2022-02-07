@@ -7,11 +7,12 @@ import { Line } from "babylonjs-gui/2D/controls/line";
 import { FloatLineComponent } from "../../../../sharedUiComponents/lines/floatLineComponent";
 import { TextInputLineComponent } from "../../../../sharedUiComponents/lines/textInputLineComponent";
 import { TextLineComponent } from "../../../../sharedUiComponents/lines/textLineComponent";
+import { makeTargetsProxy } from "../../../../sharedUiComponents/lines/targetsProxy";
 
 const positionIcon: string = require("../../../../sharedUiComponents/imgs/positionIcon.svg");
 
 interface ILinePropertyGridComponentProps {
-    line: Line;
+    lines: Line[];
     lockObject: LockObject;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
@@ -22,27 +23,42 @@ export class LinePropertyGridComponent extends React.Component<ILinePropertyGrid
     }
 
     onDashChange(value: string) {
-        const line = this.props.line;
         const split = value.split(",");
-        line.dash = [];
+        for (const line of this.props.lines) {
+            line.dash = [];
 
-        split.forEach((v) => {
-            const int = parseInt(v);
+            split.forEach((v) => {
+                const int = parseInt(v);
 
-            if (isNaN(int)) {
-                return;
-            }
+                if (isNaN(int)) {
+                    return;
+                }
 
-            line.dash.push(int);
-        });
+                line.dash.push(int);
+            });
+        }
+        this.forceUpdate();
     }
 
     render() {
-        const line = this.props.line;
+        const lines = this.props.lines;
+        let dashes = lines[0].dash;
+        for(const line of lines) {
+            if (dashes.length === 0) break;
+            if (line.dash.length !== dashes.length) {
+                dashes = [];
+            }
+            dashes.forEach((dash, index) => {
+                if (line.dash[index] !== dash) {
+                    dashes = [];
+                }
+            })
+        }
+        const dashString = dashes.join(",")
 
         return (
             <div className="pane">
-                <CommonControlPropertyGridComponent lockObject={this.props.lockObject} control={line} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <CommonControlPropertyGridComponent lockObject={this.props.lockObject} controls={lines} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <hr />
                 <TextLineComponent label="LINE" value=" " color="grey"></TextLineComponent>
                 <div className="ge-divider">
@@ -51,14 +67,14 @@ export class LinePropertyGridComponent extends React.Component<ILinePropertyGrid
                         icon={positionIcon}
                         lockObject={this.props.lockObject}
                         label="X"
-                        target={line}
+                        target={makeTargetsProxy(lines, this.props.onPropertyChangedObservable)}
                         propertyName="x1"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <TextInputLineComponent
                         lockObject={this.props.lockObject}
                         label="Y"
-                        target={line}
+                        target={makeTargetsProxy(lines, this.props.onPropertyChangedObservable)}
                         propertyName="y1"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
@@ -69,14 +85,14 @@ export class LinePropertyGridComponent extends React.Component<ILinePropertyGrid
                         icon={positionIcon}
                         lockObject={this.props.lockObject}
                         label="X"
-                        target={line}
+                        target={makeTargetsProxy(lines, this.props.onPropertyChangedObservable)}
                         propertyName="x2"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <TextInputLineComponent
                         lockObject={this.props.lockObject}
                         label="Y"
-                        target={line}
+                        target={makeTargetsProxy(lines, this.props.onPropertyChangedObservable)}
                         propertyName="y2"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
@@ -86,7 +102,7 @@ export class LinePropertyGridComponent extends React.Component<ILinePropertyGrid
                     icon={positionIcon}
                     lockObject={this.props.lockObject}
                     label=""
-                    target={line}
+                    target={makeTargetsProxy(lines, this.props.onPropertyChangedObservable)}
                     propertyName="lineWidth"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
@@ -95,8 +111,8 @@ export class LinePropertyGridComponent extends React.Component<ILinePropertyGrid
                     icon={positionIcon}
                     lockObject={this.props.lockObject}
                     label=""
-                    target={line}
-                    value={line.dash.join(",")}
+                    target={makeTargetsProxy(lines, this.props.onPropertyChangedObservable)}
+                    value={dashString}
                     onChange={(newValue) => this.onDashChange(newValue)}
                 />
             </div>
