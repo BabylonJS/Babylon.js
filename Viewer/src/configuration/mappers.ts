@@ -1,7 +1,7 @@
 import { Tools } from 'babylonjs/Misc/tools';
 import { ViewerConfiguration } from './configuration';
 
-import { kebabToCamel } from '../helper/';
+import { kebabToCamel } from '../helper/index';
 
 /**
  * This is the mapper's interface. Implement this function to create your own mapper and register it at the mapper manager

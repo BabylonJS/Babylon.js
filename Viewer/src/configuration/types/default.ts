@@ -2,7 +2,7 @@ import { ViewerConfiguration } from '../configuration';
 import { babylonFont, defaultTemplate, fillContainer, loadingScreen, defaultViewer, navbar, overlay, help, share, error } from 'babylonjs-viewer-assets';
 import * as images from 'babylonjs-viewer-assets';
 import { renderOnlyDefaultConfiguration } from './renderOnlyDefault';
-import { deepmerge } from '../../helper';
+import { deepmerge } from '../../helper/index';
 
 /**
  * The default configuration of the viewer, including templates (canvas, overly, loading screen)
