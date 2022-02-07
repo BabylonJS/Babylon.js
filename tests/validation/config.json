@@ -121,7 +121,7 @@
         },
         {
             "title": "Nested BBG",
-            "playgroundId": "#ZG0C8B#5",
+            "playgroundId": "#ZG0C8B#6",
             "renderCount": 10,
             "referenceImage": "nested_BBG.png"
         },
@@ -245,13 +245,13 @@
         },
         {
             "title": "Chibi Rex",
-            "playgroundId": "#QATUCH#18",
+            "playgroundId": "#NZ2RZY#0",
             "renderCount": 50,
             "referenceImage": "chibi_rex.png"
         },
         {
             "title": "Yeti",
-            "playgroundId": "#QATUCH#19",
+            "playgroundId": "#QATUCH#25",
             "renderCount": 150,
             "referenceImage": "yeti.png"
         },
