@@ -1,6 +1,7 @@
 import { EngineInstrumentation } from "../../Instrumentation/engineInstrumentation";
 import { Scene } from "../../scene";
 import { PrecisionDate } from "../precisionDate";
+import { SceneInstrumentation } from "../../Instrumentation/sceneInstrumentation";
 
 /**
  * Defines the general structure of what is necessary for a collection strategy.
@@ -236,23 +237,15 @@ export class PerfCollectionStrategy {
      */
     public static AbsoluteFpsStrategy(): PerfStrategyInitialization {
         return (scene) => {
-            let startTime = PrecisionDate.Now;
-            let timeTaken = 1;
-            const onBeforeAnimationsObserver = scene.onBeforeAnimationsObservable.add(() => {
-                startTime = PrecisionDate.Now;
-            });
-
-            const onAfterRenderObserver = scene.onAfterRenderObservable.add(() => {
-                timeTaken = PrecisionDate.Now - startTime;
-            });
+            const sceneInstrumentation = new SceneInstrumentation(scene);
+            sceneInstrumentation.captureFrameTime = true;
 
             return {
                 id: "Absolute FPS",
-                getData: () => 1000.0 / timeTaken,
-                dispose: () => {
-                    scene.onBeforeAnimationsObservable.remove(onBeforeAnimationsObserver);
-                    scene.onAfterRenderObservable.remove(onAfterRenderObserver);
+                getData: () => {
+                    return 1000.0 / sceneInstrumentation.frameTimeCounter.lastSecAverage;
                 },
+                dispose: defaultDisposeImpl,
             };
         };
     }
