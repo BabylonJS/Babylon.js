@@ -932,11 +932,13 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
         this._offsetX = 20;
         this._offsetY = 20;
 
-        this._minValue = Number.MAX_VALUE;
-        this._maxValue = -Number.MAX_VALUE;
+        let minValue = Number.MAX_VALUE;
+        let maxValue = -Number.MAX_VALUE;
 
-        this._minFrame = Number.MAX_VALUE;
-        this._maxFrame = -Number.MAX_VALUE;
+        let minFrame = Number.MAX_VALUE;
+        let maxFrame = -Number.MAX_VALUE;
+
+        let hasRange = false;
 
         for (const animation of this.props.context.activeAnimations) {
             let propertyFilter: string | undefined = undefined;
@@ -975,12 +977,24 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
 
             let values = this._extractValuesFromKeys(keys, animation.dataType, undefined, propertyFilter);
 
-            this._minValue = Math.min(this._minValue, values.min);
-            this._maxValue = Math.max(this._maxValue, values.max);
+            minValue = Math.min(minValue, values.min);
+            maxValue = Math.max(maxValue, values.max);
 
-            this._minFrame = Math.min(this._minFrame, keys[0].frame);
-            this._maxFrame = Math.max(this._maxFrame, keys[keys.length - 1].frame);
+            minFrame = Math.min(minFrame, keys[0].frame);
+            maxFrame = Math.max(maxFrame, keys[keys.length - 1].frame);
+
+            hasRange = true;
         }
+
+        if (!hasRange) {
+            return;
+        }
+
+        this._minFrame = minFrame;
+        this._maxFrame = maxFrame;
+
+        this._minValue = minValue;
+        this._maxValue = maxValue;
 
         this.props.context.referenceMinFrame = this._minFrame;
         this.props.context.referenceMaxFrame = this._maxFrame;
