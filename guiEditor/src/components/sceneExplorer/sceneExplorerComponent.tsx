@@ -225,6 +225,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                         this.props.globalState.selectionLock = false;
                     }
                 }}
+                onContextMenu={ev => ev.preventDefault()}
             >
                 {guiElements && guiElements.length > 0 && (
                     <TreeItemComponent
