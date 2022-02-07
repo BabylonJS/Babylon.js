@@ -155,7 +155,6 @@
 - Set default tangents for new keys on ACE and fix their behavior ([carolhmj](https://github.com/carolhmj))
 - Let the playhead move past the last animation key on ACE ([carolhmj](https://github.com/carolhmj))
 - Improve zooming on ACE ([carolhmj](https://github.com/carolhmj))
-- Improve framing on ACE ([carolhmj](https://github.com/carolhmj))
 
 ### Playground
 
