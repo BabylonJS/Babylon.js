@@ -794,7 +794,7 @@
         },
         {
             "title": "PBR rough",
-            "playgroundId": "#PI9IE8#4",
+            "playgroundId": "#PI9IE8#5",
             "referenceImage": "pbrrough.png"
         },
         {
@@ -940,12 +940,12 @@
         },
         {
             "title": "LightFalloff spots",
-            "playgroundId": "#20OAV9#3311",
+            "playgroundId": "#20OAV9#6653",
             "referenceImage": "lightFalloffSpots.png"
         },
         {
             "title": "LightFalloff point lights",
-            "playgroundId": "#20OAV9#3312",
+            "playgroundId": "#20OAV9#6654",
             "referenceImage": "lightFalloffPointLights.png"
         },
         {
@@ -1102,14 +1102,14 @@
         {
             "title": "Prepass + mirror, without postprocess",
             "renderCount": 10,
-            "playgroundId": "#PIZ1GK#212",
+            "playgroundId": "#PIZ1GK#339",
             "excludedEngines": ["webgl1"],
             "referenceImage": "prepass-mirror-without-pp.png"
         },
         {
             "title": "Prepass + mirror, with postprocesses",
             "renderCount": 10,
-            "playgroundId": "#PIZ1GK#337",
+            "playgroundId": "#PIZ1GK#340",
             "excludedEngines": ["webgl1"],
             "referenceImage": "prepass-mirror-with-pp.png"
         },
