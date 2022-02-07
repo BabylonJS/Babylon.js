@@ -245,13 +245,13 @@
         },
         {
             "title": "Chibi Rex",
-            "playgroundId": "#NZ2RZY#0",
+            "playgroundId": "#NZ2RZY#1",
             "renderCount": 50,
             "referenceImage": "chibi_rex.png"
         },
         {
             "title": "Yeti",
-            "playgroundId": "#QATUCH#25",
+            "playgroundId": "#QATUCH#27",
             "renderCount": 150,
             "referenceImage": "yeti.png"
         },
