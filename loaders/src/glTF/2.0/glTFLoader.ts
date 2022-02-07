@@ -213,7 +213,7 @@ export class GLTFLoader implements IGLTFLoader {
 
         this._completePromises.length = 0;
 
-        this._extensions.forEach((extension) => extension && extension.dispose());
+        this._extensions.forEach((extension) => extension.dispose && extension.dispose());
         this._extensions.length = 0;
 
         (this._gltf as Nullable<IGLTF>) = null; // TODO
@@ -1152,6 +1152,8 @@ export class GLTFLoader implements IGLTFLoader {
             const rootNode = this._findSkeletonRootNode(`${context}/joints`, skin.joints);
             if (rootNode) {
                 skin.skeleton = rootNode.index;
+            } else {
+                Logger.Warn(`${context}: Failed to find common root`);
             }
         }
 
@@ -1176,15 +1178,15 @@ export class GLTFLoader implements IGLTFLoader {
 
         let rootNode: Nullable<INode> = null;
         for (let i = 0;; ++i) {
-            const node = paths[joints[0]][i];
-            for (let j = 1; j < joints.length; ++j) {
-                const path = paths[joints[j]];
-                if (i >= path.length || node !== path[i]) {
-                    if (!rootNode) {
-                        Logger.Warn(`${context}: Failed to find common root`);
-                        return null;
-                    }
+            let path = paths[joints[0]];
+            if (i >= path.length) {
+                return rootNode;
+            }
 
+            const node = path[i];
+            for (let j = 1; j < joints.length; ++j) {
+                path = paths[joints[j]];
+                if (i >= path.length || node !== path[i]) {
                     return rootNode;
                 }
             }
