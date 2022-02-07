@@ -723,9 +723,13 @@ export class GLTFLoader implements IGLTFLoader {
 
                         // Wait until the scene is loaded to ensure the skeleton root node has been loaded.
                         this._postSceneLoadActions.push(() => {
-                            // Place the skinned mesh node as a sibling of the skeleton root node.
-                            const skeletonRootNode = ArrayItem.Get(`/skins/${skin.index}/skeleton`, this._gltf.nodes, skin.skeleton);
-                            babylonTransformNode.parent = skeletonRootNode.parent!._babylonTransformNode!;
+                            if (skin.skeleton != undefined) {
+                                // Place the skinned mesh node as a sibling of the skeleton root node.
+                                const skeletonRootNode = ArrayItem.Get(`/skins/${skin.index}/skeleton`, this._gltf.nodes, skin.skeleton);
+                                babylonTransformNode.parent = skeletonRootNode.parent!._babylonTransformNode!;
+                            } else {
+                                babylonTransformNode.parent = this._rootBabylonMesh;
+                            }
                         });
                     }));
                 }));
@@ -1145,7 +1149,10 @@ export class GLTFLoader implements IGLTFLoader {
 
     private _loadBones(context: string, skin: ISkin, babylonSkeleton: Skeleton): void {
         if (skin.skeleton == undefined) {
-            skin.skeleton = this._findSkeletonRootNode(`${context}/joints`, skin.joints).index;
+            const rootNode = this._findSkeletonRootNode(`${context}/joints`, skin.joints);
+            if (rootNode) {
+                skin.skeleton = rootNode.index;
+            }
         }
 
         const babylonBones: { [index: number]: Bone } = {};
@@ -1155,7 +1162,7 @@ export class GLTFLoader implements IGLTFLoader {
         }
     }
 
-    private _findSkeletonRootNode(context: string, joints: Array<number>): INode {
+    private _findSkeletonRootNode(context: string, joints: Array<number>): Nullable<INode> {
         const paths: { [joint: number]: Array<INode> } = {};
         for (const index of joints) {
             const path = new Array<INode>();
@@ -1174,7 +1181,8 @@ export class GLTFLoader implements IGLTFLoader {
                 const path = paths[joints[j]];
                 if (i >= path.length || node !== path[i]) {
                     if (!rootNode) {
-                        throw new Error(`${context}: Failed to find common root`);
+                        Logger.Warn(`${context}: Failed to find common root`);
+                        return null;
                     }
 
                     return rootNode;
@@ -1191,7 +1199,15 @@ export class GLTFLoader implements IGLTFLoader {
             return babylonBone;
         }
 
-        const parentBabylonBone = (node.index === skin.skeleton) ? null : this._loadBone(node.parent!, skin, babylonSkeleton, babylonBones);
+        let parentBabylonBone: Nullable<Bone> = null;
+        if (node.index !== skin.skeleton) {
+            if (node.parent && node.parent.index !== -1) {
+                parentBabylonBone = this._loadBone(node.parent, skin, babylonSkeleton, babylonBones);
+            } else if (skin.skeleton !== undefined) {
+                Logger.Warn(`/skins/${skin.index}/skeleton: Skeleton node is not a common root`);
+            }
+        }
+
         const boneIndex = skin.joints.indexOf(node.index);
         babylonBone = new Bone(node.name || `joint${node.index}`, babylonSkeleton, parentBabylonBone, this._getNodeMatrix(node), null, null, boneIndex);
         babylonBones[node.index] = babylonBone;
