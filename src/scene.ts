@@ -3881,8 +3881,8 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         if (!this.activeCamera) {
             return;
         }
-        var useMultiview = this.activeCamera._renderingMultiview;
-        if (useMultiview) {
+
+        if (this.activeCamera._renderingMultiview) {
             const leftCamera = this.activeCamera._rigCameras[0];
             const rightCamera = this.activeCamera._rigCameras[1];
             this.setTransformMatrix(leftCamera.getViewMatrix(), leftCamera.getProjectionMatrix(force), rightCamera.getViewMatrix(), rightCamera.getProjectionMatrix(force));
