@@ -23,7 +23,7 @@ export function makeTargetsProxy(targets: any[], onPropertyChangedObservable?: O
             }
             return firstValue;
         },
-        set(_, name, value, __) {
+        set(_, name, value) {
             if (value === "—") return true;
             for(const target of targets) {
                 const initialValue = target[name];
