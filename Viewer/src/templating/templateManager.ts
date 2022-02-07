@@ -1,11 +1,10 @@
 import { Observable } from 'babylonjs/Misc/observable';
 import { Tools } from 'babylonjs/Misc/tools';
-import { isUrl, camelToKebab, kebabToCamel } from '../helper';
+import { isUrl, camelToKebab, kebabToCamel, deepmerge } from '../helper/index';
 
 import * as Handlebars from 'handlebars/dist/handlebars';
 import { EventManager } from './eventManager';
-import { ITemplateConfiguration } from '../configuration/interfaces';
-import { deepmerge } from '../helper/';
+import { ITemplateConfiguration } from '../configuration/interfaces/templateConfiguration';
 import { IFileRequest } from 'babylonjs/Misc/fileRequest';
 
 /**
