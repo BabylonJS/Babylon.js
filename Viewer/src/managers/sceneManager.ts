@@ -1,12 +1,12 @@
-import { ILightConfiguration, ISceneConfiguration, ISceneOptimizerConfiguration, ICameraConfiguration, ISkyboxConfiguration, ViewerConfiguration, IGroundConfiguration, IModelConfiguration, getConfigurationKey, IDefaultRenderingPipelineConfiguration, IVRConfiguration } from '../configuration';
+import { ILightConfiguration, ISceneConfiguration, ISceneOptimizerConfiguration, ICameraConfiguration, ISkyboxConfiguration, IGroundConfiguration, IModelConfiguration, IDefaultRenderingPipelineConfiguration, IVRConfiguration } from '../configuration/interfaces/index';
+import { getConfigurationKey, ViewerConfiguration } from '../configuration/configuration';
 import { ViewerModel, ModelState } from '../model/viewerModel';
-import { extendClassWithConfig } from '../helper';
+import { extendClassWithConfig, deepmerge } from '../helper/index';
 import { CameraBehavior } from '../interfaces';
 import { ViewerLabs } from '../labs/viewerLabs';
-import { getCustomOptimizerByName } from '../optimizer/custom/';
+import { getCustomOptimizerByName } from '../optimizer/custom/index';
 import { ObservablesManager } from '../managers/observablesManager';
 import { ConfigurationContainer } from '../configuration/configurationContainer';
-import { deepmerge } from '../helper';
 import { IEnvironmentMapConfiguration } from '../configuration/interfaces/environmentMapConfiguration';
 import { Observable } from 'babylonjs/Misc/observable';
 import { SceneOptimizer, SceneOptimizerOptions } from 'babylonjs/Misc/sceneOptimizer';

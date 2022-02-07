@@ -1,5 +1,5 @@
 
-import { ViewerConfiguration } from '../configuration';
+import { ViewerConfiguration } from '../configuration/configuration';
 import { AbstractViewer } from './viewer';
 
 export class RenderOnlyViewer extends AbstractViewer {
