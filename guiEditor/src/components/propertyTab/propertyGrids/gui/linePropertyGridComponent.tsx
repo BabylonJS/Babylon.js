@@ -43,8 +43,6 @@ export class LinePropertyGridComponent extends React.Component<ILinePropertyGrid
     render() {
         const lines = this.props.lines;
         let dashes = lines[0].dash;
-        console.log(dashes);
-        console.log(lines);
         for(const line of lines) {
             if (dashes.length === 0) break;
             if (line.dash.length !== dashes.length) {

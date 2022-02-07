@@ -48,8 +48,8 @@ interface ICommonControlPropertyGridComponentProps {
 }
 
 export class CommonControlPropertyGridComponent extends React.Component<ICommonControlPropertyGridComponentProps> {
-    private _width : String | Number = 0;
-    private _height : String | Number = 0;
+    private _width : string | number = 0;
+    private _height : string | number = 0;
 
     constructor(props: ICommonControlPropertyGridComponentProps) {
         super(props);
