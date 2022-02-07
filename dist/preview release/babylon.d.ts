@@ -6549,6 +6549,14 @@ declare module BABYLON {
         /** @hidden */
         _depthStencilTextureWithStencil: boolean;
         /**
+         * Gets the depth/stencil texture (if created by a createDepthStencilTexture() call)
+         */
+        get depthStencilTexture(): Nullable<InternalTexture>;
+        /**
+         * Indicates if the depth/stencil texture has a stencil aspect
+         */
+        get depthStencilTextureWithStencil(): boolean;
+        /**
          * Defines if the render target wrapper is for a cube texture or if false a 2d texture
          */
         get isCube(): boolean;
@@ -45559,6 +45567,11 @@ declare module BABYLON {
         protected _creationOptions: EngineOptions;
         protected _audioContext: Nullable<AudioContext>;
         protected _audioDestination: Nullable<AudioDestinationNode | MediaStreamAudioDestinationNode>;
+        /**
+         * Gets the options used for engine creation
+         * @returns EngineOptions object
+         */
+        getCreationOptions(): EngineOptions;
         protected _highPrecisionShadersAllowed: boolean;
         /** @hidden */
         get _shouldUseHighPrecisionShader(): boolean;
@@ -49282,6 +49295,194 @@ declare module BABYLON {
          * Define the instrumented engine.
          */
         engine: Engine);
+        /**
+         * Dispose and release associated resources.
+         */
+        dispose(): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * This class can be used to get instrumentation data from a Babylon engine
+     * @see https://doc.babylonjs.com/how_to/optimizing_your_scene#sceneinstrumentation
+     */
+    export class SceneInstrumentation implements IDisposable {
+        /**
+         * Defines the scene to instrument
+         */
+        scene: Scene;
+        private _captureActiveMeshesEvaluationTime;
+        private _activeMeshesEvaluationTime;
+        private _captureRenderTargetsRenderTime;
+        private _renderTargetsRenderTime;
+        private _captureFrameTime;
+        private _frameTime;
+        private _captureRenderTime;
+        private _renderTime;
+        private _captureInterFrameTime;
+        private _interFrameTime;
+        private _captureParticlesRenderTime;
+        private _particlesRenderTime;
+        private _captureSpritesRenderTime;
+        private _spritesRenderTime;
+        private _capturePhysicsTime;
+        private _physicsTime;
+        private _captureAnimationsTime;
+        private _animationsTime;
+        private _captureCameraRenderTime;
+        private _cameraRenderTime;
+        private _onBeforeActiveMeshesEvaluationObserver;
+        private _onAfterActiveMeshesEvaluationObserver;
+        private _onBeforeRenderTargetsRenderObserver;
+        private _onAfterRenderTargetsRenderObserver;
+        private _onAfterRenderObserver;
+        private _onBeforeDrawPhaseObserver;
+        private _onAfterDrawPhaseObserver;
+        private _onBeforeAnimationsObserver;
+        private _onBeforeParticlesRenderingObserver;
+        private _onAfterParticlesRenderingObserver;
+        private _onBeforeSpritesRenderingObserver;
+        private _onAfterSpritesRenderingObserver;
+        private _onBeforePhysicsObserver;
+        private _onAfterPhysicsObserver;
+        private _onAfterAnimationsObserver;
+        private _onBeforeCameraRenderObserver;
+        private _onAfterCameraRenderObserver;
+        /**
+         * Gets the perf counter used for active meshes evaluation time
+         */
+        get activeMeshesEvaluationTimeCounter(): PerfCounter;
+        /**
+         * Gets the active meshes evaluation time capture status
+         */
+        get captureActiveMeshesEvaluationTime(): boolean;
+        /**
+         * Enable or disable the active meshes evaluation time capture
+         */
+        set captureActiveMeshesEvaluationTime(value: boolean);
+        /**
+         * Gets the perf counter used for render targets render time
+         */
+        get renderTargetsRenderTimeCounter(): PerfCounter;
+        /**
+         * Gets the render targets render time capture status
+         */
+        get captureRenderTargetsRenderTime(): boolean;
+        /**
+         * Enable or disable the render targets render time capture
+         */
+        set captureRenderTargetsRenderTime(value: boolean);
+        /**
+         * Gets the perf counter used for particles render time
+         */
+        get particlesRenderTimeCounter(): PerfCounter;
+        /**
+         * Gets the particles render time capture status
+         */
+        get captureParticlesRenderTime(): boolean;
+        /**
+         * Enable or disable the particles render time capture
+         */
+        set captureParticlesRenderTime(value: boolean);
+        /**
+         * Gets the perf counter used for sprites render time
+         */
+        get spritesRenderTimeCounter(): PerfCounter;
+        /**
+         * Gets the sprites render time capture status
+         */
+        get captureSpritesRenderTime(): boolean;
+        /**
+         * Enable or disable the sprites render time capture
+         */
+        set captureSpritesRenderTime(value: boolean);
+        /**
+         * Gets the perf counter used for physics time
+         */
+        get physicsTimeCounter(): PerfCounter;
+        /**
+         * Gets the physics time capture status
+         */
+        get capturePhysicsTime(): boolean;
+        /**
+         * Enable or disable the physics time capture
+         */
+        set capturePhysicsTime(value: boolean);
+        /**
+         * Gets the perf counter used for animations time
+         */
+        get animationsTimeCounter(): PerfCounter;
+        /**
+         * Gets the animations time capture status
+         */
+        get captureAnimationsTime(): boolean;
+        /**
+         * Enable or disable the animations time capture
+         */
+        set captureAnimationsTime(value: boolean);
+        /**
+         * Gets the perf counter used for frame time capture
+         */
+        get frameTimeCounter(): PerfCounter;
+        /**
+         * Gets the frame time capture status
+         */
+        get captureFrameTime(): boolean;
+        /**
+         * Enable or disable the frame time capture
+         */
+        set captureFrameTime(value: boolean);
+        /**
+         * Gets the perf counter used for inter-frames time capture
+         */
+        get interFrameTimeCounter(): PerfCounter;
+        /**
+         * Gets the inter-frames time capture status
+         */
+        get captureInterFrameTime(): boolean;
+        /**
+         * Enable or disable the inter-frames time capture
+         */
+        set captureInterFrameTime(value: boolean);
+        /**
+         * Gets the perf counter used for render time capture
+         */
+        get renderTimeCounter(): PerfCounter;
+        /**
+         * Gets the render time capture status
+         */
+        get captureRenderTime(): boolean;
+        /**
+         * Enable or disable the render time capture
+         */
+        set captureRenderTime(value: boolean);
+        /**
+         * Gets the perf counter used for camera render time capture
+         */
+        get cameraRenderTimeCounter(): PerfCounter;
+        /**
+         * Gets the camera render time capture status
+         */
+        get captureCameraRenderTime(): boolean;
+        /**
+         * Enable or disable the camera render time capture
+         */
+        set captureCameraRenderTime(value: boolean);
+        /**
+         * Gets the perf counter used for draw calls
+         */
+        get drawCallsCounter(): PerfCounter;
+        /**
+         * Instantiates a new scene instrumentation.
+         * This class can be used to get instrumentation data from a Babylon engine
+         * @see https://doc.babylonjs.com/how_to/optimizing_your_scene#sceneinstrumentation
+         * @param scene Defines the scene to instrument
+         */
+        constructor(
+        /**
+         * Defines the scene to instrument
+         */
+        scene: Scene);
         /**
          * Dispose and release associated resources.
          */
@@ -72138,194 +72339,6 @@ declare module BABYLON {
          */
         set videoMode(value: number);
         protected _initTexture(urlsOrElement: string | string[] | HTMLVideoElement, scene: Scene, options: any): VideoTexture;
-    }
-}
-declare module BABYLON {
-    /**
-     * This class can be used to get instrumentation data from a Babylon engine
-     * @see https://doc.babylonjs.com/how_to/optimizing_your_scene#sceneinstrumentation
-     */
-    export class SceneInstrumentation implements IDisposable {
-        /**
-         * Defines the scene to instrument
-         */
-        scene: Scene;
-        private _captureActiveMeshesEvaluationTime;
-        private _activeMeshesEvaluationTime;
-        private _captureRenderTargetsRenderTime;
-        private _renderTargetsRenderTime;
-        private _captureFrameTime;
-        private _frameTime;
-        private _captureRenderTime;
-        private _renderTime;
-        private _captureInterFrameTime;
-        private _interFrameTime;
-        private _captureParticlesRenderTime;
-        private _particlesRenderTime;
-        private _captureSpritesRenderTime;
-        private _spritesRenderTime;
-        private _capturePhysicsTime;
-        private _physicsTime;
-        private _captureAnimationsTime;
-        private _animationsTime;
-        private _captureCameraRenderTime;
-        private _cameraRenderTime;
-        private _onBeforeActiveMeshesEvaluationObserver;
-        private _onAfterActiveMeshesEvaluationObserver;
-        private _onBeforeRenderTargetsRenderObserver;
-        private _onAfterRenderTargetsRenderObserver;
-        private _onAfterRenderObserver;
-        private _onBeforeDrawPhaseObserver;
-        private _onAfterDrawPhaseObserver;
-        private _onBeforeAnimationsObserver;
-        private _onBeforeParticlesRenderingObserver;
-        private _onAfterParticlesRenderingObserver;
-        private _onBeforeSpritesRenderingObserver;
-        private _onAfterSpritesRenderingObserver;
-        private _onBeforePhysicsObserver;
-        private _onAfterPhysicsObserver;
-        private _onAfterAnimationsObserver;
-        private _onBeforeCameraRenderObserver;
-        private _onAfterCameraRenderObserver;
-        /**
-         * Gets the perf counter used for active meshes evaluation time
-         */
-        get activeMeshesEvaluationTimeCounter(): PerfCounter;
-        /**
-         * Gets the active meshes evaluation time capture status
-         */
-        get captureActiveMeshesEvaluationTime(): boolean;
-        /**
-         * Enable or disable the active meshes evaluation time capture
-         */
-        set captureActiveMeshesEvaluationTime(value: boolean);
-        /**
-         * Gets the perf counter used for render targets render time
-         */
-        get renderTargetsRenderTimeCounter(): PerfCounter;
-        /**
-         * Gets the render targets render time capture status
-         */
-        get captureRenderTargetsRenderTime(): boolean;
-        /**
-         * Enable or disable the render targets render time capture
-         */
-        set captureRenderTargetsRenderTime(value: boolean);
-        /**
-         * Gets the perf counter used for particles render time
-         */
-        get particlesRenderTimeCounter(): PerfCounter;
-        /**
-         * Gets the particles render time capture status
-         */
-        get captureParticlesRenderTime(): boolean;
-        /**
-         * Enable or disable the particles render time capture
-         */
-        set captureParticlesRenderTime(value: boolean);
-        /**
-         * Gets the perf counter used for sprites render time
-         */
-        get spritesRenderTimeCounter(): PerfCounter;
-        /**
-         * Gets the sprites render time capture status
-         */
-        get captureSpritesRenderTime(): boolean;
-        /**
-         * Enable or disable the sprites render time capture
-         */
-        set captureSpritesRenderTime(value: boolean);
-        /**
-         * Gets the perf counter used for physics time
-         */
-        get physicsTimeCounter(): PerfCounter;
-        /**
-         * Gets the physics time capture status
-         */
-        get capturePhysicsTime(): boolean;
-        /**
-         * Enable or disable the physics time capture
-         */
-        set capturePhysicsTime(value: boolean);
-        /**
-         * Gets the perf counter used for animations time
-         */
-        get animationsTimeCounter(): PerfCounter;
-        /**
-         * Gets the animations time capture status
-         */
-        get captureAnimationsTime(): boolean;
-        /**
-         * Enable or disable the animations time capture
-         */
-        set captureAnimationsTime(value: boolean);
-        /**
-         * Gets the perf counter used for frame time capture
-         */
-        get frameTimeCounter(): PerfCounter;
-        /**
-         * Gets the frame time capture status
-         */
-        get captureFrameTime(): boolean;
-        /**
-         * Enable or disable the frame time capture
-         */
-        set captureFrameTime(value: boolean);
-        /**
-         * Gets the perf counter used for inter-frames time capture
-         */
-        get interFrameTimeCounter(): PerfCounter;
-        /**
-         * Gets the inter-frames time capture status
-         */
-        get captureInterFrameTime(): boolean;
-        /**
-         * Enable or disable the inter-frames time capture
-         */
-        set captureInterFrameTime(value: boolean);
-        /**
-         * Gets the perf counter used for render time capture
-         */
-        get renderTimeCounter(): PerfCounter;
-        /**
-         * Gets the render time capture status
-         */
-        get captureRenderTime(): boolean;
-        /**
-         * Enable or disable the render time capture
-         */
-        set captureRenderTime(value: boolean);
-        /**
-         * Gets the perf counter used for camera render time capture
-         */
-        get cameraRenderTimeCounter(): PerfCounter;
-        /**
-         * Gets the camera render time capture status
-         */
-        get captureCameraRenderTime(): boolean;
-        /**
-         * Enable or disable the camera render time capture
-         */
-        set captureCameraRenderTime(value: boolean);
-        /**
-         * Gets the perf counter used for draw calls
-         */
-        get drawCallsCounter(): PerfCounter;
-        /**
-         * Instantiates a new scene instrumentation.
-         * This class can be used to get instrumentation data from a Babylon engine
-         * @see https://doc.babylonjs.com/how_to/optimizing_your_scene#sceneinstrumentation
-         * @param scene Defines the scene to instrument
-         */
-        constructor(
-        /**
-         * Defines the scene to instrument
-         */
-        scene: Scene);
-        /**
-         * Dispose and release associated resources.
-         */
-        dispose(): void;
     }
 }
 declare module BABYLON {
