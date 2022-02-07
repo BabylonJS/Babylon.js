@@ -7,7 +7,7 @@
 - Added support for ConditionalBlock for NodeMaterial ([Deltakosh](https://github.com/deltakosh))
 - Improved performance when using the shadow / cascacaded shadow generator ([Popov72](https://github.com/Popov72))
 - Add support for up to 6 uv sets in the standard, PBR and node materials ([Popov72](https://github.com/Popov72))
-- Added GUI Editor to easily build GUI controls ([msDestiny14](https://github.com/msDestiny14))
+- Added GUI Editor to easily build GUI controls ([msDestiny14](https://github.com/msDestiny14)) ([darraghjburke](https://github.com/darraghjburke))
 - Added support for Order Independent Transparency on simple scenes. `scene.useOrderIndependentTransparency = true` now makes transparent meshes shade correctly when stacked onto each other. ([CraigFeldspar](https://github.com/CraigFeldspar))
 - Added vertex animation textures with `BakedVertexAnimationManager` ([brunobg](https://github.com/brunobg), [Popov72](https://github.com/Popov72), [raggar](https://github.com/raggar))
 - Added `MaterialPluginManager` ([brunobg](https://github.com/brunobg), [Popov72](https://github.com/Popov72))
@@ -30,6 +30,7 @@
 - Added ability to enable/disable `ArcRotateCamera` zoom on multiTouch event ([NicolasBuecher](https://github.com/NicolasBuecher))
 - Moving button to shared uI folder.([msDestiny14](https://github.com/msDestiny14))
 - Added `collisionRetryCount` to improved collision detection ([CedricGuillemet](https://github.com/CedricGuillemet))
+- Added color/instance color differenciation in shaders for thin instances ([CedricGuillemet](https://github.com/CedricGuillemet))
 - Added sleepBody support for ammojs ([CedricGuillemet](https://github.com/CedricGuillemet)
 - Moved sharedUI component to shared UI folder. ([msDestiny14](https://github.com/msDestiny14))
 - Added `encapsulate` and `encapsulateBoundingInfo` methods to `BoundingInfo`. ([Tolo789](https://github.com/Tolo789))
@@ -70,6 +71,7 @@
 - Added `onCreateCustomConvexHullImpostor` handler for creating convex hull imposters with custom vertex data. ([MackeyK24](https://github.com/MackeyK24))
 - Modified touch in `WebDeviceInputSystem` to no longer delete touch points after pointer up. ([PolygonalSun](https://github.com/PolygonalSun))
 - Added support for DualSense controllers to DeviceInputSystem. ([PolygonalSun](https://github.com/PolygonalSun))
+- Added `getCreationOptions` on `ThinEngine`. ([carolhmj](https://github.com/carolhmj))
 - Added errorCodes for BaseError ([jp833](https://github.com/jp833))
 
 ### Engine
@@ -179,6 +181,7 @@
 - Added a `SceneDepth` block to access the scene depth buffer ([Popov72](https://github.com/Popov72))
 - Added support for custom blocks ([BlakeOne](https://github.com/BlakeOne), [Popov72](https://github.com/Popov72))
 - Added a `ClipPlanes` block to support scene clip planes ([Popov72](https://github.com/Popov72))
+- Added `ElbowBlock` to let users control the graph organization ([Deltakosh](https://github.com/Deltakosh))
 
 ### GUI
 
@@ -409,6 +412,7 @@
 - Fix keypoint selection in ACE ([carolhmj](https://github.com/carolhmj))
 - Fix keypoint drag in ACE ([carolhmj](https://github.com/carolhmj))
 - Fix spherical harmonics computation ([Meakk](https://github.com/Meakk))
+- Fix KTX and DDS loading with baked mipmaps ([Meakk](https://github.com/Meakk))
 
 ## Breaking changes
 
@@ -421,6 +425,7 @@
 - `Mesh.createInstance` no longer make a unique `Geometry` for the Mesh so updating one `Geometry` can affect more meshes than before. Use `Mesh.makeUniqueGeometry` for old behaviour. ([breakin](https://github.com/breakin))
 - Ammo.js needs to be initialized before creating the plugin with `await Ammo();` since Ammo introduced an async init in their library. ([sebavan](https://github.com/sebavan))
 - Recast.js needs to be initialized before creating the plugin with `await Recast();` since Recast introduced an async init in their library. ([CedricGuillemet](https://github.com/CedricGuillemet))
+- Custom shaders using instancing must use `instanceColor` instead of `color` so mesh vertex colors can be used with instancing. ([CedricGuillemet](https://github.com/CedricGuillemet))
 - Fixed spelling of `EventState.initialize` ([seritools](https://github.com/seritools))
 - `SkeletonViewer` is now enabled by default ([Deltakosh](https://github.com/deltakosh))
 - `BindEyePosition` has been moved from `Material` to `Scene` to avoid a circular dependency problem and is now a non-static method (`bindEyePosition`) ([Popov72](https://github.com/Popov72))

@@ -783,7 +783,8 @@ export class WebGPUEngine extends Engine {
             canUseGLVertexID: true,
             supportComputeShaders: true,
             supportSRGBBuffers: true,
-            supportTransformFeedbacks: false
+            supportTransformFeedbacks: false,
+            textureMaxLevel: true
         };
 
         this._caps.parallelShaderCompile = null as any;

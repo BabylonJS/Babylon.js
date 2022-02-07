@@ -7,13 +7,14 @@ import { ImageBasedSlider } from "babylonjs-gui/2D/controls/sliders/imageBasedSl
 import { TextInputLineComponent } from "../../../../sharedUiComponents/lines/textInputLineComponent";
 import { TextLineComponent } from "../../../../sharedUiComponents/lines/textLineComponent";
 import { SliderPropertyGridComponent } from "./sliderPropertyGridComponent";
+import { makeTargetsProxy } from "../../../../sharedUiComponents/lines/targetsProxy";
 
 const thumbImageLinkIcon: string = require("../../../../sharedUiComponents/imgs/thumbImageLinkIcon.svg");
 const valueBarImageLinkIcon: string = require("../../../../sharedUiComponents/imgs/valueBarImageLinkIcon.svg");
 const sliderBackgroundImageIcon: string = require("../../../../sharedUiComponents/imgs/sliderBackgroundImageIcon.svg");
 
 interface IImageBasedSliderPropertyGridComponentProps {
-    imageBasedSlider: ImageBasedSlider;
+    imageBasedSliders: ImageBasedSlider[];
     lockObject: LockObject;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
@@ -24,13 +25,13 @@ export class ImageBasedSliderPropertyGridComponent extends React.Component<IImag
     }
 
     render() {
-        const imageBasedSlider = this.props.imageBasedSlider;
+        const imageBasedSliders = this.props.imageBasedSliders;
 
         return (
             <div className="pane">
                 <CommonControlPropertyGridComponent
                     lockObject={this.props.lockObject}
-                    control={imageBasedSlider}
+                    controls={imageBasedSliders}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
                 <hr />
@@ -39,7 +40,7 @@ export class ImageBasedSliderPropertyGridComponent extends React.Component<IImag
                     icon={thumbImageLinkIcon}
                     lockObject={this.props.lockObject}
                     iconLabel="Thumb Image Link"
-                    target={imageBasedSlider.thumbImage}
+                    target={makeTargetsProxy(imageBasedSliders.map(slider => slider.thumbImage), this.props.onPropertyChangedObservable)}
                     label=""
                     propertyName="source"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
@@ -48,7 +49,7 @@ export class ImageBasedSliderPropertyGridComponent extends React.Component<IImag
                     icon={valueBarImageLinkIcon}
                     lockObject={this.props.lockObject}
                     iconLabel="Value Bar Image Link"
-                    target={imageBasedSlider.valueBarImage}
+                    target={makeTargetsProxy(imageBasedSliders.map(slider => slider.valueBarImage), this.props.onPropertyChangedObservable)}
                     label=""
                     propertyName="source"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
@@ -57,12 +58,12 @@ export class ImageBasedSliderPropertyGridComponent extends React.Component<IImag
                     icon={sliderBackgroundImageIcon}
                     lockObject={this.props.lockObject}
                     iconLabel="Background Image Link"
-                    target={imageBasedSlider.backgroundImage}
+                    target={makeTargetsProxy(imageBasedSliders.map(slider => slider.backgroundImage), this.props.onPropertyChangedObservable)}
                     label=""
                     propertyName="source"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
-                <SliderPropertyGridComponent slider={imageBasedSlider} lockObject={this.props.lockObject} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <SliderPropertyGridComponent sliders={imageBasedSliders} lockObject={this.props.lockObject} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
             </div>
         );
     }

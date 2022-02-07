@@ -3,23 +3,23 @@ import { ISceneLoaderPlugin, ISceneLoaderPluginAsync, ISceneLoaderProgressEvent 
 import { Observable } from 'babylonjs/Misc/observable';
 import { Scene } from 'babylonjs/scene';
 import { RenderingManager } from 'babylonjs/Rendering/renderingManager';
-import { Vector3 } from 'babylonjs/Maths/math';
 import { TargetCamera } from 'babylonjs/Cameras/targetCamera';
 import { Tools } from 'babylonjs/Misc/tools';
 import { Effect } from 'babylonjs/Materials/effect';
-import { ConfigurationLoader } from '../configuration/loader';
-import { IModelConfiguration, IObserversConfiguration, ViewerConfiguration } from '../configuration/';
 import { processConfigurationCompatibility } from '../configuration/configurationCompatibility';
 import { ConfigurationContainer } from '../configuration/configurationContainer';
 import { viewerGlobals } from '../configuration/globals';
 import { RenderOnlyConfigurationLoader } from '../configuration/renderOnlyLoader';
-import { deepmerge } from '../helper/';
+import { deepmerge } from '../helper/index';
 import { ModelLoader } from '../loader/modelLoader';
 import { ObservablesManager } from '../managers/observablesManager';
 import { SceneManager } from '../managers/sceneManager';
 import { telemetryManager } from '../managers/telemetryManager';
 import { ViewerModel } from '../model/viewerModel';
 import { viewerManager } from './viewerManager';
+import { ViewerConfiguration } from '../configuration/configuration';
+import { IObserversConfiguration } from '../configuration/interfaces/observersConfiguration';
+import { IModelConfiguration } from '../configuration/interfaces/modelConfiguration';
 
 /**
  * The AbstractViewer is the center of Babylon's viewer.

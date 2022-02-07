@@ -99,6 +99,7 @@ export class StandardMaterialDefines extends MaterialDefines
     public BONES_VELOCITY_ENABLED = false;
     public INSTANCES = false;
     public THIN_INSTANCES = false;
+    public INSTANCESCOLOR = false;
     public GLOSSINESS = false;
     public ROUGHNESS = false;
     public EMISSIVEASILLUMINATION = false;
@@ -1245,6 +1246,10 @@ export class StandardMaterial extends PushMaterial {
 
             if (defines.VERTEXCOLOR) {
                 attribs.push(VertexBuffer.ColorKind);
+            }
+
+            if (defines.INSTANCESCOLOR) {
+                attribs.push(VertexBuffer.ColorInstanceKind);
             }
 
             MaterialHelper.PrepareAttributesForBones(attribs, mesh, defines, fallbacks);

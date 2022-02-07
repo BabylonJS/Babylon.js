@@ -2,7 +2,7 @@ import { mapperManager } from './mappers';
 import { ViewerConfiguration } from './configuration';
 import { processConfigurationCompatibility } from './configurationCompatibility';
 
-import { deepmerge } from '../helper';
+import { deepmerge } from '../helper/index';
 import { Tools } from 'babylonjs/Misc/tools';
 import { extendedConfiguration } from './types/extended';
 import { renderOnlyDefaultConfiguration } from './types/renderOnlyDefault';

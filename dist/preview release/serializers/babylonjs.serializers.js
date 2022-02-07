@@ -2213,7 +2213,7 @@ var _Exporter = /** @class */ (function () {
         this._glTF = {
             asset: { generator: "BabylonJS", version: "2.0" }
         };
-        babylonScene = babylonScene || babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Engine"].LastCreatedScene;
+        babylonScene = babylonScene || babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["EngineStore"].LastCreatedScene;
         if (!babylonScene) {
             return;
         }

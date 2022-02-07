@@ -10114,7 +10114,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default()(_node_modules_css_loader_dist_runtime_cssWithMappingToString_js__WEBPACK_IMPORTED_MODULE_0___default.a);
 // Module
-___CSS_LOADER_EXPORT___.push([module.i, ":root {\n  --backgroundGrey: #aaaaaa;\n  --spacingHeight: 30px; }\n\nhr.ge {\n  border: 1px solid #d0cece; }\n\n#ge-propertyTab {\n  user-select: none;\n  color: black;\n  background: #e2e2e2;\n  font-family: \"acumin-pro-condensed\"; }\n  #ge-propertyTab #header {\n    height: 30px;\n    font-size: 16px;\n    color: white;\n    background: white;\n    grid-row: 1;\n    text-align: center;\n    display: grid;\n    grid-template-columns: 30px 1fr;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none; }\n    #ge-propertyTab #header #logo {\n      position: relative;\n      background: white;\n      grid-column: 1;\n      width: 32px;\n      height: 32px;\n      left: 0;\n      display: flex;\n      align-self: center;\n      justify-self: center; }\n    #ge-propertyTab #header #title {\n      background: white;\n      color: black;\n      grid-column: 2;\n      display: grid;\n      align-items: center;\n      text-align: center; }\n  #ge-propertyTab .range {\n    -webkit-appearance: none;\n    width: 120px;\n    height: 2px;\n    background: black;\n    border-radius: 5px;\n    outline: none;\n    opacity: 0.7;\n    -webkit-transition: .2s;\n    transition: opacity .2s; }\n  #ge-propertyTab .range:hover {\n    opacity: 1; }\n  #ge-propertyTab .range::-webkit-slider-thumb {\n    -webkit-appearance: none;\n    appearance: none;\n    width: 14px;\n    height: 14px;\n    border-radius: 50%;\n    background: #e2e2e2;\n    border: solid;\n    border-width: thin;\n    cursor: pointer; }\n  #ge-propertyTab .range::-moz-range-thumb {\n    width: 14px;\n    height: 14px;\n    border-radius: 50%;\n    background: black;\n    cursor: pointer; }\n  #ge-propertyTab input[type=\"color\"] {\n    -webkit-appearance: none;\n    border: 1px solid rgba(255, 255, 255, 0.5);\n    padding: 0;\n    width: 30px;\n    height: 20px; }\n  #ge-propertyTab input[type=\"color\"]::-webkit-color-swatch-wrapper {\n    padding: 0; }\n  #ge-propertyTab input[type=\"color\"]::-webkit-color-swatch {\n    border: none; }\n  #ge-propertyTab .sliderLine {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    height: var(--spacingHeight);\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: auto auto auto 1fr; }\n    #ge-propertyTab .sliderLine .label {\n      grid-column: 2;\n      display: flex;\n      align-items: center;\n      min-width: 15px; }\n    #ge-propertyTab .sliderLine .img {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .sliderLine .slider {\n      grid-column: 4;\n      grid-row: 1;\n      margin-right: 5px;\n      width: 90%;\n      display: flex;\n      align-items: center;\n      padding-left: 5px; }\n    #ge-propertyTab .sliderLine .floatLine {\n      grid-column: 3;\n      padding-left: 15px; }\n      #ge-propertyTab .sliderLine .floatLine .label {\n        grid-column: 1;\n        display: none;\n        align-items: center; }\n      #ge-propertyTab .sliderLine .floatLine .short {\n        grid-column: 1;\n        display: flex;\n        align-items: center; }\n        #ge-propertyTab .sliderLine .floatLine .short input {\n          width: 40px;\n          background-color: transparent;\n          outline-color: transparent;\n          border-left: transparent;\n          border-right: transparent;\n          border-top: transparent;\n          outline-width: 0px; }\n        #ge-propertyTab .sliderLine .floatLine .short input::-webkit-outer-spin-button,\n        #ge-propertyTab .sliderLine .floatLine .short input::-webkit-inner-spin-button {\n          -webkit-appearance: none;\n          margin: 0; }\n        #ge-propertyTab .sliderLine .floatLine .short input[type=number] {\n          -moz-appearance: textfield; }\n  #ge-propertyTab .ge-divider {\n    display: grid;\n    grid-template-columns: auto auto auto auto auto auto; }\n  #ge-propertyTab .ge-divider-short {\n    display: grid;\n    grid-template-columns: 1fr 1fr; }\n  #ge-propertyTab .ge-grid-divider {\n    display: grid;\n    grid-template-columns: 150px 1fr auto; }\n    #ge-propertyTab .ge-grid-divider .textLine {\n      grid-column: auto; }\n  #ge-propertyTab .ge-grid-button-divider {\n    display: grid;\n    grid-template-columns: 60px 60px 60px 60px; }\n  #ge-propertyTab .ge-grid-remove {\n    display: grid;\n    background-color: #c2c2c2;\n    margin-bottom: 5px;\n    filter: invert(1); }\n  #ge-propertyTab .ge-grid-edit {\n    display: grid;\n    background-color: #878787;\n    margin-bottom: 5px;\n    filter: invert(1); }\n  #ge-propertyTab .ge-grid {\n    display: grid;\n    margin-bottom: 5px; }\n  #ge-propertyTab .textInputLine {\n    user-select: none;\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    height: var(--spacingHeight);\n    display: grid;\n    grid-template-columns: auto auto 2fr 1fr; }\n    #ge-propertyTab .textInputLine .label {\n      grid-column: 2;\n      padding-left: 5px;\n      display: flex;\n      align-items: center;\n      min-width: 15px; }\n    #ge-propertyTab .textInputLine img {\n      width: 30px; }\n    #ge-propertyTab .textInputLine .img {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .textInputLine .value {\n      display: flex;\n      align-items: center;\n      padding-left: 15px;\n      grid-column: 3;\n      background: transparent; }\n      #ge-propertyTab .textInputLine .value input {\n        width: calc(100% - 5px);\n        background-color: transparent;\n        outline-color: transparent;\n        border-left: transparent;\n        border-right: transparent;\n        border-top: transparent;\n        outline-width: 0px; }\n    #ge-propertyTab .textInputLine .noUnderline input {\n      border-bottom: transparent; }\n  #ge-propertyTab .textInputArea {\n    padding-left: 5px;\n    height: 100%;\n    display: grid;\n    grid-template-columns: 1fr 120px; }\n    #ge-propertyTab .textInputArea .label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .textInputArea .value {\n      display: flex;\n      align-items: center;\n      grid-column: 2; }\n      #ge-propertyTab .textInputArea .value textarea {\n        width: calc(150% - 5px);\n        margin-left: -50%;\n        height: 40px; }\n  #ge-propertyTab .paneContainer {\n    margin-top: 3px;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 100%; }\n    #ge-propertyTab .paneContainer .paneList {\n      border-left: 3px solid transparent; }\n    #ge-propertyTab .paneContainer:hover .paneList {\n      border-left: 3px solid rgba(51, 122, 183, 0.8); }\n    #ge-propertyTab .paneContainer:hover .paneContainer-content .header .title {\n      border-left: 3px solid #337ab7; }\n    #ge-propertyTab .paneContainer .paneContainer-highlight-border {\n      grid-row: 1;\n      grid-column: 1;\n      opacity: 1;\n      border: 3px solid red;\n      transition: opacity 250ms;\n      pointer-events: none; }\n      #ge-propertyTab .paneContainer .paneContainer-highlight-border.transparent {\n        opacity: 0; }\n    #ge-propertyTab .paneContainer .paneContainer-content {\n      grid-row: 1;\n      grid-column: 1; }\n      #ge-propertyTab .paneContainer .paneContainer-content .header {\n        display: grid;\n        grid-template-columns: 1fr auto;\n        background: #cccccc;\n        height: var(--spacingHeight);\n        padding-bottom: 0px;\n        padding-top: 0px;\n        padding-right: 5px;\n        cursor: pointer; }\n        #ge-propertyTab .paneContainer .paneContainer-content .header .title {\n          border-left: 3px solid transparent;\n          padding-left: 5px;\n          grid-column: 1;\n          display: flex;\n          align-items: center; }\n        #ge-propertyTab .paneContainer .paneContainer-content .header .collapse {\n          grid-column: 2;\n          display: flex;\n          align-items: center;\n          justify-items: center;\n          transform-origin: center; }\n          #ge-propertyTab .paneContainer .paneContainer-content .header .collapse.closed {\n            transform: rotate(180deg); }\n      #ge-propertyTab .paneContainer .paneContainer-content .paneList > div:not(:last-child) {\n        border-bottom: 0.5px solid rgba(255, 255, 255, 0.1); }\n      #ge-propertyTab .paneContainer .paneContainer-content .fragment > div:not(:last-child) {\n        border-bottom: 0.5px solid rgba(255, 255, 255, 0.1); }\n  #ge-propertyTab .color-picker {\n    height: 150px;\n    width: 15px; }\n    #ge-propertyTab .color-picker .color-rect {\n      height: 15px;\n      border: 1px black solid;\n      cursor: pointer; }\n    #ge-propertyTab .color-picker .color-picker-cover {\n      position: fixed;\n      top: 0px;\n      right: 0px;\n      bottom: 0px;\n      left: 0px; }\n    #ge-propertyTab .color-picker .color-picker-float {\n      z-index: 2;\n      position: absolute; }\n  #ge-propertyTab .gradient-step {\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 20px 30px 40px auto 20px 30px;\n    padding-top: 5px;\n    padding-left: 5px;\n    padding-bottom: 5px; }\n    #ge-propertyTab .gradient-step .step {\n      grid-row: 1;\n      grid-column: 1; }\n    #ge-propertyTab .gradient-step .color {\n      grid-row: 1;\n      grid-column: 2;\n      cursor: pointer; }\n    #ge-propertyTab .gradient-step .step-value {\n      margin-left: 5px;\n      grid-row: 1;\n      grid-column: 3;\n      text-align: right;\n      margin-right: 5px; }\n    #ge-propertyTab .gradient-step .step-slider {\n      grid-row: 1;\n      grid-column: 4;\n      display: grid;\n      justify-content: stretch;\n      align-content: center;\n      margin-right: -5px;\n      padding-left: 12px; }\n      #ge-propertyTab .gradient-step .step-slider input {\n        width: 90%; }\n    #ge-propertyTab .gradient-step .gradient-copy {\n      grid-row: 1;\n      grid-column: 5;\n      display: grid;\n      align-content: center;\n      justify-content: center; }\n      #ge-propertyTab .gradient-step .gradient-copy .img {\n        height: 20px;\n        width: 20px; }\n      #ge-propertyTab .gradient-step .gradient-copy .img:hover {\n        cursor: pointer; }\n    #ge-propertyTab .gradient-step .gradient-delete {\n      grid-row: 1;\n      grid-column: 6;\n      display: grid;\n      align-content: center;\n      justify-content: center; }\n      #ge-propertyTab .gradient-step .gradient-delete .img {\n        height: 20px;\n        width: 20px; }\n      #ge-propertyTab .gradient-step .gradient-delete .img:hover {\n        cursor: pointer; }\n  #ge-propertyTab .command-button {\n    cursor: pointer;\n    width: auto; }\n    #ge-propertyTab .command-button .command-label {\n      display: none; }\n    #ge-propertyTab .command-button .command-button-icon {\n      height: 100%;\n      width: 100%;\n      display: grid;\n      color: white;\n      align-content: center;\n      justify-content: center; }\n    #ge-propertyTab .command-button:hover {\n      background-color: white; }\n    #ge-propertyTab .command-button .active {\n      transform-origin: center;\n      background-color: white; }\n    #ge-propertyTab .command-button img.active {\n      background-color: white; }\n  #ge-propertyTab .command-button-alt {\n    cursor: pointer;\n    width: 40px;\n    margin-left: 5px;\n    margin-right: 5px;\n    background-color: white; }\n    #ge-propertyTab .command-button-alt .command-label {\n      display: none; }\n    #ge-propertyTab .command-button-alt .command-button-icon {\n      height: 100%;\n      width: 100%;\n      display: grid;\n      align-content: center;\n      justify-content: center; }\n    #ge-propertyTab .command-button-alt:hover {\n      background-color: #c2c2c2;\n      filter: invert(1); }\n  #ge-propertyTab .command-button-alt-disabled {\n    cursor: pointer;\n    pointer-events: none;\n    width: 40px;\n    margin-left: 5px;\n    margin-right: 5px;\n    background-color: white; }\n    #ge-propertyTab .command-button-alt-disabled .command-label {\n      display: none; }\n    #ge-propertyTab .command-button-alt-disabled .command-button-icon {\n      height: 100%;\n      width: 100%;\n      display: grid;\n      align-content: center;\n      justify-content: center; }\n    #ge-propertyTab .command-button-alt-disabled img {\n      filter: invert(1); }\n  #ge-propertyTab .command-button-alt-active {\n    cursor: pointer;\n    pointer-events: none;\n    width: 40px;\n    margin-left: 5px;\n    margin-right: 5px;\n    background-color: #c2c2c2;\n    filter: invert(1); }\n    #ge-propertyTab .command-button-alt-active .command-label {\n      display: none; }\n    #ge-propertyTab .command-button-alt-active .command-button-icon {\n      height: 100%;\n      width: 100%;\n      display: grid;\n      align-content: center;\n      justify-content: center; }\n  #ge-propertyTab .floatLine {\n    user-select: none;\n    padding-left: 5px;\n    height: var(--spacingHeight);\n    padding-bottom: 0px;\n    padding-top: 0px;\n    display: grid;\n    grid-template-columns: auto auto 2fr 1fr; }\n    #ge-propertyTab .floatLine .label {\n      grid-column: 2;\n      display: flex;\n      align-items: center;\n      min-width: 15px; }\n    #ge-propertyTab .floatLine img {\n      width: 30px; }\n    #ge-propertyTab .floatLine .img {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .floatLine .value {\n      display: flex;\n      padding-left: 15px;\n      align-items: center;\n      grid-column: 3;\n      background: transparent; }\n      #ge-propertyTab .floatLine .value input {\n        width: calc(100% - 5px);\n        background-color: transparent;\n        outline-color: transparent;\n        border-left: transparent;\n        border-right: transparent;\n        border-top: transparent;\n        outline-width: 0px; }\n    #ge-propertyTab .floatLine .short {\n      grid-column: 2;\n      display: flex;\n      align-items: center; }\n      #ge-propertyTab .floatLine .short input {\n        width: 27px; }\n      #ge-propertyTab .floatLine .short input::-webkit-outer-spin-button,\n      #ge-propertyTab .floatLine .short input::-webkit-inner-spin-button {\n        -webkit-appearance: none;\n        margin: 0; }\n      #ge-propertyTab .floatLine .short input[type=number] {\n        -moz-appearance: textfield; }\n  #ge-propertyTab .vector3Line {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    display: grid; }\n    #ge-propertyTab .vector3Line .firstLine {\n      display: grid;\n      grid-template-columns: 1fr auto 20px;\n      height: var(--spacingHeight); }\n      #ge-propertyTab .vector3Line .firstLine .label {\n        grid-column: 1;\n        display: flex;\n        align-items: center; }\n      #ge-propertyTab .vector3Line .firstLine .vector {\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        text-align: right;\n        opacity: 0.8; }\n      #ge-propertyTab .vector3Line .firstLine .expand {\n        grid-column: 3;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n    #ge-propertyTab .vector3Line .secondLine {\n      display: grid;\n      padding-right: 5px;\n      border-left: 1px solid #337ab7; }\n      #ge-propertyTab .vector3Line .secondLine .no-right-margin {\n        margin-right: 0; }\n      #ge-propertyTab .vector3Line .secondLine .numeric {\n        display: grid;\n        grid-template-columns: 1fr auto; }\n      #ge-propertyTab .vector3Line .secondLine .numeric-label {\n        text-align: right;\n        grid-column: 1;\n        display: flex;\n        align-items: center;\n        justify-self: right;\n        margin-right: 10px; }\n      #ge-propertyTab .vector3Line .secondLine .numeric-value {\n        width: 120px;\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        border: 1px solid #337ab7; }\n  #ge-propertyTab .buttonLine {\n    height: var(--spacingHeight);\n    padding-bottom: 0px;\n    padding-top: 0px;\n    display: grid;\n    align-items: center;\n    justify-items: stretch;\n    padding-bottom: 5px; }\n    #ge-propertyTab .buttonLine input[type=\"file\"] {\n      display: none; }\n    #ge-propertyTab .buttonLine .file-upload {\n      background: var(--backgroundGrey);\n      border: 1px solid #424242;\n      margin: 5px 10px;\n      color: white;\n      padding: 4px 5px;\n      padding-top: 0px;\n      opacity: 0.9;\n      cursor: pointer;\n      text-align: center;\n      border-radius: 4px; }\n    #ge-propertyTab .buttonLine .file-upload:hover {\n      opacity: 1.0; }\n    #ge-propertyTab .buttonLine .file-upload:active {\n      transform: scale(0.98);\n      transform-origin: 0.5 0.5; }\n    #ge-propertyTab .buttonLine button {\n      background: var(--backgroundGrey);\n      border: 1px solid #424242;\n      margin: 5px 10px 5px 10px;\n      color: white;\n      padding: 4px 5px;\n      opacity: 0.9;\n      border-radius: 4px; }\n    #ge-propertyTab .buttonLine button:hover {\n      opacity: 1.0; }\n    #ge-propertyTab .buttonLine button:active {\n      background: #282828; }\n    #ge-propertyTab .buttonLine button:focus {\n      border: 1px solid #424242;\n      outline: 0px; }\n  #ge-propertyTab .numeric {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    height: var(--spacingHeight);\n    display: grid;\n    grid-template-columns: 1fr 120px auto; }\n    #ge-propertyTab .numeric .numeric-label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .numeric .number {\n      display: flex;\n      align-items: center;\n      grid-column: 2;\n      height: 10px; }\n      #ge-propertyTab .numeric .number .input {\n        width: calc(100% - 5px);\n        height: 10px; }\n  #ge-propertyTab .checkBoxLine {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    height: var(--spacingHeight);\n    display: grid;\n    grid-template-columns: auto auto 1fr; }\n    #ge-propertyTab .checkBoxLine .label {\n      grid-column: 2;\n      display: flex;\n      align-items: center;\n      min-width: 100px;\n      margin-left: 15px; }\n    #ge-propertyTab .checkBoxLine img {\n      width: 30px; }\n    #ge-propertyTab .checkBoxLine .img {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .checkBoxLine .checkBox {\n      grid-column: 3;\n      display: flex;\n      align-items: center;\n      padding-left: 15px; }\n      #ge-propertyTab .checkBoxLine .checkBox .lbl {\n        position: relative;\n        display: block;\n        height: 14px;\n        width: 34px;\n        margin-right: 5px;\n        border-radius: 100px;\n        cursor: pointer;\n        transition: all 0.3s ease;\n        border: solid;\n        border-width: thin; }\n      #ge-propertyTab .checkBoxLine .checkBox .lbl:after {\n        position: absolute;\n        left: 3px;\n        top: 1px;\n        display: block;\n        width: 10px;\n        height: 10px;\n        border-radius: 100px;\n        background: #e2e2e2;\n        box-shadow: 0px 3px 3px rgba(0, 0, 0, 0.05);\n        content: '';\n        transition: all 0.15s ease;\n        border: solid;\n        border-width: thin; }\n      #ge-propertyTab .checkBoxLine .checkBox .lbl:active:after {\n        transform: scale(1.15, 0.85); }\n      #ge-propertyTab .checkBoxLine .checkBox .cbx:checked ~ label {\n        background: transparent; }\n      #ge-propertyTab .checkBoxLine .checkBox .cbx:checked ~ label:after {\n        left: 20px;\n        background: black;\n        border: solid;\n        border-width: thin; }\n      #ge-propertyTab .checkBoxLine .checkBox .cbx:checked ~ label.disabled {\n        background: black;\n        cursor: pointer; }\n      #ge-propertyTab .checkBoxLine .checkBox .cbx:checked ~ label.disabled:after {\n        left: 20px;\n        background: #555555;\n        cursor: pointer; }\n      #ge-propertyTab .checkBoxLine .checkBox .cbx ~ label.disabled {\n        background: #555555;\n        cursor: pointer; }\n      #ge-propertyTab .checkBoxLine .checkBox .hidden {\n        display: none; }\n  #ge-propertyTab .listLine {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    height: var(--spacingHeight);\n    display: grid;\n    grid-template-columns: auto 1fr auto; }\n    #ge-propertyTab .listLine .label {\n      grid-column: 2;\n      display: none;\n      align-items: center; }\n    #ge-propertyTab .listLine img {\n      width: 30px; }\n    #ge-propertyTab .listLine .img {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .listLine .options {\n      grid-column: 2;\n      padding-left: 15px;\n      display: flex;\n      align-items: center;\n      margin-right: 5px; }\n      #ge-propertyTab .listLine .options select {\n        width: 120px;\n        height: 25px;\n        border: transparent;\n        border-radius: 4px; }\n  #ge-propertyTab .color3Line {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    display: grid; }\n    #ge-propertyTab .color3Line .firstLine {\n      height: var(--spacingHeight);\n      display: grid;\n      grid-template-columns: auto auto 1fr; }\n      #ge-propertyTab .color3Line .firstLine .label {\n        grid-column: 2;\n        padding-left: 5px;\n        display: none;\n        align-items: center;\n        min-width: 15px; }\n      #ge-propertyTab .color3Line .firstLine .img {\n        grid-column: 1;\n        display: flex;\n        align-items: center; }\n      #ge-propertyTab .color3Line .firstLine img {\n        width: 30px;\n        height: 30px; }\n      #ge-propertyTab .color3Line .firstLine .textInputLine {\n        grid-column: 3;\n        padding-left: 0px; }\n      #ge-propertyTab .color3Line .firstLine .color3 {\n        grid-column: 2;\n        margin-top: 6px;\n        display: flex;\n        align-items: center; }\n        #ge-propertyTab .color3Line .firstLine .color3 input {\n          margin-right: 5px; }\n      #ge-propertyTab .color3Line .firstLine .copy {\n        grid-column: 4;\n        display: none;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer;\n        color: black; }\n        #ge-propertyTab .color3Line .firstLine .copy img {\n          height: 100%;\n          width: 20px; }\n      #ge-propertyTab .color3Line .firstLine .expand {\n        grid-column: 4;\n        display: none;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n        #ge-propertyTab .color3Line .firstLine .expand img {\n          height: 100%;\n          width: 20px; }\n    #ge-propertyTab .color3Line .secondLine {\n      display: grid;\n      padding-right: 5px;\n      border-left: 1px solid #337ab7; }\n      #ge-propertyTab .color3Line .secondLine .numeric {\n        display: grid;\n        grid-template-columns: 1fr auto; }\n      #ge-propertyTab .color3Line .secondLine .numeric-label {\n        text-align: right;\n        grid-column: 1;\n        display: flex;\n        align-items: center;\n        justify-self: right;\n        margin-right: 10px; }\n      #ge-propertyTab .color3Line .secondLine .numeric-value {\n        width: 120px;\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        border: 1px solid #337ab7; }\n  #ge-propertyTab .textLine {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    height: auto;\n    display: grid;\n    grid-template-columns: auto auto 2fr 1fr; }\n    #ge-propertyTab .textLine .label {\n      grid-column: 2;\n      padding-left: 5px;\n      padding-top: 4px;\n      display: flex;\n      align-items: left;\n      min-width: 15px; }\n    #ge-propertyTab .textLine img {\n      width: 30px; }\n    #ge-propertyTab .textLine .img {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .textLine .link-value {\n      grid-column: 2;\n      white-space: nowrap;\n      text-overflow: ellipsis;\n      overflow: hidden;\n      text-align: end;\n      opacity: 0.8;\n      margin: 5px;\n      margin-top: 6px;\n      max-width: 140px;\n      text-decoration: underline;\n      cursor: pointer; }\n    #ge-propertyTab .textLine .value {\n      display: none;\n      grid-column: 3;\n      white-space: nowrap;\n      text-overflow: ellipsis;\n      overflow: hidden;\n      text-align: end;\n      opacity: 0.8;\n      margin: 5px;\n      margin-top: 6px;\n      max-width: 200px;\n      -webkit-user-select: text;\n      -moz-user-select: text;\n      -ms-user-select: text;\n      user-select: text; }\n      #ge-propertyTab .textLine .value.check {\n        color: green; }\n      #ge-propertyTab .textLine .value.uncheck {\n        color: red; }\n", "",{"version":3,"sources":["webpack://./components/propertyTab/propertyTab.scss"],"names":[],"mappings":"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","sourcesContent":[":root {\r\n    --backgroundGrey: #aaaaaa;\r\n    --spacingHeight: 30px;\r\n}\r\n\r\nhr.ge {\r\n    border: 1px solid #d0cece;\r\n}\r\n\r\n#ge-propertyTab {\r\n    user-select: none;\r\n    $line-padding-left: 5px;\r\n    $line-padding-bottom: 0px;\r\n    $line-padding-top: 0px;\r\n    color:black;\r\n    background: #e2e2e2;\r\n    font-family: \"acumin-pro-condensed\";\r\n      #header {\r\n        height: 30px;\r\n        font-size: 16px;\r\n        color: white;\r\n        background: white;\r\n        grid-row: 1;\r\n        text-align: center;\r\n        display: grid;\r\n        grid-template-columns: 30px 1fr;        \r\n        -webkit-user-select: none; \r\n        -moz-user-select: none;   \r\n        -ms-user-select: none;    \r\n        user-select: none;                \r\n\r\n        #logo {\r\n            position: relative;\r\n            background: white;\r\n            grid-column: 1; \r\n            width: 32px;\r\n            height: 32px;\r\n            left:0;\r\n            display: flex;\r\n            align-self: center;   \r\n            justify-self: center;\r\n        }        \r\n\r\n        #title {\r\n            background: white;\r\n            color: black;\r\n            grid-column: 2; \r\n            display: grid;\r\n            align-items: center;   \r\n            text-align: center;\r\n        }\r\n    }\r\n\r\n    .range {\r\n        -webkit-appearance: none;\r\n        width: 120px;\r\n        height: 2px;\r\n        background: black;\r\n        border-radius: 5px;\r\n        outline: none;\r\n        opacity: 0.7;\r\n        -webkit-transition: .2s;\r\n        transition: opacity .2s;\r\n    }\r\n    \r\n    .range:hover {\r\n        opacity: 1;\r\n    }\r\n    \r\n    .range::-webkit-slider-thumb {\r\n        -webkit-appearance: none;\r\n        appearance: none;\r\n        width: 14px;\r\n        height: 14px;\r\n        border-radius: 50%;\r\n        background: #e2e2e2;\r\n        border: solid;\r\n        border-width: thin;\r\n        cursor: pointer;\r\n    }\r\n    \r\n    .range::-moz-range-thumb {\r\n        width: 14px;\r\n        height: 14px;\r\n        border-radius: 50%;\r\n        background: rgb(0, 0, 0);\r\n        cursor: pointer;\r\n    }\r\n\r\n    input[type=\"color\"] {\r\n        -webkit-appearance: none;\r\n        border: 1px solid rgba(255, 255, 255, 0.5);\r\n        padding: 0;\r\n        width: 30px;\r\n        height: 20px;\r\n    }\r\n    input[type=\"color\"]::-webkit-color-swatch-wrapper {\r\n        padding: 0;\r\n    }\r\n    input[type=\"color\"]::-webkit-color-swatch {\r\n        border: none;\r\n    }\r\n\r\n    .sliderLine {\r\n        padding-left: $line-padding-left;\r\n        padding-bottom: $line-padding-bottom;\r\n        padding-top: $line-padding-top;\r\n        height: var(--spacingHeight);;\r\n        display: grid;\r\n        grid-template-rows: 100%;\r\n        grid-template-columns: auto auto auto 1fr;\r\n\r\n        .label {\r\n            grid-column: 2;\r\n            display: flex;\r\n            align-items: center;\r\n            min-width: 15px;\r\n        }\r\n\r\n        .img {\r\n            grid-column: 1;\r\n            display: flex;\r\n            align-items: center;\r\n        }\r\n\r\n\r\n        .slider {\r\n            grid-column: 4;\r\n            grid-row: 1;\r\n            margin-right: 5px;\r\n            width: 90%;\r\n            display: flex;\r\n            align-items: center;\r\n            padding-left: 5px;\r\n        }\r\n\r\n        .floatLine {\r\n            grid-column: 3;\r\n            padding-left: 15px;\r\n            \r\n            .label {\r\n                grid-column: 1;\r\n                display: none;\r\n                align-items: center;\r\n            }\r\n        \r\n            .short {\r\n                grid-column: 1; \r\n                display: flex;\r\n                align-items: center;\r\n                \r\n                input {\r\n                    width: 40px;\r\n                    background-color: transparent;\r\n                    outline-color: transparent;\r\n                    border-left: transparent;\r\n                    border-right: transparent;\r\n                    border-top: transparent;\r\n                    outline-width: 0px\r\n                }\r\n                \r\n                input::-webkit-outer-spin-button,\r\n                input::-webkit-inner-spin-button {\r\n                  -webkit-appearance: none;\r\n                  margin: 0;\r\n                }\r\n    \r\n                input[type=number] {\r\n                    -moz-appearance: textfield;\r\n                }\r\n            }\r\n        }  \r\n    }     \r\n\r\n    .ge-divider {\r\n        display: grid;\r\n        grid-template-columns: auto auto auto auto auto auto;\r\n    }\r\n\r\n    .ge-divider-short {\r\n        display: grid;\r\n        grid-template-columns: 1fr 1fr;\r\n    }\r\n    \r\n    .ge-grid-divider {\r\n        display: grid;\r\n        grid-template-columns: 150px 1fr auto;\r\n        \r\n        .textLine {\r\n            grid-column: auto;\r\n           \r\n        }\r\n    }\r\n\r\n    .ge-grid-button-divider {\r\n        display: grid;\r\n        grid-template-columns: 60px 60px 60px 60px;\r\n    }\r\n\r\n    .ge-grid-remove {\r\n        display: grid;\r\n        background-color: #c2c2c2;\r\n        margin-bottom: 5px;\r\n        filter: invert(1);\r\n    }\r\n\r\n    .ge-grid-edit {\r\n        display: grid;\r\n        background-color: #878787;\r\n        margin-bottom: 5px;\r\n        filter: invert(1);\r\n\r\n    }\r\n  \r\n    .ge-grid {\r\n        display: grid;\r\n        margin-bottom: 5px;\r\n    }\r\n\r\n\r\n    .textInputLine {\r\n        user-select: none;\r\n        padding-left: $line-padding-left;\r\n        padding-bottom: $line-padding-bottom;\r\n        padding-top: $line-padding-top;\r\n        height: var(--spacingHeight);\r\n        display: grid;\r\n        grid-template-columns: auto auto 2fr 1fr;\r\n        .label {\r\n            grid-column: 2;\r\n            padding-left: 5px;\r\n            display: flex;\r\n            align-items: center;\r\n            min-width: 15px;\r\n        }\r\n\r\n        img {\r\n            width: 30px;\r\n        }\r\n        \r\n        .img {\r\n            grid-column: 1;\r\n            display: flex;\r\n            align-items: center;\r\n        }\r\n\r\n        .value {                        \r\n            display: flex;\r\n            align-items: center;\r\n            padding-left: 15px;\r\n            grid-column: 3;\r\n            background: transparent;\r\n            input {\r\n                width: calc(100% - 5px);\r\n                background-color: transparent;\r\n                outline-color: transparent;\r\n                border-left: transparent;\r\n                border-right: transparent;\r\n                border-top: transparent;\r\n                outline-width: 0px\r\n            }\r\n        }\r\n\r\n        .noUnderline {\r\n            input {\r\n                border-bottom: transparent;\r\n            }\r\n        }\r\n    }\r\n    \r\n    .textInputArea {\r\n        padding-left: $line-padding-left;\r\n        height: 100%;\r\n        display: grid;\r\n        grid-template-columns: 1fr 120px;\r\n\r\n        .label {\r\n            grid-column: 1;\r\n            display: flex;\r\n            align-items: center;\r\n        }\r\n\r\n        .value {                        \r\n            display: flex;\r\n            align-items: center;\r\n            grid-column: 2;\r\n            \r\n            textarea {\r\n                width: calc(150% - 5px);\r\n                margin-left: -50%;\r\n                height: 40px;\r\n            }\r\n        }\r\n    }\r\n    \r\n    .paneContainer {\r\n        margin-top: 3px;\r\n        display:grid;\r\n        grid-template-rows: 100%;\r\n        grid-template-columns: 100%;\r\n        \r\n        .paneList {\r\n            border-left: 3px solid transparent;\r\n        }\r\n\r\n        &:hover {  \r\n            .paneList {                      \r\n                border-left: 3px solid rgba(51, 122, 183, 0.8);\r\n            }\r\n\r\n            .paneContainer-content {\r\n                .header {\r\n                    .title {   \r\n                        border-left: 3px solid rgb(51, 122, 183);\r\n                    }\r\n                }\r\n            }\r\n        }\r\n        \r\n        .paneContainer-highlight-border {\r\n            grid-row: 1;\r\n            grid-column: 1;\r\n            opacity: 1;\r\n            border: 3px solid red;\r\n            transition: opacity 250ms;\r\n            pointer-events: none;\r\n            \r\n            &.transparent {\r\n                opacity: 0;\r\n            }\r\n        }\r\n\r\n        .paneContainer-content {\r\n            grid-row: 1;\r\n            grid-column: 1;\r\n\r\n            .header {\r\n                display: grid;\r\n                grid-template-columns: 1fr auto;\r\n                background: #cccccc;    \r\n                height: var(--spacingHeight);\r\n                padding-bottom: $line-padding-bottom;\r\n                padding-top: $line-padding-top;\r\n                padding-right: 5px;                        \r\n                cursor: pointer;\r\n                \r\n                .title {                                \r\n                    border-left: 3px solid transparent;\r\n                    padding-left: 5px;\r\n                    grid-column: 1;\r\n                    display: flex;\r\n                    align-items: center;\r\n                }\r\n\r\n                .collapse {\r\n                    grid-column: 2;\r\n                    display: flex;\r\n                    align-items: center;  \r\n                    justify-items: center;\r\n                    transform-origin: center;\r\n\r\n                    &.closed {\r\n                        transform: rotate(180deg);\r\n                    }\r\n                }                        \r\n            }\r\n\r\n            .paneList > div:not(:last-child) {\r\n                border-bottom: 0.5px solid rgba(255, 255, 255, 0.1);\r\n            }\r\n\r\n            .fragment > div:not(:last-child)  {\r\n                border-bottom: 0.5px solid rgba(255, 255, 255, 0.1);\r\n            }\r\n        }\r\n    }\r\n\r\n    .color-picker {\r\n        height: 150px;\r\n        width: 15px;\r\n\r\n        .color-rect {\r\n            height: 15px;\r\n            border: 1px black solid;\r\n            cursor: pointer;\r\n        }\r\n\r\n        .color-picker-cover {\r\n            position: fixed;\r\n            top: 0px;\r\n            right: 0px;\r\n            bottom: 0px;\r\n            left: 0px;\r\n        }\r\n\r\n        .color-picker-float {\r\n            z-index: 2;\r\n            position: absolute;  \r\n        }                \r\n    }\r\n\r\n    .gradient-step {\r\n        display: grid;\r\n        grid-template-rows: 100%;\r\n        grid-template-columns: 20px 30px 40px auto 20px 30px;\r\n        padding-top: 5px;\r\n        padding-left: 5px;\r\n        padding-bottom: 5px;\r\n\r\n        .step {\r\n            grid-row: 1;\r\n            grid-column: 1;\r\n        }\r\n            \r\n        .color {\r\n            grid-row: 1;\r\n            grid-column: 2;\r\n            cursor: pointer;\r\n        }\r\n\r\n        .step-value {       \r\n            margin-left: 5px;     \r\n            grid-row: 1;\r\n            grid-column: 3;\r\n            text-align: right;\r\n            margin-right: 5px;\r\n        }\r\n\r\n        .step-slider {            \r\n            grid-row: 1;\r\n            grid-column: 4;\r\n            display: grid;\r\n            justify-content: stretch;\r\n            align-content: center;\r\n            margin-right: -5px;\r\n            padding-left: 12px;\r\n\r\n            input {\r\n                width: 90%;\r\n            }\r\n        }\r\n\r\n        .gradient-copy {            \r\n            grid-row: 1;\r\n            grid-column: 5;\r\n            display: grid;\r\n            align-content: center;\r\n            justify-content: center;\r\n \r\n            .img {\r\n                height: 20px;\r\n                width: 20px;\r\n            }\r\n            .img:hover {\r\n                cursor: pointer;\r\n            }\r\n\r\n        }\r\n        .gradient-delete {            \r\n            grid-row: 1;\r\n            grid-column: 6;\r\n            display: grid;\r\n            align-content: center;\r\n            justify-content: center;\r\n            .img {\r\n                height: 20px;\r\n                width: 20px;\r\n            }\r\n            .img:hover {\r\n                cursor: pointer;\r\n            }\r\n\r\n        }\r\n\r\n    }\r\n\r\n    .command-button {\r\n        cursor: pointer;\r\n        width: auto;\r\n\r\n        .command-label {\r\n            display: none;\r\n        }        \r\n\r\n        .command-button-icon {\r\n            height: 100%;\r\n            width: 100%;\r\n            display: grid;\r\n            color: white;\r\n            align-content: center;\r\n            justify-content: center;\r\n        }\r\n\r\n        &:hover {\r\n            background-color: white;\r\n        } \r\n        \r\n        .active {\r\n            transform-origin: center;\r\n            background-color: white;\r\n        }\r\n\r\n        img {\r\n            &.active {\r\n                background-color: white;\r\n            }\r\n        }\r\n    }\r\n\r\n    .command-button-alt {\r\n        cursor: pointer;\r\n        width: 40px;\r\n        margin-left: 5px;\r\n        margin-right: 5px;\r\n        .command-label {\r\n            display: none;\r\n        }        \r\n\r\n        background-color: white;\r\n        .command-button-icon {\r\n            height: 100%;\r\n            width: 100%;\r\n            display: grid;\r\n            align-content: center;\r\n            justify-content: center;\r\n        }\r\n        &:hover {\r\n            background-color: #c2c2c2;\r\n            filter: invert(1);\r\n        } \r\n    }\r\n\r\n    .command-button-alt-disabled {\r\n        cursor: pointer;\r\n        pointer-events: none;\r\n        width: 40px;\r\n        margin-left: 5px;\r\n        margin-right: 5px;\r\n        .command-label {\r\n            display: none;\r\n        }        \r\n\r\n        background-color: white;\r\n        .command-button-icon {\r\n            height: 100%;\r\n            width: 100%;\r\n            display: grid;\r\n            align-content: center;\r\n            justify-content: center;\r\n        }\r\n\r\n        img {\r\n            filter: invert(1);\r\n        }\r\n    }\r\n\r\n    \r\n    .command-button-alt-active {\r\n        cursor: pointer;\r\n        pointer-events: none;\r\n        width: 40px;\r\n        margin-left: 5px;\r\n        margin-right: 5px;\r\n        .command-label {\r\n            display: none;\r\n        }        \r\n\r\n        background-color: #c2c2c2;\r\n        filter: invert(1);\r\n        .command-button-icon {\r\n            height: 100%;\r\n            width: 100%;\r\n            display: grid;\r\n            align-content: center;\r\n            justify-content: center;\r\n        }\r\n    }\r\n\r\n    .floatLine {\r\n        user-select: none;\r\n        padding-left: $line-padding-left;\r\n        height: var(--spacingHeight);\r\n        padding-bottom: $line-padding-bottom;\r\n        padding-top: $line-padding-top;\r\n        display: grid;\r\n        grid-template-columns: auto auto 2fr 1fr;\r\n\r\n        .label {\r\n            grid-column: 2;\r\n            display: flex;\r\n            align-items: center;\r\n            min-width: 15px;\r\n        }\r\n\r\n        img {\r\n            width: 30px;\r\n        }\r\n\r\n        .img {\r\n            grid-column: 1;\r\n            display: flex;\r\n            align-items: center;\r\n        }\r\n\r\n        .value {                        \r\n            display: flex;\r\n            padding-left: 15px;\r\n            align-items: center;\r\n            grid-column: 3;\r\n            background: transparent;\r\n            input {\r\n                width: calc(100% - 5px);\r\n                background-color: transparent;\r\n                outline-color: transparent;\r\n                border-left: transparent;\r\n                border-right: transparent;\r\n                border-top: transparent;\r\n                outline-width: 0px\r\n            }\r\n        }\r\n\r\n        .short {\r\n            grid-column: 2;\r\n            \r\n            display: flex;\r\n            align-items: center;\r\n            \r\n            input {\r\n                width: 27px;\r\n            }\r\n            \r\n            input::-webkit-outer-spin-button,\r\n            input::-webkit-inner-spin-button {\r\n              -webkit-appearance: none;\r\n              margin: 0;\r\n            }\r\n\r\n            input[type=number] {\r\n                -moz-appearance: textfield;\r\n            }\r\n        }\r\n    }\r\n\r\n    .vector3Line {\r\n        padding-left:$line-padding-left;\r\n        padding-bottom: $line-padding-bottom;\r\n        padding-top: $line-padding-top;      \r\n        display: grid;\r\n        .firstLine {\r\n            display: grid;\r\n            grid-template-columns: 1fr auto 20px;\r\n            height: var(--spacingHeight);\r\n\r\n            .label {\r\n                grid-column: 1;\r\n                display: flex;\r\n                align-items: center;\r\n            }\r\n\r\n            .vector {\r\n                grid-column: 2;\r\n                display: flex;\r\n                align-items: center;\r\n                text-align: right;\r\n                opacity: 0.8;\r\n            }\r\n\r\n            .expand {\r\n                grid-column: 3;\r\n                display: grid;\r\n                align-items: center;\r\n                justify-items: center;\r\n                cursor: pointer;\r\n            }\r\n        }\r\n\r\n        .secondLine {\r\n            display: grid;\r\n            padding-right: 5px;  \r\n            border-left: 1px solid rgb(51, 122, 183);\r\n\r\n            .no-right-margin {\r\n                margin-right: 0;\r\n            }\r\n\r\n            .numeric {\r\n                display: grid;\r\n                grid-template-columns: 1fr auto;\r\n            }\r\n\r\n            .numeric-label {\r\n                text-align: right;\r\n                grid-column: 1;\r\n                display: flex;\r\n                align-items: center;                            \r\n                justify-self: right;\r\n                margin-right: 10px;                          \r\n            }\r\n\r\n            .numeric-value {\r\n                width: 120px;\r\n                grid-column: 2;\r\n                display: flex;\r\n                align-items: center;  \r\n                border: 1px solid  rgb(51, 122, 183);\r\n            }                        \r\n        }\r\n    }\r\n\r\n    .buttonLine {\r\n        height: var(--spacingHeight);\r\n        padding-bottom: $line-padding-bottom;\r\n        padding-top: $line-padding-top;\r\n        display: grid;\r\n        align-items: center;\r\n        justify-items: stretch;\r\n        padding-bottom: 5px;\r\n        input[type=\"file\"] {\r\n            display: none;\r\n        }\r\n\r\n        .file-upload {            \r\n            background: var(--backgroundGrey);\r\n            border: 1px solid #424242;\r\n            margin: 5px 10px;\r\n            color:white;\r\n            padding: 4px 5px;\r\n            padding-top: 0px;\r\n            opacity: 0.9;\r\n            cursor: pointer;\r\n            text-align: center;\r\n            border-radius: 4px;\r\n        }\r\n\r\n        .file-upload:hover {\r\n            opacity: 1.0;\r\n        }\r\n\r\n        .file-upload:active {\r\n            transform: scale(0.98);\r\n            transform-origin: 0.5 0.5;\r\n        }\r\n\r\n        button {\r\n            background: var(--backgroundGrey);\r\n            border: 1px solid #424242;\r\n            margin: 5px 10px 5px 10px;\r\n            color:white;\r\n            padding: 4px 5px;\r\n            opacity: 0.9;\r\n            border-radius: 4px;\r\n        }\r\n\r\n        button:hover {\r\n            opacity: 1.0;\r\n        }\r\n\r\n        button:active {\r\n            background: #282828;\r\n        }   \r\n        \r\n        button:focus {\r\n            border: 1px solid #424242;\r\n            outline: 0px;\r\n        }  \r\n    }\r\n\r\n    .numeric {\r\n        padding-left: $line-padding-left;\r\n        padding-bottom: $line-padding-bottom;\r\n        padding-top: $line-padding-top;\r\n        height: var(--spacingHeight);;\r\n        display: grid;\r\n        grid-template-columns: 1fr 120px auto;\r\n\r\n        .numeric-label {\r\n            grid-column: 1;\r\n            display: flex;\r\n            align-items: center;\r\n        }\r\n\r\n        .number {                        \r\n            display: flex;\r\n            align-items: center;\r\n            grid-column: 2;\r\n            height: 10px;\r\n            .input {\r\n                width: calc(100% - 5px);\r\n                height: 10px;\r\n            }\r\n        }\r\n    }\r\n    \r\n    .checkBoxLine {\r\n        padding-left: $line-padding-left;\r\n        padding-bottom: $line-padding-bottom;\r\n        padding-top: $line-padding-top;\r\n        height: var(--spacingHeight);\r\n        display: grid;\r\n        grid-template-columns: auto auto 1fr ;\r\n\r\n        .label {\r\n            grid-column: 2;\r\n            display: flex;\r\n            align-items: center;\r\n            min-width: 100px;\r\n            margin-left: 15px;\r\n        }\r\n\r\n        img {\r\n            width: 30px;\r\n        }\r\n        \r\n        .img {\r\n            grid-column: 1;\r\n            display: flex;\r\n            align-items: center;\r\n        }\r\n\r\n        .checkBox {\r\n            grid-column: 3;\r\n            display: flex;\r\n            align-items: center;\r\n            padding-left: 15px;\r\n            \r\n            .lbl {\r\n                position: relative;\r\n                display: block;\r\n                height: 14px;\r\n                width: 34px;\r\n                margin-right: 5px;\r\n                border-radius: 100px;\r\n                cursor: pointer;\r\n                transition: all 0.3s ease;\r\n                border: solid;\r\n                border-width: thin;\r\n            }\r\n\r\n            .lbl:after {\r\n                position: absolute;\r\n                left: 3px;\r\n                top: 1px;\r\n                display: block;\r\n                width: 10px;\r\n                height: 10px;\r\n                border-radius: 100px;\r\n                background: #e2e2e2;\r\n                box-shadow: 0px 3px 3px rgba(0,0,0,0.05);\r\n                content: '';\r\n                transition: all 0.15s ease;\r\n                border: solid;\r\n                border-width: thin;\r\n            }\r\n\r\n            .lbl:active:after { \r\n                transform: scale(1.15, 0.85); \r\n            }\r\n\r\n            .cbx:checked ~ label { \r\n                background: transparent;\r\n                \r\n            }\r\n\r\n            .cbx:checked ~ label:after {\r\n                left: 20px;\r\n                background: rgb(0, 0, 0);\r\n                border: solid;\r\n                border-width: thin;\r\n            }\r\n\r\n            .cbx:checked ~ label.disabled { \r\n                background: rgb(0, 0, 0);\r\n                cursor: pointer;\r\n            }\r\n\r\n            .cbx:checked ~ label.disabled:after {\r\n                left: 20px;\r\n                background: rgb(85, 85, 85);\r\n                cursor: pointer;\r\n            }\r\n\r\n            .cbx ~ label.disabled {\r\n                background: rgb(85, 85, 85);\r\n                cursor: pointer;\r\n            }\r\n\r\n            .hidden { \r\n                display: none; \r\n            }               \r\n        }                    \r\n    }  \r\n\r\n    .listLine {\r\n        padding-left: $line-padding-left;\r\n        padding-bottom: $line-padding-bottom;\r\n        padding-top: $line-padding-top;\r\n        height: var(--spacingHeight);\r\n        display: grid;\r\n        grid-template-columns: auto 1fr auto ;\r\n\r\n        .label {\r\n            grid-column: 2;\r\n            display: none;\r\n            align-items: center;\r\n        }\r\n\r\n        img {\r\n            width: 30px;\r\n        }\r\n\r\n        .img {\r\n            grid-column: 1;\r\n            display: flex;\r\n            align-items: center;\r\n        }\r\n\r\n        .options {\r\n            grid-column: 2;\r\n            padding-left: 15px;\r\n            display: flex;\r\n            align-items: center;   \r\n            margin-right: 5px;\r\n\r\n            select {\r\n                width: 120px;\r\n                height: 25px;\r\n                border: transparent;\r\n                border-radius: 4px;\r\n            }\r\n        }                    \r\n    }  \r\n                    \r\n    .color3Line {\r\n        padding-left: $line-padding-left;\r\n        padding-bottom: $line-padding-bottom;\r\n        padding-top: $line-padding-top;\r\n        display: grid;\r\n\r\n        .firstLine {\r\n            height: var(--spacingHeight);\r\n            display: grid;\r\n            grid-template-columns: auto auto 1fr;\r\n\r\n            .label {\r\n                grid-column: 2;\r\n                padding-left: 5px;\r\n                display: none;\r\n                align-items: center;\r\n                min-width: 15px;\r\n            }\r\n    \r\n            .img {\r\n                grid-column: 1;\r\n                display: flex;\r\n                align-items: center;\r\n            }\r\n\r\n            img {\r\n                width: 30px;\r\n                height: 30px;\r\n            }\r\n    \r\n            .textInputLine {\r\n                grid-column: 3;\r\n                padding-left: 0px;\r\n            }\r\n    \r\n            .color3 {\r\n                grid-column: 2;                \r\n                margin-top: 6px;\r\n                display: flex;\r\n                align-items: center;            \r\n                \r\n                input {\r\n                    margin-right: 5px;\r\n                }\r\n            }\r\n\r\n            .copy {\r\n                grid-column: 4;\r\n                display: none;\r\n                align-items: center;\r\n                justify-items: center;\r\n                cursor: pointer;\r\n                color: black;\r\n                img {\r\n                    height: 100%;\r\n                    width: 20px;\r\n                }\r\n            }\r\n\r\n            .expand {\r\n                grid-column: 4;\r\n                display: none;\r\n                align-items: center;\r\n                justify-items: center;\r\n                cursor: pointer;\r\n\r\n                img {\r\n                    height: 100%;\r\n                    width: 20px;\r\n                }\r\n            }\r\n        }   \r\n\r\n        .secondLine {\r\n            display: grid;\r\n            padding-right: 5px;  \r\n            border-left: 1px solid rgb(51, 122, 183);\r\n\r\n            .numeric {\r\n                display: grid;\r\n                grid-template-columns: 1fr auto;\r\n            }\r\n\r\n            .numeric-label {\r\n                text-align: right;\r\n                grid-column: 1;\r\n                display: flex;\r\n                align-items: center;                            \r\n                justify-self: right;\r\n                margin-right: 10px;                          \r\n            }\r\n\r\n            .numeric-value {\r\n                width: 120px;\r\n                grid-column: 2;\r\n                display: flex;\r\n                align-items: center;  \r\n                border: 1px solid  rgb(51, 122, 183);\r\n            }                        \r\n        }                  \r\n    }     \r\n    \r\n    .textLine {\r\n        padding-left: $line-padding-left;\r\n        padding-bottom: $line-padding-bottom;\r\n        padding-top: $line-padding-top;\r\n        height: auto;\r\n        display: grid;\r\n        grid-template-columns: auto auto 2fr 1fr;\r\n        .label {\r\n            grid-column: 2;\r\n            padding-left: 5px;\r\n            padding-top: 4px;\r\n            display: flex;\r\n            align-items: left;\r\n            min-width: 15px;\r\n        }\r\n\r\n        img {\r\n            width: 30px;\r\n        }\r\n\r\n        .img {\r\n            grid-column: 1;\r\n            display: flex;\r\n            align-items: center;\r\n        }\r\n\r\n        .link-value {\r\n            grid-column: 2;\r\n            white-space: nowrap;\r\n            text-overflow: ellipsis;\r\n            overflow: hidden;\r\n            text-align: end;\r\n            opacity: 0.8;\r\n            margin:5px;\r\n            margin-top: 6px;\r\n            max-width: 140px;\r\n            text-decoration: underline;\r\n            cursor: pointer;\r\n        }\r\n\r\n        .value {\r\n            display: none;\r\n            grid-column: 3;\r\n            white-space: nowrap;\r\n            text-overflow: ellipsis;\r\n            overflow: hidden;\r\n            text-align: end;\r\n            opacity: 0.8;\r\n            margin:5px;\r\n            margin-top: 6px;\r\n            max-width: 200px;\r\n            -webkit-user-select: text; \r\n            -moz-user-select: text;   \r\n            -ms-user-select: text;    \r\n            user-select: text;                \r\n\r\n            &.check {\r\n                color: green;\r\n            }\r\n\r\n            &.uncheck {\r\n                color: red;\r\n            }  \r\n        }\r\n    }    \r\n\r\n}"],"sourceRoot":""}]);
+___CSS_LOADER_EXPORT___.push([module.i, ":root {\n  --backgroundGrey: #aaaaaa;\n  --spacingHeight: 30px; }\n\nhr.ge {\n  border: 1px solid #d0cece; }\n\n#ge-propertyTab {\n  user-select: none;\n  color: black;\n  background: #e2e2e2;\n  font-family: \"acumin-pro-condensed\"; }\n  #ge-propertyTab #header {\n    height: 30px;\n    font-size: 16px;\n    color: white;\n    background: white;\n    grid-row: 1;\n    text-align: center;\n    display: grid;\n    grid-template-columns: 30px 1fr;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none; }\n    #ge-propertyTab #header #logo {\n      position: relative;\n      background: white;\n      grid-column: 1;\n      width: 32px;\n      height: 32px;\n      left: 0;\n      display: flex;\n      align-self: center;\n      justify-self: center; }\n    #ge-propertyTab #header #title {\n      background: white;\n      color: black;\n      grid-column: 2;\n      display: grid;\n      align-items: center;\n      text-align: center; }\n  #ge-propertyTab .range {\n    -webkit-appearance: none;\n    width: 120px;\n    height: 2px;\n    background: black;\n    border-radius: 5px;\n    outline: none;\n    opacity: 0.7;\n    -webkit-transition: .2s;\n    transition: opacity .2s; }\n  #ge-propertyTab .range:hover {\n    opacity: 1; }\n  #ge-propertyTab .range::-webkit-slider-thumb {\n    -webkit-appearance: none;\n    appearance: none;\n    width: 14px;\n    height: 14px;\n    border-radius: 50%;\n    background: #e2e2e2;\n    border: solid;\n    border-width: thin;\n    cursor: pointer; }\n  #ge-propertyTab .range::-moz-range-thumb {\n    width: 14px;\n    height: 14px;\n    border-radius: 50%;\n    background: black;\n    cursor: pointer; }\n  #ge-propertyTab input[type=\"color\"] {\n    -webkit-appearance: none;\n    border: 1px solid rgba(255, 255, 255, 0.5);\n    padding: 0;\n    width: 30px;\n    height: 20px; }\n  #ge-propertyTab input[type=\"color\"]::-webkit-color-swatch-wrapper {\n    padding: 0; }\n  #ge-propertyTab input[type=\"color\"]::-webkit-color-swatch {\n    border: none; }\n  #ge-propertyTab .sliderLine {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    height: var(--spacingHeight);\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: auto auto auto 1fr; }\n    #ge-propertyTab .sliderLine .label {\n      grid-column: 2;\n      display: flex;\n      align-items: center;\n      min-width: 15px; }\n    #ge-propertyTab .sliderLine .img {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .sliderLine .slider {\n      grid-column: 4;\n      grid-row: 1;\n      margin-right: 5px;\n      width: 90%;\n      display: flex;\n      align-items: center;\n      padding-left: 5px; }\n    #ge-propertyTab .sliderLine .floatLine {\n      grid-column: 3;\n      padding-left: 15px; }\n      #ge-propertyTab .sliderLine .floatLine .label {\n        grid-column: 1;\n        display: none;\n        align-items: center; }\n      #ge-propertyTab .sliderLine .floatLine .short {\n        grid-column: 1;\n        display: flex;\n        align-items: center; }\n        #ge-propertyTab .sliderLine .floatLine .short input {\n          width: 40px;\n          background-color: transparent;\n          outline-color: transparent;\n          border-left: transparent;\n          border-right: transparent;\n          border-top: transparent;\n          outline-width: 0px; }\n        #ge-propertyTab .sliderLine .floatLine .short input::-webkit-outer-spin-button,\n        #ge-propertyTab .sliderLine .floatLine .short input::-webkit-inner-spin-button {\n          -webkit-appearance: none;\n          margin: 0; }\n        #ge-propertyTab .sliderLine .floatLine .short input[type=number] {\n          -moz-appearance: textfield; }\n  #ge-propertyTab .ge-divider {\n    display: grid;\n    grid-template-columns: auto auto auto auto auto auto; }\n  #ge-propertyTab .ge-divider-short {\n    display: grid;\n    grid-template-columns: 1fr 1fr; }\n  #ge-propertyTab .ge-grid-divider {\n    display: grid;\n    grid-template-columns: 150px 1fr auto; }\n    #ge-propertyTab .ge-grid-divider .textLine {\n      grid-column: auto; }\n  #ge-propertyTab .ge-grid-button-divider {\n    display: grid;\n    grid-template-columns: 60px 60px 60px 60px; }\n  #ge-propertyTab .ge-grid-remove {\n    display: grid;\n    background-color: #c2c2c2;\n    margin-bottom: 5px;\n    filter: invert(1); }\n  #ge-propertyTab .ge-grid-edit {\n    display: grid;\n    background-color: #878787;\n    margin-bottom: 5px;\n    filter: invert(1); }\n  #ge-propertyTab .ge-grid {\n    display: grid;\n    margin-bottom: 5px; }\n  #ge-propertyTab .textInputLine {\n    user-select: none;\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    height: var(--spacingHeight);\n    display: grid;\n    grid-template-columns: auto auto 2fr 1fr; }\n    #ge-propertyTab .textInputLine .label {\n      grid-column: 2;\n      padding-left: 5px;\n      display: flex;\n      align-items: center;\n      min-width: 15px; }\n    #ge-propertyTab .textInputLine img {\n      width: 30px; }\n    #ge-propertyTab .textInputLine .img {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .textInputLine .value {\n      display: flex;\n      align-items: center;\n      padding-left: 15px;\n      grid-column: 3;\n      background: transparent; }\n      #ge-propertyTab .textInputLine .value input {\n        width: calc(100% - 5px);\n        background-color: transparent;\n        outline-color: transparent;\n        border-left: transparent;\n        border-right: transparent;\n        border-top: transparent;\n        outline-width: 0px; }\n    #ge-propertyTab .textInputLine .noUnderline input {\n      border-bottom: transparent; }\n  #ge-propertyTab .textInputArea {\n    padding-left: 5px;\n    height: 100%;\n    display: grid;\n    grid-template-columns: 1fr 120px; }\n    #ge-propertyTab .textInputArea .label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .textInputArea .value {\n      display: flex;\n      align-items: center;\n      grid-column: 2; }\n      #ge-propertyTab .textInputArea .value textarea {\n        width: calc(150% - 5px);\n        margin-left: -50%;\n        height: 40px; }\n  #ge-propertyTab .paneContainer {\n    margin-top: 3px;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 100%; }\n    #ge-propertyTab .paneContainer .paneList {\n      border-left: 3px solid transparent; }\n    #ge-propertyTab .paneContainer:hover .paneList {\n      border-left: 3px solid rgba(51, 122, 183, 0.8); }\n    #ge-propertyTab .paneContainer:hover .paneContainer-content .header .title {\n      border-left: 3px solid #337ab7; }\n    #ge-propertyTab .paneContainer .paneContainer-highlight-border {\n      grid-row: 1;\n      grid-column: 1;\n      opacity: 1;\n      border: 3px solid red;\n      transition: opacity 250ms;\n      pointer-events: none; }\n      #ge-propertyTab .paneContainer .paneContainer-highlight-border.transparent {\n        opacity: 0; }\n    #ge-propertyTab .paneContainer .paneContainer-content {\n      grid-row: 1;\n      grid-column: 1; }\n      #ge-propertyTab .paneContainer .paneContainer-content .header {\n        display: grid;\n        grid-template-columns: 1fr auto;\n        background: #cccccc;\n        height: var(--spacingHeight);\n        padding-bottom: 0px;\n        padding-top: 0px;\n        padding-right: 5px;\n        cursor: pointer; }\n        #ge-propertyTab .paneContainer .paneContainer-content .header .title {\n          border-left: 3px solid transparent;\n          padding-left: 5px;\n          grid-column: 1;\n          display: flex;\n          align-items: center; }\n        #ge-propertyTab .paneContainer .paneContainer-content .header .collapse {\n          grid-column: 2;\n          display: flex;\n          align-items: center;\n          justify-items: center;\n          transform-origin: center; }\n          #ge-propertyTab .paneContainer .paneContainer-content .header .collapse.closed {\n            transform: rotate(180deg); }\n      #ge-propertyTab .paneContainer .paneContainer-content .paneList > div:not(:last-child) {\n        border-bottom: 0.5px solid rgba(255, 255, 255, 0.1); }\n      #ge-propertyTab .paneContainer .paneContainer-content .fragment > div:not(:last-child) {\n        border-bottom: 0.5px solid rgba(255, 255, 255, 0.1); }\n  #ge-propertyTab .color-picker {\n    height: 150px;\n    width: 15px; }\n    #ge-propertyTab .color-picker .color-rect-background {\n      height: 15px;\n      border: 1px black solid;\n      cursor: pointer;\n      background: repeating-conic-gradient(#E2E2E2 0% 25%, white 0% 50%) 50%/10px 10px; }\n      #ge-propertyTab .color-picker .color-rect-background .color-rect {\n        height: 100%; }\n    #ge-propertyTab .color-picker .color-picker-cover {\n      position: fixed;\n      top: 0px;\n      right: 0px;\n      bottom: 0px;\n      left: 0px; }\n    #ge-propertyTab .color-picker .color-picker-float {\n      z-index: 2;\n      position: absolute; }\n  #ge-propertyTab .gradient-step {\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 20px 30px 40px auto 20px 30px;\n    padding-top: 5px;\n    padding-left: 5px;\n    padding-bottom: 5px; }\n    #ge-propertyTab .gradient-step .step {\n      grid-row: 1;\n      grid-column: 1; }\n    #ge-propertyTab .gradient-step .color {\n      grid-row: 1;\n      grid-column: 2;\n      cursor: pointer; }\n    #ge-propertyTab .gradient-step .step-value {\n      margin-left: 5px;\n      grid-row: 1;\n      grid-column: 3;\n      text-align: right;\n      margin-right: 5px; }\n    #ge-propertyTab .gradient-step .step-slider {\n      grid-row: 1;\n      grid-column: 4;\n      display: grid;\n      justify-content: stretch;\n      align-content: center;\n      margin-right: -5px;\n      padding-left: 12px; }\n      #ge-propertyTab .gradient-step .step-slider input {\n        width: 90%; }\n    #ge-propertyTab .gradient-step .gradient-copy {\n      grid-row: 1;\n      grid-column: 5;\n      display: grid;\n      align-content: center;\n      justify-content: center; }\n      #ge-propertyTab .gradient-step .gradient-copy .img {\n        height: 20px;\n        width: 20px; }\n      #ge-propertyTab .gradient-step .gradient-copy .img:hover {\n        cursor: pointer; }\n    #ge-propertyTab .gradient-step .gradient-delete {\n      grid-row: 1;\n      grid-column: 6;\n      display: grid;\n      align-content: center;\n      justify-content: center; }\n      #ge-propertyTab .gradient-step .gradient-delete .img {\n        height: 20px;\n        width: 20px; }\n      #ge-propertyTab .gradient-step .gradient-delete .img:hover {\n        cursor: pointer; }\n  #ge-propertyTab .command-button {\n    cursor: pointer;\n    width: auto; }\n    #ge-propertyTab .command-button .command-label {\n      display: none; }\n    #ge-propertyTab .command-button .command-button-icon {\n      height: 100%;\n      width: 100%;\n      display: grid;\n      color: white;\n      align-content: center;\n      justify-content: center; }\n    #ge-propertyTab .command-button:hover {\n      background-color: white; }\n    #ge-propertyTab .command-button .active {\n      transform-origin: center;\n      background-color: white; }\n    #ge-propertyTab .command-button img.active {\n      background-color: white; }\n  #ge-propertyTab .command-button-alt {\n    cursor: pointer;\n    width: 40px;\n    margin-left: 5px;\n    margin-right: 5px;\n    background-color: white; }\n    #ge-propertyTab .command-button-alt .command-label {\n      display: none; }\n    #ge-propertyTab .command-button-alt .command-button-icon {\n      height: 100%;\n      width: 100%;\n      display: grid;\n      align-content: center;\n      justify-content: center; }\n    #ge-propertyTab .command-button-alt:hover {\n      background-color: #c2c2c2;\n      filter: invert(1); }\n  #ge-propertyTab .command-button-alt-disabled {\n    cursor: pointer;\n    pointer-events: none;\n    width: 40px;\n    margin-left: 5px;\n    margin-right: 5px;\n    background-color: white; }\n    #ge-propertyTab .command-button-alt-disabled .command-label {\n      display: none; }\n    #ge-propertyTab .command-button-alt-disabled .command-button-icon {\n      height: 100%;\n      width: 100%;\n      display: grid;\n      align-content: center;\n      justify-content: center; }\n    #ge-propertyTab .command-button-alt-disabled img {\n      filter: invert(1); }\n  #ge-propertyTab .command-button-alt-active {\n    cursor: pointer;\n    pointer-events: none;\n    width: 40px;\n    margin-left: 5px;\n    margin-right: 5px;\n    background-color: #c2c2c2;\n    filter: invert(1); }\n    #ge-propertyTab .command-button-alt-active .command-label {\n      display: none; }\n    #ge-propertyTab .command-button-alt-active .command-button-icon {\n      height: 100%;\n      width: 100%;\n      display: grid;\n      align-content: center;\n      justify-content: center; }\n  #ge-propertyTab .floatLine {\n    user-select: none;\n    padding-left: 5px;\n    height: var(--spacingHeight);\n    padding-bottom: 0px;\n    padding-top: 0px;\n    display: grid;\n    grid-template-columns: auto auto 2fr 1fr; }\n    #ge-propertyTab .floatLine .label {\n      grid-column: 2;\n      display: flex;\n      align-items: center;\n      min-width: 15px; }\n    #ge-propertyTab .floatLine img {\n      width: 30px; }\n    #ge-propertyTab .floatLine .img {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .floatLine .value {\n      display: flex;\n      padding-left: 15px;\n      align-items: center;\n      grid-column: 3;\n      background: transparent; }\n      #ge-propertyTab .floatLine .value input {\n        width: calc(100% - 5px);\n        background-color: transparent;\n        outline-color: transparent;\n        border-left: transparent;\n        border-right: transparent;\n        border-top: transparent;\n        outline-width: 0px; }\n    #ge-propertyTab .floatLine .short {\n      grid-column: 2;\n      display: flex;\n      align-items: center; }\n      #ge-propertyTab .floatLine .short input {\n        width: 27px; }\n      #ge-propertyTab .floatLine .short input::-webkit-outer-spin-button,\n      #ge-propertyTab .floatLine .short input::-webkit-inner-spin-button {\n        -webkit-appearance: none;\n        margin: 0; }\n      #ge-propertyTab .floatLine .short input[type=number] {\n        -moz-appearance: textfield; }\n  #ge-propertyTab .vector3Line {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    display: grid; }\n    #ge-propertyTab .vector3Line .firstLine {\n      display: grid;\n      grid-template-columns: 1fr auto 20px;\n      height: var(--spacingHeight); }\n      #ge-propertyTab .vector3Line .firstLine .label {\n        grid-column: 1;\n        display: flex;\n        align-items: center; }\n      #ge-propertyTab .vector3Line .firstLine .vector {\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        text-align: right;\n        opacity: 0.8; }\n      #ge-propertyTab .vector3Line .firstLine .expand {\n        grid-column: 3;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n    #ge-propertyTab .vector3Line .secondLine {\n      display: grid;\n      padding-right: 5px;\n      border-left: 1px solid #337ab7; }\n      #ge-propertyTab .vector3Line .secondLine .no-right-margin {\n        margin-right: 0; }\n      #ge-propertyTab .vector3Line .secondLine .numeric {\n        display: grid;\n        grid-template-columns: 1fr auto; }\n      #ge-propertyTab .vector3Line .secondLine .numeric-label {\n        text-align: right;\n        grid-column: 1;\n        display: flex;\n        align-items: center;\n        justify-self: right;\n        margin-right: 10px; }\n      #ge-propertyTab .vector3Line .secondLine .numeric-value {\n        width: 120px;\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        border: 1px solid #337ab7; }\n  #ge-propertyTab .buttonLine {\n    height: var(--spacingHeight);\n    padding-bottom: 0px;\n    padding-top: 0px;\n    display: grid;\n    align-items: center;\n    justify-items: stretch;\n    padding-bottom: 5px; }\n    #ge-propertyTab .buttonLine input[type=\"file\"] {\n      display: none; }\n    #ge-propertyTab .buttonLine .file-upload {\n      background: var(--backgroundGrey);\n      border: 1px solid #424242;\n      margin: 5px 10px;\n      color: white;\n      padding: 4px 5px;\n      padding-top: 0px;\n      opacity: 0.9;\n      cursor: pointer;\n      text-align: center;\n      border-radius: 4px; }\n    #ge-propertyTab .buttonLine .file-upload:hover {\n      opacity: 1.0; }\n    #ge-propertyTab .buttonLine .file-upload:active {\n      transform: scale(0.98);\n      transform-origin: 0.5 0.5; }\n    #ge-propertyTab .buttonLine button {\n      background: var(--backgroundGrey);\n      border: 1px solid #424242;\n      margin: 5px 10px 5px 10px;\n      color: white;\n      padding: 4px 5px;\n      opacity: 0.9;\n      border-radius: 4px; }\n    #ge-propertyTab .buttonLine button:hover {\n      opacity: 1.0; }\n    #ge-propertyTab .buttonLine button:active {\n      background: #282828; }\n    #ge-propertyTab .buttonLine button:focus {\n      border: 1px solid #424242;\n      outline: 0px; }\n  #ge-propertyTab .numeric {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    height: var(--spacingHeight);\n    display: grid;\n    grid-template-columns: 1fr 120px auto; }\n    #ge-propertyTab .numeric .numeric-label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .numeric .number {\n      display: flex;\n      align-items: center;\n      grid-column: 2;\n      height: 10px; }\n      #ge-propertyTab .numeric .number .input {\n        width: calc(100% - 5px);\n        height: 10px; }\n  #ge-propertyTab .checkBoxLine {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    height: var(--spacingHeight);\n    display: grid;\n    grid-template-columns: auto auto 1fr; }\n    #ge-propertyTab .checkBoxLine .label {\n      grid-column: 2;\n      display: flex;\n      align-items: center;\n      min-width: 100px;\n      margin-left: 15px; }\n    #ge-propertyTab .checkBoxLine img {\n      width: 30px; }\n    #ge-propertyTab .checkBoxLine .img {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .checkBoxLine .checkBox {\n      grid-column: 3;\n      display: flex;\n      align-items: center;\n      padding-left: 15px; }\n      #ge-propertyTab .checkBoxLine .checkBox .lbl {\n        position: relative;\n        display: block;\n        height: 14px;\n        width: 34px;\n        margin-right: 5px;\n        border-radius: 100px;\n        cursor: pointer;\n        transition: all 0.3s ease;\n        border: solid;\n        border-width: thin; }\n      #ge-propertyTab .checkBoxLine .checkBox .lbl:after {\n        position: absolute;\n        left: 3px;\n        top: 1px;\n        display: block;\n        width: 10px;\n        height: 10px;\n        border-radius: 100px;\n        background: #e2e2e2;\n        box-shadow: 0px 3px 3px rgba(0, 0, 0, 0.05);\n        content: '';\n        transition: all 0.15s ease;\n        border: solid;\n        border-width: thin; }\n      #ge-propertyTab .checkBoxLine .checkBox .lbl:active:after {\n        transform: scale(1.15, 0.85); }\n      #ge-propertyTab .checkBoxLine .checkBox .cbx:checked ~ label {\n        background: transparent; }\n      #ge-propertyTab .checkBoxLine .checkBox .cbx:checked ~ label:after {\n        left: 20px;\n        background: black;\n        border: solid;\n        border-width: thin; }\n      #ge-propertyTab .checkBoxLine .checkBox .cbx.conflict ~ label:after {\n        left: 10px;\n        background: repeating-linear-gradient(45deg, transparent, transparent 5px, black 5px, black 10px); }\n      #ge-propertyTab .checkBoxLine .checkBox .cbx:checked ~ label.disabled {\n        background: black;\n        cursor: pointer; }\n      #ge-propertyTab .checkBoxLine .checkBox .cbx:checked ~ label.disabled:after {\n        left: 20px;\n        background: #555555;\n        cursor: pointer; }\n      #ge-propertyTab .checkBoxLine .checkBox .cbx ~ label.disabled {\n        background: #555555;\n        cursor: pointer; }\n      #ge-propertyTab .checkBoxLine .checkBox .hidden {\n        display: none; }\n  #ge-propertyTab .listLine {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    height: var(--spacingHeight);\n    display: grid;\n    grid-template-columns: auto 1fr auto; }\n    #ge-propertyTab .listLine .label {\n      grid-column: 2;\n      display: none;\n      align-items: center; }\n    #ge-propertyTab .listLine img {\n      width: 30px; }\n    #ge-propertyTab .listLine .img {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .listLine .options {\n      grid-column: 2;\n      padding-left: 15px;\n      display: flex;\n      align-items: center;\n      margin-right: 5px; }\n      #ge-propertyTab .listLine .options select {\n        width: 120px;\n        height: 25px;\n        border: transparent;\n        border-radius: 4px; }\n  #ge-propertyTab .color3Line {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    display: grid; }\n    #ge-propertyTab .color3Line .firstLine {\n      height: var(--spacingHeight);\n      display: grid;\n      grid-template-columns: auto auto 1fr; }\n      #ge-propertyTab .color3Line .firstLine .label {\n        grid-column: 2;\n        padding-left: 5px;\n        display: none;\n        align-items: center;\n        min-width: 15px; }\n      #ge-propertyTab .color3Line .firstLine .img {\n        grid-column: 1;\n        display: flex;\n        align-items: center; }\n      #ge-propertyTab .color3Line .firstLine img {\n        width: 30px;\n        height: 30px; }\n      #ge-propertyTab .color3Line .firstLine .textInputLine {\n        grid-column: 3;\n        padding-left: 0px; }\n      #ge-propertyTab .color3Line .firstLine .color3 {\n        grid-column: 2;\n        margin-top: 6px;\n        display: flex;\n        align-items: center; }\n        #ge-propertyTab .color3Line .firstLine .color3 input {\n          margin-right: 5px; }\n      #ge-propertyTab .color3Line .firstLine .copy {\n        grid-column: 4;\n        display: none;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer;\n        color: black; }\n        #ge-propertyTab .color3Line .firstLine .copy img {\n          height: 100%;\n          width: 20px; }\n      #ge-propertyTab .color3Line .firstLine .expand {\n        grid-column: 4;\n        display: none;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n        #ge-propertyTab .color3Line .firstLine .expand img {\n          height: 100%;\n          width: 20px; }\n    #ge-propertyTab .color3Line .secondLine {\n      display: grid;\n      padding-right: 5px;\n      border-left: 1px solid #337ab7; }\n      #ge-propertyTab .color3Line .secondLine .numeric {\n        display: grid;\n        grid-template-columns: 1fr auto; }\n      #ge-propertyTab .color3Line .secondLine .numeric-label {\n        text-align: right;\n        grid-column: 1;\n        display: flex;\n        align-items: center;\n        justify-self: right;\n        margin-right: 10px; }\n      #ge-propertyTab .color3Line .secondLine .numeric-value {\n        width: 120px;\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        border: 1px solid #337ab7; }\n  #ge-propertyTab .textLine {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    height: auto;\n    display: grid;\n    grid-template-columns: auto auto 2fr 1fr; }\n    #ge-propertyTab .textLine .label {\n      grid-column: 2;\n      padding-left: 5px;\n      padding-top: 4px;\n      display: flex;\n      align-items: left;\n      min-width: 15px; }\n    #ge-propertyTab .textLine img {\n      width: 30px; }\n    #ge-propertyTab .textLine .img {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .textLine .link-value {\n      grid-column: 2;\n      white-space: nowrap;\n      text-overflow: ellipsis;\n      overflow: hidden;\n      text-align: end;\n      opacity: 0.8;\n      margin: 5px;\n      margin-top: 6px;\n      max-width: 140px;\n      text-decoration: underline;\n      cursor: pointer; }\n    #ge-propertyTab .textLine .value {\n      display: none;\n      grid-column: 3;\n      white-space: nowrap;\n      text-overflow: ellipsis;\n      overflow: hidden;\n      text-align: end;\n      opacity: 0.8;\n      margin: 5px;\n      margin-top: 6px;\n      max-width: 200px;\n      -webkit-user-select: text;\n      -moz-user-select: text;\n      -ms-user-select: text;\n      user-select: text; }\n      #ge-propertyTab .textLine .value.check {\n        color: green; }\n      #ge-propertyTab .textLine .value.uncheck {\n        color: red; }\n", "",{"version":3,"sources":["webpack://./components/propertyTab/propertyTab.scss"],"names":[],"mappings":"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","sourcesContent":[":root {\r\n    --backgroundGrey: #aaaaaa;\r\n    --spacingHeight: 30px;\r\n}\r\n\r\nhr.ge {\r\n    border: 1px solid #d0cece;\r\n}\r\n\r\n#ge-propertyTab {\r\n    user-select: none;\r\n    $line-padding-left: 5px;\r\n    $line-padding-bottom: 0px;\r\n    $line-padding-top: 0px;\r\n    color:black;\r\n    background: #e2e2e2;\r\n    font-family: \"acumin-pro-condensed\";\r\n      #header {\r\n        height: 30px;\r\n        font-size: 16px;\r\n        color: white;\r\n        background: white;\r\n        grid-row: 1;\r\n        text-align: center;\r\n        display: grid;\r\n        grid-template-columns: 30px 1fr;        \r\n        -webkit-user-select: none; \r\n        -moz-user-select: none;   \r\n        -ms-user-select: none;    \r\n        user-select: none;                \r\n\r\n        #logo {\r\n            position: relative;\r\n            background: white;\r\n            grid-column: 1; \r\n            width: 32px;\r\n            height: 32px;\r\n            left:0;\r\n            display: flex;\r\n            align-self: center;   \r\n            justify-self: center;\r\n        }        \r\n\r\n        #title {\r\n            background: white;\r\n            color: black;\r\n            grid-column: 2; \r\n            display: grid;\r\n            align-items: center;   \r\n            text-align: center;\r\n        }\r\n    }\r\n\r\n    .range {\r\n        -webkit-appearance: none;\r\n        width: 120px;\r\n        height: 2px;\r\n        background: black;\r\n        border-radius: 5px;\r\n        outline: none;\r\n        opacity: 0.7;\r\n        -webkit-transition: .2s;\r\n        transition: opacity .2s;\r\n    }\r\n    \r\n    .range:hover {\r\n        opacity: 1;\r\n    }\r\n    \r\n    .range::-webkit-slider-thumb {\r\n        -webkit-appearance: none;\r\n        appearance: none;\r\n        width: 14px;\r\n        height: 14px;\r\n        border-radius: 50%;\r\n        background: #e2e2e2;\r\n        border: solid;\r\n        border-width: thin;\r\n        cursor: pointer;\r\n    }\r\n    \r\n    .range::-moz-range-thumb {\r\n        width: 14px;\r\n        height: 14px;\r\n        border-radius: 50%;\r\n        background: rgb(0, 0, 0);\r\n        cursor: pointer;\r\n    }\r\n\r\n    input[type=\"color\"] {\r\n        -webkit-appearance: none;\r\n        border: 1px solid rgba(255, 255, 255, 0.5);\r\n        padding: 0;\r\n        width: 30px;\r\n        height: 20px;\r\n    }\r\n    input[type=\"color\"]::-webkit-color-swatch-wrapper {\r\n        padding: 0;\r\n    }\r\n    input[type=\"color\"]::-webkit-color-swatch {\r\n        border: none;\r\n    }\r\n\r\n    .sliderLine {\r\n        padding-left: $line-padding-left;\r\n        padding-bottom: $line-padding-bottom;\r\n        padding-top: $line-padding-top;\r\n        height: var(--spacingHeight);;\r\n        display: grid;\r\n        grid-template-rows: 100%;\r\n        grid-template-columns: auto auto auto 1fr;\r\n\r\n        .label {\r\n            grid-column: 2;\r\n            display: flex;\r\n            align-items: center;\r\n            min-width: 15px;\r\n        }\r\n\r\n        .img {\r\n            grid-column: 1;\r\n            display: flex;\r\n            align-items: center;\r\n        }\r\n\r\n\r\n        .slider {\r\n            grid-column: 4;\r\n            grid-row: 1;\r\n            margin-right: 5px;\r\n            width: 90%;\r\n            display: flex;\r\n            align-items: center;\r\n            padding-left: 5px;\r\n        }\r\n\r\n        .floatLine {\r\n            grid-column: 3;\r\n            padding-left: 15px;\r\n            \r\n            .label {\r\n                grid-column: 1;\r\n                display: none;\r\n                align-items: center;\r\n            }\r\n        \r\n            .short {\r\n                grid-column: 1; \r\n                display: flex;\r\n                align-items: center;\r\n                \r\n                input {\r\n                    width: 40px;\r\n                    background-color: transparent;\r\n                    outline-color: transparent;\r\n                    border-left: transparent;\r\n                    border-right: transparent;\r\n                    border-top: transparent;\r\n                    outline-width: 0px\r\n                }\r\n                \r\n                input::-webkit-outer-spin-button,\r\n                input::-webkit-inner-spin-button {\r\n                  -webkit-appearance: none;\r\n                  margin: 0;\r\n                }\r\n    \r\n                input[type=number] {\r\n                    -moz-appearance: textfield;\r\n                }\r\n            }\r\n        }  \r\n    }     \r\n\r\n    .ge-divider {\r\n        display: grid;\r\n        grid-template-columns: auto auto auto auto auto auto;\r\n    }\r\n\r\n    .ge-divider-short {\r\n        display: grid;\r\n        grid-template-columns: 1fr 1fr;\r\n    }\r\n    \r\n    .ge-grid-divider {\r\n        display: grid;\r\n        grid-template-columns: 150px 1fr auto;\r\n        \r\n        .textLine {\r\n            grid-column: auto;\r\n           \r\n        }\r\n    }\r\n\r\n    .ge-grid-button-divider {\r\n        display: grid;\r\n        grid-template-columns: 60px 60px 60px 60px;\r\n    }\r\n\r\n    .ge-grid-remove {\r\n        display: grid;\r\n        background-color: #c2c2c2;\r\n        margin-bottom: 5px;\r\n        filter: invert(1);\r\n    }\r\n\r\n    .ge-grid-edit {\r\n        display: grid;\r\n        background-color: #878787;\r\n        margin-bottom: 5px;\r\n        filter: invert(1);\r\n\r\n    }\r\n  \r\n    .ge-grid {\r\n        display: grid;\r\n        margin-bottom: 5px;\r\n    }\r\n\r\n\r\n    .textInputLine {\r\n        user-select: none;\r\n        padding-left: $line-padding-left;\r\n        padding-bottom: $line-padding-bottom;\r\n        padding-top: $line-padding-top;\r\n        height: var(--spacingHeight);\r\n        display: grid;\r\n        grid-template-columns: auto auto 2fr 1fr;\r\n        .label {\r\n            grid-column: 2;\r\n            padding-left: 5px;\r\n            display: flex;\r\n            align-items: center;\r\n            min-width: 15px;\r\n        }\r\n\r\n        img {\r\n            width: 30px;\r\n        }\r\n        \r\n        .img {\r\n            grid-column: 1;\r\n            display: flex;\r\n            align-items: center;\r\n        }\r\n\r\n        .value {                        \r\n            display: flex;\r\n            align-items: center;\r\n            padding-left: 15px;\r\n            grid-column: 3;\r\n            background: transparent;\r\n            input {\r\n                width: calc(100% - 5px);\r\n                background-color: transparent;\r\n                outline-color: transparent;\r\n                border-left: transparent;\r\n                border-right: transparent;\r\n                border-top: transparent;\r\n                outline-width: 0px\r\n            }\r\n        }\r\n\r\n        .noUnderline {\r\n            input {\r\n                border-bottom: transparent;\r\n            }\r\n        }\r\n    }\r\n    \r\n    .textInputArea {\r\n        padding-left: $line-padding-left;\r\n        height: 100%;\r\n        display: grid;\r\n        grid-template-columns: 1fr 120px;\r\n\r\n        .label {\r\n            grid-column: 1;\r\n            display: flex;\r\n            align-items: center;\r\n        }\r\n\r\n        .value {                        \r\n            display: flex;\r\n            align-items: center;\r\n            grid-column: 2;\r\n            \r\n            textarea {\r\n                width: calc(150% - 5px);\r\n                margin-left: -50%;\r\n                height: 40px;\r\n            }\r\n        }\r\n    }\r\n    \r\n    .paneContainer {\r\n        margin-top: 3px;\r\n        display:grid;\r\n        grid-template-rows: 100%;\r\n        grid-template-columns: 100%;\r\n        \r\n        .paneList {\r\n            border-left: 3px solid transparent;\r\n        }\r\n\r\n        &:hover {  \r\n            .paneList {                      \r\n                border-left: 3px solid rgba(51, 122, 183, 0.8);\r\n            }\r\n\r\n            .paneContainer-content {\r\n                .header {\r\n                    .title {   \r\n                        border-left: 3px solid rgb(51, 122, 183);\r\n                    }\r\n                }\r\n            }\r\n        }\r\n        \r\n        .paneContainer-highlight-border {\r\n            grid-row: 1;\r\n            grid-column: 1;\r\n            opacity: 1;\r\n            border: 3px solid red;\r\n            transition: opacity 250ms;\r\n            pointer-events: none;\r\n            \r\n            &.transparent {\r\n                opacity: 0;\r\n            }\r\n        }\r\n\r\n        .paneContainer-content {\r\n            grid-row: 1;\r\n            grid-column: 1;\r\n\r\n            .header {\r\n                display: grid;\r\n                grid-template-columns: 1fr auto;\r\n                background: #cccccc;    \r\n                height: var(--spacingHeight);\r\n                padding-bottom: $line-padding-bottom;\r\n                padding-top: $line-padding-top;\r\n                padding-right: 5px;                        \r\n                cursor: pointer;\r\n                \r\n                .title {                                \r\n                    border-left: 3px solid transparent;\r\n                    padding-left: 5px;\r\n                    grid-column: 1;\r\n                    display: flex;\r\n                    align-items: center;\r\n                }\r\n\r\n                .collapse {\r\n                    grid-column: 2;\r\n                    display: flex;\r\n                    align-items: center;  \r\n                    justify-items: center;\r\n                    transform-origin: center;\r\n\r\n                    &.closed {\r\n                        transform: rotate(180deg);\r\n                    }\r\n                }                        \r\n            }\r\n\r\n            .paneList > div:not(:last-child) {\r\n                border-bottom: 0.5px solid rgba(255, 255, 255, 0.1);\r\n            }\r\n\r\n            .fragment > div:not(:last-child)  {\r\n                border-bottom: 0.5px solid rgba(255, 255, 255, 0.1);\r\n            }\r\n        }\r\n    }\r\n\r\n    .color-picker {\r\n        height: 150px;\r\n        width: 15px;\r\n\r\n        .color-rect-background {\r\n            height: 15px;\r\n            border: 1px black solid;\r\n            cursor: pointer;\r\n            background: repeating-conic-gradient(#E2E2E2 0% 25%, white 0% 50%) 50% / 10px 10px;\r\n            .color-rect {\r\n                height: 100%;\r\n            }\r\n        }\r\n\r\n        .color-picker-cover {\r\n            position: fixed;\r\n            top: 0px;\r\n            right: 0px;\r\n            bottom: 0px;\r\n            left: 0px;\r\n        }\r\n\r\n        .color-picker-float {\r\n            z-index: 2;\r\n            position: absolute;  \r\n        }                \r\n    }\r\n\r\n    .gradient-step {\r\n        display: grid;\r\n        grid-template-rows: 100%;\r\n        grid-template-columns: 20px 30px 40px auto 20px 30px;\r\n        padding-top: 5px;\r\n        padding-left: 5px;\r\n        padding-bottom: 5px;\r\n\r\n        .step {\r\n            grid-row: 1;\r\n            grid-column: 1;\r\n        }\r\n            \r\n        .color {\r\n            grid-row: 1;\r\n            grid-column: 2;\r\n            cursor: pointer;\r\n        }\r\n\r\n        .step-value {       \r\n            margin-left: 5px;     \r\n            grid-row: 1;\r\n            grid-column: 3;\r\n            text-align: right;\r\n            margin-right: 5px;\r\n        }\r\n\r\n        .step-slider {            \r\n            grid-row: 1;\r\n            grid-column: 4;\r\n            display: grid;\r\n            justify-content: stretch;\r\n            align-content: center;\r\n            margin-right: -5px;\r\n            padding-left: 12px;\r\n\r\n            input {\r\n                width: 90%;\r\n            }\r\n        }\r\n\r\n        .gradient-copy {            \r\n            grid-row: 1;\r\n            grid-column: 5;\r\n            display: grid;\r\n            align-content: center;\r\n            justify-content: center;\r\n \r\n            .img {\r\n                height: 20px;\r\n                width: 20px;\r\n            }\r\n            .img:hover {\r\n                cursor: pointer;\r\n            }\r\n\r\n        }\r\n        .gradient-delete {            \r\n            grid-row: 1;\r\n            grid-column: 6;\r\n            display: grid;\r\n            align-content: center;\r\n            justify-content: center;\r\n            .img {\r\n                height: 20px;\r\n                width: 20px;\r\n            }\r\n            .img:hover {\r\n                cursor: pointer;\r\n            }\r\n\r\n        }\r\n\r\n    }\r\n\r\n    .command-button {\r\n        cursor: pointer;\r\n        width: auto;\r\n\r\n        .command-label {\r\n            display: none;\r\n        }        \r\n\r\n        .command-button-icon {\r\n            height: 100%;\r\n            width: 100%;\r\n            display: grid;\r\n            color: white;\r\n            align-content: center;\r\n            justify-content: center;\r\n        }\r\n\r\n        &:hover {\r\n            background-color: white;\r\n        } \r\n        \r\n        .active {\r\n            transform-origin: center;\r\n            background-color: white;\r\n        }\r\n\r\n        img {\r\n            &.active {\r\n                background-color: white;\r\n            }\r\n        }\r\n    }\r\n\r\n    .command-button-alt {\r\n        cursor: pointer;\r\n        width: 40px;\r\n        margin-left: 5px;\r\n        margin-right: 5px;\r\n        .command-label {\r\n            display: none;\r\n        }        \r\n\r\n        background-color: white;\r\n        .command-button-icon {\r\n            height: 100%;\r\n            width: 100%;\r\n            display: grid;\r\n            align-content: center;\r\n            justify-content: center;\r\n        }\r\n        &:hover {\r\n            background-color: #c2c2c2;\r\n            filter: invert(1);\r\n        } \r\n    }\r\n\r\n    .command-button-alt-disabled {\r\n        cursor: pointer;\r\n        pointer-events: none;\r\n        width: 40px;\r\n        margin-left: 5px;\r\n        margin-right: 5px;\r\n        .command-label {\r\n            display: none;\r\n        }        \r\n\r\n        background-color: white;\r\n        .command-button-icon {\r\n            height: 100%;\r\n            width: 100%;\r\n            display: grid;\r\n            align-content: center;\r\n            justify-content: center;\r\n        }\r\n\r\n        img {\r\n            filter: invert(1);\r\n        }\r\n    }\r\n\r\n    \r\n    .command-button-alt-active {\r\n        cursor: pointer;\r\n        pointer-events: none;\r\n        width: 40px;\r\n        margin-left: 5px;\r\n        margin-right: 5px;\r\n        .command-label {\r\n            display: none;\r\n        }        \r\n\r\n        background-color: #c2c2c2;\r\n        filter: invert(1);\r\n        .command-button-icon {\r\n            height: 100%;\r\n            width: 100%;\r\n            display: grid;\r\n            align-content: center;\r\n            justify-content: center;\r\n        }\r\n    }\r\n\r\n    .floatLine {\r\n        user-select: none;\r\n        padding-left: $line-padding-left;\r\n        height: var(--spacingHeight);\r\n        padding-bottom: $line-padding-bottom;\r\n        padding-top: $line-padding-top;\r\n        display: grid;\r\n        grid-template-columns: auto auto 2fr 1fr;\r\n\r\n        .label {\r\n            grid-column: 2;\r\n            display: flex;\r\n            align-items: center;\r\n            min-width: 15px;\r\n        }\r\n\r\n        img {\r\n            width: 30px;\r\n        }\r\n\r\n        .img {\r\n            grid-column: 1;\r\n            display: flex;\r\n            align-items: center;\r\n        }\r\n\r\n        .value {                        \r\n            display: flex;\r\n            padding-left: 15px;\r\n            align-items: center;\r\n            grid-column: 3;\r\n            background: transparent;\r\n            input {\r\n                width: calc(100% - 5px);\r\n                background-color: transparent;\r\n                outline-color: transparent;\r\n                border-left: transparent;\r\n                border-right: transparent;\r\n                border-top: transparent;\r\n                outline-width: 0px\r\n            }\r\n        }\r\n\r\n        .short {\r\n            grid-column: 2;\r\n            \r\n            display: flex;\r\n            align-items: center;\r\n            \r\n            input {\r\n                width: 27px;\r\n            }\r\n            \r\n            input::-webkit-outer-spin-button,\r\n            input::-webkit-inner-spin-button {\r\n              -webkit-appearance: none;\r\n              margin: 0;\r\n            }\r\n\r\n            input[type=number] {\r\n                -moz-appearance: textfield;\r\n            }\r\n        }\r\n    }\r\n\r\n    .vector3Line {\r\n        padding-left:$line-padding-left;\r\n        padding-bottom: $line-padding-bottom;\r\n        padding-top: $line-padding-top;      \r\n        display: grid;\r\n        .firstLine {\r\n            display: grid;\r\n            grid-template-columns: 1fr auto 20px;\r\n            height: var(--spacingHeight);\r\n\r\n            .label {\r\n                grid-column: 1;\r\n                display: flex;\r\n                align-items: center;\r\n            }\r\n\r\n            .vector {\r\n                grid-column: 2;\r\n                display: flex;\r\n                align-items: center;\r\n                text-align: right;\r\n                opacity: 0.8;\r\n            }\r\n\r\n            .expand {\r\n                grid-column: 3;\r\n                display: grid;\r\n                align-items: center;\r\n                justify-items: center;\r\n                cursor: pointer;\r\n            }\r\n        }\r\n\r\n        .secondLine {\r\n            display: grid;\r\n            padding-right: 5px;  \r\n            border-left: 1px solid rgb(51, 122, 183);\r\n\r\n            .no-right-margin {\r\n                margin-right: 0;\r\n            }\r\n\r\n            .numeric {\r\n                display: grid;\r\n                grid-template-columns: 1fr auto;\r\n            }\r\n\r\n            .numeric-label {\r\n                text-align: right;\r\n                grid-column: 1;\r\n                display: flex;\r\n                align-items: center;                            \r\n                justify-self: right;\r\n                margin-right: 10px;                          \r\n            }\r\n\r\n            .numeric-value {\r\n                width: 120px;\r\n                grid-column: 2;\r\n                display: flex;\r\n                align-items: center;  \r\n                border: 1px solid  rgb(51, 122, 183);\r\n            }                        \r\n        }\r\n    }\r\n\r\n    .buttonLine {\r\n        height: var(--spacingHeight);\r\n        padding-bottom: $line-padding-bottom;\r\n        padding-top: $line-padding-top;\r\n        display: grid;\r\n        align-items: center;\r\n        justify-items: stretch;\r\n        padding-bottom: 5px;\r\n        input[type=\"file\"] {\r\n            display: none;\r\n        }\r\n\r\n        .file-upload {            \r\n            background: var(--backgroundGrey);\r\n            border: 1px solid #424242;\r\n            margin: 5px 10px;\r\n            color:white;\r\n            padding: 4px 5px;\r\n            padding-top: 0px;\r\n            opacity: 0.9;\r\n            cursor: pointer;\r\n            text-align: center;\r\n            border-radius: 4px;\r\n        }\r\n\r\n        .file-upload:hover {\r\n            opacity: 1.0;\r\n        }\r\n\r\n        .file-upload:active {\r\n            transform: scale(0.98);\r\n            transform-origin: 0.5 0.5;\r\n        }\r\n\r\n        button {\r\n            background: var(--backgroundGrey);\r\n            border: 1px solid #424242;\r\n            margin: 5px 10px 5px 10px;\r\n            color:white;\r\n            padding: 4px 5px;\r\n            opacity: 0.9;\r\n            border-radius: 4px;\r\n        }\r\n\r\n        button:hover {\r\n            opacity: 1.0;\r\n        }\r\n\r\n        button:active {\r\n            background: #282828;\r\n        }   \r\n        \r\n        button:focus {\r\n            border: 1px solid #424242;\r\n            outline: 0px;\r\n        }  \r\n    }\r\n\r\n    .numeric {\r\n        padding-left: $line-padding-left;\r\n        padding-bottom: $line-padding-bottom;\r\n        padding-top: $line-padding-top;\r\n        height: var(--spacingHeight);;\r\n        display: grid;\r\n        grid-template-columns: 1fr 120px auto;\r\n\r\n        .numeric-label {\r\n            grid-column: 1;\r\n            display: flex;\r\n            align-items: center;\r\n        }\r\n\r\n        .number {                        \r\n            display: flex;\r\n            align-items: center;\r\n            grid-column: 2;\r\n            height: 10px;\r\n            .input {\r\n                width: calc(100% - 5px);\r\n                height: 10px;\r\n            }\r\n        }\r\n    }\r\n    \r\n    .checkBoxLine {\r\n        padding-left: $line-padding-left;\r\n        padding-bottom: $line-padding-bottom;\r\n        padding-top: $line-padding-top;\r\n        height: var(--spacingHeight);\r\n        display: grid;\r\n        grid-template-columns: auto auto 1fr ;\r\n\r\n        .label {\r\n            grid-column: 2;\r\n            display: flex;\r\n            align-items: center;\r\n            min-width: 100px;\r\n            margin-left: 15px;\r\n        }\r\n\r\n        img {\r\n            width: 30px;\r\n        }\r\n        \r\n        .img {\r\n            grid-column: 1;\r\n            display: flex;\r\n            align-items: center;\r\n        }\r\n\r\n        .checkBox {\r\n            grid-column: 3;\r\n            display: flex;\r\n            align-items: center;\r\n            padding-left: 15px;\r\n            \r\n            .lbl {\r\n                position: relative;\r\n                display: block;\r\n                height: 14px;\r\n                width: 34px;\r\n                margin-right: 5px;\r\n                border-radius: 100px;\r\n                cursor: pointer;\r\n                transition: all 0.3s ease;\r\n                border: solid;\r\n                border-width: thin;\r\n            }\r\n\r\n            .lbl:after {\r\n                position: absolute;\r\n                left: 3px;\r\n                top: 1px;\r\n                display: block;\r\n                width: 10px;\r\n                height: 10px;\r\n                border-radius: 100px;\r\n                background: #e2e2e2;\r\n                box-shadow: 0px 3px 3px rgba(0,0,0,0.05);\r\n                content: '';\r\n                transition: all 0.15s ease;\r\n                border: solid;\r\n                border-width: thin;\r\n            }\r\n\r\n            .lbl:active:after { \r\n                transform: scale(1.15, 0.85); \r\n            }\r\n\r\n            .cbx:checked ~ label { \r\n                background: transparent;\r\n                \r\n            }\r\n\r\n            .cbx:checked ~ label:after {\r\n                left: 20px;\r\n                background: rgb(0, 0, 0);\r\n                border: solid;\r\n                border-width: thin;\r\n            }\r\n\r\n            .cbx.conflict ~ label:after {\r\n                left: 10px;\r\n                background: repeating-linear-gradient(45deg, transparent, transparent 5px, black 5px, black 10px);\r\n            }\r\n\r\n            .cbx:checked ~ label.disabled { \r\n                background: rgb(0, 0, 0);\r\n                cursor: pointer;\r\n            }\r\n\r\n            .cbx:checked ~ label.disabled:after {\r\n                left: 20px;\r\n                background: rgb(85, 85, 85);\r\n                cursor: pointer;\r\n            }\r\n\r\n            .cbx ~ label.disabled {\r\n                background: rgb(85, 85, 85);\r\n                cursor: pointer;\r\n            }\r\n\r\n            .hidden { \r\n                display: none; \r\n            }               \r\n        }                    \r\n    }  \r\n\r\n    .listLine {\r\n        padding-left: $line-padding-left;\r\n        padding-bottom: $line-padding-bottom;\r\n        padding-top: $line-padding-top;\r\n        height: var(--spacingHeight);\r\n        display: grid;\r\n        grid-template-columns: auto 1fr auto ;\r\n\r\n        .label {\r\n            grid-column: 2;\r\n            display: none;\r\n            align-items: center;\r\n        }\r\n\r\n        img {\r\n            width: 30px;\r\n        }\r\n\r\n        .img {\r\n            grid-column: 1;\r\n            display: flex;\r\n            align-items: center;\r\n        }\r\n\r\n        .options {\r\n            grid-column: 2;\r\n            padding-left: 15px;\r\n            display: flex;\r\n            align-items: center;   \r\n            margin-right: 5px;\r\n\r\n            select {\r\n                width: 120px;\r\n                height: 25px;\r\n                border: transparent;\r\n                border-radius: 4px;\r\n            }\r\n        }                    \r\n    }  \r\n                    \r\n    .color3Line {\r\n        padding-left: $line-padding-left;\r\n        padding-bottom: $line-padding-bottom;\r\n        padding-top: $line-padding-top;\r\n        display: grid;\r\n\r\n        .firstLine {\r\n            height: var(--spacingHeight);\r\n            display: grid;\r\n            grid-template-columns: auto auto 1fr;\r\n\r\n            .label {\r\n                grid-column: 2;\r\n                padding-left: 5px;\r\n                display: none;\r\n                align-items: center;\r\n                min-width: 15px;\r\n            }\r\n    \r\n            .img {\r\n                grid-column: 1;\r\n                display: flex;\r\n                align-items: center;\r\n            }\r\n\r\n            img {\r\n                width: 30px;\r\n                height: 30px;\r\n            }\r\n    \r\n            .textInputLine {\r\n                grid-column: 3;\r\n                padding-left: 0px;\r\n            }\r\n    \r\n            .color3 {\r\n                grid-column: 2;                \r\n                margin-top: 6px;\r\n                display: flex;\r\n                align-items: center;            \r\n                \r\n                input {\r\n                    margin-right: 5px;\r\n                }\r\n            }\r\n\r\n            .copy {\r\n                grid-column: 4;\r\n                display: none;\r\n                align-items: center;\r\n                justify-items: center;\r\n                cursor: pointer;\r\n                color: black;\r\n                img {\r\n                    height: 100%;\r\n                    width: 20px;\r\n                }\r\n            }\r\n\r\n            .expand {\r\n                grid-column: 4;\r\n                display: none;\r\n                align-items: center;\r\n                justify-items: center;\r\n                cursor: pointer;\r\n\r\n                img {\r\n                    height: 100%;\r\n                    width: 20px;\r\n                }\r\n            }\r\n        }   \r\n\r\n        .secondLine {\r\n            display: grid;\r\n            padding-right: 5px;  \r\n            border-left: 1px solid rgb(51, 122, 183);\r\n\r\n            .numeric {\r\n                display: grid;\r\n                grid-template-columns: 1fr auto;\r\n            }\r\n\r\n            .numeric-label {\r\n                text-align: right;\r\n                grid-column: 1;\r\n                display: flex;\r\n                align-items: center;                            \r\n                justify-self: right;\r\n                margin-right: 10px;                          \r\n            }\r\n\r\n            .numeric-value {\r\n                width: 120px;\r\n                grid-column: 2;\r\n                display: flex;\r\n                align-items: center;  \r\n                border: 1px solid  rgb(51, 122, 183);\r\n            }                        \r\n        }                  \r\n    }     \r\n    \r\n    .textLine {\r\n        padding-left: $line-padding-left;\r\n        padding-bottom: $line-padding-bottom;\r\n        padding-top: $line-padding-top;\r\n        height: auto;\r\n        display: grid;\r\n        grid-template-columns: auto auto 2fr 1fr;\r\n        .label {\r\n            grid-column: 2;\r\n            padding-left: 5px;\r\n            padding-top: 4px;\r\n            display: flex;\r\n            align-items: left;\r\n            min-width: 15px;\r\n        }\r\n\r\n        img {\r\n            width: 30px;\r\n        }\r\n\r\n        .img {\r\n            grid-column: 1;\r\n            display: flex;\r\n            align-items: center;\r\n        }\r\n\r\n        .link-value {\r\n            grid-column: 2;\r\n            white-space: nowrap;\r\n            text-overflow: ellipsis;\r\n            overflow: hidden;\r\n            text-align: end;\r\n            opacity: 0.8;\r\n            margin:5px;\r\n            margin-top: 6px;\r\n            max-width: 140px;\r\n            text-decoration: underline;\r\n            cursor: pointer;\r\n        }\r\n\r\n        .value {\r\n            display: none;\r\n            grid-column: 3;\r\n            white-space: nowrap;\r\n            text-overflow: ellipsis;\r\n            overflow: hidden;\r\n            text-align: end;\r\n            opacity: 0.8;\r\n            margin:5px;\r\n            margin-top: 6px;\r\n            max-width: 200px;\r\n            -webkit-user-select: text; \r\n            -moz-user-select: text;   \r\n            -ms-user-select: text;    \r\n            user-select: text;                \r\n\r\n            &.check {\r\n                color: green;\r\n            }\r\n\r\n            &.uncheck {\r\n                color: red;\r\n            }  \r\n        }\r\n    }    \r\n\r\n}"],"sourceRoot":""}]);
 // Exports
 /* harmony default export */ __webpack_exports__["default"] = (___CSS_LOADER_EXPORT___);
 
@@ -10189,7 +10189,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default()(_node_modules_css_loader_dist_runtime_cssWithMappingToString_js__WEBPACK_IMPORTED_MODULE_0___default.a);
 // Module
-___CSS_LOADER_EXPORT___.push([module.i, ":root {\n  --blackBarHeight: 55px; }\n\n#gui-editor-workbench-root {\n  display: grid;\n  grid-template-rows: calc(100% - 55px);\n  height: 100%;\n  width: 100%;\n  background: #e2e2e2;\n  font: 14px \"acumin-pro-condensed\"; }\n\n.wait-screen {\n  display: grid;\n  justify-content: center;\n  align-content: center;\n  height: 100%;\n  width: 100%;\n  background: #464646;\n  opacity: 0.95;\n  color: white;\n  font: 24px \"acumin-pro-condensed\";\n  position: absolute;\n  top: 0;\n  left: 0; }\n  .wait-screen.hidden {\n    visibility: hidden; }\n\n#leftGrab {\n  grid-row: 1 / span 2;\n  grid-column: 2;\n  cursor: ew-resize; }\n\n#rightGrab {\n  grid-row: 1 / span 2;\n  grid-column: 5;\n  cursor: ew-resize; }\n\n#toolbarGrab {\n  background: #333333;\n  grid-row: 1 / span 3;\n  grid-column: 3;\n  height: 100%; }\n  #toolbarGrab .blackLine {\n    height: 5px;\n    background: black; }\n  #toolbarGrab .toolbar-label {\n    color: white;\n    font-size: 18px;\n    display: grid;\n    align-items: center;\n    cursor: pointer;\n    user-select: none;\n    grid-template-columns: 1fr 20px;\n    grid-template-rows: 100%;\n    position: relative; }\n    #toolbarGrab .toolbar-label.active {\n      font-weight: bold;\n      font-size: 20px; }\n    #toolbarGrab .toolbar-label:hover {\n      background: var(--selectionGrey); }\n      #toolbarGrab .toolbar-label:hover .sub-items {\n        display: block; }\n  #toolbarGrab .toolbar-icon {\n    width: 40px;\n    height: 40px; }\n\n.diagram-container {\n  position: relative;\n  display: grid;\n  grid-row: 1;\n  grid-column: 4;\n  background: #CCCCCC;\n  width: 100%;\n  height: 100%;\n  overflow: hidden; }\n  .diagram-container .diagram {\n    display: none;\n    width: 100%;\n    height: 100%; }\n\n.right-panel {\n  grid-row: 1 / span 2;\n  grid-column: 6;\n  display: grid;\n  grid-template-rows: 1fr 40px auto 40px;\n  grid-template-columns: 100%;\n  height: calc(100% - var(--blackBarHeight));\n  overflow-y: auto; }\n  .right-panel #propertyTab {\n    grid-row: 1;\n    grid-column: 1; }\n  .right-panel .button {\n    display: grid;\n    justify-content: center;\n    align-content: center;\n    height: auto;\n    width: calc(100% / 7);\n    cursor: pointer; }\n    .right-panel .button:hover {\n      background: #337ab7;\n      color: white;\n      opacity: 0.8; }\n    .right-panel .button.selected {\n      background: #337ab7;\n      color: white; }\n    .right-panel .button.align {\n      justify-content: stretch;\n      text-align: center; }\n\n.blocker {\n  visibility: hidden;\n  position: absolute;\n  width: calc(100% - 40px);\n  height: 100%;\n  top: 0;\n  left: 0;\n  background: rgba(20, 20, 20, 0.95);\n  font-family: \"acumin-pro-condensed\";\n  color: white;\n  font-size: 24px;\n  display: grid;\n  align-content: center;\n  justify-content: center;\n  user-select: none;\n  padding: 20px;\n  text-align: center; }\n\n#log-console {\n  grid-row: 2;\n  grid-column: 4;\n  display: none; }\n\n.dialog-container {\n  position: absolute;\n  width: 100%;\n  height: 100%;\n  background: rgba(0, 0, 0, 0.6);\n  display: grid;\n  font-family: \"acumin-pro-condensed\";\n  top: 0; }\n  .dialog-container .dialog {\n    align-self: center;\n    justify-self: center;\n    min-height: 140px;\n    max-width: 400px;\n    border-radius: 10px;\n    background: white;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: calc(100% - 50px) 50px; }\n    .dialog-container .dialog .dialog-message {\n      grid-row: 1;\n      grid-column: 1;\n      margin-top: 20px;\n      padding: 10px;\n      font-size: 18px;\n      color: black; }\n    .dialog-container .dialog .dialog-buttons {\n      grid-row: 2;\n      grid-column: 1;\n      display: grid;\n      grid-template-rows: 100%;\n      grid-template-columns: 100%;\n      color: white; }\n      .dialog-container .dialog .dialog-buttons .dialog-button-ok {\n        cursor: pointer;\n        justify-self: center;\n        background: green;\n        min-width: 80px;\n        justify-content: center;\n        display: grid;\n        align-content: center;\n        align-self: center;\n        height: 35px;\n        border-radius: 10px; }\n        .dialog-container .dialog .dialog-buttons .dialog-button-ok:hover {\n          opacity: 0.8; }\n        .dialog-container .dialog .dialog-buttons .dialog-button-ok.error {\n          background: red; }\n\n.gizmo .bounding-box-line {\n  background-color: black;\n  position: absolute;\n  line-height: 1px;\n  height: 1px;\n  pointer-events: none; }\n\n.gizmo .scale-point-container {\n  position: absolute;\n  width: 30px;\n  height: 30px; }\n  .gizmo .scale-point-container .scale-point {\n    top: 10px;\n    left: 10px;\n    position: absolute;\n    width: 10px;\n    height: 10px;\n    background: transparent;\n    outline: #7d7d7d 2px solid; }\n  .gizmo .scale-point-container .rotate-click-area {\n    width: 20px;\n    height: 20px;\n    position: absolute; }\n  .gizmo .scale-point-container .scale-click-area {\n    width: 20px;\n    height: 20px;\n    position: absolute; }\n\n.gizmo .pivot-point {\n  width: 30px;\n  height: 30px;\n  background: transparent;\n  position: absolute; }\n\n#workbench-canvas {\n  position: relative; }\n\n.artboard-stroke {\n  outline: 1px solid black;\n  position: absolute;\n  z-index: 5;\n  pointer-events: none; }\n\n.artboard-background {\n  position: absolute;\n  background: repeating-conic-gradient(#E2E2E2 0% 25%, white 0% 50%) 50%/20px 20px;\n  width: 100%;\n  height: 100%; }\n", "",{"version":3,"sources":["webpack://./main.scss"],"names":[],"mappings":"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","sourcesContent":[":root {\r\n    --blackBarHeight: 55px;\r\n}\r\n\r\n#gui-editor-workbench-root {\r\n    display: grid;\r\n    grid-template-rows: calc(100% - 55px);\r\n    height: 100%;\r\n    width: 100%;\r\n    background: #e2e2e2;\r\n    font: 14px \"acumin-pro-condensed\";   \r\n}\r\n\r\n.wait-screen {\r\n    display: grid;\r\n    justify-content: center;\r\n    align-content: center;\r\n    height: 100%;\r\n    width: 100%;\r\n    background: #464646;\r\n    opacity: 0.95;\r\n    color:white;\r\n    font: 24px \"acumin-pro-condensed\";  \r\n    position: absolute;\r\n    top: 0;\r\n    left: 0; \r\n\r\n    &.hidden {\r\n        visibility: hidden;\r\n    }\r\n}\r\n\r\n#leftGrab {\r\n    grid-row: 1 / span 2;\r\n    grid-column: 2;\r\n    cursor: ew-resize;\r\n}\r\n\r\n#rightGrab {\r\n    grid-row: 1 / span 2;\r\n    grid-column: 5;\r\n    cursor: ew-resize;\r\n}\r\n\r\n\r\n#toolbarGrab {\r\n    background: #333333;\r\n    grid-row: 1 / span 3;\r\n    grid-column: 3;\r\n    height: 100%;\r\n\r\n    .blackLine {\r\n        height:  5px;\r\n        background: black;\r\n    }\r\n    .toolbar-label {\r\n        color:white;\r\n        font-size: 18px;\r\n        display: grid;\r\n        align-items: center;\r\n        cursor: pointer;\r\n        user-select: none;\r\n        grid-template-columns: 1fr 20px;\r\n        grid-template-rows: 100%;\r\n        position: relative;\r\n\r\n        &.active {\r\n            font-weight: bold;\r\n            font-size: 20px;\r\n        }\r\n\r\n        &:hover {\r\n            background: var(--selectionGrey);\r\n            .sub-items {\r\n                display: block;\r\n            }\r\n        } \r\n    }\r\n    .toolbar-icon {\r\n        width: 40px;\r\n        height: 40px;\r\n    }\r\n}\r\n\r\n.diagram-container {\r\n    position: relative;\r\n    display: grid;\r\n    grid-row: 1;\r\n    grid-column: 4;\r\n    background: #CCCCCC;\r\n    width: 100%;\r\n    height: 100%;\r\n    overflow: hidden;\r\n\r\n    .diagram {\r\n        display: none;\r\n        width: 100%;\r\n        height: 100%;\r\n    }\r\n}\r\n\r\n.right-panel {\r\n    grid-row: 1 / span 2;\r\n    grid-column: 6;\r\n    display: grid;\r\n    grid-template-rows: 1fr 40px auto 40px;\r\n    grid-template-columns: 100%;\r\n    height: calc(100% - var(--blackBarHeight));\r\n    overflow-y: auto;\r\n\r\n    #propertyTab {\r\n        grid-row: 1;\r\n        grid-column: 1;\r\n    }        \r\n    \r\n    .button {\r\n        display: grid;\r\n        justify-content: center;\r\n        align-content: center;\r\n        height: auto;\r\n        width: calc(100% / 7);\r\n        cursor: pointer;\r\n\r\n        &:hover {\r\n            background: rgb(51, 122, 183);\r\n            color: white;\r\n            opacity: 0.8;\r\n        }\r\n\r\n        &.selected {\r\n            background: rgb(51, 122, 183);\r\n            color: white;\r\n        }\r\n        \r\n        &.align {\r\n            justify-content: stretch;\r\n            text-align: center;\r\n        }\r\n    }    \r\n}\r\n\r\n.blocker {\r\n    visibility: hidden;\r\n    position: absolute;\r\n    width: calc(100% - 40px);\r\n    height: 100%;\r\n    top: 0;\r\n    left: 0;\r\n\r\n    background: rgba(20, 20, 20, 0.95);    \r\n    font-family: \"acumin-pro-condensed\";\r\n    color: white;\r\n    font-size: 24px;\r\n\r\n    display: grid;\r\n    align-content: center;\r\n    justify-content: center;\r\n\r\n    user-select: none;\r\n\r\n    padding: 20px;\r\n    text-align: center;\r\n}\r\n\r\n#log-console {\r\n    grid-row: 2;\r\n    grid-column: 4;\r\n    display: none;\r\n}\r\n\r\n.dialog-container {\r\n    position: absolute;\r\n    width: 100%;\r\n    height: 100%;\r\n    background: rgba(0.1, 0.1, 0.1, 0.6);\r\n    display: grid;\r\n    font-family: \"acumin-pro-condensed\";\r\n    top:0;\r\n\r\n    .dialog {\r\n        align-self: center;\r\n        justify-self: center;\r\n        min-height: 140px;\r\n        max-width: 400px;\r\n        border-radius: 10px;\r\n        background: white;\r\n\r\n        display: grid;\r\n        grid-template-columns: 100%;\r\n        grid-template-rows: calc(100% - 50px) 50px;\r\n\r\n        .dialog-message {\r\n            grid-row: 1;\r\n            grid-column: 1;\r\n            margin-top: 20px;\r\n            padding: 10px;\r\n            font-size: 18px;\r\n            color: black;\r\n        }\r\n\r\n        .dialog-buttons {\r\n            grid-row: 2;\r\n            grid-column: 1;\r\n            display: grid;\r\n            grid-template-rows: 100%;\r\n            grid-template-columns: 100%;\r\n            color: white;\r\n\r\n            .dialog-button-ok {\r\n                cursor: pointer;\r\n                justify-self: center;\r\n                background:green;\r\n                min-width: 80px;\r\n                justify-content: center;\r\n                display: grid;\r\n                align-content: center;\r\n                align-self: center;\r\n                height: 35px;      \r\n                border-radius: 10px;\r\n\r\n                &:hover {\r\n                    opacity: 0.8;\r\n                }\r\n\r\n                &.error {\r\n                    background: red;\r\n                }\r\n            }\r\n        }\r\n    }\r\n}\r\n.gizmo {\r\n    .bounding-box-line {\r\n        background-color: black;\r\n        position: absolute;\r\n        line-height: 1px;\r\n        height: 1px;\r\n        pointer-events: none;\r\n    }\r\n    .scale-point-container {\r\n        position: absolute;\r\n        width: 30px;\r\n        height: 30px;\r\n        .scale-point {\r\n            top: 10px;\r\n            left: 10px;\r\n            position: absolute;\r\n            width: 10px;\r\n            height: 10px;\r\n            background: transparent;\r\n            outline: rgb(125, 125, 125) 2px solid;\r\n        }\r\n        .rotate-click-area {\r\n            width: 20px;\r\n            height: 20px;\r\n            position: absolute;\r\n        }\r\n        .scale-click-area {\r\n            width: 20px;\r\n            height: 20px;\r\n            position: absolute;\r\n        }\r\n    }\r\n    .pivot-point {\r\n        width: 30px;\r\n        height: 30px;\r\n        background: transparent;\r\n        position: absolute;\r\n    }\r\n}\r\n#workbench-canvas {\r\n    position: relative;\r\n}\r\n.artboard-stroke {\r\n    outline: 1px solid black;\r\n    position: absolute;\r\n    z-index: 5;\r\n    pointer-events: none;\r\n}\r\n.artboard-background {\r\n    position: absolute;\r\n    background: repeating-conic-gradient(#E2E2E2 0% 25%, white 0% 50%) \r\n    50% / 20px 20px;\r\n    width: 100%;\r\n    height: 100%;\r\n}"],"sourceRoot":""}]);
+___CSS_LOADER_EXPORT___.push([module.i, ":root {\n  --blackBarHeight: 55px; }\n\n#gui-editor-workbench-root {\n  display: grid;\n  grid-template-rows: calc(100% - 55px);\n  height: 100%;\n  width: 100%;\n  background: #e2e2e2;\n  font: 14px \"acumin-pro-condensed\"; }\n\n.wait-screen {\n  display: grid;\n  justify-content: center;\n  align-content: center;\n  height: 100%;\n  width: 100%;\n  background: #464646;\n  opacity: 0.95;\n  color: white;\n  font: 24px \"acumin-pro-condensed\";\n  position: absolute;\n  top: 0;\n  left: 0; }\n  .wait-screen.hidden {\n    visibility: hidden; }\n\n#leftGrab {\n  grid-row: 1 / span 2;\n  grid-column: 2;\n  cursor: ew-resize; }\n\n#rightGrab {\n  grid-row: 1 / span 2;\n  grid-column: 5;\n  cursor: ew-resize; }\n\n#toolbarGrab {\n  background: #333333;\n  grid-row: 1 / span 3;\n  grid-column: 3;\n  height: 100%; }\n  #toolbarGrab .blackLine {\n    height: 5px;\n    background: black; }\n  #toolbarGrab .toolbar-label {\n    color: white;\n    font-size: 18px;\n    display: grid;\n    align-items: center;\n    cursor: pointer;\n    user-select: none;\n    grid-template-columns: 1fr 20px;\n    grid-template-rows: 100%;\n    position: relative; }\n    #toolbarGrab .toolbar-label.active {\n      font-weight: bold;\n      font-size: 20px; }\n    #toolbarGrab .toolbar-label:hover {\n      background: var(--selectionGrey); }\n      #toolbarGrab .toolbar-label:hover .sub-items {\n        display: block; }\n  #toolbarGrab .toolbar-icon {\n    width: 40px;\n    height: 40px; }\n\n.diagram-container {\n  position: relative;\n  display: grid;\n  grid-row: 1;\n  grid-column: 4;\n  background: #CCCCCC;\n  width: 100%;\n  height: 100%;\n  overflow: hidden; }\n  .diagram-container .diagram {\n    display: none;\n    width: 100%;\n    height: 100%; }\n\n.right-panel {\n  grid-row: 1 / span 2;\n  grid-column: 6;\n  display: grid;\n  grid-template-rows: 1fr 40px auto 40px;\n  grid-template-columns: 100%;\n  height: calc(100% - var(--blackBarHeight));\n  overflow-y: auto; }\n  .right-panel #propertyTab {\n    grid-row: 1;\n    grid-column: 1; }\n  .right-panel .button {\n    display: grid;\n    justify-content: center;\n    align-content: center;\n    height: auto;\n    width: calc(100% / 7);\n    cursor: pointer; }\n    .right-panel .button:hover {\n      background: #337ab7;\n      color: white;\n      opacity: 0.8; }\n    .right-panel .button.selected {\n      background: #337ab7;\n      color: white; }\n    .right-panel .button.align {\n      justify-content: stretch;\n      text-align: center; }\n\n.blocker {\n  visibility: hidden;\n  position: absolute;\n  width: calc(100% - 40px);\n  height: 100%;\n  top: 0;\n  left: 0;\n  background: rgba(20, 20, 20, 0.95);\n  font-family: \"acumin-pro-condensed\";\n  color: white;\n  font-size: 24px;\n  display: grid;\n  align-content: center;\n  justify-content: center;\n  user-select: none;\n  padding: 20px;\n  text-align: center; }\n\n#log-console {\n  grid-row: 2;\n  grid-column: 4;\n  display: none; }\n\n.dialog-container {\n  position: absolute;\n  width: 100%;\n  height: 100%;\n  background: rgba(0, 0, 0, 0.6);\n  display: grid;\n  font-family: \"acumin-pro-condensed\";\n  top: 0; }\n  .dialog-container .dialog {\n    align-self: center;\n    justify-self: center;\n    min-height: 140px;\n    max-width: 400px;\n    border-radius: 10px;\n    background: white;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: calc(100% - 50px) 50px; }\n    .dialog-container .dialog .dialog-message {\n      grid-row: 1;\n      grid-column: 1;\n      margin-top: 20px;\n      padding: 10px;\n      font-size: 18px;\n      color: black; }\n    .dialog-container .dialog .dialog-buttons {\n      grid-row: 2;\n      grid-column: 1;\n      display: grid;\n      grid-template-rows: 100%;\n      grid-template-columns: 100%;\n      color: white; }\n      .dialog-container .dialog .dialog-buttons .dialog-button-ok {\n        cursor: pointer;\n        justify-self: center;\n        background: green;\n        min-width: 80px;\n        justify-content: center;\n        display: grid;\n        align-content: center;\n        align-self: center;\n        height: 35px;\n        border-radius: 10px; }\n        .dialog-container .dialog .dialog-buttons .dialog-button-ok:hover {\n          opacity: 0.8; }\n        .dialog-container .dialog .dialog-buttons .dialog-button-ok.error {\n          background: red; }\n\n.gizmo .bounding-box-line {\n  background-color: black;\n  position: absolute;\n  line-height: 1px;\n  height: 1px;\n  pointer-events: none; }\n\n.gizmo .scale-point-container {\n  position: absolute;\n  width: 30px;\n  height: 30px; }\n  .gizmo .scale-point-container .scale-point {\n    top: 10px;\n    left: 10px;\n    position: absolute;\n    width: 10px;\n    height: 10px;\n    background: transparent;\n    outline: #7d7d7d 2px solid; }\n  .gizmo .scale-point-container .rotate-click-area {\n    width: 20px;\n    height: 20px;\n    position: absolute; }\n  .gizmo .scale-point-container .scale-click-area {\n    width: 20px;\n    height: 20px;\n    position: absolute; }\n\n.gizmo .pivot-point {\n  width: 30px;\n  height: 30px;\n  background: transparent;\n  position: absolute; }\n\n#workbench-canvas {\n  position: relative; }\n\n.artboard-stroke {\n  outline: 1px solid black;\n  position: absolute;\n  z-index: 5;\n  pointer-events: none; }\n\n.artboard-background {\n  position: absolute;\n  background: repeating-conic-gradient(#E2E2E2 0% 25%, white 0% 50%) 50%/10px 10px;\n  width: 100%;\n  height: 100%; }\n", "",{"version":3,"sources":["webpack://./main.scss"],"names":[],"mappings":"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","sourcesContent":[":root {\r\n    --blackBarHeight: 55px;\r\n}\r\n\r\n#gui-editor-workbench-root {\r\n    display: grid;\r\n    grid-template-rows: calc(100% - 55px);\r\n    height: 100%;\r\n    width: 100%;\r\n    background: #e2e2e2;\r\n    font: 14px \"acumin-pro-condensed\";   \r\n}\r\n\r\n.wait-screen {\r\n    display: grid;\r\n    justify-content: center;\r\n    align-content: center;\r\n    height: 100%;\r\n    width: 100%;\r\n    background: #464646;\r\n    opacity: 0.95;\r\n    color:white;\r\n    font: 24px \"acumin-pro-condensed\";  \r\n    position: absolute;\r\n    top: 0;\r\n    left: 0; \r\n\r\n    &.hidden {\r\n        visibility: hidden;\r\n    }\r\n}\r\n\r\n#leftGrab {\r\n    grid-row: 1 / span 2;\r\n    grid-column: 2;\r\n    cursor: ew-resize;\r\n}\r\n\r\n#rightGrab {\r\n    grid-row: 1 / span 2;\r\n    grid-column: 5;\r\n    cursor: ew-resize;\r\n}\r\n\r\n\r\n#toolbarGrab {\r\n    background: #333333;\r\n    grid-row: 1 / span 3;\r\n    grid-column: 3;\r\n    height: 100%;\r\n\r\n    .blackLine {\r\n        height:  5px;\r\n        background: black;\r\n    }\r\n    .toolbar-label {\r\n        color:white;\r\n        font-size: 18px;\r\n        display: grid;\r\n        align-items: center;\r\n        cursor: pointer;\r\n        user-select: none;\r\n        grid-template-columns: 1fr 20px;\r\n        grid-template-rows: 100%;\r\n        position: relative;\r\n\r\n        &.active {\r\n            font-weight: bold;\r\n            font-size: 20px;\r\n        }\r\n\r\n        &:hover {\r\n            background: var(--selectionGrey);\r\n            .sub-items {\r\n                display: block;\r\n            }\r\n        } \r\n    }\r\n    .toolbar-icon {\r\n        width: 40px;\r\n        height: 40px;\r\n    }\r\n}\r\n\r\n.diagram-container {\r\n    position: relative;\r\n    display: grid;\r\n    grid-row: 1;\r\n    grid-column: 4;\r\n    background: #CCCCCC;\r\n    width: 100%;\r\n    height: 100%;\r\n    overflow: hidden;\r\n\r\n    .diagram {\r\n        display: none;\r\n        width: 100%;\r\n        height: 100%;\r\n    }\r\n}\r\n\r\n.right-panel {\r\n    grid-row: 1 / span 2;\r\n    grid-column: 6;\r\n    display: grid;\r\n    grid-template-rows: 1fr 40px auto 40px;\r\n    grid-template-columns: 100%;\r\n    height: calc(100% - var(--blackBarHeight));\r\n    overflow-y: auto;\r\n\r\n    #propertyTab {\r\n        grid-row: 1;\r\n        grid-column: 1;\r\n    }        \r\n    \r\n    .button {\r\n        display: grid;\r\n        justify-content: center;\r\n        align-content: center;\r\n        height: auto;\r\n        width: calc(100% / 7);\r\n        cursor: pointer;\r\n\r\n        &:hover {\r\n            background: rgb(51, 122, 183);\r\n            color: white;\r\n            opacity: 0.8;\r\n        }\r\n\r\n        &.selected {\r\n            background: rgb(51, 122, 183);\r\n            color: white;\r\n        }\r\n        \r\n        &.align {\r\n            justify-content: stretch;\r\n            text-align: center;\r\n        }\r\n    }    \r\n}\r\n\r\n.blocker {\r\n    visibility: hidden;\r\n    position: absolute;\r\n    width: calc(100% - 40px);\r\n    height: 100%;\r\n    top: 0;\r\n    left: 0;\r\n\r\n    background: rgba(20, 20, 20, 0.95);    \r\n    font-family: \"acumin-pro-condensed\";\r\n    color: white;\r\n    font-size: 24px;\r\n\r\n    display: grid;\r\n    align-content: center;\r\n    justify-content: center;\r\n\r\n    user-select: none;\r\n\r\n    padding: 20px;\r\n    text-align: center;\r\n}\r\n\r\n#log-console {\r\n    grid-row: 2;\r\n    grid-column: 4;\r\n    display: none;\r\n}\r\n\r\n.dialog-container {\r\n    position: absolute;\r\n    width: 100%;\r\n    height: 100%;\r\n    background: rgba(0.1, 0.1, 0.1, 0.6);\r\n    display: grid;\r\n    font-family: \"acumin-pro-condensed\";\r\n    top:0;\r\n\r\n    .dialog {\r\n        align-self: center;\r\n        justify-self: center;\r\n        min-height: 140px;\r\n        max-width: 400px;\r\n        border-radius: 10px;\r\n        background: white;\r\n\r\n        display: grid;\r\n        grid-template-columns: 100%;\r\n        grid-template-rows: calc(100% - 50px) 50px;\r\n\r\n        .dialog-message {\r\n            grid-row: 1;\r\n            grid-column: 1;\r\n            margin-top: 20px;\r\n            padding: 10px;\r\n            font-size: 18px;\r\n            color: black;\r\n        }\r\n\r\n        .dialog-buttons {\r\n            grid-row: 2;\r\n            grid-column: 1;\r\n            display: grid;\r\n            grid-template-rows: 100%;\r\n            grid-template-columns: 100%;\r\n            color: white;\r\n\r\n            .dialog-button-ok {\r\n                cursor: pointer;\r\n                justify-self: center;\r\n                background:green;\r\n                min-width: 80px;\r\n                justify-content: center;\r\n                display: grid;\r\n                align-content: center;\r\n                align-self: center;\r\n                height: 35px;      \r\n                border-radius: 10px;\r\n\r\n                &:hover {\r\n                    opacity: 0.8;\r\n                }\r\n\r\n                &.error {\r\n                    background: red;\r\n                }\r\n            }\r\n        }\r\n    }\r\n}\r\n.gizmo {\r\n    .bounding-box-line {\r\n        background-color: black;\r\n        position: absolute;\r\n        line-height: 1px;\r\n        height: 1px;\r\n        pointer-events: none;\r\n    }\r\n    .scale-point-container {\r\n        position: absolute;\r\n        width: 30px;\r\n        height: 30px;\r\n        .scale-point {\r\n            top: 10px;\r\n            left: 10px;\r\n            position: absolute;\r\n            width: 10px;\r\n            height: 10px;\r\n            background: transparent;\r\n            outline: rgb(125, 125, 125) 2px solid;\r\n        }\r\n        .rotate-click-area {\r\n            width: 20px;\r\n            height: 20px;\r\n            position: absolute;\r\n        }\r\n        .scale-click-area {\r\n            width: 20px;\r\n            height: 20px;\r\n            position: absolute;\r\n        }\r\n    }\r\n    .pivot-point {\r\n        width: 30px;\r\n        height: 30px;\r\n        background: transparent;\r\n        position: absolute;\r\n    }\r\n}\r\n#workbench-canvas {\r\n    position: relative;\r\n}\r\n.artboard-stroke {\r\n    outline: 1px solid black;\r\n    position: absolute;\r\n    z-index: 5;\r\n    pointer-events: none;\r\n}\r\n.artboard-background {\r\n    position: absolute;\r\n    background: repeating-conic-gradient(#E2E2E2 0% 25%, white 0% 50%) 50% / 10px 10px;\r\n    width: 100%;\r\n    height: 100%;\r\n}"],"sourceRoot":""}]);
 // Exports
 /* harmony default export */ __webpack_exports__["default"] = (___CSS_LOADER_EXPORT___);
 
@@ -43562,6 +43562,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/checkBoxLineComponent */ "./sharedUiComponents/lines/checkBoxLineComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/textLineComponent */ "./sharedUiComponents/lines/textLineComponent.tsx");
 /* harmony import */ var _commandButtonComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../commandButtonComponent */ "./components/commandButtonComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/targetsProxy */ "./sharedUiComponents/lines/targetsProxy.tsx");
+
 
 
 
@@ -43581,15 +43583,15 @@ var ButtonPropertyGridComponent = /** @class */ (function (_super) {
     }
     ButtonPropertyGridComponent.prototype.render = function () {
         var _this = this;
-        var rectangle = this.props.rectangle;
+        var rectangles = this.props.rectangles;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { lockObject: this.props.lockObject, control: rectangle, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { lockObject: this.props.lockObject, controls: rectangles, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", null),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "RECTANGLE", value: " ", color: "grey" }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "CLIP CONTENT", iconLabel: "Clip Content", icon: clipContentsIcon, target: rectangle, propertyName: "clipChildren", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "CLIP CONTENT", iconLabel: "Clip Content", icon: clipContentsIcon, target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_7__["makeTargetsProxy"])(rectangles, this.props.onPropertyChangedObservable), propertyName: "clipChildren", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { iconLabel: "Stroke Weight", icon: strokeWeightIcon, lockObject: this.props.lockObject, label: "", target: rectangle, propertyName: "thickness", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { iconLabel: "Corner Radius", icon: conerRadiusIcon, lockObject: this.props.lockObject, label: "", target: rectangle, propertyName: "cornerRadius", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { iconLabel: "Stroke Weight", icon: strokeWeightIcon, lockObject: this.props.lockObject, label: "", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_7__["makeTargetsProxy"])(rectangles, this.props.onPropertyChangedObservable), propertyName: "thickness", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { iconLabel: "Corner Radius", icon: conerRadiusIcon, lockObject: this.props.lockObject, label: "", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_7__["makeTargetsProxy"])(rectangles, this.props.onPropertyChangedObservable), propertyName: "cornerRadius", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", null),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "BUTTON", value: " ", color: "grey" }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
@@ -43624,6 +43626,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/floatLineComponent */ "./sharedUiComponents/lines/floatLineComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/checkBoxLineComponent */ "./sharedUiComponents/lines/checkBoxLineComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/textLineComponent */ "./sharedUiComponents/lines/textLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/targetsProxy */ "./sharedUiComponents/lines/targetsProxy.tsx");
+
 
 
 
@@ -43638,13 +43642,13 @@ var CheckboxPropertyGridComponent = /** @class */ (function (_super) {
         return _super.call(this, props) || this;
     }
     CheckboxPropertyGridComponent.prototype.render = function () {
-        var checkbox = this.props.checkbox;
+        var checkboxes = this.props.checkboxes;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { lockObject: this.props.lockObject, control: checkbox, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { lockObject: this.props.lockObject, controls: checkboxes, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", null),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "CHECKBOX", value: " ", color: "grey" }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { iconLabel: "Check size ratio", icon: sizeIcon, lockObject: this.props.lockObject, label: "", target: checkbox, propertyName: "checkSizeRatio", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { iconLabel: "Checked", icon: fillColorIcon, label: "CHECKED", target: checkbox, propertyName: "isChecked", onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { iconLabel: "Check size ratio", icon: sizeIcon, lockObject: this.props.lockObject, label: "", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_6__["makeTargetsProxy"])(checkboxes, this.props.onPropertyChangedObservable), propertyName: "checkSizeRatio", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { iconLabel: "Checked", icon: fillColorIcon, label: "CHECKED", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_6__["makeTargetsProxy"])(checkboxes, this.props.onPropertyChangedObservable), propertyName: "isChecked", onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
     };
     return CheckboxPropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -43669,6 +43673,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../gui/commonControlPropertyGridComponent */ "./components/propertyTab/propertyGrids/gui/commonControlPropertyGridComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/color3LineComponent */ "./sharedUiComponents/lines/color3LineComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/textLineComponent */ "./sharedUiComponents/lines/textLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/targetsProxy */ "./sharedUiComponents/lines/targetsProxy.tsx");
+
 
 
 
@@ -43680,12 +43686,12 @@ var ColorPickerPropertyGridComponent = /** @class */ (function (_super) {
         return _super.call(this, props) || this;
     }
     ColorPickerPropertyGridComponent.prototype.render = function () {
-        var colorPicker = this.props.colorPicker;
+        var colorPickers = this.props.colorPickers;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { lockObject: this.props.lockObject, control: colorPicker, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { lockObject: this.props.lockObject, controls: colorPickers, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", null),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "COLORPICKER", value: " ", color: "grey" }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_3__["Color3LineComponent"], { label: "Color", target: colorPicker, propertyName: "value", onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_3__["Color3LineComponent"], { label: "Color", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_5__["makeTargetsProxy"])(colorPickers, this.props.onPropertyChangedObservable), propertyName: "value", onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
     };
     return ColorPickerPropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -43714,8 +43720,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/floatLineComponent */ "./sharedUiComponents/lines/floatLineComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/textInputLineComponent */ "./sharedUiComponents/lines/textInputLineComponent.tsx");
 /* harmony import */ var _commandButtonComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../../commandButtonComponent */ "./components/commandButtonComponent.tsx");
-/* harmony import */ var _sharedUiComponents_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/color3LineComponent */ "./sharedUiComponents/lines/color3LineComponent.tsx");
-/* harmony import */ var _sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/checkBoxLineComponent */ "./sharedUiComponents/lines/checkBoxLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/checkBoxLineComponent */ "./sharedUiComponents/lines/checkBoxLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_colorLineComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/colorLineComponent */ "./sharedUiComponents/lines/colorLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/targetsProxy */ "./sharedUiComponents/lines/targetsProxy.tsx");
+
 
 
 
@@ -43754,62 +43762,90 @@ var CommonControlPropertyGridComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(CommonControlPropertyGridComponent, _super);
     function CommonControlPropertyGridComponent(props) {
         var _this = _super.call(this, props) || this;
-        _this._width = _this.props.control.width;
-        _this._height = _this.props.control.height;
+        _this._width = 0;
+        _this._height = 0;
         return _this;
     }
     CommonControlPropertyGridComponent.prototype._updateAlignment = function (alignment, value) {
-        var control = this.props.control;
-        if (control.typeName === "TextBlock" && this.props.control.resizeToFit === false) {
-            this.props.control["text" + alignment.charAt(0).toUpperCase() + alignment.slice(1)] = value;
-        }
-        else {
-            this.props.control[alignment] = value;
+        for (var _i = 0, _a = this.props.controls; _i < _a.length; _i++) {
+            var control = _a[_i];
+            if (control.typeName === "TextBlock" && control.resizeToFit === false) {
+                control["text" + alignment.charAt(0).toUpperCase() + alignment.slice(1)] = value;
+            }
+            else {
+                control[alignment] = value;
+            }
         }
         this.forceUpdate();
     };
     CommonControlPropertyGridComponent.prototype._checkAndUpdateValues = function (propertyName, value) {
         var _a, _b;
-        // checking the previous value unit to see what it was.
-        var vau = this.props.control["_" + propertyName];
-        var percentage = vau.isPercentage;
-        // now checking if the new string contains either a px or a % sign in case we need to change the unit.
-        var negative = value.charAt(0) === "-";
-        if (value.charAt(value.length - 1) === "%") {
-            percentage = true;
+        for (var _i = 0, _c = this.props.controls; _i < _c.length; _i++) {
+            var control = _c[_i];
+            // checking the previous value unit to see what it was.
+            var vau = control["_" + propertyName];
+            var percentage = vau.isPercentage;
+            // now checking if the new string contains either a px or a % sign in case we need to change the unit.
+            var negative = value.charAt(0) === "-";
+            if (value.charAt(value.length - 1) === "%") {
+                percentage = true;
+            }
+            else if (value.charAt(value.length - 1) === "x" && value.charAt(value.length - 2) === "p") {
+                percentage = false;
+            }
+            if (((_a = control.parent) === null || _a === void 0 ? void 0 : _a.typeName) === "StackPanel") {
+                percentage = false;
+            }
+            var newValue = (_b = value.match(/([\d\.\,]+)/g)) === null || _b === void 0 ? void 0 : _b[0];
+            if (!newValue) {
+                newValue = "0";
+            }
+            newValue = (negative ? "-" : "") + newValue;
+            newValue += percentage ? "%" : "px";
+            control[propertyName] = newValue;
         }
-        else if (value.charAt(value.length - 1) === "x" && value.charAt(value.length - 2) === "p") {
-            percentage = false;
-        }
-        if (((_a = this.props.control.parent) === null || _a === void 0 ? void 0 : _a.typeName) === "StackPanel") {
-            percentage = false;
-        }
-        var newValue = (_b = value.match(/([\d\.\,]+)/g)) === null || _b === void 0 ? void 0 : _b[0];
-        if (!newValue) {
-            newValue = "0";
-        }
-        newValue = (negative ? "-" : "") + newValue;
-        newValue += percentage ? "%" : "px";
-        this.props.control[propertyName] = newValue;
         this.forceUpdate();
     };
     CommonControlPropertyGridComponent.prototype._markChildrenAsDirty = function () {
-        if (this.props.control instanceof babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["Container"])
-            this.props.control._children.forEach(function (child) {
-                child._markAsDirty();
-            });
+        for (var _i = 0, _a = this.props.controls; _i < _a.length; _i++) {
+            var control = _a[_i];
+            if (control instanceof babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["Container"])
+                control._children.forEach(function (child) {
+                    child._markAsDirty();
+                });
+        }
     };
     CommonControlPropertyGridComponent.prototype.render = function () {
         var _this = this;
-        var control = this.props.control;
-        var horizontalAlignment = this.props.control.horizontalAlignment;
-        var verticalAlignment = this.props.control.verticalAlignment;
-        if (control.typeName === "TextBlock" && this.props.control.resizeToFit === false) {
-            horizontalAlignment = this.props.control.textHorizontalAlignment;
-            verticalAlignment = this.props.control.textVerticalAlignment;
+        var controls = this.props.controls;
+        var firstControl = controls[0];
+        var horizontalAlignment = firstControl.horizontalAlignment;
+        var verticalAlignment = firstControl.verticalAlignment;
+        for (var _i = 0, controls_1 = controls; _i < controls_1.length; _i++) {
+            var control = controls_1[_i];
+            if (control.horizontalAlignment !== horizontalAlignment) {
+                horizontalAlignment = babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["Control"].HORIZONTAL_ALIGNMENT_CENTER;
+            }
+            if (control.verticalAlignment !== verticalAlignment) {
+                verticalAlignment = babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["Control"].VERTICAL_ALIGNMENT_CENTER;
+            }
         }
-        this._width = this.props.control.width;
-        this._height = this.props.control.height;
+        if (controls.every(function (control) { return control.typeName === "TextBlock" && control.resizeToFit === false; })) {
+            horizontalAlignment = firstControl.textHorizontalAlignment;
+            verticalAlignment = firstControl.textVerticalAlignment;
+        }
+        this._width = firstControl.width;
+        this._height = firstControl.height;
+        for (var _a = 0, controls_2 = controls; _a < controls_2.length; _a++) {
+            var control = controls_2[_a];
+            if (control.width !== this._width) {
+                this._width = _sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_10__["conflictingValuesPlaceholder"];
+            }
+            if (control.height !== this._height) {
+                this._height = _sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_10__["conflictingValuesPlaceholder"];
+            }
+        }
+        var showTextProperties = (firstControl instanceof babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["Container"] || firstControl.typeName === "TextBlock");
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_7__["CommandButtonComponent"], { tooltip: "Left", icon: hAlignLeftIcon, shortcut: "", isActive: horizontalAlignment === babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["Control"].HORIZONTAL_ALIGNMENT_LEFT, onClick: function () {
@@ -43831,77 +43867,88 @@ var CommonControlPropertyGridComponent = /** @class */ (function (_super) {
                         _this._updateAlignment("verticalAlignment", babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["Control"].VERTICAL_ALIGNMENT_BOTTOM);
                     } })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { numbersOnly: true, iconLabel: "Position", icon: positionIcon, lockObject: this.props.lockObject, label: "X", target: control, delayInput: true, propertyName: "left", onChange: function (newValue) { return _this._checkAndUpdateValues("left", newValue); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { numbersOnly: true, lockObject: this.props.lockObject, label: "Y", target: control, delayInput: true, propertyName: "top", onChange: function (newValue) { return _this._checkAndUpdateValues("top", newValue); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { numbersOnly: true, iconLabel: "Position", icon: positionIcon, lockObject: this.props.lockObject, label: "X", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_10__["makeTargetsProxy"])(controls, this.props.onPropertyChangedObservable), delayInput: true, propertyName: "left", onChange: function (newValue) { return _this._checkAndUpdateValues("left", newValue); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { numbersOnly: true, lockObject: this.props.lockObject, label: "Y", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_10__["makeTargetsProxy"])(controls, this.props.onPropertyChangedObservable), delayInput: true, propertyName: "top", onChange: function (newValue) { return _this._checkAndUpdateValues("top", newValue); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { numbersOnly: true, iconLabel: "Scale", icon: sizeIcon, lockObject: this.props.lockObject, label: "W", target: this, delayInput: true, propertyName: "_width", onPropertyChangedObservable: this.props.onPropertyChangedObservable, onChange: function (newValue) {
-                        if (control.typeName === "Image") {
-                            control.autoScale = false;
-                        }
-                        else if (control instanceof babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["Container"]) {
-                            control.adaptWidthToChildren = false;
-                        }
-                        else if (_this.props.control.typeName === "ColorPicker") {
-                            if (newValue === "0" || newValue === "-") {
-                                newValue = "1";
+                        for (var _i = 0, controls_3 = controls; _i < controls_3.length; _i++) {
+                            var control = controls_3[_i];
+                            if (control.typeName === "Image") {
+                                control.autoScale = false;
+                            }
+                            else if (control instanceof babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["Container"]) {
+                                control.adaptWidthToChildren = false;
+                            }
+                            else if (control.typeName === "ColorPicker") {
+                                if (newValue === "0" || newValue === "-") {
+                                    newValue = "1";
+                                }
                             }
                         }
                         _this._width = newValue;
                         _this._checkAndUpdateValues("width", _this._width.toString());
                     } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { numbersOnly: true, lockObject: this.props.lockObject, label: "H", target: this, delayInput: true, propertyName: "_height", onPropertyChangedObservable: this.props.onPropertyChangedObservable, onChange: function (newValue) {
-                        if (control.typeName === "Image") {
-                            control.autoScale = false;
-                        }
-                        else if (control instanceof babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["Container"]) {
-                            control.adaptHeightToChildren = false;
-                        }
-                        else if (_this.props.control.typeName === "ColorPicker") {
-                            if (newValue === "0" || newValue === "-") {
-                                newValue = "1";
+                        for (var _i = 0, controls_4 = controls; _i < controls_4.length; _i++) {
+                            var control = controls_4[_i];
+                            if (control.typeName === "Image") {
+                                control.autoScale = false;
+                            }
+                            else if (control instanceof babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["Container"]) {
+                                control.adaptHeightToChildren = false;
+                            }
+                            else if (control.typeName === "ColorPicker") {
+                                if (newValue === "0" || newValue === "-") {
+                                    newValue = "1";
+                                }
                             }
                         }
                         _this._height = newValue;
                         _this._checkAndUpdateValues("height", _this._height.toString());
                     } })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { numbersOnly: true, iconLabel: "Padding", icon: verticalMarginIcon, lockObject: this.props.lockObject, label: "B", target: control, propertyName: "paddingBottom", delayInput: true, onChange: function (newValue) { _this._checkAndUpdateValues("paddingBottom", newValue); _this._markChildrenAsDirty(); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { numbersOnly: true, lockObject: this.props.lockObject, label: "T", target: control, propertyName: "paddingTop", delayInput: true, onChange: function (newValue) { _this._checkAndUpdateValues("paddingTop", newValue); _this._markChildrenAsDirty(); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { numbersOnly: true, iconLabel: "Padding", icon: verticalMarginIcon, lockObject: this.props.lockObject, label: "B", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_10__["makeTargetsProxy"])(controls, this.props.onPropertyChangedObservable), propertyName: "paddingBottom", delayInput: true, onChange: function (newValue) {
+                        _this._checkAndUpdateValues("paddingBottom", newValue);
+                        _this._markChildrenAsDirty();
+                    }, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { numbersOnly: true, lockObject: this.props.lockObject, label: "T", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_10__["makeTargetsProxy"])(controls, this.props.onPropertyChangedObservable), propertyName: "paddingTop", delayInput: true, onChange: function (newValue) {
+                        _this._checkAndUpdateValues("paddingTop", newValue);
+                        _this._markChildrenAsDirty();
+                    }, onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { numbersOnly: true, iconLabel: "Horizontal Margins", icon: horizontalMarginIcon, lockObject: this.props.lockObject, label: "L", target: control, propertyName: "paddingLeft", delayInput: true, onChange: function (newValue) { _this._checkAndUpdateValues("paddingLeft", newValue); _this._markChildrenAsDirty(); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { numbersOnly: true, lockObject: this.props.lockObject, label: "R", target: control, delayInput: true, propertyName: "paddingRight", onChange: function (newValue) { _this._checkAndUpdateValues("paddingRight", newValue); _this._markChildrenAsDirty(); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { numbersOnly: true, iconLabel: "Horizontal Margins", icon: horizontalMarginIcon, lockObject: this.props.lockObject, label: "L", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_10__["makeTargetsProxy"])(controls, this.props.onPropertyChangedObservable), propertyName: "paddingLeft", delayInput: true, onChange: function (newValue) { _this._checkAndUpdateValues("paddingLeft", newValue); _this._markChildrenAsDirty(); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { numbersOnly: true, lockObject: this.props.lockObject, label: "R", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_10__["makeTargetsProxy"])(controls, this.props.onPropertyChangedObservable), delayInput: true, propertyName: "paddingRight", onChange: function (newValue) { _this._checkAndUpdateValues("paddingRight", newValue); _this._markChildrenAsDirty(); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider-shot" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_9__["CheckBoxLineComponent"], { iconLabel: "Padding does not affect the parameters of this control, only the descendants of this control.", icon: descendantsOnlyPaddingIcon, label: "", target: control, propertyName: "descendentsOnlyPadding", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_8__["CheckBoxLineComponent"], { iconLabel: "Padding does not affect the parameters of this control, only the descendants of this control.", icon: descendantsOnlyPaddingIcon, label: "", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_10__["makeTargetsProxy"])(controls, this.props.onPropertyChangedObservable), propertyName: "descendentsOnlyPadding", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", { className: "ge" }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_2__["TextLineComponent"], { tooltip: "", label: "TRANSFORMATION", value: " ", color: "grey" }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { iconLabel: "Transform Center", icon: positionIcon, lockObject: this.props.lockObject, label: "X", target: control, propertyName: "transformCenterX", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Y", target: control, propertyName: "transformCenterY", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { iconLabel: "Transform Center", icon: positionIcon, lockObject: this.props.lockObject, label: "X", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_10__["makeTargetsProxy"])(controls, this.props.onPropertyChangedObservable), propertyName: "transformCenterX", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Y", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_10__["makeTargetsProxy"])(controls, this.props.onPropertyChangedObservable), propertyName: "transformCenterY", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { iconLabel: "Scale", icon: scaleIcon, lockObject: this.props.lockObject, label: "X", target: control, propertyName: "scaleX", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Y", target: control, propertyName: "scaleY", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__["SliderLineComponent"], { iconLabel: "Rotation", lockObject: this.props.lockObject, icon: rotationIcon, label: "R", target: control, decimalCount: 2, propertyName: "rotation", minimum: 0, maximum: 2 * Math.PI, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { iconLabel: "Scale", icon: scaleIcon, lockObject: this.props.lockObject, label: "X", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_10__["makeTargetsProxy"])(controls, this.props.onPropertyChangedObservable), propertyName: "scaleX", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Y", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_10__["makeTargetsProxy"])(controls, this.props.onPropertyChangedObservable), propertyName: "scaleY", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__["SliderLineComponent"], { iconLabel: "Rotation", lockObject: this.props.lockObject, icon: rotationIcon, label: "R", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_10__["makeTargetsProxy"])(controls, this.props.onPropertyChangedObservable), decimalCount: 2, propertyName: "rotation", minimum: 0, maximum: 2 * Math.PI, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", { className: "ge" }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_2__["TextLineComponent"], { tooltip: "", label: "APPEARANCE", value: " ", color: "grey" }),
-            (control.color !== undefined && control.typeName !== "Image" &&
-                control.typeName !== "ImageBasedSlider" && control.typeName !== "ColorPicker") && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_8__["Color3LineComponent"], { iconLabel: "Color", icon: colorIcon, lockObject: this.props.lockObject, label: "", target: control, propertyName: "color", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
-            control.background !== undefined && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_8__["Color3LineComponent"], { iconLabel: "Background", icon: fillColorIcon, lockObject: this.props.lockObject, label: "", target: control, propertyName: "background", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__["SliderLineComponent"], { lockObject: this.props.lockObject, iconLabel: "Alpha", icon: alphaIcon, label: "", target: control, propertyName: "alpha", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_8__["Color3LineComponent"], { iconLabel: "Shadow Color", icon: shadowColorIcon, lockObject: this.props.lockObject, label: "", target: control, propertyName: "shadowColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            controls.every(function (control) { return control.color !== undefined && control.typeName !== "Image" && control.typeName !== "ImageBasedSlider" && control.typeName !== "ColorPicker"; }) && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_colorLineComponent__WEBPACK_IMPORTED_MODULE_9__["ColorLineComponent"], { iconLabel: "Color", icon: colorIcon, lockObject: this.props.lockObject, label: "Outline Color", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_10__["makeTargetsProxy"])(controls, this.props.onPropertyChangedObservable), propertyName: "color", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+            controls.every(function (control) { return control.background !== undefined; }) && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_colorLineComponent__WEBPACK_IMPORTED_MODULE_9__["ColorLineComponent"], { iconLabel: "Background", icon: fillColorIcon, lockObject: this.props.lockObject, label: "Background Color", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_10__["makeTargetsProxy"])(controls, this.props.onPropertyChangedObservable), propertyName: "background", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__["SliderLineComponent"], { lockObject: this.props.lockObject, iconLabel: "Alpha", icon: alphaIcon, label: "", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_10__["makeTargetsProxy"])(controls, this.props.onPropertyChangedObservable), propertyName: "alpha", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_colorLineComponent__WEBPACK_IMPORTED_MODULE_9__["ColorLineComponent"], { iconLabel: "Shadow Color", icon: shadowColorIcon, lockObject: this.props.lockObject, label: "", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_10__["makeTargetsProxy"])(controls, this.props.onPropertyChangedObservable), propertyName: "shadowColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable, disableAlpha: true }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { iconLabel: "Shadow Offset X", icon: shadowOffsetXIcon, lockObject: this.props.lockObject, label: "", target: control, propertyName: "shadowOffsetX", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { iconLabel: "Shadow Offset Y", icon: shadowOffsetYIcon, lockObject: this.props.lockObject, label: "", target: control, propertyName: "shadowOffsetY", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { iconLabel: "Shadow Offset X", icon: shadowOffsetXIcon, lockObject: this.props.lockObject, label: "", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_10__["makeTargetsProxy"])(controls, this.props.onPropertyChangedObservable), propertyName: "shadowOffsetX", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { iconLabel: "Shadow Offset Y", icon: shadowOffsetYIcon, lockObject: this.props.lockObject, label: "", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_10__["makeTargetsProxy"])(controls, this.props.onPropertyChangedObservable), propertyName: "shadowOffsetY", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider-short" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { iconLabel: "Shadow Blur", icon: shadowBlurIcon, lockObject: this.props.lockObject, label: "", target: control, propertyName: "shadowBlur", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
-            (control instanceof babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["Container"] || control.typeName === "TextBlock") && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { iconLabel: "Shadow Blur", icon: shadowBlurIcon, lockObject: this.props.lockObject, label: "", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_10__["makeTargetsProxy"])(controls, this.props.onPropertyChangedObservable), propertyName: "shadowBlur", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+            showTextProperties && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", { className: "ge" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_2__["TextLineComponent"], { tooltip: "", label: "FONT STYLE", value: " ", color: "grey" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { iconLabel: "Font Family", icon: fontFamilyIcon, lockObject: this.props.lockObject, label: "", target: control, propertyName: "fontFamily", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { iconLabel: "Font Size", icon: fontSizeIcon, lockObject: this.props.lockObject, label: "", target: control, numbersOnly: true, propertyName: "fontSize", onChange: function (newValue) { return _this._checkAndUpdateValues("fontSize", newValue); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { iconLabel: "Font Family", icon: fontFamilyIcon, lockObject: this.props.lockObject, label: "", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_10__["makeTargetsProxy"])(controls, this.props.onPropertyChangedObservable), propertyName: "fontFamily", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { iconLabel: "Font Size", icon: fontSizeIcon, lockObject: this.props.lockObject, label: "", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_10__["makeTargetsProxy"])(controls, this.props.onPropertyChangedObservable), numbersOnly: true, propertyName: "fontSize", onChange: function (newValue) { return _this._checkAndUpdateValues("fontSize", newValue); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { iconLabel: "Font Weight", icon: shadowBlurIcon, lockObject: this.props.lockObject, label: "", target: control, propertyName: "fontWeight", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { iconLabel: "Font Style", icon: fontStyleIcon, lockObject: this.props.lockObject, label: "", target: control, propertyName: "fontStyle", onPropertyChangedObservable: this.props.onPropertyChangedObservable })))));
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { iconLabel: "Font Weight", icon: shadowBlurIcon, lockObject: this.props.lockObject, label: "", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_10__["makeTargetsProxy"])(controls, this.props.onPropertyChangedObservable), propertyName: "fontWeight", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { iconLabel: "Font Style", icon: fontStyleIcon, lockObject: this.props.lockObject, label: "", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_10__["makeTargetsProxy"])(controls, this.props.onPropertyChangedObservable), propertyName: "fontStyle", onPropertyChangedObservable: this.props.onPropertyChangedObservable })))));
     };
     return CommonControlPropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -43933,9 +43980,9 @@ var ControlPropertyGridComponent = /** @class */ (function (_super) {
         return _super.call(this, props) || this;
     }
     ControlPropertyGridComponent.prototype.render = function () {
-        var control = this.props.control;
+        var controls = this.props.controls;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { lockObject: this.props.lockObject, control: control, onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { lockObject: this.props.lockObject, controls: controls, onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
     };
     return ControlPropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -43960,7 +44007,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../gui/commonControlPropertyGridComponent */ "./components/propertyTab/propertyGrids/gui/commonControlPropertyGridComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/textLineComponent */ "./sharedUiComponents/lines/textLineComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/floatLineComponent */ "./sharedUiComponents/lines/floatLineComponent.tsx");
-/* harmony import */ var _sharedUiComponents_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/color3LineComponent */ "./sharedUiComponents/lines/color3LineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_colorLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/colorLineComponent */ "./sharedUiComponents/lines/colorLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/targetsProxy */ "./sharedUiComponents/lines/targetsProxy.tsx");
+
 
 
 
@@ -43977,19 +44026,19 @@ var DisplayGridPropertyGridComponent = /** @class */ (function (_super) {
         return _super.call(this, props) || this;
     }
     DisplayGridPropertyGridComponent.prototype.render = function () {
-        var displayGrid = this.props.displayGrid;
+        var displayGrids = this.props.displayGrids;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { lockObject: this.props.lockObject, control: displayGrid, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { lockObject: this.props.lockObject, controls: displayGrids, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", null),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "DISPLAY GRID", value: " ", color: "grey" }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { iconLabel: "Cell Size", icon: sizeIcon, min: 1, isInteger: true, lockObject: this.props.lockObject, label: "W", target: displayGrid, propertyName: "cellWidth", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { min: 1, isInteger: true, lockObject: this.props.lockObject, label: "H", target: displayGrid, propertyName: "cellHeight", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { iconLabel: "Minor Line Tickness", icon: strokeWeightIcon, min: 1, isInteger: true, lockObject: this.props.lockObject, label: "", target: displayGrid, propertyName: "minorLineTickness", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_5__["Color3LineComponent"], { iconLabel: "Minor Line Color", icon: colorIcon, lockObject: this.props.lockObject, label: "", target: displayGrid, propertyName: "minorLineColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { iconLabel: "Major Line Tickness", icon: strokeWeightIcon, min: 1, isInteger: true, lockObject: this.props.lockObject, label: "", target: displayGrid, propertyName: "majorLineTickness", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_5__["Color3LineComponent"], { iconLabel: "Major Line Color", icon: colorIcon, lockObject: this.props.lockObject, label: "", target: displayGrid, propertyName: "majorLineColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { iconLabel: "Major Line Frequency", icon: conerRadiusIcon, min: 1, isInteger: true, lockObject: this.props.lockObject, label: "", target: displayGrid, propertyName: "majorLineFrequency", onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { iconLabel: "Cell Size", icon: sizeIcon, min: 1, isInteger: true, lockObject: this.props.lockObject, label: "W", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_6__["makeTargetsProxy"])(displayGrids, this.props.onPropertyChangedObservable), propertyName: "cellWidth", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { min: 1, isInteger: true, lockObject: this.props.lockObject, label: "H", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_6__["makeTargetsProxy"])(displayGrids, this.props.onPropertyChangedObservable), propertyName: "cellHeight", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { iconLabel: "Minor Line Tickness", icon: strokeWeightIcon, min: 1, isInteger: true, lockObject: this.props.lockObject, label: "", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_6__["makeTargetsProxy"])(displayGrids, this.props.onPropertyChangedObservable), propertyName: "minorLineTickness", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_colorLineComponent__WEBPACK_IMPORTED_MODULE_5__["ColorLineComponent"], { iconLabel: "Minor Line Color", icon: colorIcon, lockObject: this.props.lockObject, label: "", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_6__["makeTargetsProxy"])(displayGrids, this.props.onPropertyChangedObservable), propertyName: "minorLineColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { iconLabel: "Major Line Tickness", icon: strokeWeightIcon, min: 1, isInteger: true, lockObject: this.props.lockObject, label: "", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_6__["makeTargetsProxy"])(displayGrids, this.props.onPropertyChangedObservable), propertyName: "majorLineTickness", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_colorLineComponent__WEBPACK_IMPORTED_MODULE_5__["ColorLineComponent"], { iconLabel: "Major Line Color", icon: colorIcon, lockObject: this.props.lockObject, label: "", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_6__["makeTargetsProxy"])(displayGrids, this.props.onPropertyChangedObservable), propertyName: "majorLineColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { iconLabel: "Major Line Frequency", icon: conerRadiusIcon, min: 1, isInteger: true, lockObject: this.props.lockObject, label: "", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_6__["makeTargetsProxy"])(displayGrids, this.props.onPropertyChangedObservable), propertyName: "majorLineFrequency", onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
     };
     return DisplayGridPropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -44015,6 +44064,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/floatLineComponent */ "./sharedUiComponents/lines/floatLineComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/checkBoxLineComponent */ "./sharedUiComponents/lines/checkBoxLineComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/textLineComponent */ "./sharedUiComponents/lines/textLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/targetsProxy */ "./sharedUiComponents/lines/targetsProxy.tsx");
+
 
 
 
@@ -44029,13 +44080,13 @@ var EllipsePropertyGridComponent = /** @class */ (function (_super) {
         return _super.call(this, props) || this;
     }
     EllipsePropertyGridComponent.prototype.render = function () {
-        var ellipse = this.props.ellipse;
+        var ellipses = this.props.ellipses;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { lockObject: this.props.lockObject, control: ellipse, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { lockObject: this.props.lockObject, controls: ellipses, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", null),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "ELLIPSE", value: " ", color: "grey" }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { iconLabel: "Clip Content", icon: clipContentsIcon, label: "CLIP CONTENT", target: ellipse, propertyName: "clipChildren", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { iconLabel: "Stroke Weight", icon: strokeWeightIcon, lockObject: this.props.lockObject, label: "", target: ellipse, propertyName: "thickness", onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { iconLabel: "Clip Content", icon: clipContentsIcon, label: "CLIP CONTENT", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_6__["makeTargetsProxy"])(ellipses, this.props.onPropertyChangedObservable), propertyName: "clipChildren", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { iconLabel: "Stroke Weight", icon: strokeWeightIcon, lockObject: this.props.lockObject, label: "", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_6__["makeTargetsProxy"])(ellipses, this.props.onPropertyChangedObservable), propertyName: "thickness", onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
     };
     return EllipsePropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -44113,7 +44164,7 @@ var GridPropertyGridComponent = /** @class */ (function (_super) {
         }));
     };
     GridPropertyGridComponent.prototype.setRowValues = function () {
-        var grid = this.props.grid;
+        var grid = this.props.grids[0];
         this._rowDefinitions = [];
         this._rowEditFlags = [];
         this._editedRow = false;
@@ -44126,7 +44177,7 @@ var GridPropertyGridComponent = /** @class */ (function (_super) {
         }
     };
     GridPropertyGridComponent.prototype.setColumnValues = function () {
-        var grid = this.props.grid;
+        var grid = this.props.grids[0];
         this._columnDefinitions = [];
         this._columnEditFlags = [];
         this._editedColumn = false;
@@ -44159,7 +44210,7 @@ var GridPropertyGridComponent = /** @class */ (function (_super) {
         }));
     };
     GridPropertyGridComponent.prototype.resizeRow = function () {
-        var grid = this.props.grid;
+        var grid = this.props.grids[0];
         var total = 0;
         var editCount = 0;
         var percentCount = 0;
@@ -44218,7 +44269,7 @@ var GridPropertyGridComponent = /** @class */ (function (_super) {
         this.setRowValues();
     };
     GridPropertyGridComponent.prototype.resizeColumn = function () {
-        var grid = this.props.grid;
+        var grid = this.props.grids[0];
         var total = 0;
         var editCount = 0;
         var percentCount = 0;
@@ -44290,7 +44341,7 @@ var GridPropertyGridComponent = /** @class */ (function (_super) {
         return value.substring(value.length - toSearch.length, value.length) !== toSearch;
     };
     GridPropertyGridComponent.prototype.resetValues = function () {
-        var grid = this.props.grid;
+        var grid = this.props.grids[0];
         this._removingColumn = false;
         this._removingRow = false;
         this._columnChild = false;
@@ -44303,137 +44354,140 @@ var GridPropertyGridComponent = /** @class */ (function (_super) {
     };
     GridPropertyGridComponent.prototype.render = function () {
         var _this = this;
-        var grid = this.props.grid;
+        var grids = this.props.grids;
+        var grid = this.props.grids[0];
         if (grid !== this._previousGrid) {
             this.resetValues();
         }
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { lockObject: this.props.lockObject, control: grid, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { lockObject: this.props.lockObject, controls: grids, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", { className: "ge" }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { tooltip: "", label: "GRID", value: " ", color: "grey" }),
             this.renderRows(),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-gridLine" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-grid-button-divider" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_5__["CommandButtonComponent"], { altStyle: true, tooltip: "Add Row", icon: addGridElementDark, shortcut: "", isActive: false, onClick: function () {
-                            var total = 0;
-                            var count = 0;
-                            for (var i = 0; i < grid.rowCount; ++i) {
-                                var rd = grid.getRowDefinition(i);
-                                if (rd === null || rd === void 0 ? void 0 : rd.isPercentage) {
-                                    total += rd === null || rd === void 0 ? void 0 : rd.getValue(grid.host);
-                                    count++;
+            this.props.grids.length === 1 &&
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-gridLine" },
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-grid-button-divider" },
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_5__["CommandButtonComponent"], { altStyle: true, tooltip: "Add Row", icon: addGridElementDark, shortcut: "", isActive: false, onClick: function () {
+                                    var total = 0;
+                                    var count = 0;
+                                    for (var i = 0; i < grid.rowCount; ++i) {
+                                        var rd = grid.getRowDefinition(i);
+                                        if (rd === null || rd === void 0 ? void 0 : rd.isPercentage) {
+                                            total += rd === null || rd === void 0 ? void 0 : rd.getValue(grid.host);
+                                            count++;
+                                        }
+                                    }
+                                    grid.addRowDefinition(total / count, false);
+                                    _this.resetValues();
+                                    _this.forceUpdate();
+                                } }),
+                            "  ",
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_5__["CommandButtonComponent"], { altStyle: true, tooltip: "Remove Row", icon: subtractGridElementDark, shortcut: "", isActive: this._removingRow, disabled: grid.rowCount <= 1, onClick: function () {
+                                    var hasChild = false;
+                                    for (var i = 0; i < grid.columnCount; ++i) {
+                                        var child = grid.cells[(grid.rowCount - 1) + ":" + i];
+                                        if (child === null || child === void 0 ? void 0 : child.children.length) {
+                                            hasChild = true;
+                                            break;
+                                            //(grid.rowCount > 1 && !this._removingRow) 
+                                        }
+                                    }
+                                    _this.resetValues();
+                                    if (hasChild) {
+                                        _this._rowChild = true;
+                                    }
+                                    _this._removingRow = true;
+                                    _this.forceUpdate();
+                                } }),
+                            this._editedRow &&
+                                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+                                    " ",
+                                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_5__["CommandButtonComponent"], { altStyle: true, tooltip: "Confirm", icon: confirmGridElementDark, shortcut: "", isActive: false, onClick: function () {
+                                            _this.resizeRow();
+                                            _this.forceUpdate();
+                                        } }),
+                                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_5__["CommandButtonComponent"], { altStyle: true, tooltip: "Cancel", icon: cancelGridElementDark, shortcut: "", isActive: false, onClick: function () {
+                                            _this.resetValues();
+                                            _this.forceUpdate();
+                                        } })),
+                            this._removingRow &&
+                                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+                                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_5__["CommandButtonComponent"], { altStyle: true, tooltip: "Confirm", icon: confirmGridElementDark, shortcut: "", isActive: false, onClick: function () {
+                                            grid.removeRowDefinition(grid.rowCount - 1);
+                                            _this.setRowValues();
+                                            _this.resizeRow();
+                                            _this.forceUpdate();
+                                            _this._removingRow = false;
+                                            _this._rowChild = false;
+                                        } }),
+                                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_5__["CommandButtonComponent"], { altStyle: true, tooltip: "Cancel", icon: cancelGridElementDark, shortcut: "", isActive: false, onClick: function () {
+                                            _this._removingRow = false;
+                                            _this._rowChild = false;
+                                            _this.forceUpdate();
+                                        } })))),
+                    this._rowChild && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { tooltip: "", label: "This row is not empty. Removing it will delete all contained controls. Do you want to remove this row and delete all controls within?", value: " ", color: "grey" })),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", { className: "ge" }),
+                    this.renderColumns(),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-grid-button-divider" },
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_5__["CommandButtonComponent"], { altStyle: true, tooltip: "Add Column", icon: addGridElementDark, shortcut: "", isActive: false, onClick: function () {
+                                var total = 0;
+                                var count = 0;
+                                for (var i = 0; i < grid.columnCount; ++i) {
+                                    var cd = grid.getColumnDefinition(i);
+                                    if (cd === null || cd === void 0 ? void 0 : cd.isPercentage) {
+                                        total += cd === null || cd === void 0 ? void 0 : cd.getValue(grid.host);
+                                        count++;
+                                    }
                                 }
-                            }
-                            grid.addRowDefinition(total / count, false);
-                            _this.resetValues();
-                            _this.forceUpdate();
-                        } }),
-                    "  ",
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_5__["CommandButtonComponent"], { altStyle: true, tooltip: "Remove Row", icon: subtractGridElementDark, shortcut: "", isActive: this._removingRow, disabled: grid.rowCount <= 1, onClick: function () {
-                            var hasChild = false;
-                            for (var i = 0; i < grid.columnCount; ++i) {
-                                var child = grid.cells[(grid.rowCount - 1) + ":" + i];
-                                if (child === null || child === void 0 ? void 0 : child.children.length) {
-                                    hasChild = true;
-                                    break;
-                                    //(grid.rowCount > 1 && !this._removingRow) 
+                                grid.addColumnDefinition(total / count, false);
+                                _this.resetValues();
+                                _this.forceUpdate();
+                            } }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_5__["CommandButtonComponent"], { altStyle: true, tooltip: "Remove Column", icon: subtractGridElementDark, shortcut: "", isActive: this._removingColumn, disabled: grid.columnCount <= 1, onClick: function () {
+                                var hasChild = false;
+                                for (var i = 0; i < grid.rowCount; ++i) {
+                                    var child = grid.cells[i + ":" + (grid.columnCount - 1)];
+                                    if (child === null || child === void 0 ? void 0 : child.children.length) {
+                                        hasChild = true;
+                                        break;
+                                    }
                                 }
-                            }
-                            _this.resetValues();
-                            if (hasChild) {
-                                _this._rowChild = true;
-                            }
-                            _this._removingRow = true;
-                            _this.forceUpdate();
-                        } }),
-                    this._editedRow &&
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
-                            " ",
+                                _this.resetValues();
+                                if (hasChild) {
+                                    _this._columnChild = true;
+                                }
+                                _this._removingColumn = true;
+                                _this.forceUpdate();
+                            } }),
+                        this._editedColumn && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
                             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_5__["CommandButtonComponent"], { altStyle: true, tooltip: "Confirm", icon: confirmGridElementDark, shortcut: "", isActive: false, onClick: function () {
-                                    _this.resizeRow();
+                                    _this.resizeColumn();
                                     _this.forceUpdate();
                                 } }),
                             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_5__["CommandButtonComponent"], { altStyle: true, tooltip: "Cancel", icon: cancelGridElementDark, shortcut: "", isActive: false, onClick: function () {
                                     _this.resetValues();
                                     _this.forceUpdate();
                                 } })),
-                    this._removingRow &&
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
-                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_5__["CommandButtonComponent"], { altStyle: true, tooltip: "Confirm", icon: confirmGridElementDark, shortcut: "", isActive: false, onClick: function () {
-                                    grid.removeRowDefinition(grid.rowCount - 1);
-                                    _this.setRowValues();
-                                    _this.resizeRow();
-                                    _this.forceUpdate();
-                                    _this._removingRow = false;
-                                    _this._rowChild = false;
-                                } }),
-                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_5__["CommandButtonComponent"], { altStyle: true, tooltip: "Cancel", icon: cancelGridElementDark, shortcut: "", isActive: false, onClick: function () {
-                                    _this._removingRow = false;
-                                    _this._rowChild = false;
-                                    _this.forceUpdate();
-                                } })))),
-            this._rowChild && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { tooltip: "", label: "This row is not empty. Removing it will delete all contained controls. Do you want to remove this row and delete all controls within?", value: " ", color: "grey" })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", { className: "ge" }),
-            this.renderColumns(),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-grid-button-divider" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_5__["CommandButtonComponent"], { altStyle: true, tooltip: "Add Column", icon: addGridElementDark, shortcut: "", isActive: false, onClick: function () {
-                        var total = 0;
-                        var count = 0;
-                        for (var i = 0; i < grid.columnCount; ++i) {
-                            var cd = grid.getColumnDefinition(i);
-                            if (cd === null || cd === void 0 ? void 0 : cd.isPercentage) {
-                                total += cd === null || cd === void 0 ? void 0 : cd.getValue(grid.host);
-                                count++;
-                            }
-                        }
-                        grid.addColumnDefinition(total / count, false);
-                        _this.resetValues();
-                        _this.forceUpdate();
-                    } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_5__["CommandButtonComponent"], { altStyle: true, tooltip: "Remove Column", icon: subtractGridElementDark, shortcut: "", isActive: this._removingColumn, disabled: grid.columnCount <= 1, onClick: function () {
-                        var hasChild = false;
-                        for (var i = 0; i < grid.rowCount; ++i) {
-                            var child = grid.cells[i + ":" + (grid.columnCount - 1)];
-                            if (child === null || child === void 0 ? void 0 : child.children.length) {
-                                hasChild = true;
-                                break;
-                            }
-                        }
-                        _this.resetValues();
-                        if (hasChild) {
-                            _this._columnChild = true;
-                        }
-                        _this._removingColumn = true;
-                        _this.forceUpdate();
-                    } }),
-                this._editedColumn && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_5__["CommandButtonComponent"], { altStyle: true, tooltip: "Confirm", icon: confirmGridElementDark, shortcut: "", isActive: false, onClick: function () {
-                            _this.resizeColumn();
-                            _this.forceUpdate();
-                        } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_5__["CommandButtonComponent"], { altStyle: true, tooltip: "Cancel", icon: cancelGridElementDark, shortcut: "", isActive: false, onClick: function () {
-                            _this.resetValues();
-                            _this.forceUpdate();
-                        } })),
-                this._removingColumn &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_5__["CommandButtonComponent"], { altStyle: true, tooltip: "Confirm", icon: confirmGridElementDark, shortcut: "", isActive: false, onClick: function () {
-                                grid.removeColumnDefinition(grid.columnCount - 1);
-                                _this.setColumnValues();
-                                _this.resizeColumn();
-                                _this.forceUpdate();
-                                _this._removingColumn = false;
-                                _this._columnChild = false;
-                            } }),
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_5__["CommandButtonComponent"], { altStyle: true, tooltip: "Cancel", icon: cancelGridElementDark, shortcut: "", isActive: false, onClick: function () {
-                                _this._removingColumn = false;
-                                _this._columnChild = false;
-                                _this.forceUpdate();
-                            } })),
-                " "),
-            this._columnChild && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { tooltip: "", label: "This column is not empty. Removing it will delete all contained controls. Do you want to remove this column and delete all controls within?", value: " ", color: "grey" }))));
+                        this._removingColumn &&
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+                                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_5__["CommandButtonComponent"], { altStyle: true, tooltip: "Confirm", icon: confirmGridElementDark, shortcut: "", isActive: false, onClick: function () {
+                                        grid.removeColumnDefinition(grid.columnCount - 1);
+                                        _this.setColumnValues();
+                                        _this.resizeColumn();
+                                        _this.forceUpdate();
+                                        _this._removingColumn = false;
+                                        _this._columnChild = false;
+                                    } }),
+                                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_5__["CommandButtonComponent"], { altStyle: true, tooltip: "Cancel", icon: cancelGridElementDark, shortcut: "", isActive: false, onClick: function () {
+                                        _this._removingColumn = false;
+                                        _this._columnChild = false;
+                                        _this.forceUpdate();
+                                    } })),
+                        " "),
+                    this._columnChild && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { tooltip: "", label: "This column is not empty. Removing it will delete all contained controls. Do you want to remove this column and delete all controls within?", value: " ", color: "grey" })))));
     };
     return GridPropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -44459,6 +44513,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/textInputLineComponent */ "./sharedUiComponents/lines/textInputLineComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/textLineComponent */ "./sharedUiComponents/lines/textLineComponent.tsx");
 /* harmony import */ var _sliderPropertyGridComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./sliderPropertyGridComponent */ "./components/propertyTab/propertyGrids/gui/sliderPropertyGridComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/targetsProxy */ "./sharedUiComponents/lines/targetsProxy.tsx");
+
 
 
 
@@ -44474,15 +44530,15 @@ var ImageBasedSliderPropertyGridComponent = /** @class */ (function (_super) {
         return _super.call(this, props) || this;
     }
     ImageBasedSliderPropertyGridComponent.prototype.render = function () {
-        var imageBasedSlider = this.props.imageBasedSlider;
+        var imageBasedSliders = this.props.imageBasedSliders;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { lockObject: this.props.lockObject, control: imageBasedSlider, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { lockObject: this.props.lockObject, controls: imageBasedSliders, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", null),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "IMAGE LINKS", value: " ", color: "grey" }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputLineComponent"], { icon: thumbImageLinkIcon, lockObject: this.props.lockObject, iconLabel: "Thumb Image Link", target: imageBasedSlider.thumbImage, label: "", propertyName: "source", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputLineComponent"], { icon: valueBarImageLinkIcon, lockObject: this.props.lockObject, iconLabel: "Value Bar Image Link", target: imageBasedSlider.valueBarImage, label: "", propertyName: "source", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputLineComponent"], { icon: sliderBackgroundImageIcon, lockObject: this.props.lockObject, iconLabel: "Background Image Link", target: imageBasedSlider.backgroundImage, label: "", propertyName: "source", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sliderPropertyGridComponent__WEBPACK_IMPORTED_MODULE_5__["SliderPropertyGridComponent"], { slider: imageBasedSlider, lockObject: this.props.lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputLineComponent"], { icon: thumbImageLinkIcon, lockObject: this.props.lockObject, iconLabel: "Thumb Image Link", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_6__["makeTargetsProxy"])(imageBasedSliders.map(function (slider) { return slider.thumbImage; }), this.props.onPropertyChangedObservable), label: "", propertyName: "source", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputLineComponent"], { icon: valueBarImageLinkIcon, lockObject: this.props.lockObject, iconLabel: "Value Bar Image Link", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_6__["makeTargetsProxy"])(imageBasedSliders.map(function (slider) { return slider.valueBarImage; }), this.props.onPropertyChangedObservable), label: "", propertyName: "source", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputLineComponent"], { icon: sliderBackgroundImageIcon, lockObject: this.props.lockObject, iconLabel: "Background Image Link", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_6__["makeTargetsProxy"])(imageBasedSliders.map(function (slider) { return slider.backgroundImage; }), this.props.onPropertyChangedObservable), label: "", propertyName: "source", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sliderPropertyGridComponent__WEBPACK_IMPORTED_MODULE_5__["SliderPropertyGridComponent"], { sliders: imageBasedSliders, lockObject: this.props.lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
     };
     return ImageBasedSliderPropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -44512,6 +44568,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _sharedUiComponents_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/optionsLineComponent */ "./sharedUiComponents/lines/optionsLineComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/textInputLineComponent */ "./sharedUiComponents/lines/textInputLineComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/textLineComponent */ "./sharedUiComponents/lines/textLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/targetsProxy */ "./sharedUiComponents/lines/targetsProxy.tsx");
+
 
 
 
@@ -44534,7 +44592,8 @@ var ImagePropertyGridComponent = /** @class */ (function (_super) {
     }
     ImagePropertyGridComponent.prototype.render = function () {
         var _this = this;
-        var image = this.props.image;
+        var images = this.props.images;
+        var image = images[0]; // for nine slice
         var stretchOptions = [
             { label: "None", value: babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_3__["Image"].STRETCH_NONE },
             { label: "Fill", value: babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_3__["Image"].STRETCH_FILL },
@@ -44543,19 +44602,19 @@ var ImagePropertyGridComponent = /** @class */ (function (_super) {
             { label: "NinePatch", value: babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_3__["Image"].STRETCH_NINE_PATCH },
         ];
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { lockObject: this.props.lockObject, control: image, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { lockObject: this.props.lockObject, controls: images, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", null),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_8__["TextLineComponent"], { label: "IMAGE", value: " ", color: "grey" }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextInputLineComponent"], { iconLabel: "Source", icon: imageLinkIcon, lockObject: this.props.lockObject, label: "", target: image, propertyName: "source", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextInputLineComponent"], { iconLabel: "Source", icon: imageLinkIcon, lockObject: this.props.lockObject, label: "", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_9__["makeTargetsProxy"])(images, this.props.onPropertyChangedObservable), propertyName: "source", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { iconLabel: "Crop", icon: cropIcon, lockObject: this.props.lockObject, label: "L", target: image, propertyName: "sourceLeft", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "T", target: image, propertyName: "sourceTop", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { iconLabel: "Crop", icon: cropIcon, lockObject: this.props.lockObject, label: "L", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_9__["makeTargetsProxy"])(images, this.props.onPropertyChangedObservable), propertyName: "sourceLeft", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "T", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_9__["makeTargetsProxy"])(images, this.props.onPropertyChangedObservable), propertyName: "sourceTop", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "R", target: image, icon: cropIcon, iconLabel: "Crop", propertyName: "sourceWidth", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "B", target: image, propertyName: "sourceHeight", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { iconLabel: "Autoscale", icon: autoResizeIcon, label: "AUTOSCALE", target: image, propertyName: "autoScale", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_6__["OptionsLineComponent"], { iconLabel: "Stretch", icon: stretchFillIcon, label: "", options: stretchOptions, target: image, propertyName: "stretch", onPropertyChangedObservable: this.props.onPropertyChangedObservable, onSelect: function (value) { return _this.setState({ mode: value }); } }),
-            image.stretch === babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_3__["Image"].STRETCH_NINE_PATCH && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "R", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_9__["makeTargetsProxy"])(images, this.props.onPropertyChangedObservable), icon: cropIcon, iconLabel: "Crop", propertyName: "sourceWidth", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "B", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_9__["makeTargetsProxy"])(images, this.props.onPropertyChangedObservable), propertyName: "sourceHeight", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { iconLabel: "Autoscale", icon: autoResizeIcon, label: "AUTOSCALE", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_9__["makeTargetsProxy"])(images, this.props.onPropertyChangedObservable), propertyName: "autoScale", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_6__["OptionsLineComponent"], { iconLabel: "Stretch", icon: stretchFillIcon, label: "", options: stretchOptions, target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_9__["makeTargetsProxy"])(images, this.props.onPropertyChangedObservable), propertyName: "stretch", onPropertyChangedObservable: this.props.onPropertyChangedObservable, onSelect: function (value) { return _this.setState({ mode: value }); } }),
+            images.length === 1 && image.stretch === babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_3__["Image"].STRETCH_NINE_PATCH && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { iconLabel: "Slice", icon: cropIcon, lockObject: this.props.lockObject, label: "L", target: image, propertyName: "sliceLeft", onPropertyChangedObservable: this.props.onPropertyChangedObservable, onChange: function () { image.populateNinePatchSlicesFromImage = false; _this.forceUpdate(); } }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "R", target: image, propertyName: "sliceRight", onPropertyChangedObservable: this.props.onPropertyChangedObservable, onChange: function () { image.populateNinePatchSlicesFromImage = false; _this.forceUpdate(); } })),
@@ -44566,10 +44625,10 @@ var ImagePropertyGridComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", null),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_8__["TextLineComponent"], { label: "ANIMATION SHEET", value: " ", color: "grey" }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider-short" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { iconLabel: "Cell Id", icon: cellIDIcon, lockObject: this.props.lockObject, label: "", isInteger: true, target: image, propertyName: "cellId", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { iconLabel: "Cell Id", icon: cellIDIcon, lockObject: this.props.lockObject, label: "", isInteger: true, target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_9__["makeTargetsProxy"])(images, this.props.onPropertyChangedObservable), propertyName: "cellId", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { icon: sizeIcon, lockObject: this.props.lockObject, label: "W", target: image, propertyName: "cellWidth", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "H", target: image, propertyName: "cellHeight", onPropertyChangedObservable: this.props.onPropertyChangedObservable }))));
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { icon: sizeIcon, lockObject: this.props.lockObject, label: "W", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_9__["makeTargetsProxy"])(images, this.props.onPropertyChangedObservable), propertyName: "cellWidth", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "H", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_9__["makeTargetsProxy"])(images, this.props.onPropertyChangedObservable), propertyName: "cellHeight", onPropertyChangedObservable: this.props.onPropertyChangedObservable }))));
     };
     return ImagePropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -44597,7 +44656,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/checkBoxLineComponent */ "./sharedUiComponents/lines/checkBoxLineComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/floatLineComponent */ "./sharedUiComponents/lines/floatLineComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/textLineComponent */ "./sharedUiComponents/lines/textLineComponent.tsx");
-/* harmony import */ var _sharedUiComponents_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/color3LineComponent */ "./sharedUiComponents/lines/color3LineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/targetsProxy */ "./sharedUiComponents/lines/targetsProxy.tsx");
+/* harmony import */ var _sharedUiComponents_lines_colorLineComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/colorLineComponent */ "./sharedUiComponents/lines/colorLineComponent.tsx");
+
 
 
 
@@ -44620,23 +44681,23 @@ var InputTextPropertyGridComponent = /** @class */ (function (_super) {
         return _super.call(this, props) || this;
     }
     InputTextPropertyGridComponent.prototype.render = function () {
-        var inputText = this.props.inputText;
+        var inputTexts = this.props.inputTexts;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { lockObject: this.props.lockObject, control: inputText, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { lockObject: this.props.lockObject, controls: inputTexts, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", null),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextLineComponent"], { label: "INPUT TEXT", value: " ", color: "grey" }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputLineComponent"], { iconLabel: "Text", icon: fontFamilyIcon, lockObject: this.props.lockObject, label: "", target: inputText, propertyName: "text", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputLineComponent"], { iconLabel: "Prompt", icon: fontFamilyIcon, lockObject: this.props.lockObject, label: "", target: inputText, propertyName: "promptMessage", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputLineComponent"], { iconLabel: "Max width", icon: sizeIcon, lockObject: this.props.lockObject, label: "", target: inputText, propertyName: "maxWidth", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_8__["Color3LineComponent"], { iconLabel: "Highlight color", icon: fillColorIcon, lockObject: this.props.lockObject, label: "", target: inputText, propertyName: "textHighlightColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__["SliderLineComponent"], { iconLabel: "Highligher opacity", icon: alphaIcon, label: "", minimum: 0, maximum: 1, step: 0.01, target: inputText, propertyName: "highligherOpacity", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { iconLabel: "On focus select all", icon: verticalMarginIcon, label: "ON FOCUS SELECT ALL", target: inputText, propertyName: "onFocusSelectAll", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputLineComponent"], { iconLabel: "Focused background", icon: colorIcon, lockObject: this.props.lockObject, label: "", target: inputText, propertyName: "focusedBackground", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputLineComponent"], { iconLabel: "Margin", icon: verticalMarginIcon, lockObject: this.props.lockObject, label: "", target: inputText, propertyName: "margin", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { iconLabel: "Auto stretch width", icon: sizeIcon, label: "AUTO STRETCH", target: inputText, propertyName: "autoStretchWidth", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_6__["FloatLineComponent"], { iconLabel: "Thickness", icon: strokeWeightIcon, lockObject: this.props.lockObject, label: "", target: inputText, propertyName: "thickness", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputLineComponent"], { iconLabel: "Placeholder text", icon: fontFamilyIcon, lockObject: this.props.lockObject, label: "", target: inputText, propertyName: "placeholderText", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_8__["Color3LineComponent"], { iconLabel: "Placeholder color", icon: fillColorIcon, lockObject: this.props.lockObject, label: "", target: inputText, propertyName: "placeholderColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputLineComponent"], { iconLabel: "Text", icon: fontFamilyIcon, lockObject: this.props.lockObject, label: "", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_8__["makeTargetsProxy"])(inputTexts, this.props.onPropertyChangedObservable), propertyName: "text" }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputLineComponent"], { iconLabel: "Prompt", icon: fontFamilyIcon, lockObject: this.props.lockObject, label: "", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_8__["makeTargetsProxy"])(inputTexts, this.props.onPropertyChangedObservable), propertyName: "promptMessage" }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputLineComponent"], { iconLabel: "Max width", icon: sizeIcon, lockObject: this.props.lockObject, label: "", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_8__["makeTargetsProxy"])(inputTexts, this.props.onPropertyChangedObservable), propertyName: "maxWidth" }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_colorLineComponent__WEBPACK_IMPORTED_MODULE_9__["ColorLineComponent"], { iconLabel: "Highlight color", icon: fillColorIcon, lockObject: this.props.lockObject, label: "", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_8__["makeTargetsProxy"])(inputTexts, this.props.onPropertyChangedObservable), propertyName: "textHighlightColor" }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__["SliderLineComponent"], { iconLabel: "Highligher opacity", icon: alphaIcon, label: "", minimum: 0, maximum: 1, step: 0.01, target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_8__["makeTargetsProxy"])(inputTexts, this.props.onPropertyChangedObservable), propertyName: "highligherOpacity" }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { iconLabel: "On focus select all", icon: verticalMarginIcon, label: "ON FOCUS SELECT ALL", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_8__["makeTargetsProxy"])(inputTexts, this.props.onPropertyChangedObservable), propertyName: "onFocusSelectAll", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_colorLineComponent__WEBPACK_IMPORTED_MODULE_9__["ColorLineComponent"], { iconLabel: "Focused background", icon: colorIcon, lockObject: this.props.lockObject, label: "", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_8__["makeTargetsProxy"])(inputTexts, this.props.onPropertyChangedObservable), propertyName: "focusedBackground", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputLineComponent"], { iconLabel: "Margin", icon: verticalMarginIcon, lockObject: this.props.lockObject, label: "", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_8__["makeTargetsProxy"])(inputTexts, this.props.onPropertyChangedObservable), propertyName: "margin", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { iconLabel: "Auto stretch width", icon: sizeIcon, label: "AUTO STRETCH", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_8__["makeTargetsProxy"])(inputTexts, this.props.onPropertyChangedObservable), propertyName: "autoStretchWidth", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_6__["FloatLineComponent"], { iconLabel: "Thickness", icon: strokeWeightIcon, lockObject: this.props.lockObject, label: "", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_8__["makeTargetsProxy"])(inputTexts, this.props.onPropertyChangedObservable), propertyName: "thickness", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputLineComponent"], { iconLabel: "Placeholder text", icon: fontFamilyIcon, lockObject: this.props.lockObject, label: "", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_8__["makeTargetsProxy"])(inputTexts, this.props.onPropertyChangedObservable), propertyName: "placeholderText", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_colorLineComponent__WEBPACK_IMPORTED_MODULE_9__["ColorLineComponent"], { iconLabel: "Placeholder color", icon: fillColorIcon, lockObject: this.props.lockObject, label: "", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_8__["makeTargetsProxy"])(inputTexts, this.props.onPropertyChangedObservable), propertyName: "placeholderColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
     };
     return InputTextPropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -44662,6 +44723,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/floatLineComponent */ "./sharedUiComponents/lines/floatLineComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/textInputLineComponent */ "./sharedUiComponents/lines/textInputLineComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/textLineComponent */ "./sharedUiComponents/lines/textLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/targetsProxy */ "./sharedUiComponents/lines/targetsProxy.tsx");
+
 
 
 
@@ -44675,32 +44738,58 @@ var LinePropertyGridComponent = /** @class */ (function (_super) {
         return _super.call(this, props) || this;
     }
     LinePropertyGridComponent.prototype.onDashChange = function (value) {
-        var line = this.props.line;
         var split = value.split(",");
-        line.dash = [];
-        split.forEach(function (v) {
-            var int = parseInt(v);
-            if (isNaN(int)) {
-                return;
-            }
-            line.dash.push(int);
-        });
+        var _loop_1 = function (line) {
+            line.dash = [];
+            split.forEach(function (v) {
+                var int = parseInt(v);
+                if (isNaN(int)) {
+                    return;
+                }
+                line.dash.push(int);
+            });
+        };
+        for (var _i = 0, _a = this.props.lines; _i < _a.length; _i++) {
+            var line = _a[_i];
+            _loop_1(line);
+        }
+        this.forceUpdate();
     };
     LinePropertyGridComponent.prototype.render = function () {
         var _this = this;
-        var line = this.props.line;
+        var lines = this.props.lines;
+        var dashes = lines[0].dash;
+        var _loop_2 = function (line) {
+            if (dashes.length === 0)
+                return "break";
+            if (line.dash.length !== dashes.length) {
+                dashes = [];
+            }
+            dashes.forEach(function (dash, index) {
+                if (line.dash[index] !== dash) {
+                    dashes = [];
+                }
+            });
+        };
+        for (var _i = 0, lines_1 = lines; _i < lines_1.length; _i++) {
+            var line = lines_1[_i];
+            var state_1 = _loop_2(line);
+            if (state_1 === "break")
+                break;
+        }
+        var dashString = dashes.join(",");
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { lockObject: this.props.lockObject, control: line, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { lockObject: this.props.lockObject, controls: lines, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", null),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "LINE", value: " ", color: "grey" }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextInputLineComponent"], { iconLabel: "Position 1", icon: positionIcon, lockObject: this.props.lockObject, label: "X", target: line, propertyName: "x1", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Y", target: line, propertyName: "y1", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextInputLineComponent"], { iconLabel: "Position 1", icon: positionIcon, lockObject: this.props.lockObject, label: "X", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_6__["makeTargetsProxy"])(lines, this.props.onPropertyChangedObservable), propertyName: "x1", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Y", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_6__["makeTargetsProxy"])(lines, this.props.onPropertyChangedObservable), propertyName: "y1", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextInputLineComponent"], { iconLabel: "Position 2", icon: positionIcon, lockObject: this.props.lockObject, label: "X", target: line, propertyName: "x2", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Y", target: line, propertyName: "y2", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { iconLabel: "Line width", icon: positionIcon, lockObject: this.props.lockObject, label: "", target: line, propertyName: "lineWidth", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextInputLineComponent"], { iconLabel: "Dash pattern", icon: positionIcon, lockObject: this.props.lockObject, label: "", target: line, value: line.dash.join(","), onChange: function (newValue) { return _this.onDashChange(newValue); } })));
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextInputLineComponent"], { iconLabel: "Position 2", icon: positionIcon, lockObject: this.props.lockObject, label: "X", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_6__["makeTargetsProxy"])(lines, this.props.onPropertyChangedObservable), propertyName: "x2", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Y", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_6__["makeTargetsProxy"])(lines, this.props.onPropertyChangedObservable), propertyName: "y2", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { iconLabel: "Line width", icon: positionIcon, lockObject: this.props.lockObject, label: "", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_6__["makeTargetsProxy"])(lines, this.props.onPropertyChangedObservable), propertyName: "lineWidth", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextInputLineComponent"], { iconLabel: "Dash pattern", icon: positionIcon, lockObject: this.props.lockObject, label: "", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_6__["makeTargetsProxy"])(lines, this.props.onPropertyChangedObservable), value: dashString, onChange: function (newValue) { return _this.onDashChange(newValue); } })));
     };
     return LinePropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -44727,6 +44816,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/textInputLineComponent */ "./sharedUiComponents/lines/textInputLineComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/checkBoxLineComponent */ "./sharedUiComponents/lines/checkBoxLineComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/textLineComponent */ "./sharedUiComponents/lines/textLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/targetsProxy */ "./sharedUiComponents/lines/targetsProxy.tsx");
+
 
 
 
@@ -44743,16 +44834,16 @@ var RadioButtonPropertyGridComponent = /** @class */ (function (_super) {
         return _super.call(this, props) || this;
     }
     RadioButtonPropertyGridComponent.prototype.render = function () {
-        var radioButton = this.props.radioButton;
+        var radioButtons = this.props.radioButtons;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { lockObject: this.props.lockObject, control: radioButton, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { lockObject: this.props.lockObject, controls: radioButtons, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", null),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextLineComponent"], { label: "RADIO BUTTON", value: " ", color: "grey" }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { iconLabel: "Stroke Weight", icon: strokeWeightIcon, lockObject: this.props.lockObject, label: "", target: radioButton, propertyName: "thickness", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { iconLabel: "Check Size Ratio", icon: scaleIcon, lockObject: this.props.lockObject, label: "", target: radioButton, propertyName: "checkSizeRatio", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextInputLineComponent"], { iconLabel: "Group", icon: strokeWeightIcon, lockObject: this.props.lockObject, label: "", target: radioButton, propertyName: "group", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { iconLabel: "Is Checked", icon: checkboxIcon, label: "CHECKED", target: radioButton, propertyName: "isChecked", onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { iconLabel: "Stroke Weight", icon: strokeWeightIcon, lockObject: this.props.lockObject, label: "", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_7__["makeTargetsProxy"])(radioButtons, this.props.onPropertyChangedObservable), propertyName: "thickness", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { iconLabel: "Check Size Ratio", icon: scaleIcon, lockObject: this.props.lockObject, label: "", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_7__["makeTargetsProxy"])(radioButtons, this.props.onPropertyChangedObservable), propertyName: "checkSizeRatio", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextInputLineComponent"], { iconLabel: "Group", icon: strokeWeightIcon, lockObject: this.props.lockObject, label: "", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_7__["makeTargetsProxy"])(radioButtons, this.props.onPropertyChangedObservable), propertyName: "group", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { iconLabel: "Is Checked", icon: checkboxIcon, label: "CHECKED", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_7__["makeTargetsProxy"])(radioButtons, this.props.onPropertyChangedObservable), propertyName: "isChecked", onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
     };
     return RadioButtonPropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -44778,6 +44869,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/floatLineComponent */ "./sharedUiComponents/lines/floatLineComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/checkBoxLineComponent */ "./sharedUiComponents/lines/checkBoxLineComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/textLineComponent */ "./sharedUiComponents/lines/textLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/targetsProxy */ "./sharedUiComponents/lines/targetsProxy.tsx");
+
 
 
 
@@ -44793,15 +44886,15 @@ var RectanglePropertyGridComponent = /** @class */ (function (_super) {
         return _super.call(this, props) || this;
     }
     RectanglePropertyGridComponent.prototype.render = function () {
-        var rectangle = this.props.rectangle;
+        var rectangles = this.props.rectangles;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { lockObject: this.props.lockObject, control: rectangle, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { lockObject: this.props.lockObject, controls: rectangles, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", null),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "RECTANGLE", value: " ", color: "grey" }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { iconLabel: "Clip Content", icon: clipContentsIcon, label: "CLIP CONTENT", target: rectangle, propertyName: "clipChildren", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { iconLabel: "Clip Content", icon: clipContentsIcon, label: "CLIP CONTENT", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_6__["makeTargetsProxy"])(rectangles, this.props.onPropertyChangedObservable), propertyName: "clipChildren", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { iconLabel: "Stroke Weight", icon: strokeWeightIcon, lockObject: this.props.lockObject, label: "", target: rectangle, propertyName: "thickness", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { iconLabel: "Corner Radius", icon: conerRadiusIcon, lockObject: this.props.lockObject, label: "", target: rectangle, propertyName: "cornerRadius", onPropertyChangedObservable: this.props.onPropertyChangedObservable }))));
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { iconLabel: "Stroke Weight", icon: strokeWeightIcon, lockObject: this.props.lockObject, label: "", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_6__["makeTargetsProxy"])(rectangles, this.props.onPropertyChangedObservable), propertyName: "thickness", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { iconLabel: "Corner Radius", icon: conerRadiusIcon, lockObject: this.props.lockObject, label: "", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_6__["makeTargetsProxy"])(rectangles, this.props.onPropertyChangedObservable), propertyName: "cornerRadius", onPropertyChangedObservable: this.props.onPropertyChangedObservable }))));
     };
     return RectanglePropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -44826,7 +44919,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../gui/commonControlPropertyGridComponent */ "./components/propertyTab/propertyGrids/gui/commonControlPropertyGridComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/floatLineComponent */ "./sharedUiComponents/lines/floatLineComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/textLineComponent */ "./sharedUiComponents/lines/textLineComponent.tsx");
-/* harmony import */ var _sharedUiComponents_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/color3LineComponent */ "./sharedUiComponents/lines/color3LineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_colorLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/colorLineComponent */ "./sharedUiComponents/lines/colorLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/targetsProxy */ "./sharedUiComponents/lines/targetsProxy.tsx");
+
 
 
 
@@ -44843,21 +44938,21 @@ var ScrollViewerPropertyGridComponent = /** @class */ (function (_super) {
         return _super.call(this, props) || this;
     }
     ScrollViewerPropertyGridComponent.prototype.render = function () {
-        var scrollViewer = this.props.scrollViewer;
+        var scrollViewers = this.props.scrollViewers;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { lockObject: this.props.lockObject, control: scrollViewer, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { lockObject: this.props.lockObject, controls: scrollViewers, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", null),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "RECTANGLE", value: " ", color: "grey" }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { iconLabel: "Stroke Weight", icon: strokeWeightIcon, lockObject: this.props.lockObject, label: "", target: scrollViewer, propertyName: "thickness", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { iconLabel: "Corner Radius", icon: conerRadiusIcon, lockObject: this.props.lockObject, label: "", target: scrollViewer, propertyName: "cornerRadius", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { iconLabel: "Stroke Weight", icon: strokeWeightIcon, lockObject: this.props.lockObject, label: "", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_6__["makeTargetsProxy"])(scrollViewers, this.props.onPropertyChangedObservable), propertyName: "thickness", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { iconLabel: "Corner Radius", icon: conerRadiusIcon, lockObject: this.props.lockObject, label: "", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_6__["makeTargetsProxy"])(scrollViewers, this.props.onPropertyChangedObservable), propertyName: "cornerRadius", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", null),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "SCROLLVIEWER", value: " ", color: "grey" }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { iconLabel: "Wheel precision", icon: sizeIcon, lockObject: this.props.lockObject, label: "", target: scrollViewer, propertyName: "wheelPrecision", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { iconLabel: "Bar size", icon: sizeIcon, lockObject: this.props.lockObject, label: "", target: scrollViewer, propertyName: "barSize", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_5__["Color3LineComponent"], { iconLabel: "Bar color", icon: fillColorIcon, lockObject: this.props.lockObject, label: "", target: scrollViewer, propertyName: "barColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_5__["Color3LineComponent"], { iconLabel: "Bar background", icon: fillColorIcon, lockObject: this.props.lockObject, label: "", target: scrollViewer, propertyName: "barBackground", onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { iconLabel: "Wheel precision", icon: sizeIcon, lockObject: this.props.lockObject, label: "", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_6__["makeTargetsProxy"])(scrollViewers, this.props.onPropertyChangedObservable), propertyName: "wheelPrecision", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_3__["FloatLineComponent"], { iconLabel: "Bar size", icon: sizeIcon, lockObject: this.props.lockObject, label: "", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_6__["makeTargetsProxy"])(scrollViewers, this.props.onPropertyChangedObservable), propertyName: "barSize", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_colorLineComponent__WEBPACK_IMPORTED_MODULE_5__["ColorLineComponent"], { iconLabel: "Bar color", icon: fillColorIcon, lockObject: this.props.lockObject, label: "", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_6__["makeTargetsProxy"])(scrollViewers, this.props.onPropertyChangedObservable), propertyName: "barColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_colorLineComponent__WEBPACK_IMPORTED_MODULE_5__["ColorLineComponent"], { iconLabel: "Bar background", icon: fillColorIcon, lockObject: this.props.lockObject, label: "", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_6__["makeTargetsProxy"])(scrollViewers, this.props.onPropertyChangedObservable), propertyName: "barBackground", onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
     };
     return ScrollViewerPropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -44891,10 +44986,10 @@ var SliderGenericPropertyGridComponent = /** @class */ (function (_super) {
         return _super.call(this, props) || this;
     }
     SliderGenericPropertyGridComponent.prototype.render = function () {
-        var slider = this.props.slider;
+        var sliders = this.props.sliders;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { lockObject: this.props.lockObject, control: slider, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sliderPropertyGridComponent__WEBPACK_IMPORTED_MODULE_3__["SliderPropertyGridComponent"], { slider: slider, lockObject: this.props.lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { lockObject: this.props.lockObject, controls: sliders, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sliderPropertyGridComponent__WEBPACK_IMPORTED_MODULE_3__["SliderPropertyGridComponent"], { sliders: sliders, lockObject: this.props.lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
     };
     return SliderGenericPropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -44920,7 +45015,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/checkBoxLineComponent */ "./sharedUiComponents/lines/checkBoxLineComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/textInputLineComponent */ "./sharedUiComponents/lines/textInputLineComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/textLineComponent */ "./sharedUiComponents/lines/textLineComponent.tsx");
-/* harmony import */ var _sharedUiComponents_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/color3LineComponent */ "./sharedUiComponents/lines/color3LineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_colorLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/colorLineComponent */ "./sharedUiComponents/lines/colorLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/targetsProxy */ "./sharedUiComponents/lines/targetsProxy.tsx");
+
 
 
 
@@ -44944,23 +45041,23 @@ var SliderPropertyGridComponent = /** @class */ (function (_super) {
         return _super.call(this, props) || this;
     }
     SliderPropertyGridComponent.prototype.render = function () {
-        var slider = this.props.slider;
+        var sliders = this.props.sliders;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", null),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "SLIDER", value: " ", color: "grey" }),
-            slider.typeName === "Slider" && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_6__["Color3LineComponent"], { iconLabel: "Border color", icon: colorIcon, lockObject: this.props.lockObject, label: "", target: slider, propertyName: "borderColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { iconLabel: "Display thumb", icon: showThumbIcon, label: "DISPLAY THUMB", target: slider, propertyName: "displayThumb", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { iconLabel: "Thumb circle", icon: thumbCircleIcon, label: "THUMB CIRCLE", target: slider, propertyName: "isThumbCircle", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { iconLabel: "Thumb clamped", icon: clampSliderValueIcon, label: "THUMB CLAMPED", target: slider, propertyName: "isThumbClamped", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { iconLabel: "Vertical", icon: verticalSliderIcon, label: "VERTICAL", target: slider, propertyName: "isVertical", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            sliders.every(function (slider) { return slider.typeName === "Slider"; }) && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_colorLineComponent__WEBPACK_IMPORTED_MODULE_6__["ColorLineComponent"], { iconLabel: "Border color", icon: colorIcon, lockObject: this.props.lockObject, label: "", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_7__["makeTargetsProxy"])(sliders, this.props.onPropertyChangedObservable), propertyName: "borderColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { iconLabel: "Display thumb", icon: showThumbIcon, label: "DISPLAY THUMB", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_7__["makeTargetsProxy"])(sliders, this.props.onPropertyChangedObservable), propertyName: "displayThumb", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { iconLabel: "Thumb circle", icon: thumbCircleIcon, label: "THUMB CIRCLE", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_7__["makeTargetsProxy"])(sliders, this.props.onPropertyChangedObservable), propertyName: "isThumbCircle", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { iconLabel: "Thumb clamped", icon: clampSliderValueIcon, label: "THUMB CLAMPED", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_7__["makeTargetsProxy"])(sliders, this.props.onPropertyChangedObservable), propertyName: "isThumbClamped", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { iconLabel: "Vertical", icon: verticalSliderIcon, label: "VERTICAL", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_7__["makeTargetsProxy"])(sliders, this.props.onPropertyChangedObservable), propertyName: "isVertical", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextInputLineComponent"], { iconLabel: "Thumb width", icon: thumbWidthIcon, lockObject: this.props.lockObject, label: "", target: slider, propertyName: "thumbWidth", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextInputLineComponent"], { iconLabel: "Bar offset", icon: barOffsetIcon, lockObject: this.props.lockObject, label: "", target: slider, propertyName: "barOffset", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextInputLineComponent"], { iconLabel: "Thumb width", icon: thumbWidthIcon, lockObject: this.props.lockObject, label: "", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_7__["makeTargetsProxy"])(sliders, this.props.onPropertyChangedObservable), propertyName: "thumbWidth", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextInputLineComponent"], { iconLabel: "Bar offset", icon: barOffsetIcon, lockObject: this.props.lockObject, label: "", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_7__["makeTargetsProxy"])(sliders, this.props.onPropertyChangedObservable), propertyName: "barOffset", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_2__["FloatLineComponent"], { iconLabel: "Minimum", icon: sliderValueMinimumIcon, lockObject: this.props.lockObject, label: "", target: slider, propertyName: "minimum", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_2__["FloatLineComponent"], { iconLabel: "Maximum", icon: sliderValueMaximumIcon, lockObject: this.props.lockObject, label: "", target: slider, propertyName: "maximum", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_2__["FloatLineComponent"], { iconLabel: "Minimum", icon: sliderValueMinimumIcon, lockObject: this.props.lockObject, label: "", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_7__["makeTargetsProxy"])(sliders, this.props.onPropertyChangedObservable), propertyName: "minimum", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_2__["FloatLineComponent"], { iconLabel: "Maximum", icon: sliderValueMaximumIcon, lockObject: this.props.lockObject, label: "", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_7__["makeTargetsProxy"])(sliders, this.props.onPropertyChangedObservable), propertyName: "maximum", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider-short" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_2__["FloatLineComponent"], { iconLabel: "Value", icon: sliderValueIcon, lockObject: this.props.lockObject, label: "", target: slider, propertyName: "value", onPropertyChangedObservable: this.props.onPropertyChangedObservable }))));
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_2__["FloatLineComponent"], { iconLabel: "Value", icon: sliderValueIcon, lockObject: this.props.lockObject, label: "", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_7__["makeTargetsProxy"])(sliders, this.props.onPropertyChangedObservable), propertyName: "value", onPropertyChangedObservable: this.props.onPropertyChangedObservable }))));
     };
     return SliderPropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -44986,6 +45083,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/checkBoxLineComponent */ "./sharedUiComponents/lines/checkBoxLineComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/textLineComponent */ "./sharedUiComponents/lines/textLineComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/floatLineComponent */ "./sharedUiComponents/lines/floatLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/targetsProxy */ "./sharedUiComponents/lines/targetsProxy.tsx");
+
 
 
 
@@ -45000,14 +45099,14 @@ var StackPanelPropertyGridComponent = /** @class */ (function (_super) {
         return _super.call(this, props) || this;
     }
     StackPanelPropertyGridComponent.prototype.render = function () {
-        var stackPanel = this.props.stackPanel;
+        var stackPanels = this.props.stackPanels;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { lockObject: this.props.lockObject, control: stackPanel, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { lockObject: this.props.lockObject, controls: stackPanels, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", null),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "STACKPANEL", value: " ", color: "grey" }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { iconLabel: "Clip children", icon: clipContentsIcon, label: "CLIP CHILDREN", target: stackPanel, propertyName: "clipChildren", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { iconLabel: "Vertical", icon: verticalMarginIcon, label: "VERTICAL", target: stackPanel, propertyName: "isVertical", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "", icon: verticalMarginIcon, iconLabel: "spacing", target: stackPanel, propertyName: "spacing", defaultValue: 0, onPropertyChangedObservable: this.props.onPropertyChangedObservable, onChange: function () { return stackPanel._markAsDirty(); } })));
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { iconLabel: "Clip children", icon: clipContentsIcon, label: "CLIP CHILDREN", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_6__["makeTargetsProxy"])(stackPanels, this.props.onPropertyChangedObservable), propertyName: "clipChildren", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { iconLabel: "Vertical", icon: verticalMarginIcon, label: "VERTICAL", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_6__["makeTargetsProxy"])(stackPanels, this.props.onPropertyChangedObservable), propertyName: "isVertical", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "", icon: verticalMarginIcon, iconLabel: "spacing", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_6__["makeTargetsProxy"])(stackPanels, this.props.onPropertyChangedObservable), propertyName: "spacing", defaultValue: 0, onPropertyChangedObservable: this.props.onPropertyChangedObservable, onChange: function () { return stackPanels.forEach(function (panel) { return panel._markAsDirty(); }); } })));
     };
     return StackPanelPropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -45037,7 +45136,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/checkBoxLineComponent */ "./sharedUiComponents/lines/checkBoxLineComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/floatLineComponent */ "./sharedUiComponents/lines/floatLineComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/textLineComponent */ "./sharedUiComponents/lines/textLineComponent.tsx");
-/* harmony import */ var _sharedUiComponents_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/color3LineComponent */ "./sharedUiComponents/lines/color3LineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_colorLineComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/colorLineComponent */ "./sharedUiComponents/lines/colorLineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/targetsProxy */ "./sharedUiComponents/lines/targetsProxy.tsx");
+
 
 
 
@@ -45057,24 +45158,24 @@ var TextBlockPropertyGridComponent = /** @class */ (function (_super) {
         return _super.call(this, props) || this;
     }
     TextBlockPropertyGridComponent.prototype.render = function () {
-        var textBlock = this.props.textBlock;
+        var textBlocks = this.props.textBlocks;
         var wrappingOptions = [
             { label: "Clip", value: babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3__["TextWrapping"].Clip },
             { label: "Ellipsis", value: babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3__["TextWrapping"].Ellipsis },
             { label: "Word wrap", value: babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3__["TextWrapping"].WordWrap },
         ];
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { lockObject: this.props.lockObject, control: textBlock, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonControlPropertyGridComponent"], { lockObject: this.props.lockObject, controls: textBlocks, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", null),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_8__["TextLineComponent"], { label: "TEXTBLOCK", value: " ", color: "grey" }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextInputLineComponent"], { iconLabel: "Text", icon: fontFamilyIcon, lockObject: this.props.lockObject, label: "", target: textBlock, propertyName: "text", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { iconLabel: "Resize to fit", icon: fontFamilyIcon, label: "RESIZE TO FIT", target: textBlock, propertyName: "resizeToFit", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_5__["OptionsLineComponent"], { iconLabel: "Wrapping", icon: fontFamilyIcon, label: "", options: wrappingOptions, target: textBlock, propertyName: "textWrapping", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextInputLineComponent"], { iconLabel: "Line spacing", icon: fontFamilyIcon, lockObject: this.props.lockObject, label: "", target: textBlock, propertyName: "lineSpacing", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextInputLineComponent"], { iconLabel: "Text", icon: fontFamilyIcon, lockObject: this.props.lockObject, label: "", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_10__["makeTargetsProxy"])(textBlocks, this.props.onPropertyChangedObservable), propertyName: "text", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { iconLabel: "Resize to fit", icon: fontFamilyIcon, label: "RESIZE TO FIT", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_10__["makeTargetsProxy"])(textBlocks, this.props.onPropertyChangedObservable), propertyName: "resizeToFit", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_5__["OptionsLineComponent"], { iconLabel: "Wrapping", icon: fontFamilyIcon, label: "", options: wrappingOptions, target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_10__["makeTargetsProxy"])(textBlocks, this.props.onPropertyChangedObservable), propertyName: "textWrapping", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextInputLineComponent"], { iconLabel: "Line spacing", icon: fontFamilyIcon, lockObject: this.props.lockObject, label: "", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_10__["makeTargetsProxy"])(textBlocks, this.props.onPropertyChangedObservable), propertyName: "lineSpacing", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", null),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_8__["TextLineComponent"], { label: "OUTLINE", value: " ", color: "grey" }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_7__["FloatLineComponent"], { iconLabel: "Outline width", icon: strokeWeightIcon, lockObject: this.props.lockObject, label: "", target: textBlock, propertyName: "outlineWidth", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_9__["Color3LineComponent"], { iconLabel: "Outline color", icon: fillColorIcon, lockObject: this.props.lockObject, label: "", target: textBlock, propertyName: "outlineColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_7__["FloatLineComponent"], { iconLabel: "Outline width", icon: strokeWeightIcon, lockObject: this.props.lockObject, label: "", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_10__["makeTargetsProxy"])(textBlocks, this.props.onPropertyChangedObservable), propertyName: "outlineWidth", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_colorLineComponent__WEBPACK_IMPORTED_MODULE_9__["ColorLineComponent"], { iconLabel: "Outline color", icon: fillColorIcon, lockObject: this.props.lockObject, label: "", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_10__["makeTargetsProxy"])(textBlocks, this.props.onPropertyChangedObservable), propertyName: "outlineColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
     };
     return TextBlockPropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -45152,12 +45253,14 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _propertyGrids_gui_controlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_24__ = __webpack_require__(/*! ./propertyGrids/gui/controlPropertyGridComponent */ "./components/propertyTab/propertyGrids/gui/controlPropertyGridComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_25__ = __webpack_require__(/*! ../../sharedUiComponents/lines/optionsLineComponent */ "./sharedUiComponents/lines/optionsLineComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_26__ = __webpack_require__(/*! ../../sharedUiComponents/lines/floatLineComponent */ "./sharedUiComponents/lines/floatLineComponent.tsx");
-/* harmony import */ var _sharedUiComponents_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_27__ = __webpack_require__(/*! ../../sharedUiComponents/lines/color3LineComponent */ "./sharedUiComponents/lines/color3LineComponent.tsx");
+/* harmony import */ var _sharedUiComponents_lines_colorLineComponent__WEBPACK_IMPORTED_MODULE_27__ = __webpack_require__(/*! ../../sharedUiComponents/lines/colorLineComponent */ "./sharedUiComponents/lines/colorLineComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_28__ = __webpack_require__(/*! ../../sharedUiComponents/lines/textInputLineComponent */ "./sharedUiComponents/lines/textInputLineComponent.tsx");
 /* harmony import */ var _parentingPropertyGridComponent__WEBPACK_IMPORTED_MODULE_29__ = __webpack_require__(/*! ../parentingPropertyGridComponent */ "./components/parentingPropertyGridComponent.tsx");
 /* harmony import */ var _propertyGrids_gui_displayGridPropertyGridComponent__WEBPACK_IMPORTED_MODULE_30__ = __webpack_require__(/*! ./propertyGrids/gui/displayGridPropertyGridComponent */ "./components/propertyTab/propertyGrids/gui/displayGridPropertyGridComponent.tsx");
 /* harmony import */ var _propertyGrids_gui_buttonPropertyGridComponent__WEBPACK_IMPORTED_MODULE_31__ = __webpack_require__(/*! ./propertyGrids/gui/buttonPropertyGridComponent */ "./components/propertyTab/propertyGrids/gui/buttonPropertyGridComponent.tsx");
 /* harmony import */ var _guiNodeTools__WEBPACK_IMPORTED_MODULE_32__ = __webpack_require__(/*! ../../guiNodeTools */ "./guiNodeTools.ts");
+/* harmony import */ var _sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_33__ = __webpack_require__(/*! ../../sharedUiComponents/lines/targetsProxy */ "./sharedUiComponents/lines/targetsProxy.tsx");
+
 
 
 
@@ -45363,97 +45466,117 @@ var PropertyTabComponent = /** @class */ (function (_super) {
         }
         this.props.globalState.workbench.loadFromSnippet(snippedId);
     };
-    PropertyTabComponent.prototype.renderNode = function (node) {
+    ;
+    PropertyTabComponent.prototype.renderNode = function (nodes) {
         var _a;
+        var node = nodes[0];
         return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "header" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { id: "logo", src: this.renderControlIcon(node) }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { id: "logo", src: this.renderControlIcon(nodes) }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "title" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_28__["TextInputLineComponent"], { noUnderline: true, lockObject: this._lockObject, label: "", target: node, propertyName: "name", onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }))),
-            this.renderProperties(node),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_28__["TextInputLineComponent"], { noUnderline: true, lockObject: this._lockObject, label: "", target: Object(_sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_33__["makeTargetsProxy"])(nodes, this.props.globalState.onPropertyChangedObservable), propertyName: "name", onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }))),
+            this.renderProperties(nodes),
             ((_a = node === null || node === void 0 ? void 0 : node.parent) === null || _a === void 0 ? void 0 : _a.typeName) === "Grid" && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_parentingPropertyGridComponent__WEBPACK_IMPORTED_MODULE_29__["ParentingPropertyGridComponent"], { control: node, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable, lockObject: this._lockObject })));
     };
-    PropertyTabComponent.prototype.renderProperties = function (node) {
+    /**
+     * returns the class name of a list of controls if they share a class, or an empty string if not
+     */
+    PropertyTabComponent.prototype.getControlsCommonClassName = function (nodes) {
+        if (nodes.length === 0)
+            return "";
+        var firstNode = nodes[0];
+        var firstClass = firstNode.getClassName();
+        for (var _i = 0, nodes_1 = nodes; _i < nodes_1.length; _i++) {
+            var node = nodes_1[_i];
+            if (node.getClassName() !== firstClass) {
+                return "";
+            }
+        }
+        return firstClass;
+    };
+    PropertyTabComponent.prototype.renderProperties = function (nodes) {
         var _this = this;
-        var className = node.getClassName();
+        if (nodes.length === 0)
+            return;
+        var className = this.getControlsCommonClassName(nodes);
         switch (className) {
             case "TextBlock": {
-                var textBlock = node;
-                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_textBlockPropertyGridComponent__WEBPACK_IMPORTED_MODULE_12__["TextBlockPropertyGridComponent"], { textBlock: textBlock, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }));
+                var textBlocks = nodes;
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_textBlockPropertyGridComponent__WEBPACK_IMPORTED_MODULE_12__["TextBlockPropertyGridComponent"], { textBlocks: textBlocks, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }));
             }
             case "InputText": {
-                var inputText = node;
-                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_inputTextPropertyGridComponent__WEBPACK_IMPORTED_MODULE_13__["InputTextPropertyGridComponent"], { inputText: inputText, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }));
+                var inputTexts = nodes;
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_inputTextPropertyGridComponent__WEBPACK_IMPORTED_MODULE_13__["InputTextPropertyGridComponent"], { inputTexts: inputTexts, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }));
             }
             case "ColorPicker": {
-                var colorPicker = node;
-                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_colorPickerPropertyGridComponent__WEBPACK_IMPORTED_MODULE_14__["ColorPickerPropertyGridComponent"], { colorPicker: colorPicker, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }));
+                var colorPickers = nodes;
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_colorPickerPropertyGridComponent__WEBPACK_IMPORTED_MODULE_14__["ColorPickerPropertyGridComponent"], { colorPickers: colorPickers, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }));
             }
             case "Image": {
-                var image = node;
-                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_imagePropertyGridComponent__WEBPACK_IMPORTED_MODULE_15__["ImagePropertyGridComponent"], { image: image, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
+                var images = nodes;
+                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_imagePropertyGridComponent__WEBPACK_IMPORTED_MODULE_15__["ImagePropertyGridComponent"], { images: images, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
             }
             case "Slider": {
-                var slider = node;
-                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_sliderGenericPropertyGridComponent__WEBPACK_IMPORTED_MODULE_9__["SliderGenericPropertyGridComponent"], { slider: slider, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }));
+                var sliders = nodes;
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_sliderGenericPropertyGridComponent__WEBPACK_IMPORTED_MODULE_9__["SliderGenericPropertyGridComponent"], { sliders: sliders, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }));
             }
             case "ImageBasedSlider": {
-                var imageBasedSlider = node;
-                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_imageBasedSliderPropertyGridComponent__WEBPACK_IMPORTED_MODULE_16__["ImageBasedSliderPropertyGridComponent"], { imageBasedSlider: imageBasedSlider, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }));
+                var imageBasedSliders = nodes;
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_imageBasedSliderPropertyGridComponent__WEBPACK_IMPORTED_MODULE_16__["ImageBasedSliderPropertyGridComponent"], { imageBasedSliders: imageBasedSliders, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }));
             }
             case "Rectangle": {
-                var rectangle = node;
-                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_rectanglePropertyGridComponent__WEBPACK_IMPORTED_MODULE_17__["RectanglePropertyGridComponent"], { rectangle: rectangle, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }));
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_rectanglePropertyGridComponent__WEBPACK_IMPORTED_MODULE_17__["RectanglePropertyGridComponent"], { rectangles: nodes, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }));
             }
             case "StackPanel": {
-                var stackPanel = node;
-                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_stackPanelPropertyGridComponent__WEBPACK_IMPORTED_MODULE_18__["StackPanelPropertyGridComponent"], { stackPanel: stackPanel, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }));
+                var stackPanels = nodes;
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_stackPanelPropertyGridComponent__WEBPACK_IMPORTED_MODULE_18__["StackPanelPropertyGridComponent"], { stackPanels: stackPanels, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }));
             }
             case "Grid": {
-                var grid = node;
-                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_gridPropertyGridComponent__WEBPACK_IMPORTED_MODULE_19__["GridPropertyGridComponent"], { grid: grid, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
+                var grids = nodes;
+                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_gridPropertyGridComponent__WEBPACK_IMPORTED_MODULE_19__["GridPropertyGridComponent"], { grids: grids, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
             }
             case "ScrollViewer": {
-                var scrollViewer = node;
-                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_scrollViewerPropertyGridComponent__WEBPACK_IMPORTED_MODULE_20__["ScrollViewerPropertyGridComponent"], { scrollViewer: scrollViewer, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }));
+                var scrollViewers = nodes;
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_scrollViewerPropertyGridComponent__WEBPACK_IMPORTED_MODULE_20__["ScrollViewerPropertyGridComponent"], { scrollViewers: scrollViewers, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }));
             }
             case "Ellipse": {
-                var ellipse = node;
-                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_ellipsePropertyGridComponent__WEBPACK_IMPORTED_MODULE_21__["EllipsePropertyGridComponent"], { ellipse: ellipse, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }));
+                var ellipses = nodes;
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_ellipsePropertyGridComponent__WEBPACK_IMPORTED_MODULE_21__["EllipsePropertyGridComponent"], { ellipses: ellipses, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }));
             }
             case "Checkbox": {
-                var checkbox = node;
-                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_checkboxPropertyGridComponent__WEBPACK_IMPORTED_MODULE_22__["CheckboxPropertyGridComponent"], { checkbox: checkbox, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }));
+                var checkboxes = nodes;
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_checkboxPropertyGridComponent__WEBPACK_IMPORTED_MODULE_22__["CheckboxPropertyGridComponent"], { checkboxes: checkboxes, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }));
             }
             case "RadioButton": {
-                var radioButton = node;
-                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_radioButtonPropertyGridComponent__WEBPACK_IMPORTED_MODULE_11__["RadioButtonPropertyGridComponent"], { radioButton: radioButton, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }));
+                var radioButtons = nodes;
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_radioButtonPropertyGridComponent__WEBPACK_IMPORTED_MODULE_11__["RadioButtonPropertyGridComponent"], { radioButtons: radioButtons, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }));
             }
             case "Line": {
-                var line = node;
-                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_linePropertyGridComponent__WEBPACK_IMPORTED_MODULE_10__["LinePropertyGridComponent"], { line: line, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
+                var lines = nodes;
+                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_linePropertyGridComponent__WEBPACK_IMPORTED_MODULE_10__["LinePropertyGridComponent"], { lines: lines, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable });
             }
             case "DisplayGrid": {
-                var displayGrid = node;
-                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_displayGridPropertyGridComponent__WEBPACK_IMPORTED_MODULE_30__["DisplayGridPropertyGridComponent"], { displayGrid: displayGrid, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }));
+                var displayGrids = nodes;
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_displayGridPropertyGridComponent__WEBPACK_IMPORTED_MODULE_30__["DisplayGridPropertyGridComponent"], { displayGrids: displayGrids, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }));
             }
             case "Button": {
-                var button_1 = node;
-                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_buttonPropertyGridComponent__WEBPACK_IMPORTED_MODULE_31__["ButtonPropertyGridComponent"], { key: "buttonMenu", rectangle: button_1, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable, onAddComponent: function (value) {
-                        var guiElement = _guiNodeTools__WEBPACK_IMPORTED_MODULE_32__["GUINodeTools"].CreateControlFromString(value);
-                        var newGuiNode = _this.props.globalState.workbench.createNewGuiNode(guiElement);
-                        button_1.addControl(newGuiNode);
-                        _this.props.globalState.onSelectionChangedObservable.notifyObservers(newGuiNode);
+                var buttons_1 = nodes;
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_buttonPropertyGridComponent__WEBPACK_IMPORTED_MODULE_31__["ButtonPropertyGridComponent"], { key: "buttonMenu", rectangles: buttons_1, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable, onAddComponent: function (value) {
+                        for (var _i = 0, buttons_2 = buttons_1; _i < buttons_2.length; _i++) {
+                            var button = buttons_2[_i];
+                            var guiElement = _guiNodeTools__WEBPACK_IMPORTED_MODULE_32__["GUINodeTools"].CreateControlFromString(value);
+                            var newGuiNode = _this.props.globalState.workbench.createNewGuiNode(guiElement);
+                            button.addControl(newGuiNode);
+                            _this.props.globalState.onSelectionChangedObservable.notifyObservers(newGuiNode);
+                        }
                     } }));
             }
         }
-        if (className !== "") {
-            var control = node;
-            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_controlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_24__["ControlPropertyGridComponent"], { control: control, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }));
-        }
-        return null;
+        var controls = nodes;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_controlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_24__["ControlPropertyGridComponent"], { controls: controls, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }));
     };
-    PropertyTabComponent.prototype.renderControlIcon = function (node) {
+    PropertyTabComponent.prototype.renderControlIcon = function (nodes) {
+        var node = nodes[0];
         var className = node.getClassName();
         switch (className) {
             case "TextBlock": {
@@ -45551,8 +45674,8 @@ var PropertyTabComponent = /** @class */ (function (_super) {
             this.props.globalState.onResponsiveChangeObservable.notifyObservers(false);
             babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["DataStorage"].WriteBoolean("Responsive", false);
         }
-        if (this.state.currentNode && this.props.globalState.workbench.selectedGuiNodes.length === 1) {
-            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "ge-propertyTab" }, this.renderNode(this.state.currentNode)));
+        if (this.state.currentNode && this.props.globalState.workbench.selectedGuiNodes.length > 0) {
+            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "ge-propertyTab" }, this.renderNode(this.props.globalState.workbench.selectedGuiNodes)));
         }
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "ge-propertyTab" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "header" },
@@ -45560,7 +45683,7 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "title" }, "AdvancedDynamicTexture")),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextLineComponent"], { tooltip: "", label: "ART BOARD", value: " ", color: "grey" }),
-                this.props.globalState.workbench._scene !== undefined && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_27__["Color3LineComponent"], { iconLabel: "Background Color", lockObject: this._lockObject, icon: artboardColorIcon, label: "", target: this.props.globalState.workbench._scene, propertyName: "clearColor", onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable })),
+                this.props.globalState.workbench._scene !== undefined && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_colorLineComponent__WEBPACK_IMPORTED_MODULE_27__["ColorLineComponent"], { iconLabel: "Background Color", lockObject: this._lockObject, icon: artboardColorIcon, label: "", target: this.props.globalState, propertyName: "backgroundColor", disableAlpha: true })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", { className: "ge" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextLineComponent"], { tooltip: "", label: "CANVAS", value: " ", color: "grey" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "RESPONSIVE", iconLabel: "A responsive layout for the AdvancedDynamicTexture will resize the UI layout and reflow controls to accommodate different device screen sizes", icon: responsiveIcon, isSelected: function () { return babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["DataStorage"].ReadBoolean("Responsive", true); }, onSelect: function (value) {
@@ -45605,7 +45728,7 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                         _this.props.globalState.onSnippetSaveObservable.notifyObservers();
                     } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", { className: "ge" }),
-                this.renderNode(this.props.globalState.workbench.trueRootContainer))));
+                this.renderNode([this.props.globalState.workbench.trueRootContainer]))));
     };
     return PropertyTabComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -45979,7 +46102,7 @@ var SceneExplorerComponent = /** @class */ (function (_super) {
                 else {
                     _this.props.globalState.selectionLock = false;
                 }
-            } }, guiElements && guiElements.length > 0 && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_treeItemComponent__WEBPACK_IMPORTED_MODULE_2__["TreeItemComponent"], { globalState: this.props.globalState, extensibilityGroups: this.props.extensibilityGroups, selectedEntity: this.state.selectedEntity, items: guiElements, label: "GUI", offset: 1, filter: this.state.filter }))));
+            }, onContextMenu: function (ev) { return ev.preventDefault(); } }, guiElements && guiElements.length > 0 && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_treeItemComponent__WEBPACK_IMPORTED_MODULE_2__["TreeItemComponent"], { globalState: this.props.globalState, extensibilityGroups: this.props.extensibilityGroups, selectedEntity: this.state.selectedEntity, items: guiElements, label: "GUI", offset: 1, filter: this.state.filter }))));
     };
     SceneExplorerComponent.prototype.onClose = function () {
         if (!this.props.onClose) {
@@ -47386,6 +47509,9 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         if (adt.getSize().width !== this._engine.getRenderWidth() || adt.getSize().height !== this._engine.getRenderHeight()) {
             adt.scaleTo(this._engine.getRenderWidth(), this._engine.getRenderHeight());
         }
+        if (adt.getSize().width !== this._engine.getRenderWidth() || adt.getSize().height !== this._engine.getRenderHeight()) {
+            adt.scaleTo(this._engine.getRenderWidth(), this._engine.getRenderHeight());
+        }
         this._trueRootContainer.clipContent = false;
         this._trueRootContainer.clipChildren = false;
     };
@@ -47394,7 +47520,6 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         if (adt._rootContainer != this._trueRootContainer) {
             this._visibleRegionContainer.removeControl(this._trueRootContainer);
             adt._rootContainer = this._trueRootContainer;
-            console.log(adt._rootContainer.name, this._panAndZoomContainer.host, this._visibleRegionContainer.host, this._trueRootContainer.host);
         }
         this._trueRootContainer.clipContent = true;
         this._trueRootContainer.clipChildren = true;
@@ -47942,8 +48067,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         this._engine = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Engine"](canvas);
         // Create our first scene.
         this._scene = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Scene"](this._engine);
-        var clearColor = 204 / 255.0;
-        this._scene.clearColor = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Color4"](clearColor, clearColor, clearColor, 0.0);
+        this._scene.clearColor = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Color4"](0, 0, 0, 0);
         var light = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["HemisphericLight"]("light1", babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Axis"].Y, this._scene);
         light.intensity = 0.9;
         this._guiSize = this._defaultGUISize;
@@ -48039,13 +48163,19 @@ var WorkbenchComponent = /** @class */ (function (_super) {
             _this._panning = true;
             _this._initialPanningOffset = _this.getScaledPointerPosition();
             _this._panAndZoomContainer.getDescendants().forEach(function (desc) {
+                if (!desc.metadata)
+                    desc.metadata = {};
+                desc.metadata.isPointerBlocker = desc.isPointerBlocker;
                 desc.isPointerBlocker = false;
             });
         };
         var endPanning = function () {
             _this._panning = false;
             _this._panAndZoomContainer.getDescendants().forEach(function (desc) {
-                desc.isPointerBlocker = true;
+                if (desc.metadata && desc.metadata.isPointerBlocker !== undefined) {
+                    desc.isPointerBlocker = desc.metadata.isPointerBlocker;
+                    delete desc.metadata.isPointerBlocker;
+                }
             });
         };
         var removeObservers = function () {
@@ -48053,7 +48183,6 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         };
         (_a = this._rootContainer.current) === null || _a === void 0 ? void 0 : _a.addEventListener("wheel", zoomFnScrollWheel);
         (_b = this._rootContainer.current) === null || _b === void 0 ? void 0 : _b.addEventListener("pointerdown", function (event) {
-            console.log(event);
             removeObservers();
             if (event.button !== 0 || _this._forcePanning) {
                 startPanning();
@@ -48276,16 +48405,33 @@ var GlobalState = /** @class */ (function () {
         this.onWindowResizeObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onGizmoUpdateRequireObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onArtBoardUpdateRequiredObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onBackgroundColorChangeObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.draggedControl = null;
         this.isSaving = false;
         this.lockObject = new _sharedUiComponents_tabs_propertyGrids_lockObject__WEBPACK_IMPORTED_MODULE_1__["LockObject"]();
         this.controlCamera = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].ReadBoolean("ControlCamera", true);
-        var r = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].ReadNumber("BackgroundColorR", 0.12549019607843137);
-        var g = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].ReadNumber("BackgroundColorG", 0.09803921568627451);
-        var b = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].ReadNumber("BackgroundColorB", 0.25098039215686274);
-        this.backgroundColor = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Color4"](r, g, b, 1.0);
+        var defaultBrightness = 204 / 255.0;
+        var r = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].ReadNumber("BackgroundColorR", defaultBrightness);
+        var g = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].ReadNumber("BackgroundColorG", defaultBrightness);
+        var b = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].ReadNumber("BackgroundColorB", defaultBrightness);
+        this.backgroundColor = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Color3"](r, g, b);
+        this.onBackgroundColorChangeObservable.notifyObservers();
         _diagram_coordinateHelper__WEBPACK_IMPORTED_MODULE_2__["CoordinateHelper"].globalState = this;
     }
+    Object.defineProperty(GlobalState.prototype, "backgroundColor", {
+        get: function () {
+            return this._backgroundColor;
+        },
+        set: function (value) {
+            this._backgroundColor = value;
+            this.onBackgroundColorChangeObservable.notifyObservers();
+            babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].WriteNumber("BackgroundColorR", value.r);
+            babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].WriteNumber("BackgroundColorG", value.g);
+            babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].WriteNumber("BackgroundColorB", value.b);
+        },
+        enumerable: false,
+        configurable: true
+    });
     return GlobalState;
 }());
 
@@ -48970,6 +49116,9 @@ var ColorPicker = /** @class */ (function (_super) {
         }
         var hsv = this.state.color.toHSV();
         babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color3"].HSVtoRGBToRef(hsv.r, saturation, value, this.state.color);
+        if (this.state.alpha === 0) {
+            this.setState({ alpha: 1 });
+        }
         this.setState({ color: this.state.color });
     };
     ColorPicker.prototype._evaluateHue = function (evt) {
@@ -49023,6 +49172,7 @@ var ColorPicker = /** @class */ (function (_super) {
                             left: "".concat((hsv.r / 360.0) * 100, "%"),
                             border: "1px solid " + colorHexRef,
                         } }))),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-alpha" }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-rgb" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "red" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorComponentEntry__WEBPACK_IMPORTED_MODULE_3__["ColorComponentEntry"], { label: "R", min: 0, max: 255, value: Math.round(this.state.color.r * 255), onChange: function (value) {
@@ -49738,6 +49888,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @fortawesome/react-fontawesome */ "../../node_modules/@fortawesome/react-fontawesome/index.es.js");
+/* harmony import */ var _targetsProxy__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./targetsProxy */ "./sharedUiComponents/lines/targetsProxy.tsx");
+
 
 
 
@@ -49748,10 +49900,10 @@ var CheckBoxLineComponent = /** @class */ (function (_super) {
         _this._localChange = false;
         _this._uniqueId = CheckBoxLineComponent._UniqueIdSeed++;
         if (_this.props.isSelected) {
-            _this.state = { isSelected: _this.props.isSelected() };
+            _this.state = { isSelected: _this.props.isSelected(), isConflict: false };
         }
         else {
-            _this.state = { isSelected: _this.props.target[_this.props.propertyName] == true };
+            _this.state = { isSelected: _this.props.target[_this.props.propertyName] === true, isConflict: _this.props.target[_this.props.propertyName] === _targetsProxy__WEBPACK_IMPORTED_MODULE_3__["conflictingValuesPlaceholder"] };
         }
         if (_this.props.disabled) {
             _this.state = Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])(Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])({}, _this.state), { isDisabled: _this.props.disabled });
@@ -49764,7 +49916,10 @@ var CheckBoxLineComponent = /** @class */ (function (_super) {
             currentState = nextProps.isSelected();
         }
         else {
-            currentState = nextProps.target[nextProps.propertyName] == true;
+            currentState = nextProps.target[nextProps.propertyName] === true;
+            if (nextProps.target[nextProps.propertyName] === _targetsProxy__WEBPACK_IMPORTED_MODULE_3__["conflictingValuesPlaceholder"]) {
+                nextState.isConflict = true;
+            }
         }
         if (currentState !== nextState.isSelected || this._localChange) {
             nextState.isSelected = currentState;
@@ -49774,7 +49929,7 @@ var CheckBoxLineComponent = /** @class */ (function (_super) {
         if (nextProps.disabled !== nextState.isDisabled) {
             return true;
         }
-        return nextProps.label !== this.props.label || nextProps.target !== this.props.target;
+        return nextProps.label !== this.props.label || nextProps.target !== this.props.target || nextState.isConflict !== this.state.isConflict;
     };
     CheckBoxLineComponent.prototype.onChange = function () {
         this._localChange = true;
@@ -49795,7 +49950,7 @@ var CheckBoxLineComponent = /** @class */ (function (_super) {
         if (this.props.onValueChanged) {
             this.props.onValueChanged();
         }
-        this.setState({ isSelected: !this.state.isSelected });
+        this.setState({ isSelected: !this.state.isSelected, isConflict: false });
     };
     CheckBoxLineComponent.prototype.render = function () {
         var _this = this;
@@ -49805,7 +49960,7 @@ var CheckBoxLineComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.iconLabel }, this.props.label),
             this.props.faIcons && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__["FontAwesomeIcon"], { className: "cbx ".concat(this.props.disabled ? "disabled" : ""), icon: this.state.isSelected ? this.props.faIcons.enabled : this.props.faIcons.disabled, onClick: function () { return !_this.props.disabled && _this.onChange(); } }),
             !this.props.faIcons && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "checkBox" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "checkbox", id: "checkbox" + this._uniqueId, className: "cbx hidden", checked: this.state.isSelected, onChange: function () { return _this.onChange(); }, disabled: !!this.props.disabled }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "checkbox", id: "checkbox" + this._uniqueId, className: "cbx hidden ".concat(this.state.isConflict ? "conflict" : ""), checked: this.state.isSelected, onChange: function () { return _this.onChange(); }, disabled: !!this.props.disabled }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("label", { htmlFor: "checkbox" + this._uniqueId, className: "lbl".concat(!!this.props.disabled ? " disabled" : "") }))));
     };
     CheckBoxLineComponent._UniqueIdSeed = 0;
@@ -49829,13 +49984,48 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _numericInputComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./numericInputComponent */ "./sharedUiComponents/lines/numericInputComponent.tsx");
-/* harmony import */ var _fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @fortawesome/react-fontawesome */ "../../node_modules/@fortawesome/react-fontawesome/index.es.js");
-/* harmony import */ var _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @fortawesome/free-solid-svg-icons */ "../../node_modules/@fortawesome/free-solid-svg-icons/index.es.js");
-/* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! babylonjs/Maths/math.color */ "babylonjs/Misc/observable");
-/* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_5__);
+/* harmony import */ var _colorLineComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./colorLineComponent */ "./sharedUiComponents/lines/colorLineComponent.tsx");
+
+
+
+var Color3LineComponent = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(Color3LineComponent, _super);
+    function Color3LineComponent() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    Color3LineComponent.prototype.render = function () {
+        var props = this.props;
+        return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorLineComponent__WEBPACK_IMPORTED_MODULE_2__["ColorLineComponent"], Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])({ disableAlpha: true }, props));
+    };
+    return Color3LineComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./sharedUiComponents/lines/colorLineComponent.tsx":
+/*!*********************************************************!*\
+  !*** ./sharedUiComponents/lines/colorLineComponent.tsx ***!
+  \*********************************************************/
+/*! exports provided: ColorLineComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ColorLineComponent", function() { return ColorLineComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Maths/math.color */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _numericInputComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./numericInputComponent */ "./sharedUiComponents/lines/numericInputComponent.tsx");
+/* harmony import */ var _fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @fortawesome/react-fontawesome */ "../../node_modules/@fortawesome/react-fontawesome/index.es.js");
+/* harmony import */ var _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @fortawesome/free-solid-svg-icons */ "../../node_modules/@fortawesome/free-solid-svg-icons/index.es.js");
 /* harmony import */ var _colorPickerComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./colorPickerComponent */ "./sharedUiComponents/lines/colorPickerComponent.tsx");
 /* harmony import */ var _textInputLineComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./textInputLineComponent */ "./sharedUiComponents/lines/textInputLineComponent.tsx");
+/* harmony import */ var _targetsProxy__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./targetsProxy */ "./sharedUiComponents/lines/targetsProxy.tsx");
+
 
 
 
@@ -49845,137 +50035,128 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var copyIcon = __webpack_require__(/*! ./copy.svg */ "./sharedUiComponents/lines/copy.svg");
-var Color3LineComponent = /** @class */ (function (_super) {
-    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(Color3LineComponent, _super);
-    function Color3LineComponent(props) {
+var emptyColor = new babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color4"](0, 0, 0, 0);
+var ColorLineComponent = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ColorLineComponent, _super);
+    function ColorLineComponent(props) {
         var _this = _super.call(this, props) || this;
-        _this._localChange = false;
-        var typeName = typeof _this.props.target[_this.props.propertyName];
-        if (typeName === "string") {
-            var colorConverted = _this.convertToColor3(_this.props.target[_this.props.propertyName]);
-            _this.state = { isExpanded: false, color: colorConverted, colorText: _this.props.target[_this.props.propertyName] };
-        }
-        else {
-            _this.state = { isExpanded: false, color: _this.props.target[_this.props.propertyName].clone(), colorText: _this.props.target[_this.props.propertyName].toHexString() };
-        }
+        var colorString = _this.getValueAsString();
+        var color = _this.getValue();
+        _this.state = { isExpanded: false, color: color, colorString: colorString };
         if (props.isLinear) {
             _this.state.color.toGammaSpaceToRef(_this.state.color);
         }
-        props.target._isLinearColor = props.isLinear; // so that replayRecorder can append toLinearSpace() as appropriate
-        _this._colorPickerOpen = false;
+        var target = _this.props.target;
+        target._isLinearColor = props.isLinear; // so that replayRecorder can append toLinearSpace() as appropriate
         return _this;
     }
-    Color3LineComponent.prototype.convertToColor3 = function (color) {
-        if (color === "" || color === "transparent") {
-            return new babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_5__["Color4"](0, 0, 0, 0);
+    ColorLineComponent.prototype.shouldComponentUpdate = function (nextProps, nextState) {
+        var stateString = nextState.colorString;
+        var stateColor = nextState.color;
+        var propsString = this.getValueAsString(nextProps);
+        var propsColor = this.getValue(nextProps);
+        if (stateString !== this.state.colorString || stateColor !== this.state.color) {
+            nextState.colorString = stateString;
+            nextState.color = stateColor;
+            return true;
         }
-        if (color.substring(0, 1) !== "#" || color.length !== 7) {
-            var d = document.createElement("div");
-            d.style.color = color;
-            document.body.append(d);
-            var rgb = window.getComputedStyle(d).color;
-            document.body.removeChild(d);
-            var rgbArray = rgb
-                .substring(4, rgb.length - 1)
-                .replace(/ /g, "")
-                .split(",");
-            return new babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_5__["Color3"](parseInt(rgbArray[0]) / 255, parseInt(rgbArray[1]) / 255, parseInt(rgbArray[2]) / 255);
+        if (propsString !== this.state.colorString || propsColor !== this.state.color) {
+            nextState.colorString = propsString;
+            nextState.color = propsColor;
+            return true;
         }
-        return babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_5__["Color3"].FromHexString(color);
-    };
-    Color3LineComponent.prototype.shouldComponentUpdate = function (nextProps, nextState) {
-        var isString = typeof this.props.target[this.props.propertyName] === "string";
-        var currentState = isString
-            ? this.convertToColor3(nextProps.target[nextProps.propertyName])
-            : this.props.isLinear
-                ? nextProps.target[nextProps.propertyName].toGammaSpace()
-                : nextProps.target[nextProps.propertyName];
-        if (!currentState.equals(nextState.color) || this._localChange) {
-            nextState.color = currentState.clone();
-            nextState.colorText = isString ? nextProps.target[nextProps.propertyName] : nextProps.target[nextProps.propertyName].toHexString();
-            this._localChange = false;
+        if (nextState.isExpanded !== this.state.isExpanded) {
             return true;
         }
         return false;
     };
-    Color3LineComponent.prototype.setPropertyValue = function (newColor, newColorText) {
-        var isString = typeof this.props.target[this.props.propertyName] === "string";
-        if (isString) {
-            this.props.target[this.props.propertyName] = newColorText;
+    ColorLineComponent.prototype.getValue = function (props) {
+        if (props === void 0) { props = this.props; }
+        var target = props.target;
+        var property = target[props.propertyName];
+        if (!property)
+            return emptyColor;
+        if (typeof property === "string") {
+            if (property === _targetsProxy__WEBPACK_IMPORTED_MODULE_8__["conflictingValuesPlaceholder"]) {
+                return emptyColor;
+            }
+            return this.convertToColor(property);
         }
         else {
-            this.props.target[this.props.propertyName] = newColor;
-            if (this.props.isLinear) {
-                this.props.target[this.props.propertyName] = newColor.toLinearSpace();
-            }
+            return property;
         }
     };
-    Color3LineComponent.prototype.onChange = function (newValue) {
-        this._localChange = true;
-        var newColor = this.convertToColor3(newValue);
-        if (this._colorPickerOpen && this.props.icon) {
-            var savedColor = this.convertToColor3(this._colorStringSaved);
-            if (savedColor.equals(newColor)) {
-                newValue = this._colorStringSaved;
-            }
+    ColorLineComponent.prototype.getValueAsString = function (props) {
+        if (props === void 0) { props = this.props; }
+        var target = props.target;
+        var property = target[props.propertyName];
+        if (!property)
+            return "";
+        if (typeof property === "string") {
+            return property;
         }
+        else {
+            return property.toHexString();
+        }
+    };
+    ColorLineComponent.prototype.setColorFromString = function (colorString) {
+        if (colorString === _targetsProxy__WEBPACK_IMPORTED_MODULE_8__["conflictingValuesPlaceholder"])
+            return;
+        var color = this.convertToColor(colorString);
+        if (this.props.isLinear) {
+            color = color.toLinearSpace();
+        }
+        this.updateColor(color);
+        this.setState({ color: color, colorString: colorString });
+    };
+    ColorLineComponent.prototype.setColor = function (color) {
+        if (this.props.isLinear) {
+            color = color.toLinearSpace();
+        }
+        this.updateColor(color);
+        var colorString = this.props.disableAlpha ? this.toColor3(color).toHexString() : color.toHexString();
+        this.setState({ color: color, colorString: colorString });
+    };
+    ColorLineComponent.prototype.updateColor = function (newColor) {
+        // whether to set properties to color3 or color4
+        var setColor = this.props.disableAlpha ? this.toColor3(newColor) : newColor;
+        var target = this.props.target;
+        var initialValue = target[this.props.propertyName];
+        var value = typeof target[this.props.propertyName] === "string" ? setColor.toHexString() : setColor;
+        // make the change
+        target[this.props.propertyName] = value;
+        // notify observers
         if (this.props.onPropertyChangedObservable) {
             this.props.onPropertyChangedObservable.notifyObservers({
-                object: this.props.target,
+                object: target,
                 property: this.props.propertyName,
-                value: newColor,
-                initialValue: this.state.color,
+                value: value,
+                initialValue: initialValue
             });
         }
-        this.setPropertyValue(newColor, newValue);
-        this.setState({ color: newColor, colorText: newValue });
-        if (this.props.onValueChange) {
-            this.props.onValueChange(newValue);
+        if (this.props.onChange) {
+            this.props.onChange();
         }
     };
-    Color3LineComponent.prototype.switchExpandState = function () {
-        this._localChange = true;
+    ColorLineComponent.prototype.switchExpandState = function () {
         this.setState({ isExpanded: !this.state.isExpanded });
     };
-    Color3LineComponent.prototype.raiseOnPropertyChanged = function (previousValue) {
-        if (!this.props.onPropertyChangedObservable) {
+    ColorLineComponent.prototype.updateStateR = function (value) {
+        this.setColor(new babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color4"](value, this.state.color.g, this.state.color.b, this.state.color.a));
+    };
+    ColorLineComponent.prototype.updateStateG = function (value) {
+        this.setColor(new babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color4"](this.state.color.r, value, this.state.color.b, this.state.color.a));
+    };
+    ColorLineComponent.prototype.updateStateB = function (value) {
+        this.setColor(new babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color4"](this.state.color.r, this.state.color.g, value, this.state.color.a));
+    };
+    ColorLineComponent.prototype.updateStateA = function (value) {
+        if (this.props.disableAlpha) {
             return;
         }
-        this.props.onPropertyChangedObservable.notifyObservers({
-            object: this.props.target,
-            property: this.props.propertyName,
-            value: this.state.color,
-            initialValue: previousValue,
-        });
+        this.setColor(new babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color4"](this.state.color.r, this.state.color.g, this.state.color.b, value));
     };
-    Color3LineComponent.prototype.updateStateR = function (value) {
-        this._localChange = true;
-        var store = this.state.color.clone();
-        this.state.color.r = value;
-        var hex = this.state.color.toHexString();
-        this.setPropertyValue(this.state.color, hex);
-        this.setState({ color: this.state.color, colorText: hex });
-        this.raiseOnPropertyChanged(store);
-    };
-    Color3LineComponent.prototype.updateStateG = function (value) {
-        this._localChange = true;
-        var store = this.state.color.clone();
-        this.state.color.g = value;
-        var hex = this.state.color.toHexString();
-        this.setPropertyValue(this.state.color, hex);
-        this.setState({ color: this.state.color, colorText: hex });
-        this.raiseOnPropertyChanged(store);
-    };
-    Color3LineComponent.prototype.updateStateB = function (value) {
-        this._localChange = true;
-        var store = this.state.color.clone();
-        this.state.color.b = value;
-        var hex = this.state.color.toHexString();
-        this.setPropertyValue(this.state.color, hex);
-        this.setState({ color: this.state.color, colorText: hex });
-        this.raiseOnPropertyChanged(store);
-    };
-    Color3LineComponent.prototype.copyToClipboard = function () {
+    ColorLineComponent.prototype.copyToClipboard = function () {
         var element = document.createElement("div");
         element.textContent = this.state.color.toHexString();
         document.body.appendChild(element);
@@ -49988,38 +50169,64 @@ var Color3LineComponent = /** @class */ (function (_super) {
         document.execCommand("copy");
         element.remove();
     };
-    Color3LineComponent.prototype.convert = function (colorString) {
-        this.onChange(this._colorString);
+    Object.defineProperty(ColorLineComponent.prototype, "colorString", {
+        get: function () {
+            return this.state.colorString;
+        },
+        set: function (_) { },
+        enumerable: false,
+        configurable: true
+    });
+    ColorLineComponent.prototype.convertToColor = function (color) {
+        if (color === "" || color === "transparent") {
+            return emptyColor;
+        }
+        if (color.substring(0, 1) !== "#" || (color.length !== 7 && color.length !== 9)) {
+            var d = document.createElement("div");
+            d.style.color = color;
+            document.body.append(d);
+            var rgb = window.getComputedStyle(d).color;
+            document.body.removeChild(d);
+            var rgbArray = rgb
+                .substring(4, rgb.length - 1)
+                .replace(/ /g, "")
+                .split(",");
+            var alpha = rgbArray.length > 3 ? parseInt(rgbArray[3]) / 255 : 1.0;
+            return new babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color4"](parseInt(rgbArray[0]) / 255, parseInt(rgbArray[1]) / 255, parseInt(rgbArray[2]) / 255, alpha);
+        }
+        if (this.props.disableAlpha) {
+            var color3 = babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color3"].FromHexString(color);
+            return new babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color4"](color3.r, color3.g, color3.b, 1.0);
+        }
+        return babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color4"].FromHexString(color);
     };
-    Color3LineComponent.prototype.render = function () {
+    ColorLineComponent.prototype.toColor3 = function (color) {
+        return new babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color3"](color.r, color.g, color.b);
+    };
+    ColorLineComponent.prototype.render = function () {
         var _this = this;
-        var chevron = this.state.isExpanded ? react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_3__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_4__["faMinus"] }) : react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_3__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_4__["faPlus"] });
-        this._colorString = this.state.colorText;
+        var chevron = this.state.isExpanded ? react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_4__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_5__["faMinus"] }) : react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_4__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_5__["faPlus"] });
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color3Line" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "firstLine", title: this.props.label },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "firstLine" },
                 this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, title: this.props.iconLabel, alt: this.props.iconLabel, className: "icon" }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label" }, this.props.label),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color3" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorPickerComponent__WEBPACK_IMPORTED_MODULE_6__["ColorPickerLineComponent"], { linearHint: this.props.isLinear, value: this.state.color, onColorChanged: function (color) {
-                            if (!_this._colorPickerOpen) {
-                                _this._colorStringSaved = _this._colorString;
-                            }
-                            _this._colorPickerOpen = true;
-                            _this.onChange(color);
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorPickerComponent__WEBPACK_IMPORTED_MODULE_6__["ColorPickerLineComponent"], { linearHint: this.props.isLinear, value: this.props.disableAlpha ? this.toColor3(this.state.color) : this.state.color, onColorChanged: function (color) {
+                            _this.setColor(_this.convertToColor(color));
                         } })),
-                this.props.icon && this.props.lockObject && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_textInputLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "", target: this, propertyName: "_colorString", onChange: function (newValue) {
-                        _this._colorPickerOpen = false;
-                        _this.convert(newValue);
+                this.props.icon && this.props.lockObject && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_textInputLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "", target: this, propertyName: "colorString", onChange: function (newValue) {
+                        _this.setColorFromString(newValue);
                     }, onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "copy hoverIcon", onClick: function () { return _this.copyToClipboard(); }, title: "Copy to clipboard" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: copyIcon, alt: "" })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "expand hoverIcon", onClick: function () { return _this.switchExpandState(); }, title: "Expand" }, chevron)),
             this.state.isExpanded && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "secondLine" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { label: "r", value: this.state.color.r, onChange: function (value) { return _this.updateStateR(value); } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { label: "g", value: this.state.color.g, onChange: function (value) { return _this.updateStateG(value); } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { label: "b", value: this.state.color.b, onChange: function (value) { return _this.updateStateB(value); } })))));
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_3__["NumericInputComponent"], { label: "r", value: this.state.color.r, onChange: function (value) { return _this.updateStateR(value); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_3__["NumericInputComponent"], { label: "g", value: this.state.color.g, onChange: function (value) { return _this.updateStateG(value); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_3__["NumericInputComponent"], { label: "b", value: this.state.color.b, onChange: function (value) { return _this.updateStateB(value); } }),
+                this.props.disableAlpha || react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_3__["NumericInputComponent"], { label: "a", value: this.state.color.a, onChange: function (value) { return _this.updateStateA(value); } })))));
     };
-    return Color3LineComponent;
+    return ColorLineComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
 
 
@@ -50047,7 +50254,7 @@ var ColorPickerLineComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ColorPickerLineComponent, _super);
     function ColorPickerLineComponent(props) {
         var _this = _super.call(this, props) || this;
-        _this.state = { pickerEnabled: false, color: _this.props.value, hex: _this.props.value.toHexString() };
+        _this.state = { pickerEnabled: false, color: _this.props.value, hex: _this.getHexString(props) };
         _this._floatRef = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
         _this._floatHostRef = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
         return _this;
@@ -50072,12 +50279,16 @@ var ColorPickerLineComponent = /** @class */ (function (_super) {
         }
     };
     ColorPickerLineComponent.prototype.shouldComponentUpdate = function (nextProps, nextState) {
-        var diffProps = nextProps.value.toHexString() !== this.props.value.toHexString();
+        var diffProps = this.getHexString(nextProps) !== this.getHexString();
         if (diffProps) {
             nextState.color = nextProps.value;
-            nextState.hex = nextProps.value.toHexString();
+            nextState.hex = this.getHexString(nextProps);
         }
         return diffProps || nextState.hex !== this.state.hex || nextState.pickerEnabled !== this.state.pickerEnabled;
+    };
+    ColorPickerLineComponent.prototype.getHexString = function (props) {
+        if (props === void 0) { props = this.props; }
+        return props.value.toHexString();
     };
     ColorPickerLineComponent.prototype.componentDidUpdate = function () {
         this.syncPositions();
@@ -50087,10 +50298,10 @@ var ColorPickerLineComponent = /** @class */ (function (_super) {
     };
     ColorPickerLineComponent.prototype.render = function () {
         var _this = this;
-        var color = this.state.color;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker" },
             this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, title: this.props.iconLabel, alt: this.props.iconLabel, className: "icon" }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-rect", ref: this._floatHostRef, style: { background: this.state.hex }, onClick: function () { return _this.setState({ pickerEnabled: true }); } }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-rect-background", ref: this._floatHostRef, onClick: function () { return _this.setState({ pickerEnabled: true }); } },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-rect", style: { background: this.state.hex } })),
             this.state.pickerEnabled && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-cover", onClick: function (evt) {
                         var _a, _b;
@@ -50100,7 +50311,7 @@ var ColorPickerLineComponent = /** @class */ (function (_super) {
                         _this.setState({ pickerEnabled: false });
                     } },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-float", ref: this._floatRef },
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorPicker_colorPicker__WEBPACK_IMPORTED_MODULE_2__["ColorPicker"], { color: color, linearhint: this.props.linearHint, onColorChanged: function (color) {
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorPicker_colorPicker__WEBPACK_IMPORTED_MODULE_2__["ColorPicker"], { color: this.state.color, linearhint: this.props.linearHint, onColorChanged: function (color) {
                                 var hex = color.toHexString();
                                 _this.setState({ hex: hex, color: color });
                                 _this.props.onColorChanged(hex);
@@ -50185,6 +50396,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _sliderLineComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./sliderLineComponent */ "./sharedUiComponents/lines/sliderLineComponent.tsx");
 /* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var _targetsProxy__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./targetsProxy */ "./sharedUiComponents/lines/targetsProxy.tsx");
+
 
 
 
@@ -50195,12 +50408,26 @@ var FloatLineComponent = /** @class */ (function (_super) {
         var _this = _super.call(this, props) || this;
         _this._localChange = false;
         var currentValue = _this.props.target[_this.props.propertyName];
-        _this.state = { value: currentValue ? (_this.props.isInteger ? currentValue.toFixed(0) : currentValue.toFixed(_this.props.digits || 4)) : "0" };
+        _this.state = { value: _this.getValueString(currentValue) };
         _this._store = currentValue;
         return _this;
     }
     FloatLineComponent.prototype.componentWillUnmount = function () {
         this.unlock();
+    };
+    FloatLineComponent.prototype.getValueString = function (value) {
+        if (value) {
+            if (value === _targetsProxy__WEBPACK_IMPORTED_MODULE_4__["conflictingValuesPlaceholder"]) {
+                return _targetsProxy__WEBPACK_IMPORTED_MODULE_4__["conflictingValuesPlaceholder"];
+            }
+            else if (this.props.isInteger) {
+                return value.toFixed(0);
+            }
+            else {
+                return value.toFixed(this.props.digits || 4);
+            }
+        }
+        return "0";
     };
     FloatLineComponent.prototype.shouldComponentUpdate = function (nextProps, nextState) {
         if (this._localChange) {
@@ -50208,7 +50435,7 @@ var FloatLineComponent = /** @class */ (function (_super) {
             return true;
         }
         var newValue = nextProps.target[nextProps.propertyName];
-        var newValueString = newValue ? (this.props.isInteger ? newValue.toFixed(0) : newValue.toFixed(this.props.digits || 4)) : "0";
+        var newValueString = this.getValueString(newValue);
         if (newValueString !== nextState.value) {
             nextState.value = newValueString;
             return true;
@@ -50286,6 +50513,8 @@ var FloatLineComponent = /** @class */ (function (_super) {
             valueAsNumber = parseFloat(this.state.value);
         }
         var className = this.props.smallUI ? "short" : "value";
+        var value = this.state.value === _targetsProxy__WEBPACK_IMPORTED_MODULE_4__["conflictingValuesPlaceholder"] ? "" : this.state.value;
+        var placeholder = this.state.value === _targetsProxy__WEBPACK_IMPORTED_MODULE_4__["conflictingValuesPlaceholder"] ? _targetsProxy__WEBPACK_IMPORTED_MODULE_4__["conflictingValuesPlaceholder"] : "";
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
             !this.props.useEuler && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: this.props.additionalClass ? this.props.additionalClass + " floatLine" : "floatLine" },
                 this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, title: this.props.iconLabel, alt: this.props.iconLabel, className: "icon" }),
@@ -50298,12 +50527,12 @@ var FloatLineComponent = /** @class */ (function (_super) {
                             if (_this.props.onEnter) {
                                 _this.props.onEnter(_this._store);
                             }
-                        }, value: this.state.value, onBlur: function () {
+                        }, value: value, onBlur: function () {
                             _this.unlock();
                             if (_this.props.onEnter) {
                                 _this.props.onEnter(_this._store);
                             }
-                        }, onFocus: function () { return _this.lock(); }, onChange: function (evt) { return _this.updateValue(evt.target.value); } })))),
+                        }, placeholder: placeholder, onFocus: function () { return _this.lock(); }, onChange: function (evt) { return _this.updateValue(evt.target.value); } })))),
             this.props.useEuler && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sliderLineComponent__WEBPACK_IMPORTED_MODULE_2__["SliderLineComponent"], { label: this.props.label, minimum: 0, maximum: 360, step: 0.1, directValue: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Tools"].ToDegrees(valueAsNumber), onChange: function (value) { return _this.updateValue(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Tools"].ToRadians(value).toString()); } }))));
     };
     return FloatLineComponent;
@@ -50614,6 +50843,8 @@ var SliderLineComponent = /** @class */ (function (_super) {
         return false;
     };
     SliderLineComponent.prototype.onChange = function (newValueString) {
+        if (newValueString === "—")
+            return;
         this._localChange = true;
         var newValue = parseFloat(newValueString);
         if (this.props.useEuler) {
@@ -50672,6 +50903,64 @@ var SliderLineComponent = /** @class */ (function (_super) {
 
 /***/ }),
 
+/***/ "./sharedUiComponents/lines/targetsProxy.tsx":
+/*!***************************************************!*\
+  !*** ./sharedUiComponents/lines/targetsProxy.tsx ***!
+  \***************************************************/
+/*! exports provided: conflictingValuesPlaceholder, makeTargetsProxy */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "conflictingValuesPlaceholder", function() { return conflictingValuesPlaceholder; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "makeTargetsProxy", function() { return makeTargetsProxy; });
+var conflictingValuesPlaceholder = "—";
+/**
+ *
+ * @param propertyName the property that the input changes
+ * @param targets a list of selected targets
+ * @param defaultValue the value that should be returned when two targets have conflicting values
+ * @param setter an optional setter function to override the default setter behavior
+ * @returns a proxy object that can be passed as a target into the input
+ */
+function makeTargetsProxy(targets, onPropertyChangedObservable) {
+    return new Proxy({}, {
+        get: function (_, name) {
+            if (targets.length === 0)
+                return conflictingValuesPlaceholder;
+            var firstValue = targets[0][name];
+            for (var _i = 0, targets_1 = targets; _i < targets_1.length; _i++) {
+                var target = targets_1[_i];
+                if (target[name] !== firstValue) {
+                    return conflictingValuesPlaceholder;
+                }
+            }
+            return firstValue;
+        },
+        set: function (_, name, value) {
+            if (value === "—")
+                return true;
+            for (var _i = 0, targets_2 = targets; _i < targets_2.length; _i++) {
+                var target = targets_2[_i];
+                var initialValue = target[name];
+                target[name] = value;
+                if (onPropertyChangedObservable) {
+                    onPropertyChangedObservable.notifyObservers({
+                        object: target,
+                        property: name,
+                        value: target[name],
+                        initialValue: initialValue
+                    });
+                }
+            }
+            return true;
+        }
+    });
+}
+
+
+/***/ }),
+
 /***/ "./sharedUiComponents/lines/textInputLineComponent.tsx":
 /*!*************************************************************!*\
   !*** ./sharedUiComponents/lines/textInputLineComponent.tsx ***!
@@ -50685,6 +50974,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _targetsProxy__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./targetsProxy */ "./sharedUiComponents/lines/targetsProxy.tsx");
+
 
 
 var TextInputLineComponent = /** @class */ (function (_super) {
@@ -50748,14 +51039,16 @@ var TextInputLineComponent = /** @class */ (function (_super) {
     };
     TextInputLineComponent.prototype.render = function () {
         var _this = this;
+        var value = this.state.value === _targetsProxy__WEBPACK_IMPORTED_MODULE_2__["conflictingValuesPlaceholder"] ? "" : this.state.value;
+        var placeholder = this.state.value === _targetsProxy__WEBPACK_IMPORTED_MODULE_2__["conflictingValuesPlaceholder"] ? _targetsProxy__WEBPACK_IMPORTED_MODULE_2__["conflictingValuesPlaceholder"] : "";
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "textInputLine" },
             this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, title: this.props.iconLabel, alt: this.props.iconLabel, color: "black", className: "icon" }),
             (!this.props.icon || (this.props.icon && this.props.label != "")) && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label)),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "value" + (this.props.noUnderline === true ? " noUnderline" : "") },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { value: this.state.value, onBlur: function () {
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { value: value, onBlur: function () {
                         _this.props.lockObject.lock = false;
                         _this.updateValue((_this.props.value !== undefined ? _this.props.value : _this.props.target[_this.props.propertyName]) || "");
-                    }, onFocus: function () { return (_this.props.lockObject.lock = true); }, onChange: function (evt) { return _this.updateValue(evt.target.value); } }))));
+                    }, onFocus: function () { return (_this.props.lockObject.lock = true); }, onChange: function (evt) { return _this.updateValue(evt.target.value); }, placeholder: placeholder }))));
     };
     return TextInputLineComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -51192,6 +51485,7 @@ var WorkbenchEditor = /** @class */ (function (_super) {
             }
         }, false);
         _this.createItems();
+        _this.props.globalState.onBackgroundColorChangeObservable.add(function () { return _this.forceUpdate(); });
         return _this;
     }
     WorkbenchEditor.prototype.componentDidMount = function () {
@@ -51264,6 +51558,8 @@ var WorkbenchEditor = /** @class */ (function (_super) {
                         _this._draggedItem = null;
                     }, onDragOver: function (event) {
                         event.preventDefault();
+                    }, style: {
+                        backgroundColor: this.props.globalState.backgroundColor.toHexString()
                     } },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_diagram_artBoard__WEBPACK_IMPORTED_MODULE_12__["ArtBoardComponent"], { globalState: this.props.globalState }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_diagram_workbench__WEBPACK_IMPORTED_MODULE_7__["WorkbenchComponent"], { ref: "workbenchCanvas", globalState: this.props.globalState }),

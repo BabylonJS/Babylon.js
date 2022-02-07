@@ -847,7 +847,8 @@ export class NativeEngine extends Engine {
             canUseGLVertexID: true,
             supportComputeShaders: false,
             supportSRGBBuffers: true,
-            supportTransformFeedbacks: false
+            supportTransformFeedbacks: false,
+            textureMaxLevel: false
         };
 
         this._features = {
@@ -1049,7 +1050,8 @@ export class NativeEngine extends Engine {
                             vertexBuffer.byteStride,
                             vertexBuffer.getSize(),
                             this._getNativeAttribType(vertexBuffer.type),
-                            vertexBuffer.normalized);
+                            vertexBuffer.normalized,
+                            vertexBuffer.getInstanceDivisor());
                     }
                 }
             }

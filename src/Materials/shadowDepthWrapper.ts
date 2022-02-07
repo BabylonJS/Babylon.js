@@ -9,7 +9,7 @@ import { Node } from '../node';
 import { ShadowGenerator } from '../Lights/Shadows/shadowGenerator';
 import { RandomGUID } from '../Misc/guid';
 import { DrawWrapper } from "./drawWrapper";
-import { Engine } from "../Engines/engine";
+import { EngineStore } from "../Engines/engineStore";
 
 /**
  * Options to be used when creating a shadow depth material
@@ -82,7 +82,7 @@ export class ShadowDepthWrapper {
      */
     constructor(baseMaterial: Material, scene?: Scene, options?: IIOptionShadowDepthMaterial) {
         this._baseMaterial = baseMaterial;
-        this._scene = scene ?? <Scene>Engine.LastCreatedScene;
+        this._scene = scene ?? <Scene>EngineStore.LastCreatedScene;
         this._options = options;
 
         this._subMeshToEffect = new Map();

@@ -61386,7 +61386,7 @@ var GraphNode = /** @class */ (function () {
         }
         this._comments.innerHTML = this.block.comments || "";
         this._comments.title = this.block.comments || "";
-        if (this.block.willBeGeneratedIntoVertexShaderFromFragmentShader) {
+        if (this.block.getClassName() !== "ElbowBlock" && this.block.willBeGeneratedIntoVertexShaderFromFragmentShader) {
             this._promotionWarning.classList.add("visible");
         }
         else {
@@ -67095,6 +67095,9 @@ var ColorPicker = /** @class */ (function (_super) {
         }
         var hsv = this.state.color.toHSV();
         babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color3"].HSVtoRGBToRef(hsv.r, saturation, value, this.state.color);
+        if (this.state.alpha === 0) {
+            this.setState({ alpha: 1 });
+        }
         this.setState({ color: this.state.color });
     };
     ColorPicker.prototype._evaluateHue = function (evt) {
@@ -67148,6 +67151,7 @@ var ColorPicker = /** @class */ (function (_super) {
                             left: "".concat((hsv.r / 360.0) * 100, "%"),
                             border: "1px solid " + colorHexRef,
                         } }))),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-alpha" }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-rgb" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "red" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorComponentEntry__WEBPACK_IMPORTED_MODULE_3__["ColorComponentEntry"], { label: "R", min: 0, max: 255, value: Math.round(this.state.color.r * 255), onChange: function (value) {

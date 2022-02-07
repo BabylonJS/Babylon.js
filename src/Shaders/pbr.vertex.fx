@@ -76,7 +76,7 @@ varying vec3 vPositionW;
     #endif
 #endif
 
-#ifdef VERTEXCOLOR
+#if defined(VERTEXCOLOR) || defined(INSTANCESCOLOR)
 varying vec4 vColor;
 #endif
 
@@ -130,7 +130,7 @@ void main(void) {
 #if defined(PREPASS) && defined(PREPASS_VELOCITY) && !defined(BONES_VELOCITY_ENABLED)
     // Compute velocity before bones computation
     vCurrentPosition = viewProjection * finalWorld * vec4(positionUpdated, 1.0);
-    vPreviousPosition = previousViewProjection * previousWorld * vec4(positionUpdated, 1.0);
+    vPreviousPosition = previousViewProjection * finalPreviousWorld * vec4(positionUpdated, 1.0);
 #endif
 
 #include<bonesVertex>
@@ -243,7 +243,9 @@ void main(void) {
 
     // Vertex color
 #ifdef VERTEXCOLOR
-    vColor = color;
+	vColor = color;
+#elif INSTANCESCOLOR
+	vColor = instanceColor;
 #endif
 
     // Point size

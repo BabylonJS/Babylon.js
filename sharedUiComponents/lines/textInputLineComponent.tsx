@@ -2,6 +2,7 @@ import * as React from "react";
 import { Observable } from "babylonjs/Misc/observable";
 import { PropertyChangedEvent } from "../propertyChangedEvent";
 import { LockObject } from "../tabs/propertyGrids/lockObject";
+import { conflictingValuesPlaceholder } from './targetsProxy';
 
 interface ITextInputLineComponentProps {
     label: string;
@@ -90,6 +91,8 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
     }
 
     render() {
+        const value = this.state.value === conflictingValuesPlaceholder ? "" : this.state.value;
+        const placeholder = this.state.value === conflictingValuesPlaceholder ? conflictingValuesPlaceholder : "";
         return (
             <div className="textInputLine">
                 {this.props.icon && <img src={this.props.icon} title={this.props.iconLabel} alt={this.props.iconLabel} color="black" className="icon" />}
@@ -100,13 +103,14 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
                 )}
                 <div className={"value" + (this.props.noUnderline === true ? " noUnderline" : "")}>
                     <input
-                        value={this.state.value}
+                        value={value}
                         onBlur={() => {
                             this.props.lockObject.lock = false;
                             this.updateValue((this.props.value !== undefined ? this.props.value : this.props.target[this.props.propertyName!]) || "" );
                         }}
                         onFocus={() => (this.props.lockObject.lock = true)}
                         onChange={(evt) => this.updateValue(evt.target.value)}
+                        placeholder={placeholder}
                     />
                 </div>
             </div>

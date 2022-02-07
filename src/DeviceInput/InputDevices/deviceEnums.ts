@@ -49,6 +49,8 @@ export enum PointerInput {
     DeltaHorizontal = 10,
     /** Delta Y */
     DeltaVertical = 11,
+    /** Move Catch-all */
+    Move = 12,
 }
 
 /**
@@ -102,7 +104,7 @@ export enum DualShockInput {
 }
 
 /**
- * Enum for Dual Shock Gamepad
+ * Enum for Dual Sense Gamepad
  */
  export enum DualSenseInput {
     /** Cross */

@@ -55,7 +55,7 @@ export class _KTXTextureLoader implements IInternalTextureLoader {
         texture.width = ktx.pixelWidth;
         texture.height = ktx.pixelHeight;
 
-        engine._setCubeMapTextureParams(texture, loadMipmap);
+        engine._setCubeMapTextureParams(texture, loadMipmap, ktx.numberOfMipmapLevels - 1);
         texture.isReady = true;
         texture.onLoadedObservable.notifyObservers(texture);
         texture.onLoadedObservable.clear();

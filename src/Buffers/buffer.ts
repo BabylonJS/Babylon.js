@@ -621,6 +621,10 @@ export class VertexBuffer {
      */
     public static readonly ColorKind = "color";
     /**
+     * Instance Colors
+     */
+     public static readonly ColorInstanceKind = "instanceColor";
+    /**
      * Matrix indices (for bones)
      */
     public static readonly MatricesIndicesKind = "matricesIndices";

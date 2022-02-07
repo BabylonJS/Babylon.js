@@ -3,10 +3,10 @@ import { CubeTexture } from 'babylonjs/Materials/Textures/cubeTexture';
 import { Scene } from 'babylonjs/scene';
 import { LocalStorageHelper } from './localStorageHelper';
 import { GlobalState } from '../globalState';
-import { Engine } from 'babylonjs/Engines/engine';
 import { StandardMaterial } from 'babylonjs/Materials/standardMaterial';
 import { PBRMaterial } from 'babylonjs/Materials/PBR/pbrMaterial';
 import { Texture } from 'babylonjs/Materials/Textures/texture';
+import { EngineStore } from 'babylonjs/Engines/engineStore';
 
 export class EnvironmentTools {
     public static SkyboxPath = "";
@@ -43,7 +43,7 @@ export class EnvironmentTools {
                 localStorage.setItem("defaultSkyboxId", index.toString());
             }
 
-            var currentScene = Engine.LastCreatedScene!;
+            var currentScene = EngineStore.LastCreatedScene!;
             currentScene.environmentTexture = this.LoadSkyboxPathTexture(currentScene);
             for (var i = 0; i < currentScene.materials.length; i++) {
                 var material = currentScene.materials[i] as (StandardMaterial | PBRMaterial);

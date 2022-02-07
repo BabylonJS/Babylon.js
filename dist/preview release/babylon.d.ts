@@ -800,7 +800,9 @@ declare module BABYLON {
         /** Delta X */
         DeltaHorizontal = 10,
         /** Delta Y */
-        DeltaVertical = 11
+        DeltaVertical = 11,
+        /** Move Catch-all */
+        Move = 12
     }
     /**
      * Enum for Dual Shock Gamepad
@@ -852,7 +854,7 @@ declare module BABYLON {
         RStickYAxis = 21
     }
     /**
-     * Enum for Dual Shock Gamepad
+     * Enum for Dual Sense Gamepad
      */
     export enum DualSenseInput {
         /** Cross */
@@ -4195,6 +4197,10 @@ declare module BABYLON {
          */
         static readonly ColorKind: string;
         /**
+         * Instance Colors
+         */
+        static readonly ColorInstanceKind: string;
+        /**
          * Matrix indices (for bones)
          */
         static readonly MatricesIndicesKind: string;
@@ -6543,6 +6549,14 @@ declare module BABYLON {
         /** @hidden */
         _depthStencilTextureWithStencil: boolean;
         /**
+         * Gets the depth/stencil texture (if created by a createDepthStencilTexture() call)
+         */
+        get depthStencilTexture(): Nullable<InternalTexture>;
+        /**
+         * Indicates if the depth/stencil texture has a stencil aspect
+         */
+        get depthStencilTextureWithStencil(): boolean;
+        /**
          * Defines if the render target wrapper is for a cube texture or if false a 2d texture
          */
         get isCube(): boolean;
@@ -6715,7 +6729,7 @@ declare module BABYLON {
             /**
              * @hidden
              */
-            _setCubeMapTextureParams(texture: InternalTexture, loadMipmap: boolean): void;
+            _setCubeMapTextureParams(texture: InternalTexture, loadMipmap: boolean, maxLevel?: number): void;
         }
 }
 declare module BABYLON {
@@ -23221,6 +23235,7 @@ declare module BABYLON {
          */
         _allowCameraRotation: boolean;
         private _currentActiveButton;
+        private _contextMenuBind;
         /**
          * Manage the mouse inputs to control the movement of a free camera.
          * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
@@ -24207,6 +24222,7 @@ declare module BABYLON {
 declare module BABYLON {
     /**
      * Defines the WebVRController object that represents controllers tracked in 3D space
+     * @deprecated Use WebXR instead
      */
     export abstract class WebVRController extends PoseEnabledController {
         /**
@@ -24673,6 +24689,7 @@ declare module BABYLON {
     /**
      * This represents a WebVR camera.
      * The WebVR camera is Babylon's simple interface to interaction with Windows Mixed Reality, HTC Vive and Oculus Rift.
+     * @deprecated Use WebXR instead - https://doc.babylonjs.com/divingDeeper/webXR
      * @example https://doc.babylonjs.com/how_to/webvr_camera
      */
     export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
@@ -32931,6 +32948,11 @@ declare module BABYLON {
          */
         static ConvertCubeMapTextureToSphericalPolynomial(texture: BaseTexture): Nullable<Promise<SphericalPolynomial>>;
         /**
+         * Compute the area on the unit sphere of the rectangle defined by (x,y) and the origin
+         * See https://www.rorydriscoll.com/2012/01/15/cubemap-texel-solid-angle/
+         */
+        private static _AreaElement;
+        /**
          * Converts a cubemap to the according Spherical Polynomial data.
          * This extracts the first 3 orders only as they are the only one used in the lighting.
          *
@@ -33868,6 +33890,7 @@ declare module BABYLON {
         HORIZONOCCLUSION: boolean;
         INSTANCES: boolean;
         THIN_INSTANCES: boolean;
+        INSTANCESCOLOR: boolean;
         PREPASS: boolean;
         PREPASS_IRRADIANCE: boolean;
         PREPASS_IRRADIANCE_INDEX: number;
@@ -34683,6 +34706,7 @@ declare module BABYLON {
         BONES_VELOCITY_ENABLED: boolean;
         INSTANCES: boolean;
         THIN_INSTANCES: boolean;
+        INSTANCESCOLOR: boolean;
         GLOSSINESS: boolean;
         ROUGHNESS: boolean;
         EMISSIVEASILLUMINATION: boolean;
@@ -44866,6 +44890,8 @@ declare module BABYLON {
         supportSRGBBuffers: boolean;
         /** Defines if transform feedbacks are supported */
         supportTransformFeedbacks: boolean;
+        /** Defines if texture max level are supported */
+        textureMaxLevel: boolean;
     }
 }
 declare module BABYLON {
@@ -45541,6 +45567,11 @@ declare module BABYLON {
         protected _creationOptions: EngineOptions;
         protected _audioContext: Nullable<AudioContext>;
         protected _audioDestination: Nullable<AudioDestinationNode | MediaStreamAudioDestinationNode>;
+        /**
+         * Gets the options used for engine creation
+         * @returns EngineOptions object
+         */
+        getCreationOptions(): EngineOptions;
         protected _highPrecisionShadersAllowed: boolean;
         /** @hidden */
         get _shouldUseHighPrecisionShader(): boolean;
@@ -45671,6 +45702,8 @@ declare module BABYLON {
         private _nextFreeTextureSlots;
         private _maxSimultaneousTextures;
         private _activeRequests;
+        /** @hidden */
+        private _adaptToDeviceRatio;
         /** @hidden */
         _transformTextureUrl: Nullable<(url: string) => string>;
         /**
@@ -46987,6 +47020,8 @@ declare module BABYLON {
         /** @hidden */
         _hardwareTexture: Nullable<HardwareTextureWrapper>;
         /** @hidden */
+        _maxLodLevel: Nullable<number>;
+        /** @hidden */
         _references: number;
         /** @hidden */
         _gammaSpace: Nullable<boolean>;
@@ -47068,7 +47103,7 @@ declare module BABYLON {
         recordIndexBuffer(vertexArray: NativeData, indexBuffer: NativeData): void;
         updateDynamicIndexBuffer(buffer: NativeData, bytes: ArrayBuffer, byteOffset: number, byteLength: number, startIndex: number): void;
         createVertexBuffer(bytes: ArrayBuffer, byteOffset: number, byteLength: number, dynamic: boolean): NativeData;
-        recordVertexBuffer(vertexArray: NativeData, vertexBuffer: NativeData, location: number, byteOffset: number, byteStride: number, numElements: number, type: number, normalized: boolean): void;
+        recordVertexBuffer(vertexArray: NativeData, vertexBuffer: NativeData, location: number, byteOffset: number, byteStride: number, numElements: number, type: number, normalized: boolean, instanceDivisor: number): void;
         updateDynamicVertexBuffer(vertexBuffer: NativeData, bytes: ArrayBuffer, byteOffset: number, byteLength: number): void;
         createProgram(vertexShader: string, fragmentShader: string): any;
         getUniforms(shaderProgram: any, uniformsNames: string[]): WebGLUniformLocation[];
@@ -49260,6 +49295,194 @@ declare module BABYLON {
          * Define the instrumented engine.
          */
         engine: Engine);
+        /**
+         * Dispose and release associated resources.
+         */
+        dispose(): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * This class can be used to get instrumentation data from a Babylon engine
+     * @see https://doc.babylonjs.com/how_to/optimizing_your_scene#sceneinstrumentation
+     */
+    export class SceneInstrumentation implements IDisposable {
+        /**
+         * Defines the scene to instrument
+         */
+        scene: Scene;
+        private _captureActiveMeshesEvaluationTime;
+        private _activeMeshesEvaluationTime;
+        private _captureRenderTargetsRenderTime;
+        private _renderTargetsRenderTime;
+        private _captureFrameTime;
+        private _frameTime;
+        private _captureRenderTime;
+        private _renderTime;
+        private _captureInterFrameTime;
+        private _interFrameTime;
+        private _captureParticlesRenderTime;
+        private _particlesRenderTime;
+        private _captureSpritesRenderTime;
+        private _spritesRenderTime;
+        private _capturePhysicsTime;
+        private _physicsTime;
+        private _captureAnimationsTime;
+        private _animationsTime;
+        private _captureCameraRenderTime;
+        private _cameraRenderTime;
+        private _onBeforeActiveMeshesEvaluationObserver;
+        private _onAfterActiveMeshesEvaluationObserver;
+        private _onBeforeRenderTargetsRenderObserver;
+        private _onAfterRenderTargetsRenderObserver;
+        private _onAfterRenderObserver;
+        private _onBeforeDrawPhaseObserver;
+        private _onAfterDrawPhaseObserver;
+        private _onBeforeAnimationsObserver;
+        private _onBeforeParticlesRenderingObserver;
+        private _onAfterParticlesRenderingObserver;
+        private _onBeforeSpritesRenderingObserver;
+        private _onAfterSpritesRenderingObserver;
+        private _onBeforePhysicsObserver;
+        private _onAfterPhysicsObserver;
+        private _onAfterAnimationsObserver;
+        private _onBeforeCameraRenderObserver;
+        private _onAfterCameraRenderObserver;
+        /**
+         * Gets the perf counter used for active meshes evaluation time
+         */
+        get activeMeshesEvaluationTimeCounter(): PerfCounter;
+        /**
+         * Gets the active meshes evaluation time capture status
+         */
+        get captureActiveMeshesEvaluationTime(): boolean;
+        /**
+         * Enable or disable the active meshes evaluation time capture
+         */
+        set captureActiveMeshesEvaluationTime(value: boolean);
+        /**
+         * Gets the perf counter used for render targets render time
+         */
+        get renderTargetsRenderTimeCounter(): PerfCounter;
+        /**
+         * Gets the render targets render time capture status
+         */
+        get captureRenderTargetsRenderTime(): boolean;
+        /**
+         * Enable or disable the render targets render time capture
+         */
+        set captureRenderTargetsRenderTime(value: boolean);
+        /**
+         * Gets the perf counter used for particles render time
+         */
+        get particlesRenderTimeCounter(): PerfCounter;
+        /**
+         * Gets the particles render time capture status
+         */
+        get captureParticlesRenderTime(): boolean;
+        /**
+         * Enable or disable the particles render time capture
+         */
+        set captureParticlesRenderTime(value: boolean);
+        /**
+         * Gets the perf counter used for sprites render time
+         */
+        get spritesRenderTimeCounter(): PerfCounter;
+        /**
+         * Gets the sprites render time capture status
+         */
+        get captureSpritesRenderTime(): boolean;
+        /**
+         * Enable or disable the sprites render time capture
+         */
+        set captureSpritesRenderTime(value: boolean);
+        /**
+         * Gets the perf counter used for physics time
+         */
+        get physicsTimeCounter(): PerfCounter;
+        /**
+         * Gets the physics time capture status
+         */
+        get capturePhysicsTime(): boolean;
+        /**
+         * Enable or disable the physics time capture
+         */
+        set capturePhysicsTime(value: boolean);
+        /**
+         * Gets the perf counter used for animations time
+         */
+        get animationsTimeCounter(): PerfCounter;
+        /**
+         * Gets the animations time capture status
+         */
+        get captureAnimationsTime(): boolean;
+        /**
+         * Enable or disable the animations time capture
+         */
+        set captureAnimationsTime(value: boolean);
+        /**
+         * Gets the perf counter used for frame time capture
+         */
+        get frameTimeCounter(): PerfCounter;
+        /**
+         * Gets the frame time capture status
+         */
+        get captureFrameTime(): boolean;
+        /**
+         * Enable or disable the frame time capture
+         */
+        set captureFrameTime(value: boolean);
+        /**
+         * Gets the perf counter used for inter-frames time capture
+         */
+        get interFrameTimeCounter(): PerfCounter;
+        /**
+         * Gets the inter-frames time capture status
+         */
+        get captureInterFrameTime(): boolean;
+        /**
+         * Enable or disable the inter-frames time capture
+         */
+        set captureInterFrameTime(value: boolean);
+        /**
+         * Gets the perf counter used for render time capture
+         */
+        get renderTimeCounter(): PerfCounter;
+        /**
+         * Gets the render time capture status
+         */
+        get captureRenderTime(): boolean;
+        /**
+         * Enable or disable the render time capture
+         */
+        set captureRenderTime(value: boolean);
+        /**
+         * Gets the perf counter used for camera render time capture
+         */
+        get cameraRenderTimeCounter(): PerfCounter;
+        /**
+         * Gets the camera render time capture status
+         */
+        get captureCameraRenderTime(): boolean;
+        /**
+         * Enable or disable the camera render time capture
+         */
+        set captureCameraRenderTime(value: boolean);
+        /**
+         * Gets the perf counter used for draw calls
+         */
+        get drawCallsCounter(): PerfCounter;
+        /**
+         * Instantiates a new scene instrumentation.
+         * This class can be used to get instrumentation data from a Babylon engine
+         * @see https://doc.babylonjs.com/how_to/optimizing_your_scene#sceneinstrumentation
+         * @param scene Defines the scene to instrument
+         */
+        constructor(
+        /**
+         * Defines the scene to instrument
+         */
+        scene: Scene);
         /**
          * Dispose and release associated resources.
          */
@@ -55109,6 +55332,7 @@ declare module BABYLON {
         private _baseLayerRTTProvider;
         private _xrNavigator;
         private _sessionMode;
+        private _onEngineDisposedObserver;
         /**
          * The base reference space from which the session started. good if you want to reset your
          * reference space
@@ -62326,6 +62550,7 @@ declare module BABYLON {
     /**
      * Helps to quickly add VR support to an existing scene.
      * See https://doc.babylonjs.com/divingDeeper/cameras/webVRHelper
+     * @deprecated
      */
     export class VRExperienceHelper {
         /** Options to modify the vr experience helper's behavior. */
@@ -72067,6 +72292,7 @@ declare module BABYLON {
              * Creates a new VREXperienceHelper
              * @see https://doc.babylonjs.com/divingDeeper/cameras/webVRHelper
              * @param webVROptions defines the options used to create the new VREXperienceHelper
+             * @deprecated Please use createDefaultXRExperienceAsync instead
              * @returns a new VREXperienceHelper
              */
             createDefaultVRExperience(webVROptions?: VRExperienceHelperOptions): VRExperienceHelper;
@@ -72113,194 +72339,6 @@ declare module BABYLON {
          */
         set videoMode(value: number);
         protected _initTexture(urlsOrElement: string | string[] | HTMLVideoElement, scene: Scene, options: any): VideoTexture;
-    }
-}
-declare module BABYLON {
-    /**
-     * This class can be used to get instrumentation data from a Babylon engine
-     * @see https://doc.babylonjs.com/how_to/optimizing_your_scene#sceneinstrumentation
-     */
-    export class SceneInstrumentation implements IDisposable {
-        /**
-         * Defines the scene to instrument
-         */
-        scene: Scene;
-        private _captureActiveMeshesEvaluationTime;
-        private _activeMeshesEvaluationTime;
-        private _captureRenderTargetsRenderTime;
-        private _renderTargetsRenderTime;
-        private _captureFrameTime;
-        private _frameTime;
-        private _captureRenderTime;
-        private _renderTime;
-        private _captureInterFrameTime;
-        private _interFrameTime;
-        private _captureParticlesRenderTime;
-        private _particlesRenderTime;
-        private _captureSpritesRenderTime;
-        private _spritesRenderTime;
-        private _capturePhysicsTime;
-        private _physicsTime;
-        private _captureAnimationsTime;
-        private _animationsTime;
-        private _captureCameraRenderTime;
-        private _cameraRenderTime;
-        private _onBeforeActiveMeshesEvaluationObserver;
-        private _onAfterActiveMeshesEvaluationObserver;
-        private _onBeforeRenderTargetsRenderObserver;
-        private _onAfterRenderTargetsRenderObserver;
-        private _onAfterRenderObserver;
-        private _onBeforeDrawPhaseObserver;
-        private _onAfterDrawPhaseObserver;
-        private _onBeforeAnimationsObserver;
-        private _onBeforeParticlesRenderingObserver;
-        private _onAfterParticlesRenderingObserver;
-        private _onBeforeSpritesRenderingObserver;
-        private _onAfterSpritesRenderingObserver;
-        private _onBeforePhysicsObserver;
-        private _onAfterPhysicsObserver;
-        private _onAfterAnimationsObserver;
-        private _onBeforeCameraRenderObserver;
-        private _onAfterCameraRenderObserver;
-        /**
-         * Gets the perf counter used for active meshes evaluation time
-         */
-        get activeMeshesEvaluationTimeCounter(): PerfCounter;
-        /**
-         * Gets the active meshes evaluation time capture status
-         */
-        get captureActiveMeshesEvaluationTime(): boolean;
-        /**
-         * Enable or disable the active meshes evaluation time capture
-         */
-        set captureActiveMeshesEvaluationTime(value: boolean);
-        /**
-         * Gets the perf counter used for render targets render time
-         */
-        get renderTargetsRenderTimeCounter(): PerfCounter;
-        /**
-         * Gets the render targets render time capture status
-         */
-        get captureRenderTargetsRenderTime(): boolean;
-        /**
-         * Enable or disable the render targets render time capture
-         */
-        set captureRenderTargetsRenderTime(value: boolean);
-        /**
-         * Gets the perf counter used for particles render time
-         */
-        get particlesRenderTimeCounter(): PerfCounter;
-        /**
-         * Gets the particles render time capture status
-         */
-        get captureParticlesRenderTime(): boolean;
-        /**
-         * Enable or disable the particles render time capture
-         */
-        set captureParticlesRenderTime(value: boolean);
-        /**
-         * Gets the perf counter used for sprites render time
-         */
-        get spritesRenderTimeCounter(): PerfCounter;
-        /**
-         * Gets the sprites render time capture status
-         */
-        get captureSpritesRenderTime(): boolean;
-        /**
-         * Enable or disable the sprites render time capture
-         */
-        set captureSpritesRenderTime(value: boolean);
-        /**
-         * Gets the perf counter used for physics time
-         */
-        get physicsTimeCounter(): PerfCounter;
-        /**
-         * Gets the physics time capture status
-         */
-        get capturePhysicsTime(): boolean;
-        /**
-         * Enable or disable the physics time capture
-         */
-        set capturePhysicsTime(value: boolean);
-        /**
-         * Gets the perf counter used for animations time
-         */
-        get animationsTimeCounter(): PerfCounter;
-        /**
-         * Gets the animations time capture status
-         */
-        get captureAnimationsTime(): boolean;
-        /**
-         * Enable or disable the animations time capture
-         */
-        set captureAnimationsTime(value: boolean);
-        /**
-         * Gets the perf counter used for frame time capture
-         */
-        get frameTimeCounter(): PerfCounter;
-        /**
-         * Gets the frame time capture status
-         */
-        get captureFrameTime(): boolean;
-        /**
-         * Enable or disable the frame time capture
-         */
-        set captureFrameTime(value: boolean);
-        /**
-         * Gets the perf counter used for inter-frames time capture
-         */
-        get interFrameTimeCounter(): PerfCounter;
-        /**
-         * Gets the inter-frames time capture status
-         */
-        get captureInterFrameTime(): boolean;
-        /**
-         * Enable or disable the inter-frames time capture
-         */
-        set captureInterFrameTime(value: boolean);
-        /**
-         * Gets the perf counter used for render time capture
-         */
-        get renderTimeCounter(): PerfCounter;
-        /**
-         * Gets the render time capture status
-         */
-        get captureRenderTime(): boolean;
-        /**
-         * Enable or disable the render time capture
-         */
-        set captureRenderTime(value: boolean);
-        /**
-         * Gets the perf counter used for camera render time capture
-         */
-        get cameraRenderTimeCounter(): PerfCounter;
-        /**
-         * Gets the camera render time capture status
-         */
-        get captureCameraRenderTime(): boolean;
-        /**
-         * Enable or disable the camera render time capture
-         */
-        set captureCameraRenderTime(value: boolean);
-        /**
-         * Gets the perf counter used for draw calls
-         */
-        get drawCallsCounter(): PerfCounter;
-        /**
-         * Instantiates a new scene instrumentation.
-         * This class can be used to get instrumentation data from a Babylon engine
-         * @see https://doc.babylonjs.com/how_to/optimizing_your_scene#sceneinstrumentation
-         * @param scene Defines the scene to instrument
-         */
-        constructor(
-        /**
-         * Defines the scene to instrument
-         */
-        scene: Scene);
-        /**
-         * Dispose and release associated resources.
-         */
-        dispose(): void;
     }
 }
 declare module BABYLON {
@@ -91394,6 +91432,7 @@ interface WebGLRenderingContext {
     readonly TEXTURE_2D_ARRAY: number;
     readonly TEXTURE_COMPARE_FUNC: number;
     readonly TEXTURE_COMPARE_MODE: number;
+    readonly TEXTURE_MAX_LEVEL: number;
     readonly COMPARE_REF_TO_TEXTURE: number;
     readonly TEXTURE_WRAP_R: number;
     readonly HALF_FLOAT: number;

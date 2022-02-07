@@ -242,6 +242,9 @@ export class InternalTexture extends TextureSampler {
     public _hardwareTexture: Nullable<HardwareTextureWrapper> = null;
 
     /** @hidden */
+    public _maxLodLevel: Nullable<number> = null;
+
+    /** @hidden */
     public _references: number = 1;
 
     /** @hidden */

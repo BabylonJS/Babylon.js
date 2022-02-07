@@ -39,6 +39,7 @@ class CellMaterialDefines extends MaterialDefines {
     public NUM_BONE_INFLUENCERS = 0;
     public BonesPerMesh = 0;
     public INSTANCES = false;
+    public INSTANCESCOLOR = false;
     public NDOTL = true;
     public CUSTOMUSERLIGHTING = true;
     public CELLBASIC = true;

@@ -2454,7 +2454,7 @@ var ColorPicker = /** @class */ (function (_super) {
     };
     ColorPicker.prototype._createColorWheelCanvas = function (radius, thickness) {
         // Shoudl abstract platform instead of using LastCreatedEngine
-        var engine = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Engine"].LastCreatedEngine;
+        var engine = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["EngineStore"].LastCreatedEngine;
         if (!engine) {
             throw new Error("Invalid engine. Unable to create a canvas.");
         }
@@ -5377,7 +5377,7 @@ var Control = /** @class */ (function () {
         configurable: true
     });
     Object.defineProperty(Control.prototype, "disabledColor", {
-        /** Gets or sets background color of control if it's disabled */
+        /** Gets or sets background color of control if it's disabled. Only applies to Button class. */
         get: function () {
             return this._disabledColor;
         },
@@ -5392,7 +5392,7 @@ var Control = /** @class */ (function () {
         configurable: true
     });
     Object.defineProperty(Control.prototype, "disabledColorItem", {
-        /** Gets or sets front color of control if it's disabled */
+        /** Gets or sets front color of control if it's disabled. Only applies to Checkbox class. */
         get: function () {
             return this._disabledColorItem;
         },
@@ -6345,7 +6345,7 @@ var Control = /** @class */ (function () {
         if (Control._FontHeightSizes[font]) {
             return Control._FontHeightSizes[font];
         }
-        var engine = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Engine"].LastCreatedEngine;
+        var engine = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["EngineStore"].LastCreatedEngine;
         if (!engine) {
             throw new Error("Invalid engine. Unable to create a canvas.");
         }
@@ -7880,7 +7880,7 @@ var Image = /** @class */ (function (_super) {
         var width = this._domImage.width;
         var height = this._domImage.height;
         // Should abstract platform instead of using LastCreatedEngine
-        var engine = ((_b = (_a = this._host) === null || _a === void 0 ? void 0 : _a.getScene()) === null || _b === void 0 ? void 0 : _b.getEngine()) || babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Engine"].LastCreatedEngine;
+        var engine = ((_b = (_a = this._host) === null || _a === void 0 ? void 0 : _a.getScene()) === null || _b === void 0 ? void 0 : _b.getEngine()) || babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["EngineStore"].LastCreatedEngine;
         if (!engine) {
             throw new Error("Invalid engine. Unable to create a canvas.");
         }
@@ -7950,7 +7950,7 @@ var Image = /** @class */ (function (_super) {
         var width = this._domImage.width;
         var height = this._domImage.height;
         if (!this._workingCanvas) {
-            var engine = ((_b = (_a = this._host) === null || _a === void 0 ? void 0 : _a.getScene()) === null || _b === void 0 ? void 0 : _b.getEngine()) || babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Engine"].LastCreatedEngine;
+            var engine = ((_b = (_a = this._host) === null || _a === void 0 ? void 0 : _a.getScene()) === null || _b === void 0 ? void 0 : _b.getEngine()) || babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["EngineStore"].LastCreatedEngine;
             if (!engine) {
                 throw new Error("Invalid engine. Unable to create a canvas.");
             }
@@ -8050,7 +8050,7 @@ var Image = /** @class */ (function (_super) {
                 value = this._svgCheck(value);
             }
             // Should abstract platform instead of using LastCreatedEngine
-            var engine = ((_b = (_a = this._host) === null || _a === void 0 ? void 0 : _a.getScene()) === null || _b === void 0 ? void 0 : _b.getEngine()) || babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Engine"].LastCreatedEngine;
+            var engine = ((_b = (_a = this._host) === null || _a === void 0 ? void 0 : _a.getScene()) === null || _b === void 0 ? void 0 : _b.getEngine()) || babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["EngineStore"].LastCreatedEngine;
             if (!engine) {
                 throw new Error("Invalid engine. Unable to create a canvas.");
             }
@@ -8281,7 +8281,7 @@ var Image = /** @class */ (function (_super) {
         var width = this._currentMeasure.width;
         var height = this._currentMeasure.height;
         if (!this._workingCanvas) {
-            var engine = ((_b = (_a = this._host) === null || _a === void 0 ? void 0 : _a.getScene()) === null || _b === void 0 ? void 0 : _b.getEngine()) || babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Engine"].LastCreatedEngine;
+            var engine = ((_b = (_a = this._host) === null || _a === void 0 ? void 0 : _a.getScene()) === null || _b === void 0 ? void 0 : _b.getEngine()) || babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["EngineStore"].LastCreatedEngine;
             if (!engine) {
                 throw new Error("Invalid engine. Unable to create a canvas.");
             }
@@ -14519,7 +14519,7 @@ var TextBlock = /** @class */ (function (_super) {
         var _a;
         if (this.text && this.widthInPixels) {
             // Should abstract platform instead of using LastCreatedEngine
-            var context_1 = (_a = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Engine"].LastCreatedEngine) === null || _a === void 0 ? void 0 : _a.createCanvas(0, 0).getContext("2d");
+            var context_1 = (_a = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["EngineStore"].LastCreatedEngine) === null || _a === void 0 ? void 0 : _a.createCanvas(0, 0).getContext("2d");
             if (context_1) {
                 this._applyStates(context_1);
                 if (!this._fontOffset) {
@@ -21784,7 +21784,7 @@ var FluentMaterial = /** @class */ (function (_super) {
         /**
          * Gets or sets the radius used to render the hover light (default is 1.0)
          */
-        _this.hoverRadius = 1.0;
+        _this.hoverRadius = 0.01;
         /**
          * Gets or sets the color used to render the hover light (default is Color4(0.3, 0.3, 0.3, 1.0))
          */
