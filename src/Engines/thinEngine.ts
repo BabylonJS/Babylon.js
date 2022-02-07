@@ -363,6 +363,14 @@ export class ThinEngine {
     protected _audioContext: Nullable<AudioContext>;
     protected _audioDestination: Nullable<AudioDestinationNode | MediaStreamAudioDestinationNode>;
 
+    /**
+     * Gets the options used for engine creation
+     * @returns EngineOptions object
+     */
+    public getCreationOptions() {
+        return this._creationOptions;
+    }
+
     protected _highPrecisionShadersAllowed = true;
     /** @hidden */
     public get _shouldUseHighPrecisionShader(): boolean {
