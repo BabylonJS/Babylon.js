@@ -111,7 +111,7 @@ export class InputTextPropertyGridComponent extends React.Component<IInputTextPr
                     iconLabel={"Auto stretch width"}
                     icon={sizeIcon}
                     label="AUTO STRETCH"
-                    target={makeTargetsProxy(inputTexts, this.props.onPropertyChangedObservable, false)}
+                    target={makeTargetsProxy(inputTexts, this.props.onPropertyChangedObservable)}
                     propertyName="autoStretchWidth"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
