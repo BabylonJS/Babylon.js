@@ -39,5 +39,5 @@ export function makeTargetsProxy(targets: any[], onPropertyChangedObservable?: O
             }
             return true;
         }
-    })
+    }) as any;
 }
