@@ -9,6 +9,7 @@ import { CheckBoxLineComponent } from "../../../../sharedUiComponents/lines/chec
 import { OptionsLineComponent } from "../../../../sharedUiComponents/lines/optionsLineComponent";
 import { TextInputLineComponent } from "../../../../sharedUiComponents/lines/textInputLineComponent";
 import { TextLineComponent } from "../../../../sharedUiComponents/lines/textLineComponent";
+import { makeTargetsProxy } from "../../../../sharedUiComponents/lines/targetsProxy";
 
 const stretchFillIcon: string = require("../../../../sharedUiComponents/imgs/stretchFillIcon.svg");
 const imageLinkIcon: string = require("../../../../sharedUiComponents/imgs/imageLinkIcon.svg");
@@ -18,7 +19,7 @@ const autoResizeIcon: string = require("../../../../sharedUiComponents/imgs/auto
 const sizeIcon: string = require("../../../../sharedUiComponents/imgs/sizeIcon.svg");
 
 interface IImagePropertyGridComponentProps {
-    image: Image;
+    images: Image[];
     lockObject: LockObject;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
@@ -29,7 +30,8 @@ export class ImagePropertyGridComponent extends React.Component<IImagePropertyGr
     }
 
     render() {
-        const image = this.props.image;
+        const images = this.props.images;
+        const image = images[0]; // for nine slice
 
         var stretchOptions = [
             { label: "None", value: Image.STRETCH_NONE },
@@ -41,7 +43,7 @@ export class ImagePropertyGridComponent extends React.Component<IImagePropertyGr
 
         return (
             <div className="pane">
-                <CommonControlPropertyGridComponent lockObject={this.props.lockObject} control={image} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <CommonControlPropertyGridComponent lockObject={this.props.lockObject} controls={images} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <hr />
                 <TextLineComponent label="IMAGE" value=" " color="grey"></TextLineComponent>
                 <TextInputLineComponent
@@ -49,7 +51,7 @@ export class ImagePropertyGridComponent extends React.Component<IImagePropertyGr
                     icon={imageLinkIcon}
                     lockObject={this.props.lockObject}
                     label=""
-                    target={image}
+                    target={makeTargetsProxy(images, this.props.onPropertyChangedObservable)}
                     propertyName="source"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
@@ -59,14 +61,14 @@ export class ImagePropertyGridComponent extends React.Component<IImagePropertyGr
                         icon={cropIcon}
                         lockObject={this.props.lockObject}
                         label="L"
-                        target={image}
+                        target={makeTargetsProxy(images, this.props.onPropertyChangedObservable)}
                         propertyName="sourceLeft"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <FloatLineComponent
                         lockObject={this.props.lockObject}
                         label="T"
-                        target={image}
+                        target={makeTargetsProxy(images, this.props.onPropertyChangedObservable)}
                         propertyName="sourceTop"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
@@ -75,7 +77,7 @@ export class ImagePropertyGridComponent extends React.Component<IImagePropertyGr
                     <FloatLineComponent
                         lockObject={this.props.lockObject}
                         label="R"
-                        target={image}
+                        target={makeTargetsProxy(images, this.props.onPropertyChangedObservable)}
                         icon={cropIcon}
                         iconLabel={"Crop"}
                         propertyName="sourceWidth"
@@ -84,7 +86,7 @@ export class ImagePropertyGridComponent extends React.Component<IImagePropertyGr
                     <FloatLineComponent
                         lockObject={this.props.lockObject}
                         label="B"
-                        target={image}
+                        target={makeTargetsProxy(images, this.props.onPropertyChangedObservable)}
                         propertyName="sourceHeight"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
@@ -93,7 +95,7 @@ export class ImagePropertyGridComponent extends React.Component<IImagePropertyGr
                     iconLabel={"Autoscale"}
                     icon={autoResizeIcon}
                     label="AUTOSCALE"
-                    target={image}
+                    target={makeTargetsProxy(images, this.props.onPropertyChangedObservable)}
                     propertyName="autoScale"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
@@ -102,12 +104,12 @@ export class ImagePropertyGridComponent extends React.Component<IImagePropertyGr
                     icon={stretchFillIcon}
                     label=""
                     options={stretchOptions}
-                    target={image}
+                    target={makeTargetsProxy(images, this.props.onPropertyChangedObservable)}
                     propertyName="stretch"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     onSelect={(value) => this.setState({ mode: value })}
                 />
-                {image.stretch === Image.STRETCH_NINE_PATCH && <>
+                {images.length === 1 && image.stretch === Image.STRETCH_NINE_PATCH && <>
                     <div className="ge-divider">
                     <FloatLineComponent
                         iconLabel={"Slice"}
@@ -168,7 +170,7 @@ export class ImagePropertyGridComponent extends React.Component<IImagePropertyGr
                     lockObject={this.props.lockObject}
                     label=""
                     isInteger={true}
-                    target={image}
+                    target={makeTargetsProxy(images, this.props.onPropertyChangedObservable)}
                     propertyName="cellId"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
@@ -178,14 +180,14 @@ export class ImagePropertyGridComponent extends React.Component<IImagePropertyGr
                         icon={sizeIcon}
                         lockObject={this.props.lockObject}
                         label="W"
-                        target={image}
+                        target={makeTargetsProxy(images, this.props.onPropertyChangedObservable)}
                         propertyName="cellWidth"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <FloatLineComponent
                         lockObject={this.props.lockObject}
                         label="H"
-                        target={image}
+                        target={makeTargetsProxy(images, this.props.onPropertyChangedObservable)}
                         propertyName="cellHeight"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />

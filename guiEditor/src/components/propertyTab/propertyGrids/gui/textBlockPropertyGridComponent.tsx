@@ -9,10 +9,11 @@ import { OptionsLineComponent } from "../../../../sharedUiComponents/lines/optio
 import { CheckBoxLineComponent } from "../../../../sharedUiComponents/lines/checkBoxLineComponent";
 import { FloatLineComponent } from "../../../../sharedUiComponents/lines/floatLineComponent";
 import { TextLineComponent } from "../../../../sharedUiComponents/lines/textLineComponent";
-import { Color3LineComponent } from "../../../../sharedUiComponents/lines/color3LineComponent";
+import { ColorLineComponent } from "../../../../sharedUiComponents/lines/colorLineComponent";
+import { makeTargetsProxy } from "../../../../sharedUiComponents/lines/targetsProxy";
 
 interface ITextBlockPropertyGridComponentProps {
-    textBlock: TextBlock;
+    textBlocks: TextBlock[];
     lockObject: LockObject;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
@@ -27,9 +28,9 @@ export class TextBlockPropertyGridComponent extends React.Component<ITextBlockPr
     }
 
     render() {
-        const textBlock = this.props.textBlock;
+        const textBlocks = this.props.textBlocks;
 
-        var wrappingOptions = [
+        const wrappingOptions = [
             { label: "Clip", value: TextWrapping.Clip },
             { label: "Ellipsis", value: TextWrapping.Ellipsis },
             { label: "Word wrap", value: TextWrapping.WordWrap },
@@ -37,7 +38,7 @@ export class TextBlockPropertyGridComponent extends React.Component<ITextBlockPr
 
         return (
             <div className="pane">
-                <CommonControlPropertyGridComponent lockObject={this.props.lockObject} control={textBlock} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <CommonControlPropertyGridComponent lockObject={this.props.lockObject} controls={textBlocks} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <hr />
                 <TextLineComponent label="TEXTBLOCK" value=" " color="grey"></TextLineComponent>
                 <TextInputLineComponent
@@ -45,7 +46,7 @@ export class TextBlockPropertyGridComponent extends React.Component<ITextBlockPr
                     icon={fontFamilyIcon}
                     lockObject={this.props.lockObject}
                     label=""
-                    target={textBlock}
+                    target={makeTargetsProxy(textBlocks, this.props.onPropertyChangedObservable)}
                     propertyName="text"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
@@ -53,7 +54,7 @@ export class TextBlockPropertyGridComponent extends React.Component<ITextBlockPr
                     iconLabel={"Resize to fit"}
                     icon={fontFamilyIcon}
                     label="RESIZE TO FIT"
-                    target={textBlock}
+                    target={makeTargetsProxy(textBlocks, this.props.onPropertyChangedObservable)}
                     propertyName="resizeToFit"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
@@ -62,7 +63,7 @@ export class TextBlockPropertyGridComponent extends React.Component<ITextBlockPr
                     icon={fontFamilyIcon}
                     label=""
                     options={wrappingOptions}
-                    target={textBlock}
+                    target={makeTargetsProxy(textBlocks, this.props.onPropertyChangedObservable)}
                     propertyName="textWrapping"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
@@ -71,7 +72,7 @@ export class TextBlockPropertyGridComponent extends React.Component<ITextBlockPr
                     icon={fontFamilyIcon}
                     lockObject={this.props.lockObject}
                     label=""
-                    target={textBlock}
+                    target={makeTargetsProxy(textBlocks, this.props.onPropertyChangedObservable)}
                     propertyName="lineSpacing"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
@@ -82,16 +83,16 @@ export class TextBlockPropertyGridComponent extends React.Component<ITextBlockPr
                     icon={strokeWeightIcon}
                     lockObject={this.props.lockObject}
                     label=""
-                    target={textBlock}
+                    target={makeTargetsProxy(textBlocks, this.props.onPropertyChangedObservable)}
                     propertyName="outlineWidth"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
-                <Color3LineComponent
+                <ColorLineComponent
                     iconLabel={"Outline color"}
                     icon={fillColorIcon}
                     lockObject={this.props.lockObject}
                     label=""
-                    target={textBlock}
+                    target={makeTargetsProxy(textBlocks, this.props.onPropertyChangedObservable)}
                     propertyName="outlineColor"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />

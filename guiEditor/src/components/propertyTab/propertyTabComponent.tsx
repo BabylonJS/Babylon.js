@@ -43,7 +43,8 @@ import { ControlPropertyGridComponent } from "./propertyGrids/gui/controlPropert
 import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
 import { OptionsLineComponent } from "../../sharedUiComponents/lines/optionsLineComponent";
 import { FloatLineComponent } from "../../sharedUiComponents/lines/floatLineComponent";
-import { Color3LineComponent } from "../../sharedUiComponents/lines/color3LineComponent";
+import { ColorLineComponent } from "../../sharedUiComponents/lines/colorLineComponent";
+
 import { TextInputLineComponent } from "../../sharedUiComponents/lines/textInputLineComponent";
 import { ParentingPropertyGridComponent } from "../parentingPropertyGridComponent";
 import { DisplayGridPropertyGridComponent } from "./propertyGrids/gui/displayGridPropertyGridComponent";
@@ -51,6 +52,7 @@ import { DisplayGrid } from "babylonjs-gui/2D/controls/displayGrid";
 import { Button } from "babylonjs-gui/2D/controls/button";
 import { ButtonPropertyGridComponent } from "./propertyGrids/gui/buttonPropertyGridComponent";
 import { GUINodeTools } from "../../guiNodeTools";
+import { makeTargetsProxy } from "../../sharedUiComponents/lines/targetsProxy";
 
 require("./propertyTab.scss");
 const adtIcon: string = require("../../../public/imgs/adtIcon.svg");
@@ -241,24 +243,25 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             return;
         }
         this.props.globalState.workbench.loadFromSnippet(snippedId);
-    }
+    };
 
-    renderNode(node: Control) {
+    renderNode(nodes: Control[]) {
+        const node = nodes[0];
         return <>
         <div id="header">
-            <img id="logo" src={this.renderControlIcon(node)} />
+            <img id="logo" src={this.renderControlIcon(nodes)} />
             <div id="title">
                 <TextInputLineComponent
                     noUnderline={true}
                     lockObject={this._lockObject}
                     label=""
-                    target={node}
+                    target={makeTargetsProxy(nodes, this.props.globalState.onPropertyChangedObservable)}
                     propertyName="name"
                     onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable}
                 />
             </div>
         </div>
-        {this.renderProperties(node)}
+        {this.renderProperties(nodes)}
         {node?.parent?.typeName === "Grid" && (
             <ParentingPropertyGridComponent
                 control={node}
@@ -269,166 +272,181 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         </>;
     }
 
-    renderProperties(node: Control) {
-        const className = node.getClassName();
+    /** 
+     * returns the class name of a list of controls if they share a class, or an empty string if not
+     */
+    getControlsCommonClassName(nodes: Control[]) {
+        if (nodes.length === 0) return "";
+        const firstNode = nodes[0];
+        const firstClass = firstNode.getClassName();
+        for(const node of nodes) {
+            if (node.getClassName() !== firstClass) {
+                return "";
+            }
+        }
+        return firstClass;
+    }
+
+    renderProperties(nodes: Control[]) {
+        if (nodes.length === 0) return;
+        const className = this.getControlsCommonClassName(nodes);
         switch (className) {
             case "TextBlock": {
-                const textBlock = node as TextBlock;
+                const textBlocks = nodes as TextBlock[];
                 return (
                     <TextBlockPropertyGridComponent
-                        textBlock={textBlock}
+                        textBlocks={textBlocks}
                         lockObject={this._lockObject}
                         onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable}
                     />
                 );
             }
             case "InputText": {
-                const inputText = node as InputText;
+                const inputTexts = nodes as InputText[];
                 return (
                     <InputTextPropertyGridComponent
-                        inputText={inputText}
+                        inputTexts={inputTexts}
                         lockObject={this._lockObject}
                         onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable}
                     />
                 );
             }
             case "ColorPicker": {
-                const colorPicker = node as ColorPicker;
+                const colorPickers = nodes as ColorPicker[];
                 return (
                     <ColorPickerPropertyGridComponent
-                        colorPicker={colorPicker}
+                        colorPickers={colorPickers}
                         lockObject={this._lockObject}
                         onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable}
                     />
                 );
             }
             case "Image": {
-                const image = node as Image;
-                return <ImagePropertyGridComponent image={image} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />;
+                const images = nodes as Image[];
+                return <ImagePropertyGridComponent images={images} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />;
             }
             case "Slider": {
-                const slider = node as Slider;
+                const sliders = nodes as Slider[];
                 return (
-                    <SliderGenericPropertyGridComponent slider={slider} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />
+                    <SliderGenericPropertyGridComponent sliders={sliders} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />
                 );
             }
             case "ImageBasedSlider": {
-                const imageBasedSlider = node as ImageBasedSlider;
+                const imageBasedSliders = nodes as ImageBasedSlider[];
                 return (
                     <ImageBasedSliderPropertyGridComponent
-                        imageBasedSlider={imageBasedSlider}
+                        imageBasedSliders={imageBasedSliders}
                         lockObject={this._lockObject}
                         onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable}
                     />
                 );
             }
             case "Rectangle": {
-                const rectangle = node as Rectangle;
                 return (
                     <RectanglePropertyGridComponent
-                        rectangle={rectangle}
+                        rectangles={nodes as Rectangle[]}
                         lockObject={this._lockObject}
                         onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable}
                     />
                 );
             }
             case "StackPanel": {
-                const stackPanel = node as StackPanel;
+                const stackPanels = nodes as StackPanel[];
                 return (
                     <StackPanelPropertyGridComponent
-                        stackPanel={stackPanel}
+                        stackPanels={stackPanels}
                         lockObject={this._lockObject}
                         onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable}
                     />
                 );
             }
             case "Grid": {
-                const grid = node as Grid;
-                return <GridPropertyGridComponent grid={grid} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />;
+                const grids = nodes as Grid[];
+                return <GridPropertyGridComponent grids={grids} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />;
             }
             case "ScrollViewer": {
-                const scrollViewer = node as ScrollViewer;
+                const scrollViewers = nodes as ScrollViewer[];
                 return (
                     <ScrollViewerPropertyGridComponent
-                        scrollViewer={scrollViewer}
+                        scrollViewers={scrollViewers}
                         lockObject={this._lockObject}
                         onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable}
                     />
                 );
             }
             case "Ellipse": {
-                const ellipse = node as Ellipse;
+                const ellipses = nodes as Ellipse[];
                 return (
                     <EllipsePropertyGridComponent
-                        ellipse={ellipse}
+                        ellipses={ellipses}
                         lockObject={this._lockObject}
                         onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable}
                     />
                 );
             }
             case "Checkbox": {
-                const checkbox = node as Checkbox;
+                const checkboxes = nodes as Checkbox[];
                 return (
                     <CheckboxPropertyGridComponent
-                        checkbox={checkbox}
+                        checkboxes={checkboxes}
                         lockObject={this._lockObject}
                         onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable}
                     />
                 );
             }
             case "RadioButton": {
-                const radioButton = node as RadioButton;
+                const radioButtons = nodes as RadioButton[];
                 return (
                     <RadioButtonPropertyGridComponent
-                        radioButton={radioButton}
+                        radioButtons={radioButtons}
                         lockObject={this._lockObject}
                         onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable}
                     />
                 );
             }
             case "Line": {
-                const line = node as Line;
-                return <LinePropertyGridComponent line={line} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />;
+                const lines = nodes as Line[];
+                return <LinePropertyGridComponent lines={lines} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />;
             }
             case "DisplayGrid": {
-                const displayGrid = node as DisplayGrid;
+                const displayGrids = nodes as DisplayGrid[];
                 return (
                     <DisplayGridPropertyGridComponent
-                        displayGrid={displayGrid}
+                        displayGrids={displayGrids}
                         lockObject={this._lockObject}
                         onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable}
                     />
                 );
             }
             case "Button": {
-                const button = node as Button;
+                const buttons = nodes as Button[];
                 return (
                     <ButtonPropertyGridComponent
                         key="buttonMenu"
-                        rectangle={button}
+                        rectangles={buttons}
                         lockObject={this._lockObject}
                         onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable}
                         onAddComponent={(value) => {
-                            const guiElement = GUINodeTools.CreateControlFromString(value);
-                            const newGuiNode = this.props.globalState.workbench.createNewGuiNode(guiElement);
-                            button.addControl(newGuiNode);
-                            this.props.globalState.onSelectionChangedObservable.notifyObservers(newGuiNode);
+                            for (const button of buttons) {
+                                const guiElement = GUINodeTools.CreateControlFromString(value);
+                                const newGuiNode = this.props.globalState.workbench.createNewGuiNode(guiElement);    
+                                button.addControl(newGuiNode);
+                                this.props.globalState.onSelectionChangedObservable.notifyObservers(newGuiNode);
+                            }
                         }}
                     />
                 );
             }
         }
 
-        if (className !== "") {
-            const control = node as Control;
-            return (
-                <ControlPropertyGridComponent control={control} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />
-            );
-        }
-        return null;
+        const controls = nodes as Control[];
+        return (
+            <ControlPropertyGridComponent controls={controls} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />
+        );
     }
 
-    renderControlIcon(node: Control) {
+    renderControlIcon(nodes: Control[]) {
+        const node = nodes[0];
         const className = node.getClassName();
         switch (className) {
             case "TextBlock": {
@@ -527,10 +545,10 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             DataStorage.WriteBoolean("Responsive", false);
         }
 
-        if (this.state.currentNode && this.props.globalState.workbench.selectedGuiNodes.length === 1) {
+        if (this.state.currentNode && this.props.globalState.workbench.selectedGuiNodes.length > 0) {
             return (
                 <div id="ge-propertyTab">
-                    {this.renderNode(this.state.currentNode!)}
+                    {this.renderNode(this.props.globalState.workbench.selectedGuiNodes)}
                 </div>
             );
         }
@@ -544,14 +562,14 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 <div>
                     <TextLineComponent tooltip="" label="ART BOARD" value=" " color="grey"></TextLineComponent>
                     {this.props.globalState.workbench._scene !== undefined && (
-                        <Color3LineComponent
+                        <ColorLineComponent
                             iconLabel={"Background Color"}
                             lockObject={this._lockObject}
                             icon={artboardColorIcon}
                             label=""
-                            target={this.props.globalState.workbench._scene}
-                            propertyName="clearColor"
-                            onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable}
+                            target={this.props.globalState}
+                            propertyName="backgroundColor"
+                            disableAlpha={true}
                         />
                     )}
                     <hr className="ge" />
@@ -643,7 +661,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         }}
                     />
                     <hr className="ge" />
-                    {this.renderNode(this.props.globalState.workbench.trueRootContainer)}
+                    {this.renderNode([this.props.globalState.workbench.trueRootContainer])}
                 </div>
             </div>
         );

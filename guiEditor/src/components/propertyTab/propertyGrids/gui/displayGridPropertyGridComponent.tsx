@@ -6,7 +6,8 @@ import { LockObject } from "../../../../sharedUiComponents/tabs/propertyGrids/lo
 import { TextLineComponent } from "../../../../sharedUiComponents/lines/textLineComponent";
 import { DisplayGrid } from "babylonjs-gui/2D/controls/displayGrid";
 import { FloatLineComponent } from "../../../../sharedUiComponents/lines/floatLineComponent";
-import { Color3LineComponent } from "../../../../sharedUiComponents/lines/color3LineComponent";
+import { ColorLineComponent } from "../../../../sharedUiComponents/lines/colorLineComponent";
+import { makeTargetsProxy } from "../../../../sharedUiComponents/lines/targetsProxy";
 
 const sizeIcon: string = require("../../../../sharedUiComponents/imgs/sizeIcon.svg");
 const colorIcon: string = require("../../../../sharedUiComponents/imgs/colorIcon.svg");
@@ -14,7 +15,7 @@ const conerRadiusIcon: string = require("../../../../sharedUiComponents/imgs/con
 const strokeWeightIcon: string = require("../../../../sharedUiComponents/imgs/strokeWeightIcon.svg");
 
 interface IDisplayGridPropertyGridComponentProps {
-    displayGrid: DisplayGrid;
+    displayGrids: DisplayGrid[];
     lockObject: LockObject;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
@@ -25,11 +26,11 @@ export class DisplayGridPropertyGridComponent extends React.Component<IDisplayGr
     }
 
     render() {
-        const displayGrid = this.props.displayGrid;
+        const displayGrids = this.props.displayGrids;
 
         return (
             <div className="pane">
-                <CommonControlPropertyGridComponent lockObject={this.props.lockObject} control={displayGrid} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <CommonControlPropertyGridComponent lockObject={this.props.lockObject} controls={displayGrids} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <hr />
                 <TextLineComponent label="DISPLAY GRID" value=" " color="grey"></TextLineComponent>
                 <div className="ge-divider">
@@ -40,7 +41,7 @@ export class DisplayGridPropertyGridComponent extends React.Component<IDisplayGr
                         isInteger={true}
                         lockObject={this.props.lockObject}
                         label="W"
-                        target={displayGrid}
+                        target={makeTargetsProxy(displayGrids, this.props.onPropertyChangedObservable)}
                         propertyName="cellWidth"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
@@ -49,7 +50,7 @@ export class DisplayGridPropertyGridComponent extends React.Component<IDisplayGr
                         isInteger={true}
                         lockObject={this.props.lockObject}
                         label="H"
-                        target={displayGrid}
+                        target={makeTargetsProxy(displayGrids, this.props.onPropertyChangedObservable)}
                         propertyName="cellHeight"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
@@ -61,16 +62,16 @@ export class DisplayGridPropertyGridComponent extends React.Component<IDisplayGr
                     isInteger={true}
                     lockObject={this.props.lockObject}
                     label=""
-                    target={displayGrid}
+                    target={makeTargetsProxy(displayGrids, this.props.onPropertyChangedObservable)}
                     propertyName="minorLineTickness"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
-                <Color3LineComponent
+                <ColorLineComponent
                     iconLabel={"Minor Line Color"}
                     icon={colorIcon}
                     lockObject={this.props.lockObject}
                     label=""
-                    target={displayGrid}
+                    target={makeTargetsProxy(displayGrids, this.props.onPropertyChangedObservable)}
                     propertyName="minorLineColor"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
@@ -81,16 +82,16 @@ export class DisplayGridPropertyGridComponent extends React.Component<IDisplayGr
                     isInteger={true}
                     lockObject={this.props.lockObject}
                     label=""
-                    target={displayGrid}
+                    target={makeTargetsProxy(displayGrids, this.props.onPropertyChangedObservable)}
                     propertyName="majorLineTickness"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
-                <Color3LineComponent
+                <ColorLineComponent
                     iconLabel={"Major Line Color"}
                     icon={colorIcon}
                     lockObject={this.props.lockObject}
                     label=""
-                    target={displayGrid}
+                    target={makeTargetsProxy(displayGrids, this.props.onPropertyChangedObservable)}
                     propertyName="majorLineColor"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
@@ -101,7 +102,7 @@ export class DisplayGridPropertyGridComponent extends React.Component<IDisplayGr
                     isInteger={true}
                     lockObject={this.props.lockObject}
                     label=""
-                    target={displayGrid}
+                    target={makeTargetsProxy(displayGrids, this.props.onPropertyChangedObservable)}
                     propertyName="majorLineFrequency"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />

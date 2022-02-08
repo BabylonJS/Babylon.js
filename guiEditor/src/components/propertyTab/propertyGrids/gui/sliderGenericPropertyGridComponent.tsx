@@ -7,7 +7,7 @@ import { Slider } from "babylonjs-gui/2D/controls/sliders/slider";
 import { SliderPropertyGridComponent } from "./sliderPropertyGridComponent";
 
 interface ISliderGenericPropertyGridComponentProps {
-    slider: Slider;
+    sliders: Slider[];
     lockObject: LockObject;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
@@ -18,12 +18,12 @@ export class SliderGenericPropertyGridComponent extends React.Component<ISliderG
     }
 
     render() {
-        const slider = this.props.slider;
+        const sliders = this.props.sliders;
 
         return (
             <div className="pane">
-                <CommonControlPropertyGridComponent lockObject={this.props.lockObject} control={slider} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <SliderPropertyGridComponent slider={slider} lockObject={this.props.lockObject} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <CommonControlPropertyGridComponent lockObject={this.props.lockObject} controls={sliders} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <SliderPropertyGridComponent sliders={sliders} lockObject={this.props.lockObject} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
             </div>
         );
     }

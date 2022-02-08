@@ -86,6 +86,8 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
             false
         );
         this.createItems();
+
+        this.props.globalState.onBackgroundColorChangeObservable.add(() => this.forceUpdate());
     }
 
     showWaitScreen() {
@@ -263,6 +265,9 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                         }}
                         onDragOver={(event) => {
                             event.preventDefault();
+                        }}
+                        style={{
+                            backgroundColor: this.props.globalState.backgroundColor.toHexString()
                         }}>
                         <ArtBoardComponent globalState={this.props.globalState}/>
                         <WorkbenchComponent ref={"workbenchCanvas"} globalState={this.props.globalState} />
