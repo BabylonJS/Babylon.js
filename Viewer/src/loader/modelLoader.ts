@@ -8,7 +8,7 @@ import { ConfigurationContainer } from '../configuration/configurationContainer'
 import { IModelConfiguration } from '../configuration/interfaces/modelConfiguration';
 import { ObservablesManager } from '../managers/observablesManager';
 import { ModelState, ViewerModel } from '../model/viewerModel';
-import { getLoaderPluginByName, ILoaderPlugin } from './plugins/';
+import { getLoaderPluginByName, ILoaderPlugin } from './plugins/index';
 
 /**
  * An instance of the class is in charge of loading the model correctly.
