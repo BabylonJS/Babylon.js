@@ -440,3 +440,4 @@
 - The `overrideMesh` of the `Skeleton` class has been removed. ([bghgary](https://github.com/bghgary))
 - Cloning a mesh now copies skeletons. ([bghgary](https://github.com/bghgary))
 - Cloning and creating instances of a mesh now refreshes the bounding box applying skins and morph targets. ([bghgary](https://github.com/bghgary))
+- `KeyboardInfoPre.skipOnPointerObservable` is now correctly renamed to `KeyboardInfoPre.skipOnKeyboardObservable`. ([bghgary](https://github.com/bghgary))

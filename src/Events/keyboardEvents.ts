@@ -44,7 +44,7 @@ export class KeyboardInfoPre extends KeyboardInfo {
     /**
      * Defines whether the engine should skip the next onKeyboardObservable associated to this pre.
      */
-    public skipOnPointerObservable: boolean;
+    public skipOnKeyboardObservable: boolean;
 
     /**
      * Instantiates a new keyboard pre info.
@@ -62,6 +62,6 @@ export class KeyboardInfoPre extends KeyboardInfo {
          */
         public event: IKeyboardEvent) {
         super(type, event);
-        this.skipOnPointerObservable = false;
+        this.skipOnKeyboardObservable = false;
     }
 }
