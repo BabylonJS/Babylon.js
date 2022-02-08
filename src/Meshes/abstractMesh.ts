@@ -1406,25 +1406,15 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         this._updateBoundingInfo();
     }
 
-    /** @hidden */
-    public _getPositionData(applySkeleton: boolean, applyMorph: boolean): Nullable<FloatArray> {
-        let data = this.getVerticesData(VertexBuffer.PositionKind);
-
-        if (this._internalAbstractMeshDataInfo._positions) {
-            this._internalAbstractMeshDataInfo._positions = null;
-        }
-
-        if (data && ((applySkeleton && this.skeleton) || (applyMorph && this.morphTargetManager))) {
-            data = Tools.Slice(data);
-            this._generatePointsArray();
-            if (this._positions) {
-                const pos = this._positions;
-                this._internalAbstractMeshDataInfo._positions = new Array<Vector3>(pos.length);
-                for (let i = 0; i < pos.length; i++) {
-                    this._internalAbstractMeshDataInfo._positions[i] = pos[i]?.clone() || new Vector3();
-                }
-            }
-        }
+    /**
+     * Get the position vertex data and optionally apply skeleton and morphing.
+     * @param applySkeleton defines whether to apply the skeleton
+     * @param applyMorph  defines whether to apply the morph target
+     * @param data defines the position data to apply the skeleton and morph to
+     * @returns the position data
+     */
+    public getPositionData(applySkeleton: boolean, applyMorph: boolean, data?: Nullable<FloatArray>): Nullable<FloatArray> {
+        data = data ?? this.getVerticesData(VertexBuffer.PositionKind);
 
         if (data && applyMorph && this.morphTargetManager) {
             let faceIndexCount = 0;
@@ -1450,6 +1440,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
                 }
             }
         }
+
         if (data && applySkeleton && this.skeleton) {
             var matricesIndicesData = this.getVerticesData(VertexBuffer.MatricesIndicesKind);
             var matricesWeightsData = this.getVerticesData(VertexBuffer.MatricesWeightsKind);
@@ -1499,6 +1490,29 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         }
 
         return data;
+    }
+
+    /** @hidden */
+    public _getPositionData(applySkeleton: boolean, applyMorph: boolean): Nullable<FloatArray> {
+        let data = this.getVerticesData(VertexBuffer.PositionKind);
+
+        if (this._internalAbstractMeshDataInfo._positions) {
+            this._internalAbstractMeshDataInfo._positions = null;
+        }
+
+        if (data && ((applySkeleton && this.skeleton) || (applyMorph && this.morphTargetManager))) {
+            data = Tools.Slice(data);
+            this._generatePointsArray();
+            if (this._positions) {
+                const pos = this._positions;
+                this._internalAbstractMeshDataInfo._positions = new Array<Vector3>(pos.length);
+                for (let i = 0; i < pos.length; i++) {
+                    this._internalAbstractMeshDataInfo._positions[i] = pos[i]?.clone() || new Vector3();
+                }
+            }
+        }
+
+        return this.getPositionData(applySkeleton, applyMorph, data);
     }
 
     /** @hidden */
