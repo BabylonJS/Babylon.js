@@ -35,10 +35,6 @@ export class Skeleton implements IAnimatable {
      * Defines a boolean indicating if the root matrix is provided by meshes or by the current skeleton (this is the default value)
      */
     public needInitialSkinMatrix = false;
-    /**
-     * Defines a mesh that override the matrix used to get the world matrix (null by default).
-     */
-    public overrideMesh: Nullable<AbstractMesh> = null;
 
     /**
      * Gets the list of animations attached to this skeleton
@@ -66,9 +62,6 @@ export class Skeleton implements IAnimatable {
 
     /** @hidden */
     public _hasWaitingData: Nullable<boolean> = null;
-
-    /** @hidden */
-    public _waitingOverrideMeshId: Nullable<string> = null;
 
     /** @hidden */
     public _parentContainer: Nullable<AbstractScene> = null;
@@ -612,8 +605,6 @@ export class Skeleton implements IAnimatable {
 
         result.needInitialSkinMatrix = this.needInitialSkinMatrix;
 
-        result.overrideMesh = this.overrideMesh;
-
         for (var index = 0; index < this.bones.length; index++) {
             var source = this.bones[index];
             var parentBone = null;
@@ -707,7 +698,6 @@ export class Skeleton implements IAnimatable {
         serializationObject.bones = [];
 
         serializationObject.needInitialSkinMatrix = this.needInitialSkinMatrix;
-        serializationObject.overrideMeshId = this.overrideMesh?.id;
 
         for (var index = 0; index < this.bones.length; index++) {
             var bone = this.bones[index];
@@ -768,11 +758,6 @@ export class Skeleton implements IAnimatable {
         }
 
         skeleton.needInitialSkinMatrix = parsedSkeleton.needInitialSkinMatrix;
-
-        if (parsedSkeleton.overrideMeshId) {
-            skeleton._hasWaitingData = true;
-            skeleton._waitingOverrideMeshId = parsedSkeleton.overrideMeshId;
-        }
 
         let index: number;
         for (index = 0; index < parsedSkeleton.bones.length; index++) {

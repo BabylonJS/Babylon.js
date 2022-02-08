@@ -1503,13 +1503,12 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
 
     /** @hidden */
     public _updateBoundingInfo(): AbstractMesh {
-        const effectiveMesh = this._effectiveMesh;
         if (this._boundingInfo) {
-            this._boundingInfo.update(effectiveMesh.worldMatrixFromCache);
+            this._boundingInfo.update(this.worldMatrixFromCache);
         } else {
-            this._boundingInfo = new BoundingInfo(this.position, this.position, effectiveMesh.worldMatrixFromCache);
+            this._boundingInfo = new BoundingInfo(this.position, this.position, this.worldMatrixFromCache);
         }
-        this._updateSubMeshesBoundingInfo(effectiveMesh.worldMatrixFromCache);
+        this._updateSubMeshesBoundingInfo(this.worldMatrixFromCache);
         return this;
     }
 
@@ -1535,11 +1534,6 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         }
         // Bounding info
         this._boundingInfoIsDirty = true;
-    }
-
-    /** @hidden */
-    public get _effectiveMesh(): AbstractMesh {
-        return (this.skeleton && this.skeleton.overrideMesh) || this;
     }
 
     /**
@@ -1852,7 +1846,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
 
         if (intersectInfo) {
             // Get picked point
-            const world = worldToUse ?? (this.skeleton && this.skeleton.overrideMesh ? this.skeleton.overrideMesh.getWorldMatrix() : this.getWorldMatrix());
+            const world = worldToUse ?? this.getWorldMatrix();
             const worldOrigin = TmpVectors.Vector3[0];
             const direction = TmpVectors.Vector3[1];
             Vector3.TransformCoordinatesToRef(ray.origin, world, worldOrigin);

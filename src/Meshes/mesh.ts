@@ -536,7 +536,6 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                     "metadata",
                     "morphTargetManager",
                     "hasInstances",
-                    "source",
                     "worldMatrixInstancedBuffer",
                     "previousWorldMatrixInstancedBuffer",
                     "hasLODLevels",
@@ -622,7 +621,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
             // Material
             this.material = source.material;
-            var index: number;
+
             if (!doNotCloneChildren) {
                 // Children
                 let directDescendants = source.getDescendants(true);
@@ -652,14 +651,18 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             }
 
             // Particles
-            for (index = 0; index < scene.particleSystems.length; index++) {
+            for (let index = 0; index < scene.particleSystems.length; index++) {
                 var system = scene.particleSystems[index];
 
                 if (system.emitter === source) {
                     system.clone(system.name, this);
                 }
             }
-            this.refreshBoundingInfo();
+
+            // Skeleton
+            this.skeleton = source.skeleton;
+
+            this.refreshBoundingInfo(true, true);
             this.computeWorldMatrix(true);
         }
 
@@ -696,7 +699,6 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
     }
 
-    // Methods
     public instantiateHierarchy(
         newParent: Nullable<TransformNode> = null,
         options?: { doNotInstantiate: boolean },
@@ -707,7 +709,6 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 ? this.createInstance("instance of " + (this.name || this.id))
                 : this.clone("Clone of " + (this.name || this.id), newParent || this.parent, true);
 
-        if (instance) {
             instance.parent = newParent || this.parent;
             instance.position = this.position.clone();
             instance.scaling = this.scaling.clone();
@@ -719,14 +720,13 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
             if (onNewNodeCreated) {
                 onNewNodeCreated(this, instance);
-            }
         }
 
         for (var child of this.getChildTransformNodes(true)) {
-            child.instantiateHierarchy(instance as TransformNode, options, onNewNodeCreated);
+            child.instantiateHierarchy(instance, options, onNewNodeCreated);
         }
 
-        return instance as TransformNode;
+        return instance;
     }
 
     /**
@@ -1332,7 +1332,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param applyMorph  defines whether to apply the morph target before computing the bounding info
      * @returns the current mesh
      */
-    public refreshBoundingInfo(applySkeleton: boolean = false, applyMorph: boolean = true): Mesh {
+    public refreshBoundingInfo(applySkeleton: boolean = false, applyMorph: boolean = false): Mesh {
         if (this.hasBoundingInfo && this.getBoundingInfo().isLocked) {
             return this;
         }
@@ -1834,7 +1834,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             (this._scene.needsPreviousWorldMatrices && !instanceStorage.instancesPreviousBuffer);
 
         if (!this._instanceDataStorage.manualUpdate && (!instanceStorage.isFrozen || needUpdateBuffer)) {
-            var world = this._effectiveMesh.getWorldMatrix();
+            var world = this.getWorldMatrix();
             if (renderSelf) {
                 if (this._scene.needsPreviousWorldMatrices) {
                     if (!instanceStorage.masterMeshPreviousWorldMatrix) {
@@ -1999,7 +1999,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         fillMode: number,
         batch: _InstancesBatch,
         hardwareInstancedRendering: boolean,
-        onBeforeDraw: (isInstance: boolean, world: Matrix, effectiveMaterial?: Material, effectiveMesh?: AbstractMesh) => void,
+        onBeforeDraw: (isInstance: boolean, world: Matrix, effectiveMaterial?: Material) => void,
         effectiveMaterial?: Material
     ): Mesh {
         var scene = this.getScene();
@@ -2021,7 +2021,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             if (batch.renderSelf[subMesh._id]) {
                 // Draw
                 if (onBeforeDraw) {
-                    onBeforeDraw(false, renderingMesh._effectiveMesh.getWorldMatrix(), effectiveMaterial, renderingMesh._effectiveMesh);
+                    onBeforeDraw(false, renderingMesh.getWorldMatrix(), effectiveMaterial);
                 }
                 instanceCount++;
 
@@ -2217,7 +2217,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             return this;
         }
 
-        const effectiveMesh = effectiveMeshReplacement || this._effectiveMesh;
+        const effectiveMesh = effectiveMeshReplacement || this;
 
         var sideOrientation: Nullable<number>;
 
