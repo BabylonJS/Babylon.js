@@ -12,7 +12,7 @@
 - Added vertex animation textures with `BakedVertexAnimationManager` ([brunobg](https://github.com/brunobg), [Popov72](https://github.com/Popov72), [raggar](https://github.com/raggar))
 - Added `MaterialPluginManager` ([brunobg](https://github.com/brunobg), [Popov72](https://github.com/Popov72))
 - Official support of WebGPU ([Popov72](https://github.com/Popov72))
-- Enabled Performance Profiler ([carolhmj](https://github.com/carolhmj))
+- Added Performance Profiler to allow tracking of Performance metrics ([carolhmj](https://github.com/carolhmj))
 
 ## Updates
 
@@ -152,13 +152,7 @@
 - When user hits the "New Key" button on ACE but a key already exists on that frame, update existing frame's values instead of creating a new one. ([carolhmj](https://github.com/carolhmj))
 - Added live connection to GUI editor ([darraghjburke](https://github.com/darraghjburke))
 - Add `getAlphaFromRGB` checkbox on Texture view ([carolhmj](https://github.com/carolhmj))
-- When a perf profiler metric is constant, draw it on the middle of the canvas instead of on the top ([carolhmj](https://github.com/carolhmj))
-- Add a low pass filter on the performance graphs ([carolhmj](https://github.com/carolhmj))
-- Deselect keys with right-click on ACE ([carolhmj](https://github.com/carolhmj))
-- Let users edit multiple ACE key frame/values at the same time ([carolhmj](https://github.com/carolhmj))
-- Set default tangents for new keys on ACE and fix their behavior ([carolhmj](https://github.com/carolhmj))
-- Let the playhead move past the last animation key on ACE ([carolhmj](https://github.com/carolhmj))
-- Improve zooming on ACE ([carolhmj](https://github.com/carolhmj))
+
 
 ### Playground
 
