@@ -1440,7 +1440,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
                 }
             }
         }
-        
+
         if (data && applySkeleton && this.skeleton) {
             var matricesIndicesData = this.getVerticesData(VertexBuffer.MatricesIndicesKind);
             var matricesWeightsData = this.getVerticesData(VertexBuffer.MatricesWeightsKind);
