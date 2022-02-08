@@ -99,6 +99,9 @@ export class ColorPicker extends React.Component<IColorPickerProps, IColorPicker
 
         let hsv = this.state.color.toHSV();
         Color3.HSVtoRGBToRef(hsv.r, saturation, value, this.state.color);
+        if (this.state.alpha === 0) {
+            this.setState({alpha: 1});
+        }
         this.setState({ color: this.state.color });
     }
 
@@ -188,6 +191,9 @@ export class ColorPicker extends React.Component<IColorPickerProps, IColorPicker
                             }}
                         ></div>
                     </div>
+                </div>
+                <div className="color-picker-alpha">
+
                 </div>
                 <div className="color-picker-rgb">
                     <div className="red">

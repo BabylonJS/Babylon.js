@@ -108,6 +108,10 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         if (adt._rootContainer != this._panAndZoomContainer) {
             adt._rootContainer = this._panAndZoomContainer;
             this._visibleRegionContainer.addControl(this._trueRootContainer);
+            console.log(adt._rootContainer.name, this._panAndZoomContainer.host, this._visibleRegionContainer.host, this._trueRootContainer.host);
+        }
+        if (adt.getSize().width !== this._engine.getRenderWidth() || adt.getSize().height !== this._engine.getRenderHeight()) {
+            adt.scaleTo(this._engine.getRenderWidth(), this._engine.getRenderHeight());
         }
         if (adt.getSize().width !== this._engine.getRenderWidth() || adt.getSize().height !== this._engine.getRenderHeight()) {
             adt.scaleTo(this._engine.getRenderWidth(), this._engine.getRenderHeight());
@@ -843,8 +847,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         // Create our first scene.
         this._scene = new Scene(this._engine);
 
-        const clearColor = 204 / 255.0;
-        this._scene.clearColor = new Color4(clearColor, clearColor, clearColor, 0.0);
+        this._scene.clearColor = new Color4(0, 0, 0, 0);
         const light = new HemisphericLight("light1", Axis.Y, this._scene);
         light.intensity = 0.9;
 
@@ -955,6 +958,8 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             this._panning = true;
             this._initialPanningOffset = this.getScaledPointerPosition();
             this._panAndZoomContainer.getDescendants().forEach(desc => {
+
+                if (!desc.metadata) desc.metadata = {};
                 desc.metadata.isPointerBlocker = desc.isPointerBlocker;
                 desc.isPointerBlocker = false;
             })
@@ -963,7 +968,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         const endPanning = () => {
             this._panning = false;
             this._panAndZoomContainer.getDescendants().forEach(desc => {
-                if (desc.metadata.isPointerBlocker !== undefined) {
+                if (desc.metadata && desc.metadata.isPointerBlocker !== undefined) {
                     desc.isPointerBlocker = desc.metadata.isPointerBlocker;
                     delete desc.metadata.isPointerBlocker;
                 }
@@ -976,7 +981,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
         this._rootContainer.current?.addEventListener("wheel",  zoomFnScrollWheel);
         this._rootContainer.current?.addEventListener("pointerdown", (event) => {
-            console.log(event);
             removeObservers();
             if (event.button !== 0 || this._forcePanning) {
                 startPanning();

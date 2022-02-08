@@ -190,7 +190,7 @@ export class Gizmo implements IDisposable {
         if (this.attachedNode) {
             var effectiveNode = this.attachedNode;
             if (this.attachedMesh) {
-                effectiveNode = this.attachedMesh._effectiveMesh || this.attachedNode;
+                effectiveNode = this.attachedMesh || this.attachedNode;
             }
 
             // Position

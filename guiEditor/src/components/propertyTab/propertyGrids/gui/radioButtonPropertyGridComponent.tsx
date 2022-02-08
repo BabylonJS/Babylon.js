@@ -8,13 +8,14 @@ import { FloatLineComponent } from "../../../../sharedUiComponents/lines/floatLi
 import { TextInputLineComponent } from "../../../../sharedUiComponents/lines/textInputLineComponent";
 import { CheckBoxLineComponent } from "../../../../sharedUiComponents/lines/checkBoxLineComponent";
 import { TextLineComponent } from "../../../../sharedUiComponents/lines/textLineComponent";
+import { makeTargetsProxy } from "../../../../sharedUiComponents/lines/targetsProxy";
 
 const strokeWeightIcon: string = require("../../../../sharedUiComponents/imgs/strokeWeightIcon.svg");
 const checkboxIcon: string = require("../../../../sharedUiComponents/imgs/checkboxIconDark.svg");
 const scaleIcon: string = require("../../../../sharedUiComponents/imgs/scaleIcon.svg");
 
 interface IRadioButtonPropertyGridComponentProps {
-    radioButton: RadioButton;
+    radioButtons: RadioButton[];
     lockObject: LockObject;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
@@ -25,11 +26,11 @@ export class RadioButtonPropertyGridComponent extends React.Component<IRadioButt
     }
 
     render() {
-        const radioButton = this.props.radioButton;
+        const radioButtons = this.props.radioButtons;
 
         return (
             <div className="pane">
-                <CommonControlPropertyGridComponent lockObject={this.props.lockObject} control={radioButton} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <CommonControlPropertyGridComponent lockObject={this.props.lockObject} controls={radioButtons} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <hr />
                 <TextLineComponent label="RADIO BUTTON" value=" " color="grey"></TextLineComponent>
                 <div className="ge-divider">
@@ -38,7 +39,7 @@ export class RadioButtonPropertyGridComponent extends React.Component<IRadioButt
                         icon={strokeWeightIcon}
                         lockObject={this.props.lockObject}
                         label=""
-                        target={radioButton}
+                        target={makeTargetsProxy(radioButtons, this.props.onPropertyChangedObservable)}
                         propertyName="thickness"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
@@ -47,7 +48,7 @@ export class RadioButtonPropertyGridComponent extends React.Component<IRadioButt
                         icon={scaleIcon}
                         lockObject={this.props.lockObject}
                         label=""
-                        target={radioButton}
+                        target={makeTargetsProxy(radioButtons, this.props.onPropertyChangedObservable)}
                         propertyName="checkSizeRatio"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
@@ -57,7 +58,7 @@ export class RadioButtonPropertyGridComponent extends React.Component<IRadioButt
                     icon={strokeWeightIcon}
                     lockObject={this.props.lockObject}
                     label=""
-                    target={radioButton}
+                    target={makeTargetsProxy(radioButtons, this.props.onPropertyChangedObservable)}
                     propertyName="group"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
@@ -65,7 +66,7 @@ export class RadioButtonPropertyGridComponent extends React.Component<IRadioButt
                     iconLabel="Is Checked"
                     icon={checkboxIcon}
                     label="CHECKED"
-                    target={radioButton}
+                    target={makeTargetsProxy(radioButtons, this.props.onPropertyChangedObservable)}
                     propertyName="isChecked"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
