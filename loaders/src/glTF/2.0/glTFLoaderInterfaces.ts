@@ -1,5 +1,4 @@
 ﻿import { AnimationGroup } from "babylonjs/Animations/animationGroup";
-import { Bone } from "babylonjs/Bones/bone";
 import { Skeleton } from "babylonjs/Bones/skeleton";
 import { Material } from "babylonjs/Materials/material";
 import { TransformNode } from "babylonjs/Meshes/transformNode";
@@ -166,9 +165,6 @@ export interface INode extends GLTF2.INode, IArrayItem {
 
     /** @hidden */
     _primitiveBabylonMeshes?: AbstractMesh[];
-
-    /** @hidden */
-    _babylonBones?: Bone[];
 
     /** @hidden */
     _numMorphTargets?: number;
