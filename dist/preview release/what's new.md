@@ -130,6 +130,7 @@
 
 ### Meshes
 
+- Added public version of `AbstractMesh` function _getPositionData. ([BlakeOne](https://github.com/BlakeOne))
 - Added default options parameter to Create functions. ([BlakeOne](https://github.com/BlakeOne))
 - `LineMesh` now allows assigning custom material via `material` setter. ([FullStackForger](https://github.com/FullStackForger)
 - `InstancedMesh` can now be sorted from back to front before rendering if the material is transparent ([Popov72](https://github.com/Popov72))
