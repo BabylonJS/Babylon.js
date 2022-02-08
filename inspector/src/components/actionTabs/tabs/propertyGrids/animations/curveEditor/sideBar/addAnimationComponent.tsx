@@ -61,6 +61,16 @@ export class AddAnimationComponent extends React.Component<IAddAnimationComponen
                     ? (this.props.context.animations[0] as TargetedAnimation).animation.framePerSecond
                     : (this.props.context.animations[0] as Animation).framePerSecond
                 : 60;
+        let minFrame = this.props.context.referenceMinFrame;
+        let maxFrame = this.props.context.referenceMaxFrame;
+        if (this.props.context.animations) {
+            for (let anim of this.props.context.animations) {
+                let innerAnim = this.props.context.useTargetAnimations ? (anim as TargetedAnimation).animation : (anim as Animation);
+                minFrame = Math.min(minFrame, innerAnim.getKeys()[0].frame);
+                maxFrame = Math.max(maxFrame, innerAnim.getKeys()[innerAnim.getKeys().length - 1].frame);
+            }
+        }
+
         let dataType = 0;
         let loopMode = 0;
         let defaultValue0: any;
@@ -151,14 +161,14 @@ export class AddAnimationComponent extends React.Component<IAddAnimationComponen
         let animation = new Animation(displayName, property, fps, dataType, loopMode);
         let keys: IAnimationKey[] = [];
         keys.push({
-            frame: context.referenceMinFrame,
+            frame: minFrame,
             value: defaultValue0,
             inTangent: defaultInTangent0,
             outTangent: defaultOutTangent0
         });
 
         keys.push({
-            frame: context.referenceMaxFrame,
+            frame: maxFrame,
             value: defaultValue1,
             inTangent: defaultInTangent1,
             outTangent: defaultOutTangent1
@@ -180,7 +190,7 @@ export class AddAnimationComponent extends React.Component<IAddAnimationComponen
         }
         context.activeAnimations.push(animation);
         context.prepare();
-        context.onActiveAnimationChanged.notifyObservers();
+        context.onActiveAnimationChanged.notifyObservers({});
         context.onAnimationsLoaded.notifyObservers();
     }
 

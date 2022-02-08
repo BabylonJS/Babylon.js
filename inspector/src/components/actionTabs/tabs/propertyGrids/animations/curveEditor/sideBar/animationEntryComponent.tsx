@@ -1,6 +1,6 @@
 import * as React from "react";
 import { GlobalState } from "../../../../../../globalState";
-import { Context } from "../context";
+import { Context, IActiveAnimationChangedOptions } from "../context";
 import { Animation } from "babylonjs/Animations/animation";
 import { ActionButtonComponent } from "../controls/actionButtonComponent";
 import { Nullable } from "babylonjs/types";
@@ -25,7 +25,7 @@ interface IAnimationEntryComponentState {
 }
 
 export class AnimationEntryComponent extends React.Component<IAnimationEntryComponentProps, IAnimationEntryComponentState> {
-    private _onActiveAnimationChangedObserver: Nullable<Observer<void>>;
+    private _onActiveAnimationChangedObserver: Nullable<Observer<IActiveAnimationChangedOptions>>;
     private _onActiveKeyPointChangedObserver: Nullable<Observer<void>>;
     private _onSelectToActivatedObserver: Nullable<Observer<{ from: number; to: number }>>;
 
@@ -110,7 +110,7 @@ export class AnimationEntryComponent extends React.Component<IAnimationEntryComp
 
                 this.props.context.onSelectToActivated.notifyObservers(payload);
 
-                this.props.context.onActiveAnimationChanged.notifyObservers();
+                this.props.context.onActiveAnimationChanged.notifyObservers({});
             }
             return;
         }
@@ -128,7 +128,7 @@ export class AnimationEntryComponent extends React.Component<IAnimationEntryComp
         }
 
         this.props.context.disableChannel(this.props.animation);
-        this.props.context.onActiveAnimationChanged.notifyObservers();
+        this.props.context.onActiveAnimationChanged.notifyObservers({});
     }
 
     private _expandOrCollapse() {
