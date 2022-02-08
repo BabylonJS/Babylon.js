@@ -148,6 +148,11 @@ export class HolographicSlate extends ContentDisplay3D {
      */
     protected _applyFacade(facadeTexture: AdvancedDynamicTexture) {
         this._contentMaterial.albedoTexture = facadeTexture;
+
+        // We should have a content plate by this point, but check for safety
+        if (this._contentPlate) {
+            facadeTexture.attachToMesh(this._contentPlate, true);
+        }
     }
 
     private _rebuildContent(): void {
