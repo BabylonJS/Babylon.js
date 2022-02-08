@@ -903,7 +903,7 @@ declare module BABYLON {
     enum System {
         Deg2Rad,
         Rad2Deg,
-        Epsilon = 0.00001,
+        Epsilon = 0.000001,
         SingleEpsilon = 1.401298e-45,
         EpsilonNormalSqrt = 1e-15,
         Kph2Mph = 0.621371,
@@ -1456,6 +1456,8 @@ declare module BABYLON {
         private static TempQuaternion3;
         private static PrintElement;
         private static LoadingState;
+        /** Zero pad a number to string */
+        static ZeroPad(num: number, places: number): string;
         static OnPreloaderProgress: (remainingCount: number, totalCount: number, lastFinishedTask: BABYLON.AbstractAssetTask) => void;
         static OnPreloaderComplete: (tasks: BABYLON.AbstractAssetTask[]) => void;
         static IsLayerMasked(mask: number, layer: number): boolean;
@@ -1463,6 +1465,27 @@ declare module BABYLON {
         static Approximately(a: number, b: number): boolean;
         static GetVertexDataFromMesh(mesh: BABYLON.Mesh): BABYLON.VertexData;
         static UpdateAbstractMeshMaterial(mesh: BABYLON.AbstractMesh, material: BABYLON.Material, materialIndex: number): void;
+        /** Creates a rotation which rotates /angle/ degrees around /axis/ */
+        static LerpLog(a: number, b: number, t: number): number;
+        static LerpExp(a: number, b: number, t: number): number;
+        static LerpUnclamped(a: number, b: number, t: number): number;
+        static LerpUnclampedColor3(a: BABYLON.Color3, b: BABYLON.Color3, t: number): BABYLON.Color3;
+        static LerpUnclampedColor3ToRef(a: BABYLON.Color3, b: BABYLON.Color3, t: number, result: BABYLON.Color3): void;
+        static LerpUnclampedColor4(a: BABYLON.Color4, b: BABYLON.Color4, t: number): BABYLON.Color4;
+        static LerpUnclampedColor4ToRef(a: BABYLON.Color4, b: BABYLON.Color4, t: number, result: BABYLON.Color4): void;
+        static LerpUnclampedVector2(a: BABYLON.Vector2, b: BABYLON.Vector2, t: number): BABYLON.Vector2;
+        static LerpUnclampedVector2ToRef(a: BABYLON.Vector2, b: BABYLON.Vector2, t: number, result: BABYLON.Vector2): void;
+        static LerpUnclampedVector3(a: BABYLON.Vector3, b: BABYLON.Vector3, t: number): BABYLON.Vector3;
+        static LerpUnclampedVector3ToRef(a: BABYLON.Vector3, b: BABYLON.Vector3, t: number, result: BABYLON.Vector3): void;
+        static LerpUnclampedVector4(a: BABYLON.Vector4, b: BABYLON.Vector4, t: number): BABYLON.Vector4;
+        static LerpUnclampedVector4ToRef(a: BABYLON.Vector4, b: BABYLON.Vector4, t: number, result: BABYLON.Vector4): void;
+        static IsEqualUsingDot(dot: number): boolean;
+        static QuaternionAngle(a: BABYLON.Quaternion, b: BABYLON.Quaternion): number;
+        static QuaternionLengthSquared(quat: BABYLON.Quaternion): number;
+        static QuaternionRotateTowards(from: BABYLON.Quaternion, to: BABYLON.Quaternion, maxDegreesDelta: number): BABYLON.Quaternion;
+        static QuaternionRotateTowardsToRef(from: BABYLON.Quaternion, to: BABYLON.Quaternion, maxDegreesDelta: number, result: BABYLON.Quaternion): void;
+        static QuaternionSlerpUnclamped(from: BABYLON.Quaternion, to: BABYLON.Quaternion, t: number): BABYLON.Quaternion;
+        static QuaternionSlerpUnclampedToRef(a: BABYLON.Quaternion, b: BABYLON.Quaternion, t: number, result: BABYLON.Quaternion): void;
         static MoveTowardsVector2(current: BABYLON.Vector2, target: BABYLON.Vector2, maxDistanceDelta: number): BABYLON.Vector2;
         static MoveTowardsVector2ToRef(current: BABYLON.Vector2, target: BABYLON.Vector2, maxDistanceDelta: number, result: BABYLON.Vector2): void;
         static MoveTowardsVector3(current: BABYLON.Vector3, target: BABYLON.Vector3, maxDistanceDelta: number): BABYLON.Vector3;
@@ -1477,15 +1500,6 @@ declare module BABYLON {
         static ClampMagnitudeVector3(vector: BABYLON.Vector3, length: number): BABYLON.Vector3;
         /**  Clamps a vector3 magnitude to a max length. */
         static ClampMagnitudeVector3ToRef(vector: BABYLON.Vector3, length: number, result: BABYLON.Vector3): void;
-        /** Zero pad a number to string */
-        static ZeroPad(num: number, places: number): string;
-        /** TODO */
-        static LerpLog(a: number, b: number, t: number): number;
-        /** TODO */
-        static LerpExp(a: number, b: number, t: number): number;
-        static LerpClamp(a: number, b: number, t: number): number;
-        /** TODO */
-        static LerpUnclamp(a: number, b: number, t: number): number;
         /** Returns the angle in degrees between the from and to vectors. */
         static GetAngle(from: BABYLON.Vector3, to: BABYLON.Vector3): number;
         /** Returns the angle in radians between the from and to vectors. */
@@ -1550,9 +1564,9 @@ declare module BABYLON {
         /** Sets a vector3 result degrees converted from radions */
         static Vector3Rad2DegToRef(vector: BABYLON.Vector3, result: BABYLON.Vector3): void;
         /** Multiply the quaternion by a vector */
-        static MultiplyQuaternionByVector(quaternion: BABYLON.Quaternion, vector: BABYLON.Vector3): BABYLON.Vector3;
+        static MultiplyQuaternionByVector(rotation: BABYLON.Quaternion, point: BABYLON.Vector3): BABYLON.Vector3;
         /** Multiply the quaternion by a vector to result */
-        static MultiplyQuaternionByVectorToRef(quaternion: BABYLON.Quaternion, vector: BABYLON.Vector3, result: BABYLON.Vector3): void;
+        static MultiplyQuaternionByVectorToRef(rotation: BABYLON.Quaternion, point: BABYLON.Vector3, result: BABYLON.Vector3): void;
         /** Validate and switch Quaternion rotation to Euler rotation. */
         static ValidateTransformRotation(transform: BABYLON.TransformNode): void;
         /** Validate and switch Euler rotation to Quaternion rotation. */
