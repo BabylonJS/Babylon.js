@@ -651,7 +651,7 @@ export class PropertyGridTabComponent extends PaneComponent {
                 const radioButton = entity as RadioButton;
                 return (
                     <RadioButtonPropertyGridComponent
-                        radioButton={radioButton}
+                        radioButtons={[radioButton]}
                         lockObject={this._lockObject}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
