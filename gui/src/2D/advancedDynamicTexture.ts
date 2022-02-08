@@ -1219,4 +1219,23 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         result.attach();
         return result;
     }
+
+    /**
+     * Scales the texture
+     * @param ratio the scale factor to apply to both width and height
+     */
+     public scale(ratio: number): void {
+        super.scale(ratio);
+        this.markAsDirty();
+    }
+
+    /**
+     * Resizes the texture
+     * @param width the new width
+     * @param height the new height
+     */
+    public scaleTo(width: number, height: number): void {
+        super.scaleTo(width, height);
+        this.markAsDirty();
+    }
 }
