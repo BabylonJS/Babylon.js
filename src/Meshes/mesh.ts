@@ -515,6 +515,16 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         scene = this.getScene();
 
+        this._onBeforeDraw = ((isInstance: boolean, world: Matrix, effectiveMaterial?: Material) => {
+            if (isInstance && effectiveMaterial) {
+                if (this._uniformBuffer) {
+                    this.transferToEffect(world);
+                } else {
+                    effectiveMaterial.bindOnlyWorldMatrix(world);
+                }
+            }
+        }).bind(this);
+
         if (source) {
             // Geometry
             if (source._geometry) {
@@ -2292,11 +2302,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         return this;
     }
 
-    private _onBeforeDraw(isInstance: boolean, world: Matrix, effectiveMaterial?: Material): void {
-        if (isInstance && effectiveMaterial) {
-            effectiveMaterial.bindOnlyWorldMatrix(world);
-        }
-    }
+    private _onBeforeDraw: (isInstance: boolean, world: Matrix, effectiveMaterial?: Material) => void;
 
     /**
      *   Renormalize the mesh and patch it up if there are no weights
