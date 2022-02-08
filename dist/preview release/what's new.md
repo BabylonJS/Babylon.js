@@ -72,7 +72,6 @@
 - Modified touch in `WebDeviceInputSystem` to no longer delete touch points after pointer up. ([PolygonalSun](https://github.com/PolygonalSun))
 - Added support for DualSense controllers to DeviceInputSystem. ([PolygonalSun](https://github.com/PolygonalSun))
 - Added `getCreationOptions` on `ThinEngine`. ([carolhmj](https://github.com/carolhmj))
-- Added errorCodes for BaseError ([jp833](https://github.com/jp833))
 
 ### Engine
 
