@@ -1,6 +1,7 @@
 :root {
     --backgroundGrey: #aaaaaa;
     --spacingHeight: 30px;
+    --labelFamily: "acumin-pro-condensed-semibold";
 }
 
 hr.ge {
@@ -14,7 +15,10 @@ hr.ge {
     $line-padding-top: 0px;
     color:black;
     background: #e2e2e2;
-    font-family: "acumin-pro-condensed";
+      * {
+        font-family: "acumin-pro-condensed";
+        font-size: 12px;
+      }
       #header {
         height: 30px;
         font-size: 16px;
@@ -55,7 +59,7 @@ hr.ge {
         -webkit-appearance: none;
         width: 120px;
         height: 2px;
-        background: black;
+        background: #bcbcbc;
         border-radius: 5px;
         outline: none;
         opacity: 0.7;
@@ -101,6 +105,17 @@ hr.ge {
         border: none;
     }
 
+    .unit {
+        width: 26px;
+        height: 26px;
+        background-color: white;
+        border: none;
+    }
+
+    .unit.disabled {
+        background-color: #c8c8c8;
+    }
+
     .sliderLine {
         padding-left: $line-padding-left;
         padding-bottom: $line-padding-bottom;
@@ -115,6 +130,7 @@ hr.ge {
             display: flex;
             align-items: center;
             min-width: 15px;
+            font-family: var(--labelFamily);
         }
 
         .img {
@@ -142,6 +158,7 @@ hr.ge {
                 grid-column: 1;
                 display: none;
                 align-items: center;
+                font-family: var(--labelFamily);
             }
         
             .short {
@@ -151,11 +168,10 @@ hr.ge {
                 
                 input {
                     width: 40px;
-                    background-color: transparent;
+                    background-color: white;
                     outline-color: transparent;
-                    border-left: transparent;
-                    border-right: transparent;
-                    border-top: transparent;
+                    border: transparent;
+                    height: 26px;
                     outline-width: 0px
                 }
                 
@@ -232,6 +248,7 @@ hr.ge {
             display: flex;
             align-items: center;
             min-width: 15px;
+            font-family: var(--labelFamily);
         }
 
         img {
@@ -250,20 +267,14 @@ hr.ge {
             padding-left: 15px;
             grid-column: 3;
             background: transparent;
+            height: 26px;
             input {
                 width: calc(100% - 5px);
-                background-color: transparent;
+                background-color: white;
                 outline-color: transparent;
-                border-left: transparent;
-                border-right: transparent;
-                border-top: transparent;
-                outline-width: 0px
-            }
-        }
-
-        .noUnderline {
-            input {
-                border-bottom: transparent;
+                border: transparent;
+                outline-width: 0px;
+                height: 26px;
             }
         }
     }
@@ -594,6 +605,7 @@ hr.ge {
             display: flex;
             align-items: center;
             min-width: 15px;
+            font-family: var(--labelFamily);
         }
 
         img {
@@ -612,14 +624,14 @@ hr.ge {
             align-items: center;
             grid-column: 3;
             background: transparent;
+            height: 26px;
             input {
                 width: calc(100% - 5px);
-                background-color: transparent;
+                background-color: white;
                 outline-color: transparent;
-                border-left: transparent;
-                border-right: transparent;
-                border-top: transparent;
-                outline-width: 0px
+                border: none;
+                outline-width: 0px;
+                height: 26px;
             }
         }
 
@@ -809,6 +821,7 @@ hr.ge {
             align-items: center;
             min-width: 100px;
             margin-left: 15px;
+            font-family: var(--labelFamily);
         }
 
         img {
@@ -1055,6 +1068,8 @@ hr.ge {
             display: flex;
             align-items: left;
             min-width: 15px;
+            color: #a9a9a9;
+            font-size: 10px;
         }
 
         img {

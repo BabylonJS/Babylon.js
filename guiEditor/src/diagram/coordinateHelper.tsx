@@ -1,8 +1,14 @@
+import { ValueAndUnit } from "babylonjs-gui";
 import { Control } from "babylonjs-gui/2D/controls/control";
 import { Grid } from "babylonjs-gui/2D/controls/grid";
+import { Rectangle } from "babylonjs-gui/2D/controls/rectangle";
 import { Matrix2D } from "babylonjs-gui/2D/math2D";
 import { Vector2 } from "babylonjs/Maths/math.vector";
+import { Observable } from "babylonjs/Misc/observable";
 import { GlobalState } from '../globalState';
+import { PropertyChangedEvent } from "../sharedUiComponents/propertyChangedEvent";
+
+export type DimensionProperties = "width" | "left" | "height" | "top";
 
 export class Rect {
     public top: number;
@@ -213,4 +219,77 @@ export class CoordinateHelper {
     public static computeLocalBounds(node: Control) {
         return new Rect(-node.widthInPixels * 0.5, -node.heightInPixels * 0.5, node.widthInPixels * 0.5, node.heightInPixels * 0.5);
     }
-} 
+
+    /** 
+     * converts a node's dimensions to percentage, properties can be specified as a list, or can convert all
+    */
+    public static convertToPercentage(guiControl: Control, properties?: DimensionProperties[], onPropertyChangedObservable?: Observable<PropertyChangedEvent>) {
+        let ratioX = 1;
+        let ratioY = 1;
+        if (guiControl.parent) {
+            if (guiControl.parent.typeName === "Grid") {
+                const cellInfo = (guiControl.parent as Grid).getChildCellInfo(guiControl);
+                const cell = (guiControl.parent as Grid).cells[cellInfo];
+                ratioX = cell.widthInPixels;
+                ratioY = cell.heightInPixels;
+            } else if (guiControl.parent.typeName === "Rectangle" || guiControl.parent.typeName === "Button") {
+                const thickness = (guiControl.parent as Rectangle).thickness * 2;
+                ratioX = guiControl.parent._currentMeasure.width - thickness;
+                ratioY = guiControl.parent._currentMeasure.height - thickness;
+            } else {
+                ratioX = guiControl.parent._currentMeasure.width;
+                ratioY = guiControl.parent._currentMeasure.height;
+            }
+        }
+        let old = {} as any;
+        if (!properties || properties.includes("left")) {
+            old.left = guiControl.left;
+            const left = (guiControl.leftInPixels * 100) / ratioX;
+            guiControl.left = `${left.toFixed(2)}%`;
+        }
+        if (!properties || properties.includes("top")) {
+            old.top = guiControl.top;
+            const top = (guiControl.topInPixels * 100) / ratioY;
+            guiControl.top = `${top.toFixed(2)}%`;
+        }
+        if (!properties || properties.includes("width")) {
+            old.width = guiControl.width;
+            const width = (guiControl.widthInPixels * 100) / ratioX;
+            guiControl.width = `${width.toFixed(2)}%`;
+        }
+        if (!properties || properties.includes("height")) {
+            old.height = guiControl.height;
+            const height = (guiControl.heightInPixels * 100) / ratioY;
+            guiControl.height = `${height.toFixed(2)}%`;
+
+        }
+
+        for(const property of properties || ["left", "top", "width", "height"]) {
+            onPropertyChangedObservable?.notifyObservers({
+                object: guiControl,
+                initialValue: old[property],
+                value: guiControl[property],
+                property
+            });
+        }
+    }
+
+    private static round(value: number) {
+        return Math.floor(value * 100) / 100;
+    }
+
+    public static convertToPixels(guiControl: Control, properties?: DimensionProperties[], onPropertyChangedObservable?: Observable<PropertyChangedEvent>) {
+        if (!properties || properties.includes("width")) {
+            guiControl._width = new ValueAndUnit(this.round(guiControl.widthInPixels), ValueAndUnit.UNITMODE_PIXEL);
+        }
+        if (!properties || properties.includes("height")) {
+            guiControl._height = new ValueAndUnit(this.round(guiControl.heightInPixels), ValueAndUnit.UNITMODE_PIXEL);
+        }
+        if (!properties || properties.includes("left")) {
+            guiControl._left = new ValueAndUnit(this.round(guiControl.leftInPixels), ValueAndUnit.UNITMODE_PIXEL);
+        }
+        if (!properties || properties.includes("top")) {
+            guiControl._top = new ValueAndUnit(this.round(guiControl.topInPixels), ValueAndUnit.UNITMODE_PIXEL);
+        }
+    }
+}

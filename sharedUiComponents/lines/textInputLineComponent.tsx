@@ -16,7 +16,10 @@ interface ITextInputLineComponentProps {
     iconLabel?: string;
     noUnderline?: boolean;
     numbersOnly?: boolean;
-    delayInput?: boolean
+    delayInput?: boolean;
+    unit?: string;
+    onUnitClicked?: (unit: string) => void;
+    unitLocked?: boolean;
 }
 
 export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, { value: string }> {
@@ -113,6 +116,12 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
                         placeholder={placeholder}
                     />
                 </div>
+                {this.props.unit && <button
+                    className={this.props.unitLocked ? "unit disabled" : "unit"}
+                    onClick={() => {if (this.props.onUnitClicked && !this.props.unitLocked) this.props.onUnitClicked(this.props.unit || "")}}
+                >
+                    {this.props.unit}
+                </button>}
             </div>
         );
     }
