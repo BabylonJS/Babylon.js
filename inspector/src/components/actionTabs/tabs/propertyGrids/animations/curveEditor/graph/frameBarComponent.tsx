@@ -1,7 +1,7 @@
 import { Nullable } from "babylonjs/types";
 import * as React from "react";
 import { GlobalState } from "../../../../../../globalState";
-import { Context } from "../context";
+import { Context, IActiveAnimationChangedOptions } from "../context";
 import { Observer } from "babylonjs/Misc/observable";
 
 // x distance between consecutive ticks on the frame
@@ -22,7 +22,7 @@ export class FrameBarComponent extends React.Component<IFrameBarComponentProps, 
     private _viewScale = 1;
     private _offsetX = 0;
 
-    private _onActiveAnimationChangedObserver: Nullable<Observer<void>>;
+    private _onActiveAnimationChangedObserver: Nullable<Observer<IActiveAnimationChangedOptions>>;
 
     constructor(props: IFrameBarComponentProps) {
         super(props);

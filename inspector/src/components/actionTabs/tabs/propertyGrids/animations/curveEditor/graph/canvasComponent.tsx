@@ -1,6 +1,6 @@
 import * as React from "react";
 import { GlobalState } from "../../../../../../globalState";
-import { Context } from "../context";
+import { Context, IActiveAnimationChangedOptions } from "../context";
 import { FrameBarComponent } from "./frameBarComponent";
 import { GraphComponent } from "./graphComponent";
 import { PlayHeadComponent } from "./playHeadComponent";
@@ -18,7 +18,7 @@ interface ICanvasComponentProps {
 interface ICanvasComponentState {}
 
 export class CanvasComponent extends React.Component<ICanvasComponentProps, ICanvasComponentState> {
-    private _onActiveAnimationChangedObserver: Nullable<Observer<void>>;
+    private _onActiveAnimationChangedObserver: Nullable<Observer<IActiveAnimationChangedOptions>>;
     constructor(props: ICanvasComponentProps) {
         super(props);
 
