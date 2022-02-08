@@ -64,13 +64,13 @@
         },
         {
             "title": "Node material 1",
-            "playgroundId": "#QJ71C6#1",
+            "playgroundId": "#QJ71C6#5",
             "referenceImage": "node-material1.png",
             "renderCount": 20
         },
         {
             "title": "Node material 2",
-            "playgroundId": "#WYM31D#4",
+            "playgroundId": "#WYM31D#12",
             "referenceImage": "node-material2.png"
         },
         {
@@ -1102,7 +1102,7 @@
         {
             "title": "Prepass + mirror, without postprocess",
             "renderCount": 10,
-            "playgroundId": "#PIZ1GK#339",
+            "playgroundId": "#PIZ1GK#344",
             "excludedEngines": ["webgl1"],
             "referenceImage": "prepass-mirror-without-pp.png"
         },
