@@ -470,13 +470,6 @@ export class BoundingBoxGizmo extends Gizmo {
             var originalParent = this.attachedMesh.parent;
             this.attachedMesh.setParent(null);
 
-            // Store original skeleton override mesh
-            var originalSkeletonOverrideMesh = null;
-            if (this.attachedMesh.skeleton) {
-                originalSkeletonOverrideMesh = this.attachedMesh.skeleton.overrideMesh;
-                this.attachedMesh.skeleton.overrideMesh = null;
-            }
-
             this._update();
 
             // Rotate based on axis
@@ -515,10 +508,6 @@ export class BoundingBoxGizmo extends Gizmo {
             // Restore original parent
             this.attachedMesh.setParent(originalParent);
 
-            // Restore original skeleton override mesh
-            if (this.attachedMesh.skeleton) {
-                this.attachedMesh.skeleton.overrideMesh = originalSkeletonOverrideMesh;
-            }
         }
 
         this._updateRotationSpheres();

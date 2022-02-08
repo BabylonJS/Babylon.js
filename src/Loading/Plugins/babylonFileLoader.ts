@@ -461,10 +461,6 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
                     });
                 }
 
-                if (skeleton._waitingOverrideMeshId) {
-                    skeleton.overrideMesh = scene.getMeshById(skeleton._waitingOverrideMeshId);
-                    skeleton._waitingOverrideMeshId = null;
-                }
                 skeleton._hasWaitingData = null;
             }
         }
@@ -770,11 +766,6 @@ SceneLoader.RegisterPlugin({
                                     bone._waitingTransformNodeId = null;
                                 }
                             });
-                        }
-
-                        if (skeleton._waitingOverrideMeshId) {
-                            skeleton.overrideMesh = scene.getMeshById(skeleton._waitingOverrideMeshId);
-                            skeleton._waitingOverrideMeshId = null;
                         }
 
                         skeleton._hasWaitingData = null;
