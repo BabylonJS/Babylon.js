@@ -70,7 +70,7 @@ export class InstancedMesh extends AbstractMesh {
 
         this.setPivotMatrix(source.getPivotMatrix());
 
-        this.refreshBoundingInfo();
+        this.refreshBoundingInfo(true, true);
         this._syncSubMeshes();
     }
 
@@ -421,14 +421,12 @@ export class InstancedMesh extends AbstractMesh {
 
     /** @hidden */
     public _updateBoundingInfo(): AbstractMesh {
-        const effectiveMesh = this as AbstractMesh;
         if (this.hasBoundingInfo) {
-            this.getBoundingInfo().update(effectiveMesh.worldMatrixFromCache);
+            this.getBoundingInfo().update(this.worldMatrixFromCache);
+        } else {
+            this.buildBoundingInfo(this.absolutePosition, this.absolutePosition, this.worldMatrixFromCache);
         }
-        else {
-            this.buildBoundingInfo(this.absolutePosition, this.absolutePosition, effectiveMesh.worldMatrixFromCache);
-        }
-        this._updateSubMeshesBoundingInfo(effectiveMesh.worldMatrixFromCache);
+        this._updateSubMeshesBoundingInfo(this.worldMatrixFromCache);
         return this;
     }
 
