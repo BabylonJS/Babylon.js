@@ -1,6 +1,16 @@
-import { ICameraConfiguration, IDefaultRenderingPipelineConfiguration, IGroundConfiguration, ILightConfiguration, IModelConfiguration, IObserversConfiguration, ISceneConfiguration, ISceneOptimizerConfiguration, ISkyboxConfiguration, ITemplateConfiguration, IVRConfiguration } from './interfaces';
 import { IEnvironmentMapConfiguration } from './interfaces/environmentMapConfiguration';
 import { EngineOptions } from 'babylonjs/Engines/thinEngine';
+import { IObserversConfiguration } from './interfaces/observersConfiguration';
+import { IModelConfiguration } from './interfaces/modelConfiguration';
+import { ISceneConfiguration } from './interfaces/sceneConfiguration';
+import { ISceneOptimizerConfiguration } from './interfaces/sceneOptimizerConfiguration';
+import { ICameraConfiguration } from './interfaces/cameraConfiguration';
+import { ISkyboxConfiguration } from './interfaces/skyboxConfiguration';
+import { IGroundConfiguration } from './interfaces/groundConfiguration';
+import { ILightConfiguration } from './interfaces/lightConfiguration';
+import { ITemplateConfiguration } from './interfaces/templateConfiguration';
+import { IVRConfiguration } from './interfaces/vrConfiguration';
+import { IDefaultRenderingPipelineConfiguration } from './interfaces/defaultRenderingPipelineConfiguration';
 
 export function getConfigurationKey(key: string, configObject: any) {
     let splits = key.split('.');
