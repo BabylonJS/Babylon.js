@@ -45,7 +45,7 @@ export class SideBarComponent extends React.Component<ISideBarComponentProps, IS
 
             if (indexInActiveList !== -1) {
                 this.props.context.activeAnimations.splice(indexInActiveList, 1);
-                this.props.context.onActiveAnimationChanged.notifyObservers();
+                this.props.context.onActiveAnimationChanged.notifyObservers({});
             }
 
             let index = -1;
