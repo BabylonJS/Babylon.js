@@ -1,28 +1,71 @@
 import * as React from "react";
 
 interface ITreeItemLabelComponentProps {
-    label: string;
+    label: string | undefined;
     onClick?: () => void;
-    color: string;
+    onChange: (newValue: string) => void;
+    bracket: string;
+    renaming: boolean;
+    setRenaming: (renaming: boolean) => void;
 }
 
-export class TreeItemLabelComponent extends React.Component<ITreeItemLabelComponentProps> {
+interface ITreeItemLabelState {
+    value: string | undefined;
+}
+
+export class TreeItemLabelComponent extends React.Component<ITreeItemLabelComponentProps, ITreeItemLabelState> {
     constructor(props: ITreeItemLabelComponentProps) {
         super(props);
+        this.state = {
+            value: ""
+        }
     }
 
     onClick() {
-        if (!this.props.onClick) {
+        if (!this.props.onClick || this.props.renaming) {
             return;
         }
 
         this.props.onClick();
     }
 
+    onFocus() {
+        this.props.setRenaming(true);
+        this.setState({value: this.props.label});
+    }
+
+    onBlur() {
+        this.props.setRenaming(false);
+    }
+
     render() {
+        // if editing, overwrite string with local value
+        const label = this.props.renaming ? this.state.value : (this.props.label || "No Name");
         return (
             <div className="title" onClick={() => this.onClick()}>
-                <div className="titleText">{this.props.label || "no name"}</div>
+                {
+                this.props.renaming ?
+                    <input
+                        type="text"
+                        onBlur={() => this.onBlur()}
+                        autoFocus={true}
+                        value={label}
+                        onChange={ev => {
+                            this.props.onChange(ev.target.value);
+                            this.setState({value: ev.target.value})
+                        }}
+                        onKeyDown={(ev) => {
+                            if (ev.key === "Enter") this.onBlur();
+                        }}
+                        className="titleText"
+                    />
+                :
+                    <div
+                        className="titleText"
+                        onDoubleClick={() => this.onFocus()}
+                    >{label}
+                    </div>
+                }
             </div>
         );
     }
