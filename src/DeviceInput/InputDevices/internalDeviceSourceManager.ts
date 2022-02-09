@@ -115,7 +115,15 @@ export class InternalDeviceSourceManager implements IDisposable {
         return deviceArray;
     }
 
-    public dispose(): void {
+    public enableEvents = (): void => {
+        this._deviceInputSystem.configureEvents();
+    }
+
+    public disableEvents = (): void => {
+        this._deviceInputSystem.removeEvents();
+    }
+
+    public dispose = (): void => {
         this.onDeviceConnectedObservable.clear();
         this.onDeviceDisconnectedObservable.clear();
         this._deviceInputSystem.dispose();

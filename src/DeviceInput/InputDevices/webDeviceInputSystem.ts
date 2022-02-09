@@ -59,6 +59,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
     private _pointerWheelEvent = (evt: any) => { };
     private _pointerBlurEvent = (evt: any) => { };
     private _wheelEventName: string;
+    private _eventsAttached: boolean = false;
 
     private _mouseId = -1;
     private readonly _isUsingFirefox = DomManagement.IsNavigatorAvailable() && navigator.userAgent && navigator.userAgent.indexOf("Firefox") !== -1;
@@ -82,7 +83,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
         this.onDeviceDisconnected = (deviceType: DeviceType, deviceSlot: number) => { };
         this.onInputChanged = (deviceEvent: IDeviceEvent) => { };
 
-        this._configureEvents();
+        this.configureEvents();
     }
 
     // Public functions
@@ -122,6 +123,72 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
     }
 
     /**
+     * Configures events to work with an engine's active element
+     */
+     public configureEvents(): void {
+        const inputElement = this._engine.getInputElement();
+        if (inputElement && (!this._eventsAttached || this._elementToAttachTo !== inputElement)) {
+            this.removeEvents();
+
+            // If the inputs array has already been created, zero it out to before setting up events
+            if (this._inputs) {
+                for (let deviceType = 0; deviceType < this._inputs.length; deviceType++) {
+                    const inputs = this._inputs[deviceType];
+                    if (inputs) {
+                        for (const deviceSlotKey in inputs) {
+                            const deviceSlot = +deviceSlotKey;
+                            const device = this._inputs[deviceType]?.[deviceSlot]
+                            if (device) {
+                                for (let inputIndex = 0; inputIndex < device.length; inputIndex++) {
+                                    device[inputIndex] = 0;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            this._elementToAttachTo = inputElement;
+            // Set tab index for the inputElement to the engine's canvasTabIndex, if and only if the element's tab index is -1
+            this._elementToAttachTo.tabIndex = (this._elementToAttachTo.tabIndex !== -1) ? this._elementToAttachTo.tabIndex : this._engine.canvasTabIndex;
+            this._handleKeyActions();
+            this._handlePointerActions();
+            this._handleGamepadActions();
+            this._eventsAttached = true;
+
+            // Check for devices that are already connected but aren't registered. Currently, only checks for gamepads and mouse
+            this._checkForConnectedDevices();
+        }
+    }
+
+    /**
+     * Remove events from active input element
+     */
+     public removeEvents(): void {
+        if (this._elementToAttachTo) {
+            // Blur Events
+            this._elementToAttachTo.removeEventListener("blur", this._keyboardBlurEvent);
+            this._elementToAttachTo.removeEventListener("blur", this._pointerBlurEvent);
+
+            // Keyboard Events
+            this._elementToAttachTo.removeEventListener("keydown", this._keyboardDownEvent);
+            this._elementToAttachTo.removeEventListener("keyup", this._keyboardUpEvent);
+
+            // Pointer Events
+            this._elementToAttachTo.removeEventListener(this._eventPrefix + "move", this._pointerMoveEvent);
+            this._elementToAttachTo.removeEventListener(this._eventPrefix + "down", this._pointerDownEvent);
+            this._elementToAttachTo.removeEventListener(this._eventPrefix + "up", this._pointerUpEvent);
+            this._elementToAttachTo.removeEventListener(this._wheelEventName, this._pointerWheelEvent);
+        }
+
+        if (this._pointerInputClearObserver) {
+            this._engine.onEndFrameObservable.remove(this._pointerInputClearObserver);
+        }
+
+        this._eventsAttached = false;
+    }
+
+    /**
      * Dispose of all the eventlisteners
      */
     public dispose(): void {
@@ -131,34 +198,11 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
         this.onInputChanged = () => { };
 
         if (this._elementToAttachTo) {
-            this._removeEvents();
+            this.removeEvents();
 
             // Gamepad Events
             window.removeEventListener("gamepadconnected", this._gamepadConnectedEvent);
             window.removeEventListener("gamepaddisconnected", this._gamepadDisconnectedEvent);
-        }
-    }
-
-    /**
-     * Configures events to work with an engine's active element
-     */
-    private _configureEvents(): void {
-        const inputElement = this._engine.getInputElement();
-        if (inputElement && this._elementToAttachTo !== inputElement) {
-            // If the engine's input element has changed, unregister events from previous element
-            if (this._elementToAttachTo) {
-                this._removeEvents();
-            }
-
-            this._elementToAttachTo = inputElement;
-            // Set tab index for the inputElement to the engine's canvasTabIndex, if and only if the element's tab index is -1
-            this._elementToAttachTo.tabIndex = (this._elementToAttachTo.tabIndex !== -1) ? this._elementToAttachTo.tabIndex : this._engine.canvasTabIndex;
-            this._handleKeyActions();
-            this._handlePointerActions();
-            this._handleGamepadActions();
-
-            // Check for devices that are already connected but aren't registered. Currently, only checks for gamepads and mouse
-            this._checkForConnectedDevices();
         }
     }
 
@@ -749,28 +793,5 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
         }
 
         return deviceType;
-    }
-
-    /**
-     * Remove events from active input element
-     */
-    private _removeEvents(): void {
-        // Blur Events
-        this._elementToAttachTo.removeEventListener("blur", this._keyboardBlurEvent);
-        this._elementToAttachTo.removeEventListener("blur", this._pointerBlurEvent);
-
-        // Keyboard Events
-        this._elementToAttachTo.removeEventListener("keydown", this._keyboardDownEvent);
-        this._elementToAttachTo.removeEventListener("keyup", this._keyboardUpEvent);
-
-        // Pointer Events
-        this._elementToAttachTo.removeEventListener(this._eventPrefix + "move", this._pointerMoveEvent);
-        this._elementToAttachTo.removeEventListener(this._eventPrefix + "down", this._pointerDownEvent);
-        this._elementToAttachTo.removeEventListener(this._eventPrefix + "up", this._pointerUpEvent);
-        this._elementToAttachTo.removeEventListener(this._wheelEventName, this._pointerWheelEvent);
-
-        if (this._pointerInputClearObserver) {
-            this._engine.onEndFrameObservable.remove(this._pointerInputClearObserver);
-        }
     }
 }

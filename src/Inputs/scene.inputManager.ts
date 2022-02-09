@@ -501,6 +501,9 @@ export class InputManager {
         if (!this._deviceSourceManager) {
             this._deviceSourceManager = new DeviceSourceManager(engine);
         }
+        else {
+            this._deviceSourceManager.enableEvents();
+        }
 
         this._initActionManager = (act: Nullable<AbstractActionManager>, clickInfo: _ClickInfo): Nullable<AbstractActionManager> => {
             if (!this._meshPickProceed) {
@@ -899,6 +902,7 @@ export class InputManager {
         if (this._alreadyAttached) {
 
             this._deviceSourceManager.onInputChangedObservable.remove(this._onInputObserver);
+            this._deviceSourceManager.disableEvents();
 
             // Cursor
             if (this._alreadyAttachedTo && !this._scene.doNotHandleCursors) {

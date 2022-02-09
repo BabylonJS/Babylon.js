@@ -101,4 +101,14 @@ export interface IDeviceInputSystem extends IDisposable {
      * @returns bool with status of device's existence
      */
     isDeviceAvailable(deviceType: DeviceType): boolean;
+
+    /**
+     * Configure (or reconfigure) input events to be handled
+     */
+    configureEvents: () => void;
+
+    /**
+     * Remove handling of input events
+     */
+    removeEvents: () => void;
 }

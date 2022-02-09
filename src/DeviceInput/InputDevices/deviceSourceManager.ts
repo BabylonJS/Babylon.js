@@ -44,6 +44,21 @@ export class DeviceSourceManager {
     public getDevices: () => ReadonlyArray<DeviceSource<DeviceType>>;
 
     /**
+     * Enable handling of input events
+     */
+    public enableEvents: () => void;
+
+    /**
+     * Disable handling of input events
+     */
+    public disableEvents: () => void;
+
+    /**
+     * Dispose of DeviceSourceManager
+     */
+    public dispose: () => void;
+
+    /**
      * Default constructor
      * @param engine Used to get canvas (if applicable)
      */
@@ -56,5 +71,8 @@ export class DeviceSourceManager {
         this.getDeviceSource = this._deviceSourceManager.getDeviceSource;
         this.getDeviceSources = this._deviceSourceManager.getDeviceSources;
         this.getDevices = this._deviceSourceManager.getDevices;
+        this.enableEvents = this._deviceSourceManager.enableEvents;
+        this.disableEvents = this._deviceSourceManager.disableEvents;
+        this.dispose = this._deviceSourceManager.dispose;
     }
 }
