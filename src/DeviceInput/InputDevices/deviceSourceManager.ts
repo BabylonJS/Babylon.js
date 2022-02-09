@@ -45,11 +45,13 @@ export class DeviceSourceManager {
 
     /**
      * Enable handling of input events
+     * @hidden
      */
     public enableEvents: () => void;
 
     /**
      * Disable handling of input events
+     * @hidden
      */
     public disableEvents: () => void;
 
