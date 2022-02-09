@@ -297,6 +297,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     }
 
     keyEvent = (evt: KeyboardEvent) => {
+        if ((evt.target as HTMLElement).localName === "input") return;
         this._ctrlKeyIsPressed = evt.ctrlKey;
         this._altKeyIsPressed = evt.altKey;
         if (evt.shiftKey) {
