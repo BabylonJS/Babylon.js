@@ -128,6 +128,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
      public configureEvents(): void {
         const inputElement = this._engine.getInputElement();
         if (inputElement && (!this._eventsAttached || this._elementToAttachTo !== inputElement)) {
+            // Remove events before adding to avoid double events or simultaneous events on multiple canvases
             this.removeEvents();
 
             // If the inputs array has already been created, zero it out to before setting up events
@@ -376,7 +377,8 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
      * Handle all actions that come from pointer interaction
      */
     private _handlePointerActions(): void {
-        this._maxTouchPoints = (DomManagement.IsNavigatorAvailable() && navigator.maxTouchPoints) || 0;
+        // If maxTouchPoints is defined, use that value.  Otherwise, allow for a minimum for supported gestures like pinch
+        this._maxTouchPoints = (DomManagement.IsNavigatorAvailable() && navigator.maxTouchPoints) || 2;
         if (!this._activeTouchIds) {
             this._activeTouchIds = new Array<number>(this._maxTouchPoints);
         }
