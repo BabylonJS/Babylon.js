@@ -138,7 +138,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                     if (inputs) {
                         for (const deviceSlotKey in inputs) {
                             const deviceSlot = +deviceSlotKey;
-                            const device = this._inputs[deviceType]?.[deviceSlot]
+                            const device = this._inputs[deviceType]?.[deviceSlot];
                             if (device) {
                                 for (let inputIndex = 0; inputIndex < device.length; inputIndex++) {
                                     device[inputIndex] = 0;
