@@ -8,7 +8,7 @@ import { Observable } from "babylonjs/Misc/observable";
 import { GlobalState } from '../globalState';
 import { PropertyChangedEvent } from "../sharedUiComponents/propertyChangedEvent";
 
-export type DimensionProperties = "width" | "left" | "height" | "top";
+export type DimensionProperties = "width" | "left" | "height" | "top" | "paddingLeft" | "paddingRight" | "paddingTop" | "paddingBottom";
 
 export class Rect {
     public top: number;
@@ -261,9 +261,27 @@ export class CoordinateHelper {
             old.height = guiControl.height;
             const height = (guiControl.heightInPixels * 100) / ratioY;
             guiControl.height = `${height.toFixed(2)}%`;
-
         }
-
+        if (!properties || properties.includes("paddingLeft")) {
+            old.paddingLeft = guiControl.paddingLeft;
+            const paddingLeft = (guiControl.paddingLeftInPixels * 100) / ratioX;
+            guiControl.paddingLeft = `${paddingLeft.toFixed(2)}%`;
+        }
+        if (!properties || properties.includes("paddingTop")) {
+            old.paddingTop = guiControl.paddingTop;
+            const paddingTop = (guiControl.paddingTopInPixels * 100) / ratioY;
+            guiControl.paddingTop = `${paddingTop.toFixed(2)}%`;
+        }
+        if (!properties || properties.includes("paddingRight")) {
+            old.paddingRight = guiControl.paddingRight;
+            const paddingRight = (guiControl.paddingRightInPixels * 100) / ratioX;
+            guiControl.paddingRight = `${paddingRight.toFixed(2)}%`;
+        }
+        if (!properties || properties.includes("paddingBottom")) {
+            old.paddingBottom = guiControl.paddingBottom;
+            const paddingBottom = (guiControl.paddingBottomInPixels * 100) / ratioY;
+            guiControl.paddingBottom = `${paddingBottom.toFixed(2)}%`;
+        }
         for(const property of properties || ["left", "top", "width", "height"]) {
             onPropertyChangedObservable?.notifyObservers({
                 object: guiControl,
@@ -274,22 +292,34 @@ export class CoordinateHelper {
         }
     }
 
-    private static round(value: number) {
+    public static round(value: number) {
         return Math.floor(value * 100) / 100;
     }
 
     public static convertToPixels(guiControl: Control, properties?: DimensionProperties[], onPropertyChangedObservable?: Observable<PropertyChangedEvent>) {
+        if (!properties || properties.includes("left")) {
+            guiControl._left = new ValueAndUnit(this.round(guiControl.leftInPixels), ValueAndUnit.UNITMODE_PIXEL);
+        }
+        if (!properties || properties.includes("top")) {
+            guiControl._top = new ValueAndUnit(this.round(guiControl.topInPixels), ValueAndUnit.UNITMODE_PIXEL);
+        }
         if (!properties || properties.includes("width")) {
             guiControl._width = new ValueAndUnit(this.round(guiControl.widthInPixels), ValueAndUnit.UNITMODE_PIXEL);
         }
         if (!properties || properties.includes("height")) {
             guiControl._height = new ValueAndUnit(this.round(guiControl.heightInPixels), ValueAndUnit.UNITMODE_PIXEL);
         }
-        if (!properties || properties.includes("left")) {
-            guiControl._left = new ValueAndUnit(this.round(guiControl.leftInPixels), ValueAndUnit.UNITMODE_PIXEL);
+        if (properties && properties.includes("paddingLeft")) {
+            (guiControl as any)._paddingLeft = new ValueAndUnit(this.round(guiControl.paddingLeftInPixels), ValueAndUnit.UNITMODE_PIXEL);
         }
-        if (!properties || properties.includes("top")) {
-            guiControl._top = new ValueAndUnit(this.round(guiControl.topInPixels), ValueAndUnit.UNITMODE_PIXEL);
+        if (properties && properties.includes("paddingTop")) {
+            (guiControl as any)._paddingTop = new ValueAndUnit(this.round(guiControl.paddingTopInPixels), ValueAndUnit.UNITMODE_PIXEL);
+        }
+        if (properties && properties.includes("paddingRight")) {
+            (guiControl as any)._paddingRight = new ValueAndUnit(this.round(guiControl.paddingRightInPixels), ValueAndUnit.UNITMODE_PIXEL);
+        }
+        if (properties && properties.includes("paddingBottom")) {
+            (guiControl as any)._paddingBottom = new ValueAndUnit(this.round(guiControl.paddingBottomInPixels), ValueAndUnit.UNITMODE_PIXEL);
         }
     }
 }
