@@ -32,14 +32,6 @@ export class RectanglePropertyGridComponent extends React.Component<IRectanglePr
                 <CommonControlPropertyGridComponent lockObject={this.props.lockObject} controls={rectangles} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <hr />
                 <TextLineComponent label="RECTANGLE" value=" " color="grey"></TextLineComponent>
-                <CheckBoxLineComponent
-                    iconLabel="Clip Content"
-                    icon={clipContentsIcon}
-                    label="CLIP CONTENT"
-                    target={makeTargetsProxy(rectangles, this.props.onPropertyChangedObservable)}
-                    propertyName="clipChildren"
-                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                />
                 <div className="ge-divider">
                     <FloatLineComponent
                         iconLabel="Stroke Weight"
@@ -49,7 +41,11 @@ export class RectanglePropertyGridComponent extends React.Component<IRectanglePr
                         target={makeTargetsProxy(rectangles, this.props.onPropertyChangedObservable)}
                         propertyName="thickness"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        unit="PX"
+                        unitLocked={true}
                     />
+                </div>
+                <div className="ge-divider">
                     <FloatLineComponent
                         iconLabel="Corner Radius"
                         icon={conerRadiusIcon}
@@ -58,8 +54,18 @@ export class RectanglePropertyGridComponent extends React.Component<IRectanglePr
                         target={makeTargetsProxy(rectangles, this.props.onPropertyChangedObservable)}
                         propertyName="cornerRadius"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        unit="PX"
+                        unitLocked={true}
                     />
                 </div>
+                <CheckBoxLineComponent
+                    iconLabel="Clip Content"
+                    icon={clipContentsIcon}
+                    label="CLIP CONTENT"
+                    target={makeTargetsProxy(rectangles, this.props.onPropertyChangedObservable)}
+                    propertyName="clipChildren"
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                />
             </div>
         );
     }

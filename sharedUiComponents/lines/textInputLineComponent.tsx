@@ -97,7 +97,7 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
         const value = this.state.value === conflictingValuesPlaceholder ? "" : this.state.value;
         const placeholder = this.state.value === conflictingValuesPlaceholder ? conflictingValuesPlaceholder : "";
         return (
-            <div className="textInputLine">
+            <div className={this.props.unit !== undefined ? "textInputLine withUnits" : "textInputLine"}>
                 {this.props.icon && <img src={this.props.icon} title={this.props.iconLabel} alt={this.props.iconLabel} color="black" className="icon" />}
                 {(!this.props.icon || (this.props.icon && this.props.label != "")) && (
                     <div className="label" title={this.props.label}>
@@ -116,7 +116,7 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
                         placeholder={placeholder}
                     />
                 </div>
-                {this.props.unit && <button
+                {this.props.unit !== undefined && <button
                     className={this.props.unitLocked ? "unit disabled" : "unit"}
                     onClick={() => {if (this.props.onUnitClicked && !this.props.unitLocked) this.props.onUnitClicked(this.props.unit || "")}}
                 >
