@@ -66,9 +66,12 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     public _liveGuiTextureRerender: boolean = true;
     private _anyControlClicked = true;
     private _visibleRegionContainer : Container;
-    private _panAndZoomContainer: Container;
     public get visibleRegionContainer() {
         return this._visibleRegionContainer;
+    }
+    private _panAndZoomContainer: Container;
+    public get panAndZoomContainer() {
+        return this._panAndZoomContainer;
     }
     private _trueRootContainer: Container;
     public set trueRootContainer(value: Container) {
@@ -108,7 +111,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         if (adt._rootContainer != this._panAndZoomContainer) {
             adt._rootContainer = this._panAndZoomContainer;
             this._visibleRegionContainer.addControl(this._trueRootContainer);
-            console.log(adt._rootContainer.name, this._panAndZoomContainer.host, this._visibleRegionContainer.host, this._trueRootContainer.host);
+            this.globalState.guiTexture.markAsDirty();
         }
         if (adt.getSize().width !== this._engine.getRenderWidth() || adt.getSize().height !== this._engine.getRenderHeight()) {
             adt.scaleTo(this._engine.getRenderWidth(), this._engine.getRenderHeight());
@@ -483,7 +486,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 alert("Unable to load your GUI");
             });
         }
-        this.globalState.onSelectionChangedObservable.notifyObservers(null);
     }
 
     loadToEditor() {
@@ -501,6 +503,8 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             // this.props.globalState.guiTexture.getChildren()[0].children.push(this.props.globalState.workbench.artBoardBackground);
         }
         this._isOverGUINode = [];
+        this.globalState.onSelectionChangedObservable.notifyObservers(null);
+        this.globalState.onFitToWindowObservable.notifyObservers();
     }
 
     changeSelectionHighlight(value: boolean) {
