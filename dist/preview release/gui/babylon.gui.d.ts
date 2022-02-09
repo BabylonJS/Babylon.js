@@ -747,6 +747,17 @@ declare module BABYLON.GUI {
          * @returns a new AdvancedDynamicTexture
          */
         static CreateFullscreenUI(name: string, foreground?: boolean, scene?: BABYLON.Nullable<BABYLON.Scene>, sampling?: number, adaptiveScaling?: boolean): AdvancedDynamicTexture;
+        /**
+         * Scales the texture
+         * @param ratio the scale factor to apply to both width and height
+         */
+        scale(ratio: number): void;
+        /**
+         * Resizes the texture
+         * @param width the new width
+         * @param height the new height
+         */
+        scaleTo(width: number, height: number): void;
     }
 }
 declare module BABYLON.GUI {

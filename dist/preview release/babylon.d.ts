@@ -26154,10 +26154,6 @@ declare module BABYLON {
          */
         needInitialSkinMatrix: boolean;
         /**
-         * Defines a mesh that override the matrix used to get the world matrix (null by default).
-         */
-        overrideMesh: Nullable<AbstractMesh>;
-        /**
          * Gets the list of animations attached to this skeleton
          */
         animations: Array<Animation>;
@@ -26177,8 +26173,6 @@ declare module BABYLON {
         _numBonesWithLinkedTransformNode: number;
         /** @hidden */
         _hasWaitingData: Nullable<boolean>;
-        /** @hidden */
-        _waitingOverrideMeshId: Nullable<string>;
         /** @hidden */
         _parentContainer: Nullable<AbstractScene>;
         /**
@@ -30281,7 +30275,7 @@ declare module BABYLON {
         /** @hidden */
         _processInstancedBuffers(visibleInstances: InstancedMesh[], renderSelf: boolean): void;
         /** @hidden */
-        _processRendering(renderingMesh: AbstractMesh, subMesh: SubMesh, effect: Effect, fillMode: number, batch: _InstancesBatch, hardwareInstancedRendering: boolean, onBeforeDraw: (isInstance: boolean, world: Matrix, effectiveMaterial?: Material, effectiveMesh?: AbstractMesh) => void, effectiveMaterial?: Material): Mesh;
+        _processRendering(renderingMesh: AbstractMesh, subMesh: SubMesh, effect: Effect, fillMode: number, batch: _InstancesBatch, hardwareInstancedRendering: boolean, onBeforeDraw: (isInstance: boolean, world: Matrix, effectiveMaterial?: Material) => void, effectiveMaterial?: Material): Mesh;
         /** @hidden */
         _rebuild(dispose?: boolean): void;
         /** @hidden */
@@ -36926,6 +36920,14 @@ declare module BABYLON {
         refreshBoundingInfo(applySkeleton?: boolean, applyMorph?: boolean): AbstractMesh;
         /** @hidden */
         _refreshBoundingInfo(data: Nullable<FloatArray>, bias: Nullable<Vector2>): void;
+        /**
+         * Get the position vertex data and optionally apply skeleton and morphing.
+         * @param applySkeleton defines whether to apply the skeleton
+         * @param applyMorph  defines whether to apply the morph target
+         * @param data defines the position data to apply the skeleton and morph to
+         * @returns the position data
+         */
+        getPositionData(applySkeleton: boolean, applyMorph: boolean, data?: Nullable<FloatArray>): Nullable<FloatArray>;
         /** @hidden */
         _getPositionData(applySkeleton: boolean, applyMorph: boolean): Nullable<FloatArray>;
         /** @hidden */
@@ -36934,8 +36936,6 @@ declare module BABYLON {
         _updateSubMeshesBoundingInfo(matrix: DeepImmutable<Matrix>): AbstractMesh;
         /** @hidden */
         protected _afterComputeWorldMatrix(): void;
-        /** @hidden */
-        get _effectiveMesh(): AbstractMesh;
         /**
          * Returns `true` if the mesh is within the frustum defined by the passed array of planes.
          * A mesh is in the frustum if its bounding box intersects the frustum
@@ -67567,7 +67567,8 @@ declare module BABYLON {
     }
     /** @hidden */
     export enum LoadOp {
-        Load = "load"
+        Load = "load",
+        Clear = "clear"
     }
     /** @hidden */
     export enum StoreOp {
@@ -91710,6 +91711,7 @@ interface GPUTextureDescriptor extends GPUObjectDescriptorBase {
     dimension?: GPUTextureDimension; /* default="2d" */
     format: GPUTextureFormat;
     usage: GPUTextureUsageFlags;
+    viewFormats?: GPUTextureFormat[]; /* default=[] */
 }
 
 type GPUTextureDimension = "1d" | "2d" | "3d";
@@ -91796,6 +91798,12 @@ type GPUTextureFormat =
     | "depth24plus-stencil8"
     | "depth32float"
 
+    // "depth24unorm-stencil8" feature
+    | "depth24unorm-stencil8"
+
+    // "depth32float-stencil8" feature
+    | "depth32float-stencil8"
+
     // BC compressed formats usable if "texture-compression-bc" is both
     // supported by the device/user agent and enabled in requestDevice.
     | "bc1-rgba-unorm"
@@ -91855,13 +91863,7 @@ type GPUTextureFormat =
     | "astc-12x10-unorm"
     | "astc-12x10-unorm-srgb"
     | "astc-12x12-unorm"
-    | "astc-12x12-unorm-srgb"
-
-    // "depth24unorm-stencil8" feature
-    | "depth24unorm-stencil8"
-
-    // "depth32float-stencil8" feature
-    | "depth32float-stencil8";
+    | "astc-12x12-unorm-srgb";
 
 declare class GPUExternalTexture implements GPUObjectBase {
     private __brand: void;
@@ -91957,7 +91959,7 @@ interface GPUTextureBindingLayout {
 type GPUStorageTextureAccess = "write-only";
 
 interface GPUStorageTextureBindingLayout {
-    access: GPUStorageTextureAccess;
+    access?: GPUStorageTextureAccess; /* default=write-only */
     format: GPUTextureFormat;
     viewDimension?: GPUTextureViewDimension; /* default="2d" */
 }
@@ -92008,9 +92010,14 @@ declare class GPUShaderModule implements GPUObjectBase {
     compilationInfo(): Promise<GPUCompilationInfo>;
 }
 
+interface GPUShaderModuleCompilationHint {
+    layout: GPUPipelineLayout;
+}
+
 interface GPUShaderModuleDescriptor extends GPUObjectDescriptorBase {
     code: string | Uint32Array;
     sourceMap?: object;
+    hints?: { [name: string]: GPUShaderModuleCompilationHint };
 }
 
 type GPUCompilationMessageType = "error" | "warning" | "info";
@@ -92237,7 +92244,10 @@ declare class GPUCommandBuffer implements GPUObjectBase {
 interface GPUCommandBufferDescriptor extends GPUObjectDescriptorBase {
 }
 
-declare class GPUCommandEncoder implements GPUObjectBase {
+interface GPUCommandsMixin {
+}
+
+declare class GPUCommandEncoder implements GPUObjectBase, GPUCommandsMixin, GPUDebugCommandsMixin {
     private __brand: void;
     label: string | undefined;
 
@@ -92266,10 +92276,10 @@ declare class GPUCommandEncoder implements GPUObjectBase {
         destination: GPUImageCopyTexture,
         copySize: GPUExtent3D
     ): void;
-    fillBuffer(
-        destination: GPUBuffer,
-        destinationOffset: GPUSize64,
-        size: GPUSize64
+    clearBuffer(
+        buffer: GPUBuffer,
+        offset?: GPUSize64, /* default=0 */
+        size?: GPUSize64
     ): void;
 
     pushDebugGroup(groupLabel: string): void;
@@ -92339,7 +92349,13 @@ interface GPUProgrammablePassEncoder {
     insertDebugMarker(markerLabel: string): void;
 }
 
-declare class GPUComputePassEncoder implements GPUObjectBase, GPUProgrammablePassEncoder {
+interface GPUDebugCommandsMixin {
+    pushDebugGroup(groupLabel: string): void;
+    popDebugGroup(): void;
+    insertDebugMarker(markerLabel: string): void;
+}
+
+declare class GPUComputePassEncoder implements GPUObjectBase, GPUCommandsMixin, GPUDebugCommandsMixin, GPUProgrammablePassEncoder {
     private __brand: void;
     label: string | undefined;
 
@@ -92361,10 +92377,10 @@ declare class GPUComputePassEncoder implements GPUObjectBase, GPUProgrammablePas
     insertDebugMarker(markerLabel: string): void;
 
     setPipeline(pipeline: GPUComputePipeline): void;
-    dispatch(x: GPUSize32, y?: GPUSize32 /* default=1 */, z?: GPUSize32 /* default=1 */): void;
+    dispatch(workgroupCountX: GPUSize32, workgroupCountY?: GPUSize32 /* default=1 */, workgroupCountZ?: GPUSize32 /* default=1 */): void;
     dispatchIndirect(indirectBuffer: GPUBuffer, indirectOffset: GPUSize64): void;
 
-    endPass(): void;
+    end(): void;
 }
 
 type GPUComputePassTimestampLocation =
@@ -92407,7 +92423,7 @@ interface GPURenderEncoderBase {
     drawIndexedIndirect(indirectBuffer: GPUBuffer, indirectOffset: GPUSize64): void;
 }
 
-declare class GPURenderPassEncoder implements GPUObjectBase, GPUProgrammablePassEncoder, GPURenderEncoderBase {
+declare class GPURenderPassEncoder implements GPUObjectBase, GPUCommandsMixin, GPUDebugCommandsMixin, GPUProgrammablePassEncoder, GPURenderEncoderBase {
     private __brand: void;
     label: string | undefined;
 
@@ -92465,7 +92481,7 @@ declare class GPURenderPassEncoder implements GPUObjectBase, GPUProgrammablePass
     endOcclusionQuery(): void;
 
     executeBundles(bundles: GPURenderBundle[]): void;
-    endPass(): void;
+    end(): void;
 }
 
 type GPURenderPassTimestampLocation =
@@ -92491,23 +92507,26 @@ interface GPURenderPassColorAttachment {
     view: GPUTextureView;
     resolveTarget?: GPUTextureView;
 
-    loadValue: GPULoadOp | GPUColor;
+    clearValue?: GPUColor;
+    loadOp: GPULoadOp;
     storeOp: GPUStoreOp;
 }
 
 interface GPURenderPassDepthStencilAttachment {
     view: GPUTextureView;
 
-    depthLoadValue: GPULoadOp | number;
+    depthClearValue?: number; /* default=0 */
+    depthLoadOp: GPULoadOp;
     depthStoreOp: GPUStoreOp;
     depthReadOnly?: boolean; /* default=false */
 
-    stencilLoadValue: GPULoadOp | GPUStencilValue;
+    stencilClearValue?: GPUStencilValue; /* default=0 */
+    stencilLoadOp: GPULoadOp;
     stencilStoreOp: GPUStoreOp;
     stencilReadOnly?: boolean; /* default=false */
 }
 
-type GPULoadOp = "load";
+type GPULoadOp = "load" | "clear";
 
 type GPUStoreOp = "store" | "discard";
 
@@ -92525,7 +92544,7 @@ declare class GPURenderBundle implements GPUObjectBase {
 interface GPURenderBundleDescriptor extends GPUObjectDescriptorBase {
 }
 
-declare class GPURenderBundleEncoder implements GPUObjectBase, GPUProgrammablePassEncoder, GPURenderEncoderBase {
+declare class GPURenderBundleEncoder implements GPUObjectBase, GPUCommandsMixin, GPUDebugCommandsMixin, GPUProgrammablePassEncoder, GPURenderEncoderBase {
     private __brand: void;
     label: string | undefined;
 
@@ -92640,6 +92659,7 @@ interface GPUCanvasConfiguration extends GPUObjectDescriptorBase {
     device: GPUDevice;
     format: GPUTextureFormat;
     usage?: GPUTextureUsageFlags; /* default=0x10 - GPUTextureUsage.RENDER_ATTACHMENT */
+    viewFormats?: GPUTextureFormat[]; /* default=[] */
     colorSpace?: GPUPredefinedColorSpace; /* default="srgb" */
     compositingAlphaMode?: GPUCanvasCompositingAlphaMode; /* default="opaque" */
     size: GPUExtent3D;
