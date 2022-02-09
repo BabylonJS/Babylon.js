@@ -523,7 +523,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                     effectiveMaterial.bindOnlyWorldMatrix(world);
                 }
             }
-        }).bind(this);
+        });
 
         if (source) {
             // Geometry
