@@ -30,8 +30,8 @@
 //   ../../../../../Tools/Gulp/babylonjs/Cameras/VR/vrExperienceHelper
 //   ../../../../../Tools/Gulp/babylonjs/PostProcesses/RenderPipeline/Pipelines/defaultRenderingPipeline
 //   ../../../../../Tools/Gulp/babylonjs/Lights/shadowLight
-//   ../../../../../Tools/Gulp/babylonjs-loaders/glTF/2.0/glTFLoaderExtension
 //   ../../../../../Tools/Gulp/babylonjs/PostProcesses/depthOfFieldEffect
+//   ../../../../../Tools/Gulp/babylonjs-loaders/glTF/2.0/glTFLoaderExtension
 //   ../../../../../Tools/Gulp/babylonjs/Materials/Textures/cubeTexture
 
 declare module 'babylonjs-viewer' {
@@ -46,7 +46,7 @@ declare module 'babylonjs-viewer' {
     import { AnimationPlayMode, AnimationState } from 'babylonjs-viewer/model/modelAnimation';
     import { ILoaderPlugin } from 'babylonjs-viewer/loader/plugins/loaderPlugin';
     import { AbstractViewerNavbarButton } from 'babylonjs-viewer/templating/viewerTemplatePlugin';
-    import { registerCustomOptimizer } from 'babylonjs-viewer/optimizer/custom';
+    import { registerCustomOptimizer } from 'babylonjs-viewer/optimizer/custom/index';
     /**
         * BabylonJS Viewer
         *
@@ -64,7 +64,7 @@ declare module 'babylonjs-viewer' {
     const Version: string;
     export { BABYLON, Version, InitTags, DefaultViewer, AbstractViewer, viewerGlobals, telemetryManager, disableInit, viewerManager, mapperManager, disposeAll, ModelLoader, ViewerModel, AnimationPlayMode, AnimationState, ModelState, ILoaderPlugin, AbstractViewerNavbarButton, registerCustomOptimizer };
     export { GLTF2 } from 'babylonjs-loaders';
-    export * from 'babylonjs-viewer/configuration';
+    export * from 'babylonjs-viewer/configuration/index';
 }
 
 declare module 'babylonjs-viewer/configuration/mappers' {
@@ -570,7 +570,7 @@ declare module 'babylonjs-viewer/loader/modelLoader' {
     import { IModelConfiguration } from 'babylonjs-viewer/configuration/interfaces/modelConfiguration';
     import { ObservablesManager } from 'babylonjs-viewer/managers/observablesManager';
     import { ViewerModel } from 'babylonjs-viewer/model/viewerModel';
-    import { ILoaderPlugin } from 'babylonjs-viewer/loader/plugins';
+    import { ILoaderPlugin } from 'babylonjs-viewer/loader/plugins/index';
     /**
         * An instance of the class is in charge of loading the model correctly.
         * This class will continously be expended with tasks required from the specific loaders Babylon has.
@@ -1056,7 +1056,7 @@ declare module 'babylonjs-viewer/templating/viewerTemplatePlugin' {
     }
 }
 
-declare module 'babylonjs-viewer/optimizer/custom' {
+declare module 'babylonjs-viewer/optimizer/custom/index' {
     import { SceneManager } from "babylonjs-viewer/managers/sceneManager";
     /**
       *
@@ -1081,15 +1081,25 @@ declare module 'babylonjs-viewer/initializer' {
     export function InitTags(selector?: string): void;
 }
 
-declare module 'babylonjs-viewer/configuration' {
+declare module 'babylonjs-viewer/configuration/index' {
     export * from 'babylonjs-viewer/configuration/configuration';
-    export * from 'babylonjs-viewer/configuration/interfaces';
+    export * from 'babylonjs-viewer/configuration/interfaces/index';
 }
 
 declare module 'babylonjs-viewer/configuration/configuration' {
-    import { ICameraConfiguration, IDefaultRenderingPipelineConfiguration, IGroundConfiguration, ILightConfiguration, IModelConfiguration, IObserversConfiguration, ISceneConfiguration, ISceneOptimizerConfiguration, ISkyboxConfiguration, ITemplateConfiguration, IVRConfiguration } from 'babylonjs-viewer/configuration/interfaces';
     import { IEnvironmentMapConfiguration } from 'babylonjs-viewer/configuration/interfaces/environmentMapConfiguration';
     import { EngineOptions } from 'babylonjs/Engines/thinEngine';
+    import { IObserversConfiguration } from 'babylonjs-viewer/configuration/interfaces/observersConfiguration';
+    import { IModelConfiguration } from 'babylonjs-viewer/configuration/interfaces/modelConfiguration';
+    import { ISceneConfiguration } from 'babylonjs-viewer/configuration/interfaces/sceneConfiguration';
+    import { ISceneOptimizerConfiguration } from 'babylonjs-viewer/configuration/interfaces/sceneOptimizerConfiguration';
+    import { ICameraConfiguration } from 'babylonjs-viewer/configuration/interfaces/cameraConfiguration';
+    import { ISkyboxConfiguration } from 'babylonjs-viewer/configuration/interfaces/skyboxConfiguration';
+    import { IGroundConfiguration } from 'babylonjs-viewer/configuration/interfaces/groundConfiguration';
+    import { ILightConfiguration } from 'babylonjs-viewer/configuration/interfaces/lightConfiguration';
+    import { ITemplateConfiguration } from 'babylonjs-viewer/configuration/interfaces/templateConfiguration';
+    import { IVRConfiguration } from 'babylonjs-viewer/configuration/interfaces/vrConfiguration';
+    import { IDefaultRenderingPipelineConfiguration } from 'babylonjs-viewer/configuration/interfaces/defaultRenderingPipelineConfiguration';
     export function getConfigurationKey(key: string, configObject: any): any;
     export interface ViewerConfiguration {
             version?: string;
@@ -1765,7 +1775,7 @@ declare module 'babylonjs-viewer/configuration/interfaces/observersConfiguration
     }
 }
 
-declare module 'babylonjs-viewer/loader/plugins' {
+declare module 'babylonjs-viewer/loader/plugins/index' {
     import { TelemetryLoaderPlugin } from "babylonjs-viewer/loader/plugins/telemetryLoaderPlugin";
     import { ILoaderPlugin } from "babylonjs-viewer/loader/plugins/loaderPlugin";
     import { MSFTLodLoaderPlugin } from 'babylonjs-viewer/loader/plugins/msftLodLoaderPlugin';
@@ -1785,7 +1795,7 @@ declare module 'babylonjs-viewer/loader/plugins' {
     export function addLoaderPlugin(name: string, plugin: ILoaderPlugin): void;
 }
 
-declare module 'babylonjs-viewer/configuration/interfaces' {
+declare module 'babylonjs-viewer/configuration/interfaces/index' {
     export * from 'babylonjs-viewer/configuration/interfaces/cameraConfiguration';
     export * from 'babylonjs-viewer/configuration/interfaces/colorGradingConfiguration';
     export * from 'babylonjs-viewer/configuration/interfaces/defaultRenderingPipelineConfiguration';
@@ -1828,38 +1838,199 @@ declare module 'babylonjs-viewer/configuration/interfaces/environmentMapConfigur
     }
 }
 
-declare module 'babylonjs-viewer/templating/eventManager' {
-    import { EventCallback, TemplateManager } from "babylonjs-viewer/templating/templateManager";
-    /**
-        * The EventManager is in charge of registering user interctions with the viewer.
-        * It is used in the TemplateManager
-        */
-    export class EventManager {
-            constructor(_templateManager: TemplateManager);
-            /**
-                * Register a new callback to a specific template.
-                * The best example for the usage can be found in the DefaultViewer
-                *
-                * @param templateName the templateName to register the event to
-                * @param callback The callback to be executed
-                * @param eventType the type of event to register
-                * @param selector an optional selector. if not defined the parent object in the template will be selected
-                */
-            registerCallback(templateName: string, callback: (eventData: EventCallback) => void, eventType?: string, selector?: string): void;
-            /**
-                * This will remove a registered event from the defined template.
-                * Each one of the variables apart from the template name are optional, but one must be provided.
-                *
-                * @param templateName the templateName
-                * @param callback the callback to remove (optional)
-                * @param eventType the event type to remove (optional)
-                * @param selector the selector from which to remove the event (optional)
-                */
-            unregisterCallback(templateName: string, callback: (eventData: EventCallback) => void, eventType?: string, selector?: string): void;
-            /**
-                * Dispose the event manager
-                */
-            dispose(): void;
+declare module 'babylonjs-viewer/configuration/interfaces/sceneConfiguration' {
+    import { IImageProcessingConfiguration } from "babylonjs-viewer/configuration/interfaces/imageProcessingConfiguration";
+    import { IColorGradingConfiguration } from "babylonjs-viewer/configuration/interfaces/colorGradingConfiguration";
+    import { IGlowLayerOptions } from "babylonjs";
+    export interface ISceneConfiguration {
+        debug?: boolean;
+        clearColor?: {
+            r: number;
+            g: number;
+            b: number;
+            a: number;
+        };
+        /** @deprecated Please use environmentMap.mainColor instead. */
+        mainColor?: {
+            r?: number;
+            g?: number;
+            b?: number;
+        };
+        imageProcessingConfiguration?: IImageProcessingConfiguration;
+        environmentTexture?: string;
+        colorGrading?: IColorGradingConfiguration;
+        environmentRotationY?: number;
+        /** @deprecated Please use default rendering pipeline. */
+        glow?: boolean | IGlowLayerOptions;
+        disableHdr?: boolean;
+        renderInBackground?: boolean;
+        disableCameraControl?: boolean;
+        animationPropertiesOverride?: {
+            [propName: string]: any;
+        };
+        defaultMaterial?: {
+            materialType: "standard" | "pbr";
+            [propName: string]: any;
+        };
+        flags?: {
+            shadowsEnabled?: boolean;
+            particlesEnabled?: boolean;
+            collisionsEnabled?: boolean;
+            lightsEnabled?: boolean;
+            texturesEnabled?: boolean;
+            lensFlaresEnabled?: boolean;
+            proceduralTexturesEnabled?: boolean;
+            renderTargetsEnabled?: boolean;
+            spritesEnabled?: boolean;
+            skeletonsEnabled?: boolean;
+            audioEnabled?: boolean;
+        };
+        assetsRootURL?: string;
+    }
+}
+
+declare module 'babylonjs-viewer/configuration/interfaces/sceneOptimizerConfiguration' {
+    export interface ISceneOptimizerConfiguration {
+        targetFrameRate?: number;
+        trackerDuration?: number;
+        autoGeneratePriorities?: boolean;
+        improvementMode?: boolean;
+        degradation?: string;
+        types?: {
+            texture?: ISceneOptimizerParameters;
+            hardwareScaling?: ISceneOptimizerParameters;
+            shadow?: ISceneOptimizerParameters;
+            postProcess?: ISceneOptimizerParameters;
+            lensFlare?: ISceneOptimizerParameters;
+            particles?: ISceneOptimizerParameters;
+            renderTarget?: ISceneOptimizerParameters;
+            mergeMeshes?: ISceneOptimizerParameters;
+        };
+        custom?: string;
+    }
+    export interface ISceneOptimizerParameters {
+        priority?: number;
+        maximumSize?: number;
+        step?: number;
+    }
+}
+
+declare module 'babylonjs-viewer/configuration/interfaces/cameraConfiguration' {
+    export interface ICameraConfiguration {
+        position?: {
+            x: number;
+            y: number;
+            z: number;
+        };
+        rotation?: {
+            x: number;
+            y: number;
+            z: number;
+            w: number;
+        };
+        fov?: number;
+        fovMode?: number;
+        minZ?: number;
+        maxZ?: number;
+        inertia?: number;
+        exposure?: number;
+        pinchPrecision?: number;
+        behaviors?: {
+            [name: string]: boolean | number | ICameraBehaviorConfiguration;
+        };
+        disableCameraControl?: boolean;
+        disableCtrlForPanning?: boolean;
+        disableAutoFocus?: boolean;
+        [propName: string]: any;
+    }
+    export interface ICameraBehaviorConfiguration {
+        type: number;
+        [propName: string]: any;
+    }
+}
+
+declare module 'babylonjs-viewer/configuration/interfaces/skyboxConfiguration' {
+    import { IImageProcessingConfiguration } from "babylonjs-viewer/configuration/interfaces/imageProcessingConfiguration";
+    export interface ISkyboxConfiguration {
+            cubeTexture?: {
+                    noMipMap?: boolean;
+                    gammaSpace?: boolean;
+                    url?: string | Array<string>;
+            };
+            color?: {
+                    r: number;
+                    g: number;
+                    b: number;
+            };
+}
+
+declare module 'babylonjs-viewer/configuration/interfaces/groundConfiguration' {
+    export interface IGroundConfiguration {
+            size?: number;
+            receiveShadows?: boolean;
+            shadowLevel?: number;
+}
+
+declare module 'babylonjs-viewer/configuration/interfaces/lightConfiguration' {
+    export interface ILightConfiguration {
+        type: number;
+        name?: string;
+        disabled?: boolean;
+        position?: {
+            x: number;
+            y: number;
+            z: number;
+        };
+        target?: {
+            x: number;
+            y: number;
+            z: number;
+        };
+        direction?: {
+            x: number;
+            y: number;
+            z: number;
+        };
+        diffuse?: {
+            r: number;
+            g: number;
+            b: number;
+        };
+        specular?: {
+            r: number;
+            g: number;
+            b: number;
+        };
+        intensity?: number;
+        intensityMode?: number;
+        radius?: number;
+        shadownEnabled?: boolean;
+        shadowConfig?: {
+            useBlurExponentialShadowMap?: boolean;
+            useBlurCloseExponentialShadowMap?: boolean;
+            useKernelBlur?: boolean;
+            blurKernel?: number;
+            blurScale?: number;
+            minZ?: number;
+            maxZ?: number;
+            frustumSize?: number;
+            angleScale?: number;
+            frustumEdgeFalloff?: number;
+            [propName: string]: any;
+        };
+        spotAngle?: number;
+        shadowFieldOfView?: number;
+        shadowBufferSize?: number;
+        shadowFrustumSize?: number;
+        shadowMinZ?: number;
+        shadowMaxZ?: number;
+        [propName: string]: any;
+        behaviors?: {
+            [name: string]: number | {
+                type: number;
+                [propName: string]: any;
+            };
+        };
     }
 }
 
@@ -1933,6 +2104,83 @@ declare module 'babylonjs-viewer/configuration/interfaces/templateConfiguration'
     }
 }
 
+declare module 'babylonjs-viewer/configuration/interfaces/vrConfiguration' {
+    import { VRExperienceHelperOptions } from "babylonjs";
+    export interface IVRConfiguration {
+        disabled?: boolean;
+        objectScaleFactor?: number;
+        disableInteractions?: boolean;
+        disableTeleportation?: boolean;
+        overrideFloorMeshName?: string;
+        vrOptions?: VRExperienceHelperOptions;
+        modelHeightCorrection?: number | boolean;
+        rotateUsingControllers?: boolean;
+        cameraPosition?: {
+            x: number;
+            y: number;
+            z: number;
+        };
+    }
+}
+
+declare module 'babylonjs-viewer/configuration/interfaces/defaultRenderingPipelineConfiguration' {
+    import { DepthOfFieldEffectBlurLevel } from "babylonjs/PostProcesses/depthOfFieldEffect";
+    export interface IDefaultRenderingPipelineConfiguration {
+        sharpenEnabled?: boolean;
+        bloomEnabled?: boolean;
+        bloomThreshold?: number;
+        depthOfFieldEnabled?: boolean;
+        depthOfFieldBlurLevel?: DepthOfFieldEffectBlurLevel;
+        fxaaEnabled?: boolean;
+        imageProcessingEnabled?: boolean;
+        defaultPipelineTextureType?: number;
+        bloomScale?: number;
+        chromaticAberrationEnabled?: boolean;
+        grainEnabled?: boolean;
+        bloomKernel?: number;
+        hardwareScaleLevel?: number;
+        bloomWeight?: number;
+        hdr?: boolean;
+        samples?: number;
+        glowLayerEnabled?: boolean;
+    }
+}
+
+declare module 'babylonjs-viewer/templating/eventManager' {
+    import { EventCallback, TemplateManager } from "babylonjs-viewer/templating/templateManager";
+    /**
+        * The EventManager is in charge of registering user interctions with the viewer.
+        * It is used in the TemplateManager
+        */
+    export class EventManager {
+            constructor(_templateManager: TemplateManager);
+            /**
+                * Register a new callback to a specific template.
+                * The best example for the usage can be found in the DefaultViewer
+                *
+                * @param templateName the templateName to register the event to
+                * @param callback The callback to be executed
+                * @param eventType the type of event to register
+                * @param selector an optional selector. if not defined the parent object in the template will be selected
+                */
+            registerCallback(templateName: string, callback: (eventData: EventCallback) => void, eventType?: string, selector?: string): void;
+            /**
+                * This will remove a registered event from the defined template.
+                * Each one of the variables apart from the template name are optional, but one must be provided.
+                *
+                * @param templateName the templateName
+                * @param callback the callback to remove (optional)
+                * @param eventType the event type to remove (optional)
+                * @param selector the selector from which to remove the event (optional)
+                */
+            unregisterCallback(templateName: string, callback: (eventData: EventCallback) => void, eventType?: string, selector?: string): void;
+            /**
+                * Dispose the event manager
+                */
+            dispose(): void;
+    }
+}
+
 declare module 'babylonjs-viewer/configuration/loader' {
     import { RenderOnlyConfigurationLoader } from "babylonjs-viewer/configuration/renderOnlyLoader";
     export class ConfigurationLoader extends RenderOnlyConfigurationLoader {
@@ -1967,24 +2215,6 @@ declare module 'babylonjs-viewer/configuration/interfaces/modelAnimationConfigur
                 */
             easingMode?: number;
     }
-}
-
-declare module 'babylonjs-viewer/configuration/interfaces/index' {
-    export * from 'babylonjs-viewer/configuration/interfaces/cameraConfiguration';
-    export * from 'babylonjs-viewer/configuration/interfaces/colorGradingConfiguration';
-    export * from 'babylonjs-viewer/configuration/interfaces/defaultRenderingPipelineConfiguration';
-    export * from 'babylonjs-viewer/configuration/interfaces/groundConfiguration';
-    export * from 'babylonjs-viewer/configuration/interfaces/imageProcessingConfiguration';
-    export * from 'babylonjs-viewer/configuration/interfaces/lightConfiguration';
-    export * from 'babylonjs-viewer/configuration/interfaces/modelAnimationConfiguration';
-    export * from 'babylonjs-viewer/configuration/interfaces/modelConfiguration';
-    export * from 'babylonjs-viewer/configuration/interfaces/observersConfiguration';
-    export * from 'babylonjs-viewer/configuration/interfaces/sceneConfiguration';
-    export * from 'babylonjs-viewer/configuration/interfaces/sceneOptimizerConfiguration';
-    export * from 'babylonjs-viewer/configuration/interfaces/skyboxConfiguration';
-    export * from 'babylonjs-viewer/configuration/interfaces/templateConfiguration';
-    export * from 'babylonjs-viewer/configuration/interfaces/vrConfiguration';
-    export * from 'babylonjs-viewer/configuration/interfaces/environmentMapConfiguration';
 }
 
 declare module 'babylonjs-viewer/labs/viewerLabs' {
@@ -2092,40 +2322,6 @@ declare module 'babylonjs-viewer/loader/plugins/extendedMaterialLoaderPlugin' {
     }
 }
 
-declare module 'babylonjs-viewer/configuration/interfaces/cameraConfiguration' {
-    export interface ICameraConfiguration {
-        position?: {
-            x: number;
-            y: number;
-            z: number;
-        };
-        rotation?: {
-            x: number;
-            y: number;
-            z: number;
-            w: number;
-        };
-        fov?: number;
-        fovMode?: number;
-        minZ?: number;
-        maxZ?: number;
-        inertia?: number;
-        exposure?: number;
-        pinchPrecision?: number;
-        behaviors?: {
-            [name: string]: boolean | number | ICameraBehaviorConfiguration;
-        };
-        disableCameraControl?: boolean;
-        disableCtrlForPanning?: boolean;
-        disableAutoFocus?: boolean;
-        [propName: string]: any;
-    }
-    export interface ICameraBehaviorConfiguration {
-        type: number;
-        [propName: string]: any;
-    }
-}
-
 declare module 'babylonjs-viewer/configuration/interfaces/colorGradingConfiguration' {
     /**
         * The Color Grading Configuration groups the different settings used to define the color grading used in the viewer.
@@ -2210,36 +2406,6 @@ declare module 'babylonjs-viewer/configuration/interfaces/colorGradingConfigurat
     }
 }
 
-declare module 'babylonjs-viewer/configuration/interfaces/defaultRenderingPipelineConfiguration' {
-    import { DepthOfFieldEffectBlurLevel } from "babylonjs/PostProcesses/depthOfFieldEffect";
-    export interface IDefaultRenderingPipelineConfiguration {
-        sharpenEnabled?: boolean;
-        bloomEnabled?: boolean;
-        bloomThreshold?: number;
-        depthOfFieldEnabled?: boolean;
-        depthOfFieldBlurLevel?: DepthOfFieldEffectBlurLevel;
-        fxaaEnabled?: boolean;
-        imageProcessingEnabled?: boolean;
-        defaultPipelineTextureType?: number;
-        bloomScale?: number;
-        chromaticAberrationEnabled?: boolean;
-        grainEnabled?: boolean;
-        bloomKernel?: number;
-        hardwareScaleLevel?: number;
-        bloomWeight?: number;
-        hdr?: boolean;
-        samples?: number;
-        glowLayerEnabled?: boolean;
-    }
-}
-
-declare module 'babylonjs-viewer/configuration/interfaces/groundConfiguration' {
-    export interface IGroundConfiguration {
-            size?: number;
-            receiveShadows?: boolean;
-            shadowLevel?: number;
-}
-
 declare module 'babylonjs-viewer/configuration/interfaces/imageProcessingConfiguration' {
     export interface IImageProcessingConfiguration {
         colorGradingEnabled?: boolean;
@@ -2283,180 +2449,6 @@ declare module 'babylonjs-viewer/configuration/interfaces/imageProcessingConfigu
         vignetteM?: boolean;
         applyByPostProcess?: boolean;
         isEnabled?: boolean;
-    }
-}
-
-declare module 'babylonjs-viewer/configuration/interfaces/lightConfiguration' {
-    export interface ILightConfiguration {
-        type: number;
-        name?: string;
-        disabled?: boolean;
-        position?: {
-            x: number;
-            y: number;
-            z: number;
-        };
-        target?: {
-            x: number;
-            y: number;
-            z: number;
-        };
-        direction?: {
-            x: number;
-            y: number;
-            z: number;
-        };
-        diffuse?: {
-            r: number;
-            g: number;
-            b: number;
-        };
-        specular?: {
-            r: number;
-            g: number;
-            b: number;
-        };
-        intensity?: number;
-        intensityMode?: number;
-        radius?: number;
-        shadownEnabled?: boolean;
-        shadowConfig?: {
-            useBlurExponentialShadowMap?: boolean;
-            useBlurCloseExponentialShadowMap?: boolean;
-            useKernelBlur?: boolean;
-            blurKernel?: number;
-            blurScale?: number;
-            minZ?: number;
-            maxZ?: number;
-            frustumSize?: number;
-            angleScale?: number;
-            frustumEdgeFalloff?: number;
-            [propName: string]: any;
-        };
-        spotAngle?: number;
-        shadowFieldOfView?: number;
-        shadowBufferSize?: number;
-        shadowFrustumSize?: number;
-        shadowMinZ?: number;
-        shadowMaxZ?: number;
-        [propName: string]: any;
-        behaviors?: {
-            [name: string]: number | {
-                type: number;
-                [propName: string]: any;
-            };
-        };
-    }
-}
-
-declare module 'babylonjs-viewer/configuration/interfaces/sceneConfiguration' {
-    import { IImageProcessingConfiguration } from "babylonjs-viewer/configuration/interfaces/imageProcessingConfiguration";
-    import { IColorGradingConfiguration } from "babylonjs-viewer/configuration/interfaces/colorGradingConfiguration";
-    import { IGlowLayerOptions } from "babylonjs";
-    export interface ISceneConfiguration {
-        debug?: boolean;
-        clearColor?: {
-            r: number;
-            g: number;
-            b: number;
-            a: number;
-        };
-        /** @deprecated Please use environmentMap.mainColor instead. */
-        mainColor?: {
-            r?: number;
-            g?: number;
-            b?: number;
-        };
-        imageProcessingConfiguration?: IImageProcessingConfiguration;
-        environmentTexture?: string;
-        colorGrading?: IColorGradingConfiguration;
-        environmentRotationY?: number;
-        /** @deprecated Please use default rendering pipeline. */
-        glow?: boolean | IGlowLayerOptions;
-        disableHdr?: boolean;
-        renderInBackground?: boolean;
-        disableCameraControl?: boolean;
-        animationPropertiesOverride?: {
-            [propName: string]: any;
-        };
-        defaultMaterial?: {
-            materialType: "standard" | "pbr";
-            [propName: string]: any;
-        };
-        flags?: {
-            shadowsEnabled?: boolean;
-            particlesEnabled?: boolean;
-            collisionsEnabled?: boolean;
-            lightsEnabled?: boolean;
-            texturesEnabled?: boolean;
-            lensFlaresEnabled?: boolean;
-            proceduralTexturesEnabled?: boolean;
-            renderTargetsEnabled?: boolean;
-            spritesEnabled?: boolean;
-            skeletonsEnabled?: boolean;
-            audioEnabled?: boolean;
-        };
-        assetsRootURL?: string;
-    }
-}
-
-declare module 'babylonjs-viewer/configuration/interfaces/sceneOptimizerConfiguration' {
-    export interface ISceneOptimizerConfiguration {
-        targetFrameRate?: number;
-        trackerDuration?: number;
-        autoGeneratePriorities?: boolean;
-        improvementMode?: boolean;
-        degradation?: string;
-        types?: {
-            texture?: ISceneOptimizerParameters;
-            hardwareScaling?: ISceneOptimizerParameters;
-            shadow?: ISceneOptimizerParameters;
-            postProcess?: ISceneOptimizerParameters;
-            lensFlare?: ISceneOptimizerParameters;
-            particles?: ISceneOptimizerParameters;
-            renderTarget?: ISceneOptimizerParameters;
-            mergeMeshes?: ISceneOptimizerParameters;
-        };
-        custom?: string;
-    }
-    export interface ISceneOptimizerParameters {
-        priority?: number;
-        maximumSize?: number;
-        step?: number;
-    }
-}
-
-declare module 'babylonjs-viewer/configuration/interfaces/skyboxConfiguration' {
-    import { IImageProcessingConfiguration } from "babylonjs-viewer/configuration/interfaces/imageProcessingConfiguration";
-    export interface ISkyboxConfiguration {
-            cubeTexture?: {
-                    noMipMap?: boolean;
-                    gammaSpace?: boolean;
-                    url?: string | Array<string>;
-            };
-            color?: {
-                    r: number;
-                    g: number;
-                    b: number;
-            };
-}
-
-declare module 'babylonjs-viewer/configuration/interfaces/vrConfiguration' {
-    import { VRExperienceHelperOptions } from "babylonjs";
-    export interface IVRConfiguration {
-        disabled?: boolean;
-        objectScaleFactor?: number;
-        disableInteractions?: boolean;
-        disableTeleportation?: boolean;
-        overrideFloorMeshName?: string;
-        vrOptions?: VRExperienceHelperOptions;
-        modelHeightCorrection?: number | boolean;
-        rotateUsingControllers?: boolean;
-        cameraPosition?: {
-            x: number;
-            y: number;
-            z: number;
-        };
     }
 }
 
