@@ -47,6 +47,13 @@ export class KeyboardInfoPre extends KeyboardInfo {
     public skipOnKeyboardObservable: boolean;
 
     /**
+     * Defines whether the engine should skip the next onKeyboardObservable associated to this pre.
+     * @deprecated use skipOnKeyboardObservable property instead
+     */
+    public get skipOnPointerObservable() { return this.skipOnKeyboardObservable; }
+    public set skipOnPointerObservable(value) { this.skipOnKeyboardObservable = value; }
+
+    /**
      * Instantiates a new keyboard pre info.
      * This class is used to store keyboard related info for the onPreKeyboardObservable event.
      * @param type Defines the type of event (KeyboardEventTypes)
