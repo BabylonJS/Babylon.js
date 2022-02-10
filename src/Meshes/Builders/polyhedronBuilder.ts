@@ -4,6 +4,7 @@ import { Color4 } from '../../Maths/math.color';
 import { Mesh, _CreationDataStorage } from "../mesh";
 import { VertexData } from "../mesh.vertexData";
 import { Nullable } from '../../types';
+import { CompatibilityOptions } from "../../Compat/CompatibilityOptions";
 
 // inspired from // http://stemkoski.github.io/Three.js/Polyhedra.html
 /**
@@ -99,7 +100,7 @@ export function CreatePolyhedronVertexData(options: { type?: number, size?: numb
 
         for (i = 0; i < data.vertex.length; i++) {
             positions.push(data.vertex[i][0] * sizeX, data.vertex[i][1] * sizeY, data.vertex[i][2] * sizeZ);
-            uvs.push(0, 0);
+            uvs.push(0, CompatibilityOptions.UseOpenGLOrientationForUV ? 1.0 :  0);
         }
         for (f = 0; f < nbfaces; f++) {
             for (i = 0; i < data.face[f].length - 2; i++) {
@@ -124,7 +125,7 @@ export function CreatePolyhedronVertexData(options: { type?: number, size?: numb
                 // uvs
                 u = faceUV[f].x + (faceUV[f].z - faceUV[f].x) * (0.5 + x);
                 v = faceUV[f].y + (faceUV[f].w - faceUV[f].y) * (y - 0.5);
-                uvs.push(u, v);
+                uvs.push(u, CompatibilityOptions.UseOpenGLOrientationForUV ? 1.0 - v : v);
                 tmp = x * Math.cos(ang) - y * Math.sin(ang);
                 y = x * Math.sin(ang) + y * Math.cos(ang);
                 x = tmp;

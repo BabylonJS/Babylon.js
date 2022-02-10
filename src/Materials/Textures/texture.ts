@@ -13,6 +13,7 @@ import { InstantiationTools } from '../../Misc/instantiationTools';
 import { Plane } from '../../Maths/math.plane';
 import { EncodeArrayBufferToBase64, StartsWith } from '../../Misc/stringTools';
 import { GenerateBase64StringFromTexture, GenerateBase64StringFromTextureAsync } from '../../Misc/copyTools';
+import { CompatibilityOptions } from "../../Compat/CompatibilityOptions";
 
 declare type CubeTexture = import("../../Materials/Textures/cubeTexture").CubeTexture;
 declare type MirrorTexture = import("../../Materials/Textures/mirrorTexture").MirrorTexture;
@@ -339,7 +340,7 @@ export class Texture extends BaseTexture {
      * @param loaderOptions options to be passed to the loader
      * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
      */
-    constructor(url: Nullable<string>, sceneOrEngine?: Nullable<Scene | ThinEngine>, noMipmapOrOptions?: boolean | ITextureCreationOptions, invertY: boolean = true, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
+    constructor(url: Nullable<string>, sceneOrEngine?: Nullable<Scene | ThinEngine>, noMipmapOrOptions?: boolean | ITextureCreationOptions, invertY?: boolean, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
         onLoad: Nullable<() => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null, buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null,
         deleteBuffer: boolean = false, format?: number, mimeType?: string, loaderOptions?: any, creationFlags?: number) {
         super(sceneOrEngine);
@@ -352,7 +353,7 @@ export class Texture extends BaseTexture {
 
         if (typeof noMipmapOrOptions === 'object' && noMipmapOrOptions !== null) {
             noMipmap = noMipmapOrOptions.noMipmap ?? false;
-            invertY = noMipmapOrOptions.invertY ?? true;
+            invertY = noMipmapOrOptions.invertY ?? (CompatibilityOptions.UseOpenGLOrientationForUV ? false : true);
             samplingMode = noMipmapOrOptions.samplingMode ?? Texture.TRILINEAR_SAMPLINGMODE;
             onLoad = noMipmapOrOptions.onLoad ?? null;
             onError = noMipmapOrOptions.onError ?? null;
@@ -368,7 +369,7 @@ export class Texture extends BaseTexture {
         }
 
         this._noMipmap = noMipmap;
-        this._invertY = invertY;
+        this._invertY = invertY === undefined ? (CompatibilityOptions.UseOpenGLOrientationForUV ? false : true) : invertY;
         this._initialSamplingMode = samplingMode;
         this._buffer = buffer;
         this._deleteBuffer = deleteBuffer;
@@ -437,12 +438,12 @@ export class Texture extends BaseTexture {
             return;
         }
 
-        this._texture = this._getFromCache(this.url, noMipmap, samplingMode, invertY, useSRGBBuffer);
+        this._texture = this._getFromCache(this.url, noMipmap, samplingMode, this._invertY, useSRGBBuffer);
 
         if (!this._texture) {
             if (!scene || !scene.useDelayedTextureLoading) {
                 try {
-                    this._texture = engine.createTexture(this.url, noMipmap, invertY, scene, samplingMode, load, errorHandler, this._buffer, undefined, this._format, null, mimeType, loaderOptions, creationFlags, useSRGBBuffer);
+                    this._texture = engine.createTexture(this.url, noMipmap, this._invertY, scene, samplingMode, load, errorHandler, this._buffer, undefined, this._format, null, mimeType, loaderOptions, creationFlags, useSRGBBuffer);
                 } catch (e) {
                     errorHandler("error loading", e);
                     throw e;
@@ -902,8 +903,14 @@ export class Texture extends BaseTexture {
                 return renderTargetTexture;
             } else {
                 var texture: Texture;
+                var invertY = !!parsedTexture.invertY;
+
+                if (CompatibilityOptions.UseOpenGLOrientationForUV) {
+                    invertY = !invertY;
+                }
+
                 if (parsedTexture.base64String) {
-                    texture = Texture.CreateFromBase64String(parsedTexture.base64String, parsedTexture.name, scene, !generateMipMaps, parsedTexture.invertY, parsedTexture.samplingMode, onLoaded, parsedTexture._creationFlags ?? 0, parsedTexture._useSRGBBuffer ?? false);
+                    texture = Texture.CreateFromBase64String(parsedTexture.base64String, parsedTexture.name, scene, !generateMipMaps, invertY, parsedTexture.samplingMode, onLoaded, parsedTexture._creationFlags ?? 0, parsedTexture._useSRGBBuffer ?? false);
                 } else {
                     let url: string;
                     if (parsedTexture.name && parsedTexture.name.indexOf("://") > 0) {
@@ -916,7 +923,7 @@ export class Texture extends BaseTexture {
                     if (StartsWith(parsedTexture.url, "data:") || (Texture.UseSerializedUrlIfAny && parsedTexture.url)) {
                         url = parsedTexture.url;
                     }
-                    texture = new Texture(url, scene, !generateMipMaps, parsedTexture.invertY, parsedTexture.samplingMode, onLoaded);
+                    texture = new Texture(url, scene, !generateMipMaps, invertY, parsedTexture.samplingMode, onLoaded);
                 }
 
                 return texture;

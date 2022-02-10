@@ -43,3 +43,4 @@ export * from "./States/index";
 export * from "./Misc/index";
 export * from "./XR/index";
 export * from "./types";
+export * from "./compat/index";
