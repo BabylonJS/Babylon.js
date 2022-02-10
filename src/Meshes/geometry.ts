@@ -1211,7 +1211,7 @@ export class Geometry implements IGetSetVerticesData {
                 var uvsData = new Float32Array(parsedGeometry, binaryInfo.uvsAttrDesc.offset, binaryInfo.uvsAttrDesc.count);
                 if (CompatibilityOptions.UseOpenGLOrientationForUV) {
                     for (var index = 1; index < uvsData.length; index += 2) {
-                        uvsData[index] *= -1;
+                        uvsData[index] = 1 - uvsData[index];
                     }
                 }
                 mesh.setVerticesData(VertexBuffer.UVKind, uvsData, false);
@@ -1221,7 +1221,7 @@ export class Geometry implements IGetSetVerticesData {
                 var uvs2Data = new Float32Array(parsedGeometry, binaryInfo.uvs2AttrDesc.offset, binaryInfo.uvs2AttrDesc.count);
                 if (CompatibilityOptions.UseOpenGLOrientationForUV) {
                     for (var index = 1; index < uvs2Data.length; index += 2) {
-                        uvs2Data[index] *= -1;
+                        uvs2Data[index] = 1 - uvs2Data[index];
                     }
                 }
                 mesh.setVerticesData(VertexBuffer.UV2Kind, uvs2Data, false);
@@ -1231,7 +1231,7 @@ export class Geometry implements IGetSetVerticesData {
                 var uvs3Data = new Float32Array(parsedGeometry, binaryInfo.uvs3AttrDesc.offset, binaryInfo.uvs3AttrDesc.count);
                 if (CompatibilityOptions.UseOpenGLOrientationForUV) {
                     for (var index = 1; index < uvs3Data.length; index += 2) {
-                        uvs3Data[index] *= -1;
+                        uvs3Data[index] = 1 - uvs3Data[index];
                     }
                 }
                 mesh.setVerticesData(VertexBuffer.UV3Kind, uvs3Data, false);
@@ -1241,7 +1241,7 @@ export class Geometry implements IGetSetVerticesData {
                 var uvs4Data = new Float32Array(parsedGeometry, binaryInfo.uvs4AttrDesc.offset, binaryInfo.uvs4AttrDesc.count);
                 if (CompatibilityOptions.UseOpenGLOrientationForUV) {
                     for (var index = 1; index < uvs4Data.length; index += 2) {
-                        uvs4Data[index] *= -1;
+                        uvs4Data[index]  = 1 - uvs4Data[index];
                     }
                 }
                 mesh.setVerticesData(VertexBuffer.UV4Kind, uvs4Data, false);
@@ -1251,7 +1251,7 @@ export class Geometry implements IGetSetVerticesData {
                 var uvs5Data = new Float32Array(parsedGeometry, binaryInfo.uvs5AttrDesc.offset, binaryInfo.uvs5AttrDesc.count);
                 if (CompatibilityOptions.UseOpenGLOrientationForUV) {
                     for (var index = 1; index < uvs5Data.length; index += 2) {
-                        uvs5Data[index] *= -1;
+                        uvs5Data[index] = 1 - uvs5Data[index];
                     }
                 }
                 mesh.setVerticesData(VertexBuffer.UV5Kind, uvs5Data, false);
@@ -1261,7 +1261,7 @@ export class Geometry implements IGetSetVerticesData {
                 var uvs6Data = new Float32Array(parsedGeometry, binaryInfo.uvs6AttrDesc.offset, binaryInfo.uvs6AttrDesc.count);
                 if (CompatibilityOptions.UseOpenGLOrientationForUV) {
                     for (var index = 1; index < uvs6Data.length; index += 2) {
-                        uvs6Data[index] *= -1;
+                        uvs6Data[index] = 1 - uvs6Data[index];
                     }
                 }
                 mesh.setVerticesData(VertexBuffer.UV6Kind, uvs6Data, false);
