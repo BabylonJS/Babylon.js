@@ -34,8 +34,8 @@ export class ImagePropertyGridComponent extends React.Component<IImagePropertyGr
         for(const image of this.props.images) {
             if (on) {
                 image.cellId = 0;
-                image.cellWidth = Math.floor(image.imageWidth);
-                image.cellHeight = Math.floor(image.imageHeight);
+                image.cellWidth = image.imageWidth;
+                image.cellHeight = image.imageHeight;
             } else {
                 image.cellId = -1;
             }
@@ -80,6 +80,8 @@ export class ImagePropertyGridComponent extends React.Component<IImagePropertyGr
 
         const animationSheet = images.every(image => image.cellId !== -1);
         const maxCells = this.getMaxCells();
+        const maxCellWidth = Math.max(...images.map(image => image.imageWidth));
+        const maxCellHeight = Math.max(...images.map(image => image.imageHeight));
 
         return (
             <div className="pane">
@@ -234,6 +236,8 @@ export class ImagePropertyGridComponent extends React.Component<IImagePropertyGr
                         isInteger={true}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         onChange={() => this.updateCellSize()}
+                        min={1}
+                        max={maxCellWidth}
                     />
                     <FloatLineComponent
                         lockObject={this.props.lockObject}
@@ -243,6 +247,8 @@ export class ImagePropertyGridComponent extends React.Component<IImagePropertyGr
                         isInteger={true}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         onChange={() => this.updateCellSize()}
+                        min={1}
+                        max={maxCellHeight}
                     />
                 </div>
                 </>}
