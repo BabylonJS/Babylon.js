@@ -1,7 +1,7 @@
 import * as React from "react";
 
 interface ITreeItemLabelComponentProps {
-    label: string | undefined;
+    label?: string;
     onClick?: () => void;
     onChange: (newValue: string) => void;
     bracket: string;
@@ -10,7 +10,7 @@ interface ITreeItemLabelComponentProps {
 }
 
 interface ITreeItemLabelState {
-    value: string | undefined;
+    value: string;
 }
 
 export class TreeItemLabelComponent extends React.Component<ITreeItemLabelComponentProps, ITreeItemLabelState> {
@@ -27,11 +27,6 @@ export class TreeItemLabelComponent extends React.Component<ITreeItemLabelCompon
         }
 
         this.props.onClick();
-    }
-
-    onFocus() {
-        this.props.setRenaming(true);
-        this.setState({value: this.props.label});
     }
 
     onBlur() {
@@ -62,7 +57,10 @@ export class TreeItemLabelComponent extends React.Component<ITreeItemLabelCompon
                 :
                     <div
                         className="titleText"
-                        onDoubleClick={() => this.onFocus()}
+                        onDoubleClick={() => {
+                            this.props.setRenaming(true);
+                            this.setState({value: label});                    
+                        }}
                     >{label}
                     </div>
                 }
