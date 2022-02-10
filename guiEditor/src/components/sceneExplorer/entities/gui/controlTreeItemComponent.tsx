@@ -28,7 +28,7 @@ export class ControlTreeItemComponent extends React.Component<IControlTreeItemCo
 
         const control = this.props.control;
 
-        this.state = { isActive: control.isHighlighted, isVisible: control.isVisible, isEditing: false };
+        this.state = { isActive: control.isHighlighted, isVisible: control.isVisible, isRenaming: false };
     }
 
     highlight() {
