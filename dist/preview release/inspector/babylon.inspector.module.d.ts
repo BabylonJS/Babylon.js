@@ -1331,6 +1331,11 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
     import { IAnimatable } from "babylonjs/Animations/animatable.interface";
     import { AnimationGroup, TargetedAnimation } from "babylonjs/Animations/animationGroup";
     import { AnimationKeyInterpolation } from "babylonjs/Animations/animationKey";
+    export interface IActiveAnimationChangedOptions {
+        evaluateKeys?: boolean;
+        frame?: boolean;
+        range?: boolean;
+    }
     export class Context {
         title: string;
         animations: Nullable<Animation[] | TargetedAnimation[]>;
@@ -1355,7 +1360,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         referenceMinFrame: number;
         referenceMaxFrame: number;
         focusedInput: boolean;
-        onActiveAnimationChanged: Observable<void>;
+        onActiveAnimationChanged: Observable<IActiveAnimationChangedOptions>;
         onActiveKeyPointChanged: Observable<void>;
         onHostWindowResized: Observable<void>;
         onSelectAllKeys: Observable<void>;
@@ -1696,7 +1701,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         private _invertY;
         private _buildFrameIntervalAxis;
         private _buildYAxis;
-        private _frame;
+        private _frameFromActiveKeys;
         private _dropKeyFrames;
         private _onPointerDown;
         private _onPointerMove;
@@ -3556,7 +3561,6 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mes
         changeDisplayMode(): void;
         changeDisplayOptions(option: string, value: number): void;
         shouldComponentUpdate(nextProps: ISkeletonPropertyGridComponentProps): boolean;
-        onOverrideMeshLink(): void;
         render(): JSX.Element;
     }
 }
@@ -6253,6 +6257,11 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    export interface IActiveAnimationChangedOptions {
+        evaluateKeys?: boolean;
+        frame?: boolean;
+        range?: boolean;
+    }
     export class Context {
         title: string;
         animations: BABYLON.Nullable<BABYLON.Animation[] | BABYLON.TargetedAnimation[]>;
@@ -6277,7 +6286,7 @@ declare module INSPECTOR {
         referenceMinFrame: number;
         referenceMaxFrame: number;
         focusedInput: boolean;
-        onActiveAnimationChanged: BABYLON.Observable<void>;
+        onActiveAnimationChanged: BABYLON.Observable<IActiveAnimationChangedOptions>;
         onActiveKeyPointChanged: BABYLON.Observable<void>;
         onHostWindowResized: BABYLON.Observable<void>;
         onSelectAllKeys: BABYLON.Observable<void>;
@@ -6588,7 +6597,7 @@ declare module INSPECTOR {
         private _invertY;
         private _buildFrameIntervalAxis;
         private _buildYAxis;
-        private _frame;
+        private _frameFromActiveKeys;
         private _dropKeyFrames;
         private _onPointerDown;
         private _onPointerMove;
@@ -8077,7 +8086,6 @@ declare module INSPECTOR {
         changeDisplayMode(): void;
         changeDisplayOptions(option: string, value: number): void;
         shouldComponentUpdate(nextProps: ISkeletonPropertyGridComponentProps): boolean;
-        onOverrideMeshLink(): void;
         render(): JSX.Element;
     }
 }

@@ -29,8 +29,8 @@
 //   ../../../../../Tools/Gulp/babylonjs/Cameras/VR/vrExperienceHelper
 //   ../../../../../Tools/Gulp/babylonjs/PostProcesses/RenderPipeline/Pipelines/defaultRenderingPipeline
 //   ../../../../../Tools/Gulp/babylonjs/Lights/shadowLight
-//   ../../../../../Tools/Gulp/babylonjs-loaders/glTF/2.0/glTFLoaderExtension
 //   ../../../../../Tools/Gulp/babylonjs/PostProcesses/depthOfFieldEffect
+//   ../../../../../Tools/Gulp/babylonjs-loaders/glTF/2.0/glTFLoaderExtension
 //   ../../../../../Tools/Gulp/babylonjs/Materials/Textures/cubeTexture
 declare module BabylonViewer {
     /**
@@ -1661,36 +1661,189 @@ declare module BabylonViewer {
     }
 }
 declare module BabylonViewer {
-    /**
-        * The EventManager is in charge of registering user interctions with the viewer.
-        * It is used in the TemplateManager
-        */
-    export class EventManager {
-            constructor(_templateManager: TemplateManager);
-            /**
-                * Register a new callback to a specific template.
-                * The best example for the usage can be found in the DefaultViewer
-                *
-                * @param templateName the templateName to register the event to
-                * @param callback The callback to be executed
-                * @param eventType the type of event to register
-                * @param selector an optional selector. if not defined the parent object in the template will be selected
-                */
-            registerCallback(templateName: string, callback: (eventData: EventCallback) => void, eventType?: string, selector?: string): void;
-            /**
-                * This will remove a registered event from the defined template.
-                * Each one of the variables apart from the template name are optional, but one must be provided.
-                *
-                * @param templateName the templateName
-                * @param callback the callback to remove (optional)
-                * @param eventType the event type to remove (optional)
-                * @param selector the selector from which to remove the event (optional)
-                */
-            unregisterCallback(templateName: string, callback: (eventData: EventCallback) => void, eventType?: string, selector?: string): void;
-            /**
-                * Dispose the event manager
-                */
-            dispose(): void;
+    export interface ISceneConfiguration {
+        debug?: boolean;
+        clearColor?: {
+            r: number;
+            g: number;
+            b: number;
+            a: number;
+        };
+        /** @deprecated Please use environmentMap.mainColor instead. */
+        mainColor?: {
+            r?: number;
+            g?: number;
+            b?: number;
+        };
+        imageProcessingConfiguration?: IImageProcessingConfiguration;
+        environmentTexture?: string;
+        colorGrading?: IColorGradingConfiguration;
+        environmentRotationY?: number;
+        /** @deprecated Please use default rendering pipeline. */
+        glow?: boolean | BABYLON.IGlowLayerOptions;
+        disableHdr?: boolean;
+        renderInBackground?: boolean;
+        disableCameraControl?: boolean;
+        animationPropertiesOverride?: {
+            [propName: string]: any;
+        };
+        defaultMaterial?: {
+            materialType: "standard" | "pbr";
+            [propName: string]: any;
+        };
+        flags?: {
+            shadowsEnabled?: boolean;
+            particlesEnabled?: boolean;
+            collisionsEnabled?: boolean;
+            lightsEnabled?: boolean;
+            texturesEnabled?: boolean;
+            lensFlaresEnabled?: boolean;
+            proceduralTexturesEnabled?: boolean;
+            renderTargetsEnabled?: boolean;
+            spritesEnabled?: boolean;
+            skeletonsEnabled?: boolean;
+            audioEnabled?: boolean;
+        };
+        assetsRootURL?: string;
+    }
+}
+declare module BabylonViewer {
+    export interface ISceneOptimizerConfiguration {
+        targetFrameRate?: number;
+        trackerDuration?: number;
+        autoGeneratePriorities?: boolean;
+        improvementMode?: boolean;
+        degradation?: string;
+        types?: {
+            texture?: ISceneOptimizerParameters;
+            hardwareScaling?: ISceneOptimizerParameters;
+            shadow?: ISceneOptimizerParameters;
+            postProcess?: ISceneOptimizerParameters;
+            lensFlare?: ISceneOptimizerParameters;
+            particles?: ISceneOptimizerParameters;
+            renderTarget?: ISceneOptimizerParameters;
+            mergeMeshes?: ISceneOptimizerParameters;
+        };
+        custom?: string;
+    }
+    export interface ISceneOptimizerParameters {
+        priority?: number;
+        maximumSize?: number;
+        step?: number;
+    }
+}
+declare module BabylonViewer {
+    export interface ICameraConfiguration {
+        position?: {
+            x: number;
+            y: number;
+            z: number;
+        };
+        rotation?: {
+            x: number;
+            y: number;
+            z: number;
+            w: number;
+        };
+        fov?: number;
+        fovMode?: number;
+        minZ?: number;
+        maxZ?: number;
+        inertia?: number;
+        exposure?: number;
+        pinchPrecision?: number;
+        behaviors?: {
+            [name: string]: boolean | number | ICameraBehaviorConfiguration;
+        };
+        disableCameraControl?: boolean;
+        disableCtrlForPanning?: boolean;
+        disableAutoFocus?: boolean;
+        [propName: string]: any;
+    }
+    export interface ICameraBehaviorConfiguration {
+        type: number;
+        [propName: string]: any;
+    }
+}
+declare module BabylonViewer {
+    export interface ISkyboxConfiguration {
+            cubeTexture?: {
+                    noMipMap?: boolean;
+                    gammaSpace?: boolean;
+                    url?: string | Array<string>;
+            };
+            color?: {
+                    r: number;
+                    g: number;
+                    b: number;
+            };
+}
+declare module BabylonViewer {
+    export interface IGroundConfiguration {
+            size?: number;
+            receiveShadows?: boolean;
+            shadowLevel?: number;
+}
+declare module BabylonViewer {
+    export interface ILightConfiguration {
+        type: number;
+        name?: string;
+        disabled?: boolean;
+        position?: {
+            x: number;
+            y: number;
+            z: number;
+        };
+        target?: {
+            x: number;
+            y: number;
+            z: number;
+        };
+        direction?: {
+            x: number;
+            y: number;
+            z: number;
+        };
+        diffuse?: {
+            r: number;
+            g: number;
+            b: number;
+        };
+        specular?: {
+            r: number;
+            g: number;
+            b: number;
+        };
+        intensity?: number;
+        intensityMode?: number;
+        radius?: number;
+        shadownEnabled?: boolean;
+        shadowConfig?: {
+            useBlurExponentialShadowMap?: boolean;
+            useBlurCloseExponentialShadowMap?: boolean;
+            useKernelBlur?: boolean;
+            blurKernel?: number;
+            blurScale?: number;
+            minZ?: number;
+            maxZ?: number;
+            frustumSize?: number;
+            angleScale?: number;
+            frustumEdgeFalloff?: number;
+            [propName: string]: any;
+        };
+        spotAngle?: number;
+        shadowFieldOfView?: number;
+        shadowBufferSize?: number;
+        shadowFrustumSize?: number;
+        shadowMinZ?: number;
+        shadowMaxZ?: number;
+        [propName: string]: any;
+        behaviors?: {
+            [name: string]: number | {
+                type: number;
+                [propName: string]: any;
+            };
+        };
     }
 }
 declare module BabylonViewer {
@@ -1760,6 +1913,77 @@ declare module BabylonViewer {
                             [id: string]: boolean;
                     } | undefined;
             };
+    }
+}
+declare module BabylonViewer {
+    export interface IVRConfiguration {
+        disabled?: boolean;
+        objectScaleFactor?: number;
+        disableInteractions?: boolean;
+        disableTeleportation?: boolean;
+        overrideFloorMeshName?: string;
+        vrOptions?: BABYLON.VRExperienceHelperOptions;
+        modelHeightCorrection?: number | boolean;
+        rotateUsingControllers?: boolean;
+        cameraPosition?: {
+            x: number;
+            y: number;
+            z: number;
+        };
+    }
+}
+declare module BabylonViewer {
+    export interface IDefaultRenderingPipelineConfiguration {
+        sharpenEnabled?: boolean;
+        bloomEnabled?: boolean;
+        bloomThreshold?: number;
+        depthOfFieldEnabled?: boolean;
+        depthOfFieldBlurLevel?: BABYLON.DepthOfFieldEffectBlurLevel;
+        fxaaEnabled?: boolean;
+        imageProcessingEnabled?: boolean;
+        defaultPipelineTextureType?: number;
+        bloomScale?: number;
+        chromaticAberrationEnabled?: boolean;
+        grainEnabled?: boolean;
+        bloomKernel?: number;
+        hardwareScaleLevel?: number;
+        bloomWeight?: number;
+        hdr?: boolean;
+        samples?: number;
+        glowLayerEnabled?: boolean;
+    }
+}
+declare module BabylonViewer {
+    /**
+        * The EventManager is in charge of registering user interctions with the viewer.
+        * It is used in the TemplateManager
+        */
+    export class EventManager {
+            constructor(_templateManager: TemplateManager);
+            /**
+                * Register a new callback to a specific template.
+                * The best example for the usage can be found in the DefaultViewer
+                *
+                * @param templateName the templateName to register the event to
+                * @param callback The callback to be executed
+                * @param eventType the type of event to register
+                * @param selector an optional selector. if not defined the parent object in the template will be selected
+                */
+            registerCallback(templateName: string, callback: (eventData: EventCallback) => void, eventType?: string, selector?: string): void;
+            /**
+                * This will remove a registered event from the defined template.
+                * Each one of the variables apart from the template name are optional, but one must be provided.
+                *
+                * @param templateName the templateName
+                * @param callback the callback to remove (optional)
+                * @param eventType the event type to remove (optional)
+                * @param selector the selector from which to remove the event (optional)
+                */
+            unregisterCallback(templateName: string, callback: (eventData: EventCallback) => void, eventType?: string, selector?: string): void;
+            /**
+                * Dispose the event manager
+                */
+            dispose(): void;
     }
 }
 declare module BabylonViewer {
@@ -1879,39 +2103,6 @@ declare module BabylonViewer {
     }
 }
 declare module BabylonViewer {
-    export interface ICameraConfiguration {
-        position?: {
-            x: number;
-            y: number;
-            z: number;
-        };
-        rotation?: {
-            x: number;
-            y: number;
-            z: number;
-            w: number;
-        };
-        fov?: number;
-        fovMode?: number;
-        minZ?: number;
-        maxZ?: number;
-        inertia?: number;
-        exposure?: number;
-        pinchPrecision?: number;
-        behaviors?: {
-            [name: string]: boolean | number | ICameraBehaviorConfiguration;
-        };
-        disableCameraControl?: boolean;
-        disableCtrlForPanning?: boolean;
-        disableAutoFocus?: boolean;
-        [propName: string]: any;
-    }
-    export interface ICameraBehaviorConfiguration {
-        type: number;
-        [propName: string]: any;
-    }
-}
-declare module BabylonViewer {
     /**
         * The Color Grading Configuration groups the different settings used to define the color grading used in the viewer.
         */
@@ -1995,33 +2186,6 @@ declare module BabylonViewer {
     }
 }
 declare module BabylonViewer {
-    export interface IDefaultRenderingPipelineConfiguration {
-        sharpenEnabled?: boolean;
-        bloomEnabled?: boolean;
-        bloomThreshold?: number;
-        depthOfFieldEnabled?: boolean;
-        depthOfFieldBlurLevel?: BABYLON.DepthOfFieldEffectBlurLevel;
-        fxaaEnabled?: boolean;
-        imageProcessingEnabled?: boolean;
-        defaultPipelineTextureType?: number;
-        bloomScale?: number;
-        chromaticAberrationEnabled?: boolean;
-        grainEnabled?: boolean;
-        bloomKernel?: number;
-        hardwareScaleLevel?: number;
-        bloomWeight?: number;
-        hdr?: boolean;
-        samples?: number;
-        glowLayerEnabled?: boolean;
-    }
-}
-declare module BabylonViewer {
-    export interface IGroundConfiguration {
-            size?: number;
-            receiveShadows?: boolean;
-            shadowLevel?: number;
-}
-declare module BabylonViewer {
     export interface IImageProcessingConfiguration {
         colorGradingEnabled?: boolean;
         colorCurvesEnabled?: boolean;
@@ -2064,170 +2228,6 @@ declare module BabylonViewer {
         vignetteM?: boolean;
         applyByPostProcess?: boolean;
         isEnabled?: boolean;
-    }
-}
-declare module BabylonViewer {
-    export interface ILightConfiguration {
-        type: number;
-        name?: string;
-        disabled?: boolean;
-        position?: {
-            x: number;
-            y: number;
-            z: number;
-        };
-        target?: {
-            x: number;
-            y: number;
-            z: number;
-        };
-        direction?: {
-            x: number;
-            y: number;
-            z: number;
-        };
-        diffuse?: {
-            r: number;
-            g: number;
-            b: number;
-        };
-        specular?: {
-            r: number;
-            g: number;
-            b: number;
-        };
-        intensity?: number;
-        intensityMode?: number;
-        radius?: number;
-        shadownEnabled?: boolean;
-        shadowConfig?: {
-            useBlurExponentialShadowMap?: boolean;
-            useBlurCloseExponentialShadowMap?: boolean;
-            useKernelBlur?: boolean;
-            blurKernel?: number;
-            blurScale?: number;
-            minZ?: number;
-            maxZ?: number;
-            frustumSize?: number;
-            angleScale?: number;
-            frustumEdgeFalloff?: number;
-            [propName: string]: any;
-        };
-        spotAngle?: number;
-        shadowFieldOfView?: number;
-        shadowBufferSize?: number;
-        shadowFrustumSize?: number;
-        shadowMinZ?: number;
-        shadowMaxZ?: number;
-        [propName: string]: any;
-        behaviors?: {
-            [name: string]: number | {
-                type: number;
-                [propName: string]: any;
-            };
-        };
-    }
-}
-declare module BabylonViewer {
-    export interface ISceneConfiguration {
-        debug?: boolean;
-        clearColor?: {
-            r: number;
-            g: number;
-            b: number;
-            a: number;
-        };
-        /** @deprecated Please use environmentMap.mainColor instead. */
-        mainColor?: {
-            r?: number;
-            g?: number;
-            b?: number;
-        };
-        imageProcessingConfiguration?: IImageProcessingConfiguration;
-        environmentTexture?: string;
-        colorGrading?: IColorGradingConfiguration;
-        environmentRotationY?: number;
-        /** @deprecated Please use default rendering pipeline. */
-        glow?: boolean | BABYLON.IGlowLayerOptions;
-        disableHdr?: boolean;
-        renderInBackground?: boolean;
-        disableCameraControl?: boolean;
-        animationPropertiesOverride?: {
-            [propName: string]: any;
-        };
-        defaultMaterial?: {
-            materialType: "standard" | "pbr";
-            [propName: string]: any;
-        };
-        flags?: {
-            shadowsEnabled?: boolean;
-            particlesEnabled?: boolean;
-            collisionsEnabled?: boolean;
-            lightsEnabled?: boolean;
-            texturesEnabled?: boolean;
-            lensFlaresEnabled?: boolean;
-            proceduralTexturesEnabled?: boolean;
-            renderTargetsEnabled?: boolean;
-            spritesEnabled?: boolean;
-            skeletonsEnabled?: boolean;
-            audioEnabled?: boolean;
-        };
-        assetsRootURL?: string;
-    }
-}
-declare module BabylonViewer {
-    export interface ISceneOptimizerConfiguration {
-        targetFrameRate?: number;
-        trackerDuration?: number;
-        autoGeneratePriorities?: boolean;
-        improvementMode?: boolean;
-        degradation?: string;
-        types?: {
-            texture?: ISceneOptimizerParameters;
-            hardwareScaling?: ISceneOptimizerParameters;
-            shadow?: ISceneOptimizerParameters;
-            postProcess?: ISceneOptimizerParameters;
-            lensFlare?: ISceneOptimizerParameters;
-            particles?: ISceneOptimizerParameters;
-            renderTarget?: ISceneOptimizerParameters;
-            mergeMeshes?: ISceneOptimizerParameters;
-        };
-        custom?: string;
-    }
-    export interface ISceneOptimizerParameters {
-        priority?: number;
-        maximumSize?: number;
-        step?: number;
-    }
-}
-declare module BabylonViewer {
-    export interface ISkyboxConfiguration {
-            cubeTexture?: {
-                    noMipMap?: boolean;
-                    gammaSpace?: boolean;
-                    url?: string | Array<string>;
-            };
-            color?: {
-                    r: number;
-                    g: number;
-                    b: number;
-            };
-}
-declare module BabylonViewer {
-    export interface IVRConfiguration {
-        disabled?: boolean;
-        objectScaleFactor?: number;
-        disableInteractions?: boolean;
-        disableTeleportation?: boolean;
-        overrideFloorMeshName?: string;
-        vrOptions?: BABYLON.VRExperienceHelperOptions;
-        modelHeightCorrection?: number | boolean;
-        rotateUsingControllers?: boolean;
-        cameraPosition?: {
-            x: number;
-            y: number;
-            z: number;
-        };
     }
 }
 declare module BabylonViewer {
