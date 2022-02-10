@@ -132,7 +132,7 @@ export function CreateCapsuleVertexData(
             normal.set(sinTheta, slope, cosTheta).normalize();
             normals.push(normal.x, normal.y, normal.z);
             // uv
-            uvs.push(u, v / vl ? v / vl : 1 - v / vl);
+            uvs.push(u, CompatibilityOptions.UseOpenGLOrientationForUV ? v / vl : 1 - v / vl);
             // save index of vertex in respective row
             indexRow.push(index);
             // increase index
