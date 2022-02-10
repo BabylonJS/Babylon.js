@@ -155,7 +155,7 @@
         {
             "title": "wgsl in shadermaterial",
             "renderCount": 30,
-            "playgroundId": "#8RU8Q3#104",
+            "playgroundId": "#8RU8Q3#117",
             "excludedEngines": ["webgl1", "webgl2"]
         },
         {
