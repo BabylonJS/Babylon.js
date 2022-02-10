@@ -3,7 +3,9 @@
     left: 0px;
     top:0px;
     bottom: 0px;
-    font-family: "acumin-pro-condensed";
+    * {
+            font-family: "acumin-pro-condensed";
+    }
     &:focus {
         outline: none;
     }
@@ -396,7 +398,6 @@
         .controlTools {
             grid-column: 2;
             display: grid;
-            grid-template-columns: 1fr 30px 30px auto 5px;
             align-items: center;
 
             .highlight {
@@ -430,7 +431,8 @@
                 grid-column: 1;
                 white-space: nowrap;
                 text-overflow: ellipsis;
-                overflow: hidden;          
+                overflow: hidden;
+                outline: none;
             }   
  
         }
