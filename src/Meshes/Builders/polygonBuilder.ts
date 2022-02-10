@@ -7,6 +7,7 @@ import { PolygonMeshBuilder } from "../polygonMesh";
 import { FloatArray, IndicesArray, Nullable } from "../../types";
 import { VertexBuffer } from "../../Buffers/buffer";
 import { EngineStore } from '../../Engines/engineStore';
+import { CompatibilityOptions } from "../../Compat/CompatibilityOptions";
 
 declare var earcut: any;
 
@@ -94,15 +95,19 @@ export function CreatePolygonVertexData(polygon: Mesh, sideOrientation: number, 
                 }
             }
             if (disp % 2 === 0) {
-                uvs[2 * idx + 1] = faceUV[face].w;
+                uvs[2 * idx + 1] = CompatibilityOptions.UseOpenGLOrientationForUV ? 1.0 - faceUV[face].w : faceUV[face].w;
             }
             else {
-                uvs[2 * idx + 1] = faceUV[face].y;
+                uvs[2 * idx + 1] = CompatibilityOptions.UseOpenGLOrientationForUV ? 1.0 - faceUV[face].y : faceUV[face].y;
             }
         }
         else {
             uvs[2 * idx] = (1 - uvs[2 * idx]) * faceUV[face].x + uvs[2 * idx] * faceUV[face].z;
             uvs[2 * idx + 1] = (1 - uvs[2 * idx + 1]) * faceUV[face].y + uvs[2 * idx + 1] * faceUV[face].w;
+
+            if (CompatibilityOptions.UseOpenGLOrientationForUV) {
+                uvs[2 * idx + 1] = 1.0 - uvs[2 * idx + 1];
+            }
         }
         if (faceColors) {
             colors.push(faceColors[face].r, faceColors[face].g, faceColors[face].b, faceColors[face].a);

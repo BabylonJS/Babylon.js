@@ -7,6 +7,7 @@ import { Nullable } from '../../types';
 import { Logger } from "../../Misc/logger";
 import { _PrimaryIsoTriangle, GeodesicData, PolyhedronData } from "../geodesicMesh";
 import { GoldbergMesh } from "../goldbergMesh";
+import { CompatibilityOptions } from "../../Compat/CompatibilityOptions";
 
 /**
  * Defines the set of data required to create goldberg vertex data.
@@ -96,7 +97,8 @@ export function CreateGoldbergVertexData(options: GoldbergVertexDataOption, gold
             normals.push(norm.x, norm.y, norm.z);
             const pdata = goldbergData.vertex[verts[v]];
             positions.push(pdata[0] * sizeX, pdata[1] * sizeY, pdata[2] * sizeZ);
-            uvs.push((pdata[0] * sizeX - minX) / (maxX - minX), (pdata[1] * sizeY - minY) / (maxY - minY));
+            const vCoord = (pdata[1] * sizeY - minY) / (maxY - minY);
+            uvs.push((pdata[0] * sizeX - minX) / (maxX - minX), CompatibilityOptions.UseOpenGLOrientationForUV ? 1 - vCoord : vCoord);
         }
         for (let v = 0; v < verts.length - 2; v++) {
             indices.push(index, index + v + 2, index + v + 1);

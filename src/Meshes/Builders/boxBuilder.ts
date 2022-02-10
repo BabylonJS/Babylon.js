@@ -4,6 +4,7 @@ import { Vector4 } from "../../Maths/math.vector";
 import { Color4 } from '../../Maths/math.color';
 import { Mesh, _CreationDataStorage } from "../mesh";
 import { VertexData } from "../mesh.vertexData";
+import { CompatibilityOptions } from "../../Compat/CompatibilityOptions";
 
 /**
  * Creates the VertexData for a box
@@ -85,10 +86,10 @@ export function CreateBoxVertexData(options: { size?: number, width?: number, he
 
     // Create each face in turn.
     for (var index = 0; index < nbFaces; index++) {
-        uvs.push(faceUV[index].z, faceUV[index].w);
-        uvs.push(faceUV[index].x, faceUV[index].w);
-        uvs.push(faceUV[index].x, faceUV[index].y);
-        uvs.push(faceUV[index].z, faceUV[index].y);
+        uvs.push(faceUV[index].z, CompatibilityOptions.UseOpenGLOrientationForUV ? 1.0 - faceUV[index].w : faceUV[index].w);
+        uvs.push(faceUV[index].x, CompatibilityOptions.UseOpenGLOrientationForUV ? 1.0 - faceUV[index].w : faceUV[index].w);
+        uvs.push(faceUV[index].x, CompatibilityOptions.UseOpenGLOrientationForUV ? 1.0 - faceUV[index].y : faceUV[index].y);
+        uvs.push(faceUV[index].z, CompatibilityOptions.UseOpenGLOrientationForUV ? 1.0 - faceUV[index].y : faceUV[index].y);
         if (faceColors) {
             for (var c = 0; c < 4; c++) {
                 colors.push(faceColors[index].r, faceColors[index].g, faceColors[index].b, faceColors[index].a);

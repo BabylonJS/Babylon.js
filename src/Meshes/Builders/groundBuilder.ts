@@ -8,6 +8,7 @@ import { Tools } from "../../Misc/tools";
 import { Nullable } from '../../types';
 import { EngineStore } from '../../Engines/engineStore';
 import { Epsilon } from '../../Maths/math.constants';
+import { CompatibilityOptions } from "../../Compat/CompatibilityOptions";
 
 /**
  * Creates the VertexData for a Ground
@@ -36,7 +37,7 @@ export function CreateGroundVertexData(options: { width?: number, height?: numbe
 
             positions.push(position.x, position.y, position.z);
             normals.push(normal.x, normal.y, normal.z);
-            uvs.push(col / subdivisionsX, 1.0 - row / subdivisionsY);
+            uvs.push(col / subdivisionsX, CompatibilityOptions.UseOpenGLOrientationForUV ? row / subdivisionsY : 1.0 - row / subdivisionsY);
         }
     }
 

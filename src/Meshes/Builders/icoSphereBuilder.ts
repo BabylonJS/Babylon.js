@@ -3,6 +3,7 @@ import { Vector4, Vector3, Vector2 } from "../../Maths/math.vector";
 import { Mesh, _CreationDataStorage } from "../mesh";
 import { VertexData } from "../mesh.vertexData";
 import { Nullable } from '../../types';
+import { CompatibilityOptions } from "../../Compat/CompatibilityOptions";
 
 /**
  * Creates the VertexData of the IcoSphere
@@ -238,7 +239,7 @@ export function CreateIcoSphereVertexData(options: { radius?: number, radiusX?: 
             var uv_interp = (subdivisions === i2) ? face_vertex_uv[2] : Vector2.Lerp(uv_x0, uv_x1, i1 / (subdivisions - i2));
             positions.push(pos_interp.x * radiusX, pos_interp.y * radiusY, pos_interp.z * radiusZ);
             normals.push(vertex_normal.x, vertex_normal.y, vertex_normal.z);
-            uvs.push(uv_interp.x, uv_interp.y);
+            uvs.push(uv_interp.x, CompatibilityOptions.UseOpenGLOrientationForUV ? 1.0 - uv_interp.y : uv_interp.y);
             // push each vertex has member of a face
             // Same vertex can belong to multiple face, it is pushed multiple time (duplicate vertex are present)
             indices.push(current_indice);
