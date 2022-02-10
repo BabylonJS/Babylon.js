@@ -1,4 +1,4 @@
-import { ErrorCodesString } from "./errorCodes";
+import { ErrorCodesType } from "./errorCodes";
 
 /**
  * BabylonJS error internal class wrapper. Extending Error for a class with docs
@@ -21,12 +21,12 @@ export class BaseError extends BabylonJSErrorWrapper {
     /**
      * The error code
      */
-    protected errorCode?: ErrorCodesString;
+    public errorCode?: ErrorCodesType;
 
     /**
      * The exception that caused the outer exception
      */
-    protected innerException?: Error;
+    public innerException?: Error;
 
     /**
      * Creates a new BaseError
@@ -34,7 +34,7 @@ export class BaseError extends BabylonJSErrorWrapper {
      * @param errorCode the error code
      * @param innerException the exception that caused the outer exception
      */
-    public constructor(message: string, errorCode?: ErrorCodesString, innerException?: Error) {
+    public constructor(message: string, errorCode?: ErrorCodesType, innerException?: Error) {
         super(message);
 
         this.errorCode = errorCode;

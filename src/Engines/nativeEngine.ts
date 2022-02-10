@@ -31,6 +31,7 @@ import { RenderTargetWrapper } from "./renderTargetWrapper";
 import { NativeData, NativeDataStream } from "./Native/nativeDataStream";
 import { INative, INativeCamera, INativeEngine } from "./Native/nativeInterfaces";
 import { BaseError } from "../Misc/baseError";
+import { ErrorCodes } from "../Misc/errorCodes";
 
 declare const _native: INative;
 
@@ -2881,7 +2882,7 @@ export class NativeEngine extends Engine {
             return _native.Engine.TEXTURE_FORMAT_RGBA32F;
         }
         else {
-            throw new BaseError(`Unsupported texture format or type: format ${format}, type ${type}.`, "UnsupportedTextureError");
+            throw new BaseError(`Unsupported texture format or type: format ${format}, type ${type}.`, ErrorCodes.UnsupportedTextureError);
         }
     }
 

@@ -1,4 +1,5 @@
 import { BaseError } from "../Misc/baseError";
+import { ErrorCodes } from "../Misc/errorCodes";
 
 /**
  * Application error to indicate load scene failures.
@@ -10,7 +11,7 @@ export class SceneLoaderError extends BaseError {
      * @param innerException the exception that caused the outer exception
      */
     constructor(message: string, innerException?: Error) {
-        super(message, "SceneLoaderError", innerException);
+        super(message, ErrorCodes.SceneLoaderError, innerException);
 
         this.name = "SceneLoaderError";
         BaseError._setPrototypeOf(this, SceneLoaderError.prototype);
