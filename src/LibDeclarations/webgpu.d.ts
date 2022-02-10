@@ -553,7 +553,7 @@ interface GPUMultisampleState {
 }
 
 interface GPUFragmentState extends GPUProgrammableStage {
-    targets: GPUColorTargetState[];
+    targets: (GPUColorTargetState | null | undefined)[];
 }
 
 interface GPUColorTargetState {
@@ -945,7 +945,7 @@ interface GPURenderPassTimestampWrite {
 type GPURenderPassTimestampWrites = Array<GPURenderPassTimestampWrite>;
 
 interface GPURenderPassDescriptor extends GPUObjectDescriptorBase {
-    colorAttachments: GPURenderPassColorAttachment[];
+    colorAttachments: (GPURenderPassColorAttachment | null | undefined)[];
     depthStencilAttachment?: GPURenderPassDepthStencilAttachment;
     occlusionQuerySet?: GPUQuerySet;
     timestampWrites?: GPURenderPassTimestampWrites; /* default=[] */
@@ -979,7 +979,7 @@ type GPULoadOp = "load" | "clear";
 type GPUStoreOp = "store" | "discard";
 
 interface GPURenderPassLayout extends GPUObjectDescriptorBase {
-    colorFormats: GPUTextureFormat[];
+    colorFormats: (GPUTextureFormat | null | undefined)[];
     depthStencilFormat?: GPUTextureFormat;
     sampleCount?: GPUSize32; /* default=1 */
 }
