@@ -223,7 +223,7 @@ export class CoordinateHelper {
     /** 
      * converts a node's dimensions to percentage, properties can be specified as a list, or can convert all
     */
-    public static convertToPercentage(guiControl: Control, properties?: DimensionProperties[], onPropertyChangedObservable?: Observable<PropertyChangedEvent>) {
+    public static convertToPercentage(guiControl: Control, properties: DimensionProperties[] = ["left", "top", "width", "height"], onPropertyChangedObservable?: Observable<PropertyChangedEvent>) {
         let ratioX = 1;
         let ratioY = 1;
         if (guiControl.parent) {
@@ -241,51 +241,14 @@ export class CoordinateHelper {
                 ratioY = guiControl.parent._currentMeasure.height;
             }
         }
-        let old = {} as any;
-        if (!properties || properties.includes("left")) {
-            old.left = guiControl.left;
-            const left = (guiControl.leftInPixels * 100) / ratioX;
-            guiControl.left = `${left.toFixed(2)}%`;
-        }
-        if (!properties || properties.includes("top")) {
-            old.top = guiControl.top;
-            const top = (guiControl.topInPixels * 100) / ratioY;
-            guiControl.top = `${top.toFixed(2)}%`;
-        }
-        if (!properties || properties.includes("width")) {
-            old.width = guiControl.width;
-            const width = (guiControl.widthInPixels * 100) / ratioX;
-            guiControl.width = `${width.toFixed(2)}%`;
-        }
-        if (!properties || properties.includes("height")) {
-            old.height = guiControl.height;
-            const height = (guiControl.heightInPixels * 100) / ratioY;
-            guiControl.height = `${height.toFixed(2)}%`;
-        }
-        if (!properties || properties.includes("paddingLeft")) {
-            old.paddingLeft = guiControl.paddingLeft;
-            const paddingLeft = (guiControl.paddingLeftInPixels * 100) / ratioX;
-            guiControl.paddingLeft = `${paddingLeft.toFixed(2)}%`;
-        }
-        if (!properties || properties.includes("paddingTop")) {
-            old.paddingTop = guiControl.paddingTop;
-            const paddingTop = (guiControl.paddingTopInPixels * 100) / ratioY;
-            guiControl.paddingTop = `${paddingTop.toFixed(2)}%`;
-        }
-        if (!properties || properties.includes("paddingRight")) {
-            old.paddingRight = guiControl.paddingRight;
-            const paddingRight = (guiControl.paddingRightInPixels * 100) / ratioX;
-            guiControl.paddingRight = `${paddingRight.toFixed(2)}%`;
-        }
-        if (!properties || properties.includes("paddingBottom")) {
-            old.paddingBottom = guiControl.paddingBottom;
-            const paddingBottom = (guiControl.paddingBottomInPixels * 100) / ratioY;
-            guiControl.paddingBottom = `${paddingBottom.toFixed(2)}%`;
-        }
-        for(const property of properties || ["left", "top", "width", "height"]) {
+        for(const property of properties) {
+            const initialValue = guiControl[property];
+            const ratio = (property === "left" || property === "width" || property === "paddingLeft" || property === "paddingRight") ? ratioX : ratioY;
+            const newValue = guiControl[`${property}InPixels`] * 100 / ratio;
+            guiControl[property] = `${newValue.toFixed(2)}%`;
             onPropertyChangedObservable?.notifyObservers({
                 object: guiControl,
-                initialValue: old[property],
+                initialValue,
                 value: guiControl[property],
                 property
             });
@@ -296,30 +259,9 @@ export class CoordinateHelper {
         return Math.floor(value * 100) / 100;
     }
 
-    public static convertToPixels(guiControl: Control, properties?: DimensionProperties[], onPropertyChangedObservable?: Observable<PropertyChangedEvent>) {
-        if (!properties || properties.includes("left")) {
-            guiControl._left = new ValueAndUnit(this.round(guiControl.leftInPixels), ValueAndUnit.UNITMODE_PIXEL);
-        }
-        if (!properties || properties.includes("top")) {
-            guiControl._top = new ValueAndUnit(this.round(guiControl.topInPixels), ValueAndUnit.UNITMODE_PIXEL);
-        }
-        if (!properties || properties.includes("width")) {
-            guiControl._width = new ValueAndUnit(this.round(guiControl.widthInPixels), ValueAndUnit.UNITMODE_PIXEL);
-        }
-        if (!properties || properties.includes("height")) {
-            guiControl._height = new ValueAndUnit(this.round(guiControl.heightInPixels), ValueAndUnit.UNITMODE_PIXEL);
-        }
-        if (properties && properties.includes("paddingLeft")) {
-            (guiControl as any)._paddingLeft = new ValueAndUnit(this.round(guiControl.paddingLeftInPixels), ValueAndUnit.UNITMODE_PIXEL);
-        }
-        if (properties && properties.includes("paddingTop")) {
-            (guiControl as any)._paddingTop = new ValueAndUnit(this.round(guiControl.paddingTopInPixels), ValueAndUnit.UNITMODE_PIXEL);
-        }
-        if (properties && properties.includes("paddingRight")) {
-            (guiControl as any)._paddingRight = new ValueAndUnit(this.round(guiControl.paddingRightInPixels), ValueAndUnit.UNITMODE_PIXEL);
-        }
-        if (properties && properties.includes("paddingBottom")) {
-            (guiControl as any)._paddingBottom = new ValueAndUnit(this.round(guiControl.paddingBottomInPixels), ValueAndUnit.UNITMODE_PIXEL);
+    public static convertToPixels(guiControl: Control, properties: DimensionProperties[] = ["left", "top", "width", "height"], onPropertyChangedObservable?: Observable<PropertyChangedEvent>) {
+        for(const property of properties) {
+            guiControl[`_${property}`] = new ValueAndUnit(this.round(guiControl[`${property}InPixels`]), ValueAndUnit.UNITMODE_PIXEL);
         }
     }
 }
