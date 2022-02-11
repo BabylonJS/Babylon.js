@@ -5,27 +5,28 @@ import { Observable } from '../../Misc/observable';
 import { IDeviceEvent } from './inputInterfaces';
 import { DeviceSource } from './deviceSource';
 import { InternalDeviceSourceManager } from './internalDeviceSourceManager';
+import { IDisposable } from '../../scene';
 
 /**
  * Class to keep track of devices
  */
-export class DeviceSourceManager {
+export class DeviceSourceManager implements IDisposable {
     // Public Members
     /**
      * Observable to be triggered when after a device is connected, any new observers added will be triggered against already connected devices
      */
-    public readonly onDeviceConnectedObservable: Observable<DeviceSource<DeviceType>>;
+    public onDeviceConnectedObservable: Nullable<Observable<DeviceSource<DeviceType>>>;
     /**
      * Observable to be triggered when a device's input is changed
      */
-    public readonly onInputChangedObservable: Observable<IDeviceEvent>;
+    public onInputChangedObservable: Nullable<Observable<IDeviceEvent>>;
     /**
      * Observable to be triggered when after a device is disconnected
      */
-    public readonly onDeviceDisconnectedObservable: Observable<DeviceSource<DeviceType>>;
+    public onDeviceDisconnectedObservable: Nullable<Observable<DeviceSource<DeviceType>>>;
 
     // Private Members
-    private _deviceSourceManager: InternalDeviceSourceManager;
+    private _deviceSourceManager: Nullable<InternalDeviceSourceManager>;
 
     // Public Functions
     /**
@@ -66,7 +67,6 @@ export class DeviceSourceManager {
      */
     constructor(engine: Engine) {
         this._deviceSourceManager = InternalDeviceSourceManager._Create(engine);
-
         this.onDeviceConnectedObservable = this._deviceSourceManager.onDeviceConnectedObservable;
         this.onInputChangedObservable = this._deviceSourceManager.onInputChangedObservable;
         this.onDeviceDisconnectedObservable = this._deviceSourceManager.onDeviceDisconnectedObservable;
@@ -75,6 +75,20 @@ export class DeviceSourceManager {
         this.getDevices = this._deviceSourceManager.getDevices;
         this.enableEvents = this._deviceSourceManager.enableEvents;
         this.disableEvents = this._deviceSourceManager.disableEvents;
-        this.dispose = this._deviceSourceManager.dispose;
+
+        this.dispose = (): void => {
+            // Null out observable refs
+            this.onDeviceConnectedObservable = null;
+            this.onInputChangedObservable = null;
+            this.onDeviceDisconnectedObservable = null;
+            // Null out function refs
+            this.getDeviceSource = <T extends DeviceType>(deviceType: T, deviceSlot?: number) => { return null; };
+            this.getDeviceSources = <T extends DeviceType>(deviceType: T): ReadonlyArray<DeviceSource<T>> => { return []; };
+            this.getDevices = (): ReadonlyArray<DeviceSource<DeviceType>> => { return []; };
+            this.enableEvents = () => { };
+            this.disableEvents = () => { };
+
+            this._deviceSourceManager = null;
+        };
     }
 }

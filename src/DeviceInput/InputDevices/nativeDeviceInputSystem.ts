@@ -63,7 +63,7 @@ export class NativeDeviceInputSystem implements IDeviceInputSystem {
         // TODO: Implement on Native Side; if necessary
     }
 
-    public removeEvents(): void {
+    public unconfigureEvents(): void {
         // TODO: Implement on Native Side; if necessary
     }
 

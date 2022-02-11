@@ -110,5 +110,5 @@ export interface IDeviceInputSystem extends IDisposable {
     /**
      * Remove handling of input events
      */
-    removeEvents: () => void;
+    unconfigureEvents: () => void;
 }

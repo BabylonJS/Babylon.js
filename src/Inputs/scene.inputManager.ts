@@ -859,7 +859,7 @@ export class InputManager {
             }
         };
 
-        this._onInputObserver = this._deviceSourceManager.onInputChangedObservable.add((eventData) => {
+        this._onInputObserver = this._deviceSourceManager.onInputChangedObservable!.add((eventData) => {
             const evt: IEvent = eventData;
             // Keyboard Events
             if (eventData.deviceType === DeviceType.Keyboard) {
@@ -901,7 +901,7 @@ export class InputManager {
     public detachControl() {
         if (this._alreadyAttached) {
 
-            this._deviceSourceManager.onInputChangedObservable.remove(this._onInputObserver);
+            this._deviceSourceManager.onInputChangedObservable!.remove(this._onInputObserver);
             this._deviceSourceManager.disableEvents();
 
             // Cursor
