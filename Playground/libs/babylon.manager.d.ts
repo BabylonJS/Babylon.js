@@ -258,20 +258,6 @@ declare module BABYLON {
         static RegisterScriptComponent(instance: BABYLON.ScriptComponent, alias: string, validate?: boolean): void;
         /** Destroys a script component instance. */
         static DestroyScriptComponent(instance: BABYLON.ScriptComponent): void;
-        /** Validates a network entity on the transform node. */
-        static HasNetworkEntity(transform: BABYLON.TransformNode): boolean;
-        /** Gets the network entity on the transform node. */
-        static GetNetworkEntity(transform: BABYLON.TransformNode): BABYLON.IColyseusNetworkEntity;
-        /** Gets the network entity id on the transform node. */
-        static GetNetworkEntityId(transform: BABYLON.TransformNode): string;
-        /** Gets the network entity type on the transform node. */
-        static GetNetworkEntityType(transform: BABYLON.TransformNode): BABYLON.NetworkEntityType;
-        /** Gets the network entity attribute on the transform node. */
-        static GetNetworkEntityAttribute(transform: BABYLON.TransformNode, key: string): string;
-        /** Gets all the network entity attributes on the transform node. */
-        static GetNetworkEntityAttributes(transform: BABYLON.TransformNode): Map<string, string>;
-        /** Post network entity attribute on the transform node update batch. (Local Entities Only) */
-        static PostNetworkEntityAttribute(transform: BABYLON.TransformNode, key: string, value: string): void;
         /** Finds a script component on the transform with the specfied class name. */
         static FindScriptComponent<T extends BABYLON.ScriptComponent>(transform: BABYLON.TransformNode, klass: string): T;
         /** Finds all script components on the transform with the specfied class name. */
@@ -733,20 +719,6 @@ declare module BABYLON {
         getChildWithScript(klass: string, directDecendantsOnly?: boolean, predicate?: (node: BABYLON.Node) => boolean): BABYLON.TransformNode;
         /** Get all child transforms with the specified script component. */
         getChildrenWithScript(klass: string, directDecendantsOnly?: boolean, predicate?: (node: BABYLON.Node) => boolean): BABYLON.TransformNode[];
-        /** Validates a network entity on the transform node. */
-        hasNetworkEntity(): boolean;
-        /** Gets the network entity on the transform node. */
-        getNetworkEntity(): BABYLON.IColyseusNetworkEntity;
-        /** Gets the network entity id on the transform node. */
-        getNetworkEntityId(): string;
-        /** Gets the network entity type on the transform node. */
-        getNetworkEntityType(): BABYLON.NetworkEntityType;
-        /** Gets the network entity attribute on the transform node. */
-        getNetworkEntityAttribute(key: string): string;
-        /** Gets all the network entity attributes on the transform node. */
-        getNetworkEntityAttributes(): Map<string, string>;
-        /** Post network entity attribute on the transform node's update batch. (Local Entities Only) */
-        postNetworkEntityAttribute(key: string, value: string): void;
         /** Registers an on pick tricgger click action */
         registerOnClickAction(func: () => void): BABYLON.IAction;
         /** Unregisters an on pick tricgger click action */
@@ -931,7 +903,7 @@ declare module BABYLON {
     enum System {
         Deg2Rad,
         Rad2Deg,
-        Epsilon = 0.00001,
+        Epsilon = 0.000001,
         SingleEpsilon = 1.401298e-45,
         EpsilonNormalSqrt = 1e-15,
         Kph2Mph = 0.621371,
@@ -1031,15 +1003,6 @@ declare module BABYLON {
         CF_HAS_CUSTOM_DEBUG_RENDERING_COLOR = 256,
         CF_HAS_FRICTION_ANCHOR = 512,
         CF_HAS_COLLISION_SOUND_TRIGGER = 1024
-    }
-    enum RemoteFunctionCallTarget {
-        All = 0,
-        Others = 1
-    }
-    enum NetworkEntityType {
-        None = 0,
-        Local = 1,
-        Remote = 2
     }
     enum UserInputPointer {
         Left = 0,
@@ -1304,73 +1267,6 @@ declare module BABYLON {
         b: number;
         a: number;
     }
-    interface IColyseusNetworkEntity {
-        id: string;
-        ownerId: string;
-        creationId: string;
-        xPos: number;
-        yPos: number;
-        zPos: number;
-        xRot: number;
-        yRot: number;
-        zRot: number;
-        wRot: number;
-        xScale: number;
-        yScale: number;
-        zScale: number;
-        xVel: number;
-        yVel: number;
-        zVel: number;
-        xAngle: number;
-        yAngle: number;
-        zAngle: number;
-        timestamp: number;
-        attributes: Map<string, string>;
-    }
-    interface IColyseusNetworkUser {
-        id: string;
-        name: string;
-        sessionId: string;
-        connected: boolean;
-        timestamp: number;
-        attributes: Map<string, string>;
-    }
-    interface IColyseusRoomState {
-        networkEntities: Map<string, BABYLON.IColyseusNetworkEntity>;
-        networkUsers: Map<string, BABYLON.IColyseusNetworkUser>;
-        serverTime: number;
-        attributes: Map<string, string>;
-    }
-    class ColyseusTransformData {
-        xPos: number;
-        yPos: number;
-        zPos: number;
-        xRot: number;
-        yRot: number;
-        zRot: number;
-        wRot: number;
-        xScale: number;
-        yScale: number;
-        zScale: number;
-        xVel: number;
-        yVel: number;
-        zVel: number;
-        xAngle: number;
-        yAngle: number;
-        zAngle: number;
-        private localPositionDelta;
-        private prevLocalPosition;
-        private currLocalPosition;
-        private localRotationDelta;
-        private prevLocalRotation;
-        private currLocalRotation;
-        private localAngularVelocity;
-        constructor();
-        update(transform: BABYLON.TransformNode, deltaTime: number): void;
-        copy(data: BABYLON.ColyseusTransformData): void;
-        reset(): void;
-        dirty(): void;
-    }
     /**
      * Http Request Header
      * @class RequestHeader - All rights reserved (c) 2020 Mackey Kinard
@@ -1560,6 +1456,8 @@ declare module BABYLON {
         private static TempQuaternion3;
         private static PrintElement;
         private static LoadingState;
+        /** Zero pad a number to string */
+        static ZeroPad(num: number, places: number): string;
         static OnPreloaderProgress: (remainingCount: number, totalCount: number, lastFinishedTask: BABYLON.AbstractAssetTask) => void;
         static OnPreloaderComplete: (tasks: BABYLON.AbstractAssetTask[]) => void;
         static IsLayerMasked(mask: number, layer: number): boolean;
@@ -1567,6 +1465,27 @@ declare module BABYLON {
         static Approximately(a: number, b: number): boolean;
         static GetVertexDataFromMesh(mesh: BABYLON.Mesh): BABYLON.VertexData;
         static UpdateAbstractMeshMaterial(mesh: BABYLON.AbstractMesh, material: BABYLON.Material, materialIndex: number): void;
+        /** Creates a rotation which rotates /angle/ degrees around /axis/ */
+        static LerpLog(a: number, b: number, t: number): number;
+        static LerpExp(a: number, b: number, t: number): number;
+        static LerpUnclamped(a: number, b: number, t: number): number;
+        static LerpUnclampedColor3(a: BABYLON.Color3, b: BABYLON.Color3, t: number): BABYLON.Color3;
+        static LerpUnclampedColor3ToRef(a: BABYLON.Color3, b: BABYLON.Color3, t: number, result: BABYLON.Color3): void;
+        static LerpUnclampedColor4(a: BABYLON.Color4, b: BABYLON.Color4, t: number): BABYLON.Color4;
+        static LerpUnclampedColor4ToRef(a: BABYLON.Color4, b: BABYLON.Color4, t: number, result: BABYLON.Color4): void;
+        static LerpUnclampedVector2(a: BABYLON.Vector2, b: BABYLON.Vector2, t: number): BABYLON.Vector2;
+        static LerpUnclampedVector2ToRef(a: BABYLON.Vector2, b: BABYLON.Vector2, t: number, result: BABYLON.Vector2): void;
+        static LerpUnclampedVector3(a: BABYLON.Vector3, b: BABYLON.Vector3, t: number): BABYLON.Vector3;
+        static LerpUnclampedVector3ToRef(a: BABYLON.Vector3, b: BABYLON.Vector3, t: number, result: BABYLON.Vector3): void;
+        static LerpUnclampedVector4(a: BABYLON.Vector4, b: BABYLON.Vector4, t: number): BABYLON.Vector4;
+        static LerpUnclampedVector4ToRef(a: BABYLON.Vector4, b: BABYLON.Vector4, t: number, result: BABYLON.Vector4): void;
+        static IsEqualUsingDot(dot: number): boolean;
+        static QuaternionAngle(a: BABYLON.Quaternion, b: BABYLON.Quaternion): number;
+        static QuaternionLengthSquared(quat: BABYLON.Quaternion): number;
+        static QuaternionRotateTowards(from: BABYLON.Quaternion, to: BABYLON.Quaternion, maxDegreesDelta: number): BABYLON.Quaternion;
+        static QuaternionRotateTowardsToRef(from: BABYLON.Quaternion, to: BABYLON.Quaternion, maxDegreesDelta: number, result: BABYLON.Quaternion): void;
+        static QuaternionSlerpUnclamped(from: BABYLON.Quaternion, to: BABYLON.Quaternion, t: number): BABYLON.Quaternion;
+        static QuaternionSlerpUnclampedToRef(a: BABYLON.Quaternion, b: BABYLON.Quaternion, t: number, result: BABYLON.Quaternion): void;
         static MoveTowardsVector2(current: BABYLON.Vector2, target: BABYLON.Vector2, maxDistanceDelta: number): BABYLON.Vector2;
         static MoveTowardsVector2ToRef(current: BABYLON.Vector2, target: BABYLON.Vector2, maxDistanceDelta: number, result: BABYLON.Vector2): void;
         static MoveTowardsVector3(current: BABYLON.Vector3, target: BABYLON.Vector3, maxDistanceDelta: number): BABYLON.Vector3;
@@ -1581,15 +1500,6 @@ declare module BABYLON {
         static ClampMagnitudeVector3(vector: BABYLON.Vector3, length: number): BABYLON.Vector3;
         /**  Clamps a vector3 magnitude to a max length. */
         static ClampMagnitudeVector3ToRef(vector: BABYLON.Vector3, length: number, result: BABYLON.Vector3): void;
-        /** Zero pad a number to string */
-        static ZeroPad(num: number, places: number): string;
-        /** TODO */
-        static LerpLog(a: number, b: number, t: number): number;
-        /** TODO */
-        static LerpExp(a: number, b: number, t: number): number;
-        static LerpClamp(a: number, b: number, t: number): number;
-        /** TODO */
-        static LerpUnclamp(a: number, b: number, t: number): number;
         /** Returns the angle in degrees between the from and to vectors. */
         static GetAngle(from: BABYLON.Vector3, to: BABYLON.Vector3): number;
         /** Returns the angle in radians between the from and to vectors. */
@@ -1654,9 +1564,9 @@ declare module BABYLON {
         /** Sets a vector3 result degrees converted from radions */
         static Vector3Rad2DegToRef(vector: BABYLON.Vector3, result: BABYLON.Vector3): void;
         /** Multiply the quaternion by a vector */
-        static MultiplyQuaternionByVector(quaternion: BABYLON.Quaternion, vector: BABYLON.Vector3): BABYLON.Vector3;
+        static MultiplyQuaternionByVector(rotation: BABYLON.Quaternion, point: BABYLON.Vector3): BABYLON.Vector3;
         /** Multiply the quaternion by a vector to result */
-        static MultiplyQuaternionByVectorToRef(quaternion: BABYLON.Quaternion, vector: BABYLON.Vector3, result: BABYLON.Vector3): void;
+        static MultiplyQuaternionByVectorToRef(rotation: BABYLON.Quaternion, point: BABYLON.Vector3, result: BABYLON.Vector3): void;
         /** Validate and switch Quaternion rotation to Euler rotation. */
         static ValidateTransformRotation(transform: BABYLON.TransformNode): void;
         /** Validate and switch Euler rotation to Quaternion rotation. */

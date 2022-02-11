@@ -6549,6 +6549,14 @@ declare module BABYLON {
         /** @hidden */
         _depthStencilTextureWithStencil: boolean;
         /**
+         * Gets the depth/stencil texture (if created by a createDepthStencilTexture() call)
+         */
+        get depthStencilTexture(): Nullable<InternalTexture>;
+        /**
+         * Indicates if the depth/stencil texture has a stencil aspect
+         */
+        get depthStencilTextureWithStencil(): boolean;
+        /**
          * Defines if the render target wrapper is for a cube texture or if false a 2d texture
          */
         get isCube(): boolean;
@@ -26146,10 +26154,6 @@ declare module BABYLON {
          */
         needInitialSkinMatrix: boolean;
         /**
-         * Defines a mesh that override the matrix used to get the world matrix (null by default).
-         */
-        overrideMesh: Nullable<AbstractMesh>;
-        /**
          * Gets the list of animations attached to this skeleton
          */
         animations: Array<Animation>;
@@ -26169,8 +26173,6 @@ declare module BABYLON {
         _numBonesWithLinkedTransformNode: number;
         /** @hidden */
         _hasWaitingData: Nullable<boolean>;
-        /** @hidden */
-        _waitingOverrideMeshId: Nullable<string>;
         /** @hidden */
         _parentContainer: Nullable<AbstractScene>;
         /**
@@ -30273,7 +30275,7 @@ declare module BABYLON {
         /** @hidden */
         _processInstancedBuffers(visibleInstances: InstancedMesh[], renderSelf: boolean): void;
         /** @hidden */
-        _processRendering(renderingMesh: AbstractMesh, subMesh: SubMesh, effect: Effect, fillMode: number, batch: _InstancesBatch, hardwareInstancedRendering: boolean, onBeforeDraw: (isInstance: boolean, world: Matrix, effectiveMaterial?: Material, effectiveMesh?: AbstractMesh) => void, effectiveMaterial?: Material): Mesh;
+        _processRendering(renderingMesh: AbstractMesh, subMesh: SubMesh, effect: Effect, fillMode: number, batch: _InstancesBatch, hardwareInstancedRendering: boolean, onBeforeDraw: (isInstance: boolean, world: Matrix, effectiveMaterial?: Material) => void, effectiveMaterial?: Material): Mesh;
         /** @hidden */
         _rebuild(dispose?: boolean): void;
         /** @hidden */
@@ -36918,6 +36920,14 @@ declare module BABYLON {
         refreshBoundingInfo(applySkeleton?: boolean, applyMorph?: boolean): AbstractMesh;
         /** @hidden */
         _refreshBoundingInfo(data: Nullable<FloatArray>, bias: Nullable<Vector2>): void;
+        /**
+         * Get the position vertex data and optionally apply skeleton and morphing.
+         * @param applySkeleton defines whether to apply the skeleton
+         * @param applyMorph  defines whether to apply the morph target
+         * @param data defines the position data to apply the skeleton and morph to
+         * @returns the position data
+         */
+        getPositionData(applySkeleton: boolean, applyMorph: boolean, data?: Nullable<FloatArray>): Nullable<FloatArray>;
         /** @hidden */
         _getPositionData(applySkeleton: boolean, applyMorph: boolean): Nullable<FloatArray>;
         /** @hidden */
@@ -36926,8 +36936,6 @@ declare module BABYLON {
         _updateSubMeshesBoundingInfo(matrix: DeepImmutable<Matrix>): AbstractMesh;
         /** @hidden */
         protected _afterComputeWorldMatrix(): void;
-        /** @hidden */
-        get _effectiveMesh(): AbstractMesh;
         /**
          * Returns `true` if the mesh is within the frustum defined by the passed array of planes.
          * A mesh is in the frustum if its bounding box intersects the frustum
@@ -45559,6 +45567,11 @@ declare module BABYLON {
         protected _creationOptions: EngineOptions;
         protected _audioContext: Nullable<AudioContext>;
         protected _audioDestination: Nullable<AudioDestinationNode | MediaStreamAudioDestinationNode>;
+        /**
+         * Gets the options used for engine creation
+         * @returns EngineOptions object
+         */
+        getCreationOptions(): EngineOptions;
         protected _highPrecisionShadersAllowed: boolean;
         /** @hidden */
         get _shouldUseHighPrecisionShader(): boolean;
@@ -49282,6 +49295,194 @@ declare module BABYLON {
          * Define the instrumented engine.
          */
         engine: Engine);
+        /**
+         * Dispose and release associated resources.
+         */
+        dispose(): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * This class can be used to get instrumentation data from a Babylon engine
+     * @see https://doc.babylonjs.com/how_to/optimizing_your_scene#sceneinstrumentation
+     */
+    export class SceneInstrumentation implements IDisposable {
+        /**
+         * Defines the scene to instrument
+         */
+        scene: Scene;
+        private _captureActiveMeshesEvaluationTime;
+        private _activeMeshesEvaluationTime;
+        private _captureRenderTargetsRenderTime;
+        private _renderTargetsRenderTime;
+        private _captureFrameTime;
+        private _frameTime;
+        private _captureRenderTime;
+        private _renderTime;
+        private _captureInterFrameTime;
+        private _interFrameTime;
+        private _captureParticlesRenderTime;
+        private _particlesRenderTime;
+        private _captureSpritesRenderTime;
+        private _spritesRenderTime;
+        private _capturePhysicsTime;
+        private _physicsTime;
+        private _captureAnimationsTime;
+        private _animationsTime;
+        private _captureCameraRenderTime;
+        private _cameraRenderTime;
+        private _onBeforeActiveMeshesEvaluationObserver;
+        private _onAfterActiveMeshesEvaluationObserver;
+        private _onBeforeRenderTargetsRenderObserver;
+        private _onAfterRenderTargetsRenderObserver;
+        private _onAfterRenderObserver;
+        private _onBeforeDrawPhaseObserver;
+        private _onAfterDrawPhaseObserver;
+        private _onBeforeAnimationsObserver;
+        private _onBeforeParticlesRenderingObserver;
+        private _onAfterParticlesRenderingObserver;
+        private _onBeforeSpritesRenderingObserver;
+        private _onAfterSpritesRenderingObserver;
+        private _onBeforePhysicsObserver;
+        private _onAfterPhysicsObserver;
+        private _onAfterAnimationsObserver;
+        private _onBeforeCameraRenderObserver;
+        private _onAfterCameraRenderObserver;
+        /**
+         * Gets the perf counter used for active meshes evaluation time
+         */
+        get activeMeshesEvaluationTimeCounter(): PerfCounter;
+        /**
+         * Gets the active meshes evaluation time capture status
+         */
+        get captureActiveMeshesEvaluationTime(): boolean;
+        /**
+         * Enable or disable the active meshes evaluation time capture
+         */
+        set captureActiveMeshesEvaluationTime(value: boolean);
+        /**
+         * Gets the perf counter used for render targets render time
+         */
+        get renderTargetsRenderTimeCounter(): PerfCounter;
+        /**
+         * Gets the render targets render time capture status
+         */
+        get captureRenderTargetsRenderTime(): boolean;
+        /**
+         * Enable or disable the render targets render time capture
+         */
+        set captureRenderTargetsRenderTime(value: boolean);
+        /**
+         * Gets the perf counter used for particles render time
+         */
+        get particlesRenderTimeCounter(): PerfCounter;
+        /**
+         * Gets the particles render time capture status
+         */
+        get captureParticlesRenderTime(): boolean;
+        /**
+         * Enable or disable the particles render time capture
+         */
+        set captureParticlesRenderTime(value: boolean);
+        /**
+         * Gets the perf counter used for sprites render time
+         */
+        get spritesRenderTimeCounter(): PerfCounter;
+        /**
+         * Gets the sprites render time capture status
+         */
+        get captureSpritesRenderTime(): boolean;
+        /**
+         * Enable or disable the sprites render time capture
+         */
+        set captureSpritesRenderTime(value: boolean);
+        /**
+         * Gets the perf counter used for physics time
+         */
+        get physicsTimeCounter(): PerfCounter;
+        /**
+         * Gets the physics time capture status
+         */
+        get capturePhysicsTime(): boolean;
+        /**
+         * Enable or disable the physics time capture
+         */
+        set capturePhysicsTime(value: boolean);
+        /**
+         * Gets the perf counter used for animations time
+         */
+        get animationsTimeCounter(): PerfCounter;
+        /**
+         * Gets the animations time capture status
+         */
+        get captureAnimationsTime(): boolean;
+        /**
+         * Enable or disable the animations time capture
+         */
+        set captureAnimationsTime(value: boolean);
+        /**
+         * Gets the perf counter used for frame time capture
+         */
+        get frameTimeCounter(): PerfCounter;
+        /**
+         * Gets the frame time capture status
+         */
+        get captureFrameTime(): boolean;
+        /**
+         * Enable or disable the frame time capture
+         */
+        set captureFrameTime(value: boolean);
+        /**
+         * Gets the perf counter used for inter-frames time capture
+         */
+        get interFrameTimeCounter(): PerfCounter;
+        /**
+         * Gets the inter-frames time capture status
+         */
+        get captureInterFrameTime(): boolean;
+        /**
+         * Enable or disable the inter-frames time capture
+         */
+        set captureInterFrameTime(value: boolean);
+        /**
+         * Gets the perf counter used for render time capture
+         */
+        get renderTimeCounter(): PerfCounter;
+        /**
+         * Gets the render time capture status
+         */
+        get captureRenderTime(): boolean;
+        /**
+         * Enable or disable the render time capture
+         */
+        set captureRenderTime(value: boolean);
+        /**
+         * Gets the perf counter used for camera render time capture
+         */
+        get cameraRenderTimeCounter(): PerfCounter;
+        /**
+         * Gets the camera render time capture status
+         */
+        get captureCameraRenderTime(): boolean;
+        /**
+         * Enable or disable the camera render time capture
+         */
+        set captureCameraRenderTime(value: boolean);
+        /**
+         * Gets the perf counter used for draw calls
+         */
+        get drawCallsCounter(): PerfCounter;
+        /**
+         * Instantiates a new scene instrumentation.
+         * This class can be used to get instrumentation data from a Babylon engine
+         * @see https://doc.babylonjs.com/how_to/optimizing_your_scene#sceneinstrumentation
+         * @param scene Defines the scene to instrument
+         */
+        constructor(
+        /**
+         * Defines the scene to instrument
+         */
+        scene: Scene);
         /**
          * Dispose and release associated resources.
          */
@@ -67366,7 +67567,8 @@ declare module BABYLON {
     }
     /** @hidden */
     export enum LoadOp {
-        Load = "load"
+        Load = "load",
+        Clear = "clear"
     }
     /** @hidden */
     export enum StoreOp {
@@ -72138,194 +72340,6 @@ declare module BABYLON {
          */
         set videoMode(value: number);
         protected _initTexture(urlsOrElement: string | string[] | HTMLVideoElement, scene: Scene, options: any): VideoTexture;
-    }
-}
-declare module BABYLON {
-    /**
-     * This class can be used to get instrumentation data from a Babylon engine
-     * @see https://doc.babylonjs.com/how_to/optimizing_your_scene#sceneinstrumentation
-     */
-    export class SceneInstrumentation implements IDisposable {
-        /**
-         * Defines the scene to instrument
-         */
-        scene: Scene;
-        private _captureActiveMeshesEvaluationTime;
-        private _activeMeshesEvaluationTime;
-        private _captureRenderTargetsRenderTime;
-        private _renderTargetsRenderTime;
-        private _captureFrameTime;
-        private _frameTime;
-        private _captureRenderTime;
-        private _renderTime;
-        private _captureInterFrameTime;
-        private _interFrameTime;
-        private _captureParticlesRenderTime;
-        private _particlesRenderTime;
-        private _captureSpritesRenderTime;
-        private _spritesRenderTime;
-        private _capturePhysicsTime;
-        private _physicsTime;
-        private _captureAnimationsTime;
-        private _animationsTime;
-        private _captureCameraRenderTime;
-        private _cameraRenderTime;
-        private _onBeforeActiveMeshesEvaluationObserver;
-        private _onAfterActiveMeshesEvaluationObserver;
-        private _onBeforeRenderTargetsRenderObserver;
-        private _onAfterRenderTargetsRenderObserver;
-        private _onAfterRenderObserver;
-        private _onBeforeDrawPhaseObserver;
-        private _onAfterDrawPhaseObserver;
-        private _onBeforeAnimationsObserver;
-        private _onBeforeParticlesRenderingObserver;
-        private _onAfterParticlesRenderingObserver;
-        private _onBeforeSpritesRenderingObserver;
-        private _onAfterSpritesRenderingObserver;
-        private _onBeforePhysicsObserver;
-        private _onAfterPhysicsObserver;
-        private _onAfterAnimationsObserver;
-        private _onBeforeCameraRenderObserver;
-        private _onAfterCameraRenderObserver;
-        /**
-         * Gets the perf counter used for active meshes evaluation time
-         */
-        get activeMeshesEvaluationTimeCounter(): PerfCounter;
-        /**
-         * Gets the active meshes evaluation time capture status
-         */
-        get captureActiveMeshesEvaluationTime(): boolean;
-        /**
-         * Enable or disable the active meshes evaluation time capture
-         */
-        set captureActiveMeshesEvaluationTime(value: boolean);
-        /**
-         * Gets the perf counter used for render targets render time
-         */
-        get renderTargetsRenderTimeCounter(): PerfCounter;
-        /**
-         * Gets the render targets render time capture status
-         */
-        get captureRenderTargetsRenderTime(): boolean;
-        /**
-         * Enable or disable the render targets render time capture
-         */
-        set captureRenderTargetsRenderTime(value: boolean);
-        /**
-         * Gets the perf counter used for particles render time
-         */
-        get particlesRenderTimeCounter(): PerfCounter;
-        /**
-         * Gets the particles render time capture status
-         */
-        get captureParticlesRenderTime(): boolean;
-        /**
-         * Enable or disable the particles render time capture
-         */
-        set captureParticlesRenderTime(value: boolean);
-        /**
-         * Gets the perf counter used for sprites render time
-         */
-        get spritesRenderTimeCounter(): PerfCounter;
-        /**
-         * Gets the sprites render time capture status
-         */
-        get captureSpritesRenderTime(): boolean;
-        /**
-         * Enable or disable the sprites render time capture
-         */
-        set captureSpritesRenderTime(value: boolean);
-        /**
-         * Gets the perf counter used for physics time
-         */
-        get physicsTimeCounter(): PerfCounter;
-        /**
-         * Gets the physics time capture status
-         */
-        get capturePhysicsTime(): boolean;
-        /**
-         * Enable or disable the physics time capture
-         */
-        set capturePhysicsTime(value: boolean);
-        /**
-         * Gets the perf counter used for animations time
-         */
-        get animationsTimeCounter(): PerfCounter;
-        /**
-         * Gets the animations time capture status
-         */
-        get captureAnimationsTime(): boolean;
-        /**
-         * Enable or disable the animations time capture
-         */
-        set captureAnimationsTime(value: boolean);
-        /**
-         * Gets the perf counter used for frame time capture
-         */
-        get frameTimeCounter(): PerfCounter;
-        /**
-         * Gets the frame time capture status
-         */
-        get captureFrameTime(): boolean;
-        /**
-         * Enable or disable the frame time capture
-         */
-        set captureFrameTime(value: boolean);
-        /**
-         * Gets the perf counter used for inter-frames time capture
-         */
-        get interFrameTimeCounter(): PerfCounter;
-        /**
-         * Gets the inter-frames time capture status
-         */
-        get captureInterFrameTime(): boolean;
-        /**
-         * Enable or disable the inter-frames time capture
-         */
-        set captureInterFrameTime(value: boolean);
-        /**
-         * Gets the perf counter used for render time capture
-         */
-        get renderTimeCounter(): PerfCounter;
-        /**
-         * Gets the render time capture status
-         */
-        get captureRenderTime(): boolean;
-        /**
-         * Enable or disable the render time capture
-         */
-        set captureRenderTime(value: boolean);
-        /**
-         * Gets the perf counter used for camera render time capture
-         */
-        get cameraRenderTimeCounter(): PerfCounter;
-        /**
-         * Gets the camera render time capture status
-         */
-        get captureCameraRenderTime(): boolean;
-        /**
-         * Enable or disable the camera render time capture
-         */
-        set captureCameraRenderTime(value: boolean);
-        /**
-         * Gets the perf counter used for draw calls
-         */
-        get drawCallsCounter(): PerfCounter;
-        /**
-         * Instantiates a new scene instrumentation.
-         * This class can be used to get instrumentation data from a Babylon engine
-         * @see https://doc.babylonjs.com/how_to/optimizing_your_scene#sceneinstrumentation
-         * @param scene Defines the scene to instrument
-         */
-        constructor(
-        /**
-         * Defines the scene to instrument
-         */
-        scene: Scene);
-        /**
-         * Dispose and release associated resources.
-         */
-        dispose(): void;
     }
 }
 declare module BABYLON {
@@ -91697,6 +91711,7 @@ interface GPUTextureDescriptor extends GPUObjectDescriptorBase {
     dimension?: GPUTextureDimension; /* default="2d" */
     format: GPUTextureFormat;
     usage: GPUTextureUsageFlags;
+    viewFormats?: GPUTextureFormat[]; /* default=[] */
 }
 
 type GPUTextureDimension = "1d" | "2d" | "3d";
@@ -91783,6 +91798,12 @@ type GPUTextureFormat =
     | "depth24plus-stencil8"
     | "depth32float"
 
+    // "depth24unorm-stencil8" feature
+    | "depth24unorm-stencil8"
+
+    // "depth32float-stencil8" feature
+    | "depth32float-stencil8"
+
     // BC compressed formats usable if "texture-compression-bc" is both
     // supported by the device/user agent and enabled in requestDevice.
     | "bc1-rgba-unorm"
@@ -91842,13 +91863,7 @@ type GPUTextureFormat =
     | "astc-12x10-unorm"
     | "astc-12x10-unorm-srgb"
     | "astc-12x12-unorm"
-    | "astc-12x12-unorm-srgb"
-
-    // "depth24unorm-stencil8" feature
-    | "depth24unorm-stencil8"
-
-    // "depth32float-stencil8" feature
-    | "depth32float-stencil8";
+    | "astc-12x12-unorm-srgb";
 
 declare class GPUExternalTexture implements GPUObjectBase {
     private __brand: void;
@@ -91944,7 +91959,7 @@ interface GPUTextureBindingLayout {
 type GPUStorageTextureAccess = "write-only";
 
 interface GPUStorageTextureBindingLayout {
-    access: GPUStorageTextureAccess;
+    access?: GPUStorageTextureAccess; /* default=write-only */
     format: GPUTextureFormat;
     viewDimension?: GPUTextureViewDimension; /* default="2d" */
 }
@@ -91995,9 +92010,14 @@ declare class GPUShaderModule implements GPUObjectBase {
     compilationInfo(): Promise<GPUCompilationInfo>;
 }
 
+interface GPUShaderModuleCompilationHint {
+    layout: GPUPipelineLayout;
+}
+
 interface GPUShaderModuleDescriptor extends GPUObjectDescriptorBase {
     code: string | Uint32Array;
     sourceMap?: object;
+    hints?: { [name: string]: GPUShaderModuleCompilationHint };
 }
 
 type GPUCompilationMessageType = "error" | "warning" | "info";
@@ -92224,7 +92244,10 @@ declare class GPUCommandBuffer implements GPUObjectBase {
 interface GPUCommandBufferDescriptor extends GPUObjectDescriptorBase {
 }
 
-declare class GPUCommandEncoder implements GPUObjectBase {
+interface GPUCommandsMixin {
+}
+
+declare class GPUCommandEncoder implements GPUObjectBase, GPUCommandsMixin, GPUDebugCommandsMixin {
     private __brand: void;
     label: string | undefined;
 
@@ -92253,10 +92276,10 @@ declare class GPUCommandEncoder implements GPUObjectBase {
         destination: GPUImageCopyTexture,
         copySize: GPUExtent3D
     ): void;
-    fillBuffer(
-        destination: GPUBuffer,
-        destinationOffset: GPUSize64,
-        size: GPUSize64
+    clearBuffer(
+        buffer: GPUBuffer,
+        offset?: GPUSize64, /* default=0 */
+        size?: GPUSize64
     ): void;
 
     pushDebugGroup(groupLabel: string): void;
@@ -92326,7 +92349,13 @@ interface GPUProgrammablePassEncoder {
     insertDebugMarker(markerLabel: string): void;
 }
 
-declare class GPUComputePassEncoder implements GPUObjectBase, GPUProgrammablePassEncoder {
+interface GPUDebugCommandsMixin {
+    pushDebugGroup(groupLabel: string): void;
+    popDebugGroup(): void;
+    insertDebugMarker(markerLabel: string): void;
+}
+
+declare class GPUComputePassEncoder implements GPUObjectBase, GPUCommandsMixin, GPUDebugCommandsMixin, GPUProgrammablePassEncoder {
     private __brand: void;
     label: string | undefined;
 
@@ -92348,10 +92377,10 @@ declare class GPUComputePassEncoder implements GPUObjectBase, GPUProgrammablePas
     insertDebugMarker(markerLabel: string): void;
 
     setPipeline(pipeline: GPUComputePipeline): void;
-    dispatch(x: GPUSize32, y?: GPUSize32 /* default=1 */, z?: GPUSize32 /* default=1 */): void;
+    dispatch(workgroupCountX: GPUSize32, workgroupCountY?: GPUSize32 /* default=1 */, workgroupCountZ?: GPUSize32 /* default=1 */): void;
     dispatchIndirect(indirectBuffer: GPUBuffer, indirectOffset: GPUSize64): void;
 
-    endPass(): void;
+    end(): void;
 }
 
 type GPUComputePassTimestampLocation =
@@ -92394,7 +92423,7 @@ interface GPURenderEncoderBase {
     drawIndexedIndirect(indirectBuffer: GPUBuffer, indirectOffset: GPUSize64): void;
 }
 
-declare class GPURenderPassEncoder implements GPUObjectBase, GPUProgrammablePassEncoder, GPURenderEncoderBase {
+declare class GPURenderPassEncoder implements GPUObjectBase, GPUCommandsMixin, GPUDebugCommandsMixin, GPUProgrammablePassEncoder, GPURenderEncoderBase {
     private __brand: void;
     label: string | undefined;
 
@@ -92452,7 +92481,7 @@ declare class GPURenderPassEncoder implements GPUObjectBase, GPUProgrammablePass
     endOcclusionQuery(): void;
 
     executeBundles(bundles: GPURenderBundle[]): void;
-    endPass(): void;
+    end(): void;
 }
 
 type GPURenderPassTimestampLocation =
@@ -92478,23 +92507,26 @@ interface GPURenderPassColorAttachment {
     view: GPUTextureView;
     resolveTarget?: GPUTextureView;
 
-    loadValue: GPULoadOp | GPUColor;
+    clearValue?: GPUColor;
+    loadOp: GPULoadOp;
     storeOp: GPUStoreOp;
 }
 
 interface GPURenderPassDepthStencilAttachment {
     view: GPUTextureView;
 
-    depthLoadValue: GPULoadOp | number;
+    depthClearValue?: number; /* default=0 */
+    depthLoadOp: GPULoadOp;
     depthStoreOp: GPUStoreOp;
     depthReadOnly?: boolean; /* default=false */
 
-    stencilLoadValue: GPULoadOp | GPUStencilValue;
+    stencilClearValue?: GPUStencilValue; /* default=0 */
+    stencilLoadOp: GPULoadOp;
     stencilStoreOp: GPUStoreOp;
     stencilReadOnly?: boolean; /* default=false */
 }
 
-type GPULoadOp = "load";
+type GPULoadOp = "load" | "clear";
 
 type GPUStoreOp = "store" | "discard";
 
@@ -92512,7 +92544,7 @@ declare class GPURenderBundle implements GPUObjectBase {
 interface GPURenderBundleDescriptor extends GPUObjectDescriptorBase {
 }
 
-declare class GPURenderBundleEncoder implements GPUObjectBase, GPUProgrammablePassEncoder, GPURenderEncoderBase {
+declare class GPURenderBundleEncoder implements GPUObjectBase, GPUCommandsMixin, GPUDebugCommandsMixin, GPUProgrammablePassEncoder, GPURenderEncoderBase {
     private __brand: void;
     label: string | undefined;
 
@@ -92627,6 +92659,7 @@ interface GPUCanvasConfiguration extends GPUObjectDescriptorBase {
     device: GPUDevice;
     format: GPUTextureFormat;
     usage?: GPUTextureUsageFlags; /* default=0x10 - GPUTextureUsage.RENDER_ATTACHMENT */
+    viewFormats?: GPUTextureFormat[]; /* default=[] */
     colorSpace?: GPUPredefinedColorSpace; /* default="srgb" */
     compositingAlphaMode?: GPUCanvasCompositingAlphaMode; /* default="opaque" */
     size: GPUExtent3D;

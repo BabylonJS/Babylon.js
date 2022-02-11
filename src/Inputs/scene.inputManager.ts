@@ -824,7 +824,7 @@ export class InputManager {
             if (scene.onPreKeyboardObservable.hasObservers()) {
                 let pi = new KeyboardInfoPre(type, evt);
                 scene.onPreKeyboardObservable.notifyObservers(pi, type);
-                if (pi.skipOnPointerObservable) {
+                if (pi.skipOnKeyboardObservable) {
                     return;
                 }
             }
@@ -844,7 +844,7 @@ export class InputManager {
             if (scene.onPreKeyboardObservable.hasObservers()) {
                 let pi = new KeyboardInfoPre(type, evt);
                 scene.onPreKeyboardObservable.notifyObservers(pi, type);
-                if (pi.skipOnPointerObservable) {
+                if (pi.skipOnKeyboardObservable) {
                     return;
                 }
             }

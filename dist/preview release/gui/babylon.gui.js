@@ -97,9 +97,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ({
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
-/*!*************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/tslib/tslib.es6.js ***!
-  \*************************************************************/
+/*!************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  \************************************************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __createBinding, __exportStar, __values, __read, __spread, __spreadArrays, __spreadArray, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault, __classPrivateFieldGet, __classPrivateFieldSet */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -1776,6 +1776,23 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
         // Attach
         result.attach();
         return result;
+    };
+    /**
+     * Scales the texture
+     * @param ratio the scale factor to apply to both width and height
+     */
+    AdvancedDynamicTexture.prototype.scale = function (ratio) {
+        _super.prototype.scale.call(this, ratio);
+        this.markAsDirty();
+    };
+    /**
+     * Resizes the texture
+     * @param width the new width
+     * @param height the new height
+     */
+    AdvancedDynamicTexture.prototype.scaleTo = function (width, height) {
+        _super.prototype.scaleTo.call(this, width, height);
+        this.markAsDirty();
     };
     /** Define the Uurl to load snippets */
     AdvancedDynamicTexture.SnippetUrl = "https://snippet.babylonjs.com";
@@ -5361,6 +5378,9 @@ var Control = /** @class */ (function () {
             this._markAsDirty();
             // if this control or any of it's descendants are under a pointer, we need to fire a pointerOut event
             var recursivelyFirePointerOut = function (control) {
+                if (!control.host) {
+                    return;
+                }
                 for (var pointer in control.host._lastControlOver) {
                     if (control === _this.host._lastControlOver[pointer]) {
                         control._onPointerOut(control, null, true);
@@ -18346,6 +18366,10 @@ var HolographicSlate = /** @class */ (function (_super) {
      */
     HolographicSlate.prototype._applyFacade = function (facadeTexture) {
         this._contentMaterial.albedoTexture = facadeTexture;
+        // We should have a content plate by this point, but check for safety
+        if (this._contentPlate) {
+            facadeTexture.attachToMesh(this._contentPlate, true);
+        }
     };
     HolographicSlate.prototype._rebuildContent = function () {
         this._disposeFacadeTexture();
@@ -21784,7 +21808,7 @@ var FluentMaterial = /** @class */ (function (_super) {
         /**
          * Gets or sets the radius used to render the hover light (default is 1.0)
          */
-        _this.hoverRadius = 1.0;
+        _this.hoverRadius = 0.01;
         /**
          * Gets or sets the color used to render the hover light (default is Color4(0.3, 0.3, 0.3, 1.0))
          */

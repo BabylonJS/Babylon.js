@@ -106,17 +106,18 @@ export class GLTFLoader implements IGLTFLoader {
     /** @hidden */
     public _disableInstancedMesh = 0;
 
+    private readonly _parent: GLTFFileLoader;
+    private readonly _extensions = new Array<IGLTFLoaderExtension>();
     private _disposed = false;
-    private _parent: GLTFFileLoader;
-    private _extensions = new Array<IGLTFLoaderExtension>();
-    private _rootUrl: string;
-    private _fileName: string;
-    private _uniqueRootUrl: string;
+    private _rootUrl: Nullable<string> = null;
+    private _fileName: Nullable<string> = null;
+    private _uniqueRootUrl: Nullable<string> = null;
     private _gltf: IGLTF;
-    private _bin: Nullable<IDataBuffer>;
+    private _bin: Nullable<IDataBuffer> = null;
     private _babylonScene: Scene;
     private _rootBabylonMesh: Nullable<Mesh> = null;
     private _defaultBabylonMaterialData: { [drawMode: number]: Material } = {};
+    private _postSceneLoadActions = new Array<() => void>();
 
     private static _RegisteredExtensions: { [name: string]: IRegisteredExtension } = {};
 
@@ -158,6 +159,10 @@ export class GLTFLoader implements IGLTFLoader {
      * The object that represents the glTF JSON.
      */
     public get gltf(): IGLTF {
+        if (!this._gltf) {
+            throw new Error("glTF JSON is not available");
+        }
+
         return this._gltf;
     }
 
@@ -179,6 +184,10 @@ export class GLTFLoader implements IGLTFLoader {
      * The Babylon scene when loading the asset.
      */
     public get babylonScene(): Scene {
+        if (!this._babylonScene) {
+            throw new Error("Scene is not available");
+        }
+
         return this._babylonScene;
     }
 
@@ -204,15 +213,15 @@ export class GLTFLoader implements IGLTFLoader {
 
         this._completePromises.length = 0;
 
-        for (const name in this._extensions) {
-            const extension = this._extensions[name];
-            extension.dispose && extension.dispose();
-            delete this._extensions[name];
-        }
+        this._extensions.forEach((extension) => extension.dispose && extension.dispose());
+        this._extensions.length = 0;
 
-        (this._gltf as any) = null;
-        (this._babylonScene as any) = null;
+        (this._gltf as Nullable<IGLTF>) = null; // TODO
+        this._bin = null;
+        (this._babylonScene as Nullable<Scene>) = null; // TODO
         this._rootBabylonMesh = null;
+        this._defaultBabylonMaterialData = {};
+        this._postSceneLoadActions.length = 0;
 
         this._parent.dispose();
     }
@@ -511,16 +520,8 @@ export class GLTFLoader implements IGLTFLoader {
             }
         }
 
-        // Link all Babylon bones for each glTF node with the corresponding Babylon transform node.
-        // A glTF joint is a pointer to a glTF node in the glTF node hierarchy similar to Unity3D.
-        if (this._gltf.nodes) {
-            for (const node of this._gltf.nodes) {
-                if (node._babylonTransformNode && node._babylonBones) {
-                    for (const babylonBone of node._babylonBones) {
-                        babylonBone.linkTransformNode(node._babylonTransformNode);
-                    }
-                }
-            }
+        for (const action of this._postSceneLoadActions) {
+            action();
         }
 
         promises.push(this._loadAnimationsAsync());
@@ -692,7 +693,7 @@ export class GLTFLoader implements IGLTFLoader {
             assign(babylonTransformNode);
         };
 
-        if (node.mesh == undefined) {
+        if (node.mesh == undefined || node.skin != undefined) {
             const nodeName = node.name || `node${node.index}`;
             this._babylonScene._blockEntityCollection = !!this._assetContainer;
             node._babylonTransformNode = new TransformNode(nodeName, this._babylonScene);
@@ -700,9 +701,39 @@ export class GLTFLoader implements IGLTFLoader {
             this._babylonScene._blockEntityCollection = false;
             loadNode(node._babylonTransformNode);
         }
-        else {
-            const mesh = ArrayItem.Get(`${context}/mesh`, this._gltf.meshes, node.mesh);
-            promises.push(this._loadMeshAsync(`/meshes/${mesh.index}`, node, mesh, loadNode));
+
+        if (node.mesh != undefined) {
+            if (node.skin == undefined) {
+                const mesh = ArrayItem.Get(`${context}/mesh`, this._gltf.meshes, node.mesh);
+                promises.push(this._loadMeshAsync(`/meshes/${mesh.index}`, node, mesh, loadNode));
+            } else {
+                // See https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#skins (second implementation note)
+                // This code path will place the skinned mesh as a sibling of the skeleton root node without loading the
+                // transform, which effectively ignores the transform of the skinned mesh, as per spec.
+
+                const mesh = ArrayItem.Get(`${context}/mesh`, this._gltf.meshes, node.mesh);
+                promises.push(this._loadMeshAsync(`/meshes/${mesh.index}`, node, mesh, (babylonTransformNode) => {
+                    GLTFLoader.AddPointerMetadata(babylonTransformNode, context);
+
+                    const skin = ArrayItem.Get(`${context}/skin`, this._gltf.skins, node.skin);
+                    promises.push(this._loadSkinAsync(`/skins/${skin.index}`, node, skin, (babylonSkeleton) => {
+                        this._forEachPrimitive(node, (babylonMesh) => {
+                            babylonMesh.skeleton = babylonSkeleton;
+                        });
+
+                        // Wait until the scene is loaded to ensure the skeleton root node has been loaded.
+                        this._postSceneLoadActions.push(() => {
+                            if (skin.skeleton != undefined) {
+                                // Place the skinned mesh node as a sibling of the skeleton root node.
+                                const skeletonRootNode = ArrayItem.Get(`/skins/${skin.index}/skeleton`, this._gltf.nodes, skin.skeleton);
+                                babylonTransformNode.parent = skeletonRootNode.parent!._babylonTransformNode!;
+                            } else {
+                                babylonTransformNode.parent = this._rootBabylonMesh;
+                            }
+                        });
+                    }));
+                }));
+            }
         }
 
         this.logClose();
@@ -756,11 +787,6 @@ export class GLTFLoader implements IGLTFLoader {
                     node._primitiveBabylonMeshes!.push(babylonMesh);
                 }));
             }
-        }
-
-        if (node.skin != undefined) {
-            const skin = ArrayItem.Get(`${context}/skin`, this._gltf.skins, node.skin);
-            promises.push(this._loadSkinAsync(`/skins/${skin.index}`, node, skin));
         }
 
         assign(node._babylonTransformNode!);
@@ -1089,20 +1115,14 @@ export class GLTFLoader implements IGLTFLoader {
         babylonNode.scaling = scaling;
     }
 
-    private _loadSkinAsync(context: string, node: INode, skin: ISkin): Promise<void> {
+    private _loadSkinAsync(context: string, node: INode, skin: ISkin, assign: (babylonSkeleton: Skeleton) => void): Promise<void> {
         const extensionPromise = this._extensionsLoadSkinAsync(context, node, skin);
         if (extensionPromise) {
             return extensionPromise;
         }
 
-        const assignSkeleton = (skeleton: Skeleton) => {
-            this._forEachPrimitive(node, (babylonMesh) => {
-                babylonMesh.skeleton = skeleton;
-            });
-        };
-
         if (skin._data) {
-            assignSkeleton(skin._data.babylonSkeleton);
+            assign(skin._data.babylonSkeleton);
             return skin._data.promise;
         }
 
@@ -1112,12 +1132,7 @@ export class GLTFLoader implements IGLTFLoader {
         babylonSkeleton._parentContainer = this._assetContainer;
         this._babylonScene._blockEntityCollection = false;
 
-        // See https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#skins (second implementation note)
-        babylonSkeleton.overrideMesh = this._rootBabylonMesh;
-
         this._loadBones(context, skin, babylonSkeleton);
-        assignSkeleton(babylonSkeleton);
-
         const promise = this._loadSkinInverseBindMatricesDataAsync(context, skin).then((inverseBindMatricesData) => {
             this._updateBoneMatrices(babylonSkeleton, inverseBindMatricesData);
         });
@@ -1127,14 +1142,56 @@ export class GLTFLoader implements IGLTFLoader {
             promise: promise
         };
 
+        assign(babylonSkeleton);
+
         return promise;
     }
 
     private _loadBones(context: string, skin: ISkin, babylonSkeleton: Skeleton): void {
+        if (skin.skeleton == undefined) {
+            const rootNode = this._findSkeletonRootNode(`${context}/joints`, skin.joints);
+            if (rootNode) {
+                skin.skeleton = rootNode.index;
+            } else {
+                Logger.Warn(`${context}: Failed to find common root`);
+            }
+        }
+
         const babylonBones: { [index: number]: Bone } = {};
         for (const index of skin.joints) {
             const node = ArrayItem.Get(`${context}/joints/${index}`, this._gltf.nodes, index);
             this._loadBone(node, skin, babylonSkeleton, babylonBones);
+        }
+    }
+
+    private _findSkeletonRootNode(context: string, joints: Array<number>): Nullable<INode> {
+        const paths: { [joint: number]: Array<INode> } = {};
+        for (const index of joints) {
+            const path = new Array<INode>();
+            let node = ArrayItem.Get(`${context}/${index}`, this._gltf.nodes, index);
+            while (node.index !== -1) {
+                path.unshift(node);
+                node = node.parent!;
+            }
+            paths[index] = path;
+        }
+
+        let rootNode: Nullable<INode> = null;
+        for (let i = 0;; ++i) {
+            let path = paths[joints[0]];
+            if (i >= path.length) {
+                return rootNode;
+            }
+
+            const node = path[i];
+            for (let j = 1; j < joints.length; ++j) {
+                path = paths[joints[j]];
+                if (i >= path.length || node !== path[i]) {
+                    return rootNode;
+                }
+            }
+
+            rootNode = node;
         }
     }
 
@@ -1144,18 +1201,25 @@ export class GLTFLoader implements IGLTFLoader {
             return babylonBone;
         }
 
-        let babylonParentBone: Nullable<Bone> = null;
-        if (node.parent && node.parent._babylonTransformNode !== this._rootBabylonMesh) {
-            babylonParentBone = this._loadBone(node.parent, skin, babylonSkeleton, babylonBones);
+        let parentBabylonBone: Nullable<Bone> = null;
+        if (node.index !== skin.skeleton) {
+            if (node.parent && node.parent.index !== -1) {
+                parentBabylonBone = this._loadBone(node.parent, skin, babylonSkeleton, babylonBones);
+            } else if (skin.skeleton !== undefined) {
+                Logger.Warn(`/skins/${skin.index}/skeleton: Skeleton node is not a common root`);
+            }
         }
 
         const boneIndex = skin.joints.indexOf(node.index);
-
-        babylonBone = new Bone(node.name || `joint${node.index}`, babylonSkeleton, babylonParentBone, this._getNodeMatrix(node), null, null, boneIndex);
+        babylonBone = new Bone(node.name || `joint${node.index}`, babylonSkeleton, parentBabylonBone, this._getNodeMatrix(node), null, null, boneIndex);
         babylonBones[node.index] = babylonBone;
 
-        node._babylonBones = node._babylonBones || [];
-        node._babylonBones.push(babylonBone);
+        // Wait until the scene is loaded to ensure the transform nodes are loaded.
+        this._postSceneLoadActions.push(() => {
+            // Link the Babylon bone with the corresponding Babylon transform node.
+            // A glTF joint is a pointer to a glTF node in the glTF node hierarchy similar to Unity3D.
+            babylonBone.linkTransformNode(node._babylonTransformNode!);
+        });
 
         return babylonBone;
     }

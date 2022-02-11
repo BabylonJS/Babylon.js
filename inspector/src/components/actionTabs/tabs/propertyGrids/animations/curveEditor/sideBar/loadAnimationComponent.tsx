@@ -51,7 +51,7 @@ export class LoadAnimationComponent extends React.Component<ILoadAnimationCompon
                 context.activeAnimations = animations.length ? animations : [];
                 context.prepare();
                 context.onAnimationsLoaded.notifyObservers();
-                context.onActiveAnimationChanged.notifyObservers();
+                context.onActiveAnimationChanged.notifyObservers({});
             },
             undefined,
             true
@@ -80,7 +80,7 @@ export class LoadAnimationComponent extends React.Component<ILoadAnimationCompon
                 context.activeAnimations = context.animations.length ? context.animations : [];
                 context.prepare();
                 context.onAnimationsLoaded.notifyObservers();
-                context.onActiveAnimationChanged.notifyObservers();
+                context.onActiveAnimationChanged.notifyObservers({});
             })
             .catch((err) => {
                 this._root.current?.ownerDocument.defaultView!.alert("Unable to load your animations: " + err);
