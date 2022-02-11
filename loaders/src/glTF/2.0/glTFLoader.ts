@@ -1478,7 +1478,7 @@ export class GLTFLoader implements IGLTFLoader {
             switch (data.interpolation) {
                 case AnimationSamplerInterpolation.STEP: {
                     getNextKey = (frameIndex) => ({
-                        frame: data.input[frameIndex],
+                        frame: data.input[frameIndex] * this.parent.targetFps,
                         value: getNextOutputValue(),
                         interpolation: AnimationKeyInterpolation.STEP
                     });
@@ -1486,14 +1486,14 @@ export class GLTFLoader implements IGLTFLoader {
                 }
                 case AnimationSamplerInterpolation.LINEAR: {
                     getNextKey = (frameIndex) => ({
-                        frame: data.input[frameIndex],
+                        frame: data.input[frameIndex] * this.parent.targetFps,
                         value: getNextOutputValue()
                     });
                     break;
                 }
                 case AnimationSamplerInterpolation.CUBICSPLINE: {
                     getNextKey = (frameIndex) => ({
-                        frame: data.input[frameIndex],
+                        frame: data.input[frameIndex] * this.parent.targetFps,
                         inTangent: getNextOutputValue(),
                         value: getNextOutputValue(),
                         outTangent: getNextOutputValue()
@@ -1510,7 +1510,7 @@ export class GLTFLoader implements IGLTFLoader {
             if (targetPath === "influence") {
                 for (let targetIndex = 0; targetIndex < targetNode._numMorphTargets!; targetIndex++) {
                     const animationName = `${babylonAnimationGroup.name}_channel${babylonAnimationGroup.targetedAnimations.length}`;
-                    const babylonAnimation = new Animation(animationName, targetPath, 1, animationType);
+                    const babylonAnimation = new Animation(animationName, targetPath, this.parent.targetFps, animationType);
                     babylonAnimation.setKeys(keys.map((key) => ({
                         frame: key.frame,
                         inTangent: key.inTangent ? key.inTangent[targetIndex] : undefined,
@@ -1529,7 +1529,7 @@ export class GLTFLoader implements IGLTFLoader {
             }
             else {
                 const animationName = `${babylonAnimationGroup.name}_channel${babylonAnimationGroup.targetedAnimations.length}`;
-                const babylonAnimation = new Animation(animationName, targetPath, 1, animationType);
+                const babylonAnimation = new Animation(animationName, targetPath, this.parent.targetFps, animationType);
                 babylonAnimation.setKeys(keys);
 
                 if (animationTargetOverride != null && animationTargetOverride.animations != null) {
