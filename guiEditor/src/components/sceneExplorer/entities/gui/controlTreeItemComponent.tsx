@@ -46,7 +46,7 @@ export class ControlTreeItemComponent extends React.Component<IControlTreeItemCo
 
     onRename(name: string) {
         this.props.control.name = name;
-        this.forceUpdate();
+        this.props.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
     }
 
     render() {
