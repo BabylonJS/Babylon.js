@@ -2,7 +2,7 @@ import { Observer } from "babylonjs/Misc/observable";
 import { Nullable } from "babylonjs/types";
 import * as React from "react";
 import { GlobalState } from "../../../../../../globalState";
-import { Context } from "../context";
+import { Context, IActiveAnimationChangedOptions } from "../context";
 import { TextInputComponent } from "../controls/textInputComponent";
 import { MediaPlayerComponent } from "./mediaPlayerComponent";
 import { RangeSelectorComponent } from "./rangeSelectorComponent";
@@ -20,7 +20,7 @@ interface IBottomBarComponentState {
 
 export class BottomBarComponent extends React.Component<IBottomBarComponentProps, IBottomBarComponentState> {
     private _onAnimationsLoadedObserver: Nullable<Observer<void>>;
-    private _onActiveAnimationChangedObserver: Nullable<Observer<void>>;
+    private _onActiveAnimationChangedObserver: Nullable<Observer<IActiveAnimationChangedOptions>>;
     private _onClipLengthIncreasedObserver: Nullable<Observer<number>>;
     private _onClipLengthDecreasedObserver: Nullable<Observer<number>>;
 

@@ -1,2 +1,2 @@
 export * from './configuration';
-export * from './interfaces';
+export * from './interfaces/index';

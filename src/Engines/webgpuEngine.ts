@@ -853,13 +853,15 @@ export class WebGPUEngine extends Engine {
             this._mainTexture = this._device.createTexture(mainTextureDescriptor);
             mainColorAttachments = [{
                 view: this._mainTexture.createView(),
-                loadValue: new Color4(0, 0, 0, 1),
-                storeOp: WebGPUConstants.StoreOp.Store // don't use StoreOp.Clear, else using several cameras with different viewports or using scissors will fail because we call beginRenderPass / endPass several times for the same color attachment!
+                clearValue: new Color4(0, 0, 0, 1),
+                loadOp: WebGPUConstants.LoadOp.Clear,
+                storeOp: WebGPUConstants.StoreOp.Store // don't use StoreOp.Discard, else using several cameras with different viewports or using scissors will fail because we call beginRenderPass / endPass several times for the same color attachment!
             }];
         } else {
             mainColorAttachments = [{
                 view: undefined as any,
-                loadValue: new Color4(0, 0, 0, 1),
+                clearValue: new Color4(0, 0, 0, 1),
+                loadOp: WebGPUConstants.LoadOp.Clear,
                 storeOp: WebGPUConstants.StoreOp.Store
             }];
         }
@@ -884,9 +886,11 @@ export class WebGPUEngine extends Engine {
         const mainDepthAttachment: GPURenderPassDepthStencilAttachment = {
             view: this._depthTexture.createView(),
 
-            depthLoadValue: this._clearDepthValue,
+            depthClearValue: this._clearDepthValue,
+            depthLoadOp: WebGPUConstants.LoadOp.Clear,
             depthStoreOp: WebGPUConstants.StoreOp.Store,
-            stencilLoadValue: this._clearStencilValue,
+            stencilClearValue: this._clearStencilValue,
+            stencilLoadOp: WebGPUConstants.LoadOp.Clear,
             stencilStoreOp: WebGPUConstants.StoreOp.Store,
         };
 
@@ -2369,9 +2373,9 @@ export class WebGPUEngine extends Engine {
             this.setDepthFunctionToGreaterOrEqual();
         }
 
-        const colorClearValue = !setClearStates ? WebGPUConstants.LoadOp.Load : clearColor ? clearColor : WebGPUConstants.LoadOp.Load;
-        const depthClearValue = !setClearStates ? WebGPUConstants.LoadOp.Load : clearDepth ? (this.useReverseDepthBuffer ? this._clearReverseDepthValue : this._clearDepthValue) : WebGPUConstants.LoadOp.Load;
-        const stencilClearValue = !setClearStates ? WebGPUConstants.LoadOp.Load : clearStencil ? this._clearStencilValue : WebGPUConstants.LoadOp.Load;
+        const mustClearColor = setClearStates && clearColor;
+        const mustClearDepth = setClearStates && clearDepth;
+        const mustClearStencil = setClearStates && clearStencil;
 
         if (rtWrapper._attachments && rtWrapper.isMulti) {
             // multi render targets
@@ -2395,7 +2399,8 @@ export class WebGPUEngine extends Engine {
                     colorAttachments.push({
                         view: colorMSAATextureView ? colorMSAATextureView : colorTextureView,
                         resolveTarget: gpuMSAATexture ? colorTextureView : undefined,
-                        loadValue: index !== 0 ? colorClearValue : WebGPUConstants.LoadOp.Load,
+                        clearValue: index !== 0 && mustClearColor ? clearColor : undefined,
+                        loadOp: index !== 0 && mustClearColor ? WebGPUConstants.LoadOp.Clear : WebGPUConstants.LoadOp.Load,
                         storeOp: WebGPUConstants.StoreOp.Store,
                     });
                 }
@@ -2415,7 +2420,8 @@ export class WebGPUEngine extends Engine {
             colorAttachments.push({
                 view: colorMSAATextureView ? colorMSAATextureView : colorTextureView,
                 resolveTarget: gpuMSAATexture ? colorTextureView : undefined,
-                loadValue: colorClearValue,
+                clearValue: mustClearColor ? clearColor : undefined,
+                loadOp: mustClearColor ? WebGPUConstants.LoadOp.Clear : WebGPUConstants.LoadOp.Load,
                 storeOp: WebGPUConstants.StoreOp.Store,
             });
         }
@@ -2426,9 +2432,11 @@ export class WebGPUEngine extends Engine {
             colorAttachments,
             depthStencilAttachment: depthStencilTexture && gpuDepthStencilTexture ? {
                 view: depthMSAATextureView ? depthMSAATextureView : depthTextureView!,
-                depthLoadValue: true /* depth always generated for the depth/stencil texture */ ? depthClearValue : WebGPUConstants.LoadOp.Load,
+                depthClearValue: mustClearDepth ? (this.useReverseDepthBuffer ? this._clearReverseDepthValue : this._clearDepthValue) : undefined,
+                depthLoadOp: mustClearDepth ? WebGPUConstants.LoadOp.Clear : WebGPUConstants.LoadOp.Load,
                 depthStoreOp: WebGPUConstants.StoreOp.Store,
-                stencilLoadValue: rtWrapper._depthStencilTextureWithStencil ? stencilClearValue : WebGPUConstants.LoadOp.Load,
+                stencilClearValue: rtWrapper._depthStencilTextureWithStencil && mustClearStencil ? this._clearStencilValue : undefined,
+                stencilLoadOp: rtWrapper._depthStencilTextureWithStencil && mustClearStencil ? WebGPUConstants.LoadOp.Clear : WebGPUConstants.LoadOp.Load,
                 stencilStoreOp: WebGPUConstants.StoreOp.Store,
             } : undefined,
             occlusionQuerySet: this._occlusionQuery?.hasQueries ? this._occlusionQuery.querySet : undefined,
@@ -2465,7 +2473,7 @@ export class WebGPUEngine extends Engine {
                 this._bundleListRenderTarget.run(this._currentRenderPass);
                 this._bundleListRenderTarget.reset();
             }
-            this._currentRenderPass.endPass();
+            this._currentRenderPass.end();
             if (this.dbgVerboseLogsForFirstFrames) {
                 if ((this as any)._count === undefined) { (this as any)._count = 0; }
                 if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
@@ -2507,13 +2515,16 @@ export class WebGPUEngine extends Engine {
             this.setDepthFunctionToGreaterOrEqual();
         }
 
-        const colorClearValue = !setClearStates ? WebGPUConstants.LoadOp.Load : clearColor ? clearColor : WebGPUConstants.LoadOp.Load;
-        const depthClearValue = !setClearStates ? WebGPUConstants.LoadOp.Load : clearDepth ? (this.useReverseDepthBuffer ? this._clearReverseDepthValue : this._clearDepthValue) : WebGPUConstants.LoadOp.Load;
-        const stencilClearValue = !setClearStates ? WebGPUConstants.LoadOp.Load : clearStencil ? this._clearStencilValue : WebGPUConstants.LoadOp.Load;
+        const mustClearColor = setClearStates && clearColor;
+        const mustClearDepth = setClearStates && clearDepth;
+        const mustClearStencil = setClearStates && clearStencil;
 
-        this._mainRenderPassWrapper.renderPassDescriptor!.colorAttachments[0].loadValue = colorClearValue;
-        this._mainRenderPassWrapper.renderPassDescriptor!.depthStencilAttachment!.depthLoadValue = depthClearValue;
-        this._mainRenderPassWrapper.renderPassDescriptor!.depthStencilAttachment!.stencilLoadValue = stencilClearValue;
+        this._mainRenderPassWrapper.renderPassDescriptor!.colorAttachments[0]!.clearValue = mustClearColor ? clearColor : undefined;
+        this._mainRenderPassWrapper.renderPassDescriptor!.colorAttachments[0]!.loadOp = mustClearColor ? WebGPUConstants.LoadOp.Clear : WebGPUConstants.LoadOp.Load;
+        this._mainRenderPassWrapper.renderPassDescriptor!.depthStencilAttachment!.depthClearValue = mustClearDepth ? (this.useReverseDepthBuffer ? this._clearReverseDepthValue : this._clearDepthValue) : undefined;
+        this._mainRenderPassWrapper.renderPassDescriptor!.depthStencilAttachment!.depthLoadOp = mustClearDepth ? WebGPUConstants.LoadOp.Clear : WebGPUConstants.LoadOp.Load;
+        this._mainRenderPassWrapper.renderPassDescriptor!.depthStencilAttachment!.stencilClearValue = mustClearStencil ? this._clearStencilValue : undefined;
+        this._mainRenderPassWrapper.renderPassDescriptor!.depthStencilAttachment!.stencilLoadOp = mustClearStencil ? WebGPUConstants.LoadOp.Clear : WebGPUConstants.LoadOp.Load;
         this._mainRenderPassWrapper.renderPassDescriptor!.occlusionQuerySet = this._occlusionQuery?.hasQueries ? this._occlusionQuery.querySet : undefined;
 
         this._swapChainTexture = this._context.getCurrentTexture();
@@ -2521,10 +2532,10 @@ export class WebGPUEngine extends Engine {
 
         // Resolve in case of MSAA
         if (this._options.antialiasing) {
-            this._mainRenderPassWrapper.renderPassDescriptor!.colorAttachments[0].resolveTarget = this._swapChainTexture.createView();
+            this._mainRenderPassWrapper.renderPassDescriptor!.colorAttachments[0]!.resolveTarget = this._swapChainTexture.createView();
         }
         else {
-            this._mainRenderPassWrapper.renderPassDescriptor!.colorAttachments[0].view = this._swapChainTexture.createView();
+            this._mainRenderPassWrapper.renderPassDescriptor!.colorAttachments[0]!.view = this._swapChainTexture.createView();
         }
 
         if (this.dbgVerboseLogsForFirstFrames) {
@@ -2559,7 +2570,7 @@ export class WebGPUEngine extends Engine {
                 this._bundleList.run(this._mainRenderPassWrapper.renderPass);
                 this._bundleList.reset();
             }
-            this._mainRenderPassWrapper.renderPass.endPass();
+            this._mainRenderPassWrapper.renderPass.end();
             if (this.dbgVerboseLogsForFirstFrames) {
                 if ((this as any)._count === undefined) { (this as any)._count = 0; }
                 if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {

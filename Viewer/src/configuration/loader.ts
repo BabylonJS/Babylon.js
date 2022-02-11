@@ -1,5 +1,5 @@
 import { RenderOnlyConfigurationLoader } from "./renderOnlyLoader";
-import { getConfigurationType } from "./types";
+import { getConfigurationType } from "./types/index";
 
 export class ConfigurationLoader extends RenderOnlyConfigurationLoader {
     protected getExtendedConfig(type: string | undefined) {

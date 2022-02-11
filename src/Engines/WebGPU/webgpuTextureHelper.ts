@@ -1035,7 +1035,7 @@ export class WebGPUTextureHelper {
                     arrayLayerCount: 1,
                     baseArrayLayer: 0,
                 }),
-                loadValue: WebGPUConstants.LoadOp.Load,
+                loadOp: WebGPUConstants.LoadOp.Load,
                 storeOp: WebGPUConstants.StoreOp.Store,
             }],
         };
@@ -1071,7 +1071,7 @@ export class WebGPUTextureHelper {
         passEncoder.setPipeline(pipeline);
         passEncoder.setBindGroup(0, bindGroup);
         passEncoder.draw(4, 1, 0, 0);
-        passEncoder.endPass();
+        passEncoder.end();
 
         commandEncoder!.copyTextureToTexture({
             texture: outputTexture,
@@ -1133,7 +1133,7 @@ export class WebGPUTextureHelper {
         passEncoder.setPipeline(pipeline);
         passEncoder.setBindGroup(0, bindGroup);
         passEncoder.draw(4, 1, 0, 0);
-        passEncoder.endPass();
+        passEncoder.end();
 
         commandEncoder!.popDebugGroup?.();
 
@@ -1295,7 +1295,7 @@ export class WebGPUTextureHelper {
                         arrayLayerCount: 1,
                         baseArrayLayer: faceIndex,
                     }),
-                    loadValue: WebGPUConstants.LoadOp.Load,
+                    loadOp: WebGPUConstants.LoadOp.Load,
                     storeOp: WebGPUConstants.StoreOp.Store,
                 }],
             };
@@ -1330,7 +1330,7 @@ export class WebGPUTextureHelper {
             passEncoder.setPipeline(pipeline);
             passEncoder.setBindGroup(0, bindGroup);
             passEncoder.draw(4, 1, 0, 0);
-            passEncoder.endPass();
+            passEncoder.end();
         }
 
         commandEncoder!.popDebugGroup?.();
