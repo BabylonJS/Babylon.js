@@ -145,7 +145,6 @@ function createMultiviewUbo(engine: Engine, name?: string) {
     ubo.addUniform("viewProjectionR", 16);
     ubo.addUniform("view", 16);
     ubo.addUniform("projection", 16);
-    ubo.addUniform("viewPosition", 4);
     ubo.addUniform("vEyePosition", 4);
     return ubo;
 }

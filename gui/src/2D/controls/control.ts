@@ -1124,6 +1124,9 @@ export class Control {
         this._markAsDirty();
         // if this control or any of it's descendants are under a pointer, we need to fire a pointerOut event
         const recursivelyFirePointerOut = (control: Control) => {
+            if (!control.host) {
+                return;
+            }
             for (const pointer in control.host._lastControlOver) {
                 if (control === this.host._lastControlOver[pointer]) {
                     control._onPointerOut(control, null, true);
@@ -1216,14 +1219,14 @@ export class Control {
      * Mark control element as dirty
      * @param force force non visible elements to be marked too
      */
-    public markAsDirty(force: false) : void {
+    public markAsDirty(force: false): void {
         this._markAsDirty(force);
     }
 
     /**
      * Mark the element and its children as dirty
      */
-    public markAllAsDirty() : void {
+    public markAllAsDirty(): void {
         this._markAllAsDirty();
     }
 

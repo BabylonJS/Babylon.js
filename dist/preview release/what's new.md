@@ -12,7 +12,7 @@
 - Added vertex animation textures with `BakedVertexAnimationManager` ([brunobg](https://github.com/brunobg), [Popov72](https://github.com/Popov72), [raggar](https://github.com/raggar))
 - Added `MaterialPluginManager` ([brunobg](https://github.com/brunobg), [Popov72](https://github.com/Popov72))
 - Official support of WebGPU ([Popov72](https://github.com/Popov72))
-- Enabled Performance Profiler ([carolhmj](https://github.com/carolhmj))
+- Added Performance Profiler to allow tracking of Performance metrics ([carolhmj](https://github.com/carolhmj))
 
 ## Updates
 
@@ -104,6 +104,7 @@
 - Added support for `KHR_materials_emissive_strength` for glTF loader. ([sebavan](https://github.com/sebavan))
 - Added support for normalized attributes ([#11685](https://github.com/BabylonJS/Babylon.js/issues/11685)) ([RaananW](https://github.com/RaananW))
 - Added fallback error logging on mesh loading tasks if no error handler is defined. ([carolhmj](https://github.com/carolhmj))
+- Updated the glTF loader to place the skinned mesh as a sibling of the skeleton root node instead of using `skeleton.overrideMesh`. ([bghgary](https://github.com/bghgary))
 
 ### Navigation
 
@@ -129,6 +130,7 @@
 
 ### Meshes
 
+- Added public version of `AbstractMesh` function _getPositionData. ([BlakeOne](https://github.com/BlakeOne))
 - Added default options parameter to Create functions. ([BlakeOne](https://github.com/BlakeOne))
 - `LineMesh` now allows assigning custom material via `material` setter. ([FullStackForger](https://github.com/FullStackForger)
 - `InstancedMesh` can now be sorted from back to front before rendering if the material is transparent ([Popov72](https://github.com/Popov72))
@@ -150,13 +152,7 @@
 - When user hits the "New Key" button on ACE but a key already exists on that frame, update existing frame's values instead of creating a new one. ([carolhmj](https://github.com/carolhmj))
 - Added live connection to GUI editor ([darraghjburke](https://github.com/darraghjburke))
 - Add `getAlphaFromRGB` checkbox on Texture view ([carolhmj](https://github.com/carolhmj))
-- When a perf profiler metric is constant, draw it on the middle of the canvas instead of on the top ([carolhmj](https://github.com/carolhmj))
-- Add a low pass filter on the performance graphs ([carolhmj](https://github.com/carolhmj))
-- Deselect keys with right-click on ACE ([carolhmj](https://github.com/carolhmj))
-- Let users edit multiple ACE key frame/values at the same time ([carolhmj](https://github.com/carolhmj))
-- Set default tangents for new keys on ACE and fix their behavior ([carolhmj](https://github.com/carolhmj))
-- Let the playhead move past the last animation key on ACE ([carolhmj](https://github.com/carolhmj))
-- Improve zooming on ACE ([carolhmj](https://github.com/carolhmj))
+
 
 ### Playground
 
@@ -440,3 +436,8 @@
 - `ShaderMaterial` is now storing the effect on submeshes by default. It may be a breaking change in some special cases where one creates a `ShaderMaterial` not to be used as the material property of a mesh but instead to handle it "by hand" by calling `ShaderMaterial.isReady` / `ShaderMaterial.bind` directly. If you are doing that, you may want to pass `false` as the 5th parameter of the `ShaderMaterial` constructor to disable storing the effect on submeshes.
 - The `glTFLoader.rootBabylonMesh` getter now has a nullable return type (glTF files without mesh data) ([simonihmig](https://github.com/simonihmig))
 - When updating the `m` array of the `Matrix` class directly, you must call `markAsUpdated()` explicitly or the matrix changes may not take effect ([Popov72](https://github.com/Popov72), [Deltakosh](https://github.com/deltakosh), [bghgary](https://github.com/bghgary), [Sebavan](https://github.com/sebavan))
+- Loading glTF assets with skins now places skinned meshes as siblings of the corresponding skeleton root nodes instead of using `skeleton.overrideMesh`. ([bghgary](https://github.com/bghgary))
+- The `overrideMesh` of the `Skeleton` class has been removed. ([bghgary](https://github.com/bghgary))
+- Cloning a mesh now copies skeletons. ([bghgary](https://github.com/bghgary))
+- Cloning and creating instances of a mesh now refreshes the bounding box applying skins and morph targets. ([bghgary](https://github.com/bghgary))
+- `KeyboardInfoPre.skipOnPointerObservable` is now correctly renamed to `KeyboardInfoPre.skipOnKeyboardObservable`. ([bghgary](https://github.com/bghgary))

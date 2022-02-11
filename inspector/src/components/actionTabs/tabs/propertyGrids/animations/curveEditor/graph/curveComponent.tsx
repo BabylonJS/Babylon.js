@@ -1,7 +1,7 @@
 import { Observer } from "babylonjs/Misc/observable";
 import { Nullable } from "babylonjs/types";
 import * as React from "react";
-import { Context } from "../context";
+import { Context, IActiveAnimationChangedOptions } from "../context";
 import { Curve } from "./curve";
 import { AnimationKeyInterpolation } from "babylonjs/Animations/animationKey";
 
@@ -18,7 +18,7 @@ interface ICurveComponentState {
 
 export class CurveComponent extends React.Component<ICurveComponentProps, ICurveComponentState> {
     private _onDataUpdatedObserver: Nullable<Observer<void>>;
-    private _onActiveAnimationChangedObserver: Nullable<Observer<void>>;
+    private _onActiveAnimationChangedObserver: Nullable<Observer<IActiveAnimationChangedOptions>>;
     private _onInterpolationModeSetObserver: Nullable<Observer<{ keyId: number; value: AnimationKeyInterpolation }>>;
 
     constructor(props: ICurveComponentProps) {
