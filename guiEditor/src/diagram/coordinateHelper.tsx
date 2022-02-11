@@ -1,4 +1,4 @@
-import { ValueAndUnit } from "babylonjs-gui";
+import { ValueAndUnit } from "babylonjs-gui/2D/valueAndUnit";
 import { Control } from "babylonjs-gui/2D/controls/control";
 import { Grid } from "babylonjs-gui/2D/controls/grid";
 import { Rectangle } from "babylonjs-gui/2D/controls/rectangle";
