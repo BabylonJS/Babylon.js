@@ -73,7 +73,7 @@
         "gulp-typedoc": "^2.2.5",
         "gulp-typescript": "4.0.2",
         "jest": "^26.6.3",
-        "karma": "^5.0.9",
+        "karma": "^6.3.14",
         "karma-browserstack-launcher": "^1.6.0",
         "karma-chai": "^0.1.0",
         "karma-chrome-launcher": "^3.1.0",
