@@ -86,7 +86,7 @@
         "mocha": "^7.2.0",
         "monaco-editor": "^0.27.0",
         "monaco-editor-webpack-plugin": "^4.2.0",
-        "node-sass": "6.0.1",
+        "node-sass": "7.0.0",
         "plugin-error": "^1.0.1",
         "prompt": "^1.2.1",
         "re-resizable": "~4.9.1",
