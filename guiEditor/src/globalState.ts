@@ -9,7 +9,6 @@ import { PropertyChangedEvent } from "./sharedUiComponents/propertyChangedEvent"
 import { Scene } from "babylonjs/scene";
 import { Control } from "babylonjs-gui/2D/controls/control";
 import { LockObject } from "./sharedUiComponents/tabs/propertyGrids/lockObject";
-import { GuiGizmoComponent } from "./diagram/guiGizmo";
 import { ISize } from "babylonjs/Maths/math";
 import { CoordinateHelper } from "./diagram/coordinateHelper";
 
@@ -44,14 +43,12 @@ export class GlobalState {
     controlCamera: boolean;
     selectionLock: boolean;
     workbench: WorkbenchComponent;
-    guiGizmo: GuiGizmoComponent;
     onPropertyChangedObservable = new Observable<PropertyChangedEvent>();
 
     onZoomObservable = new Observable<void>();
     onFitToWindowObservable = new Observable<void>();
     onPanObservable = new Observable<void>();
     onSelectionButtonObservable = new Observable<void>();
-    onMoveObservable = new Observable<void>();
     onLoadObservable = new Observable<File>();
     onSaveObservable = new Observable<void>();
     onSnippetLoadObservable = new Observable<void>();
@@ -66,6 +63,8 @@ export class GlobalState {
     onGizmoUpdateRequireObservable = new Observable<void>();
     onArtBoardUpdateRequiredObservable = new Observable<void>();
     onBackgroundColorChangeObservable = new Observable<void>();
+    onPointerMoveObservable = new Observable<React.PointerEvent<HTMLCanvasElement>>();
+    onPointerUpObservable = new Observable<Nullable<React.PointerEvent<HTMLCanvasElement> | PointerEvent>>();
     draggedControl: Nullable<Control> = null;
     draggedControlDirection: DragOverLocation;
     isSaving = false;
