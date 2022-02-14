@@ -65,7 +65,7 @@ export class Animation {
     /**
      * Stores the easing function of the animation
      */
-    private _easingFunction: IEasingFunction;
+    private _easingFunction: Nullable<IEasingFunction>;
 
     /**
      * @hidden Internal use only
@@ -669,7 +669,7 @@ export class Animation {
      * Gets the easing function of the animation
      * @returns Easing function of the animation
      */
-    public getEasingFunction(): IEasingFunction {
+    public getEasingFunction(): Nullable<IEasingFunction> {
         return this._easingFunction;
     }
 
@@ -677,7 +677,7 @@ export class Animation {
      * Sets the easing function of the animation
      * @param easingFunction A custom mathematical formula for animation
      */
-    public setEasingFunction(easingFunction: IEasingFunction): void {
+    public setEasingFunction(easingFunction: Nullable<IEasingFunction>): void {
         this._easingFunction = easingFunction;
     }
 

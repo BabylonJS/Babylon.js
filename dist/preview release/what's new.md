@@ -72,9 +72,10 @@
 - Modified touch in `WebDeviceInputSystem` to no longer delete touch points after pointer up. ([PolygonalSun](https://github.com/PolygonalSun))
 - Added support for DualSense controllers to DeviceInputSystem. ([PolygonalSun](https://github.com/PolygonalSun))
 - Added `getCreationOptions` on `ThinEngine`. ([carolhmj](https://github.com/carolhmj))
+- It is now possible to clear the easing function of an animation ([Deltakosh](https://github.com/deltakosh))
 
 ### Engine
-
+ 
 - Moved all instance data from `Geometry` to `Mesh` such that the same `Geometry` object can be used by many meshes with instancing. Reduces memory consumption on CPU/GPU. ([breakin](https://github.com/breakin)
 - Added `NativeEngine` configuration object parameter. ([drigax](https://github.com/drigax))
 - Added `NativeEngine` support for signed byte and unsigned short vertex buffer attribute types ([Alex-MSFT](https://github.com/Alex-MSFT))
