@@ -206,6 +206,10 @@ declare module "babylonjs-loaders/glTF/glTFFileLoader" {
          */
         useSRGBBuffers: boolean;
         /**
+         * When loading glTF animations, which are defined in seconds, target them to this FPS.
+         */
+        targetFps: number;
+        /**
         * Function called before loading a url referenced by the asset.
         */
         preprocessUrlAsync: (url: string) => Promise<string>;
@@ -3351,6 +3355,10 @@ declare module BABYLON {
          * If true, load the color (gamma encoded) textures into sRGB buffers (if supported by the GPU), which will yield more accurate results when sampling the texture. Defaults to true.
          */
         useSRGBBuffers: boolean;
+        /**
+         * When loading glTF animations, which are defined in seconds, target them to this FPS.
+         */
+        targetFps: number;
         /**
         * Function called before loading a url referenced by the asset.
         */
