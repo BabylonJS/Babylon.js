@@ -6,12 +6,15 @@ import { DataStorage } from "babylonjs/Misc/dataStorage";
 import { Image } from "babylonjs-gui/2D/controls/image";
 import { TextBlock } from "babylonjs-gui/2D/controls/textBlock";
 import { CoordinateHelper, Rect } from './coordinateHelper';
+import { Observer } from "babylonjs/Misc/observable";
+import { Nullable } from "babylonjs/types";
 
 require("./workbenchCanvas.scss");
 const gizmoPivotIcon: string = require("../../public/imgs/gizmoPivotIcon.svg");
 
 export interface IGuiGizmoProps {
     globalState: GlobalState;
+    control: Control;
 }
 
 // which side of the bounding box are we on?
@@ -31,8 +34,6 @@ interface IScalePoint {
     rotation: number;
     isPivot: boolean;
 }
-
-
 
 interface IGuiGizmoState {
     canvasBounds: Rect;
@@ -79,12 +80,16 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
     private _rotation: {
         pivot: Vector2
         initialAngleToPivot: number,
-        nodeRotations: number[]
     }
+
+    // private _selectionChangedObserver: Nullable<Observer<Nullable<Control>>>;
+    private _responsiveChangedObserver: Nullable<Observer<boolean>>;
+    private _gizmoUpdateObserver: Nullable<Observer<void>>;
+    private _pointerUpObserver: Nullable<Observer<Nullable<React.PointerEvent<HTMLCanvasElement> | PointerEvent>>>;
+    private _pointerMoveObserver: Nullable<Observer<React.PointerEvent<HTMLCanvasElement>>>;
 
     constructor(props: IGuiGizmoProps) {
         super(props);
-        this.props.globalState.guiGizmo = this;
         this._responsive = DataStorage.ReadBoolean("Responsive", true);
 
         const scalePoints: IScalePoint[] = [];
@@ -104,131 +109,94 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
             isRotating: false
         };
 
-        props.globalState.onSelectionChangedObservable.add((selection) => {
-            this.updateGizmo(true);
-        });
-
-        this.props.globalState.onResponsiveChangeObservable.add((value) => {
+        this._responsiveChangedObserver = this.props.globalState.onResponsiveChangeObservable.add((value) => {
             this._responsive = value;
         });
 
-        this.props.globalState.onGizmoUpdateRequireObservable.add(() => {
+        this._gizmoUpdateObserver = this.props.globalState.onGizmoUpdateRequireObservable.add(() => {
             this.updateGizmo(true);
         });
+
+        this._pointerUpObserver = this.props.globalState.onPointerUpObservable.add(evt => this._onUp(evt));
+        this._pointerMoveObserver = this.props.globalState.onPointerMoveObservable.add(evt => this._onMove());
 
         this.updateGizmo(true);
     }
 
-    componentDidMount() {}
+    componentWillUnmount() {
+        this.props.globalState.onResponsiveChangeObservable.remove(this._responsiveChangedObserver);
+        this.props.globalState.onGizmoUpdateRequireObservable.remove(this._gizmoUpdateObserver);
+        this.props.globalState.onPointerUpObservable.remove(this._pointerUpObserver);
+        this.props.globalState.onPointerMoveObservable.remove(this._pointerMoveObserver);
+    }
 
     /**
      * Update the gizmo's positions
      * @param force should the update be forced. otherwise it will be updated only when the pointer is down
      */
     updateGizmo(force?: boolean) {
-        const selectedGuiNodes = this.props.globalState.workbench.selectedGuiNodes;
-        if (selectedGuiNodes.length > 0 && (force || this.state.scalePointDragging !== -1)) {
-            // Calculating the offsets for each scale point.
-            const half = 1 / 2;
-            const canvasBounds = new Rect(Number.MAX_VALUE, Number.MAX_VALUE, 0, 0);
-            selectedGuiNodes.forEach((node) => {
-                const localBounds = CoordinateHelper.computeLocalBounds(node);
-                this.state.scalePoints.forEach((scalePoint) => {
-                    let nodeSpace = new Vector2();
-                    switch (scalePoint.horizontalPosition) {
-                        case ScalePointPosition.Left:
-                            nodeSpace.x = localBounds.left;
-                            break;
-                        case ScalePointPosition.Center:
-                            nodeSpace.x = localBounds.center.x;
-                            break;
-                        case ScalePointPosition.Right:
-                            nodeSpace.x = localBounds.right;
-                            break;
-                    }
-                    switch (scalePoint.verticalPosition) {
-                        case ScalePointPosition.Top:
-                            nodeSpace.y = localBounds.top;
-                            break;
-                        case ScalePointPosition.Center:
-                            nodeSpace.y = localBounds.center.y;
-                            break;
-                        case ScalePointPosition.Bottom:
-                            nodeSpace.y = localBounds.bottom;
-                            break;
-                    }
-                    if (scalePoint.isPivot) {
-                        // Calculate the pivot point
-                        const pivotX = (node.transformCenterX - 0.5) * 2;
-                        const pivotY = (node.transformCenterY - 0.5) * 2;
-                        nodeSpace.x = node.widthInPixels * half * pivotX;
-                        nodeSpace.y = node.heightInPixels * half * pivotY;
-                    }
-                    const rtt = CoordinateHelper.nodeToRTTSpace(node, nodeSpace.x, nodeSpace.y, undefined);
-                    const canvas = CoordinateHelper.rttToCanvasSpace(rtt.x, rtt.y);
-                    if (canvas.x < canvasBounds.left) {
-                        canvasBounds.left = canvas.x;
-                    }
-                    if (canvas.x > canvasBounds.right) {
-                        canvasBounds.right = canvas.x;
-                    }
-                    if (canvas.y < canvasBounds.top) {
-                        canvasBounds.top = canvas.y;
-                    }
-                    if (canvas.y > canvasBounds.bottom) {
-                        canvasBounds.bottom = canvas.y;
-                    }
-                    // if we have a single control selected, put scale points at its edges, and rotate based on the rotation of the control
-                    if (selectedGuiNodes.length === 1) {
-                        scalePoint.position.x = canvas.x;
-                        scalePoint.position.y = canvas.y;
-                        scalePoint.rotation = CoordinateHelper.getRotation(node) * (180 / Math.PI);
-                    }
-                });
-            });
-            // if we are in multiselect mode, use the bounds to determine the scale point locations, and set rotation = 0
-            if (selectedGuiNodes.length > 1) {
-                this.state.scalePoints.forEach((scalePoint) => {
-                    switch (scalePoint.verticalPosition) {
-                        case ScalePointPosition.Top:
-                            scalePoint.position.y = canvasBounds.top;
-                            break;
-                        case ScalePointPosition.Center:
-                            scalePoint.position.y = canvasBounds.center.y;
-                            break;
-                        case ScalePointPosition.Bottom:
-                            scalePoint.position.y = canvasBounds.bottom;
-                            break;
-                    }
-                    switch (scalePoint.horizontalPosition) {
-                        case ScalePointPosition.Left:
-                            scalePoint.position.x = canvasBounds.left;
-                            break;
-                        case ScalePointPosition.Center:
-                            scalePoint.position.x = canvasBounds.center.x;
-                            break;
-                        case ScalePointPosition.Right:
-                            scalePoint.position.x = canvasBounds.right;
-                            break;
-                    }
-                    scalePoint.rotation = 0;
-                });
+        const node = this.props.control;
+        // Calculating the offsets for each scale point.
+        const half = 1 / 2;
+        const canvasBounds = new Rect(Number.MAX_VALUE, Number.MAX_VALUE, 0, 0);
+        const localBounds = CoordinateHelper.computeLocalBounds(node);
+        this.state.scalePoints.forEach((scalePoint) => {
+            let nodeSpace = new Vector2();
+            switch (scalePoint.horizontalPosition) {
+                case ScalePointPosition.Left:
+                    nodeSpace.x = localBounds.left;
+                    break;
+                case ScalePointPosition.Center:
+                    nodeSpace.x = localBounds.center.x;
+                    break;
+                case ScalePointPosition.Right:
+                    nodeSpace.x = localBounds.right;
+                    break;
             }
-            this.setState({
-                canvasBounds,
-                scalePoints: [...this.state.scalePoints],
-            });
-        }
-        else {
-            this.forceUpdate();
-        }
+            switch (scalePoint.verticalPosition) {
+                case ScalePointPosition.Top:
+                    nodeSpace.y = localBounds.top;
+                    break;
+                case ScalePointPosition.Center:
+                    nodeSpace.y = localBounds.center.y;
+                    break;
+                case ScalePointPosition.Bottom:
+                    nodeSpace.y = localBounds.bottom;
+                    break;
+            }
+            if (scalePoint.isPivot) {
+                // Calculate the pivot point
+                const pivotX = (node.transformCenterX - 0.5) * 2;
+                const pivotY = (node.transformCenterY - 0.5) * 2;
+                nodeSpace.x = node.widthInPixels * half * pivotX;
+                nodeSpace.y = node.heightInPixels * half * pivotY;
+            }
+            const rtt = CoordinateHelper.nodeToRTTSpace(node, nodeSpace.x, nodeSpace.y, undefined);
+            const canvas = CoordinateHelper.rttToCanvasSpace(rtt.x, rtt.y);
+            if (canvas.x < canvasBounds.left) {
+                canvasBounds.left = canvas.x;
+            }
+            if (canvas.x > canvasBounds.right) {
+                canvasBounds.right = canvas.x;
+            }
+            if (canvas.y < canvasBounds.top) {
+                canvasBounds.top = canvas.y;
+            }
+            if (canvas.y > canvasBounds.bottom) {
+                canvasBounds.bottom = canvas.y;
+            }
+            // if we have a single control selected, put scale points at its edges, and rotate based on the rotation of the control
+                scalePoint.position.x = canvas.x;
+                scalePoint.position.y = canvas.y;
+                scalePoint.rotation = CoordinateHelper.getRotation(node) * (180 / Math.PI);
+        });
+        this.setState({
+            canvasBounds,
+            scalePoints: [...this.state.scalePoints],
+        });
     }
 
-    public onUp(evt?: React.PointerEvent) {
-        this._onUp(evt);
-    }
-
-    private _onUp = (evt?: React.PointerEvent | PointerEvent) => {
+    private _onUp = (evt?: React.PointerEvent | PointerEvent | null) => {
         // if left is still pressed, don't release
         if (evt && (evt.buttons & 1)) {
             return;
@@ -237,33 +205,27 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
         this.setState({ scalePointDragging: -1, isRotating: false });
     };
 
-    public onMove(evt: React.PointerEvent) {
-        this._onMove();
-    }
     private _onMove = () => {
         const scene = this.props.globalState.workbench._scene;
-        const selectedGuiNodes = this.props.globalState.workbench.selectedGuiNodes;
         if (this.state.scalePointDragging !== -1) {
-            if (selectedGuiNodes.length === 1) {
-                const node = selectedGuiNodes[0];
-                const inRTT = CoordinateHelper.mousePointerToRTTSpace(node, scene.pointerX, scene.pointerY);
-                const inNodeSpace = CoordinateHelper.rttToLocalNodeSpace(node, inRTT.x, inRTT.y, undefined, this._storedValues);
-                this._dragLocalBounds(inNodeSpace);
-                this._updateNodeFromLocalBounds(node, this.state.scalePointDragging);
-                //convert to percentage
-                if (this._responsive) {
-                    this.props.globalState.workbench.convertToPercentage(node, false);
-                }
-                this.props.globalState.workbench._liveGuiTextureRerender = false;
-                this.props.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
+            const node = this.props.control;
+            const inRTT = CoordinateHelper.mousePointerToRTTSpace(node, scene.pointerX, scene.pointerY);
+            const inNodeSpace = CoordinateHelper.rttToLocalNodeSpace(node, inRTT.x, inRTT.y, undefined, this._storedValues);
+            this._dragLocalBounds(inNodeSpace);
+            this._updateNodeFromLocalBounds(node, this.state.scalePointDragging);
+            //convert to percentage
+            if (this._responsive) {
+                this.props.globalState.workbench.convertToPercentage(node, false);
             }
+            this.props.globalState.workbench._liveGuiTextureRerender = false;
+            this.props.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
         }
         if (this.state.isRotating) {
-            selectedGuiNodes.forEach((node, index) => {
-                const nodeRotationData = this._rotation.nodeRotations[index];
-                const angle = Math.atan2(scene.pointerY - this._rotation.pivot.y, scene.pointerX - this._rotation.pivot.x);
-                node.rotation = nodeRotationData + (angle - this._rotation.initialAngleToPivot);
-            })
+            const angle = Math.atan2(scene.pointerY - this._rotation.pivot.y, scene.pointerX - this._rotation.pivot.x);
+            for(const control of this.props.globalState.workbench.selectedGuiNodes) {
+                control.rotation += (angle - this._rotation.initialAngleToPivot);
+            }
+            this._rotation.initialAngleToPivot = angle;
             this.props.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
         }
     };
@@ -335,6 +297,7 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
 
         // rotate the center around 0,0
         const rotatedCenter = this._rotate(center.x, center.y, 0, 0, localRotation);
+        const old = {left: node._left, top: node._top, width: node._width, height: node._height};
         // round the values and set them
         node.leftInPixels = round(this._storedValues.left + rotatedCenter.x);
         node.topInPixels = round(this._storedValues.top + rotatedCenter.y);
@@ -346,44 +309,27 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
         } else if (node.typeName === "TextBlock") {
             (node as TextBlock).resizeToFit = false;
         }
-
-        if (this._responsive) {
-            this.props.globalState.workbench.convertToPercentage(node, true);
-        }
     }
 
     private _beginDraggingScalePoint = (scalePointIndex: number) => {
-        const selectedGuiNodes = this.props.globalState.workbench.selectedGuiNodes;
         this.setState({ scalePointDragging: scalePointIndex });
-        if (selectedGuiNodes.length > 0) {
-            const node = selectedGuiNodes[0];
-            this._localBounds = CoordinateHelper.computeLocalBounds(node);
-            this._storedValues = new Rect(node.leftInPixels, node.topInPixels, node.leftInPixels + node.widthInPixels, node.topInPixels + node.heightInPixels);
-        }
+        const node = this.props.control;
+        this._localBounds = CoordinateHelper.computeLocalBounds(node);
+        this._storedValues = new Rect(node.leftInPixels, node.topInPixels, node.leftInPixels + node.widthInPixels, node.topInPixels + node.heightInPixels);
     };
 
     private _beginRotate = () => {
         const scene = this.props.globalState.workbench._scene;
-        const selectedGuiNodes = this.props.globalState.workbench.selectedGuiNodes;
         let pivot: Vector2;
-        if (selectedGuiNodes.length === 1) {
-            const node = selectedGuiNodes[0];
-            const nodeSpace = new Vector2(node.transformCenterX, node.transformCenterY);
-            const rtt = CoordinateHelper.nodeToRTTSpace(node, nodeSpace.x, nodeSpace.y, undefined);
-            const canvas = CoordinateHelper.rttToCanvasSpace(rtt.x, rtt.y);
-            pivot = new Vector2(canvas.x, canvas.y);
-        } else {
-            pivot = this.state.canvasBounds.center;
-        }
+        const node = this.props.control;
+        const nodeSpace = new Vector2(node.transformCenterX, node.transformCenterY);
+        const rtt = CoordinateHelper.nodeToRTTSpace(node, nodeSpace.x, nodeSpace.y, undefined);
+        const canvas = CoordinateHelper.rttToCanvasSpace(rtt.x, rtt.y);
+        pivot = new Vector2(canvas.x, canvas.y);
         const initialAngleToPivot = Math.atan2(scene.pointerY - pivot.y, scene.pointerX - pivot.x);
-        const nodeRotations : number[] = [];
-        selectedGuiNodes.forEach(node => {
-            nodeRotations.push(node.rotation)
-        })
         this._rotation = {
             pivot,
             initialAngleToPivot,
-            nodeRotations
         }
         this.setState({isRotating: true});
     }
@@ -421,9 +367,6 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
                         pointerEvents: this.state.scalePointDragging === -1 && !scalePoint.isPivot && !this.state.isRotating ? "auto" : "none",
                     };
                     if (scalePoint.isPivot) {
-                        if (this.props.globalState.workbench.selectedGuiNodes.length > 1) {
-                            return null;
-                        }
                         return <img className="pivot-point" src={gizmoPivotIcon} style={style} key={index} />;
                     }
                     // compute which cursor icon to use on hover
