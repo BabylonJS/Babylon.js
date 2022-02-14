@@ -11,13 +11,14 @@ export const conflictingValuesPlaceholder = "—";
  * @param setter an optional setter function to override the default setter behavior
  * @returns a proxy object that can be passed as a target into the input
  */
-export function makeTargetsProxy(targets: any[], onPropertyChangedObservable?: Observable<PropertyChangedEvent>) {
+export function makeTargetsProxy<Type>(targets: Type[], onPropertyChangedObservable?: Observable<PropertyChangedEvent>, getProperty: (target: Type, property: keyof Type) => any = (target, property) => target[property]) {
     return new Proxy({}, {
         get(_, name) {
+            const property = name as keyof Type;
             if (targets.length === 0) return conflictingValuesPlaceholder;
-            const firstValue = targets[0][name];
+            const firstValue = getProperty(targets[0], property);
             for (const target of targets) {
-                if (target[name] !== firstValue) {
+                if (getProperty(target, property) !== firstValue) {
                     return conflictingValuesPlaceholder;
                 }
             }
@@ -25,19 +26,20 @@ export function makeTargetsProxy(targets: any[], onPropertyChangedObservable?: O
         },
         set(_, name, value) {
             if (value === "—") return true;
+            const property = name as keyof Type;
             for(const target of targets) {
-                const initialValue = target[name];
-                target[name] = value;
+                const initialValue = target[property];
+                target[property] = value;
                 if (onPropertyChangedObservable) {
                     onPropertyChangedObservable.notifyObservers({
                         object: target,
                         property: name as string,
-                        value: target[name],
+                        value: target[property],
                         initialValue
                     });
                 }
             }
             return true;
         }
-    })
+    }) as any;
 }
