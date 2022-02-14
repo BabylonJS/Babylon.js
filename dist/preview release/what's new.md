@@ -441,3 +441,4 @@
 - Cloning a mesh now copies skeletons. ([bghgary](https://github.com/bghgary))
 - Cloning and creating instances of a mesh now refreshes the bounding box applying skins and morph targets. ([bghgary](https://github.com/bghgary))
 - `KeyboardInfoPre.skipOnPointerObservable` is now correctly renamed to `KeyboardInfoPre.skipOnKeyboardObservable`. ([bghgary](https://github.com/bghgary))
+- GLTF Animations are loaded at 60 FPS by default. ([carolhmj](https://github.com/carolhmj))
