@@ -17,7 +17,7 @@ import { DataBuffer } from "../Buffers/dataBuffer";
 import { extractMinAndMax } from "../Maths/math.functions";
 import { AbstractScene } from "../abstractScene";
 import { EngineStore } from "../Engines/engineStore";
-import { CompatibilityOptions } from "../Compat/CompatibilityOptions";
+import { CompatibilityOptions } from "../Compat/compatibilityOptions";
 
 declare type Mesh = import("../Meshes/mesh").Mesh;
 

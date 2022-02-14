@@ -7,7 +7,7 @@ import { PolygonMeshBuilder } from "../polygonMesh";
 import { FloatArray, IndicesArray, Nullable } from "../../types";
 import { VertexBuffer } from "../../Buffers/buffer";
 import { EngineStore } from '../../Engines/engineStore';
-import { CompatibilityOptions } from "../../Compat/CompatibilityOptions";
+import { CompatibilityOptions } from "../../Compat/compatibilityOptions";
 
 declare var earcut: any;
 
