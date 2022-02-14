@@ -65,7 +65,7 @@ export class Animation {
     /**
      * Stores the easing function of the animation
      */
-    private _easingFunction: Nullable<IEasingFunction>;
+    private _easingFunction: Nullable<IEasingFunction> = null;
 
     /**
      * @hidden Internal use only
