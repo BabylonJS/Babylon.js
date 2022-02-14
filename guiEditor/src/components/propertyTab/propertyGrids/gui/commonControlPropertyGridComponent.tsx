@@ -15,6 +15,7 @@ import { CheckBoxLineComponent } from "../../../../sharedUiComponents/lines/chec
 import { ValueAndUnit } from "babylonjs-gui/2D/valueAndUnit";
 import { ColorLineComponent } from "../../../../sharedUiComponents/lines/colorLineComponent";
 import { makeTargetsProxy, conflictingValuesPlaceholder } from "../../../../sharedUiComponents/lines/targetsProxy";
+import { CoordinateHelper, DimensionProperties } from "../../../../diagram/coordinateHelper";
 
 const sizeIcon: string = require("../../../../sharedUiComponents/imgs/sizeIcon.svg");
 const verticalMarginIcon: string = require("../../../../sharedUiComponents/imgs/verticalMarginIcon.svg");
@@ -47,9 +48,9 @@ interface ICommonControlPropertyGridComponentProps {
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
 
+type ControlProperty = keyof Control | "_paddingLeft" | "_paddingRight" | "_paddingTop" | "_paddingBottom";
+
 export class CommonControlPropertyGridComponent extends React.Component<ICommonControlPropertyGridComponentProps> {
-    private _width : string | number = 0;
-    private _height : string | number = 0;
 
     constructor(props: ICommonControlPropertyGridComponentProps) {
         super(props);
@@ -123,22 +124,53 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
             horizontalAlignment = (firstControl as TextBlock).textHorizontalAlignment;
             verticalAlignment = (firstControl as TextBlock).textVerticalAlignment;
         }
-        this._width = firstControl.width;
-        this._height = firstControl.height;
-        for (const control of controls) {
-            if (control.width !== this._width) {
-                this._width = conflictingValuesPlaceholder;
-            }
-            if (control.height !== this._height) {
-                this._height = conflictingValuesPlaceholder;
-            }
-        }
 
         const showTextProperties = (firstControl instanceof Container || firstControl.typeName === "TextBlock");
 
+        const proxy = makeTargetsProxy(controls, this.props.onPropertyChangedObservable);
+        const getValue = (propertyName: ControlProperty) => {
+            const values = (controls.map(control => control[propertyName]._value));
+            const firstValue = values[0];
+            if (values.every((value: any) => value === firstValue)) {
+                const units = getUnitString(propertyName);
+                if (units === "%") {
+                    return (firstValue * 100).toFixed(2);
+                } else if (units === "PX") {
+                    return firstValue.toFixed(2);
+                } else {
+                    return conflictingValuesPlaceholder;
+                }
+            } else {
+                return conflictingValuesPlaceholder;
+            }
+        };
+        const getUnitString = (propertyName: ControlProperty) => {
+            const units = (controls.map(control => control[propertyName]._unit));
+            const firstUnit = units[0];
+            if (units.every((unit: any) => unit === firstUnit)) {
+                if (firstUnit === ValueAndUnit.UNITMODE_PIXEL) {
+                    return "PX";
+                } else {
+                    return "%";
+                }
+            } else {
+                return conflictingValuesPlaceholder;
+            }
+        };
+        const convertUnits = (unit: string, property: DimensionProperties) => {
+            for(const control of controls) {
+                if (unit === "PX") {
+                    CoordinateHelper.convertToPercentage(control, [property], this.props.onPropertyChangedObservable);
+                } else {
+                    CoordinateHelper.convertToPixels(control, [property], this.props.onPropertyChangedObservable);
+                }
+                this.forceUpdate();
+            }
+        }
+
         return (
             <div>
-                <div className="ge-divider">
+                <div className="ge-divider alignment-bar">
                     <CommandButtonComponent
                         tooltip="Left"
                         icon={hAlignLeftIcon}
@@ -201,21 +233,22 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         icon={positionIcon}
                         lockObject={this.props.lockObject}
                         label="X"
-                        target={makeTargetsProxy(controls, this.props.onPropertyChangedObservable)}
                         delayInput={true}
-                        propertyName="left"
+                        value={getValue("_left")}
                         onChange={(newValue) => this._checkAndUpdateValues("left", newValue)}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        unit={getUnitString("_left")}
+                        onUnitClicked={unit => convertUnits(unit, "left")}
                     />
                     <TextInputLineComponent
                         numbersOnly={true}
                         lockObject={this.props.lockObject}
                         label="Y"
-                        target={makeTargetsProxy(controls, this.props.onPropertyChangedObservable)}
                         delayInput={true}
-                        propertyName="top"
+                        value={getValue("_top")}
                         onChange={(newValue) => this._checkAndUpdateValues("top", newValue)}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        unit={getUnitString("_top")}
+                        onUnitClicked={unit => convertUnits(unit, "top")}
                     />
                 </div>
                 <div className="ge-divider">
@@ -225,9 +258,8 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         icon={sizeIcon}
                         lockObject={this.props.lockObject}
                         label="W"
-                        target={this}
                         delayInput={true}
-                        propertyName="_width"
+                        value={getValue("_width")}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         onChange={(newValue) => {
                             for(const control of controls) {
@@ -243,17 +275,17 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                                     }
                                 }
                             }
-                            this._width = newValue;
-                            this._checkAndUpdateValues("width", this._width.toString());
+                            this._checkAndUpdateValues("width", newValue);
                         }}
+                        unit={getUnitString("_width")}
+                        onUnitClicked={unit => convertUnits(unit, "width")}
                     />
                     <TextInputLineComponent
                         numbersOnly={true}
                         lockObject={this.props.lockObject}
                         label="H"
-                        target={this}
                         delayInput={true}
-                        propertyName="_height"
+                        value={getValue("_height")}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         onChange={(newValue) => {
                             for(const control of controls) {
@@ -269,9 +301,10 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                                     }
                                 }
                             }
-                            this._height = newValue;
-                            this._checkAndUpdateValues("height", this._height.toString());
+                            this._checkAndUpdateValues("height", newValue);
                         }}
+                        unit={getUnitString("_height")}
+                        onUnitClicked={unit => convertUnits(unit, "height")}
                     />
                 </div>
                 <div className="ge-divider">
@@ -280,28 +313,30 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         iconLabel={"Padding"}
                         icon={verticalMarginIcon}
                         lockObject={this.props.lockObject}
-                        label="B"
-                        target={makeTargetsProxy(controls, this.props.onPropertyChangedObservable)}
-                        propertyName="paddingBottom"
-                        delayInput={true}
-                        onChange={(newValue) => {
-                            this._checkAndUpdateValues("paddingBottom", newValue);
-                            this._markChildrenAsDirty();
-                        }}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                    <TextInputLineComponent
-                        numbersOnly={true}
-                        lockObject={this.props.lockObject}
                         label="T"
-                        target={makeTargetsProxy(controls, this.props.onPropertyChangedObservable)}
-                        propertyName="paddingTop"
                         delayInput={true}
+                        value={getValue("_paddingTop")}
                         onChange={(newValue) => {
                             this._checkAndUpdateValues("paddingTop", newValue);
                             this._markChildrenAsDirty();
                         }}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        unit={getUnitString("_paddingTop")}
+                        onUnitClicked={unit => convertUnits(unit, "paddingTop")}
+                    />
+                    <TextInputLineComponent
+                        numbersOnly={true}
+                        lockObject={this.props.lockObject}
+                        label="B"
+                        delayInput={true}
+                        value={getValue("_paddingBottom")}
+                        onChange={(newValue) => {
+                            this._checkAndUpdateValues("paddingBottom", newValue);
+                            this._markChildrenAsDirty();
+                        }}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        unit={getUnitString("_paddingBottom")}
+                        onUnitClicked={unit => convertUnits(unit, "paddingBottom")}
                     />
                 </div>
                 <div className="ge-divider">
@@ -311,33 +346,39 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         icon={horizontalMarginIcon}
                         lockObject={this.props.lockObject}
                         label="L"
-                        target={makeTargetsProxy(controls, this.props.onPropertyChangedObservable)}
-                        propertyName="paddingLeft"
                         delayInput={true}
-                        onChange={(newValue) => { this._checkAndUpdateValues("paddingLeft", newValue); this._markChildrenAsDirty(); }}
+                        value={getValue("_paddingLeft")}
+                        onChange={(newValue) => {
+                            this._checkAndUpdateValues("paddingLeft", newValue);
+                            this._markChildrenAsDirty();
+                        }}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        unit={getUnitString("_paddingLeft")}
+                        onUnitClicked={unit => convertUnits(unit, "paddingLeft")}
                     />
                     <TextInputLineComponent
                         numbersOnly={true}
                         lockObject={this.props.lockObject}
                         label="R"
-                        target={makeTargetsProxy(controls, this.props.onPropertyChangedObservable)}
                         delayInput={true}
-                        propertyName="paddingRight"
-                        onChange={(newValue) => { this._checkAndUpdateValues("paddingRight", newValue); this._markChildrenAsDirty(); }}
+                        value={getValue("_paddingRight")}
+                        onChange={(newValue) => {
+                            this._checkAndUpdateValues("paddingRight", newValue);
+                            this._markChildrenAsDirty();
+                        }}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        unit={getUnitString("_paddingRight")}
+                        onUnitClicked={unit => convertUnits(unit, "paddingRight")}
                     />
                 </div>
-                <div className="ge-divider-shot">
-                    <CheckBoxLineComponent
-                        iconLabel={"Padding does not affect the parameters of this control, only the descendants of this control."}
-                        icon={descendantsOnlyPaddingIcon}
-                        label=""
-                        target={makeTargetsProxy(controls, this.props.onPropertyChangedObservable)}
-                        propertyName="descendentsOnlyPadding"
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                </div>
+                <CheckBoxLineComponent
+                    iconLabel={"Padding does not affect the parameters of this control, only the descendants of this control."}
+                    icon={descendantsOnlyPaddingIcon}
+                    label="PAD ONLY DESCENDENTS"
+                    target={proxy}
+                    propertyName="descendentsOnlyPadding"
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                />
                 <hr className="ge" />
                 <TextLineComponent tooltip="" label="TRANSFORMATION" value=" " color="grey"></TextLineComponent>
                 <div className="ge-divider">
@@ -346,14 +387,14 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         icon={positionIcon}
                         lockObject={this.props.lockObject}
                         label="X"
-                        target={makeTargetsProxy(controls, this.props.onPropertyChangedObservable)}
+                        target={proxy}
                         propertyName="transformCenterX"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <FloatLineComponent
                         lockObject={this.props.lockObject}
                         label="Y"
-                        target={makeTargetsProxy(controls, this.props.onPropertyChangedObservable)}
+                        target={proxy}
                         propertyName="transformCenterY"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
@@ -364,14 +405,14 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         icon={scaleIcon}
                         lockObject={this.props.lockObject}
                         label="X"
-                        target={makeTargetsProxy(controls, this.props.onPropertyChangedObservable)}
+                        target={proxy}
                         propertyName="scaleX"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <FloatLineComponent
                         lockObject={this.props.lockObject}
                         label="Y"
-                        target={makeTargetsProxy(controls, this.props.onPropertyChangedObservable)}
+                        target={proxy}
                         propertyName="scaleY"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
@@ -381,7 +422,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                     lockObject={this.props.lockObject}
                     icon={rotationIcon}
                     label="R"
-                    target={makeTargetsProxy(controls, this.props.onPropertyChangedObservable)}
+                    target={proxy}
                     decimalCount={2}
                     propertyName="rotation"
                     minimum={0}
@@ -397,7 +438,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         icon={colorIcon}
                         lockObject={this.props.lockObject}
                         label="Outline Color"
-                        target={makeTargetsProxy(controls, this.props.onPropertyChangedObservable)}
+                        target={proxy}
                         propertyName="color"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
@@ -408,7 +449,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         icon={fillColorIcon}
                         lockObject={this.props.lockObject}
                         label="Background Color"
-                        target={makeTargetsProxy(controls, this.props.onPropertyChangedObservable)}
+                        target={proxy}
                         propertyName="background"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
@@ -417,8 +458,8 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                     lockObject={this.props.lockObject}
                     iconLabel={"Alpha"}
                     icon={alphaIcon}
-                    label=""
-                    target={makeTargetsProxy(controls, this.props.onPropertyChangedObservable)}
+                    label=" "
+                    target={proxy}
                     propertyName="alpha"
                     minimum={0}
                     maximum={1}
@@ -430,7 +471,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                     icon={shadowColorIcon}
                     lockObject={this.props.lockObject}
                     label=""
-                    target={makeTargetsProxy(controls, this.props.onPropertyChangedObservable)}
+                    target={proxy}
                     propertyName="shadowColor"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     disableAlpha={true}
@@ -441,27 +482,31 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         icon={shadowOffsetXIcon}
                         lockObject={this.props.lockObject}
                         label=""
-                        target={makeTargetsProxy(controls, this.props.onPropertyChangedObservable)}
+                        target={proxy}
                         propertyName="shadowOffsetX"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        unit="PX"
+                        unitLocked={true}
                     />
                     <FloatLineComponent
                         iconLabel={"Shadow Offset Y"}
                         icon={shadowOffsetYIcon}
                         lockObject={this.props.lockObject}
                         label=""
-                        target={makeTargetsProxy(controls, this.props.onPropertyChangedObservable)}
+                        target={proxy}
                         propertyName="shadowOffsetY"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        unit="PX"
+                        unitLocked={true}
                     />
                 </div>
-                <div className="ge-divider-short">
+                <div className="ge-divider">
                     <FloatLineComponent
                         iconLabel={"Shadow Blur"}
                         icon={shadowBlurIcon}
                         lockObject={this.props.lockObject}
                         label=""
-                        target={makeTargetsProxy(controls, this.props.onPropertyChangedObservable)}
+                        target={proxy}
                         propertyName="shadowBlur"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
@@ -469,44 +514,48 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                 {showTextProperties && <>
                     <hr className="ge" />
                     <TextLineComponent tooltip="" label="FONT STYLE" value=" " color="grey"></TextLineComponent>
-                    <div className="ge-divider">
+                    <div className="ge-divider-single">
                         <TextInputLineComponent
                             iconLabel={"Font Family"}
                             icon={fontFamilyIcon}
                             lockObject={this.props.lockObject}
                             label=""
-                            target={makeTargetsProxy(controls, this.props.onPropertyChangedObservable)}
+                            target={proxy}
                             propertyName="fontFamily"
                             onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         />
+                    </div>
+                    <div className="ge-divider-single">
                         <TextInputLineComponent
                             iconLabel={"Font Size"}
                             icon={fontSizeIcon}
                             lockObject={this.props.lockObject}
                             label=""
-                            target={makeTargetsProxy(controls, this.props.onPropertyChangedObservable)}
+                            target={proxy}
                             numbersOnly={true}
                             propertyName="fontSize"
                             onChange={(newValue) => this._checkAndUpdateValues("fontSize", newValue)}
                             onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         />
                     </div>
-                    <div className="ge-divider">
+                    <div className="ge-divider-single">
                         <TextInputLineComponent
                             iconLabel={"Font Weight"}
                             icon={shadowBlurIcon}
                             lockObject={this.props.lockObject}
                             label=""
-                            target={makeTargetsProxy(controls, this.props.onPropertyChangedObservable)}
+                            target={proxy}
                             propertyName="fontWeight"
                             onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         />
+                    </div>
+                    <div className="ge-divider-single">
                         <TextInputLineComponent
                             iconLabel={"Font Style"}
                             icon={fontStyleIcon}
                             lockObject={this.props.lockObject}
                             label=""
-                            target={makeTargetsProxy(controls, this.props.onPropertyChangedObservable)}
+                            target={proxy}
                             propertyName="fontStyle"
                             onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         />

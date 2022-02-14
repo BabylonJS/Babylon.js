@@ -1,8 +1,14 @@
+import { ValueAndUnit } from "babylonjs-gui/2D/valueAndUnit";
 import { Control } from "babylonjs-gui/2D/controls/control";
 import { Grid } from "babylonjs-gui/2D/controls/grid";
+import { Rectangle } from "babylonjs-gui/2D/controls/rectangle";
 import { Matrix2D } from "babylonjs-gui/2D/math2D";
 import { Vector2 } from "babylonjs/Maths/math.vector";
+import { Observable } from "babylonjs/Misc/observable";
 import { GlobalState } from '../globalState';
+import { PropertyChangedEvent } from "../sharedUiComponents/propertyChangedEvent";
+
+export type DimensionProperties = "width" | "left" | "height" | "top" | "paddingLeft" | "paddingRight" | "paddingTop" | "paddingBottom";
 
 export class Rect {
     public top: number;
@@ -213,4 +219,49 @@ export class CoordinateHelper {
     public static computeLocalBounds(node: Control) {
         return new Rect(-node.widthInPixels * 0.5, -node.heightInPixels * 0.5, node.widthInPixels * 0.5, node.heightInPixels * 0.5);
     }
-} 
+
+    /** 
+     * converts a node's dimensions to percentage, properties can be specified as a list, or can convert all
+    */
+    public static convertToPercentage(guiControl: Control, properties: DimensionProperties[] = ["left", "top", "width", "height"], onPropertyChangedObservable?: Observable<PropertyChangedEvent>) {
+        let ratioX = 1;
+        let ratioY = 1;
+        if (guiControl.parent) {
+            if (guiControl.parent.typeName === "Grid") {
+                const cellInfo = (guiControl.parent as Grid).getChildCellInfo(guiControl);
+                const cell = (guiControl.parent as Grid).cells[cellInfo];
+                ratioX = cell.widthInPixels;
+                ratioY = cell.heightInPixels;
+            } else if (guiControl.parent.typeName === "Rectangle" || guiControl.parent.typeName === "Button") {
+                const thickness = (guiControl.parent as Rectangle).thickness * 2;
+                ratioX = guiControl.parent._currentMeasure.width - thickness;
+                ratioY = guiControl.parent._currentMeasure.height - thickness;
+            } else {
+                ratioX = guiControl.parent._currentMeasure.width;
+                ratioY = guiControl.parent._currentMeasure.height;
+            }
+        }
+        for(const property of properties) {
+            const initialValue = guiControl[property];
+            const ratio = (property === "left" || property === "width" || property === "paddingLeft" || property === "paddingRight") ? ratioX : ratioY;
+            const newValue = guiControl[`${property}InPixels`] * 100 / ratio;
+            guiControl[property] = `${newValue.toFixed(2)}%`;
+            onPropertyChangedObservable?.notifyObservers({
+                object: guiControl,
+                initialValue,
+                value: guiControl[property],
+                property
+            });
+        }
+    }
+
+    public static round(value: number) {
+        return Math.floor(value * 100) / 100;
+    }
+
+    public static convertToPixels(guiControl: Control, properties: DimensionProperties[] = ["left", "top", "width", "height"], onPropertyChangedObservable?: Observable<PropertyChangedEvent>) {
+        for(const property of properties) {
+            guiControl[`_${property}`] = new ValueAndUnit(this.round(guiControl[`${property}InPixels`]), ValueAndUnit.UNITMODE_PIXEL);
+        }
+    }
+}

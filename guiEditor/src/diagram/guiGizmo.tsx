@@ -213,10 +213,6 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
             const inNodeSpace = CoordinateHelper.rttToLocalNodeSpace(node, inRTT.x, inRTT.y, undefined, this._storedValues);
             this._dragLocalBounds(inNodeSpace);
             this._updateNodeFromLocalBounds(node, this.state.scalePointDragging);
-            //convert to percentage
-            if (this._responsive) {
-                this.props.globalState.workbench.convertToPercentage(node, false);
-            }
             this.props.globalState.workbench._liveGuiTextureRerender = false;
             this.props.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
         }

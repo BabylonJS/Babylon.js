@@ -41,5 +41,5 @@ export function makeTargetsProxy<Type>(targets: Type[], onPropertyChangedObserva
             }
             return true;
         }
-    })
+    }) as any;
 }
