@@ -28,7 +28,7 @@ export class LoadFileError extends BaseError {
      * @param file defines the optional file
      */
     constructor(message: string, object?: WebRequest | File) {
-        super(message);
+        super(message, ErrorCodes.LoadFileError);
 
         this.name = "LoadFileError";
         BaseError._setPrototypeOf(this, LoadFileError.prototype);
@@ -50,7 +50,7 @@ export class RequestFileError extends BaseError {
      * @param request defines the optional web request
      */
     constructor(message: string, public request: WebRequest) {
-        super(message);
+        super(message, ErrorCodes.RequestFileError);
         this.name = "RequestFileError";
         BaseError._setPrototypeOf(this, RequestFileError.prototype);
     }
@@ -64,7 +64,7 @@ export class ReadFileError extends BaseError {
      * @param file defines the optional file
      */
     constructor(message: string, public file: File) {
-        super(message);
+        super(message, ErrorCodes.ReadFileError);
         this.name = "ReadFileError";
         BaseError._setPrototypeOf(this, ReadFileError.prototype);
     }
@@ -597,4 +597,5 @@ initSideEffects();
 
 // LTS. Export FileTools in this module for backward compatibility.
 import { _injectLTSFileTools } from './fileTools.lts';
+import { ErrorCodes } from '.';
 _injectLTSFileTools(DecodeBase64UrlToBinary, DecodeBase64UrlToString, FileToolsOptions, IsBase64DataUrl, IsFileURL, LoadFile, LoadImage, ReadFile, RequestFile, SetCorsBehavior);

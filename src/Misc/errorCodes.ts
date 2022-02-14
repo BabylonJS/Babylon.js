@@ -18,6 +18,14 @@ export const ErrorCodes = {
     // SceneLoader errors 3000-3999
     /** SceneLoader generic error code. Ideally wraps the inner exception. */
     SceneLoaderError: 3000,
+
+    // File related errors 4000-4999
+    /** Load file error */
+    LoadFileError: 4000,
+    /** Request file error */
+    RequestFileError: 4001,
+    /** Read file error */
+    ReadFileError: 4002
 } as const;
 
 /**

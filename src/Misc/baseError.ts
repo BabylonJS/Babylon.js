@@ -10,7 +10,7 @@ class BabylonJSErrorWrapper extends Error {}
 /**
  * Base Error class for babylonjs errors
  */
-export class BaseError extends BabylonJSErrorWrapper {
+export abstract class BaseError extends BabylonJSErrorWrapper {
     // See https://stackoverflow.com/questions/12915412/how-do-i-extend-a-host-object-e-g-error-in-typescript
     // and https://github.com/Microsoft/TypeScript/wiki/Breaking-Changes#extending-built-ins-like-error-array-and-map-may-no-longer-work
 
@@ -21,7 +21,7 @@ export class BaseError extends BabylonJSErrorWrapper {
     /**
      * The error code
      */
-    public errorCode?: ErrorCodesType;
+    public errorCode: ErrorCodesType;
 
     /**
      * The exception that caused the outer exception
@@ -34,7 +34,7 @@ export class BaseError extends BabylonJSErrorWrapper {
      * @param errorCode the error code
      * @param innerException the exception that caused the outer exception
      */
-    public constructor(message: string, errorCode?: ErrorCodesType, innerException?: Error) {
+    public constructor(message: string, errorCode: ErrorCodesType, innerException?: Error) {
         super(message);
 
         this.errorCode = errorCode;
