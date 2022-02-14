@@ -5,6 +5,7 @@ import { Color4 } from '../../Maths/math.color';
 import { Mesh, _CreationDataStorage } from "../mesh";
 import { VertexBuffer } from "../../Buffers/buffer";
 import { VertexData } from "../mesh.vertexData";
+import { CompatibilityOptions } from "../../Compat/compatibilityOptions";
 
 /**
  * Creates the VertexData for a Ribbon
@@ -143,7 +144,7 @@ export function CreateRibbonVertexData(options: { pathArray: Vector3[][], closeA
     var v: number;
     if (customUV) {
         for (p = 0; p < customUV.length; p++) {
-            uvs.push(customUV[p].x, customUV[p].y);
+            uvs.push(customUV[p].x, CompatibilityOptions.UseOpenGLOrientationForUV ? 1.0 - customUV[p].y : customUV[p].y);
         }
     }
     else {
@@ -154,7 +155,7 @@ export function CreateRibbonVertexData(options: { pathArray: Vector3[][], closeA
                 if (invertUV) {
                     uvs.push(v, u);
                 } else {
-                    uvs.push(u, v);
+                    uvs.push(u, CompatibilityOptions.UseOpenGLOrientationForUV ? 1.0 - v : v);
                 }
             }
         }
@@ -340,7 +341,7 @@ export function CreateRibbon(name: string, options: { pathArray: Vector3[][], cl
             var uvs = <FloatArray>instance.getVerticesData(VertexBuffer.UVKind);
             for (var i = 0; i < options.uvs.length; i++) {
                 uvs[i * 2] = options.uvs[i].x;
-                uvs[i * 2 + 1] = options.uvs[i].y;
+                uvs[i * 2 + 1] = CompatibilityOptions.UseOpenGLOrientationForUV ? 1.0 - options.uvs[i].y : options.uvs[i].y;
             }
             instance.updateVerticesData(VertexBuffer.UVKind, uvs, false, false);
         }
