@@ -13,7 +13,7 @@ import { InstantiationTools } from '../../Misc/instantiationTools';
 import { Plane } from '../../Maths/math.plane';
 import { EncodeArrayBufferToBase64, StartsWith } from '../../Misc/stringTools';
 import { GenerateBase64StringFromTexture, GenerateBase64StringFromTextureAsync } from '../../Misc/copyTools';
-import { CompatibilityOptions } from "../../Compat/CompatibilityOptions";
+import { CompatibilityOptions } from "../../Compat/compatibilityOptions";
 
 declare type CubeTexture = import("../../Materials/Textures/cubeTexture").CubeTexture;
 declare type MirrorTexture = import("../../Materials/Textures/mirrorTexture").MirrorTexture;

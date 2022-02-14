@@ -7,7 +7,7 @@ import { Nullable } from '../../types';
 import { Logger } from "../../Misc/logger";
 import { _PrimaryIsoTriangle, GeodesicData, PolyhedronData } from "../geodesicMesh";
 import { GoldbergMesh } from "../goldbergMesh";
-import { CompatibilityOptions } from "../../Compat/CompatibilityOptions";
+import { CompatibilityOptions } from "../../Compat/compatibilityOptions";
 
 /**
  * Defines the set of data required to create goldberg vertex data.

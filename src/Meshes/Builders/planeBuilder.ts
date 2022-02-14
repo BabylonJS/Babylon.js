@@ -4,7 +4,7 @@ import { Mesh, _CreationDataStorage } from "../mesh";
 import { VertexData } from "../mesh.vertexData";
 import { Nullable } from '../../types';
 import { Plane } from '../../Maths/math.plane';
-import { CompatibilityOptions } from "../../Compat/CompatibilityOptions";
+import { CompatibilityOptions } from "../../Compat/compatibilityOptions";
 
 /**
  * Creates the VertexData for a Plane

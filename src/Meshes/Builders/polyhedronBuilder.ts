@@ -4,7 +4,7 @@ import { Color4 } from '../../Maths/math.color';
 import { Mesh, _CreationDataStorage } from "../mesh";
 import { VertexData } from "../mesh.vertexData";
 import { Nullable } from '../../types';
-import { CompatibilityOptions } from "../../Compat/CompatibilityOptions";
+import { CompatibilityOptions } from "../../Compat/compatibilityOptions";
 
 // inspired from // http://stemkoski.github.io/Three.js/Polyhedra.html
 /**

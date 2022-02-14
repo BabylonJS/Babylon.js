@@ -2,7 +2,7 @@ import { Vector4, Matrix, Vector3, Vector2 } from "../../Maths/math.vector";
 import { Mesh, _CreationDataStorage } from "../mesh";
 import { VertexData } from "../mesh.vertexData";
 import { Scene } from "../../scene";
-import { CompatibilityOptions } from "../../Compat/CompatibilityOptions";
+import { CompatibilityOptions } from "../../Compat/compatibilityOptions";
 
 /**
  * Creates the VertexData for a torus

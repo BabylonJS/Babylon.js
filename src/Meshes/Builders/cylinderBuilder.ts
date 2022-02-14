@@ -5,7 +5,7 @@ import { VertexData } from "../mesh.vertexData";
 import { Scene } from "../../scene";
 import { Nullable } from "../../types";
 import { Axis } from '../../Maths/math.axis';
-import { CompatibilityOptions } from "../../Compat/CompatibilityOptions";
+import { CompatibilityOptions } from "../../Compat/compatibilityOptions";
 
 /**
  * Creates the VertexData for a cylinder, cone or prism
