@@ -8,7 +8,7 @@ import { nativeOverride } from '../Misc/decorators';
 import { Coroutine, makeSyncFunction, runCoroutineSync } from '../Misc/coroutine';
 import { ICreateCapsuleOptions } from "./Builders/capsuleBuilder";
 import { ErrorCodes } from "../Misc/errorCodes";
-import { MeshValidationError } from "./errors";
+import { RuntimeError } from "../Misc/baseError";
 
 declare type Geometry = import("../Meshes/geometry").Geometry;
 declare type Mesh = import("../Meshes/mesh").Mesh;
@@ -643,7 +643,7 @@ export class VertexData {
 
     private _validate(): void {
         if (!this.positions) {
-            throw new MeshValidationError("Positions are required", ErrorCodes.MeshInvalidPositionsError);
+            throw new RuntimeError("Positions are required", ErrorCodes.MeshInvalidPositionsError);
         }
 
         const getElementCount = (kind: string, values: FloatArray) => {

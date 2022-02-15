@@ -6,7 +6,7 @@ import { IFileRequest } from './fileRequest';
 import { Observable } from './observable';
 import { FilesInputStore } from './filesInputStore';
 import { RetryStrategy } from './retryStrategy';
-import { BaseError } from './baseError';
+import { RuntimeError, setPrototypeOf } from './baseError';
 import { DecodeBase64ToBinary, DecodeBase64ToString, EncodeArrayBufferToBase64 } from './stringTools';
 import { ShaderProcessor } from '../Engines/Processors/shaderProcessor';
 import { ThinEngine } from '../Engines/thinEngine';
@@ -17,7 +17,7 @@ import { TimingTools } from './timingTools';
 const base64DataUrlRegEx = new RegExp(/^data:([^,]+\/[^,]+)?;base64,/i);
 
 /** @ignore */
-export class LoadFileError extends BaseError {
+export class LoadFileError extends RuntimeError {
     public request?: WebRequest;
     public file?: File;
 
@@ -31,7 +31,7 @@ export class LoadFileError extends BaseError {
         super(message, ErrorCodes.LoadFileError);
 
         this.name = "LoadFileError";
-        BaseError._setPrototypeOf(this, LoadFileError.prototype);
+        setPrototypeOf(this, LoadFileError.prototype);
 
         if (object instanceof WebRequest) {
             this.request = object;
@@ -43,7 +43,7 @@ export class LoadFileError extends BaseError {
 }
 
 /** @ignore */
-export class RequestFileError extends BaseError {
+export class RequestFileError extends RuntimeError {
     /**
      * Creates a new LoadFileError
      * @param message defines the message of the error
@@ -52,12 +52,12 @@ export class RequestFileError extends BaseError {
     constructor(message: string, public request: WebRequest) {
         super(message, ErrorCodes.RequestFileError);
         this.name = "RequestFileError";
-        BaseError._setPrototypeOf(this, RequestFileError.prototype);
+        setPrototypeOf(this, RequestFileError.prototype);
     }
 }
 
 /** @ignore */
-export class ReadFileError extends BaseError {
+export class ReadFileError extends RuntimeError {
     /**
     * Creates a new ReadFileError
      * @param message defines the message of the error
@@ -66,7 +66,7 @@ export class ReadFileError extends BaseError {
     constructor(message: string, public file: File) {
         super(message, ErrorCodes.ReadFileError);
         this.name = "ReadFileError";
-        BaseError._setPrototypeOf(this, ReadFileError.prototype);
+        setPrototypeOf(this, ReadFileError.prototype);
     }
 }
 /**
