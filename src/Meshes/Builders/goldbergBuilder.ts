@@ -124,6 +124,10 @@ export function CreateGoldbergVertexData(options: GoldbergVertexDataOption, gold
  * @returns Goldberg mesh
  */
 export function CreateGoldberg(name: string, options: GoldbergCreationOption, scene: Nullable<Scene> = null): GoldbergMesh {
+    const size = options.size;
+    const sizeX: number = options.sizeX || size || 1;
+    const sizeY: number = options.sizeY || size || 1;
+    const sizeZ: number = options.sizeZ || size || 1;
     let m: number = options.m || 1;
     if (m !== Math.floor(m)) {
         m === Math.floor(m);
@@ -161,6 +165,9 @@ export function CreateGoldberg(name: string, options: GoldbergCreationOption, sc
     goldberg.goldbergData.nbFacesAtPole = (goldberg.goldbergData.nbUnsharedFaces - 12) / 12;
     for (let f = 0; f < geodesicData.vertex.length; f++) {
         goldberg.goldbergData.faceCenters.push(Vector3.FromArray(geodesicData.vertex[f]));
+        goldberg.goldbergData.faceCenters[f].x *= sizeX;
+		goldberg.goldbergData.faceCenters[f].y *= sizeY;
+		goldberg.goldbergData.faceCenters[f].z *= sizeZ;
         goldberg.goldbergData.faceColors.push(new Color4(1, 1, 1, 1));
     }
 
