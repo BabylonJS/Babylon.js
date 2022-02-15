@@ -243,6 +243,11 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
     public useSRGBBuffers = true;
 
     /**
+     * When loading glTF animations, which are defined in seconds, target them to this FPS.
+     */
+    public targetFps = 60;
+
+    /**
     * Function called before loading a url referenced by the asset.
     */
     public preprocessUrlAsync = (url: string) => Promise.resolve(url);

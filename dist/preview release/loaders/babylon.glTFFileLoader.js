@@ -7019,7 +7019,7 @@ var GLTFLoader = /** @class */ (function () {
             switch (data.interpolation) {
                 case "STEP" /* STEP */: {
                     getNextKey = function (frameIndex) { return ({
-                        frame: data.input[frameIndex],
+                        frame: data.input[frameIndex] * _this.parent.targetFps,
                         value: getNextOutputValue(),
                         interpolation: babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["AnimationKeyInterpolation"].STEP
                     }); };
@@ -7027,14 +7027,14 @@ var GLTFLoader = /** @class */ (function () {
                 }
                 case "LINEAR" /* LINEAR */: {
                     getNextKey = function (frameIndex) { return ({
-                        frame: data.input[frameIndex],
+                        frame: data.input[frameIndex] * _this.parent.targetFps,
                         value: getNextOutputValue()
                     }); };
                     break;
                 }
                 case "CUBICSPLINE" /* CUBICSPLINE */: {
                     getNextKey = function (frameIndex) { return ({
-                        frame: data.input[frameIndex],
+                        frame: data.input[frameIndex] * _this.parent.targetFps,
                         inTangent: getNextOutputValue(),
                         value: getNextOutputValue(),
                         outTangent: getNextOutputValue()
@@ -7049,7 +7049,7 @@ var GLTFLoader = /** @class */ (function () {
             if (targetPath === "influence") {
                 var _loop_2 = function (targetIndex) {
                     var animationName = "".concat(babylonAnimationGroup.name, "_channel").concat(babylonAnimationGroup.targetedAnimations.length);
-                    var babylonAnimation = new babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["Animation"](animationName, targetPath, 1, animationType);
+                    var babylonAnimation = new babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["Animation"](animationName, targetPath, _this.parent.targetFps, animationType);
                     babylonAnimation.setKeys(keys.map(function (key) { return ({
                         frame: key.frame,
                         inTangent: key.inTangent ? key.inTangent[targetIndex] : undefined,
@@ -7070,7 +7070,7 @@ var GLTFLoader = /** @class */ (function () {
             }
             else {
                 var animationName = "".concat(babylonAnimationGroup.name, "_channel").concat(babylonAnimationGroup.targetedAnimations.length);
-                var babylonAnimation = new babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["Animation"](animationName, targetPath, 1, animationType);
+                var babylonAnimation = new babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["Animation"](animationName, targetPath, _this.parent.targetFps, animationType);
                 babylonAnimation.setKeys(keys);
                 if (animationTargetOverride != null && animationTargetOverride.animations != null) {
                     animationTargetOverride.animations.push(babylonAnimation);
@@ -8238,6 +8238,10 @@ var GLTFFileLoader = /** @class */ (function () {
          * If true, load the color (gamma encoded) textures into sRGB buffers (if supported by the GPU), which will yield more accurate results when sampling the texture. Defaults to true.
          */
         this.useSRGBBuffers = true;
+        /**
+         * When loading glTF animations, which are defined in seconds, target them to this FPS.
+         */
+        this.targetFps = 60;
         /**
         * Function called before loading a url referenced by the asset.
         */

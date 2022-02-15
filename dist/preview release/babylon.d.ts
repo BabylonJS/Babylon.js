@@ -6426,6 +6426,17 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Options used to control default behaviors regarding compatibility support
+     */
+    export class CompatibilityOptions {
+        /**
+        * Defines if the system should use OpenGL convention for UVs when creating geometry or loading .babylon files (false by default)
+        */
+        static UseOpenGLOrientationForUV: boolean;
+    }
+}
+declare module BABYLON {
+    /**
      * This represents the required contract to create a new type of texture loader.
      */
     export interface IInternalTextureLoader {
@@ -22964,7 +22975,13 @@ declare module BABYLON {
         /**
          * Defines whether the engine should skip the next onKeyboardObservable associated to this pre.
          */
-        skipOnPointerObservable: boolean;
+        skipOnKeyboardObservable: boolean;
+        /**
+         * Defines whether the engine should skip the next onKeyboardObservable associated to this pre.
+         * @deprecated use skipOnKeyboardObservable property instead
+         */
+        get skipOnPointerObservable(): boolean;
+        set skipOnPointerObservable(value: boolean);
         /**
          * Instantiates a new keyboard pre info.
          * This class is used to store keyboard related info for the onPreKeyboardObservable event.
@@ -27327,12 +27344,12 @@ declare module BABYLON {
          * Gets the easing function of the animation
          * @returns Easing function of the animation
          */
-        getEasingFunction(): IEasingFunction;
+        getEasingFunction(): Nullable<IEasingFunction>;
         /**
          * Sets the easing function of the animation
          * @param easingFunction A custom mathematical formula for animation
          */
-        setEasingFunction(easingFunction: IEasingFunction): void;
+        setEasingFunction(easingFunction: Nullable<IEasingFunction>): void;
         /**
          * Interpolates a scalar linearly
          * @param startValue Start value of the animation curve
@@ -92105,7 +92122,7 @@ interface GPUMultisampleState {
 }
 
 interface GPUFragmentState extends GPUProgrammableStage {
-    targets: GPUColorTargetState[];
+    targets: (GPUColorTargetState | null | undefined)[];
 }
 
 interface GPUColorTargetState {
@@ -92497,7 +92514,7 @@ interface GPURenderPassTimestampWrite {
 type GPURenderPassTimestampWrites = Array<GPURenderPassTimestampWrite>;
 
 interface GPURenderPassDescriptor extends GPUObjectDescriptorBase {
-    colorAttachments: GPURenderPassColorAttachment[];
+    colorAttachments: (GPURenderPassColorAttachment | null | undefined)[];
     depthStencilAttachment?: GPURenderPassDepthStencilAttachment;
     occlusionQuerySet?: GPUQuerySet;
     timestampWrites?: GPURenderPassTimestampWrites; /* default=[] */
@@ -92531,7 +92548,7 @@ type GPULoadOp = "load" | "clear";
 type GPUStoreOp = "store" | "discard";
 
 interface GPURenderPassLayout extends GPUObjectDescriptorBase {
-    colorFormats: GPUTextureFormat[];
+    colorFormats: (GPUTextureFormat | null | undefined)[];
     depthStencilFormat?: GPUTextureFormat;
     sampleCount?: GPUSize32; /* default=1 */
 }

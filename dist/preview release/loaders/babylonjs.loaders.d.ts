@@ -191,6 +191,10 @@ declare module BABYLON {
          */
         useSRGBBuffers: boolean;
         /**
+         * When loading glTF animations, which are defined in seconds, target them to this FPS.
+         */
+        targetFps: number;
+        /**
         * Function called before loading a url referenced by the asset.
         */
         preprocessUrlAsync: (url: string) => Promise<string>;
