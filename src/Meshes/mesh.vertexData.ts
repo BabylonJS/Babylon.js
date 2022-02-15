@@ -7,8 +7,7 @@ import { Logger } from '../Misc/logger';
 import { nativeOverride } from '../Misc/decorators';
 import { Coroutine, makeSyncFunction, runCoroutineSync } from '../Misc/coroutine';
 import { ICreateCapsuleOptions } from "./Builders/capsuleBuilder";
-import { ErrorCodes } from "../Misc/errorCodes";
-import { RuntimeError } from "../Misc/baseError";
+import { RuntimeError, ErrorCodes } from "../Misc/error";
 
 declare type Geometry = import("../Meshes/geometry").Geometry;
 declare type Mesh = import("../Meshes/mesh").Mesh;

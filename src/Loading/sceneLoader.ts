@@ -19,8 +19,7 @@ import { TransformNode } from '../Meshes/transformNode';
 import { Geometry } from '../Meshes/geometry';
 import { Light } from '../Lights/light';
 import { StartsWith } from '../Misc/stringTools';
-import { RuntimeWrapperError } from "../Misc/baseError";
-import { ErrorCodes } from "../Misc/errorCodes";
+import { RuntimeError, ErrorCodes } from "../Misc/error";
 
 /**
  * Type used for the success callback of ImportMesh
@@ -686,7 +685,7 @@ export class SceneLoader {
             const errorMessage = SceneLoader._FormatErrorMessage(fileInfo, message, exception);
 
             if (onError) {
-                onError(scene, errorMessage, new RuntimeWrapperError(errorMessage, ErrorCodes.SceneLoaderError, exception));
+                onError(scene, errorMessage, new RuntimeError(errorMessage, ErrorCodes.SceneLoaderError, exception));
             } else {
                 Logger.Error(errorMessage);
                 // should the exception be thrown?
@@ -858,7 +857,7 @@ export class SceneLoader {
             const errorMessage = SceneLoader._FormatErrorMessage(fileInfo, message, exception);
 
             if (onError) {
-                onError(scene, errorMessage, new RuntimeWrapperError(errorMessage, ErrorCodes.SceneLoaderError, exception));
+                onError(scene, errorMessage, new RuntimeError(errorMessage, ErrorCodes.SceneLoaderError, exception));
             } else {
                 Logger.Error(errorMessage);
                 // should the exception be thrown?
@@ -970,7 +969,7 @@ export class SceneLoader {
             const errorMessage = SceneLoader._FormatErrorMessage(fileInfo, message, exception);
 
             if (onError) {
-                onError(scene, errorMessage, new RuntimeWrapperError(errorMessage, ErrorCodes.SceneLoaderError, exception));
+                onError(scene, errorMessage, new RuntimeError(errorMessage, ErrorCodes.SceneLoaderError, exception));
             } else {
                 Logger.Error(errorMessage);
                 // should the exception be thrown?

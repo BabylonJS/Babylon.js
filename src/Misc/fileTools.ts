@@ -6,7 +6,7 @@ import { IFileRequest } from './fileRequest';
 import { Observable } from './observable';
 import { FilesInputStore } from './filesInputStore';
 import { RetryStrategy } from './retryStrategy';
-import { RuntimeError, setPrototypeOf } from './baseError';
+import { BaseError, ErrorCodes, RuntimeError } from './error';
 import { DecodeBase64ToBinary, DecodeBase64ToString, EncodeArrayBufferToBase64 } from './stringTools';
 import { ShaderProcessor } from '../Engines/Processors/shaderProcessor';
 import { ThinEngine } from '../Engines/thinEngine';
@@ -31,7 +31,7 @@ export class LoadFileError extends RuntimeError {
         super(message, ErrorCodes.LoadFileError);
 
         this.name = "LoadFileError";
-        setPrototypeOf(this, LoadFileError.prototype);
+        BaseError._setPrototypeOf(this, LoadFileError.prototype);
 
         if (object instanceof WebRequest) {
             this.request = object;
@@ -52,7 +52,7 @@ export class RequestFileError extends RuntimeError {
     constructor(message: string, public request: WebRequest) {
         super(message, ErrorCodes.RequestFileError);
         this.name = "RequestFileError";
-        setPrototypeOf(this, RequestFileError.prototype);
+        BaseError._setPrototypeOf(this, RequestFileError.prototype);
     }
 }
 
@@ -66,7 +66,7 @@ export class ReadFileError extends RuntimeError {
     constructor(message: string, public file: File) {
         super(message, ErrorCodes.ReadFileError);
         this.name = "ReadFileError";
-        setPrototypeOf(this, ReadFileError.prototype);
+        BaseError._setPrototypeOf(this, ReadFileError.prototype);
     }
 }
 /**
@@ -597,5 +597,4 @@ initSideEffects();
 
 // LTS. Export FileTools in this module for backward compatibility.
 import { _injectLTSFileTools } from './fileTools.lts';
-import { ErrorCodes } from '.';
 _injectLTSFileTools(DecodeBase64UrlToBinary, DecodeBase64UrlToString, FileToolsOptions, IsBase64DataUrl, IsFileURL, LoadFile, LoadImage, ReadFile, RequestFile, SetCorsBehavior);

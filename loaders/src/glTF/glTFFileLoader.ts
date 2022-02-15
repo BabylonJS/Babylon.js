@@ -16,8 +16,7 @@ import { DataReader, IDataBuffer } from 'babylonjs/Misc/dataReader';
 import { GLTFValidation } from './glTFValidation';
 import { DecodeBase64UrlToBinary, LoadFileError } from 'babylonjs/Misc/fileTools';
 import { StringTools } from 'babylonjs/Misc/stringTools';
-import { ErrorCodes } from "babylonjs/Misc/errorCodes";
-import { RuntimeError } from "babylonjs/Misc/baseError";
+import { RuntimeError, ErrorCodes } from "babylonjs/Misc/error";
 
 interface IFileRequestInfo extends IFileRequest {
     _lengthComputable?: boolean;
