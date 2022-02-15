@@ -1,4 +1,3 @@
-
 /**
  * Base error. Due to limitations of typedoc-check and missing documentation
  * in lib.es5.d.ts, cannot extend Error directly for RuntimeError.
