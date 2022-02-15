@@ -83,7 +83,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
         this.onDeviceDisconnected = (deviceType: DeviceType, deviceSlot: number) => { };
         this.onInputChanged = (deviceEvent: IDeviceEvent) => { };
 
-        this.configureEvents();
+        this.enableEvents();
     }
 
     // Public functions
@@ -123,13 +123,13 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
     }
 
     /**
-     * Configures events to work with an engine's active element
+     * Enable listening for user input events
      */
-    public configureEvents(): void {
+    public enableEvents(): void {
         const inputElement = this._engine.getInputElement();
         if (inputElement && (!this._eventsAttached || this._elementToAttachTo !== inputElement)) {
             // Remove events before adding to avoid double events or simultaneous events on multiple canvases
-            this.unconfigureEvents();
+            this.disableEvents();
 
             // If the inputs array has already been created, zero it out to before setting up events
             if (this._inputs) {
@@ -162,9 +162,9 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
     }
 
     /**
-     * Remove events from active input element
+     * Disable listening for user input events
      */
-    public unconfigureEvents(): void {
+    public disableEvents(): void {
         if (this._elementToAttachTo) {
             // Blur Events
             this._elementToAttachTo.removeEventListener("blur", this._keyboardBlurEvent);
@@ -202,7 +202,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
         this.onInputChanged = () => { };
 
         if (this._elementToAttachTo) {
-            this.unconfigureEvents();
+            this.disableEvents();
         }
     }
 

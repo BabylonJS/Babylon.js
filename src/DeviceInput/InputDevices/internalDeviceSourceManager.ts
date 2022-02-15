@@ -42,6 +42,7 @@ export class InternalDeviceSourceManager implements IDisposable {
                 engine._deviceSourceManager.dispose();
             });
         }
+
         return engine._deviceSourceManager;
     }
 
@@ -80,8 +81,16 @@ export class InternalDeviceSourceManager implements IDisposable {
         };
     }
 
+    public enableEvents() {
+        this._deviceInputSystem.enableEvents();
+    }
+
+    public disableEvents() {
+        this._deviceInputSystem.disableEvents();
+    }
+
     // Public Functions
-    public getDeviceSource = <T extends DeviceType>(deviceType: T, deviceSlot?: number): Nullable<DeviceSource<T>> => {
+    public readonly getDeviceSource = <T extends DeviceType>(deviceType: T, deviceSlot?: number): Nullable<DeviceSource<T>> => {
         if (deviceSlot === undefined) {
             if (this._firstDevice[deviceType] === undefined) {
                 return null;
@@ -97,11 +106,11 @@ export class InternalDeviceSourceManager implements IDisposable {
         return this._devices[deviceType][deviceSlot];
     }
 
-    public getDeviceSources = <T extends DeviceType>(deviceType: T): ReadonlyArray<DeviceSource<T>> => {
+    public readonly getDeviceSources = <T extends DeviceType>(deviceType: T): ReadonlyArray<DeviceSource<T>> => {
         return this._devices[deviceType].filter((source) => { return !!source; });
     }
 
-    public getDevices = (): ReadonlyArray<DeviceSource<DeviceType>> => {
+    public readonly getDevices = (): ReadonlyArray<DeviceSource<DeviceType>> => {
         const deviceArray = new Array<DeviceSource<DeviceType>>();
         this._devices.forEach((deviceSet) => {
             deviceArray.push.apply(deviceArray, deviceSet);
@@ -110,11 +119,11 @@ export class InternalDeviceSourceManager implements IDisposable {
         return deviceArray;
     }
 
-    public registerManager = (manager: IObservableManager): void => {
+    public readonly registerManager = (manager: IObservableManager): void => {
         this._registeredManagers.push(manager);
     }
 
-    public unregisterManager = (manager: IObservableManager): void => {
+    public readonly unregisterManager = (manager: IObservableManager): void => {
         const idx = this._registeredManagers.indexOf(manager);
 
         if (idx > -1) {
@@ -122,21 +131,7 @@ export class InternalDeviceSourceManager implements IDisposable {
         }
     }
 
-    public enableEvents = (): void => {
-        this._deviceInputSystem.configureEvents();
-    }
-
-    public disableEvents = (): void => {
-        this._deviceInputSystem.unconfigureEvents();
-    }
-
-    public dispose = (): void => {
-        // If we have managers that weren't properly disposed of, dispose of their observables.
-        for (const manager of this._registeredManagers) {
-            manager.onDeviceConnectedObservable.clear();
-            manager.onInputChangedObservable.clear();
-            manager.onDeviceDisconnectedObservable.clear();
-        }
+    public dispose(): void {
         this._deviceInputSystem.dispose();
     }
 

@@ -1,4 +1,4 @@
-import { Observable, Observer } from "../Misc/observable";
+import { Observable } from "../Misc/observable";
 import { PointerInfoPre, PointerInfo, PointerEventTypes } from "../Events/pointerEvents";
 import { Nullable } from "../types";
 import { AbstractActionManager } from "../Actions/abstractActionManager";
@@ -10,7 +10,6 @@ import { ActionEvent } from "../Actions/actionEvent";
 import { KeyboardEventTypes, KeyboardInfoPre, KeyboardInfo } from "../Events/keyboardEvents";
 import { DeviceType, PointerInput } from "../DeviceInput/InputDevices/deviceEnums";
 import { IEvent, IKeyboardEvent, IMouseEvent, IPointerEvent, IWheelEvent } from "../Events/deviceInputEvents";
-import { IDeviceEvent } from "../DeviceInput/InputDevices/inputInterfaces";
 import { DeviceSourceManager } from "../DeviceInput/InputDevices/deviceSourceManager";
 import { EngineStore } from "../Engines/engineStore";
 
@@ -66,9 +65,6 @@ export class InputManager {
     /** This is a defensive check to not allow control attachment prior to an already active one. If already attached, previous control is unattached before attaching the new one. */
     private _alreadyAttached = false;
     private _alreadyAttachedTo: HTMLElement;
-
-    // Observer
-    private _onInputObserver: Nullable<Observer<IDeviceEvent>>;
 
     // Pointers
     private _onPointerMove: (evt: IMouseEvent) => void;
@@ -497,13 +493,8 @@ export class InputManager {
         }
 
         if (elementToAttachTo) { this._alreadyAttachedTo = elementToAttachTo; }
-
-        if (!this._deviceSourceManager) {
-            this._deviceSourceManager = new DeviceSourceManager(engine);
-        }
-        else {
-            this._deviceSourceManager.enableEvents();
-        }
+        this._deviceSourceManager = new DeviceSourceManager(engine);
+        this._scene.getEngine()._deviceSourceManager.enableEvents();
 
         this._initActionManager = (act: Nullable<AbstractActionManager>, clickInfo: _ClickInfo): Nullable<AbstractActionManager> => {
             if (!this._meshPickProceed) {
@@ -859,7 +850,7 @@ export class InputManager {
             }
         };
 
-        this._onInputObserver = this._deviceSourceManager.onInputChangedObservable.add((eventData) => {
+        this._deviceSourceManager.onInputChangedObservable.add((eventData) => {
             const evt: IEvent = eventData;
             // Keyboard Events
             if (eventData.deviceType === DeviceType.Keyboard) {
@@ -900,9 +891,8 @@ export class InputManager {
      */
     public detachControl() {
         if (this._alreadyAttached) {
-
-            this._deviceSourceManager.onInputChangedObservable.remove(this._onInputObserver);
-            this._deviceSourceManager.disableEvents();
+            this._scene.getEngine()._deviceSourceManager.disableEvents();
+            this._deviceSourceManager.dispose();
 
             // Cursor
             if (this._alreadyAttachedTo && !this._scene.doNotHandleCursors) {

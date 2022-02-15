@@ -26,7 +26,7 @@ export class DeviceSourceManager implements IDisposable {
     public readonly onDeviceDisconnectedObservable: Observable<DeviceSource<DeviceType>>;
 
     // Private Members
-    private _deviceSourceManager: Nullable<InternalDeviceSourceManager>;
+    private _deviceSourceManager: InternalDeviceSourceManager;
 
     // Public Functions
     /**
@@ -45,23 +45,6 @@ export class DeviceSourceManager implements IDisposable {
     public getDevices: () => ReadonlyArray<DeviceSource<DeviceType>>;
 
     /**
-     * Enable handling of input events
-     * @hidden
-     */
-    public enableEvents: () => void;
-
-    /**
-     * Disable handling of input events
-     * @hidden
-     */
-    public disableEvents: () => void;
-
-    /**
-     * Dispose of DeviceSourceManager
-     */
-    public dispose: () => void;
-
-    /**
      * Default constructor
      * @param engine Used to get canvas (if applicable)
      */
@@ -71,9 +54,7 @@ export class DeviceSourceManager implements IDisposable {
         // Observables
         this.onDeviceConnectedObservable = new Observable<DeviceSource<DeviceType>>((observer) => {
             this.getDevices().forEach((device) => {
-                if (device) {
-                    this.onDeviceConnectedObservable.notifyObserver(observer, device);
-                }
+                this.onDeviceConnectedObservable.notifyObserver(observer, device);
             });
         });
         this.onInputChangedObservable = new Observable<IDeviceEvent>();
@@ -84,23 +65,20 @@ export class DeviceSourceManager implements IDisposable {
         this.getDeviceSource = this._deviceSourceManager.getDeviceSource;
         this.getDeviceSources = this._deviceSourceManager.getDeviceSources;
         this.getDevices = this._deviceSourceManager.getDevices;
-        this.enableEvents = this._deviceSourceManager.enableEvents;
-        this.disableEvents = this._deviceSourceManager.disableEvents;
+    }
 
-        this.dispose = (): void => {
-            // Null out observable refs
-            this._deviceSourceManager?.unregisterManager(this);
-            this.onDeviceConnectedObservable.clear();
-            this.onInputChangedObservable.clear();
-            this.onDeviceDisconnectedObservable.clear();
-            // Null out function refs
-            this.getDeviceSource = <T extends DeviceType>(deviceType: T, deviceSlot?: number) => { return null; };
-            this.getDeviceSources = <T extends DeviceType>(deviceType: T): ReadonlyArray<DeviceSource<T>> => { return []; };
-            this.getDevices = (): ReadonlyArray<DeviceSource<DeviceType>> => { return []; };
-            this.enableEvents = () => { };
-            this.disableEvents = () => { };
-
-            this._deviceSourceManager = null;
-        };
+    /**
+     * Dispose of DeviceSourceManager
+     */
+    public dispose(): void {
+        // Null out observable refs
+        this._deviceSourceManager.unregisterManager(this);
+        this.onDeviceConnectedObservable.clear();
+        this.onInputChangedObservable.clear();
+        this.onDeviceDisconnectedObservable.clear();
+        // Null out function refs
+        this.getDeviceSource = () => { return null; };
+        this.getDeviceSources = () => { return []; };
+        this.getDevices = () => { return []; };
     }
 }

@@ -103,12 +103,12 @@ export interface IDeviceInputSystem extends IDisposable {
     isDeviceAvailable(deviceType: DeviceType): boolean;
 
     /**
-     * Configure (or reconfigure) input events to be handled
+     * Enable listening for user input events
      */
-    configureEvents: () => void;
+    enableEvents: () => void;
 
     /**
-     * Remove handling of input events
+     * Disable listening for user input events
      */
-    unconfigureEvents: () => void;
+    disableEvents: () => void;
 }

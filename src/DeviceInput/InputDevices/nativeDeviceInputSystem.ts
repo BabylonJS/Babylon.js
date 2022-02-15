@@ -59,12 +59,18 @@ export class NativeDeviceInputSystem implements IDeviceInputSystem {
         return (deviceType === DeviceType.Mouse || deviceType === DeviceType.Touch);
     }
 
-    public configureEvents(): void {
-        // TODO: Implement on Native Side; if necessary
+    /**
+     * Enable listening for user input events
+     */
+    public enableEvents() {
+        // No action required but function required for interface, may be used later
     }
 
-    public unconfigureEvents(): void {
-        // TODO: Implement on Native Side; if necessary
+    /**
+     * Disable listening for user input events
+     */
+    public disableEvents() {
+        // No action required but function required for interface, may be used later
     }
 
     /**
