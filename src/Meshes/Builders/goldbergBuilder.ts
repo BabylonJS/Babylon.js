@@ -168,8 +168,8 @@ export function CreateGoldberg(name: string, options: GoldbergCreationOption, sc
     for (let f = 0; f < geodesicData.vertex.length; f++) {
         goldberg.goldbergData.faceCenters.push(Vector3.FromArray(geodesicData.vertex[f]));
         goldberg.goldbergData.faceCenters[f].x *= sizeX;
-		goldberg.goldbergData.faceCenters[f].y *= sizeY;
-		goldberg.goldbergData.faceCenters[f].z *= sizeZ;
+        goldberg.goldbergData.faceCenters[f].y *= sizeY;
+        goldberg.goldbergData.faceCenters[f].z *= sizeZ;
         goldberg.goldbergData.faceColors.push(new Color4(1, 1, 1, 1));
     }
 
