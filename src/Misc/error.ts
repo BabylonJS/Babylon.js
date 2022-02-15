@@ -16,7 +16,7 @@ export abstract class BaseError extends Error {
 /**
  * Error codes for BaseError
  */
- export const ErrorCodes = {
+export const ErrorCodes = {
     // Mesh errors 0-999
     /** Invalid or empty mesh vertex positions. */
     MeshInvalidPositionsError: 0,
@@ -50,7 +50,7 @@ export type ErrorCodesType = typeof ErrorCodes[keyof typeof ErrorCodes];
 /**
  * Application runtime error
  */
- export class RuntimeError extends BaseError {
+export class RuntimeError extends BaseError {
     /**
      * The error code
      */
