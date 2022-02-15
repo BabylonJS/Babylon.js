@@ -65,13 +65,13 @@ export type ErrorCodesType = typeof ErrorCodes[keyof typeof ErrorCodes];
      * Creates a new RuntimeError
      * @param message defines the message of the error
      * @param errorCode the error code
-     * @param innerException the error that caused the outer error
+     * @param innerError the error that caused the outer error
      */
-    public constructor(message: string, errorCode: ErrorCodesType, innerException?: Error) {
+    public constructor(message: string, errorCode: ErrorCodesType, innerError?: Error) {
         super(message);
 
         this.errorCode = errorCode;
-        this.innerError = innerException;
+        this.innerError = innerError;
 
         this.name = "RuntimeError";
         BaseError._setPrototypeOf(this, RuntimeError.prototype);
