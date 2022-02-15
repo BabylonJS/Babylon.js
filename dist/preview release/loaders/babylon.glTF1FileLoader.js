@@ -2907,6 +2907,10 @@ var GLTFFileLoader = /** @class */ (function () {
          */
         this.useSRGBBuffers = true;
         /**
+         * When loading glTF animations, which are defined in seconds, target them to this FPS.
+         */
+        this.targetFps = 60;
+        /**
         * Function called before loading a url referenced by the asset.
         */
         this.preprocessUrlAsync = function (url) { return Promise.resolve(url); };

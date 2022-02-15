@@ -122,7 +122,7 @@ export class TreeItemSelectableComponent extends React.Component<
     }
 
     render() {
-        if (this.props.entity === this.props.globalState.workbench.trueRootContainer || this.props.entity === this.props.globalState.workbench.visibleRegionContainer) {
+        if (this.props.entity === this.props.globalState.workbench.trueRootContainer || this.props.entity === this.props.globalState.workbench.visibleRegionContainer || this.props.entity === this.props.globalState.workbench.panAndZoomContainer) {
             return this.renderChildren(true, false);
         }
         const marginStyle = {

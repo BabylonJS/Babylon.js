@@ -191,6 +191,10 @@ declare module BABYLON {
          */
         useSRGBBuffers: boolean;
         /**
+         * When loading glTF animations, which are defined in seconds, target them to this FPS.
+         */
+        targetFps: number;
+        /**
         * Function called before loading a url referenced by the asset.
         */
         preprocessUrlAsync: (url: string) => Promise<string>;
@@ -1105,8 +1109,6 @@ declare module BABYLON.GLTF2.Loader {
         /** @hidden */
         _primitiveBabylonMeshes?: AbstractMesh[];
         /** @hidden */
-        _babylonBones?: Bone[];
-        /** @hidden */
         _numMorphTargets?: number;
     }
     /** @hidden */
@@ -1343,9 +1345,9 @@ declare module BABYLON.GLTF2 {
         _babylonLights: Light[];
         /** @hidden */
         _disableInstancedMesh: number;
+        private readonly _parent;
+        private readonly _extensions;
         private _disposed;
-        private _parent;
-        private _extensions;
         private _rootUrl;
         private _fileName;
         private _uniqueRootUrl;
@@ -1354,6 +1356,7 @@ declare module BABYLON.GLTF2 {
         private _babylonScene;
         private _rootBabylonMesh;
         private _defaultBabylonMaterialData;
+        private _postSceneLoadActions;
         private static _RegisteredExtensions;
         /**
          * The default glTF sampler.
@@ -1446,6 +1449,7 @@ declare module BABYLON.GLTF2 {
         private static _LoadTransform;
         private _loadSkinAsync;
         private _loadBones;
+        private _findSkeletonRootNode;
         private _loadBone;
         private _loadSkinInverseBindMatricesDataAsync;
         private _updateBoneMatrices;

@@ -440,7 +440,7 @@ declare module "babylonjs-inspector/sharedUiComponents/lines/targetsProxy" {
      * @param setter an optional setter function to override the default setter behavior
      * @returns a proxy object that can be passed as a target into the input
      */
-    export function makeTargetsProxy(targets: any[], onPropertyChangedObservable?: Observable<PropertyChangedEvent>): {};
+    export function makeTargetsProxy<Type>(targets: Type[], onPropertyChangedObservable?: Observable<PropertyChangedEvent>, getProperty?: (target: Type, property: keyof Type) => any): any;
 }
 declare module "babylonjs-inspector/sharedUiComponents/lines/checkBoxLineComponent" {
     import * as React from "react";
@@ -852,6 +852,9 @@ declare module "babylonjs-inspector/sharedUiComponents/lines/floatLineComponent"
         icon?: string;
         iconLabel?: string;
         defaultValue?: number;
+        unit?: string;
+        onUnitClicked?: () => void;
+        unitLocked?: boolean;
     }
     export class FloatLineComponent extends React.Component<IFloatLineComponentProps, {
         value: string;
@@ -987,6 +990,9 @@ declare module "babylonjs-inspector/sharedUiComponents/lines/textInputLineCompon
         noUnderline?: boolean;
         numbersOnly?: boolean;
         delayInput?: boolean;
+        unit?: string;
+        onUnitClicked?: (unit: string) => void;
+        unitLocked?: boolean;
     }
     export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, {
         value: string;
@@ -1331,6 +1337,11 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
     import { IAnimatable } from "babylonjs/Animations/animatable.interface";
     import { AnimationGroup, TargetedAnimation } from "babylonjs/Animations/animationGroup";
     import { AnimationKeyInterpolation } from "babylonjs/Animations/animationKey";
+    export interface IActiveAnimationChangedOptions {
+        evaluateKeys?: boolean;
+        frame?: boolean;
+        range?: boolean;
+    }
     export class Context {
         title: string;
         animations: Nullable<Animation[] | TargetedAnimation[]>;
@@ -1355,7 +1366,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         referenceMinFrame: number;
         referenceMaxFrame: number;
         focusedInput: boolean;
-        onActiveAnimationChanged: Observable<void>;
+        onActiveAnimationChanged: Observable<IActiveAnimationChangedOptions>;
         onActiveKeyPointChanged: Observable<void>;
         onHostWindowResized: Observable<void>;
         onSelectAllKeys: Observable<void>;
@@ -1696,7 +1707,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         private _invertY;
         private _buildFrameIntervalAxis;
         private _buildYAxis;
-        private _frame;
+        private _frameFromActiveKeys;
         private _dropKeyFrames;
         private _onPointerDown;
         private _onPointerMove;
@@ -3556,7 +3567,6 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mes
         changeDisplayMode(): void;
         changeDisplayOptions(option: string, value: number): void;
         shouldComponentUpdate(nextProps: ISkeletonPropertyGridComponentProps): boolean;
-        onOverrideMeshLink(): void;
         render(): JSX.Element;
     }
 }
@@ -5446,7 +5456,7 @@ declare module INSPECTOR {
      * @param setter an optional setter function to override the default setter behavior
      * @returns a proxy object that can be passed as a target into the input
      */
-    export function makeTargetsProxy(targets: any[], onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>): {};
+    export function makeTargetsProxy<Type>(targets: Type[], onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>, getProperty?: (target: Type, property: keyof Type) => any): any;
 }
 declare module INSPECTOR {
     export interface ICheckBoxLineComponentProps {
@@ -5826,6 +5836,9 @@ declare module INSPECTOR {
         icon?: string;
         iconLabel?: string;
         defaultValue?: number;
+        unit?: string;
+        onUnitClicked?: () => void;
+        unitLocked?: boolean;
     }
     export class FloatLineComponent extends React.Component<IFloatLineComponentProps, {
         value: string;
@@ -5948,6 +5961,9 @@ declare module INSPECTOR {
         noUnderline?: boolean;
         numbersOnly?: boolean;
         delayInput?: boolean;
+        unit?: string;
+        onUnitClicked?: (unit: string) => void;
+        unitLocked?: boolean;
     }
     export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, {
         value: string;
@@ -6253,6 +6269,11 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    export interface IActiveAnimationChangedOptions {
+        evaluateKeys?: boolean;
+        frame?: boolean;
+        range?: boolean;
+    }
     export class Context {
         title: string;
         animations: BABYLON.Nullable<BABYLON.Animation[] | BABYLON.TargetedAnimation[]>;
@@ -6277,7 +6298,7 @@ declare module INSPECTOR {
         referenceMinFrame: number;
         referenceMaxFrame: number;
         focusedInput: boolean;
-        onActiveAnimationChanged: BABYLON.Observable<void>;
+        onActiveAnimationChanged: BABYLON.Observable<IActiveAnimationChangedOptions>;
         onActiveKeyPointChanged: BABYLON.Observable<void>;
         onHostWindowResized: BABYLON.Observable<void>;
         onSelectAllKeys: BABYLON.Observable<void>;
@@ -6588,7 +6609,7 @@ declare module INSPECTOR {
         private _invertY;
         private _buildFrameIntervalAxis;
         private _buildYAxis;
-        private _frame;
+        private _frameFromActiveKeys;
         private _dropKeyFrames;
         private _onPointerDown;
         private _onPointerMove;
@@ -8077,7 +8098,6 @@ declare module INSPECTOR {
         changeDisplayMode(): void;
         changeDisplayOptions(option: string, value: number): void;
         shouldComponentUpdate(nextProps: ISkeletonPropertyGridComponentProps): boolean;
-        onOverrideMeshLink(): void;
         render(): JSX.Element;
     }
 }

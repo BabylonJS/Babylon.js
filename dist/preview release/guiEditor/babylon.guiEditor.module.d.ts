@@ -31,6 +31,73 @@ declare module "babylonjs-gui-editor/tools" {
         static reorderGrid(grid: Grid, index: number, control: Control, cell: Vector2): void;
     }
 }
+declare module "babylonjs-gui-editor/sharedUiComponents/propertyChangedEvent" {
+    export class PropertyChangedEvent {
+        object: any;
+        property: string;
+        value: any;
+        initialValue: any;
+        allowNullValue?: boolean;
+    }
+}
+declare module "babylonjs-gui-editor/diagram/coordinateHelper" {
+    import { Control } from "babylonjs-gui/2D/controls/control";
+    import { Matrix2D } from "babylonjs-gui/2D/math2D";
+    import { Vector2 } from "babylonjs/Maths/math.vector";
+    import { Observable } from "babylonjs/Misc/observable";
+    import { GlobalState } from "babylonjs-gui-editor/globalState";
+    import { PropertyChangedEvent } from "babylonjs-gui-editor/sharedUiComponents/propertyChangedEvent";
+    export type DimensionProperties = "width" | "left" | "height" | "top" | "paddingLeft" | "paddingRight" | "paddingTop" | "paddingBottom";
+    export class Rect {
+        top: number;
+        left: number;
+        right: number;
+        bottom: number;
+        constructor(left: number, top: number, right: number, bottom: number);
+        get center(): Vector2;
+        get width(): number;
+        get height(): number;
+    }
+    export class CoordinateHelper {
+        private static _matrixCache;
+        static globalState: GlobalState;
+        /**
+         * Get the scaling of a specific GUI control
+         * @param node the node for which we are getting the scaling
+         * @param relative should we return only the relative scaling (relative to the parent)
+         * @returns an X,Y vector of the scaling
+         */
+        static getScale(node: Control, relative?: boolean): Vector2;
+        static getRotation(node: Control, relative?: boolean): number;
+        /**
+         * This function calculates a local matrix for a node, including it's full transformation and pivot point
+         *
+         * @param node the node to calculate the matrix for
+         * @param useStoredValues should the stored (cached) values be used to calculate the matrix
+         * @returns a new matrix for the control
+         */
+        static getNodeMatrix(node: Control, storedValues?: Rect): Matrix2D;
+        /**
+         * Using the node's tree, calculate its world matrix and return it
+         * @param node the node to calculate the matrix for
+         * @param useStoredValuesIfPossible used stored valued (cached when pointer down is clicked)
+         * @returns the world matrix for this node
+         */
+        static nodeToRTTWorldMatrix(node: Control, storedValues?: Rect): Matrix2D;
+        static nodeToRTTSpace(node: Control, x: number, y: number, reference?: Vector2, storedValues?: Rect): Vector2;
+        static rttToLocalNodeSpace(node: Control, x: number, y: number, reference?: Vector2, storedValues?: Rect): Vector2;
+        static rttToCanvasSpace(x: number, y: number): Vector2;
+        static mousePointerToRTTSpace(node: Control, x?: number, y?: number): Vector2;
+        private static resetMatrixArray;
+        static computeLocalBounds(node: Control): Rect;
+        /**
+         * converts a node's dimensions to percentage, properties can be specified as a list, or can convert all
+        */
+        static convertToPercentage(guiControl: Control, properties?: DimensionProperties[], onPropertyChangedObservable?: Observable<PropertyChangedEvent>): void;
+        static round(value: number): number;
+        static convertToPixels(guiControl: Control, properties?: DimensionProperties[], onPropertyChangedObservable?: Observable<PropertyChangedEvent>): void;
+    }
+}
 declare module "babylonjs-gui-editor/diagram/workbench" {
     import * as React from "react";
     import { GlobalState } from "babylonjs-gui-editor/globalState";
@@ -80,8 +147,9 @@ declare module "babylonjs-gui-editor/diagram/workbench" {
         _liveGuiTextureRerender: boolean;
         private _anyControlClicked;
         private _visibleRegionContainer;
-        private _panAndZoomContainer;
         get visibleRegionContainer(): Container;
+        private _panAndZoomContainer;
+        get panAndZoomContainer(): Container;
         private _trueRootContainer;
         set trueRootContainer(value: Container);
         get trueRootContainer(): Container;
@@ -129,7 +197,6 @@ declare module "babylonjs-gui-editor/diagram/workbench" {
         isSelected(value: boolean, guiNode: Control): void;
         clicked: boolean;
         _onMove(guiControl: Control, evt: Vector2, startPos: Vector2, ignorClick?: boolean): boolean;
-        convertToPercentage(guiControl: Control, includeScale: boolean): void;
         onMove(evt: React.PointerEvent): void;
         private _screenToTexturePosition;
         private getScaledPointerPosition;
@@ -146,15 +213,6 @@ declare module "babylonjs-gui-editor/diagram/workbench" {
         render(): JSX.Element;
     }
 }
-declare module "babylonjs-gui-editor/sharedUiComponents/propertyChangedEvent" {
-    export class PropertyChangedEvent {
-        object: any;
-        property: string;
-        value: any;
-        initialValue: any;
-        allowNullValue?: boolean;
-    }
-}
 declare module "babylonjs-gui-editor/sharedUiComponents/tabs/propertyGrids/lockObject" {
     /**
      * Class used to provide lock mechanism
@@ -164,55 +222,6 @@ declare module "babylonjs-gui-editor/sharedUiComponents/tabs/propertyGrids/lockO
          * Gets or set if the lock is engaged
          */
         lock: boolean;
-    }
-}
-declare module "babylonjs-gui-editor/diagram/coordinateHelper" {
-    import { Control } from "babylonjs-gui/2D/controls/control";
-    import { Matrix2D } from "babylonjs-gui/2D/math2D";
-    import { Vector2 } from "babylonjs/Maths/math.vector";
-    import { GlobalState } from "babylonjs-gui-editor/globalState";
-    export class Rect {
-        top: number;
-        left: number;
-        right: number;
-        bottom: number;
-        constructor(left: number, top: number, right: number, bottom: number);
-        get center(): Vector2;
-        get width(): number;
-        get height(): number;
-    }
-    export class CoordinateHelper {
-        private static _matrixCache;
-        static globalState: GlobalState;
-        /**
-         * Get the scaling of a specific GUI control
-         * @param node the node for which we are getting the scaling
-         * @param relative should we return only the relative scaling (relative to the parent)
-         * @returns an X,Y vector of the scaling
-         */
-        static getScale(node: Control, relative?: boolean): Vector2;
-        static getRotation(node: Control, relative?: boolean): number;
-        /**
-         * This function calculates a local matrix for a node, including it's full transformation and pivot point
-         *
-         * @param node the node to calculate the matrix for
-         * @param useStoredValues should the stored (cached) values be used to calculate the matrix
-         * @returns a new matrix for the control
-         */
-        static getNodeMatrix(node: Control, storedValues?: Rect): Matrix2D;
-        /**
-         * Using the node's tree, calculate its world matrix and return it
-         * @param node the node to calculate the matrix for
-         * @param useStoredValuesIfPossible used stored valued (cached when pointer down is clicked)
-         * @returns the world matrix for this node
-         */
-        static nodeToRTTWorldMatrix(node: Control, storedValues?: Rect): Matrix2D;
-        static nodeToRTTSpace(node: Control, x: number, y: number, reference?: Vector2, storedValues?: Rect): Vector2;
-        static rttToLocalNodeSpace(node: Control, x: number, y: number, reference?: Vector2, storedValues?: Rect): Vector2;
-        static rttToCanvasSpace(x: number, y: number): Vector2;
-        static mousePointerToRTTSpace(node: Control, x?: number, y?: number): Vector2;
-        private static resetMatrixArray;
-        static computeLocalBounds(node: Control): Rect;
     }
 }
 declare module "babylonjs-gui-editor/diagram/guiGizmo" {
@@ -392,7 +401,7 @@ declare module "babylonjs-gui-editor/sharedUiComponents/lines/targetsProxy" {
      * @param setter an optional setter function to override the default setter behavior
      * @returns a proxy object that can be passed as a target into the input
      */
-    export function makeTargetsProxy(targets: any[], onPropertyChangedObservable?: Observable<PropertyChangedEvent>): {};
+    export function makeTargetsProxy<Type>(targets: Type[], onPropertyChangedObservable?: Observable<PropertyChangedEvent>, getProperty?: (target: Type, property: keyof Type) => any): any;
 }
 declare module "babylonjs-gui-editor/sharedUiComponents/lines/checkBoxLineComponent" {
     import * as React from "react";
@@ -487,6 +496,9 @@ declare module "babylonjs-gui-editor/sharedUiComponents/lines/floatLineComponent
         icon?: string;
         iconLabel?: string;
         defaultValue?: number;
+        unit?: string;
+        onUnitClicked?: () => void;
+        unitLocked?: boolean;
     }
     export class FloatLineComponent extends React.Component<IFloatLineComponentProps, {
         value: string;
@@ -561,6 +573,9 @@ declare module "babylonjs-gui-editor/sharedUiComponents/lines/textInputLineCompo
         noUnderline?: boolean;
         numbersOnly?: boolean;
         delayInput?: boolean;
+        unit?: string;
+        onUnitClicked?: (unit: string) => void;
+        unitLocked?: boolean;
     }
     export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, {
         value: string;
@@ -785,8 +800,6 @@ declare module "babylonjs-gui-editor/components/propertyTab/propertyGrids/gui/co
         onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     }
     export class CommonControlPropertyGridComponent extends React.Component<ICommonControlPropertyGridComponentProps> {
-        private _width;
-        private _height;
         constructor(props: ICommonControlPropertyGridComponentProps);
         private _updateAlignment;
         private _checkAndUpdateValues;
@@ -975,6 +988,9 @@ declare module "babylonjs-gui-editor/components/propertyTab/propertyGrids/gui/im
     }
     export class ImagePropertyGridComponent extends React.Component<IImagePropertyGridComponentProps> {
         constructor(props: IImagePropertyGridComponentProps);
+        toggleAnimations(on: boolean): void;
+        getMaxCells(): number;
+        updateCellSize(): void;
         render(): JSX.Element;
     }
 }
@@ -1197,7 +1213,7 @@ declare module "babylonjs-gui-editor/guiNodeTools" {
     import { ImageBasedSlider } from "babylonjs-gui/2D/controls/sliders/imageBasedSlider";
     export class GUINodeTools {
         static ImageControlDefaultUrl: string;
-        static CreateControlFromString(data: string): Grid | Line | Rectangle | Image | TextBlock | Slider | ImageBasedSlider | RadioButton | InputText | ColorPicker | StackPanel | Ellipse | Checkbox | DisplayGrid;
+        static CreateControlFromString(data: string): Grid | Rectangle | Line | Image | TextBlock | Slider | ImageBasedSlider | RadioButton | InputText | ColorPicker | StackPanel | Ellipse | Checkbox | DisplayGrid;
     }
 }
 declare module "babylonjs-gui-editor/components/propertyTab/propertyTabComponent" {
@@ -1263,13 +1279,20 @@ declare module "babylonjs-gui-editor/sharedComponents/messageDialog" {
 declare module "babylonjs-gui-editor/components/sceneExplorer/treeItemLabelComponent" {
     import * as React from "react";
     interface ITreeItemLabelComponentProps {
-        label: string;
+        label?: string;
         onClick?: () => void;
-        color: string;
+        onChange: (newValue: string) => void;
+        bracket: string;
+        renaming: boolean;
+        setRenaming: (renaming: boolean) => void;
     }
-    export class TreeItemLabelComponent extends React.Component<ITreeItemLabelComponentProps> {
+    interface ITreeItemLabelState {
+        value: string;
+    }
+    export class TreeItemLabelComponent extends React.Component<ITreeItemLabelComponentProps, ITreeItemLabelState> {
         constructor(props: ITreeItemLabelComponentProps);
         onClick(): void;
+        onBlur(): void;
         render(): JSX.Element;
     }
 }
@@ -1309,10 +1332,12 @@ declare module "babylonjs-gui-editor/components/sceneExplorer/entities/gui/contr
     export class ControlTreeItemComponent extends React.Component<IControlTreeItemComponentProps, {
         isActive: boolean;
         isVisible: boolean;
+        isRenaming: boolean;
     }> {
         constructor(props: IControlTreeItemComponentProps);
         highlight(): void;
         switchVisibility(): void;
+        onRename(name: string): void;
         render(): JSX.Element;
     }
 }
@@ -2418,6 +2443,67 @@ declare module GUIEDITOR {
     }
 }
 declare module GUIEDITOR {
+    export class PropertyChangedEvent {
+        object: any;
+        property: string;
+        value: any;
+        initialValue: any;
+        allowNullValue?: boolean;
+    }
+}
+declare module GUIEDITOR {
+    export type DimensionProperties = "width" | "left" | "height" | "top" | "paddingLeft" | "paddingRight" | "paddingTop" | "paddingBottom";
+    export class Rect {
+        top: number;
+        left: number;
+        right: number;
+        bottom: number;
+        constructor(left: number, top: number, right: number, bottom: number);
+        get center(): BABYLON.Vector2;
+        get width(): number;
+        get height(): number;
+    }
+    export class CoordinateHelper {
+        private static _matrixCache;
+        static globalState: GlobalState;
+        /**
+         * Get the scaling of a specific GUI control
+         * @param node the node for which we are getting the scaling
+         * @param relative should we return only the relative scaling (relative to the parent)
+         * @returns an X,Y vector of the scaling
+         */
+        static getScale(node: Control, relative?: boolean): BABYLON.Vector2;
+        static getRotation(node: Control, relative?: boolean): number;
+        /**
+         * This function calculates a local matrix for a node, including it's full transformation and pivot point
+         *
+         * @param node the node to calculate the matrix for
+         * @param useStoredValues should the stored (cached) values be used to calculate the matrix
+         * @returns a new matrix for the control
+         */
+        static getNodeMatrix(node: Control, storedValues?: Rect): Matrix2D;
+        /**
+         * Using the node's tree, calculate its world matrix and return it
+         * @param node the node to calculate the matrix for
+         * @param useStoredValuesIfPossible used stored valued (cached when pointer down is clicked)
+         * @returns the world matrix for this node
+         */
+        static nodeToRTTWorldMatrix(node: Control, storedValues?: Rect): Matrix2D;
+        static nodeToRTTSpace(node: Control, x: number, y: number, reference?: BABYLON.Vector2, storedValues?: Rect): BABYLON.Vector2;
+        static rttToLocalNodeSpace(node: Control, x: number, y: number, reference?: BABYLON.Vector2, storedValues?: Rect): BABYLON.Vector2;
+        static rttToCanvasSpace(x: number, y: number): BABYLON.Vector2;
+        static mousePointerToRTTSpace(node: Control, x?: number, y?: number): BABYLON.Vector2;
+        private static resetMatrixArray;
+        static computeLocalBounds(node: Control): Rect;
+        /**
+         * converts a node's dimensions to percentage, properties can be specified as a list, or can convert all
+        */
+        static convertToPercentage(guiControl: Control, properties?: DimensionProperties[], onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>): void;
+        static round(value: number): number;
+        static convertToPixels(guiControl: Control, properties?: DimensionProperties[], onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>): void;
+    }
+}
+declare module GUIEDITOR {
     export interface IWorkbenchComponentProps {
         globalState: GlobalState;
     }
@@ -2457,8 +2543,9 @@ declare module GUIEDITOR {
         _liveGuiTextureRerender: boolean;
         private _anyControlClicked;
         private _visibleRegionContainer;
-        private _panAndZoomContainer;
         get visibleRegionContainer(): Container;
+        private _panAndZoomContainer;
+        get panAndZoomContainer(): Container;
         private _trueRootContainer;
         set trueRootContainer(value: Container);
         get trueRootContainer(): Container;
@@ -2506,7 +2593,6 @@ declare module GUIEDITOR {
         isSelected(value: boolean, guiNode: Control): void;
         clicked: boolean;
         _onMove(guiControl: Control, evt: BABYLON.Vector2, startPos: BABYLON.Vector2, ignorClick?: boolean): boolean;
-        convertToPercentage(guiControl: Control, includeScale: boolean): void;
         onMove(evt: React.PointerEvent): void;
         private _screenToTexturePosition;
         private getScaledPointerPosition;
@@ -2524,15 +2610,6 @@ declare module GUIEDITOR {
     }
 }
 declare module GUIEDITOR {
-    export class PropertyChangedEvent {
-        object: any;
-        property: string;
-        value: any;
-        initialValue: any;
-        allowNullValue?: boolean;
-    }
-}
-declare module GUIEDITOR {
     /**
      * Class used to provide lock mechanism
      */
@@ -2541,51 +2618,6 @@ declare module GUIEDITOR {
          * Gets or set if the lock is engaged
          */
         lock: boolean;
-    }
-}
-declare module GUIEDITOR {
-    export class Rect {
-        top: number;
-        left: number;
-        right: number;
-        bottom: number;
-        constructor(left: number, top: number, right: number, bottom: number);
-        get center(): BABYLON.Vector2;
-        get width(): number;
-        get height(): number;
-    }
-    export class CoordinateHelper {
-        private static _matrixCache;
-        static globalState: GlobalState;
-        /**
-         * Get the scaling of a specific GUI control
-         * @param node the node for which we are getting the scaling
-         * @param relative should we return only the relative scaling (relative to the parent)
-         * @returns an X,Y vector of the scaling
-         */
-        static getScale(node: Control, relative?: boolean): BABYLON.Vector2;
-        static getRotation(node: Control, relative?: boolean): number;
-        /**
-         * This function calculates a local matrix for a node, including it's full transformation and pivot point
-         *
-         * @param node the node to calculate the matrix for
-         * @param useStoredValues should the stored (cached) values be used to calculate the matrix
-         * @returns a new matrix for the control
-         */
-        static getNodeMatrix(node: Control, storedValues?: Rect): Matrix2D;
-        /**
-         * Using the node's tree, calculate its world matrix and return it
-         * @param node the node to calculate the matrix for
-         * @param useStoredValuesIfPossible used stored valued (cached when pointer down is clicked)
-         * @returns the world matrix for this node
-         */
-        static nodeToRTTWorldMatrix(node: Control, storedValues?: Rect): Matrix2D;
-        static nodeToRTTSpace(node: Control, x: number, y: number, reference?: BABYLON.Vector2, storedValues?: Rect): BABYLON.Vector2;
-        static rttToLocalNodeSpace(node: Control, x: number, y: number, reference?: BABYLON.Vector2, storedValues?: Rect): BABYLON.Vector2;
-        static rttToCanvasSpace(x: number, y: number): BABYLON.Vector2;
-        static mousePointerToRTTSpace(node: Control, x?: number, y?: number): BABYLON.Vector2;
-        private static resetMatrixArray;
-        static computeLocalBounds(node: Control): Rect;
     }
 }
 declare module GUIEDITOR {
@@ -2745,7 +2777,7 @@ declare module GUIEDITOR {
      * @param setter an optional setter function to override the default setter behavior
      * @returns a proxy object that can be passed as a target into the input
      */
-    export function makeTargetsProxy(targets: any[], onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>): {};
+    export function makeTargetsProxy<Type>(targets: Type[], onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>, getProperty?: (target: Type, property: keyof Type) => any): any;
 }
 declare module GUIEDITOR {
     export interface ICheckBoxLineComponentProps {
@@ -2832,6 +2864,9 @@ declare module GUIEDITOR {
         icon?: string;
         iconLabel?: string;
         defaultValue?: number;
+        unit?: string;
+        onUnitClicked?: () => void;
+        unitLocked?: boolean;
     }
     export class FloatLineComponent extends React.Component<IFloatLineComponentProps, {
         value: string;
@@ -2898,6 +2933,9 @@ declare module GUIEDITOR {
         noUnderline?: boolean;
         numbersOnly?: boolean;
         delayInput?: boolean;
+        unit?: string;
+        onUnitClicked?: (unit: string) => void;
+        unitLocked?: boolean;
     }
     export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, {
         value: string;
@@ -3104,8 +3142,6 @@ declare module GUIEDITOR {
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
     }
     export class CommonControlPropertyGridComponent extends React.Component<ICommonControlPropertyGridComponentProps> {
-        private _width;
-        private _height;
         constructor(props: ICommonControlPropertyGridComponentProps);
         private _updateAlignment;
         private _checkAndUpdateValues;
@@ -3245,6 +3281,9 @@ declare module GUIEDITOR {
     }
     export class ImagePropertyGridComponent extends React.Component<IImagePropertyGridComponentProps> {
         constructor(props: IImagePropertyGridComponentProps);
+        toggleAnimations(on: boolean): void;
+        getMaxCells(): number;
+        updateCellSize(): void;
         render(): JSX.Element;
     }
 }
@@ -3398,7 +3437,7 @@ declare module GUIEDITOR {
 declare module GUIEDITOR {
     export class GUINodeTools {
         static ImageControlDefaultUrl: string;
-        static CreateControlFromString(data: string): Grid | Line | Rectangle | Image | TextBlock | Slider | ImageBasedSlider | RadioButton | InputText | ColorPicker | StackPanel | Ellipse | Checkbox | DisplayGrid;
+        static CreateControlFromString(data: string): Grid | Rectangle | Line | Image | TextBlock | Slider | ImageBasedSlider | RadioButton | InputText | ColorPicker | StackPanel | Ellipse | Checkbox | DisplayGrid;
     }
 }
 declare module GUIEDITOR {
@@ -3454,13 +3493,20 @@ declare module GUIEDITOR {
 }
 declare module GUIEDITOR {
     interface ITreeItemLabelComponentProps {
-        label: string;
+        label?: string;
         onClick?: () => void;
-        color: string;
+        onChange: (newValue: string) => void;
+        bracket: string;
+        renaming: boolean;
+        setRenaming: (renaming: boolean) => void;
     }
-    export class TreeItemLabelComponent extends React.Component<ITreeItemLabelComponentProps> {
+    interface ITreeItemLabelState {
+        value: string;
+    }
+    export class TreeItemLabelComponent extends React.Component<ITreeItemLabelComponentProps, ITreeItemLabelState> {
         constructor(props: ITreeItemLabelComponentProps);
         onClick(): void;
+        onBlur(): void;
         render(): JSX.Element;
     }
 }
@@ -3494,10 +3540,12 @@ declare module GUIEDITOR {
     export class ControlTreeItemComponent extends React.Component<IControlTreeItemComponentProps, {
         isActive: boolean;
         isVisible: boolean;
+        isRenaming: boolean;
     }> {
         constructor(props: IControlTreeItemComponentProps);
         highlight(): void;
         switchVisibility(): void;
+        onRename(name: string): void;
         render(): JSX.Element;
     }
 }

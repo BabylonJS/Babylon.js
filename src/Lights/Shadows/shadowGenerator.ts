@@ -1221,12 +1221,12 @@ export class ShadowGenerator implements IShadowGenerator {
             // Draw
             renderingMesh._processRendering(effectiveMesh, subMesh, effect, material.fillMode, batch, hardwareInstancedRendering,
                 (isInstance, worldOverride) => {
-                    if (effectiveMesh !== renderingMesh) {
+                    if (effectiveMesh !== renderingMesh && !isInstance) {
                         renderingMesh.getMeshUniformBuffer().bindToEffect(effect, "Mesh");
                         renderingMesh.transferToEffect(worldOverride);
                     } else {
                         effectiveMesh.getMeshUniformBuffer().bindToEffect(effect, "Mesh");
-                        effectiveMesh.transferToEffect(world);
+                        effectiveMesh.transferToEffect(isInstance ? worldOverride : world);
                     }
                 });
 

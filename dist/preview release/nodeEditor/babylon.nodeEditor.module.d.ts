@@ -2170,7 +2170,7 @@ declare module "babylonjs-node-editor/sharedUiComponents/lines/targetsProxy" {
      * @param setter an optional setter function to override the default setter behavior
      * @returns a proxy object that can be passed as a target into the input
      */
-    export function makeTargetsProxy(targets: any[], onPropertyChangedObservable?: Observable<PropertyChangedEvent>): {};
+    export function makeTargetsProxy<Type>(targets: Type[], onPropertyChangedObservable?: Observable<PropertyChangedEvent>, getProperty?: (target: Type, property: keyof Type) => any): any;
 }
 declare module "babylonjs-node-editor/sharedUiComponents/lines/checkBoxLineComponent" {
     import * as React from "react";
@@ -2294,6 +2294,9 @@ declare module "babylonjs-node-editor/sharedUiComponents/lines/textInputLineComp
         noUnderline?: boolean;
         numbersOnly?: boolean;
         delayInput?: boolean;
+        unit?: string;
+        onUnitClicked?: (unit: string) => void;
+        unitLocked?: boolean;
     }
     export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, {
         value: string;
@@ -2505,6 +2508,9 @@ declare module "babylonjs-node-editor/sharedUiComponents/lines/floatLineComponen
         icon?: string;
         iconLabel?: string;
         defaultValue?: number;
+        unit?: string;
+        onUnitClicked?: () => void;
+        unitLocked?: boolean;
     }
     export class FloatLineComponent extends React.Component<IFloatLineComponentProps, {
         value: string;
@@ -4934,7 +4940,7 @@ declare module NODEEDITOR {
      * @param setter an optional setter function to override the default setter behavior
      * @returns a proxy object that can be passed as a target into the input
      */
-    export function makeTargetsProxy(targets: any[], onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>): {};
+    export function makeTargetsProxy<Type>(targets: Type[], onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>, getProperty?: (target: Type, property: keyof Type) => any): any;
 }
 declare module NODEEDITOR {
     export interface ICheckBoxLineComponentProps {
@@ -5048,6 +5054,9 @@ declare module NODEEDITOR {
         noUnderline?: boolean;
         numbersOnly?: boolean;
         delayInput?: boolean;
+        unit?: string;
+        onUnitClicked?: (unit: string) => void;
+        unitLocked?: boolean;
     }
     export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, {
         value: string;
@@ -5235,6 +5244,9 @@ declare module NODEEDITOR {
         icon?: string;
         iconLabel?: string;
         defaultValue?: number;
+        unit?: string;
+        onUnitClicked?: () => void;
+        unitLocked?: boolean;
     }
     export class FloatLineComponent extends React.Component<IFloatLineComponentProps, {
         value: string;

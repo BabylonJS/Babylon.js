@@ -1777,6 +1777,23 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
         result.attach();
         return result;
     };
+    /**
+     * Scales the texture
+     * @param ratio the scale factor to apply to both width and height
+     */
+    AdvancedDynamicTexture.prototype.scale = function (ratio) {
+        _super.prototype.scale.call(this, ratio);
+        this.markAsDirty();
+    };
+    /**
+     * Resizes the texture
+     * @param width the new width
+     * @param height the new height
+     */
+    AdvancedDynamicTexture.prototype.scaleTo = function (width, height) {
+        _super.prototype.scaleTo.call(this, width, height);
+        this.markAsDirty();
+    };
     /** Define the Uurl to load snippets */
     AdvancedDynamicTexture.SnippetUrl = "https://snippet.babylonjs.com";
     /** Indicates if some optimizations can be performed in GUI GPU management (the downside is additional memory/GPU texture memory used) */
@@ -5361,6 +5378,9 @@ var Control = /** @class */ (function () {
             this._markAsDirty();
             // if this control or any of it's descendants are under a pointer, we need to fire a pointerOut event
             var recursivelyFirePointerOut = function (control) {
+                if (!control.host) {
+                    return;
+                }
                 for (var pointer in control.host._lastControlOver) {
                     if (control === _this.host._lastControlOver[pointer]) {
                         control._onPointerOut(control, null, true);
@@ -18346,6 +18366,10 @@ var HolographicSlate = /** @class */ (function (_super) {
      */
     HolographicSlate.prototype._applyFacade = function (facadeTexture) {
         this._contentMaterial.albedoTexture = facadeTexture;
+        // We should have a content plate by this point, but check for safety
+        if (this._contentPlate) {
+            facadeTexture.attachToMesh(this._contentPlate, true);
+        }
     };
     HolographicSlate.prototype._rebuildContent = function () {
         this._disposeFacadeTexture();
