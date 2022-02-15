@@ -19,7 +19,8 @@ import { TransformNode } from '../Meshes/transformNode';
 import { Geometry } from '../Meshes/geometry';
 import { Light } from '../Lights/light';
 import { StartsWith } from '../Misc/stringTools';
-import { ErrorCodes, RuntimeWrapperError } from "..";
+import { RuntimeWrapperError } from "../Misc/baseError";
+import { ErrorCodes } from "../Misc/errorCodes";
 
 /**
  * Type used for the success callback of ImportMesh
