@@ -5,6 +5,7 @@ import { Color4 } from '../../Maths/math.color';
 import { Mesh, _CreationDataStorage } from "../mesh";
 import { VertexData } from "../mesh.vertexData";
 import { CreateTiledPlaneVertexData } from "./tiledPlaneBuilder";
+import { CompatibilityOptions } from "../../Compat/compatibilityOptions";
 
 /**
  * Creates the VertexData for a tiled box
@@ -134,8 +135,13 @@ export function CreateTiledBoxVertexData(options: { pattern?: number, size?: num
         for (var i = 0; i < lu; i += 2) {
             newFaceUV[f][i] = faceUV[f].x + (faceUV[f].z - faceUV[f].x) * faceVertexData[f].uvs![i];
             newFaceUV[f][i + 1] = faceUV[f].y + (faceUV[f].w - faceUV[f].y) * faceVertexData[f].uvs![i + 1];
+
+            if (CompatibilityOptions.UseOpenGLOrientationForUV) {
+                newFaceUV[f][i + 1] = 1.0 - newFaceUV[f][i + 1];
+            }
         }
         uvs = uvs.concat(newFaceUV[f]);
+
         indices = indices.concat(<Array<number>>faceVertexData[f].indices!.map((x: number) => x + li));
         li += facePositions[f].length;
         if (faceColors) {
