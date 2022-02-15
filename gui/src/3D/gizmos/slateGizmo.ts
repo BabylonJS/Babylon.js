@@ -209,8 +209,7 @@ export class SlateGizmo extends Gizmo {
         offsetDimensionsMasked.copyFrom(offset).multiplyInPlace(masks.dimensions);
 
         this._attachedSlate.origin.copyFrom(originStart).addInPlace(offsetOriginMasked);
-        this._attachedSlate.dimensions.copyFrom(dimensionsStart).addInPlace(offsetDimensionsMasked);
-        this._attachedSlate.backplateDimensions.x = this._attachedSlate.dimensions.x;
+        this._attachedSlate.dimensions.set(dimensionsStart.x + offsetDimensionsMasked.x, dimensionsStart.y + offsetDimensionsMasked.y);
     }
 
     private _assignDragBehaviorCorners(
@@ -236,7 +235,7 @@ export class SlateGizmo extends Gizmo {
 
         const dragStart = (event: { position: Vector3 }) => {
             if (this.attachedSlate && this.attachedMesh) {
-                dimensionsStart.copyFrom(this.attachedSlate.dimensions);
+                dimensionsStart.set(this.attachedSlate.dimensions.x, this.attachedSlate.dimensions.y, 0.001);
                 originStart.copyFrom(this.attachedSlate.origin);
                 dragOrigin.copyFrom(event.position);
                 toObjectFrame.copyFrom(this.attachedMesh.computeWorldMatrix(true));
