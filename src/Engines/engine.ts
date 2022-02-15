@@ -2000,9 +2000,10 @@ export class Engine extends ThinEngine {
     /**
      * Get Font size information
      * @param font font name
+     * @param context the Canvas context used for rendering. Might be ignored for Web
      * @return an object containing ascent, height and descent
      */
-    public getFontOffset(font: string, context: ICanvasRenderingContext): { ascent: number, height: number, descent: number } {
+    public getFontOffset(font: string, context?: ICanvasRenderingContext): { ascent: number, height: number, descent: number } {
         var text = document.createElement("span");
         text.innerHTML = "Hg";
         text.setAttribute('style', `font: ${font} !important`);

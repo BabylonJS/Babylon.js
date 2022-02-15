@@ -2929,7 +2929,10 @@ export class NativeEngine extends Engine {
         }
     }
 
-    public getFontOffset(font: string, context: ICanvasRenderingContext): { ascent: number, height: number, descent: number } {
-        return (context as any).getTextMetrics();
+    public getFontOffset(font: string, context?: ICanvasRenderingContext): { ascent: number, height: number, descent: number } {
+        if (context) {
+            return (context as any).getTextMetrics();
+        }
+        return { ascent: 0, height: 0, descent: 0 };
     }
 }
