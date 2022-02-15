@@ -25,12 +25,11 @@ import { ShaderCodeInliner } from "./Processors/shaderCodeInliner";
 import { WebGL2ShaderProcessor } from '../Engines/WebGL/webGL2ShaderProcessors';
 import { IMaterialContext } from "./IMaterialContext";
 import { IDrawContext } from "./IDrawContext";
-import { ICanvas, IImage } from "./ICanvas";
+import { ICanvas, IImage, ICanvasRenderingContext } from "./ICanvas";
 import { IStencilState } from "../States/IStencilState";
 import { RenderTargetWrapper } from "./renderTargetWrapper";
 import { NativeData, NativeDataStream } from "./Native/nativeDataStream";
 import { INative, INativeCamera, INativeEngine } from "./Native/nativeInterfaces";
-
 declare const _native: INative;
 
 const onNativeObjectInitialized = new Observable<INative>();
@@ -2930,9 +2929,7 @@ export class NativeEngine extends Engine {
         }
     }
 
-    public getFontOffset(font: string): { ascent: number, height: number, descent: number } {
-        // TODO
-        var result = { ascent: 0, height: 0, descent: 0 };
-        return result;
+    public getFontOffset(font: string, context: ICanvasRenderingContext): { ascent: number, height: number, descent: number } {
+        return (context as any).getTextMetrics();
     }
 }

@@ -2202,7 +2202,7 @@ export class Control {
             this._font = this._fontStyle + " " + this._fontWeight + " " + this.fontSizeInPixels + "px " + this._fontFamily;
         }
 
-        this._fontOffset = Control._GetFontOffset(this._font);
+        this._fontOffset = Control._GetFontOffset(this._font, this._host.getContext());
 
         //children need to be refreshed
         this.getDescendants().forEach((child) => child._markAllAsDirty());
@@ -2321,7 +2321,7 @@ export class Control {
     private static _FontHeightSizes: { [key: string]: { ascent: number; height: number; descent: number } } = {};
 
     /** @hidden */
-    public static _GetFontOffset(font: string): { ascent: number; height: number; descent: number } {
+    public static _GetFontOffset(font: string, context: ICanvasRenderingContext): { ascent: number; height: number; descent: number } {
         if (Control._FontHeightSizes[font]) {
             return Control._FontHeightSizes[font];
         }
@@ -2331,7 +2331,7 @@ export class Control {
             throw new Error("Invalid engine. Unable to create a canvas.");
         }
 
-        var result = engine.getFontOffset(font);
+        var result = engine.getFontOffset(font, context);
         Control._FontHeightSizes[font] = result;
 
         return result;

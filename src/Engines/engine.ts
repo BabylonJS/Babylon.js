@@ -20,6 +20,7 @@ import { PerfCounter } from '../Misc/perfCounter';
 import { WebGLDataBuffer } from '../Meshes/WebGL/webGLDataBuffer';
 import { Logger } from '../Misc/logger';
 import { RenderTargetWrapper } from "./renderTargetWrapper";
+import { ICanvasRenderingContext } from "./ICanvas";
 
 import "./Extensions/engine.alpha";
 import "./Extensions/engine.readTexture";
@@ -2001,7 +2002,7 @@ export class Engine extends ThinEngine {
      * @param font font name
      * @return an object containing ascent, height and descent
      */
-    public getFontOffset(font: string): { ascent: number, height: number, descent: number } {
+    public getFontOffset(font: string, context: ICanvasRenderingContext): { ascent: number, height: number, descent: number } {
         var text = document.createElement("span");
         text.innerHTML = "Hg";
         text.setAttribute('style', `font: ${font} !important`);
