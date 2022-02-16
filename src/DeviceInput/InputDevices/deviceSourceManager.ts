@@ -1,11 +1,12 @@
 import { Engine } from '../../Engines/engine';
 import { DeviceType } from './deviceEnums';
 import { Nullable } from '../../types';
-import { Observable } from '../../Misc/observable';
+import { Observable, Observer } from '../../Misc/observable';
 import { IDeviceEvent } from './inputInterfaces';
 import { DeviceSource } from './deviceSource';
 import { InternalDeviceSourceManager } from './internalDeviceSourceManager';
 import { IDisposable } from '../../scene';
+import { ThinEngine } from '../../Engines/thinEngine';
 
 /**
  * Class to keep track of devices
@@ -44,6 +45,9 @@ export class DeviceSourceManager implements IDisposable {
      */
     public getDevices: () => ReadonlyArray<DeviceSource<DeviceType>>;
 
+    // Private Members
+    private _onDisposeObserver: Nullable<Observer<ThinEngine>>;
+
     /**
      * Default constructor
      * @param engine Used to get canvas (if applicable)
@@ -70,7 +74,7 @@ export class DeviceSourceManager implements IDisposable {
         this.getDeviceSources = this._engine._deviceSourceManager.getDeviceSources;
         this.getDevices = this._engine._deviceSourceManager.getDevices;
 
-        engine.onDisposeObservable.add(() => {
+        this._onDisposeObserver = engine.onDisposeObservable.add(() => {
             this.dispose();
         });
     }
@@ -93,5 +97,6 @@ export class DeviceSourceManager implements IDisposable {
             this._engine._deviceSourceManager.dispose();
             delete this._engine._deviceSourceManager;
         }
+        this._engine.onDisposeObservable.remove(this._onDisposeObserver);
     }
 }
