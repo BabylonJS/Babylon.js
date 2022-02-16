@@ -11,6 +11,19 @@ import { IDeviceEvent, IDeviceInputSystem } from "./inputInterfaces";
 const MAX_KEYCODES = 255;
 const MAX_POINTER_INPUTS = Object.keys(PointerInput).length / 2;
 
+declare module "../../Engines/engine" {
+    export interface Engine {
+        /** @hidden */
+        _inputElement: Nullable<HTMLElement>;
+
+        /**
+         * Observable to handle when a change to inputElement occurs
+         * @hidden
+         */
+        onEngineViewChanged: () => void;
+    }
+}
+
 /** @hidden */
 export class WebDeviceInputSystem implements IDeviceInputSystem {
     /** onDeviceConnected property */
@@ -83,7 +96,31 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
         this.onDeviceDisconnected = (deviceType: DeviceType, deviceSlot: number) => { };
         this.onInputChanged = (deviceEvent: IDeviceEvent) => { };
 
-        this.enableEvents();
+        this._enableEvents();
+
+        // In order to handle EngineView changes, we need to modify the Engine to inform us when changes to the inputElement happen
+        if (!this._engine.onEngineViewChanged) {
+            this._engine.onEngineViewChanged = () => {
+                this._enableEvents();
+            };
+
+            this._engine.onDisposeObservable.add(() => {
+                this._engine.onEngineViewChanged = () => { };
+            });
+        }
+
+        // Add callback to Engine to enable EngineView changes
+        Object.defineProperty(Engine.prototype, "inputElement", {
+            get: function (this: Engine) {
+                return this._inputElement;
+            },
+            set: function (this: Engine, value: HTMLElement) {
+                if (this._inputElement !== value) {
+                    this._inputElement = value;
+                    this.onEngineViewChanged();
+                }
+            },
+        });
     }
 
     // Public functions
@@ -123,13 +160,28 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
     }
 
     /**
+     * Dispose of all the eventlisteners
+     */
+    public dispose(): void {
+        // Callbacks
+        this.onDeviceConnected = () => { };
+        this.onDeviceDisconnected = () => { };
+        this.onInputChanged = () => { };
+        this._engine.onEngineViewChanged = () => { };
+
+        if (this._elementToAttachTo) {
+            this._disableEvents();
+        }
+    }
+
+    /**
      * Enable listening for user input events
      */
-    public enableEvents(): void {
-        const inputElement = this._engine.getInputElement();
+    private _enableEvents(): void {
+        const inputElement = this?._engine.getInputElement();
         if (inputElement && (!this._eventsAttached || this._elementToAttachTo !== inputElement)) {
             // Remove events before adding to avoid double events or simultaneous events on multiple canvases
-            this.disableEvents();
+            this._disableEvents();
 
             // If the inputs array has already been created, zero it out to before setting up events
             if (this._inputs) {
@@ -164,7 +216,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
     /**
      * Disable listening for user input events
      */
-    public disableEvents(): void {
+    private _disableEvents(): void {
         if (this._elementToAttachTo) {
             // Blur Events
             this._elementToAttachTo.removeEventListener("blur", this._keyboardBlurEvent);
@@ -190,20 +242,6 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
         }
 
         this._eventsAttached = false;
-    }
-
-    /**
-     * Dispose of all the eventlisteners
-     */
-    public dispose(): void {
-        // Observables
-        this.onDeviceConnected = () => { };
-        this.onDeviceDisconnected = () => { };
-        this.onInputChanged = () => { };
-
-        if (this._elementToAttachTo) {
-            this.disableEvents();
-        }
     }
 
     /**

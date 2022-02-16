@@ -14,7 +14,7 @@ declare const _native: INative;
 declare module "../../Engines/engine" {
     interface Engine {
         /** @hidden */
-        _deviceSourceManager: InternalDeviceSourceManager;
+        _deviceSourceManager?: InternalDeviceSourceManager;
     }
 }
 
@@ -34,19 +34,9 @@ export class InternalDeviceSourceManager implements IDisposable {
 
     private readonly _registeredManagers = new Array<IObservableManager>();
 
-    public static _Create(engine: Engine): InternalDeviceSourceManager {
-        if (!engine._deviceSourceManager) {
-            engine._deviceSourceManager = new InternalDeviceSourceManager(engine);
+    public _refCount = 0;
 
-            engine.onDisposeObservable.add(() => {
-                engine._deviceSourceManager.dispose();
-            });
-        }
-
-        return engine._deviceSourceManager;
-    }
-
-    private constructor(engine: Engine) {
+    public constructor(engine: Engine) {
         const numberOfDeviceTypes = Object.keys(DeviceType).length / 2;
         this._devices = new Array<Array<DeviceSource<DeviceType>>>(numberOfDeviceTypes);
         this._firstDevice = new Array<number>(numberOfDeviceTypes);
@@ -79,14 +69,6 @@ export class InternalDeviceSourceManager implements IDisposable {
                 manager.onInputChangedObservable.notifyObservers(deviceEvent);
             }
         };
-    }
-
-    public enableEvents() {
-        this._deviceInputSystem.enableEvents();
-    }
-
-    public disableEvents() {
-        this._deviceInputSystem.disableEvents();
     }
 
     // Public Functions

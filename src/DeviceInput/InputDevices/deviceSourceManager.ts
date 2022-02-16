@@ -26,7 +26,7 @@ export class DeviceSourceManager implements IDisposable {
     public readonly onDeviceDisconnectedObservable: Observable<DeviceSource<DeviceType>>;
 
     // Private Members
-    private _deviceSourceManager: InternalDeviceSourceManager;
+    private _engine: Engine;
 
     // Public Functions
     /**
@@ -49,7 +49,11 @@ export class DeviceSourceManager implements IDisposable {
      * @param engine Used to get canvas (if applicable)
      */
     constructor(engine: Engine) {
-        this._deviceSourceManager = InternalDeviceSourceManager._Create(engine);
+        this._engine = engine;
+        if (!this._engine._deviceSourceManager) {
+            this._engine._deviceSourceManager = new InternalDeviceSourceManager(engine);
+        }
+        this._engine._deviceSourceManager._refCount++;
 
         // Observables
         this.onDeviceConnectedObservable = new Observable<DeviceSource<DeviceType>>((observer) => {
@@ -60,11 +64,15 @@ export class DeviceSourceManager implements IDisposable {
         this.onInputChangedObservable = new Observable<IDeviceEvent>();
         this.onDeviceDisconnectedObservable = new Observable<DeviceSource<DeviceType>>();
 
-        this._deviceSourceManager.registerManager(this);
+        this._engine._deviceSourceManager.registerManager(this);
 
-        this.getDeviceSource = this._deviceSourceManager.getDeviceSource;
-        this.getDeviceSources = this._deviceSourceManager.getDeviceSources;
-        this.getDevices = this._deviceSourceManager.getDevices;
+        this.getDeviceSource = this._engine._deviceSourceManager.getDeviceSource;
+        this.getDeviceSources = this._engine._deviceSourceManager.getDeviceSources;
+        this.getDevices = this._engine._deviceSourceManager.getDevices;
+
+        engine.onDisposeObservable.add(() => {
+            this.dispose();
+        });
     }
 
     /**
@@ -72,7 +80,7 @@ export class DeviceSourceManager implements IDisposable {
      */
     public dispose(): void {
         // Null out observable refs
-        this._deviceSourceManager.unregisterManager(this);
+        this._engine._deviceSourceManager?.unregisterManager(this);
         this.onDeviceConnectedObservable.clear();
         this.onInputChangedObservable.clear();
         this.onDeviceDisconnectedObservable.clear();
@@ -80,5 +88,10 @@ export class DeviceSourceManager implements IDisposable {
         this.getDeviceSource = () => { return null; };
         this.getDeviceSources = () => { return []; };
         this.getDevices = () => { return []; };
+
+        if (this._engine._deviceSourceManager && --this._engine._deviceSourceManager._refCount < 1) {
+            this._engine._deviceSourceManager.dispose();
+            delete this._engine._deviceSourceManager;
+        }
     }
 }

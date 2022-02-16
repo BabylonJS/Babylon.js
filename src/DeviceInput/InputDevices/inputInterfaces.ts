@@ -101,14 +101,4 @@ export interface IDeviceInputSystem extends IDisposable {
      * @returns bool with status of device's existence
      */
     isDeviceAvailable(deviceType: DeviceType): boolean;
-
-    /**
-     * Enable listening for user input events
-     */
-    enableEvents: () => void;
-
-    /**
-     * Disable listening for user input events
-     */
-    disableEvents: () => void;
 }

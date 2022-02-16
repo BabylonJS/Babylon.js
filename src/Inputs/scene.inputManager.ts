@@ -494,7 +494,6 @@ export class InputManager {
 
         if (elementToAttachTo) { this._alreadyAttachedTo = elementToAttachTo; }
         this._deviceSourceManager = new DeviceSourceManager(engine);
-        this._scene.getEngine()._deviceSourceManager.enableEvents();
 
         this._initActionManager = (act: Nullable<AbstractActionManager>, clickInfo: _ClickInfo): Nullable<AbstractActionManager> => {
             if (!this._meshPickProceed) {
@@ -891,7 +890,6 @@ export class InputManager {
      */
     public detachControl() {
         if (this._alreadyAttached) {
-            this._scene.getEngine()._deviceSourceManager.disableEvents();
             this._deviceSourceManager.dispose();
 
             // Cursor

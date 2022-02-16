@@ -60,20 +60,6 @@ export class NativeDeviceInputSystem implements IDeviceInputSystem {
     }
 
     /**
-     * Enable listening for user input events
-     */
-    public enableEvents() {
-        // No action required but function required for interface, may be used later
-    }
-
-    /**
-     * Disable listening for user input events
-     */
-    public disableEvents() {
-        // No action required but function required for interface, may be used later
-    }
-
-    /**
      * Dispose of all the observables
      */
     public dispose(): void {
