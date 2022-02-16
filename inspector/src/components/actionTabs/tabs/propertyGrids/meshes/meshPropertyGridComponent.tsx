@@ -37,6 +37,8 @@ import { SkeletonViewer } from "babylonjs/Debug/skeletonViewer";
 import { ShaderMaterial } from "babylonjs/Materials/shaderMaterial";
 import { IInspectableOptions } from "babylonjs/Misc/iInspectable";
 
+import "core/Physics/physicsEngineComponent";
+
 interface IMeshPropertyGridComponentProps {
     globalState: GlobalState;
     mesh: Mesh;

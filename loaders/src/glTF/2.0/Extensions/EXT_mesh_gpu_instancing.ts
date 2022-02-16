@@ -8,6 +8,8 @@ import { INode } from "../glTFLoaderInterfaces";
 import { TmpVectors } from 'babylonjs/Maths/math.vector';
 import { IEXTMeshGpuInstancing } from "babylonjs-gltf2interface";
 
+import "core/Meshes/thinInstanceMesh";
+
 const NAME = "EXT_mesh_gpu_instancing";
 
 /**
