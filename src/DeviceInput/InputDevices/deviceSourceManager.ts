@@ -28,25 +28,33 @@ export class DeviceSourceManager implements IDisposable {
 
     // Private Members
     private _engine: Engine;
+    private _onDisposeObserver: Nullable<Observer<ThinEngine>>;
+
+    private _getDeviceSource: <T extends DeviceType>(deviceType: T, deviceSlot?: number) => Nullable<DeviceSource<T>>;
+    private _getDeviceSources: <T extends DeviceType>(deviceType: T) => ReadonlyArray<DeviceSource<T>>;
+    private _getDevices: () => ReadonlyArray<DeviceSource<DeviceType>>;
 
     // Public Functions
     /**
      * Gets a DeviceSource, given a type and slot
      */
-    public getDeviceSource: <T extends DeviceType>(deviceType: T, deviceSlot?: number) => Nullable<DeviceSource<T>>;
+    public get getDeviceSource(): <T extends DeviceType>(deviceType: T, deviceSlot?: number) => Nullable<DeviceSource<T>> {
+        return this._getDeviceSource;
+    }
 
     /**
      * Gets an array of DeviceSource objects for a given device type
      */
-    public getDeviceSources: <T extends DeviceType>(deviceType: T) => ReadonlyArray<DeviceSource<T>>;
+    public get getDeviceSources(): <T extends DeviceType>(deviceType: T) => ReadonlyArray<DeviceSource<T>> {
+        return this._getDeviceSources;
+    }
 
     /**
      * Returns a read-only list of all available devices
      */
-    public getDevices: () => ReadonlyArray<DeviceSource<DeviceType>>;
-
-    // Private Members
-    private _onDisposeObserver: Nullable<Observer<ThinEngine>>;
+    public get getDevices(): () => ReadonlyArray<DeviceSource<DeviceType>> {
+        return this._getDevices;
+    }
 
     /**
      * Default constructor
@@ -70,9 +78,9 @@ export class DeviceSourceManager implements IDisposable {
 
         this._engine._deviceSourceManager.registerManager(this);
 
-        this.getDeviceSource = this._engine._deviceSourceManager.getDeviceSource;
-        this.getDeviceSources = this._engine._deviceSourceManager.getDeviceSources;
-        this.getDevices = this._engine._deviceSourceManager.getDevices;
+        this._getDeviceSource = this._engine._deviceSourceManager.getDeviceSource;
+        this._getDeviceSources = this._engine._deviceSourceManager.getDeviceSources;
+        this._getDevices = this._engine._deviceSourceManager.getDevices;
 
         this._onDisposeObserver = engine.onDisposeObservable.add(() => {
             this.dispose();
@@ -89,9 +97,9 @@ export class DeviceSourceManager implements IDisposable {
         this.onInputChangedObservable.clear();
         this.onDeviceDisconnectedObservable.clear();
         // Null out function refs
-        this.getDeviceSource = () => { return null; };
-        this.getDeviceSources = () => { return []; };
-        this.getDevices = () => { return []; };
+        this._getDeviceSource = () => { return null; };
+        this._getDeviceSources = () => { return []; };
+        this._getDevices = () => { return []; };
 
         if (this._engine._deviceSourceManager && --this._engine._deviceSourceManager._refCount < 1) {
             this._engine._deviceSourceManager.dispose();
