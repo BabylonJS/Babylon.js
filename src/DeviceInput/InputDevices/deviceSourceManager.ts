@@ -37,6 +37,9 @@ export class DeviceSourceManager implements IDisposable {
     // Public Functions
     /**
      * Gets a DeviceSource, given a type and slot
+     * @param deviceType Type of Device
+     * @param deviceSlot Slot or ID of device
+     * @returns DeviceSource
      */
     public getDeviceSource<T extends DeviceType>(deviceType: T, deviceSlot?: number): Nullable<DeviceSource<T>> {
         return this._getDeviceSource(deviceType, deviceSlot);
@@ -44,6 +47,8 @@ export class DeviceSourceManager implements IDisposable {
 
     /**
      * Gets an array of DeviceSource objects for a given device type
+     * @param deviceType Type of Device
+     * @returns All available DeviceSources of a given type
      */
     public getDeviceSources<T extends DeviceType>(deviceType: T): ReadonlyArray<DeviceSource<T>> {
         return this._getDeviceSources(deviceType);
@@ -51,6 +56,7 @@ export class DeviceSourceManager implements IDisposable {
 
     /**
      * Returns a read-only list of all available devices
+     * @returns All available DeviceSources
      */
     public getDevices(): ReadonlyArray<DeviceSource<DeviceType>> {
         return this._getDevices();
