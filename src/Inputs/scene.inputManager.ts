@@ -890,7 +890,7 @@ export class InputManager {
      */
     public detachControl() {
         if (this._alreadyAttached) {
-            this._deviceSourceManager?.dispose();
+            this._deviceSourceManager!.dispose();
             this._deviceSourceManager = null;
 
             // Cursor
