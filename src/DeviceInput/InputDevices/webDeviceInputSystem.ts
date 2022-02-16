@@ -11,19 +11,6 @@ import { IDeviceEvent, IDeviceInputSystem } from "./inputInterfaces";
 const MAX_KEYCODES = 255;
 const MAX_POINTER_INPUTS = Object.keys(PointerInput).length / 2;
 
-declare module "../../Engines/engine" {
-    export interface Engine {
-        /** @hidden */
-        _inputElement: Nullable<HTMLElement>;
-
-        /**
-         * Observable to handle when a change to inputElement occurs
-         * @hidden
-         */
-        onEngineViewChanged: () => void;
-    }
-}
-
 /** @hidden */
 export class WebDeviceInputSystem implements IDeviceInputSystem {
     /** onDeviceConnected property */
@@ -98,7 +85,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
 
         this._enableEvents();
 
-        // In order to handle EngineView changes, we need to modify the Engine to inform us when changes to the inputElement happen
+        // Set callback to enable event handler switching when inputElement changes
         if (!this._engine.onEngineViewChanged) {
             this._engine.onEngineViewChanged = () => {
                 this._enableEvents();
@@ -108,19 +95,6 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                 this._engine.onEngineViewChanged = () => { };
             });
         }
-
-        // Add callback to Engine to enable EngineView changes
-        Object.defineProperty(Engine.prototype, "inputElement", {
-            get: function (this: Engine) {
-                return this._inputElement;
-            },
-            set: function (this: Engine, value: HTMLElement) {
-                if (this._inputElement !== value) {
-                    this._inputElement = value;
-                    this.onEngineViewChanged();
-                }
-            },
-        });
     }
 
     // Public functions
@@ -180,6 +154,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
     private _enableEvents(): void {
         const inputElement = this?._engine.getInputElement();
         if (inputElement && (!this._eventsAttached || this._elementToAttachTo !== inputElement)) {
+            console.log("ENABG");
             // Remove events before adding to avoid double events or simultaneous events on multiple canvases
             this._disableEvents();
 
