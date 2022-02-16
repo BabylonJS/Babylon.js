@@ -110,7 +110,7 @@ export class InputManager {
     private _onKeyUp: (evt: IKeyboardEvent) => void;
 
     private _scene: Scene;
-    private _deviceSourceManager: DeviceSourceManager;
+    private _deviceSourceManager: Nullable<DeviceSourceManager> = null;
 
     /**
      * Creates a new InputManager
@@ -890,7 +890,8 @@ export class InputManager {
      */
     public detachControl() {
         if (this._alreadyAttached) {
-            this._deviceSourceManager.dispose();
+            this._deviceSourceManager?.dispose();
+            this._deviceSourceManager = null;
 
             // Cursor
             if (this._alreadyAttachedTo && !this._scene.doNotHandleCursors) {

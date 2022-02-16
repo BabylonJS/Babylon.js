@@ -86,14 +86,10 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
         this._enableEvents();
 
         // Set callback to enable event handler switching when inputElement changes
-        if (!this._engine.onEngineViewChanged) {
-            this._engine.onEngineViewChanged = () => {
+        if (!this._engine._onEngineViewChanged) {
+            this._engine._onEngineViewChanged = () => {
                 this._enableEvents();
             };
-
-            this._engine.onDisposeObservable.add(() => {
-                this._engine.onEngineViewChanged = () => { };
-            });
         }
     }
 
@@ -141,7 +137,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
         this.onDeviceConnected = () => { };
         this.onDeviceDisconnected = () => { };
         this.onInputChanged = () => { };
-        this._engine.onEngineViewChanged = () => { };
+        delete this._engine._onEngineViewChanged;
 
         if (this._elementToAttachTo) {
             this._disableEvents();

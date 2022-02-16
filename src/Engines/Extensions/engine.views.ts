@@ -34,7 +34,7 @@ declare module "../../Engines/engine" {
          * Observable to handle when a change to inputElement occurs
          * @hidden
          */
-        onEngineViewChanged: () => void;
+        _onEngineViewChanged?: () => void;
 
         /**
          * Gets the current engine view
@@ -70,7 +70,7 @@ Object.defineProperty(Engine.prototype, "inputElement", {
     set: function (this: Engine, value: HTMLElement) {
         if (this._inputElement !== value) {
             this._inputElement = value;
-            this.onEngineViewChanged?.();
+            this._onEngineViewChanged?.();
         }
     },
 });
