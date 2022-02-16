@@ -26,6 +26,9 @@ interface IFloatLineComponentProps {
     icon?: string;
     iconLabel?: string;
     defaultValue?: number
+    unit?: string;
+    onUnitClicked?: () => void;
+    unitLocked?: boolean;
 }
 
 export class FloatLineComponent extends React.Component<IFloatLineComponentProps, { value: string }> {
@@ -193,6 +196,12 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
                                 onChange={(evt) => this.updateValue(evt.target.value)}
                             />
                         </div>
+                        {this.props.unit && <button
+                            className={this.props.unitLocked ? "unit disabled" : "unit"}
+                            onClick={() => {if (this.props.onUnitClicked && !this.props.unitLocked) this.props.onUnitClicked()}}
+                        >
+                            {this.props.unit}
+                        </button>}
                     </div>
                 )}
                 {this.props.useEuler && (

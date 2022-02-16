@@ -1,6 +1,7 @@
 :root {
     --backgroundGrey: #aaaaaa;
     --spacingHeight: 30px;
+    --labelFamily: "acumin-pro-condensed-semibold";
 }
 
 hr.ge {
@@ -12,9 +13,13 @@ hr.ge {
     $line-padding-left: 5px;
     $line-padding-bottom: 0px;
     $line-padding-top: 0px;
+    $line-padding-right: 18px;
     color:black;
     background: #e2e2e2;
-    font-family: "acumin-pro-condensed";
+      * {
+        font-family: "acumin-pro-semicondensed";
+        font-size: 12px;
+      }
       #header {
         height: 30px;
         font-size: 16px;
@@ -53,9 +58,9 @@ hr.ge {
 
     .range {
         -webkit-appearance: none;
-        width: 120px;
+        width: 100%;
         height: 2px;
-        background: black;
+        background: #bcbcbc;
         border-radius: 5px;
         outline: none;
         opacity: 0.7;
@@ -101,10 +106,23 @@ hr.ge {
         border: none;
     }
 
+    .unit {
+        width: 26px;
+        height: 26px;
+        background-color: white;
+        border: none;
+        margin-top: 2px;
+    }
+
+    .unit.disabled {
+        background-color: #c8c8c8;
+    }
+
     .sliderLine {
         padding-left: $line-padding-left;
         padding-bottom: $line-padding-bottom;
         padding-top: $line-padding-top;
+        padding-right: $line-padding-right;
         height: var(--spacingHeight);;
         display: grid;
         grid-template-rows: 100%;
@@ -115,6 +133,7 @@ hr.ge {
             display: flex;
             align-items: center;
             min-width: 15px;
+            font-family: var(--labelFamily);
         }
 
         .img {
@@ -136,12 +155,13 @@ hr.ge {
 
         .floatLine {
             grid-column: 3;
-            padding-left: 15px;
+            padding-left: 0px;
             
             .label {
                 grid-column: 1;
                 display: none;
                 align-items: center;
+                font-family: var(--labelFamily);
             }
         
             .short {
@@ -150,12 +170,11 @@ hr.ge {
                 align-items: center;
                 
                 input {
-                    width: 40px;
-                    background-color: transparent;
+                    width: 60px;
+                    background-color: white;
                     outline-color: transparent;
-                    border-left: transparent;
-                    border-right: transparent;
-                    border-top: transparent;
+                    border: transparent;
+                    height: 26px;
                     outline-width: 0px
                 }
                 
@@ -175,11 +194,18 @@ hr.ge {
     .ge-divider {
         display: grid;
         grid-template-columns: auto auto auto auto auto auto;
+        padding-right: $line-padding-right;
     }
 
     .ge-divider-short {
         display: grid;
         grid-template-columns: 1fr 1fr;
+        padding-right: $line-padding-right;
+    }
+
+    .ge-divider-single {
+        display: block;
+        padding-right: $line-padding-right;
     }
     
     .ge-grid-divider {
@@ -223,15 +249,16 @@ hr.ge {
         padding-left: $line-padding-left;
         padding-bottom: $line-padding-bottom;
         padding-top: $line-padding-top;
+        padding-right: $line-padding-right;
         height: var(--spacingHeight);
         display: grid;
-        grid-template-columns: auto auto 2fr 1fr;
+        grid-template-columns: auto auto 1fr;
         .label {
             grid-column: 2;
-            padding-left: 5px;
             display: flex;
             align-items: center;
             min-width: 15px;
+            font-family: var(--labelFamily);
         }
 
         img {
@@ -247,25 +274,22 @@ hr.ge {
         .value {                        
             display: flex;
             align-items: center;
-            padding-left: 15px;
             grid-column: 3;
             background: transparent;
+            height: 30px;
             input {
                 width: calc(100% - 5px);
-                background-color: transparent;
+                background-color: white;
                 outline-color: transparent;
-                border-left: transparent;
-                border-right: transparent;
-                border-top: transparent;
-                outline-width: 0px
+                border: transparent;
+                outline-width: 0px;
+                height: 24px;
             }
         }
+    }
 
-        .noUnderline {
-            input {
-                border-bottom: transparent;
-            }
-        }
+    .textInputLine.withUnits {
+        grid-template-columns: auto auto 1fr auto;
     }
     
     .textInputArea {
@@ -478,9 +502,15 @@ hr.ge {
 
     }
 
+    .alignment-bar {
+        display: flex;
+        justify-content: center;
+        padding-right: 5px;
+    }
+
     .command-button {
         cursor: pointer;
-        width: auto;
+        width: 30px;
 
         .command-label {
             display: none;
@@ -594,6 +624,7 @@ hr.ge {
             display: flex;
             align-items: center;
             min-width: 15px;
+            font-family: var(--labelFamily);
         }
 
         img {
@@ -608,18 +639,17 @@ hr.ge {
 
         .value {                        
             display: flex;
-            padding-left: 15px;
             align-items: center;
             grid-column: 3;
             background: transparent;
+            height: 30px;
             input {
                 width: calc(100% - 5px);
-                background-color: transparent;
+                background-color: white;
                 outline-color: transparent;
-                border-left: transparent;
-                border-right: transparent;
-                border-top: transparent;
-                outline-width: 0px
+                border: none;
+                outline-width: 0px;
+                height: 24px;
             }
         }
 
@@ -729,7 +759,6 @@ hr.ge {
             margin: 5px 10px;
             color:white;
             padding: 4px 5px;
-            padding-top: 0px;
             opacity: 0.9;
             cursor: pointer;
             text-align: center;
@@ -799,6 +828,7 @@ hr.ge {
         padding-left: $line-padding-left;
         padding-bottom: $line-padding-bottom;
         padding-top: $line-padding-top;
+        padding-right: $line-padding-right;
         height: var(--spacingHeight);
         display: grid;
         grid-template-columns: auto auto 1fr ;
@@ -809,6 +839,7 @@ hr.ge {
             align-items: center;
             min-width: 100px;
             margin-left: 15px;
+            font-family: var(--labelFamily);
         }
 
         img {
@@ -825,14 +856,14 @@ hr.ge {
             grid-column: 3;
             display: flex;
             align-items: center;
-            padding-left: 15px;
+            margin-left: auto;
+            margin-right: 0px;
             
             .lbl {
                 position: relative;
                 display: block;
                 height: 14px;
                 width: 34px;
-                margin-right: 5px;
                 border-radius: 100px;
                 cursor: pointer;
                 transition: all 0.3s ease;
@@ -943,6 +974,7 @@ hr.ge {
         padding-left: $line-padding-left;
         padding-bottom: $line-padding-bottom;
         padding-top: $line-padding-top;
+        padding-right: $line-padding-right;
         display: grid;
 
         .firstLine {
@@ -978,10 +1010,17 @@ hr.ge {
                 grid-column: 2;                
                 margin-top: 6px;
                 display: flex;
-                align-items: center;            
+                align-items: center;
+                padding-left: 15px;
                 
                 input {
                     margin-right: 5px;
+                }
+            }
+
+            .textInputLine {
+                .value {
+                    padding-left: 2px;
                 }
             }
 
@@ -1045,6 +1084,7 @@ hr.ge {
         padding-left: $line-padding-left;
         padding-bottom: $line-padding-bottom;
         padding-top: $line-padding-top;
+        padding-right: $line-padding-right;
         height: auto;
         display: grid;
         grid-template-columns: auto auto 2fr 1fr;
@@ -1055,6 +1095,9 @@ hr.ge {
             display: flex;
             align-items: left;
             min-width: 15px;
+            color: #a9a9a9;
+            font-size: 10px;
+            font-family: "acumin-pro-semicondensed";
         }
 
         img {

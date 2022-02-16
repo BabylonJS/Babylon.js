@@ -117,13 +117,15 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
         const deltaX = evt.clientX - this._startX;
         const rootElement = evt.currentTarget.ownerDocument!.getElementById("gui-editor-workbench-root") as HTMLDivElement;
 
+        const maxWidth = this.props.globalState.hostWindow.innerWidth - this._toolBarIconSize - 8;
+
         if (forLeft) {
             this._leftWidth += deltaX;
-            this._leftWidth = Math.max(150, Math.min(400, this._leftWidth));
+            this._leftWidth = Math.max(150, Math.min(maxWidth - this._rightWidth, this._leftWidth));
             DataStorage.WriteNumber("LeftWidth", this._leftWidth);
         } else {
             this._rightWidth -= deltaX;
-            this._rightWidth = Math.max(250, Math.min(500, this._rightWidth));
+            this._rightWidth = Math.max(250, Math.min(maxWidth - this._leftWidth, this._rightWidth));
             DataStorage.WriteNumber("RightWidth", this._rightWidth);
         }
 

@@ -4,6 +4,7 @@ import { Mesh, _CreationDataStorage } from "../mesh";
 import { VertexData } from "../mesh.vertexData";
 import { Nullable } from '../../types';
 import { Plane } from '../../Maths/math.plane';
+import { CompatibilityOptions } from "../../Compat/compatibilityOptions";
 
 /**
  * Creates the VertexData for a Plane
@@ -32,19 +33,19 @@ export function CreatePlaneVertexData(options: { size?: number, width?: number, 
 
     positions.push(-halfWidth, -halfHeight, 0);
     normals.push(0, 0, -1.0);
-    uvs.push(0.0, 0.0);
+    uvs.push(0.0, CompatibilityOptions.UseOpenGLOrientationForUV ? 1.0 : 0.0);
 
     positions.push(halfWidth, -halfHeight, 0);
     normals.push(0, 0, -1.0);
-    uvs.push(1.0, 0.0);
+    uvs.push(1.0, CompatibilityOptions.UseOpenGLOrientationForUV ? 1.0 : 0.0);
 
     positions.push(halfWidth, halfHeight, 0);
     normals.push(0, 0, -1.0);
-    uvs.push(1.0, 1.0);
+    uvs.push(1.0, CompatibilityOptions.UseOpenGLOrientationForUV ? 0.0 : 1.0);
 
     positions.push(-halfWidth, halfHeight, 0);
     normals.push(0, 0, -1.0);
-    uvs.push(0.0, 1.0);
+    uvs.push(0.0, CompatibilityOptions.UseOpenGLOrientationForUV ? 0.0 : 1.0);
 
     // Indices
     indices.push(0);

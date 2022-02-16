@@ -2,6 +2,7 @@ import { Vector4, Matrix, Vector3, Vector2 } from "../../Maths/math.vector";
 import { Mesh, _CreationDataStorage } from "../mesh";
 import { VertexData } from "../mesh.vertexData";
 import { Scene } from "../../scene";
+import { CompatibilityOptions } from "../../Compat/compatibilityOptions";
 
 /**
  * Creates the VertexData for a torus
@@ -51,7 +52,7 @@ export function CreateTorusVertexData(options: { diameter?: number, thickness?: 
 
             positions.push(position.x, position.y, position.z);
             normals.push(normal.x, normal.y, normal.z);
-            uvs.push(textureCoordinate.x, textureCoordinate.y);
+            uvs.push(textureCoordinate.x, CompatibilityOptions.UseOpenGLOrientationForUV ? 1.0 - textureCoordinate.y : textureCoordinate.y);
 
             // And create indices for two triangles.
             var nextI = (i + 1) % stride;
