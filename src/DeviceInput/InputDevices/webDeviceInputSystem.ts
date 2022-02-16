@@ -154,7 +154,6 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
     private _enableEvents(): void {
         const inputElement = this?._engine.getInputElement();
         if (inputElement && (!this._eventsAttached || this._elementToAttachTo !== inputElement)) {
-            console.log("ENABG");
             // Remove events before adding to avoid double events or simultaneous events on multiple canvases
             this._disableEvents();
 
