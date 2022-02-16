@@ -99,7 +99,7 @@ export class DeviceSourceManager implements IDisposable {
         this._getDeviceSource = () => { return null; };
         this._getDeviceSources = () => { return []; };
         this._getDevices = () => { return []; };
-        
+
         if (this._engine._deviceSourceManager) {
             this._engine._deviceSourceManager.unregisterManager(this);
             if (--this._engine._deviceSourceManager._refCount < 1) {
