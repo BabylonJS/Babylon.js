@@ -27,6 +27,10 @@ import { PBRMaterial } from "babylonjs/Materials/PBR/pbrMaterial";
 import { SpriteManager } from "babylonjs/Sprites/spriteManager";
 import { TargetCamera } from "babylonjs/Cameras/targetCamera";
 
+// side effects
+import "babylonjs/Sprites/spriteSceneComponent";
+import "babylonjs/Audio/audioSceneComponent";
+
 require("./sceneExplorer.scss");
 
 interface ISceneExplorerFilterComponentProps {
