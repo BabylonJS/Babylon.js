@@ -1,24 +1,25 @@
-import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
-import { Scene } from "babylonjs/scene";
-import { TransformNode } from "babylonjs/Meshes/transformNode";
-import { CreateBox } from "babylonjs/Meshes/Builders/boxBuilder";
-import { Mesh } from "babylonjs/Meshes/mesh";
-import { FluentMaterial } from "../materials/fluent/fluentMaterial";
-import { TouchHolographicButton } from "./touchHolographicButton";
-import { Nullable } from "babylonjs/types";
-import { Observer } from "babylonjs/Misc/observable";
-import { Matrix, Quaternion, Vector2, Vector3 } from "babylonjs/Maths/math.vector";
-import { Control3D } from "./control3D";
 import { ContentDisplay3D } from "./contentDisplay3D";
+import { Control3D } from "./control3D";
+import { TouchHolographicButton } from "./touchHolographicButton";
 import { AdvancedDynamicTexture } from "../../2D/advancedDynamicTexture";
-import { SlateGizmo } from "../gizmos/slateGizmo";
 import { DefaultBehavior } from "../behaviors/defaultBehavior";
-import { Viewport } from "babylonjs/Maths/math.viewport";
-import { PointerDragBehavior } from "babylonjs/Behaviors/Meshes/pointerDragBehavior";
-import { Scalar } from "babylonjs/Maths/math.scalar";
-import { Texture } from "babylonjs/Materials/Textures/texture";
+import { SlateGizmo } from "../gizmos/slateGizmo";
+import { FluentMaterial } from "../materials/fluent/fluentMaterial";
 import { FluentBackplateMaterial } from "../materials/fluentBackplate/fluentBackplateMaterial";
+import { PointerDragBehavior } from "babylonjs/Behaviors/Meshes/pointerDragBehavior";
+import { Texture } from "babylonjs/Materials/Textures/texture";
 import { Vector4 } from "babylonjs/Maths/math";
+import { Epsilon } from "babylonjs/Maths/math.constants";
+import { Scalar } from "babylonjs/Maths/math.scalar";
+import { Matrix, Quaternion, Vector2, Vector3 } from "babylonjs/Maths/math.vector";
+import { Viewport } from "babylonjs/Maths/math.viewport";
+import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
+import { CreateBox } from "babylonjs/Meshes/Builders/boxBuilder";
+import { TransformNode } from "babylonjs/Meshes/transformNode";
+import { Mesh } from "babylonjs/Meshes/mesh";
+import { Observer } from "babylonjs/Misc/observable";
+import { Scene } from "babylonjs/scene";
+import { Nullable } from "babylonjs/types";
 
 /**
  * Class used to create a holographic slate
@@ -37,8 +38,6 @@ export class HolographicSlate extends ContentDisplay3D {
      * File name for the close icon.
      */
     public static FOLLOW_ICON_FILENAME: string = "IconFollowMe.png";
-
-    private static SLATE_DEPTH: number = 0.001;
 
     /**
      * 2D dimensions of the slate
@@ -168,20 +167,20 @@ export class HolographicSlate extends ContentDisplay3D {
                 .copyFromFloats(
                     this.dimensions.x - titleBarYScale / 2,
                     -this.titleBarHeight / 2,
-                    (-HolographicSlate.SLATE_DEPTH / 2) * (this._host.scene.useRightHandedSystem ? -1 : 1)
+                    (-Epsilon / 2) * (this._host.scene.useRightHandedSystem ? -1 : 1)
                 )
                 .addInPlace(this.origin);
             followButtonMesh.position
                 .copyFromFloats(
                     this.dimensions.x - (3 * titleBarYScale) / 2,
                     -this.titleBarHeight / 2,
-                    (-HolographicSlate.SLATE_DEPTH / 2) * (this._host.scene.useRightHandedSystem ? -1 : 1)
+                    (-Epsilon / 2) * (this._host.scene.useRightHandedSystem ? -1 : 1)
                 )
                 .addInPlace(this.origin);
 
             const contentPlateHeight = this.dimensions.y - this.titleBarHeight - this.titleBarMargin;
-            titleBar.scaling.set(this.dimensions.x, this.titleBarHeight, HolographicSlate.SLATE_DEPTH);
-            contentPlate.scaling.copyFromFloats(this.dimensions.x, contentPlateHeight, HolographicSlate.SLATE_DEPTH);
+            titleBar.scaling.set(this.dimensions.x, this.titleBarHeight, Epsilon);
+            contentPlate.scaling.copyFromFloats(this.dimensions.x, contentPlateHeight, Epsilon);
             titleBar.position.copyFromFloats(this.dimensions.x / 2, -(this.titleBarHeight / 2), 0).addInPlace(this.origin);
             contentPlate.position.copyFromFloats(this.dimensions.x / 2, -(this.titleBarHeight + this.titleBarMargin + contentPlateHeight / 2), 0).addInPlace(this.origin);
 
@@ -219,7 +218,7 @@ export class HolographicSlate extends ContentDisplay3D {
 
         // Update pivot point so it is at the center of geometry
         // As origin is topleft corner in 2D, dimensions are calculated towards bottom right corner, thus y axis is downwards
-        const center = new Vector3(this.dimensions.x * 0.5, -this.dimensions.y * 0.5, HolographicSlate.SLATE_DEPTH);
+        const center = new Vector3(this.dimensions.x * 0.5, -this.dimensions.y * 0.5, Epsilon);
         center.addInPlace(this.origin);
         center.z = 0;
 
@@ -302,7 +301,7 @@ export class HolographicSlate extends ContentDisplay3D {
             worldMatrix = this.node.computeWorldMatrix(true);
 
             origin.copyFrom(event.dragPlanePoint);
-            worldDimensions.set(this.dimensions.x, this.dimensions.y, HolographicSlate.SLATE_DEPTH);
+            worldDimensions.set(this.dimensions.x, this.dimensions.y, Epsilon);
             worldDimensions.y -= this.titleBarHeight + this.titleBarMargin;
             Vector3.TransformNormalToRef(worldDimensions, worldMatrix, worldDimensions);
             upWorld.copyFromFloats(0, 1, 0);
@@ -332,14 +331,14 @@ export class HolographicSlate extends ContentDisplay3D {
         // TODO share materials
         this._titleBarMaterial = new FluentBackplateMaterial(`${this.name} plateMaterial`, mesh.getScene());
 
-        this._pickedPointObserver = this._host.onPickedPointChangedObservable.add((pickedPoint) => {
-            // if (pickedPoint) {
-            //     this._titleBarMaterial.globalLeftIndexTipPosition = pickedPoint;
-            //     this._titleBarMaterial.hoverColor.a = 1.0;
-            // } else {
-            //     this._titleBarMaterial.hoverColor.a = 0;
-            // }
-        });
+       // this._pickedPointObserver = this._host.onPickedPointChangedObservable.add((pickedPoint) => {
+       //     if (pickedPoint) {
+       //         this._titleBarMaterial.globalLeftIndexTipPosition = pickedPoint;
+       //         this._titleBarMaterial.hoverColor.a = 1.0;
+       //     } else {
+       //         this._titleBarMaterial.hoverColor.a = 0;
+       //     }
+       // });
 
         this._contentMaterial = new FluentMaterial(this.name + "contentMaterial", mesh.getScene());
         this._contentMaterial.renderBorders = true;
