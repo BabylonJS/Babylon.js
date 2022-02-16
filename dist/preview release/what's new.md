@@ -72,6 +72,8 @@
 - Modified touch in `WebDeviceInputSystem` to no longer delete touch points after pointer up. ([PolygonalSun](https://github.com/PolygonalSun))
 - Added support for DualSense controllers to DeviceInputSystem. ([PolygonalSun](https://github.com/PolygonalSun))
 - Added `getCreationOptions` on `ThinEngine`. ([carolhmj](https://github.com/carolhmj))
+- Added `CompatibilityOptions.UseOpenGLOrientationForUV` to define if the system should use OpenGL convention for UVs when creating geometry or loading .babylon files (false by default) ([Deltakosh](https://github.com/deltakosh))
+- Added RuntimeError and errorCodes for runtime errors. ([jp833](https://github.com/jp833))
 
 ### Engine
 
@@ -440,3 +442,5 @@
 - The `overrideMesh` of the `Skeleton` class has been removed. ([bghgary](https://github.com/bghgary))
 - Cloning a mesh now copies skeletons. ([bghgary](https://github.com/bghgary))
 - Cloning and creating instances of a mesh now refreshes the bounding box applying skins and morph targets. ([bghgary](https://github.com/bghgary))
+- `KeyboardInfoPre.skipOnPointerObservable` is now correctly renamed to `KeyboardInfoPre.skipOnKeyboardObservable`. ([bghgary](https://github.com/bghgary))
+- GLTF Animations are loaded at 60 FPS by default. ([carolhmj](https://github.com/carolhmj))

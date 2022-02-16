@@ -31,14 +31,7 @@ export class EllipsePropertyGridComponent extends React.Component<IEllipseProper
                 <CommonControlPropertyGridComponent lockObject={this.props.lockObject} controls={ellipses} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <hr />
                 <TextLineComponent label="ELLIPSE" value=" " color="grey"></TextLineComponent>
-                <CheckBoxLineComponent
-                    iconLabel="Clip Content"
-                    icon={clipContentsIcon}
-                    label="CLIP CONTENT"
-                    target={makeTargetsProxy(ellipses, this.props.onPropertyChangedObservable)}
-                    propertyName="clipChildren"
-                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                />
+                <div className="ge-divider">
                 <FloatLineComponent
                     iconLabel="Stroke Weight"
                     icon={strokeWeightIcon}
@@ -46,6 +39,17 @@ export class EllipsePropertyGridComponent extends React.Component<IEllipseProper
                     label=""
                     target={makeTargetsProxy(ellipses, this.props.onPropertyChangedObservable)}
                     propertyName="thickness"
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    unit={"PX"}
+                    unitLocked={true}
+                />
+                </div>
+                <CheckBoxLineComponent
+                    iconLabel="Clip Content"
+                    icon={clipContentsIcon}
+                    label="CLIP CONTENT"
+                    target={makeTargetsProxy(ellipses, this.props.onPropertyChangedObservable)}
+                    propertyName="clipChildren"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
             </div>

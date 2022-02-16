@@ -6,6 +6,7 @@ import { VertexData } from "../mesh.vertexData";
 import { AbstractMesh } from "../abstractMesh";
 import { Camera } from "../../Cameras/camera";
 import { PositionNormalTextureVertex } from '../../Maths/math.vertexFormat';
+import { CompatibilityOptions } from "../../Compat/compatibilityOptions";
 
 /**
  * Creates a decal mesh.
@@ -76,7 +77,8 @@ export function CreateDecal(name: string, sourceMesh: AbstractMesh, options: { p
         result.normal = Vector3.TransformNormal(result.normal, transformMatrix);
 
         if (options.captureUVS && uvs) {
-            result.uv = new Vector2(uvs[vertexId * 2], uvs[vertexId * 2 + 1]);
+            const v = uvs[vertexId * 2 + 1];
+            result.uv = new Vector2(uvs[vertexId * 2], CompatibilityOptions.UseOpenGLOrientationForUV ? 1 - v : v);
         }
 
         return result;
@@ -228,7 +230,8 @@ export function CreateDecal(name: string, sourceMesh: AbstractMesh, options: { p
 
             if (!options.captureUVS) {
                 (<number[]>vertexData.uvs).push(0.5 + vertex.position.x / size.x);
-                (<number[]>vertexData.uvs).push(0.5 + vertex.position.y / size.y);
+                const v = 0.5 + vertex.position.y / size.y;
+                (<number[]>vertexData.uvs).push(CompatibilityOptions.UseOpenGLOrientationForUV ? 1 - v : v);
             } else {
                 vertex.uv.toArray(vertexData.uvs, currentVertexDataIndex * 2);
             }
