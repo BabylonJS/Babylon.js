@@ -14,7 +14,6 @@ import { PointerEventTypes } from "babylonjs/Events/pointerEvents";
 import { IWheelEvent } from "babylonjs/Events/deviceInputEvents";
 import { Epsilon } from "babylonjs/Maths/math.constants";
 import { Container } from "babylonjs-gui/2D/controls/container";
-import { Rectangle } from "babylonjs-gui/2D/controls/rectangle";
 import { KeyboardEventTypes, KeyboardInfo } from "babylonjs/Events/keyboardEvents";
 import { Line } from "babylonjs-gui/2D/controls/line";
 import { DataStorage } from "babylonjs/Misc/dataStorage";
@@ -23,6 +22,7 @@ import { Tools } from "../tools";
 import { Observer } from "babylonjs/Misc/observable";
 import { ISize } from "babylonjs/Maths/math";
 import { Texture } from "babylonjs/Materials/Textures/texture";
+import { CoordinateHelper } from "./coordinateHelper";
 require("./workbenchCanvas.scss");
 
 export interface IWorkbenchComponentProps {
@@ -300,6 +300,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     }
 
     keyEvent = (evt: KeyboardEvent) => {
+        if ((evt.target as HTMLElement).localName === "input") return;
         this._ctrlKeyIsPressed = evt.ctrlKey;
         this._altKeyIsPressed = evt.altKey;
         if (evt.shiftKey) {
@@ -752,41 +753,10 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
         //convert to percentage
         if (this._responsive) {
-            this.convertToPercentage(guiControl, false);
+            CoordinateHelper.convertToPercentage(guiControl, ["left", "top"]);
         }
         this.props.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
         return true;
-    }
-
-    convertToPercentage(guiControl: Control, includeScale: boolean) {
-        let ratioX = 1;//this._textureMesh.scaling.x;
-        let ratioY = 1;//this._textureMesh.scaling.z;
-        if (guiControl.parent) {
-            if (guiControl.parent.typeName === "Grid") {
-                const cellInfo = (guiControl.parent as Grid).getChildCellInfo(guiControl);
-                const cell = (guiControl.parent as Grid).cells[cellInfo];
-                ratioX = cell.widthInPixels;
-                ratioY = cell.heightInPixels;
-            } else if (guiControl.parent.typeName === "Rectangle" || guiControl.parent.typeName === "Button") {
-                const thickness = (guiControl.parent as Rectangle).thickness * 2;
-                ratioX = guiControl.parent._currentMeasure.width - thickness;
-                ratioY = guiControl.parent._currentMeasure.height - thickness;
-            } else {
-                ratioX = guiControl.parent._currentMeasure.width;
-                ratioY = guiControl.parent._currentMeasure.height;
-            }
-        }
-        const left = (guiControl.leftInPixels * 100) / ratioX;
-        const top = (guiControl.topInPixels * 100) / ratioY;
-        guiControl.left = `${left.toFixed(2)}%`;
-        guiControl.top = `${top.toFixed(2)}%`;
-
-        if (includeScale) {
-            const width = (guiControl.widthInPixels * 100) / ratioX;
-            const height = (guiControl.heightInPixels * 100) / ratioY;
-            guiControl.width = `${width.toFixed(2)}%`;
-            guiControl.height = `${height.toFixed(2)}%`;
-        }
     }
 
     onMove(evt: React.PointerEvent) {
@@ -899,6 +869,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
         this.globalState.onPropertyChangedObservable.add((ev) => {
             (ev.object as Control).markAsDirty(false);
+            this.globalState.onArtBoardUpdateRequiredObservable.notifyObservers();
         })
 
         // Every time the original ADT re-renders, we must also re-render, so that layout information is computed correctly

@@ -6,7 +6,7 @@ import { IFileRequest } from './fileRequest';
 import { Observable } from './observable';
 import { FilesInputStore } from './filesInputStore';
 import { RetryStrategy } from './retryStrategy';
-import { BaseError } from './baseError';
+import { BaseError, ErrorCodes, RuntimeError } from './error';
 import { DecodeBase64ToBinary, DecodeBase64ToString, EncodeArrayBufferToBase64 } from './stringTools';
 import { ShaderProcessor } from '../Engines/Processors/shaderProcessor';
 import { ThinEngine } from '../Engines/thinEngine';
@@ -17,7 +17,7 @@ import { TimingTools } from './timingTools';
 const base64DataUrlRegEx = new RegExp(/^data:([^,]+\/[^,]+)?;base64,/i);
 
 /** @ignore */
-export class LoadFileError extends BaseError {
+export class LoadFileError extends RuntimeError {
     public request?: WebRequest;
     public file?: File;
 
@@ -28,7 +28,7 @@ export class LoadFileError extends BaseError {
      * @param file defines the optional file
      */
     constructor(message: string, object?: WebRequest | File) {
-        super(message);
+        super(message, ErrorCodes.LoadFileError);
 
         this.name = "LoadFileError";
         BaseError._setPrototypeOf(this, LoadFileError.prototype);
@@ -43,28 +43,28 @@ export class LoadFileError extends BaseError {
 }
 
 /** @ignore */
-export class RequestFileError extends BaseError {
+export class RequestFileError extends RuntimeError {
     /**
      * Creates a new LoadFileError
      * @param message defines the message of the error
      * @param request defines the optional web request
      */
     constructor(message: string, public request: WebRequest) {
-        super(message);
+        super(message, ErrorCodes.RequestFileError);
         this.name = "RequestFileError";
         BaseError._setPrototypeOf(this, RequestFileError.prototype);
     }
 }
 
 /** @ignore */
-export class ReadFileError extends BaseError {
+export class ReadFileError extends RuntimeError {
     /**
     * Creates a new ReadFileError
      * @param message defines the message of the error
      * @param file defines the optional file
      */
     constructor(message: string, public file: File) {
-        super(message);
+        super(message, ErrorCodes.ReadFileError);
         this.name = "ReadFileError";
         BaseError._setPrototypeOf(this, ReadFileError.prototype);
     }

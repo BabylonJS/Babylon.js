@@ -1436,37 +1436,37 @@ export class GLTFLoader implements IGLTFLoader {
             }
 
             let outputBufferOffset = 0;
-            let getNextOutputValue: () => Vector3 | Quaternion | Array<number>;
+            let getNextOutputValue: (scale: number) => Vector3 | Quaternion | Array<number>;
             switch (targetPath) {
                 case "position": {
-                    getNextOutputValue = () => {
-                        const value = Vector3.FromArray(data.output, outputBufferOffset);
+                    getNextOutputValue = (scale) => {
+                        const value = Vector3.FromArray(data.output, outputBufferOffset).scaleInPlace(scale);
                         outputBufferOffset += 3;
                         return value;
                     };
                     break;
                 }
                 case "rotationQuaternion": {
-                    getNextOutputValue = () => {
-                        const value = Quaternion.FromArray(data.output, outputBufferOffset);
+                    getNextOutputValue = (scale) => {
+                        const value = Quaternion.FromArray(data.output, outputBufferOffset).scaleInPlace(scale);
                         outputBufferOffset += 4;
                         return value;
                     };
                     break;
                 }
                 case "scaling": {
-                    getNextOutputValue = () => {
-                        const value = Vector3.FromArray(data.output, outputBufferOffset);
+                    getNextOutputValue = (scale) => {
+                        const value = Vector3.FromArray(data.output, outputBufferOffset).scaleInPlace(scale);
                         outputBufferOffset += 3;
                         return value;
                     };
                     break;
                 }
                 case "influence": {
-                    getNextOutputValue = () => {
+                    getNextOutputValue = (scale) => {
                         const value = new Array<number>(targetNode._numMorphTargets!);
                         for (let i = 0; i < targetNode._numMorphTargets!; i++) {
-                            value[i] = data.output[outputBufferOffset++];
+                            value[i] = data.output[outputBufferOffset++] * scale;
                         }
                         return value;
                     };
@@ -1478,25 +1478,26 @@ export class GLTFLoader implements IGLTFLoader {
             switch (data.interpolation) {
                 case AnimationSamplerInterpolation.STEP: {
                     getNextKey = (frameIndex) => ({
-                        frame: data.input[frameIndex],
-                        value: getNextOutputValue(),
+                        frame: data.input[frameIndex] * this.parent.targetFps,
+                        value: getNextOutputValue(1),
                         interpolation: AnimationKeyInterpolation.STEP
                     });
                     break;
                 }
                 case AnimationSamplerInterpolation.LINEAR: {
                     getNextKey = (frameIndex) => ({
-                        frame: data.input[frameIndex],
-                        value: getNextOutputValue()
+                        frame: data.input[frameIndex] * this.parent.targetFps,
+                        value: getNextOutputValue(1)
                     });
                     break;
                 }
                 case AnimationSamplerInterpolation.CUBICSPLINE: {
+                    const invTargetFps = 1 / this.parent.targetFps;
                     getNextKey = (frameIndex) => ({
-                        frame: data.input[frameIndex],
-                        inTangent: getNextOutputValue(),
-                        value: getNextOutputValue(),
-                        outTangent: getNextOutputValue()
+                        frame: data.input[frameIndex] * this.parent.targetFps,
+                        inTangent: getNextOutputValue(invTargetFps),
+                        value: getNextOutputValue(1),
+                        outTangent: getNextOutputValue(invTargetFps)
                     });
                     break;
                 }
@@ -1510,7 +1511,7 @@ export class GLTFLoader implements IGLTFLoader {
             if (targetPath === "influence") {
                 for (let targetIndex = 0; targetIndex < targetNode._numMorphTargets!; targetIndex++) {
                     const animationName = `${babylonAnimationGroup.name}_channel${babylonAnimationGroup.targetedAnimations.length}`;
-                    const babylonAnimation = new Animation(animationName, targetPath, 1, animationType);
+                    const babylonAnimation = new Animation(animationName, targetPath, this.parent.targetFps, animationType);
                     babylonAnimation.setKeys(keys.map((key) => ({
                         frame: key.frame,
                         inTangent: key.inTangent ? key.inTangent[targetIndex] : undefined,
@@ -1529,7 +1530,7 @@ export class GLTFLoader implements IGLTFLoader {
             }
             else {
                 const animationName = `${babylonAnimationGroup.name}_channel${babylonAnimationGroup.targetedAnimations.length}`;
-                const babylonAnimation = new Animation(animationName, targetPath, 1, animationType);
+                const babylonAnimation = new Animation(animationName, targetPath, this.parent.targetFps, animationType);
                 babylonAnimation.setKeys(keys);
 
                 if (animationTargetOverride != null && animationTargetOverride.animations != null) {

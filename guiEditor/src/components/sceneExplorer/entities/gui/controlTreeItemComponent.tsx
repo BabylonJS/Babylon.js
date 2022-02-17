@@ -22,13 +22,13 @@ interface IControlTreeItemComponentProps {
     dragOverLocation: DragOverLocation;
 }
 
-export class ControlTreeItemComponent extends React.Component<IControlTreeItemComponentProps, { isActive: boolean; isVisible: boolean }> {
+export class ControlTreeItemComponent extends React.Component<IControlTreeItemComponentProps, { isActive: boolean; isVisible: boolean, isRenaming: boolean }> {
     constructor(props: IControlTreeItemComponentProps) {
         super(props);
 
         const control = this.props.control;
 
-        this.state = { isActive: control.isHighlighted, isVisible: control.isVisible };
+        this.state = { isActive: control.isHighlighted, isVisible: control.isVisible, isRenaming: false };
     }
 
     highlight() {
@@ -44,17 +44,29 @@ export class ControlTreeItemComponent extends React.Component<IControlTreeItemCo
         this.props.control.isVisible = newState;
     }
 
+    onRename(name: string) {
+        this.props.control.name = name;
+        this.props.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
+    }
+
     render() {
         const control = this.props.control;
 
-        let name = `${control.name || "No name"} [${control.getClassName()}]`;
+        let bracket = "";
         if (control.parent?.typeName === "Grid") {
-            name += ` [${(control.parent as Grid).getChildCellInfo(this.props.control)}]`;
+            bracket = (control.parent as Grid).getChildCellInfo(this.props.control);
         }
         let draggingSelf = this.props.globalState.draggedControl === control;
         return (
             <div className="controlTools">
-                <TreeItemLabelComponent label={name} onClick={() => this.props.onClick()} color="greenyellow" />
+                <TreeItemLabelComponent
+                    label={control.name}
+                    bracket={bracket}
+                    onClick={() => this.props.onClick()}
+                    onChange={name => this.onRename(name)}
+                    setRenaming={renaming => this.setState({isRenaming: renaming})}
+                    renaming={this.state.isRenaming}
+                />
                 {!draggingSelf && this.props.dragOverHover && this.props.dragOverLocation == DragOverLocation.CENTER && control instanceof Container && (
                     <>
                         <div className="makeChild icon" onClick={() => this.highlight()} title="Make Child">
@@ -62,7 +74,7 @@ export class ControlTreeItemComponent extends React.Component<IControlTreeItemCo
                         </div>
                     </>
                 )}
-                {this.props.isHovered && this.props.globalState.draggedControl === null && this.props.dragOverLocation == DragOverLocation.NONE && (
+                {!this.state.isRenaming && this.props.isHovered && this.props.globalState.draggedControl === null && this.props.dragOverLocation == DragOverLocation.NONE && (
                     <>
                         <div className="addComponent icon" onClick={() => this.highlight()} title="Add component (Not Implemented)">
                             <img src={makeComponentIcon} />

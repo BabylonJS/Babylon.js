@@ -16,6 +16,7 @@ import { DataReader, IDataBuffer } from 'babylonjs/Misc/dataReader';
 import { GLTFValidation } from './glTFValidation';
 import { DecodeBase64UrlToBinary, LoadFileError } from 'babylonjs/Misc/fileTools';
 import { StringTools } from 'babylonjs/Misc/stringTools';
+import { RuntimeError, ErrorCodes } from "babylonjs/Misc/error";
 
 interface IFileRequestInfo extends IFileRequest {
     _lengthComputable?: boolean;
@@ -241,6 +242,11 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
      * If true, load the color (gamma encoded) textures into sRGB buffers (if supported by the GPU), which will yield more accurate results when sampling the texture. Defaults to true.
      */
     public useSRGBBuffers = true;
+
+    /**
+     * When loading glTF animations, which are defined in seconds, target them to this FPS.
+     */
+    public targetFps = 60;
 
     /**
     * Function called before loading a url referenced by the asset.
@@ -827,7 +833,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
 
             const magic = dataReader.readUint32();
             if (magic !== Binary.Magic) {
-                throw new Error("Unexpected magic: " + magic);
+                throw new RuntimeError("Unexpected magic: " + magic, ErrorCodes.GLTFLoaderUnexpectedMagicError);
             }
 
             const version = dataReader.readUint32();
