@@ -50,6 +50,8 @@ export class DeviceEventFactory {
 
         evt.pointerId = deviceType === DeviceType.Mouse ? 1 : deviceSlot;
 
+        evt.pointerType = deviceType === DeviceType.Mouse ? "mouse" : "touch";
+
         if (inputIndex === PointerInput.Move) {
             evt.type = "pointermove";
         }
