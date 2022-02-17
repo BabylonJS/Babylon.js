@@ -3,7 +3,7 @@ import { Observer } from "babylonjs/Misc/observable";
 import * as React from "react";
 import { GlobalState } from "../globalState";
 import { GuiGizmoComponent } from "./guiGizmo";
-import { Control } from "babylonjs-gui";
+import { Control } from "babylonjs-gui/2D/controls/control";
 
 export interface IGizmoWrapperProps {
     globalState: GlobalState;

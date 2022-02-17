@@ -2,7 +2,6 @@ import { Control } from "babylonjs-gui/2D/controls/control";
 import { Vector2 } from "babylonjs/Maths/math.vector";
 import * as React from "react";
 import { GlobalState } from "../globalState";
-import { DataStorage } from "babylonjs/Misc/dataStorage";
 import { Image } from "babylonjs-gui/2D/controls/image";
 import { TextBlock } from "babylonjs-gui/2D/controls/textBlock";
 import { CoordinateHelper, DimensionProperties, Rect } from './coordinateHelper';
@@ -72,7 +71,6 @@ const defaultScalePointRotations = [
 ]
 
 export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmoState> {
-    private _responsive: boolean;
 
     // used for scaling computations
     private _storedValues: Rect;
@@ -83,14 +81,12 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
         initialAngleToPivot: number,
     }
 
-    private _responsiveChangedObserver: Nullable<Observer<boolean>>;
     private _gizmoUpdateObserver: Nullable<Observer<void>>;
     private _pointerUpObserver: Nullable<Observer<Nullable<React.PointerEvent<HTMLCanvasElement> | PointerEvent>>>;
     private _pointerMoveObserver: Nullable<Observer<React.PointerEvent<HTMLCanvasElement>>>;
 
     constructor(props: IGuiGizmoProps) {
         super(props);
-        this._responsive = DataStorage.ReadBoolean("Responsive", true);
 
         const scalePoints: IScalePoint[] = [];
         for (let vertical = ScalePointPosition.Top; vertical <= ScalePointPosition.Bottom; vertical++) {
@@ -109,22 +105,17 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
             isRotating: false
         };
 
-        this._responsiveChangedObserver = this.props.globalState.onResponsiveChangeObservable.add((value) => {
-            this._responsive = value;
-        });
-
         this._gizmoUpdateObserver = this.props.globalState.onGizmoUpdateRequireObservable.add(() => {
             this.updateGizmo(true);
         });
 
         this._pointerUpObserver = this.props.globalState.onPointerUpObservable.add(evt => this._onUp(evt));
-        this._pointerMoveObserver = this.props.globalState.onPointerMoveObservable.add(evt => this._onMove());
+        this._pointerMoveObserver = this.props.globalState.onPointerMoveObservable.add(() => this._onMove());
 
         this.updateGizmo(true);
     }
 
     componentWillUnmount() {
-        this.props.globalState.onResponsiveChangeObservable.remove(this._responsiveChangedObserver);
         this.props.globalState.onGizmoUpdateRequireObservable.remove(this._gizmoUpdateObserver);
         this.props.globalState.onPointerUpObservable.remove(this._pointerUpObserver);
         this.props.globalState.onPointerMoveObservable.remove(this._pointerMoveObserver);
