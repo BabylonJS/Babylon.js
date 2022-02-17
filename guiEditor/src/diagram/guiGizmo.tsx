@@ -5,9 +5,10 @@ import { GlobalState } from "../globalState";
 import { DataStorage } from "babylonjs/Misc/dataStorage";
 import { Image } from "babylonjs-gui/2D/controls/image";
 import { TextBlock } from "babylonjs-gui/2D/controls/textBlock";
-import { CoordinateHelper, Rect } from './coordinateHelper';
+import { CoordinateHelper, DimensionProperties, Rect } from './coordinateHelper';
 import { Observer } from "babylonjs/Misc/observable";
 import { Nullable } from "babylonjs/types";
+import { ValueAndUnit } from "babylonjs-gui/2D/valueAndUnit";
 
 require("./workbenchCanvas.scss");
 const gizmoPivotIcon: string = require("../../public/imgs/gizmoPivotIcon.svg");
@@ -185,10 +186,10 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
             if (canvas.y > canvasBounds.bottom) {
                 canvasBounds.bottom = canvas.y;
             }
-            // if we have a single control selected, put scale points at its edges, and rotate based on the rotation of the control
-                scalePoint.position.x = canvas.x;
-                scalePoint.position.y = canvas.y;
-                scalePoint.rotation = CoordinateHelper.getRotation(node) * (180 / Math.PI);
+            // edges, and rotate based on the rotation of the control
+            scalePoint.position.x = canvas.x;
+            scalePoint.position.y = canvas.y;
+            scalePoint.rotation = CoordinateHelper.getRotation(node) * (180 / Math.PI);
         });
         this.setState({
             canvasBounds,
@@ -212,7 +213,7 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
             const inRTT = CoordinateHelper.mousePointerToRTTSpace(node, scene.pointerX, scene.pointerY);
             const inNodeSpace = CoordinateHelper.rttToLocalNodeSpace(node, inRTT.x, inRTT.y, undefined, this._storedValues);
             this._dragLocalBounds(inNodeSpace);
-            this._updateNodeFromLocalBounds(node, this.state.scalePointDragging);
+            this._updateNodeFromLocalBounds();
             this.props.globalState.workbench._liveGuiTextureRerender = false;
             this.props.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
         }
@@ -233,77 +234,123 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
         };
     }
 
-    private _dragLocalBounds(toPosition: Vector2) {
-        const scalePoint = this.state.scalePoints[this.state.scalePointDragging];
-        if (scalePoint.horizontalPosition === ScalePointPosition.Left) {
-            this._localBounds.left = Math.min(this._localBounds.right, toPosition.x);
-        }
-        if (scalePoint.horizontalPosition === ScalePointPosition.Right) {
-            this._localBounds.right = Math.max(this._localBounds.left, toPosition.x);
-        }
-        if (scalePoint.verticalPosition === ScalePointPosition.Left) {
-            this._localBounds.top = Math.min(this._localBounds.bottom, toPosition.y);
-        }
-        if (scalePoint.verticalPosition === ScalePointPosition.Bottom) {
-            this._localBounds.bottom = Math.max(this._localBounds.top, toPosition.y);
-        }
+    private _modulo(dividend: number, divisor: number) {
+        return ((dividend % divisor) + divisor) % divisor;
     }
 
-    private _updateNodeFromLocalBounds(node: Control, scalePointIndex: number) {
-        const width = this._localBounds.right - this._localBounds.left;
-        const height = this._localBounds.bottom - this._localBounds.top;
-        const scalePoint = this.state.scalePoints[scalePointIndex];
+    private _dragLocalBounds(toPosition: Vector2) {
+        const scalePoint = this.state.scalePoints[this.state.scalePointDragging];
+        const newBounds = this._localBounds.clone();
+        if (scalePoint.horizontalPosition === ScalePointPosition.Left) {
+            newBounds.left = Math.min(this._localBounds.right - 1, toPosition.x);
+        }
+        if (scalePoint.verticalPosition === ScalePointPosition.Left) {
+            newBounds.top = Math.min(this._localBounds.bottom - 1, toPosition.y);
+        }
+        if (scalePoint.horizontalPosition === ScalePointPosition.Right) {
+            newBounds.right = Math.max(this._localBounds.left + 1, toPosition.x);
+        }
+        if (scalePoint.verticalPosition === ScalePointPosition.Bottom) {
+            newBounds.bottom = Math.max(this._localBounds.top + 1, toPosition.y);
+        }
+        // apply bounds changes to all controls 
+        const edges: ["left", "top", "right", "bottom"] = ["left", "top", "right", "bottom"];
+        for (const node of this.props.globalState.workbench.selectedGuiNodes) {
+            const initialBounds = (node.metadata.localBounds as Rect);
+            const nb = initialBounds.clone();
+            // account for rotation: if other control is rotated 90 degrees
+            // relative to primary control, we should modify top instead of left
+            const rotationModifier = this._modulo((this.props.control.rotation - node.rotation), Math.PI * 2) / Math.PI * 2;
+            edges.forEach((edge, index) => {
+                const modifiedIndex = Math.round(index + rotationModifier) % 4;
+                const flipSign = ((index < 2) === (modifiedIndex < 2)) ? 1 : -1;
+                nb[edges[modifiedIndex]] += (newBounds[edge] - this._localBounds[edge]) * flipSign;
+            });
+            nb.left = Math.min(initialBounds.right - 1, nb.left);
+            nb.top = Math.min(initialBounds.bottom - 1, nb.top);
+            nb.right = Math.max(initialBounds.left + 1, nb.right);
+            nb.bottom = Math.max(initialBounds.top + 1, nb.bottom);
+            node.metadata.localBounds = nb;
+        }
+        this._localBounds = newBounds;
+    }
+
+    private _updateNodeFromLocalBounds() {
+        const scalePoint = this.state.scalePoints[this.state.scalePointDragging];
         const left = scalePoint.horizontalPosition === ScalePointPosition.Left && scalePoint.verticalPosition !== ScalePointPosition.Center;
         const top = scalePoint.verticalPosition === ScalePointPosition.Top && scalePoint.horizontalPosition !== ScalePointPosition.Center;
-        // calculate the center point
-        const localRotation = CoordinateHelper.getRotation(node, true);
-        const localScaling = CoordinateHelper.getScale(node, true);
-        const absoluteCenter = this._localBounds.center;
-        const center = absoluteCenter.clone();
-        // move to pivot
-        center.multiplyInPlace(localScaling);
-        const cosRotation = Math.cos(localRotation);
-        const sinRotation = Math.sin(localRotation);
-        const cosRotation180 = Math.cos(localRotation + Math.PI);
-        const sinRotation180 = Math.sin(localRotation + Math.PI);
-        const widthDelta = (this._storedValues.width - width) * 0.5;
-        const heightDelta = (this._storedValues.height - height) * 0.5;
-        // alignment compensation
-        switch (node.horizontalAlignment) {
-            case Control.HORIZONTAL_ALIGNMENT_LEFT:
-                center.x += (left ? widthDelta : -absoluteCenter.x) * cosRotation;
-                center.y += (left ? -widthDelta : absoluteCenter.x) * sinRotation;
-                break;
-            case Control.HORIZONTAL_ALIGNMENT_RIGHT:
-                center.x += (left ? -widthDelta : absoluteCenter.x) * cosRotation;
-                center.y += (left ? widthDelta : -absoluteCenter.x) * sinRotation;
-                break;
-        }
+        for(const selectedControl of this.props.globalState.workbench.selectedGuiNodes) {
+            const width = selectedControl.metadata.localBounds.right - selectedControl.metadata.localBounds.left;
+            const height = selectedControl.metadata.localBounds.bottom - selectedControl.metadata.localBounds.top;
+            // calculate the center point
+            const localRotation = CoordinateHelper.getRotation(selectedControl, true);
+            const localScaling = CoordinateHelper.getScale(selectedControl, true);
+            const absoluteCenter = (selectedControl.metadata.localBounds as Rect).center;
+            const center = absoluteCenter.clone();
+            // move to pivot
+            center.multiplyInPlace(localScaling);
+            const cosRotation = Math.cos(localRotation);
+            const sinRotation = Math.sin(localRotation);
+            const cosRotation180 = Math.cos(localRotation + Math.PI);
+            const sinRotation180 = Math.sin(localRotation + Math.PI);
+            
+            const widthDelta = (selectedControl.metadata.storedValues.width - width) * 0.5;
+            const heightDelta = (selectedControl.metadata.storedValues.height - height) * 0.5;
+            // alignment compensation
+            switch (selectedControl.horizontalAlignment) {
+                case Control.HORIZONTAL_ALIGNMENT_LEFT:
+                    center.x += (left ? widthDelta : -absoluteCenter.x) * cosRotation;
+                    center.y += (left ? -widthDelta : absoluteCenter.x) * sinRotation;
+                    break;
+                case Control.HORIZONTAL_ALIGNMENT_RIGHT:
+                    center.x += (left ? -widthDelta : absoluteCenter.x) * cosRotation;
+                    center.y += (left ? widthDelta : -absoluteCenter.x) * sinRotation;
+                    break;
+            }
 
-        switch (node.verticalAlignment) {
-            case Control.VERTICAL_ALIGNMENT_TOP:
-                center.y += (top ? -heightDelta : absoluteCenter.y) * cosRotation180;
-                center.x += (top ? -heightDelta : absoluteCenter.y) * sinRotation180;
-                break;
-            case Control.VERTICAL_ALIGNMENT_BOTTOM:
-                center.y += (top ? heightDelta : -absoluteCenter.y) * cosRotation180;
-                center.x += (top ? heightDelta : -absoluteCenter.y) * sinRotation180;
-                break;
-        }
+            switch (selectedControl.verticalAlignment) {
+                case Control.VERTICAL_ALIGNMENT_TOP:
+                    center.y += (top ? -heightDelta : absoluteCenter.y) * cosRotation180;
+                    center.x += (top ? -heightDelta : absoluteCenter.y) * sinRotation180;
+                    break;
+                case Control.VERTICAL_ALIGNMENT_BOTTOM:
+                    center.y += (top ? heightDelta : -absoluteCenter.y) * cosRotation180;
+                    center.x += (top ? heightDelta : -absoluteCenter.y) * sinRotation180;
+                    break;
+            }
 
-        // rotate the center around 0,0
-        const rotatedCenter = this._rotate(center.x, center.y, 0, 0, localRotation);
-        const old = {left: node._left, top: node._top, width: node._width, height: node._height};
-        // round the values and set them
-        node.leftInPixels = round(this._storedValues.left + rotatedCenter.x);
-        node.topInPixels = round(this._storedValues.top + rotatedCenter.y);
-        node.widthInPixels = round(Math.max(10, width));
-        node.heightInPixels = round(Math.max(10, height));
+            // rotate the center around 0,0
+            const rotatedCenter = this._rotate(center.x, center.y, 0, 0, localRotation);
+            const properties: (DimensionProperties)[] = ["left", "top", "width", "height"];
+            for(const property of properties) {
+                let newPixels = 0;
+                switch(property) {
+                    case "left":
+                        newPixels = round(selectedControl.metadata.storedValues.left + rotatedCenter.x);
+                        break;
+                    case "top":
+                        newPixels = round(selectedControl.metadata.storedValues.top + rotatedCenter.y);
+                        break;
+                    case "width":
+                        newPixels = round(width);
+                        break;
+                    case "height":
+                        newPixels = round(height);
+                        break;
+                }
+                // compute real change in property
+                const initialUnit = (selectedControl as any)[`_${property}`].unit;
+                (selectedControl as any)[`${property}InPixels`] = newPixels;
+                if (initialUnit === ValueAndUnit.UNITMODE_PERCENTAGE) {
+                    CoordinateHelper.convertToPercentage(selectedControl, [property]);
+                }
+            }
 
-        if (node.typeName === "Image") {
-            (node as Image).autoScale = false;
-        } else if (node.typeName === "TextBlock") {
-            (node as TextBlock).resizeToFit = false;
+            if (selectedControl.typeName === "Image") {
+                (selectedControl as Image).autoScale = false;
+            } else if (selectedControl.typeName === "TextBlock") {
+                (selectedControl as TextBlock).resizeToFit = false;
+            }
         }
     }
 
@@ -312,6 +359,10 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
         const node = this.props.control;
         this._localBounds = CoordinateHelper.computeLocalBounds(node);
         this._storedValues = new Rect(node.leftInPixels, node.topInPixels, node.leftInPixels + node.widthInPixels, node.topInPixels + node.heightInPixels);
+        for (const node of this.props.globalState.workbench.selectedGuiNodes) {
+            node.metadata.localBounds = CoordinateHelper.computeLocalBounds(node);
+            node.metadata.storedValues = new Rect(node.leftInPixels, node.topInPixels, node.leftInPixels + node.widthInPixels, node.topInPixels + node.heightInPixels);
+        }
     };
 
     private _beginRotate = () => {
@@ -332,7 +383,6 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
 
     render() {
         // don't render if we don't have anything selected, or if we're currently dragging
-        if (this.props.globalState.workbench.selectedGuiNodes.length === 0 || this.state.scalePointDragging !== -1) return null;
         return (
             <div className="gizmo">
                 {lines.map((line, index) => {
@@ -366,9 +416,8 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
                         return <img className="pivot-point" src={gizmoPivotIcon} style={style} key={index} />;
                     }
                     // compute which cursor icon to use on hover
-                    const angleOfCursor = (defaultScalePointRotations[index]  + scalePoint.rotation);
-                    let angleAdjusted = angleOfCursor % (360);
-                    if (angleAdjusted < 0) angleAdjusted += 360;
+                    const angleOfCursor = (defaultScalePointRotations[index] + scalePoint.rotation);
+                    const angleAdjusted = this._modulo(angleOfCursor, 360);
                     const increment = 45;
                     let cursorIndex = Math.round(angleAdjusted / increment) % 8;
                     const cursor = scalePointCursors[cursorIndex];
