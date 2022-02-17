@@ -79,7 +79,7 @@ export interface ITreeItemComponentProps {
     forceSubitems?: boolean;
     globalState: GlobalState;
     entity?: any;
-    selectedEntity: any;
+    selectedEntities: any[];
     extensibilityGroups?: IExplorerExtensibilityGroup[];
     contextMenuItems?: { label: string; action: () => void }[];
 }
@@ -105,12 +105,10 @@ export class TreeItemComponent extends React.Component<ITreeItemComponentProps, 
         const items = nextProps.items;
 
         if (items && items.length) {
-            if (nextProps.selectedEntity) {
-                for (var item of items) {
-                    if (Tools.LookForItem(item, nextProps.selectedEntity)) {
-                        nextState.isExpanded = true;
-                        return true;
-                    }
+            for (var item of items) {
+                if (Tools.LookForItems(item, nextProps.selectedEntities)) {
+                    nextState.isExpanded = true;
+                    return true;
                 }
             }
         }
@@ -196,7 +194,7 @@ export class TreeItemComponent extends React.Component<ITreeItemComponentProps, 
                             extensibilityGroups={this.props.extensibilityGroups}
                             key={item.uniqueId !== undefined && item.uniqueId !== null ? item.uniqueId : item.name}
                             offset={this.props.offset + 1}
-                            selectedEntity={this.props.selectedEntity}
+                            selectedEntities={this.props.selectedEntities}
                             entity={item}
                             globalState={this.props.globalState}
                             filter={this.props.filter}
