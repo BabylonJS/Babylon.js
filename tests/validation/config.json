@@ -256,6 +256,11 @@
             "referenceImage": "yeti.png"
         },
         {
+            "title": "Alien",
+            "playgroundId": "#57DRJ2#0",
+            "referenceImage": "alien.png"
+        },
+        {
             "title": "Sponza",
             "sceneFolder": "/Scenes/Sponza/",
             "sceneFilename": "Sponza.babylon",
