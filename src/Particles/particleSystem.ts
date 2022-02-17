@@ -2177,12 +2177,17 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
     public clone(name: string, newEmitter: any): ParticleSystem {
         var custom = { ...this._customWrappers };
         var program: any = null;
-        var engine = this._engine as any;
+        var engine = this._engine as Engine;
         if (engine.createEffectForParticles) {
             if (this.customShader != null) {
                 program = this.customShader;
-                var defines: string = (program.shaderOptions.defines.length > 0) ? program.shaderOptions.defines.join("\n") : "";
-                custom[0] = engine.createEffectForParticles(program.shaderPath.fragmentElement, program.shaderOptions.uniforms, program.shaderOptions.samplers, defines);
+                const defines: string = (program.shaderOptions.defines.length > 0) ? program.shaderOptions.defines.join("\n") : "";
+                const effect = engine.createEffectForParticles(program.shaderPath.fragmentElement, program.shaderOptions.uniforms, program.shaderOptions.samplers, defines);
+                if (!custom[0]) {
+                    this.setCustomEffect(effect, 0);
+                } else {
+                    custom[0].effect = effect;
+                }
             }
         }
 
