@@ -2570,11 +2570,55 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Base error. Due to limitations of typedoc-check and missing documentation
+     * in lib.es5.d.ts, cannot extend Error directly for RuntimeError.
      * @ignore
-     * Application error to support additional information when loading a file
      */
     export abstract class BaseError extends Error {
         protected static _setPrototypeOf: (o: any, proto: object | null) => any;
+    }
+    /**
+     * Error codes for BaseError
+     */
+    export const ErrorCodes: {
+        /** Invalid or empty mesh vertex positions. */
+        readonly MeshInvalidPositionsError: 0;
+        /** Unsupported texture found. */
+        readonly UnsupportedTextureError: 1000;
+        /** Unexpected magic number found in GLTF file header. */
+        readonly GLTFLoaderUnexpectedMagicError: 2000;
+        /** SceneLoader generic error code. Ideally wraps the inner exception. */
+        readonly SceneLoaderError: 3000;
+        /** Load file error */
+        readonly LoadFileError: 4000;
+        /** Request file error */
+        readonly RequestFileError: 4001;
+        /** Read file error */
+        readonly ReadFileError: 4002;
+    };
+    /**
+     * Error code type
+     */
+    export type ErrorCodesType = typeof ErrorCodes[keyof typeof ErrorCodes];
+    /**
+     * Application runtime error
+     */
+    export class RuntimeError extends BaseError {
+        /**
+         * The error code
+         */
+        errorCode: ErrorCodesType;
+        /**
+         * The error that caused this outer error
+         */
+        innerError?: Error;
+        /**
+         * Creates a new RuntimeError
+         * @param message defines the message of the error
+         * @param errorCode the error code
+         * @param innerError the error that caused the outer error
+         */
+        constructor(message: string, errorCode: ErrorCodesType, innerError?: Error);
     }
 }
 declare module BABYLON {
@@ -2609,7 +2653,7 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @ignore */
-    export class LoadFileError extends BaseError {
+    export class LoadFileError extends RuntimeError {
         request?: WebRequest;
         file?: File;
         /**
@@ -2621,7 +2665,7 @@ declare module BABYLON {
         constructor(message: string, object?: WebRequest | File);
     }
     /** @ignore */
-    export class RequestFileError extends BaseError {
+    export class RequestFileError extends RuntimeError {
         request: WebRequest;
         /**
          * Creates a new LoadFileError
@@ -2631,7 +2675,7 @@ declare module BABYLON {
         constructor(message: string, request: WebRequest);
     }
     /** @ignore */
-    export class ReadFileError extends BaseError {
+    export class ReadFileError extends RuntimeError {
         file: File;
         /**
         * Creates a new ReadFileError
@@ -48392,6 +48436,7 @@ declare module BABYLON {
         private _pointerWheelEvent;
         private _pointerBlurEvent;
         private _wheelEventName;
+        private _eventsAttached;
         private _mouseId;
         private readonly _isUsingFirefox;
         private _activeTouchIds;
@@ -48420,9 +48465,13 @@ declare module BABYLON {
          */
         dispose(): void;
         /**
-         * Configures events to work with an engine's active element
+         * Enable listening for user input events
          */
-        private _configureEvents;
+        private _enableEvents;
+        /**
+         * Disable listening for user input events
+         */
+        private _disableEvents;
         /**
          * Checks for existing connections to devices and register them, if necessary
          * Currently handles gamepads and mouse
@@ -48485,31 +48534,32 @@ declare module BABYLON {
          * @returns DeviceType interpreted from event
          */
         private _getPointerType;
-        /**
-         * Remove events from active input element
-         */
-        private _removeEvents;
     }
 }
 declare module BABYLON {
         interface Engine {
             /** @hidden */
-            _deviceSourceManager: InternalDeviceSourceManager;
+            _deviceSourceManager?: InternalDeviceSourceManager;
         }
     /** @hidden */
+    export interface IObservableManager {
+        onDeviceConnectedObservable: Observable<DeviceSource<DeviceType>>;
+        onInputChangedObservable: Observable<IDeviceEvent>;
+        onDeviceDisconnectedObservable: Observable<DeviceSource<DeviceType>>;
+    }
+    /** @hidden */
     export class InternalDeviceSourceManager implements IDisposable {
-        readonly onDeviceConnectedObservable: Observable<DeviceSource<DeviceType>>;
-        readonly onInputChangedObservable: Observable<IDeviceEvent>;
-        readonly onDeviceDisconnectedObservable: Observable<DeviceSource<DeviceType>>;
         private readonly _devices;
         private readonly _firstDevice;
         private readonly _deviceInputSystem;
-        private _oninputChangedObserver;
-        static _Create(engine: Engine): InternalDeviceSourceManager;
-        private constructor();
-        getDeviceSource: <T extends DeviceType>(deviceType: T, deviceSlot?: number | undefined) => Nullable<DeviceSource<T>>;
-        getDeviceSources: <T extends DeviceType>(deviceType: T) => readonly DeviceSource<T>[];
-        getDevices: () => ReadonlyArray<DeviceSource<DeviceType>>;
+        private readonly _registeredManagers;
+        _refCount: number;
+        constructor(engine: Engine);
+        readonly getDeviceSource: <T extends DeviceType>(deviceType: T, deviceSlot?: number | undefined) => Nullable<DeviceSource<T>>;
+        readonly getDeviceSources: <T extends DeviceType>(deviceType: T) => readonly DeviceSource<T>[];
+        readonly getDevices: () => ReadonlyArray<DeviceSource<DeviceType>>;
+        readonly registerManager: (manager: IObservableManager) => void;
+        readonly unregisterManager: (manager: IObservableManager) => void;
         dispose(): void;
         /**
          * Function to add device name to device list
@@ -48534,7 +48584,7 @@ declare module BABYLON {
     /**
      * Class to keep track of devices
      */
-    export class DeviceSourceManager {
+    export class DeviceSourceManager implements IDisposable {
         /**
          * Observable to be triggered when after a device is connected, any new observers added will be triggered against already connected devices
          */
@@ -48547,24 +48597,38 @@ declare module BABYLON {
          * Observable to be triggered when after a device is disconnected
          */
         readonly onDeviceDisconnectedObservable: Observable<DeviceSource<DeviceType>>;
-        private _deviceSourceManager;
+        private _engine;
+        private _onDisposeObserver;
+        private _getDeviceSource;
+        private _getDeviceSources;
+        private _getDevices;
         /**
          * Gets a DeviceSource, given a type and slot
+         * @param deviceType Type of Device
+         * @param deviceSlot Slot or ID of device
+         * @returns DeviceSource
          */
-        getDeviceSource: <T extends DeviceType>(deviceType: T, deviceSlot?: number) => Nullable<DeviceSource<T>>;
+        getDeviceSource<T extends DeviceType>(deviceType: T, deviceSlot?: number): Nullable<DeviceSource<T>>;
         /**
          * Gets an array of DeviceSource objects for a given device type
+         * @param deviceType Type of Device
+         * @returns All available DeviceSources of a given type
          */
-        getDeviceSources: <T extends DeviceType>(deviceType: T) => ReadonlyArray<DeviceSource<T>>;
+        getDeviceSources<T extends DeviceType>(deviceType: T): ReadonlyArray<DeviceSource<T>>;
         /**
          * Returns a read-only list of all available devices
+         * @returns All available DeviceSources
          */
-        getDevices: () => ReadonlyArray<DeviceSource<DeviceType>>;
+        getDevices(): ReadonlyArray<DeviceSource<DeviceType>>;
         /**
          * Default constructor
          * @param engine Used to get canvas (if applicable)
          */
         constructor(engine: Engine);
+        /**
+         * Dispose of DeviceSourceManager
+         */
+        dispose(): void;
     }
 }
 declare module BABYLON {
@@ -48583,7 +48647,6 @@ declare module BABYLON {
         /** This is a defensive check to not allow control attachment prior to an already active one. If already attached, previous control is unattached before attaching the new one. */
         private _alreadyAttached;
         private _alreadyAttachedTo;
-        private _onInputObserver;
         private _onPointerMove;
         private _onPointerDown;
         private _onPointerUp;
@@ -66407,10 +66470,17 @@ declare module BABYLON {
         customResize?: (canvas: HTMLCanvasElement) => void;
     }
         interface Engine {
+            /** @hidden */
+            _inputElement: Nullable<HTMLElement>;
             /**
              * Gets or sets the  HTML element to use for attaching events
              */
             inputElement: Nullable<HTMLElement>;
+            /**
+             * Observable to handle when a change to inputElement occurs
+             * @hidden
+             */
+            _onEngineViewChanged?: () => void;
             /**
              * Gets the current engine view
              * @see https://doc.babylonjs.com/how_to/multi_canvases
