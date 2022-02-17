@@ -142,9 +142,8 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
     }
 
     processKeys(keyEvent: React.KeyboardEvent<HTMLDivElement>) {
-        // if (!this.state.selectedEntity) {
-        //     return;
-        // }
+        // if typing inside a text box, don't process keys
+        if ((keyEvent.target as HTMLElement).localName === "input") return;
 
         const scene = this.state.scene;
         let search = false;

@@ -252,7 +252,7 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
                 this._updateNodeFromLocalBounds(node, this.state.scalePointDragging);
                 //convert to percentage
                 if (this._responsive) {
-                    this.props.globalState.workbench.convertToPercentage(node, false);
+                    CoordinateHelper.convertToPercentage(node, ["left", "top"]);
                 }
                 this.props.globalState.workbench._liveGuiTextureRerender = false;
                 this.props.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
@@ -348,7 +348,7 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
         }
 
         if (this._responsive) {
-            this.props.globalState.workbench.convertToPercentage(node, true);
+            CoordinateHelper.convertToPercentage(node);
         }
     }
 

@@ -78,7 +78,9 @@ export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponen
                 });
             }
 
-            this.props.target[this.props.propertyName!] = !this.state.isSelected;
+            if (this.props.target && this.props.propertyName) {
+                this.props.target[this.props.propertyName!] = !this.state.isSelected;
+            }
         }
 
         if (this.props.onValueChanged) {

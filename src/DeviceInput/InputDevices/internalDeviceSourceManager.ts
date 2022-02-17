@@ -1,7 +1,7 @@
 import { IDisposable } from '../../scene';
 import { DeviceType } from './deviceEnums';
 import { Nullable } from '../../types';
-import { Observable, Observer } from '../../Misc/observable';
+import { Observable } from '../../Misc/observable';
 import { IDeviceEvent, IDeviceInputSystem } from './inputInterfaces';
 import { NativeDeviceInputSystem } from './nativeDeviceInputSystem';
 import { WebDeviceInputSystem } from './webDeviceInputSystem';
@@ -14,44 +14,29 @@ declare const _native: INative;
 declare module "../../Engines/engine" {
     interface Engine {
         /** @hidden */
-        _deviceSourceManager: InternalDeviceSourceManager;
+        _deviceSourceManager?: InternalDeviceSourceManager;
     }
 }
 
 /** @hidden */
+export interface IObservableManager {
+    onDeviceConnectedObservable: Observable<DeviceSource<DeviceType>>;
+    onInputChangedObservable: Observable<IDeviceEvent>;
+    onDeviceDisconnectedObservable: Observable<DeviceSource<DeviceType>>;
+}
+
+/** @hidden */
 export class InternalDeviceSourceManager implements IDisposable {
-    // Public Members
-    public readonly onDeviceConnectedObservable = new Observable<DeviceSource<DeviceType>>((observer) => {
-        this.getDevices().forEach((device) => {
-            if (device) {
-                this.onDeviceConnectedObservable.notifyObserver(observer, device);
-            }
-        });
-    });
-
-    public readonly onInputChangedObservable = new Observable<IDeviceEvent>();
-
-    public readonly onDeviceDisconnectedObservable = new Observable<DeviceSource<DeviceType>>();
-
     // Private Members
     private readonly _devices: Array<Array<DeviceSource<DeviceType>>>;
     private readonly _firstDevice: Array<number>;
     private readonly _deviceInputSystem: IDeviceInputSystem;
 
-    private _oninputChangedObserver: Nullable<Observer<IDeviceEvent>>;
+    private readonly _registeredManagers = new Array<IObservableManager>();
 
-    public static _Create(engine: Engine): InternalDeviceSourceManager {
-        if (!engine._deviceSourceManager) {
-            engine._deviceSourceManager = new InternalDeviceSourceManager(engine);
+    public _refCount = 0;
 
-            engine.onDisposeObservable.add(() => {
-                engine._deviceSourceManager.dispose();
-            });
-        }
-        return engine._deviceSourceManager;
-    }
-
-    private constructor(engine: Engine) {
+    public constructor(engine: Engine) {
         const numberOfDeviceTypes = Object.keys(DeviceType).length / 2;
         this._devices = new Array<Array<DeviceSource<DeviceType>>>(numberOfDeviceTypes);
         this._firstDevice = new Array<number>(numberOfDeviceTypes);
@@ -65,22 +50,29 @@ export class InternalDeviceSourceManager implements IDisposable {
 
         this._deviceInputSystem.onDeviceConnected = (deviceType, deviceSlot) => {
             this._addDevice(deviceType, deviceSlot);
-            this.onDeviceConnectedObservable.notifyObservers(this.getDeviceSource(deviceType, deviceSlot)!);
+            const deviceSource = this.getDeviceSource(deviceType, deviceSlot)!;
+            for (const manager of this._registeredManagers) {
+                manager.onDeviceConnectedObservable.notifyObservers(deviceSource);
+            }
         };
 
         this._deviceInputSystem.onDeviceDisconnected = (deviceType, deviceSlot) => {
-            const device = this.getDeviceSource(deviceType, deviceSlot)!; // Grab local reference to use before removing from devices
+            const deviceSource = this.getDeviceSource(deviceType, deviceSlot)!; // Grab local reference to use before removing from devices
             this._removeDevice(deviceType, deviceSlot);
-            this.onDeviceDisconnectedObservable.notifyObservers(device);
+            for (const manager of this._registeredManagers) {
+                manager.onDeviceDisconnectedObservable.notifyObservers(deviceSource);
+            }
         };
 
         this._deviceInputSystem.onInputChanged = (deviceEvent) => {
-            this.onInputChangedObservable.notifyObservers(deviceEvent);
+            for (const manager of this._registeredManagers) {
+                manager.onInputChangedObservable.notifyObservers(deviceEvent);
+            }
         };
     }
 
     // Public Functions
-    public getDeviceSource = <T extends DeviceType>(deviceType: T, deviceSlot?: number): Nullable<DeviceSource<T>> => {
+    public readonly getDeviceSource = <T extends DeviceType>(deviceType: T, deviceSlot?: number): Nullable<DeviceSource<T>> => {
         if (deviceSlot === undefined) {
             if (this._firstDevice[deviceType] === undefined) {
                 return null;
@@ -93,20 +85,14 @@ export class InternalDeviceSourceManager implements IDisposable {
             return null;
         }
 
-        if (!this._oninputChangedObserver) {
-            this._oninputChangedObserver = this.onInputChangedObservable.add((eventData) => {
-                this._devices[eventData.deviceType][eventData.deviceSlot].onInputChangedObservable.notifyObservers(eventData);
-            });
-        }
-
         return this._devices[deviceType][deviceSlot];
     }
 
-    public getDeviceSources = <T extends DeviceType>(deviceType: T): ReadonlyArray<DeviceSource<T>> => {
+    public readonly getDeviceSources = <T extends DeviceType>(deviceType: T): ReadonlyArray<DeviceSource<T>> => {
         return this._devices[deviceType].filter((source) => { return !!source; });
     }
 
-    public getDevices = (): ReadonlyArray<DeviceSource<DeviceType>> => {
+    public readonly getDevices = (): ReadonlyArray<DeviceSource<DeviceType>> => {
         const deviceArray = new Array<DeviceSource<DeviceType>>();
         this._devices.forEach((deviceSet) => {
             deviceArray.push.apply(deviceArray, deviceSet);
@@ -115,9 +101,19 @@ export class InternalDeviceSourceManager implements IDisposable {
         return deviceArray;
     }
 
+    public readonly registerManager = (manager: IObservableManager): void => {
+        this._registeredManagers.push(manager);
+    }
+
+    public readonly unregisterManager = (manager: IObservableManager): void => {
+        const idx = this._registeredManagers.indexOf(manager);
+
+        if (idx > -1) {
+            this._registeredManagers.splice(idx, 1);
+        }
+    }
+
     public dispose(): void {
-        this.onDeviceConnectedObservable.clear();
-        this.onDeviceDisconnectedObservable.clear();
         this._deviceInputSystem.dispose();
     }
 
