@@ -40,6 +40,7 @@ export class Curve {
         }
         let pathData = `M${convertX(keys[0].frame)} ${convertY(keys[0].value)}`;
 
+        const dataType = this.animation.dataType;
         for (var keyIndex = 1; keyIndex < keys.length; keyIndex++) {
             const outTangent = keys[keyIndex - 1].outTangent;
             const inTangent = keys[keyIndex].inTangent;
@@ -56,7 +57,7 @@ export class Curve {
                 continue;
             }
 
-            if (outTangent === undefined && inTangent === undefined) { // Draw a straight line
+            if (outTangent === undefined && inTangent === undefined && dataType !== Animation.ANIMATIONTYPE_QUATERNION) { // Draw a straight line
                 pathData += ` L${convertX(currentFrame)} ${convertY(currentValue)}`;
                 continue;
             }
