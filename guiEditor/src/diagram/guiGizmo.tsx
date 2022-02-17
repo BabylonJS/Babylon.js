@@ -83,7 +83,6 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
         initialAngleToPivot: number,
     }
 
-    // private _selectionChangedObserver: Nullable<Observer<Nullable<Control>>>;
     private _responsiveChangedObserver: Nullable<Observer<boolean>>;
     private _gizmoUpdateObserver: Nullable<Observer<void>>;
     private _pointerUpObserver: Nullable<Observer<Nullable<React.PointerEvent<HTMLCanvasElement> | PointerEvent>>>;
