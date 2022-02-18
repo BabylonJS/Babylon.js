@@ -1937,6 +1937,7 @@ declare module "babylonjs-node-editor/sharedComponents/messageDialog" {
 }
 declare module "babylonjs-node-editor/components/preview/previewManager" {
     import { GlobalState } from "babylonjs-node-editor/globalState";
+    import "babylonjs/Rendering/depthRendererSceneComponent";
     export class PreviewManager {
         private _nodeMaterial;
         private _onBuildObserver;

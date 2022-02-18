@@ -19,7 +19,7 @@ declare module GUIEDITOR {
 }
 declare module GUIEDITOR {
     export class Tools {
-        static LookForItem(item: any, selectedEntity: any, firstIteration?: boolean): boolean;
+        static LookForItems(item: any, selectedEntities: any[], firstIteration?: boolean): boolean;
         private static _RecursiveRemoveHiddenMeshesAndHoistChildren;
         static SortAndFilter(parent: any, items: any[]): any[];
         static getCellInfo(grid: Grid, control: Control): BABYLON.Vector2;
@@ -43,6 +43,7 @@ declare module GUIEDITOR {
         right: number;
         bottom: number;
         constructor(left: number, top: number, right: number, bottom: number);
+        clone(): Rect;
         get center(): BABYLON.Vector2;
         get width(): number;
         get height(): number;
@@ -205,54 +206,6 @@ declare module GUIEDITOR {
     }
 }
 declare module GUIEDITOR {
-    export interface IGuiGizmoProps {
-        globalState: GlobalState;
-    }
-    enum ScalePointPosition {
-        Top = -1,
-        Left = -1,
-        Center = 0,
-        Right = 1,
-        Bottom = 1
-    }
-    interface IScalePoint {
-        position: BABYLON.Vector2;
-        horizontalPosition: ScalePointPosition;
-        verticalPosition: ScalePointPosition;
-        rotation: number;
-        isPivot: boolean;
-    }
-    interface IGuiGizmoState {
-        canvasBounds: Rect;
-        scalePoints: IScalePoint[];
-        scalePointDragging: number;
-        isRotating: boolean;
-    }
-    export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmoState> {
-        private _responsive;
-        private _storedValues;
-        private _localBounds;
-        private _rotation;
-        constructor(props: IGuiGizmoProps);
-        componentDidMount(): void;
-        /**
-         * Update the gizmo's positions
-         * @param force should the update be forced. otherwise it will be updated only when the pointer is down
-         */
-        updateGizmo(force?: boolean): void;
-        onUp(evt?: React.PointerEvent): void;
-        private _onUp;
-        onMove(evt: React.PointerEvent): void;
-        private _onMove;
-        private _rotate;
-        private _dragLocalBounds;
-        private _updateNodeFromLocalBounds;
-        private _beginDraggingScalePoint;
-        private _beginRotate;
-        render(): JSX.Element | null;
-    }
-}
-declare module GUIEDITOR {
     export enum DragOverLocation {
         ABOVE = 0,
         BELOW = 1,
@@ -283,13 +236,11 @@ declare module GUIEDITOR {
         controlCamera: boolean;
         selectionLock: boolean;
         workbench: WorkbenchComponent;
-        guiGizmo: GuiGizmoComponent;
         onPropertyChangedObservable: BABYLON.Observable<PropertyChangedEvent>;
         onZoomObservable: BABYLON.Observable<void>;
         onFitToWindowObservable: BABYLON.Observable<void>;
         onPanObservable: BABYLON.Observable<void>;
         onSelectionButtonObservable: BABYLON.Observable<void>;
-        onMoveObservable: BABYLON.Observable<void>;
         onLoadObservable: BABYLON.Observable<File>;
         onSaveObservable: BABYLON.Observable<void>;
         onSnippetLoadObservable: BABYLON.Observable<void>;
@@ -304,6 +255,8 @@ declare module GUIEDITOR {
         onGizmoUpdateRequireObservable: BABYLON.Observable<void>;
         onArtBoardUpdateRequiredObservable: BABYLON.Observable<void>;
         onBackgroundColorChangeObservable: BABYLON.Observable<void>;
+        onPointerMoveObservable: BABYLON.Observable<PointerEvent<HTMLCanvasElement>>;
+        onPointerUpObservable: BABYLON.Observable<BABYLON.Nullable<PointerEvent | PointerEvent<HTMLCanvasElement>>>;
         draggedControl: BABYLON.Nullable<Control>;
         draggedControlDirection: DragOverLocation;
         isSaving: boolean;
@@ -1021,7 +974,7 @@ declare module GUIEDITOR {
 declare module GUIEDITOR {
     export class GUINodeTools {
         static ImageControlDefaultUrl: string;
-        static CreateControlFromString(data: string): Grid | Rectangle | Line | Image | TextBlock | Slider | ImageBasedSlider | RadioButton | InputText | ColorPicker | StackPanel | Ellipse | Checkbox | DisplayGrid;
+        static CreateControlFromString(data: string): Grid | Rectangle | Line | TextBlock | Image | Slider | ImageBasedSlider | RadioButton | InputText | ColorPicker | StackPanel | Ellipse | Checkbox | DisplayGrid;
     }
 }
 declare module GUIEDITOR {
@@ -1136,7 +1089,7 @@ declare module GUIEDITOR {
 declare module GUIEDITOR {
     export interface ITreeItemSelectableComponentProps {
         entity: any;
-        selectedEntity?: any;
+        selectedEntities: any[];
         mustExpand?: boolean;
         offset: number;
         globalState: GlobalState;
@@ -1175,7 +1128,7 @@ declare module GUIEDITOR {
         forceSubitems?: boolean;
         globalState: GlobalState;
         entity?: any;
-        selectedEntity: any;
+        selectedEntities: any[];
         extensibilityGroups?: BABYLON.IExplorerExtensibilityGroup[];
         contextMenuItems?: {
             label: string;
@@ -1279,6 +1232,67 @@ declare module GUIEDITOR {
         private _outlines;
         constructor(props: ICommandBarComponentProps);
         private updateNodeOutline;
+        render(): JSX.Element;
+    }
+}
+declare module GUIEDITOR {
+    export interface IGuiGizmoProps {
+        globalState: GlobalState;
+        control: Control;
+    }
+    enum ScalePointPosition {
+        Top = -1,
+        Left = -1,
+        Center = 0,
+        Right = 1,
+        Bottom = 1
+    }
+    interface IScalePoint {
+        position: BABYLON.Vector2;
+        horizontalPosition: ScalePointPosition;
+        verticalPosition: ScalePointPosition;
+        rotation: number;
+        isPivot: boolean;
+    }
+    interface IGuiGizmoState {
+        canvasBounds: Rect;
+        scalePoints: IScalePoint[];
+        scalePointDragging: number;
+        isRotating: boolean;
+    }
+    export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmoState> {
+        private _storedValues;
+        private _localBounds;
+        private _rotation;
+        private _gizmoUpdateObserver;
+        private _pointerUpObserver;
+        private _pointerMoveObserver;
+        constructor(props: IGuiGizmoProps);
+        componentWillUnmount(): void;
+        /**
+         * Update the gizmo's positions
+         * @param force should the update be forced. otherwise it will be updated only when the pointer is down
+         */
+        updateGizmo(force?: boolean): void;
+        private _onUp;
+        private _onMove;
+        private _rotate;
+        private _modulo;
+        private _dragLocalBounds;
+        private _updateNodeFromLocalBounds;
+        private _beginDraggingScalePoint;
+        private _beginRotate;
+        render(): JSX.Element;
+    }
+}
+declare module GUIEDITOR {
+    export interface IGizmoWrapperProps {
+        globalState: GlobalState;
+    }
+    export class GizmoWrapper extends React.Component<IGizmoWrapperProps> {
+        observer: BABYLON.Nullable<BABYLON.Observer<BABYLON.Nullable<Control>>>;
+        componentWillMount(): void;
+        componentWillUnmount(): void;
         render(): JSX.Element;
     }
 }

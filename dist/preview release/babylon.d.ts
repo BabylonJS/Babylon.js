@@ -28,7 +28,7 @@ declare module BABYLON {
      * Alias type for primitive types
      * @ignorenaming
      */
-    type Primitive = undefined | null | boolean | string | number | Function;
+    type Primitive = undefined | null | boolean | string | number | Function | Element;
     /**
      * Type modifier to make all the properties of an object Readonly
      */
@@ -41452,7 +41452,7 @@ declare module BABYLON {
      * Decorator used to redirect a function to a native implementation if available.
      * @hidden
      */
-    export function nativeOverride<T extends (...params: any) => boolean>(target: any, propertyKey: string, descriptor: TypedPropertyDescriptor<(...params: Parameters<T>) => unknown>, predicate?: T): void;
+    export function nativeOverride<T extends (...params: any[]) => boolean>(target: any, propertyKey: string, descriptor: TypedPropertyDescriptor<(...params: Parameters<T>) => unknown>, predicate?: T): void;
     /**
      * Decorator used to redirect a function to a native implementation if available.
      * @hidden
@@ -72555,6 +72555,7 @@ declare module BABYLON {
         get mainTexture(): RenderTargetTexture;
         /** @hidden */
         static _SceneComponentInitialization: (scene: Scene) => void;
+        private _materialForRendering;
         /**
          * Sets a specific material to be used to render a mesh/a list of meshes in the layer
          * @param mesh mesh or array of meshes

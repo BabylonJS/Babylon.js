@@ -42,8 +42,8 @@ declare module "babylonjs-loaders/glTF/glTFFileLoader" {
     import { Scene, IDisposable } from "babylonjs/scene";
     import { WebRequest } from "babylonjs/Misc/webRequest";
     import { IFileRequest } from "babylonjs/Misc/fileRequest";
-    import { IDataBuffer } from 'babylonjs/Misc/dataReader';
-    import { LoadFileError } from 'babylonjs/Misc/fileTools';
+    import { IDataBuffer } from "babylonjs/Misc/dataReader";
+    import { LoadFileError } from "babylonjs/Misc/fileTools";
     /**
      * Mode that determines the coordinate system to use.
      */
@@ -206,9 +206,14 @@ declare module "babylonjs-loaders/glTF/glTFFileLoader" {
          */
         useSRGBBuffers: boolean;
         /**
-         * When loading glTF animations, which are defined in seconds, target them to this FPS.
+         * When loading glTF animations, which are defined in seconds, target them to this FPS. Defaults to 60.
          */
         targetFps: number;
+        /**
+         * Defines if the loader should always compute the nearest common ancestor of the skeleton joints instead of using `skin.skeleton`. Defaults to false.
+         * Set this to true if loading assets with invalid `skin.skeleton` values.
+         */
+        alwaysComputeSkeletonRootNode: boolean;
         /**
         * Function called before loading a url referenced by the asset.
         */
@@ -1787,6 +1792,7 @@ declare module "babylonjs-loaders/glTF/2.0/Extensions/EXT_mesh_gpu_instancing" {
     import { GLTFLoader } from "babylonjs-loaders/glTF/2.0/glTFLoader";
     import { IGLTFLoaderExtension } from "babylonjs-loaders/glTF/2.0/glTFLoaderExtension";
     import { INode } from "babylonjs-loaders/glTF/2.0/glTFLoaderInterfaces";
+    import "babylonjs/Meshes/thinInstanceMesh";
     /**
      * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1691)
      * [Playground Sample](https://playground.babylonjs.com/#QFIGLW#9)
@@ -3356,9 +3362,14 @@ declare module BABYLON {
          */
         useSRGBBuffers: boolean;
         /**
-         * When loading glTF animations, which are defined in seconds, target them to this FPS.
+         * When loading glTF animations, which are defined in seconds, target them to this FPS. Defaults to 60.
          */
         targetFps: number;
+        /**
+         * Defines if the loader should always compute the nearest common ancestor of the skeleton joints instead of using `skin.skeleton`. Defaults to false.
+         * Set this to true if loading assets with invalid `skin.skeleton` values.
+         */
+        alwaysComputeSkeletonRootNode: boolean;
         /**
         * Function called before loading a url referenced by the asset.
         */

@@ -4890,6 +4890,74 @@ declare module BABYLON.GUI {
     }
 }
 declare module BABYLON.GUI {
+    /**
+     * Default behavior for 3D UI elements.
+     * Handles a BABYLON.FollowBehavior, SixDofBehavior and BABYLON.SurfaceMagnetismBehavior
+     * @since 5.0.0
+     */
+    export class DefaultBehavior implements BABYLON.Behavior<BABYLON.Mesh> {
+        private _scene;
+        private _followBehavior;
+        private _sixDofDragBehavior;
+        private _surfaceMagnetismBehavior;
+        private _onBeforeRenderObserver;
+        private _onDragObserver;
+        /**
+         * Instantiates the default behavior
+         */
+        constructor();
+        /**
+         * Attached node of this behavior
+         */
+        attachedNode: BABYLON.Nullable<BABYLON.Mesh>;
+        /**
+         *  The name of the behavior
+         */
+        get name(): string;
+        /**
+         *  The follow behavior
+         */
+        get followBehavior(): BABYLON.FollowBehavior;
+        /**
+         *  The six DoF drag behavior
+         */
+        get sixDofDragBehavior(): BABYLON.SixDofDragBehavior;
+        /**
+         * The surface magnetism behavior
+         */
+        get surfaceMagnetismBehavior(): BABYLON.SurfaceMagnetismBehavior;
+        /**
+         * Enables the follow behavior
+         */
+        followBehaviorEnabled: boolean;
+        /**
+         * Enables the six DoF drag behavior
+         */
+        sixDofDragBehaviorEnabled: boolean;
+        /**
+         * Enables the surface magnetism behavior
+         */
+        surfaceMagnetismBehaviorEnabled: boolean;
+        /**
+         *  Initializes the behavior
+         */
+        init(): void;
+        /**
+         * Attaches the default behavior
+         * @param ownerMesh The top level mesh
+         * @param draggablesMeshes Descendant meshes that can be used for dragging the owner mesh
+         * @param sceneUnderstandingMeshes Meshes from the scene understanding that will be used for surface magnetism
+         */
+        attach(ownerMesh: BABYLON.Mesh, draggablesMeshes?: BABYLON.Mesh[], sceneUnderstandingMeshes?: BABYLON.AbstractMesh[]): void;
+        /**
+         *  Detaches the behavior from the mesh
+         */
+        detach(): void;
+        private _addObservables;
+        private _removeObservables;
+    }
+}
+declare module BABYLON.GUI {
     /** @hidden */
     export var handleVertexShader: {
         name: string;
@@ -5128,74 +5196,6 @@ declare module BABYLON.GUI {
     }
 }
 declare module BABYLON.GUI {
-    /**
-     * Default behavior for 3D UI elements.
-     * Handles a BABYLON.FollowBehavior, SixDofBehavior and BABYLON.SurfaceMagnetismBehavior
-     * @since 5.0.0
-     */
-    export class DefaultBehavior implements BABYLON.Behavior<BABYLON.Mesh> {
-        private _scene;
-        private _followBehavior;
-        private _sixDofDragBehavior;
-        private _surfaceMagnetismBehavior;
-        private _onBeforeRenderObserver;
-        private _onDragObserver;
-        /**
-         * Instantiates the default behavior
-         */
-        constructor();
-        /**
-         * Attached node of this behavior
-         */
-        attachedNode: BABYLON.Nullable<BABYLON.Mesh>;
-        /**
-         *  The name of the behavior
-         */
-        get name(): string;
-        /**
-         *  The follow behavior
-         */
-        get followBehavior(): BABYLON.FollowBehavior;
-        /**
-         *  The six DoF drag behavior
-         */
-        get sixDofDragBehavior(): BABYLON.SixDofDragBehavior;
-        /**
-         * The surface magnetism behavior
-         */
-        get surfaceMagnetismBehavior(): BABYLON.SurfaceMagnetismBehavior;
-        /**
-         * Enables the follow behavior
-         */
-        followBehaviorEnabled: boolean;
-        /**
-         * Enables the six DoF drag behavior
-         */
-        sixDofDragBehaviorEnabled: boolean;
-        /**
-         * Enables the surface magnetism behavior
-         */
-        surfaceMagnetismBehaviorEnabled: boolean;
-        /**
-         *  Initializes the behavior
-         */
-        init(): void;
-        /**
-         * Attaches the default behavior
-         * @param ownerMesh The top level mesh
-         * @param draggablesMeshes Descendant meshes that can be used for dragging the owner mesh
-         * @param sceneUnderstandingMeshes Meshes from the scene understanding that will be used for surface magnetism
-         */
-        attach(ownerMesh: BABYLON.Mesh, draggablesMeshes?: BABYLON.Mesh[], sceneUnderstandingMeshes?: BABYLON.AbstractMesh[]): void;
-        /**
-         *  Detaches the behavior from the mesh
-         */
-        detach(): void;
-        private _addObservables;
-        private _removeObservables;
-    }
-}
-declare module BABYLON.GUI {
     /** @hidden */
     export var fluentBackplatePixelShader: {
         name: string;
@@ -5372,34 +5372,33 @@ declare module BABYLON.GUI {
          */
         static FOLLOW_ICON_FILENAME: string;
         /**
-         * Dimensions of the slate
+         * 2D dimensions of the slate
          */
-        dimensions: BABYLON.Vector3;
+        dimensions: BABYLON.Vector2;
         /**
          * Minimum dimensions of the slate
          */
-        minDimensions: BABYLON.Vector3;
+        minDimensions: BABYLON.Vector2;
         /**
          * Default dimensions of the slate
          */
-        readonly defaultDimensions: BABYLON.Vector3;
+        readonly defaultDimensions: BABYLON.Vector2;
         /**
-         * Dimensions of the backplate
+         * Height of the title bar component
          */
-        backplateDimensions: BABYLON.Vector3;
+        titleBarHeight: number;
         /**
-         * Margin between backplate and contentplate
+         * Margin between title bar and contentplate
          */
-        backPlateMargin: number;
+        titleBarMargin: number;
         /**
          * Origin in local coordinates (top left corner)
          */
         origin: BABYLON.Vector3;
-        private _backPlateMaterial;
+        private _titleBarMaterial;
         private _contentMaterial;
         private _pickedPointObserver;
         private _positionChangedObserver;
-        private _imageUrl;
         private _contentViewport;
         private _contentDragBehavior;
         private _defaultBehavior;
@@ -5409,7 +5408,7 @@ declare module BABYLON.GUI {
         get defaultBehavior(): DefaultBehavior;
         /** @hidden */
         _gizmo: SlateGizmo;
-        protected _backPlate: BABYLON.Mesh;
+        protected _titleBar: BABYLON.Mesh;
         protected _contentPlate: BABYLON.Mesh;
         protected _followButton: TouchHolographicButton;
         protected _closeButton: TouchHolographicButton;
@@ -5419,11 +5418,6 @@ declare module BABYLON.GUI {
          */
         set renderingGroupId(id: number);
         get renderingGroupId(): number;
-        /**
-         * Gets or sets the image url for the button
-         */
-        get imageUrl(): string;
-        set imageUrl(value: string);
         /**
          * Creates a new slate
          * @param name defines the control name
@@ -5435,7 +5429,6 @@ declare module BABYLON.GUI {
          * @param facadeTexture defines the AdvancedDynamicTexture to use
          */
         protected _applyFacade(facadeTexture: AdvancedDynamicTexture): void;
-        private _rebuildContent;
         private _addControl;
         protected _getTypeName(): string;
         /**
