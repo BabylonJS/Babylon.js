@@ -191,9 +191,14 @@ declare module BABYLON {
          */
         useSRGBBuffers: boolean;
         /**
-         * When loading glTF animations, which are defined in seconds, target them to this FPS.
+         * When loading glTF animations, which are defined in seconds, target them to this FPS. Defaults to 60.
          */
         targetFps: number;
+        /**
+         * Defines if the loader should always compute the nearest common ancestor of the skeleton joints instead of using `skin.skeleton`. Defaults to false.
+         * Set this to true if loading assets with invalid `skin.skeleton` values.
+         */
+        alwaysComputeSkeletonRootNode: boolean;
         /**
         * Function called before loading a url referenced by the asset.
         */

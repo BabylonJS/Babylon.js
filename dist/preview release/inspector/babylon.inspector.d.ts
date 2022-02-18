@@ -1311,6 +1311,7 @@ declare module INSPECTOR {
             animationIndex: number;
             keyIndex: number;
         } | null;
+        hasActiveQuaternionAnimationKeyPoints(): boolean;
     }
 }
 declare module INSPECTOR {

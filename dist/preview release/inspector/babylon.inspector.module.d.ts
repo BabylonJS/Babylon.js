@@ -810,6 +810,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ren
 }
 declare module "babylonjs-inspector/components/actionTabs/tabs/debugTabComponent" {
     import { PaneComponent, IPaneComponentProps } from "babylonjs-inspector/components/actionTabs/paneComponent";
+    import "babylonjs/Physics/physicsEngineComponent";
     export class DebugTabComponent extends PaneComponent {
         private _physicsViewersEnabled;
         constructor(props: IPaneComponentProps);
@@ -1431,6 +1432,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
             animationIndex: number;
             keyIndex: number;
         } | null;
+        hasActiveQuaternionAnimationKeyPoints(): boolean;
     }
 }
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/animations/curveEditor/controls/textInputComponent" {
@@ -2733,6 +2735,8 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
     import { TextureLinkLineComponent } from "babylonjs-inspector/components/actionTabs/lines/textureLinkLineComponent";
     import { LockObject } from "babylonjs-inspector/sharedUiComponents/tabs/propertyGrids/lockObject";
     import { GlobalState } from "babylonjs-inspector/components/globalState";
+    import "babylonjs/Rendering/prePassRendererSceneComponent";
+    import "babylonjs/Rendering/subSurfaceSceneComponent";
     interface IPBRMaterialPropertyGridComponentProps {
         globalState: GlobalState;
         material: PBRMaterial;
@@ -2798,6 +2802,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/sce
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
     import { LockObject } from "babylonjs-inspector/sharedUiComponents/tabs/propertyGrids/lockObject";
     import { GlobalState } from "babylonjs-inspector/components/globalState";
+    import "babylonjs/Physics/physicsEngineComponent";
     interface IScenePropertyGridComponentProps {
         globalState: GlobalState;
         scene: Scene;
@@ -3011,6 +3016,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mes
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
     import { LockObject } from "babylonjs-inspector/sharedUiComponents/tabs/propertyGrids/lockObject";
     import { GlobalState } from "babylonjs-inspector/components/globalState";
+    import "babylonjs/Physics/physicsEngineComponent";
     interface IMeshPropertyGridComponentProps {
         globalState: GlobalState;
         mesh: Mesh;
@@ -4423,6 +4429,7 @@ declare module "babylonjs-inspector/components/sceneExplorer/entities/meshTreeIt
     import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
     import * as React from "react";
     import { GlobalState } from "babylonjs-inspector/components/globalState";
+    import "babylonjs/Rendering/boundingBoxRenderer";
     interface IMeshTreeItemComponentProps {
         mesh: AbstractMesh;
         extensibilityGroups?: IExplorerExtensibilityGroup[];
@@ -4859,6 +4866,8 @@ declare module "babylonjs-inspector/components/sceneExplorer/sceneExplorerCompon
     import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
     import { Scene } from "babylonjs/scene";
     import { GlobalState } from "babylonjs-inspector/components/globalState";
+    import "babylonjs/Sprites/spriteSceneComponent";
+    import "babylonjs/Audio/audioSceneComponent";
     interface ISceneExplorerFilterComponentProps {
         onFilter: (filter: string) => void;
     }
@@ -6363,6 +6372,7 @@ declare module INSPECTOR {
             animationIndex: number;
             keyIndex: number;
         } | null;
+        hasActiveQuaternionAnimationKeyPoints(): boolean;
     }
 }
 declare module INSPECTOR {

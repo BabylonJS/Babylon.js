@@ -5619,11 +5619,9 @@ var Control = /** @class */ (function () {
         var _a;
         var oldLeft = this._left.getValue(this._host);
         var oldTop = this._top.getValue(this._host);
-        if (this._currentMeasure.width === 0 && this._currentMeasure.height === 0) {
-            var parentMeasure = (_a = this.parent) === null || _a === void 0 ? void 0 : _a._currentMeasure;
-            if (parentMeasure) {
-                this._processMeasures(parentMeasure, this._host.getContext());
-            }
+        var parentMeasure = (_a = this.parent) === null || _a === void 0 ? void 0 : _a._currentMeasure;
+        if (parentMeasure) {
+            this._processMeasures(parentMeasure, this._host.getContext());
         }
         var newLeft = projectedPosition.x + this._linkOffsetX.getValue(this._host) - this._currentMeasure.width / 2;
         var newTop = projectedPosition.y + this._linkOffsetY.getValue(this._host) - this._currentMeasure.height / 2;
@@ -17102,7 +17100,7 @@ var ContentDisplay3D = /** @class */ (function (_super) {
         },
         set: function (value) {
             this._content = value;
-            if (!this._host || !this._host.utilityLayer) {
+            if (!value || !this._host || !this._host.utilityLayer) {
                 return;
             }
             if (!this._facadeTexture) {
@@ -18246,16 +18244,14 @@ var HolographicButton = /** @class */ (function (_super) {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "HolographicSlate", function() { return HolographicSlate; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Meshes/Builders/boxBuilder */ "babylonjs/Misc/perfCounter");
-/* harmony import */ var babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _materials_fluent_fluentMaterial__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../materials/fluent/fluentMaterial */ "./3D/materials/fluent/fluentMaterial.ts");
-/* harmony import */ var _touchHolographicButton__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./touchHolographicButton */ "./3D/controls/touchHolographicButton.ts");
-/* harmony import */ var _contentDisplay3D__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./contentDisplay3D */ "./3D/controls/contentDisplay3D.ts");
-/* harmony import */ var _2D_controls_image__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../2D/controls/image */ "./2D/controls/image.ts");
-/* harmony import */ var _gizmos_slateGizmo__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../gizmos/slateGizmo */ "./3D/gizmos/slateGizmo.ts");
-/* harmony import */ var _behaviors_defaultBehavior__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../behaviors/defaultBehavior */ "./3D/behaviors/defaultBehavior.ts");
-/* harmony import */ var _materials_fluentBackplate_fluentBackplateMaterial__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../materials/fluentBackplate/fluentBackplateMaterial */ "./3D/materials/fluentBackplate/fluentBackplateMaterial.ts");
-
+/* harmony import */ var _contentDisplay3D__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./contentDisplay3D */ "./3D/controls/contentDisplay3D.ts");
+/* harmony import */ var _touchHolographicButton__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./touchHolographicButton */ "./3D/controls/touchHolographicButton.ts");
+/* harmony import */ var _behaviors_defaultBehavior__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../behaviors/defaultBehavior */ "./3D/behaviors/defaultBehavior.ts");
+/* harmony import */ var _gizmos_slateGizmo__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../gizmos/slateGizmo */ "./3D/gizmos/slateGizmo.ts");
+/* harmony import */ var _materials_fluent_fluentMaterial__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../materials/fluent/fluentMaterial */ "./3D/materials/fluent/fluentMaterial.ts");
+/* harmony import */ var _materials_fluentBackplate_fluentBackplateMaterial__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../materials/fluentBackplate/fluentBackplateMaterial */ "./3D/materials/fluentBackplate/fluentBackplateMaterial.ts");
+/* harmony import */ var babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! babylonjs/Behaviors/Meshes/pointerDragBehavior */ "babylonjs/Misc/perfCounter");
+/* harmony import */ var babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_7___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_7__);
 
 
 
@@ -18284,35 +18280,35 @@ var HolographicSlate = /** @class */ (function (_super) {
     function HolographicSlate(name) {
         var _this = _super.call(this, name) || this;
         /**
-         * Dimensions of the slate
+         * 2D dimensions of the slate
          */
-        _this.dimensions = new babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["Vector3"](21.875, 12.5, 0.001);
+        _this.dimensions = new babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_7__["Vector2"](21.875, 12.5);
         /**
          * Minimum dimensions of the slate
          */
-        _this.minDimensions = new babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["Vector3"](15.625, 6.25, 0.001);
+        _this.minDimensions = new babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_7__["Vector2"](15.625, 6.25);
         /**
          * Default dimensions of the slate
          */
         _this.defaultDimensions = _this.dimensions.clone();
         /**
-         * Dimensions of the backplate
+         * Height of the title bar component
          */
-        _this.backplateDimensions = new babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["Vector3"](21.875, 0.625, 0.001);
+        _this.titleBarHeight = 0.625;
         /**
-         * Margin between backplate and contentplate
+         * Margin between title bar and contentplate
          */
-        _this.backPlateMargin = 0.005;
+        _this.titleBarMargin = 0.005;
         /**
          * Origin in local coordinates (top left corner)
          */
-        _this.origin = new babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["Vector3"](0, 0, 0);
+        _this.origin = new babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_7__["Vector3"](0, 0, 0);
         _this._contentScaleRatio = 1;
-        _this._followButton = new _touchHolographicButton__WEBPACK_IMPORTED_MODULE_3__["TouchHolographicButton"]("followButton" + _this.name);
-        _this._closeButton = new _touchHolographicButton__WEBPACK_IMPORTED_MODULE_3__["TouchHolographicButton"]("closeButton" + _this.name);
-        _this._contentViewport = new babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["Viewport"](0, 0, 1, 1);
-        _this._contentDragBehavior = new babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["PointerDragBehavior"]({
-            dragPlaneNormal: new babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["Vector3"](0, 0, -1),
+        _this._followButton = new _touchHolographicButton__WEBPACK_IMPORTED_MODULE_2__["TouchHolographicButton"]("followButton" + _this.name);
+        _this._closeButton = new _touchHolographicButton__WEBPACK_IMPORTED_MODULE_2__["TouchHolographicButton"]("closeButton" + _this.name);
+        _this._contentViewport = new babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_7__["Viewport"](0, 0, 1, 1);
+        _this._contentDragBehavior = new babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_7__["PointerDragBehavior"]({
+            dragPlaneNormal: new babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_7__["Vector3"](0, 0, -1),
         });
         return _this;
     }
@@ -18328,33 +18324,14 @@ var HolographicSlate = /** @class */ (function (_super) {
     });
     Object.defineProperty(HolographicSlate.prototype, "renderingGroupId", {
         get: function () {
-            return this._backPlate.renderingGroupId;
+            return this._titleBar.renderingGroupId;
         },
         /**
          * Rendering ground id of all the mesh in the button
          */
         set: function (id) {
-            this._backPlate.renderingGroupId = id;
+            this._titleBar.renderingGroupId = id;
             this._contentPlate.renderingGroupId = id;
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(HolographicSlate.prototype, "imageUrl", {
-        /**
-         * Gets or sets the image url for the button
-         */
-        get: function () {
-            return this._imageUrl;
-        },
-        set: function (value) {
-            if (this._imageUrl === value) {
-                return;
-            }
-            this._imageUrl = value;
-            this._rebuildContent();
-            this._resetContentPositionAndZoom();
-            this._applyContentViewport();
         },
         enumerable: false,
         configurable: true
@@ -18366,22 +18343,9 @@ var HolographicSlate = /** @class */ (function (_super) {
      */
     HolographicSlate.prototype._applyFacade = function (facadeTexture) {
         this._contentMaterial.albedoTexture = facadeTexture;
-        // We should have a content plate by this point, but check for safety
-        if (this._contentPlate) {
-            facadeTexture.attachToMesh(this._contentPlate, true);
-        }
-    };
-    HolographicSlate.prototype._rebuildContent = function () {
-        this._disposeFacadeTexture();
-        if (babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["DomManagement"].IsDocumentAvailable() && !!document.createElement) {
-            if (this._imageUrl) {
-                var image = new _2D_controls_image__WEBPACK_IMPORTED_MODULE_5__["Image"]();
-                image.source = this._imageUrl;
-                if (this._contentPlate) {
-                    this.content = image;
-                }
-            }
-        }
+        this._resetContentPositionAndZoom();
+        this._applyContentViewport();
+        facadeTexture.attachToMesh(this._contentPlate, true);
     };
     HolographicSlate.prototype._addControl = function (control) {
         control._host = this._host;
@@ -18398,26 +18362,26 @@ var HolographicSlate = /** @class */ (function (_super) {
     HolographicSlate.prototype._positionElements = function () {
         var followButtonMesh = this._followButton.mesh;
         var closeButtonMesh = this._closeButton.mesh;
-        var backPlate = this._backPlate;
+        var titleBar = this._titleBar;
         var contentPlate = this._contentPlate;
-        if (followButtonMesh && closeButtonMesh && backPlate) {
+        if (followButtonMesh && closeButtonMesh && titleBar) {
             // World size of a button with 1 scaling
             var buttonBaseSize = 1;
-            // Buttons take full backPlate on Y axis
-            var backPlateYScale = this.backplateDimensions.y / buttonBaseSize;
-            closeButtonMesh.scaling.setAll(backPlateYScale);
-            followButtonMesh.scaling.setAll(backPlateYScale);
+            // Buttons take full titleBar on Y axis
+            var titleBarYScale = this.titleBarHeight / buttonBaseSize;
+            closeButtonMesh.scaling.setAll(titleBarYScale);
+            followButtonMesh.scaling.setAll(titleBarYScale);
             closeButtonMesh.position
-                .copyFromFloats(this.backplateDimensions.x - backPlateYScale / 2, -this.backplateDimensions.y / 2, (-this.backplateDimensions.z / 2) * (this._host.scene.useRightHandedSystem ? -1 : 1))
+                .copyFromFloats(this.dimensions.x - titleBarYScale / 2, -this.titleBarHeight / 2, (-babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_7__["Epsilon"] / 2) * (this._host.scene.useRightHandedSystem ? -1 : 1))
                 .addInPlace(this.origin);
             followButtonMesh.position
-                .copyFromFloats(this.backplateDimensions.x - (3 * backPlateYScale) / 2, -this.backplateDimensions.y / 2, (-this.backplateDimensions.z / 2) * (this._host.scene.useRightHandedSystem ? -1 : 1))
+                .copyFromFloats(this.dimensions.x - (3 * titleBarYScale) / 2, -this.titleBarHeight / 2, (-babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_7__["Epsilon"] / 2) * (this._host.scene.useRightHandedSystem ? -1 : 1))
                 .addInPlace(this.origin);
-            var contentPlateHeight = this.dimensions.y - this.backplateDimensions.y - this.backPlateMargin;
-            backPlate.scaling.copyFrom(this.backplateDimensions);
-            contentPlate.scaling.copyFromFloats(this.dimensions.x, contentPlateHeight, this.dimensions.z);
-            backPlate.position.copyFromFloats(this.backplateDimensions.x / 2, -(this.backplateDimensions.y / 2), 0).addInPlace(this.origin);
-            contentPlate.position.copyFromFloats(this.dimensions.x / 2, -(this.backplateDimensions.y + this.backPlateMargin + contentPlateHeight / 2), 0).addInPlace(this.origin);
+            var contentPlateHeight = this.dimensions.y - this.titleBarHeight - this.titleBarMargin;
+            titleBar.scaling.set(this.dimensions.x, this.titleBarHeight, babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_7__["Epsilon"]);
+            contentPlate.scaling.copyFromFloats(this.dimensions.x, contentPlateHeight, babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_7__["Epsilon"]);
+            titleBar.position.copyFromFloats(this.dimensions.x / 2, -(this.titleBarHeight / 2), 0).addInPlace(this.origin);
+            contentPlate.position.copyFromFloats(this.dimensions.x / 2, -(this.titleBarHeight + this.titleBarMargin + contentPlateHeight / 2), 0).addInPlace(this.origin);
             var aspectRatio = this.dimensions.x / contentPlateHeight;
             this._contentViewport.width = this._contentScaleRatio;
             this._contentViewport.height = this._contentScaleRatio / aspectRatio;
@@ -18447,30 +18411,29 @@ var HolographicSlate = /** @class */ (function (_super) {
             return;
         }
         // Update pivot point so it is at the center of geometry
-        var center = this.dimensions.scale(0.5);
         // As origin is topleft corner in 2D, dimensions are calculated towards bottom right corner, thus y axis is downwards
-        center.y *= -1;
+        var center = new babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_7__["Vector3"](this.dimensions.x * 0.5, -this.dimensions.y * 0.5, babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_7__["Epsilon"]);
         center.addInPlace(this.origin);
         center.z = 0;
-        var origin = new babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["Vector3"](0, 0, 0);
-        babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["Vector3"].TransformCoordinatesToRef(origin, this.mesh.computeWorldMatrix(true), origin);
+        var origin = new babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_7__["Vector3"](0, 0, 0);
+        babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_7__["Vector3"].TransformCoordinatesToRef(origin, this.mesh.computeWorldMatrix(true), origin);
         this.mesh.setPivotPoint(center);
-        var origin2 = new babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["Vector3"](0, 0, 0);
-        babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["Vector3"].TransformCoordinatesToRef(origin2, this.mesh.computeWorldMatrix(true), origin2);
+        var origin2 = new babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_7__["Vector3"](0, 0, 0);
+        babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_7__["Vector3"].TransformCoordinatesToRef(origin2, this.mesh.computeWorldMatrix(true), origin2);
         this.mesh.position.addInPlace(origin).subtractInPlace(origin2);
     };
     // Mesh association
     HolographicSlate.prototype._createNode = function (scene) {
         var _this = this;
-        var node = new babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["Mesh"]("slate" + this.name, scene);
-        this._backPlate = Object(babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["CreateBox"])("backPlate" + this.name, { size: 1 }, scene);
-        var faceUV = new Array(6).fill(new babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["Vector4"](0, 0, 1, 1));
+        var node = new babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_7__["Mesh"]("slate_" + this.name, scene);
+        this._titleBar = Object(babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_7__["CreateBox"])("titleBar_" + this.name, { size: 1 }, scene);
+        var faceUV = new Array(6).fill(new babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_7__["Vector4"](0, 0, 1, 1));
         if (scene.useRightHandedSystem) {
             faceUV[0].copyFromFloats(0, 1, 1, 0);
         }
-        this._contentPlate = Object(babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["CreateBox"])("contentPlate" + this.name, { size: 1, faceUV: faceUV }, scene);
-        this._backPlate.parent = node;
-        this._backPlate.isNearGrabbable = true;
+        this._contentPlate = Object(babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_7__["CreateBox"])("contentPlate_" + this.name, { size: 1, faceUV: faceUV }, scene);
+        this._titleBar.parent = node;
+        this._titleBar.isNearGrabbable = true;
         this._contentPlate.parent = node;
         this._attachContentPlateBehavior();
         this._addControl(this._followButton);
@@ -18493,7 +18456,7 @@ var HolographicSlate = /** @class */ (function (_super) {
         this._closeButton.onPointerClickObservable.add(function () {
             _this.dispose();
         });
-        node.rotationQuaternion = babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["Quaternion"].Identity();
+        node.rotationQuaternion = babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_7__["Quaternion"].Identity();
         node.isVisible = false;
         return node;
     };
@@ -18503,11 +18466,11 @@ var HolographicSlate = /** @class */ (function (_super) {
         this._contentDragBehavior.moveAttached = false;
         this._contentDragBehavior.useObjectOrientationForDragging = true;
         this._contentDragBehavior.updateDragPlane = false;
-        var origin = new babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["Vector3"]();
-        var worldDimensions = new babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["Vector3"]();
-        var upWorld = new babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["Vector3"]();
-        var rightWorld = new babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["Vector3"]();
-        var projectedOffset = new babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["Vector2"]();
+        var origin = new babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_7__["Vector3"]();
+        var worldDimensions = new babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_7__["Vector3"]();
+        var upWorld = new babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_7__["Vector3"]();
+        var rightWorld = new babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_7__["Vector3"]();
+        var projectedOffset = new babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_7__["Vector2"]();
         var startViewport;
         var worldMatrix;
         this._contentDragBehavior.onDragStartObservable.add(function (event) {
@@ -18517,55 +18480,55 @@ var HolographicSlate = /** @class */ (function (_super) {
             startViewport = _this._contentViewport.clone();
             worldMatrix = _this.node.computeWorldMatrix(true);
             origin.copyFrom(event.dragPlanePoint);
-            worldDimensions.copyFrom(_this.dimensions);
-            worldDimensions.y -= _this.backplateDimensions.y + _this.backPlateMargin;
-            babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["Vector3"].TransformNormalToRef(worldDimensions, worldMatrix, worldDimensions);
+            worldDimensions.set(_this.dimensions.x, _this.dimensions.y, babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_7__["Epsilon"]);
+            worldDimensions.y -= _this.titleBarHeight + _this.titleBarMargin;
+            babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_7__["Vector3"].TransformNormalToRef(worldDimensions, worldMatrix, worldDimensions);
             upWorld.copyFromFloats(0, 1, 0);
-            babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["Vector3"].TransformNormalToRef(upWorld, worldMatrix, upWorld);
+            babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_7__["Vector3"].TransformNormalToRef(upWorld, worldMatrix, upWorld);
             rightWorld.copyFromFloats(1, 0, 0);
-            babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["Vector3"].TransformNormalToRef(rightWorld, worldMatrix, rightWorld);
+            babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_7__["Vector3"].TransformNormalToRef(rightWorld, worldMatrix, rightWorld);
             upWorld.normalize();
-            upWorld.scaleInPlace(1 / babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Dot(upWorld, worldDimensions));
+            upWorld.scaleInPlace(1 / babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_7__["Vector3"].Dot(upWorld, worldDimensions));
             rightWorld.normalize();
-            rightWorld.scaleInPlace(1 / babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Dot(rightWorld, worldDimensions));
+            rightWorld.scaleInPlace(1 / babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_7__["Vector3"].Dot(rightWorld, worldDimensions));
         });
-        var offset = new babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["Vector3"]();
+        var offset = new babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_7__["Vector3"]();
         this._contentDragBehavior.onDragObservable.add(function (event) {
             offset.copyFrom(event.dragPlanePoint);
             offset.subtractInPlace(origin);
-            projectedOffset.copyFromFloats(babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Dot(offset, rightWorld), babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Dot(offset, upWorld));
+            projectedOffset.copyFromFloats(babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_7__["Vector3"].Dot(offset, rightWorld), babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_7__["Vector3"].Dot(offset, upWorld));
             // By default, content takes full width available and height is cropped to keep aspect ratio
-            _this._contentViewport.x = babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["Scalar"].Clamp(startViewport.x - offset.x, 0, 1 - _this._contentViewport.width * _this._contentScaleRatio);
-            _this._contentViewport.y = babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["Scalar"].Clamp(startViewport.y - offset.y, 0, 1 - _this._contentViewport.height * _this._contentScaleRatio);
+            _this._contentViewport.x = babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_7__["Scalar"].Clamp(startViewport.x - offset.x, 0, 1 - _this._contentViewport.width * _this._contentScaleRatio);
+            _this._contentViewport.y = babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_7__["Scalar"].Clamp(startViewport.y - offset.y, 0, 1 - _this._contentViewport.height * _this._contentScaleRatio);
             _this._applyContentViewport();
         });
     };
     HolographicSlate.prototype._affectMaterial = function (mesh) {
         // TODO share materials
-        this._backPlateMaterial = new _materials_fluentBackplate_fluentBackplateMaterial__WEBPACK_IMPORTED_MODULE_8__["FluentBackplateMaterial"]("".concat(this.name, " plateMaterial"), mesh.getScene());
-        this._pickedPointObserver = this._host.onPickedPointChangedObservable.add(function (pickedPoint) {
-            // if (pickedPoint) {
-            //     this._backPlateMaterial. = pickedPoint;
-            //     this._backPlateMaterial.hoverColor.a = 1.0;
-            // } else {
-            //     this._backPlateMaterial.hoverColor.a = 0;
-            // }
-        });
-        this._contentMaterial = new _materials_fluent_fluentMaterial__WEBPACK_IMPORTED_MODULE_2__["FluentMaterial"](this.name + "contentMaterial", mesh.getScene());
+        this._titleBarMaterial = new _materials_fluentBackplate_fluentBackplateMaterial__WEBPACK_IMPORTED_MODULE_6__["FluentBackplateMaterial"]("".concat(this.name, " plateMaterial"), mesh.getScene());
+        // this._pickedPointObserver = this._host.onPickedPointChangedObservable.add((pickedPoint) => {
+        //     if (pickedPoint) {
+        //         this._titleBarMaterial.globalLeftIndexTipPosition = pickedPoint;
+        //         this._titleBarMaterial.hoverColor.a = 1.0;
+        //     } else {
+        //         this._titleBarMaterial.hoverColor.a = 0;
+        //     }
+        // });
+        this._contentMaterial = new _materials_fluent_fluentMaterial__WEBPACK_IMPORTED_MODULE_5__["FluentMaterial"](this.name + "contentMaterial", mesh.getScene());
         this._contentMaterial.renderBorders = true;
-        this._backPlate.material = this._backPlateMaterial;
+        this._titleBar.material = this._titleBarMaterial;
         this._contentPlate.material = this._contentMaterial;
-        this._rebuildContent();
+        this._resetContent();
         this._applyContentViewport();
     };
     /** @hidden **/
     HolographicSlate.prototype._prepareNode = function (scene) {
         var _this = this;
         _super.prototype._prepareNode.call(this, scene);
-        this._gizmo = new _gizmos_slateGizmo__WEBPACK_IMPORTED_MODULE_6__["SlateGizmo"](this._host.utilityLayer);
+        this._gizmo = new _gizmos_slateGizmo__WEBPACK_IMPORTED_MODULE_4__["SlateGizmo"](this._host.utilityLayer);
         this._gizmo.attachedSlate = this;
-        this._defaultBehavior = new _behaviors_defaultBehavior__WEBPACK_IMPORTED_MODULE_7__["DefaultBehavior"]();
-        this._defaultBehavior.attach(this.node, [this._backPlate]);
+        this._defaultBehavior = new _behaviors_defaultBehavior__WEBPACK_IMPORTED_MODULE_3__["DefaultBehavior"]();
+        this._defaultBehavior.attach(this.node, [this._titleBar]);
         this._positionChangedObserver = this._defaultBehavior.sixDofDragBehavior.onPositionChangedObservable.add(function () {
             _this._gizmo.updateBoundingBox();
         });
@@ -18583,13 +18546,13 @@ var HolographicSlate = /** @class */ (function (_super) {
         var camera = scene.activeCamera;
         if (camera) {
             var worldMatrix = camera.getWorldMatrix();
-            var backward = babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["Vector3"].TransformNormal(babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Backward(scene.useRightHandedSystem), worldMatrix);
+            var backward = babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_7__["Vector3"].TransformNormal(babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_7__["Vector3"].Backward(scene.useRightHandedSystem), worldMatrix);
             this.dimensions.copyFrom(this.defaultDimensions);
             this.origin.setAll(0);
             this._gizmo.updateBoundingBox();
             var pivot = this.node.getAbsolutePivotPoint();
             this.node.position.copyFrom(camera.position).subtractInPlace(backward).subtractInPlace(pivot);
-            this.node.rotationQuaternion = babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["Quaternion"].FromLookDirectionLH(backward, new babylonjs_Meshes_Builders_boxBuilder__WEBPACK_IMPORTED_MODULE_1__["Vector3"](0, 1, 0));
+            this.node.rotationQuaternion = babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_7__["Quaternion"].FromLookDirectionLH(backward, new babylonjs_Behaviors_Meshes_pointerDragBehavior__WEBPACK_IMPORTED_MODULE_7__["Vector3"](0, 1, 0));
         }
     };
     /**
@@ -18597,9 +18560,9 @@ var HolographicSlate = /** @class */ (function (_super) {
      */
     HolographicSlate.prototype.dispose = function () {
         _super.prototype.dispose.call(this);
-        this._backPlateMaterial.dispose();
+        this._titleBarMaterial.dispose();
         this._contentMaterial.dispose();
-        this._backPlate.dispose();
+        this._titleBar.dispose();
         this._contentPlate.dispose();
         this._followButton.dispose();
         this._closeButton.dispose();
@@ -18622,7 +18585,7 @@ var HolographicSlate = /** @class */ (function (_super) {
      */
     HolographicSlate.FOLLOW_ICON_FILENAME = "IconFollowMe.png";
     return HolographicSlate;
-}(_contentDisplay3D__WEBPACK_IMPORTED_MODULE_4__["ContentDisplay3D"]));
+}(_contentDisplay3D__WEBPACK_IMPORTED_MODULE_1__["ContentDisplay3D"]));
 
 
 
@@ -19696,14 +19659,29 @@ var TouchButton3D = /** @class */ (function (_super) {
          * @param collisionMesh the new collision mesh for the button
          */
         set: function (collisionMesh) {
-            var _a, _b;
-            // Remove the GUI3DManager's data from the previous collision mesh's reserved data store
-            if ((_b = (_a = this._collisionMesh) === null || _a === void 0 ? void 0 : _a.reservedDataStore) === null || _b === void 0 ? void 0 : _b.GUI3D) {
-                this._collisionMesh.reservedDataStore.GUI3D = {};
+            var _this = this;
+            var _a;
+            // Remove the GUI3DManager's data from the previous collision mesh's reserved data store, and reset interactability
+            if (this._collisionMesh) {
+                this._collisionMesh.isNearPickable = false;
+                if ((_a = this._collisionMesh.reservedDataStore) === null || _a === void 0 ? void 0 : _a.GUI3D) {
+                    this._collisionMesh.reservedDataStore.GUI3D = {};
+                }
+                this._collisionMesh.getChildMeshes().forEach(function (mesh) {
+                    var _a;
+                    mesh.isNearPickable = false;
+                    if ((_a = mesh.reservedDataStore) === null || _a === void 0 ? void 0 : _a.GUI3D) {
+                        mesh.reservedDataStore.GUI3D = {};
+                    }
+                });
             }
             this._collisionMesh = collisionMesh;
             this._injectGUI3DReservedDataStore(this._collisionMesh).control = this;
             this._collisionMesh.isNearPickable = true;
+            this._collisionMesh.getChildMeshes().forEach(function (mesh) {
+                _this._injectGUI3DReservedDataStore(mesh).control = _this;
+                mesh.isNearPickable = true;
+            });
             this.collidableFrontDirection = collisionMesh.forward;
         },
         enumerable: false,
@@ -20989,6 +20967,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 /**
  * Gizmo to resize 2D slates
  */
@@ -21151,8 +21130,7 @@ var SlateGizmo = /** @class */ (function (_super) {
         offsetOriginMasked.copyFrom(offset).multiplyInPlace(masks.origin);
         offsetDimensionsMasked.copyFrom(offset).multiplyInPlace(masks.dimensions);
         this._attachedSlate.origin.copyFrom(originStart).addInPlace(offsetOriginMasked);
-        this._attachedSlate.dimensions.copyFrom(dimensionsStart).addInPlace(offsetDimensionsMasked);
-        this._attachedSlate.backplateDimensions.x = this._attachedSlate.dimensions.x;
+        this._attachedSlate.dimensions.set(dimensionsStart.x + offsetDimensionsMasked.x, dimensionsStart.y + offsetDimensionsMasked.y);
     };
     SlateGizmo.prototype._assignDragBehaviorCorners = function (handle, moveFn, masks) {
         var _this = this;
@@ -21172,7 +21150,7 @@ var SlateGizmo = /** @class */ (function (_super) {
         };
         var dragStart = function (event) {
             if (_this.attachedSlate && _this.attachedMesh) {
-                dimensionsStart.copyFrom(_this.attachedSlate.dimensions);
+                dimensionsStart.set(_this.attachedSlate.dimensions.x, _this.attachedSlate.dimensions.y, babylonjs_Gizmos_gizmo__WEBPACK_IMPORTED_MODULE_1__["Epsilon"]);
                 originStart.copyFrom(_this.attachedSlate.origin);
                 dragOrigin.copyFrom(event.position);
                 toObjectFrame.copyFrom(_this.attachedMesh.computeWorldMatrix(true));
