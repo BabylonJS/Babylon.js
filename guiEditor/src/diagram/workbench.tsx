@@ -428,7 +428,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     blurEvent = () => {
         this._ctrlKeyIsPressed = false;
         this._constraintDirection = ConstraintDirection.NONE;
-        this.props.globalState.guiGizmo.onUp();
+        this.props.globalState.onPointerUpObservable.notifyObservers(null);
     };
 
     componentWillUnmount() {
@@ -977,7 +977,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this._rootContainer.current?.addEventListener("pointerup", (event) => {
             this._panning = false;
             removeObservers();
-            this.props.globalState.guiGizmo.onUp();            
+            this.props.globalState.onPointerUpObservable.notifyObservers(event);          
         })
 
         scene.onKeyboardObservable.add((k: KeyboardInfo, e: KeyboardEventTypes) => {
@@ -1081,13 +1081,11 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                     if (this.props.globalState.guiTexture) {
                         this.onMove(evt);
                     }
-                    if (this.props.globalState.guiGizmo) {
-                        this.props.globalState.guiGizmo.onMove(evt);
-                    }
+                    this.props.globalState.onPointerMoveObservable.notifyObservers(evt);
                 }} onPointerDown={(evt) => this.onDown(evt)}
                 onPointerUp={(evt) => {
                     this.onUp(evt);
-                    this.props.globalState.guiGizmo.onUp(evt);
+                    this.props.globalState.onPointerUpObservable.notifyObservers(evt);
                 }}
                 ref={this._rootContainer}>
 

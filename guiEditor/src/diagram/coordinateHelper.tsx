@@ -22,6 +22,10 @@ export class Rect {
         this.bottom = bottom;
     }
 
+    public clone() {
+        return new Rect(this.left, this.top, this.right, this.bottom);
+    }
+    
     public get center() {
         const topLeft = new Vector2(this.left, this.top);
         return topLeft.addInPlace(new Vector2(this.right, this.bottom).subtractInPlace(topLeft).multiplyByFloats(0.5, 0.5));

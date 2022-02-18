@@ -230,6 +230,9 @@
     }
 }
 .gizmo {
+    * {
+        user-select: none;
+    }
     .bounding-box-line {
         background-color: black;
         position: absolute;
