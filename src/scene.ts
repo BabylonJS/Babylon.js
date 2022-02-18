@@ -68,6 +68,7 @@ declare type Effect = import("./Materials/effect").Effect;
 declare type MorphTarget = import("./Morph/morphTarget").MorphTarget;
 declare type WebVRFreeCamera = import("./Cameras/VR/webVRCamera").WebVRFreeCamera;
 declare type PerformanceViewerCollector = import("./Misc/PerformanceViewer/performanceViewerCollector").PerformanceViewerCollector;
+declare type IAction = import("./Actions/action").IAction;
 
 /**
  * Define an interface for all classes that will hold resources
@@ -1215,7 +1216,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     private _renderId = 0;
     private _frameId = 0;
-    private _executeWhenReadyTimeoutId = -1;
+    private _executeWhenReadyTimeoutId: Nullable<ReturnType<typeof setTimeout>> = null;
     private _intermediateRendering = false;
     private _defaultFrameBufferCleared = false;
 
@@ -2046,7 +2047,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     public executeWhenReady(func: () => void, checkRenderTargets = false): void {
         this.onReadyObservable.add(func);
 
-        if (this._executeWhenReadyTimeoutId !== -1) {
+        if (this._executeWhenReadyTimeoutId !== null) {
             return;
         }
 
@@ -2076,13 +2077,13 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             this.onReadyObservable.notifyObservers(this);
 
             this.onReadyObservable.clear();
-            this._executeWhenReadyTimeoutId = -1;
+            this._executeWhenReadyTimeoutId = null;
             return;
         }
 
         if (this._isDisposed) {
             this.onReadyObservable.clear();
-            this._executeWhenReadyTimeoutId = -1;
+            this._executeWhenReadyTimeoutId = null;
             return;
         }
 
@@ -4098,7 +4099,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             }
 
             for (var actionIndex = 0; sourceMesh.actionManager && actionIndex < sourceMesh.actionManager.actions.length; actionIndex++) {
-                var action = sourceMesh.actionManager.actions[actionIndex];
+                var action: IAction = sourceMesh.actionManager.actions[actionIndex];
 
                 if (action.trigger === Constants.ACTION_OnIntersectionEnterTrigger || action.trigger === Constants.ACTION_OnIntersectionExitTrigger) {
                     var parameters = action.getTriggerParameter();
@@ -4252,7 +4253,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             return;
         }
 
-        if (this.onReadyObservable.hasObservers() && this._executeWhenReadyTimeoutId === -1) {
+        if (this.onReadyObservable.hasObservers() && this._executeWhenReadyTimeoutId === null) {
             this._checkIsReady();
         }
 
