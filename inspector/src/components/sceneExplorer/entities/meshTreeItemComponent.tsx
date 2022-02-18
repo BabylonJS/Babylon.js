@@ -9,6 +9,8 @@ import { ExtensionsComponent } from "../extensionsComponent";
 import * as React from "react";
 import { GlobalState } from "../../globalState";
 
+import "babylonjs/Rendering/boundingBoxRenderer";
+
 interface IMeshTreeItemComponentProps {
     mesh: AbstractMesh;
     extensibilityGroups?: IExplorerExtensibilityGroup[];

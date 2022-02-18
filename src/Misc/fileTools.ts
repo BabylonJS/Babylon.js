@@ -405,7 +405,7 @@ export const RequestFile = (url: string, onSuccess: (data: string | ArrayBuffer,
 
     const requestFile = () => {
         let request = new WebRequest();
-        let retryHandle: Nullable<number> = null;
+        let retryHandle: Nullable<ReturnType<typeof setTimeout>> = null;
 
         fileRequest.abort = () => {
             aborted = true;

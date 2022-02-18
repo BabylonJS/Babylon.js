@@ -30,7 +30,7 @@ export type DataArray = number[] | ArrayBuffer | ArrayBufferView;
  * Alias type for primitive types
  * @ignorenaming
  */
-type Primitive = undefined | null | boolean | string | number | Function;
+type Primitive = undefined | null | boolean | string | number | Function | Element;
 
 /**
  * Type modifier to make all the properties of an object Readonly
