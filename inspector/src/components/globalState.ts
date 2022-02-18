@@ -12,7 +12,6 @@ import { CameraGizmo } from "babylonjs/Gizmos/cameraGizmo";
 import { PropertyChangedEvent } from "./propertyChangedEvent";
 import { ReplayRecorder } from "./replayRecorder";
 import { DataStorage } from "babylonjs/Misc/dataStorage";
-import { faLaptopHouse, faLeaf } from "@fortawesome/free-solid-svg-icons";
 
 export class GlobalState {
     public onSelectionChangedObservable: Observable<any>;
