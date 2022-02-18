@@ -1,5 +1,5 @@
 import * as React from "react";
-import { GlobalState } from "./globalState";
+import { DragOverLocation, GlobalState } from "./globalState";
 import { PropertyTabComponent } from "./components/propertyTab/propertyTabComponent";
 import { Portal } from "./portal";
 import { LogComponent } from "./components/log/logComponent";
@@ -12,6 +12,7 @@ import { CommandBarComponent } from "./components/commandBarComponent";
 import { GuiGizmoComponent } from "./diagram/guiGizmo";
 import { Nullable } from "babylonjs/types";
 import { ArtBoardComponent } from './diagram/artBoard';
+import { Control } from "babylonjs-gui/2D/controls/control";
 
 require("./main.scss");
 require("./scss/header.scss");
@@ -88,6 +89,12 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
         this.createItems();
 
         this.props.globalState.onBackgroundColorChangeObservable.add(() => this.forceUpdate());
+        this.props.globalState.onDropObservable.add(() => {
+            if (this._draggedItem != null) {
+                this.props.globalState.draggedControl = this.onCreate(this._draggedItem);
+            }
+            this._draggedItem = null;
+        })
     }
 
     showWaitScreen() {
@@ -259,11 +266,8 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                     {/* The gui workbench diagram */}
                     <div className="diagram-container"
                         onDrop={(event) => {
-                            if (this._draggedItem != null) {
-                                this.onCreate(this._draggedItem);
-                            }
-                            this._draggedItem = null;
-
+                            event.preventDefault();
+                            this.props.globalState.onDropObservable.notifyObservers();
                         }}
                         onDragOver={(event) => {
                             event.preventDefault();
@@ -440,12 +444,13 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
         ];
     }
 
-    onCreate(value: string): void {
+    onCreate(value: string): Control {
         let guiElement = GUINodeTools.CreateControlFromString(value);
         let newGuiNode = this.props.globalState.workbench.appendBlock(guiElement);
         this.props.globalState.onSelectionChangedObservable.notifyObservers(newGuiNode);
         this.props.globalState.guiGizmo.onUp();
         this.forceUpdate();
+        return newGuiNode;
     }
 
     createToolbar() {
