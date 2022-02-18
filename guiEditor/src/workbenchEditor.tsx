@@ -9,7 +9,7 @@ import { WorkbenchComponent } from "./diagram/workbench";
 import { MessageDialogComponent } from "./sharedComponents/messageDialog";
 import { SceneExplorerComponent } from "./components/sceneExplorer/sceneExplorerComponent";
 import { CommandBarComponent } from "./components/commandBarComponent";
-import { GuiGizmoComponent } from "./diagram/guiGizmo";
+import { GizmoWrapper } from "./diagram/guiGizmoWrapper";
 import { Nullable } from "babylonjs/types";
 import { ArtBoardComponent } from './diagram/artBoard';
 
@@ -273,7 +273,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                         }}>
                         <ArtBoardComponent globalState={this.props.globalState}/>
                         <WorkbenchComponent ref={"workbenchCanvas"} globalState={this.props.globalState} />
-                        <GuiGizmoComponent globalState={this.props.globalState} />
+                        <GizmoWrapper globalState={this.props.globalState} />
                     </div>
 
                     <div
@@ -444,7 +444,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
         let guiElement = GUINodeTools.CreateControlFromString(value);
         let newGuiNode = this.props.globalState.workbench.appendBlock(guiElement);
         this.props.globalState.onSelectionChangedObservable.notifyObservers(newGuiNode);
-        this.props.globalState.guiGizmo.onUp();
+        this.props.globalState.onPointerUpObservable.notifyObservers(null);
         this.forceUpdate();
     }
 
