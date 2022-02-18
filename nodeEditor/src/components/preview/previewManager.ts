@@ -36,7 +36,7 @@ import { CreateGround } from "babylonjs/Meshes/Builders/groundBuilder";
 import { CreateSphere } from "babylonjs/Meshes/Builders/sphereBuilder";
 import { CreateTorus } from "babylonjs/Meshes/Builders/torusBuilder";
 
-import "core/Rendering/depthRendererSceneComponent";
+import "babylonjs/Rendering/depthRendererSceneComponent";
 
 export class PreviewManager {
     private _nodeMaterial: NodeMaterial;

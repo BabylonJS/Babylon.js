@@ -16,8 +16,8 @@ import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids
 import { GlobalState } from "../../../../globalState";
 import { Vector2LineComponent } from "../../../../../sharedUiComponents/lines/vector2LineComponent";
 
-import "core/Rendering/prePassRendererSceneComponent";
-import "core/Rendering/subSurfaceSceneComponent";
+import "babylonjs/Rendering/prePassRendererSceneComponent";
+import "babylonjs/Rendering/subSurfaceSceneComponent";
 
 interface IPBRMaterialPropertyGridComponentProps {
     globalState: GlobalState;
