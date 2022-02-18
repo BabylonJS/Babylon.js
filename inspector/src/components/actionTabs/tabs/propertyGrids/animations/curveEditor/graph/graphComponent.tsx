@@ -138,6 +138,9 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
             }
 
             for (const currentAnimation of this.props.context.activeAnimations) {
+                if (currentAnimation.dataType === Animation.ANIMATIONTYPE_QUATERNION) {
+                    continue;
+                }
                 let keys = currentAnimation.getKeys();
 
                 const currentFrame = this.props.context.activeFrame;
@@ -212,16 +215,6 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
                             }
                             case Animation.ANIMATIONTYPE_VECTOR3: {
                                 derivative = Vector3.Hermite1stDerivative(
-                                    leftKey.value.scale(invFrameDelta),
-                                    leftKey.outTangent,
-                                    rightKey.value.scale(invFrameDelta),
-                                    rightKey.inTangent,
-                                    cutTime
-                                );
-                                break;
-                            }
-                            case Animation.ANIMATIONTYPE_QUATERNION: {
-                                derivative = Quaternion.Hermite1stDerivative(
                                     leftKey.value.scale(invFrameDelta),
                                     leftKey.outTangent,
                                     rightKey.value.scale(invFrameDelta),
