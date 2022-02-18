@@ -171,7 +171,8 @@ export function CreatePolygon(name: string, options: { shape: Vector3[], holes?:
         }
         polygonTriangulation.addHole(hole);
     }
-    var polygon = polygonTriangulation.build(options.updatable, depth, smoothingThreshold);
+    //updatability is set during applyToMesh; setting to true in triangulation build produces errors
+    var polygon = polygonTriangulation.build(false, depth, smoothingThreshold);
     polygon._originalBuilderSideOrientation = options.sideOrientation;
     var vertexData = CreatePolygonVertexData(polygon, options.sideOrientation, options.faceUV, options.faceColors, options.frontUVs, options.backUVs, options.wrap);
     vertexData.applyToMesh(polygon, options.updatable);
