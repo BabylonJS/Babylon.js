@@ -8,7 +8,7 @@ import { PhysicsViewer } from "babylonjs/Debug/physicsViewer";
 import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
 import { Mesh } from "babylonjs/Meshes/mesh";
 
-import "core/Physics/physicsEngineComponent";
+import "babylonjs/Physics/physicsEngineComponent";
 
 export class DebugTabComponent extends PaneComponent {
     private _physicsViewersEnabled = false;
