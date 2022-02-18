@@ -59,6 +59,7 @@ export class GlobalState {
     onOutlinesObservable = new Observable<void>();
     onResponsiveChangeObservable = new Observable<boolean>();
     onParentingChangeObservable = new Observable<Nullable<Control>>();
+    onDropObservable = new Observable<void>();
     onPropertyGridUpdateRequiredObservable = new Observable<void>();
     onDraggingEndObservable = new Observable<void>();
     onDraggingStartObservable = new Observable<void>();
