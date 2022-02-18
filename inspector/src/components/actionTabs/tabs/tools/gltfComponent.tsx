@@ -111,14 +111,20 @@ export class GLTFComponent extends React.Component<IGLTFComponentProps> {
         return (
             <div>
                 <LineContainerComponent title="GLTF LOADER" closed={true} selection={this.props.globalState}>
+                    <CheckBoxLineComponent label="Always compute bounding box" target={loaderState} propertyName="alwaysComputeBoundingBox" />
+                    <CheckBoxLineComponent label="Always compute skeleton root node" target={loaderState} propertyName="alwaysComputeSkeletonRootNode" />
                     <OptionsLineComponent label="Animation start mode" options={animationStartMode} target={loaderState} propertyName="animationStartMode" />
                     <CheckBoxLineComponent label="Capture performance counters" target={loaderState} propertyName="capturePerformanceCounters" />
                     <CheckBoxLineComponent label="Compile materials" target={loaderState} propertyName="compileMaterials" />
                     <CheckBoxLineComponent label="Compile shadow generators" target={loaderState} propertyName="compileShadowGenerators" />
                     <OptionsLineComponent label="Coordinate system" options={coordinateSystemMode} target={loaderState} propertyName="coordinateSystemMode" />
+                    <CheckBoxLineComponent label="Create instances" target={loaderState} propertyName="createInstances" />
                     <CheckBoxLineComponent label="Enable logging" target={loaderState} propertyName="loggingEnabled" />
+                    <CheckBoxLineComponent label="Load all materials" target={loaderState} propertyName="loadAllMaterials" />
+                    <FloatLineComponent label="Target FPS" target={loaderState} propertyName="targetFps" isInteger={true} />
                     <CheckBoxLineComponent label="Transparency as coverage" target={loaderState} propertyName="transparencyAsCoverage" />
                     <CheckBoxLineComponent label="Use clip plane" target={loaderState} propertyName="useClipPlane" />
+                    <CheckBoxLineComponent label="Use sRGB buffers" target={loaderState} propertyName="useSRGBBuffers" />
                     <CheckBoxLineComponent label="Validate" target={loaderState} propertyName="validate" />
                     <MessageLineComponent text="You need to reload your file to see these changes" />
                 </LineContainerComponent>
