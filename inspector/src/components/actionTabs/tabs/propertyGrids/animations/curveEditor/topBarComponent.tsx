@@ -58,8 +58,10 @@ export class TopBarComponent extends React.Component<ITopBarComponentProps, ITop
             
             const frameControlEnabled = (numKeys === 1 && numAnims === 1) || (numKeys > 1 && numAnims > 1);
             const valueControlEnabled = numKeys > 0;
+
+            const hasActiveQuaternionAnimation = this.props.context.hasActiveQuaternionAnimationKeyPoints();
             
-            this.setState({ keyFrameValue: "", keyValue: "", frameControlEnabled, valueControlEnabled });
+            this.setState({ keyFrameValue: "", keyValue: "", frameControlEnabled: frameControlEnabled && !hasActiveQuaternionAnimation, valueControlEnabled: valueControlEnabled && !hasActiveQuaternionAnimation });
         });
     }
 

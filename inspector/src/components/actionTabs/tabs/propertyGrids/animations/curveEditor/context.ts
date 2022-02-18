@@ -315,4 +315,11 @@ export class Context {
         }
         return null;
     }
+
+    public hasActiveQuaternionAnimationKeyPoints() {
+        const activeAnimData = this.activeKeyPoints?.map(keyPointComponent => keyPointComponent.props.curve.animation.dataType);
+        const quaternionAnimData = activeAnimData?.filter(type => (type === Animation.ANIMATIONTYPE_QUATERNION));
+        const hasActiveQuaternionAnimation = (quaternionAnimData?.length || 0) > 0;
+        return hasActiveQuaternionAnimation;
+    }   
 }
