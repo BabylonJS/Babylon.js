@@ -23,7 +23,7 @@ export class ContentDisplay3D extends Control3D {
     public set content(value: Control) {
         this._content = value;
 
-        if (!this._host || !this._host.utilityLayer) {
+        if (!value || !this._host || !this._host.utilityLayer) {
             return;
         }
 
