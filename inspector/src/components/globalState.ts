@@ -56,14 +56,20 @@ export class GlobalState {
     };
 
     public glTFLoaderDefaults: { [key: string]: any } = {
+        alwaysComputeBoundingBox: false,
+        alwaysComputeSkeletonRootNode: false,
         animationStartMode: typeof GLTFLoaderAnimationStartMode !== 'undefined' ? GLTFLoaderAnimationStartMode.FIRST : 1,
         capturePerformanceCounters: false,
         compileMaterials: false,
         compileShadowGenerators: false,
         coordinateSystemMode: typeof GLTFLoaderCoordinateSystemMode !== 'undefined' ? GLTFLoaderCoordinateSystemMode.AUTO : 0,
+        createInstances: false,
+        loadAllMaterials: false,
         loggingEnabled: false,
+        targetFps: 60,
         transparencyAsCoverage: false,
         useClipPlane: false,
+        useSRGBBuffers: false,
     };
 
     public glTFLoaderExtensions: { [key: string]: import("babylonjs-loaders/glTF/index").IGLTFLoaderExtension } = {};

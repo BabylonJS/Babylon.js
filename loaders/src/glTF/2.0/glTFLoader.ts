@@ -1148,10 +1148,28 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     private _loadBones(context: string, skin: ISkin, babylonSkeleton: Skeleton): void {
-        if (skin.skeleton == undefined) {
+        if (skin.skeleton == undefined || this._parent.alwaysComputeSkeletonRootNode) {
             const rootNode = this._findSkeletonRootNode(`${context}/joints`, skin.joints);
             if (rootNode) {
-                skin.skeleton = rootNode.index;
+                if (skin.skeleton === undefined) {
+                    skin.skeleton = rootNode.index;
+                } else {
+                    const isParent = (a: INode, b: INode): boolean => {
+                        for (; b.parent; b = b.parent) {
+                            if (b.parent === a) {
+                                return true;
+                            }
+                        }
+
+                        return false;
+                    };
+
+                    const skeletonNode = ArrayItem.Get(`${context}/skeleton`, this._gltf.nodes, skin.skeleton);
+                    if (skeletonNode !== rootNode && !isParent(skeletonNode, rootNode)) {
+                        Logger.Warn(`${context}/skeleton: Overriding with nearest common ancestor as skeleton node is not a common root`);
+                        skin.skeleton = rootNode.index;
+                    }
+                }
             } else {
                 Logger.Warn(`${context}: Failed to find common root`);
             }
