@@ -443,9 +443,9 @@ export class VertexData {
         for (let index = offset; index < offset + length; index += 3) {
             Vector3.FromArrayToRef(normals, index, normal);
             Vector3.TransformNormalToRef(normal, transformation, transformedNormal);
-            normals[index + offset] = transformedNormal.x;
-            normals[index + offset + 1] = transformedNormal.y;
-            normals[index + offset + 2] = transformedNormal.z;
+            normals[index] = transformedNormal.x;
+            normals[index + 1] = transformedNormal.y;
+            normals[index + 2] = transformedNormal.z;
         }
     }
 
@@ -456,10 +456,10 @@ export class VertexData {
         for (let index = offset; index < offset + length; index += 4) {
             Vector4.FromArrayToRef(normals, index, normal);
             Vector4.TransformNormalToRef(normal, transformation, transformedNormal);
-            normals[index + offset] = transformedNormal.x;
-            normals[index + offset + 1] = transformedNormal.y;
-            normals[index + offset + 2] = transformedNormal.z;
-            normals[index + offset + 3] = transformedNormal.w;
+            normals[index] = transformedNormal.x;
+            normals[index + 1] = transformedNormal.y;
+            normals[index + 2] = transformedNormal.z;
+            normals[index + 3] = transformedNormal.w;
         }
     }
 
@@ -467,8 +467,8 @@ export class VertexData {
     private static _FlipFaces(indices: IndicesArray, offset = 0, length = indices.length) {
         for (let index = offset; index < offset + length; index += 3) {
             const tmp = indices[index + 1];
-            indices[index + offset + 1] = indices[index + 2];
-            indices[index + offset + 2] = tmp;
+            indices[index + 1] = indices[index + 2];
+            indices[index + 2] = tmp;
         }
     }
 
@@ -514,7 +514,6 @@ export class VertexData {
         this._validate();
 
         const others = vertexDatas.map(vertexData => vertexData[0]);
-        //const transforms = vertexDatas.map(vertexData => vertexData[1]);
 
         for (const other of others) {
             other._validate();
@@ -560,8 +559,7 @@ export class VertexData {
             }
 
             let positionsOffset = this.positions ? this.positions.length / 3 : 0;
-            for (const vertexData of vertexDatas) {
-                const [other, transform] = vertexData;
+            for (const [other, transform] of vertexDatas) {
                 if (other.indices) {
                     for (let index = 0; index < other.indices.length; index++) {
                         this.indices[indicesOffset + index] = other.indices[index] + positionsOffset;
@@ -645,8 +643,7 @@ export class VertexData {
             transformRange(ret32, transform, 0, source.length);
 
             let offset = source.length;
-            for (const other of nonNullOthers) {
-                const [vertexData, transform] = other;
+            for (const [vertexData, transform] of nonNullOthers) {
                 ret32.set(vertexData, offset);
                 transformRange(ret32, transform, offset, vertexData.length);
                 offset += vertexData.length;
@@ -661,13 +658,12 @@ export class VertexData {
             transformRange(ret, transform, 0, source.length);
 
             let offset = source.length;
-            for (const other of nonNullOthers) {
-                const [vertexData, transform] = other;
+            for (const [vertexData, transform] of nonNullOthers) {
                 for (let i = 0; i < vertexData.length; i++) {
                     ret[offset + i] = vertexData[i];
                 }
                 transformRange(ret, transform, offset, vertexData.length);
-                offset += other.length;
+                offset += vertexData.length;
             }
             return ret;
         }

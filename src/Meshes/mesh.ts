@@ -4442,7 +4442,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         };
 
         Tools.StartPerformanceCounter(`getVertexDataFromMesh`);
-        const sourceVertexData = getVertexDataFromMesh(source);
+        const [sourceVertexData, sourceTransform] = getVertexDataFromMesh(source);
         if (isAsync) { yield; }
 
         const meshVertexDatas = new Array<readonly [VertexData, Matrix]>(meshes.length - 1);
@@ -4452,7 +4452,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
         Tools.EndPerformanceCounter(`getVertexDataFromMesh`);
 
-        const mergeCoroutine = sourceVertexData[0]._mergeCoroutine(sourceVertexData[1], meshVertexDatas, allow32BitsIndices, isAsync);
+        const mergeCoroutine = sourceVertexData._mergeCoroutine(sourceTransform, meshVertexDatas, allow32BitsIndices, isAsync);
         let mergeCoroutineStep = mergeCoroutine.next();
         while (!mergeCoroutineStep.done) {
             if (isAsync) { yield; }
