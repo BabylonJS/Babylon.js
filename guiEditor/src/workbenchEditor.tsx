@@ -1,5 +1,5 @@
 import * as React from "react";
-import { DragOverLocation, GlobalState } from "./globalState";
+import { GlobalState } from "./globalState";
 import { PropertyTabComponent } from "./components/propertyTab/propertyTabComponent";
 import { Portal } from "./portal";
 import { LogComponent } from "./components/log/logComponent";
