@@ -1,5 +1,3 @@
-import { Container } from "babylonjs-gui/2D/controls/container";
-import { Control } from "babylonjs-gui/2D/controls/control";
 import * as React from "react";
 import { GlobalState } from "../globalState";
 import { CommandButtonComponent } from "./commandButtonComponent";
@@ -25,7 +23,6 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
     private _panning: boolean = false;
     private _zooming: boolean = false;
     private _selecting: boolean = true;
-    private _outlines: boolean;
     public constructor(props: ICommandBarComponentProps) {
         super(props);
 
@@ -50,24 +47,9 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
             this.forceUpdate();
         });
 
-        props.globalState.onOutlinesObservable.add(() => {
-            this._outlines = !this._outlines;
-            const nodes = this.props.globalState.workbench.nodes;
-            nodes.forEach((node) => {
-                this.updateNodeOutline(node);
-            });
+        props.globalState.onOutlineChangedObservable.add(() => {
             this.forceUpdate();
         });
-    }
-
-    private updateNodeOutline(guiControl: Control) {
-        guiControl.isHighlighted = this._outlines;
-        guiControl.highlightLineWidth = 5;
-        if (guiControl instanceof Container) {
-            (guiControl as Container).children.forEach((child) => {
-                this.updateNodeOutline(child);
-            });
-        }
     }
 
     public render() {
@@ -184,10 +166,8 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                         tooltip="Toggle Guides"
                         shortcut="G"
                         icon={guidesIcon}
-                        isActive={this._outlines}
-                        onClick={() => {
-                            this.props.globalState.onOutlinesObservable.notifyObservers();
-                        }}
+                        isActive={this.props.globalState.outlines}
+                        onClick={() => this.props.globalState.outlines = !this.props.globalState.outlines}
                     />
                 </div>
                 <div className="commands-right"></div>
