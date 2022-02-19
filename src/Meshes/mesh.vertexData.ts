@@ -11,6 +11,7 @@ declare type Geometry = import("../Meshes/geometry").Geometry;
 declare type Mesh = import("../Meshes/mesh").Mesh;
 
 import { ICreateCapsuleOptions } from "./Builders/capsuleBuilder";
+import { Tools } from "../Misc/tools";
 declare type PolyhedronData= import("./geodesicMesh").PolyhedronData;
 
 /**
@@ -422,52 +423,52 @@ export class VertexData {
         return this;
     }
 
-    @nativeOverride.filter((...[coordinates]: Parameters<typeof VertexData._TransformVector3Coordinates>) => !Array.isArray(coordinates))
-    private static _TransformVector3Coordinates(coordinates: FloatArray, transformation: DeepImmutable<Matrix>) {
+    @nativeOverride.filter((...[coordinates,, destination]: Parameters<typeof VertexData._TransformVector3Coordinates>) => !Array.isArray(coordinates) && !Array.isArray(destination))
+    private static _TransformVector3Coordinates(coordinates: FloatArray, transformation: DeepImmutable<Matrix>, destination = coordinates, offset = 0) {
         const coordinate = TmpVectors.Vector3[0];
         const transformedCoordinate = TmpVectors.Vector3[1];
         for (let index = 0; index < coordinates.length; index += 3) {
             Vector3.FromArrayToRef(coordinates, index, coordinate);
             Vector3.TransformCoordinatesToRef(coordinate, transformation, transformedCoordinate);
-            coordinates[index] = transformedCoordinate.x;
-            coordinates[index + 1] = transformedCoordinate.y;
-            coordinates[index + 2] = transformedCoordinate.z;
+            destination[index + offset] = transformedCoordinate.x;
+            destination[index + offset + 1] = transformedCoordinate.y;
+            destination[index + offset + 2] = transformedCoordinate.z;
         }
     }
 
-    @nativeOverride.filter((...[normals]: Parameters<typeof VertexData._TransformVector3Normals>) => !Array.isArray(normals))
-    private static _TransformVector3Normals(normals: FloatArray, transformation: DeepImmutable<Matrix>) {
+    @nativeOverride.filter((...[normals,, destination]: Parameters<typeof VertexData._TransformVector3Normals>) => !Array.isArray(normals) && !Array.isArray(destination))
+    private static _TransformVector3Normals(normals: FloatArray, transformation: DeepImmutable<Matrix>, destination = normals, offset = 0) {
         const normal = TmpVectors.Vector3[0];
         const transformedNormal = TmpVectors.Vector3[1];
         for (let index = 0; index < normals.length; index += 3) {
             Vector3.FromArrayToRef(normals, index, normal);
             Vector3.TransformNormalToRef(normal, transformation, transformedNormal);
-            normals[index] = transformedNormal.x;
-            normals[index + 1] = transformedNormal.y;
-            normals[index + 2] = transformedNormal.z;
+            destination[index + offset] = transformedNormal.x;
+            destination[index + offset + 1] = transformedNormal.y;
+            destination[index + offset + 2] = transformedNormal.z;
         }
     }
 
-    @nativeOverride.filter((...[normals]: Parameters<typeof VertexData._TransformVector4Normals>) => !Array.isArray(normals))
-    private static _TransformVector4Normals(normals: FloatArray, transformation: DeepImmutable<Matrix>) {
+    @nativeOverride.filter((...[normals,, destination]: Parameters<typeof VertexData._TransformVector4Normals>) => !Array.isArray(normals) && !Array.isArray(destination))
+    private static _TransformVector4Normals(normals: FloatArray, transformation: DeepImmutable<Matrix>, destination = normals, offset = 0) {
         const normal = TmpVectors.Vector4[0];
         const transformedNormal = TmpVectors.Vector4[1];
         for (let index = 0; index < normals.length; index += 4) {
             Vector4.FromArrayToRef(normals, index, normal);
             Vector4.TransformNormalToRef(normal, transformation, transformedNormal);
-            normals[index] = transformedNormal.x;
-            normals[index + 1] = transformedNormal.y;
-            normals[index + 2] = transformedNormal.z;
-            normals[index + 3] = transformedNormal.w;
+            destination[index + offset] = transformedNormal.x;
+            destination[index + offset + 1] = transformedNormal.y;
+            destination[index + offset + 2] = transformedNormal.z;
+            destination[index + offset + 3] = transformedNormal.w;
         }
     }
 
     @nativeOverride.filter((...[indices]: Parameters<typeof VertexData._FlipFaces>) => !Array.isArray(indices))
-    private static _FlipFaces(indices: IndicesArray) {
+    private static _FlipFaces<TArray extends IndicesArray>(indices: TArray, destination = indices, offset = 0) {
         for (let index = 0; index < indices.length; index += 3) {
             const tmp = indices[index + 1];
-            indices[index + 1] = indices[index + 2];
-            indices[index + 2] = tmp;
+            destination[index + offset + 1] = indices[index + 2];
+            destination[index + offset + 2] = tmp;
         }
     }
 
@@ -504,14 +505,16 @@ export class VertexData {
      * @returns the modified VertexData
      */
     public merge(others: VertexData | VertexData[], use32BitsIndices = false) {
-        return runCoroutineSync(this._mergeCoroutine(others, use32BitsIndices, false));
+        const vertexDatas: [vertexData: VertexData, transform?: Matrix][] = Array.isArray(others) ? others.map(other => [other, undefined]) : [[others, undefined]];
+        return runCoroutineSync(this._mergeCoroutine(undefined, vertexDatas, use32BitsIndices, false));
     }
 
     /** @hidden */
-    public *_mergeCoroutine(others: VertexData | VertexData[], use32BitsIndices = false, isAsync: boolean): Coroutine<VertexData> {
+    public *_mergeCoroutine(transform: Matrix | undefined, vertexDatas: (readonly [vertexData: VertexData, transform?: Matrix])[], use32BitsIndices = false, isAsync: boolean): Coroutine<VertexData> {
         this._validate();
 
-        others = Array.isArray(others) ? others : [others];
+        const others = vertexDatas.map(vertexData => vertexData[0]);
+        //const transforms = vertexDatas.map(vertexData => vertexData[1]);
 
         for (const other of others) {
             other._validate();
@@ -568,6 +571,7 @@ export class VertexData {
             }
         }
 
+        Tools.StartPerformanceCounter(`VertexData._mergeElement`);
         this.positions = VertexData._mergeElement(this.positions, others.map((other) => other.positions));
         if (isAsync) { yield; }
         this.normals = VertexData._mergeElement(this.normals, others.map((other) => other.normals));
@@ -595,19 +599,20 @@ export class VertexData {
         this.matricesIndicesExtra = VertexData._mergeElement(this.matricesIndicesExtra, others.map((other) => other.matricesIndicesExtra));
         if (isAsync) { yield; }
         this.matricesWeightsExtra = VertexData._mergeElement(this.matricesWeightsExtra, others.map((other) => other.matricesWeightsExtra));
+        Tools.EndPerformanceCounter(`VertexData._mergeElement`);
 
         return this;
     }
 
-    private static _mergeElement(source: Nullable<FloatArray>, others: readonly Nullable<FloatArray>[]): Nullable<FloatArray> {
-        const nonNullOthers = others.filter((other): other is FloatArray => other !== null && other !== undefined);
+    private static _mergeElement(kind: string, source: Nullable<FloatArray>, transform: Matrix | undefined, others: readonly (readonly [element: Nullable<FloatArray>, transform: Matrix | undefined])[]): Nullable<FloatArray> {
+        const nonNullOthers = others.filter((other): other is [element: FloatArray, transform: Matrix | undefined] => other[0] !== null && other[0] !== undefined);
 
         if (nonNullOthers.length === 0) {
             return source;
         }
 
         if (!source) {
-            return this._mergeElement(nonNullOthers[0], nonNullOthers.slice(1));
+            return this._mergeElement(kind, nonNullOthers[0][0], nonNullOthers[0][1], nonNullOthers.slice(1));
         }
 
         const len = nonNullOthers.reduce((sumLen, elements) => sumLen + elements.length, source.length);
@@ -615,8 +620,11 @@ export class VertexData {
         if (source instanceof Float32Array) {
             // use non-loop method when the source is Float32Array
             const ret32 = new Float32Array(len);
+            let offset = 0;
+            //const transfer = (
+
             ret32.set(source);
-            let offset = source.length;
+            offset = source.length;
             for (const other of nonNullOthers) {
                 ret32.set(other, offset);
                 offset += other.length;

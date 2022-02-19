@@ -4436,21 +4436,23 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         const getVertexDataFromMesh = (mesh: Mesh) => {
             const wm = mesh.computeWorldMatrix(true);
-            const vertexData = VertexData.ExtractFromMesh(mesh, true, true);
-            vertexData.transform(wm);
-            return vertexData;
+            const vertexData = VertexData.ExtractFromMesh(mesh, false, false);
+            //vertexData.transform(wm);
+            return [vertexData, wm] as const;
         };
 
+        Tools.StartPerformanceCounter(`getVertexDataFromMesh`);
         const sourceVertexData = getVertexDataFromMesh(source);
         if (isAsync) { yield; }
 
-        const meshVertexDatas = new Array<VertexData>(meshes.length - 1);
+        const meshVertexDatas = new Array<readonly [VertexData, Matrix]>(meshes.length - 1);
         for (let i = 1; i < meshes.length; i++) {
             meshVertexDatas[i - 1] = getVertexDataFromMesh(meshes[i]);
             if (isAsync) { yield; }
         }
+        Tools.EndPerformanceCounter(`getVertexDataFromMesh`);
 
-        const mergeCoroutine = sourceVertexData._mergeCoroutine(meshVertexDatas, allow32BitsIndices, isAsync);
+        const mergeCoroutine = sourceVertexData[0]._mergeCoroutine(sourceVertexData[1], meshVertexDatas, allow32BitsIndices, isAsync);
         let mergeCoroutineStep = mergeCoroutine.next();
         while (!mergeCoroutineStep.done) {
             if (isAsync) { yield; }
