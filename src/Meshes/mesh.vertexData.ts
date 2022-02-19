@@ -622,7 +622,7 @@ export class VertexData {
             return this._mergeElement(kind, nonNullOthers[0][0], nonNullOthers[0][1], nonNullOthers.slice(1));
         }
 
-        const len = nonNullOthers.reduce((sumLen, elements) => sumLen + elements.length, source.length);
+        const len = nonNullOthers.reduce((sumLen, elements) => sumLen + elements[0].length, source.length);
 
         const transformRange = (element: FloatArray, matrix: Matrix | undefined, offset: number, length: number) => {
             if (matrix) {
