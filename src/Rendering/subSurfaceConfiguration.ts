@@ -14,7 +14,7 @@ import { Constants } from "../Engines/constants";
 export class SubSurfaceConfiguration implements PrePassEffectConfiguration {
     /** @hidden */
     public static _SceneComponentInitialization: (scene: Scene) => void = (_) => {
-        throw _WarnImport("PrePassRendererSceneComponent");
+        throw _WarnImport("SubSurfaceSceneComponent");
     }
 
     private _ssDiffusionS: number[] = [];
