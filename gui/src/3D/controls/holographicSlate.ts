@@ -261,6 +261,7 @@ export class HolographicSlate extends ContentDisplay3D {
         this._titleBar = CreateBox("titleBar_" + this.name, { size: 1 }, scene);
         this._titleBarTitle = CreatePlane("titleText_" + this.name, { size: 1 }, scene);
         this._titleBarTitle.parent = node;
+        this._titleBarTitle.isPickable = false;
 
         var adt = AdvancedDynamicTexture.CreateForMesh(this._titleBarTitle);
         this._titleTextComponent = new TextBlock("titleText_" + this.name, this._titleText);
