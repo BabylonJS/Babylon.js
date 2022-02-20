@@ -104,10 +104,11 @@ export class HolographicSlate extends ContentDisplay3D {
     protected _contentScaleRatio = 1;
 
     /**
-     * Rendering ground id of all the mesh in the button
+     * Rendering ground id of all the meshes
      */
     public set renderingGroupId(id: number) {
         this._titleBar.renderingGroupId = id;
+        this._titleBarTitle.renderingGroupId = id;
         this._contentPlate.renderingGroupId = id;
     }
     public get renderingGroupId(): number {
@@ -433,6 +434,7 @@ export class HolographicSlate extends ContentDisplay3D {
         this._contentMaterial.dispose();
 
         this._titleBar.dispose();
+        this._titleBarTitle.dispose();
         this._contentPlate.dispose();
 
         this._followButton.dispose();
