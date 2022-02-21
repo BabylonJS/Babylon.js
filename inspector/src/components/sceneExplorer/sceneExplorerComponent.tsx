@@ -30,6 +30,7 @@ import { TargetCamera } from "babylonjs/Cameras/targetCamera";
 // side effects
 import "babylonjs/Sprites/spriteSceneComponent";
 import "babylonjs/Audio/audioSceneComponent";
+import "babylonjs/PostProcesses/RenderPipeline/Pipelines/postProcessRenderPipelineManagerSceneComponent";
 
 require("./sceneExplorer.scss");
 
@@ -280,7 +281,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
         let guiElements = scene.textures.filter((t) => t.getClassName() === "AdvancedDynamicTexture");
         let textures = scene.textures.filter((t) => t.getClassName() !== "AdvancedDynamicTexture");
         let postProcessses = scene.postProcesses;
-        let pipelines = scene.postProcessRenderPipelineManager?.supportedPipelines || [];
+        let pipelines = scene.postProcessRenderPipelineManager.supportedPipelines;
 
         // Context menus
         let pipelineContextMenus: { label: string; action: () => void }[] = [];
@@ -496,7 +497,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                         filter={this.state.filter}
                     />
                 )}
-                {pipelines.length && <TreeItemComponent
+                <TreeItemComponent
                     globalState={this.props.globalState}
                     extensibilityGroups={this.props.extensibilityGroups}
                     contextMenuItems={pipelineContextMenus}
@@ -505,7 +506,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                     label="Rendering pipelines"
                     offset={1}
                     filter={this.state.filter}
-                />}
+                />
                 {scene.effectLayers && scene.effectLayers.length > 0 && (
                     <TreeItemComponent
                         globalState={this.props.globalState}
