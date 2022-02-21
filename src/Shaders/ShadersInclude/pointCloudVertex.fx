@@ -1,3 +1,3 @@
-﻿#ifdef POINTSIZE
-	gl_PointSize = pointSize;
+﻿#if defined(POINTSIZE) && !defined(WEBGPU)
+    gl_PointSize = pointSize;
 #endif
