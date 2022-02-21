@@ -300,7 +300,7 @@ export class BaseSlider extends Control {
         else {
             value = this._minimum + ((x - this._currentMeasure.left) / this._currentMeasure.width) * (this._maximum - this._minimum);
         }
-        this.value = this._step ? Math.round(value/this._step) * this._step : value;
+        this.value = this._step ? Math.round(value / this._step) * this._step : value;
     }
 
     public _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, pi: PointerInfoBase): boolean {
