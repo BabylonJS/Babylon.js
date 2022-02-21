@@ -30,7 +30,7 @@ import { TargetCamera } from "babylonjs/Cameras/targetCamera";
 // side effects
 import "babylonjs/Sprites/spriteSceneComponent";
 import "babylonjs/Audio/audioSceneComponent";
-import "babylonjs/PostProcesses/RenderPipeline/Pipelines/postProcessRenderPipelineManagerSceneComponent";
+import "babylonjs/PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent";
 
 require("./sceneExplorer.scss");
 
