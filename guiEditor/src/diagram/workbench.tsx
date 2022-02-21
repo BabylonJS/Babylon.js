@@ -617,8 +617,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     private parent(dropLocationControl: Nullable<Control>) {
         const draggedControl = this.props.globalState.draggedControl;
         const draggedControlParent = draggedControl?.parent;
-        console.log("parenting", this.props.globalState.draggedControl);
-        console.log("parenting to", dropLocationControl);
 
         if (draggedControlParent && draggedControl) {
             if (this._isNotChildInsert(dropLocationControl, draggedControl)) {
