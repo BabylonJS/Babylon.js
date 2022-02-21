@@ -60993,7 +60993,7 @@ declare module BABYLON {
          * @param invertY defines the direction for the Y axis (default is true - y increases downwards)
          * @param update defines whether texture is immediately update (default is true)
          */
-        drawText(text: string, x: number | null | undefined, y: number | null | undefined, font: string, color: string | null, clearColor: string, invertY?: boolean, update?: boolean): void;
+        drawText(text: string, x: number | null | undefined, y: number | null | undefined, font: string, color: string | null, clearColor: string | null, invertY?: boolean, update?: boolean): void;
         /**
          * Clones the texture
          * @returns the clone of the texture.

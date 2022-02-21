@@ -1362,7 +1362,7 @@ declare module BABYLON.GUI {
         /** @hidden */
         _flagDescendantsAsMatrixDirty(): void;
         /** @hidden */
-        _intersectsRect(rect: Measure): boolean;
+        _intersectsRect(rect: Measure, context?: BABYLON.ICanvasRenderingContext): boolean;
         /** @hidden */
         protected _computeAdditionnalOffsetX(): number;
         /** @hidden */
@@ -5371,6 +5371,7 @@ declare module BABYLON.GUI {
          * File name for the close icon.
          */
         static FOLLOW_ICON_FILENAME: string;
+        private static DEFAULT_TEXT_RESOLUTION_Y;
         /**
          * 2D dimensions of the slate
          */
@@ -5399,6 +5400,8 @@ declare module BABYLON.GUI {
         private _contentMaterial;
         private _pickedPointObserver;
         private _positionChangedObserver;
+        private _titleText;
+        private _titleTextComponent;
         private _contentViewport;
         private _contentDragBehavior;
         private _defaultBehavior;
@@ -5409,15 +5412,21 @@ declare module BABYLON.GUI {
         /** @hidden */
         _gizmo: SlateGizmo;
         protected _titleBar: BABYLON.Mesh;
+        protected _titleBarTitle: BABYLON.Mesh;
         protected _contentPlate: BABYLON.Mesh;
         protected _followButton: TouchHolographicButton;
         protected _closeButton: TouchHolographicButton;
         protected _contentScaleRatio: number;
         /**
-         * Rendering ground id of all the mesh in the button
+         * Rendering ground id of all the meshes
          */
         set renderingGroupId(id: number);
         get renderingGroupId(): number;
+        /**
+         * The title text displayed at the top of the slate
+         */
+        set title(title: string);
+        get title(): string;
         /**
          * Creates a new slate
          * @param name defines the control name

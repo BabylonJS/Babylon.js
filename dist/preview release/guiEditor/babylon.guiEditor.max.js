@@ -7,7 +7,7 @@
 		exports["babylonjs-gui-editor"] = factory(require("babylonjs-gui"), require("babylonjs"));
 	else
 		root["GUIEDITOR"] = factory(root["BABYLON"]["GUI"], root["BABYLON"]);
-})((typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this), function(__WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_valueAndUnit__, __WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_observable__) {
+})((typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this), function(__WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_controls_button__, __WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_observable__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -43100,13 +43100,10 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "CommandBarComponent", function() { return CommandBarComponent; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_gui_2D_controls_container__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs-gui/2D/controls/container */ "babylonjs-gui/2D/valueAndUnit");
-/* harmony import */ var babylonjs_gui_2D_controls_container__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_container__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var _commandButtonComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./commandButtonComponent */ "./components/commandButtonComponent.tsx");
-/* harmony import */ var _commandDropdownComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./commandDropdownComponent */ "./components/commandDropdownComponent.tsx");
-
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _commandButtonComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./commandButtonComponent */ "./components/commandButtonComponent.tsx");
+/* harmony import */ var _commandDropdownComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./commandDropdownComponent */ "./components/commandDropdownComponent.tsx");
 
 
 
@@ -43144,32 +43141,17 @@ var CommandBarComponent = /** @class */ (function (_super) {
             _this._selecting = false;
             _this.forceUpdate();
         });
-        props.globalState.onOutlinesObservable.add(function () {
-            _this._outlines = !_this._outlines;
-            var nodes = _this.props.globalState.workbench.nodes;
-            nodes.forEach(function (node) {
-                _this.updateNodeOutline(node);
-            });
+        props.globalState.onOutlineChangedObservable.add(function () {
             _this.forceUpdate();
         });
         return _this;
     }
-    CommandBarComponent.prototype.updateNodeOutline = function (guiControl) {
-        var _this = this;
-        guiControl.isHighlighted = this._outlines;
-        guiControl.highlightLineWidth = 5;
-        if (guiControl instanceof babylonjs_gui_2D_controls_container__WEBPACK_IMPORTED_MODULE_1__["Container"]) {
-            guiControl.children.forEach(function (child) {
-                _this.updateNodeOutline(child);
-            });
-        }
-    };
     CommandBarComponent.prototype.render = function () {
         var _this = this;
-        return (react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("div", { className: "ge-commands" },
-            react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("div", { className: "commands-left" },
-                react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("img", { src: logoIcon, color: "white", className: "active" }),
-                react__WEBPACK_IMPORTED_MODULE_2__["createElement"](_commandDropdownComponent__WEBPACK_IMPORTED_MODULE_4__["CommandDropdownComponent"], { globalState: this.props.globalState, toRight: true, icon: hamburgerIcon, tooltip: "Options", items: [
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-commands" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "commands-left" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: logoIcon, color: "white", className: "active" }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandDropdownComponent__WEBPACK_IMPORTED_MODULE_3__["CommandDropdownComponent"], { globalState: this.props.globalState, toRight: true, icon: hamburgerIcon, tooltip: "Options", items: [
                         {
                             label: "Save",
                             onClick: function () {
@@ -43231,28 +43213,26 @@ var CommandBarComponent = /** @class */ (function (_super) {
                             },
                         },
                     ] }),
-                react__WEBPACK_IMPORTED_MODULE_2__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_3__["CommandButtonComponent"], { tooltip: "Select", icon: pointerIcon, shortcut: "S", isActive: this._selecting, onClick: function () {
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_2__["CommandButtonComponent"], { tooltip: "Select", icon: pointerIcon, shortcut: "S", isActive: this._selecting, onClick: function () {
                         if (!_this._selecting)
                             _this.props.globalState.onSelectionButtonObservable.notifyObservers();
                     } }),
-                react__WEBPACK_IMPORTED_MODULE_2__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_3__["CommandButtonComponent"], { tooltip: "Pan", icon: handIcon, shortcut: "P", isActive: this._panning, onClick: function () {
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_2__["CommandButtonComponent"], { tooltip: "Pan", icon: handIcon, shortcut: "P", isActive: this._panning, onClick: function () {
                         if (!_this._panning)
                             _this.props.globalState.onPanObservable.notifyObservers();
                     } }),
-                react__WEBPACK_IMPORTED_MODULE_2__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_3__["CommandButtonComponent"], { tooltip: "Zoom", shortcut: "Z", icon: zoomIcon, isActive: this._zooming, onClick: function () {
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_2__["CommandButtonComponent"], { tooltip: "Zoom", shortcut: "Z", icon: zoomIcon, isActive: this._zooming, onClick: function () {
                         if (!_this._zooming)
                             _this.props.globalState.onZoomObservable.notifyObservers();
                     } }),
-                react__WEBPACK_IMPORTED_MODULE_2__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_3__["CommandButtonComponent"], { tooltip: "Fit to Window", shortcut: "F", icon: canvasFitIcon, isActive: false, onClick: function () {
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_2__["CommandButtonComponent"], { tooltip: "Fit to Window", shortcut: "F", icon: canvasFitIcon, isActive: false, onClick: function () {
                         _this.props.globalState.onFitToWindowObservable.notifyObservers();
                     } }),
-                react__WEBPACK_IMPORTED_MODULE_2__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_3__["CommandButtonComponent"], { tooltip: "Toggle Guides", shortcut: "G", icon: guidesIcon, isActive: this._outlines, onClick: function () {
-                        _this.props.globalState.onOutlinesObservable.notifyObservers();
-                    } })),
-            react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("div", { className: "commands-right" })));
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commandButtonComponent__WEBPACK_IMPORTED_MODULE_2__["CommandButtonComponent"], { tooltip: "Toggle Guides", shortcut: "G", icon: guidesIcon, isActive: this.props.globalState.outlines, onClick: function () { return _this.props.globalState.outlines = !_this.props.globalState.outlines; } })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "commands-right" })));
     };
     return CommandBarComponent;
-}(react__WEBPACK_IMPORTED_MODULE_2__["Component"]));
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
 
 
 
@@ -43714,7 +43694,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/textLineComponent */ "./sharedUiComponents/lines/textLineComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs-gui/2D/controls/control */ "babylonjs-gui/2D/valueAndUnit");
+/* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs-gui/2D/controls/control */ "babylonjs-gui/2D/controls/button");
 /* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__);
 /* harmony import */ var _sharedUiComponents_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/sliderLineComponent */ "./sharedUiComponents/lines/sliderLineComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/floatLineComponent */ "./sharedUiComponents/lines/floatLineComponent.tsx");
@@ -44603,7 +44583,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../gui/commonControlPropertyGridComponent */ "./components/propertyTab/propertyGrids/gui/commonControlPropertyGridComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs-gui/2D/controls/image */ "babylonjs-gui/2D/valueAndUnit");
+/* harmony import */ var babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs-gui/2D/controls/image */ "babylonjs-gui/2D/controls/button");
 /* harmony import */ var babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_3__);
 /* harmony import */ var _sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/floatLineComponent */ "./sharedUiComponents/lines/floatLineComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/checkBoxLineComponent */ "./sharedUiComponents/lines/checkBoxLineComponent.tsx");
@@ -45216,7 +45196,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _gui_commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../gui/commonControlPropertyGridComponent */ "./components/propertyTab/propertyGrids/gui/commonControlPropertyGridComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs-gui/2D/controls/textBlock */ "babylonjs-gui/2D/valueAndUnit");
+/* harmony import */ var babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs-gui/2D/controls/textBlock */ "babylonjs-gui/2D/controls/button");
 /* harmony import */ var babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3__);
 /* harmony import */ var _sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/textInputLineComponent */ "./sharedUiComponents/lines/textInputLineComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/optionsLineComponent */ "./sharedUiComponents/lines/optionsLineComponent.tsx");
@@ -45335,7 +45315,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _propertyGrids_gui_scrollViewerPropertyGridComponent__WEBPACK_IMPORTED_MODULE_20__ = __webpack_require__(/*! ./propertyGrids/gui/scrollViewerPropertyGridComponent */ "./components/propertyTab/propertyGrids/gui/scrollViewerPropertyGridComponent.tsx");
 /* harmony import */ var _propertyGrids_gui_ellipsePropertyGridComponent__WEBPACK_IMPORTED_MODULE_21__ = __webpack_require__(/*! ./propertyGrids/gui/ellipsePropertyGridComponent */ "./components/propertyTab/propertyGrids/gui/ellipsePropertyGridComponent.tsx");
 /* harmony import */ var _propertyGrids_gui_checkboxPropertyGridComponent__WEBPACK_IMPORTED_MODULE_22__ = __webpack_require__(/*! ./propertyGrids/gui/checkboxPropertyGridComponent */ "./components/propertyTab/propertyGrids/gui/checkboxPropertyGridComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_23__ = __webpack_require__(/*! babylonjs-gui/2D/controls/control */ "babylonjs-gui/2D/valueAndUnit");
+/* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_23__ = __webpack_require__(/*! babylonjs-gui/2D/controls/control */ "babylonjs-gui/2D/controls/button");
 /* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_23___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_23__);
 /* harmony import */ var _propertyGrids_gui_controlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_24__ = __webpack_require__(/*! ./propertyGrids/gui/controlPropertyGridComponent */ "./components/propertyTab/propertyGrids/gui/controlPropertyGridComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_25__ = __webpack_require__(/*! ../../sharedUiComponents/lines/optionsLineComponent */ "./sharedUiComponents/lines/optionsLineComponent.tsx");
@@ -45840,7 +45820,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_3__);
 /* harmony import */ var _globalState__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../../globalState */ "./globalState.ts");
-/* harmony import */ var babylonjs_gui_2D_controls_container__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! babylonjs-gui/2D/controls/container */ "babylonjs-gui/2D/valueAndUnit");
+/* harmony import */ var babylonjs_gui_2D_controls_container__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! babylonjs-gui/2D/controls/container */ "babylonjs-gui/2D/controls/button");
 /* harmony import */ var babylonjs_gui_2D_controls_container__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_container__WEBPACK_IMPORTED_MODULE_5__);
 
 
@@ -46445,7 +46425,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_3__);
 /* harmony import */ var _globalState__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../globalState */ "./globalState.ts");
 /* harmony import */ var _entities_gui_controlTreeItemComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./entities/gui/controlTreeItemComponent */ "./components/sceneExplorer/entities/gui/controlTreeItemComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_controls_container__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! babylonjs-gui/2D/controls/container */ "babylonjs-gui/2D/valueAndUnit");
+/* harmony import */ var babylonjs_gui_2D_controls_container__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! babylonjs-gui/2D/controls/container */ "babylonjs-gui/2D/controls/button");
 /* harmony import */ var babylonjs_gui_2D_controls_container__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_container__WEBPACK_IMPORTED_MODULE_6__);
 
 
@@ -46707,7 +46687,7 @@ var ArtBoardComponent = /** @class */ (function (_super) {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Rect", function() { return Rect; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "CoordinateHelper", function() { return CoordinateHelper; });
-/* harmony import */ var babylonjs_gui_2D_valueAndUnit__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs-gui/2D/valueAndUnit */ "babylonjs-gui/2D/valueAndUnit");
+/* harmony import */ var babylonjs_gui_2D_valueAndUnit__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs-gui/2D/valueAndUnit */ "babylonjs-gui/2D/controls/button");
 /* harmony import */ var babylonjs_gui_2D_valueAndUnit__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_valueAndUnit__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Maths/math.vector */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__);
@@ -46986,7 +46966,7 @@ var CoordinateHelper = /** @class */ (function () {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "GuiGizmoComponent", function() { return GuiGizmoComponent; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs-gui/2D/controls/control */ "babylonjs-gui/2D/valueAndUnit");
+/* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs-gui/2D/controls/control */ "babylonjs-gui/2D/controls/button");
 /* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Maths/math.vector */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_2__);
@@ -47055,7 +47035,6 @@ var GuiGizmoComponent = /** @class */ (function (_super) {
                 var inNodeSpace = _coordinateHelper__WEBPACK_IMPORTED_MODULE_4__["CoordinateHelper"].rttToLocalNodeSpace(node, inRTT.x, inRTT.y, undefined, _this._storedValues);
                 _this._dragLocalBounds(inNodeSpace);
                 _this._updateNodeFromLocalBounds();
-                _this.props.globalState.workbench._liveGuiTextureRerender = false;
                 _this.props.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
             }
             if (_this.state.isRotating) {
@@ -47443,7 +47422,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _globalState__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../globalState */ "./globalState.ts");
-/* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs-gui/2D/controls/control */ "babylonjs-gui/2D/valueAndUnit");
+/* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs-gui/2D/controls/control */ "babylonjs-gui/2D/controls/button");
 /* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__);
 /* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs/Maths/math.vector */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__);
@@ -47490,7 +47469,6 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         _this._forcePanning = false;
         _this._forceZooming = false;
         _this._forceSelecting = true;
-        _this._outlines = false;
         _this._isOverGUINode = [];
         _this._clipboard = [];
         _this._selectAll = false;
@@ -47501,7 +47479,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         _this._liveGuiTextureRerender = true;
         _this._anyControlClicked = true;
         _this._nextLiveGuiRender = -1;
-        _this._liveGuiRerenderDelay = 100;
+        _this._liveGuiRerenderDelay = 30;
         _this._defaultGUISize = { width: 1024, height: 1024 };
         _this._initialPanningOffset = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Vector2"](0, 0);
         _this._panningOffset = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Vector2"](0, 0);
@@ -47570,7 +47548,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         _this._responsive = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["DataStorage"].ReadBoolean("Responsive", true);
         props.globalState.onSelectionChangedObservable.add(function (selection) {
             if (!selection) {
-                _this.changeSelectionHighlight(false);
+                _this.updateNodeOutlines();
                 _this._selectedGuiNodes = [];
                 _this._selectAll = false;
                 _this._mainSelection = null;
@@ -47583,12 +47561,12 @@ var WorkbenchComponent = /** @class */ (function (_super) {
                             _this._selectedGuiNodes.push(selection);
                         }
                         else {
-                            _this.changeSelectionHighlight(false);
+                            _this.updateNodeOutlines();
                             _this._selectedGuiNodes.splice(index, 1);
                         }
                     }
                     else if (_this._selectedGuiNodes.length <= 1) {
-                        _this.changeSelectionHighlight(false);
+                        _this.updateNodeOutlines();
                         _this._selectedGuiNodes = [selection];
                         if (!_this._lockMainSelection && selection != _this.props.globalState.guiTexture._rootContainer) {
                             //incase the selection did not come from the canvas and mouse
@@ -47597,7 +47575,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
                         _this._lockMainSelection = false;
                         _this._selectAll = false;
                     }
-                    _this.changeSelectionHighlight(true);
+                    _this.updateNodeOutlines();
                 }
             }
         });
@@ -47611,16 +47589,12 @@ var WorkbenchComponent = /** @class */ (function (_super) {
             else {
                 _this._canvas.style.cursor = "grab";
             }
-            _this.updateHitTest(_this.globalState.guiTexture.getChildren()[0], _this._forceSelecting);
-            // this.artBoardBackground.isHitTestVisible = true;
         });
         props.globalState.onSelectionButtonObservable.add(function () {
             _this._forceSelecting = !_this._forceSelecting;
             _this._forcePanning = false;
             _this._forceZooming = false;
             _this._canvas.style.cursor = "default";
-            _this.updateHitTest(_this.globalState.guiTexture.getChildren()[0], _this._forceSelecting);
-            // this.artBoardBackground.isHitTestVisible = true;
         });
         props.globalState.onZoomObservable.add(function () {
             _this._forceZooming = !_this._forceZooming;
@@ -47632,8 +47606,6 @@ var WorkbenchComponent = /** @class */ (function (_super) {
             else {
                 _this._canvas.style.cursor = "zoom-in";
             }
-            _this.updateHitTest(_this.globalState.guiTexture.getChildren()[0], _this._forceSelecting);
-            // this.artBoardBackground.isHitTestVisible = true;
         });
         props.globalState.onFitToWindowObservable.add(function () {
             _this._panningOffset = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Vector2"](0, 0);
@@ -47641,8 +47613,11 @@ var WorkbenchComponent = /** @class */ (function (_super) {
             var yFactor = _this._engine.getRenderHeight() / _this.guiSize.height;
             _this._zoomFactor = Math.min(xFactor, yFactor) * 0.9;
         });
-        props.globalState.onOutlinesObservable.add(function () {
-            _this._outlines = !_this._outlines;
+        props.globalState.onOutlineChangedObservable.add(function () {
+            _this.updateNodeOutlines();
+        });
+        props.globalState.onSelectionChangedObservable.add(function () {
+            _this.updateNodeOutlines();
         });
         props.globalState.onParentingChangeObservable.add(function (control) {
             _this.parent(control);
@@ -47796,22 +47771,6 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         this._lockMainSelection = true;
         this.props.globalState.onSelectionChangedObservable.notifyObservers(selection);
     };
-    WorkbenchComponent.prototype.updateHitTest = function (guiControl, value) {
-        var _this = this;
-        guiControl.isHitTestVisible = value;
-        if (guiControl instanceof babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["Container"]) {
-            guiControl.children.forEach(function (child) {
-                _this.updateHitTest(child, value);
-            });
-        }
-    };
-    WorkbenchComponent.prototype.updateHitTestForSelection = function (value) {
-        if (this._forceSelecting && !value)
-            return;
-        this.selectedGuiNodes.forEach(function (control) {
-            control.isHitTestVisible = value;
-        });
-    };
     WorkbenchComponent.prototype.copyToClipboard = function () {
         var _this = this;
         this._clipboard = [];
@@ -47943,35 +47902,18 @@ var WorkbenchComponent = /** @class */ (function (_super) {
     WorkbenchComponent.prototype.loadToEditor = function () {
         var _this = this;
         this.globalState.guiTexture.rootContainer.children.forEach(function (guiElement) {
-            if (guiElement.name === "Art-Board-Background" && guiElement.typeName === "Rectangle") {
-                // this.artBoardBackground = guiElement as Rectangle;
-                return;
-            }
             _this.createNewGuiNode(guiElement);
         });
-        if (this.props.globalState.guiTexture.getChildren()[0].children.length) {
-            // this.props.globalState.guiTexture.getChildren()[0].children.unshift(this.props.globalState.workbench.artBoardBackground);
-        }
-        else {
-            // this.props.globalState.guiTexture.getChildren()[0].children.push(this.props.globalState.workbench.artBoardBackground);
-        }
         this._isOverGUINode = [];
         this.globalState.onSelectionChangedObservable.notifyObservers(null);
         this.globalState.onFitToWindowObservable.notifyObservers();
     };
-    WorkbenchComponent.prototype.changeSelectionHighlight = function (value) {
-        var _this = this;
-        this._selectedGuiNodes.forEach(function (node) {
-            if (_this._outlines) {
-                node.isHighlighted = true;
-                node.highlightLineWidth = 5;
-            }
-            else {
-                node.isHighlighted = value && node.typeName === "Grid";
-                node.highlightLineWidth = 5;
-            }
-        });
-        this.updateHitTestForSelection(value);
+    WorkbenchComponent.prototype.updateNodeOutlines = function () {
+        for (var _i = 0, _a = this._trueRootContainer.getDescendants(); _i < _a.length; _i++) {
+            var guiControl = _a[_i];
+            guiControl.isHighlighted = guiControl.getClassName() === "Grid" && (this.props.globalState.outlines || this.props.globalState.workbench.selectedGuiNodes.includes(guiControl));
+            guiControl.highlightLineWidth = 5;
+        }
     };
     WorkbenchComponent.prototype.findNodeFromGuiElement = function (guiControl) {
         return this.nodes.filter(function (n) { return n === guiControl; })[0];
@@ -48157,7 +48099,6 @@ var WorkbenchComponent = /** @class */ (function (_super) {
     };
     WorkbenchComponent.prototype._onMove = function (guiControl, evt, startPos, ignorClick) {
         if (ignorClick === void 0) { ignorClick = false; }
-        this._liveGuiTextureRerender = false;
         var newX = evt.x - startPos.x;
         var newY = evt.y - startPos.y;
         if (this._setConstraintDirection) {
@@ -48321,7 +48262,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
     WorkbenchComponent.prototype.synchronizeLiveGUI = function () {
         var _this = this;
         if (this.globalState.liveGuiTexture) {
-            this.globalState.guiTexture._rootContainer.getDescendants().filter(function (desc) { return desc.name !== "Art-Board-Background"; }).forEach(function (desc) { return desc.dispose(); });
+            this._trueRootContainer.getDescendants().forEach(function (desc) { return desc.dispose(); });
             this.globalState.liveGuiTexture.rootContainer.getDescendants(true).forEach(function (desc) {
                 var _a;
                 (_a = _this.globalState.liveGuiTexture) === null || _a === void 0 ? void 0 : _a.removeControl(desc);
@@ -48406,7 +48347,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
                     break;
                 case "g": //outlines
                 case "G":
-                    _this.globalState.onOutlinesObservable.notifyObservers();
+                    _this.globalState.outlines = !_this.globalState.outlines;
                     break;
                 case "f": //fit to window
                 case "F":
@@ -48564,6 +48505,8 @@ var GlobalState = /** @class */ (function () {
         this.onNewSceneObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onGuiNodeRemovalObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onPopupClosedObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this._outlines = false;
+        this.onOutlineChangedObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.blockKeyboardEvents = false;
         this.onPropertyChangedObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onZoomObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
@@ -48574,7 +48517,6 @@ var GlobalState = /** @class */ (function () {
         this.onSaveObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onSnippetLoadObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onSnippetSaveObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
-        this.onOutlinesObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onResponsiveChangeObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onParentingChangeObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onPropertyGridUpdateRequiredObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
@@ -48608,6 +48550,17 @@ var GlobalState = /** @class */ (function () {
             babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].WriteNumber("BackgroundColorR", value.r);
             babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].WriteNumber("BackgroundColorG", value.g);
             babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].WriteNumber("BackgroundColorB", value.b);
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(GlobalState.prototype, "outlines", {
+        get: function () {
+            return this._outlines;
+        },
+        set: function (value) {
+            this._outlines = value;
+            this.onOutlineChangedObservable.notifyObservers();
         },
         enumerable: false,
         configurable: true
@@ -48747,7 +48700,7 @@ var GUIEditor = /** @class */ (function () {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "GUINodeTools", function() { return GUINodeTools; });
-/* harmony import */ var babylonjs_gui_2D_controls_button__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs-gui/2D/controls/button */ "babylonjs-gui/2D/valueAndUnit");
+/* harmony import */ var babylonjs_gui_2D_controls_button__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs-gui/2D/controls/button */ "babylonjs-gui/2D/controls/button");
 /* harmony import */ var babylonjs_gui_2D_controls_button__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_button__WEBPACK_IMPORTED_MODULE_0__);
 
 
@@ -48872,7 +48825,6 @@ var GUINodeTools = /** @class */ (function () {
                 return element;
             case "Grid":
                 element = new babylonjs_gui_2D_controls_button__WEBPACK_IMPORTED_MODULE_0__["Grid"]("Grid");
-                element.isHighlighted = true;
                 element.addColumnDefinition(1.0, false);
                 element.addRowDefinition(1.0, false);
                 element.isPointerBlocker = true;
@@ -48882,7 +48834,6 @@ var GUINodeTools = /** @class */ (function () {
                 return element;
             case "StackPanel":
                 element = new babylonjs_gui_2D_controls_button__WEBPACK_IMPORTED_MODULE_0__["StackPanel"]("StackPanel");
-                element.isHighlighted = true;
                 element.width = "100%";
                 element.height = "100%";
                 return element;
@@ -51945,14 +51896,14 @@ var WorkbenchEditor = /** @class */ (function (_super) {
 
 /***/ }),
 
-/***/ "babylonjs-gui/2D/valueAndUnit":
+/***/ "babylonjs-gui/2D/controls/button":
 /*!************************************************************************************************************************!*\
   !*** external {"root":["BABYLON","GUI"],"commonjs":"babylonjs-gui","commonjs2":"babylonjs-gui","amd":"babylonjs-gui"} ***!
   \************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_valueAndUnit__;
+module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_controls_button__;
 
 /***/ }),
 

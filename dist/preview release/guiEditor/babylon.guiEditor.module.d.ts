@@ -130,7 +130,6 @@ declare module "babylonjs-gui-editor/diagram/workbench" {
         private _forcePanning;
         private _forceZooming;
         private _forceSelecting;
-        private _outlines;
         private _panning;
         private _canvas;
         private _responsive;
@@ -174,8 +173,6 @@ declare module "babylonjs-gui-editor/diagram/workbench" {
         constructor(props: IWorkbenchComponentProps);
         determineMouseSelection(selection: Nullable<Control>): void;
         keyEvent: (evt: KeyboardEvent) => void;
-        private updateHitTest;
-        private updateHitTestForSelection;
         copyToClipboard(): void;
         pasteFromClipboard(): void;
         CopyGUIControl(original: Control): void;
@@ -185,7 +182,7 @@ declare module "babylonjs-gui-editor/diagram/workbench" {
         loadFromJson(serializationObject: any): void;
         loadFromSnippet(snippetId: string): Promise<void>;
         loadToEditor(): void;
-        changeSelectionHighlight(value: boolean): void;
+        updateNodeOutlines(): void;
         findNodeFromGuiElement(guiControl: Control): Control;
         appendBlock(guiElement: Control): Control;
         private _isMainSelectionParent;
@@ -262,7 +259,9 @@ declare module "babylonjs-gui-editor/globalState" {
         onNewSceneObservable: Observable<Nullable<Scene>>;
         onGuiNodeRemovalObservable: Observable<Control>;
         onPopupClosedObservable: Observable<void>;
-        _backgroundColor: Color3;
+        private _backgroundColor;
+        private _outlines;
+        onOutlineChangedObservable: Observable<void>;
         blockKeyboardEvents: boolean;
         controlCamera: boolean;
         selectionLock: boolean;
@@ -276,7 +275,6 @@ declare module "babylonjs-gui-editor/globalState" {
         onSaveObservable: Observable<void>;
         onSnippetLoadObservable: Observable<void>;
         onSnippetSaveObservable: Observable<void>;
-        onOutlinesObservable: Observable<void>;
         onResponsiveChangeObservable: Observable<boolean>;
         onParentingChangeObservable: Observable<Nullable<Control>>;
         onPropertyGridUpdateRequiredObservable: Observable<void>;
@@ -304,6 +302,8 @@ declare module "babylonjs-gui-editor/globalState" {
         constructor();
         get backgroundColor(): Color3;
         set backgroundColor(value: Color3);
+        get outlines(): boolean;
+        set outlines(value: boolean);
     }
 }
 declare module "babylonjs-gui-editor/sharedUiComponents/lines/buttonLineComponent" {
@@ -1449,9 +1449,7 @@ declare module "babylonjs-gui-editor/components/commandBarComponent" {
         private _panning;
         private _zooming;
         private _selecting;
-        private _outlines;
         constructor(props: ICommandBarComponentProps);
-        private updateNodeOutline;
         render(): JSX.Element;
     }
 }
@@ -2545,7 +2543,6 @@ declare module GUIEDITOR {
         private _forcePanning;
         private _forceZooming;
         private _forceSelecting;
-        private _outlines;
         private _panning;
         private _canvas;
         private _responsive;
@@ -2589,8 +2586,6 @@ declare module GUIEDITOR {
         constructor(props: IWorkbenchComponentProps);
         determineMouseSelection(selection: BABYLON.Nullable<Control>): void;
         keyEvent: (evt: KeyboardEvent) => void;
-        private updateHitTest;
-        private updateHitTestForSelection;
         copyToClipboard(): void;
         pasteFromClipboard(): void;
         CopyGUIControl(original: Control): void;
@@ -2600,7 +2595,7 @@ declare module GUIEDITOR {
         loadFromJson(serializationObject: any): void;
         loadFromSnippet(snippetId: string): Promise<void>;
         loadToEditor(): void;
-        changeSelectionHighlight(value: boolean): void;
+        updateNodeOutlines(): void;
         findNodeFromGuiElement(guiControl: Control): Control;
         appendBlock(guiElement: Control): Control;
         private _isMainSelectionParent;
@@ -2666,7 +2661,9 @@ declare module GUIEDITOR {
         onNewSceneObservable: BABYLON.Observable<BABYLON.Nullable<BABYLON.Scene>>;
         onGuiNodeRemovalObservable: BABYLON.Observable<Control>;
         onPopupClosedObservable: BABYLON.Observable<void>;
-        _backgroundColor: BABYLON.Color3;
+        private _backgroundColor;
+        private _outlines;
+        onOutlineChangedObservable: BABYLON.Observable<void>;
         blockKeyboardEvents: boolean;
         controlCamera: boolean;
         selectionLock: boolean;
@@ -2680,7 +2677,6 @@ declare module GUIEDITOR {
         onSaveObservable: BABYLON.Observable<void>;
         onSnippetLoadObservable: BABYLON.Observable<void>;
         onSnippetSaveObservable: BABYLON.Observable<void>;
-        onOutlinesObservable: BABYLON.Observable<void>;
         onResponsiveChangeObservable: BABYLON.Observable<boolean>;
         onParentingChangeObservable: BABYLON.Observable<BABYLON.Nullable<Control>>;
         onPropertyGridUpdateRequiredObservable: BABYLON.Observable<void>;
@@ -2708,6 +2704,8 @@ declare module GUIEDITOR {
         constructor();
         get backgroundColor(): BABYLON.Color3;
         set backgroundColor(value: BABYLON.Color3);
+        get outlines(): boolean;
+        set outlines(value: boolean);
     }
 }
 declare module GUIEDITOR {
@@ -3664,9 +3662,7 @@ declare module GUIEDITOR {
         private _panning;
         private _zooming;
         private _selecting;
-        private _outlines;
         constructor(props: ICommandBarComponentProps);
-        private updateNodeOutline;
         render(): JSX.Element;
     }
 }
