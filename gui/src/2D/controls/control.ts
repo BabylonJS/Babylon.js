@@ -1467,22 +1467,22 @@ export class Control {
     }
 
     /** @hidden */
-    public _intersectsRect(rect: Measure) {
-        // Rotate the control's current measure into local space and check if it intersects the passed in rectangle
-        this._currentMeasure.transformToRef(this._transformMatrix, this._tmpMeasureA);
-        if (this._tmpMeasureA.left >= rect.left + rect.width) {
+    public _intersectsRect(rect: Measure, context?: ICanvasRenderingContext) {
+        // make sure we are transformed correctly before checking intersections. no-op if nothing is dirty.
+        this._transform(context);
+        if (this._evaluatedMeasure.left >= rect.left + rect.width) {
             return false;
         }
 
-        if (this._tmpMeasureA.top >= rect.top + rect.height) {
+        if (this._evaluatedMeasure.top >= rect.top + rect.height) {
             return false;
         }
 
-        if (this._tmpMeasureA.left + this._tmpMeasureA.width <= rect.left) {
+        if (this._evaluatedMeasure.left + this._evaluatedMeasure.width <= rect.left) {
             return false;
         }
 
-        if (this._tmpMeasureA.top + this._tmpMeasureA.height <= rect.top) {
+        if (this._evaluatedMeasure.top + this._evaluatedMeasure.height <= rect.top) {
             return false;
         }
 
@@ -1538,6 +1538,7 @@ export class Control {
         }
 
         this._isDirty = true;
+        this._markMatrixAsDirty();
 
         // Redraw only this rectangle
         if (this._host) {
@@ -1593,6 +1594,7 @@ export class Control {
             Matrix2D.ComposeToRef(-offsetX, -offsetY, this._rotation, this._scaleX, this._scaleY, this.parent ? this.parent._transformMatrix : null, this._transformMatrix);
 
             this._transformMatrix.invertToRef(this._invertTransformMatrix);
+            this._currentMeasure.transformToRef(this._transformMatrix, this._evaluatedMeasure);
         }
     }
 
