@@ -48,7 +48,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     private _forcePanning = false;
     private _forceZooming = false;
     private _forceSelecting = true;
-    private _outlines = false;
     private _panning: boolean;
     private _canvas: HTMLCanvasElement;
     private _responsive: boolean;
@@ -86,7 +85,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         return this._trueRootContainer;
     }
     private _nextLiveGuiRender = -1;
-    private _liveGuiRerenderDelay = 100;
+    private _liveGuiRerenderDelay = 30;
     private _defaultGUISize: ISize = {width: 1024, height: 1024};
     private _initialPanningOffset: Vector2 = new Vector2(0,0);
     private _panningOffset = new Vector2(0,0);
@@ -176,7 +175,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
         props.globalState.onSelectionChangedObservable.add((selection) => {
             if (!selection) {
-                this.changeSelectionHighlight(false);
+                this.updateNodeOutlines();
                 this._selectedGuiNodes = [];
                 this._selectAll = false;
                 this._mainSelection = null;
@@ -187,12 +186,11 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                         if (index === -1) {
                             this._selectedGuiNodes.push(selection);
                         } else {
-                            this.changeSelectionHighlight(false);
+                            this.updateNodeOutlines();
                             this._selectedGuiNodes.splice(index, 1);
                         }
                     } else if (this._selectedGuiNodes.length <= 1) {
-
-                        this.changeSelectionHighlight(false);
+                        this.updateNodeOutlines();
 
                         this._selectedGuiNodes = [selection];
                         if (!this._lockMainSelection && selection != this.props.globalState.guiTexture._rootContainer) {
@@ -203,7 +201,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                         this._selectAll = false;
 
                     }
-                    this.changeSelectionHighlight(true);
+                    this.updateNodeOutlines();
                 }
             }
 
@@ -218,8 +216,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             } else {
                 this._canvas.style.cursor = "grab";
             }
-            this.updateHitTest(this.globalState.guiTexture.getChildren()[0], this._forceSelecting);
-            // this.artBoardBackground.isHitTestVisible = true;
         });
 
 
@@ -228,8 +224,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             this._forcePanning = false;
             this._forceZooming = false;
             this._canvas.style.cursor = "default";
-            this.updateHitTest(this.globalState.guiTexture.getChildren()[0], this._forceSelecting);
-            // this.artBoardBackground.isHitTestVisible = true;
         });
 
         props.globalState.onZoomObservable.add(() => {
@@ -241,8 +235,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             } else {
                 this._canvas.style.cursor = "zoom-in";
             }
-            this.updateHitTest(this.globalState.guiTexture.getChildren()[0], this._forceSelecting);
-            // this.artBoardBackground.isHitTestVisible = true;
         });
 
         props.globalState.onFitToWindowObservable.add(() => {
@@ -252,8 +244,12 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             this._zoomFactor = Math.min(xFactor, yFactor) * 0.9;
         });
 
-        props.globalState.onOutlinesObservable.add(() => {
-            this._outlines = !this._outlines;
+        props.globalState.onOutlineChangedObservable.add(() => {
+            this.updateNodeOutlines();
+        });
+
+        props.globalState.onSelectionChangedObservable.add(() => {
+            this.updateNodeOutlines();
         });
 
         props.globalState.onParentingChangeObservable.add((control) => {
@@ -348,22 +344,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             this._canvas.style.cursor = this._altKeyIsPressed ? "zoom-out" : "zoom-in";
         }
     };
-
-    private updateHitTest(guiControl: Control, value: boolean) {
-        guiControl.isHitTestVisible = value;
-        if (guiControl instanceof Container) {
-            (guiControl as Container).children.forEach((child) => {
-                this.updateHitTest(child, value);
-            });
-        }
-    }
-
-    private updateHitTestForSelection(value: boolean) {
-        if (this._forceSelecting && !value) return;
-        this.selectedGuiNodes.forEach((control) => {
-            control.isHitTestVisible = value;
-        });
-    }
 
     public copyToClipboard() {
         this._clipboard = [];
@@ -491,34 +471,19 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
     loadToEditor() {
         this.globalState.guiTexture.rootContainer.children.forEach((guiElement) => {
-            if (guiElement.name === "Art-Board-Background" && guiElement.typeName === "Rectangle") {
-                // this.artBoardBackground = guiElement as Rectangle;
-                return;
-            }
             this.createNewGuiNode(guiElement);
         });
 
-        if (this.props.globalState.guiTexture.getChildren()[0].children.length) {
-            // this.props.globalState.guiTexture.getChildren()[0].children.unshift(this.props.globalState.workbench.artBoardBackground);
-        } else {
-            // this.props.globalState.guiTexture.getChildren()[0].children.push(this.props.globalState.workbench.artBoardBackground);
-        }
         this._isOverGUINode = [];
         this.globalState.onSelectionChangedObservable.notifyObservers(null);
         this.globalState.onFitToWindowObservable.notifyObservers();
     }
 
-    changeSelectionHighlight(value: boolean) {
-        this._selectedGuiNodes.forEach((node) => {
-            if (this._outlines) {
-                node.isHighlighted = true;
-                node.highlightLineWidth = 5;
-            } else {
-                node.isHighlighted = value && node.typeName === "Grid";
-                node.highlightLineWidth = 5
-            }
-        });
-        this.updateHitTestForSelection(value);
+    public updateNodeOutlines() {
+        for(const guiControl of this._trueRootContainer.getDescendants()) {
+            guiControl.isHighlighted = guiControl.getClassName() === "Grid" && (this.props.globalState.outlines || this.props.globalState.workbench.selectedGuiNodes.includes(guiControl));
+            guiControl.highlightLineWidth = 5;
+        }
     }
 
     findNodeFromGuiElement(guiControl: Control) {
@@ -720,7 +685,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     public clicked: boolean;
 
     public _onMove(guiControl: Control, evt: Vector2, startPos: Vector2, ignorClick: boolean = false) {
-        this._liveGuiTextureRerender = false;
         let newX = evt.x - startPos.x;
         let newY = evt.y - startPos.y;
 
@@ -909,7 +873,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     // removes all controls from both GUIs, and re-adds the controls from the original to the GUI editor
     synchronizeLiveGUI() {
         if (this.globalState.liveGuiTexture) {
-            this.globalState.guiTexture._rootContainer.getDescendants().filter(desc => desc.name !== "Art-Board-Background").forEach(desc => desc.dispose());
+            this._trueRootContainer.getDescendants().forEach(desc => desc.dispose());
             this.globalState.liveGuiTexture.rootContainer.getDescendants(true).forEach(desc => {
                 this.globalState.liveGuiTexture?.removeControl(desc);
                 this.appendBlock(desc);
@@ -996,7 +960,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                     break;
                 case "g": //outlines
                 case "G":
-                    this.globalState.onOutlinesObservable.notifyObservers();
+                    this.globalState.outlines = !this.globalState.outlines;
                     break;
                 case "f": //fit to window
                 case "F":

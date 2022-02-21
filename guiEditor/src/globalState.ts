@@ -38,7 +38,9 @@ export class GlobalState {
     onNewSceneObservable = new Observable<Nullable<Scene>>();
     onGuiNodeRemovalObservable = new Observable<Control>();
     onPopupClosedObservable = new Observable<void>();
-    _backgroundColor: Color3;
+    private _backgroundColor: Color3;
+    private _outlines: boolean = false;
+    onOutlineChangedObservable = new Observable<void>();
     blockKeyboardEvents = false;
     controlCamera: boolean;
     selectionLock: boolean;
@@ -53,7 +55,6 @@ export class GlobalState {
     onSaveObservable = new Observable<void>();
     onSnippetLoadObservable = new Observable<void>();
     onSnippetSaveObservable = new Observable<void>();
-    onOutlinesObservable = new Observable<void>();
     onResponsiveChangeObservable = new Observable<boolean>();
     onParentingChangeObservable = new Observable<Nullable<Control>>();
     onPropertyGridUpdateRequiredObservable = new Observable<void>();
@@ -96,5 +97,14 @@ export class GlobalState {
         DataStorage.WriteNumber("BackgroundColorR", value.r);
         DataStorage.WriteNumber("BackgroundColorG", value.g);
         DataStorage.WriteNumber("BackgroundColorB", value.b);
+    }
+
+    public get outlines() {
+        return this._outlines;
+    }
+
+    public set outlines(value: boolean) {
+        this._outlines = value;
+        this.onOutlineChangedObservable.notifyObservers();
     }
 }

@@ -204,7 +204,6 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
             const inNodeSpace = CoordinateHelper.rttToLocalNodeSpace(node, inRTT.x, inRTT.y, undefined, this._storedValues);
             this._dragLocalBounds(inNodeSpace);
             this._updateNodeFromLocalBounds();
-            this.props.globalState.workbench._liveGuiTextureRerender = false;
             this.props.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
         }
         if (this.state.isRotating) {
