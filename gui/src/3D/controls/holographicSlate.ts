@@ -2,6 +2,8 @@ import { ContentDisplay3D } from "./contentDisplay3D";
 import { Control3D } from "./control3D";
 import { TouchHolographicButton } from "./touchHolographicButton";
 import { AdvancedDynamicTexture } from "../../2D/advancedDynamicTexture";
+import { Control } from "../../2D/controls/control";
+import { TextBlock, TextWrapping } from "../../2D/controls/textBlock";
 import { DefaultBehavior } from "../behaviors/defaultBehavior";
 import { SlateGizmo } from "../gizmos/slateGizmo";
 import { FluentMaterial } from "../materials/fluent/fluentMaterial";
@@ -15,6 +17,7 @@ import { Matrix, Quaternion, Vector2, Vector3 } from "babylonjs/Maths/math.vecto
 import { Viewport } from "babylonjs/Maths/math.viewport";
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { CreateBox } from "babylonjs/Meshes/Builders/boxBuilder";
+import { CreatePlane } from "babylonjs/Meshes/Builders/planeBuilder";
 import { TransformNode } from "babylonjs/Meshes/transformNode";
 import { Mesh } from "babylonjs/Meshes/mesh";
 import { Observer } from "babylonjs/Misc/observable";
@@ -38,6 +41,8 @@ export class HolographicSlate extends ContentDisplay3D {
      * File name for the close icon.
      */
     public static FOLLOW_ICON_FILENAME: string = "IconFollowMe.png";
+
+    private static DEFAULT_TEXT_RESOLUTION_Y = 102.4;
 
     /**
      * 2D dimensions of the slate
@@ -74,6 +79,9 @@ export class HolographicSlate extends ContentDisplay3D {
     private _pickedPointObserver: Nullable<Observer<Nullable<Vector3>>>;
     private _positionChangedObserver: Nullable<Observer<{ position: Vector3 }>>;
 
+    private _titleText = "";
+    private _titleTextComponent: TextBlock;
+
     private _contentViewport: Viewport;
     private _contentDragBehavior: PointerDragBehavior;
 
@@ -89,20 +97,35 @@ export class HolographicSlate extends ContentDisplay3D {
     public _gizmo: SlateGizmo;
 
     protected _titleBar: Mesh;
+    protected _titleBarTitle: Mesh;
     protected _contentPlate: Mesh;
     protected _followButton: TouchHolographicButton;
     protected _closeButton: TouchHolographicButton;
     protected _contentScaleRatio = 1;
 
     /**
-     * Rendering ground id of all the mesh in the button
+     * Rendering ground id of all the meshes
      */
     public set renderingGroupId(id: number) {
         this._titleBar.renderingGroupId = id;
+        this._titleBarTitle.renderingGroupId = id;
         this._contentPlate.renderingGroupId = id;
     }
     public get renderingGroupId(): number {
         return this._titleBar.renderingGroupId;
+    }
+
+    /**
+     * The title text displayed at the top of the slate
+     */
+    public set title(title: string) {
+        this._titleText = title;
+        if (this._titleTextComponent) {
+            this._titleTextComponent.text = title;
+        }
+    }
+    public get title() {
+        return this._titleText;
     }
 
     /**
@@ -152,37 +175,39 @@ export class HolographicSlate extends ContentDisplay3D {
         const followButtonMesh = this._followButton.mesh;
         const closeButtonMesh = this._closeButton.mesh;
         const titleBar = this._titleBar;
+        const titleBarTitle = this._titleBarTitle;
         const contentPlate = this._contentPlate;
 
         if (followButtonMesh && closeButtonMesh && titleBar) {
-            // World size of a button with 1 scaling
-            const buttonBaseSize = 1;
-
-            // Buttons take full titleBar on Y axis
-            const titleBarYScale = this.titleBarHeight / buttonBaseSize;
-
-            closeButtonMesh.scaling.setAll(titleBarYScale);
-            followButtonMesh.scaling.setAll(titleBarYScale);
+            closeButtonMesh.scaling.setAll(this.titleBarHeight);
+            followButtonMesh.scaling.setAll(this.titleBarHeight);
             closeButtonMesh.position
                 .copyFromFloats(
-                    this.dimensions.x - titleBarYScale / 2,
+                    this.dimensions.x - this.titleBarHeight / 2,
                     -this.titleBarHeight / 2,
                     (-Epsilon / 2) * (this._host.scene.useRightHandedSystem ? -1 : 1)
                 )
                 .addInPlace(this.origin);
             followButtonMesh.position
                 .copyFromFloats(
-                    this.dimensions.x - (3 * titleBarYScale) / 2,
+                    this.dimensions.x - (3 * this.titleBarHeight) / 2,
                     -this.titleBarHeight / 2,
                     (-Epsilon / 2) * (this._host.scene.useRightHandedSystem ? -1 : 1)
                 )
                 .addInPlace(this.origin);
 
             const contentPlateHeight = this.dimensions.y - this.titleBarHeight - this.titleBarMargin;
+
             titleBar.scaling.set(this.dimensions.x, this.titleBarHeight, Epsilon);
+            titleBarTitle.scaling.set(this.dimensions.x - (2 * this.titleBarHeight), this.titleBarHeight, Epsilon);
             contentPlate.scaling.copyFromFloats(this.dimensions.x, contentPlateHeight, Epsilon);
+
             titleBar.position.copyFromFloats(this.dimensions.x / 2, -(this.titleBarHeight / 2), 0).addInPlace(this.origin);
+            titleBarTitle.position.copyFromFloats((this.dimensions.x / 2) - this.titleBarHeight, -(this.titleBarHeight / 2), -Epsilon).addInPlace(this.origin);
             contentPlate.position.copyFromFloats(this.dimensions.x / 2, -(this.titleBarHeight + this.titleBarMargin + contentPlateHeight / 2), 0).addInPlace(this.origin);
+
+            // Update the title's AdvancedDynamicTexture scale to avoid visual stretching
+            this._titleTextComponent.host.scaleTo(HolographicSlate.DEFAULT_TEXT_RESOLUTION_Y * titleBarTitle.scaling.x / titleBarTitle.scaling.y, HolographicSlate.DEFAULT_TEXT_RESOLUTION_Y);
 
             const aspectRatio = this.dimensions.x / contentPlateHeight;
             this._contentViewport.width = this._contentScaleRatio;
@@ -235,6 +260,19 @@ export class HolographicSlate extends ContentDisplay3D {
         const node = new Mesh("slate_" + this.name, scene);
 
         this._titleBar = CreateBox("titleBar_" + this.name, { size: 1 }, scene);
+        this._titleBarTitle = CreatePlane("titleText_" + this.name, { size: 1 }, scene);
+        this._titleBarTitle.parent = node;
+        this._titleBarTitle.isPickable = false;
+
+        var adt = AdvancedDynamicTexture.CreateForMesh(this._titleBarTitle);
+        this._titleTextComponent = new TextBlock("titleText_" + this.name, this._titleText);
+        this._titleTextComponent.textWrapping = TextWrapping.Ellipsis;
+        this._titleTextComponent.textHorizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
+        this._titleTextComponent.color = "white";
+        this._titleTextComponent.fontSize = HolographicSlate.DEFAULT_TEXT_RESOLUTION_Y / 2;
+        this._titleTextComponent.paddingLeft = HolographicSlate.DEFAULT_TEXT_RESOLUTION_Y / 4;
+        adt.addControl(this._titleTextComponent);
+
         const faceUV = new Array(6).fill(new Vector4(0, 0, 1, 1));
         if (scene.useRightHandedSystem) {
             faceUV[0].copyFromFloats(0, 1, 1, 0);
@@ -396,6 +434,7 @@ export class HolographicSlate extends ContentDisplay3D {
         this._contentMaterial.dispose();
 
         this._titleBar.dispose();
+        this._titleBarTitle.dispose();
         this._contentPlate.dispose();
 
         this._followButton.dispose();
