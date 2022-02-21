@@ -438,29 +438,43 @@ export class TextBlock extends Control {
         return { text: line, width: lineWidth };
     }
 
+    //Calculate how many characters approximately we need to remove
+    private _getCharsToRemove(lineWidth : number, width : number, lineLength : number) {
+        let diff = lineWidth > width ? lineWidth - width : 0;
+        // This isn't exact unless the font is monospaced
+        let charWidth = lineWidth / lineLength;
+        let removeChars = Math.max(Math.floor(diff / charWidth), 1);
+        return removeChars;
+    }
+
     protected _parseLineEllipsis(line: string = "", width: number, context: ICanvasRenderingContext): object {
         var textMetrics = context.measureText(line);
         var lineWidth = Math.abs(textMetrics.actualBoundingBoxLeft) + Math.abs(textMetrics.actualBoundingBoxRight);
 
-        if (lineWidth > width) {
-            line += "…";
-        }
+        let removeChars = this._getCharsToRemove(lineWidth, width, line.length); 
+
         // unicode support. split('') does not work with unicode!
         // make sure Array.from is available
         const characters = Array.from && Array.from(line);
         if (!characters) {
             // no array.from, use the old method
             while (line.length > 2 && lineWidth > width) {
-                line = line.slice(0, -2) + "…";
-                textMetrics = context.measureText(line);
+                line = line.slice(0, -removeChars);
+                textMetrics = context.measureText(line + "…");
                 lineWidth = Math.abs(textMetrics.actualBoundingBoxLeft) + Math.abs(textMetrics.actualBoundingBoxRight);
+
+                removeChars = this._getCharsToRemove(lineWidth, width, line.length); 
             }
+            // Add on the end
+            line += "…";
         } else {
             while (characters.length && lineWidth > width) {
-                characters.pop();
-                line = `${characters.join("")}...`;
+                characters.splice(characters.length - removeChars, removeChars);
+                line = `${characters.join("")}…`;
                 textMetrics = context.measureText(line);
                 lineWidth = Math.abs(textMetrics.actualBoundingBoxLeft) + Math.abs(textMetrics.actualBoundingBoxRight);
+
+                removeChars = this._getCharsToRemove(lineWidth, width, line.length);
             }
         }
 
