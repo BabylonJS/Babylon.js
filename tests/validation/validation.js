@@ -148,6 +148,7 @@ async function evaluate(test, resultCanvas, result, renderImage, waitRing, done)
 
     if (!dontReportTestOutcome) {
         var renderB64 = saveRenderImage(renderData, canvas);
+        BABYLON.Tools.EncodeScreenshotCanvasData(undefined, "image/png", test.referenceImage, canvas)
         renderImage.src = renderB64;
     }
 
