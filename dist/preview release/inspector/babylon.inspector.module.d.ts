@@ -4868,6 +4868,7 @@ declare module "babylonjs-inspector/components/sceneExplorer/sceneExplorerCompon
     import { GlobalState } from "babylonjs-inspector/components/globalState";
     import "babylonjs/Sprites/spriteSceneComponent";
     import "babylonjs/Audio/audioSceneComponent";
+    import "babylonjs/PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent";
     interface ISceneExplorerFilterComponentProps {
         onFilter: (filter: string) => void;
     }
