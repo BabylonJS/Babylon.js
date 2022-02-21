@@ -463,7 +463,7 @@ export class TextBlock extends Control {
                 textMetrics = context.measureText(line + "…");
                 lineWidth = Math.abs(textMetrics.actualBoundingBoxLeft) + Math.abs(textMetrics.actualBoundingBoxRight);
 
-                removeChars = this._getCharsToRemove(lineWidth, width, line.length); 
+                removeChars = this._getCharsToRemove(lineWidth, width, line.length);
             }
             // Add on the end
             line += "…";
