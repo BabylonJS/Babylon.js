@@ -410,7 +410,6 @@
 - Fix keypoint drag in ACE ([carolhmj](https://github.com/carolhmj))
 - Fix spherical harmonics computation ([Meakk](https://github.com/Meakk))
 - Fix KTX and DDS loading with baked mipmaps ([Meakk](https://github.com/Meakk))
-- Fix type of param `clearColor` to allow null to be passed to drawText` for `DynamicTexture` ([BlakeOne](https://github.com/BlakeOne))
 
 ## Breaking changes
 
