@@ -93,7 +93,7 @@ void main(void) {
 #include<shadowsVertex>[0..maxSimultaneousLights]
 
 	// Point size
-#ifdef POINTSIZE
+#if defined(POINTSIZE) && !defined(WEBGPU)
 	gl_PointSize = pointSize;
 #endif
 

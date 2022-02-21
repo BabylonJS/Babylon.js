@@ -89,7 +89,7 @@ void main(void) {
 #endif
 
 	// Point size
-#ifdef POINTSIZE
+#if defined(POINTSIZE) && !defined(WEBGPU)
 	gl_PointSize = pointSize;
 #endif
 
