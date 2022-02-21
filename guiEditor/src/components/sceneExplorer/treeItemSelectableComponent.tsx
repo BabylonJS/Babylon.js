@@ -37,11 +37,12 @@ export class TreeItemSelectableComponent extends React.Component<
     private _onSelectionChangedObservable: Nullable<Observer<any>>;
     private _onDraggingEndObservable: Nullable<Observer<any>>;
     private _onDraggingStartObservable: Nullable<Observer<any>>;
-    /** makes dragging behavior work correctly
-     * see: https://github.com/transformation-dev/matrx/tree/master/packages/dragster
+    /** flag flipped onDragEnter if dragOver is already true
+     * prevents dragLeave from immediately setting dragOver to false
+     * required to make dragging work as expected
+     * see: see: https://github.com/transformation-dev/matrx/tree/master/packages/dragster
      */
-    private _first = false;
-    private _second = false;
+    private _secondDragEnter = false;
     constructor(props: ITreeItemSelectableComponentProps) {
         super(props);
 
@@ -195,11 +196,11 @@ export class TreeItemSelectableComponent extends React.Component<
                     }}
                     onPointerEnter={() => this.setState({ isHovered: true })}
                     onPointerLeave={() => this.setState({ isHovered: false })}
-                    onDragStart={(event) => {
+                    onDragStart={() => {
                         this.props.globalState.draggedControl = this.props.entity;
                         this.props.globalState.onDraggingStartObservable.notifyObservers();
                     }}
-                    onDragEnd={(event) => {
+                    onDragEnd={() => {
                         this.props.globalState.onDraggingEndObservable.notifyObservers();
                     }}
                     draggable={entity.parent ? true: false}        
@@ -211,13 +212,12 @@ export class TreeItemSelectableComponent extends React.Component<
                         event.preventDefault();
                         this.dragOver(event);
                     }}
+                    onDragOver={event => this.updateDragOverLocation(event)}
                     onDragLeave={() => {
-                        if (this._second) {
-                            this._second = false;
-                        } else if (this._first) {
-                            this._first = false;
-                        }
-                        if (!this._first && !this._second) {
+                        // don't immediately set dragOver to false
+                        if (this._secondDragEnter) {
+                            this._secondDragEnter = false;
+                        } else {
                             this.setState({dragOver: false});
                         }
                     }}
@@ -243,8 +243,18 @@ export class TreeItemSelectableComponent extends React.Component<
     }
 
     dragOver(event: React.DragEvent<HTMLDivElement>): void {
-        //check the positiions of the mouse cursor.
-        var target = event.target as HTMLElement;
+        this.updateDragOverLocation(event);
+        // if we've already hovered the element, record a new drag event
+        if (this.state.dragOver) {
+            this._secondDragEnter = true;
+        } else {
+            this.setState({ dragOver: true });
+        }
+    }
+
+    updateDragOverLocation(event: React.DragEvent<HTMLDivElement>) {
+        //check the positions of the mouse cursor.
+        const target = event.target as HTMLElement;
         const rect = target.getBoundingClientRect();
         const y = event.clientY - rect.top;
 
@@ -265,12 +275,6 @@ export class TreeItemSelectableComponent extends React.Component<
                 this.setState({ dragOverLocation: DragOverLocation.BELOW });
             }
         }
-        if (this._first) {
-            this._second = true;
-        } else {
-            this._first = true;
-            this.setState({ dragOver: true });
-        }
     }
 
     drop(): void {
@@ -282,7 +286,6 @@ export class TreeItemSelectableComponent extends React.Component<
         }
         this.props.globalState.draggedControl = null;
         this.setState({ dragOverLocation: DragOverLocation.NONE, dragOver: false });
-        this._first = false;
-        this._second = false;
+        this._secondDragEnter = false;
     }
 }
