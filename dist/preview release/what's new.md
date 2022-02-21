@@ -291,7 +291,6 @@
 
 ## Bugs
 
-- Fix type of param `clearColor` to allow null to be passed to drawText` for `DynamicTexture` ([BlakeOne](https://github.com/BlakeOne))
 - Fix `WaterMaterial`’s constructor to use `this.getScene()` instead of `scene` parameter ([BlakeOne](https://github.com/BlakeOne))
 - Add missing param `point` to the callback function's type for the methods `registerOnPhysicsCollide` and `unregisterOnPhysicsCollide` of the `PhysicsImpostor` class. ([BlakeOne](https://github.com/BlakeOne))
 - Fix serialization and parsing of `textBlock` and `image` for `Button` class ([BlakeOne](https://github.com/BlakeOne))
@@ -411,6 +410,7 @@
 - Fix keypoint drag in ACE ([carolhmj](https://github.com/carolhmj))
 - Fix spherical harmonics computation ([Meakk](https://github.com/Meakk))
 - Fix KTX and DDS loading with baked mipmaps ([Meakk](https://github.com/Meakk))
+- Fix type of param `clearColor` to allow null to be passed to drawText` for `DynamicTexture` ([BlakeOne](https://github.com/BlakeOne))
 
 ## Breaking changes
 
