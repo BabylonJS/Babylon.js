@@ -206,6 +206,12 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
             this._updateNodeFromLocalBounds();
             this.props.globalState.workbench._liveGuiTextureRerender = false;
             this.props.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
+            this.props.globalState.onPropertyChangedObservable.notifyObservers({
+                object: node,
+                property: 'test',
+                value: 'test',
+                initialValue: 'test'
+            });
         }
         if (this.state.isRotating) {
             const angle = Math.atan2(scene.pointerY - this._rotation.pivot.y, scene.pointerX - this._rotation.pivot.x);
@@ -214,6 +220,12 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
             }
             this._rotation.initialAngleToPivot = angle;
             this.props.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
+            this.props.globalState.onPropertyChangedObservable.notifyObservers({
+                object: null,
+                property: 'test',
+                value: 'test',
+                initialValue: 'test'
+            });
         }
     };
 
