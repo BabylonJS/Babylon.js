@@ -22,7 +22,7 @@
         {
             "title": "cube reflection with probe and mirrors",
             "renderCount": 20,
-            "playgroundId": "#X3V1NN#0"
+            "playgroundId": "#X3V1NN#7"
         },
         {
             "title": "sphere with custom shader to display wireframe using glow layer",
@@ -65,7 +65,7 @@
         },
         {
             "title": "simple sphere in 4 mirrors",
-            "playgroundId": "#58CFTW#0"
+            "playgroundId": "#58CFTW#4"
         },
         {
             "title": "procedural texture with node material",
@@ -141,7 +141,7 @@
         {
             "title": "particle system matrix like",
             "renderCount": 100,
-            "playgroundId": "#WL44T7"
+            "playgroundId": "#WL44T7#1"
         },
         {
             "title": "lens flare",
