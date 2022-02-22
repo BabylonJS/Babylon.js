@@ -27,6 +27,9 @@ export class _OcclusionDataStorage {
 
     /** @hidden */
     public occlusionQueryAlgorithmType = AbstractMesh.OCCLUSION_ALGORITHM_TYPE_CONSERVATIVE;
+
+    /** @hidden */
+    public forceRenderingWhenOccluded = false;
 }
 
 declare module "../../Engines/engine" {
@@ -392,6 +395,12 @@ declare module "../../Meshes/abstractMesh" {
          * @see https://doc.babylonjs.com/features/occlusionquery
          */
         isOcclusionQueryInProgress: boolean;
+
+        /**
+         * Flag to force rendering the mesh even if occluded
+         * @see https://doc.babylonjs.com/features/occlusionquery
+         */
+        forceRenderingWhenOccluded: boolean;
     }
 }
 Object.defineProperty(AbstractMesh.prototype, "isOcclusionQueryInProgress", {
@@ -455,6 +464,17 @@ Object.defineProperty(AbstractMesh.prototype, "occlusionRetryCount", {
     },
     set: function (this: AbstractMesh, value: number) {
         this._occlusionDataStorage.occlusionRetryCount = value;
+    },
+    enumerable: true,
+    configurable: true
+});
+
+Object.defineProperty(AbstractMesh.prototype, "forceRenderingWhenOccluded", {
+    get: function (this: AbstractMesh) {
+        return this._occlusionDataStorage.forceRenderingWhenOccluded;
+    },
+    set: function (this: AbstractMesh, value: boolean) {
+        this._occlusionDataStorage.forceRenderingWhenOccluded = value;
     },
     enumerable: true,
     configurable: true
