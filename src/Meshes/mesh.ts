@@ -2129,7 +2129,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             this._internalAbstractMeshDataInfo._isActive = false;
         }
 
-        if (this._checkOcclusionQuery()) {
+        if (this._checkOcclusionQuery() && !this._occlusionDataStorage.forceRenderingWhenOccluded) {
             return this;
         }
 
