@@ -13,7 +13,7 @@ import { Constants } from "../constants";
  * Type used to define a texture size (either with a number or with a rect width and height)
  * @deprecated please use TextureSize instead
  */
- export type RenderTargetTextureSize = TextureSize;
+export type RenderTargetTextureSize = TextureSize;
 
 declare module "../../Engines/thinEngine" {
     export interface ThinEngine {
