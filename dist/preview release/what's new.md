@@ -154,7 +154,7 @@
 - When user hits the "New Key" button on ACE but a key already exists on that frame, update existing frame's values instead of creating a new one. ([carolhmj](https://github.com/carolhmj))
 - Added live connection to GUI editor ([darraghjburke](https://github.com/darraghjburke))
 - Add `getAlphaFromRGB` checkbox on Texture view ([carolhmj](https://github.com/carolhmj))
-
+- Make sure popups are closed when page refreshes ([RaananW](https://github.com/RaananW))
 
 ### Playground
 
@@ -410,6 +410,7 @@
 - Fix keypoint drag in ACE ([carolhmj](https://github.com/carolhmj))
 - Fix spherical harmonics computation ([Meakk](https://github.com/Meakk))
 - Fix KTX and DDS loading with baked mipmaps ([Meakk](https://github.com/Meakk))
+- Fix text rendering speed when `TextWrapping.Ellipsis` is used ([carolhmj](https://github.com/carolhmj))
 
 ## Breaking changes
 

@@ -27434,7 +27434,7 @@ declare module BABYLON {
          * Interpolates a Vector3 linearly
          * @param startValue Start value of the animation curve
          * @param endValue End value of the animation curve
-         * @param gradient Scalar amount to interpolate
+         * @param gradient Scalar amount to interpolate (value between 0 and 1)
          * @returns Interpolated scalar value
          */
         vector3InterpolateFunction(startValue: Vector3, endValue: Vector3, gradient: number): Vector3;
@@ -27444,7 +27444,7 @@ declare module BABYLON {
          * @param outTangent End tangent of the animation
          * @param endValue End value of the animation curve
          * @param inTangent Start tangent of the animation curve
-         * @param gradient Scalar amount to interpolate
+         * @param gradient Scalar amount to interpolate (value between 0 and 1)
          * @returns InterpolatedVector3 value
          */
         vector3InterpolateFunctionWithTangents(startValue: Vector3, outTangent: Vector3, endValue: Vector3, inTangent: Vector3, gradient: number): Vector3;
@@ -27452,7 +27452,7 @@ declare module BABYLON {
          * Interpolates a Vector2 linearly
          * @param startValue Start value of the animation curve
          * @param endValue End value of the animation curve
-         * @param gradient Scalar amount to interpolate
+         * @param gradient Scalar amount to interpolate (value between 0 and 1)
          * @returns Interpolated Vector2 value
          */
         vector2InterpolateFunction(startValue: Vector2, endValue: Vector2, gradient: number): Vector2;
@@ -27462,7 +27462,7 @@ declare module BABYLON {
          * @param outTangent End tangent of the animation
          * @param endValue End value of the animation curve
          * @param inTangent Start tangent of the animation curve
-         * @param gradient Scalar amount to interpolate
+         * @param gradient Scalar amount to interpolate (value between 0 and 1)
          * @returns Interpolated Vector2 value
          */
         vector2InterpolateFunctionWithTangents(startValue: Vector2, outTangent: Vector2, endValue: Vector2, inTangent: Vector2, gradient: number): Vector2;
@@ -48433,6 +48433,7 @@ declare module BABYLON {
         private _pointerMoveEvent;
         private _pointerDownEvent;
         private _pointerUpEvent;
+        private _pointerCancelEvent;
         private _pointerWheelEvent;
         private _pointerBlurEvent;
         private _wheelEventName;
@@ -66255,6 +66256,8 @@ declare module BABYLON {
         occlusionType: number;
         /** @hidden */
         occlusionQueryAlgorithmType: number;
+        /** @hidden */
+        forceRenderingWhenOccluded: boolean;
     }
         interface Engine {
             /**
@@ -66382,6 +66385,11 @@ declare module BABYLON {
              * @see https://doc.babylonjs.com/features/occlusionquery
              */
             isOcclusionQueryInProgress: boolean;
+            /**
+             * Flag to force rendering the mesh even if occluded
+             * @see https://doc.babylonjs.com/features/occlusionquery
+             */
+            forceRenderingWhenOccluded: boolean;
         }
 }
 declare module BABYLON {
