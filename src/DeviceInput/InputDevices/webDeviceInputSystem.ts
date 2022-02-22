@@ -56,6 +56,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
     private _pointerMoveEvent = (evt: any) => { };
     private _pointerDownEvent = (evt: any) => { };
     private _pointerUpEvent = (evt: any) => { };
+    private _pointerCancelEvent = (evt: any) => { };
     private _pointerWheelEvent = (evt: any) => { };
     private _pointerBlurEvent = (evt: any) => { };
     private _wheelEventName: string;
@@ -200,6 +201,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
             this._elementToAttachTo.removeEventListener(this._eventPrefix + "move", this._pointerMoveEvent);
             this._elementToAttachTo.removeEventListener(this._eventPrefix + "down", this._pointerDownEvent);
             this._elementToAttachTo.removeEventListener(this._eventPrefix + "up", this._pointerUpEvent);
+            this._elementToAttachTo.removeEventListener(this._eventPrefix + "cancel", this._pointerCancelEvent);
             this._elementToAttachTo.removeEventListener(this._wheelEventName, this._pointerWheelEvent);
 
             // Gamepad Events
@@ -575,6 +577,52 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
             }
         });
 
+        this._pointerCancelEvent = ((evt) => {
+            if (evt.pointerType === "mouse") {
+                const pointer = this._inputs[DeviceType.Mouse][0];
+
+                if (this._mouseId >= 0 && this._elementToAttachTo.hasPointerCapture?.(this._mouseId)) {
+                    this._elementToAttachTo.releasePointerCapture(this._mouseId);
+                }
+
+                for (let inputIndex = PointerInput.LeftClick; inputIndex <= PointerInput.BrowserForward; inputIndex++) {
+                    if (pointer[inputIndex] === 1) {
+                        pointer[inputIndex] = 0;
+
+                        const evt: IEvent = DeviceEventFactory.CreateDeviceEvent(DeviceType.Mouse, 0, inputIndex, 0, this, this._elementToAttachTo);
+                        const deviceEvent = evt as IDeviceEvent;
+                        deviceEvent.deviceType = DeviceType.Mouse;
+                        deviceEvent.deviceSlot = 0;
+                        deviceEvent.inputIndex = inputIndex;
+                        deviceEvent.currentState = pointer[inputIndex];
+                        deviceEvent.previousState = 1;
+                        this.onInputChanged(deviceEvent);
+                    }
+                }
+            }
+            else {
+                const deviceSlot = this._activeTouchIds.indexOf(evt.pointerId);
+
+                if (this._elementToAttachTo.hasPointerCapture?.(evt.pointerId)) {
+                    this._elementToAttachTo.releasePointerCapture(evt.pointerId);
+                }
+
+                this._inputs[DeviceType.Touch][deviceSlot][PointerInput.LeftClick] = 0;
+
+                const upEvt: IEvent = DeviceEventFactory.CreateDeviceEvent(DeviceType.Touch, deviceSlot, PointerInput.LeftClick, 0, this, this._elementToAttachTo);
+                const deviceEvent = upEvt as IDeviceEvent;
+                deviceEvent.deviceType = DeviceType.Touch;
+                deviceEvent.deviceSlot = deviceSlot;
+                deviceEvent.inputIndex = PointerInput.LeftClick;
+                deviceEvent.currentState = 0;
+                deviceEvent.previousState = 1;
+                this.onInputChanged(deviceEvent);
+
+                this._activeTouchIds[deviceSlot] = -1;
+                this.onDeviceDisconnected(DeviceType.Touch, deviceSlot);
+            }
+        });
+
         // Set Wheel Event Name, code originally from scene.inputManager
         this._wheelEventName = "onwheel" in document.createElement("div") ? "wheel" :       // Modern browsers support "wheel"
             (<any>document).onmousewheel !== undefined ? "mousewheel" :                     // Webkit and IE support at least "mousewheel"
@@ -612,16 +660,16 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                     this._elementToAttachTo.releasePointerCapture(this._mouseId);
                 }
 
-                for (let i = 0; i <= PointerInput.BrowserForward; i++) {
-                    if (pointer[i + 2] === 1) {
-                        pointer[i + 2] = 0;
+                for (let inputIndex = PointerInput.LeftClick; inputIndex <= PointerInput.BrowserForward; inputIndex++) {
+                    if (pointer[inputIndex] === 1) {
+                        pointer[inputIndex] = 0;
 
-                        const evt: IEvent = DeviceEventFactory.CreateDeviceEvent(DeviceType.Mouse, 0, i + 2, 1, this, this._elementToAttachTo);
+                        const evt: IEvent = DeviceEventFactory.CreateDeviceEvent(DeviceType.Mouse, 0, inputIndex, 0, this, this._elementToAttachTo);
                         const deviceEvent = evt as IDeviceEvent;
                         deviceEvent.deviceType = DeviceType.Mouse;
                         deviceEvent.deviceSlot = 0;
-                        deviceEvent.inputIndex = i + 2;
-                        deviceEvent.currentState = pointer[i + 2];
+                        deviceEvent.inputIndex = inputIndex;
+                        deviceEvent.currentState = pointer[inputIndex];
                         deviceEvent.previousState = 1;
                         this.onInputChanged(deviceEvent);
                     }
@@ -642,7 +690,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                     if (pointerId !== -1 && pointer[deviceSlot]?.[PointerInput.LeftClick] === 1) {
                         pointer[deviceSlot][PointerInput.LeftClick] = 0;
 
-                        const evt: IEvent = DeviceEventFactory.CreateDeviceEvent(DeviceType.Touch, deviceSlot, PointerInput.LeftClick, 1, this, this._elementToAttachTo);
+                        const evt: IEvent = DeviceEventFactory.CreateDeviceEvent(DeviceType.Touch, deviceSlot, PointerInput.LeftClick, 0, this, this._elementToAttachTo);
                         const deviceEvent = evt as IDeviceEvent;
                         deviceEvent.deviceType = DeviceType.Touch;
                         deviceEvent.deviceSlot = deviceSlot;
@@ -710,6 +758,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
         this._elementToAttachTo.addEventListener(this._eventPrefix + "move", this._pointerMoveEvent);
         this._elementToAttachTo.addEventListener(this._eventPrefix + "down", this._pointerDownEvent);
         this._elementToAttachTo.addEventListener(this._eventPrefix + "up", this._pointerUpEvent);
+        this._elementToAttachTo.addEventListener(this._eventPrefix + "cancel", this._pointerCancelEvent);
         this._elementToAttachTo.addEventListener("blur", this._pointerBlurEvent);
         this._elementToAttachTo.addEventListener(this._wheelEventName, this._pointerWheelEvent, passiveSupported ? { passive: false } : false);
 
