@@ -252,39 +252,36 @@ export class TransformNode extends Node {
      * The forward direction of that transform in world space.
      */
     public get forward(): Vector3 {
-        Vector3.TransformNormalToRef(
-            this.getScene().useRightHandedSystem ? Vector3.RightHandedForwardReadOnly : Vector3.LeftHandedForwardReadOnly,
+        Vector3.TransformNormalFromFloatsToRef(
+            0, 0, this.getScene().useRightHandedSystem ? -1.0 : 1.0,
             this.getWorldMatrix(),
             this._forward
         );
-        this._forward.normalize();
-        return this._forward;
+        return this._forward.normalize();
     }
 
     /**
      * The up direction of that transform in world space.
      */
     public get up(): Vector3 {
-        Vector3.TransformNormalToRef(
-            Vector3.UpReadOnly,
+        Vector3.TransformNormalFromFloatsToRef(
+            0, 1, 0,
             this.getWorldMatrix(),
             this._up
         );
-        this._up.normalize();
-        return this._up;
+        return this._up.normalize();
     }
 
     /**
      * The right direction of that transform in world space.
      */
     public get right(): Vector3 {
-        Vector3.TransformNormalToRef(
-            this.getScene().useRightHandedSystem ? Vector3.LeftReadOnly : Vector3.RightReadOnly,
+        Vector3.TransformNormalFromFloatsToRef(
+            this.getScene().useRightHandedSystem ? -1.0 : 1.0, 0, 0,
             this.getWorldMatrix(),
             this._right
         );
-        this._right.normalize();
-        return this._right;
+        return this._right.normalize();
     }
 
     /**
