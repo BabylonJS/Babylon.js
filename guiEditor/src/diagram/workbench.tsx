@@ -23,6 +23,7 @@ import { Observer } from "babylonjs/Misc/observable";
 import { ISize } from "babylonjs/Maths/math";
 import { Texture } from "babylonjs/Materials/Textures/texture";
 import { CoordinateHelper } from "./coordinateHelper";
+import { Logger } from "babylonjs/Misc/logger";
 require("./workbenchCanvas.scss");
 
 export interface IWorkbenchComponentProps {
@@ -52,9 +53,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     private _canvas: HTMLCanvasElement;
     private _responsive: boolean;
     private _isOverGUINode: Control[] = [];
-    private _clipboard: Control[] = [];
-    private _selectAll: boolean = false;
-    private _pasted: boolean;
     private _engine: Engine;
     private _liveRenderObserver: Nullable<Observer<AdvancedDynamicTexture>>;
     private _guiRenderObserver: Nullable<Observer<AdvancedDynamicTexture>>;
@@ -177,7 +175,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             if (!selection) {
                 this.updateNodeOutlines();
                 this._selectedGuiNodes = [];
-                this._selectAll = false;
                 this._mainSelection = null;
             } else {
                 if (selection instanceof Control) {
@@ -198,7 +195,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                             this._mainSelection = selection;
                         }
                         this._lockMainSelection = false;
-                        this._selectAll = false;
 
                     }
                     this.updateNodeOutlines();
@@ -272,6 +268,10 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             this._engine.resize();
         });
 
+        props.globalState.onCopyObservable.add(copyFn => this.copyToClipboard(copyFn));
+        props.globalState.onCutObservable.add(copyFn => this.cutToClipboard(copyFn));
+        props.globalState.onPasteObservable.add(content => this.pasteFromClipboard(content));
+
         this.props.globalState.workbench = this;
     }
 
@@ -308,14 +308,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
         if (evt.key === "Delete" || evt.key === "Backspace") {
             if (!this.props.globalState.lockObject.lock) {
-                this._selectedGuiNodes.forEach((guiNode) => {
-                    if (guiNode !== this.globalState.guiTexture.getChildren()[0]) {
-                        this.props.globalState.guiTexture.removeControl(guiNode);
-                        this.props.globalState.liveGuiTexture?.removeControl(guiNode);
-                        guiNode.dispose();
-                    }
-                });
-                this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+                this._deleteSelectedNodes();
             }
         }
 
@@ -329,15 +322,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                         this.selectAllGUI(node);
                     }
                 });
-            } else if (evt.key === "c") {
-                this.copyToClipboard();
-            } else if (evt.key === "v" && !this._pasted) {
-                this.globalState.onSelectionChangedObservable.notifyObservers(null);
-                this.pasteFromClipboard();
-                this._pasted = true;
             }
-        } else if (!this._ctrlKeyIsPressed) {
-            this._pasted = false;
         }
 
         if (this._forceZooming) {
@@ -345,25 +330,50 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         }
     };
 
-    public copyToClipboard() {
-        this._clipboard = [];
-        if (this._selectAll) {
-            let index = 0;
-            this.nodes.forEach((node) => {
-                if (index++) {
-                    //skip the first node, the background
-                    this._clipboard.push(node);
-                }
-            });
-        } else {
-            this._clipboard = this.selectedGuiNodes;
-        }
+    private _deleteSelectedNodes() {
+        for (const control of this._selectedGuiNodes) {
+            this.props.globalState.guiTexture.removeControl(control);
+            this.props.globalState.liveGuiTexture?.removeControl(control);
+            control.dispose();
+        };
+        this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
     }
 
-    public pasteFromClipboard() {
-        this._clipboard.forEach((control) => {
-            this.CopyGUIControl(control);
-        });
+    public copyToClipboard(copyFn: (content: string) => void) {
+        const controlList: any[] = [];
+        for(const control of this.selectedGuiNodes) {
+            const obj = {}
+            control.serialize(obj);
+            controlList.push(obj);
+        }
+        copyFn(JSON.stringify({
+            GUIClipboard: true,
+            controls: controlList
+        }));
+    }
+
+    public cutToClipboard(copyFn: (content: string) => void) {
+        this.copyToClipboard(copyFn);
+        this._deleteSelectedNodes();
+    }
+
+    public pasteFromClipboard(clipboardContents: string) {
+        try {
+            const parsed = JSON.parse(clipboardContents);
+            if (parsed.GUIClipboard) {
+                this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+                for(const control of parsed.controls) {
+                    const newControl = this.appendBlock(Control.Parse(control, this.props.globalState.guiTexture));
+                    this.props.globalState.onSelectionChangedObservable.notifyObservers(newControl);
+                }
+                return true;
+            }
+        }
+        catch {
+            // don't need an error message
+        }
+        Logger.Warn("Paste attempted, but clipboard content was invalid.");
+        return false;
     }
 
     public CopyGUIControl(original: Control) {
@@ -402,7 +412,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 this.selectAllGUI(child);
             });
         }
-        this._selectAll = true;
     }
 
     blurEvent = () => {
