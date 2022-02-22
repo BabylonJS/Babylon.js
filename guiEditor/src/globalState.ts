@@ -68,6 +68,9 @@ export class GlobalState {
     onPointerUpObservable = new Observable<Nullable<React.PointerEvent<HTMLCanvasElement> | PointerEvent>>();
     draggedControl: Nullable<Control> = null;
     draggedControlDirection: DragOverLocation;
+    onCopyObservable = new Observable<(content: string) => void>();
+    onCutObservable = new Observable<(content: string) => void>();
+    onPasteObservable = new Observable<string>();
     isSaving = false;
     public lockObject = new LockObject();
     storeEditorData: (serializationObject: any) => void;
@@ -85,6 +88,31 @@ export class GlobalState {
         this.onBackgroundColorChangeObservable.notifyObservers();
 
         CoordinateHelper.globalState = this;
+    }
+
+    /** adds copy, cut and paste listeners to the host window */
+    public registerEventListeners() {
+        this.hostDocument.addEventListener("copy", (event) => {
+            const target = event.target as HTMLElement;
+            if (!target.isContentEditable && target.tagName !== "input" && target.tagName !== "textarea") {
+                this.onCopyObservable.notifyObservers(content => event.clipboardData?.setData("text/plain", content));
+                event.preventDefault();
+            }
+        });
+        this.hostDocument.addEventListener("cut", (event) => {
+            const target = event.target as HTMLElement;
+            if (!target.isContentEditable && target.tagName !== "input" && target.tagName !== "textarea") {
+                this.onCutObservable.notifyObservers(content => event.clipboardData?.setData("text/plain", content));
+                event.preventDefault();
+            }
+        });
+        this.hostDocument.addEventListener("paste", (event) => {
+            const target = event.target as HTMLElement;
+            if (!target.isContentEditable && target.tagName !== "input" && target.tagName !== "textarea") {
+                this.onPasteObservable.notifyObservers(event.clipboardData?.getData("text") || "");
+                event.preventDefault();
+            }
+        });
     }
 
     public get backgroundColor() {
