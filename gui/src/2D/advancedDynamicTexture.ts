@@ -1155,7 +1155,15 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     public static CreateForMesh(mesh: AbstractMesh, width = 1024, height = 1024, supportPointerMove = true, onlyAlphaTesting = false, invertY?: boolean): AdvancedDynamicTexture {
         // use a unique ID in name so serialization will work even if you create two ADTs for a single mesh
         const uniqueId = RandomGUID();
-        var result = new AdvancedDynamicTexture(`AdvancedDynamicTexture for ${mesh.name} [${uniqueId}]`, width, height, mesh.getScene(), true, Texture.TRILINEAR_SAMPLINGMODE, invertY);
+        var result = new AdvancedDynamicTexture(
+            `AdvancedDynamicTexture for ${mesh.name} [${uniqueId}]`,
+            width,
+            height,
+            mesh.getScene(),
+            true,
+            Texture.TRILINEAR_SAMPLINGMODE,
+            invertY
+        );
         var material = new StandardMaterial(`AdvancedDynamicTextureMaterial for ${mesh.name} [${uniqueId}]`, mesh.getScene());
         material.backFaceCulling = false;
         material.diffuseColor = Color3.Black();
@@ -1200,7 +1208,13 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      * @param adaptiveScaling defines whether to automatically scale root to match hardwarescaling (false by default)
      * @returns a new AdvancedDynamicTexture
      */
-    public static CreateFullscreenUI(name: string, foreground: boolean = true, scene: Nullable<Scene> = null, sampling = Texture.BILINEAR_SAMPLINGMODE, adaptiveScaling: boolean = false): AdvancedDynamicTexture {
+    public static CreateFullscreenUI(
+        name: string,
+        foreground: boolean = true,
+        scene: Nullable<Scene> = null,
+        sampling = Texture.BILINEAR_SAMPLINGMODE,
+        adaptiveScaling: boolean = false
+    ): AdvancedDynamicTexture {
         var result = new AdvancedDynamicTexture(name, 0, 0, scene, false, sampling);
         // Display
         const resultScene = result.getScene();
@@ -1224,7 +1238,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      * Scales the texture
      * @param ratio the scale factor to apply to both width and height
      */
-     public scale(ratio: number): void {
+    public scale(ratio: number): void {
         super.scale(ratio);
         this.markAsDirty();
     }
@@ -1239,3 +1253,5 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         this.markAsDirty();
     }
 }
+
+export { IFocusableControl };
