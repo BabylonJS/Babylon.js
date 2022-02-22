@@ -11,6 +11,7 @@ declare module "babylonjs-post-process/asciiArt/asciiArtPostProcess" {
     import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
     import { PostProcess } from "babylonjs/PostProcesses/postProcess";
     import { Scene } from "babylonjs/scene";
+    import "babylonjs/Engines/Extensions/engine.dynamicTexture";
     import "babylonjs-post-process/asciiArt/asciiart.fragment";
     /**
      * AsciiArtFontTexture is the helper class used to easily create your ascii art font texture.
@@ -128,6 +129,7 @@ declare module "babylonjs-post-process/digitalRain/digitalRainPostProcess" {
     import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
     import { PostProcess } from "babylonjs/PostProcesses/postProcess";
     import { Scene } from "babylonjs/scene";
+    import "babylonjs/Engines/Extensions/engine.dynamicTexture";
     import "babylonjs-post-process/digitalRain/digitalrain.fragment";
     /**
      * DigitalRainFontTexture is the helper class used to easily create your digital rain font texture.

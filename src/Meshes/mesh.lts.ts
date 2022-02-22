@@ -184,7 +184,7 @@ declare module "./mesh" {
          * @returns a new Mesh
          * @deprecated Please use MeshBuilder instead
          */
-        function CreateLines(name: string, points: Vector3[], scene: Nullable<Scene>, updatable: boolean, instance?: Nullable<LinesMesh>): LinesMesh;
+        function CreateLines(name: string, points: Vector3[], scene: Nullable<Scene>, updatable?: boolean, instance?: Nullable<LinesMesh>): LinesMesh;
 
         /**
          * Creates a dashed line mesh.

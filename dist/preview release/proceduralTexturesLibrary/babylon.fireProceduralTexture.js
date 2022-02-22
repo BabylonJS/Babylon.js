@@ -449,6 +449,7 @@ __webpack_require__.r(__webpack_exports__);
 var FireProceduralTexture = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(FireProceduralTexture, _super);
     function FireProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {
+        if (scene === void 0) { scene = null; }
         var _this = _super.call(this, name, size, "fireProceduralTexture", scene, fallbackTexture, generateMipMaps) || this;
         _this._time = 0.0;
         _this._speed = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Vector2"](0.5, 0.3);

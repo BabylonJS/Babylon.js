@@ -56,8 +56,12 @@ export class AssetContainer extends AbstractScene {
      * Instantiates an AssetContainer.
      * @param scene The scene the AssetContainer belongs to.
      */
-    constructor(scene: Scene) {
+    constructor(scene?: Nullable<Scene>) {
         super();
+        scene = scene || EngineStore.LastCreatedScene;
+        if (!scene) {
+            return;
+        }
         this.scene = scene;
         this["sounds"] = [];
         this["effectLayers"] = [];
@@ -213,10 +217,6 @@ export class AssetContainer extends AbstractScene {
         this.skeletons.forEach((s) => {
             let clone = s.clone(nameFunction ? nameFunction(s.name) : "Clone of " + s.name);
 
-            if (s.overrideMesh) {
-                clone.overrideMesh = storeMap[convertionMap[s.overrideMesh.uniqueId]];
-            }
-
             for (var m of this.meshes) {
                 if (m.skeleton === s && !m.isAnInstance) {
                     let copy = storeMap[convertionMap[m.uniqueId]] as Mesh;
@@ -244,7 +244,7 @@ export class AssetContainer extends AbstractScene {
         });
 
         this.animationGroups.forEach((o) => {
-            let clone = o.clone(o.name, (oldTarget) => {
+            let clone = o.clone(nameFunction ? nameFunction(o.name) : "Clone of " + o.name, (oldTarget) => {
                 let newTarget = storeMap[convertionMap[oldTarget.uniqueId]];
 
                 return newTarget || oldTarget;

@@ -1,9 +1,10 @@
 import { Observer } from "babylonjs/Misc/observable";
 import { Nullable } from "babylonjs/types";
 import * as React from "react";
-import { Context } from "../context";
+import { Context, IActiveAnimationChangedOptions } from "../context";
 import { Curve } from "./curve";
 import { AnimationKeyInterpolation } from "babylonjs/Animations/animationKey";
+import { Animation } from "babylonjs/Animations/animation";
 
 interface ICurveComponentProps {
     curve: Curve;
@@ -18,7 +19,7 @@ interface ICurveComponentState {
 
 export class CurveComponent extends React.Component<ICurveComponentProps, ICurveComponentState> {
     private _onDataUpdatedObserver: Nullable<Observer<void>>;
-    private _onActiveAnimationChangedObserver: Nullable<Observer<void>>;
+    private _onActiveAnimationChangedObserver: Nullable<Observer<IActiveAnimationChangedOptions>>;
     private _onInterpolationModeSetObserver: Nullable<Observer<{ keyId: number; value: AnimationKeyInterpolation }>>;
 
     constructor(props: ICurveComponentProps) {
@@ -67,16 +68,22 @@ export class CurveComponent extends React.Component<ICurveComponentProps, ICurve
         if (!this.props.context.isChannelEnabled(this.props.curve.animation, this.props.curve.color)) {
             return null;
         }
+        const pathStyle : any = {
+            stroke: this.props.curve.color,
+            fill: "none",
+            strokeWidth: "1",
+        };
+
+        if (this.props.curve.animation.dataType === Animation.ANIMATIONTYPE_QUATERNION) {
+            pathStyle['stroke-dasharray'] = '5';
+            pathStyle['stroke-opacity'] = '0.5';
+        }
 
         return (
             <svg style={{ cursor: "pointer", overflow: "auto" }}>
                 <path
                     d={this.props.curve.getPathData(this.props.convertX, this.props.convertY)}
-                    style={{
-                        stroke: this.props.curve.color,
-                        fill: "none",
-                        strokeWidth: "1",
-                    }}
+                    style={pathStyle}
                 ></path>
             </svg>
         );

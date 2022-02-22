@@ -494,6 +494,7 @@ __webpack_require__.r(__webpack_exports__);
 var RoadProceduralTexture = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(RoadProceduralTexture, _super);
     function RoadProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {
+        if (scene === void 0) { scene = null; }
         var _this = _super.call(this, name, size, "roadProceduralTexture", scene, fallbackTexture, generateMipMaps) || this;
         _this._roadColor = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color3"](0.53, 0.53, 0.53);
         _this.updateShaderUniforms();

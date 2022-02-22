@@ -3,6 +3,7 @@ import { Analyser } from "./analyser";
 import { Nullable } from "../types";
 import { Scene } from "../scene";
 import { Engine } from "../Engines/engine";
+import { EngineStore } from "../Engines/engineStore";
 
 /**
  * Options allowed during the creation of a sound track.
@@ -45,7 +46,11 @@ export class SoundTrack {
      * @param scene Define the scene the sound track belongs to
      * @param options
      */
-    constructor(scene: Scene, options: ISoundTrackOptions = {}) {
+    constructor(scene?: Nullable<Scene>, options: ISoundTrackOptions = {}) {
+        scene = scene || EngineStore.LastCreatedScene;
+        if (!scene) {
+            return;
+        }
         this._scene = scene;
         this.soundCollection = new Array();
         this._options = options;

@@ -190,14 +190,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@5.0.0-beta.4";
+        return "babylonjs@5.0.0-beta.9";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "5.0.0-beta.4";
+        return "5.0.0-beta.9";
     }
 
     /**
@@ -363,6 +363,14 @@ export class ThinEngine {
     protected _audioContext: Nullable<AudioContext>;
     protected _audioDestination: Nullable<AudioDestinationNode | MediaStreamAudioDestinationNode>;
 
+    /**
+     * Gets the options used for engine creation
+     * @returns EngineOptions object
+     */
+    public getCreationOptions() {
+        return this._creationOptions;
+    }
+
     protected _highPrecisionShadersAllowed = true;
     /** @hidden */
     public get _shouldUseHighPrecisionShader(): boolean {
@@ -525,6 +533,9 @@ export class ThinEngine {
     private _maxSimultaneousTextures = 0;
 
     private _activeRequests = new Array<IFileRequest>();
+
+    /** @hidden */
+    private _adaptToDeviceRatio: boolean = false;
 
     /** @hidden */
     public _transformTextureUrl: Nullable<(url: string) => string> = null;
@@ -707,6 +718,9 @@ export class ThinEngine {
         options = options || {};
 
         this._creationOptions = options;
+
+        // Save this off for use in resize().
+        this._adaptToDeviceRatio = adaptToDeviceRatio ?? false;
 
         this._stencilStateComposer.stencilGlobal = this._stencilState;
 
@@ -1104,7 +1118,8 @@ export class ThinEngine {
             canUseGLVertexID: this._webGLVersion > 1,
             supportComputeShaders: false,
             supportSRGBBuffers: false,
-            supportTransformFeedbacks: this._webGLVersion > 1
+            supportTransformFeedbacks: this._webGLVersion > 1,
+            textureMaxLevel: this._webGLVersion > 1
         };
 
         // Infos
@@ -1117,11 +1132,11 @@ export class ThinEngine {
         }
 
         if (!this._glVendor) {
-            this._glVendor = "Unknown vendor";
+            this._glVendor = this._gl.getParameter(this._gl.VENDOR) || "Unknown vendor";
         }
 
         if (!this._glRenderer) {
-            this._glRenderer = "Unknown renderer";
+            this._glRenderer = this._gl.getParameter(this._gl.RENDERER) || "Unknown renderer";
         }
 
         // Constants
@@ -1655,6 +1670,13 @@ export class ThinEngine {
     public resize(forceSetSize = false): void {
         let width: number;
         let height: number;
+
+        // Requery hardware scaling level to handle zoomed-in resizing.
+        if (this._adaptToDeviceRatio) {
+            const devicePixelRatio = IsWindowObjectExist() ? (window.devicePixelRatio || 1.0) : 1.0;
+            var limitDeviceRatio = this._creationOptions.limitDeviceRatio || devicePixelRatio;
+            this._hardwareScalingLevel = this._adaptToDeviceRatio ? 1.0 / Math.min(limitDeviceRatio, devicePixelRatio) : 1.0;
+        }
 
         if (IsWindowObjectExist()) {
             width = this._renderingCanvas ? (this._renderingCanvas.clientWidth || this._renderingCanvas.width) : window.innerWidth;

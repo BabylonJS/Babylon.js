@@ -13,6 +13,7 @@ import { EquiRectangularCubeTexture } from "../Materials/Textures/equiRectangula
 import { Logger } from "../Misc/logger";
 import { AnimationGroup } from '../Animations/animationGroup';
 import { AssetContainer } from "../assetContainer";
+import { EngineStore } from "../Engines/engineStore";
 
 /**
  * Defines the list of states available for a task inside a AssetsManager
@@ -919,8 +920,8 @@ export class AssetsManager {
      * Creates a new AssetsManager
      * @param scene defines the scene to work on
      */
-    constructor(scene: Scene) {
-        this._scene = scene;
+    constructor(scene?: Scene) {
+        this._scene = scene || <Scene>EngineStore.LastCreatedScene;
     }
 
     /**
@@ -1151,12 +1152,27 @@ export class AssetsManager {
 
             if (this.onTaskError) {
                 this.onTaskError(task);
+            } else if (!task.onError) {
+                Logger.Error(this._formatTaskErrorMessage(task));
             }
             this.onTaskErrorObservable.notifyObservers(task);
             this._decreaseWaitingTasksCount(task);
         };
 
         task.run(this._scene, done, error);
+    }
+
+    private _formatTaskErrorMessage(task: AbstractAssetTask) {
+        let errorMessage = "Unable to complete task " + task.name;
+
+        if (task.errorObject.message) {
+            errorMessage += `: ${task.errorObject.message}`;
+        }
+        if (task.errorObject.exception) {
+            errorMessage += `: ${task.errorObject.exception}`;
+        }
+
+        return errorMessage;
     }
 
     /**

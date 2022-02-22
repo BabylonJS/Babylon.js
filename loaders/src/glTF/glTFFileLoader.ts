@@ -11,11 +11,12 @@ import { AssetContainer } from "babylonjs/assetContainer";
 import { Scene, IDisposable } from "babylonjs/scene";
 import { WebRequest } from "babylonjs/Misc/webRequest";
 import { IFileRequest } from "babylonjs/Misc/fileRequest";
-import { Logger } from 'babylonjs/Misc/logger';
-import { DataReader, IDataBuffer } from 'babylonjs/Misc/dataReader';
-import { GLTFValidation } from './glTFValidation';
-import { DecodeBase64UrlToBinary, LoadFileError } from 'babylonjs/Misc/fileTools';
-import { StringTools } from 'babylonjs/Misc/stringTools';
+import { Logger } from "babylonjs/Misc/logger";
+import { DataReader, IDataBuffer } from "babylonjs/Misc/dataReader";
+import { GLTFValidation } from "./glTFValidation";
+import { DecodeBase64UrlToBinary, LoadFileError } from "babylonjs/Misc/fileTools";
+import { StringTools } from "babylonjs/Misc/stringTools";
+import { RuntimeError, ErrorCodes } from "babylonjs/Misc/error";
 
 interface IFileRequestInfo extends IFileRequest {
     _lengthComputable?: boolean;
@@ -241,6 +242,17 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
      * If true, load the color (gamma encoded) textures into sRGB buffers (if supported by the GPU), which will yield more accurate results when sampling the texture. Defaults to true.
      */
     public useSRGBBuffers = true;
+
+    /**
+     * When loading glTF animations, which are defined in seconds, target them to this FPS. Defaults to 60.
+     */
+    public targetFps = 60;
+
+    /**
+     * Defines if the loader should always compute the nearest common ancestor of the skeleton joints instead of using `skin.skeleton`. Defaults to false.
+     * Set this to true if loading assets with invalid `skin.skeleton` values.
+     */
+     public alwaysComputeSkeletonRootNode = false;
 
     /**
     * Function called before loading a url referenced by the asset.
@@ -510,6 +522,9 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
     public loadFile(scene: Scene, fileOrUrl: File | string, onSuccess: (data: any, responseURL?: string) => void, onProgress?: (ev: ISceneLoaderProgressEvent) => void, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: LoadFileError) => void): IFileRequest {
         this._progressCallback = onProgress;
 
+        const rootUrl = (fileOrUrl as File).name ? "file:" : Tools.GetFolderPath(fileOrUrl as string);
+        const fileName = (fileOrUrl as File).name || Tools.GetFilename(fileOrUrl as string);
+
         if (useArrayBuffer) {
             if (this.useRangeRequests) {
                 if (this.validate) {
@@ -545,10 +560,10 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
             }
 
             return this._loadFile(scene, fileOrUrl, (data) => {
-                const arrayBuffer = data as ArrayBuffer;
+                this._validate(scene, data as ArrayBuffer, rootUrl, fileName);
                 this._unpackBinaryAsync(new DataReader({
-                    readAsync: (byteOffset, byteLength) => readAsync(arrayBuffer, byteOffset, byteLength),
-                    byteLength: arrayBuffer.byteLength
+                    readAsync: (byteOffset, byteLength) => readAsync(data as ArrayBuffer, byteOffset, byteLength),
+                    byteLength: (data as ArrayBuffer).byteLength
                 })).then((loaderData) => {
                     onSuccess(loaderData);
                 }, onError ? (error) => onError(undefined, error) : undefined);
@@ -556,13 +571,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
         }
 
         return this._loadFile(scene, fileOrUrl, (data) => {
-            if ((fileOrUrl as File).name) {
-                this._validate(scene, data, "file:", (fileOrUrl as File).name);
-            }
-            else {
-                const url = fileOrUrl as string;
-                this._validate(scene, data, Tools.GetFolderPath(url), Tools.GetFilename(url));
-            }
+            this._validate(scene, data, rootUrl, fileName);
             onSuccess({ json: this._parseJson(data as string) });
         }, useArrayBuffer, onError);
     }
@@ -827,7 +836,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
 
             const magic = dataReader.readUint32();
             if (magic !== Binary.Magic) {
-                throw new Error("Unexpected magic: " + magic);
+                throw new RuntimeError("Unexpected magic: " + magic, ErrorCodes.GLTFLoaderUnexpectedMagicError);
             }
 
             const version = dataReader.readUint32();

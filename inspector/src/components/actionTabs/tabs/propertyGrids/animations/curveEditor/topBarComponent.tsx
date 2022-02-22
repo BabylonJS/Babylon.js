@@ -2,7 +2,7 @@ import { Observer } from "babylonjs/Misc/observable";
 import { Nullable } from "babylonjs/types";
 import * as React from "react";
 import { GlobalState } from "../../../../../globalState";
-import { Context } from "./context";
+import { Context, IActiveAnimationChangedOptions } from "./context";
 import { ActionButtonComponent } from "./controls/actionButtonComponent";
 import { TextInputComponent } from "./controls/textInputComponent";
 
@@ -25,19 +25,20 @@ interface ITopBarComponentProps {
 interface ITopBarComponentState {
     keyFrameValue: string;
     keyValue: string;
-    editControlsVisible: boolean;
+    frameControlEnabled: boolean;
+    valueControlEnabled: boolean;
 }
 
 export class TopBarComponent extends React.Component<ITopBarComponentProps, ITopBarComponentState> {
     private _onFrameSetObserver: Nullable<Observer<number>>;
     private _onValueSetObserver: Nullable<Observer<number>>;
-    private _onActiveAnimationChangedObserver: Nullable<Observer<void>>;
+    private _onActiveAnimationChangedObserver: Nullable<Observer<IActiveAnimationChangedOptions>>;
     private onActiveKeyPointChanged: Nullable<Observer<void>>;
 
     constructor(props: ITopBarComponentProps) {
         super(props);
 
-        this.state = { keyFrameValue: "", keyValue: "", editControlsVisible: false };
+        this.state = { keyFrameValue: "", keyValue: "", frameControlEnabled: false, valueControlEnabled: false };
 
         this._onFrameSetObserver = this.props.context.onFrameSet.add((newFrameValue) => {
             this.setState({ keyFrameValue: newFrameValue.toFixed(0) });
@@ -52,7 +53,15 @@ export class TopBarComponent extends React.Component<ITopBarComponentProps, ITop
         });
 
         this.onActiveKeyPointChanged = this.props.context.onActiveKeyPointChanged.add(() => {
-            this.setState({ keyFrameValue: "", keyValue: "", editControlsVisible: this.props.context.activeKeyPoints?.length === 1 });
+            const numKeys = this.props.context.activeKeyPoints?.length || 0;
+            const numAnims = new Set(this.props.context.activeKeyPoints?.map(keyPointComponent => keyPointComponent.props.curve.animation.uniqueId)).size;
+            
+            const frameControlEnabled = (numKeys === 1 && numAnims === 1) || (numKeys > 1 && numAnims > 1);
+            const valueControlEnabled = numKeys > 0;
+
+            const hasActiveQuaternionAnimation = this.props.context.hasActiveQuaternionAnimationKeyPoints();
+            
+            this.setState({ keyFrameValue: "", keyValue: "", frameControlEnabled: frameControlEnabled && !hasActiveQuaternionAnimation, valueControlEnabled: valueControlEnabled && !hasActiveQuaternionAnimation });
         });
     }
 
@@ -78,7 +87,7 @@ export class TopBarComponent extends React.Component<ITopBarComponentProps, ITop
                 <img id="top-bar-logo" src={logoIcon} />
                 <div id="top-bar-parent-name">{this.props.context.title}</div>
                 <TextInputComponent
-                    className={hasActiveAnimations && this.state.editControlsVisible ? "" : "disabled"}
+                    className={hasActiveAnimations && this.state.frameControlEnabled ? "" : "disabled"}
                     isNumber={true}
                     value={this.state.keyFrameValue}
                     tooltip="Frame"
@@ -88,7 +97,7 @@ export class TopBarComponent extends React.Component<ITopBarComponentProps, ITop
                     context={this.props.context}
                 />
                 <TextInputComponent
-                    className={hasActiveAnimations && this.state.editControlsVisible ? "" : "disabled"}
+                    className={hasActiveAnimations && this.state.valueControlEnabled ? "" : "disabled"}
                     isNumber={true}
                     value={this.state.keyValue}
                     tooltip="Value"

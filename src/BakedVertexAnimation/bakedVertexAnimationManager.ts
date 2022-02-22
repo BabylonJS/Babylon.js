@@ -4,6 +4,7 @@ import { serialize, expandToProperty, serializeAsTexture, SerializationHelper } 
 import { BaseTexture } from '../Materials/Textures/baseTexture';
 import { Vector4 } from "../Maths/math.vector";
 import { Effect } from "../Materials/effect";
+import { EngineStore } from "../Engines/engineStore";
 
 /**
  * Interface for baked vertex animation texture, see BakedVertexAnimationManager
@@ -104,7 +105,11 @@ export class BakedVertexAnimationManager implements IBakedVertexAnimationManager
      * Creates a new BakedVertexAnimationManager
      * @param scene defines the current scene
      */
-    constructor(scene: Scene) {
+    constructor(scene?: Nullable<Scene>) {
+        scene = scene || EngineStore.LastCreatedScene;
+        if (!scene) {
+            return;
+        }
         this._scene = scene;
         this.animationParameters = new Vector4(0, 0, 0, 30);
     }

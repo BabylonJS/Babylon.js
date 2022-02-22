@@ -1,10 +1,10 @@
-// > This worker will analyze the syntaxtree and return an array of deprecated functions (but the goal is to do more in the future!)
+// > This worker will analyze the syntaxtree and return an array of tagged functions, like experimental or deprecated ones (but the goal is to do more in the future!)
 // We need to do this because:
 // - checking extended properties during completion is time consuming, so we need to prefilter potential candidates
-// - we don't want to maintain a static list of deprecated members or to instrument this work on the CI
+// - we don't want to maintain a static list of members or to instrument this work on the CI
 // - we have more plans involving syntaxtree analysis
 // > This worker was carefully crafted to work even if the processing is super fast or super long. 
-// In both cases the deprecation filter will start working after the worker is done.
+// In both cases the completion filter will start working after the worker is done.
 // We will also need this worker in the future to compute Intellicode scores for completion using dedicated attributes.
 
 // see monacoCreator.js/setupDefinitionWorker
@@ -16,8 +16,8 @@ var define = (id, dependencies, callback) => ts = callback();
 
 importScripts("https://unpkg.com/monaco-editor@0.20.0/dev/vs/language/typescript/lib/typescriptServices.js");
 
-// store deprecated names
-var deprecatedCandidates = [];
+const supportedTags = new Set(['deprecated', 'beta', 'experimental']);
+var tagCandidates = [];
 
 // optimize syntaxtree visitor, we don't care about non documented nodes
 function canHaveJsDoc(node) {
@@ -63,10 +63,10 @@ function canHaveJsDoc(node) {
     }
 }
 
-function onFindDeprecatedCandidate(node) {
+function onFindCandidate(node, tag) {
     const name = relatedName(node);
     if (name)
-        deprecatedCandidates.push(name);
+        tagCandidates.push({name: name, tagName: tag.tagName.escapedText});
 }
 
 function relatedName(node) {
@@ -85,8 +85,8 @@ function visit(node) {
         for (const jsDocEntry of node.jsDoc) {
             if (jsDocEntry.tags) {
                 for (const tag of jsDocEntry.tags) {
-                    if (tag.tagName && tag.tagName.escapedText == 'deprecated')
-                        onFindDeprecatedCandidate(node);
+                    if (isCandidate(tag))
+                        onFindCandidate(node, tag);
                 }
             }
         }
@@ -95,13 +95,17 @@ function visit(node) {
     ts.forEachChild(node, visit);
 }
 
+function isCandidate(tag) {
+    return tag.tagName && supportedTags.has(tag.tagName.escapedText);
+}
+
 function processDefinition(code) {
-    if (deprecatedCandidates.length == 0) {
+    if (tagCandidates.length == 0) {
         const sourceFile = ts.createSourceFile('babylon.js', code, ts.ScriptTarget.ESNext, true);
         ts.forEachChild(sourceFile, visit);
     }
 
-    self.postMessage({ result: deprecatedCandidates });
+    self.postMessage({ result: tagCandidates });
 }
 
 self.addEventListener('message', event => {

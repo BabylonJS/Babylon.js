@@ -81,19 +81,29 @@ export class TouchButton3D extends Button3D {
      * @param collisionMesh the new collision mesh for the button
      */
     public set collisionMesh(collisionMesh: Mesh) {
+        // Remove the GUI3DManager's data from the previous collision mesh's reserved data store, and reset interactability
         if (this._collisionMesh) {
-            this._collisionMesh.dispose();
-        }
+            this._collisionMesh.isNearPickable = false;
+            if (this._collisionMesh.reservedDataStore?.GUI3D) {
+                this._collisionMesh.reservedDataStore.GUI3D = {};
+            }
 
-        // parent the mesh to sync transforms
-        if (!collisionMesh.parent && this.mesh) {
-            collisionMesh.setParent(this.mesh);
+            this._collisionMesh.getChildMeshes().forEach((mesh) => {
+                mesh.isNearPickable = false;
+                if (mesh.reservedDataStore?.GUI3D) {
+                    mesh.reservedDataStore.GUI3D = {};
+                }
+            });
         }
 
         this._collisionMesh = collisionMesh;
         this._injectGUI3DReservedDataStore(this._collisionMesh).control = this;
         this._collisionMesh.isNearPickable = true;
 
+        this._collisionMesh.getChildMeshes().forEach((mesh) => {
+            this._injectGUI3DReservedDataStore(mesh).control = this;
+            mesh.isNearPickable = true;
+        });
         this.collidableFrontDirection = collisionMesh.forward;
     }
 

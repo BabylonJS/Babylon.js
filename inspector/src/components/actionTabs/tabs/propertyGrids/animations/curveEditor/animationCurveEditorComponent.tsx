@@ -34,7 +34,7 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
         }
         this.setState({ isOpen: false });
         this.props.context.activeAnimations = [];
-        this.props.context.onActiveAnimationChanged.notifyObservers();
+        this.props.context.onActiveAnimationChanged.notifyObservers({});
     }
 
     shouldComponentUpdate(newProps: IAnimationCurveEditorComponentProps, newState: IAnimationCurveEditorComponentState) {
@@ -48,7 +48,7 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
                                 ? (this.props.context.animations![0] as TargetedAnimation).animation
                                 : (this.props.context.animations![0] as Animation)
                         );
-                        this.props.context.onActiveAnimationChanged.notifyObservers();
+                        this.props.context.onActiveAnimationChanged.notifyObservers({});
                     });
                 }
             }

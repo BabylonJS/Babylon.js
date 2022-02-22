@@ -18,7 +18,7 @@ import { RadioButton } from "babylonjs-gui/2D/controls/radioButton";
 import { ImageBasedSlider } from "babylonjs-gui/2D/controls/sliders/imageBasedSlider";
 
 export class GUINodeTools {
-    public static ImageControlDefaultUrl = "https://playground.babylonjs.com/textures/grass.png";
+    public static ImageControlDefaultUrl = "./imageControlDefault.jpg";
 
     public static CreateControlFromString(data: string) {
         let element;
@@ -122,7 +122,6 @@ export class GUINodeTools {
                 return element;
             case "Grid":
                 element = new Grid("Grid");
-                element.isHighlighted = true;
                 element.addColumnDefinition(1.0, false);
                 element.addRowDefinition(1.0, false);
                 element.isPointerBlocker = true;
@@ -132,7 +131,6 @@ export class GUINodeTools {
                 return element;
             case "StackPanel":
                 element = new StackPanel("StackPanel");
-                element.isHighlighted = true;
                 element.width = "100%";
                 element.height = "100%";
                 return element;

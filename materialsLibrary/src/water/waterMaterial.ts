@@ -49,6 +49,7 @@ class WaterMaterialDefines extends MaterialDefines implements IImageProcessingCo
     public NUM_BONE_INFLUENCERS = 0;
     public BonesPerMesh = 0;
     public INSTANCES = false;
+    public INSTANCESCOLOR = false;
     public SPECULARTERM = false;
     public LOGARITHMICDEPTH = false;
     public USE_REVERSE_DEPTHBUFFER = false;
@@ -225,10 +226,10 @@ export class WaterMaterial extends PushMaterial {
     /**
     * Constructor
     */
-    constructor(name: string, scene: Scene, public renderTargetSize: Vector2 = new Vector2(512, 512)) {
+    constructor(name: string, scene?: Scene, public renderTargetSize: Vector2 = new Vector2(512, 512)) {
         super(name, scene);
 
-        this._createRenderTargets(scene, renderTargetSize);
+        this._createRenderTargets(this.getScene(), renderTargetSize);
 
         // Create render targets
         this.getRenderTargetTextures = (): SmartArray<RenderTargetTexture> => {
@@ -749,7 +750,7 @@ export class WaterMaterial extends PushMaterial {
     }
 
     public serialize(): any {
-        var serializationObject = SerializationHelper.Serialize(this);
+        var serializationObject = super.serialize();
         serializationObject.customType = "BABYLON.WaterMaterial";
 
         serializationObject.renderList = [];

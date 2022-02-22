@@ -7,6 +7,7 @@ import { Nullable } from '../../types';
 import { Logger } from "../../Misc/logger";
 import { _PrimaryIsoTriangle, GeodesicData, PolyhedronData } from "../geodesicMesh";
 import { GoldbergMesh } from "../goldbergMesh";
+import { CompatibilityOptions } from "../../Compat/compatibilityOptions";
 
 /**
  * Defines the set of data required to create goldberg vertex data.
@@ -96,7 +97,8 @@ export function CreateGoldbergVertexData(options: GoldbergVertexDataOption, gold
             normals.push(norm.x, norm.y, norm.z);
             const pdata = goldbergData.vertex[verts[v]];
             positions.push(pdata[0] * sizeX, pdata[1] * sizeY, pdata[2] * sizeZ);
-            uvs.push((pdata[0] * sizeX - minX) / (maxX - minX), (pdata[1] * sizeY - minY) / (maxY - minY));
+            const vCoord = (pdata[1] * sizeY - minY) / (maxY - minY);
+            uvs.push((pdata[0] * sizeX - minX) / (maxX - minX), CompatibilityOptions.UseOpenGLOrientationForUV ? 1 - vCoord : vCoord);
         }
         for (let v = 0; v < verts.length - 2; v++) {
             indices.push(index, index + v + 2, index + v + 1);
@@ -124,6 +126,10 @@ export function CreateGoldbergVertexData(options: GoldbergVertexDataOption, gold
  * @returns Goldberg mesh
  */
 export function CreateGoldberg(name: string, options: GoldbergCreationOption, scene: Nullable<Scene> = null): GoldbergMesh {
+    const size = options.size;
+    const sizeX: number = options.sizeX || size || 1;
+    const sizeY: number = options.sizeY || size || 1;
+    const sizeZ: number = options.sizeZ || size || 1;
     let m: number = options.m || 1;
     if (m !== Math.floor(m)) {
         m === Math.floor(m);
@@ -161,6 +167,9 @@ export function CreateGoldberg(name: string, options: GoldbergCreationOption, sc
     goldberg.goldbergData.nbFacesAtPole = (goldberg.goldbergData.nbUnsharedFaces - 12) / 12;
     for (let f = 0; f < geodesicData.vertex.length; f++) {
         goldberg.goldbergData.faceCenters.push(Vector3.FromArray(geodesicData.vertex[f]));
+        goldberg.goldbergData.faceCenters[f].x *= sizeX;
+        goldberg.goldbergData.faceCenters[f].y *= sizeY;
+        goldberg.goldbergData.faceCenters[f].z *= sizeZ;
         goldberg.goldbergData.faceColors.push(new Color4(1, 1, 1, 1));
     }
 

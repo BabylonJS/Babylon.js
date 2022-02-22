@@ -558,7 +558,7 @@ declare module BABYLON.GUI {
          * @param samplingMode defines the texture sampling mode (Texture.NEAREST_SAMPLINGMODE by default)
          * @param invertY defines if the texture needs to be inverted on the y axis during loading (true by default)
          */
-        constructor(name: string, width: number | undefined, height: number | undefined, scene: BABYLON.Nullable<BABYLON.Scene>, generateMipMaps?: boolean, samplingMode?: number, invertY?: boolean);
+        constructor(name: string, width?: number, height?: number, scene?: BABYLON.Nullable<BABYLON.Scene>, generateMipMaps?: boolean, samplingMode?: number, invertY?: boolean);
         /**
          * Get the current class name of the texture useful for serialization or dynamic coding.
          * @returns "AdvancedDynamicTexture"
@@ -747,6 +747,17 @@ declare module BABYLON.GUI {
          * @returns a new AdvancedDynamicTexture
          */
         static CreateFullscreenUI(name: string, foreground?: boolean, scene?: BABYLON.Nullable<BABYLON.Scene>, sampling?: number, adaptiveScaling?: boolean): AdvancedDynamicTexture;
+        /**
+         * Scales the texture
+         * @param ratio the scale factor to apply to both width and height
+         */
+        scale(ratio: number): void;
+        /**
+         * Resizes the texture
+         * @param width the new width
+         * @param height the new height
+         */
+        scaleTo(width: number, height: number): void;
     }
 }
 declare module BABYLON.GUI {
@@ -1228,10 +1239,10 @@ declare module BABYLON.GUI {
         /** Gets or sets if control is Enabled */
         get isEnabled(): boolean;
         set isEnabled(value: boolean);
-        /** Gets or sets background color of control if it's disabled */
+        /** Gets or sets background color of control if it's disabled. Only applies to Button class. */
         get disabledColor(): string;
         set disabledColor(value: string);
-        /** Gets or sets front color of control if it's disabled */
+        /** Gets or sets front color of control if it's disabled. Only applies to Checkbox class. */
         get disabledColorItem(): string;
         set disabledColorItem(value: string);
         /**
@@ -1351,7 +1362,7 @@ declare module BABYLON.GUI {
         /** @hidden */
         _flagDescendantsAsMatrixDirty(): void;
         /** @hidden */
-        _intersectsRect(rect: Measure): boolean;
+        _intersectsRect(rect: Measure, context?: BABYLON.ICanvasRenderingContext): boolean;
         /** @hidden */
         protected _computeAdditionnalOffsetX(): number;
         /** @hidden */
@@ -4496,7 +4507,7 @@ declare module BABYLON.GUI {
          * @param name defines the name of the material
          * @param scene defines the hosting scene
          */
-        constructor(name: string, scene: BABYLON.Scene);
+        constructor(name: string, scene?: BABYLON.Scene);
         needAlphaBlending(): boolean;
         needAlphaTesting(): boolean;
         getAlphaTestTexture(): BABYLON.Nullable<BABYLON.BaseTexture>;
@@ -4763,7 +4774,7 @@ declare module BABYLON.GUI {
          */
         globalRightIndexTipPosition: BABYLON.Vector3;
         private _blobTexture;
-        constructor(name: string, scene: BABYLON.Scene);
+        constructor(name: string, scene?: BABYLON.Scene);
         needAlphaBlending(): boolean;
         needAlphaTesting(): boolean;
         getAlphaTestTexture(): BABYLON.Nullable<BABYLON.BaseTexture>;
@@ -4876,6 +4887,74 @@ declare module BABYLON.GUI {
          * Releases all associated resources
          */
         dispose(): void;
+    }
+}
+declare module BABYLON.GUI {
+    /**
+     * Default behavior for 3D UI elements.
+     * Handles a BABYLON.FollowBehavior, SixDofBehavior and BABYLON.SurfaceMagnetismBehavior
+     * @since 5.0.0
+     */
+    export class DefaultBehavior implements BABYLON.Behavior<BABYLON.Mesh> {
+        private _scene;
+        private _followBehavior;
+        private _sixDofDragBehavior;
+        private _surfaceMagnetismBehavior;
+        private _onBeforeRenderObserver;
+        private _onDragObserver;
+        /**
+         * Instantiates the default behavior
+         */
+        constructor();
+        /**
+         * Attached node of this behavior
+         */
+        attachedNode: BABYLON.Nullable<BABYLON.Mesh>;
+        /**
+         *  The name of the behavior
+         */
+        get name(): string;
+        /**
+         *  The follow behavior
+         */
+        get followBehavior(): BABYLON.FollowBehavior;
+        /**
+         *  The six DoF drag behavior
+         */
+        get sixDofDragBehavior(): BABYLON.SixDofDragBehavior;
+        /**
+         * The surface magnetism behavior
+         */
+        get surfaceMagnetismBehavior(): BABYLON.SurfaceMagnetismBehavior;
+        /**
+         * Enables the follow behavior
+         */
+        followBehaviorEnabled: boolean;
+        /**
+         * Enables the six DoF drag behavior
+         */
+        sixDofDragBehaviorEnabled: boolean;
+        /**
+         * Enables the surface magnetism behavior
+         */
+        surfaceMagnetismBehaviorEnabled: boolean;
+        /**
+         *  Initializes the behavior
+         */
+        init(): void;
+        /**
+         * Attaches the default behavior
+         * @param ownerMesh The top level mesh
+         * @param draggablesMeshes Descendant meshes that can be used for dragging the owner mesh
+         * @param sceneUnderstandingMeshes Meshes from the scene understanding that will be used for surface magnetism
+         */
+        attach(ownerMesh: BABYLON.Mesh, draggablesMeshes?: BABYLON.Mesh[], sceneUnderstandingMeshes?: BABYLON.AbstractMesh[]): void;
+        /**
+         *  Detaches the behavior from the mesh
+         */
+        detach(): void;
+        private _addObservables;
+        private _removeObservables;
     }
 }
 declare module BABYLON.GUI {
@@ -5117,74 +5196,6 @@ declare module BABYLON.GUI {
     }
 }
 declare module BABYLON.GUI {
-    /**
-     * Default behavior for 3D UI elements.
-     * Handles a BABYLON.FollowBehavior, SixDofBehavior and BABYLON.SurfaceMagnetismBehavior
-     * @since 5.0.0
-     */
-    export class DefaultBehavior implements BABYLON.Behavior<BABYLON.Mesh> {
-        private _scene;
-        private _followBehavior;
-        private _sixDofDragBehavior;
-        private _surfaceMagnetismBehavior;
-        private _onBeforeRenderObserver;
-        private _onDragObserver;
-        /**
-         * Instantiates the default behavior
-         */
-        constructor();
-        /**
-         * Attached node of this behavior
-         */
-        attachedNode: BABYLON.Nullable<BABYLON.Mesh>;
-        /**
-         *  The name of the behavior
-         */
-        get name(): string;
-        /**
-         *  The follow behavior
-         */
-        get followBehavior(): BABYLON.FollowBehavior;
-        /**
-         *  The six DoF drag behavior
-         */
-        get sixDofDragBehavior(): BABYLON.SixDofDragBehavior;
-        /**
-         * The surface magnetism behavior
-         */
-        get surfaceMagnetismBehavior(): BABYLON.SurfaceMagnetismBehavior;
-        /**
-         * Enables the follow behavior
-         */
-        followBehaviorEnabled: boolean;
-        /**
-         * Enables the six DoF drag behavior
-         */
-        sixDofDragBehaviorEnabled: boolean;
-        /**
-         * Enables the surface magnetism behavior
-         */
-        surfaceMagnetismBehaviorEnabled: boolean;
-        /**
-         *  Initializes the behavior
-         */
-        init(): void;
-        /**
-         * Attaches the default behavior
-         * @param ownerMesh The top level mesh
-         * @param draggablesMeshes Descendant meshes that can be used for dragging the owner mesh
-         * @param sceneUnderstandingMeshes Meshes from the scene understanding that will be used for surface magnetism
-         */
-        attach(ownerMesh: BABYLON.Mesh, draggablesMeshes?: BABYLON.Mesh[], sceneUnderstandingMeshes?: BABYLON.AbstractMesh[]): void;
-        /**
-         *  Detaches the behavior from the mesh
-         */
-        detach(): void;
-        private _addObservables;
-        private _removeObservables;
-    }
-}
-declare module BABYLON.GUI {
     /** @hidden */
     export var fluentBackplatePixelShader: {
         name: string;
@@ -5324,7 +5335,7 @@ declare module BABYLON.GUI {
          */
         globalRightIndexTipPosition: BABYLON.Vector3;
         private _globalRightIndexTipPosition4;
-        constructor(name: string, scene: BABYLON.Scene);
+        constructor(name: string, scene?: BABYLON.Scene);
         needAlphaBlending(): boolean;
         needAlphaTesting(): boolean;
         getAlphaTestTexture(): BABYLON.Nullable<BABYLON.BaseTexture>;
@@ -5360,35 +5371,37 @@ declare module BABYLON.GUI {
          * File name for the close icon.
          */
         static FOLLOW_ICON_FILENAME: string;
+        private static DEFAULT_TEXT_RESOLUTION_Y;
         /**
-         * Dimensions of the slate
+         * 2D dimensions of the slate
          */
-        dimensions: BABYLON.Vector3;
+        dimensions: BABYLON.Vector2;
         /**
          * Minimum dimensions of the slate
          */
-        minDimensions: BABYLON.Vector3;
+        minDimensions: BABYLON.Vector2;
         /**
          * Default dimensions of the slate
          */
-        readonly defaultDimensions: BABYLON.Vector3;
+        readonly defaultDimensions: BABYLON.Vector2;
         /**
-         * Dimensions of the backplate
+         * Height of the title bar component
          */
-        backplateDimensions: BABYLON.Vector3;
+        titleBarHeight: number;
         /**
-         * Margin between backplate and contentplate
+         * Margin between title bar and contentplate
          */
-        backPlateMargin: number;
+        titleBarMargin: number;
         /**
          * Origin in local coordinates (top left corner)
          */
         origin: BABYLON.Vector3;
-        private _backPlateMaterial;
+        private _titleBarMaterial;
         private _contentMaterial;
         private _pickedPointObserver;
         private _positionChangedObserver;
-        private _imageUrl;
+        private _titleText;
+        private _titleTextComponent;
         private _contentViewport;
         private _contentDragBehavior;
         private _defaultBehavior;
@@ -5398,21 +5411,22 @@ declare module BABYLON.GUI {
         get defaultBehavior(): DefaultBehavior;
         /** @hidden */
         _gizmo: SlateGizmo;
-        protected _backPlate: BABYLON.Mesh;
+        protected _titleBar: BABYLON.Mesh;
+        protected _titleBarTitle: BABYLON.Mesh;
         protected _contentPlate: BABYLON.Mesh;
         protected _followButton: TouchHolographicButton;
         protected _closeButton: TouchHolographicButton;
         protected _contentScaleRatio: number;
         /**
-         * Rendering ground id of all the mesh in the button
+         * Rendering ground id of all the meshes
          */
         set renderingGroupId(id: number);
         get renderingGroupId(): number;
         /**
-         * Gets or sets the image url for the button
+         * The title text displayed at the top of the slate
          */
-        get imageUrl(): string;
-        set imageUrl(value: string);
+        set title(title: string);
+        get title(): string;
         /**
          * Creates a new slate
          * @param name defines the control name
@@ -5424,7 +5438,6 @@ declare module BABYLON.GUI {
          * @param facadeTexture defines the AdvancedDynamicTexture to use
          */
         protected _applyFacade(facadeTexture: AdvancedDynamicTexture): void;
-        private _rebuildContent;
         private _addControl;
         protected _getTypeName(): string;
         /**
@@ -5930,7 +5943,7 @@ declare module BABYLON.GUI {
          * @hidden
          */
         globalRightIndexMiddlePosition: BABYLON.Vector4;
-        constructor(name: string, scene: BABYLON.Scene);
+        constructor(name: string, scene?: BABYLON.Scene);
         needAlphaBlending(): boolean;
         needAlphaTesting(): boolean;
         getAlphaTestTexture(): BABYLON.Nullable<BABYLON.BaseTexture>;
@@ -6266,7 +6279,7 @@ declare module BABYLON.GUI {
          * @hidden
          */
         globalRightIndexMiddlePosition: BABYLON.Vector4;
-        constructor(name: string, scene: BABYLON.Scene);
+        constructor(name: string, scene?: BABYLON.Scene);
         needAlphaBlending(): boolean;
         needAlphaTesting(): boolean;
         getAlphaTestTexture(): BABYLON.Nullable<BABYLON.BaseTexture>;
@@ -6417,7 +6430,7 @@ declare module BABYLON.GUI {
          * Gets or sets the edge width of the backplate.
          */
         edgeLineGradientBlend: number;
-        constructor(name: string, scene: BABYLON.Scene);
+        constructor(name: string, scene?: BABYLON.Scene);
         needAlphaBlending(): boolean;
         needAlphaTesting(): boolean;
         getAlphaTestTexture(): BABYLON.Nullable<BABYLON.BaseTexture>;

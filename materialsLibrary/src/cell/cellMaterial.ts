@@ -39,6 +39,7 @@ class CellMaterialDefines extends MaterialDefines {
     public NUM_BONE_INFLUENCERS = 0;
     public BonesPerMesh = 0;
     public INSTANCES = false;
+    public INSTANCESCOLOR = false;
     public NDOTL = true;
     public CUSTOMUSERLIGHTING = true;
     public CELLBASIC = true;
@@ -76,7 +77,7 @@ export class CellMaterial extends PushMaterial {
     @expandToProperty("_markAllSubMeshesAsLightsDirty")
     public maxSimultaneousLights: number;
 
-    constructor(name: string, scene: Scene) {
+    constructor(name: string, scene?: Scene) {
         super(name, scene);
     }
 
@@ -330,7 +331,7 @@ export class CellMaterial extends PushMaterial {
     }
 
     public serialize(): any {
-        var serializationObject = SerializationHelper.Serialize(this);
+        var serializationObject = super.serialize();
         serializationObject.customType = "BABYLON.CellMaterial";
         return serializationObject;
     }

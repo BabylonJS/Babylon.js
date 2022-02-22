@@ -209,12 +209,12 @@ export class MRDLBackplateMaterial extends PushMaterial {
     @serialize()
     public edgeLineGradientBlend = 0.5;
 
-    constructor(name: string, scene: Scene) {
+    constructor(name: string, scene?: Scene) {
         super(name, scene);
         this.alphaMode = Constants.ALPHA_DISABLE;
         this.backFaceCulling = false;
 
-        this._iridescentMapTexture = new Texture(MRDLBackplateMaterial.IRIDESCENT_MAP_TEXTURE_URL, scene, true, false, Texture.NEAREST_SAMPLINGMODE);
+        this._iridescentMapTexture = new Texture(MRDLBackplateMaterial.IRIDESCENT_MAP_TEXTURE_URL, this.getScene(), true, false, Texture.NEAREST_SAMPLINGMODE);
     }
 
     public needAlphaBlending(): boolean {
@@ -429,7 +429,7 @@ export class MRDLBackplateMaterial extends PushMaterial {
     }
 
     public serialize(): any {
-        const serializationObject = SerializationHelper.Serialize(this);
+        const serializationObject = super.serialize();
         serializationObject.customType = "BABYLON.MRDLBackplateMaterial";
         return serializationObject;
     }

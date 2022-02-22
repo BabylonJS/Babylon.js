@@ -61,46 +61,84 @@ export class AddAnimationComponent extends React.Component<IAddAnimationComponen
                     ? (this.props.context.animations[0] as TargetedAnimation).animation.framePerSecond
                     : (this.props.context.animations[0] as Animation).framePerSecond
                 : 60;
+        let minFrame = this.props.context.referenceMinFrame;
+        let maxFrame = this.props.context.referenceMaxFrame;
+        if (this.props.context.animations) {
+            for (let anim of this.props.context.animations) {
+                let innerAnim = this.props.context.useTargetAnimations ? (anim as TargetedAnimation).animation : (anim as Animation);
+                minFrame = Math.min(minFrame, innerAnim.getKeys()[0].frame);
+                maxFrame = Math.max(maxFrame, innerAnim.getKeys()[innerAnim.getKeys().length - 1].frame);
+            }
+        }
+
         let dataType = 0;
         let loopMode = 0;
         let defaultValue0: any;
         let defaultValue1: any;
+        let defaultInTangent0: any;
+        let defaultOutTangent0: any;
+        let defaultInTangent1: any;
+        let defaultOutTangent1: any;
 
         switch (type) {
             case "Float": {
                 dataType = Animation.ANIMATIONTYPE_FLOAT;
                 defaultValue0 = 0;
                 defaultValue1 = 1;
+                defaultInTangent0 = 0;
+                defaultOutTangent0 = 0;
+                defaultInTangent1 = 0;
+                defaultOutTangent1 = 0;
                 break;
             }
             case "Vector2": {
                 dataType = Animation.ANIMATIONTYPE_VECTOR2;
                 defaultValue0 = Vector2.Zero();
                 defaultValue1 = new Vector2(1, 1);
+                defaultInTangent0 = new Vector2(0, 0);
+                defaultOutTangent0 = new Vector2(0, 0);
+                defaultInTangent1 = new Vector2(0, 0);
+                defaultOutTangent1 = new Vector2(0, 0);
                 break;
             }
             case "Vector3": {
                 dataType = Animation.ANIMATIONTYPE_VECTOR3;
                 defaultValue0 = Vector3.Zero();
                 defaultValue1 = new Vector3(1, 1, 1);
+                defaultInTangent0 = new Vector3(0, 0, 0);
+                defaultOutTangent0 = new Vector3(0, 0, 0);
+                defaultInTangent1 = new Vector3(0, 0, 0);
+                defaultOutTangent1 = new Vector3(0, 0, 0);
                 break;
             }
             case "Quaternion": {
                 dataType = Animation.ANIMATIONTYPE_QUATERNION;
                 defaultValue0 = Quaternion.Zero();
                 defaultValue1 = new Quaternion(1, 1, 1, 0);
+                defaultInTangent0 = new Quaternion(0, 0, 0, 0);
+                defaultOutTangent0 = new Quaternion(0, 0, 0, 0);
+                defaultInTangent1 = new Quaternion(0, 0, 0, 0);
+                defaultOutTangent1 = new Quaternion(0, 0, 0, 0);
                 break;
             }
             case "Color3": {
                 dataType = Animation.ANIMATIONTYPE_COLOR3;
                 defaultValue0 = Color3.Black();
                 defaultValue1 = Color3.White();
+                defaultInTangent0 = new Color3(0, 0, 0);
+                defaultOutTangent0 = new Color3(0, 0, 0);
+                defaultInTangent1 = new Color3(0, 0, 0);
+                defaultOutTangent1 = new Color3(0, 0, 0);
                 break;
             }
             case "Color4": {
                 dataType = Animation.ANIMATIONTYPE_COLOR4;
                 defaultValue0 = new Color4(0, 0, 0, 0);
                 defaultValue1 = new Color4(1, 1, 1, 1);
+                defaultInTangent0 = new Color4(0, 0, 0, 0);
+                defaultOutTangent0 = new Color4(0, 0, 0, 0);
+                defaultInTangent1 = new Color4(0, 0, 0, 0);
+                defaultOutTangent1 = new Color4(0, 0, 0, 0);
                 break;
             }
         }
@@ -123,13 +161,17 @@ export class AddAnimationComponent extends React.Component<IAddAnimationComponen
         let animation = new Animation(displayName, property, fps, dataType, loopMode);
         let keys: IAnimationKey[] = [];
         keys.push({
-            frame: context.referenceMinFrame,
+            frame: minFrame,
             value: defaultValue0,
+            inTangent: defaultInTangent0,
+            outTangent: defaultOutTangent0
         });
 
         keys.push({
-            frame: context.referenceMaxFrame,
+            frame: maxFrame,
             value: defaultValue1,
+            inTangent: defaultInTangent1,
+            outTangent: defaultOutTangent1
         });
 
         animation.setKeys(keys);
@@ -148,7 +190,7 @@ export class AddAnimationComponent extends React.Component<IAddAnimationComponen
         }
         context.activeAnimations.push(animation);
         context.prepare();
-        context.onActiveAnimationChanged.notifyObservers();
+        context.onActiveAnimationChanged.notifyObservers({});
         context.onAnimationsLoaded.notifyObservers();
     }
 

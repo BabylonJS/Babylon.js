@@ -664,7 +664,7 @@ var KHR_lights_punctual = /** @class */ (function () {
                 var light = void 0;
                 var lightType = (babylonLight.getTypeID() == babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Light"].LIGHTTYPEID_POINTLIGHT ? "point" /* POINT */ : (babylonLight.getTypeID() == babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Light"].LIGHTTYPEID_DIRECTIONALLIGHT ? "directional" /* DIRECTIONAL */ : (babylonLight.getTypeID() == babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Light"].LIGHTTYPEID_SPOTLIGHT ? "spot" /* SPOT */ : null)));
                 if (lightType == null) {
-                    babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Logger"].Warn(context + ": Light " + babylonLight.name + " is not supported in " + NAME);
+                    babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Logger"].Warn("".concat(context, ": Light ").concat(babylonLight.name, " is not supported in ").concat(NAME));
                 }
                 else {
                     var lightPosition = babylonLight.position.clone();
@@ -689,7 +689,7 @@ var KHR_lights_punctual = /** @class */ (function () {
                         }
                     }
                     if (babylonLight.falloffType !== babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Light"].FALLOFF_GLTF) {
-                        babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Logger"].Warn(context + ": Light falloff for " + babylonLight.name + " does not match the " + NAME + " specification!");
+                        babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Logger"].Warn("".concat(context, ": Light falloff for ").concat(babylonLight.name, " does not match the ").concat(NAME, " specification!"));
                     }
                     light = {
                         type: lightType
@@ -864,10 +864,10 @@ var KHR_materials_clearcoat = /** @class */ (function () {
                     clearCoatTextureRoughnessInfo = _this._exporter._glTFMaterialExporter._getTextureInfo(babylonMaterial.clearCoat.textureRoughness);
                 }
                 if (babylonMaterial.clearCoat.isTintEnabled) {
-                    babylonjs_Materials_PBR_pbrBaseMaterial__WEBPACK_IMPORTED_MODULE_1__["Tools"].Warn("Clear Color tint is not supported for glTF export. Ignoring for: " + babylonMaterial.name);
+                    babylonjs_Materials_PBR_pbrBaseMaterial__WEBPACK_IMPORTED_MODULE_1__["Tools"].Warn("Clear Color tint is not supported for glTF export. Ignoring for: ".concat(babylonMaterial.name));
                 }
                 if (babylonMaterial.clearCoat.remapF0OnInterfaceChange) {
-                    babylonjs_Materials_PBR_pbrBaseMaterial__WEBPACK_IMPORTED_MODULE_1__["Tools"].Warn("Clear Color F0 remapping is not supported for glTF export. Ignoring for: " + babylonMaterial.name);
+                    babylonjs_Materials_PBR_pbrBaseMaterial__WEBPACK_IMPORTED_MODULE_1__["Tools"].Warn("Clear Color F0 remapping is not supported for glTF export. Ignoring for: ".concat(babylonMaterial.name));
                 }
                 var clearCoatNormalTextureInfo = _this._exporter._glTFMaterialExporter._getTextureInfo(babylonMaterial.clearCoat.bumpTexture);
                 var clearCoatInfo_1 = {
@@ -1135,7 +1135,7 @@ var KHR_texture_transform = /** @class */ (function () {
         return new Promise(function (resolve, reject) {
             var scene = babylonTexture.getScene();
             if (!scene) {
-                reject(context + ": \"scene\" is not defined for Babylon texture " + babylonTexture.name + "!");
+                reject("".concat(context, ": \"scene\" is not defined for Babylon texture ").concat(babylonTexture.name, "!"));
                 return;
             }
             var bakeTextureTransform = false;
@@ -1171,9 +1171,9 @@ var KHR_texture_transform = /** @class */ (function () {
     KHR_texture_transform.prototype._textureTransformTextureAsync = function (babylonTexture, scene) {
         var _this = this;
         return new Promise(function (resolve) {
-            var proceduralTexture = new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_0__["ProceduralTexture"]("" + babylonTexture.name, babylonTexture.getSize(), "textureTransform", scene);
+            var proceduralTexture = new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_0__["ProceduralTexture"]("".concat(babylonTexture.name), babylonTexture.getSize(), "textureTransform", scene);
             if (!proceduralTexture) {
-                babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_0__["Tools"].Log("Cannot create procedural texture for " + babylonTexture.name + "!");
+                babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_0__["Tools"].Log("Cannot create procedural texture for ".concat(babylonTexture.name, "!"));
                 resolve(babylonTexture);
             }
             proceduralTexture.reservedDataStore = {
@@ -1358,7 +1358,7 @@ var _GLTFAnimation = /** @class */ (function () {
                 break;
             }
             default: {
-                babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Tools"].Error("Unsupported animatable property " + property[0]);
+                babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Tools"].Error("Unsupported animatable property ".concat(property[0]));
             }
         }
         if (animationChannelTargetPath) {
@@ -1396,7 +1396,7 @@ var _GLTFAnimation = /** @class */ (function () {
                             samplers: [],
                             channels: []
                         };
-                        _GLTFAnimation.AddAnimation("" + animation.name, animation.hasRunningRuntimeAnimations ? runtimeGLTFAnimation : glTFAnimation, babylonNode, animation, animationInfo.dataAccessorType, animationInfo.animationChannelTargetPath, nodeMap, binaryWriter, bufferViews, accessors, convertToRightHandedSystem, animationInfo.useQuaternion, animationSampleRate);
+                        _GLTFAnimation.AddAnimation("".concat(animation.name), animation.hasRunningRuntimeAnimations ? runtimeGLTFAnimation : glTFAnimation, babylonNode, animation, animationInfo.dataAccessorType, animationInfo.animationChannelTargetPath, nodeMap, binaryWriter, bufferViews, accessors, convertToRightHandedSystem, animationInfo.useQuaternion, animationSampleRate);
                         if (glTFAnimation.samplers.length && glTFAnimation.channels.length) {
                             idleGLTFAnimations.push(glTFAnimation);
                         }
@@ -1428,7 +1428,7 @@ var _GLTFAnimation = /** @class */ (function () {
                     var morphTarget = morphTargetManager.getTarget(i);
                     for (var _i = 0, _a = morphTarget.animations; _i < _a.length; _i++) {
                         var animation = _a[_i];
-                        var combinedAnimation = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Animation"]("" + animation.name, "influence", animation.framePerSecond, animation.dataType, animation.loopMode, animation.enableBlending);
+                        var combinedAnimation = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Animation"]("".concat(animation.name), "influence", animation.framePerSecond, animation.dataType, animation.loopMode, animation.enableBlending);
                         var combinedAnimationKeys = [];
                         var animationKeys = animation.getKeys();
                         for (var j = 0; j < animationKeys.length; ++j) {
@@ -1497,7 +1497,7 @@ var _GLTFAnimation = /** @class */ (function () {
                         if (animationInfo) {
                             var babylonTransformNode = target instanceof babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["TransformNode"] ? target : target[0];
                             var convertToRightHandedSystem = convertToRightHandedSystemMap[babylonTransformNode.uniqueId];
-                            _GLTFAnimation.AddAnimation("" + animation.name, glTFAnimation, babylonTransformNode, animation, animationInfo.dataAccessorType, animationInfo.animationChannelTargetPath, nodeMap, binaryWriter, bufferViews, accessors, convertToRightHandedSystem, animationInfo.useQuaternion, animationSampleRate);
+                            _GLTFAnimation.AddAnimation("".concat(animation.name), glTFAnimation, babylonTransformNode, animation, animationInfo.dataAccessorType, animationInfo.animationChannelTargetPath, nodeMap, binaryWriter, bufferViews, accessors, convertToRightHandedSystem, animationInfo.useQuaternion, animationSampleRate);
                         }
                     }
                     else if (target instanceof babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["MorphTarget"] || target.length === 1 && target[0] instanceof babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["MorphTarget"]) {
@@ -1557,7 +1557,7 @@ var _GLTFAnimation = /** @class */ (function () {
                                 var morphTargetAnimation = animationsByMorphTarget.get(morphTarget);
                                 if (morphTargetAnimation) {
                                     if (!combinedAnimationGroup) {
-                                        combinedAnimationGroup = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Animation"](animationGroup.name + "_" + mesh.name + "_MorphWeightAnimation", "influence", morphTargetAnimation.framePerSecond, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Animation"].ANIMATIONTYPE_FLOAT, morphTargetAnimation.loopMode, morphTargetAnimation.enableBlending);
+                                        combinedAnimationGroup = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Animation"]("".concat(animationGroup.name, "_").concat(mesh.name, "_MorphWeightAnimation"), "influence", morphTargetAnimation.framePerSecond, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Animation"].ANIMATIONTYPE_FLOAT, morphTargetAnimation.loopMode, morphTargetAnimation.enableBlending);
                                     }
                                     animationKeys.push(morphTargetAnimation.getKeys()[i]);
                                 }
@@ -1575,7 +1575,7 @@ var _GLTFAnimation = /** @class */ (function () {
                     combinedAnimationGroup.setKeys(animationKeys);
                     var animationInfo = _GLTFAnimation._DeduceAnimationInfo(combinedAnimationGroup);
                     if (animationInfo) {
-                        _GLTFAnimation.AddAnimation(animationGroup.name + "_" + mesh.name + "_MorphWeightAnimation", glTFAnimation, mesh, combinedAnimationGroup, animationInfo.dataAccessorType, animationInfo.animationChannelTargetPath, nodeMap, binaryWriter, bufferViews, accessors, false, animationInfo.useQuaternion, animationSampleRate, morphTargetManager === null || morphTargetManager === void 0 ? void 0 : morphTargetManager.numTargets);
+                        _GLTFAnimation.AddAnimation("".concat(animationGroup.name, "_").concat(mesh.name, "_MorphWeightAnimation"), glTFAnimation, mesh, combinedAnimationGroup, animationInfo.dataAccessorType, animationInfo.animationChannelTargetPath, nodeMap, binaryWriter, bufferViews, accessors, false, animationInfo.useQuaternion, animationSampleRate, morphTargetManager === null || morphTargetManager === void 0 ? void 0 : morphTargetManager.numTargets);
                     }
                 });
                 if (glTFAnimation.channels.length && glTFAnimation.samplers.length) {
@@ -1619,26 +1619,26 @@ var _GLTFAnimation = /** @class */ (function () {
             var nodeIndex = nodeMap[babylonTransformNode.uniqueId];
             // Creates buffer view and accessor for key frames.
             var byteLength = animationData.inputs.length * 4;
-            bufferView = _glTFUtilities__WEBPACK_IMPORTED_MODULE_1__["_GLTFUtilities"]._CreateBufferView(0, binaryWriter.getByteOffset(), byteLength, undefined, name + "  keyframe data view");
+            bufferView = _glTFUtilities__WEBPACK_IMPORTED_MODULE_1__["_GLTFUtilities"]._CreateBufferView(0, binaryWriter.getByteOffset(), byteLength, undefined, "".concat(name, "  keyframe data view"));
             bufferViews.push(bufferView);
             animationData.inputs.forEach(function (input) {
                 binaryWriter.setFloat32(input);
             });
-            accessor = _glTFUtilities__WEBPACK_IMPORTED_MODULE_1__["_GLTFUtilities"]._CreateAccessor(bufferViews.length - 1, name + "  keyframes", "SCALAR" /* SCALAR */, 5126 /* FLOAT */, animationData.inputs.length, null, [animationData.inputsMin], [animationData.inputsMax]);
+            accessor = _glTFUtilities__WEBPACK_IMPORTED_MODULE_1__["_GLTFUtilities"]._CreateAccessor(bufferViews.length - 1, "".concat(name, "  keyframes"), "SCALAR" /* SCALAR */, 5126 /* FLOAT */, animationData.inputs.length, null, [animationData.inputsMin], [animationData.inputsMax]);
             accessors.push(accessor);
             keyframeAccessorIndex = accessors.length - 1;
             // create bufferview and accessor for keyed values.
             outputLength = animationData.outputs.length;
             byteLength = _glTFUtilities__WEBPACK_IMPORTED_MODULE_1__["_GLTFUtilities"]._GetDataAccessorElementCount(dataAccessorType) * 4 * animationData.outputs.length;
             // check for in and out tangents
-            bufferView = _glTFUtilities__WEBPACK_IMPORTED_MODULE_1__["_GLTFUtilities"]._CreateBufferView(0, binaryWriter.getByteOffset(), byteLength, undefined, name + "  data view");
+            bufferView = _glTFUtilities__WEBPACK_IMPORTED_MODULE_1__["_GLTFUtilities"]._CreateBufferView(0, binaryWriter.getByteOffset(), byteLength, undefined, "".concat(name, "  data view"));
             bufferViews.push(bufferView);
             animationData.outputs.forEach(function (output) {
                 output.forEach(function (entry) {
                     binaryWriter.setFloat32(entry);
                 });
             });
-            accessor = _glTFUtilities__WEBPACK_IMPORTED_MODULE_1__["_GLTFUtilities"]._CreateAccessor(bufferViews.length - 1, name + "  data", dataAccessorType, 5126 /* FLOAT */, outputLength, null, null, null);
+            accessor = _glTFUtilities__WEBPACK_IMPORTED_MODULE_1__["_GLTFUtilities"]._CreateAccessor(bufferViews.length - 1, "".concat(name, "  data"), dataAccessorType, 5126 /* FLOAT */, outputLength, null, null, null);
             accessors.push(accessor);
             dataAccessorIndex = accessors.length - 1;
             // create sampler
@@ -1760,7 +1760,7 @@ var _GLTFAnimation = /** @class */ (function () {
                     break;
                 }
                 default: {
-                    babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Tools"].Error("glTFAnimation: Unsupported component type \"" + componentName + "\" for scale animation!");
+                    babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Tools"].Error("glTFAnimation: Unsupported component type \"".concat(componentName, "\" for scale animation!"));
                 }
             }
         }
@@ -2192,6 +2192,8 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
+
 /**
  * Converts Babylon Scene into glTF 2.0.
  * @hidden
@@ -2211,11 +2213,16 @@ var _Exporter = /** @class */ (function () {
         this._glTF = {
             asset: { generator: "BabylonJS", version: "2.0" }
         };
+        babylonScene = babylonScene || babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["EngineStore"].LastCreatedScene;
+        if (!babylonScene) {
+            return;
+        }
         this._babylonScene = babylonScene;
         this._bufferViews = [];
         this._accessors = [];
         this._meshes = [];
         this._scenes = [];
+        this._cameras = [];
         this._nodes = [];
         this._images = [];
         this._materials = [];
@@ -2342,7 +2349,7 @@ var _Exporter = /** @class */ (function () {
      */
     _Exporter.RegisterExtension = function (name, factory) {
         if (_Exporter.UnregisterExtension(name)) {
-            babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Tools"].Warn("Extension with the name " + name + " already exists");
+            babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Tools"].Warn("Extension with the name ".concat(name, " already exists"));
         }
         _Exporter._ExtensionFactories[name] = factory;
         _Exporter._ExtensionNames.push(name);
@@ -2495,14 +2502,14 @@ var _Exporter = /** @class */ (function () {
                         break;
                     }
                     default: {
-                        babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Tools"].Error("Unsupported Vertex Buffer type: " + vertexBufferKind);
+                        babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Tools"].Error("Unsupported Vertex Buffer type: ".concat(vertexBufferKind));
                     }
                 }
                 this.writeVertexAttributeData(vertexData, byteOffset, vertexBufferKind, meshAttributeArray, binaryWriter, convertToRightHandedSystem);
             }
         }
         else {
-            babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Tools"].Warn("reorderTriangleFillMode: Vertex Buffer Kind " + vertexBufferKind + " not present!");
+            babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Tools"].Warn("reorderTriangleFillMode: Vertex Buffer Kind ".concat(vertexBufferKind, " not present!"));
         }
     };
     /**
@@ -2554,13 +2561,13 @@ var _Exporter = /** @class */ (function () {
                     break;
                 }
                 default: {
-                    babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Tools"].Error("Unsupported Vertex Buffer type: " + vertexBufferKind);
+                    babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Tools"].Error("Unsupported Vertex Buffer type: ".concat(vertexBufferKind));
                 }
             }
             this.writeVertexAttributeData(vertexData, byteOffset + 12, vertexBufferKind, meshAttributeArray, binaryWriter, convertToRightHandedSystem);
         }
         else {
-            babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Tools"].Warn("reorderTriangleStripDrawMode: Vertex buffer kind " + vertexBufferKind + " not present!");
+            babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Tools"].Warn("reorderTriangleStripDrawMode: Vertex buffer kind ".concat(vertexBufferKind, " not present!"));
         }
     };
     /**
@@ -2614,13 +2621,13 @@ var _Exporter = /** @class */ (function () {
                     break;
                 }
                 default: {
-                    babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Tools"].Error("Unsupported Vertex Buffer type: " + vertexBufferKind);
+                    babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Tools"].Error("Unsupported Vertex Buffer type: ".concat(vertexBufferKind));
                 }
             }
             this.writeVertexAttributeData(vertexData, byteOffset, vertexBufferKind, meshAttributeArray, binaryWriter, convertToRightHandedSystem);
         }
         else {
-            babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Tools"].Warn("reorderTriangleFanMode: Vertex buffer kind " + vertexBufferKind + " not present!");
+            babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Tools"].Warn("reorderTriangleFanMode: Vertex buffer kind ".concat(vertexBufferKind, " not present!"));
         }
     };
     /**
@@ -2919,6 +2926,9 @@ var _Exporter = /** @class */ (function () {
             this._glTF.scenes = this._scenes;
             this._glTF.scene = 0;
         }
+        if (this._cameras && this._cameras.length) {
+            this._glTF.cameras = this._cameras;
+        }
         if (this._bufferViews && this._bufferViews.length) {
             this._glTF.bufferViews = this._bufferViews;
         }
@@ -3145,7 +3155,19 @@ var _Exporter = /** @class */ (function () {
         if (babylonTransformNode.rotationQuaternion) {
             rotationQuaternion.multiplyInPlace(babylonTransformNode.rotationQuaternion);
         }
-        if (!(rotationQuaternion.x === 0 && rotationQuaternion.y === 0 && rotationQuaternion.z === 0 && rotationQuaternion.w === 1)) {
+        if (!babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Quaternion"].IsIdentity(rotationQuaternion)) {
+            if (convertToRightHandedSystem) {
+                _glTFUtilities__WEBPACK_IMPORTED_MODULE_3__["_GLTFUtilities"]._GetRightHandedQuaternionFromRef(rotationQuaternion);
+            }
+            node.rotation = rotationQuaternion.normalize().asArray();
+        }
+    };
+    _Exporter.prototype.setCameraTransformation = function (node, babylonCamera, convertToRightHandedSystem) {
+        if (!babylonCamera.position.equalsToFloats(0, 0, 0)) {
+            node.translation = convertToRightHandedSystem ? _glTFUtilities__WEBPACK_IMPORTED_MODULE_3__["_GLTFUtilities"]._GetRightHandedPositionVector3(babylonCamera.position).asArray() : babylonCamera.position.asArray();
+        }
+        var rotationQuaternion = babylonCamera.absoluteRotation;
+        if (!babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Quaternion"].IsIdentity(rotationQuaternion)) {
             if (convertToRightHandedSystem) {
                 _glTFUtilities__WEBPACK_IMPORTED_MODULE_3__["_GLTFUtilities"]._GetRightHandedQuaternionFromRef(rotationQuaternion);
             }
@@ -3566,7 +3588,7 @@ var _Exporter = /** @class */ (function () {
         var glTFNodeIndex;
         var glTFNode;
         var directDescendents;
-        var nodes = Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__spreadArray"])(Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__spreadArray"])(Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__spreadArray"])([], babylonScene.transformNodes, true), babylonScene.meshes, true), babylonScene.lights, true);
+        var nodes = Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__spreadArray"])(Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__spreadArray"])(Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__spreadArray"])(Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__spreadArray"])([], babylonScene.transformNodes, true), babylonScene.meshes, true), babylonScene.lights, true), babylonScene.cameras, true);
         var rootNodesToLeftHanded = [];
         this._convertToRightHandedSystem = !babylonScene.useRightHandedSystem;
         this._convertToRightHandedSystemMap = {};
@@ -3592,6 +3614,35 @@ var _Exporter = /** @class */ (function () {
                 });
             }
         });
+        // Export babylon cameras to glTFCamera
+        var cameraHash = new Map();
+        babylonScene.cameras.forEach(function (camera) {
+            var glTFCamera = {
+                type: camera.mode === babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Camera"].PERSPECTIVE_CAMERA ? "perspective" /* PERSPECTIVE */ : "orthographic" /* ORTHOGRAPHIC */
+            };
+            if (camera.name) {
+                glTFCamera.name = camera.name;
+            }
+            if (glTFCamera.type === "perspective" /* PERSPECTIVE */) {
+                glTFCamera.perspective = {
+                    aspectRatio: camera.getEngine().getAspectRatio(camera),
+                    yfov: camera._cache.fovMode === babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Camera"].FOVMODE_VERTICAL_FIXED ? camera.fov : camera.fov * camera._cache.aspectRatio,
+                    znear: camera.minZ, zfar: camera.maxZ
+                };
+            }
+            else if (glTFCamera.type === "orthographic" /* ORTHOGRAPHIC */) {
+                var halfWidth = camera.orthoLeft && camera.orthoRight ?
+                    0.5 * (camera.orthoRight - camera.orthoLeft) : camera.getEngine().getRenderWidth() * 0.5;
+                var halfHeight = camera.orthoBottom && camera.orthoTop ?
+                    0.5 * (camera.orthoTop - camera.orthoBottom) : camera.getEngine().getRenderHeight() * 0.5;
+                glTFCamera.orthographic = {
+                    xmag: halfWidth, ymag: halfHeight,
+                    znear: camera.minZ, zfar: camera.maxZ
+                };
+            }
+            cameraHash.set(camera, _this._cameras.length);
+            _this._cameras.push(glTFCamera);
+        });
         var _a = this.getExportNodes(nodes), exportNodes = _a[0], exportMaterials = _a[1];
         return this._glTFMaterialExporter._convertMaterialsToGLTFAsync(exportMaterials, "image/png" /* PNG */, true).then(function () {
             return _this.createNodeMapAndAnimationsAsync(babylonScene, exportNodes, binaryWriter).then(function (nodeMap) {
@@ -3614,6 +3665,9 @@ var _Exporter = /** @class */ (function () {
                                 else if (babylonNode.metadata.gltf) {
                                     glTFNode.extras = babylonNode.metadata.gltf.extras;
                                 }
+                            }
+                            if (babylonNode instanceof babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Camera"]) {
+                                glTFNode.camera = cameraHash.get(babylonNode);
                             }
                             if (!babylonNode.parent || rootNodesToLeftHanded.indexOf(babylonNode.parent) !== -1) {
                                 if (_this._options.shouldExportNode && !_this._options.shouldExportNode(babylonNode)) {
@@ -3689,7 +3743,7 @@ var _Exporter = /** @class */ (function () {
                 }
             }
             else {
-                "Excluding node " + babylonNode.name;
+                "Excluding node ".concat(babylonNode.name);
             }
         }
         return [exportNodes, exportMaterials];
@@ -3718,7 +3772,7 @@ var _Exporter = /** @class */ (function () {
                 return _this.createNodeAsync(babylonNode, binaryWriter, convertToRightHandedSystem, nodeMap).then(function (node) {
                     var promise = _this._extensionsPostExportNodeAsync("createNodeAsync", node, babylonNode, nodeMap);
                     if (promise == null) {
-                        babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Tools"].Warn("Not exporting node " + babylonNode.name);
+                        babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Tools"].Warn("Not exporting node ".concat(babylonNode.name));
                         return Promise.resolve();
                     }
                     else {
@@ -3796,6 +3850,10 @@ var _Exporter = /** @class */ (function () {
                     }
                     return node;
                 });
+            }
+            else if (babylonNode instanceof babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Camera"]) {
+                _this.setCameraTransformation(node, babylonNode, convertToRightHandedSystem);
+                return node;
             }
             else {
                 return node;
@@ -4149,7 +4207,7 @@ var _GLTFMaterialExporter = /** @class */ (function () {
                 promises.push(_this._convertPBRMaterialAsync(material, mimeType, hasTextureCoords));
             }
             else {
-                babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Tools"].Warn("Unsupported material type: " + material.name);
+                babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Tools"].Warn("Unsupported material type: ".concat(material.name));
             }
         });
         return Promise.all(promises).then(function () { });
@@ -4884,7 +4942,7 @@ var _GLTFMaterialExporter = /** @class */ (function () {
                 return 33648 /* MIRRORED_REPEAT */;
             }
             default: {
-                babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Tools"].Error("Unsupported Texture Wrap Mode " + wrapMode + "!");
+                babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Tools"].Error("Unsupported Texture Wrap Mode ".concat(wrapMode, "!"));
                 return 10497 /* REPEAT */;
             }
         }
@@ -5187,7 +5245,7 @@ var _GLTFMaterialExporter = /** @class */ (function () {
         var textureName = baseTextureName + extension;
         var originalTextureName = textureName;
         if (textureName in imageData) {
-            textureName = baseTextureName + "_" + babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Tools"].RandomId() + extension;
+            textureName = "".concat(baseTextureName, "_").concat(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Tools"].RandomId()).concat(extension);
         }
         imageData[textureName] = imageValues;
         if (mimeType === "image/jpeg" /* JPEG */ || mimeType === "image/png" /* PNG */) {
@@ -5218,7 +5276,7 @@ var _GLTFMaterialExporter = /** @class */ (function () {
             }
         }
         else {
-            babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Tools"].Error("Unsupported texture mime type " + mimeType);
+            babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Tools"].Error("Unsupported texture mime type ".concat(mimeType));
         }
         return textureInfo;
     };

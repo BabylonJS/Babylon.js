@@ -158,10 +158,15 @@ export class KeyPointComponent extends React.Component<IKeyPointComponentProps, 
         });
 
         this._onSelectionRectangleMovedObserver = this.props.context.onSelectionRectangleMoved.add((rect1) => {
-            if (!this._svgHost.current) {
+            if (!this._keyPointSVG.current) {
                 return;
             }
-            const rect2 = this._svgHost.current.getBoundingClientRect();
+            const animationType = this.props.curve.animation.dataType;  
+            const isQuaternionAnimation = animationType === Animation.ANIMATIONTYPE_QUATERNION;
+            if (isQuaternionAnimation) {
+                return;
+            }
+            const rect2 = this._keyPointSVG.current.getBoundingClientRect();
             var overlap = !(rect1.right < rect2.left || rect1.left > rect2.right || rect1.bottom < rect2.top || rect1.top > rect2.bottom);
 
             if (!this.props.context.activeKeyPoints) {
@@ -436,6 +441,12 @@ export class KeyPointComponent extends React.Component<IKeyPointComponentProps, 
             this.props.context.activeKeyPoints = [];
         }
 
+        evt.preventDefault();
+
+        const isQuaternionAnimation = this.props.curve.animation.dataType === Animation.ANIMATIONTYPE_QUATERNION;
+        if (isQuaternionAnimation) {
+            return;
+        }
         this._select(evt.nativeEvent.ctrlKey);
 
         this.props.context.onActiveKeyPointChanged.notifyObservers();
@@ -446,13 +457,13 @@ export class KeyPointComponent extends React.Component<IKeyPointComponentProps, 
         this._sourcePointerY = evt.nativeEvent.offsetY;
 
         const target = evt.nativeEvent.target as HTMLElement;
-        if (target.tagName === "image") {
+        if (target.tagName === "image" && !isQuaternionAnimation) {
             this._controlMode = ControlMode.Key;
             this.setState({ tangentSelectedIndex: -1 });
-        } else if (target.classList.contains("left-tangent")) {
+        } else if (target.classList.contains("left-tangent") && !isQuaternionAnimation) {
             this._controlMode = ControlMode.TangentLeft;
             this.setState({ tangentSelectedIndex: 0 });
-        } else if (target.classList.contains("right-tangent")) {
+        } else if (target.classList.contains("right-tangent") && !isQuaternionAnimation) {
             this._controlMode = ControlMode.TangentRight;
             this.setState({ tangentSelectedIndex: 1 });
         }
@@ -496,7 +507,7 @@ export class KeyPointComponent extends React.Component<IKeyPointComponentProps, 
     }
 
     private _onPointerMove(evt: React.PointerEvent<SVGSVGElement>) {
-        if (!this._pointerIsDown || this.state.selectedState !== SelectionState.Selected) {
+        if (!this._pointerIsDown || this.state.selectedState !== SelectionState.Selected || this.props.context.hasActiveQuaternionAnimationKeyPoints()) {
             return;
         }
         if (this._controlMode === ControlMode.Key) {
@@ -533,7 +544,7 @@ export class KeyPointComponent extends React.Component<IKeyPointComponentProps, 
             if (nextX !== null) {
                 newX = Math.min(nextX - epsilon, newX);
             }
-            if (this.props.keyId !== 0) {
+            if (this.props.keyId !== 0 && !(this.props.context.lockLastFrameFrame && this.props.keyId === this.props.curve.keys.length - 1)) {
                 let frame = this.props.invertX(newX);
                 this.props.onFrameValueChanged(frame);
                 this.props.context.onFrameSet.notifyObservers(frame);
@@ -544,7 +555,9 @@ export class KeyPointComponent extends React.Component<IKeyPointComponentProps, 
             } else {
                 newX = this.state.x;
             }
-
+            if (this.props.context.lockLastFrameValue && this.props.keyId === this.props.curve.keys.length - 1) {
+                newY = this.state.y;
+            }
             let value = this.props.invertY(newY);
             this.props.onKeyValueChanged(value);
             this.props.context.onValueSet.notifyObservers(value);
@@ -563,9 +576,7 @@ export class KeyPointComponent extends React.Component<IKeyPointComponentProps, 
             const isLockedTangent =
                 keys[this.props.keyId].lockedTangent &&
                 this.props.keyId !== 0 &&
-                this.props.keyId !== keys.length - 1 &&
-                keys[this.props.keyId].inTangent !== undefined &&
-                keys[this.props.keyId].outTangent !== undefined;
+                this.props.keyId !== keys.length - 1;
 
             let angleDiff = 0;
             let tmpVector = TmpVectors.Vector2[0];
@@ -607,7 +618,7 @@ export class KeyPointComponent extends React.Component<IKeyPointComponentProps, 
             this.props.context.refreshTarget();
             this.forceUpdate();
         }
-
+        this.props.context.onActiveKeyDataChanged.notifyObservers(this.props.keyId);
         this._sourcePointerX = evt.nativeEvent.offsetX;
         this._sourcePointerY = evt.nativeEvent.offsetY;
         evt.stopPropagation();
@@ -629,6 +640,7 @@ export class KeyPointComponent extends React.Component<IKeyPointComponentProps, 
 
         const animationType = this.props.curve.animation.dataType;
         const isColorAnimation = animationType === Animation.ANIMATIONTYPE_COLOR3 || animationType === Animation.ANIMATIONTYPE_COLOR4;
+        const isQuaternionAnimation = animationType === Animation.ANIMATIONTYPE_QUATERNION;
 
         const svgImageIcon = this.state.selectedState === SelectionState.Selected ? keySelected : this.state.selectedState === SelectionState.Siblings ? keyActive : keyInactive;
         const keys = this.props.curve.keys;
@@ -671,7 +683,7 @@ export class KeyPointComponent extends React.Component<IKeyPointComponentProps, 
                 onPointerUp={(evt) => this._onPointerUp(evt)}
                 x={this.state.x}
                 y={this.state.y}
-                style={{ cursor: "pointer", overflow: "auto" }}
+                style={{ cursor: isQuaternionAnimation ? "auto" : "pointer", overflow: "auto", opacity: isQuaternionAnimation ? "25%" : "100%" }}
             >
                 <image
                     x={`-${8 * this.props.scale}`}
@@ -683,7 +695,7 @@ export class KeyPointComponent extends React.Component<IKeyPointComponentProps, 
                 />
                 {this.state.selectedState === SelectionState.Selected && (
                     <g>
-                        {this.props.keyId !== 0 && !hasStepTangentIn && !isColorAnimation && hasDefinedInTangent && (
+                        {this.props.keyId !== 0 && !hasStepTangentIn && !isColorAnimation && !isQuaternionAnimation && hasDefinedInTangent && (
                             <>
                                 <line
                                     x1={0}
@@ -707,7 +719,7 @@ export class KeyPointComponent extends React.Component<IKeyPointComponentProps, 
                                 ></circle>
                             </>
                         )}
-                        {this.props.keyId !== keys.length - 1 && !hasStepTangentOut && !isColorAnimation && hasDefinedOutTangent && (
+                        {this.props.keyId !== keys.length - 1 && !hasStepTangentOut && !isColorAnimation && !isQuaternionAnimation && hasDefinedOutTangent && (
                             <>
                                 <line
                                     x1={0}

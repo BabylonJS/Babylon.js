@@ -99,6 +99,7 @@ export class StandardMaterialDefines extends MaterialDefines
     public BONES_VELOCITY_ENABLED = false;
     public INSTANCES = false;
     public THIN_INSTANCES = false;
+    public INSTANCESCOLOR = false;
     public GLOSSINESS = false;
     public ROUGHNESS = false;
     public EMISSIVEASILLUMINATION = false;
@@ -750,7 +751,7 @@ export class StandardMaterial extends PushMaterial {
      * @param name Define the name of the material in the scene
      * @param scene Define the scene the material belong to
      */
-    constructor(name: string, scene: Scene) {
+    constructor(name: string, scene?: Scene) {
         super(name, scene);
 
         this.detailMap = new DetailMapConfiguration(this);
@@ -1245,6 +1246,10 @@ export class StandardMaterial extends PushMaterial {
 
             if (defines.VERTEXCOLOR) {
                 attribs.push(VertexBuffer.ColorKind);
+            }
+
+            if (defines.INSTANCESCOLOR) {
+                attribs.push(VertexBuffer.ColorInstanceKind);
             }
 
             MaterialHelper.PrepareAttributesForBones(attribs, mesh, defines, fallbacks);
@@ -1858,18 +1863,6 @@ export class StandardMaterial extends PushMaterial {
         this.stencil.copyTo(result.stencil);
 
         return result;
-    }
-
-    /**
-     * Serializes this material in a JSON representation
-     * @returns the serialized material object
-     */
-    public serialize(): any {
-        const serializationObject = SerializationHelper.Serialize(this);
-
-        serializationObject.stencil = this.stencil.serialize();
-
-        return serializationObject;
     }
 
     /**

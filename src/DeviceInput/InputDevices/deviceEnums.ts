@@ -15,7 +15,9 @@ export enum DeviceType {
     /** Xbox */
     Xbox = 5,
     /** Switch Controller */
-    Switch = 6
+    Switch = 6,
+    /** PS5 DualSense */
+    DualSense = 7,
 }
 
 // Device Enums
@@ -47,6 +49,8 @@ export enum PointerInput {
     DeltaHorizontal = 10,
     /** Delta Y */
     DeltaVertical = 11,
+    /** Move Catch-all */
+    Move = 12,
 }
 
 /**
@@ -71,6 +75,56 @@ export enum DualShockInput {
     R2 = 7,
     /** Share */
     Share = 8,
+    /** Options */
+    Options = 9,
+    /** L3 */
+    L3 = 10,
+    /** R3 */
+    R3 = 11,
+    /** DPadUp */
+    DPadUp = 12,
+    /** DPadDown */
+    DPadDown = 13,
+    /** DPadLeft */
+    DPadLeft = 14,
+    /** DRight */
+    DPadRight = 15,
+    /** Home */
+    Home = 16,
+    /** TouchPad */
+    TouchPad = 17,
+    /** LStickXAxis */
+    LStickXAxis = 18,
+    /** LStickYAxis */
+    LStickYAxis = 19,
+    /** RStickXAxis */
+    RStickXAxis = 20,
+    /** RStickYAxis */
+    RStickYAxis = 21
+}
+
+/**
+ * Enum for Dual Sense Gamepad
+ */
+ export enum DualSenseInput {
+    /** Cross */
+    Cross = 0,
+    /** Circle */
+    Circle = 1,
+    /** Square */
+    Square = 2,
+    /** Triangle */
+    Triangle = 3,
+    /** L1 */
+    L1 = 4,
+    /** R1 */
+    R1 = 5,
+    /** L2 */
+    L2 = 6,
+    /** R2 */
+    R2 = 7,
+    /** Create */
+    Create  = 8,
     /** Options */
     Options = 9,
     /** L3 */

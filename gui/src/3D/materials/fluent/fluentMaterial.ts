@@ -90,7 +90,7 @@ export class FluentMaterial extends PushMaterial {
      * Gets or sets the radius used to render the hover light (default is 1.0)
      */
     @serialize()
-    public hoverRadius = 1.0;
+    public hoverRadius = 0.01;
 
     /**
      * Gets or sets the color used to render the hover light (default is Color4(0.3, 0.3, 0.3, 1.0))
@@ -116,7 +116,7 @@ export class FluentMaterial extends PushMaterial {
      * @param name defines the name of the material
      * @param scene defines the hosting scene
      */
-    constructor(name: string, scene: Scene) {
+    constructor(name: string, scene?: Scene) {
         super(name, scene);
     }
 
@@ -294,7 +294,7 @@ export class FluentMaterial extends PushMaterial {
     }
 
     public serialize(): any {
-        var serializationObject = SerializationHelper.Serialize(this);
+        var serializationObject = super.serialize();
         serializationObject.customType = "BABYLON.GUI.FluentMaterial";
         return serializationObject;
     }

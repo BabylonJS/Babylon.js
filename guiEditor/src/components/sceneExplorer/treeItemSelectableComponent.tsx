@@ -15,7 +15,7 @@ const CONTROL_HEIGHT = 32;
 
 export interface ITreeItemSelectableComponentProps {
     entity: any;
-    selectedEntity?: any;
+    selectedEntities: any[];
     mustExpand?: boolean;
     offset: number;
     globalState: GlobalState;
@@ -34,7 +34,7 @@ export class TreeItemSelectableComponent extends React.Component<
     constructor(props: ITreeItemSelectableComponentProps) {
         super(props);
 
-        this.state = { dragOverLocation: DragOverLocation.NONE, isHovered: false, isSelected: this.props.entity === this.props.selectedEntity };
+        this.state = { dragOverLocation: DragOverLocation.NONE, isHovered: false, isSelected: this.props.selectedEntities.includes(this.props.entity) };
 
         this._onSelectionChangedObservable = props.globalState.onSelectionChangedObservable.add((selection) => {
             this.setState({ isSelected: selection === this.props.entity });
@@ -49,21 +49,19 @@ export class TreeItemSelectableComponent extends React.Component<
     }
 
     switchExpandedState(): void {
-        this.props.entity.reservedDataStore.isExpanded = !this.props.entity.reservedDataStore.isExpanded;
+        this.props.entity.reservedDataStore.setExpandedState(!this.props.entity.reservedDataStore.isExpanded);
     }
 
     shouldComponentUpdate(nextProps: ITreeItemSelectableComponentProps, nextState: { isSelected: boolean }) {
         //if the next entity is going to be selected then we want to highlight it so update
-        if (nextProps.entity === nextProps.selectedEntity) {
+        if (nextProps.selectedEntities.includes(nextProps.entity)) {
             nextState.isSelected = true;
             return true;
         } else {
             nextState.isSelected = false;
         }
-        if (nextProps.selectedEntity) {
-            if (Tools.LookForItem(nextProps.entity, nextProps.selectedEntity)) {
-                return true;
-            }
+        if (Tools.LookForItems(nextProps.entity, nextProps.selectedEntities)) {
+            return true;
         }
 
         return true;
@@ -92,7 +90,7 @@ export class TreeItemSelectableComponent extends React.Component<
         this.props.globalState.selectionLock = true;
     }
 
-    renderChildren(isExpanded: boolean) {
+    renderChildren(isExpanded: boolean, offset = true) {
         const entity = this.props.entity;
         if ((!entity.getChildren && !entity.children) || !isExpanded) {
             return null;
@@ -111,9 +109,9 @@ export class TreeItemSelectableComponent extends React.Component<
                     globalState={this.props.globalState}
                     mustExpand={this.props.mustExpand}
                     extensibilityGroups={this.props.extensibilityGroups}
-                    selectedEntity={this.props.selectedEntity}
+                    selectedEntities={this.props.selectedEntities}
                     key={i}
-                    offset={this.props.offset + 2}
+                    offset={this.props.offset + (offset ? 2 : 0)}
                     entity={item}
                     filter={this.props.filter}
                 />
@@ -122,16 +120,21 @@ export class TreeItemSelectableComponent extends React.Component<
     }
 
     render() {
+        if (this.props.entity === this.props.globalState.workbench.trueRootContainer || this.props.entity === this.props.globalState.workbench.visibleRegionContainer || this.props.entity === this.props.globalState.workbench.panAndZoomContainer) {
+            return this.renderChildren(true, false);
+        }
         const marginStyle = {
             paddingLeft: 10 * (this.props.offset + 0.5) - 20 + "px",
         };
         const entity = this.props.entity;
 
         if (!entity.reservedDataStore) {
-            entity.reservedDataStore = {};
-            entity.reservedDataStore.isExpanded = true;
+            entity.reservedDataStore = {
+                isExpanded: true,
+                setExpandedState: (expanded: boolean) => entity.reservedDataStore.isExpanded = expanded
+            };
         }
-        let isExpanded = entity.reservedDataStore.isExpanded || Tools.LookForItem(this.props.entity, this.props.selectedEntity);
+        let isExpanded = entity.reservedDataStore.isExpanded || Tools.LookForItems(this.props.entity, this.props.selectedEntities);
         entity.reservedDataStore.isExpanded = isExpanded;
 
         const chevron = isExpanded ? <img src={expandedIcon} className="icon" /> : <img src={collapsedIcon} className="icon" />;

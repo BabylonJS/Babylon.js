@@ -493,6 +493,7 @@ __webpack_require__.r(__webpack_exports__);
 var NormalMapProceduralTexture = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(NormalMapProceduralTexture, _super);
     function NormalMapProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {
+        if (scene === void 0) { scene = null; }
         var _this = _super.call(this, name, size, "normalMapProceduralTexture", scene, fallbackTexture, generateMipMaps) || this;
         _this.updateShaderUniforms();
         return _this;

@@ -153,7 +153,7 @@ export class DynamicTexture extends Texture {
      * @param invertY defines the direction for the Y axis (default is true - y increases downwards)
      * @param update defines whether texture is immediately update (default is true)
      */
-    public drawText(text: string, x: number | null | undefined, y: number | null | undefined, font: string, color: string | null, clearColor: string, invertY?: boolean, update = true) {
+    public drawText(text: string, x: number | null | undefined, y: number | null | undefined, font: string, color: string | null, clearColor: string | null, invertY?: boolean, update = true) {
         var size = this.getSize();
         if (clearColor) {
             this._context.fillStyle = clearColor;

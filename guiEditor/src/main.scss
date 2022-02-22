@@ -87,9 +87,10 @@
     display: grid;
     grid-row: 1;
     grid-column: 4;
-    background: #5f5b60;
+    background: #CCCCCC;
     width: 100%;
     height: 100%;
+    overflow: hidden;
 
     .diagram {
         display: none;
@@ -229,6 +230,9 @@
     }
 }
 .gizmo {
+    * {
+        user-select: none;
+    }
     .bounding-box-line {
         background-color: black;
         position: absolute;
@@ -266,4 +270,19 @@
         background: transparent;
         position: absolute;
     }
+}
+#workbench-canvas {
+    position: relative;
+}
+.artboard-stroke {
+    outline: 1px solid black;
+    position: absolute;
+    z-index: 5;
+    pointer-events: none;
+}
+.artboard-background {
+    position: absolute;
+    background: repeating-conic-gradient(#E2E2E2 0% 25%, white 0% 50%) 50% / 10px 10px;
+    width: 100%;
+    height: 100%;
 }

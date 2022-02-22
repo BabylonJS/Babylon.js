@@ -169,10 +169,12 @@ float r = Rand(position);
 	// Vertex color
 #ifdef VERTEXCOLOR
 	vColor = color;
+#elif INSTANCESCOLOR
+	vColor = instanceColor;
 #endif
 
 	// Point size
-#ifdef POINTSIZE
+#if defined(POINTSIZE) && !defined(WEBGPU)
 	gl_PointSize = pointSize;
 #endif
 

@@ -68,6 +68,7 @@ declare type Effect = import("./Materials/effect").Effect;
 declare type MorphTarget = import("./Morph/morphTarget").MorphTarget;
 declare type WebVRFreeCamera = import("./Cameras/VR/webVRCamera").WebVRFreeCamera;
 declare type PerformanceViewerCollector = import("./Misc/PerformanceViewer/performanceViewerCollector").PerformanceViewerCollector;
+declare type IAction = import("./Actions/action").IAction;
 
 /**
  * Define an interface for all classes that will hold resources
@@ -1215,7 +1216,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     private _renderId = 0;
     private _frameId = 0;
-    private _executeWhenReadyTimeoutId = -1;
+    private _executeWhenReadyTimeoutId: Nullable<ReturnType<typeof setTimeout>> = null;
     private _intermediateRendering = false;
     private _defaultFrameBufferCleared = false;
 
@@ -2046,7 +2047,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     public executeWhenReady(func: () => void, checkRenderTargets = false): void {
         this.onReadyObservable.add(func);
 
-        if (this._executeWhenReadyTimeoutId !== -1) {
+        if (this._executeWhenReadyTimeoutId !== null) {
             return;
         }
 
@@ -2076,13 +2077,13 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             this.onReadyObservable.notifyObservers(this);
 
             this.onReadyObservable.clear();
-            this._executeWhenReadyTimeoutId = -1;
+            this._executeWhenReadyTimeoutId = null;
             return;
         }
 
         if (this._isDisposed) {
             this.onReadyObservable.clear();
-            this._executeWhenReadyTimeoutId = -1;
+            this._executeWhenReadyTimeoutId = null;
             return;
         }
 
@@ -2319,6 +2320,9 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             // Remove from the scene if found
             this.skeletons.splice(index, 1);
             this.onSkeletonRemovedObservable.notifyObservers(toRemove);
+
+            // Clean active container
+            this._executeActiveContainerCleanup(this._activeSkeletons);
         }
 
         return index;
@@ -2407,6 +2411,9 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         var index = this.particleSystems.indexOf(toRemove);
         if (index !== -1) {
             this.particleSystems.splice(index, 1);
+
+            // Clean active container
+            this._executeActiveContainerCleanup(this._activeParticleSystems);
         }
         return index;
     }
@@ -2785,12 +2792,20 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Gets a the last added material using a given id
      * @param id defines the material's Id
+     * @param allowMultiMaterials determines whether multimaterials should be considered
      * @return the last material with the given id or null if none found.
      */
-    public getLastMaterialById(id: string): Nullable<Material> {
-        for (var index = this.materials.length - 1; index >= 0; index--) {
+    public getLastMaterialById(id: string, allowMultiMaterials: boolean = false): Nullable<Material> {
+        for (let index = this.materials.length - 1; index >= 0; index--) {
             if (this.materials[index].id === id) {
                 return this.materials[index];
+            }
+        }
+        if (allowMultiMaterials) {
+            for (let index = this.multiMaterials.length - 1; index >= 0; index--) {
+                if (this.multiMaterials[index].id === id) {
+                    return this.multiMaterials[index];
+                }
             }
         }
 
@@ -3644,7 +3659,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             }
 
             if (!this._frustumPlanes) {
-                this.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix());
+                this.updateTransformMatrix();
             }
 
             this._evaluateActiveMeshes();
@@ -3680,6 +3695,17 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
         this._activeMeshesFrozen = false;
         return this;
+    }
+
+    private _executeActiveContainerCleanup(container: SmartArray<any>) {
+        const isInFastMode = this._engine.snapshotRendering && this._engine.snapshotRenderingMode === Constants.SNAPSHOTRENDERING_FAST;
+
+        if (!isInFastMode && this._activeMeshesFrozen && this._activeMeshes.length) {
+            return; // Do not execute in frozen mode
+        }
+
+        // We need to ensure we are not in the rendering loop
+        this.onBeforeRenderObservable.addOnce(() => container.dispose());
     }
 
     private _evaluateActiveMeshes(): void {
@@ -3856,7 +3882,14 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         if (!this.activeCamera) {
             return;
         }
-        this.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix(force));
+
+        if (this.activeCamera._renderingMultiview) {
+            const leftCamera = this.activeCamera._rigCameras[0];
+            const rightCamera = this.activeCamera._rigCameras[1];
+            this.setTransformMatrix(leftCamera.getViewMatrix(), leftCamera.getProjectionMatrix(force), rightCamera.getViewMatrix(), rightCamera.getProjectionMatrix(force));
+        } else {
+            this.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix(force));
+        }
     }
 
     private _bindFrameBuffer(camera: Nullable<Camera>, clear = true) {
@@ -3924,12 +3957,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             this._bindFrameBuffer(this._activeCamera);
         }
 
-        var useMultiview = this.getEngine().getCaps().multiview && camera.outputRenderTarget && camera.outputRenderTarget.getViewCount() > 1;
-        if (useMultiview) {
-            this.setTransformMatrix(camera._rigCameras[0].getViewMatrix(), camera._rigCameras[0].getProjectionMatrix(), camera._rigCameras[1].getViewMatrix(), camera._rigCameras[1].getProjectionMatrix());
-        } else {
-            this.updateTransformMatrix();
-        }
+        this.updateTransformMatrix();
 
         this.onBeforeCameraRenderObservable.notifyObservers(this.activeCamera);
 
@@ -4037,7 +4065,10 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     private _processSubCameras(camera: Camera, bindFrameBuffer = true): void {
-        if (camera.cameraRigMode === Constants.RIG_MODE_NONE || (camera.outputRenderTarget && camera.outputRenderTarget.getViewCount() > 1 && this.getEngine().getCaps().multiview)) {
+        if (camera.cameraRigMode === Constants.RIG_MODE_NONE || camera._renderingMultiview) {
+            if (camera._renderingMultiview && !this._multiviewSceneUbo) {
+                this._createMultiviewUbo();
+            }
             this._renderForCamera(camera, undefined, bindFrameBuffer);
             this.onAfterRenderCameraObservable.notifyObservers(camera);
             return;
@@ -4055,7 +4086,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
         // Use _activeCamera instead of activeCamera to avoid onActiveCameraChanged
         this._activeCamera = camera;
-        this.setTransformMatrix(this._activeCamera.getViewMatrix(), this._activeCamera.getProjectionMatrix());
+        this.updateTransformMatrix();
         this.onAfterRenderCameraObservable.notifyObservers(camera);
     }
 
@@ -4068,7 +4099,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             }
 
             for (var actionIndex = 0; sourceMesh.actionManager && actionIndex < sourceMesh.actionManager.actions.length; actionIndex++) {
-                var action = sourceMesh.actionManager.actions[actionIndex];
+                var action: IAction = sourceMesh.actionManager.actions[actionIndex];
 
                 if (action.trigger === Constants.ACTION_OnIntersectionEnterTrigger || action.trigger === Constants.ACTION_OnIntersectionExitTrigger) {
                     var parameters = action.getTriggerParameter();
@@ -4222,7 +4253,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             return;
         }
 
-        if (this.onReadyObservable.hasObservers() && this._executeWhenReadyTimeoutId === -1) {
+        if (this.onReadyObservable.hasObservers() && this._executeWhenReadyTimeoutId === null) {
             this._checkIsReady();
         }
 
@@ -4352,7 +4383,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
                 throw new Error("No camera defined");
             }
 
-            this._processSubCameras(this.activeCamera, false);
+            this._processSubCameras(this.activeCamera, !!this.activeCamera.outputRenderTarget);
         }
 
         // Intersection checks

@@ -135,7 +135,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
      * @param options Define the options used to create the multi render target
      * @param textureNames Define the names to set to the textures (if count > 0 - optional)
      */
-    constructor(name: string, size: any, count: number, scene: Scene, options?: IMultiRenderTargetOptions, textureNames?: string[]) {
+    constructor(name: string, size: any, count: number, scene?: Scene, options?: IMultiRenderTargetOptions, textureNames?: string[]) {
         var generateMipMaps = options && options.generateMipMaps ? options.generateMipMaps : false;
         var generateDepthTexture = options && options.generateDepthTexture ? options.generateDepthTexture : false;
         var depthTextureFormat = options && options.depthTextureFormat ? options.depthTextureFormat : Constants.TEXTUREFORMAT_DEPTH16;

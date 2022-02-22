@@ -44,6 +44,7 @@ class FurMaterialDefines extends MaterialDefines {
     public NUM_BONE_INFLUENCERS = 0;
     public BonesPerMesh = 0;
     public INSTANCES = false;
+    public INSTANCESCOLOR = false;
     public HIGHLEVEL = false;
     public IMAGEPROCESSINGPOSTPROCESS = false;
     public SKIPFINALCOLORCLAMP = false;
@@ -115,7 +116,7 @@ export class FurMaterial extends PushMaterial {
 
     private _furTime: number = 0;
 
-    constructor(name: string, scene: Scene) {
+    constructor(name: string, scene?: Scene) {
         super(name, scene);
     }
 
@@ -455,7 +456,7 @@ export class FurMaterial extends PushMaterial {
     }
 
     public serialize(): any {
-        var serializationObject = SerializationHelper.Serialize(this);
+        var serializationObject = super.serialize();
         serializationObject.customType = "BABYLON.FurMaterial";
 
         if (this._meshes) {

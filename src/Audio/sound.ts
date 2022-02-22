@@ -9,6 +9,7 @@ import { TransformNode } from "../Meshes/transformNode";
 import { Logger } from "../Misc/logger";
 import { _WarnImport } from "../Misc/devTools";
 import { ISoundOptions } from './Interfaces/ISoundOptions';
+import { EngineStore } from "../Engines/engineStore";
 
 /**
  * Defines a sound that can be played in the application.
@@ -161,8 +162,12 @@ export class Sound {
      * @param readyToPlayCallback Provide a callback function if you'd like to load your code once the sound is ready to be played
      * @param options Objects to provide with the current available options: autoplay, loop, volume, spatialSound, maxDistance, rolloffFactor, refDistance, distanceModel, panningModel, streaming
      */
-    constructor(name: string, urlOrArrayBuffer: any, scene: Scene, readyToPlayCallback: Nullable<() => void> = null, options?: ISoundOptions) {
+    constructor(name: string, urlOrArrayBuffer: any, scene?: Nullable<Scene>, readyToPlayCallback: Nullable<() => void> = null, options?: ISoundOptions) {
         this.name = name;
+        scene = scene || EngineStore.LastCreatedScene;
+        if (!scene) {
+            return;
+        }
         this._scene = scene;
         Sound._SceneComponentInitialization(scene);
 
@@ -273,6 +278,7 @@ export class Sound {
                                     (url.indexOf(".ogg", url.length - 4) !== -1 && Engine.audioEngine.isOGGsupported) ||
                                     url.indexOf(".wav", url.length - 4) !== -1 ||
                                     url.indexOf(".m4a", url.length - 4) !== -1 ||
+                                    url.indexOf(".mp4", url.length - 4) !== -1 ||
                                     url.indexOf("blob:") !== -1;
                                 if (codecSupportedFound) {
                                     // Loading sound
@@ -469,6 +475,7 @@ export class Sound {
             this._playbackRate = options.playbackRate ?? this._playbackRate;
             this._length = options.length ?? undefined;
             this._offset = options.offset ?? undefined;
+            this.setVolume(options.volume ?? this._volume);
             this._updateSpatialParameters();
             if (this.isPlaying) {
                 if (this._streaming && this._htmlAudioElement) {

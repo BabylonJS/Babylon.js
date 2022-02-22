@@ -576,6 +576,10 @@ declare module "babylonjs-serializers/glTF/2.0/glTFExporter" {
          */
         private _scenes;
         /**
+         * Stores all the generated glTF cameras
+         */
+        private _cameras;
+        /**
          * Stores all the generated mesh information, each containing a set of primitives to render in glTF
          */
         private _meshes;
@@ -679,7 +683,7 @@ declare module "babylonjs-serializers/glTF/2.0/glTFExporter" {
          * @param babylonScene Babylon scene object
          * @param options Options to modify the behavior of the exporter
          */
-        constructor(babylonScene: Scene, options?: IExportOptions);
+        constructor(babylonScene?: Nullable<Scene>, options?: IExportOptions);
         dispose(): void;
         /**
          * Registers a glTF exporter extension
@@ -813,6 +817,7 @@ declare module "babylonjs-serializers/glTF/2.0/glTFExporter" {
          * @param convertToRightHandedSystem Converts the values to right-handed
          */
         private setNodeTransformation;
+        private setCameraTransformation;
         private getVertexBufferFromMesh;
         /**
          * Creates a bufferview based on the vertices type for the Babylon mesh
@@ -1938,6 +1943,10 @@ declare module BABYLON.GLTF2.Exporter {
          */
         private _scenes;
         /**
+         * Stores all the generated glTF cameras
+         */
+        private _cameras;
+        /**
          * Stores all the generated mesh information, each containing a set of primitives to render in glTF
          */
         private _meshes;
@@ -2041,7 +2050,7 @@ declare module BABYLON.GLTF2.Exporter {
          * @param babylonScene Babylon scene object
          * @param options Options to modify the behavior of the exporter
          */
-        constructor(babylonScene: Scene, options?: IExportOptions);
+        constructor(babylonScene?: Nullable<Scene>, options?: IExportOptions);
         dispose(): void;
         /**
          * Registers a glTF exporter extension
@@ -2175,6 +2184,7 @@ declare module BABYLON.GLTF2.Exporter {
          * @param convertToRightHandedSystem Converts the values to right-handed
          */
         private setNodeTransformation;
+        private setCameraTransformation;
         private getVertexBufferFromMesh;
         /**
          * Creates a bufferview based on the vertices type for the Babylon mesh

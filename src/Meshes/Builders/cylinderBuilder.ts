@@ -5,6 +5,7 @@ import { VertexData } from "../mesh.vertexData";
 import { Scene } from "../../scene";
 import { Nullable } from "../../types";
 import { Axis } from '../../Maths/math.axis';
+import { CompatibilityOptions } from "../../Compat/compatibilityOptions";
 
 /**
  * Creates the VertexData for a cylinder, cone or prism
@@ -18,7 +19,7 @@ import { Axis } from '../../Maths/math.axis';
   * * arc a number from 0 to 1, to create an unclosed cylinder based on the fraction of the circumference given by the arc value, optional, default 1
   * * faceColors an array of Color3 elements used to set different colors to the top, rings and bottom respectively
   * * faceUV an array of Vector4 elements used to set different images to the top, rings and bottom respectively
-  * * hasRings when true makes each subdivision independantly treated as a face for faceUV and faceColors, optional, default false
+  * * hasRings when true makes each subdivision independently treated as a face for faceUV and faceColors, optional, default false
   * * enclose when true closes an open cylinder by adding extra flat faces between the height axis and vertical edges, think cut cake
   * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
   * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
@@ -130,7 +131,7 @@ export function CreateCylinderVertexData(options: { height?: number, diameterTop
                 } else {
                     v = faceUV[s].y + (faceUV[s].w - faceUV[s].y) * h;
                 }
-                uvs.push(faceUV[s].x + (faceUV[s].z - faceUV[s].x) * j / tessellation, v);
+                uvs.push(faceUV[s].x + (faceUV[s].z - faceUV[s].x) * j / tessellation, CompatibilityOptions.UseOpenGLOrientationForUV ? 1 - v : v);
                 if (faceColors) {
                     colors.push(faceColors[s].r, faceColors[s].g, faceColors[s].b, faceColors[s].a);
                 }
@@ -153,15 +154,15 @@ export function CreateCylinderVertexData(options: { height?: number, diameterTop
                 } else {
                     v = faceUV[s + 1].y + (faceUV[s + 1].w - faceUV[s + 1].y) * h;
                 }
-                uvs.push(faceUV[s + 1].x, v);
-                uvs.push(faceUV[s + 1].z, v);
+                uvs.push(faceUV[s + 1].x, CompatibilityOptions.UseOpenGLOrientationForUV ? 1 - v : v);
+                uvs.push(faceUV[s + 1].z, CompatibilityOptions.UseOpenGLOrientationForUV ? 1 - v : v);
                 if (hasRings) {
                     v = (cs !== s) ? faceUV[s + 2].y : faceUV[s + 2].w;
                 } else {
                     v = faceUV[s + 2].y + (faceUV[s + 2].w - faceUV[s + 2].y) * h;
                 }
-                uvs.push(faceUV[s + 2].x, v);
-                uvs.push(faceUV[s + 2].z, v);
+                uvs.push(faceUV[s + 2].x, CompatibilityOptions.UseOpenGLOrientationForUV ? 1 - v : v);
+                uvs.push(faceUV[s + 2].z, CompatibilityOptions.UseOpenGLOrientationForUV ? 1 - v : v);
                 if (faceColors) {
                     colors.push(faceColors[s + 1].r, faceColors[s + 1].g, faceColors[s + 1].b, faceColors[s + 1].a);
                     colors.push(faceColors[s + 1].r, faceColors[s + 1].g, faceColors[s + 1].b, faceColors[s + 1].a);
@@ -225,7 +226,8 @@ export function CreateCylinderVertexData(options: { height?: number, diameterTop
         var center = new Vector3(0, offset, 0);
         positions.push(center.x, center.y, center.z);
         normals.push(0, isTop ? 1 : -1, 0);
-        uvs.push(u.x + (u.z - u.x) * 0.5, u.y + (u.w - u.y) * 0.5);
+        const v = u.y + (u.w - u.y) * 0.5;
+        uvs.push(u.x + (u.z - u.x) * 0.5, CompatibilityOptions.UseOpenGLOrientationForUV ? 1 - v : v);
         if (c) {
             colors.push(c.r, c.g, c.b, c.a);
         }
@@ -239,7 +241,8 @@ export function CreateCylinderVertexData(options: { height?: number, diameterTop
             var textureCoordinate = new Vector2(cos * textureScale.x + 0.5, sin * textureScale.y + 0.5);
             positions.push(circleVector.x, circleVector.y, circleVector.z);
             normals.push(0, isTop ? 1 : -1, 0);
-            uvs.push(u.x + (u.z - u.x) * textureCoordinate.x, u.y + (u.w - u.y) * textureCoordinate.y);
+            const v = u.y + (u.w - u.y) * textureCoordinate.y;
+            uvs.push(u.x + (u.z - u.x) * textureCoordinate.x, CompatibilityOptions.UseOpenGLOrientationForUV ? 1 - v : v);
             if (c) {
                 colors.push(c.r, c.g, c.b, c.a);
             }

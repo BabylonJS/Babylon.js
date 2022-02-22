@@ -749,10 +749,10 @@ export class PBRMaterial extends PBRBaseMaterial {
      * @param name The material name
      * @param scene The scene the material will be use in.
      */
-    constructor(name: string, scene: Scene) {
+    constructor(name: string, scene?: Scene) {
         super(name, scene);
 
-        this._environmentBRDFTexture = GetEnvironmentBRDFTexture(scene);
+        this._environmentBRDFTexture = GetEnvironmentBRDFTexture(this.getScene());
     }
 
     /**
@@ -787,10 +787,9 @@ export class PBRMaterial extends PBRBaseMaterial {
      * @returns - An object with the serialized material.
      */
     public serialize(): any {
-        var serializationObject = SerializationHelper.Serialize(this);
+        var serializationObject = super.serialize();
         serializationObject.customType = "BABYLON.PBRMaterial";
 
-        serializationObject.stencil = this.stencil.serialize();
         serializationObject.clearCoat = this.clearCoat.serialize();
         serializationObject.anisotropy = this.anisotropy.serialize();
         serializationObject.brdf = this.brdf.serialize();

@@ -1035,7 +1035,7 @@ export class WebGPUTextureHelper {
                     arrayLayerCount: 1,
                     baseArrayLayer: 0,
                 }),
-                loadValue: WebGPUConstants.LoadOp.Load,
+                loadOp: WebGPUConstants.LoadOp.Load,
                 storeOp: WebGPUConstants.StoreOp.Store,
             }],
         };
@@ -1071,7 +1071,7 @@ export class WebGPUTextureHelper {
         passEncoder.setPipeline(pipeline);
         passEncoder.setBindGroup(0, bindGroup);
         passEncoder.draw(4, 1, 0, 0);
-        passEncoder.endPass();
+        passEncoder.end();
 
         commandEncoder!.copyTextureToTexture({
             texture: outputTexture,
@@ -1133,7 +1133,7 @@ export class WebGPUTextureHelper {
         passEncoder.setPipeline(pipeline);
         passEncoder.setBindGroup(0, bindGroup);
         passEncoder.draw(4, 1, 0, 0);
-        passEncoder.endPass();
+        passEncoder.end();
 
         commandEncoder!.popDebugGroup?.();
 
@@ -1295,7 +1295,7 @@ export class WebGPUTextureHelper {
                         arrayLayerCount: 1,
                         baseArrayLayer: faceIndex,
                     }),
-                    loadValue: WebGPUConstants.LoadOp.Load,
+                    loadOp: WebGPUConstants.LoadOp.Load,
                     storeOp: WebGPUConstants.StoreOp.Store,
                 }],
             };
@@ -1330,7 +1330,7 @@ export class WebGPUTextureHelper {
             passEncoder.setPipeline(pipeline);
             passEncoder.setBindGroup(0, bindGroup);
             passEncoder.draw(4, 1, 0, 0);
-            passEncoder.endPass();
+            passEncoder.end();
         }
 
         commandEncoder!.popDebugGroup?.();
@@ -1369,6 +1369,13 @@ export class WebGPUTextureHelper {
 
         const hasMipMaps = texture.generateMipMaps;
         const layerCount = depth || 1;
+        let mipmapCount;
+        if (texture._maxLodLevel !== null) {
+            mipmapCount = texture._maxLodLevel;
+        }
+        else {
+            mipmapCount = hasMipMaps ? WebGPUTextureHelper.ComputeNumMipmapLevels(width!, height!) : 1;
+        }
 
         if (texture.isCube) {
             const gpuTexture = this.createCubeTexture({ width, height }, texture.generateMipMaps, texture.generateMipMaps, texture.invertY, false, gpuTextureWrapper.format, 1, this._commandEncoderForCreation, gpuTextureWrapper.textureUsages, gpuTextureWrapper.textureAdditionalUsages);
@@ -1377,7 +1384,7 @@ export class WebGPUTextureHelper {
             gpuTextureWrapper.createView({
                 format: gpuTextureWrapper.format,
                 dimension: WebGPUConstants.TextureViewDimension.Cube,
-                mipLevelCount: hasMipMaps ? WebGPUTextureHelper.ComputeNumMipmapLevels(width!, height!) : 1,
+                mipLevelCount: mipmapCount,
                 baseArrayLayer: 0,
                 baseMipLevel: 0,
                 arrayLayerCount: 6,
@@ -1390,7 +1397,7 @@ export class WebGPUTextureHelper {
             gpuTextureWrapper.createView({
                 format: gpuTextureWrapper.format,
                 dimension: texture.is2DArray ? WebGPUConstants.TextureViewDimension.E2dArray : texture.is3D ? WebGPUConstants.TextureDimension.E3d : WebGPUConstants.TextureViewDimension.E2d,
-                mipLevelCount: hasMipMaps ? WebGPUTextureHelper.ComputeNumMipmapLevels(width!, height!) : 1,
+                mipLevelCount: mipmapCount,
                 baseArrayLayer: 0,
                 baseMipLevel: 0,
                 arrayLayerCount: texture.is3D ? 1 : layerCount,

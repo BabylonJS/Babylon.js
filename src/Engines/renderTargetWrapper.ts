@@ -37,6 +37,20 @@ export class RenderTargetWrapper {
     public _depthStencilTextureWithStencil: boolean = false;
 
     /**
+     * Gets the depth/stencil texture (if created by a createDepthStencilTexture() call)
+     */
+    public get depthStencilTexture() {
+        return this._depthStencilTexture;
+    }
+
+    /**
+     * Indicates if the depth/stencil texture has a stencil aspect
+     */
+    public get depthStencilTextureWithStencil() {
+        return this._depthStencilTextureWithStencil;
+    }
+
+    /**
      * Defines if the render target wrapper is for a cube texture or if false a 2d texture
      */
     public get isCube(): boolean {

@@ -448,6 +448,7 @@ __webpack_require__.r(__webpack_exports__);
 var BrickProceduralTexture = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(BrickProceduralTexture, _super);
     function BrickProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {
+        if (scene === void 0) { scene = null; }
         var _this = _super.call(this, name, size, "brickProceduralTexture", scene, fallbackTexture, generateMipMaps) || this;
         _this._numberOfBricksHeight = 15;
         _this._numberOfBricksWidth = 5;

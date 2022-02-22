@@ -42,8 +42,8 @@ declare module "babylonjs-loaders/glTF/glTFFileLoader" {
     import { Scene, IDisposable } from "babylonjs/scene";
     import { WebRequest } from "babylonjs/Misc/webRequest";
     import { IFileRequest } from "babylonjs/Misc/fileRequest";
-    import { IDataBuffer } from 'babylonjs/Misc/dataReader';
-    import { LoadFileError } from 'babylonjs/Misc/fileTools';
+    import { IDataBuffer } from "babylonjs/Misc/dataReader";
+    import { LoadFileError } from "babylonjs/Misc/fileTools";
     /**
      * Mode that determines the coordinate system to use.
      */
@@ -205,6 +205,15 @@ declare module "babylonjs-loaders/glTF/glTFFileLoader" {
          * If true, load the color (gamma encoded) textures into sRGB buffers (if supported by the GPU), which will yield more accurate results when sampling the texture. Defaults to true.
          */
         useSRGBBuffers: boolean;
+        /**
+         * When loading glTF animations, which are defined in seconds, target them to this FPS. Defaults to 60.
+         */
+        targetFps: number;
+        /**
+         * Defines if the loader should always compute the nearest common ancestor of the skeleton joints instead of using `skin.skeleton`. Defaults to false.
+         * Set this to true if loading assets with invalid `skin.skeleton` values.
+         */
+        alwaysComputeSkeletonRootNode: boolean;
         /**
         * Function called before loading a url referenced by the asset.
         */
@@ -1017,7 +1026,6 @@ declare module "babylonjs-loaders/glTF/1.0/index" {
 }
 declare module "babylonjs-loaders/glTF/2.0/glTFLoaderInterfaces" {
     import { AnimationGroup } from "babylonjs/Animations/animationGroup";
-    import { Bone } from "babylonjs/Bones/bone";
     import { Skeleton } from "babylonjs/Bones/skeleton";
     import { Material } from "babylonjs/Materials/material";
     import { TransformNode } from "babylonjs/Meshes/transformNode";
@@ -1162,8 +1170,6 @@ declare module "babylonjs-loaders/glTF/2.0/glTFLoaderInterfaces" {
         _babylonTransformNode?: TransformNode;
         /** @hidden */
         _primitiveBabylonMeshes?: AbstractMesh[];
-        /** @hidden */
-        _babylonBones?: Bone[];
         /** @hidden */
         _numMorphTargets?: number;
     }
@@ -1432,9 +1438,9 @@ declare module "babylonjs-loaders/glTF/2.0/glTFLoader" {
         _babylonLights: Light[];
         /** @hidden */
         _disableInstancedMesh: number;
+        private readonly _parent;
+        private readonly _extensions;
         private _disposed;
-        private _parent;
-        private _extensions;
         private _rootUrl;
         private _fileName;
         private _uniqueRootUrl;
@@ -1443,6 +1449,7 @@ declare module "babylonjs-loaders/glTF/2.0/glTFLoader" {
         private _babylonScene;
         private _rootBabylonMesh;
         private _defaultBabylonMaterialData;
+        private _postSceneLoadActions;
         private static _RegisteredExtensions;
         /**
          * The default glTF sampler.
@@ -1535,6 +1542,7 @@ declare module "babylonjs-loaders/glTF/2.0/glTFLoader" {
         private static _LoadTransform;
         private _loadSkinAsync;
         private _loadBones;
+        private _findSkeletonRootNode;
         private _loadBone;
         private _loadSkinInverseBindMatricesDataAsync;
         private _updateBoneMatrices;
@@ -1784,6 +1792,7 @@ declare module "babylonjs-loaders/glTF/2.0/Extensions/EXT_mesh_gpu_instancing" {
     import { GLTFLoader } from "babylonjs-loaders/glTF/2.0/glTFLoader";
     import { IGLTFLoaderExtension } from "babylonjs-loaders/glTF/2.0/glTFLoaderExtension";
     import { INode } from "babylonjs-loaders/glTF/2.0/glTFLoaderInterfaces";
+    import "babylonjs/Meshes/thinInstanceMesh";
     /**
      * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1691)
      * [Playground Sample](https://playground.babylonjs.com/#QFIGLW#9)
@@ -2538,7 +2547,6 @@ declare module "babylonjs-loaders/glTF/2.0/Extensions/MSFT_lod" {
         _loadUriAsync(context: string, property: IProperty, uri: string): Nullable<Promise<ArrayBufferView>>;
         /** @hidden */
         loadBufferAsync(context: string, buffer: IBuffer, byteOffset: number, byteLength: number): Nullable<Promise<ArrayBufferView>>;
-        private _isMesh;
         private _loadBufferLOD;
         /**
          * Gets an array of LOD properties from lowest to highest.
@@ -3353,6 +3361,15 @@ declare module BABYLON {
          * If true, load the color (gamma encoded) textures into sRGB buffers (if supported by the GPU), which will yield more accurate results when sampling the texture. Defaults to true.
          */
         useSRGBBuffers: boolean;
+        /**
+         * When loading glTF animations, which are defined in seconds, target them to this FPS. Defaults to 60.
+         */
+        targetFps: number;
+        /**
+         * Defines if the loader should always compute the nearest common ancestor of the skeleton joints instead of using `skin.skeleton`. Defaults to false.
+         * Set this to true if loading assets with invalid `skin.skeleton` values.
+         */
+        alwaysComputeSkeletonRootNode: boolean;
         /**
         * Function called before loading a url referenced by the asset.
         */
@@ -4268,8 +4285,6 @@ declare module BABYLON.GLTF2.Loader {
         /** @hidden */
         _primitiveBabylonMeshes?: AbstractMesh[];
         /** @hidden */
-        _babylonBones?: Bone[];
-        /** @hidden */
         _numMorphTargets?: number;
     }
     /** @hidden */
@@ -4506,9 +4521,9 @@ declare module BABYLON.GLTF2 {
         _babylonLights: Light[];
         /** @hidden */
         _disableInstancedMesh: number;
+        private readonly _parent;
+        private readonly _extensions;
         private _disposed;
-        private _parent;
-        private _extensions;
         private _rootUrl;
         private _fileName;
         private _uniqueRootUrl;
@@ -4517,6 +4532,7 @@ declare module BABYLON.GLTF2 {
         private _babylonScene;
         private _rootBabylonMesh;
         private _defaultBabylonMaterialData;
+        private _postSceneLoadActions;
         private static _RegisteredExtensions;
         /**
          * The default glTF sampler.
@@ -4609,6 +4625,7 @@ declare module BABYLON.GLTF2 {
         private static _LoadTransform;
         private _loadSkinAsync;
         private _loadBones;
+        private _findSkeletonRootNode;
         private _loadBone;
         private _loadSkinInverseBindMatricesDataAsync;
         private _updateBoneMatrices;
@@ -5494,7 +5511,6 @@ declare module BABYLON.GLTF2.Loader.Extensions {
         _loadUriAsync(context: string, property: IProperty, uri: string): Nullable<Promise<ArrayBufferView>>;
         /** @hidden */
         loadBufferAsync(context: string, buffer: IBuffer, byteOffset: number, byteLength: number): Nullable<Promise<ArrayBufferView>>;
-        private _isMesh;
         private _loadBufferLOD;
         /**
          * Gets an array of LOD properties from lowest to highest.

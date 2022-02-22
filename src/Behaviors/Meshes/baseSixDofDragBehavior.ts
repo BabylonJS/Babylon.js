@@ -236,40 +236,43 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
             virtualMeshesInfo.originMesh.rotationQuaternion!.copyFrom(controllerAimTransform.rotationQuaternion!);
         }
 
-        // Z scaling logic
-        // Camera.getForwardRay modifies TmpVectors.Vector[0-3], so cache it in advance
-        const cameraForwardVec = TmpVectors.Vector3[0];
-        const originDragDirection = TmpVectors.Vector3[1];
-        cameraForwardVec.copyFrom(this._pointerCamera!.getForwardRay().direction);
-        virtualMeshesInfo.originMesh.position.subtractToRef(virtualMeshesInfo.lastOriginPosition, originDragDirection);
-        virtualMeshesInfo.lastOriginPosition.copyFrom(virtualMeshesInfo.originMesh.position);
-        const controllerDragDistance = originDragDirection.length();
-        originDragDirection.normalize();
-
         virtualMeshesInfo.pivotMesh.computeWorldMatrix(true);
         virtualMeshesInfo.dragMesh.computeWorldMatrix(true);
 
-        const cameraToDrag = TmpVectors.Vector3[2];
-        const controllerToDrag = TmpVectors.Vector3[3];
-        virtualMeshesInfo.dragMesh.absolutePosition.subtractToRef(this._pointerCamera!.globalPosition, cameraToDrag);
-        virtualMeshesInfo.dragMesh.absolutePosition.subtractToRef(virtualMeshesInfo.originMesh.position, controllerToDrag);
-        const controllerToDragDistance = controllerToDrag.length();
-        cameraToDrag.normalize();
-        controllerToDrag.normalize();
+        // Z scaling logic
+        if (zDragFactor !== 0) {
+            // Camera.getForwardRay modifies TmpVectors.Vector[0-3], so cache it in advance
+            const cameraForwardVec = TmpVectors.Vector3[0];
+            const originDragDirection = TmpVectors.Vector3[1];
+            cameraForwardVec.copyFrom(this._pointerCamera!.getForwardRay().direction);
+            virtualMeshesInfo.originMesh.position.subtractToRef(virtualMeshesInfo.lastOriginPosition, originDragDirection);
+            virtualMeshesInfo.lastOriginPosition.copyFrom(virtualMeshesInfo.originMesh.position);
+            const controllerDragDistance = originDragDirection.length();
+            originDragDirection.normalize();
 
-        const controllerDragScaling = Math.abs(Vector3.Dot(originDragDirection, controllerToDrag)) * Vector3.Dot(originDragDirection, cameraForwardVec);
-        let zOffsetScaling = controllerDragScaling * zDragFactor * controllerDragDistance * controllerToDragDistance;
+            const cameraToDrag = TmpVectors.Vector3[2];
+            const controllerToDrag = TmpVectors.Vector3[3];
+            virtualMeshesInfo.dragMesh.absolutePosition.subtractToRef(this._pointerCamera!.globalPosition, cameraToDrag);
+            virtualMeshesInfo.dragMesh.absolutePosition.subtractToRef(virtualMeshesInfo.originMesh.position, controllerToDrag);
+            const controllerToDragDistance = controllerToDrag.length();
+            cameraToDrag.normalize();
+            controllerToDrag.normalize();
 
-        // Prevent pulling the mesh through the controller
-        if (zOffsetScaling + controllerToDragDistance < 0.1) {
-            zOffsetScaling = Math.min(controllerToDragDistance, 0.1);
+            const controllerDragScaling = Math.abs(Vector3.Dot(originDragDirection, controllerToDrag)) * Vector3.Dot(originDragDirection, cameraForwardVec);
+            let zOffsetScaling = controllerDragScaling * zDragFactor * controllerDragDistance * controllerToDragDistance;
+
+            // Prevent pulling the mesh through the controller
+            const minDistanceFromControllerToDragMesh = 0.01;
+            if (zOffsetScaling < 0 && (minDistanceFromControllerToDragMesh - controllerToDragDistance > zOffsetScaling)) {
+                zOffsetScaling = Math.min(minDistanceFromControllerToDragMesh - controllerToDragDistance, 0);
+            }
+            controllerToDrag.scaleInPlace(zOffsetScaling);
+
+            controllerToDrag.addToRef(virtualMeshesInfo.pivotMesh.absolutePosition, this._tmpVector);
+            virtualMeshesInfo.pivotMesh.setAbsolutePosition(this._tmpVector);
+            controllerToDrag.addToRef(virtualMeshesInfo.dragMesh.absolutePosition, this._tmpVector);
+            virtualMeshesInfo.dragMesh.setAbsolutePosition(this._tmpVector);
         }
-        controllerToDrag.scaleInPlace(zOffsetScaling);
-
-        controllerToDrag.addToRef(virtualMeshesInfo.pivotMesh.absolutePosition, this._tmpVector);
-        virtualMeshesInfo.pivotMesh.setAbsolutePosition(this._tmpVector);
-        controllerToDrag.addToRef(virtualMeshesInfo.dragMesh.absolutePosition, this._tmpVector);
-        virtualMeshesInfo.dragMesh.setAbsolutePosition(this._tmpVector);
     }
 
     /**

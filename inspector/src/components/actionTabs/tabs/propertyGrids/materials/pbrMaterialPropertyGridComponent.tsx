@@ -16,6 +16,9 @@ import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids
 import { GlobalState } from "../../../../globalState";
 import { Vector2LineComponent } from "../../../../../sharedUiComponents/lines/vector2LineComponent";
 
+import "babylonjs/Rendering/prePassRendererSceneComponent";
+import "babylonjs/Rendering/subSurfaceSceneComponent";
+
 interface IPBRMaterialPropertyGridComponentProps {
     globalState: GlobalState;
     material: PBRMaterial;
@@ -173,7 +176,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
             { label: "Anisotropic Tangents", value: 12 },
             { label: "Anisotropic Bitangents", value: 13 },
             // Maps
-            { label: "Albdeo Map", value: 20 },
+            { label: "Albedo Map", value: 20 },
             { label: "Ambient Map", value: 21 },
             { label: "Opacity Map", value: 22 },
             { label: "Emissive Map", value: 23 },

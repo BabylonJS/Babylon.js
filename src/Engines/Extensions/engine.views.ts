@@ -22,11 +22,19 @@ export class EngineView {
 
 declare module "../../Engines/engine" {
     export interface Engine {
+        /** @hidden */
+        _inputElement: Nullable<HTMLElement>;
 
         /**
          * Gets or sets the  HTML element to use for attaching events
          */
         inputElement: Nullable<HTMLElement>;
+
+        /**
+         * Observable to handle when a change to inputElement occurs
+         * @hidden
+         */
+        _onEngineViewChanged?: () => void;
 
         /**
          * Gets the current engine view
@@ -54,6 +62,18 @@ declare module "../../Engines/engine" {
         unRegisterView(canvas: HTMLCanvasElement): Engine;
     }
 }
+
+Object.defineProperty(Engine.prototype, "inputElement", {
+    get: function (this: Engine) {
+        return this._inputElement;
+    },
+    set: function (this: Engine, value: HTMLElement) {
+        if (this._inputElement !== value) {
+            this._inputElement = value;
+            this._onEngineViewChanged?.();
+        }
+    },
+});
 
 Engine.prototype.getInputElement = function (): Nullable<HTMLElement> {
     return this.inputElement || this.getRenderingCanvas();

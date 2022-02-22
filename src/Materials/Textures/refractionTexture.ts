@@ -28,15 +28,15 @@ export class RefractionTexture extends RenderTargetTexture {
      * @param scene Define the scene the refraction belongs to
      * @param generateMipMaps Define if we need to generate mips level for the refraction
      */
-    constructor(name: string, size: number, scene: Scene, generateMipMaps?: boolean) {
+    constructor(name: string, size: number, scene?: Scene, generateMipMaps?: boolean) {
         super(name, size, scene, generateMipMaps, true);
 
         this.onBeforeRenderObservable.add(() => {
-            scene.clipPlane = this.refractionPlane;
+            this.getScene()!.clipPlane = this.refractionPlane;
         });
 
         this.onAfterRenderObservable.add(() => {
-            scene.clipPlane = null;
+            this.getScene()!.clipPlane = null;
         });
     }
 

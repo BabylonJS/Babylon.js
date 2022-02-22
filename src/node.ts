@@ -163,7 +163,7 @@ export class Node implements IBehaviorAware<Node> {
     /** @hidden */
     public _cache: any = {};
 
-    private _parentNode: Nullable<Node> = null;
+    protected _parentNode: Nullable<Node> = null;
 
     /** @hidden */
     protected _children: Nullable<Node[]> = null;

@@ -1,4 +1,4 @@
-import { Observable, Observer } from "../Misc/observable";
+import { Observable } from "../Misc/observable";
 import { PointerInfoPre, PointerInfo, PointerEventTypes } from "../Events/pointerEvents";
 import { Nullable } from "../types";
 import { AbstractActionManager } from "../Actions/abstractActionManager";
@@ -10,8 +10,8 @@ import { ActionEvent } from "../Actions/actionEvent";
 import { KeyboardEventTypes, KeyboardInfoPre, KeyboardInfo } from "../Events/keyboardEvents";
 import { DeviceType, PointerInput } from "../DeviceInput/InputDevices/deviceEnums";
 import { IEvent, IKeyboardEvent, IMouseEvent, IPointerEvent, IWheelEvent } from "../Events/deviceInputEvents";
-import { IDeviceEvent } from "../DeviceInput/InputDevices/inputInterfaces";
 import { DeviceSourceManager } from "../DeviceInput/InputDevices/deviceSourceManager";
+import { EngineStore } from "../Engines/engineStore";
 
 declare type Scene = import("../scene").Scene;
 
@@ -66,9 +66,6 @@ export class InputManager {
     private _alreadyAttached = false;
     private _alreadyAttachedTo: HTMLElement;
 
-    // Observer
-    private _onInputObserver: Nullable<Observer<IDeviceEvent>>;
-
     // Pointers
     private _onPointerMove: (evt: IMouseEvent) => void;
     private _onPointerDown: (evt: IPointerEvent) => void;
@@ -113,14 +110,17 @@ export class InputManager {
     private _onKeyUp: (evt: IKeyboardEvent) => void;
 
     private _scene: Scene;
-    private _deviceSourceManager: DeviceSourceManager;
+    private _deviceSourceManager: Nullable<DeviceSourceManager> = null;
 
     /**
      * Creates a new InputManager
      * @param scene defines the hosting scene
      */
-    public constructor(scene: Scene) {
-        this._scene = scene;
+    constructor(scene?: Scene) {
+        this._scene = scene || <Scene>EngineStore.LastCreatedScene;
+        if (!this._scene) {
+            return;
+        }
     }
 
     /**
@@ -493,10 +493,7 @@ export class InputManager {
         }
 
         if (elementToAttachTo) { this._alreadyAttachedTo = elementToAttachTo; }
-
-        if (!this._deviceSourceManager) {
-            this._deviceSourceManager = new DeviceSourceManager(engine);
-        }
+        this._deviceSourceManager = new DeviceSourceManager(engine);
 
         this._initActionManager = (act: Nullable<AbstractActionManager>, clickInfo: _ClickInfo): Nullable<AbstractActionManager> => {
             if (!this._meshPickProceed) {
@@ -817,7 +814,7 @@ export class InputManager {
             if (scene.onPreKeyboardObservable.hasObservers()) {
                 let pi = new KeyboardInfoPre(type, evt);
                 scene.onPreKeyboardObservable.notifyObservers(pi, type);
-                if (pi.skipOnPointerObservable) {
+                if (pi.skipOnKeyboardObservable) {
                     return;
                 }
             }
@@ -837,7 +834,7 @@ export class InputManager {
             if (scene.onPreKeyboardObservable.hasObservers()) {
                 let pi = new KeyboardInfoPre(type, evt);
                 scene.onPreKeyboardObservable.notifyObservers(pi, type);
-                if (pi.skipOnPointerObservable) {
+                if (pi.skipOnKeyboardObservable) {
                     return;
                 }
             }
@@ -852,7 +849,7 @@ export class InputManager {
             }
         };
 
-        this._onInputObserver = this._deviceSourceManager.onInputChangedObservable.add((eventData) => {
+        this._deviceSourceManager.onInputChangedObservable.add((eventData) => {
             const evt: IEvent = eventData;
             // Keyboard Events
             if (eventData.deviceType === DeviceType.Keyboard) {
@@ -876,12 +873,7 @@ export class InputManager {
                 }
 
                 if (attachMove) {
-                    if (
-                        eventData.inputIndex === PointerInput.Horizontal ||
-                        eventData.inputIndex === PointerInput.Vertical ||
-                        eventData.inputIndex === PointerInput.DeltaHorizontal ||
-                        eventData.inputIndex === PointerInput.DeltaVertical
-                    ) {
+                    if (eventData.inputIndex === PointerInput.Move) {
                         this._onPointerMove(evt as IPointerEvent);
                     } else if (eventData.inputIndex === PointerInput.MouseWheelX || eventData.inputIndex === PointerInput.MouseWheelY || eventData.inputIndex === PointerInput.MouseWheelZ) {
                         this._onPointerMove(evt as IWheelEvent);
@@ -898,8 +890,8 @@ export class InputManager {
      */
     public detachControl() {
         if (this._alreadyAttached) {
-
-            this._deviceSourceManager.onInputChangedObservable.remove(this._onInputObserver);
+            this._deviceSourceManager!.dispose();
+            this._deviceSourceManager = null;
 
             // Cursor
             if (this._alreadyAttachedTo && !this._scene.doNotHandleCursors) {

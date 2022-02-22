@@ -9,8 +9,9 @@ import { WorkbenchComponent } from "./diagram/workbench";
 import { MessageDialogComponent } from "./sharedComponents/messageDialog";
 import { SceneExplorerComponent } from "./components/sceneExplorer/sceneExplorerComponent";
 import { CommandBarComponent } from "./components/commandBarComponent";
-import { GuiGizmoComponent } from "./diagram/guiGizmo";
+import { GizmoWrapper } from "./diagram/guiGizmoWrapper";
 import { Nullable } from "babylonjs/types";
+import { ArtBoardComponent } from './diagram/artBoard';
 
 require("./main.scss");
 require("./scss/header.scss");
@@ -85,6 +86,8 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
             false
         );
         this.createItems();
+
+        this.props.globalState.onBackgroundColorChangeObservable.add(() => this.forceUpdate());
     }
 
     showWaitScreen() {
@@ -114,13 +117,15 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
         const deltaX = evt.clientX - this._startX;
         const rootElement = evt.currentTarget.ownerDocument!.getElementById("gui-editor-workbench-root") as HTMLDivElement;
 
+        const maxWidth = this.props.globalState.hostWindow.innerWidth - this._toolBarIconSize - 8;
+
         if (forLeft) {
             this._leftWidth += deltaX;
-            this._leftWidth = Math.max(150, Math.min(400, this._leftWidth));
+            this._leftWidth = Math.max(150, Math.min(maxWidth - this._rightWidth, this._leftWidth));
             DataStorage.WriteNumber("LeftWidth", this._leftWidth);
         } else {
             this._rightWidth -= deltaX;
-            this._rightWidth = Math.max(250, Math.min(500, this._rightWidth));
+            this._rightWidth = Math.max(250, Math.min(maxWidth - this._leftWidth, this._rightWidth));
             DataStorage.WriteNumber("RightWidth", this._rightWidth);
         }
 
@@ -262,9 +267,13 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                         }}
                         onDragOver={(event) => {
                             event.preventDefault();
+                        }}
+                        style={{
+                            backgroundColor: this.props.globalState.backgroundColor.toHexString()
                         }}>
+                        <ArtBoardComponent globalState={this.props.globalState}/>
                         <WorkbenchComponent ref={"workbenchCanvas"} globalState={this.props.globalState} />
-                        <GuiGizmoComponent globalState={this.props.globalState} />
+                        <GizmoWrapper globalState={this.props.globalState} />
                     </div>
 
                     <div
@@ -435,7 +444,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
         let guiElement = GUINodeTools.CreateControlFromString(value);
         let newGuiNode = this.props.globalState.workbench.appendBlock(guiElement);
         this.props.globalState.onSelectionChangedObservable.notifyObservers(newGuiNode);
-        this.props.globalState.guiGizmo.onUp();
+        this.props.globalState.onPointerUpObservable.notifyObservers(null);
         this.forceUpdate();
     }
 

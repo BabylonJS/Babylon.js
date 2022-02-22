@@ -193,11 +193,21 @@ declare module BABYLON {
         /** Get the last created scene instance */
         static GetLastCreatedScene(): BABYLON.Scene;
         /** Get managed asset container. */
-        static GetAssetContainer(scene: BABYLON.Scene, name: string): BABYLON.AssetContainer;
+        static GetImportMeshes(scene: BABYLON.Scene, name: string): BABYLON.AbstractMesh[];
+        /** Get managed asset container map. */
+        static GetImportMeshMap(scene: BABYLON.Scene): Map<string, BABYLON.AbstractMesh[]>;
+        /** Clear all managed asset containers. */
+        static ClearImportMeshes(scene: BABYLON.Scene): void;
         /** Set managed asset container. */
-        static SetAssetContainer(scene: BABYLON.Scene, name: string, container: BABYLON.AssetContainer): void;
+        static RegisterImportMeshes(scene: BABYLON.Scene, name: string, meshes: BABYLON.AbstractMesh[]): void;
+        /** Get managed asset container. */
+        static GetAssetContainer(scene: BABYLON.Scene, name: string): BABYLON.AssetContainer;
+        /** Get managed asset container map. */
+        static GetAssetContainerMap(scene: BABYLON.Scene): Map<string, BABYLON.AssetContainer>;
         /** Clear all managed asset containers. */
         static ClearAssetContainers(scene: BABYLON.Scene): void;
+        /** Set managed asset container. */
+        static RegisterAssetContainer(scene: BABYLON.Scene, name: string, container: BABYLON.AssetContainer): void;
         /** Gets the specified mesh by name from scene. */
         static GetMesh(scene: BABYLON.Scene, name: string): BABYLON.Mesh;
         /** Gets the specified mesh by id from scene. */
@@ -232,15 +242,18 @@ declare module BABYLON {
         static GetMaterialWithName(scene: BABYLON.Scene, name: string): BABYLON.Material;
         /** Get all materials with name. (Uses starts with text searching) */
         static GetAllMaterialsWithName(scene: BABYLON.Scene, name: string): BABYLON.Material[];
-        /** Instantiate the specified prefab asset hierarchy into the scene. (Cloned Hierarchy) */
-        static InstantiatePrefab(container: BABYLON.AssetContainer, prefabName: string, newName: string, makeNewMaterials?: boolean, cloneAnimations?: boolean): BABYLON.TransformNode;
+        /** TODO: Support Animation Groups */
+        /** TODO: Support Instance Or Clones */
+        /** Instantiate the specified prefab asset hierarchy from the specified scene. (Cloned Hierarchy) */
+        static InstantiatePrefabFromScene(scene: BABYLON.Scene, prefabName: string, newName: string, cloneAnimations?: boolean): BABYLON.TransformNode;
+        /** Instantiate the specified prefab asset hierarchy from an asset container. (Cloned Hierarchy) */
+        static InstantiatePrefabFromContainer(container: BABYLON.AssetContainer, prefabName: string, newName: string, cloneAnimations?: boolean, makeNewMaterials?: boolean): BABYLON.TransformNode;
         /** Clones the specified transform node asset into the scene. (Transform Node) */
         static CloneTransformNode(container: BABYLON.AssetContainer, nodeName: string, cloneName: string): BABYLON.TransformNode;
         /** Clones the specified abstract mesh asset into the scene. (Abtract Mesh) */
         static CloneAbstractMesh(container: BABYLON.AssetContainer, nodeName: string, cloneName: string): BABYLON.AbstractMesh;
         /** Creates an instance of the specified mesh asset into the scene. (Mesh Instance) */
         static CreateInstancedMesh(container: BABYLON.AssetContainer, meshName: string, instanceName: string): BABYLON.InstancedMesh;
-        /** Clones the specfied transform node from scene. */
         /** Registers a script componment with the scene manager. */
         static RegisterScriptComponent(instance: BABYLON.ScriptComponent, alias: string, validate?: boolean): void;
         /** Destroys a script component instance. */
@@ -653,19 +666,19 @@ declare module BABYLON {
         private _registeredClassname;
         private _lateUpdateObserver;
         private _fixedUpdateObserver;
+        /** Gets the script component ready state */
+        isReady(): boolean;
         /** Gets the current scene object */
         get scene(): BABYLON.Scene;
         /** Gets the transform node entity */
         get transform(): BABYLON.TransformNode;
         constructor(transform: BABYLON.TransformNode, scene: BABYLON.Scene, properties?: any);
+        /** Gets the script component class name */
+        getClassName(): string;
         /** Sets the script component property bag value */
         protected setProperty(name: string, propertyValue: any): void;
         /** Gets the script component property bag value */
         protected getProperty<T>(name: string, defaultValue?: T): T;
-        /** Gets the script component class name */
-        getClassName(): string;
-        /** Gets the script component ready state */
-        getReadyState(): boolean;
         /** Get the current time in seconds */
         getTime(): number;
         /** Get the total game time in seconds */
@@ -890,12 +903,13 @@ declare module BABYLON {
     enum System {
         Deg2Rad,
         Rad2Deg,
-        Epsilon = 0.00001,
+        Epsilon = 0.000001,
         SingleEpsilon = 1.401298e-45,
         EpsilonNormalSqrt = 1e-15,
         Kph2Mph = 0.621371,
         Mph2Kph = 1.60934,
         Mps2Kph = 3.6,
+        Mps2Mph = 2.23694,
         Meter2Inch = 39.3701,
         Inch2Meter = 0.0254,
         Gravity = 9.81,
@@ -1130,6 +1144,12 @@ declare module BABYLON {
         static UseArrowKeyRotation: boolean;
     }
     /**
+     * Asset Preloader Interface (https://doc.babylonjs.com/divingDeeper/importers/assetManager)
+     */
+    interface IAssetPreloader {
+        addPreloaderTasks(assetsManager: BABYLON.PreloadAssetsManager): void;
+    }
+    /**
      * Window Message Interface
      */
     interface IWindowMessage {
@@ -1248,12 +1268,6 @@ declare module BABYLON {
         a: number;
     }
     /**
-     * Asset Preloader Interface (https://doc.babylonjs.com/divingDeeper/importers/assetManager)
-     */
-    interface IAssetPreloader {
-        addPreloaderTasks(assetsManager: BABYLON.PreloadAssetsManager): void;
-    }
-    /**
      * Http Request Header
      * @class RequestHeader - All rights reserved (c) 2020 Mackey Kinard
      */
@@ -1268,6 +1282,14 @@ declare module BABYLON {
     class TriggerVolume {
         mesh: BABYLON.AbstractMesh;
         state: number;
+    }
+    /**
+     * Room Error Message
+     * @class RoomErrorMessage - All rights reserved (c) 2020 Mackey Kinard
+     */
+    class RoomErrorMessage {
+        code: number;
+        message: string;
     }
     /**
      * Event Message Bus (Use Static Singleton Pattern)
@@ -1434,6 +1456,8 @@ declare module BABYLON {
         private static TempQuaternion3;
         private static PrintElement;
         private static LoadingState;
+        /** Zero pad a number to string */
+        static ZeroPad(num: number, places: number): string;
         static OnPreloaderProgress: (remainingCount: number, totalCount: number, lastFinishedTask: BABYLON.AbstractAssetTask) => void;
         static OnPreloaderComplete: (tasks: BABYLON.AbstractAssetTask[]) => void;
         static IsLayerMasked(mask: number, layer: number): boolean;
@@ -1441,12 +1465,33 @@ declare module BABYLON {
         static Approximately(a: number, b: number): boolean;
         static GetVertexDataFromMesh(mesh: BABYLON.Mesh): BABYLON.VertexData;
         static UpdateAbstractMeshMaterial(mesh: BABYLON.AbstractMesh, material: BABYLON.Material, materialIndex: number): void;
-        static MoveTowardsVector2(current: BABYLON.Vector2, target: BABYLON.Vector2, maxDelta: number): BABYLON.Vector2;
-        static MoveTowardsVector2ToRef(current: BABYLON.Vector2, target: BABYLON.Vector2, maxDelta: number, result: BABYLON.Vector2): void;
-        static MoveTowardsVector3(current: BABYLON.Vector3, target: BABYLON.Vector3, maxDelta: number): BABYLON.Vector3;
-        static MoveTowardsVector3ToRef(current: BABYLON.Vector3, target: BABYLON.Vector3, maxDelta: number, result: BABYLON.Vector3): void;
-        static MoveTowardsVector4(current: BABYLON.Vector4, target: BABYLON.Vector4, maxDelta: number): BABYLON.Vector4;
-        static MoveTowardsVector4ToRef(current: BABYLON.Vector4, target: BABYLON.Vector4, maxDelta: number, result: BABYLON.Vector4): void;
+        /** Creates a rotation which rotates /angle/ degrees around /axis/ */
+        static LerpLog(a: number, b: number, t: number): number;
+        static LerpExp(a: number, b: number, t: number): number;
+        static LerpUnclamped(a: number, b: number, t: number): number;
+        static LerpUnclampedColor3(a: BABYLON.Color3, b: BABYLON.Color3, t: number): BABYLON.Color3;
+        static LerpUnclampedColor3ToRef(a: BABYLON.Color3, b: BABYLON.Color3, t: number, result: BABYLON.Color3): void;
+        static LerpUnclampedColor4(a: BABYLON.Color4, b: BABYLON.Color4, t: number): BABYLON.Color4;
+        static LerpUnclampedColor4ToRef(a: BABYLON.Color4, b: BABYLON.Color4, t: number, result: BABYLON.Color4): void;
+        static LerpUnclampedVector2(a: BABYLON.Vector2, b: BABYLON.Vector2, t: number): BABYLON.Vector2;
+        static LerpUnclampedVector2ToRef(a: BABYLON.Vector2, b: BABYLON.Vector2, t: number, result: BABYLON.Vector2): void;
+        static LerpUnclampedVector3(a: BABYLON.Vector3, b: BABYLON.Vector3, t: number): BABYLON.Vector3;
+        static LerpUnclampedVector3ToRef(a: BABYLON.Vector3, b: BABYLON.Vector3, t: number, result: BABYLON.Vector3): void;
+        static LerpUnclampedVector4(a: BABYLON.Vector4, b: BABYLON.Vector4, t: number): BABYLON.Vector4;
+        static LerpUnclampedVector4ToRef(a: BABYLON.Vector4, b: BABYLON.Vector4, t: number, result: BABYLON.Vector4): void;
+        static IsEqualUsingDot(dot: number): boolean;
+        static QuaternionAngle(a: BABYLON.Quaternion, b: BABYLON.Quaternion): number;
+        static QuaternionLengthSquared(quat: BABYLON.Quaternion): number;
+        static QuaternionRotateTowards(from: BABYLON.Quaternion, to: BABYLON.Quaternion, maxDegreesDelta: number): BABYLON.Quaternion;
+        static QuaternionRotateTowardsToRef(from: BABYLON.Quaternion, to: BABYLON.Quaternion, maxDegreesDelta: number, result: BABYLON.Quaternion): void;
+        static QuaternionSlerpUnclamped(from: BABYLON.Quaternion, to: BABYLON.Quaternion, t: number): BABYLON.Quaternion;
+        static QuaternionSlerpUnclampedToRef(a: BABYLON.Quaternion, b: BABYLON.Quaternion, t: number, result: BABYLON.Quaternion): void;
+        static MoveTowardsVector2(current: BABYLON.Vector2, target: BABYLON.Vector2, maxDistanceDelta: number): BABYLON.Vector2;
+        static MoveTowardsVector2ToRef(current: BABYLON.Vector2, target: BABYLON.Vector2, maxDistanceDelta: number, result: BABYLON.Vector2): void;
+        static MoveTowardsVector3(current: BABYLON.Vector3, target: BABYLON.Vector3, maxDistanceDelta: number): BABYLON.Vector3;
+        static MoveTowardsVector3ToRef(current: BABYLON.Vector3, target: BABYLON.Vector3, maxDistanceDelta: number, result: BABYLON.Vector3): void;
+        static MoveTowardsVector4(current: BABYLON.Vector4, target: BABYLON.Vector4, maxDistanceDelta: number): BABYLON.Vector4;
+        static MoveTowardsVector4ToRef(current: BABYLON.Vector4, target: BABYLON.Vector4, maxDistanceDelta: number, result: BABYLON.Vector4): void;
         /**  Clamps a vector2 magnitude to a max length. */
         static ClampMagnitudeVector2(vector: BABYLON.Vector2, length: number): BABYLON.Vector2;
         /**  Clamps a vector2 magnitude to a max length. */
@@ -1455,15 +1500,6 @@ declare module BABYLON {
         static ClampMagnitudeVector3(vector: BABYLON.Vector3, length: number): BABYLON.Vector3;
         /**  Clamps a vector3 magnitude to a max length. */
         static ClampMagnitudeVector3ToRef(vector: BABYLON.Vector3, length: number, result: BABYLON.Vector3): void;
-        /** Zero pad a number to string */
-        static ZeroPad(num: number, places: number): string;
-        /** TODO */
-        static LerpLog(a: number, b: number, t: number): number;
-        /** TODO */
-        static LerpExp(a: number, b: number, t: number): number;
-        static LerpClamp(a: number, b: number, t: number): number;
-        /** TODO */
-        static LerpUnclamp(a: number, b: number, t: number): number;
         /** Returns the angle in degrees between the from and to vectors. */
         static GetAngle(from: BABYLON.Vector3, to: BABYLON.Vector3): number;
         /** Returns the angle in radians between the from and to vectors. */
@@ -1528,9 +1564,9 @@ declare module BABYLON {
         /** Sets a vector3 result degrees converted from radions */
         static Vector3Rad2DegToRef(vector: BABYLON.Vector3, result: BABYLON.Vector3): void;
         /** Multiply the quaternion by a vector */
-        static MultiplyQuaternionByVector(quaternion: BABYLON.Quaternion, vector: BABYLON.Vector3): BABYLON.Vector3;
+        static MultiplyQuaternionByVector(rotation: BABYLON.Quaternion, point: BABYLON.Vector3): BABYLON.Vector3;
         /** Multiply the quaternion by a vector to result */
-        static MultiplyQuaternionByVectorToRef(quaternion: BABYLON.Quaternion, vector: BABYLON.Vector3, result: BABYLON.Vector3): void;
+        static MultiplyQuaternionByVectorToRef(rotation: BABYLON.Quaternion, point: BABYLON.Vector3, result: BABYLON.Vector3): void;
         /** Validate and switch Quaternion rotation to Euler rotation. */
         static ValidateTransformRotation(transform: BABYLON.TransformNode): void;
         /** Validate and switch Euler rotation to Quaternion rotation. */
@@ -1574,9 +1610,9 @@ declare module BABYLON {
         private static TmpAmmoNormalA;
         private static TmpAmmoNormalB;
         private static TmpAmmoNormalC;
-        private static FindMeshCollider;
-        static AddMeshVerts(btTriangleMesh: any, topLevelObject: BABYLON.IPhysicsEnabledObject, object: BABYLON.IPhysicsEnabledObject, normals?: boolean): number;
+        static FindMeshCollider(scene: BABYLON.Scene, object: BABYLON.IPhysicsEnabledObject): BABYLON.IPhysicsEnabledObject;
         static AddHullVerts(btConvexHullShape: any, topLevelObject: BABYLON.IPhysicsEnabledObject, object: BABYLON.IPhysicsEnabledObject): number;
+        static AddMeshVerts(btTriangleMesh: any, topLevelObject: IPhysicsEnabledObject, object: IPhysicsEnabledObject, normals?: boolean): number;
         static CreateImpostorCustomShape(scene: BABYLON.Scene, impostor: BABYLON.PhysicsImpostor, type: number, showDebugColliders?: boolean, colliderVisibility?: number, colliderRenderGroup?: number, useTriangleNormals?: boolean): any;
         static UseTriangleNormals(): boolean;
         static ShowDebugColliders(): boolean;

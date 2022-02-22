@@ -427,7 +427,8 @@ export class VideoTexture extends Texture {
                 video.srcObject = stream;
             } else {
                 window.URL = window.URL || window.webkitURL || window.mozURL || window.msURL;
-                video.src = (window.URL && window.URL.createObjectURL(stream));
+                // older API. See https://developer.mozilla.org/en-US/docs/Web/API/URL/createObjectURL#using_object_urls_for_media_streams
+                video.src = (window.URL && window.URL.createObjectURL(stream as any));
             }
         }
 

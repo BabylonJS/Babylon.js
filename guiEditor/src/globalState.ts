@@ -2,15 +2,15 @@ import { Nullable } from "babylonjs/types";
 import { Observable } from "babylonjs/Misc/observable";
 import { LogEntry } from "./components/log/logComponent";
 import { DataStorage } from "babylonjs/Misc/dataStorage";
-import { Color4 } from "babylonjs/Maths/math.color";
+import { Color3 } from "babylonjs/Maths/math.color";
 import { WorkbenchComponent } from "./diagram/workbench";
 import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
 import { PropertyChangedEvent } from "./sharedUiComponents/propertyChangedEvent";
-import { Vector2 } from "babylonjs/Maths/math.vector";
 import { Scene } from "babylonjs/scene";
 import { Control } from "babylonjs-gui/2D/controls/control";
 import { LockObject } from "./sharedUiComponents/tabs/propertyGrids/lockObject";
-import { GuiGizmoComponent } from "./diagram/guiGizmo";
+import { ISize } from "babylonjs/Maths/math";
+import { CoordinateHelper } from "./diagram/coordinateHelper";
 
 export enum DragOverLocation {
     ABOVE = 0,
@@ -27,7 +27,7 @@ export class GlobalState {
     hostDocument: HTMLDocument;
     hostWindow: Window;
     onSelectionChangedObservable = new Observable<Nullable<Control>>();
-    onResizeObservable = new Observable<Vector2>();
+    onResizeObservable = new Observable<ISize>();
     onBuiltObservable = new Observable<void>();
     onResetRequiredObservable = new Observable<void>();
     onUpdateRequiredObservable = new Observable<void>();
@@ -38,24 +38,23 @@ export class GlobalState {
     onNewSceneObservable = new Observable<Nullable<Scene>>();
     onGuiNodeRemovalObservable = new Observable<Control>();
     onPopupClosedObservable = new Observable<void>();
-    backgroundColor: Color4;
+    private _backgroundColor: Color3;
+    private _outlines: boolean = false;
+    onOutlineChangedObservable = new Observable<void>();
     blockKeyboardEvents = false;
     controlCamera: boolean;
     selectionLock: boolean;
     workbench: WorkbenchComponent;
-    guiGizmo: GuiGizmoComponent;
     onPropertyChangedObservable = new Observable<PropertyChangedEvent>();
 
     onZoomObservable = new Observable<void>();
     onFitToWindowObservable = new Observable<void>();
     onPanObservable = new Observable<void>();
     onSelectionButtonObservable = new Observable<void>();
-    onMoveObservable = new Observable<void>();
     onLoadObservable = new Observable<File>();
     onSaveObservable = new Observable<void>();
     onSnippetLoadObservable = new Observable<void>();
     onSnippetSaveObservable = new Observable<void>();
-    onOutlinesObservable = new Observable<void>();
     onResponsiveChangeObservable = new Observable<boolean>();
     onParentingChangeObservable = new Observable<Nullable<Control>>();
     onPropertyGridUpdateRequiredObservable = new Observable<void>();
@@ -63,6 +62,10 @@ export class GlobalState {
     onDraggingStartObservable = new Observable<void>();
     onWindowResizeObservable = new Observable<void>();
     onGizmoUpdateRequireObservable = new Observable<void>();
+    onArtBoardUpdateRequiredObservable = new Observable<void>();
+    onBackgroundColorChangeObservable = new Observable<void>();
+    onPointerMoveObservable = new Observable<React.PointerEvent<HTMLCanvasElement>>();
+    onPointerUpObservable = new Observable<Nullable<React.PointerEvent<HTMLCanvasElement> | PointerEvent>>();
     draggedControl: Nullable<Control> = null;
     draggedControlDirection: DragOverLocation;
     isSaving = false;
@@ -74,9 +77,34 @@ export class GlobalState {
     public constructor() {
         this.controlCamera = DataStorage.ReadBoolean("ControlCamera", true);
 
-        let r = DataStorage.ReadNumber("BackgroundColorR", 0.12549019607843137);
-        let g = DataStorage.ReadNumber("BackgroundColorG", 0.09803921568627451);
-        let b = DataStorage.ReadNumber("BackgroundColorB", 0.25098039215686274);
-        this.backgroundColor = new Color4(r, g, b, 1.0);
+        const defaultBrightness = 204 / 255.0;
+        let r = DataStorage.ReadNumber("BackgroundColorR", defaultBrightness);
+        let g = DataStorage.ReadNumber("BackgroundColorG", defaultBrightness);
+        let b = DataStorage.ReadNumber("BackgroundColorB", defaultBrightness);
+        this.backgroundColor = new Color3(r, g, b);
+        this.onBackgroundColorChangeObservable.notifyObservers();
+
+        CoordinateHelper.globalState = this;
+    }
+
+    public get backgroundColor() {
+        return this._backgroundColor;
+    }
+
+    public set backgroundColor(value: Color3) {
+        this._backgroundColor = value;
+        this.onBackgroundColorChangeObservable.notifyObservers();
+        DataStorage.WriteNumber("BackgroundColorR", value.r);
+        DataStorage.WriteNumber("BackgroundColorG", value.g);
+        DataStorage.WriteNumber("BackgroundColorB", value.b);
+    }
+
+    public get outlines() {
+        return this._outlines;
+    }
+
+    public set outlines(value: boolean) {
+        this._outlines = value;
+        this.onOutlineChangedObservable.notifyObservers();
     }
 }

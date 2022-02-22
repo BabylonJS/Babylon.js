@@ -137,6 +137,13 @@ function generateExpandMember(setCallback: string, targetKey: Nullable<string> =
                 return this[key];
             },
             set: function (this: any, value) {
+                // does this object (i.e. vector3) has an equals function? use it!
+                // Note - not using "with epsilon" here, it is expected te behave like the internal cache does.
+                if (typeof this.equals === "function") {
+                    if (this.equals(value)) {
+                        return;
+                    }
+                }
                 if (this[key] === value) {
                     return;
                 }
@@ -438,7 +445,7 @@ declare const _native: any;
  * Decorator used to redirect a function to a native implementation if available.
  * @hidden
  */
-export function nativeOverride<T extends (...params: any) => boolean>(target: any, propertyKey: string, descriptor: TypedPropertyDescriptor<(...params: Parameters<T>) => unknown>, predicate?: T) {
+export function nativeOverride<T extends (...params: any[]) => boolean>(target: any, propertyKey: string, descriptor: TypedPropertyDescriptor<(...params: Parameters<T>) => unknown>, predicate?: T) {
     // Cache the original JS function for later.
     const jsFunc = descriptor.value!;
 
@@ -453,7 +460,7 @@ export function nativeOverride<T extends (...params: any) => boolean>(target: an
             // If a predicate was provided, then we'll need to invoke the predicate on each invocation of the underlying function to determine whether to call the native function or the JS function.
             if (predicate) {
                 // The resolved function will execute the predicate and then either execute the native function or the JS function.
-                func = (...params: Parameters<T>) => predicate(...params) ? nativeFunc(...params) : jsFunc(...params);
+                func = (...params: Parameters<T>) => (predicate(params) ? nativeFunc(...params) : jsFunc(...params));
             } else {
                 // The resolved function will directly execute the native function.
                 func = nativeFunc;

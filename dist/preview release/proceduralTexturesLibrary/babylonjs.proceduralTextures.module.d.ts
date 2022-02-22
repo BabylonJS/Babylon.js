@@ -10,13 +10,14 @@ declare module "babylonjs-procedural-textures/brick/brickProceduralTexture" {
     import { Texture } from "babylonjs/Materials/Textures/texture";
     import { ProceduralTexture } from "babylonjs/Materials/Textures/Procedurals/proceduralTexture";
     import { Scene } from "babylonjs/scene";
+    import { Nullable } from "babylonjs/types";
     import "babylonjs-procedural-textures/brick/brickProceduralTexture.fragment";
     export class BrickProceduralTexture extends ProceduralTexture {
         private _numberOfBricksHeight;
         private _numberOfBricksWidth;
         private _jointColor;
         private _brickColor;
-        constructor(name: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean);
+        constructor(name: string, size: number, scene?: Nullable<Scene>, fallbackTexture?: Texture, generateMipMaps?: boolean);
         updateShaderUniforms(): void;
         get numberOfBricksHeight(): number;
         set numberOfBricksHeight(value: number);
@@ -56,13 +57,14 @@ declare module "babylonjs-procedural-textures/cloud/cloudProceduralTexture" {
     import { Texture } from "babylonjs/Materials/Textures/texture";
     import { ProceduralTexture } from "babylonjs/Materials/Textures/Procedurals/proceduralTexture";
     import { Scene } from "babylonjs/scene";
+    import { Nullable } from "babylonjs/types";
     import "babylonjs-procedural-textures/cloud/cloudProceduralTexture.fragment";
     export class CloudProceduralTexture extends ProceduralTexture {
         private _skyColor;
         private _cloudColor;
         private _amplitude;
         private _numOctaves;
-        constructor(name: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean);
+        constructor(name: string, size: number, scene?: Nullable<Scene>, fallbackTexture?: Texture, generateMipMaps?: boolean);
         updateShaderUniforms(): void;
         get skyColor(): Color4;
         set skyColor(value: Color4);
@@ -103,6 +105,7 @@ declare module "babylonjs-procedural-textures/fire/fireProceduralTexture" {
     import { Texture } from "babylonjs/Materials/Textures/texture";
     import { ProceduralTexture } from "babylonjs/Materials/Textures/Procedurals/proceduralTexture";
     import { Scene } from "babylonjs/scene";
+    import { Nullable } from "babylonjs/types";
     import "babylonjs-procedural-textures/fire/fireProceduralTexture.fragment";
     export class FireProceduralTexture extends ProceduralTexture {
         private _time;
@@ -110,7 +113,7 @@ declare module "babylonjs-procedural-textures/fire/fireProceduralTexture" {
         private _autoGenerateTime;
         private _fireColors;
         private _alphaThreshold;
-        constructor(name: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean);
+        constructor(name: string, size: number, scene?: Nullable<Scene>, fallbackTexture?: Texture, generateMipMaps?: boolean);
         updateShaderUniforms(): void;
         render(useCameraPostProcess?: boolean): void;
         static get PurpleFireColors(): Color3[];
@@ -157,11 +160,12 @@ declare module "babylonjs-procedural-textures/grass/grassProceduralTexture" {
     import { Texture } from "babylonjs/Materials/Textures/texture";
     import { ProceduralTexture } from "babylonjs/Materials/Textures/Procedurals/proceduralTexture";
     import { Scene } from "babylonjs/scene";
+    import { Nullable } from "babylonjs/types";
     import "babylonjs-procedural-textures/grass/grassProceduralTexture.fragment";
     export class GrassProceduralTexture extends ProceduralTexture {
         private _grassColors;
         private _groundColor;
-        constructor(name: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean);
+        constructor(name: string, size: number, scene?: Nullable<Scene>, fallbackTexture?: Texture, generateMipMaps?: boolean);
         updateShaderUniforms(): void;
         get grassColors(): Color3[];
         set grassColors(value: Color3[]);
@@ -197,13 +201,14 @@ declare module "babylonjs-procedural-textures/marble/marbleProceduralTexture" {
     import { Texture } from "babylonjs/Materials/Textures/texture";
     import { ProceduralTexture } from "babylonjs/Materials/Textures/Procedurals/proceduralTexture";
     import { Scene } from "babylonjs/scene";
+    import { Nullable } from "babylonjs/types";
     import "babylonjs-procedural-textures/marble/marbleProceduralTexture.fragment";
     export class MarbleProceduralTexture extends ProceduralTexture {
         private _numberOfTilesHeight;
         private _numberOfTilesWidth;
         private _amplitude;
         private _jointColor;
-        constructor(name: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean);
+        constructor(name: string, size: number, scene?: Nullable<Scene>, fallbackTexture?: Texture, generateMipMaps?: boolean);
         updateShaderUniforms(): void;
         get numberOfTilesHeight(): number;
         set numberOfTilesHeight(value: number);
@@ -242,10 +247,11 @@ declare module "babylonjs-procedural-textures/normalMap/normalMapProceduralTextu
     import { Texture } from "babylonjs/Materials/Textures/texture";
     import { ProceduralTexture } from "babylonjs/Materials/Textures/Procedurals/proceduralTexture";
     import { Scene } from "babylonjs/scene";
+    import { Nullable } from "babylonjs/types";
     import "babylonjs-procedural-textures/normalMap/normalMapProceduralTexture.fragment";
     export class NormalMapProceduralTexture extends ProceduralTexture {
         private _baseTexture;
-        constructor(name: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean);
+        constructor(name: string, size: number, scene?: Nullable<Scene>, fallbackTexture?: Texture, generateMipMaps?: boolean);
         updateShaderUniforms(): void;
         render(useCameraPostProcess?: boolean): void;
         resize(size: any, generateMipMaps: any): void;
@@ -281,13 +287,14 @@ declare module "babylonjs-procedural-textures/perlinNoise/perlinNoiseProceduralT
     import { Texture } from "babylonjs/Materials/Textures/texture";
     import { ProceduralTexture } from "babylonjs/Materials/Textures/Procedurals/proceduralTexture";
     import { Scene } from "babylonjs/scene";
+    import { Nullable } from "babylonjs/types";
     import "babylonjs-procedural-textures/perlinNoise/perlinNoiseProceduralTexture.fragment";
     export class PerlinNoiseProceduralTexture extends ProceduralTexture {
         time: number;
         timeScale: number;
         translationSpeed: number;
         private _currentTranslation;
-        constructor(name: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean);
+        constructor(name: string, size: number, scene?: Nullable<Scene>, fallbackTexture?: Texture, generateMipMaps?: boolean);
         updateShaderUniforms(): void;
         render(useCameraPostProcess?: boolean): void;
         resize(size: any, generateMipMaps: any): void;
@@ -321,10 +328,11 @@ declare module "babylonjs-procedural-textures/road/roadProceduralTexture" {
     import { Texture } from "babylonjs/Materials/Textures/texture";
     import { ProceduralTexture } from "babylonjs/Materials/Textures/Procedurals/proceduralTexture";
     import { Scene } from "babylonjs/scene";
+    import { Nullable } from "babylonjs/types";
     import "babylonjs-procedural-textures/road/roadProceduralTexture.fragment";
     export class RoadProceduralTexture extends ProceduralTexture {
         private _roadColor;
-        constructor(name: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean);
+        constructor(name: string, size: number, scene?: Nullable<Scene>, fallbackTexture?: Texture, generateMipMaps?: boolean);
         updateShaderUniforms(): void;
         get roadColor(): Color3;
         set roadColor(value: Color3);
@@ -357,6 +365,7 @@ declare module "babylonjs-procedural-textures/starfield/starfieldProceduralTextu
     import { Texture } from "babylonjs/Materials/Textures/texture";
     import { ProceduralTexture } from "babylonjs/Materials/Textures/Procedurals/proceduralTexture";
     import { Scene } from "babylonjs/scene";
+    import { Nullable } from "babylonjs/types";
     import "babylonjs-procedural-textures/starfield/starfieldProceduralTexture.fragment";
     export class StarfieldProceduralTexture extends ProceduralTexture {
         private _time;
@@ -370,7 +379,7 @@ declare module "babylonjs-procedural-textures/starfield/starfieldProceduralTextu
         private _darkmatter;
         private _distfading;
         private _saturation;
-        constructor(name: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean);
+        constructor(name: string, size: number, scene?: Nullable<Scene>, fallbackTexture?: Texture, generateMipMaps?: boolean);
         updateShaderUniforms(): void;
         get time(): number;
         set time(value: number);
@@ -424,11 +433,12 @@ declare module "babylonjs-procedural-textures/wood/woodProceduralTexture" {
     import { Texture } from "babylonjs/Materials/Textures/texture";
     import { ProceduralTexture } from "babylonjs/Materials/Textures/Procedurals/proceduralTexture";
     import { Scene } from "babylonjs/scene";
+    import { Nullable } from "babylonjs/types";
     import "babylonjs-procedural-textures/wood/woodProceduralTexture.fragment";
     export class WoodProceduralTexture extends ProceduralTexture {
         private _ampScale;
         private _woodColor;
-        constructor(name: string, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean);
+        constructor(name: string, size: number, scene?: Nullable<Scene>, fallbackTexture?: Texture, generateMipMaps?: boolean);
         updateShaderUniforms(): void;
         get ampScale(): number;
         set ampScale(value: number);
@@ -513,7 +523,7 @@ declare module BABYLON {
         private _numberOfBricksWidth;
         private _jointColor;
         private _brickColor;
-        constructor(name: string, size: number, scene: BABYLON.Scene, fallbackTexture?: BABYLON.Texture, generateMipMaps?: boolean);
+        constructor(name: string, size: number, scene?: BABYLON.Nullable<BABYLON.Scene>, fallbackTexture?: BABYLON.Texture, generateMipMaps?: boolean);
         updateShaderUniforms(): void;
         get numberOfBricksHeight(): number;
         set numberOfBricksHeight(value: number);
@@ -551,7 +561,7 @@ declare module BABYLON {
         private _cloudColor;
         private _amplitude;
         private _numOctaves;
-        constructor(name: string, size: number, scene: BABYLON.Scene, fallbackTexture?: BABYLON.Texture, generateMipMaps?: boolean);
+        constructor(name: string, size: number, scene?: BABYLON.Nullable<BABYLON.Scene>, fallbackTexture?: BABYLON.Texture, generateMipMaps?: boolean);
         updateShaderUniforms(): void;
         get skyColor(): BABYLON.Color4;
         set skyColor(value: BABYLON.Color4);
@@ -590,7 +600,7 @@ declare module BABYLON {
         private _autoGenerateTime;
         private _fireColors;
         private _alphaThreshold;
-        constructor(name: string, size: number, scene: BABYLON.Scene, fallbackTexture?: BABYLON.Texture, generateMipMaps?: boolean);
+        constructor(name: string, size: number, scene?: BABYLON.Nullable<BABYLON.Scene>, fallbackTexture?: BABYLON.Texture, generateMipMaps?: boolean);
         updateShaderUniforms(): void;
         render(useCameraPostProcess?: boolean): void;
         static get PurpleFireColors(): BABYLON.Color3[];
@@ -633,7 +643,7 @@ declare module BABYLON {
     export class GrassProceduralTexture extends BABYLON.ProceduralTexture {
         private _grassColors;
         private _groundColor;
-        constructor(name: string, size: number, scene: BABYLON.Scene, fallbackTexture?: BABYLON.Texture, generateMipMaps?: boolean);
+        constructor(name: string, size: number, scene?: BABYLON.Nullable<BABYLON.Scene>, fallbackTexture?: BABYLON.Texture, generateMipMaps?: boolean);
         updateShaderUniforms(): void;
         get grassColors(): BABYLON.Color3[];
         set grassColors(value: BABYLON.Color3[]);
@@ -667,7 +677,7 @@ declare module BABYLON {
         private _numberOfTilesWidth;
         private _amplitude;
         private _jointColor;
-        constructor(name: string, size: number, scene: BABYLON.Scene, fallbackTexture?: BABYLON.Texture, generateMipMaps?: boolean);
+        constructor(name: string, size: number, scene?: BABYLON.Nullable<BABYLON.Scene>, fallbackTexture?: BABYLON.Texture, generateMipMaps?: boolean);
         updateShaderUniforms(): void;
         get numberOfTilesHeight(): number;
         set numberOfTilesHeight(value: number);
@@ -702,7 +712,7 @@ declare module BABYLON {
 declare module BABYLON {
     export class NormalMapProceduralTexture extends BABYLON.ProceduralTexture {
         private _baseTexture;
-        constructor(name: string, size: number, scene: BABYLON.Scene, fallbackTexture?: BABYLON.Texture, generateMipMaps?: boolean);
+        constructor(name: string, size: number, scene?: BABYLON.Nullable<BABYLON.Scene>, fallbackTexture?: BABYLON.Texture, generateMipMaps?: boolean);
         updateShaderUniforms(): void;
         render(useCameraPostProcess?: boolean): void;
         resize(size: any, generateMipMaps: any): void;
@@ -737,7 +747,7 @@ declare module BABYLON {
         timeScale: number;
         translationSpeed: number;
         private _currentTranslation;
-        constructor(name: string, size: number, scene: BABYLON.Scene, fallbackTexture?: BABYLON.Texture, generateMipMaps?: boolean);
+        constructor(name: string, size: number, scene?: BABYLON.Nullable<BABYLON.Scene>, fallbackTexture?: BABYLON.Texture, generateMipMaps?: boolean);
         updateShaderUniforms(): void;
         render(useCameraPostProcess?: boolean): void;
         resize(size: any, generateMipMaps: any): void;
@@ -766,7 +776,7 @@ declare module BABYLON {
 declare module BABYLON {
     export class RoadProceduralTexture extends BABYLON.ProceduralTexture {
         private _roadColor;
-        constructor(name: string, size: number, scene: BABYLON.Scene, fallbackTexture?: BABYLON.Texture, generateMipMaps?: boolean);
+        constructor(name: string, size: number, scene?: BABYLON.Nullable<BABYLON.Scene>, fallbackTexture?: BABYLON.Texture, generateMipMaps?: boolean);
         updateShaderUniforms(): void;
         get roadColor(): BABYLON.Color3;
         set roadColor(value: BABYLON.Color3);
@@ -805,7 +815,7 @@ declare module BABYLON {
         private _darkmatter;
         private _distfading;
         private _saturation;
-        constructor(name: string, size: number, scene: BABYLON.Scene, fallbackTexture?: BABYLON.Texture, generateMipMaps?: boolean);
+        constructor(name: string, size: number, scene?: BABYLON.Nullable<BABYLON.Scene>, fallbackTexture?: BABYLON.Texture, generateMipMaps?: boolean);
         updateShaderUniforms(): void;
         get time(): number;
         set time(value: number);
@@ -855,7 +865,7 @@ declare module BABYLON {
     export class WoodProceduralTexture extends BABYLON.ProceduralTexture {
         private _ampScale;
         private _woodColor;
-        constructor(name: string, size: number, scene: BABYLON.Scene, fallbackTexture?: BABYLON.Texture, generateMipMaps?: boolean);
+        constructor(name: string, size: number, scene?: BABYLON.Nullable<BABYLON.Scene>, fallbackTexture?: BABYLON.Texture, generateMipMaps?: boolean);
         updateShaderUniforms(): void;
         get ampScale(): number;
         set ampScale(value: number);

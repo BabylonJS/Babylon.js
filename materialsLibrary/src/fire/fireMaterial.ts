@@ -39,6 +39,7 @@ class FireMaterialDefines extends MaterialDefines {
     public BonesPerMesh = 0;
     public NUM_BONE_INFLUENCERS = 0;
     public INSTANCES = false;
+    public INSTANCESCOLOR = false;
     public IMAGEPROCESSINGPOSTPROCESS = false;
     public SKIPFINALCOLORCLAMP = false;
 
@@ -73,7 +74,7 @@ export class FireMaterial extends PushMaterial {
     private _scaledDiffuse = new Color3();
     private _lastTime: number = 0;
 
-    constructor(name: string, scene: Scene) {
+    constructor(name: string, scene?: Scene) {
         super(name, scene);
     }
 

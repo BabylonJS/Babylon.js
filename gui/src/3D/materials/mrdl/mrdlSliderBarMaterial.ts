@@ -477,11 +477,11 @@ export class MRDLSliderBarMaterial extends PushMaterial {
      */
     public globalRightIndexMiddlePosition =  new Vector4(0.0, 0.0, 0.0, 1.0);
 
-    constructor(name: string, scene: Scene) {
+    constructor(name: string, scene?: Scene) {
         super(name, scene);
         this.alphaMode = Constants.ALPHA_DISABLE;
         this.backFaceCulling = false;
-        this._blueGradientTexture = new Texture(MRDLSliderBarMaterial.BLUE_GRADIENT_TEXTURE_URL, scene, true, false, Texture.NEAREST_SAMPLINGMODE);
+        this._blueGradientTexture = new Texture(MRDLSliderBarMaterial.BLUE_GRADIENT_TEXTURE_URL, this.getScene(), true, false, Texture.NEAREST_SAMPLINGMODE);
     }
 
     public needAlphaBlending(): boolean {
@@ -782,7 +782,7 @@ export class MRDLSliderBarMaterial extends PushMaterial {
     }
 
     public serialize(): any {
-        const serializationObject = SerializationHelper.Serialize(this);
+        const serializationObject = super.serialize();
         serializationObject.customType = "BABYLON.MRDLSliderBarMaterial";
         return serializationObject;
     }

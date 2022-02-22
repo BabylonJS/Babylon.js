@@ -19,8 +19,7 @@ import { IAsset } from "babylonjs-gltf2interface";
 import { IModelConfiguration } from "../configuration/interfaces/modelConfiguration";
 import { IModelAnimationConfiguration } from "../configuration/interfaces/modelAnimationConfiguration";
 import { IModelAnimation, GroupModelAnimation, AnimationPlayMode, ModelAnimationConfiguration, EasingFunction, AnimationState } from "./modelAnimation";
-
-import { deepmerge, extendClassWithConfig } from '../helper/';
+import { deepmerge, extendClassWithConfig } from '../helper/index';
 import { ObservablesManager } from "../managers/observablesManager";
 import { ConfigurationContainer } from "../configuration/configurationContainer";
 

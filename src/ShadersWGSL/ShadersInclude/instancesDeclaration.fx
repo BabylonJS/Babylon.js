@@ -3,6 +3,9 @@
 	attribute world1 : vec4<f32>;
 	attribute world2 : vec4<f32>;
 	attribute world3 : vec4<f32>;
+    #ifdef INSTANCESCOLOR
+        attribute instanceColor : vec4<f32>;
+    #endif
     #if defined(THIN_INSTANCES) && !defined(WORLD_UBO)
         uniform world : mat4x4<f32>;
     #endif

@@ -86,7 +86,7 @@ WebGPUEngine.prototype.computeDispatch = function (effect: ComputeEffect, contex
     }
 
     computePass.dispatch(x, y, z);
-    computePass.endPass();
+    computePass.end();
 };
 
 WebGPUEngine.prototype.releaseComputeEffects = function () {

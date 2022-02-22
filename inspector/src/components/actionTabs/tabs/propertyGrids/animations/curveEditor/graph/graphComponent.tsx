@@ -1,6 +1,6 @@
 import * as React from "react";
 import { GlobalState } from "../../../../../../globalState";
-import { Context } from "../context";
+import { Context, IActiveAnimationChangedOptions } from "../context";
 import { Animation } from "babylonjs/Animations/animation";
 import { Curve } from "./curve";
 import { KeyPointComponent } from "./keyPoint";
@@ -21,7 +21,7 @@ interface IGraphComponentState {}
 
 export class GraphComponent extends React.Component<IGraphComponentProps, IGraphComponentState> {
     private readonly _MinScale = 0.5;
-    private readonly _MaxScale = 4;
+    private readonly _MaxScale = 5;
     private readonly _GraphAbsoluteWidth = 788;
     private readonly _GraphAbsoluteHeight = 357;
 
@@ -48,11 +48,12 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
     private _pointerIsDown: boolean;
     private _sourcePointerX: number;
     private _sourcePointerY: number;
+    private _selectionMade: boolean;
 
     private _selectionStartX: number;
     private _selectionStartY: number;
 
-    private _onActiveAnimationChangedObserver: Nullable<Observer<void>>;
+    private _onActiveAnimationChangedObserver: Nullable<Observer<IActiveAnimationChangedOptions>>;
 
     constructor(props: IGraphComponentProps) {
         super(props);
@@ -69,14 +70,16 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
             this._computeSizes();
         });
 
-        this._onActiveAnimationChangedObserver = this.props.context.onActiveAnimationChanged.add(() => {
-            this._evaluateKeys();
+        this._onActiveAnimationChangedObserver = this.props.context.onActiveAnimationChanged.add(({evaluateKeys = true, frame = true, range = true}) => {
+            if (evaluateKeys) {
+                this._evaluateKeys(frame, range);
+            } 
             this._computeSizes();
             this.forceUpdate();
         });
 
         this.props.context.onFrameRequired.add(() => {
-            this._frame();
+            this._frameFromActiveKeys();
             this.forceUpdate();
         });
 
@@ -119,10 +122,13 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
                     this.props.context.moveToFrame(deletedFrame);
                 }
 
-                this.props.context.activeKeyPoints = [];
             }
+            this._evaluateKeys(false, false);
 
-            this.props.context.onActiveAnimationChanged.notifyObservers();
+            this.props.context.activeKeyPoints = [];
+            this.props.context.onActiveKeyPointChanged.notifyObservers();
+            this.props.context.onActiveAnimationChanged.notifyObservers({evaluateKeys: false});
+            this.forceUpdate();
         });
 
         // Create or Update keypoint
@@ -132,6 +138,9 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
             }
 
             for (const currentAnimation of this.props.context.activeAnimations) {
+                if (currentAnimation.dataType === Animation.ANIMATIONTYPE_QUATERNION) {
+                    continue;
+                }
                 let keys = currentAnimation.getKeys();
 
                 const currentFrame = this.props.context.activeFrame;
@@ -166,7 +175,7 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
                 if (Math.floor(currentFrame - leftKey?.frame) === 0) {
                     // Key already exists, update it
                     leftKey.value = value;
-                } else if (Math.floor(rightKey.frame - currentFrame) === 0) {
+                } else if (Math.floor(rightKey?.frame - currentFrame) === 0) {
                     // Key already exists, update it
                     rightKey.value = value;
                 } else {
@@ -175,9 +184,10 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
                     let newKey: IAnimationKey = {
                         frame: currentFrame,
                         value: value,
+                        lockedTangent: true
                     };
-
-                    if (leftKey.outTangent !== undefined && rightKey.inTangent !== undefined) {
+                    
+                    if (leftKey?.outTangent !== undefined && rightKey?.inTangent !== undefined) {
                         let derivative: Nullable<any> = null;
                         const invFrameDelta = 1.0 / (rightKey.frame - leftKey.frame);
                         const cutTime = (currentFrame - leftKey.frame) * invFrameDelta;
@@ -213,16 +223,6 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
                                 );
                                 break;
                             }
-                            case Animation.ANIMATIONTYPE_QUATERNION: {
-                                derivative = Quaternion.Hermite1stDerivative(
-                                    leftKey.value.scale(invFrameDelta),
-                                    leftKey.outTangent,
-                                    rightKey.value.scale(invFrameDelta),
-                                    rightKey.inTangent,
-                                    cutTime
-                                );
-                                break;
-                            }
                             case Animation.ANIMATIONTYPE_COLOR3:
                                 derivative = Color3.Hermite1stDerivative(
                                     leftKey.value.scale(invFrameDelta),
@@ -248,7 +248,6 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
                             newKey.outTangent = derivative.clone ? derivative.clone() : derivative;
                         }
                     }
-
                     keys.splice(indexToAdd + 1, 0, newKey);
                 }
 
@@ -258,7 +257,7 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
 
             this.props.context.activeKeyPoints = [];
             this.props.context.onActiveKeyPointChanged.notifyObservers();
-            this.props.context.onActiveAnimationChanged.notifyObservers();
+            this.props.context.onActiveAnimationChanged.notifyObservers({evaluateKeys: false});
             this.forceUpdate();
         });
     }
@@ -299,11 +298,6 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
         }
 
         this._curves = [];
-        this._minValue = Number.MAX_VALUE;
-        this._maxValue = -Number.MAX_VALUE;
-
-        this._minFrame = Number.MAX_VALUE;
-        this._maxFrame = -Number.MAX_VALUE;
 
         for (const animation of this.props.context.activeAnimations) {
             let keys = animation.getKeys();
@@ -499,7 +493,7 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
         }
 
         if (frame) {
-            this._frame();
+            this._frameFromActiveKeys();
         }
     }
 
@@ -923,8 +917,7 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
             );
         });
     }
-
-    private _frame() {
+    private _frameFromActiveKeys() {
         if (this.props.context.activeAnimations.length === 0) {
             return;
         }
@@ -932,11 +925,13 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
         this._offsetX = 20;
         this._offsetY = 20;
 
-        this._minValue = Number.MAX_VALUE;
-        this._maxValue = -Number.MAX_VALUE;
+        let minValue = Number.MAX_VALUE;
+        let maxValue = -Number.MAX_VALUE;
 
-        this._minFrame = Number.MAX_VALUE;
-        this._maxFrame = -Number.MAX_VALUE;
+        let minFrame = Number.MAX_VALUE;
+        let maxFrame = -Number.MAX_VALUE;
+
+        let hasRange = false;
 
         for (const animation of this.props.context.activeAnimations) {
             let propertyFilter: string | undefined = undefined;
@@ -950,12 +945,19 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
             }
 
             let keys = animation.getKeys();
-            // Only keep selected keys
-            if (this.props.context.activeKeyPoints && this.props.context.activeKeyPoints.length > 1) {
+            // Only keep selected keys, the previous sibling to the first key, and the next sibling of the last key
+            if (this.props.context.activeKeyPoints && this.props.context.activeKeyPoints.length > 0) {
                 let newKeys = [];
-                for (var keyPoint of this.props.context.activeKeyPoints) {
+
+                for (let i = 0; i < this.props.context.activeKeyPoints.length; i++) {
+                    const keyPoint = this.props.context.activeKeyPoints[i];
                     if (keyPoint.props.curve.animation === animation) {
                         newKeys.push(keys[keyPoint.props.keyId]);
+                        if (i === 0 && keyPoint.props.keyId >= 1) {
+                            newKeys.unshift(keys[keyPoint.props.keyId - 1]);
+                        } if (i === this.props.context.activeKeyPoints.length - 1 && keyPoint.props.keyId < keys.length - 1) {
+                            newKeys.push(keys[keyPoint.props.keyId + 1]);
+                        }
                     }
                 }
 
@@ -968,12 +970,24 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
 
             let values = this._extractValuesFromKeys(keys, animation.dataType, undefined, propertyFilter);
 
-            this._minValue = Math.min(this._minValue, values.min);
-            this._maxValue = Math.max(this._maxValue, values.max);
+            minValue = Math.min(minValue, values.min);
+            maxValue = Math.max(maxValue, values.max);
 
-            this._minFrame = Math.min(this._minFrame, keys[0].frame);
-            this._maxFrame = Math.max(this._maxFrame, keys[keys.length - 1].frame);
+            minFrame = Math.min(minFrame, keys[0].frame);
+            maxFrame = Math.max(maxFrame, keys[keys.length - 1].frame);
+
+            hasRange = true;
         }
+
+        if (!hasRange) {
+            return;
+        }
+
+        this._minFrame = minFrame;
+        this._maxFrame = maxFrame;
+
+        this._minValue = minValue;
+        this._maxValue = maxValue;
 
         this.props.context.referenceMinFrame = this._minFrame;
         this.props.context.referenceMaxFrame = this._maxFrame;
@@ -1029,6 +1043,8 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
             return;
         }
 
+        evt.preventDefault();
+
         this._pointerIsDown = true;
         evt.currentTarget.setPointerCapture(evt.pointerId);
         this._sourcePointerX = evt.nativeEvent.offsetX;
@@ -1070,6 +1086,9 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
                 style.top = `${localY}px`;
                 style.height = `${this._selectionStartY - localY}px`;
             }
+            if (localX !== this._selectionStartX || localY !== this._selectionStartY) {
+                this._selectionMade = true;
+            }
 
             this.props.context.onSelectionRectangleMoved.notifyObservers(this._selectionRectangle.current!.getBoundingClientRect());
 
@@ -1093,9 +1112,11 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
 
         this._selectionRectangle.current!.style.visibility = "hidden";
 
-        if (!this._inSelectionMode) {
+        if (!this._inSelectionMode || !this._selectionMade) {
             this.props.context.clearSelection();
         }
+
+        this._selectionMade = false;
     }
 
     private _onWheel(evt: React.WheelEvent) {

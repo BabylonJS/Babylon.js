@@ -30,6 +30,7 @@ import { IStencilState } from "../States/IStencilState";
 import { RenderTargetWrapper } from "./renderTargetWrapper";
 import { NativeData, NativeDataStream } from "./Native/nativeDataStream";
 import { INative, INativeCamera, INativeEngine } from "./Native/nativeInterfaces";
+import { RuntimeError, ErrorCodes } from "../Misc/error";
 
 declare const _native: INative;
 
@@ -846,7 +847,8 @@ export class NativeEngine extends Engine {
             canUseGLVertexID: true,
             supportComputeShaders: false,
             supportSRGBBuffers: true,
-            supportTransformFeedbacks: false
+            supportTransformFeedbacks: false,
+            textureMaxLevel: false
         };
 
         this._features = {
@@ -1048,7 +1050,8 @@ export class NativeEngine extends Engine {
                             vertexBuffer.byteStride,
                             vertexBuffer.getSize(),
                             this._getNativeAttribType(vertexBuffer.type),
-                            vertexBuffer.normalized);
+                            vertexBuffer.normalized,
+                            vertexBuffer.getInstanceDivisor());
                     }
                 }
             }
@@ -1317,7 +1320,7 @@ export class NativeEngine extends Engine {
             width: this.getRenderWidth(),
             x: 0,
             y: 0,
-            toJSON: () => {}
+            toJSON: () => { }
         };
         return rect;
     }
@@ -2024,6 +2027,35 @@ export class NativeEngine extends Engine {
             var filter = this._getNativeSamplingMode(samplingMode);
             this._setTextureSampling(webGLTexture, filter);
         }
+
+        this._internalTexturesCache.push(texture);
+        return texture;
+    }
+
+    public createRawTexture2DArray(data: Nullable<ArrayBufferView>, width: number, height: number, depth: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: Nullable<string> = null, textureType = Constants.TEXTURETYPE_UNSIGNED_INT): InternalTexture {
+        let texture = new InternalTexture(this, InternalTextureSource.Raw2DArray);
+
+        texture.baseWidth = width;
+        texture.baseHeight = height;
+        texture.baseDepth = depth;
+        texture.width = width;
+        texture.height = height;
+        texture.depth = depth;
+        texture.format = format;
+        texture.type = textureType;
+        texture.generateMipMaps = generateMipMaps;
+        texture.samplingMode = samplingMode;
+        texture.is2DArray = true;
+
+        if (texture._hardwareTexture) {
+            var webGLTexture = texture._hardwareTexture.underlyingResource;
+            this._engine.loadRawTexture2DArray(webGLTexture, data, width, height, depth, this._getNativeTextureFormat(format, textureType), generateMipMaps, invertY);
+
+            var filter = this._getNativeSamplingMode(samplingMode);
+            this._setTextureSampling(webGLTexture, filter);
+        }
+
+        texture.isReady = true;
 
         this._internalTexturesCache.push(texture);
         return texture;
@@ -2850,7 +2882,7 @@ export class NativeEngine extends Engine {
             return _native.Engine.TEXTURE_FORMAT_RGBA32F;
         }
         else {
-            throw new Error(`Unsupported texture format or type: format ${format}, type ${type}.`);
+            throw new RuntimeError(`Unsupported texture format or type: format ${format}, type ${type}.`, ErrorCodes.UnsupportedTextureError);
         }
     }
 

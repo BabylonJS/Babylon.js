@@ -9,6 +9,7 @@ import { CheckBoxLineComponent } from "../../../../sharedUiComponents/lines/chec
 import { OptionsLineComponent } from "../../../../sharedUiComponents/lines/optionsLineComponent";
 import { TextInputLineComponent } from "../../../../sharedUiComponents/lines/textInputLineComponent";
 import { TextLineComponent } from "../../../../sharedUiComponents/lines/textLineComponent";
+import { makeTargetsProxy } from "../../../../sharedUiComponents/lines/targetsProxy";
 
 const stretchFillIcon: string = require("../../../../sharedUiComponents/imgs/stretchFillIcon.svg");
 const imageLinkIcon: string = require("../../../../sharedUiComponents/imgs/imageLinkIcon.svg");
@@ -16,9 +17,10 @@ const cropIcon: string = require("../../../../sharedUiComponents/imgs/cropIcon.s
 const cellIDIcon: string = require("../../../../sharedUiComponents/imgs/cellIDIcon.svg");
 const autoResizeIcon: string = require("../../../../sharedUiComponents/imgs/autoResizeIcon.svg");
 const sizeIcon: string = require("../../../../sharedUiComponents/imgs/sizeIcon.svg");
+const animationSheetIcon: string = require("../../../../sharedUiComponents/imgs/animationSheetIcon.svg");
 
 interface IImagePropertyGridComponentProps {
-    image: Image;
+    images: Image[];
     lockObject: LockObject;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
@@ -28,8 +30,45 @@ export class ImagePropertyGridComponent extends React.Component<IImagePropertyGr
         super(props);
     }
 
+    toggleAnimations(on: boolean) {
+        for(const image of this.props.images) {
+            if (on) {
+                image.cellId = 0;
+                image.cellWidth = image.imageWidth;
+                image.cellHeight = image.imageHeight;
+            } else {
+                image.cellId = -1;
+            }
+        }
+    }
+
+    getMaxCells() {
+        let maxCells = Number.MAX_SAFE_INTEGER;
+        for(const image of this.props.images) {
+            if (image.cellWidth === 0 || image.cellHeight === 0) continue;
+            const cols = Math.ceil(image.imageWidth / image.cellWidth);
+            const rows = Math.ceil(image.imageHeight / image.cellHeight);
+            const max = (cols * rows) - 1;
+            if (max < maxCells) maxCells = max;
+        }
+        return maxCells;
+    }
+
+    updateCellSize() {
+        const maxCells = this.getMaxCells();
+        for(const image of this.props.images) {
+            if (image.cellId > maxCells) {
+                image.cellId = maxCells;
+            }
+        }
+        this.forceUpdate();
+    }
+
     render() {
-        const image = this.props.image;
+        const images = this.props.images;
+        const image = images[0]; // for nine slice
+
+        const proxy = makeTargetsProxy(images, this.props.onPropertyChangedObservable);
 
         var stretchOptions = [
             { label: "None", value: Image.STRETCH_NONE },
@@ -39,9 +78,14 @@ export class ImagePropertyGridComponent extends React.Component<IImagePropertyGr
             { label: "NinePatch", value: Image.STRETCH_NINE_PATCH },
         ];
 
+        const animationSheet = images.every(image => image.cellId !== -1);
+        const maxCells = this.getMaxCells();
+        const maxCellWidth = Math.max(...images.map(image => image.imageWidth));
+        const maxCellHeight = Math.max(...images.map(image => image.imageHeight));
+
         return (
             <div className="pane">
-                <CommonControlPropertyGridComponent lockObject={this.props.lockObject} control={image} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <CommonControlPropertyGridComponent lockObject={this.props.lockObject} controls={images} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <hr />
                 <TextLineComponent label="IMAGE" value=" " color="grey"></TextLineComponent>
                 <TextInputLineComponent
@@ -49,7 +93,7 @@ export class ImagePropertyGridComponent extends React.Component<IImagePropertyGr
                     icon={imageLinkIcon}
                     lockObject={this.props.lockObject}
                     label=""
-                    target={image}
+                    target={proxy}
                     propertyName="source"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
@@ -59,14 +103,14 @@ export class ImagePropertyGridComponent extends React.Component<IImagePropertyGr
                         icon={cropIcon}
                         lockObject={this.props.lockObject}
                         label="L"
-                        target={image}
+                        target={proxy}
                         propertyName="sourceLeft"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <FloatLineComponent
                         lockObject={this.props.lockObject}
                         label="T"
-                        target={image}
+                        target={proxy}
                         propertyName="sourceTop"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
@@ -75,7 +119,7 @@ export class ImagePropertyGridComponent extends React.Component<IImagePropertyGr
                     <FloatLineComponent
                         lockObject={this.props.lockObject}
                         label="R"
-                        target={image}
+                        target={proxy}
                         icon={cropIcon}
                         iconLabel={"Crop"}
                         propertyName="sourceWidth"
@@ -84,7 +128,7 @@ export class ImagePropertyGridComponent extends React.Component<IImagePropertyGr
                     <FloatLineComponent
                         lockObject={this.props.lockObject}
                         label="B"
-                        target={image}
+                        target={proxy}
                         propertyName="sourceHeight"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
@@ -93,7 +137,7 @@ export class ImagePropertyGridComponent extends React.Component<IImagePropertyGr
                     iconLabel={"Autoscale"}
                     icon={autoResizeIcon}
                     label="AUTOSCALE"
-                    target={image}
+                    target={proxy}
                     propertyName="autoScale"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
@@ -102,12 +146,12 @@ export class ImagePropertyGridComponent extends React.Component<IImagePropertyGr
                     icon={stretchFillIcon}
                     label=""
                     options={stretchOptions}
-                    target={image}
+                    target={proxy}
                     propertyName="stretch"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     onSelect={(value) => this.setState({ mode: value })}
                 />
-                {image.stretch === Image.STRETCH_NINE_PATCH && <>
+                {images.length === 1 && image.stretch === Image.STRETCH_NINE_PATCH && <>
                     <div className="ge-divider">
                     <FloatLineComponent
                         iconLabel={"Slice"}
@@ -160,7 +204,14 @@ export class ImagePropertyGridComponent extends React.Component<IImagePropertyGr
                 </>
                 }
                 <hr />
-                <TextLineComponent label="ANIMATION SHEET" value=" " color="grey"></TextLineComponent>
+                <CheckBoxLineComponent
+                    iconLabel={"animationSheet"}
+                    icon={animationSheetIcon}
+                    label="ANIMATION SHEET"
+                    target={makeTargetsProxy(images, this.props.onPropertyChangedObservable, (target: Image) => target.cellId !== -1)}
+                    onValueChanged={() => {this.toggleAnimations(!animationSheet); this.forceUpdate();}}
+                />
+                {animationSheet && <>
                 <div className="ge-divider-short">
                 <FloatLineComponent
                     iconLabel={"Cell Id"}
@@ -168,9 +219,11 @@ export class ImagePropertyGridComponent extends React.Component<IImagePropertyGr
                     lockObject={this.props.lockObject}
                     label=""
                     isInteger={true}
-                    target={image}
+                    target={proxy}
                     propertyName="cellId"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    min={0}
+                    max={maxCells}
                 />
                 </div>
                 <div className="ge-divider">
@@ -178,18 +231,27 @@ export class ImagePropertyGridComponent extends React.Component<IImagePropertyGr
                         icon={sizeIcon}
                         lockObject={this.props.lockObject}
                         label="W"
-                        target={image}
+                        target={proxy}
                         propertyName="cellWidth"
+                        isInteger={true}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        onChange={() => this.updateCellSize()}
+                        min={1}
+                        max={maxCellWidth}
                     />
                     <FloatLineComponent
                         lockObject={this.props.lockObject}
                         label="H"
-                        target={image}
+                        target={proxy}
                         propertyName="cellHeight"
+                        isInteger={true}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        onChange={() => this.updateCellSize()}
+                        min={1}
+                        max={maxCellHeight}
                     />
                 </div>
+                </>}
             </div>
         );
     }

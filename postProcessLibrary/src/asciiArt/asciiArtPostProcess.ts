@@ -6,7 +6,7 @@ import { Texture } from "babylonjs/Materials/Textures/texture";
 import { Effect } from "babylonjs/Materials/effect";
 import { PostProcess } from "babylonjs/PostProcesses/postProcess";
 import { Scene } from "babylonjs/scene";
-
+import "babylonjs/Engines/Extensions/engine.dynamicTexture";
 import "./asciiart.fragment";
 
 /**

@@ -176,6 +176,8 @@ export abstract class EffectLayer {
         throw _WarnImport("EffectLayerSceneComponent");
     }
 
+    private _materialForRendering: { [id: string]: [AbstractMesh, Material] } = {};
+
     /**
      * Sets a specific material to be used to render a mesh/a list of meshes in the layer
      * @param mesh mesh or array of meshes
@@ -183,6 +185,22 @@ export abstract class EffectLayer {
      */
     public setMaterialForRendering(mesh: AbstractMesh | AbstractMesh[], material?: Material): void {
         this._mainTexture.setMaterialForRendering(mesh, material);
+        if (Array.isArray(mesh)) {
+            for (let i = 0; i <  mesh.length; ++i) {
+                const mesh_ = mesh[i];
+                if (!material) {
+                    delete this._materialForRendering[mesh_.uniqueId];
+                } else {
+                    this._materialForRendering[mesh_.uniqueId] = [mesh_, material];
+                }
+            }
+        } else {
+            if (!material) {
+                delete this._materialForRendering[mesh.uniqueId];
+            } else {
+                this._materialForRendering[mesh.uniqueId] = [mesh, material];
+            }
+        }
     }
 
     /**
@@ -193,10 +211,10 @@ export abstract class EffectLayer {
     constructor(
         /** The Friendly of the effect in the scene */
         name: string,
-        scene: Scene) {
+        scene?: Scene) {
         this.name = name;
 
-        this._scene = scene || EngineStore.LastCreatedScene;
+        this._scene = scene || <Scene>EngineStore.LastCreatedScene;
         EffectLayer._SceneComponentInitialization(this._scene);
 
         this._engine = this._scene.getEngine();
@@ -368,6 +386,11 @@ export abstract class EffectLayer {
         this._mainTexture.renderParticles = false;
         this._mainTexture.renderList = null;
         this._mainTexture.ignoreCameraViewport = true;
+
+        for (const id in this._materialForRendering) {
+            const [mesh, material] = this._materialForRendering[id];
+            this._mainTexture.setMaterialForRendering(mesh, material);
+        }
 
         this._mainTexture.customIsReadyFunction = (mesh: AbstractMesh, refreshRate: number) => {
             if (!mesh.isReady(false)) {
@@ -782,7 +805,7 @@ export abstract class EffectLayer {
 
         // Culling
         let sideOrientation = renderingMesh.overrideMaterialSideOrientation ?? material.sideOrientation;
-        const mainDeterminant = renderingMesh._getWorldMatrixDeterminant();
+        const mainDeterminant = effectiveMesh._getWorldMatrixDeterminant();
         if (mainDeterminant < 0) {
             sideOrientation = (sideOrientation === Material.ClockWiseSideOrientation ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation);
         }

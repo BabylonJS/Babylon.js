@@ -26,6 +26,8 @@ import { GlobalState } from "../../../globalState";
 import { ButtonLineComponent } from "../../../../sharedUiComponents/lines/buttonLineComponent";
 import { AnimationGridComponent } from "./animations/animationPropertyGridComponent";
 
+import "babylonjs/Physics/physicsEngineComponent";
+
 interface IScenePropertyGridComponentProps {
     globalState: GlobalState;
     scene: Scene;

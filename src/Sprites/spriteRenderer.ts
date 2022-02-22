@@ -245,7 +245,7 @@ export class SpriteRenderer {
 
         this._buffer.update(this._vertexData);
 
-        const culling = engine.depthCullingState.cull || true;
+        const culling = !!engine.depthCullingState.cull;
         const zOffset = engine.depthCullingState.zOffset;
         const zOffsetUnits = engine.depthCullingState.zOffsetUnits;
 

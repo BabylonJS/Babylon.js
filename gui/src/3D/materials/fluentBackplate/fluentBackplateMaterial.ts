@@ -217,13 +217,13 @@ export class FluentBackplateMaterial extends PushMaterial {
     public globalRightIndexTipPosition = Vector3.Zero();
     private _globalRightIndexTipPosition4 = Vector4.Zero();
 
-    constructor(name: string, scene: Scene) {
+    constructor(name: string, scene?: Scene) {
         super(name, scene);
         this.alphaMode = Constants.ALPHA_DISABLE;
         this.backFaceCulling = false;
 
-        this._blobTexture = new Texture(FluentBackplateMaterial.BLOB_TEXTURE_URL, scene, true, false, Texture.NEAREST_SAMPLINGMODE);
-        this._iridescentMap = new Texture(FluentBackplateMaterial.IM_TEXTURE_URL, scene, true, false, Texture.NEAREST_SAMPLINGMODE);
+        this._blobTexture = new Texture(FluentBackplateMaterial.BLOB_TEXTURE_URL, this.getScene(), true, false, Texture.NEAREST_SAMPLINGMODE);
+        this._iridescentMap = new Texture(FluentBackplateMaterial.IM_TEXTURE_URL, this.getScene(), true, false, Texture.NEAREST_SAMPLINGMODE);
     }
 
     public needAlphaBlending(): boolean {
@@ -473,7 +473,7 @@ export class FluentBackplateMaterial extends PushMaterial {
     }
 
     public serialize(): any {
-        const serializationObject = SerializationHelper.Serialize(this);
+        const serializationObject = super.serialize();
         serializationObject.customType = "BABYLON.FluentBackplateMaterial";
         return serializationObject;
     }

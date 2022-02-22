@@ -285,21 +285,21 @@ VertexData.CreateDashedLines = CreateDashedLinesVertexData;
 
 Mesh.CreateLines = (name: string, points: Vector3[], scene: Nullable<Scene> = null, updatable: boolean = false, instance: Nullable<LinesMesh> = null): LinesMesh => {
     var options = {
-        points: points,
-        updatable: updatable,
-        instance: instance
+        points,
+        updatable,
+        instance
     };
     return CreateLines(name, options, scene);
 };
 
 Mesh.CreateDashedLines = (name: string, points: Vector3[], dashSize: number, gapSize: number, dashNb: number, scene: Nullable<Scene> = null, updatable?: boolean, instance?: LinesMesh): LinesMesh => {
     var options = {
-        points: points,
-        dashSize: dashSize,
-        gapSize: gapSize,
-        dashNb: dashNb,
-        updatable: updatable,
-        instance: instance
+        points,
+        dashSize,
+        gapSize,
+        dashNb,
+        updatable,
+        instance
     };
     return CreateDashedLines(name, options, scene);
 };

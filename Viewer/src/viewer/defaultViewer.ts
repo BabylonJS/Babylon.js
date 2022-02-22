@@ -1,5 +1,4 @@
 
-import { ViewerConfiguration, IModelConfiguration, ILightConfiguration, ISceneConfiguration } from './../configuration';
 import { Template, EventCallback } from '../templating/templateManager';
 import { FilesInput } from 'babylonjs/Misc/filesInput';
 import { SpotLight } from 'babylonjs/Lights/spotLight';
@@ -8,12 +7,15 @@ import { TemplateManager } from '../templating/templateManager';
 import { AbstractViewerWithTemplate } from './viewerWithTemplate';
 import { StandardMaterial } from 'babylonjs/Materials/standardMaterial';
 import { PBRMaterial } from 'babylonjs/Materials/PBR/pbrMaterial';
-import { extendClassWithConfig } from '../helper';
+import { extendClassWithConfig } from '../helper/index';
 import { ViewerModel } from '../model/viewerModel';
 import { IModelAnimation, AnimationState } from '../model/modelAnimation';
 import { IViewerTemplatePlugin } from '../templating/viewerTemplatePlugin';
 import { HDButtonPlugin } from '../templating/plugins/hdButtonPlugin';
 import { PrintButtonPlugin } from '../templating/plugins/printButton';
+import { ViewerConfiguration } from '../configuration/configuration';
+import { ISceneConfiguration } from '../configuration/interfaces/sceneConfiguration';
+import { IModelConfiguration } from '../configuration/interfaces/modelConfiguration';
 
 /**
  * The Default viewer is the default implementation of the AbstractViewer.

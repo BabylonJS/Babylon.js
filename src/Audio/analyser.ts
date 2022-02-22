@@ -3,6 +3,7 @@ import { Scene } from "../scene";
 import { Engine } from "../Engines/engine";
 import { IAudioEngine } from "./Interfaces/IAudioEngine";
 import { Tools } from "../Misc/tools";
+import { EngineStore } from "../Engines/engineStore";
 
 /**
  * Class used to work with sound analyzer using fast fourier transform (FFT)
@@ -49,7 +50,11 @@ export class Analyser {
      * Creates a new analyser
      * @param scene defines hosting scene
      */
-    constructor(scene: Scene) {
+    constructor(scene?: Nullable<Scene>) {
+        scene = scene || EngineStore.LastCreatedScene;
+        if (!scene) {
+            return;
+        }
         this._scene = scene;
         if (!Engine.audioEngine) {
             Tools.Warn("No audio engine initialized, failed to create an audio analyser");

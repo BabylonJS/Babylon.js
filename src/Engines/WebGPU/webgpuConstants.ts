@@ -397,7 +397,8 @@ export enum RenderPassTimestampLocation {
 
 /** @hidden */
 export enum LoadOp {
-    Load = "load"
+    Load = "load",
+    Clear = "clear"
 }
 
 /** @hidden */

@@ -448,6 +448,7 @@ __webpack_require__.r(__webpack_exports__);
 var BrickProceduralTexture = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(BrickProceduralTexture, _super);
     function BrickProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {
+        if (scene === void 0) { scene = null; }
         var _this = _super.call(this, name, size, "brickProceduralTexture", scene, fallbackTexture, generateMipMaps) || this;
         _this._numberOfBricksHeight = 15;
         _this._numberOfBricksWidth = 5;
@@ -608,6 +609,7 @@ __webpack_require__.r(__webpack_exports__);
 var CloudProceduralTexture = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(CloudProceduralTexture, _super);
     function CloudProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {
+        if (scene === void 0) { scene = null; }
         var _this = _super.call(this, name, size, "cloudProceduralTexture", scene, fallbackTexture, generateMipMaps) || this;
         _this._skyColor = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color4"](0.15, 0.68, 1.0, 1.0);
         _this._cloudColor = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color4"](1, 1, 1, 1.0);
@@ -769,6 +771,7 @@ __webpack_require__.r(__webpack_exports__);
 var FireProceduralTexture = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(FireProceduralTexture, _super);
     function FireProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {
+        if (scene === void 0) { scene = null; }
         var _this = _super.call(this, name, size, "fireProceduralTexture", scene, fallbackTexture, generateMipMaps) || this;
         _this._time = 0.0;
         _this._speed = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Vector2"](0.5, 0.3);
@@ -1018,6 +1021,7 @@ __webpack_require__.r(__webpack_exports__);
 var GrassProceduralTexture = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(GrassProceduralTexture, _super);
     function GrassProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {
+        if (scene === void 0) { scene = null; }
         var _this = _super.call(this, name, size, "grassProceduralTexture", scene, fallbackTexture, generateMipMaps) || this;
         _this._groundColor = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color3"](1, 1, 1);
         _this._grassColors = [
@@ -1278,6 +1282,7 @@ __webpack_require__.r(__webpack_exports__);
 var MarbleProceduralTexture = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(MarbleProceduralTexture, _super);
     function MarbleProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {
+        if (scene === void 0) { scene = null; }
         var _this = _super.call(this, name, size, "marbleProceduralTexture", scene, fallbackTexture, generateMipMaps) || this;
         _this._numberOfTilesHeight = 3;
         _this._numberOfTilesWidth = 3;
@@ -1437,6 +1442,7 @@ __webpack_require__.r(__webpack_exports__);
 var NormalMapProceduralTexture = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(NormalMapProceduralTexture, _super);
     function NormalMapProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {
+        if (scene === void 0) { scene = null; }
         var _this = _super.call(this, name, size, "normalMapProceduralTexture", scene, fallbackTexture, generateMipMaps) || this;
         _this.updateShaderUniforms();
         return _this;
@@ -1562,6 +1568,7 @@ __webpack_require__.r(__webpack_exports__);
 var PerlinNoiseProceduralTexture = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(PerlinNoiseProceduralTexture, _super);
     function PerlinNoiseProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {
+        if (scene === void 0) { scene = null; }
         var _this = _super.call(this, name, size, "perlinNoiseProceduralTexture", scene, fallbackTexture, generateMipMaps) || this;
         _this.time = 0.0;
         _this.timeScale = 1.0;
@@ -1688,6 +1695,7 @@ __webpack_require__.r(__webpack_exports__);
 var RoadProceduralTexture = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(RoadProceduralTexture, _super);
     function RoadProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {
+        if (scene === void 0) { scene = null; }
         var _this = _super.call(this, name, size, "roadProceduralTexture", scene, fallbackTexture, generateMipMaps) || this;
         _this._roadColor = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color3"](0.53, 0.53, 0.53);
         _this.updateShaderUniforms();
@@ -1799,6 +1807,7 @@ __webpack_require__.r(__webpack_exports__);
 var StarfieldProceduralTexture = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(StarfieldProceduralTexture, _super);
     function StarfieldProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {
+        if (scene === void 0) { scene = null; }
         var _this = _super.call(this, name, size, "starfieldProceduralTexture", scene, fallbackTexture, generateMipMaps) || this;
         _this._time = 1;
         _this._alpha = 0.5;
@@ -2071,6 +2080,7 @@ __webpack_require__.r(__webpack_exports__);
 var WoodProceduralTexture = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(WoodProceduralTexture, _super);
     function WoodProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {
+        if (scene === void 0) { scene = null; }
         var _this = _super.call(this, name, size, "woodProceduralTexture", scene, fallbackTexture, generateMipMaps) || this;
         _this._ampScale = 100.0;
         _this._woodColor = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color3"](0.32, 0.17, 0.09);

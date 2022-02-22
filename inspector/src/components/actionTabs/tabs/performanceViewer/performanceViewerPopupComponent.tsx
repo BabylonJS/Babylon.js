@@ -15,10 +15,11 @@ interface IPerformanceViewerPopupComponentProps {
     layoutObservable: Observable<IPerfLayoutSize>;
     returnToLiveObservable: Observable<void>;
     performanceCollector: PerformanceViewerCollector;
+    initialGraphSize?: {width: number, height: number};
 }
 
 export const PerformanceViewerPopupComponent: React.FC<IPerformanceViewerPopupComponentProps> = (props: IPerformanceViewerPopupComponentProps) => {
-    const { scene, layoutObservable, returnToLiveObservable, performanceCollector } = props;
+    const { scene, layoutObservable, returnToLiveObservable, performanceCollector, initialGraphSize } = props;
     const [ onVisibleRangeChangedObservable ] = useState(new Observable<IVisibleRangeChangedObservableProps>());
 
     return (
@@ -32,6 +33,7 @@ export const PerformanceViewerPopupComponent: React.FC<IPerformanceViewerPopupCo
                 scene={scene}
                 collector={performanceCollector}
                 onVisibleRangeChangedObservable={onVisibleRangeChangedObservable}
+                initialGraphSize={initialGraphSize}
             />
         </div>
     );

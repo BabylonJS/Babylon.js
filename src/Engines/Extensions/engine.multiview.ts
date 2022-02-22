@@ -43,6 +43,7 @@ Engine.prototype.createMultiviewRenderTargetTexture = function (width: number, h
     var internalTexture = new InternalTexture(this, InternalTextureSource.Unknown, true);
     internalTexture.width = width;
     internalTexture.height = height;
+    internalTexture.isMultiview = true;
 
     rtWrapper._colorTextureArray = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D_ARRAY, rtWrapper._colorTextureArray);
@@ -50,11 +51,12 @@ Engine.prototype.createMultiviewRenderTargetTexture = function (width: number, h
 
     rtWrapper._depthStencilTextureArray = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D_ARRAY, rtWrapper._depthStencilTextureArray);
-    (gl as any).texStorage3D(gl.TEXTURE_2D_ARRAY, 1, (gl as any).DEPTH32F_STENCIL8, width, height, 2);
+    (gl as any).texStorage3D(gl.TEXTURE_2D_ARRAY, 1, (gl as any).DEPTH24_STENCIL8, width, height, 2);
 
     internalTexture.isReady = true;
 
     rtWrapper.setTextures(internalTexture);
+    rtWrapper._depthStencilTexture = internalTexture;
 
     return rtWrapper;
 };
@@ -92,6 +94,12 @@ declare module "../../Cameras/camera" {
          * For cameras that cannot use multiview images to display directly. (e.g. webVR camera will render to multiview texture, then copy to each eye texture and go from there)
          */
         _multiviewTexture: Nullable<RenderTargetTexture>;
+
+        /**
+         * @hidden
+         * For WebXR cameras that are rendering to multiview texture arrays.
+         */
+        _renderingMultiview: boolean;
 
         /**
          * @hidden
@@ -137,7 +145,7 @@ function createMultiviewUbo(engine: Engine, name?: string) {
     ubo.addUniform("viewProjectionR", 16);
     ubo.addUniform("view", 16);
     ubo.addUniform("projection", 16);
-    ubo.addUniform("viewPosition", 4);
+    ubo.addUniform("vEyePosition", 4);
     return ubo;
 }
 

@@ -3,7 +3,7 @@ import { Scene } from "babylonjs/scene";
 import { Nullable } from "babylonjs/types";
 import * as React from "react";
 import { GlobalState } from "../../../../../../globalState";
-import { Context } from "../context";
+import { Context, IActiveAnimationChangedOptions } from "../context";
 
 interface IPlayHeadComponentProps {
     globalState: GlobalState;
@@ -17,7 +17,7 @@ export class PlayHeadComponent extends React.Component<IPlayHeadComponentProps, 
     private _playHead: React.RefObject<HTMLDivElement>;
     private _playHeadCircle: React.RefObject<HTMLDivElement>;
     private _onBeforeRenderObserver: Nullable<Observer<Scene>>;
-    private _onActiveAnimationChangedObserver: Nullable<Observer<void>>;
+    private _onActiveAnimationChangedObserver: Nullable<Observer<IActiveAnimationChangedOptions>>;
     private _viewScale = 1;
     private _offsetX = 0;
 
@@ -99,7 +99,7 @@ export class PlayHeadComponent extends React.Component<IPlayHeadComponentProps, 
         let maxFrame = this.props.context.referenceMaxFrame;
 
         return Math.max(
-            Math.min(keys[keys.length - 1].frame, ((pixel / this._viewScale - this._offsetX) / this._GraphAbsoluteWidth) * (maxFrame - minFrame) + minFrame),
+            ((pixel / this._viewScale - this._offsetX) / this._GraphAbsoluteWidth) * (maxFrame - minFrame) + minFrame,
             keys[0].frame
         );
     }
@@ -116,6 +116,8 @@ export class PlayHeadComponent extends React.Component<IPlayHeadComponentProps, 
     }
 
     private _onPointerDown(evt: React.PointerEvent<HTMLDivElement>) {
+        evt.preventDefault();
+
         this._pointerIsDown = true;
         evt.currentTarget.setPointerCapture(evt.pointerId);
 
