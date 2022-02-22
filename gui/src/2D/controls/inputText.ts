@@ -30,6 +30,7 @@ export class InputText extends Control implements IFocusableControl {
     private _autoStretchWidth = true;
     private _maxWidth = new ValueAndUnit(1, ValueAndUnit.UNITMODE_PERCENTAGE, false);
     private _isFocused = false;
+    /** the type of device that most recently focused the input: "mouse", "touch" or "pen" */
     private _focusedBy: string;
     private _blinkTimeout: number;
     private _blinkIsEven = false;
