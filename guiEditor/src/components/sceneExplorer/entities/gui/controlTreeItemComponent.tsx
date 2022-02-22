@@ -18,7 +18,7 @@ interface IControlTreeItemComponentProps {
     onClick: () => void;
     globalState: GlobalState;
     isHovered: boolean;
-    dragOverHover: boolean;
+    isDragOver: boolean;
     dragOverLocation: DragOverLocation;
 }
 
@@ -67,7 +67,7 @@ export class ControlTreeItemComponent extends React.Component<IControlTreeItemCo
                     setRenaming={renaming => this.setState({isRenaming: renaming})}
                     renaming={this.state.isRenaming}
                 />
-                {!draggingSelf && this.props.dragOverHover && this.props.dragOverLocation == DragOverLocation.CENTER && control instanceof Container && (
+                {!draggingSelf && this.props.isDragOver && this.props.dragOverLocation == DragOverLocation.CENTER && control instanceof Container && (
                     <>
                         <div className="makeChild icon" onClick={() => this.highlight()} title="Make Child">
                             <img src={makeChildOfContainerIcon} />
