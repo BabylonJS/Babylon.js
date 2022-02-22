@@ -387,6 +387,12 @@ export class InstancedMesh extends AbstractMesh {
             return this;
         }
 
+        const sourceMeshLODLevels = this.sourceMesh.getLODLevels();
+        if(!sourceMeshLODLevels || sourceMeshLODLevels.length === 0) {
+            this._currentLOD = this.sourceMesh;
+            return this.sourceMesh;
+        }
+
         let boundingInfo = this.getBoundingInfo();
 
         this._currentLOD = <Mesh>this.sourceMesh.getLOD(camera, boundingInfo.boundingSphere);
