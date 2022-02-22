@@ -17,6 +17,8 @@ import { ColorLineComponent } from "../../../../sharedUiComponents/lines/colorLi
 import { makeTargetsProxy, conflictingValuesPlaceholder } from "../../../../sharedUiComponents/lines/targetsProxy";
 import { CoordinateHelper, DimensionProperties } from "../../../../diagram/coordinateHelper";
 import { Vector2 } from "babylonjs/Maths/math";
+import { Observer } from "babylonjs/Misc/observable";
+import { Nullable } from "babylonjs/types";
 
 const sizeIcon: string = require("../../../../sharedUiComponents/imgs/sizeIcon.svg");
 const verticalMarginIcon: string = require("../../../../sharedUiComponents/imgs/verticalMarginIcon.svg");
@@ -53,6 +55,8 @@ type ControlProperty = keyof Control | "_paddingLeft" | "_paddingRight" | "_padd
 
 export class CommonControlPropertyGridComponent extends React.Component<ICommonControlPropertyGridComponentProps> {
 
+    private _onPropertyChangedObserver : Nullable<Observer<PropertyChangedEvent>> | undefined;
+
     constructor(props: ICommonControlPropertyGridComponentProps) {
         super(props);
 
@@ -64,6 +68,26 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
             }
             control.metadata._previousCenter = transformed;
         }
+
+        this._onPropertyChangedObserver = this.props.onPropertyChangedObservable?.add((event) => {
+            const isTransformEvent = event.property === "transformCenterX" || event.property === "transformCenterY";
+            console.log('on observer for event', event.property);
+            for (let control of controls) {
+                let transformed = this._getTransformedReferenceCoordinate(control);
+                if (isTransformEvent && control.metadata._previousCenter) {
+                    // Calculate the difference between current center and previous center
+                    const diff = transformed.subtract(control.metadata._previousCenter);
+                    control.leftInPixels -= diff.x;
+                    control.topInPixels -= diff.y;
+
+                    // Update center in reference to left and top positions
+                    transformed = this._getTransformedReferenceCoordinate(control);
+                }
+
+                control.metadata._previousCenter = transformed;
+            }
+            this.forceUpdate();
+        });
     }
 
     private _getTransformedReferenceCoordinate(control : Control) {
@@ -121,6 +145,12 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                 (control as Container)._children.forEach(child => {
                     child._markAsDirty();
             });
+        }
+    }
+
+    componentWillUnmount() {
+        if (this._onPropertyChangedObserver) {
+            this.props.onPropertyChangedObservable?.remove(this._onPropertyChangedObserver);
         }
     }
 
@@ -184,7 +214,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                 this.forceUpdate();
             }
         }
-        const updateTransformCentersAndPositions = () => {
+        /*const updateTransformCentersAndPositions = () => {
             for (let control of controls) {
                 let transformed = this._getTransformedReferenceCoordinate(control);
                 if (control.metadata._previousCenter) {
@@ -207,7 +237,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
 
                 control.metadata._previousCenter = transformed;
             }
-        };
+        };*/
 
         return (
             <div>
@@ -276,10 +306,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         label="X"
                         delayInput={true}
                         value={getValue("_left")}
-                        onChange={(newValue) => {
-                            this._checkAndUpdateValues("left", newValue);
-                            updateTransformCenters();
-                        }}
+                        onChange={(newValue) => this._checkAndUpdateValues("left", newValue)}
                         unit={getUnitString("_left")}
                         onUnitClicked={unit => convertUnits(unit, "left")}
                     />
@@ -289,10 +316,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         label="Y"
                         delayInput={true}
                         value={getValue("_top")}
-                        onChange={(newValue) => {
-                            this._checkAndUpdateValues("top", newValue);
-                            updateTransformCenters();
-                        }}
+                        onChange={(newValue) => this._checkAndUpdateValues("top", newValue)}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         unit={getUnitString("_top")}
                         onUnitClicked={unit => convertUnits(unit, "top")}
@@ -323,7 +347,6 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                                 }
                             }
                             this._checkAndUpdateValues("width", newValue);
-                            updateTransformCenters();
                         }}
                         unit={getUnitString("_width")}
                         onUnitClicked={unit => convertUnits(unit, "width")}
@@ -350,7 +373,6 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                                 }
                             }
                             this._checkAndUpdateValues("height", newValue);
-                            updateTransformCenters();
                         }}
                         unit={getUnitString("_height")}
                         onUnitClicked={unit => convertUnits(unit, "height")}
@@ -439,7 +461,6 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         target={proxy}
                         propertyName="transformCenterX"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                        onChange={updateTransformCentersAndPositions}
                     />
                     <FloatLineComponent
                         lockObject={this.props.lockObject}
@@ -447,7 +468,6 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         target={proxy}
                         propertyName="transformCenterY"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                        onChange={updateTransformCentersAndPositions}
                     />
                 </div>
                 <div className="ge-divider">
@@ -459,7 +479,6 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         target={proxy}
                         propertyName="scaleX"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                        onChange={updateTransformCenters}
                     />
                     <FloatLineComponent
                         lockObject={this.props.lockObject}
@@ -467,7 +486,6 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         target={proxy}
                         propertyName="scaleY"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                        onChange={updateTransformCenters}
                     />
                 </div>
                 <SliderLineComponent
@@ -482,7 +500,6 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                     maximum={2 * Math.PI}
                     step={0.01}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    onChange={updateTransformCenters}
                 />
                 <hr className="ge" />
                 <TextLineComponent tooltip="" label="APPEARANCE" value=" " color="grey"></TextLineComponent>
