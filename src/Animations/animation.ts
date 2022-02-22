@@ -733,7 +733,7 @@ export class Animation {
      * Interpolates a Vector3 linearly
      * @param startValue Start value of the animation curve
      * @param endValue End value of the animation curve
-     * @param gradient Scalar amount to interpolate
+     * @param gradient Scalar amount to interpolate (value between 0 and 1)
      * @returns Interpolated scalar value
      */
     public vector3InterpolateFunction(startValue: Vector3, endValue: Vector3, gradient: number): Vector3 {
@@ -746,7 +746,7 @@ export class Animation {
      * @param outTangent End tangent of the animation
      * @param endValue End value of the animation curve
      * @param inTangent Start tangent of the animation curve
-     * @param gradient Scalar amount to interpolate
+     * @param gradient Scalar amount to interpolate (value between 0 and 1)
      * @returns InterpolatedVector3 value
      */
     public vector3InterpolateFunctionWithTangents(startValue: Vector3, outTangent: Vector3, endValue: Vector3, inTangent: Vector3, gradient: number): Vector3 {
@@ -757,7 +757,7 @@ export class Animation {
      * Interpolates a Vector2 linearly
      * @param startValue Start value of the animation curve
      * @param endValue End value of the animation curve
-     * @param gradient Scalar amount to interpolate
+     * @param gradient Scalar amount to interpolate (value between 0 and 1)
      * @returns Interpolated Vector2 value
      */
     public vector2InterpolateFunction(startValue: Vector2, endValue: Vector2, gradient: number): Vector2 {
@@ -770,7 +770,7 @@ export class Animation {
      * @param outTangent End tangent of the animation
      * @param endValue End value of the animation curve
      * @param inTangent Start tangent of the animation curve
-     * @param gradient Scalar amount to interpolate
+     * @param gradient Scalar amount to interpolate (value between 0 and 1)
      * @returns Interpolated Vector2 value
      */
     public vector2InterpolateFunctionWithTangents(startValue: Vector2, outTangent: Vector2, endValue: Vector2, inTangent: Vector2, gradient: number): Vector2 {
