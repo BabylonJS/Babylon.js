@@ -601,7 +601,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                         }
                     } else if (dropLocationControl.parent) {
                         //dropping inside the controls parent container
-                        if (dropLocationControl.parent.typeName != "Grid") {
+                        if (dropLocationControl.parent.typeName !== "Grid") {
                             draggedControlParent.removeControl(draggedControl);
                             let index = dropLocationControl.parent.children.indexOf(dropLocationControl);
                             const reversed = dropLocationControl.parent.typeName === "StackPanel" || dropLocationControl.parent.typeName === "VirtualKeyboard";
@@ -626,10 +626,10 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                         this.trueRootContainer.addControl(draggedControl);
                     }
                 } else {
-                    //starting at index 1 because of object "Art-Board-Background" must be at index 0
                     draggedControlParent.removeControl(draggedControl);
-                    draggedControlParent.children.splice(1, 0, draggedControl);
-                    draggedControl.parent = draggedControlParent;
+                    this.trueRootContainer.addControl(draggedControl);
+                    this.trueRootContainer.children.pop();
+                    this.trueRootContainer.children.splice(0, 0, draggedControl);
                 }
             }
         }

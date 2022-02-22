@@ -222,6 +222,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
             <div
                 id="tree"
                 onDrop={(event) => {
+                    this.props.globalState.onDropObservable.notifyObservers();
                     this.props.globalState.onParentingChangeObservable.notifyObservers(null);
                 }}
                 onDragOver={(event) => {
