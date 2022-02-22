@@ -134,9 +134,6 @@ declare module "babylonjs-gui-editor/diagram/workbench" {
         private _canvas;
         private _responsive;
         private _isOverGUINode;
-        private _clipboard;
-        private _selectAll;
-        private _pasted;
         private _engine;
         private _liveRenderObserver;
         private _guiRenderObserver;
@@ -173,8 +170,10 @@ declare module "babylonjs-gui-editor/diagram/workbench" {
         constructor(props: IWorkbenchComponentProps);
         determineMouseSelection(selection: Nullable<Control>): void;
         keyEvent: (evt: KeyboardEvent) => void;
-        copyToClipboard(): void;
-        pasteFromClipboard(): void;
+        private _deleteSelectedNodes;
+        copyToClipboard(copyFn: (content: string) => void): void;
+        cutToClipboard(copyFn: (content: string) => void): void;
+        pasteFromClipboard(clipboardContents: string): boolean;
         CopyGUIControl(original: Control): void;
         private selectAllGUI;
         blurEvent: () => void;
@@ -277,6 +276,7 @@ declare module "babylonjs-gui-editor/globalState" {
         onSnippetSaveObservable: Observable<void>;
         onResponsiveChangeObservable: Observable<boolean>;
         onParentingChangeObservable: Observable<Nullable<Control>>;
+        onDropObservable: Observable<void>;
         onPropertyGridUpdateRequiredObservable: Observable<void>;
         onDraggingEndObservable: Observable<void>;
         onDraggingStartObservable: Observable<void>;
@@ -288,6 +288,9 @@ declare module "babylonjs-gui-editor/globalState" {
         onPointerUpObservable: Observable<Nullable<PointerEvent | import("react").PointerEvent<HTMLCanvasElement>>>;
         draggedControl: Nullable<Control>;
         draggedControlDirection: DragOverLocation;
+        onCopyObservable: Observable<(content: string) => void>;
+        onCutObservable: Observable<(content: string) => void>;
+        onPasteObservable: Observable<string>;
         isSaving: boolean;
         lockObject: LockObject;
         storeEditorData: (serializationObject: any) => void;
@@ -300,6 +303,8 @@ declare module "babylonjs-gui-editor/globalState" {
             action: (data: string) => Promise<string>;
         };
         constructor();
+        /** adds copy, cut and paste listeners to the host window */
+        registerEventListeners(): void;
         get backgroundColor(): Color3;
         set backgroundColor(value: Color3);
         get outlines(): boolean;
@@ -1274,7 +1279,7 @@ declare module "babylonjs-gui-editor/components/sceneExplorer/entities/gui/contr
         onClick: () => void;
         globalState: GlobalState;
         isHovered: boolean;
-        dragOverHover: boolean;
+        isDragOver: boolean;
         dragOverLocation: DragOverLocation;
     }
     export class ControlTreeItemComponent extends React.Component<IControlTreeItemComponentProps, {
@@ -1303,15 +1308,22 @@ declare module "babylonjs-gui-editor/components/sceneExplorer/treeItemSelectable
         extensibilityGroups?: IExplorerExtensibilityGroup[];
         filter: Nullable<string>;
     }
-    export class TreeItemSelectableComponent extends React.Component<ITreeItemSelectableComponentProps, {
+    export interface ITreeItemSelectableComponentState {
+        dragOver: boolean;
         isSelected: boolean;
         isHovered: boolean;
         dragOverLocation: DragOverLocation;
-    }> {
-        dragOverHover: boolean;
+    }
+    export class TreeItemSelectableComponent extends React.Component<ITreeItemSelectableComponentProps, ITreeItemSelectableComponentState> {
         private _onSelectionChangedObservable;
         private _onDraggingEndObservable;
         private _onDraggingStartObservable;
+        /** flag flipped onDragEnter if dragOver is already true
+         * prevents dragLeave from immediately setting dragOver to false
+         * required to make dragging work as expected
+         * see: see: https://github.com/transformation-dev/matrx/tree/master/packages/dragster
+         */
+        private _secondDragEnter;
         constructor(props: ITreeItemSelectableComponentProps);
         switchExpandedState(): void;
         shouldComponentUpdate(nextProps: ITreeItemSelectableComponentProps, nextState: {
@@ -1323,6 +1335,7 @@ declare module "babylonjs-gui-editor/components/sceneExplorer/treeItemSelectable
         renderChildren(isExpanded: boolean, offset?: boolean): (JSX.Element | null)[] | null;
         render(): JSX.Element | (JSX.Element | null)[] | null;
         dragOver(event: React.DragEvent<HTMLDivElement>): void;
+        updateDragOverLocation(event: React.DragEvent<HTMLDivElement>): void;
         drop(): void;
     }
 }
@@ -1543,6 +1556,7 @@ declare module "babylonjs-gui-editor/diagram/artBoard" {
 declare module "babylonjs-gui-editor/workbenchEditor" {
     import * as React from "react";
     import { GlobalState } from "babylonjs-gui-editor/globalState";
+    import { Control } from "babylonjs-gui/2D/controls/control";
     interface IGraphEditorProps {
         globalState: GlobalState;
     }
@@ -1582,7 +1596,7 @@ declare module "babylonjs-gui-editor/workbenchEditor" {
             subItems?: string[];
         }[];
         createItems(): void;
-        onCreate(value: string): void;
+        onCreate(value: string): Control;
         createToolbar(): JSX.Element;
     }
 }
@@ -2547,9 +2561,6 @@ declare module GUIEDITOR {
         private _canvas;
         private _responsive;
         private _isOverGUINode;
-        private _clipboard;
-        private _selectAll;
-        private _pasted;
         private _engine;
         private _liveRenderObserver;
         private _guiRenderObserver;
@@ -2586,8 +2597,10 @@ declare module GUIEDITOR {
         constructor(props: IWorkbenchComponentProps);
         determineMouseSelection(selection: BABYLON.Nullable<Control>): void;
         keyEvent: (evt: KeyboardEvent) => void;
-        copyToClipboard(): void;
-        pasteFromClipboard(): void;
+        private _deleteSelectedNodes;
+        copyToClipboard(copyFn: (content: string) => void): void;
+        cutToClipboard(copyFn: (content: string) => void): void;
+        pasteFromClipboard(clipboardContents: string): boolean;
         CopyGUIControl(original: Control): void;
         private selectAllGUI;
         blurEvent: () => void;
@@ -2679,6 +2692,7 @@ declare module GUIEDITOR {
         onSnippetSaveObservable: BABYLON.Observable<void>;
         onResponsiveChangeObservable: BABYLON.Observable<boolean>;
         onParentingChangeObservable: BABYLON.Observable<BABYLON.Nullable<Control>>;
+        onDropObservable: BABYLON.Observable<void>;
         onPropertyGridUpdateRequiredObservable: BABYLON.Observable<void>;
         onDraggingEndObservable: BABYLON.Observable<void>;
         onDraggingStartObservable: BABYLON.Observable<void>;
@@ -2690,6 +2704,9 @@ declare module GUIEDITOR {
         onPointerUpObservable: BABYLON.Observable<BABYLON.Nullable<PointerEvent | PointerEvent<HTMLCanvasElement>>>;
         draggedControl: BABYLON.Nullable<Control>;
         draggedControlDirection: DragOverLocation;
+        onCopyObservable: BABYLON.Observable<(content: string) => void>;
+        onCutObservable: BABYLON.Observable<(content: string) => void>;
+        onPasteObservable: BABYLON.Observable<string>;
         isSaving: boolean;
         lockObject: LockObject;
         storeEditorData: (serializationObject: any) => void;
@@ -2702,6 +2719,8 @@ declare module GUIEDITOR {
             action: (data: string) => Promise<string>;
         };
         constructor();
+        /** adds copy, cut and paste listeners to the host window */
+        registerEventListeners(): void;
         get backgroundColor(): BABYLON.Color3;
         set backgroundColor(value: BABYLON.Color3);
         get outlines(): boolean;
@@ -3504,7 +3523,7 @@ declare module GUIEDITOR {
         onClick: () => void;
         globalState: GlobalState;
         isHovered: boolean;
-        dragOverHover: boolean;
+        isDragOver: boolean;
         dragOverLocation: DragOverLocation;
     }
     export class ControlTreeItemComponent extends React.Component<IControlTreeItemComponentProps, {
@@ -3529,15 +3548,22 @@ declare module GUIEDITOR {
         extensibilityGroups?: BABYLON.IExplorerExtensibilityGroup[];
         filter: BABYLON.Nullable<string>;
     }
-    export class TreeItemSelectableComponent extends React.Component<ITreeItemSelectableComponentProps, {
+    export interface ITreeItemSelectableComponentState {
+        dragOver: boolean;
         isSelected: boolean;
         isHovered: boolean;
         dragOverLocation: DragOverLocation;
-    }> {
-        dragOverHover: boolean;
+    }
+    export class TreeItemSelectableComponent extends React.Component<ITreeItemSelectableComponentProps, ITreeItemSelectableComponentState> {
         private _onSelectionChangedObservable;
         private _onDraggingEndObservable;
         private _onDraggingStartObservable;
+        /** flag flipped onDragEnter if dragOver is already true
+         * prevents dragLeave from immediately setting dragOver to false
+         * required to make dragging work as expected
+         * see: see: https://github.com/transformation-dev/matrx/tree/master/packages/dragster
+         */
+        private _secondDragEnter;
         constructor(props: ITreeItemSelectableComponentProps);
         switchExpandedState(): void;
         shouldComponentUpdate(nextProps: ITreeItemSelectableComponentProps, nextState: {
@@ -3549,6 +3575,7 @@ declare module GUIEDITOR {
         renderChildren(isExpanded: boolean, offset?: boolean): (JSX.Element | null)[] | null;
         render(): JSX.Element | (JSX.Element | null)[] | null;
         dragOver(event: React.DragEvent<HTMLDivElement>): void;
+        updateDragOverLocation(event: React.DragEvent<HTMLDivElement>): void;
         drop(): void;
     }
 }
@@ -3780,7 +3807,7 @@ declare module GUIEDITOR {
             subItems?: string[];
         }[];
         createItems(): void;
-        onCreate(value: string): void;
+        onCreate(value: string): Control;
         createToolbar(): JSX.Element;
     }
 }

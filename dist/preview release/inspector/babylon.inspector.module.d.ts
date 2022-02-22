@@ -1201,6 +1201,7 @@ declare module "babylonjs-inspector/components/popupComponent" {
         private _host;
         constructor(props: IPopupComponentProps);
         componentDidMount(): void;
+        onBeforeUnloadListener: () => void;
         openPopup(): void;
         componentWillUnmount(): void;
         getWindow(): Window | null;
@@ -6157,6 +6158,7 @@ declare module INSPECTOR {
         private _host;
         constructor(props: IPopupComponentProps);
         componentDidMount(): void;
+        onBeforeUnloadListener: () => void;
         openPopup(): void;
         componentWillUnmount(): void;
         getWindow(): Window | null;

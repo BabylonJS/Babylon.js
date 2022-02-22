@@ -10139,7 +10139,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default()(_node_modules_css_loader_dist_runtime_cssWithMappingToString_js__WEBPACK_IMPORTED_MODULE_0___default.a);
 // Module
-___CSS_LOADER_EXPORT___.push([module.i, "#ge-scene-explorer-host {\n  position: absolute;\n  left: 0px;\n  top: 0px;\n  bottom: 0px; }\n  #ge-scene-explorer-host * {\n    font-family: \"acumin-pro-condensed\"; }\n  #ge-scene-explorer-host:focus {\n    outline: none; }\n\n#ge-__resizable_base__ {\n  display: none; }\n\n.ge-context-menu {\n  background: #e2e2e2; }\n  .ge-context-menu .react-contextmenu-item {\n    padding: 10px;\n    cursor: pointer; }\n    .ge-context-menu .react-contextmenu-item:hover {\n      background: #e2e2e2; }\n\n.ge-eact-contextmenu.context-menu.react-contextmenu--visible {\n  z-index: 99;\n  transform: scale(1); }\n\n#ge-sceneExplorer {\n  background: #e2e2e2;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  display: grid;\n  grid-template-rows: auto 1fr;\n  font: 16px \"acumin-pro-condensed\"; }\n  #ge-sceneExplorer:focus {\n    outline: none; }\n  #ge-sceneExplorer #header {\n    height: 30px;\n    font-size: 16px;\n    color: black;\n    background: #e2e2e2;\n    grid-row: 1;\n    text-align: center;\n    display: grid;\n    grid-template-columns: 30px 1fr 50px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none; }\n    #ge-sceneExplorer #header #logo {\n      position: relative;\n      grid-column: 1;\n      width: 24px;\n      height: 24px;\n      left: 0;\n      display: flex;\n      align-self: center;\n      justify-self: center; }\n    #ge-sceneExplorer #header #title {\n      grid-column: 2;\n      display: grid;\n      align-items: center;\n      text-align: center; }\n    #ge-sceneExplorer #header #commands {\n      grid-column: 3;\n      display: grid;\n      align-items: center;\n      grid-template-columns: 1fr 1fr; }\n      #ge-sceneExplorer #header #commands .expand {\n        grid-column: 1;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n      #ge-sceneExplorer #header #commands .close {\n        grid-column: 2;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n  #ge-sceneExplorer #tree {\n    grid-row: 2;\n    overflow-x: hidden;\n    overflow-y: auto; }\n  #ge-sceneExplorer .filter {\n    display: flex;\n    align-items: stretch; }\n    #ge-sceneExplorer .filter input {\n      width: 100%;\n      margin: 10px 40px 5px 40px;\n      display: block;\n      border: none;\n      padding: 0;\n      border-bottom: solid 1px #337ab7;\n      background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 96%, #337ab7 4%);\n      background-position: -1000px 0;\n      background-size: 1000px 100%;\n      background-repeat: no-repeat;\n      color: black; }\n    #ge-sceneExplorer .filter input::placeholder {\n      color: lightgray; }\n    #ge-sceneExplorer .filter input:focus {\n      box-shadow: none;\n      outline: none;\n      background-position: 0 0; }\n  #ge-sceneExplorer .groupContainer {\n    margin-left: 0px;\n    color: black;\n    margin-top: 0px;\n    margin-bottom: 0px;\n    height: 24px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none;\n    align-self: center;\n    display: grid;\n    align-items: center; }\n    #ge-sceneExplorer .groupContainer:hover {\n      background: #bbbbbb; }\n    #ge-sceneExplorer .groupContainer .expandableHeader {\n      display: grid;\n      grid-template-columns: 1fr 20px; }\n      #ge-sceneExplorer .groupContainer .expandableHeader .text {\n        grid-column: 1;\n        display: grid;\n        grid-template-columns: 20px 1fr; }\n        #ge-sceneExplorer .groupContainer .expandableHeader .text .arrow {\n          grid-column: 1;\n          margin-left: 0px;\n          color: black;\n          cursor: pointer;\n          display: inline-block;\n          margin-right: 6px;\n          opacity: 0.5; }\n        #ge-sceneExplorer .groupContainer .expandableHeader .text .text-value {\n          grid-column: 2;\n          display: flex;\n          align-items: center; }\n      #ge-sceneExplorer .groupContainer .expandableHeader .expandAll {\n        opacity: 0.5;\n        grid-column: 2;\n        margin-right: 10px; }\n  #ge-sceneExplorer .icon {\n    display: grid;\n    align-items: center;\n    justify-items: center;\n    cursor: pointer; }\n  #ge-sceneExplorer .addComponent {\n    display: none; }\n  #ge-sceneExplorer .makeChild {\n    grid-column: 3; }\n  #ge-sceneExplorer .itemContainer {\n    margin-left: 0px;\n    color: black;\n    margin-top: 0px;\n    margin-bottom: 0px;\n    height: 32px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none;\n    display: grid;\n    grid-template-columns: 20px 1fr;\n    border: 2px solid transparent; }\n    #ge-sceneExplorer .itemContainer.hover {\n      border: 2px solid #527089;\n      cursor: pointer; }\n    #ge-sceneExplorer .itemContainer.seAbove {\n      border-top: 2px solid #527089;\n      cursor: pointer; }\n    #ge-sceneExplorer .itemContainer.seBelow {\n      border-bottom: 2px solid #527089;\n      cursor: pointer; }\n    #ge-sceneExplorer .itemContainer.selected {\n      background: #bfbebe;\n      color: black; }\n    #ge-sceneExplorer .itemContainer.dragged {\n      background: transparent;\n      color: black; }\n    #ge-sceneExplorer .itemContainer.parent {\n      background: #ffffff;\n      color: black; }\n    #ge-sceneExplorer .itemContainer .isNotActive {\n      opacity: 0.3; }\n    #ge-sceneExplorer .itemContainer .arrow {\n      grid-column: 1;\n      color: black;\n      opacity: 0.6; }\n    #ge-sceneExplorer .itemContainer .popup {\n      width: 200px;\n      visibility: hidden;\n      background-color: #bbbbbb;\n      color: #fff;\n      border: 1px solid rgba(255, 255, 255, 0.5);\n      position: absolute;\n      z-index: 1;\n      margin-left: -180px;\n      box-sizing: border-box; }\n      #ge-sceneExplorer .itemContainer .popup.show {\n        visibility: visible; }\n      #ge-sceneExplorer .itemContainer .popup:focus {\n        outline: none; }\n      #ge-sceneExplorer .itemContainer .popup .popupMenu {\n        padding: 6px 5px 5px 10px;\n        overflow: hidden;\n        white-space: nowrap;\n        text-overflow: ellipsis;\n        height: 18px; }\n        #ge-sceneExplorer .itemContainer .popup .popupMenu:hover {\n          background: white;\n          color: #333333; }\n    #ge-sceneExplorer .itemContainer .sceneNode {\n      grid-column: 2;\n      margin-left: -10px;\n      display: grid;\n      grid-template-columns: 1fr 20px 20px 20px 20px 10px 20px 20px auto 5px;\n      align-items: center;\n      cursor: pointer; }\n      #ge-sceneExplorer .itemContainer .sceneNode .sceneTitle {\n        grid-column: 1;\n        margin-right: 5px;\n        display: flex;\n        align-items: center;\n        height: 24px; }\n      #ge-sceneExplorer .itemContainer .sceneNode .translation {\n        grid-column: 2;\n        opacity: 0.6; }\n        #ge-sceneExplorer .itemContainer .sceneNode .translation.selected {\n          opacity: 1; }\n      #ge-sceneExplorer .itemContainer .sceneNode .rotation {\n        grid-column: 3;\n        opacity: 0.6; }\n        #ge-sceneExplorer .itemContainer .sceneNode .rotation.selected {\n          opacity: 1; }\n      #ge-sceneExplorer .itemContainer .sceneNode .scaling {\n        grid-column: 4;\n        opacity: 0.6; }\n        #ge-sceneExplorer .itemContainer .sceneNode .scaling.selected {\n          opacity: 1; }\n      #ge-sceneExplorer .itemContainer .sceneNode .bounding {\n        grid-column: 5;\n        opacity: 0.6; }\n        #ge-sceneExplorer .itemContainer .sceneNode .bounding.selected {\n          opacity: 1; }\n      #ge-sceneExplorer .itemContainer .sceneNode .separator {\n        grid-column: 6;\n        margin-left: 5px;\n        width: 5px;\n        display: flex;\n        align-items: center;\n        height: 18px;\n        border-left: solid 1px #337ab7; }\n      #ge-sceneExplorer .itemContainer .sceneNode .pickingMode {\n        grid-column: 7;\n        opacity: 0.6; }\n        #ge-sceneExplorer .itemContainer .sceneNode .pickingMode.selected {\n          opacity: 1; }\n      #ge-sceneExplorer .itemContainer .sceneNode .refresh {\n        grid-column: 8; }\n      #ge-sceneExplorer .itemContainer .sceneNode .extensions {\n        width: 20px;\n        grid-column: 9; }\n    #ge-sceneExplorer .itemContainer .adtextureTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr 20px auto 5px;\n      align-items: center; }\n      #ge-sceneExplorer .itemContainer .adtextureTools .pickingMode {\n        grid-column: 2;\n        opacity: 0.6; }\n        #ge-sceneExplorer .itemContainer .adtextureTools .pickingMode.selected {\n          opacity: 1; }\n      #ge-sceneExplorer .itemContainer .adtextureTools .extensions {\n        width: 20px;\n        grid-column: 3; }\n    #ge-sceneExplorer .itemContainer .controlTools {\n      grid-column: 2;\n      display: grid;\n      align-items: center; }\n      #ge-sceneExplorer .itemContainer .controlTools .highlight {\n        grid-column: 2; }\n      #ge-sceneExplorer .itemContainer .controlTools .visibility {\n        grid-column: 3; }\n      #ge-sceneExplorer .itemContainer .controlTools .extensions {\n        width: 20px;\n        grid-column: 4; }\n    #ge-sceneExplorer .itemContainer .title {\n      grid-column: 1;\n      background: transparent;\n      white-space: nowrap;\n      overflow: hidden;\n      min-width: 0;\n      margin-right: 5px;\n      display: grid;\n      align-items: center;\n      grid-template-columns: 1fr;\n      height: 24px;\n      cursor: pointer; }\n      #ge-sceneExplorer .itemContainer .title .titleText {\n        grid-column: 1;\n        white-space: nowrap;\n        text-overflow: ellipsis;\n        overflow: hidden;\n        outline: none; }\n", "",{"version":3,"sources":["webpack://./components/sceneExplorer/sceneExplorer.scss"],"names":[],"mappings":"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","sourcesContent":["#ge-scene-explorer-host {\r\n    position: absolute;\r\n    left: 0px;\r\n    top:0px;\r\n    bottom: 0px;\r\n    * {\r\n            font-family: \"acumin-pro-condensed\";\r\n    }\r\n    &:focus {\r\n        outline: none;\r\n    }\r\n}\r\n\r\n#ge-__resizable_base__ {\r\n    display: none;\r\n}\r\n\r\n.ge-context-menu {\r\n    background: #e2e2e2;\r\n\r\n    .react-contextmenu-item {\r\n        padding: 10px;\r\n        cursor: pointer;\r\n\r\n        &:hover {\r\n            background: #e2e2e2;\r\n        }\r\n    }\r\n}\r\n\r\n.ge-eact-contextmenu.context-menu.react-contextmenu--visible {\r\n    z-index: 99;\r\n    transform: scale(1);\r\n}\r\n\r\n#ge-sceneExplorer {\r\n    background: #e2e2e2;\r\n    height: 100%;\r\n    margin: 0;\r\n    padding: 0;\r\n    display: grid;\r\n    grid-template-rows: auto 1fr;\r\n    font: 16px \"acumin-pro-condensed\";\r\n\r\n    &:focus {\r\n        outline: none;\r\n    }\r\n\r\n    #header {\r\n        height: 30px;\r\n        font-size: 16px;\r\n        color: black;\r\n        background: #e2e2e2;\r\n        grid-row: 1;\r\n        text-align: center;\r\n        display: grid;\r\n        grid-template-columns: 30px 1fr 50px;        \r\n        -webkit-user-select: none; \r\n        -moz-user-select: none;   \r\n        -ms-user-select: none;    \r\n        user-select: none;                \r\n\r\n        #logo {\r\n            position: relative;\r\n            grid-column: 1; \r\n            width: 24px;\r\n            height: 24px;\r\n            left:0;\r\n            display: flex;\r\n            align-self: center;   \r\n            justify-self: center;\r\n        }        \r\n\r\n        #title {\r\n            grid-column: 2; \r\n            display: grid;\r\n            align-items: center;   \r\n            text-align: center;\r\n        }\r\n\r\n        #commands {\r\n            grid-column: 3; \r\n            display: grid;\r\n            align-items: center;  \r\n            grid-template-columns: 1fr 1fr;   \r\n            \r\n            .expand {\r\n                grid-column: 1;\r\n                display: grid;\r\n                align-items: center;   \r\n                justify-items: center;\r\n                cursor: pointer;     \r\n            }\r\n\r\n            .close {\r\n                grid-column: 2;\r\n                display: grid;\r\n                align-items: center;   \r\n                justify-items: center;\r\n                cursor: pointer;     \r\n            }            \r\n        }\r\n    }\r\n\r\n    #tree {\r\n       grid-row: 2; \r\n\r\n       overflow-x: hidden;\r\n       overflow-y: auto;\r\n    }\r\n\r\n    .filter {\r\n        display: flex;\r\n        align-items: stretch;\r\n\r\n        input {\r\n            width: 100%;\r\n            margin: 10px 40px 5px 40px;\r\n            display: block;\r\n            border: none;\r\n            padding: 0;\r\n            border-bottom: solid 1px rgb(51, 122, 183);\r\n            background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 96%, rgb(51, 122, 183) 4%);\r\n            background-position: -1000px 0;\r\n            background-size: 1000px 100%;\r\n            background-repeat: no-repeat;  \r\n            color:black;    \r\n        }\r\n\r\n        input::placeholder {\r\n            color: lightgray;\r\n        }\r\n\r\n        input:focus  {\r\n            box-shadow: none;\r\n            outline: none;\r\n            background-position: 0 0;\r\n        }\r\n    }\r\n\r\n    .groupContainer {\r\n        margin-left: 0px;\r\n        color: black;\r\n        margin-top: 0px;\r\n        margin-bottom: 0px;\r\n        height: 24px;    \r\n\r\n        -webkit-user-select: none; \r\n        -moz-user-select: none;   \r\n        -ms-user-select: none;    \r\n        user-select: none;    \r\n        \r\n        align-self: center;     \r\n        display: grid;\r\n        align-items: center;           \r\n\r\n        &:hover {\r\n            background: #bbbbbb;\r\n        }\r\n\r\n        .expandableHeader {\r\n            display: grid;\r\n            grid-template-columns: 1fr 20px;\r\n\r\n            .text {\r\n                grid-column: 1;\r\n                display: grid;\r\n                grid-template-columns: 20px 1fr;\r\n\r\n                .arrow {\r\n                    grid-column: 1;\r\n                    margin-left: 0px;\r\n                    color: black;\r\n                    cursor: pointer;\r\n                    display: inline-block;\r\n                    margin-right: 6px;\r\n                    opacity: 0.5;\r\n                }\r\n\r\n                .text-value {\r\n                    grid-column: 2;\r\n                    display: flex;\r\n                    align-items: center;\r\n                }\r\n            }\r\n\r\n            .expandAll {                \r\n                opacity: 0.5;\r\n                grid-column: 2;\r\n                margin-right: 10px;  \r\n            }\r\n        }\r\n        \r\n\r\n    }\r\n\r\n    .icon {\r\n        display: grid;\r\n        align-items: center;   \r\n        justify-items: center;\r\n        cursor: pointer;\r\n    }\r\n\r\n    .addComponent {\r\n        display: none;\r\n    }\r\n\r\n    .makeChild{\r\n       grid-column: 3;\r\n    }\r\n\r\n    .itemContainer {\r\n        margin-left: 0px;\r\n        color: black;\r\n        margin-top: 0px;\r\n        margin-bottom: 0px;\r\n        height: 32px;   \r\n        -webkit-user-select: none; \r\n        -moz-user-select: none;   \r\n        -ms-user-select: none;    \r\n        user-select: none;         \r\n        display: grid;\r\n        grid-template-columns: 20px 1fr;\r\n        border: 2px solid transparent;\r\n        &.hover {\r\n            border: 2px solid #527089;\r\n            cursor: pointer;\r\n        }\r\n\r\n        &.seAbove {\r\n            border-top: 2px solid #527089;\r\n            cursor: pointer;\r\n        }\r\n        &.seBelow {\r\n            border-bottom: 2px solid #527089;\r\n            cursor: pointer;\r\n        }\r\n\r\n        &.selected {\r\n            \r\n            background: #bfbebe;\r\n            color: black;\r\n        }\r\n\r\n        &.dragged {\r\n            background: transparent;\r\n            color: black;\r\n        }\r\n\r\n        &.parent {\r\n            background: #ffffff ;\r\n            color: black;\r\n        }\r\n        \r\n        .isNotActive {\r\n            opacity: 0.3;\r\n        }\r\n        .arrow {\r\n            grid-column: 1;\r\n            color: black;\r\n            opacity: 0.6;\r\n        }\r\n\r\n        .popup {\r\n            width: 200px;\r\n            visibility: hidden;\r\n            background-color: #bbbbbb;\r\n            color: #fff;\r\n            border: 1px solid rgba(255, 255, 255, 0.5);\r\n            position: absolute;\r\n            z-index: 1;\r\n            margin-left: -180px;\r\n            box-sizing: border-box;\r\n\r\n            &.show {\r\n                visibility: visible;\r\n            }\r\n\r\n            &:focus {\r\n                outline: none;\r\n            }\r\n\r\n            .popupMenu {\r\n                padding: 6px 5px 5px 10px;\r\n                overflow: hidden;\r\n                white-space: nowrap;\r\n                text-overflow: ellipsis;\r\n                height: 18px;\r\n                \r\n\r\n                &:hover {\r\n                    background: white;\r\n                    color: #333333;\r\n                }\r\n            }\r\n        }\r\n\r\n        .sceneNode {\r\n            grid-column: 2;\r\n            margin-left: -10px;\r\n            display: grid;\r\n            grid-template-columns: 1fr 20px 20px 20px 20px 10px 20px 20px auto 5px;\r\n            align-items: center;\r\n            cursor: pointer;         \r\n\r\n            .sceneTitle {\r\n                grid-column: 1;\r\n                margin-right: 5px;     \r\n                display: flex;\r\n                align-items: center;   \r\n                height: 24px;       \r\n            }            \r\n\r\n            .translation {\r\n                grid-column: 2;\r\n                opacity: 0.6;\r\n               \r\n                &.selected {\r\n                    opacity: 1;\r\n                }    \r\n            }\r\n\r\n            .rotation {\r\n                grid-column: 3;\r\n                opacity: 0.6;\r\n\r\n                &.selected {\r\n                    opacity: 1;\r\n                }    \r\n            }\r\n\r\n            .scaling {\r\n                grid-column: 4;\r\n                opacity: 0.6;\r\n                &.selected {\r\n                    opacity: 1;\r\n                }    \r\n            }\r\n            \r\n            .bounding {\r\n                grid-column: 5;\r\n                opacity: 0.6;\r\n                &.selected {\r\n                    opacity: 1;\r\n                }    \r\n            }\r\n\r\n            .separator {\r\n                grid-column: 6;\r\n                margin-left: 5px;    \r\n                width: 5px;\r\n                display: flex;\r\n                align-items: center;   \r\n                height: 18px;           \r\n                border-left: solid 1px rgb(51, 122, 183);\r\n            }\r\n\r\n            .pickingMode {\r\n                grid-column: 7;\r\n                opacity: 0.6;\r\n\r\n                &.selected {\r\n                    opacity: 1;\r\n                }\r\n            }\r\n\r\n            .refresh {\r\n                grid-column: 8;\r\n            }\r\n\r\n            .extensions {\r\n                width: 20px;\r\n                grid-column: 9;\r\n            }\r\n        }\r\n        \r\n        .adtextureTools {\r\n            grid-column: 2;\r\n            display: grid;\r\n            grid-template-columns: 1fr 20px auto 5px;\r\n            align-items: center;\r\n            \r\n            .pickingMode {\r\n                grid-column: 2;\r\n                opacity: 0.6;\r\n\r\n                &.selected {\r\n                    opacity: 1;\r\n                }\r\n            }\r\n\r\n            .extensions {\r\n                width: 20px;\r\n                grid-column: 3;\r\n            }\r\n        }         \r\n\r\n        .controlTools {\r\n            grid-column: 2;\r\n            display: grid;\r\n            align-items: center;\r\n\r\n            .highlight {\r\n                grid-column: 2;\r\n            }\r\n\r\n            .visibility {\r\n                grid-column: 3;\r\n            }\r\n\r\n            .extensions {\r\n                width: 20px;\r\n                grid-column: 4;\r\n            }\r\n        }   \r\n        \r\n        .title {\r\n            grid-column: 1;\r\n            background: transparent;\r\n            white-space: nowrap;\r\n            overflow: hidden;\r\n            min-width: 0;\r\n            margin-right: 5px;     \r\n            display: grid;\r\n            align-items: center;  \r\n            grid-template-columns: 1fr; \r\n            height: 24px;\r\n            cursor: pointer;\r\n\r\n            .titleText {\r\n                grid-column: 1;\r\n                white-space: nowrap;\r\n                text-overflow: ellipsis;\r\n                overflow: hidden;\r\n                outline: none;\r\n            }   \r\n \r\n        }\r\n    }\r\n}"],"sourceRoot":""}]);
+___CSS_LOADER_EXPORT___.push([module.i, "#ge-scene-explorer-host {\n  position: absolute;\n  left: 0px;\n  top: 0px;\n  bottom: 0px; }\n  #ge-scene-explorer-host * {\n    font-family: \"acumin-pro-condensed\"; }\n  #ge-scene-explorer-host:focus {\n    outline: none; }\n\n#ge-__resizable_base__ {\n  display: none; }\n\n.ge-context-menu {\n  background: #e2e2e2; }\n  .ge-context-menu .react-contextmenu-item {\n    padding: 10px;\n    cursor: pointer; }\n    .ge-context-menu .react-contextmenu-item:hover {\n      background: #e2e2e2; }\n\n.ge-eact-contextmenu.context-menu.react-contextmenu--visible {\n  z-index: 99;\n  transform: scale(1); }\n\n#ge-sceneExplorer {\n  background: #e2e2e2;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  display: grid;\n  grid-template-rows: auto 1fr;\n  font: 16px \"acumin-pro-condensed\"; }\n  #ge-sceneExplorer:focus {\n    outline: none; }\n  #ge-sceneExplorer #header {\n    height: 30px;\n    font-size: 16px;\n    color: black;\n    background: #e2e2e2;\n    grid-row: 1;\n    text-align: center;\n    display: grid;\n    grid-template-columns: 30px 1fr 50px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none; }\n    #ge-sceneExplorer #header #logo {\n      position: relative;\n      grid-column: 1;\n      width: 24px;\n      height: 24px;\n      left: 0;\n      display: flex;\n      align-self: center;\n      justify-self: center; }\n    #ge-sceneExplorer #header #title {\n      grid-column: 2;\n      display: grid;\n      align-items: center;\n      text-align: center; }\n    #ge-sceneExplorer #header #commands {\n      grid-column: 3;\n      display: grid;\n      align-items: center;\n      grid-template-columns: 1fr 1fr; }\n      #ge-sceneExplorer #header #commands .expand {\n        grid-column: 1;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n      #ge-sceneExplorer #header #commands .close {\n        grid-column: 2;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n  #ge-sceneExplorer #tree {\n    grid-row: 2;\n    overflow-x: hidden;\n    overflow-y: auto; }\n  #ge-sceneExplorer .filter {\n    display: flex;\n    align-items: stretch; }\n    #ge-sceneExplorer .filter input {\n      width: 100%;\n      margin: 10px 40px 5px 40px;\n      display: block;\n      border: none;\n      padding: 0;\n      border-bottom: solid 1px #337ab7;\n      background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 96%, #337ab7 4%);\n      background-position: -1000px 0;\n      background-size: 1000px 100%;\n      background-repeat: no-repeat;\n      color: black; }\n    #ge-sceneExplorer .filter input::placeholder {\n      color: lightgray; }\n    #ge-sceneExplorer .filter input:focus {\n      box-shadow: none;\n      outline: none;\n      background-position: 0 0; }\n  #ge-sceneExplorer .groupContainer {\n    margin-left: 0px;\n    color: black;\n    margin-top: 0px;\n    margin-bottom: 0px;\n    height: 24px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none;\n    align-self: center;\n    display: grid;\n    align-items: center; }\n    #ge-sceneExplorer .groupContainer:hover {\n      background: #bbbbbb; }\n    #ge-sceneExplorer .groupContainer .expandableHeader {\n      display: grid;\n      grid-template-columns: 1fr 20px; }\n      #ge-sceneExplorer .groupContainer .expandableHeader .text {\n        grid-column: 1;\n        display: grid;\n        grid-template-columns: 20px 1fr; }\n        #ge-sceneExplorer .groupContainer .expandableHeader .text .arrow {\n          grid-column: 1;\n          margin-left: 0px;\n          color: black;\n          cursor: pointer;\n          display: inline-block;\n          margin-right: 6px;\n          opacity: 0.5; }\n        #ge-sceneExplorer .groupContainer .expandableHeader .text .text-value {\n          grid-column: 2;\n          display: flex;\n          align-items: center; }\n      #ge-sceneExplorer .groupContainer .expandableHeader .expandAll {\n        opacity: 0.5;\n        grid-column: 2;\n        margin-right: 10px; }\n  #ge-sceneExplorer .icon {\n    display: grid;\n    align-items: center;\n    justify-items: center;\n    cursor: pointer; }\n  #ge-sceneExplorer .addComponent {\n    display: none; }\n  #ge-sceneExplorer .makeChild {\n    grid-column: 3; }\n  #ge-sceneExplorer .itemContainer {\n    margin-left: 0px;\n    color: black;\n    margin-top: 0px;\n    margin-bottom: 0px;\n    height: 32px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none;\n    display: grid;\n    grid-template-columns: 20px 1fr;\n    border: 2px solid transparent; }\n    #ge-sceneExplorer .itemContainer.hover {\n      border: 2px solid #527089;\n      cursor: pointer; }\n    #ge-sceneExplorer .itemContainer.seAbove {\n      border-top: 2px solid #527089;\n      cursor: pointer; }\n    #ge-sceneExplorer .itemContainer.seBelow {\n      border-bottom: 2px solid #527089;\n      cursor: pointer; }\n    #ge-sceneExplorer .itemContainer.selected {\n      background: #bfbebe;\n      color: black; }\n    #ge-sceneExplorer .itemContainer.dragged {\n      background: transparent;\n      color: black; }\n    #ge-sceneExplorer .itemContainer.parent {\n      background: #ffffff;\n      color: black; }\n    #ge-sceneExplorer .itemContainer .isNotActive {\n      opacity: 0.3; }\n    #ge-sceneExplorer .itemContainer .arrow {\n      grid-column: 1;\n      color: black;\n      opacity: 0.6; }\n    #ge-sceneExplorer .itemContainer .popup {\n      width: 200px;\n      visibility: hidden;\n      background-color: #bbbbbb;\n      color: #fff;\n      border: 1px solid rgba(255, 255, 255, 0.5);\n      position: absolute;\n      z-index: 1;\n      margin-left: -180px;\n      box-sizing: border-box; }\n      #ge-sceneExplorer .itemContainer .popup.show {\n        visibility: visible; }\n      #ge-sceneExplorer .itemContainer .popup:focus {\n        outline: none; }\n      #ge-sceneExplorer .itemContainer .popup .popupMenu {\n        padding: 6px 5px 5px 10px;\n        overflow: hidden;\n        white-space: nowrap;\n        text-overflow: ellipsis;\n        height: 18px; }\n        #ge-sceneExplorer .itemContainer .popup .popupMenu:hover {\n          background: white;\n          color: #333333; }\n    #ge-sceneExplorer .itemContainer .sceneNode {\n      grid-column: 2;\n      margin-left: -10px;\n      display: grid;\n      grid-template-columns: 1fr 20px 20px 20px 20px 10px 20px 20px auto 5px;\n      align-items: center;\n      cursor: pointer; }\n      #ge-sceneExplorer .itemContainer .sceneNode .sceneTitle {\n        grid-column: 1;\n        margin-right: 5px;\n        display: flex;\n        align-items: center;\n        height: 24px; }\n      #ge-sceneExplorer .itemContainer .sceneNode .translation {\n        grid-column: 2;\n        opacity: 0.6; }\n        #ge-sceneExplorer .itemContainer .sceneNode .translation.selected {\n          opacity: 1; }\n      #ge-sceneExplorer .itemContainer .sceneNode .rotation {\n        grid-column: 3;\n        opacity: 0.6; }\n        #ge-sceneExplorer .itemContainer .sceneNode .rotation.selected {\n          opacity: 1; }\n      #ge-sceneExplorer .itemContainer .sceneNode .scaling {\n        grid-column: 4;\n        opacity: 0.6; }\n        #ge-sceneExplorer .itemContainer .sceneNode .scaling.selected {\n          opacity: 1; }\n      #ge-sceneExplorer .itemContainer .sceneNode .bounding {\n        grid-column: 5;\n        opacity: 0.6; }\n        #ge-sceneExplorer .itemContainer .sceneNode .bounding.selected {\n          opacity: 1; }\n      #ge-sceneExplorer .itemContainer .sceneNode .separator {\n        grid-column: 6;\n        margin-left: 5px;\n        width: 5px;\n        display: flex;\n        align-items: center;\n        height: 18px;\n        border-left: solid 1px #337ab7; }\n      #ge-sceneExplorer .itemContainer .sceneNode .pickingMode {\n        grid-column: 7;\n        opacity: 0.6; }\n        #ge-sceneExplorer .itemContainer .sceneNode .pickingMode.selected {\n          opacity: 1; }\n      #ge-sceneExplorer .itemContainer .sceneNode .refresh {\n        grid-column: 8; }\n      #ge-sceneExplorer .itemContainer .sceneNode .extensions {\n        width: 20px;\n        grid-column: 9; }\n    #ge-sceneExplorer .itemContainer .adtextureTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr 20px auto 5px;\n      align-items: center; }\n      #ge-sceneExplorer .itemContainer .adtextureTools .pickingMode {\n        grid-column: 2;\n        opacity: 0.6; }\n        #ge-sceneExplorer .itemContainer .adtextureTools .pickingMode.selected {\n          opacity: 1; }\n      #ge-sceneExplorer .itemContainer .adtextureTools .extensions {\n        width: 20px;\n        grid-column: 3; }\n    #ge-sceneExplorer .itemContainer .controlTools {\n      grid-column: 2;\n      display: grid;\n      align-items: center; }\n      #ge-sceneExplorer .itemContainer .controlTools .highlight {\n        grid-column: 2; }\n      #ge-sceneExplorer .itemContainer .controlTools .visibility {\n        grid-column: 3; }\n      #ge-sceneExplorer .itemContainer .controlTools .extensions {\n        width: 20px;\n        grid-column: 4; }\n    #ge-sceneExplorer .itemContainer .title {\n      background: transparent;\n      white-space: nowrap;\n      overflow: hidden;\n      min-width: 0;\n      margin-right: 5px;\n      align-items: center;\n      height: 24px;\n      cursor: pointer; }\n      #ge-sceneExplorer .itemContainer .title .titleText {\n        white-space: nowrap;\n        text-overflow: ellipsis;\n        overflow: hidden;\n        outline: none; }\n", "",{"version":3,"sources":["webpack://./components/sceneExplorer/sceneExplorer.scss"],"names":[],"mappings":"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","sourcesContent":["#ge-scene-explorer-host {\r\n    position: absolute;\r\n    left: 0px;\r\n    top:0px;\r\n    bottom: 0px;\r\n    * {\r\n            font-family: \"acumin-pro-condensed\";\r\n    }\r\n    &:focus {\r\n        outline: none;\r\n    }\r\n}\r\n\r\n#ge-__resizable_base__ {\r\n    display: none;\r\n}\r\n\r\n.ge-context-menu {\r\n    background: #e2e2e2;\r\n\r\n    .react-contextmenu-item {\r\n        padding: 10px;\r\n        cursor: pointer;\r\n\r\n        &:hover {\r\n            background: #e2e2e2;\r\n        }\r\n    }\r\n}\r\n\r\n.ge-eact-contextmenu.context-menu.react-contextmenu--visible {\r\n    z-index: 99;\r\n    transform: scale(1);\r\n}\r\n\r\n#ge-sceneExplorer {\r\n    background: #e2e2e2;\r\n    height: 100%;\r\n    margin: 0;\r\n    padding: 0;\r\n    display: grid;\r\n    grid-template-rows: auto 1fr;\r\n    font: 16px \"acumin-pro-condensed\";\r\n\r\n    &:focus {\r\n        outline: none;\r\n    }\r\n\r\n    #header {\r\n        height: 30px;\r\n        font-size: 16px;\r\n        color: black;\r\n        background: #e2e2e2;\r\n        grid-row: 1;\r\n        text-align: center;\r\n        display: grid;\r\n        grid-template-columns: 30px 1fr 50px;        \r\n        -webkit-user-select: none; \r\n        -moz-user-select: none;   \r\n        -ms-user-select: none;    \r\n        user-select: none;                \r\n\r\n        #logo {\r\n            position: relative;\r\n            grid-column: 1; \r\n            width: 24px;\r\n            height: 24px;\r\n            left:0;\r\n            display: flex;\r\n            align-self: center;   \r\n            justify-self: center;\r\n        }        \r\n\r\n        #title {\r\n            grid-column: 2; \r\n            display: grid;\r\n            align-items: center;   \r\n            text-align: center;\r\n        }\r\n\r\n        #commands {\r\n            grid-column: 3; \r\n            display: grid;\r\n            align-items: center;  \r\n            grid-template-columns: 1fr 1fr;   \r\n            \r\n            .expand {\r\n                grid-column: 1;\r\n                display: grid;\r\n                align-items: center;   \r\n                justify-items: center;\r\n                cursor: pointer;     \r\n            }\r\n\r\n            .close {\r\n                grid-column: 2;\r\n                display: grid;\r\n                align-items: center;   \r\n                justify-items: center;\r\n                cursor: pointer;     \r\n            }            \r\n        }\r\n    }\r\n\r\n    #tree {\r\n       grid-row: 2; \r\n\r\n       overflow-x: hidden;\r\n       overflow-y: auto;\r\n    }\r\n\r\n    .filter {\r\n        display: flex;\r\n        align-items: stretch;\r\n\r\n        input {\r\n            width: 100%;\r\n            margin: 10px 40px 5px 40px;\r\n            display: block;\r\n            border: none;\r\n            padding: 0;\r\n            border-bottom: solid 1px rgb(51, 122, 183);\r\n            background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 96%, rgb(51, 122, 183) 4%);\r\n            background-position: -1000px 0;\r\n            background-size: 1000px 100%;\r\n            background-repeat: no-repeat;  \r\n            color:black;    \r\n        }\r\n\r\n        input::placeholder {\r\n            color: lightgray;\r\n        }\r\n\r\n        input:focus  {\r\n            box-shadow: none;\r\n            outline: none;\r\n            background-position: 0 0;\r\n        }\r\n    }\r\n\r\n    .groupContainer {\r\n        margin-left: 0px;\r\n        color: black;\r\n        margin-top: 0px;\r\n        margin-bottom: 0px;\r\n        height: 24px;    \r\n\r\n        -webkit-user-select: none; \r\n        -moz-user-select: none;   \r\n        -ms-user-select: none;    \r\n        user-select: none;    \r\n        \r\n        align-self: center;     \r\n        display: grid;\r\n        align-items: center;           \r\n\r\n        &:hover {\r\n            background: #bbbbbb;\r\n        }\r\n\r\n        .expandableHeader {\r\n            display: grid;\r\n            grid-template-columns: 1fr 20px;\r\n\r\n            .text {\r\n                grid-column: 1;\r\n                display: grid;\r\n                grid-template-columns: 20px 1fr;\r\n\r\n                .arrow {\r\n                    grid-column: 1;\r\n                    margin-left: 0px;\r\n                    color: black;\r\n                    cursor: pointer;\r\n                    display: inline-block;\r\n                    margin-right: 6px;\r\n                    opacity: 0.5;\r\n                }\r\n\r\n                .text-value {\r\n                    grid-column: 2;\r\n                    display: flex;\r\n                    align-items: center;\r\n                }\r\n            }\r\n\r\n            .expandAll {                \r\n                opacity: 0.5;\r\n                grid-column: 2;\r\n                margin-right: 10px;  \r\n            }\r\n        }\r\n        \r\n\r\n    }\r\n\r\n    .icon {\r\n        display: grid;\r\n        align-items: center;   \r\n        justify-items: center;\r\n        cursor: pointer;\r\n    }\r\n\r\n    .addComponent {\r\n        display: none;\r\n    }\r\n\r\n    .makeChild{\r\n       grid-column: 3;\r\n    }\r\n\r\n    .itemContainer {\r\n        margin-left: 0px;\r\n        color: black;\r\n        margin-top: 0px;\r\n        margin-bottom: 0px;\r\n        height: 32px;   \r\n        -webkit-user-select: none; \r\n        -moz-user-select: none;   \r\n        -ms-user-select: none;    \r\n        user-select: none;\r\n        display: grid;\r\n        grid-template-columns: 20px 1fr;\r\n        border: 2px solid transparent;\r\n        &.hover {\r\n            border: 2px solid #527089;\r\n            cursor: pointer;\r\n        }\r\n\r\n        &.seAbove {\r\n            border-top: 2px solid #527089;\r\n            cursor: pointer;\r\n        }\r\n        &.seBelow {\r\n            border-bottom: 2px solid #527089;\r\n            cursor: pointer;\r\n        }\r\n\r\n        &.selected {\r\n            \r\n            background: #bfbebe;\r\n            color: black;\r\n        }\r\n\r\n        &.dragged {\r\n            background: transparent;\r\n            color: black;\r\n        }\r\n\r\n        &.parent {\r\n            background: #ffffff;\r\n            color: black;\r\n        }\r\n        \r\n        .isNotActive {\r\n            opacity: 0.3;\r\n        }\r\n        .arrow {\r\n            grid-column: 1;\r\n            color: black;\r\n            opacity: 0.6;\r\n        }\r\n\r\n        .popup {\r\n            width: 200px;\r\n            visibility: hidden;\r\n            background-color: #bbbbbb;\r\n            color: #fff;\r\n            border: 1px solid rgba(255, 255, 255, 0.5);\r\n            position: absolute;\r\n            z-index: 1;\r\n            margin-left: -180px;\r\n            box-sizing: border-box;\r\n\r\n            &.show {\r\n                visibility: visible;\r\n            }\r\n\r\n            &:focus {\r\n                outline: none;\r\n            }\r\n\r\n            .popupMenu {\r\n                padding: 6px 5px 5px 10px;\r\n                overflow: hidden;\r\n                white-space: nowrap;\r\n                text-overflow: ellipsis;\r\n                height: 18px;\r\n                \r\n\r\n                &:hover {\r\n                    background: white;\r\n                    color: #333333;\r\n                }\r\n            }\r\n        }\r\n\r\n        .sceneNode {\r\n            grid-column: 2;\r\n            margin-left: -10px;\r\n            display: grid;\r\n            grid-template-columns: 1fr 20px 20px 20px 20px 10px 20px 20px auto 5px;\r\n            align-items: center;\r\n            cursor: pointer;         \r\n\r\n            .sceneTitle {\r\n                grid-column: 1;\r\n                margin-right: 5px;     \r\n                display: flex;\r\n                align-items: center;   \r\n                height: 24px;       \r\n            }            \r\n\r\n            .translation {\r\n                grid-column: 2;\r\n                opacity: 0.6;\r\n               \r\n                &.selected {\r\n                    opacity: 1;\r\n                }    \r\n            }\r\n\r\n            .rotation {\r\n                grid-column: 3;\r\n                opacity: 0.6;\r\n\r\n                &.selected {\r\n                    opacity: 1;\r\n                }    \r\n            }\r\n\r\n            .scaling {\r\n                grid-column: 4;\r\n                opacity: 0.6;\r\n                &.selected {\r\n                    opacity: 1;\r\n                }    \r\n            }\r\n            \r\n            .bounding {\r\n                grid-column: 5;\r\n                opacity: 0.6;\r\n                &.selected {\r\n                    opacity: 1;\r\n                }    \r\n            }\r\n\r\n            .separator {\r\n                grid-column: 6;\r\n                margin-left: 5px;    \r\n                width: 5px;\r\n                display: flex;\r\n                align-items: center;   \r\n                height: 18px;           \r\n                border-left: solid 1px rgb(51, 122, 183);\r\n            }\r\n\r\n            .pickingMode {\r\n                grid-column: 7;\r\n                opacity: 0.6;\r\n\r\n                &.selected {\r\n                    opacity: 1;\r\n                }\r\n            }\r\n\r\n            .refresh {\r\n                grid-column: 8;\r\n            }\r\n\r\n            .extensions {\r\n                width: 20px;\r\n                grid-column: 9;\r\n            }\r\n        }\r\n        \r\n        .adtextureTools {\r\n            grid-column: 2;\r\n            display: grid;\r\n            grid-template-columns: 1fr 20px auto 5px;\r\n            align-items: center;\r\n            \r\n            .pickingMode {\r\n                grid-column: 2;\r\n                opacity: 0.6;\r\n\r\n                &.selected {\r\n                    opacity: 1;\r\n                }\r\n            }\r\n\r\n            .extensions {\r\n                width: 20px;\r\n                grid-column: 3;\r\n            }\r\n        }         \r\n\r\n        .controlTools {\r\n            grid-column: 2;\r\n            display: grid;\r\n            align-items: center;\r\n\r\n            .highlight {\r\n                grid-column: 2;\r\n            }\r\n\r\n            .visibility {\r\n                grid-column: 3;\r\n            }\r\n\r\n            .extensions {\r\n                width: 20px;\r\n                grid-column: 4;\r\n            }\r\n        }   \r\n        \r\n        .title {\r\n            background: transparent;\r\n            white-space: nowrap;\r\n            overflow: hidden;\r\n            min-width: 0;\r\n            margin-right: 5px;\r\n            align-items: center;  \r\n            height: 24px;\r\n            cursor: pointer;\r\n\r\n            .titleText {\r\n                white-space: nowrap;\r\n                text-overflow: ellipsis;\r\n                overflow: hidden;\r\n                outline: none;\r\n            }   \r\n \r\n        }\r\n    }\r\n}"],"sourceRoot":""}]);
 // Exports
 /* harmony default export */ __webpack_exports__["default"] = (___CSS_LOADER_EXPORT___);
 
@@ -43177,14 +43177,24 @@ var CommandBarComponent = /** @class */ (function (_super) {
                         {
                             label: "Copy Selected",
                             onClick: function () {
-                                _this.props.globalState.workbench.copyToClipboard();
+                                _this.props.globalState.onCopyObservable.notifyObservers(function (content) { return _this.props.globalState.hostWindow.navigator.clipboard.writeText(content); });
                             },
                         },
                         {
                             label: "Paste",
-                            onClick: function () {
-                                _this.props.globalState.workbench.pasteFromClipboard();
-                            }
+                            onClick: function () { return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"])(_this, void 0, void 0, function () {
+                                var _a, _b;
+                                return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__generator"])(this, function (_c) {
+                                    switch (_c.label) {
+                                        case 0:
+                                            _b = (_a = this.props.globalState.onPasteObservable).notifyObservers;
+                                            return [4 /*yield*/, this.props.globalState.hostWindow.navigator.clipboard.readText()];
+                                        case 1:
+                                            _b.apply(_a, [_c.sent()]);
+                                            return [2 /*return*/];
+                                    }
+                                });
+                            }); }
                         },
                         {
                             label: "Delete Selected",
@@ -45865,7 +45875,7 @@ var ControlTreeItemComponent = /** @class */ (function (_super) {
         var draggingSelf = this.props.globalState.draggedControl === control;
         return (react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", { className: "controlTools" },
             react__WEBPACK_IMPORTED_MODULE_3__["createElement"](_treeItemLabelComponent__WEBPACK_IMPORTED_MODULE_1__["TreeItemLabelComponent"], { label: control.name, bracket: bracket, onClick: function () { return _this.props.onClick(); }, onChange: function (name) { return _this.onRename(name); }, setRenaming: function (renaming) { return _this.setState({ isRenaming: renaming }); }, renaming: this.state.isRenaming }),
-            !draggingSelf && this.props.dragOverHover && this.props.dragOverLocation == _globalState__WEBPACK_IMPORTED_MODULE_4__["DragOverLocation"].CENTER && control instanceof babylonjs_gui_2D_controls_container__WEBPACK_IMPORTED_MODULE_5__["Container"] && (react__WEBPACK_IMPORTED_MODULE_3__["createElement"](react__WEBPACK_IMPORTED_MODULE_3__["Fragment"], null,
+            !draggingSelf && this.props.isDragOver && this.props.dragOverLocation == _globalState__WEBPACK_IMPORTED_MODULE_4__["DragOverLocation"].CENTER && control instanceof babylonjs_gui_2D_controls_container__WEBPACK_IMPORTED_MODULE_5__["Container"] && (react__WEBPACK_IMPORTED_MODULE_3__["createElement"](react__WEBPACK_IMPORTED_MODULE_3__["Fragment"], null,
                 react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", { className: "makeChild icon", onClick: function () { return _this.highlight(); }, title: "Make Child" },
                     react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("img", { src: makeChildOfContainerIcon })))),
             !this.state.isRenaming && this.props.isHovered && this.props.globalState.draggedControl === null && this.props.dragOverLocation == _globalState__WEBPACK_IMPORTED_MODULE_4__["DragOverLocation"].NONE && (react__WEBPACK_IMPORTED_MODULE_3__["createElement"](react__WEBPACK_IMPORTED_MODULE_3__["Fragment"], null,
@@ -46174,6 +46184,7 @@ var SceneExplorerComponent = /** @class */ (function (_super) {
         }
         var guiElements = scene.textures.filter(function (t) { return t.getClassName() === "AdvancedDynamicTexture"; });
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "tree", onDrop: function (event) {
+                _this.props.globalState.onDropObservable.notifyObservers();
                 _this.props.globalState.onParentingChangeObservable.notifyObservers(null);
             }, onDragOver: function (event) {
                 event.preventDefault();
@@ -46441,7 +46452,13 @@ var TreeItemSelectableComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TreeItemSelectableComponent, _super);
     function TreeItemSelectableComponent(props) {
         var _this = _super.call(this, props) || this;
-        _this.state = { dragOverLocation: _globalState__WEBPACK_IMPORTED_MODULE_4__["DragOverLocation"].NONE, isHovered: false, isSelected: _this.props.selectedEntities.includes(_this.props.entity) };
+        /** flag flipped onDragEnter if dragOver is already true
+         * prevents dragLeave from immediately setting dragOver to false
+         * required to make dragging work as expected
+         * see: see: https://github.com/transformation-dev/matrx/tree/master/packages/dragster
+         */
+        _this._secondDragEnter = false;
+        _this.state = { dragOver: false, dragOverLocation: _globalState__WEBPACK_IMPORTED_MODULE_4__["DragOverLocation"].NONE, isHovered: false, isSelected: _this.props.selectedEntities.includes(_this.props.entity) };
         _this._onSelectionChangedObservable = props.globalState.onSelectionChangedObservable.add(function (selection) {
             _this.setState({ isSelected: selection === _this.props.entity });
         });
@@ -46509,7 +46526,9 @@ var TreeItemSelectableComponent = /** @class */ (function (_super) {
     };
     TreeItemSelectableComponent.prototype.render = function () {
         var _this = this;
-        if (this.props.entity === this.props.globalState.workbench.trueRootContainer || this.props.entity === this.props.globalState.workbench.visibleRegionContainer || this.props.entity === this.props.globalState.workbench.panAndZoomContainer) {
+        if (this.props.entity === this.props.globalState.workbench.trueRootContainer ||
+            this.props.entity === this.props.globalState.workbench.visibleRegionContainer ||
+            this.props.entity === this.props.globalState.workbench.panAndZoomContainer) {
             return this.renderChildren(true, false);
         }
         var marginStyle = {
@@ -46545,43 +46564,60 @@ var TreeItemSelectableComponent = /** @class */ (function (_super) {
         var className = "itemContainer"; //setting class name plus whatever extras based on states
         className += this.state.isSelected && this.props.globalState.draggedControl === null ? " selected" : "";
         className += this.state.isHovered && this.props.globalState.draggedControl === null ? " hover" : "";
-        className += this.dragOverHover && this.state.dragOverLocation == _globalState__WEBPACK_IMPORTED_MODULE_4__["DragOverLocation"].CENTER && entity instanceof babylonjs_gui_2D_controls_container__WEBPACK_IMPORTED_MODULE_6__["Container"] ? " parent" : "";
+        className += this.state.dragOver && this.state.dragOverLocation == _globalState__WEBPACK_IMPORTED_MODULE_4__["DragOverLocation"].CENTER && entity instanceof babylonjs_gui_2D_controls_container__WEBPACK_IMPORTED_MODULE_6__["Container"] ? " parent" : "";
         className += this.props.globalState.draggedControl === this.props.entity ? " dragged" : "";
         className +=
-            this.dragOverHover && this.state.dragOverLocation == _globalState__WEBPACK_IMPORTED_MODULE_4__["DragOverLocation"].ABOVE && this.props.globalState.draggedControl != null && entity.parent ? " seAbove" : "";
+            this.state.dragOver && this.state.dragOverLocation == _globalState__WEBPACK_IMPORTED_MODULE_4__["DragOverLocation"].ABOVE && entity.parent ? " seAbove" : "";
         className +=
-            this.dragOverHover && this.state.dragOverLocation == _globalState__WEBPACK_IMPORTED_MODULE_4__["DragOverLocation"].BELOW && this.props.globalState.draggedControl != null && entity.parent ? " seBelow" : "";
+            this.state.dragOver && this.state.dragOverLocation == _globalState__WEBPACK_IMPORTED_MODULE_4__["DragOverLocation"].BELOW && entity.parent ? " seBelow" : "";
         return (react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", null,
-            react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", { className: className, style: marginStyle, draggable: entity.parent ? true : false, onMouseOver: function () { return _this.setState({ isHovered: true }); }, onMouseLeave: function () { return _this.setState({ isHovered: false }); }, onClick: function () {
+            react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", { className: className, style: marginStyle, onClick: function () {
                     _this.onSelect();
-                }, onDragStart: function (event) {
-                    _this.props.globalState.draggedControl = entity;
+                }, onPointerEnter: function () { return _this.setState({ isHovered: true }); }, onPointerLeave: function () { return _this.setState({ isHovered: false }); }, onDragStart: function () {
+                    _this.props.globalState.draggedControl = _this.props.entity;
                     _this.props.globalState.onDraggingStartObservable.notifyObservers();
-                }, onDrop: function (event) {
-                    _this.drop();
-                }, onDragEnd: function (event) {
+                }, onDragEnd: function () {
                     _this.props.globalState.onDraggingEndObservable.notifyObservers();
-                }, onDragOver: function (event) {
+                }, draggable: entity.parent ? true : false, onDrop: function (event) {
+                    _this.drop();
+                    event.preventDefault();
+                }, onDragEnter: function (event) {
+                    event.preventDefault();
                     _this.dragOver(event);
-                }, onDragLeave: function (event) {
-                    _this.dragOverHover = false;
-                    _this.forceUpdate();
+                }, onDragOver: function (event) { return _this.updateDragOverLocation(event); }, onDragLeave: function () {
+                    // don't immediately set dragOver to false
+                    if (_this._secondDragEnter) {
+                        _this._secondDragEnter = false;
+                    }
+                    else {
+                        _this.setState({ dragOver: false });
+                    }
                 } },
                 hasChildren && (react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", { className: "arrow icon", onClick: function () { return _this.switchExpandedState(); } }, chevron)),
-                react__WEBPACK_IMPORTED_MODULE_3__["createElement"](_entities_gui_controlTreeItemComponent__WEBPACK_IMPORTED_MODULE_5__["ControlTreeItemComponent"], { globalState: this.props.globalState, extensibilityGroups: this.props.extensibilityGroups, control: entity, onClick: function () { }, isHovered: this.state.isHovered, dragOverHover: this.dragOverHover, dragOverLocation: this.state.dragOverLocation })),
+                react__WEBPACK_IMPORTED_MODULE_3__["createElement"](_entities_gui_controlTreeItemComponent__WEBPACK_IMPORTED_MODULE_5__["ControlTreeItemComponent"], { globalState: this.props.globalState, extensibilityGroups: this.props.extensibilityGroups, control: entity, onClick: function () { }, isHovered: this.state.isHovered, isDragOver: this.state.dragOver, dragOverLocation: this.state.dragOverLocation })),
             this.renderChildren(isExpanded)));
     };
     TreeItemSelectableComponent.prototype.dragOver = function (event) {
-        //check the positiions of the mouse cursor.
+        this.updateDragOverLocation(event);
+        // if we've already hovered the element, record a new drag event
+        if (this.state.dragOver) {
+            this._secondDragEnter = true;
+        }
+        else {
+            this.setState({ dragOver: true });
+        }
+    };
+    TreeItemSelectableComponent.prototype.updateDragOverLocation = function (event) {
+        //check the positions of the mouse cursor.
         var target = event.target;
         var rect = target.getBoundingClientRect();
         var y = event.clientY - rect.top;
         if (this.props.entity instanceof babylonjs_gui_2D_controls_container__WEBPACK_IMPORTED_MODULE_6__["Container"]) {
-            if (y < CONTROL_HEIGHT / 3) {
-                //split in thirds
+            if (y < CONTROL_HEIGHT / 5) {
+                //split in fifths
                 this.setState({ dragOverLocation: _globalState__WEBPACK_IMPORTED_MODULE_4__["DragOverLocation"].ABOVE });
             }
-            else if (y > (2 * CONTROL_HEIGHT) / 3) {
+            else if (y > (4 * CONTROL_HEIGHT) / 5) {
                 this.setState({ dragOverLocation: _globalState__WEBPACK_IMPORTED_MODULE_4__["DragOverLocation"].BELOW });
             }
             else {
@@ -46597,19 +46633,17 @@ var TreeItemSelectableComponent = /** @class */ (function (_super) {
                 this.setState({ dragOverLocation: _globalState__WEBPACK_IMPORTED_MODULE_4__["DragOverLocation"].BELOW });
             }
         }
-        event.preventDefault();
-        this.dragOverHover = true;
-        this.forceUpdate();
     };
     TreeItemSelectableComponent.prototype.drop = function () {
+        this.props.globalState.onDropObservable.notifyObservers();
         var control = this.props.entity;
         if (this.props.globalState.draggedControl != control) {
-            this.dragOverHover = false;
             this.props.globalState.draggedControlDirection = this.state.dragOverLocation;
             this.props.globalState.onParentingChangeObservable.notifyObservers(this.props.entity);
         }
         this.props.globalState.draggedControl = null;
-        this.setState({ dragOverLocation: _globalState__WEBPACK_IMPORTED_MODULE_4__["DragOverLocation"].NONE });
+        this.setState({ dragOverLocation: _globalState__WEBPACK_IMPORTED_MODULE_4__["DragOverLocation"].NONE, dragOver: false });
+        this._secondDragEnter = false;
     };
     return TreeItemSelectableComponent;
 }(react__WEBPACK_IMPORTED_MODULE_3__["Component"]));
@@ -47448,6 +47482,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 __webpack_require__(/*! ./workbenchCanvas.scss */ "./diagram/workbenchCanvas.scss");
 var ConstraintDirection;
 (function (ConstraintDirection) {
@@ -47470,8 +47505,6 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         _this._forceZooming = false;
         _this._forceSelecting = true;
         _this._isOverGUINode = [];
-        _this._clipboard = [];
-        _this._selectAll = false;
         _this._mainSelection = null;
         _this._selectionDepth = 0;
         _this._doubleClick = null;
@@ -47500,15 +47533,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
             }
             if (evt.key === "Delete" || evt.key === "Backspace") {
                 if (!_this.props.globalState.lockObject.lock) {
-                    _this._selectedGuiNodes.forEach(function (guiNode) {
-                        var _a;
-                        if (guiNode !== _this.globalState.guiTexture.getChildren()[0]) {
-                            _this.props.globalState.guiTexture.removeControl(guiNode);
-                            (_a = _this.props.globalState.liveGuiTexture) === null || _a === void 0 ? void 0 : _a.removeControl(guiNode);
-                            guiNode.dispose();
-                        }
-                    });
-                    _this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+                    _this._deleteSelectedNodes();
                 }
             }
             if (_this._ctrlKeyIsPressed && !_this.props.globalState.lockObject.lock) {
@@ -47522,17 +47547,6 @@ var WorkbenchComponent = /** @class */ (function (_super) {
                         }
                     });
                 }
-                else if (evt.key === "c") {
-                    _this.copyToClipboard();
-                }
-                else if (evt.key === "v" && !_this._pasted) {
-                    _this.globalState.onSelectionChangedObservable.notifyObservers(null);
-                    _this.pasteFromClipboard();
-                    _this._pasted = true;
-                }
-            }
-            else if (!_this._ctrlKeyIsPressed) {
-                _this._pasted = false;
             }
             if (_this._forceZooming) {
                 _this._canvas.style.cursor = _this._altKeyIsPressed ? "zoom-out" : "zoom-in";
@@ -47550,7 +47564,6 @@ var WorkbenchComponent = /** @class */ (function (_super) {
             if (!selection) {
                 _this.updateNodeOutlines();
                 _this._selectedGuiNodes = [];
-                _this._selectAll = false;
                 _this._mainSelection = null;
             }
             else {
@@ -47573,7 +47586,6 @@ var WorkbenchComponent = /** @class */ (function (_super) {
                             _this._mainSelection = selection;
                         }
                         _this._lockMainSelection = false;
-                        _this._selectAll = false;
                     }
                     _this.updateNodeOutlines();
                 }
@@ -47634,6 +47646,9 @@ var WorkbenchComponent = /** @class */ (function (_super) {
             _this.props.globalState.onArtBoardUpdateRequiredObservable.notifyObservers();
             _this._engine.resize();
         });
+        props.globalState.onCopyObservable.add(function (copyFn) { return _this.copyToClipboard(copyFn); });
+        props.globalState.onCutObservable.add(function (copyFn) { return _this.cutToClipboard(copyFn); });
+        props.globalState.onPasteObservable.add(function (content) { return _this.pasteFromClipboard(content); });
         _this.props.globalState.workbench = _this;
         return _this;
     }
@@ -47771,27 +47786,52 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         this._lockMainSelection = true;
         this.props.globalState.onSelectionChangedObservable.notifyObservers(selection);
     };
-    WorkbenchComponent.prototype.copyToClipboard = function () {
-        var _this = this;
-        this._clipboard = [];
-        if (this._selectAll) {
-            var index_2 = 0;
-            this.nodes.forEach(function (node) {
-                if (index_2++) {
-                    //skip the first node, the background
-                    _this._clipboard.push(node);
-                }
-            });
+    WorkbenchComponent.prototype._deleteSelectedNodes = function () {
+        var _a;
+        for (var _i = 0, _b = this._selectedGuiNodes; _i < _b.length; _i++) {
+            var control = _b[_i];
+            this.props.globalState.guiTexture.removeControl(control);
+            (_a = this.props.globalState.liveGuiTexture) === null || _a === void 0 ? void 0 : _a.removeControl(control);
+            control.dispose();
         }
-        else {
-            this._clipboard = this.selectedGuiNodes;
-        }
+        ;
+        this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
     };
-    WorkbenchComponent.prototype.pasteFromClipboard = function () {
-        var _this = this;
-        this._clipboard.forEach(function (control) {
-            _this.CopyGUIControl(control);
-        });
+    WorkbenchComponent.prototype.copyToClipboard = function (copyFn) {
+        var controlList = [];
+        for (var _i = 0, _a = this.selectedGuiNodes; _i < _a.length; _i++) {
+            var control = _a[_i];
+            var obj = {};
+            control.serialize(obj);
+            controlList.push(obj);
+        }
+        copyFn(JSON.stringify({
+            GUIClipboard: true,
+            controls: controlList
+        }));
+    };
+    WorkbenchComponent.prototype.cutToClipboard = function (copyFn) {
+        this.copyToClipboard(copyFn);
+        this._deleteSelectedNodes();
+    };
+    WorkbenchComponent.prototype.pasteFromClipboard = function (clipboardContents) {
+        try {
+            var parsed = JSON.parse(clipboardContents);
+            if (parsed.GUIClipboard) {
+                this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+                for (var _i = 0, _a = parsed.controls; _i < _a.length; _i++) {
+                    var control = _a[_i];
+                    var newControl = this.appendBlock(babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["Control"].Parse(control, this.props.globalState.guiTexture));
+                    this.props.globalState.onSelectionChangedObservable.notifyObservers(newControl);
+                }
+                return true;
+            }
+        }
+        catch (_b) {
+            // don't need an error message
+        }
+        babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["Logger"].Warn("Paste attempted, but clipboard content was invalid.");
+        return false;
     };
     WorkbenchComponent.prototype.CopyGUIControl = function (original) {
         var _a, _b;
@@ -47809,13 +47849,13 @@ var WorkbenchComponent = /** @class */ (function (_super) {
             else {
                 (_b = original.parent) === null || _b === void 0 ? void 0 : _b.addControl(newControl);
             }
-            var index_3 = 1;
+            var index_2 = 1;
             while (this.props.globalState.guiTexture.getDescendants(false).filter(
             //search if there are any copies
-            function (control) { return control.name === "".concat(newControl.name, " Copy ").concat(index_3); }).length) {
-                index_3++;
+            function (control) { return control.name === "".concat(newControl.name, " Copy ").concat(index_2); }).length) {
+                index_2++;
             }
-            newControl.name = "".concat(newControl.name, " Copy ").concat(index_3);
+            newControl.name = "".concat(newControl.name, " Copy ").concat(index_2);
             this.props.globalState.onSelectionChangedObservable.notifyObservers(newControl);
         }
     };
@@ -47827,7 +47867,6 @@ var WorkbenchComponent = /** @class */ (function (_super) {
                 _this.selectAllGUI(child);
             });
         }
-        this._selectAll = true;
     };
     WorkbenchComponent.prototype.componentWillUnmount = function () {
         this.props.globalState.hostDocument.removeEventListener("keyup", this.keyEvent);
@@ -48021,7 +48060,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
                     }
                     else if (dropLocationControl.parent) {
                         //dropping inside the controls parent container
-                        if (dropLocationControl.parent.typeName != "Grid") {
+                        if (dropLocationControl.parent.typeName !== "Grid") {
                             draggedControlParent.removeControl(draggedControl);
                             var index = dropLocationControl.parent.children.indexOf(dropLocationControl);
                             var reversed = dropLocationControl.parent.typeName === "StackPanel" || dropLocationControl.parent.typeName === "VirtualKeyboard";
@@ -48048,10 +48087,10 @@ var WorkbenchComponent = /** @class */ (function (_super) {
                     }
                 }
                 else {
-                    //starting at index 1 because of object "Art-Board-Background" must be at index 0
                     draggedControlParent.removeControl(draggedControl);
-                    draggedControlParent.children.splice(1, 0, draggedControl);
-                    draggedControl.parent = draggedControlParent;
+                    this.trueRootContainer.addControl(draggedControl);
+                    this.trueRootContainer.children.pop();
+                    this.trueRootContainer.children.splice(0, 0, draggedControl);
                 }
             }
         }
@@ -48519,6 +48558,7 @@ var GlobalState = /** @class */ (function () {
         this.onSnippetSaveObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onResponsiveChangeObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onParentingChangeObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onDropObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onPropertyGridUpdateRequiredObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onDraggingEndObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onDraggingStartObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
@@ -48529,6 +48569,9 @@ var GlobalState = /** @class */ (function () {
         this.onPointerMoveObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onPointerUpObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.draggedControl = null;
+        this.onCopyObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onCutObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onPasteObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.isSaving = false;
         this.lockObject = new _sharedUiComponents_tabs_propertyGrids_lockObject__WEBPACK_IMPORTED_MODULE_1__["LockObject"]();
         this.controlCamera = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].ReadBoolean("ControlCamera", true);
@@ -48540,6 +48583,32 @@ var GlobalState = /** @class */ (function () {
         this.onBackgroundColorChangeObservable.notifyObservers();
         _diagram_coordinateHelper__WEBPACK_IMPORTED_MODULE_2__["CoordinateHelper"].globalState = this;
     }
+    /** adds copy, cut and paste listeners to the host window */
+    GlobalState.prototype.registerEventListeners = function () {
+        var _this = this;
+        this.hostDocument.addEventListener("copy", function (event) {
+            var target = event.target;
+            if (!target.isContentEditable && target.tagName !== "input" && target.tagName !== "textarea") {
+                _this.onCopyObservable.notifyObservers(function (content) { var _a; return (_a = event.clipboardData) === null || _a === void 0 ? void 0 : _a.setData("text/plain", content); });
+                event.preventDefault();
+            }
+        });
+        this.hostDocument.addEventListener("cut", function (event) {
+            var target = event.target;
+            if (!target.isContentEditable && target.tagName !== "input" && target.tagName !== "textarea") {
+                _this.onCutObservable.notifyObservers(function (content) { var _a; return (_a = event.clipboardData) === null || _a === void 0 ? void 0 : _a.setData("text/plain", content); });
+                event.preventDefault();
+            }
+        });
+        this.hostDocument.addEventListener("paste", function (event) {
+            var _a;
+            var target = event.target;
+            if (!target.isContentEditable && target.tagName !== "input" && target.tagName !== "textarea") {
+                _this.onPasteObservable.notifyObservers(((_a = event.clipboardData) === null || _a === void 0 ? void 0 : _a.getData("text")) || "");
+                event.preventDefault();
+            }
+        });
+    };
     Object.defineProperty(GlobalState.prototype, "backgroundColor", {
         get: function () {
             return this._backgroundColor;
@@ -48641,6 +48710,7 @@ var GUIEditor = /** @class */ (function () {
                         globalState.customSave = options.customSave;
                         globalState.customLoad = options.customLoad;
                         globalState.hostWindow = hostElement.ownerDocument.defaultView;
+                        globalState.registerEventListeners();
                         graphEditor = react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_workbenchEditor__WEBPACK_IMPORTED_MODULE_4__["WorkbenchEditor"], {
                             globalState: globalState,
                         });
@@ -51640,6 +51710,12 @@ var WorkbenchEditor = /** @class */ (function (_super) {
         }, false);
         _this.createItems();
         _this.props.globalState.onBackgroundColorChangeObservable.add(function () { return _this.forceUpdate(); });
+        _this.props.globalState.onDropObservable.add(function () {
+            if (_this._draggedItem != null) {
+                _this.props.globalState.draggedControl = _this.onCreate(_this._draggedItem);
+            }
+            _this._draggedItem = null;
+        });
         return _this;
     }
     WorkbenchEditor.prototype.componentDidMount = function () {
@@ -51707,10 +51783,8 @@ var WorkbenchEditor = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_sceneExplorer_sceneExplorerComponent__WEBPACK_IMPORTED_MODULE_9__["SceneExplorerComponent"], { globalState: this.props.globalState, noExpand: true }),
                 this.createToolbar(),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "diagram-container", onDrop: function (event) {
-                        if (_this._draggedItem != null) {
-                            _this.onCreate(_this._draggedItem);
-                        }
-                        _this._draggedItem = null;
+                        event.preventDefault();
+                        _this.props.globalState.onDropObservable.notifyObservers();
                     }, onDragOver: function (event) {
                         event.preventDefault();
                     }, style: {
@@ -51864,6 +51938,7 @@ var WorkbenchEditor = /** @class */ (function (_super) {
         this.props.globalState.onSelectionChangedObservable.notifyObservers(newGuiNode);
         this.props.globalState.onPointerUpObservable.notifyObservers(null);
         this.forceUpdate();
+        return newGuiNode;
     };
     WorkbenchEditor.prototype.createToolbar = function () {
         var _this = this;
