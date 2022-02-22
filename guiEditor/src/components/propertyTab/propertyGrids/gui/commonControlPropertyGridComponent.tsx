@@ -16,6 +16,7 @@ import { ValueAndUnit } from "babylonjs-gui/2D/valueAndUnit";
 import { ColorLineComponent } from "../../../../sharedUiComponents/lines/colorLineComponent";
 import { makeTargetsProxy, conflictingValuesPlaceholder } from "../../../../sharedUiComponents/lines/targetsProxy";
 import { CoordinateHelper, DimensionProperties } from "../../../../diagram/coordinateHelper";
+import { Vector2 } from "babylonjs/Maths/math";
 
 const sizeIcon: string = require("../../../../sharedUiComponents/imgs/sizeIcon.svg");
 const verticalMarginIcon: string = require("../../../../sharedUiComponents/imgs/verticalMarginIcon.svg");
@@ -54,6 +55,23 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
 
     constructor(props: ICommonControlPropertyGridComponentProps) {
         super(props);
+
+        const controls = this.props.controls;
+        for (let control of controls) {
+            const transformed = this._getTransformedReferenceCoordinate(control);
+            console.log('transformed', transformed);
+            if (!control.metadata) {
+                control.metadata = {};
+            }
+            control.metadata._previousCenter = transformed;
+        }
+    }
+
+    private _getTransformedReferenceCoordinate(control : Control) {
+        const nodeMatrix = CoordinateHelper.getNodeMatrix(control);
+        const transformed = new Vector2(1, 1);
+        nodeMatrix.transformCoordinates(1, 1, transformed);
+        return transformed;
     }
 
     private _updateAlignment(alignment: string, value: number) {
@@ -390,6 +408,22 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         target={proxy}
                         propertyName="transformCenterX"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        onChange={() => {
+                            for (let control of controls) {
+                                let transformed = this._getTransformedReferenceCoordinate(control);
+                                if (control.metadata._previousCenter) {
+                                    // transform
+                                    const diff = transformed.subtract(control.metadata._previousCenter);
+                                    control.leftInPixels -= diff.x;
+                                    control.topInPixels -= diff.y;
+
+                                    transformed = this._getTransformedReferenceCoordinate(control);
+                                }
+
+                                control.metadata._previousCenter = transformed;
+                            }
+                            this.forceUpdate();
+                        }}
                     />
                     <FloatLineComponent
                         lockObject={this.props.lockObject}
@@ -429,6 +463,13 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                     maximum={2 * Math.PI}
                     step={0.01}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    onChange={() => {
+                        for (let control of controls) {
+                            let transformed = this._getTransformedReferenceCoordinate(control);
+
+                            control.metadata._previousCenter = transformed;
+                        }
+                    }}
                 />
                 <hr className="ge" />
                 <TextLineComponent tooltip="" label="APPEARANCE" value=" " color="grey"></TextLineComponent>
