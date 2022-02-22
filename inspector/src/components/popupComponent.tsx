@@ -36,7 +36,7 @@ export class PopupComponent extends React.Component<IPopupComponentProps, { isCo
         this.setState({ isComponentMounted: true });
     }
 
-    onBeforeLoadListener = () => {
+    onBeforeUnloadListener = () => {
         if (this._window) {
             this._window.close();
         }
@@ -58,7 +58,7 @@ export class PopupComponent extends React.Component<IPopupComponentProps, { isCo
         }
 
         this._window = (Inspector as any)[windowVariableName];
-        window.addEventListener("beforeunload", this.onBeforeLoadListener);
+        window.addEventListener("beforeunload", this.onBeforeUnloadListener);
 
         if (this._window) {
             if (onOpen) {
@@ -94,7 +94,7 @@ export class PopupComponent extends React.Component<IPopupComponentProps, { isCo
     }
 
     componentWillUnmount() {
-        window.removeEventListener("beforeunload", this.onBeforeLoadListener);
+        window.removeEventListener("beforeunload", this.onBeforeUnloadListener);
         if (this._window) {
             this._window.close();
         }
