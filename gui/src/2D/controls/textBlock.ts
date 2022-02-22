@@ -451,7 +451,7 @@ export class TextBlock extends Control {
         var textMetrics = context.measureText(line);
         var lineWidth = Math.abs(textMetrics.actualBoundingBoxLeft) + Math.abs(textMetrics.actualBoundingBoxRight);
 
-        let removeChars = this._getCharsToRemove(lineWidth, width, line.length); 
+        let removeChars = this._getCharsToRemove(lineWidth, width, line.length);
 
         // unicode support. split('') does not work with unicode!
         // make sure Array.from is available
