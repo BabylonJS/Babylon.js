@@ -10,6 +10,7 @@ import { FluentMaterial } from "../materials/fluent/fluentMaterial";
 import { FluentBackplateMaterial } from "../materials/fluentBackplate/fluentBackplateMaterial";
 import { PointerDragBehavior } from "babylonjs/Behaviors/Meshes/pointerDragBehavior";
 import { Texture } from "babylonjs/Materials/Textures/texture";
+import { Vector4 } from "babylonjs/Maths/math";
 import { Epsilon } from "babylonjs/Maths/math.constants";
 import { Scalar } from "babylonjs/Maths/math.scalar";
 import { Matrix, Quaternion, Vector2, Vector3 } from "babylonjs/Maths/math.vector";
@@ -213,6 +214,7 @@ export class HolographicSlate extends ContentDisplay3D {
         const titleBarTitle = this._titleBarTitle;
         const contentPlate = this._contentPlate;
         const backPlate = this._backPlate;
+        const rightHandScene = contentPlate.getScene().useRightHandedSystem;
 
         if (followButton && closeButton && titleBar) {
             closeButton.scaling.setAll(this.titleBarHeight);
@@ -240,9 +242,9 @@ export class HolographicSlate extends ContentDisplay3D {
             backPlate.scaling.copyFromFloats(this.dimensions.x, contentPlateHeight, Epsilon);
 
             titleBar.position.copyFromFloats(this.dimensions.x / 2, -(this.titleBarHeight / 2), 0).addInPlace(this.origin);
-            titleBarTitle.position.copyFromFloats((this.dimensions.x / 2) - this.titleBarHeight, -(this.titleBarHeight / 2), -Epsilon).addInPlace(this.origin);
+            titleBarTitle.position.copyFromFloats((this.dimensions.x / 2) - this.titleBarHeight, -(this.titleBarHeight / 2), rightHandScene ? Epsilon : -Epsilon).addInPlace(this.origin);
             contentPlate.position.copyFromFloats(this.dimensions.x / 2, -(this.titleBarHeight + this.titleBarMargin + contentPlateHeight / 2), 0).addInPlace(this.origin);
-            backPlate.position.copyFromFloats(this.dimensions.x / 2, -(this.titleBarHeight + this.titleBarMargin + contentPlateHeight / 2), Epsilon).addInPlace(this.origin);
+            backPlate.position.copyFromFloats(this.dimensions.x / 2, -(this.titleBarHeight + this.titleBarMargin + contentPlateHeight / 2), rightHandScene ? -Epsilon : Epsilon).addInPlace(this.origin);
 
             // Update the title's AdvancedDynamicTexture scale to avoid visual stretching
             this._titleTextComponent.host.scaleTo(HolographicSlate.DEFAULT_TEXT_RESOLUTION_Y * titleBarTitle.scaling.x / titleBarTitle.scaling.y, HolographicSlate.DEFAULT_TEXT_RESOLUTION_Y);
@@ -314,8 +316,16 @@ export class HolographicSlate extends ContentDisplay3D {
         this._titleTextComponent.paddingLeft = HolographicSlate.DEFAULT_TEXT_RESOLUTION_Y / 4;
         adt.addControl(this._titleTextComponent);
 
-        this._contentPlate = CreatePlane("contentPlate_" + this.name, { size: 1, sideOrientation: VertexData.FRONTSIDE }, scene);
-        this._backPlate = CreatePlane("backPlate_" + this.name, { size: 1, sideOrientation: VertexData.BACKSIDE }, scene);
+        if (scene.useRightHandedSystem) {
+            const faceUV = new Vector4(0,0,1,1);
+            this._contentPlate = CreatePlane("contentPlate_" + this.name, { size: 1, sideOrientation: VertexData.BACKSIDE, frontUVs: faceUV }, scene);
+            this._backPlate = CreatePlane("backPlate_" + this.name, { size: 1, sideOrientation: VertexData.FRONTSIDE }, scene);
+        }
+        else {
+            const faceUV = new Vector4(0,0,1,1);
+            this._contentPlate = CreatePlane("contentPlate_" + this.name, { size: 1, sideOrientation: VertexData.FRONTSIDE, frontUVs: faceUV }, scene);
+            this._backPlate = CreatePlane("backPlate_" + this.name, { size: 1, sideOrientation: VertexData.BACKSIDE }, scene);
+        }
 
         this._titleBar.parent = node;
         this._titleBar.isNearGrabbable = true;
@@ -455,7 +465,7 @@ export class HolographicSlate extends ContentDisplay3D {
         const camera = scene.activeCamera;
         if (camera) {
             const worldMatrix = camera.getWorldMatrix();
-            const backward = Vector3.TransformNormal(Vector3.Backward(false), worldMatrix);
+            const backward = Vector3.TransformNormal(Vector3.Backward(scene.useRightHandedSystem), worldMatrix);
             this.origin.setAll(0);
             this._gizmo.updateBoundingBox();
             const pivot = this.node.getAbsolutePivotPoint();
