@@ -245,7 +245,7 @@
         },
         {
             "title": "Chibi Rex",
-            "playgroundId": "#NZ2RZY#1",
+            "playgroundId": "#NZ2RZY#2",
             "renderCount": 50,
             "referenceImage": "chibi_rex.png"
         },
@@ -1107,7 +1107,7 @@
         {
             "title": "Prepass + mirror, without postprocess",
             "renderCount": 10,
-            "playgroundId": "#PIZ1GK#344",
+            "playgroundId": "#PIZ1GK#352",
             "excludedEngines": ["webgl1"],
             "referenceImage": "prepass-mirror-without-pp.png"
         },
