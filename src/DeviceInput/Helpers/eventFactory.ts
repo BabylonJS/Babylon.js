@@ -48,9 +48,14 @@ export class DeviceEventFactory {
     private static _createPointerEvent(deviceType: DeviceType, deviceSlot: number, inputIndex: number, currentState: Nullable<number>, deviceInputSystem: IDeviceInputSystem, elementToAttachTo?: any): any {
         const evt = this._createMouseEvent(deviceType, deviceSlot, inputIndex, currentState, deviceInputSystem, elementToAttachTo);
 
-        evt.pointerId = deviceType === DeviceType.Mouse ? 1 : deviceSlot;
-
-        evt.pointerType = deviceType === DeviceType.Mouse ? "mouse" : "touch";
+        if (deviceType === DeviceType.Mouse) {
+            evt.pointerId = 1;
+            evt.pointerType = "mouse";
+        }
+        else {
+            evt.pointerId = deviceSlot;
+            evt.pointerType = "touch";
+        }
 
         if (inputIndex === PointerInput.Move) {
             evt.type = "pointermove";
