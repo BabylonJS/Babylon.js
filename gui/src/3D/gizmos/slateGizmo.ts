@@ -47,6 +47,7 @@ export class SlateGizmo extends Gizmo {
      * Value we use to offset handles from mesh
      */
     private _margin = 0.35;
+    private _handleSize = 0.075;
     private _attachedSlate: Nullable<HolographicSlate> = null;
     private _existingSlateScale = new Vector3();
     /**
@@ -57,11 +58,6 @@ export class SlateGizmo extends Gizmo {
      * The distance away from the object which the draggable meshes should appear world sized when fixedScreenSize is set to true (default: 10)
      */
     public fixedScreenSizeDistanceFactor = 10;
-
-    /**
-     * Size of the handles (meters in XR)
-     */
-    public handleSize = 0.01;
 
     /**
      * The slate attached to this gizmo
@@ -136,7 +132,6 @@ export class SlateGizmo extends Gizmo {
             const corner = new CornerHandle(this, this.gizmoLayer.utilityLayerScene);
             this._corners.push(corner);
             corner.node.rotation.z = (Math.PI / 2) * i;
-            corner.node.scaling.setAll(this.handleSize);
 
             corner.node.parent = this._handlesParent;
             this._assignDragBehaviorCorners(
@@ -150,7 +145,6 @@ export class SlateGizmo extends Gizmo {
             const side = new SideHandle(this, this.gizmoLayer.utilityLayerScene);
             this._sides.push(side);
             side.node.rotation.z = (Math.PI / 2) * i;
-            side.node.scaling.copyFromFloats(this.handleSize, this.handleSize, this.handleSize);
             side.node.parent = this._handlesParent;
             this._assignDragBehaviorSides(side, i % 2 === 0 ? new Vector3(0, 1, 0) : new Vector3(1, 0, 0));
         }
@@ -224,7 +218,6 @@ export class SlateGizmo extends Gizmo {
         const toObjectFrame = new Matrix();
         const dragPlaneNormal = new Vector3();
 
-        let previousFollowState = false;
         const projectToRef = (position: Vector3, normal: Vector3, origin: Vector3, ref: Vector3) => {
             // Projects on the plane with its normal and origin
             position.subtractToRef(origin, TmpVectors.Vector3[0]);
@@ -241,8 +234,7 @@ export class SlateGizmo extends Gizmo {
                 dragOrigin.copyFrom(event.position);
                 toObjectFrame.copyFrom(this.attachedMesh.computeWorldMatrix(true));
                 toObjectFrame.invert();
-                previousFollowState = this.attachedSlate.defaultBehavior.followBehaviorEnabled;
-                this.attachedSlate.defaultBehavior.followBehaviorEnabled = false;
+                this.attachedSlate._followButton.isToggled = false;
                 Vector3.TransformNormalToRef(Vector3.Forward(), this.attachedMesh.getWorldMatrix(), dragPlaneNormal);
                 dragPlaneNormal.normalize();
 
@@ -268,7 +260,6 @@ export class SlateGizmo extends Gizmo {
         const dragEnd = () => {
             if (this.attachedSlate && this.attachedNode) {
                 this.attachedSlate._updatePivot();
-                this.attachedSlate.defaultBehavior.followBehaviorEnabled = previousFollowState;
 
                 if (this._handleDragged) {
                     this._handleDragged.drag = false;
@@ -285,17 +276,15 @@ export class SlateGizmo extends Gizmo {
         let dragOrigin = new Vector3();
         let directionOrigin = new Vector3();
         let worldPivot = new Vector3();
-        let previousFollowState: boolean;
         let worldPlaneNormal = new Vector3();
 
         const dragStart = (event: { position: Vector3 }) => {
             if (this.attachedSlate && this.attachedMesh) {
                 quaternionOrigin.copyFrom(this.attachedMesh.rotationQuaternion!);
                 dragOrigin.copyFrom(event.position);
-                previousFollowState = this.attachedSlate.defaultBehavior.followBehaviorEnabled;
-                this.attachedSlate.defaultBehavior.followBehaviorEnabled = false;
                 worldPivot.copyFrom(this.attachedMesh.getAbsolutePivotPoint());
                 directionOrigin.copyFrom(dragOrigin).subtractInPlace(worldPivot).normalize();
+                this.attachedSlate._followButton.isToggled = false;
                 Vector3.TransformNormalToRef(dragPlaneNormal, this.attachedMesh.getWorldMatrix(), worldPlaneNormal);
                 worldPlaneNormal.normalize();
 
@@ -321,7 +310,6 @@ export class SlateGizmo extends Gizmo {
         const dragEnd = () => {
             if (this.attachedSlate && this.attachedNode) {
                 this.attachedSlate._updatePivot();
-                this.attachedSlate.defaultBehavior.followBehaviorEnabled = previousFollowState;
 
                 if (this._handleDragged) {
                     this._handleDragged.drag = false;
@@ -371,6 +359,7 @@ export class SlateGizmo extends Gizmo {
 
             // Update handles of the gizmo
             this._updateHandlesPosition();
+            this._updateHandlesScaling();
 
             // Restore position/rotation values
             this.attachedMesh.rotationQuaternion.copyFrom(this._tmpQuaternion);
@@ -409,6 +398,20 @@ export class SlateGizmo extends Gizmo {
         this._sides[3].node.position.copyFromFloats(center.x, max.y, 0);
     }
 
+    private _updateHandlesScaling() {
+        if (this._attachedSlate && this._attachedSlate.mesh) {
+            const scaledWidth = this._attachedSlate.mesh.scaling.x * this._attachedSlate.dimensions.x;
+            const scaledHeight = this._attachedSlate.mesh.scaling.y * this._attachedSlate.dimensions.y;
+            const scale = Math.min(scaledWidth, scaledHeight) * this._handleSize;
+            for (let index = 0; index < this._corners.length; index++) {
+                this._corners[index].node.scaling.setAll(scale);
+            }
+            for (let index = 0; index < this._sides.length; index++) {
+                this._sides[index].node.scaling.setAll(scale);
+            }
+        }
+    }
+
     protected _update() {
         super._update();
 
@@ -419,9 +422,12 @@ export class SlateGizmo extends Gizmo {
         if (this._attachedSlate && this._attachedSlate.mesh) {
             if (this.fixedScreenSize) {
                 this._attachedSlate.mesh.absolutePosition.subtractToRef(this.gizmoLayer.utilityLayerScene.activeCamera.position, this._tmpVector);
-                var distanceFromCamera = (this.handleSize * this._tmpVector.length()) / this.fixedScreenSizeDistanceFactor;
+                var distanceFromCamera = (this._handleSize * this._tmpVector.length()) / this.fixedScreenSizeDistanceFactor;
                 for (let i = 0; i < this._corners.length; i++) {
                     this._corners[i].node.scaling.set(distanceFromCamera, distanceFromCamera, distanceFromCamera);
+                }
+                for (let i = 0; i < this._sides.length; i++) {
+                    this._sides[i].node.scaling.set(distanceFromCamera, distanceFromCamera, distanceFromCamera);
                 }
             }
             this._updateHandlesPosition();
