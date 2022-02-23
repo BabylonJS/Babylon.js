@@ -3,6 +3,7 @@ import { Observable } from "babylonjs/Misc/observable";
 import { PropertyChangedEvent } from "../propertyChangedEvent";
 import { LockObject } from "../tabs/propertyGrids/lockObject";
 import { conflictingValuesPlaceholder } from './targetsProxy';
+import { InputArrowsComponent } from "./inputArrowsComponent";
 
 interface ITextInputLineComponentProps {
     label: string;
@@ -20,22 +21,27 @@ interface ITextInputLineComponentProps {
     unit?: string;
     onUnitClicked?: (unit: string) => void;
     unitLocked?: boolean;
+    arrows?: boolean;
+    arrowsIncrement?: (amount: number) => void;
 }
 
-export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, { value: string }> {
+export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, { value: string, dragging: boolean }> {
     private _localChange = false;
 
     constructor(props: ITextInputLineComponentProps) {
         super(props);
 
-        this.state = { value: (this.props.value !== undefined ? this.props.value : this.props.target[this.props.propertyName!]) || "" };
+        this.state = {
+            value: (this.props.value !== undefined ? this.props.value : this.props.target[this.props.propertyName!]) || "",
+            dragging: false
+        };
     }
 
     componentWillUnmount() {
         this.props.lockObject.lock = false;
     }
 
-    shouldComponentUpdate(nextProps: ITextInputLineComponentProps, nextState: { value: string }) {
+    shouldComponentUpdate(nextProps: ITextInputLineComponentProps, nextState: { value: string, dragging: boolean }) {
         if (this._localChange) {
             this._localChange = false;
             return true;
@@ -46,6 +52,9 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
             nextState.value = newValue || "";
             return true;
         }
+
+        if (nextState.dragging != this.state.dragging) return true;
+
         return false;
     }
 
@@ -93,6 +102,15 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
         this.raiseOnPropertyChanged(value, store);
     }
 
+    incrementValue(amount: number) {
+        if (this.props.arrowsIncrement) {
+            this.props.arrowsIncrement(amount);
+            return;
+        }
+        const currentValue = parseFloat(this.state.value);
+        this.updateValue((currentValue + amount).toFixed(2));
+    }
+
     render() {
         const value = this.state.value === conflictingValuesPlaceholder ? "" : this.state.value;
         const placeholder = this.state.value === conflictingValuesPlaceholder ? conflictingValuesPlaceholder : "";
@@ -104,7 +122,7 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
                         {this.props.label}
                     </div>
                 )}
-                <div className={"value" + (this.props.noUnderline === true ? " noUnderline" : "")}>
+                <div className={`value${this.props.noUnderline === true ? " noUnderline" : ""}${this.props.arrows ? " hasArrows": ""}${this.state.dragging ? " dragging" : ""}`}>
                     <input
                         value={value}
                         onBlur={() => {
@@ -115,6 +133,13 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
                         onChange={(evt) => this.updateValue(evt.target.value)}
                         placeholder={placeholder}
                     />
+                    {
+                    this.props.arrows &&
+                    <InputArrowsComponent
+                        incrementValue={amount => this.incrementValue(amount)}
+                        setDragging={dragging => this.setState({dragging})}
+                    />
+                    }
                 </div>
                 {this.props.unit !== undefined && <button
                     className={this.props.unitLocked ? "unit disabled" : "unit"}

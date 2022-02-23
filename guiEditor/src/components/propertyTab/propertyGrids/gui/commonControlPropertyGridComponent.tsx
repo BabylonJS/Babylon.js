@@ -157,6 +157,18 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                 return conflictingValuesPlaceholder;
             }
         };
+        const increment = (propertyName: ControlProperty, amount: number) => {
+            for(const control of controls) {
+                const initialValue = (control as any)[`${propertyName}InPixels`];
+                const newValue = (control as any)[`${propertyName}InPixels`] += amount;
+                this.props.onPropertyChangedObservable?.notifyObservers({
+                    object: control,
+                    property: `${propertyName}InPixels`,
+                    initialValue: initialValue,
+                    value: newValue
+                });
+            }
+        }
         const convertUnits = (unit: string, property: DimensionProperties) => {
             for(const control of controls) {
                 if (unit === "PX") {
@@ -238,6 +250,8 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         onChange={(newValue) => this._checkAndUpdateValues("left", newValue)}
                         unit={getUnitString("_left")}
                         onUnitClicked={unit => convertUnits(unit, "left")}
+                        arrows={true}
+                        arrowsIncrement={amount => increment("left", amount)}
                     />
                     <TextInputLineComponent
                         numbersOnly={true}
@@ -249,6 +263,8 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         unit={getUnitString("_top")}
                         onUnitClicked={unit => convertUnits(unit, "top")}
+                        arrows={true}
+                        arrowsIncrement={amount => increment("top", amount)}
                     />
                 </div>
                 <div className="ge-divider">
@@ -279,6 +295,8 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         }}
                         unit={getUnitString("_width")}
                         onUnitClicked={unit => convertUnits(unit, "width")}
+                        arrows={true}
+                        arrowsIncrement={amount => increment("width", amount)}
                     />
                     <TextInputLineComponent
                         numbersOnly={true}
@@ -305,6 +323,8 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         }}
                         unit={getUnitString("_height")}
                         onUnitClicked={unit => convertUnits(unit, "height")}
+                        arrows={true}
+                        arrowsIncrement={amount => increment("height", amount)}
                     />
                 </div>
                 <div className="ge-divider">
@@ -323,6 +343,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         unit={getUnitString("_paddingTop")}
                         onUnitClicked={unit => convertUnits(unit, "paddingTop")}
+                        arrows={true}
                     />
                     <TextInputLineComponent
                         numbersOnly={true}
@@ -337,6 +358,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         unit={getUnitString("_paddingBottom")}
                         onUnitClicked={unit => convertUnits(unit, "paddingBottom")}
+                        arrows={true}
                     />
                 </div>
                 <div className="ge-divider">
@@ -355,6 +377,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         unit={getUnitString("_paddingLeft")}
                         onUnitClicked={unit => convertUnits(unit, "paddingLeft")}
+                        arrows={true}
                     />
                     <TextInputLineComponent
                         numbersOnly={true}
@@ -369,6 +392,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         unit={getUnitString("_paddingRight")}
                         onUnitClicked={unit => convertUnits(unit, "paddingRight")}
+                        arrows={true}
                     />
                 </div>
                 <CheckBoxLineComponent
