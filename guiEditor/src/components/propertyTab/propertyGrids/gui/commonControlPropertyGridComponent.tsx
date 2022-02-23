@@ -71,7 +71,6 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
 
         this._onPropertyChangedObserver = this.props.onPropertyChangedObservable?.add((event) => {
             const isTransformEvent = event.property === "transformCenterX" || event.property === "transformCenterY";
-            console.log('on observer for event', event.property);
             for (let control of controls) {
                 let transformed = this._getTransformedReferenceCoordinate(control);
                 if (isTransformEvent && control.metadata._previousCenter) {
@@ -214,30 +213,6 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                 this.forceUpdate();
             }
         }
-        /*const updateTransformCentersAndPositions = () => {
-            for (let control of controls) {
-                let transformed = this._getTransformedReferenceCoordinate(control);
-                if (control.metadata._previousCenter) {
-                    // transform
-                    const diff = transformed.subtract(control.metadata._previousCenter);
-                    control.leftInPixels -= diff.x;
-                    control.topInPixels -= diff.y;
-
-                    transformed = this._getTransformedReferenceCoordinate(control);
-                }
-
-                control.metadata._previousCenter = transformed;
-            }
-            this.forceUpdate();
-        };
-
-        const updateTransformCenters = () => {
-            for (let control of controls) {
-                let transformed = this._getTransformedReferenceCoordinate(control);
-
-                control.metadata._previousCenter = transformed;
-            }
-        };*/
 
         return (
             <div>
