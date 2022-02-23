@@ -2,6 +2,11 @@
     --backgroundGrey: #aaaaaa;
     --spacingHeight: 30px;
     --labelFamily: "acumin-pro-condensed-semibold";
+    --button: #333333;
+    --buttonBackground: #ffffff;
+    --buttonDisabledBackground: #c8c8c8;
+    --buttonPressed: #ffffff;
+    --buttonPressedBackground: #606060;
 }
 
 hr.ge {
@@ -109,13 +114,20 @@ hr.ge {
     .unit {
         width: 26px;
         height: 26px;
-        background-color: white;
+        color: var(--button);
+        background-color: var(--buttonBackground);
         border: none;
         margin-top: 2px;
+        cursor: pointer;
     }
 
     .unit.disabled {
-        background-color: #c8c8c8;
+        background-color: var(--buttonDisabledBackground);
+    }
+
+    .unit:active {
+        color: var(--buttonPressed);
+        background-color: var(--buttonPressedBackground);
     }
 
     .sliderLine {
@@ -276,14 +288,41 @@ hr.ge {
             align-items: center;
             grid-column: 3;
             background: transparent;
-            height: 30px;
+            height: 26px;
+            position: relative;
+            background-color: white;
+            margin-top: 2px;
+            overflow-y: hidden;
             input {
-                width: calc(100% - 5px);
-                background-color: white;
+                width: 100%;
                 outline-color: transparent;
                 border: transparent;
                 outline-width: 0px;
                 height: 24px;
+            }
+            input.hasArrows {
+                padding-right: 15px;
+            }
+            .arrows {
+                display: none;
+            }
+            &:hover .arrows, &:focus .arrows, &.dragging .arrows {
+                position: absolute;
+                right: 0;
+                display: flex;
+                flex-direction: column;
+                background-color: white;
+                cursor: grab;
+                .downArrowIcon, .upArrowIcon {
+                    width: 15px;
+                    height: 15px;
+                }
+            }
+            &.dragging .arrows {
+                background-color: var(--buttonPressedBackground);
+                .downArrowIcon, .upArrowIcon {
+                    filter: invert(100%) brightness(500%);
+                }
             }
         }
     }
