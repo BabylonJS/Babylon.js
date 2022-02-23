@@ -203,15 +203,22 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                 return conflictingValuesPlaceholder;
             }
         };
-        const increment = (propertyName: ControlProperty, amount: number) => {
+        const increment = (propertyName: DimensionProperties, amount: number, minimum?: number, maximum?: number) => {
             for(const control of controls) {
-                const initialValue = (control as any)[`${propertyName}InPixels`];
-                const newValue = (control as any)[`${propertyName}InPixels`] += amount;
+                const initialValue = control[propertyName];
+                const initialUnit = (control as any)["_" + propertyName]._unit ;
+                let newValue: number = (control as any)[`${propertyName}InPixels`] + amount;
+                if (minimum !== undefined && newValue < minimum) newValue = minimum;
+                if (maximum !== undefined && newValue > maximum) newValue = maximum;
+                (control as any)[`${propertyName}InPixels`] = newValue;
+                if (initialUnit === ValueAndUnit.UNITMODE_PERCENTAGE) {
+                    CoordinateHelper.convertToPercentage(control, [propertyName]);
+                }
                 this.props.onPropertyChangedObservable?.notifyObservers({
                     object: control,
-                    property: `${propertyName}InPixels`,
+                    property: propertyName,
                     initialValue: initialValue,
-                    value: newValue
+                    value: control[propertyName]
                 });
             }
         }
@@ -390,6 +397,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         unit={getUnitString("_paddingTop")}
                         onUnitClicked={unit => convertUnits(unit, "paddingTop")}
                         arrows={true}
+                        arrowsIncrement={amount => increment("paddingTop", amount, 0)}
                     />
                     <TextInputLineComponent
                         numbersOnly={true}
@@ -405,6 +413,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         unit={getUnitString("_paddingBottom")}
                         onUnitClicked={unit => convertUnits(unit, "paddingBottom")}
                         arrows={true}
+                        arrowsIncrement={amount => increment("paddingBottom", amount, 0)}
                     />
                 </div>
                 <div className="ge-divider">
@@ -424,6 +433,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         unit={getUnitString("_paddingLeft")}
                         onUnitClicked={unit => convertUnits(unit, "paddingLeft")}
                         arrows={true}
+                        arrowsIncrement={amount => increment("paddingLeft", amount)}
                     />
                     <TextInputLineComponent
                         numbersOnly={true}
@@ -439,6 +449,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         unit={getUnitString("_paddingRight")}
                         onUnitClicked={unit => convertUnits(unit, "paddingRight")}
                         arrows={true}
+                        arrowsIncrement={amount => increment("paddingRight", amount)}
                     />
                 </div>
                 <CheckBoxLineComponent
@@ -452,7 +463,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                 <hr className="ge" />
                 <TextLineComponent tooltip="" label="TRANSFORMATION" value=" " color="grey"></TextLineComponent>
                 <div className="ge-divider">
-                    <FloatLineComponent
+                    <TextInputLineComponent
                         iconLabel={"Transform Center"}
                         icon={positionIcon}
                         lockObject={this.props.lockObject}
@@ -460,17 +471,23 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         target={proxy}
                         propertyName="transformCenterX"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        arrows={true}
+                        step={0.0005}
+                        numbersOnly={true}
                     />
-                    <FloatLineComponent
+                    <TextInputLineComponent
                         lockObject={this.props.lockObject}
                         label="Y"
                         target={proxy}
                         propertyName="transformCenterY"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        arrows={true}
+                        step={0.0005}
+                        numbersOnly={true}
                     />
                 </div>
                 <div className="ge-divider">
-                    <FloatLineComponent
+                    <TextInputLineComponent
                         iconLabel={"Scale"}
                         icon={scaleIcon}
                         lockObject={this.props.lockObject}
@@ -478,13 +495,19 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         target={proxy}
                         propertyName="scaleX"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        arrows={true}
+                        step={0.0005}
+                        numbersOnly={true}
                     />
-                    <FloatLineComponent
+                    <TextInputLineComponent
                         lockObject={this.props.lockObject}
                         label="Y"
                         target={proxy}
                         propertyName="scaleY"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        arrows={true}
+                        step={0.0005}
+                        numbersOnly={true}
                     />
                 </div>
                 <SliderLineComponent

@@ -197,7 +197,9 @@ hr.ge {
                 }
     
                 input[type=number] {
+                    -webkit-appearance: textfield;
                     -moz-appearance: textfield;
+                    appearance: textfield;
                 }
             }
         }  
@@ -293,6 +295,7 @@ hr.ge {
             background-color: white;
             margin-top: 2px;
             overflow-y: hidden;
+            margin-right: 2px;
             input {
                 width: 100%;
                 outline-color: transparent;
@@ -682,8 +685,9 @@ hr.ge {
             grid-column: 3;
             background: transparent;
             height: 30px;
+            margin-right: 2px;
             input {
-                width: calc(100% - 5px);
+                width: 100%;
                 background-color: white;
                 outline-color: transparent;
                 border: none;
