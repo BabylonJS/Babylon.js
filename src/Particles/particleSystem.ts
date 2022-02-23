@@ -1,4 +1,4 @@
-import { Nullable } from "../types";
+import { Immutable, Nullable } from "../types";
 import { FactorGradient, ColorGradient, Color3Gradient, GradientHelper } from "../Misc/gradients";
 import { Observable, Observer } from "../Misc/observable";
 import { Vector3, Matrix, TmpVectors, Vector4 } from "../Maths/math.vector";
@@ -273,6 +273,20 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
      */
     public get vertexShaderName(): string {
         return "particles";
+    }
+
+    /**
+     * Gets the vertex buffers used by the particle system
+     */
+    public get vertexBuffers(): Immutable<{ [key: string]: VertexBuffer }> {
+        return this._vertexBuffers;
+    }
+
+    /**
+     * Gets the index buffer used by the particle system (or null if no index buffer is used (if _useInstancing=true))
+     */
+    public get indexBuffer(): Nullable<DataBuffer> {
+        return this._indexBuffer;
     }
 
     /**
