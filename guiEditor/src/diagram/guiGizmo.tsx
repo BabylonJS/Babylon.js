@@ -206,26 +206,21 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
             this._updateNodeFromLocalBounds();
             this.props.globalState.workbench._liveGuiTextureRerender = false;
             this.props.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
-            this.props.globalState.onPropertyChangedObservable.notifyObservers({
-                object: node,
-                property: 'test',
-                value: 'test',
-                initialValue: 'test'
-            });
         }
         if (this.state.isRotating) {
             const angle = Math.atan2(scene.pointerY - this._rotation.pivot.y, scene.pointerX - this._rotation.pivot.x);
             for(const control of this.props.globalState.workbench.selectedGuiNodes) {
+                const oldRotation = control.rotation;
                 control.rotation += (angle - this._rotation.initialAngleToPivot);
+                this.props.globalState.onPropertyChangedObservable.notifyObservers({
+                    object: control,
+                    property: 'rotation',
+                    value: control.rotation,
+                    initialValue: oldRotation
+                })
             }
             this._rotation.initialAngleToPivot = angle;
             this.props.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
-            this.props.globalState.onPropertyChangedObservable.notifyObservers({
-                object: null,
-                property: 'test',
-                value: 'test',
-                initialValue: 'test'
-            });
         }
     };
 
@@ -342,7 +337,14 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
                 }
                 // compute real change in property
                 const initialUnit = (selectedControl as any)[`_${property}`].unit;
+                const oldPixels = (selectedControl as any)[`${property}InPixels`];
                 (selectedControl as any)[`${property}InPixels`] = newPixels;
+                this.props.globalState.onPropertyChangedObservable.notifyObservers({
+                    object: selectedControl,
+                    property: `${property}InPixels`,
+                    value: newPixels,
+                    initialValue: oldPixels
+                });
                 if (initialUnit === ValueAndUnit.UNITMODE_PERCENTAGE) {
                     CoordinateHelper.convertToPercentage(selectedControl, [property]);
                 }
