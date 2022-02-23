@@ -214,7 +214,6 @@ export class HolographicSlate extends ContentDisplay3D {
         const titleBarTitle = this._titleBarTitle;
         const contentPlate = this._contentPlate;
         const backPlate = this._backPlate;
-        const rightHandScene = contentPlate.getScene().useRightHandedSystem;
 
         if (followButton && closeButton && titleBar) {
             closeButton.scaling.setAll(this.titleBarHeight);
@@ -235,6 +234,7 @@ export class HolographicSlate extends ContentDisplay3D {
                 .addInPlace(this.origin);
 
             const contentPlateHeight = this.dimensions.y - this.titleBarHeight - this.titleBarMargin;
+            const rightHandScene = contentPlate.getScene().useRightHandedSystem;
 
             titleBar.scaling.set(this.dimensions.x, this.titleBarHeight, Epsilon);
             titleBarTitle.scaling.set(this.dimensions.x - (2 * this.titleBarHeight), this.titleBarHeight, Epsilon);
