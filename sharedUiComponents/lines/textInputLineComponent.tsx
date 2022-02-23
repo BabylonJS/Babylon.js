@@ -23,6 +23,7 @@ interface ITextInputLineComponentProps {
     unitLocked?: boolean;
     arrows?: boolean;
     arrowsIncrement?: (amount: number) => void;
+    step?: number
 }
 
 export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, { value: string, dragging: boolean }> {
@@ -103,12 +104,28 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
     }
 
     incrementValue(amount: number) {
+        if (this.props.step) {
+            amount *= this.props.step;
+        }
         if (this.props.arrowsIncrement) {
             this.props.arrowsIncrement(amount);
             return;
         }
         const currentValue = parseFloat(this.state.value);
         this.updateValue((currentValue + amount).toFixed(2));
+    }
+
+    onKeyDown(event: React.KeyboardEvent) {
+        if (this.props.arrows) {
+            if (event.key === "ArrowUp") {
+                this.incrementValue(-1);
+                event.preventDefault();
+            }
+            if (event.key === "ArrowDown") {
+                this.incrementValue(1);
+                event.preventDefault();
+            }
+        }
     }
 
     render() {
@@ -131,6 +148,7 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
                         }}
                         onFocus={() => (this.props.lockObject.lock = true)}
                         onChange={(evt) => this.updateValue(evt.target.value)}
+                        onKeyDown={evt => this.onKeyDown(evt)}
                         placeholder={placeholder}
                     />
                     {
