@@ -456,6 +456,7 @@ export class HolographicSlate extends ContentDisplay3D {
 
     /**
      * Resets the aspect and pose of the slate so it is right in front of the active camera, facing towards it.
+     * @param resetAspect Should the slate's dimensions/aspect ratio be reset as well
      */
     public resetDefaultAspectAndPose(resetAspect: boolean = true) {
         if (!this._host || !this._host.utilityLayer || !this.node) {
