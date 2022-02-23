@@ -975,6 +975,25 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 case "F":
                     this.globalState.onFitToWindowObservable.notifyObservers();
                     break;
+                case "ArrowUp": // move up
+                case "W":
+                case "w":
+                    this.moveControls(false, k.event.shiftKey ? -5 : -1);
+                    break;
+                case "ArrowDown": // move down
+                case "S":
+                case "s":
+                    this.moveControls(false, k.event.shiftKey ? 5 : 1);
+                    break;
+                case "ArrowLeft": // move left
+                case "A":
+                case "a":
+                    this.moveControls(true, k.event.shiftKey ? -5 : -1);
+                    break;
+                case "ArrowRight": // move right
+                case "D":
+                case "d":
+                    this.moveControls(true, k.event.shiftKey ? 5 : 1);
                 default:
                     break;
             }
@@ -1013,6 +1032,34 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this._initialPanningOffset = this.getScaledPointerPosition();
         this.props.globalState.onArtBoardUpdateRequiredObservable.notifyObservers();
         this.props.globalState.onGizmoUpdateRequireObservable.notifyObservers();
+    }
+
+    // Move the selected controls. Can be either on horizontal (leftInPixels) or 
+    // vertical (topInPixels) direction
+    moveControls(horizontal: boolean, amount: number) {
+        for (let selectedControl of this.props.globalState.workbench.selectedGuiNodes) {
+            if (horizontal) {
+                const prevValue = selectedControl.leftInPixels;
+                selectedControl.leftInPixels += amount;
+                this.props.globalState.onPropertyChangedObservable.notifyObservers({
+                    object: selectedControl,
+                    property: "leftInPixels",
+                    value: selectedControl.leftInPixels,
+                    initialValue: prevValue
+                });
+                this.props.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
+            } else {
+                const prevValue = selectedControl.topInPixels;
+                selectedControl.topInPixels += amount;
+                this.props.globalState.onPropertyChangedObservable.notifyObservers({
+                    object: selectedControl,
+                    property: "topInPixels",
+                    value: selectedControl.topInPixels,
+                    initialValue: prevValue
+                });
+                this.props.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
+            }
+        }
     }
 
     //Get the wheel delta
