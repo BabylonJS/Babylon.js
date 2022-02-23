@@ -266,11 +266,11 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
 
     private _updateNodeFromLocalBounds() {
         const scalePoint = this.state.scalePoints[this.state.scalePointDragging];
-        const left = scalePoint.horizontalPosition === ScalePointPosition.Left && scalePoint.verticalPosition !== ScalePointPosition.Center;
-        const top = scalePoint.verticalPosition === ScalePointPosition.Top && scalePoint.horizontalPosition !== ScalePointPosition.Center;
+        const left = scalePoint.horizontalPosition === ScalePointPosition.Left;
+        const top = scalePoint.verticalPosition === ScalePointPosition.Top;
         for(const selectedControl of this.props.globalState.workbench.selectedGuiNodes) {
-            const width = selectedControl.metadata.localBounds.right - selectedControl.metadata.localBounds.left;
-            const height = selectedControl.metadata.localBounds.bottom - selectedControl.metadata.localBounds.top;
+            const width = selectedControl.metadata.localBounds.width;
+            const height = selectedControl.metadata.localBounds.height;
             // calculate the center point
             const localRotation = CoordinateHelper.getRotation(selectedControl, true);
             const localScaling = CoordinateHelper.getScale(selectedControl, true);
