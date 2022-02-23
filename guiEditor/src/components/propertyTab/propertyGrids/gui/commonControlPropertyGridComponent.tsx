@@ -16,6 +16,9 @@ import { ValueAndUnit } from "babylonjs-gui/2D/valueAndUnit";
 import { ColorLineComponent } from "../../../../sharedUiComponents/lines/colorLineComponent";
 import { makeTargetsProxy, conflictingValuesPlaceholder } from "../../../../sharedUiComponents/lines/targetsProxy";
 import { CoordinateHelper, DimensionProperties } from "../../../../diagram/coordinateHelper";
+import { Vector2 } from "babylonjs/Maths/math";
+import { Observer } from "babylonjs/Misc/observable";
+import { Nullable } from "babylonjs/types";
 
 const sizeIcon: string = require("../../../../sharedUiComponents/imgs/sizeIcon.svg");
 const verticalMarginIcon: string = require("../../../../sharedUiComponents/imgs/verticalMarginIcon.svg");
@@ -52,8 +55,45 @@ type ControlProperty = keyof Control | "_paddingLeft" | "_paddingRight" | "_padd
 
 export class CommonControlPropertyGridComponent extends React.Component<ICommonControlPropertyGridComponentProps> {
 
+    private _onPropertyChangedObserver : Nullable<Observer<PropertyChangedEvent>> | undefined;
+
     constructor(props: ICommonControlPropertyGridComponentProps) {
         super(props);
+
+        const controls = this.props.controls;
+        for (let control of controls) {
+            const transformed = this._getTransformedReferenceCoordinate(control);
+            if (!control.metadata) {
+                control.metadata = {};
+            }
+            control.metadata._previousCenter = transformed;
+        }
+
+        this._onPropertyChangedObserver = this.props.onPropertyChangedObservable?.add((event) => {
+            const isTransformEvent = event.property === "transformCenterX" || event.property === "transformCenterY";
+            for (let control of controls) {
+                let transformed = this._getTransformedReferenceCoordinate(control);
+                if (isTransformEvent && control.metadata._previousCenter) {
+                    // Calculate the difference between current center and previous center
+                    const diff = transformed.subtract(control.metadata._previousCenter);
+                    control.leftInPixels -= diff.x;
+                    control.topInPixels -= diff.y;
+
+                    // Update center in reference to left and top positions
+                    transformed = this._getTransformedReferenceCoordinate(control);
+                }
+
+                control.metadata._previousCenter = transformed;
+            }
+            this.forceUpdate();
+        });
+    }
+
+    private _getTransformedReferenceCoordinate(control : Control) {
+        const nodeMatrix = CoordinateHelper.getNodeMatrix(control);
+        const transformed = new Vector2(1, 1);
+        nodeMatrix.transformCoordinates(1, 1, transformed);
+        return transformed;
     }
 
     private _updateAlignment(alignment: string, value: number) {
@@ -104,6 +144,12 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                 (control as Container)._children.forEach(child => {
                     child._markAsDirty();
             });
+        }
+    }
+
+    componentWillUnmount() {
+        if (this._onPropertyChangedObserver) {
+            this.props.onPropertyChangedObservable?.remove(this._onPropertyChangedObserver);
         }
     }
 
