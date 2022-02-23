@@ -89,7 +89,7 @@ export class HolographicSlate extends ContentDisplay3D {
     public _followButton: TouchHolographicButton;
     protected _closeButton: TouchHolographicButton;
     protected _contentScaleRatio = 1;
-    
+
     /**
      * 2D dimensions of the slate
      */
@@ -317,12 +317,12 @@ export class HolographicSlate extends ContentDisplay3D {
         adt.addControl(this._titleTextComponent);
 
         if (scene.useRightHandedSystem) {
-            const faceUV = new Vector4(0,0,1,1);
+            const faceUV = new Vector4(0, 0, 1, 1);
             this._contentPlate = CreatePlane("contentPlate_" + this.name, { size: 1, sideOrientation: VertexData.BACKSIDE, frontUVs: faceUV }, scene);
             this._backPlate = CreatePlane("backPlate_" + this.name, { size: 1, sideOrientation: VertexData.FRONTSIDE }, scene);
         }
         else {
-            const faceUV = new Vector4(0,0,1,1);
+            const faceUV = new Vector4(0, 0, 1, 1);
             this._contentPlate = CreatePlane("contentPlate_" + this.name, { size: 1, sideOrientation: VertexData.FRONTSIDE, frontUVs: faceUV }, scene);
             this._backPlate = CreatePlane("backPlate_" + this.name, { size: 1, sideOrientation: VertexData.BACKSIDE }, scene);
         }
