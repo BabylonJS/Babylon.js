@@ -410,6 +410,7 @@
 - Fix keypoint drag in ACE ([carolhmj](https://github.com/carolhmj))
 - Fix spherical harmonics computation ([Meakk](https://github.com/Meakk))
 - Fix KTX and DDS loading with baked mipmaps ([Meakk](https://github.com/Meakk))
+- Fix text rendering speed when `TextWrapping.Ellipsis` is used ([carolhmj](https://github.com/carolhmj))
 
 ## Breaking changes
 
