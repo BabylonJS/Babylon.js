@@ -276,6 +276,20 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
     }
 
     /**
+     * Gets the vertex buffers used by the particle system
+     */
+    public get vertexBuffers(): { [key: string]: VertexBuffer } {
+        return this._vertexBuffers;
+    }
+
+    /**
+     * Gets the index buffer used by the particle system (or null if no index buffer is used (if _useInstancing=true))
+     */
+    public get indexBuffer(): Nullable<DataBuffer> {
+        return this._indexBuffer;
+    }
+
+    /**
      * Instantiates a particle system.
      * Particles are often small sprites used to simulate hard-to-reproduce phenomena like fire, smoke, water, or abstract visual effects like magic glitter and faery dust.
      * @param name The name of the particle system
