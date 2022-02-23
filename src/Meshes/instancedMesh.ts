@@ -388,7 +388,7 @@ export class InstancedMesh extends AbstractMesh {
         }
 
         const sourceMeshLODLevels = this.sourceMesh.getLODLevels();
-        if(!sourceMeshLODLevels || sourceMeshLODLevels.length === 0) {
+        if (!sourceMeshLODLevels || sourceMeshLODLevels.length === 0) {
             this._currentLOD = this.sourceMesh;
         } else {
             let boundingInfo = this.getBoundingInfo();
