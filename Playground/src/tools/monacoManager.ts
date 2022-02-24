@@ -18,7 +18,7 @@ declare type IStandaloneEditorConstructionOptions = import("monaco-editor/esm/vs
 export class MonacoManager {
     private _editor: IStandaloneCodeEditor;
     private _definitionWorker: Worker;
-    private _tagCandidates: {name: string, tagName: string}[];
+    private _tagCandidates: { name: string; tagName: string }[];
     private _hostElement: HTMLDivElement;
     private _templates: {
         label: string;
@@ -144,7 +144,8 @@ var createScene = function() {
     return scene;
 };`);
         } else {
-            this._editor?.setValue(`// You have to create a class called Playground. This class must provide a static function named CreateScene(engine, canvas) which must return a Scene object
+            this._editor
+                ?.setValue(`// You have to create a class called Playground. This class must provide a static function named CreateScene(engine, canvas) which must return a Scene object
 // You must at least define a camera inside the CreateScene function
 
 class Playground {
@@ -196,6 +197,9 @@ class Playground {
             minimap: {
                 enabled: Utilities.ReadBoolFromStore("minimap", true),
             },
+            suggest: {
+                snippetsPreventQuickSuggestions: false,
+            },
         };
 
         this._editor = monaco.editor.create(this._hostElement, editorOptions as any);
@@ -243,6 +247,7 @@ class Playground {
                 declarations[index] = declarations[index].replace("https://preview.babylonjs.com/", "../dist/preview%20release/");
             }
         }
+        declarations.push("https://assets.babylonjs.com/generated/Assets.d.ts");
 
         // Check for Unity Toolkit
         if (location.href.indexOf("UnityToolkit") !== -1 || Utilities.ReadBoolFromStore("unity-toolkit", false)) {
@@ -482,7 +487,7 @@ class Playground {
         }
 
         const languageService = await worker(uri);
-        const source = "[Noteworthy babylon.js members]";
+        const source = "[preview]";
 
         monaco.editor.setModelMarkers(model, source, []);
         const markers: {
@@ -497,8 +502,7 @@ class Playground {
 
         for (const candidate of this._tagCandidates) {
             const matches = model.findMatches(candidate.name, false, false, true, null, false);
-            if (!matches)
-                continue;
+            if (!matches) continue;
 
             for (const match of matches) {
                 const position = {
@@ -520,10 +524,9 @@ class Playground {
                 // the following is time consuming on all suggestions, that's why we precompute tag candidate names in the definition worker to filter calls
                 // @see setupDefinitionWorker
                 const details = await languageService.getCompletionEntryDetails(uri.toString(), offset, wordInfo.word);
-                if (!details || !details.tags)
-                    continue;
+                if (!details || !details.tags) continue;
 
-                const tag = details.tags.find((t: {name: string}) => t.name === candidate.tagName);
+                const tag = details.tags.find((t: { name: string }) => t.name === candidate.tagName);
                 if (tag) {
                     markers.push({
                         startLineNumber: match.range.startLineNumber,
@@ -541,8 +544,8 @@ class Playground {
         monaco.editor.setModelMarkers(model, source, markers);
     }
 
-    private _getCandidateMarkerSeverity(candidate: {tagName: string}) {
-        switch(candidate.tagName) {
+    private _getCandidateMarkerSeverity(candidate: { tagName: string }) {
+        switch (candidate.tagName) {
             case "deprecated":
                 return monaco.MarkerSeverity.Warning;
             default:
@@ -550,8 +553,8 @@ class Playground {
         }
     }
 
-    private _getCandidateCompletionSuffix(candidate: {tagName: string}) {
-        switch(candidate.tagName) {
+    private _getCandidateCompletionSuffix(candidate: { tagName: string }) {
+        switch (candidate.tagName) {
             case "deprecated":
                 return "⚠️";
             default:
@@ -560,16 +563,20 @@ class Playground {
     }
 
     private _getTagMessage(tag: any) {
-        if (tag?.text instanceof String)
+        if (tag?.text instanceof String) {
+            if (tag.text.indexOf("data:") === 0) {
+                return `<img src="${tag.text}">`;
+            }
             return tag.text;
+        }
 
         if (tag?.text instanceof Array)
             return tag.text
-                .filter((i: { kind: string}) => i.kind === "text")
-                .map((i: { text: any; }) => i.text)
-                .join(', ');
+                .filter((i: { kind: string }) => i.kind === "text")
+                .map((i: { text: any }) => (i.text.indexOf("data:") === 0 ? `<img src="${i.text}">` : i.text))
+                .join(", ");
 
-        return '';
+        return "";
     }
 
     // This is our hook in the Monaco suggest adapter, we are called everytime a completion UI is displayed
@@ -591,25 +598,24 @@ class Playground {
             const suggestions = result.suggestions.filter((item: any) => !item.label.startsWith("_"));
 
             for (const suggestion of suggestions) {
-                const candidate = owner._tagCandidates.find(t => t.name === suggestion.label);
+                const candidate = owner._tagCandidates.find((t) => t.name === suggestion.label);
                 if (candidate) {
                     // the following is time consuming on all suggestions, that's why we precompute deprecated candidate names in the definition worker to filter calls
-                    // @see setupDefinitionWorker                    
+                    // @see setupDefinitionWorker
                     const uri = suggestion.uri;
                     const worker = await this._worker(uri);
                     const model = monaco.editor.getModel(uri);
                     const details = await worker.getCompletionEntryDetails(uri.toString(), model!.getOffsetAt(position), suggestion.label);
 
-                    if (!details || !details.tags)
-                        continue;
+                    if (!details || !details.tags) continue;
 
-                    const tag = details.tags.find((t: {name: string}) => t.name === candidate.tagName);
+                    const tag = details.tags.find((t: { name: string }) => t.name === candidate.tagName);
                     if (tag) {
-                        const suffix = owner._getCandidateCompletionSuffix(candidate)
+                        const suffix = owner._getCandidateCompletionSuffix(candidate);
                         suggestion.label = suggestion.label + suffix;
                     }
                 }
-            }            
+            }
 
             // add our own templates when invoked without context
             if (context.triggerKind == monaco.languages.CompletionTriggerKind.Invoke) {
@@ -625,7 +631,6 @@ class Playground {
 
             // preserve incomplete flag or force it when the definition is not yet analyzed
             const incomplete = (result.incomplete && result.incomplete == true) || owner._tagCandidates.length == 0;
-
             return {
                 suggestions: JSON.parse(JSON.stringify(suggestions)),
                 incomplete: incomplete,
