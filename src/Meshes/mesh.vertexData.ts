@@ -621,28 +621,22 @@ export class VertexData {
 
         const len = nonNullOthers.reduce((sumLen, elements) => sumLen + elements[0].length, source.length);
 
-        const transformRange = (element: FloatArray, matrix: Matrix | undefined, offset: number, length: number) => {
-            if (matrix) {
-                if (kind === VertexBuffer.PositionKind) {
-                    VertexData._TransformVector3Coordinates(element, matrix, offset, length);
-                } else if (kind === VertexBuffer.NormalKind) {
-                    VertexData._TransformVector3Normals(element, matrix, offset, length);
-                } else if (kind === VertexBuffer.TangentKind) {
-                    VertexData._TransformVector4Normals(element, matrix, offset, length);
-                }
-            }
-        };
+        const transformRange =
+            kind === VertexBuffer.PositionKind ? VertexData._TransformVector3Coordinates :
+            kind === VertexBuffer.NormalKind ? VertexData._TransformVector3Normals :
+            kind === VertexBuffer.TangentKind ? VertexData._TransformVector4Normals :
+            () => {};
 
         if (source instanceof Float32Array) {
             // use non-loop method when the source is Float32Array
             const ret32 = new Float32Array(len);
             ret32.set(source);
-            transformRange(ret32, transform, 0, source.length);
+            transform && transformRange(ret32, transform, 0, source.length);
 
             let offset = source.length;
             for (const [vertexData, transform] of nonNullOthers) {
                 ret32.set(vertexData, offset);
-                transformRange(ret32, transform, offset, vertexData.length);
+                transform && transformRange(ret32, transform, offset, vertexData.length);
                 offset += vertexData.length;
             }
             return ret32;
@@ -652,14 +646,14 @@ export class VertexData {
             for (let i = 0; i < source.length; i++) {
                 ret[i] = source[i];
             }
-            transformRange(ret, transform, 0, source.length);
+            transform && transformRange(ret, transform, 0, source.length);
 
             let offset = source.length;
             for (const [vertexData, transform] of nonNullOthers) {
                 for (let i = 0; i < vertexData.length; i++) {
                     ret[offset + i] = vertexData[i];
                 }
-                transformRange(ret, transform, offset, vertexData.length);
+                transform && transformRange(ret, transform, offset, vertexData.length);
                 offset += vertexData.length;
             }
             return ret;
