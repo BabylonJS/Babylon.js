@@ -248,7 +248,7 @@ export class ColorLineComponent extends React.Component<IColorLineComponentProps
                         />
                     )}
                     <div className="copy hoverIcon" onClick={() => this.copyToClipboard()} title="Copy to clipboard">
-                        <img src={copyIcon} alt="" />
+                        <img src={copyIcon} alt="Copy" />
                     </div>
                     <div className="expand hoverIcon" onClick={() => this.switchExpandState()} title="Expand">
                         {chevron}
