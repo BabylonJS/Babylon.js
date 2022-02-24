@@ -58,7 +58,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     private _mainSelection: Nullable<Control> = null;
     private _selectionDepth = 0;
     private _doubleClick: Nullable<Control> = null;
-    private _lockMainSelection: boolean = false;
     public _liveGuiTextureRerender: boolean = true;
     private _anyControlClicked = true;
     private _visibleRegionContainer : Container;
@@ -260,7 +259,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 this._mainSelection = selection;
             }
         }
-        this._lockMainSelection = true;
         this.props.globalState.select(selection);
     }
 
