@@ -123,7 +123,6 @@
 - Gradient nodes from NME can now be set to be visible in the inspector ([msDestiny14](https://github.com/msDestiny14))
 - Automatically turn picking on when gizmo is enabled (Inspector) (BlakeOne](https://github.com/BlakeOne))
 
-
 ### Cameras
 
 - Fixed up vector not correctly handled with stereoscopic rig ([cedricguillemet](https://github.com/cedricguillemet))
