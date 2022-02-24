@@ -263,6 +263,9 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
             manager.dispose();
             scene.reservedDataStore.gizmoManager = null;
         } else {
+            if (mode !== 0 && !this.state.isInPickingMode) {
+                this.onPickingMode();
+            }
             switch (mode) {
                 case 1:
                     manager.positionGizmoEnabled = true;
