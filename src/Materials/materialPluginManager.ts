@@ -50,6 +50,7 @@ export class MaterialPluginManager {
     protected _fragmentDeclaration: string;
     protected _uniformList: string[];
     protected _samplerList: string[];
+    protected _uboList: string[];
 
     /**
      * Creates a new instance of the plugin manager
@@ -237,6 +238,9 @@ export class MaterialPluginManager {
                 if (this._samplerList.length > 0) {
                     eventData.samplers.push(...this._samplerList);
                 }
+                if (this._uboList.length > 0) {
+                    eventData.uniformBuffersNames.push(...this._uboList);
+                }
                 eventData.customCode = this._injectCustomCode(eventData.customCode);
                 break;
             }
@@ -248,6 +252,7 @@ export class MaterialPluginManager {
                 this._fragmentDeclaration = "";
                 this._uniformList = [];
                 this._samplerList = [];
+                this._uboList = [];
                 for (const plugin of this._plugins) {
                     const uniforms = plugin.getUniforms();
                     if (uniforms) {
@@ -266,6 +271,7 @@ export class MaterialPluginManager {
                         }
                     }
                     plugin.getSamplers(this._samplerList);
+                    plugin.getUniformBuffersNames(this._uboList);
                 }
                 break;
             }
