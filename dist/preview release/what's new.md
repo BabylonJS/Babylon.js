@@ -140,6 +140,7 @@
 - Added `mesh.onMeshReadyObservable` to get notified when a mesh is ready ([RaananW](https://github.com/RaananW))
 - Added support for morph targets to the mesh `BoundingInfo` refresh. ([EricBeetsOfficial-Opuscope](https://github.com/EricBeetsOfficial-Opuscope))
 - Added support for screen coverage in addition to distance for LOds. ([CraigFeldspar](https://github.com/CraigFeldspar))
+- Decreased memory usage and improved performance of `Mesh.MergeMeshes`. ([ryantrem](https://github.com/ryantrem))
 
 ### Inspector
 
