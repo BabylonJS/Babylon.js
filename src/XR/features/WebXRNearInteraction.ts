@@ -36,6 +36,7 @@ type ControllerData = {
     meshUnderPointer: Nullable<AbstractMesh>;
     nearInteractionTargetMesh: Nullable<AbstractMesh>;
     pick: Nullable<PickingInfo>;
+    stalePick: Nullable<PickingInfo>;
     id: number;
     touchCollisionMesh: AbstractMesh;
     touchCollisionMeshFunction: (isTouch: boolean) => void;
@@ -153,6 +154,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
             meshUnderPointer: null,
             nearInteractionTargetMesh: null,
             pick: null,
+            stalePick: null,
             touchCollisionMesh,
             touchCollisionMeshFunction: touchCollisionMeshFunction,
             hydrateCollisionMeshFunction: hydrateCollisionMeshFunction,
@@ -532,6 +534,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                     }
                 }
 
+                controllerData.stalePick = controllerData.pick;
                 controllerData.pick = pick;
 
                 // Update mesh under pointer
@@ -624,8 +627,8 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                     this._scene.simulatePointerDown(controllerData.pick, pointerEventInit);
                     controllerData.nearInteractionTargetMesh = controllerData.meshUnderPointer;
                 }
-            } else if (controllerData.nearInteractionTargetMesh && controllerData.pick) {
-                this._scene.simulatePointerUp(controllerData.pick, pointerEventInit);
+            } else if (controllerData.nearInteractionTargetMesh && controllerData.stalePick) {
+                this._scene.simulatePointerUp(controllerData.stalePick, pointerEventInit);
                 controllerData.nearInteractionTargetMesh = null;
             }
         });
