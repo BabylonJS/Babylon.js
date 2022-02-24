@@ -101,14 +101,14 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                             {
                                 label: "Delete Selected",
                                 onClick: () => {
-                                    this.props.globalState.workbench.selectedGuiNodes.forEach((guiNode) => {
+                                    this.props.globalState.selectedControls.forEach((guiNode) => {
                                         if (guiNode !== this.props.globalState.guiTexture.getChildren()[0]) {
                                             this.props.globalState.guiTexture.removeControl(guiNode);
                                             this.props.globalState.liveGuiTexture?.removeControl(guiNode);
                                             guiNode.dispose();
                                         }
                                     });
-                                    this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+                                    this.props.globalState.setSelection([]);
                                 },
                             },
                             {
