@@ -504,7 +504,7 @@ export class VertexData {
      * @returns the modified VertexData
      */
     public merge(others: VertexData | VertexData[], use32BitsIndices = false) {
-        const vertexDatas: [vertexData: VertexData, transform?: Matrix][] = Array.isArray(others) ? others.map(other => [other, undefined]) : [[others, undefined]];
+        const vertexDatas: [vertexData: VertexData, transform?: Matrix][] = Array.isArray(others) ? others.map((other) => [other, undefined]) : [[others, undefined]];
         return runCoroutineSync(this._mergeCoroutine(undefined, vertexDatas, use32BitsIndices, false));
     }
 
@@ -512,7 +512,7 @@ export class VertexData {
     public *_mergeCoroutine(transform: Matrix | undefined, vertexDatas: (readonly [vertexData: VertexData, transform?: Matrix])[], use32BitsIndices = false, isAsync: boolean): Coroutine<VertexData> {
         this._validate();
 
-        const others = vertexDatas.map(vertexData => vertexData[0]);
+        const others = vertexDatas.map((vertexData) => vertexData[0]);
 
         for (const other of others) {
             other._validate();
@@ -631,7 +631,7 @@ export class VertexData {
                     VertexData._TransformVector4Normals(element, matrix, offset, length);
                 }
             }
-        }
+        };
 
         if (source instanceof Float32Array) {
             // use non-loop method when the source is Float32Array
