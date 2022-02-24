@@ -11,7 +11,6 @@ declare type Geometry = import("../Meshes/geometry").Geometry;
 declare type Mesh = import("../Meshes/mesh").Mesh;
 
 import { ICreateCapsuleOptions } from "./Builders/capsuleBuilder";
-import { Tools } from "../Misc/tools";
 declare type PolyhedronData= import("./geodesicMesh").PolyhedronData;
 
 /**
@@ -578,7 +577,6 @@ export class VertexData {
             }
         }
 
-        Tools.StartPerformanceCounter(`VertexData._mergeElement`);
         this.positions = VertexData._mergeElement(VertexBuffer.PositionKind, this.positions, transform, vertexDatas.map((other) => [other[0].positions, other[1]]));
         if (isAsync) { yield; }
         this.normals = VertexData._mergeElement(VertexBuffer.NormalKind, this.normals, transform, vertexDatas.map((other) => [other[0].normals, other[1]]));
@@ -606,7 +604,6 @@ export class VertexData {
         this.matricesIndicesExtra = VertexData._mergeElement(VertexBuffer.MatricesIndicesExtraKind, this.matricesIndicesExtra, transform, vertexDatas.map((other) => [other[0].matricesIndicesExtra, other[1]]));
         if (isAsync) { yield; }
         this.matricesWeightsExtra = VertexData._mergeElement(VertexBuffer.MatricesWeightsExtraKind, this.matricesWeightsExtra, transform, vertexDatas.map((other) => [other[0].matricesWeightsExtra, other[1]]));
-        Tools.EndPerformanceCounter(`VertexData._mergeElement`);
 
         return this;
     }

@@ -4437,11 +4437,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         const getVertexDataFromMesh = (mesh: Mesh) => {
             const wm = mesh.computeWorldMatrix(true);
             const vertexData = VertexData.ExtractFromMesh(mesh, false, false);
-            //vertexData.transform(wm);
             return [vertexData, wm] as const;
         };
 
-        Tools.StartPerformanceCounter(`getVertexDataFromMesh`);
         const [sourceVertexData, sourceTransform] = getVertexDataFromMesh(source);
         if (isAsync) { yield; }
 
@@ -4450,7 +4448,6 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             meshVertexDatas[i - 1] = getVertexDataFromMesh(meshes[i]);
             if (isAsync) { yield; }
         }
-        Tools.EndPerformanceCounter(`getVertexDataFromMesh`);
 
         const mergeCoroutine = sourceVertexData._mergeCoroutine(sourceTransform, meshVertexDatas, allow32BitsIndices, isAsync);
         let mergeCoroutineStep = mergeCoroutine.next();
