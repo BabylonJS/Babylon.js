@@ -608,8 +608,8 @@ export class VertexData {
         return this;
     }
 
-    private static _mergeElement(kind: string, source: Nullable<FloatArray>, transform: Matrix | undefined, others: readonly (readonly [element: Nullable<FloatArray>, transform: Matrix | undefined])[]): Nullable<FloatArray> {
-        const nonNullOthers = others.filter((other): other is [element: FloatArray, transform: Matrix | undefined] => other[0] !== null && other[0] !== undefined);
+    private static _mergeElement(kind: string, source: Nullable<FloatArray>, transform: Matrix | undefined, others: readonly (readonly [element: Nullable<FloatArray>, transform?: Matrix])[]): Nullable<FloatArray> {
+        const nonNullOthers = others.filter((other): other is [element: FloatArray, transform?: Matrix] => other[0] !== null && other[0] !== undefined);
 
         if (nonNullOthers.length === 0) {
             return source;
