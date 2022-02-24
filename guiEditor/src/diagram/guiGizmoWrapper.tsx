@@ -3,14 +3,13 @@ import { Observer } from "babylonjs/Misc/observable";
 import * as React from "react";
 import { GlobalState } from "../globalState";
 import { GuiGizmoComponent } from "./guiGizmo";
-import { Control } from "babylonjs-gui/2D/controls/control";
 
 export interface IGizmoWrapperProps {
     globalState: GlobalState;
 }
 
 export class GizmoWrapper extends React.Component<IGizmoWrapperProps> {
-    observer: Nullable<Observer<Nullable<Control>>>;
+    observer: Nullable<Observer<void>>;
     componentWillMount() {
         this.observer = this.props.globalState.onSelectionChangedObservable.add(() => this.forceUpdate());
     }
@@ -20,7 +19,7 @@ export class GizmoWrapper extends React.Component<IGizmoWrapperProps> {
     }
 
     render() {
-        const controls = this.props.globalState.workbench.selectedGuiNodes;
+        const controls = this.props.globalState.selectedControls;
         return <>
             {controls.map(control =>
                 <GuiGizmoComponent globalState={this.props.globalState} control={control} key={control.uniqueId}/>)}
