@@ -121,6 +121,8 @@
 - Added more functionality and options to the skeleton debug panel. ([Pryme8](https://github.com/Pryme8))
 - Along with bone index it is now possible to select a bone using its name when viewing bone weights ([#9117](https://github.com/BabylonJS/Babylon.js/issues/9117)) ([RaananW](https://github.com/RaananW))
 - Gradient nodes from NME can now be set to be visible in the inspector ([msDestiny14](https://github.com/msDestiny14))
+- Automatically turn picking on when gizmo is enabled (Inspector) (BlakeOne](https://github.com/BlakeOne))
+
 
 ### Cameras
 
