@@ -107,6 +107,7 @@
 - Added support for normalized attributes ([#11685](https://github.com/BabylonJS/Babylon.js/issues/11685)) ([RaananW](https://github.com/RaananW))
 - Added fallback error logging on mesh loading tasks if no error handler is defined. ([carolhmj](https://github.com/carolhmj))
 - Updated the glTF loader to place the skinned mesh as a sibling of the skeleton root node instead of using `skeleton.overrideMesh`. ([bghgary](https://github.com/bghgary))
+- Added support for `--bm` bump multiplier to OBJ loader ([brianzinn](https://github.com/brianzinn))
 
 ### Navigation
 
