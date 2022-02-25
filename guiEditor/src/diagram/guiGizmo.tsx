@@ -208,8 +208,15 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
         }
         if (this.state.isRotating) {
             const angle = Math.atan2(scene.pointerY - this._rotation.pivot.y, scene.pointerX - this._rotation.pivot.x);
-            for(const control of this.props.globalState.workbench.selectedGuiNodes) {
+            for(const control of this.props.globalState.selectedControls) {
+                const oldRotation = control.rotation;
                 control.rotation += (angle - this._rotation.initialAngleToPivot);
+                this.props.globalState.onPropertyChangedObservable.notifyObservers({
+                    object: control,
+                    property: 'rotation',
+                    value: control.rotation,
+                    initialValue: oldRotation
+                })
             }
             this._rotation.initialAngleToPivot = angle;
             this.props.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
@@ -244,7 +251,7 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
         }
         // apply bounds changes to all controls 
         const edges: ["left", "top", "right", "bottom"] = ["left", "top", "right", "bottom"];
-        for (const node of this.props.globalState.workbench.selectedGuiNodes) {
+        for (const node of this.props.globalState.selectedControls) {
             const initialBounds = (node.metadata.localBounds as Rect);
             const nb = initialBounds.clone();
             // account for rotation: if other control is rotated 90 degrees
@@ -266,11 +273,11 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
 
     private _updateNodeFromLocalBounds() {
         const scalePoint = this.state.scalePoints[this.state.scalePointDragging];
-        const left = scalePoint.horizontalPosition === ScalePointPosition.Left && scalePoint.verticalPosition !== ScalePointPosition.Center;
-        const top = scalePoint.verticalPosition === ScalePointPosition.Top && scalePoint.horizontalPosition !== ScalePointPosition.Center;
-        for(const selectedControl of this.props.globalState.workbench.selectedGuiNodes) {
-            const width = selectedControl.metadata.localBounds.right - selectedControl.metadata.localBounds.left;
-            const height = selectedControl.metadata.localBounds.bottom - selectedControl.metadata.localBounds.top;
+        const left = scalePoint.horizontalPosition === ScalePointPosition.Left;
+        const top = scalePoint.verticalPosition === ScalePointPosition.Top;
+        for(const selectedControl of this.props.globalState.selectedControls) {
+            const width = selectedControl.metadata.localBounds.width;
+            const height = selectedControl.metadata.localBounds.height;
             // calculate the center point
             const localRotation = CoordinateHelper.getRotation(selectedControl, true);
             const localScaling = CoordinateHelper.getScale(selectedControl, true);
@@ -329,7 +336,14 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
                 }
                 // compute real change in property
                 const initialUnit = (selectedControl as any)[`_${property}`].unit;
+                const oldPixels = (selectedControl as any)[`${property}InPixels`];
                 (selectedControl as any)[`${property}InPixels`] = newPixels;
+                this.props.globalState.onPropertyChangedObservable.notifyObservers({
+                    object: selectedControl,
+                    property: `${property}InPixels`,
+                    value: newPixels,
+                    initialValue: oldPixels
+                });
                 if (initialUnit === ValueAndUnit.UNITMODE_PERCENTAGE) {
                     CoordinateHelper.convertToPercentage(selectedControl, [property]);
                 }
@@ -348,7 +362,7 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
         const node = this.props.control;
         this._localBounds = CoordinateHelper.computeLocalBounds(node);
         this._storedValues = new Rect(node.leftInPixels, node.topInPixels, node.leftInPixels + node.widthInPixels, node.topInPixels + node.heightInPixels);
-        for (const node of this.props.globalState.workbench.selectedGuiNodes) {
+        for (const node of this.props.globalState.selectedControls) {
             node.metadata.localBounds = CoordinateHelper.computeLocalBounds(node);
             node.metadata.storedValues = new Rect(node.leftInPixels, node.topInPixels, node.leftInPixels + node.widthInPixels, node.topInPixels + node.heightInPixels);
         }

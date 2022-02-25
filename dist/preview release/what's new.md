@@ -140,6 +140,7 @@
 - Added `mesh.onMeshReadyObservable` to get notified when a mesh is ready ([RaananW](https://github.com/RaananW))
 - Added support for morph targets to the mesh `BoundingInfo` refresh. ([EricBeetsOfficial-Opuscope](https://github.com/EricBeetsOfficial-Opuscope))
 - Added support for screen coverage in addition to distance for LOds. ([CraigFeldspar](https://github.com/CraigFeldspar))
+- Decreased memory usage and improved performance of `Mesh.MergeMeshes`. ([ryantrem](https://github.com/ryantrem))
 
 ### Inspector
 
@@ -346,6 +347,7 @@
 - Fix for GUI renderAtIdealSize ([msDestiny14](https://github.com/msDestiny14))
 - Fix the strength input parameter of the NME `PerturbNormal` block that was handled as a 1/strength value ([Popov72](https://github.com/Popov72))
 - Fix an issue with audio engine not being garbage-collected when engine is disposed ([RaananW](https://github.com/RaananW))
+- Fix deprecated audio methods setPosition/setOrientation with new position/orientation values ([CedricGuillemet](https://github.com/CedricGuillemet))
 - Fix the NME `NormalBlend` block ([Popov72](https://github.com/Popov72))
 - Fix Compatibility with NPM 7 ([Sebavan](https://github.com/sebavan))
 - Fix for cloning meshes for 3D GUIs ([msDestiny14](https://github.com/msDestiny14))
@@ -410,6 +412,7 @@
 - Fix keypoint drag in ACE ([carolhmj](https://github.com/carolhmj))
 - Fix spherical harmonics computation ([Meakk](https://github.com/Meakk))
 - Fix KTX and DDS loading with baked mipmaps ([Meakk](https://github.com/Meakk))
+- Fix text rendering speed when `TextWrapping.Ellipsis` is used ([carolhmj](https://github.com/carolhmj))
 
 ## Breaking changes
 

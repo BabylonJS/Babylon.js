@@ -784,6 +784,7 @@ declare module "babylonjs-gui/2D/advancedDynamicTexture" {
          */
         scaleTo(width: number, height: number): void;
     }
+    export { IFocusableControl };
 }
 declare module "babylonjs-gui/2D/controls/control" {
     import { Nullable } from "babylonjs/types";
@@ -1853,6 +1854,7 @@ declare module "babylonjs-gui/2D/controls/textBlock" {
         protected _applyStates(context: ICanvasRenderingContext): void;
         protected _breakLines(refWidth: number, refHeight: number, context: ICanvasRenderingContext): object[];
         protected _parseLine(line: string | undefined, context: ICanvasRenderingContext): object;
+        private _getCharsToRemove;
         protected _parseLineEllipsis(line: string | undefined, width: number, context: ICanvasRenderingContext): object;
         protected _parseLineWordWrap(line: string | undefined, width: number, context: ICanvasRenderingContext): object[];
         protected _parseLineWordWrapEllipsis(line: string | undefined, width: number, height: number, context: ICanvasRenderingContext): object[];
@@ -2416,6 +2418,8 @@ declare module "babylonjs-gui/2D/controls/inputText" {
         private _autoStretchWidth;
         private _maxWidth;
         private _isFocused;
+        /** the type of device that most recently focused the input: "mouse", "touch" or "pen" */
+        private _focusedBy;
         private _blinkTimeout;
         private _blinkIsEven;
         private _cursorOffset;
@@ -8971,6 +8975,7 @@ declare module BABYLON.GUI {
         protected _applyStates(context: BABYLON.ICanvasRenderingContext): void;
         protected _breakLines(refWidth: number, refHeight: number, context: BABYLON.ICanvasRenderingContext): object[];
         protected _parseLine(line: string | undefined, context: BABYLON.ICanvasRenderingContext): object;
+        private _getCharsToRemove;
         protected _parseLineEllipsis(line: string | undefined, width: number, context: BABYLON.ICanvasRenderingContext): object;
         protected _parseLineWordWrap(line: string | undefined, width: number, context: BABYLON.ICanvasRenderingContext): object[];
         protected _parseLineWordWrapEllipsis(line: string | undefined, width: number, height: number, context: BABYLON.ICanvasRenderingContext): object[];
@@ -9494,6 +9499,8 @@ declare module BABYLON.GUI {
         private _autoStretchWidth;
         private _maxWidth;
         private _isFocused;
+        /** the type of device that most recently focused the input: "mouse", "touch" or "pen" */
+        private _focusedBy;
         private _blinkTimeout;
         private _blinkIsEven;
         private _cursorOffset;
