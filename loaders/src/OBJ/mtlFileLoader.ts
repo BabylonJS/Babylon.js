@@ -37,7 +37,7 @@ export class MTLFileLoader {
 
         //Split the lines from the file
         var lines = data.split('\n');
-        //Space char
+        // whitespace char ie: [ \t\r\n\f]
         var delimiter_pattern = /\s+/;
         //Array with RGB colors
         var color: number[];
@@ -135,7 +135,19 @@ export class MTLFileLoader {
                 //    continue;
             } else if (key === "map_bump" && material) {
                 //The bump texture
-                material.bumpTexture = MTLFileLoader._getTexture(rootUrl, value, scene);
+                const values = value.split(delimiter_pattern);
+                const bumpMultiplierIndex = values.indexOf('-bm');
+                let bumpMultiplier: Nullable<string> = null;
+
+                if (bumpMultiplierIndex >= 0) {
+                    bumpMultiplier = values[bumpMultiplierIndex + 1];
+                    values.splice(bumpMultiplierIndex, 2); // remove
+                }
+
+                material.bumpTexture = MTLFileLoader._getTexture(rootUrl, values.join(' '), scene);
+                if (material.bumpTexture && bumpMultiplier !== null) {
+                    material.bumpTexture.level = parseFloat(bumpMultiplier);
+                }
             } else if (key === "map_d" && material) {
                 // The dissolve of the material
                 material.opacityTexture = MTLFileLoader._getTexture(rootUrl, value, scene);
