@@ -168,6 +168,7 @@ export class TouchButton3D extends Button3D {
     /**
      * Get the height of the touchPoint from the collidable part of the button
      * @param touchPoint the point to compare to the button, in absolute position
+     * @returns the depth of the touch point into the front of the button
      */
     public getPressDepth(touchPoint: Vector3) {
         if (!this._isNearPressed) {
