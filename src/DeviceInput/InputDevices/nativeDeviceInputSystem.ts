@@ -25,7 +25,7 @@ export class NativeDeviceInputSystem implements IDeviceInputSystem {
 
         this._nativeInput.onInputChanged = (deviceType, deviceSlot, inputIndex, previousState, currentState, eventData) => {
             const idx = (inputIndex === PointerInput.Horizontal || inputIndex === PointerInput.Vertical || inputIndex === PointerInput.DeltaHorizontal || inputIndex === PointerInput.DeltaVertical) ? PointerInput.Move : inputIndex;
-            const evt = DeviceEventFactory.CreateDeviceEvent(deviceType, deviceSlot, inputIndex, currentState, this);
+            const evt = DeviceEventFactory.CreateDeviceEvent(deviceType, deviceSlot, idx, currentState, this);
 
             this.onInputChanged(deviceType, deviceSlot, idx, previousState, currentState, evt);
         };

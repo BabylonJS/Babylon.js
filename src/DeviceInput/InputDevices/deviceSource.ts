@@ -7,7 +7,7 @@ import { IUIEvent } from '../../Events/deviceInputEvents';
 /**
  * Class that handles all input for a specific device
  */
- export class DeviceSource<T extends DeviceType> {
+export class DeviceSource<T extends DeviceType> {
     // Public Members
     /**
      * Observable to handle device input changes per device

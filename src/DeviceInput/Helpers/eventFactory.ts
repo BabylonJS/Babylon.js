@@ -17,7 +17,7 @@ export class DeviceEventFactory {
      * @param currentState Current value for given input
      * @param deviceInputSystem Reference to DeviceInputSystem
      * @param elementToAttachTo HTMLElement to reference as target for inputs
-     * @returns IEvent object
+     * @returns IUIEvent object
      */
     public static CreateDeviceEvent(deviceType: DeviceType, deviceSlot: number, inputIndex: number, currentState: Nullable<number>, deviceInputSystem: IDeviceInputSystem, elementToAttachTo?: any): IUIEvent {
         switch (deviceType) {
@@ -43,7 +43,7 @@ export class DeviceEventFactory {
      * @param currentState Current value for given input
      * @param deviceInputSystem Reference to DeviceInputSystem
      * @param elementToAttachTo HTMLElement to reference as target for inputs
-     * @returns IEvent object (Pointer)
+     * @returns IUIEvent object (Pointer)
      */
     private static _createPointerEvent(deviceType: DeviceType, deviceSlot: number, inputIndex: number, currentState: Nullable<number>, deviceInputSystem: IDeviceInputSystem, elementToAttachTo?: any): any {
         const evt = this._createMouseEvent(deviceType, deviceSlot, inputIndex, currentState, deviceInputSystem, elementToAttachTo);
@@ -78,7 +78,7 @@ export class DeviceEventFactory {
      * @param currentState Current value for given input
      * @param deviceInputSystem Reference to DeviceInputSystem
      * @param elementToAttachTo HTMLElement to reference as target for inputs
-     * @returns IEvent object (Wheel)
+     * @returns IUIEvent object (Wheel)
      */
     private static _createWheelEvent(deviceType: DeviceType, deviceSlot: number, inputIndex: number, currentState: Nullable<number>, deviceInputSystem: IDeviceInputSystem, elementToAttachTo: any): any {
         const evt = this._createMouseEvent(deviceType, deviceSlot, inputIndex, currentState, deviceInputSystem, elementToAttachTo);
@@ -100,7 +100,7 @@ export class DeviceEventFactory {
      * @param currentState Current value for given input
      * @param deviceInputSystem Reference to DeviceInputSystem
      * @param elementToAttachTo HTMLElement to reference as target for inputs
-     * @returns IEvent object (Mouse)
+     * @returns IUIEvent object (Mouse)
      */
     private static _createMouseEvent(deviceType: DeviceType, deviceSlot: number, inputIndex: number, currentState: Nullable<number>, deviceInputSystem: IDeviceInputSystem, elementToAttachTo?: any): any {
         const evt = this._createEvent(elementToAttachTo);
@@ -123,6 +123,10 @@ export class DeviceEventFactory {
         evt.x = pointerX;
         evt.y = pointerY;
 
+        evt.deviceType = deviceType;
+        evt.deviceSlot = deviceSlot;
+        evt.inputIndex = inputIndex;
+
         return evt;
     }
 
@@ -138,6 +142,8 @@ export class DeviceEventFactory {
         const evt = this._createEvent(elementToAttachTo);
         this._checkNonCharacterKeys(evt, deviceInputSystem);
         evt.deviceType = DeviceType.Keyboard;
+        evt.deviceSlot = 0;
+        evt.inputIndex = inputIndex;
 
         evt.type = currentState === 1 ? "keydown" : "keyup";
         evt.key = String.fromCharCode(inputIndex);
