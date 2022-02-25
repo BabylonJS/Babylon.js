@@ -1282,6 +1282,7 @@ export class StandardMaterial extends PushMaterial {
             this._eventInfo.defines = defines;
             this._eventInfo.uniforms = uniforms;
             this._eventInfo.samplers = samplers;
+            this._eventInfo.uniformBuffersNames = uniformBuffers;
             this._eventInfo.customCode = undefined;
             this._callbackPluginEventGeneric(MaterialPluginEvent.PrepareEffect, this._eventInfo);
 

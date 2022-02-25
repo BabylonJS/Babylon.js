@@ -16,6 +16,9 @@ import { ValueAndUnit } from "babylonjs-gui/2D/valueAndUnit";
 import { ColorLineComponent } from "../../../../sharedUiComponents/lines/colorLineComponent";
 import { makeTargetsProxy, conflictingValuesPlaceholder } from "../../../../sharedUiComponents/lines/targetsProxy";
 import { CoordinateHelper, DimensionProperties } from "../../../../diagram/coordinateHelper";
+import { Vector2 } from "babylonjs/Maths/math";
+import { Observer } from "babylonjs/Misc/observable";
+import { Nullable } from "babylonjs/types";
 
 const sizeIcon: string = require("../../../../sharedUiComponents/imgs/sizeIcon.svg");
 const verticalMarginIcon: string = require("../../../../sharedUiComponents/imgs/verticalMarginIcon.svg");
@@ -52,8 +55,45 @@ type ControlProperty = keyof Control | "_paddingLeft" | "_paddingRight" | "_padd
 
 export class CommonControlPropertyGridComponent extends React.Component<ICommonControlPropertyGridComponentProps> {
 
+    private _onPropertyChangedObserver : Nullable<Observer<PropertyChangedEvent>> | undefined;
+
     constructor(props: ICommonControlPropertyGridComponentProps) {
         super(props);
+
+        const controls = this.props.controls;
+        for (let control of controls) {
+            const transformed = this._getTransformedReferenceCoordinate(control);
+            if (!control.metadata) {
+                control.metadata = {};
+            }
+            control.metadata._previousCenter = transformed;
+        }
+
+        this._onPropertyChangedObserver = this.props.onPropertyChangedObservable?.add((event) => {
+            const isTransformEvent = event.property === "transformCenterX" || event.property === "transformCenterY";
+            for (let control of controls) {
+                let transformed = this._getTransformedReferenceCoordinate(control);
+                if (isTransformEvent && control.metadata._previousCenter) {
+                    // Calculate the difference between current center and previous center
+                    const diff = transformed.subtract(control.metadata._previousCenter);
+                    control.leftInPixels -= diff.x;
+                    control.topInPixels -= diff.y;
+
+                    // Update center in reference to left and top positions
+                    transformed = this._getTransformedReferenceCoordinate(control);
+                }
+
+                control.metadata._previousCenter = transformed;
+            }
+            this.forceUpdate();
+        });
+    }
+
+    private _getTransformedReferenceCoordinate(control : Control) {
+        const nodeMatrix = CoordinateHelper.getNodeMatrix(control);
+        const transformed = new Vector2(1, 1);
+        nodeMatrix.transformCoordinates(1, 1, transformed);
+        return transformed;
     }
 
     private _updateAlignment(alignment: string, value: number) {
@@ -107,6 +147,12 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
         }
     }
 
+    componentWillUnmount() {
+        if (this._onPropertyChangedObserver) {
+            this.props.onPropertyChangedObservable?.remove(this._onPropertyChangedObserver);
+        }
+    }
+
     render() {
         const controls = this.props.controls;
         const firstControl = controls[0];
@@ -157,6 +203,25 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                 return conflictingValuesPlaceholder;
             }
         };
+        const increment = (propertyName: DimensionProperties, amount: number, minimum?: number, maximum?: number) => {
+            for(const control of controls) {
+                const initialValue = control[propertyName];
+                const initialUnit = (control as any)["_" + propertyName]._unit ;
+                let newValue: number = (control as any)[`${propertyName}InPixels`] + amount;
+                if (minimum !== undefined && newValue < minimum) newValue = minimum;
+                if (maximum !== undefined && newValue > maximum) newValue = maximum;
+                (control as any)[`${propertyName}InPixels`] = newValue;
+                if (initialUnit === ValueAndUnit.UNITMODE_PERCENTAGE) {
+                    CoordinateHelper.convertToPercentage(control, [propertyName]);
+                }
+                this.props.onPropertyChangedObservable?.notifyObservers({
+                    object: control,
+                    property: propertyName,
+                    initialValue: initialValue,
+                    value: control[propertyName]
+                });
+            }
+        }
         const convertUnits = (unit: string, property: DimensionProperties) => {
             for(const control of controls) {
                 if (unit === "PX") {
@@ -238,6 +303,8 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         onChange={(newValue) => this._checkAndUpdateValues("left", newValue)}
                         unit={getUnitString("_left")}
                         onUnitClicked={unit => convertUnits(unit, "left")}
+                        arrows={true}
+                        arrowsIncrement={amount => increment("left", amount)}
                     />
                     <TextInputLineComponent
                         numbersOnly={true}
@@ -249,6 +316,8 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         unit={getUnitString("_top")}
                         onUnitClicked={unit => convertUnits(unit, "top")}
+                        arrows={true}
+                        arrowsIncrement={amount => increment("top", amount)}
                     />
                 </div>
                 <div className="ge-divider">
@@ -279,6 +348,8 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         }}
                         unit={getUnitString("_width")}
                         onUnitClicked={unit => convertUnits(unit, "width")}
+                        arrows={true}
+                        arrowsIncrement={amount => increment("width", amount)}
                     />
                     <TextInputLineComponent
                         numbersOnly={true}
@@ -305,6 +376,8 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         }}
                         unit={getUnitString("_height")}
                         onUnitClicked={unit => convertUnits(unit, "height")}
+                        arrows={true}
+                        arrowsIncrement={amount => increment("height", amount)}
                     />
                 </div>
                 <div className="ge-divider">
@@ -323,6 +396,8 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         unit={getUnitString("_paddingTop")}
                         onUnitClicked={unit => convertUnits(unit, "paddingTop")}
+                        arrows={true}
+                        arrowsIncrement={amount => increment("paddingTop", amount, 0)}
                     />
                     <TextInputLineComponent
                         numbersOnly={true}
@@ -337,6 +412,8 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         unit={getUnitString("_paddingBottom")}
                         onUnitClicked={unit => convertUnits(unit, "paddingBottom")}
+                        arrows={true}
+                        arrowsIncrement={amount => increment("paddingBottom", amount, 0)}
                     />
                 </div>
                 <div className="ge-divider">
@@ -355,6 +432,8 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         unit={getUnitString("_paddingLeft")}
                         onUnitClicked={unit => convertUnits(unit, "paddingLeft")}
+                        arrows={true}
+                        arrowsIncrement={amount => increment("paddingLeft", amount)}
                     />
                     <TextInputLineComponent
                         numbersOnly={true}
@@ -369,6 +448,8 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         unit={getUnitString("_paddingRight")}
                         onUnitClicked={unit => convertUnits(unit, "paddingRight")}
+                        arrows={true}
+                        arrowsIncrement={amount => increment("paddingRight", amount)}
                     />
                 </div>
                 <CheckBoxLineComponent
@@ -382,7 +463,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                 <hr className="ge" />
                 <TextLineComponent tooltip="" label="TRANSFORMATION" value=" " color="grey"></TextLineComponent>
                 <div className="ge-divider">
-                    <FloatLineComponent
+                    <TextInputLineComponent
                         iconLabel={"Transform Center"}
                         icon={positionIcon}
                         lockObject={this.props.lockObject}
@@ -390,17 +471,23 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         target={proxy}
                         propertyName="transformCenterX"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        arrows={true}
+                        step={0.0005}
+                        numbersOnly={true}
                     />
-                    <FloatLineComponent
+                    <TextInputLineComponent
                         lockObject={this.props.lockObject}
                         label="Y"
                         target={proxy}
                         propertyName="transformCenterY"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        arrows={true}
+                        step={0.0005}
+                        numbersOnly={true}
                     />
                 </div>
                 <div className="ge-divider">
-                    <FloatLineComponent
+                    <TextInputLineComponent
                         iconLabel={"Scale"}
                         icon={scaleIcon}
                         lockObject={this.props.lockObject}
@@ -408,13 +495,19 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         target={proxy}
                         propertyName="scaleX"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        arrows={true}
+                        step={0.0005}
+                        numbersOnly={true}
                     />
-                    <FloatLineComponent
+                    <TextInputLineComponent
                         lockObject={this.props.lockObject}
                         label="Y"
                         target={proxy}
                         propertyName="scaleY"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        arrows={true}
+                        step={0.0005}
+                        numbersOnly={true}
                     />
                 </div>
                 <SliderLineComponent

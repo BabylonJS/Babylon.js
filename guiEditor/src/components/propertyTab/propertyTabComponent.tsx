@@ -82,11 +82,7 @@ interface IPropertyTabComponentProps {
     globalState: GlobalState;
 }
 
-interface IPropertyTabComponentState {
-    currentNode: Nullable<Control>;
-}
-
-export class PropertyTabComponent extends React.Component<IPropertyTabComponentProps, IPropertyTabComponentState> {
+export class PropertyTabComponent extends React.Component<IPropertyTabComponentProps> {
     private _onBuiltObserver: Nullable<Observer<void>>;
     private _timerIntervalId: number;
     private _lockObject: LockObject;
@@ -95,7 +91,6 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
     constructor(props: IPropertyTabComponentProps) {
         super(props);
 
-        this.state = { currentNode: null };
         this._lockObject = new LockObject();
         this.props.globalState.lockObject = this._lockObject;
         this.props.globalState.onSaveObservable.add(() => {
@@ -116,12 +111,8 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
     }
 
     componentDidMount() {
-        this.props.globalState.onSelectionChangedObservable.add((selection) => {
-            if (selection instanceof Control) {
-                this.setState({ currentNode: selection });
-            } else {
-                this.setState({ currentNode: null });
-            }
+        this.props.globalState.onSelectionChangedObservable.add(() => {
+            this.forceUpdate();
         });
         this.props.globalState.onResizeObservable.add((newSize) => {
             this.forceUpdate();
@@ -144,7 +135,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 const decoder = new TextDecoder("utf-8");
                 this.props.globalState.workbench.loadFromJson(JSON.parse(decoder.decode(data)));
 
-                this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+                this.props.globalState.setSelection([]);
             },
             undefined,
             true
@@ -431,7 +422,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                                 const guiElement = GUINodeTools.CreateControlFromString(value);
                                 const newGuiNode = this.props.globalState.workbench.createNewGuiNode(guiElement);    
                                 button.addControl(newGuiNode);
-                                this.props.globalState.onSelectionChangedObservable.notifyObservers(newGuiNode);
+                                this.props.globalState.select(newGuiNode);
                             }
                         }}
                     />
@@ -545,10 +536,10 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             DataStorage.WriteBoolean("Responsive", false);
         }
 
-        if (this.state.currentNode && this.props.globalState.workbench.selectedGuiNodes.length > 0) {
+        if (this.props.globalState.selectedControls.length > 0) {
             return (
                 <div id="ge-propertyTab">
-                    {this.renderNode(this.props.globalState.workbench.selectedGuiNodes)}
+                    {this.renderNode(this.props.globalState.selectedControls)}
                 </div>
             );
         }

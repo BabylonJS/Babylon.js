@@ -12,7 +12,7 @@ import { RegisterClass } from 'babylonjs/Misc/typeStore';
 import { Measure } from '../measure';
 import { TextWrapper } from './textWrapper';
 import { serialize } from 'babylonjs/Misc/decorators';
-import { IKeyboardEvent } from 'babylonjs/Events/deviceInputEvents';
+import { IKeyboardEvent, IPointerEvent } from 'babylonjs/Events/deviceInputEvents';
 import { ICanvasRenderingContext } from "babylonjs/Engines/ICanvas";
 
 /**
@@ -30,6 +30,8 @@ export class InputText extends Control implements IFocusableControl {
     private _autoStretchWidth = true;
     private _maxWidth = new ValueAndUnit(1, ValueAndUnit.UNITMODE_PERCENTAGE, false);
     private _isFocused = false;
+    /** the type of device that most recently focused the input: "mouse", "touch" or "pen" */
+    private _focusedBy: string;
     private _blinkTimeout: number;
     private _blinkIsEven = false;
     private _cursorOffset = 0;
@@ -396,7 +398,7 @@ export class InputText extends Control implements IFocusableControl {
 
         this.onFocusObservable.notifyObservers(this);
 
-        if (navigator.userAgent.indexOf("Mobile") !== -1 && !this.disableMobilePrompt) {
+        if (this._focusedBy === "touch" && !this.disableMobilePrompt) {
             let value = prompt(this.promptMessage);
 
             if (value !== null) {
@@ -1055,6 +1057,7 @@ export class InputText extends Control implements IFocusableControl {
         this._cursorIndex = -1;
         this._isPointerDown = true;
         this._host._capturingControl[pointerId] = this;
+        this._focusedBy = (pi.event as IPointerEvent).pointerType;
         if (this._host.focusedControl === this) {
             // Move cursor
             clearTimeout(this._blinkTimeout);
