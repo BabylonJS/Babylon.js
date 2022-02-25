@@ -4113,7 +4113,8 @@ declare module BABYLON.GUI {
     export class TouchButton3D extends Button3D {
         private _collisionMesh;
         private _collidableFrontDirection;
-        protected _isNearPressed: boolean;
+        private _isNearPressed;
+        private _interactionSurfaceHeight;
         private _isToggleButton;
         private _toggleState;
         private _toggleButtonCallback;
@@ -4127,6 +4128,10 @@ declare module BABYLON.GUI {
          * @param collisionMesh mesh to track collisions with
          */
         constructor(name?: string, collisionMesh?: BABYLON.Mesh);
+        /**
+         * Whether the current interaction is caused by near interaction or not
+         */
+        get isActiveNearInteraction(): boolean;
         /**
          * Sets the front-facing direction of the button. Pass in BABYLON.Vector3.Zero to allow interactions from any direction
          * @param frontDir the forward direction of the button
@@ -4155,6 +4160,12 @@ declare module BABYLON.GUI {
         get isToggled(): boolean;
         protected _onToggle(newState: boolean): void;
         private _isInteractionInFrontOfButton;
+        /**
+         * Get the height of the touchPoint from the collidable part of the button
+         * @param touchPoint the point to compare to the button, in absolute position
+         * @returns the depth of the touch point into the front of the button
+         */
+        getPressDepth(touchPoint: BABYLON.Vector3): number;
         protected _getInteractionHeight(interactionPos: BABYLON.Vector3, basePos: BABYLON.Vector3): number;
         /** @hidden */
         _generatePointerEventType(providedType: number, nearMeshPosition: BABYLON.Vector3, activeInteractionCount: number): number;
@@ -4838,6 +4849,10 @@ declare module BABYLON.GUI {
         set renderingGroupId(id: number);
         get renderingGroupId(): number;
         /**
+         * Gets the mesh used to render this control
+         */
+        get mesh(): BABYLON.Nullable<BABYLON.AbstractMesh>;
+        /**
          * Text to be displayed on the tooltip shown when hovering on the button. When set to null tooltip is disabled. (Default: null)
          */
         set tooltipText(text: BABYLON.Nullable<string>);
@@ -5162,6 +5177,7 @@ declare module BABYLON.GUI {
          * Value we use to offset handles from mesh
          */
         private _margin;
+        private _handleSize;
         private _attachedSlate;
         private _existingSlateScale;
         /**
@@ -5172,10 +5188,6 @@ declare module BABYLON.GUI {
          * The distance away from the object which the draggable meshes should appear world sized when fixedScreenSize is set to true (default: 10)
          */
         fixedScreenSizeDistanceFactor: number;
-        /**
-         * Size of the handles (meters in XR)
-         */
-        handleSize: number;
         /**
          * The slate attached to this gizmo
          */
@@ -5194,6 +5206,7 @@ declare module BABYLON.GUI {
          */
         updateBoundingBox(): void;
         private _updateHandlesPosition;
+        private _updateHandlesScaling;
         protected _update(): void;
         dispose(): void;
     }
@@ -5376,22 +5389,6 @@ declare module BABYLON.GUI {
         static FOLLOW_ICON_FILENAME: string;
         private static DEFAULT_TEXT_RESOLUTION_Y;
         /**
-         * 2D dimensions of the slate
-         */
-        dimensions: BABYLON.Vector2;
-        /**
-         * Minimum dimensions of the slate
-         */
-        minDimensions: BABYLON.Vector2;
-        /**
-         * Default dimensions of the slate
-         */
-        readonly defaultDimensions: BABYLON.Vector2;
-        /**
-         * Height of the title bar component
-         */
-        titleBarHeight: number;
-        /**
          * Margin between title bar and contentplate
          */
         titleBarMargin: number;
@@ -5399,7 +5396,10 @@ declare module BABYLON.GUI {
          * Origin in local coordinates (top left corner)
          */
         origin: BABYLON.Vector3;
+        private _dimensions;
+        private _titleBarHeight;
         private _titleBarMaterial;
+        private _backMaterial;
         private _contentMaterial;
         private _pickedPointObserver;
         private _positionChangedObserver;
@@ -5417,9 +5417,29 @@ declare module BABYLON.GUI {
         protected _titleBar: BABYLON.Mesh;
         protected _titleBarTitle: BABYLON.Mesh;
         protected _contentPlate: BABYLON.Mesh;
-        protected _followButton: TouchHolographicButton;
+        protected _backPlate: BABYLON.Mesh;
+        /** @hidden */
+        _followButton: TouchHolographicButton;
         protected _closeButton: TouchHolographicButton;
         protected _contentScaleRatio: number;
+        /**
+         * 2D dimensions of the slate
+         */
+        get dimensions(): BABYLON.Vector2;
+        set dimensions(value: BABYLON.Vector2);
+        /**
+         * Minimum dimensions of the slate
+         */
+        minDimensions: BABYLON.Vector2;
+        /**
+         * Default dimensions of the slate
+         */
+        readonly defaultDimensions: BABYLON.Vector2;
+        /**
+         * Height of the title bar component
+         */
+        get titleBarHeight(): number;
+        set titleBarHeight(value: number);
         /**
          * Rendering ground id of all the meshes
          */
@@ -5460,8 +5480,9 @@ declare module BABYLON.GUI {
         _prepareNode(scene: BABYLON.Scene): void;
         /**
          * Resets the aspect and pose of the slate so it is right in front of the active camera, facing towards it.
+         * @param resetAspect Should the slate's dimensions/aspect ratio be reset as well
          */
-        resetDefaultAspectAndPose(): void;
+        resetDefaultAspectAndPose(resetAspect?: boolean): void;
         /**
          * Releases all associated resources
          */

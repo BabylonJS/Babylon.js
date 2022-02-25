@@ -102,7 +102,6 @@ declare module "babylonjs-gui-editor/diagram/coordinateHelper" {
 declare module "babylonjs-gui-editor/diagram/workbench" {
     import * as React from "react";
     import { GlobalState } from "babylonjs-gui-editor/globalState";
-    import { Nullable } from "babylonjs/types";
     import { Control } from "babylonjs-gui/2D/controls/control";
     import { Vector2, Vector3 } from "babylonjs/Maths/math.vector";
     import { Scene } from "babylonjs/scene";
@@ -123,7 +122,6 @@ declare module "babylonjs-gui-editor/diagram/workbench" {
         private _mouseStartPointX;
         private _mouseStartPointY;
         _scene: Scene;
-        private _selectedGuiNodes;
         private _ctrlKeyIsPressed;
         private _altKeyIsPressed;
         private _constraintDirection;
@@ -140,7 +138,6 @@ declare module "babylonjs-gui-editor/diagram/workbench" {
         private _mainSelection;
         private _selectionDepth;
         private _doubleClick;
-        private _lockMainSelection;
         _liveGuiTextureRerender: boolean;
         private _anyControlClicked;
         private _visibleRegionContainer;
@@ -168,7 +165,7 @@ declare module "babylonjs-gui-editor/diagram/workbench" {
         private _getParentWithDepth;
         private _getMaxParent;
         constructor(props: IWorkbenchComponentProps);
-        determineMouseSelection(selection: Nullable<Control>): void;
+        determineMouseSelection(selection: Control): void;
         keyEvent: (evt: KeyboardEvent) => void;
         private _deleteSelectedNodes;
         copyToClipboard(copyFn: (content: string) => void): void;
@@ -240,13 +237,13 @@ declare module "babylonjs-gui-editor/globalState" {
         NONE = 3
     }
     export class GlobalState {
-        [x: string]: any;
         liveGuiTexture: Nullable<AdvancedDynamicTexture>;
         guiTexture: AdvancedDynamicTexture;
         hostElement: HTMLElement;
         hostDocument: HTMLDocument;
         hostWindow: Window;
-        onSelectionChangedObservable: Observable<Nullable<Control>>;
+        selectedControls: Control[];
+        onSelectionChangedObservable: Observable<void>;
         onResizeObservable: Observable<ISize>;
         onBuiltObservable: Observable<void>;
         onResetRequiredObservable: Observable<void>;
@@ -260,6 +257,7 @@ declare module "babylonjs-gui-editor/globalState" {
         onPopupClosedObservable: Observable<void>;
         private _backgroundColor;
         private _outlines;
+        isMultiSelecting: boolean;
         onOutlineChangedObservable: Observable<void>;
         blockKeyboardEvents: boolean;
         controlCamera: boolean;
@@ -305,10 +303,14 @@ declare module "babylonjs-gui-editor/globalState" {
         constructor();
         /** adds copy, cut and paste listeners to the host window */
         registerEventListeners(): void;
+        private _updateKeys;
         get backgroundColor(): Color3;
         set backgroundColor(value: Color3);
         get outlines(): boolean;
         set outlines(value: boolean);
+        select(control: Control): void;
+        setSelection(controls: Control[]): void;
+        isMultiSelectable(control: Control): boolean;
     }
 }
 declare module "babylonjs-gui-editor/sharedUiComponents/lines/buttonLineComponent" {
@@ -508,6 +510,19 @@ declare module "babylonjs-gui-editor/sharedUiComponents/lines/sliderLineComponen
         render(): JSX.Element;
     }
 }
+declare module "babylonjs-gui-editor/sharedUiComponents/lines/inputArrowsComponent" {
+    import * as React from "react";
+    interface IInputArrowsComponentProps {
+        incrementValue: (amount: number) => void;
+        setDragging: (dragging: boolean) => void;
+    }
+    export class InputArrowsComponent extends React.Component<IInputArrowsComponentProps> {
+        private _arrowsRef;
+        private _drag;
+        private _releaseListener;
+        render(): JSX.Element;
+    }
+}
 declare module "babylonjs-gui-editor/sharedUiComponents/lines/textInputLineComponent" {
     import * as React from "react";
     import { Observable } from "babylonjs/Misc/observable";
@@ -529,18 +544,25 @@ declare module "babylonjs-gui-editor/sharedUiComponents/lines/textInputLineCompo
         unit?: string;
         onUnitClicked?: (unit: string) => void;
         unitLocked?: boolean;
+        arrows?: boolean;
+        arrowsIncrement?: (amount: number) => void;
+        step?: number;
     }
     export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, {
         value: string;
+        dragging: boolean;
     }> {
         private _localChange;
         constructor(props: ITextInputLineComponentProps);
         componentWillUnmount(): void;
         shouldComponentUpdate(nextProps: ITextInputLineComponentProps, nextState: {
             value: string;
+            dragging: boolean;
         }): boolean;
         raiseOnPropertyChanged(newValue: string, previousValue: string): void;
         updateValue(value: string): void;
+        incrementValue(amount: number): void;
+        onKeyDown(event: React.KeyboardEvent): void;
         render(): JSX.Element;
     }
 }
@@ -753,10 +775,13 @@ declare module "babylonjs-gui-editor/components/propertyTab/propertyGrids/gui/co
         onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     }
     export class CommonControlPropertyGridComponent extends React.Component<ICommonControlPropertyGridComponentProps> {
+        private _onPropertyChangedObserver;
         constructor(props: ICommonControlPropertyGridComponentProps);
+        private _getTransformedReferenceCoordinate;
         private _updateAlignment;
         private _checkAndUpdateValues;
         private _markChildrenAsDirty;
+        componentWillUnmount(): void;
         render(): JSX.Element;
     }
 }
@@ -1172,16 +1197,12 @@ declare module "babylonjs-gui-editor/guiNodeTools" {
 declare module "babylonjs-gui-editor/components/propertyTab/propertyTabComponent" {
     import * as React from "react";
     import { GlobalState } from "babylonjs-gui-editor/globalState";
-    import { Nullable } from "babylonjs/types";
     import { Control } from "babylonjs-gui/2D/controls/control";
     import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
     interface IPropertyTabComponentProps {
         globalState: GlobalState;
     }
-    interface IPropertyTabComponentState {
-        currentNode: Nullable<Control>;
-    }
-    export class PropertyTabComponent extends React.Component<IPropertyTabComponentProps, IPropertyTabComponentState> {
+    export class PropertyTabComponent extends React.Component<IPropertyTabComponentProps> {
         private _onBuiltObserver;
         private _timerIntervalId;
         private _lockObject;
@@ -1526,12 +1547,11 @@ declare module "babylonjs-gui-editor/diagram/guiGizmoWrapper" {
     import { Observer } from "babylonjs/Misc/observable";
     import * as React from "react";
     import { GlobalState } from "babylonjs-gui-editor/globalState";
-    import { Control } from "babylonjs-gui/2D/controls/control";
     export interface IGizmoWrapperProps {
         globalState: GlobalState;
     }
     export class GizmoWrapper extends React.Component<IGizmoWrapperProps> {
-        observer: Nullable<Observer<Nullable<Control>>>;
+        observer: Nullable<Observer<void>>;
         componentWillMount(): void;
         componentWillUnmount(): void;
         render(): JSX.Element;
@@ -2550,7 +2570,6 @@ declare module GUIEDITOR {
         private _mouseStartPointX;
         private _mouseStartPointY;
         _scene: BABYLON.Scene;
-        private _selectedGuiNodes;
         private _ctrlKeyIsPressed;
         private _altKeyIsPressed;
         private _constraintDirection;
@@ -2567,7 +2586,6 @@ declare module GUIEDITOR {
         private _mainSelection;
         private _selectionDepth;
         private _doubleClick;
-        private _lockMainSelection;
         _liveGuiTextureRerender: boolean;
         private _anyControlClicked;
         private _visibleRegionContainer;
@@ -2595,7 +2613,7 @@ declare module GUIEDITOR {
         private _getParentWithDepth;
         private _getMaxParent;
         constructor(props: IWorkbenchComponentProps);
-        determineMouseSelection(selection: BABYLON.Nullable<Control>): void;
+        determineMouseSelection(selection: Control): void;
         keyEvent: (evt: KeyboardEvent) => void;
         private _deleteSelectedNodes;
         copyToClipboard(copyFn: (content: string) => void): void;
@@ -2656,13 +2674,13 @@ declare module GUIEDITOR {
         NONE = 3
     }
     export class GlobalState {
-        [x: string]: any;
         liveGuiTexture: BABYLON.Nullable<AdvancedDynamicTexture>;
         guiTexture: AdvancedDynamicTexture;
         hostElement: HTMLElement;
         hostDocument: HTMLDocument;
         hostWindow: Window;
-        onSelectionChangedObservable: BABYLON.Observable<BABYLON.Nullable<Control>>;
+        selectedControls: Control[];
+        onSelectionChangedObservable: BABYLON.Observable<void>;
         onResizeObservable: BABYLON.Observable<BABYLON.ISize>;
         onBuiltObservable: BABYLON.Observable<void>;
         onResetRequiredObservable: BABYLON.Observable<void>;
@@ -2676,6 +2694,7 @@ declare module GUIEDITOR {
         onPopupClosedObservable: BABYLON.Observable<void>;
         private _backgroundColor;
         private _outlines;
+        isMultiSelecting: boolean;
         onOutlineChangedObservable: BABYLON.Observable<void>;
         blockKeyboardEvents: boolean;
         controlCamera: boolean;
@@ -2721,10 +2740,14 @@ declare module GUIEDITOR {
         constructor();
         /** adds copy, cut and paste listeners to the host window */
         registerEventListeners(): void;
+        private _updateKeys;
         get backgroundColor(): BABYLON.Color3;
         set backgroundColor(value: BABYLON.Color3);
         get outlines(): boolean;
         set outlines(value: boolean);
+        select(control: Control): void;
+        setSelection(controls: Control[]): void;
+        isMultiSelectable(control: Control): boolean;
     }
 }
 declare module GUIEDITOR {
@@ -2909,6 +2932,18 @@ declare module GUIEDITOR {
     }
 }
 declare module GUIEDITOR {
+    interface IInputArrowsComponentProps {
+        incrementValue: (amount: number) => void;
+        setDragging: (dragging: boolean) => void;
+    }
+    export class InputArrowsComponent extends React.Component<IInputArrowsComponentProps> {
+        private _arrowsRef;
+        private _drag;
+        private _releaseListener;
+        render(): JSX.Element;
+    }
+}
+declare module GUIEDITOR {
     interface ITextInputLineComponentProps {
         label: string;
         lockObject: LockObject;
@@ -2925,18 +2960,25 @@ declare module GUIEDITOR {
         unit?: string;
         onUnitClicked?: (unit: string) => void;
         unitLocked?: boolean;
+        arrows?: boolean;
+        arrowsIncrement?: (amount: number) => void;
+        step?: number;
     }
     export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, {
         value: string;
+        dragging: boolean;
     }> {
         private _localChange;
         constructor(props: ITextInputLineComponentProps);
         componentWillUnmount(): void;
         shouldComponentUpdate(nextProps: ITextInputLineComponentProps, nextState: {
             value: string;
+            dragging: boolean;
         }): boolean;
         raiseOnPropertyChanged(newValue: string, previousValue: string): void;
         updateValue(value: string): void;
+        incrementValue(amount: number): void;
+        onKeyDown(event: React.KeyboardEvent): void;
         render(): JSX.Element;
     }
 }
@@ -3131,10 +3173,13 @@ declare module GUIEDITOR {
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
     }
     export class CommonControlPropertyGridComponent extends React.Component<ICommonControlPropertyGridComponentProps> {
+        private _onPropertyChangedObserver;
         constructor(props: ICommonControlPropertyGridComponentProps);
+        private _getTransformedReferenceCoordinate;
         private _updateAlignment;
         private _checkAndUpdateValues;
         private _markChildrenAsDirty;
+        componentWillUnmount(): void;
         render(): JSX.Element;
     }
 }
@@ -3433,10 +3478,7 @@ declare module GUIEDITOR {
     interface IPropertyTabComponentProps {
         globalState: GlobalState;
     }
-    interface IPropertyTabComponentState {
-        currentNode: BABYLON.Nullable<Control>;
-    }
-    export class PropertyTabComponent extends React.Component<IPropertyTabComponentProps, IPropertyTabComponentState> {
+    export class PropertyTabComponent extends React.Component<IPropertyTabComponentProps> {
         private _onBuiltObserver;
         private _timerIntervalId;
         private _lockObject;
@@ -3748,7 +3790,7 @@ declare module GUIEDITOR {
         globalState: GlobalState;
     }
     export class GizmoWrapper extends React.Component<IGizmoWrapperProps> {
-        observer: BABYLON.Nullable<BABYLON.Observer<BABYLON.Nullable<Control>>>;
+        observer: BABYLON.Nullable<BABYLON.Observer<void>>;
         componentWillMount(): void;
         componentWillUnmount(): void;
         render(): JSX.Element;
