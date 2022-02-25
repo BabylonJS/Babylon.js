@@ -63,13 +63,13 @@ export class GlobalState {
         compileMaterials: false,
         compileShadowGenerators: false,
         coordinateSystemMode: typeof GLTFLoaderCoordinateSystemMode !== 'undefined' ? GLTFLoaderCoordinateSystemMode.AUTO : 0,
-        createInstances: false,
+        createInstances: true,
         loadAllMaterials: false,
         loggingEnabled: false,
         targetFps: 60,
         transparencyAsCoverage: false,
         useClipPlane: false,
-        useSRGBBuffers: false,
+        useSRGBBuffers: true,
     };
 
     public glTFLoaderExtensions: { [key: string]: import("babylonjs-loaders/glTF/index").IGLTFLoaderExtension } = {};

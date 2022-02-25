@@ -447,7 +447,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
     onCreate(value: string): Control {
         let guiElement = GUINodeTools.CreateControlFromString(value);
         let newGuiNode = this.props.globalState.workbench.appendBlock(guiElement);
-        this.props.globalState.onSelectionChangedObservable.notifyObservers(newGuiNode);
+        this.props.globalState.select(newGuiNode);
         this.props.globalState.onPointerUpObservable.notifyObservers(null);
         this.forceUpdate();
         return newGuiNode;
