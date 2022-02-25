@@ -18,7 +18,8 @@ export class TouchButton3D extends Button3D {
 
     // 'front' direction. If Vector3.Zero, there is no front and all directions of interaction are accepted
     private _collidableFrontDirection: Vector3;
-    protected _isNearPressed = false;
+    private _isNearPressed = false;
+    private _interactionSurfaceHeight = 0;
 
     private _isToggleButton = false;
     private _toggleState = false;
@@ -42,6 +43,13 @@ export class TouchButton3D extends Button3D {
         if (collisionMesh) {
             this.collisionMesh = collisionMesh;
         }
+    }
+
+    /**
+     * Whether the current interaction is caused by near interaction or not
+     */
+    public get isActiveNearInteraction() {
+        return this._isNearPressed;
     }
 
     /**
@@ -157,6 +165,19 @@ export class TouchButton3D extends Button3D {
         return this._getInteractionHeight(collidablePos, this._collisionMesh.getAbsolutePosition()) > 0;
     }
 
+    /**
+     * Get the height of the touchPoint from the collidable part of the button
+     * @param touchPoint the point to compare to the button, in absolute position
+     * @returns the depth of the touch point into the front of the button
+     */
+    public getPressDepth(touchPoint: Vector3) {
+        if (!this._isNearPressed) {
+            return 0;
+        }
+        var interactionHeight = this._getInteractionHeight(touchPoint, this._collisionMesh.getAbsolutePosition());
+        return this._interactionSurfaceHeight - interactionHeight;
+    }
+
     // Returns true if the collidable is in front of the button, or if the button has no front direction
     protected _getInteractionHeight(interactionPos: Vector3, basePos: Vector3) {
         const frontDir = this.collidableFrontDirection;
@@ -179,6 +200,7 @@ export class TouchButton3D extends Button3D {
             }
             else {
                 this._isNearPressed = true;
+                this._interactionSurfaceHeight = this._getInteractionHeight(nearMeshPosition, this._collisionMesh.getAbsolutePosition());
             }
         }
         if (providedType === PointerEventTypes.POINTERUP) {

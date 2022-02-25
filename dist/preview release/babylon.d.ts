@@ -14261,6 +14261,16 @@ declare module BABYLON {
          */
         get vertexShaderName(): string;
         /**
+         * Gets the vertex buffers used by the particle system
+         */
+        get vertexBuffers(): Immutable<{
+            [key: string]: VertexBuffer;
+        }>;
+        /**
+         * Gets the index buffer used by the particle system (or null if no index buffer is used (if _useInstancing=true))
+         */
+        get indexBuffer(): Nullable<DataBuffer>;
+        /**
          * Instantiates a particle system.
          * Particles are often small sprites used to simulate hard-to-reproduce phenomena like fire, smoke, water, or abstract visual effects like magic glitter and faery dust.
          * @param name The name of the particle system
@@ -18630,6 +18640,7 @@ declare module BABYLON {
         customCode?: ShaderCustomProcessingFunction;
         uniforms: string[];
         samplers: string[];
+        uniformBuffersNames: string[];
     };
     /** @hidden */
     export type MaterialPluginPrepareDefines = {
@@ -30872,7 +30883,7 @@ declare module BABYLON {
          */
         merge(others: VertexData | VertexData[], use32BitsIndices?: boolean): VertexData;
         /** @hidden */
-        _mergeCoroutine(others: VertexData | VertexData[], use32BitsIndices: boolean | undefined, isAsync: boolean): Coroutine<VertexData>;
+        _mergeCoroutine(transform: Matrix | undefined, vertexDatas: (readonly [vertexData: VertexData, transform?: Matrix])[], use32BitsIndices: boolean | undefined, isAsync: boolean): Coroutine<VertexData>;
         private static _mergeElement;
         private _validate;
         /**
@@ -32231,6 +32242,7 @@ declare module BABYLON {
         protected _fragmentDeclaration: string;
         protected _uniformList: string[];
         protected _samplerList: string[];
+        protected _uboList: string[];
         /**
          * Creates a new instance of the plugin manager
          * @param material material that this manager will manage the plugins for
@@ -32421,6 +32433,11 @@ declare module BABYLON {
          * @param samplers list that the sampler names should be added to.
          */
         getSamplers(samplers: string[]): void;
+        /**
+         * Gets the uniform buffers names added by the plugin.
+         * @param ubos list that the ubo names should be added to.
+         */
+        getUniformBuffersNames(ubos: string[]): void;
         /**
          * Gets the description of the uniforms to add to the ubo (if engine supports ubos) or to inject directly in the vertex/fragment shaders (if engine does not support ubos)
          * @returns the description of the uniforms
