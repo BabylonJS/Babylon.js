@@ -36,6 +36,9 @@ export enum ConstraintDirection {
     Y = 3, // Vertical constraint
 }
 
+const ARROW_KEY_MOVEMENT_SMALL = 1; // px
+const ARROW_KEY_MOVEMENT_LARGE = 5; // px
+
 export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps> {
     private _rootContainer: React.RefObject<HTMLCanvasElement>;
     private _setConstraintDirection: boolean = false;
@@ -976,24 +979,16 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                     this.globalState.onFitToWindowObservable.notifyObservers();
                     break;
                 case "ArrowUp": // move up
-                case "W":
-                case "w":
-                    this.moveControls(false, k.event.shiftKey ? -5 : -1);
+                    this.moveControls(false, k.event.shiftKey ? -ARROW_KEY_MOVEMENT_LARGE : -ARROW_KEY_MOVEMENT_SMALL);
                     break;
                 case "ArrowDown": // move down
-                case "S":
-                case "s":
-                    this.moveControls(false, k.event.shiftKey ? 5 : 1);
+                    this.moveControls(false, k.event.shiftKey ? ARROW_KEY_MOVEMENT_LARGE : ARROW_KEY_MOVEMENT_SMALL);
                     break;
                 case "ArrowLeft": // move left
-                case "A":
-                case "a":
-                    this.moveControls(true, k.event.shiftKey ? -5 : -1);
+                    this.moveControls(true, k.event.shiftKey ? -ARROW_KEY_MOVEMENT_LARGE : -ARROW_KEY_MOVEMENT_SMALL);
                     break;
                 case "ArrowRight": // move right
-                case "D":
-                case "d":
-                    this.moveControls(true, k.event.shiftKey ? 5 : 1);
+                    this.moveControls(true, k.event.shiftKey ? ARROW_KEY_MOVEMENT_LARGE : ARROW_KEY_MOVEMENT_SMALL);
                 default:
                     break;
             }
@@ -1036,9 +1031,9 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
     // Move the selected controls. Can be either on horizontal (leftInPixels) or 
     // vertical (topInPixels) direction
-    moveControls(horizontal: boolean, amount: number) {
+    moveControls(moveHorizontal: boolean, amount: number) {
         for (let selectedControl of this.props.globalState.workbench.selectedGuiNodes) {
-            if (horizontal) {
+            if (moveHorizontal) { // move horizontal
                 const prevValue = selectedControl.leftInPixels;
                 selectedControl.leftInPixels += amount;
                 this.props.globalState.onPropertyChangedObservable.notifyObservers({
@@ -1048,7 +1043,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                     initialValue: prevValue
                 });
                 this.props.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
-            } else {
+            } else { // move vertical
                 const prevValue = selectedControl.topInPixels;
                 selectedControl.topInPixels += amount;
                 this.props.globalState.onPropertyChangedObservable.notifyObservers({
