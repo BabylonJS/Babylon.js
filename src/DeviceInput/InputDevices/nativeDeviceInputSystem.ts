@@ -1,17 +1,18 @@
+import { IUIEvent } from "../..";
 import { Nullable } from "../../types";
 import { DeviceEventFactory } from "../Helpers/eventFactory";
 import { DeviceType, PointerInput } from "./deviceEnums";
-import { IDeviceEvent, IDeviceInputSystem, INativeInput } from "./inputInterfaces";
+import { IDeviceInputSystem } from "./inputInterfaces";
 
 /** @hidden */
 export class NativeDeviceInputSystem implements IDeviceInputSystem {
     public onDeviceConnected = (deviceType: DeviceType, deviceSlot: number) => { };
     public onDeviceDisconnected = (deviceType: DeviceType, deviceSlot: number) => { };
-    public onInputChanged = (deviceEvent: IDeviceEvent) => { };
+    public onInputChanged = (deviceType: DeviceType, deviceSlot: number, inputIndex: number, previousState: Nullable<number>, currentState: Nullable<number>, eventData?: any) => { };
 
-    private readonly _nativeInput: INativeInput;
+    private readonly _nativeInput: IDeviceInputSystem;
 
-    public constructor(nativeInput?: INativeInput) {
+    public constructor(nativeInput?: IDeviceInputSystem) {
         this._nativeInput = nativeInput || this._createDummyNativeInput();
 
         this._nativeInput.onDeviceConnected = (deviceType, deviceSlot) => {
@@ -26,14 +27,7 @@ export class NativeDeviceInputSystem implements IDeviceInputSystem {
             const idx = (inputIndex === PointerInput.Horizontal || inputIndex === PointerInput.Vertical || inputIndex === PointerInput.DeltaHorizontal || inputIndex === PointerInput.DeltaVertical) ? PointerInput.Move : inputIndex;
             const evt = DeviceEventFactory.CreateDeviceEvent(deviceType, deviceSlot, inputIndex, currentState, this);
 
-            let deviceEvent = evt as IDeviceEvent;
-            deviceEvent.deviceType = deviceType;
-            deviceEvent.deviceSlot = deviceSlot;
-            deviceEvent.inputIndex = idx;
-            deviceEvent.previousState = previousState;
-            deviceEvent.currentState = currentState;
-
-            this.onInputChanged(deviceEvent);
+            this.onInputChanged(deviceType, deviceSlot, idx, previousState, currentState, evt);
         };
     }
 
@@ -76,7 +70,7 @@ export class NativeDeviceInputSystem implements IDeviceInputSystem {
         let nativeInput = {
             onDeviceConnected: (deviceType: DeviceType, deviceSlot: number) => { },
             onDeviceDisconnected: (deviceType: DeviceType, deviceSlot: number) => { },
-            onInputChanged: (deviceType: DeviceType, deviceSlot: number, inputIndex: number, previousState: Nullable<number>, currentState: Nullable<number>, eventData?: any) => { },
+            onInputChanged: (deviceType: DeviceType, deviceSlot: number, inputIndex: number, previousState: Nullable<number>, currentState: Nullable<number>, eventData?: IUIEvent) => { },
             pollInput: () => { return 0; },
             isDeviceAvailable: () => { return false; },
             dispose: () => { },

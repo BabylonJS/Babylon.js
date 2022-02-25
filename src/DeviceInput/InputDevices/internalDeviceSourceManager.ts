@@ -2,12 +2,13 @@ import { IDisposable } from '../../scene';
 import { DeviceType } from './deviceEnums';
 import { Nullable } from '../../types';
 import { Observable } from '../../Misc/observable';
-import { IDeviceEvent, IDeviceInputSystem } from './inputInterfaces';
+import { IDeviceInputSystem } from './inputInterfaces';
 import { NativeDeviceInputSystem } from './nativeDeviceInputSystem';
 import { WebDeviceInputSystem } from './webDeviceInputSystem';
 import { DeviceSource } from './deviceSource';
 import { INative } from '../../Engines/Native/nativeInterfaces';
 import { Engine } from '../../Engines/engine';
+import { IUIEvent } from '../../Events/deviceInputEvents';
 
 declare const _native: INative;
 
@@ -21,7 +22,7 @@ declare module "../../Engines/engine" {
 /** @hidden */
 export interface IObservableManager {
     onDeviceConnectedObservable: Observable<DeviceSource<DeviceType>>;
-    onInputChangedObservable: Observable<IDeviceEvent>;
+    onInputChangedObservable: Observable<IUIEvent>;
     onDeviceDisconnectedObservable: Observable<DeviceSource<DeviceType>>;
 }
 
@@ -64,9 +65,11 @@ export class InternalDeviceSourceManager implements IDisposable {
             }
         };
 
-        this._deviceInputSystem.onInputChanged = (deviceEvent) => {
-            for (const manager of this._registeredManagers) {
-                manager.onInputChangedObservable.notifyObservers(deviceEvent);
+        this._deviceInputSystem.onInputChanged = (deviceType: DeviceType, deviceSlot: number, inputIndex: number, previousState: Nullable<number>, currentState: Nullable<number>, eventData?: IUIEvent) => {
+            if (eventData) {
+                for (const manager of this._registeredManagers) {
+                    manager.onInputChangedObservable.notifyObservers(eventData);
+                }
             }
         };
     }

@@ -26,6 +26,7 @@ import "./Extensions/engine.readTexture";
 import "./Extensions/engine.dynamicBuffer";
 import { IAudioEngine } from '../Audio/Interfaces/IAudioEngine';
 import { IPointerEvent } from "../Events/deviceInputEvents";
+import { DeviceType, PointerInput } from "../DeviceInput/InputDevices/deviceEnums";
 
 declare type Material = import("../Materials/material").Material;
 declare type PostProcess = import("../PostProcesses/postProcess").PostProcess;
@@ -654,7 +655,11 @@ export class Engine extends ThinEngine {
             // Check that the element at the point of the pointer out isn't the canvas and if it isn't, notify observers
             // Note: This is a workaround for a bug with Safari
             if (document.elementFromPoint(ev.clientX, ev.clientY) !== canvas) {
-                this.onCanvasPointerOutObservable.notifyObservers(ev);
+                let evt: any = ev;
+                evt.deviceType = evt.pointerType === "mouse" ? DeviceType.Mouse : DeviceType.Touch;
+                evt.deviceSlot = evt.pointerId || 0;
+                evt.inputIndex = PointerInput.Move;
+                this.onCanvasPointerOutObservable.notifyObservers(evt);
             }
         };
 

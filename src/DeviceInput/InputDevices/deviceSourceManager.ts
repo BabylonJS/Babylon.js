@@ -2,11 +2,11 @@ import { Engine } from '../../Engines/engine';
 import { DeviceType } from './deviceEnums';
 import { Nullable } from '../../types';
 import { Observable, Observer } from '../../Misc/observable';
-import { IDeviceEvent } from './inputInterfaces';
 import { DeviceSource } from './deviceSource';
 import { InternalDeviceSourceManager } from './internalDeviceSourceManager';
 import { IDisposable } from '../../scene';
 import { ThinEngine } from '../../Engines/thinEngine';
+import { IUIEvent } from '../../Events/deviceInputEvents';
 
 /**
  * Class to keep track of devices
@@ -20,7 +20,7 @@ export class DeviceSourceManager implements IDisposable {
     /**
      * Observable to be triggered when a device's input is changed
      */
-    public readonly onInputChangedObservable: Observable<IDeviceEvent>;
+    public readonly onInputChangedObservable: Observable<IUIEvent>;
     /**
      * Observable to be triggered when after a device is disconnected
      */
@@ -79,7 +79,7 @@ export class DeviceSourceManager implements IDisposable {
                 this.onDeviceConnectedObservable.notifyObserver(observer, device);
             });
         });
-        this.onInputChangedObservable = new Observable<IDeviceEvent>();
+        this.onInputChangedObservable = new Observable<IUIEvent>();
         this.onDeviceDisconnectedObservable = new Observable<DeviceSource<DeviceType>>();
 
         this._engine._deviceSourceManager.registerManager(this);

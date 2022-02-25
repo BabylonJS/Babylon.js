@@ -1,3 +1,5 @@
+import { DeviceType } from "../DeviceInput/InputDevices/deviceEnums";
+
 /**
  * Event Types
  */
@@ -14,8 +16,21 @@ export enum DeviceInputEventType {
 /**
  * Native friendly interface for Event Object
  */
-export interface IEvent {
+export interface IUIEvent {
     // Properties
+    /**
+     * Device type
+     */
+    deviceType: DeviceType;
+    /**
+     * Device slot
+     */
+    deviceSlot: number;
+    /**
+     * Input array index
+     */
+    inputIndex: number;
+
     /**
      * Current target for an event
      */
@@ -45,31 +60,15 @@ export interface IEvent {
 }
 
 /**
- * Native friendly interface for UIEvent Object
- */
-export interface IUIEvent extends IEvent {
-    // Properties
-    /**
-     * Provides current click count
-     */
-    detail: number;
-
-    /**
-     * Horizontal coordinate of event
-     */
-    pageX: number;
-
-    /**
-     * Vertical coordinate of event
-     */
-    pageY: number;
-}
-
-/**
  * Native friendly interface for KeyboardEvent Object
  */
 export interface IKeyboardEvent extends IUIEvent {
     // Properties
+    /**
+     * DeviceType
+     */
+    deviceType: DeviceType.Keyboard;
+
     /**
      * Status of Alt key being pressed
      */
@@ -118,6 +117,11 @@ export interface IKeyboardEvent extends IUIEvent {
 export interface IMouseEvent extends IUIEvent {
     // Properties
     /**
+     * DeviceType
+     */
+    deviceType: DeviceType.Mouse | DeviceType.Touch;
+
+    /**
      * Status of Alt key being pressed
      */
     altKey: boolean;
@@ -146,6 +150,11 @@ export interface IMouseEvent extends IUIEvent {
      * Status of Ctrl key being pressed
      */
     ctrlKey: boolean;
+
+    /**
+     * Provides current click count
+     */
+    detail?: number;
 
     /**
      * Status of Meta key (eg. Windows key) being pressed
@@ -193,6 +202,16 @@ export interface IMouseEvent extends IUIEvent {
     offsetY: number;
 
     /**
+     * Horizontal coordinate of event
+     */
+    pageX: number;
+
+    /**
+     * Vertical coordinate of event
+     */
+    pageY: number;
+
+    /**
      * Status of Shift key being pressed
      */
     shiftKey: boolean;
@@ -224,6 +243,11 @@ export interface IMouseEvent extends IUIEvent {
 export interface IPointerEvent extends IMouseEvent {
     // Properties
     /**
+     * DeviceType
+     */
+    deviceType: DeviceType.Mouse | DeviceType.Touch;
+
+    /**
      * Pointer Event ID
      */
     pointerId: number;
@@ -239,6 +263,11 @@ export interface IPointerEvent extends IMouseEvent {
  */
 export interface IWheelEvent extends IMouseEvent {
     // Properties
+    /**
+     * DeviceType
+     */
+    deviceType: DeviceType.Mouse;
+
     /**
      * Units for delta value
      */

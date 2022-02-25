@@ -9,7 +9,7 @@ import { Constants } from "../Engines/constants";
 import { ActionEvent } from "../Actions/actionEvent";
 import { KeyboardEventTypes, KeyboardInfoPre, KeyboardInfo } from "../Events/keyboardEvents";
 import { DeviceType, PointerInput } from "../DeviceInput/InputDevices/deviceEnums";
-import { IEvent, IKeyboardEvent, IMouseEvent, IPointerEvent, IWheelEvent } from "../Events/deviceInputEvents";
+import { IUIEvent, IKeyboardEvent, IMouseEvent, IPointerEvent, IWheelEvent } from "../Events/deviceInputEvents";
 import { DeviceSourceManager } from "../DeviceInput/InputDevices/deviceSourceManager";
 import { EngineStore } from "../Engines/engineStore";
 
@@ -267,7 +267,10 @@ export class InputManager {
      * @param pointerEventInit pointer event state to be used when simulating the pointer event (eg. pointer id for multitouch)
      */
     public simulatePointerMove(pickResult: PickingInfo, pointerEventInit?: PointerEventInit): void {
-        let evt = new PointerEvent("pointermove", pointerEventInit);
+        let evt: any = new PointerEvent("pointermove", pointerEventInit);
+        evt.deviceType = evt.pointerType === "mouse" ? DeviceType.Mouse : DeviceType.Touch;
+        evt.deviceSlot = evt.pointerId || 0;
+        evt.inputIndex = PointerInput.Move;
 
         if (this._checkPrePointerObservable(pickResult, evt, PointerEventTypes.POINTERMOVE)) {
             return;
@@ -282,7 +285,10 @@ export class InputManager {
      * @param pointerEventInit pointer event state to be used when simulating the pointer event (eg. pointer id for multitouch)
      */
     public simulatePointerDown(pickResult: PickingInfo, pointerEventInit?: PointerEventInit): void {
-        let evt = new PointerEvent("pointerdown", pointerEventInit);
+        let evt: any = new PointerEvent("pointerdown", pointerEventInit);
+        evt.deviceType = evt.pointerType === "mouse" ? DeviceType.Mouse : DeviceType.Touch;
+        evt.deviceSlot = evt.pointerId || 0;
+        evt.inputIndex = evt.button + 2;
 
         if (this._checkPrePointerObservable(pickResult, evt, PointerEventTypes.POINTERDOWN)) {
             return;
@@ -376,7 +382,10 @@ export class InputManager {
      * @param doubleTap indicates that the pointer up event should be considered as part of a double click (false by default)
      */
     public simulatePointerUp(pickResult: PickingInfo, pointerEventInit?: PointerEventInit, doubleTap?: boolean): void {
-        let evt = new PointerEvent("pointerup", pointerEventInit);
+        let evt: any = new PointerEvent("pointerup", pointerEventInit);
+        evt.deviceType = evt.pointerType === "mouse" ? DeviceType.Mouse : DeviceType.Touch;
+        evt.deviceSlot = evt.pointerId || 0;
+        evt.inputIndex = PointerInput.Move;
         let clickInfo = new _ClickInfo();
 
         if (doubleTap) {
@@ -850,25 +859,25 @@ export class InputManager {
         };
 
         this._deviceSourceManager.onInputChangedObservable.add((eventData) => {
-            const evt: IEvent = eventData;
+            const evt: IUIEvent = eventData;
             // Keyboard Events
             if (eventData.deviceType === DeviceType.Keyboard) {
-                if (eventData.currentState === 1) {
+                if (eventData.type === "keydown") {
                     this._onKeyDown(evt as IKeyboardEvent);
                 }
 
-                if (eventData.currentState === 0) {
+                if (eventData.type === "keyup") {
                     this._onKeyUp(evt as IKeyboardEvent);
                 }
             }
 
             // Pointer Events
             if (eventData.deviceType === DeviceType.Mouse || eventData.deviceType === DeviceType.Touch) {
-                if (attachDown && eventData.inputIndex >= PointerInput.LeftClick && eventData.inputIndex <= PointerInput.RightClick && eventData.currentState === 1) {
+                if (attachDown && eventData.inputIndex >= PointerInput.LeftClick && eventData.inputIndex <= PointerInput.RightClick && eventData.type.indexOf("down") !== -1) {
                     this._onPointerDown(evt as IPointerEvent);
                 }
 
-                if (attachUp && eventData.inputIndex >= PointerInput.LeftClick && eventData.inputIndex <= PointerInput.RightClick && eventData.currentState === 0) {
+                if (attachUp && eventData.inputIndex >= PointerInput.LeftClick && eventData.inputIndex <= PointerInput.RightClick && eventData.type.indexOf("up") !== -1) {
                     this._onPointerUp(evt as IPointerEvent);
                 }
 

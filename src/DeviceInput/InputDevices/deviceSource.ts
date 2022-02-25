@@ -1,7 +1,8 @@
 import { DeviceType } from './deviceEnums';
 import { Observable } from '../../Misc/observable';
 import { DeviceInput } from './deviceTypes';
-import { IDeviceEvent, IDeviceInputSystem } from './inputInterfaces';
+import { IDeviceInputSystem } from './inputInterfaces';
+import { IUIEvent } from '../../Events/deviceInputEvents';
 
 /**
  * Class that handles all input for a specific device
@@ -11,7 +12,7 @@ import { IDeviceEvent, IDeviceInputSystem } from './inputInterfaces';
     /**
      * Observable to handle device input changes per device
      */
-    public readonly onInputChangedObservable = new Observable<IDeviceEvent>();
+    public readonly onInputChangedObservable = new Observable<IUIEvent>();
 
     // Private Members
     private readonly _deviceInputSystem: IDeviceInputSystem;

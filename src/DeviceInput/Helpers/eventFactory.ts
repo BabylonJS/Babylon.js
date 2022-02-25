@@ -1,5 +1,5 @@
 import { Constants } from "../../Engines/constants";
-import { EventConstants, IEvent } from "../../Events/deviceInputEvents";
+import { EventConstants, IUIEvent } from "../../Events/deviceInputEvents";
 import { Nullable } from "../../types";
 import { DeviceType, PointerInput } from "../InputDevices/deviceEnums";
 import { IDeviceInputSystem } from "../InputDevices/inputInterfaces";
@@ -19,7 +19,7 @@ export class DeviceEventFactory {
      * @param elementToAttachTo HTMLElement to reference as target for inputs
      * @returns IEvent object
      */
-    public static CreateDeviceEvent(deviceType: DeviceType, deviceSlot: number, inputIndex: number, currentState: Nullable<number>, deviceInputSystem: IDeviceInputSystem, elementToAttachTo?: any): IEvent {
+    public static CreateDeviceEvent(deviceType: DeviceType, deviceSlot: number, inputIndex: number, currentState: Nullable<number>, deviceInputSystem: IDeviceInputSystem, elementToAttachTo?: any): IUIEvent {
         switch (deviceType) {
             case DeviceType.Keyboard:
                 return this._createKeyboardEvent(inputIndex, currentState, deviceInputSystem, elementToAttachTo);
@@ -49,10 +49,12 @@ export class DeviceEventFactory {
         const evt = this._createMouseEvent(deviceType, deviceSlot, inputIndex, currentState, deviceInputSystem, elementToAttachTo);
 
         if (deviceType === DeviceType.Mouse) {
+            evt.deviceType = DeviceType.Mouse;
             evt.pointerId = 1;
             evt.pointerType = "mouse";
         }
         else {
+            evt.deviceType = DeviceType.Touch;
             evt.pointerId = deviceSlot;
             evt.pointerType = "touch";
         }
@@ -135,6 +137,7 @@ export class DeviceEventFactory {
     private static _createKeyboardEvent(inputIndex: number, currentState: Nullable<number>, deviceInputSystem: IDeviceInputSystem, elementToAttachTo?: any): any {
         const evt = this._createEvent(elementToAttachTo);
         this._checkNonCharacterKeys(evt, deviceInputSystem);
+        evt.deviceType = DeviceType.Keyboard;
 
         evt.type = currentState === 1 ? "keydown" : "keyup";
         evt.key = String.fromCharCode(inputIndex);
