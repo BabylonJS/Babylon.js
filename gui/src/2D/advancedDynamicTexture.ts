@@ -45,9 +45,6 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     private _resizeObserver: Nullable<Observer<Engine>>;
     private _preKeyboardObserver: Nullable<Observer<KeyboardInfoPre>>;
     private _pointerMoveObserver: Nullable<Observer<PointerInfoPre>>;
-    // private _cameraViewMatrixChangedObserver: Nullable<Observer<Camera>>;
-    // private _cameraChangedObserver: Nullable<Observer<Scene>>;
-    // private _camera: Nullable<Camera>;
     private _sceneRenderObserver: Nullable<Observer<Scene>>;
     private _pointerObserver: Nullable<Observer<PointerInfo>>;
     private _canvasPointerOutObserver: Nullable<Observer<IPointerEvent>>;
@@ -552,12 +549,6 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         if (this._sceneRenderObserver) {
             scene.onBeforeRenderObservable.remove(this._sceneRenderObserver);
         }
-        // if (this._camera && this._cameraViewMatrixChangedObserver) {
-        //     this._camera?.onViewMatrixChangedObservable.remove(this._cameraViewMatrixChangedObserver);
-        // }
-        // if (this._cameraChangedObserver) {
-        //     scene.onActiveCameraChanged.remove(this._cameraChangedObserver);
-        // }
         if (this._pointerObserver) {
             scene.onPointerObservable.remove(this._pointerObserver);
         }
@@ -856,7 +847,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
                 pi.skipOnPointerObservable = this._shouldBlockPointer;
             }
         } else {
-            this._doPicking(x, y, null, PointerEventTypes.POINTERMOVE, 0, this._defaultMousePointerId);
+            this._doPicking(x, y, null, PointerEventTypes.POINTERMOVE, this._defaultMousePointerId, 0);
         }
         // if overridden by a rig camera - reset back to the original value
         scene.cameraToUseForPointers = originalCameraToUseForPointers;
@@ -890,7 +881,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
 
             this._translateToPicking(scene, tempViewport, pi);
         });
-        this._attachToCameraView(scene, () => this._translateToPicking(scene, tempViewport, null), false);
+        this._attachPickingToSceneRender(scene, () => this._translateToPicking(scene, tempViewport, null), false);
         this._attachToOnPointerOut(scene);
         this._attachToOnBlur(scene);
     }
@@ -1006,7 +997,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             }
         });
         mesh.enablePointerMoveEvents = supportPointerMove;
-        this._attachToCameraView(scene, () => {
+        this._attachPickingToSceneRender(scene, () => {
             const pointerId = this._defaultMousePointerId;
             const pick = scene?.pick(scene.pointerX, scene.pointerY);
             if (pick && pick.hit && pick.pickedMesh === mesh) {
@@ -1020,8 +1011,6 @@ export class AdvancedDynamicTexture extends DynamicTexture {
                         PointerEventTypes.POINTERMOVE,
                         pointerId,
                         0,
-                        0,
-                        0
                     );
                 }
             } else {
@@ -1059,7 +1048,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             }
         }
     }
-    private _attachToCameraView(scene: Scene, pickFunction: () => void, forcePicking: boolean) {
+    private _attachPickingToSceneRender(scene: Scene, pickFunction: () => void, forcePicking: boolean) {
         this._sceneRenderObserver = scene.onBeforeRenderObservable.add(() => {
             if (!this.checkPointerEveryFrame) return;
             if (this._linkedControls.length > 0 || forcePicking) {
