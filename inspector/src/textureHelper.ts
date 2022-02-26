@@ -24,7 +24,7 @@ export class TextureHelper {
         let lodPostProcess: PostProcess;
 
         if (!texture.isCube) {
-            lodPostProcess = new PostProcess("lod", "lod", ["lod"], null, 1.0, null, Texture.NEAREST_NEAREST_MIPNEAREST, engine);
+            lodPostProcess = new PostProcess("lod", "lod", ["lod", "gamma"], null, 1.0, null, Texture.NEAREST_NEAREST_MIPNEAREST, engine);
         } else {
             const faceDefines = [
                 "#define POSITIVEX",
@@ -34,7 +34,7 @@ export class TextureHelper {
                 "#define POSITIVEZ",
                 "#define NEGATIVEZ",
             ];
-            lodPostProcess = new PostProcess("lodCube", "lodCube", ["lod"], null, 1.0, null, Texture.NEAREST_NEAREST_MIPNEAREST, engine, false, faceDefines[face]);
+            lodPostProcess = new PostProcess("lodCube", "lodCube", ["lod", "gamma"], null, 1.0, null, Texture.NEAREST_NEAREST_MIPNEAREST, engine, false, faceDefines[face]);
         }
 
         if (!lodPostProcess.getEffect().isReady()) {
@@ -60,6 +60,7 @@ export class TextureHelper {
         lodPostProcess.onApply = function (effect) {
             effect.setTexture("textureSampler", texture);
             effect.setFloat("lod", lod);
+            effect.setBool("gamma", texture.gammaSpace)
         };
 
         const internalTexture = texture.getInternalTexture();
