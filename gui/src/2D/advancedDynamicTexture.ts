@@ -1050,7 +1050,9 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     }
     private _attachPickingToSceneRender(scene: Scene, pickFunction: () => void, forcePicking: boolean) {
         this._sceneRenderObserver = scene.onBeforeRenderObservable.add(() => {
-            if (!this.checkPointerEveryFrame) return;
+            if (!this.checkPointerEveryFrame) {
+                return;
+            }
             if (this._linkedControls.length > 0 || forcePicking) {
                 pickFunction();
             }
