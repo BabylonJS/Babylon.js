@@ -35,7 +35,6 @@ export class ButtonPropertyGridComponent extends React.Component<IButtonProperty
                 <CommonControlPropertyGridComponent lockObject={lockObject} controls={rectangles} onPropertyChangedObservable={onPropertyChangedObservable} />
                 <hr />
                 <TextLineComponent label="RECTANGLE" value=" " color="grey"></TextLineComponent>
-                <ContainerPropertyGridComponent containers={rectangles} onPropertyChangedObservable={onPropertyChangedObservable}/>
                 <div className="ge-divider">
                     <FloatLineComponent
                         iconLabel="Stroke Weight"
@@ -56,6 +55,7 @@ export class ButtonPropertyGridComponent extends React.Component<IButtonProperty
                         onPropertyChangedObservable={onPropertyChangedObservable}
                     />
                 </div>
+                <ContainerPropertyGridComponent containers={rectangles} onPropertyChangedObservable={onPropertyChangedObservable}/>
                 <hr />
                 <TextLineComponent label="BUTTON" value=" " color="grey"></TextLineComponent>
                 <div className="ge-divider">
