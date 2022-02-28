@@ -608,6 +608,42 @@ export class InputTextArea extends InputText {
         return lines;
     }
 
+    protected _parseLineWordWrapEllipsis(line: string = "", width: number, height: number, context: ICanvasRenderingContext):  { text: string, width: number, lineEnding: string }[] {
+        var lines = this._parseLineWordWrap(line, width, context);
+        for (var n = 1; n <= lines.length; n++) {
+            const currentHeight = this._computeHeightForLinesOf(n);
+            if (currentHeight > height && n > 1) {
+                var lastLine = lines[n - 2] as {text: string; width: number, lineEnding: string};
+                var currentLine = lines[n - 1] as {text: string; width: number, lineEnding: string};
+                lines[n - 2] = this._parseLineEllipsis(`${lastLine.text}${currentLine.text}`, width, context);
+                var linesToRemove = lines.length - n + 1;
+                for (var i = 0; i < linesToRemove; i++) {
+                    lines.pop();
+                }
+                return lines;
+            }
+        }
+
+        return lines;
+    }
+
+    private _computeHeightForLinesOf(lineCount: number): number {
+        let newHeight = this._paddingTopInPixels + this._paddingBottomInPixels + this._fontOffset.height * lineCount;
+
+        if (lineCount > 0 && this._lineSpacing.internalValue !== 0) {
+            let lineSpacing = 0;
+            if (this._lineSpacing.isPixel) {
+                lineSpacing = this._lineSpacing.getValue(this._host);
+            } else {
+                lineSpacing = this._lineSpacing.getValue(this._host) * this._height.getValueInPixel(this._host, this._cachedParentMeasure.height);
+            }
+
+            newHeight += (lineCount - 1) * lineSpacing;
+        }
+
+        return newHeight;
+    }
+
     protected _breakLines(refWidth: number, refHeight: number,  context: ICanvasRenderingContext): object[] {
         var lines: { text: string, width: number, lineEnding: string }[] = [];
         var _lines = this.text.split("\n");
@@ -619,6 +655,10 @@ export class InputTextArea extends InputText {
         } else if (this._textWrapping === TextWrapping.WordWrap) {
             for (var _line of _lines) {
                 lines.push(...this._parseLineWordWrap(_line, refWidth, context));
+            }
+        } else if (this._textWrapping === TextWrapping.WordWrapEllipsis) {
+            for (var _line of _lines) {
+                lines.push(...this._parseLineWordWrapEllipsis(_line, refWidth, refHeight!, context));
             }
         } else {
             for (var _line of _lines) {
