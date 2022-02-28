@@ -328,7 +328,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     public onCollideObservable = new Observable<AbstractMesh>();
 
     /** Set a function to call when this mesh collides with another one */
-    public set onCollide(callback: () => void) {
+    public set onCollide(callback: (collidedMesh?: AbstractMesh) => void) {
         if (this._internalAbstractMeshDataInfo._meshCollisionData._onCollideObserver) {
             this.onCollideObservable.remove(this._internalAbstractMeshDataInfo._meshCollisionData._onCollideObserver);
         }
