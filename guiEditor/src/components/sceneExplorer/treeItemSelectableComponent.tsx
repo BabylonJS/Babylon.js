@@ -48,8 +48,8 @@ export class TreeItemSelectableComponent extends React.Component<
 
         this.state = { dragOver: false, dragOverLocation: DragOverLocation.NONE, isHovered: false, isSelected: this.props.selectedEntities.includes(this.props.entity) };
 
-        this._onSelectionChangedObservable = props.globalState.onSelectionChangedObservable.add((selection) => {
-            this.setState({ isSelected: selection === this.props.entity });
+        this._onSelectionChangedObservable = props.globalState.onSelectionChangedObservable.add(() => {
+            this.setState({ isSelected: this.props.globalState.selectedControls.includes(this.props.entity) });
         });
 
         this._onDraggingEndObservable = props.globalState.onDraggingEndObservable.add(() => {
@@ -94,11 +94,8 @@ export class TreeItemSelectableComponent extends React.Component<
     }
 
     onSelect() {
-        if (!this.props.globalState.onSelectionChangedObservable) {
-            return;
-        }
         const entity = this.props.entity;
-        this.props.globalState.onSelectionChangedObservable.notifyObservers(entity);
+        this.props.globalState.select(entity);
         this.props.globalState.selectionLock = true;
     }
 
@@ -191,7 +188,7 @@ export class TreeItemSelectableComponent extends React.Component<
                 <div
                     className={className}
                     style={marginStyle}
-                    onClick={() => {
+                    onPointerUp={() => {
                         this.onSelect();
                     }}
                     onPointerEnter={() => this.setState({ isHovered: true })}

@@ -224,6 +224,12 @@ export class MaterialPluginBase {
     public getSamplers(samplers: string[]): void {}
 
     /**
+     * Gets the uniform buffers names added by the plugin.
+     * @param ubos list that the ubo names should be added to.
+     */
+    public getUniformBuffersNames(ubos: string[]): void {}
+
+    /**
      * Gets the description of the uniforms to add to the ubo (if engine supports ubos) or to inject directly in the vertex/fragment shaders (if engine does not support ubos)
      * @returns the description of the uniforms
      */

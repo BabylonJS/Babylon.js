@@ -749,11 +749,11 @@ export class WebGPUEngine extends Engine {
             maxFragmentUniformVectors: 1024,
             maxVertexUniformVectors: 1024,
             standardDerivatives: true,
-            astc: null,
+            astc: (this._deviceEnabledExtensions.indexOf(WebGPUConstants.FeatureName.TextureCompressionASTC) >= 0 ? true : undefined) as any,
             s3tc: (this._deviceEnabledExtensions.indexOf(WebGPUConstants.FeatureName.TextureCompressionBC) >= 0 ? true : undefined) as any,
             pvrtc: null,
             etc1: null,
-            etc2: null,
+            etc2: (this._deviceEnabledExtensions.indexOf(WebGPUConstants.FeatureName.TextureCompressionETC2) >= 0 ? true : undefined) as any,
             bptc: this._deviceEnabledExtensions.indexOf(WebGPUConstants.FeatureName.TextureCompressionBC) >= 0 ? true : undefined,
             maxAnisotropy: 4, // the spec only supports values of 1 and 4
             uintIndices: true,

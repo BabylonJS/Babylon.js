@@ -97,9 +97,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ({
 
 /***/ "../../node_modules/@fortawesome/fontawesome-svg-core/index.es.js":
-/*!****************************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/@fortawesome/fontawesome-svg-core/index.es.js ***!
-  \****************************************************************************************/
+/*!***************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/@fortawesome/fontawesome-svg-core/index.es.js ***!
+  \***************************************************************************************************************/
 /*! exports provided: icon, noAuto, config, toHtml, layer, text, counter, library, dom, parse, findIconDefinition */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -2557,9 +2557,9 @@ var autoReplace = function autoReplace() {
 /***/ }),
 
 /***/ "../../node_modules/@fortawesome/free-solid-svg-icons/index.es.js":
-/*!****************************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/@fortawesome/free-solid-svg-icons/index.es.js ***!
-  \****************************************************************************************/
+/*!***************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/@fortawesome/free-solid-svg-icons/index.es.js ***!
+  \***************************************************************************************************************/
 /*! exports provided: fas, prefix, faAd, faAddressBook, faAddressCard, faAdjust, faAirFreshener, faAlignCenter, faAlignJustify, faAlignLeft, faAlignRight, faAllergies, faAmbulance, faAmericanSignLanguageInterpreting, faAnchor, faAngleDoubleDown, faAngleDoubleLeft, faAngleDoubleRight, faAngleDoubleUp, faAngleDown, faAngleLeft, faAngleRight, faAngleUp, faAngry, faAnkh, faAppleAlt, faArchive, faArchway, faArrowAltCircleDown, faArrowAltCircleLeft, faArrowAltCircleRight, faArrowAltCircleUp, faArrowCircleDown, faArrowCircleLeft, faArrowCircleRight, faArrowCircleUp, faArrowDown, faArrowLeft, faArrowRight, faArrowUp, faArrowsAlt, faArrowsAltH, faArrowsAltV, faAssistiveListeningSystems, faAsterisk, faAt, faAtlas, faAtom, faAudioDescription, faAward, faBaby, faBabyCarriage, faBackspace, faBackward, faBacon, faBacteria, faBacterium, faBahai, faBalanceScale, faBalanceScaleLeft, faBalanceScaleRight, faBan, faBandAid, faBarcode, faBars, faBaseballBall, faBasketballBall, faBath, faBatteryEmpty, faBatteryFull, faBatteryHalf, faBatteryQuarter, faBatteryThreeQuarters, faBed, faBeer, faBell, faBellSlash, faBezierCurve, faBible, faBicycle, faBiking, faBinoculars, faBiohazard, faBirthdayCake, faBlender, faBlenderPhone, faBlind, faBlog, faBold, faBolt, faBomb, faBone, faBong, faBook, faBookDead, faBookMedical, faBookOpen, faBookReader, faBookmark, faBorderAll, faBorderNone, faBorderStyle, faBowlingBall, faBox, faBoxOpen, faBoxTissue, faBoxes, faBraille, faBrain, faBreadSlice, faBriefcase, faBriefcaseMedical, faBroadcastTower, faBroom, faBrush, faBug, faBuilding, faBullhorn, faBullseye, faBurn, faBus, faBusAlt, faBusinessTime, faCalculator, faCalendar, faCalendarAlt, faCalendarCheck, faCalendarDay, faCalendarMinus, faCalendarPlus, faCalendarTimes, faCalendarWeek, faCamera, faCameraRetro, faCampground, faCandyCane, faCannabis, faCapsules, faCar, faCarAlt, faCarBattery, faCarCrash, faCarSide, faCaravan, faCaretDown, faCaretLeft, faCaretRight, faCaretSquareDown, faCaretSquareLeft, faCaretSquareRight, faCaretSquareUp, faCaretUp, faCarrot, faCartArrowDown, faCartPlus, faCashRegister, faCat, faCertificate, faChair, faChalkboard, faChalkboardTeacher, faChargingStation, faChartArea, faChartBar, faChartLine, faChartPie, faCheck, faCheckCircle, faCheckDouble, faCheckSquare, faCheese, faChess, faChessBishop, faChessBoard, faChessKing, faChessKnight, faChessPawn, faChessQueen, faChessRook, faChevronCircleDown, faChevronCircleLeft, faChevronCircleRight, faChevronCircleUp, faChevronDown, faChevronLeft, faChevronRight, faChevronUp, faChild, faChurch, faCircle, faCircleNotch, faCity, faClinicMedical, faClipboard, faClipboardCheck, faClipboardList, faClock, faClone, faClosedCaptioning, faCloud, faCloudDownloadAlt, faCloudMeatball, faCloudMoon, faCloudMoonRain, faCloudRain, faCloudShowersHeavy, faCloudSun, faCloudSunRain, faCloudUploadAlt, faCocktail, faCode, faCodeBranch, faCoffee, faCog, faCogs, faCoins, faColumns, faComment, faCommentAlt, faCommentDollar, faCommentDots, faCommentMedical, faCommentSlash, faComments, faCommentsDollar, faCompactDisc, faCompass, faCompress, faCompressAlt, faCompressArrowsAlt, faConciergeBell, faCookie, faCookieBite, faCopy, faCopyright, faCouch, faCreditCard, faCrop, faCropAlt, faCross, faCrosshairs, faCrow, faCrown, faCrutch, faCube, faCubes, faCut, faDatabase, faDeaf, faDemocrat, faDesktop, faDharmachakra, faDiagnoses, faDice, faDiceD20, faDiceD6, faDiceFive, faDiceFour, faDiceOne, faDiceSix, faDiceThree, faDiceTwo, faDigitalTachograph, faDirections, faDisease, faDivide, faDizzy, faDna, faDog, faDollarSign, faDolly, faDollyFlatbed, faDonate, faDoorClosed, faDoorOpen, faDotCircle, faDove, faDownload, faDraftingCompass, faDragon, faDrawPolygon, faDrum, faDrumSteelpan, faDrumstickBite, faDumbbell, faDumpster, faDumpsterFire, faDungeon, faEdit, faEgg, faEject, faEllipsisH, faEllipsisV, faEnvelope, faEnvelopeOpen, faEnvelopeOpenText, faEnvelopeSquare, faEquals, faEraser, faEthernet, faEuroSign, faExchangeAlt, faExclamation, faExclamationCircle, faExclamationTriangle, faExpand, faExpandAlt, faExpandArrowsAlt, faExternalLinkAlt, faExternalLinkSquareAlt, faEye, faEyeDropper, faEyeSlash, faFan, faFastBackward, faFastForward, faFaucet, faFax, faFeather, faFeatherAlt, faFemale, faFighterJet, faFile, faFileAlt, faFileArchive, faFileAudio, faFileCode, faFileContract, faFileCsv, faFileDownload, faFileExcel, faFileExport, faFileImage, faFileImport, faFileInvoice, faFileInvoiceDollar, faFileMedical, faFileMedicalAlt, faFilePdf, faFilePowerpoint, faFilePrescription, faFileSignature, faFileUpload, faFileVideo, faFileWord, faFill, faFillDrip, faFilm, faFilter, faFingerprint, faFire, faFireAlt, faFireExtinguisher, faFirstAid, faFish, faFistRaised, faFlag, faFlagCheckered, faFlagUsa, faFlask, faFlushed, faFolder, faFolderMinus, faFolderOpen, faFolderPlus, faFont, faFontAwesomeLogoFull, faFootballBall, faForward, faFrog, faFrown, faFrownOpen, faFunnelDollar, faFutbol, faGamepad, faGasPump, faGavel, faGem, faGenderless, faGhost, faGift, faGifts, faGlassCheers, faGlassMartini, faGlassMartiniAlt, faGlassWhiskey, faGlasses, faGlobe, faGlobeAfrica, faGlobeAmericas, faGlobeAsia, faGlobeEurope, faGolfBall, faGopuram, faGraduationCap, faGreaterThan, faGreaterThanEqual, faGrimace, faGrin, faGrinAlt, faGrinBeam, faGrinBeamSweat, faGrinHearts, faGrinSquint, faGrinSquintTears, faGrinStars, faGrinTears, faGrinTongue, faGrinTongueSquint, faGrinTongueWink, faGrinWink, faGripHorizontal, faGripLines, faGripLinesVertical, faGripVertical, faGuitar, faHSquare, faHamburger, faHammer, faHamsa, faHandHolding, faHandHoldingHeart, faHandHoldingMedical, faHandHoldingUsd, faHandHoldingWater, faHandLizard, faHandMiddleFinger, faHandPaper, faHandPeace, faHandPointDown, faHandPointLeft, faHandPointRight, faHandPointUp, faHandPointer, faHandRock, faHandScissors, faHandSparkles, faHandSpock, faHands, faHandsHelping, faHandsWash, faHandshake, faHandshakeAltSlash, faHandshakeSlash, faHanukiah, faHardHat, faHashtag, faHatCowboy, faHatCowboySide, faHatWizard, faHdd, faHeadSideCough, faHeadSideCoughSlash, faHeadSideMask, faHeadSideVirus, faHeading, faHeadphones, faHeadphonesAlt, faHeadset, faHeart, faHeartBroken, faHeartbeat, faHelicopter, faHighlighter, faHiking, faHippo, faHistory, faHockeyPuck, faHollyBerry, faHome, faHorse, faHorseHead, faHospital, faHospitalAlt, faHospitalSymbol, faHospitalUser, faHotTub, faHotdog, faHotel, faHourglass, faHourglassEnd, faHourglassHalf, faHourglassStart, faHouseDamage, faHouseUser, faHryvnia, faICursor, faIceCream, faIcicles, faIcons, faIdBadge, faIdCard, faIdCardAlt, faIgloo, faImage, faImages, faInbox, faIndent, faIndustry, faInfinity, faInfo, faInfoCircle, faItalic, faJedi, faJoint, faJournalWhills, faKaaba, faKey, faKeyboard, faKhanda, faKiss, faKissBeam, faKissWinkHeart, faKiwiBird, faLandmark, faLanguage, faLaptop, faLaptopCode, faLaptopHouse, faLaptopMedical, faLaugh, faLaughBeam, faLaughSquint, faLaughWink, faLayerGroup, faLeaf, faLemon, faLessThan, faLessThanEqual, faLevelDownAlt, faLevelUpAlt, faLifeRing, faLightbulb, faLink, faLiraSign, faList, faListAlt, faListOl, faListUl, faLocationArrow, faLock, faLockOpen, faLongArrowAltDown, faLongArrowAltLeft, faLongArrowAltRight, faLongArrowAltUp, faLowVision, faLuggageCart, faLungs, faLungsVirus, faMagic, faMagnet, faMailBulk, faMale, faMap, faMapMarked, faMapMarkedAlt, faMapMarker, faMapMarkerAlt, faMapPin, faMapSigns, faMarker, faMars, faMarsDouble, faMarsStroke, faMarsStrokeH, faMarsStrokeV, faMask, faMedal, faMedkit, faMeh, faMehBlank, faMehRollingEyes, faMemory, faMenorah, faMercury, faMeteor, faMicrochip, faMicrophone, faMicrophoneAlt, faMicrophoneAltSlash, faMicrophoneSlash, faMicroscope, faMinus, faMinusCircle, faMinusSquare, faMitten, faMobile, faMobileAlt, faMoneyBill, faMoneyBillAlt, faMoneyBillWave, faMoneyBillWaveAlt, faMoneyCheck, faMoneyCheckAlt, faMonument, faMoon, faMortarPestle, faMosque, faMotorcycle, faMountain, faMouse, faMousePointer, faMugHot, faMusic, faNetworkWired, faNeuter, faNewspaper, faNotEqual, faNotesMedical, faObjectGroup, faObjectUngroup, faOilCan, faOm, faOtter, faOutdent, faPager, faPaintBrush, faPaintRoller, faPalette, faPallet, faPaperPlane, faPaperclip, faParachuteBox, faParagraph, faParking, faPassport, faPastafarianism, faPaste, faPause, faPauseCircle, faPaw, faPeace, faPen, faPenAlt, faPenFancy, faPenNib, faPenSquare, faPencilAlt, faPencilRuler, faPeopleArrows, faPeopleCarry, faPepperHot, faPercent, faPercentage, faPersonBooth, faPhone, faPhoneAlt, faPhoneSlash, faPhoneSquare, faPhoneSquareAlt, faPhoneVolume, faPhotoVideo, faPiggyBank, faPills, faPizzaSlice, faPlaceOfWorship, faPlane, faPlaneArrival, faPlaneDeparture, faPlaneSlash, faPlay, faPlayCircle, faPlug, faPlus, faPlusCircle, faPlusSquare, faPodcast, faPoll, faPollH, faPoo, faPooStorm, faPoop, faPortrait, faPoundSign, faPowerOff, faPray, faPrayingHands, faPrescription, faPrescriptionBottle, faPrescriptionBottleAlt, faPrint, faProcedures, faProjectDiagram, faPumpMedical, faPumpSoap, faPuzzlePiece, faQrcode, faQuestion, faQuestionCircle, faQuidditch, faQuoteLeft, faQuoteRight, faQuran, faRadiation, faRadiationAlt, faRainbow, faRandom, faReceipt, faRecordVinyl, faRecycle, faRedo, faRedoAlt, faRegistered, faRemoveFormat, faReply, faReplyAll, faRepublican, faRestroom, faRetweet, faRibbon, faRing, faRoad, faRobot, faRocket, faRoute, faRss, faRssSquare, faRubleSign, faRuler, faRulerCombined, faRulerHorizontal, faRulerVertical, faRunning, faRupeeSign, faSadCry, faSadTear, faSatellite, faSatelliteDish, faSave, faSchool, faScrewdriver, faScroll, faSdCard, faSearch, faSearchDollar, faSearchLocation, faSearchMinus, faSearchPlus, faSeedling, faServer, faShapes, faShare, faShareAlt, faShareAltSquare, faShareSquare, faShekelSign, faShieldAlt, faShieldVirus, faShip, faShippingFast, faShoePrints, faShoppingBag, faShoppingBasket, faShoppingCart, faShower, faShuttleVan, faSign, faSignInAlt, faSignLanguage, faSignOutAlt, faSignal, faSignature, faSimCard, faSink, faSitemap, faSkating, faSkiing, faSkiingNordic, faSkull, faSkullCrossbones, faSlash, faSleigh, faSlidersH, faSmile, faSmileBeam, faSmileWink, faSmog, faSmoking, faSmokingBan, faSms, faSnowboarding, faSnowflake, faSnowman, faSnowplow, faSoap, faSocks, faSolarPanel, faSort, faSortAlphaDown, faSortAlphaDownAlt, faSortAlphaUp, faSortAlphaUpAlt, faSortAmountDown, faSortAmountDownAlt, faSortAmountUp, faSortAmountUpAlt, faSortDown, faSortNumericDown, faSortNumericDownAlt, faSortNumericUp, faSortNumericUpAlt, faSortUp, faSpa, faSpaceShuttle, faSpellCheck, faSpider, faSpinner, faSplotch, faSprayCan, faSquare, faSquareFull, faSquareRootAlt, faStamp, faStar, faStarAndCrescent, faStarHalf, faStarHalfAlt, faStarOfDavid, faStarOfLife, faStepBackward, faStepForward, faStethoscope, faStickyNote, faStop, faStopCircle, faStopwatch, faStopwatch20, faStore, faStoreAlt, faStoreAltSlash, faStoreSlash, faStream, faStreetView, faStrikethrough, faStroopwafel, faSubscript, faSubway, faSuitcase, faSuitcaseRolling, faSun, faSuperscript, faSurprise, faSwatchbook, faSwimmer, faSwimmingPool, faSynagogue, faSync, faSyncAlt, faSyringe, faTable, faTableTennis, faTablet, faTabletAlt, faTablets, faTachometerAlt, faTag, faTags, faTape, faTasks, faTaxi, faTeeth, faTeethOpen, faTemperatureHigh, faTemperatureLow, faTenge, faTerminal, faTextHeight, faTextWidth, faTh, faThLarge, faThList, faTheaterMasks, faThermometer, faThermometerEmpty, faThermometerFull, faThermometerHalf, faThermometerQuarter, faThermometerThreeQuarters, faThumbsDown, faThumbsUp, faThumbtack, faTicketAlt, faTimes, faTimesCircle, faTint, faTintSlash, faTired, faToggleOff, faToggleOn, faToilet, faToiletPaper, faToiletPaperSlash, faToolbox, faTools, faTooth, faTorah, faToriiGate, faTractor, faTrademark, faTrafficLight, faTrailer, faTrain, faTram, faTransgender, faTransgenderAlt, faTrash, faTrashAlt, faTrashRestore, faTrashRestoreAlt, faTree, faTrophy, faTruck, faTruckLoading, faTruckMonster, faTruckMoving, faTruckPickup, faTshirt, faTty, faTv, faUmbrella, faUmbrellaBeach, faUnderline, faUndo, faUndoAlt, faUniversalAccess, faUniversity, faUnlink, faUnlock, faUnlockAlt, faUpload, faUser, faUserAlt, faUserAltSlash, faUserAstronaut, faUserCheck, faUserCircle, faUserClock, faUserCog, faUserEdit, faUserFriends, faUserGraduate, faUserInjured, faUserLock, faUserMd, faUserMinus, faUserNinja, faUserNurse, faUserPlus, faUserSecret, faUserShield, faUserSlash, faUserTag, faUserTie, faUserTimes, faUsers, faUsersCog, faUsersSlash, faUtensilSpoon, faUtensils, faVectorSquare, faVenus, faVenusDouble, faVenusMars, faVest, faVestPatches, faVial, faVials, faVideo, faVideoSlash, faVihara, faVirus, faVirusSlash, faViruses, faVoicemail, faVolleyballBall, faVolumeDown, faVolumeMute, faVolumeOff, faVolumeUp, faVoteYea, faVrCardboard, faWalking, faWallet, faWarehouse, faWater, faWaveSquare, faWeight, faWeightHanging, faWheelchair, faWifi, faWind, faWindowClose, faWindowMaximize, faWindowMinimize, faWindowRestore, faWineBottle, faWineGlass, faWineGlassAlt, faWonSign, faWrench, faXRay, faYenSign, faYinYang */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -9595,9 +9595,9 @@ var _iconsCache = {
 /***/ }),
 
 /***/ "../../node_modules/@fortawesome/react-fontawesome/index.es.js":
-/*!*************************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/@fortawesome/react-fontawesome/index.es.js ***!
-  \*************************************************************************************/
+/*!************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/@fortawesome/react-fontawesome/index.es.js ***!
+  \************************************************************************************************************/
 /*! exports provided: FontAwesomeIcon */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -10004,9 +10004,9 @@ var convertCurry = convert.bind(null, react__WEBPACK_IMPORTED_MODULE_2___default
 /***/ }),
 
 /***/ "../../node_modules/classnames/index.js":
-/*!**************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/classnames/index.js ***!
-  \**************************************************************/
+/*!*************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/classnames/index.js ***!
+  \*************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10072,9 +10072,9 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/log/log.scss":
-/*!******************************************************************************************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!E:/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/log/log.scss ***!
-  \******************************************************************************************************************************************************/
+/*!****************************************************************************************************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/log/log.scss ***!
+  \****************************************************************************************************************************************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -10097,9 +10097,9 @@ ___CSS_LOADER_EXPORT___.push([module.i, "#log-console {\n  background: #333333;\
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/propertyTab/propertyTab.scss":
-/*!**********************************************************************************************************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!E:/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/propertyTab/propertyTab.scss ***!
-  \**********************************************************************************************************************************************************************/
+/*!********************************************************************************************************************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/propertyTab/propertyTab.scss ***!
+  \********************************************************************************************************************************************************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -10114,7 +10114,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default()(_node_modules_css_loader_dist_runtime_cssWithMappingToString_js__WEBPACK_IMPORTED_MODULE_0___default.a);
 // Module
-___CSS_LOADER_EXPORT___.push([module.i, ":root {\n  --backgroundGrey: #aaaaaa;\n  --spacingHeight: 30px;\n  --labelFamily: \"acumin-pro-condensed-semibold\"; }\n\nhr.ge {\n  border: 1px solid #d0cece; }\n\n#ge-propertyTab {\n  user-select: none;\n  color: black;\n  background: #e2e2e2; }\n  #ge-propertyTab * {\n    font-family: \"acumin-pro-semicondensed\";\n    font-size: 12px; }\n  #ge-propertyTab #header {\n    height: 30px;\n    font-size: 16px;\n    color: white;\n    background: white;\n    grid-row: 1;\n    text-align: center;\n    display: grid;\n    grid-template-columns: 30px 1fr;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none; }\n    #ge-propertyTab #header #logo {\n      position: relative;\n      background: white;\n      grid-column: 1;\n      width: 32px;\n      height: 32px;\n      left: 0;\n      display: flex;\n      align-self: center;\n      justify-self: center; }\n    #ge-propertyTab #header #title {\n      background: white;\n      color: black;\n      grid-column: 2;\n      display: grid;\n      align-items: center;\n      text-align: center; }\n  #ge-propertyTab .range {\n    -webkit-appearance: none;\n    width: 100%;\n    height: 2px;\n    background: #bcbcbc;\n    border-radius: 5px;\n    outline: none;\n    opacity: 0.7;\n    -webkit-transition: .2s;\n    transition: opacity .2s; }\n  #ge-propertyTab .range:hover {\n    opacity: 1; }\n  #ge-propertyTab .range::-webkit-slider-thumb {\n    -webkit-appearance: none;\n    appearance: none;\n    width: 14px;\n    height: 14px;\n    border-radius: 50%;\n    background: #e2e2e2;\n    border: solid;\n    border-width: thin;\n    cursor: pointer; }\n  #ge-propertyTab .range::-moz-range-thumb {\n    width: 14px;\n    height: 14px;\n    border-radius: 50%;\n    background: black;\n    cursor: pointer; }\n  #ge-propertyTab input[type=\"color\"] {\n    -webkit-appearance: none;\n    border: 1px solid rgba(255, 255, 255, 0.5);\n    padding: 0;\n    width: 30px;\n    height: 20px; }\n  #ge-propertyTab input[type=\"color\"]::-webkit-color-swatch-wrapper {\n    padding: 0; }\n  #ge-propertyTab input[type=\"color\"]::-webkit-color-swatch {\n    border: none; }\n  #ge-propertyTab .unit {\n    width: 26px;\n    height: 26px;\n    background-color: white;\n    border: none;\n    margin-top: 2px; }\n  #ge-propertyTab .unit.disabled {\n    background-color: #c8c8c8; }\n  #ge-propertyTab .sliderLine {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    padding-right: 18px;\n    height: var(--spacingHeight);\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: auto auto auto 1fr; }\n    #ge-propertyTab .sliderLine .label {\n      grid-column: 2;\n      display: flex;\n      align-items: center;\n      min-width: 15px;\n      font-family: var(--labelFamily); }\n    #ge-propertyTab .sliderLine .img {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .sliderLine .slider {\n      grid-column: 4;\n      grid-row: 1;\n      margin-right: 5px;\n      width: 90%;\n      display: flex;\n      align-items: center;\n      padding-left: 5px; }\n    #ge-propertyTab .sliderLine .floatLine {\n      grid-column: 3;\n      padding-left: 0px; }\n      #ge-propertyTab .sliderLine .floatLine .label {\n        grid-column: 1;\n        display: none;\n        align-items: center;\n        font-family: var(--labelFamily); }\n      #ge-propertyTab .sliderLine .floatLine .short {\n        grid-column: 1;\n        display: flex;\n        align-items: center; }\n        #ge-propertyTab .sliderLine .floatLine .short input {\n          width: 60px;\n          background-color: white;\n          outline-color: transparent;\n          border: transparent;\n          height: 26px;\n          outline-width: 0px; }\n        #ge-propertyTab .sliderLine .floatLine .short input::-webkit-outer-spin-button,\n        #ge-propertyTab .sliderLine .floatLine .short input::-webkit-inner-spin-button {\n          -webkit-appearance: none;\n          margin: 0; }\n        #ge-propertyTab .sliderLine .floatLine .short input[type=number] {\n          -moz-appearance: textfield; }\n  #ge-propertyTab .ge-divider {\n    display: grid;\n    grid-template-columns: auto auto auto auto auto auto;\n    padding-right: 18px; }\n  #ge-propertyTab .ge-divider-short {\n    display: grid;\n    grid-template-columns: 1fr 1fr;\n    padding-right: 18px; }\n  #ge-propertyTab .ge-divider-single {\n    display: block;\n    padding-right: 18px; }\n  #ge-propertyTab .ge-grid-divider {\n    display: grid;\n    grid-template-columns: 150px 1fr auto; }\n    #ge-propertyTab .ge-grid-divider .textLine {\n      grid-column: auto; }\n  #ge-propertyTab .ge-grid-button-divider {\n    display: grid;\n    grid-template-columns: 60px 60px 60px 60px; }\n  #ge-propertyTab .ge-grid-remove {\n    display: grid;\n    background-color: #c2c2c2;\n    margin-bottom: 5px;\n    filter: invert(1); }\n  #ge-propertyTab .ge-grid-edit {\n    display: grid;\n    background-color: #878787;\n    margin-bottom: 5px;\n    filter: invert(1); }\n  #ge-propertyTab .ge-grid {\n    display: grid;\n    margin-bottom: 5px; }\n  #ge-propertyTab .textInputLine {\n    user-select: none;\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    padding-right: 18px;\n    height: var(--spacingHeight);\n    display: grid;\n    grid-template-columns: auto auto 1fr; }\n    #ge-propertyTab .textInputLine .label {\n      grid-column: 2;\n      display: flex;\n      align-items: center;\n      min-width: 15px;\n      font-family: var(--labelFamily); }\n    #ge-propertyTab .textInputLine img {\n      width: 30px; }\n    #ge-propertyTab .textInputLine .img {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .textInputLine .value {\n      display: flex;\n      align-items: center;\n      grid-column: 3;\n      background: transparent;\n      height: 30px; }\n      #ge-propertyTab .textInputLine .value input {\n        width: calc(100% - 5px);\n        background-color: white;\n        outline-color: transparent;\n        border: transparent;\n        outline-width: 0px;\n        height: 24px; }\n  #ge-propertyTab .textInputLine.withUnits {\n    grid-template-columns: auto auto 1fr auto; }\n  #ge-propertyTab .textInputArea {\n    padding-left: 5px;\n    height: 100%;\n    display: grid;\n    grid-template-columns: 1fr 120px; }\n    #ge-propertyTab .textInputArea .label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .textInputArea .value {\n      display: flex;\n      align-items: center;\n      grid-column: 2; }\n      #ge-propertyTab .textInputArea .value textarea {\n        width: calc(150% - 5px);\n        margin-left: -50%;\n        height: 40px; }\n  #ge-propertyTab .paneContainer {\n    margin-top: 3px;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 100%; }\n    #ge-propertyTab .paneContainer .paneList {\n      border-left: 3px solid transparent; }\n    #ge-propertyTab .paneContainer:hover .paneList {\n      border-left: 3px solid rgba(51, 122, 183, 0.8); }\n    #ge-propertyTab .paneContainer:hover .paneContainer-content .header .title {\n      border-left: 3px solid #337ab7; }\n    #ge-propertyTab .paneContainer .paneContainer-highlight-border {\n      grid-row: 1;\n      grid-column: 1;\n      opacity: 1;\n      border: 3px solid red;\n      transition: opacity 250ms;\n      pointer-events: none; }\n      #ge-propertyTab .paneContainer .paneContainer-highlight-border.transparent {\n        opacity: 0; }\n    #ge-propertyTab .paneContainer .paneContainer-content {\n      grid-row: 1;\n      grid-column: 1; }\n      #ge-propertyTab .paneContainer .paneContainer-content .header {\n        display: grid;\n        grid-template-columns: 1fr auto;\n        background: #cccccc;\n        height: var(--spacingHeight);\n        padding-bottom: 0px;\n        padding-top: 0px;\n        padding-right: 5px;\n        cursor: pointer; }\n        #ge-propertyTab .paneContainer .paneContainer-content .header .title {\n          border-left: 3px solid transparent;\n          padding-left: 5px;\n          grid-column: 1;\n          display: flex;\n          align-items: center; }\n        #ge-propertyTab .paneContainer .paneContainer-content .header .collapse {\n          grid-column: 2;\n          display: flex;\n          align-items: center;\n          justify-items: center;\n          transform-origin: center; }\n          #ge-propertyTab .paneContainer .paneContainer-content .header .collapse.closed {\n            transform: rotate(180deg); }\n      #ge-propertyTab .paneContainer .paneContainer-content .paneList > div:not(:last-child) {\n        border-bottom: 0.5px solid rgba(255, 255, 255, 0.1); }\n      #ge-propertyTab .paneContainer .paneContainer-content .fragment > div:not(:last-child) {\n        border-bottom: 0.5px solid rgba(255, 255, 255, 0.1); }\n  #ge-propertyTab .color-picker {\n    height: 150px;\n    width: 15px; }\n    #ge-propertyTab .color-picker .color-rect-background {\n      height: 15px;\n      border: 1px black solid;\n      cursor: pointer;\n      background: repeating-conic-gradient(#E2E2E2 0% 25%, white 0% 50%) 50%/10px 10px; }\n      #ge-propertyTab .color-picker .color-rect-background .color-rect {\n        height: 100%; }\n    #ge-propertyTab .color-picker .color-picker-cover {\n      position: fixed;\n      top: 0px;\n      right: 0px;\n      bottom: 0px;\n      left: 0px; }\n    #ge-propertyTab .color-picker .color-picker-float {\n      z-index: 2;\n      position: absolute; }\n  #ge-propertyTab .gradient-step {\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 20px 30px 40px auto 20px 30px;\n    padding-top: 5px;\n    padding-left: 5px;\n    padding-bottom: 5px; }\n    #ge-propertyTab .gradient-step .step {\n      grid-row: 1;\n      grid-column: 1; }\n    #ge-propertyTab .gradient-step .color {\n      grid-row: 1;\n      grid-column: 2;\n      cursor: pointer; }\n    #ge-propertyTab .gradient-step .step-value {\n      margin-left: 5px;\n      grid-row: 1;\n      grid-column: 3;\n      text-align: right;\n      margin-right: 5px; }\n    #ge-propertyTab .gradient-step .step-slider {\n      grid-row: 1;\n      grid-column: 4;\n      display: grid;\n      justify-content: stretch;\n      align-content: center;\n      margin-right: -5px;\n      padding-left: 12px; }\n      #ge-propertyTab .gradient-step .step-slider input {\n        width: 90%; }\n    #ge-propertyTab .gradient-step .gradient-copy {\n      grid-row: 1;\n      grid-column: 5;\n      display: grid;\n      align-content: center;\n      justify-content: center; }\n      #ge-propertyTab .gradient-step .gradient-copy .img {\n        height: 20px;\n        width: 20px; }\n      #ge-propertyTab .gradient-step .gradient-copy .img:hover {\n        cursor: pointer; }\n    #ge-propertyTab .gradient-step .gradient-delete {\n      grid-row: 1;\n      grid-column: 6;\n      display: grid;\n      align-content: center;\n      justify-content: center; }\n      #ge-propertyTab .gradient-step .gradient-delete .img {\n        height: 20px;\n        width: 20px; }\n      #ge-propertyTab .gradient-step .gradient-delete .img:hover {\n        cursor: pointer; }\n  #ge-propertyTab .alignment-bar {\n    display: flex;\n    justify-content: center;\n    padding-right: 5px; }\n  #ge-propertyTab .command-button {\n    cursor: pointer;\n    width: 30px; }\n    #ge-propertyTab .command-button .command-label {\n      display: none; }\n    #ge-propertyTab .command-button .command-button-icon {\n      height: 100%;\n      width: 100%;\n      display: grid;\n      color: white;\n      align-content: center;\n      justify-content: center; }\n    #ge-propertyTab .command-button:hover {\n      background-color: white; }\n    #ge-propertyTab .command-button .active {\n      transform-origin: center;\n      background-color: white; }\n    #ge-propertyTab .command-button img.active {\n      background-color: white; }\n  #ge-propertyTab .command-button-alt {\n    cursor: pointer;\n    width: 40px;\n    margin-left: 5px;\n    margin-right: 5px;\n    background-color: white; }\n    #ge-propertyTab .command-button-alt .command-label {\n      display: none; }\n    #ge-propertyTab .command-button-alt .command-button-icon {\n      height: 100%;\n      width: 100%;\n      display: grid;\n      align-content: center;\n      justify-content: center; }\n    #ge-propertyTab .command-button-alt:hover {\n      background-color: #c2c2c2;\n      filter: invert(1); }\n  #ge-propertyTab .command-button-alt-disabled {\n    cursor: pointer;\n    pointer-events: none;\n    width: 40px;\n    margin-left: 5px;\n    margin-right: 5px;\n    background-color: white; }\n    #ge-propertyTab .command-button-alt-disabled .command-label {\n      display: none; }\n    #ge-propertyTab .command-button-alt-disabled .command-button-icon {\n      height: 100%;\n      width: 100%;\n      display: grid;\n      align-content: center;\n      justify-content: center; }\n    #ge-propertyTab .command-button-alt-disabled img {\n      filter: invert(1); }\n  #ge-propertyTab .command-button-alt-active {\n    cursor: pointer;\n    pointer-events: none;\n    width: 40px;\n    margin-left: 5px;\n    margin-right: 5px;\n    background-color: #c2c2c2;\n    filter: invert(1); }\n    #ge-propertyTab .command-button-alt-active .command-label {\n      display: none; }\n    #ge-propertyTab .command-button-alt-active .command-button-icon {\n      height: 100%;\n      width: 100%;\n      display: grid;\n      align-content: center;\n      justify-content: center; }\n  #ge-propertyTab .floatLine {\n    user-select: none;\n    padding-left: 5px;\n    height: var(--spacingHeight);\n    padding-bottom: 0px;\n    padding-top: 0px;\n    display: grid;\n    grid-template-columns: auto auto 2fr 1fr; }\n    #ge-propertyTab .floatLine .label {\n      grid-column: 2;\n      display: flex;\n      align-items: center;\n      min-width: 15px;\n      font-family: var(--labelFamily); }\n    #ge-propertyTab .floatLine img {\n      width: 30px; }\n    #ge-propertyTab .floatLine .img {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .floatLine .value {\n      display: flex;\n      align-items: center;\n      grid-column: 3;\n      background: transparent;\n      height: 30px; }\n      #ge-propertyTab .floatLine .value input {\n        width: calc(100% - 5px);\n        background-color: white;\n        outline-color: transparent;\n        border: none;\n        outline-width: 0px;\n        height: 24px; }\n    #ge-propertyTab .floatLine .short {\n      grid-column: 2;\n      display: flex;\n      align-items: center; }\n      #ge-propertyTab .floatLine .short input {\n        width: 27px; }\n      #ge-propertyTab .floatLine .short input::-webkit-outer-spin-button,\n      #ge-propertyTab .floatLine .short input::-webkit-inner-spin-button {\n        -webkit-appearance: none;\n        margin: 0; }\n      #ge-propertyTab .floatLine .short input[type=number] {\n        -moz-appearance: textfield; }\n  #ge-propertyTab .vector3Line {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    display: grid; }\n    #ge-propertyTab .vector3Line .firstLine {\n      display: grid;\n      grid-template-columns: 1fr auto 20px;\n      height: var(--spacingHeight); }\n      #ge-propertyTab .vector3Line .firstLine .label {\n        grid-column: 1;\n        display: flex;\n        align-items: center; }\n      #ge-propertyTab .vector3Line .firstLine .vector {\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        text-align: right;\n        opacity: 0.8; }\n      #ge-propertyTab .vector3Line .firstLine .expand {\n        grid-column: 3;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n    #ge-propertyTab .vector3Line .secondLine {\n      display: grid;\n      padding-right: 5px;\n      border-left: 1px solid #337ab7; }\n      #ge-propertyTab .vector3Line .secondLine .no-right-margin {\n        margin-right: 0; }\n      #ge-propertyTab .vector3Line .secondLine .numeric {\n        display: grid;\n        grid-template-columns: 1fr auto; }\n      #ge-propertyTab .vector3Line .secondLine .numeric-label {\n        text-align: right;\n        grid-column: 1;\n        display: flex;\n        align-items: center;\n        justify-self: right;\n        margin-right: 10px; }\n      #ge-propertyTab .vector3Line .secondLine .numeric-value {\n        width: 120px;\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        border: 1px solid #337ab7; }\n  #ge-propertyTab .buttonLine {\n    height: var(--spacingHeight);\n    padding-bottom: 0px;\n    padding-top: 0px;\n    display: grid;\n    align-items: center;\n    justify-items: stretch;\n    padding-bottom: 5px; }\n    #ge-propertyTab .buttonLine input[type=\"file\"] {\n      display: none; }\n    #ge-propertyTab .buttonLine .file-upload {\n      background: var(--backgroundGrey);\n      border: 1px solid #424242;\n      margin: 5px 10px;\n      color: white;\n      padding: 4px 5px;\n      opacity: 0.9;\n      cursor: pointer;\n      text-align: center;\n      border-radius: 4px; }\n    #ge-propertyTab .buttonLine .file-upload:hover {\n      opacity: 1.0; }\n    #ge-propertyTab .buttonLine .file-upload:active {\n      transform: scale(0.98);\n      transform-origin: 0.5 0.5; }\n    #ge-propertyTab .buttonLine button {\n      background: var(--backgroundGrey);\n      border: 1px solid #424242;\n      margin: 5px 10px 5px 10px;\n      color: white;\n      padding: 4px 5px;\n      opacity: 0.9;\n      border-radius: 4px; }\n    #ge-propertyTab .buttonLine button:hover {\n      opacity: 1.0; }\n    #ge-propertyTab .buttonLine button:active {\n      background: #282828; }\n    #ge-propertyTab .buttonLine button:focus {\n      border: 1px solid #424242;\n      outline: 0px; }\n  #ge-propertyTab .numeric {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    height: var(--spacingHeight);\n    display: grid;\n    grid-template-columns: 1fr 120px auto; }\n    #ge-propertyTab .numeric .numeric-label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .numeric .number {\n      display: flex;\n      align-items: center;\n      grid-column: 2;\n      height: 10px; }\n      #ge-propertyTab .numeric .number .input {\n        width: calc(100% - 5px);\n        height: 10px; }\n  #ge-propertyTab .checkBoxLine {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    padding-right: 18px;\n    height: var(--spacingHeight);\n    display: grid;\n    grid-template-columns: auto auto 1fr; }\n    #ge-propertyTab .checkBoxLine .label {\n      grid-column: 2;\n      display: flex;\n      align-items: center;\n      min-width: 100px;\n      margin-left: 15px;\n      font-family: var(--labelFamily); }\n    #ge-propertyTab .checkBoxLine img {\n      width: 30px; }\n    #ge-propertyTab .checkBoxLine .img {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .checkBoxLine .checkBox {\n      grid-column: 3;\n      display: flex;\n      align-items: center;\n      margin-left: auto;\n      margin-right: 0px; }\n      #ge-propertyTab .checkBoxLine .checkBox .lbl {\n        position: relative;\n        display: block;\n        height: 14px;\n        width: 34px;\n        border-radius: 100px;\n        cursor: pointer;\n        transition: all 0.3s ease;\n        border: solid;\n        border-width: thin; }\n      #ge-propertyTab .checkBoxLine .checkBox .lbl:after {\n        position: absolute;\n        left: 3px;\n        top: 1px;\n        display: block;\n        width: 10px;\n        height: 10px;\n        border-radius: 100px;\n        background: #e2e2e2;\n        box-shadow: 0px 3px 3px rgba(0, 0, 0, 0.05);\n        content: '';\n        transition: all 0.15s ease;\n        border: solid;\n        border-width: thin; }\n      #ge-propertyTab .checkBoxLine .checkBox .lbl:active:after {\n        transform: scale(1.15, 0.85); }\n      #ge-propertyTab .checkBoxLine .checkBox .cbx:checked ~ label {\n        background: transparent; }\n      #ge-propertyTab .checkBoxLine .checkBox .cbx:checked ~ label:after {\n        left: 20px;\n        background: black;\n        border: solid;\n        border-width: thin; }\n      #ge-propertyTab .checkBoxLine .checkBox .cbx.conflict ~ label:after {\n        left: 10px;\n        background: repeating-linear-gradient(45deg, transparent, transparent 5px, black 5px, black 10px); }\n      #ge-propertyTab .checkBoxLine .checkBox .cbx:checked ~ label.disabled {\n        background: black;\n        cursor: pointer; }\n      #ge-propertyTab .checkBoxLine .checkBox .cbx:checked ~ label.disabled:after {\n        left: 20px;\n        background: #555555;\n        cursor: pointer; }\n      #ge-propertyTab .checkBoxLine .checkBox .cbx ~ label.disabled {\n        background: #555555;\n        cursor: pointer; }\n      #ge-propertyTab .checkBoxLine .checkBox .hidden {\n        display: none; }\n  #ge-propertyTab .listLine {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    height: var(--spacingHeight);\n    display: grid;\n    grid-template-columns: auto 1fr auto; }\n    #ge-propertyTab .listLine .label {\n      grid-column: 2;\n      display: none;\n      align-items: center; }\n    #ge-propertyTab .listLine img {\n      width: 30px; }\n    #ge-propertyTab .listLine .img {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .listLine .options {\n      grid-column: 2;\n      padding-left: 15px;\n      display: flex;\n      align-items: center;\n      margin-right: 5px; }\n      #ge-propertyTab .listLine .options select {\n        width: 120px;\n        height: 25px;\n        border: transparent;\n        border-radius: 4px; }\n  #ge-propertyTab .color3Line {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    padding-right: 18px;\n    display: grid; }\n    #ge-propertyTab .color3Line .firstLine {\n      height: var(--spacingHeight);\n      display: grid;\n      grid-template-columns: auto auto 1fr; }\n      #ge-propertyTab .color3Line .firstLine .label {\n        grid-column: 2;\n        padding-left: 5px;\n        display: none;\n        align-items: center;\n        min-width: 15px; }\n      #ge-propertyTab .color3Line .firstLine .img {\n        grid-column: 1;\n        display: flex;\n        align-items: center; }\n      #ge-propertyTab .color3Line .firstLine img {\n        width: 30px;\n        height: 30px; }\n      #ge-propertyTab .color3Line .firstLine .textInputLine {\n        grid-column: 3;\n        padding-left: 0px; }\n      #ge-propertyTab .color3Line .firstLine .color3 {\n        grid-column: 2;\n        margin-top: 6px;\n        display: flex;\n        align-items: center;\n        padding-left: 15px; }\n        #ge-propertyTab .color3Line .firstLine .color3 input {\n          margin-right: 5px; }\n      #ge-propertyTab .color3Line .firstLine .textInputLine .value {\n        padding-left: 2px; }\n      #ge-propertyTab .color3Line .firstLine .copy {\n        grid-column: 4;\n        display: none;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer;\n        color: black; }\n        #ge-propertyTab .color3Line .firstLine .copy img {\n          height: 100%;\n          width: 20px; }\n      #ge-propertyTab .color3Line .firstLine .expand {\n        grid-column: 4;\n        display: none;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n        #ge-propertyTab .color3Line .firstLine .expand img {\n          height: 100%;\n          width: 20px; }\n    #ge-propertyTab .color3Line .secondLine {\n      display: grid;\n      padding-right: 5px;\n      border-left: 1px solid #337ab7; }\n      #ge-propertyTab .color3Line .secondLine .numeric {\n        display: grid;\n        grid-template-columns: 1fr auto; }\n      #ge-propertyTab .color3Line .secondLine .numeric-label {\n        text-align: right;\n        grid-column: 1;\n        display: flex;\n        align-items: center;\n        justify-self: right;\n        margin-right: 10px; }\n      #ge-propertyTab .color3Line .secondLine .numeric-value {\n        width: 120px;\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        border: 1px solid #337ab7; }\n  #ge-propertyTab .textLine {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    padding-right: 18px;\n    height: auto;\n    display: grid;\n    grid-template-columns: auto auto 2fr 1fr; }\n    #ge-propertyTab .textLine .label {\n      grid-column: 2;\n      padding-left: 5px;\n      padding-top: 4px;\n      display: flex;\n      align-items: left;\n      min-width: 15px;\n      color: #a9a9a9;\n      font-size: 10px;\n      font-family: \"acumin-pro-semicondensed\"; }\n    #ge-propertyTab .textLine img {\n      width: 30px; }\n    #ge-propertyTab .textLine .img {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .textLine .link-value {\n      grid-column: 2;\n      white-space: nowrap;\n      text-overflow: ellipsis;\n      overflow: hidden;\n      text-align: end;\n      opacity: 0.8;\n      margin: 5px;\n      margin-top: 6px;\n      max-width: 140px;\n      text-decoration: underline;\n      cursor: pointer; }\n    #ge-propertyTab .textLine .value {\n      display: none;\n      grid-column: 3;\n      white-space: nowrap;\n      text-overflow: ellipsis;\n      overflow: hidden;\n      text-align: end;\n      opacity: 0.8;\n      margin: 5px;\n      margin-top: 6px;\n      max-width: 200px;\n      -webkit-user-select: text;\n      -moz-user-select: text;\n      -ms-user-select: text;\n      user-select: text; }\n      #ge-propertyTab .textLine .value.check {\n        color: green; }\n      #ge-propertyTab .textLine .value.uncheck {\n        color: red; }\n", "",{"version":3,"sources":["webpack://./components/propertyTab/propertyTab.scss"],"names":[],"mappings":"AAAA;EACI,yBAAiB;EACjB,qBAAgB;EAChB,8CAAc,EAAA;;AAGlB;EACI,yBAAyB,EAAA;;AAG7B;EACI,iBAAiB;EAKjB,YAAW;EACX,mBAAmB,EAAA;EAPvB;IASQ,uCAAuC;IACvC,eAAe,EAAA;EAVvB;IAaQ,YAAY;IACZ,eAAe;IACf,YAAY;IACZ,iBAAiB;IACjB,WAAW;IACX,kBAAkB;IAClB,aAAa;IACb,+BAA+B;IAC/B,yBAAyB;IACzB,sBAAsB;IACtB,qBAAqB;IACrB,iBAAiB,EAAA;IAxBzB;MA2BY,kBAAkB;MAClB,iBAAiB;MACjB,cAAc;MACd,WAAW;MACX,YAAY;MACZ,OAAM;MACN,aAAa;MACb,kBAAkB;MAClB,oBAAoB,EAAA;IAnChC;MAuCY,iBAAiB;MACjB,YAAY;MACZ,cAAc;MACd,aAAa;MACb,mBAAmB;MACnB,kBAAkB,EAAA;EA5C9B;IAiDQ,wBAAwB;IACxB,WAAW;IACX,WAAW;IACX,mBAAmB;IACnB,kBAAkB;IAClB,aAAa;IACb,YAAY;IACZ,uBAAuB;IACvB,uBAAuB,EAAA;EAzD/B;IA6DQ,UAAU,EAAA;EA7DlB;IAiEQ,wBAAwB;IACxB,gBAAgB;IAChB,WAAW;IACX,YAAY;IACZ,kBAAkB;IAClB,mBAAmB;IACnB,aAAa;IACb,kBAAkB;IAClB,eAAe,EAAA;EAzEvB;IA6EQ,WAAW;IACX,YAAY;IACZ,kBAAkB;IAClB,iBAAwB;IACxB,eAAe,EAAA;EAjFvB;IAqFQ,wBAAwB;IACxB,0CAA0C;IAC1C,UAAU;IACV,WAAW;IACX,YAAY,EAAA;EAzFpB;IA4FQ,UAAU,EAAA;EA5FlB;IA+FQ,YAAY,EAAA;EA/FpB;IAmGQ,WAAW;IACX,YAAY;IACZ,uBAAuB;IACvB,YAAY;IACZ,eAAe,EAAA;EAvGvB;IA2GQ,yBAAyB,EAAA;EA3GjC;IA+GQ,iBA7GmB;IA8GnB,mBA7GqB;IA8GrB,gBA7GkB;IA8GlB,mBA7GqB;IA8GrB,4BAA4B;IAC5B,aAAa;IACb,wBAAwB;IACxB,yCAAyC,EAAA;IAtHjD;MAyHY,cAAc;MACd,aAAa;MACb,mBAAmB;MACnB,eAAe;MACf,+BAA+B,EAAA;IA7H3C;MAiIY,cAAc;MACd,aAAa;MACb,mBAAmB,EAAA;IAnI/B;MAwIY,cAAc;MACd,WAAW;MACX,iBAAiB;MACjB,UAAU;MACV,aAAa;MACb,mBAAmB;MACnB,iBAAiB,EAAA;IA9I7B;MAkJY,cAAc;MACd,iBAAiB,EAAA;MAnJ7B;QAsJgB,cAAc;QACd,aAAa;QACb,mBAAmB;QACnB,+BAA+B,EAAA;MAzJ/C;QA6JgB,cAAc;QACd,aAAa;QACb,mBAAmB,EAAA;QA/JnC;UAkKoB,WAAW;UACX,uBAAuB;UACvB,0BAA0B;UAC1B,mBAAmB;UACnB,YAAY;UACZ,kBACJ,EAAA;QAxKhB;;UA4KkB,wBAAwB;UACxB,SAAS,EAAA;QA7K3B;UAiLoB,0BAA0B,EAAA;EAjL9C;IAwLQ,aAAa;IACb,oDAAoD;IACpD,mBArLqB,EAAA;EAL7B;IA8LQ,aAAa;IACb,8BAA8B;IAC9B,mBA3LqB,EAAA;EAL7B;IAoMQ,cAAc;IACd,mBAhMqB,EAAA;EAL7B;IAyMQ,aAAa;IACb,qCAAqC,EAAA;IA1M7C;MA6MY,iBAAiB,EAAA;EA7M7B;IAmNQ,aAAa;IACb,0CAA0C,EAAA;EApNlD;IAwNQ,aAAa;IACb,yBAAyB;IACzB,kBAAkB;IAClB,iBAAiB,EAAA;EA3NzB;IA+NQ,aAAa;IACb,yBAAyB;IACzB,kBAAkB;IAClB,iBAAiB,EAAA;EAlOzB;IAuOQ,aAAa;IACb,kBAAkB,EAAA;EAxO1B;IA6OQ,iBAAiB;IACjB,iBA5OmB;IA6OnB,mBA5OqB;IA6OrB,gBA5OkB;IA6OlB,mBA5OqB;IA6OrB,4BAA4B;IAC5B,aAAa;IACb,oCAAoC,EAAA;IApP5C;MAsPY,cAAc;MACd,aAAa;MACb,mBAAmB;MACnB,eAAe;MACf,+BAA+B,EAAA;IA1P3C;MA8PY,WAAW,EAAA;IA9PvB;MAkQY,cAAc;MACd,aAAa;MACb,mBAAmB,EAAA;IApQ/B;MAwQY,aAAa;MACb,mBAAmB;MACnB,cAAc;MACd,uBAAuB;MACvB,YAAY,EAAA;MA5QxB;QA8QgB,uBAAuB;QACvB,uBAAuB;QACvB,0BAA0B;QAC1B,mBAAmB;QACnB,kBAAkB;QAClB,YAAY,EAAA;EAnR5B;IAyRQ,yCAAyC,EAAA;EAzRjD;IA6RQ,iBA3RmB;IA4RnB,YAAY;IACZ,aAAa;IACb,gCAAgC,EAAA;IAhSxC;MAmSY,cAAc;MACd,aAAa;MACb,mBAAmB,EAAA;IArS/B;MAySY,aAAa;MACb,mBAAmB;MACnB,cAAc,EAAA;MA3S1B;QA8SgB,uBAAuB;QACvB,iBAAiB;QACjB,YAAY,EAAA;EAhT5B;IAsTQ,eAAe;IACf,aAAY;IACZ,wBAAwB;IACxB,2BAA2B,EAAA;IAzTnC;MA4TY,kCAAkC,EAAA;IA5T9C;MAiUgB,8CAA8C,EAAA;IAjU9D;MAuUwB,8BAAwC,EAAA;IAvUhE;MA8UY,WAAW;MACX,cAAc;MACd,UAAU;MACV,qBAAqB;MACrB,yBAAyB;MACzB,oBAAoB,EAAA;MAnVhC;QAsVgB,UAAU,EAAA;IAtV1B;MA2VY,WAAW;MACX,cAAc,EAAA;MA5V1B;QA+VgB,aAAa;QACb,+BAA+B;QAC/B,mBAAmB;QACnB,4BAA4B;QAC5B,mBAhWa;QAiWb,gBAhWU;QAiWV,kBAAkB;QAClB,eAAe,EAAA;QAtW/B;UAyWoB,kCAAkC;UAClC,iBAAiB;UACjB,cAAc;UACd,aAAa;UACb,mBAAmB,EAAA;QA7WvC;UAiXoB,cAAc;UACd,aAAa;UACb,mBAAmB;UACnB,qBAAqB;UACrB,wBAAwB,EAAA;UArX5C;YAwXwB,yBAAyB,EAAA;MAxXjD;QA8XgB,mDAAmD,EAAA;MA9XnE;QAkYgB,mDAAmD,EAAA;EAlYnE;IAwYQ,aAAa;IACb,WAAW,EAAA;IAzYnB;MA4YY,YAAY;MACZ,uBAAuB;MACvB,eAAe;MACf,gFAAkF,EAAA;MA/Y9F;QAiZgB,YAAY,EAAA;IAjZ5B;MAsZY,eAAe;MACf,QAAQ;MACR,UAAU;MACV,WAAW;MACX,SAAS,EAAA;IA1ZrB;MA8ZY,UAAU;MACV,kBAAkB,EAAA;EA/Z9B;IAoaQ,aAAa;IACb,wBAAwB;IACxB,oDAAoD;IACpD,gBAAgB;IAChB,iBAAiB;IACjB,mBAAmB,EAAA;IAza3B;MA4aY,WAAW;MACX,cAAc,EAAA;IA7a1B;MAibY,WAAW;MACX,cAAc;MACd,eAAe,EAAA;IAnb3B;MAubY,gBAAgB;MAChB,WAAW;MACX,cAAc;MACd,iBAAiB;MACjB,iBAAiB,EAAA;IA3b7B;MA+bY,WAAW;MACX,cAAc;MACd,aAAa;MACb,wBAAwB;MACxB,qBAAqB;MACrB,kBAAkB;MAClB,kBAAkB,EAAA;MArc9B;QAwcgB,UAAU,EAAA;IAxc1B;MA6cY,WAAW;MACX,cAAc;MACd,aAAa;MACb,qBAAqB;MACrB,uBAAuB,EAAA;MAjdnC;QAodgB,YAAY;QACZ,WAAW,EAAA;MArd3B;QAwdgB,eAAe,EAAA;IAxd/B;MA6dY,WAAW;MACX,cAAc;MACd,aAAa;MACb,qBAAqB;MACrB,uBAAuB,EAAA;MAjenC;QAmegB,YAAY;QACZ,WAAW,EAAA;MApe3B;QAuegB,eAAe,EAAA;EAve/B;IA+eQ,aAAa;IACb,uBAAuB;IACvB,kBAAkB,EAAA;EAjf1B;IAqfQ,eAAe;IACf,WAAW,EAAA;IAtfnB;MAyfY,aAAa,EAAA;IAzfzB;MA6fY,YAAY;MACZ,WAAW;MACX,aAAa;MACb,YAAY;MACZ,qBAAqB;MACrB,uBAAuB,EAAA;IAlgBnC;MAsgBY,uBAAuB,EAAA;IAtgBnC;MA0gBY,wBAAwB;MACxB,uBAAuB,EAAA;IA3gBnC;MAghBgB,uBAAuB,EAAA;EAhhBvC;IAshBQ,eAAe;IACf,WAAW;IACX,gBAAgB;IAChB,iBAAiB;IAKjB,uBAAuB,EAAA;IA9hB/B;MA2hBY,aAAa,EAAA;IA3hBzB;MAgiBY,YAAY;MACZ,WAAW;MACX,aAAa;MACb,qBAAqB;MACrB,uBAAuB,EAAA;IApiBnC;MAuiBY,yBAAyB;MACzB,iBAAiB,EAAA;EAxiB7B;IA6iBQ,eAAe;IACf,oBAAoB;IACpB,WAAW;IACX,gBAAgB;IAChB,iBAAiB;IAKjB,uBAAuB,EAAA;IAtjB/B;MAmjBY,aAAa,EAAA;IAnjBzB;MAwjBY,YAAY;MACZ,WAAW;MACX,aAAa;MACb,qBAAqB;MACrB,uBAAuB,EAAA;IA5jBnC;MAgkBY,iBAAiB,EAAA;EAhkB7B;IAskBQ,eAAe;IACf,oBAAoB;IACpB,WAAW;IACX,gBAAgB;IAChB,iBAAiB;IAKjB,yBAAyB;IACzB,iBAAiB,EAAA;IAhlBzB;MA4kBY,aAAa,EAAA;IA5kBzB;MAklBY,YAAY;MACZ,WAAW;MACX,aAAa;MACb,qBAAqB;MACrB,uBAAuB,EAAA;EAtlBnC;IA2lBQ,iBAAiB;IACjB,iBA1lBmB;IA2lBnB,4BAA4B;IAC5B,mBA3lBqB;IA4lBrB,gBA3lBkB;IA4lBlB,aAAa;IACb,wCAAwC,EAAA;IAjmBhD;MAomBY,cAAc;MACd,aAAa;MACb,mBAAmB;MACnB,eAAe;MACf,+BAA+B,EAAA;IAxmB3C;MA4mBY,WAAW,EAAA;IA5mBvB;MAgnBY,cAAc;MACd,aAAa;MACb,mBAAmB,EAAA;IAlnB/B;MAsnBY,aAAa;MACb,mBAAmB;MACnB,cAAc;MACd,uBAAuB;MACvB,YAAY,EAAA;MA1nBxB;QA4nBgB,uBAAuB;QACvB,uBAAuB;QACvB,0BAA0B;QAC1B,YAAY;QACZ,kBAAkB;QAClB,YAAY,EAAA;IAjoB5B;MAsoBY,cAAc;MAEd,aAAa;MACb,mBAAmB,EAAA;MAzoB/B;QA4oBgB,WAAW,EAAA;MA5oB3B;;QAipBc,wBAAwB;QACxB,SAAS,EAAA;MAlpBvB;QAspBgB,0BAA0B,EAAA;EAtpB1C;IA4pBQ,iBA1pBmB;IA2pBnB,mBA1pBqB;IA2pBrB,gBA1pBkB;IA2pBlB,aAAa,EAAA;IA/pBrB;MAiqBY,aAAa;MACb,oCAAoC;MACpC,4BAA4B,EAAA;MAnqBxC;QAsqBgB,cAAc;QACd,aAAa;QACb,mBAAmB,EAAA;MAxqBnC;QA4qBgB,cAAc;QACd,aAAa;QACb,mBAAmB;QACnB,iBAAiB;QACjB,YAAY,EAAA;MAhrB5B;QAorBgB,cAAc;QACd,aAAa;QACb,mBAAmB;QACnB,qBAAqB;QACrB,eAAe,EAAA;IAxrB/B;MA6rBY,aAAa;MACb,kBAAkB;MAClB,8BAAwC,EAAA;MA/rBpD;QAksBgB,eAAe,EAAA;MAlsB/B;QAssBgB,aAAa;QACb,+BAA+B,EAAA;MAvsB/C;QA2sBgB,iBAAiB;QACjB,cAAc;QACd,aAAa;QACb,mBAAmB;QACnB,mBAAmB;QACnB,kBAAkB,EAAA;MAhtBlC;QAotBgB,YAAY;QACZ,cAAc;QACd,aAAa;QACb,mBAAmB;QACnB,yBAAoC,EAAA;EAxtBpD;IA8tBQ,4BAA4B;IAC5B,mBA5tBqB;IA6tBrB,gBA5tBkB;IA6tBlB,aAAa;IACb,mBAAmB;IACnB,sBAAsB;IACtB,mBAAmB,EAAA;IApuB3B;MAsuBY,aAAa,EAAA;IAtuBzB;MA0uBY,iCAAiC;MACjC,yBAAyB;MACzB,gBAAgB;MAChB,YAAW;MACX,gBAAgB;MAChB,YAAY;MACZ,eAAe;MACf,kBAAkB;MAClB,kBAAkB,EAAA;IAlvB9B;MAsvBY,YAAY,EAAA;IAtvBxB;MA0vBY,sBAAsB;MACtB,yBAAyB,EAAA;IA3vBrC;MA+vBY,iCAAiC;MACjC,yBAAyB;MACzB,yBAAyB;MACzB,YAAW;MACX,gBAAgB;MAChB,YAAY;MACZ,kBAAkB,EAAA;IArwB9B;MAywBY,YAAY,EAAA;IAzwBxB;MA6wBY,mBAAmB,EAAA;IA7wB/B;MAixBY,yBAAyB;MACzB,YAAY,EAAA;EAlxBxB;IAuxBQ,iBArxBmB;IAsxBnB,mBArxBqB;IAsxBrB,gBArxBkB;IAsxBlB,4BAA4B;IAC5B,aAAa;IACb,qCAAqC,EAAA;IA5xB7C;MA+xBY,cAAc;MACd,aAAa;MACb,mBAAmB,EAAA;IAjyB/B;MAqyBY,aAAa;MACb,mBAAmB;MACnB,cAAc;MACd,YAAY,EAAA;MAxyBxB;QA0yBgB,uBAAuB;QACvB,YAAY,EAAA;EA3yB5B;IAizBQ,iBA/yBmB;IAgzBnB,mBA/yBqB;IAgzBrB,gBA/yBkB;IAgzBlB,mBA/yBqB;IAgzBrB,4BAA4B;IAC5B,aAAa;IACb,oCAAqC,EAAA;IAvzB7C;MA0zBY,cAAc;MACd,aAAa;MACb,mBAAmB;MACnB,gBAAgB;MAChB,iBAAiB;MACjB,+BAA+B,EAAA;IA/zB3C;MAm0BY,WAAW,EAAA;IAn0BvB;MAu0BY,cAAc;MACd,aAAa;MACb,mBAAmB,EAAA;IAz0B/B;MA60BY,cAAc;MACd,aAAa;MACb,mBAAmB;MACnB,iBAAiB;MACjB,iBAAiB,EAAA;MAj1B7B;QAo1BgB,kBAAkB;QAClB,cAAc;QACd,YAAY;QACZ,WAAW;QACX,oBAAoB;QACpB,eAAe;QACf,yBAAyB;QACzB,aAAa;QACb,kBAAkB,EAAA;MA51BlC;QAg2BgB,kBAAkB;QAClB,SAAS;QACT,QAAQ;QACR,cAAc;QACd,WAAW;QACX,YAAY;QACZ,oBAAoB;QACpB,mBAAmB;QACnB,2CAAwC;QACxC,WAAW;QACX,0BAA0B;QAC1B,aAAa;QACb,kBAAkB,EAAA;MA52BlC;QAg3BgB,4BAA4B,EAAA;MAh3B5C;QAo3BgB,uBAAuB,EAAA;MAp3BvC;QAy3BgB,UAAU;QACV,iBAAwB;QACxB,aAAa;QACb,kBAAkB,EAAA;MA53BlC;QAg4BgB,UAAU;QACV,iGAAiG,EAAA;MAj4BjH;QAq4BgB,iBAAwB;QACxB,eAAe,EAAA;MAt4B/B;QA04BgB,UAAU;QACV,mBAA2B;QAC3B,eAAe,EAAA;MA54B/B;QAg5BgB,mBAA2B;QAC3B,eAAe,EAAA;MAj5B/B;QAq5BgB,aAAa,EAAA;EAr5B7B;IA25BQ,iBAz5BmB;IA05BnB,mBAz5BqB;IA05BrB,gBAz5BkB;IA05BlB,4BAA4B;IAC5B,aAAa;IACb,oCAAqC,EAAA;IAh6B7C;MAm6BY,cAAc;MACd,aAAa;MACb,mBAAmB,EAAA;IAr6B/B;MAy6BY,WAAW,EAAA;IAz6BvB;MA66BY,cAAc;MACd,aAAa;MACb,mBAAmB,EAAA;IA/6B/B;MAm7BY,cAAc;MACd,kBAAkB;MAClB,aAAa;MACb,mBAAmB;MACnB,iBAAiB,EAAA;MAv7B7B;QA07BgB,YAAY;QACZ,YAAY;QACZ,mBAAmB;QACnB,kBAAkB,EAAA;EA77BlC;IAm8BQ,iBAj8BmB;IAk8BnB,mBAj8BqB;IAk8BrB,gBAj8BkB;IAk8BlB,mBAj8BqB;IAk8BrB,aAAa,EAAA;IAv8BrB;MA08BY,4BAA4B;MAC5B,aAAa;MACb,oCAAoC,EAAA;MA58BhD;QA+8BgB,cAAc;QACd,iBAAiB;QACjB,aAAa;QACb,mBAAmB;QACnB,eAAe,EAAA;MAn9B/B;QAu9BgB,cAAc;QACd,aAAa;QACb,mBAAmB,EAAA;MAz9BnC;QA69BgB,WAAW;QACX,YAAY,EAAA;MA99B5B;QAk+BgB,cAAc;QACd,iBAAiB,EAAA;MAn+BjC;QAu+BgB,cAAc;QACd,eAAe;QACf,aAAa;QACb,mBAAmB;QACnB,kBAAkB,EAAA;QA3+BlC;UA8+BoB,iBAAiB,EAAA;MA9+BrC;QAo/BoB,iBAAiB,EAAA;MAp/BrC;QAy/BgB,cAAc;QACd,aAAa;QACb,mBAAmB;QACnB,qBAAqB;QACrB,eAAe;QACf,YAAY,EAAA;QA9/B5B;UAggCoB,YAAY;UACZ,WAAW,EAAA;MAjgC/B;QAsgCgB,cAAc;QACd,aAAa;QACb,mBAAmB;QACnB,qBAAqB;QACrB,eAAe,EAAA;QA1gC/B;UA6gCoB,YAAY;UACZ,WAAW,EAAA;IA9gC/B;MAohCY,aAAa;MACb,kBAAkB;MAClB,8BAAwC,EAAA;MAthCpD;QAyhCgB,aAAa;QACb,+BAA+B,EAAA;MA1hC/C;QA8hCgB,iBAAiB;QACjB,cAAc;QACd,aAAa;QACb,mBAAmB;QACnB,mBAAmB;QACnB,kBAAkB,EAAA;MAniClC;QAuiCgB,YAAY;QACZ,cAAc;QACd,aAAa;QACb,mBAAmB;QACnB,yBAAoC,EAAA;EA3iCpD;IAijCQ,iBA/iCmB;IAgjCnB,mBA/iCqB;IAgjCrB,gBA/iCkB;IAgjClB,mBA/iCqB;IAgjCrB,YAAY;IACZ,aAAa;IACb,wCAAwC,EAAA;IAvjChD;MAyjCY,cAAc;MACd,iBAAiB;MACjB,gBAAgB;MAChB,aAAa;MACb,iBAAiB;MACjB,eAAe;MACf,cAAc;MACd,eAAe;MACf,uCAAuC,EAAA;IAjkCnD;MAqkCY,WAAW,EAAA;IArkCvB;MAykCY,cAAc;MACd,aAAa;MACb,mBAAmB,EAAA;IA3kC/B;MA+kCY,cAAc;MACd,mBAAmB;MACnB,uBAAuB;MACvB,gBAAgB;MAChB,eAAe;MACf,YAAY;MACZ,WAAU;MACV,eAAe;MACf,gBAAgB;MAChB,0BAA0B;MAC1B,eAAe,EAAA;IAzlC3B;MA6lCY,aAAa;MACb,cAAc;MACd,mBAAmB;MACnB,uBAAuB;MACvB,gBAAgB;MAChB,eAAe;MACf,YAAY;MACZ,WAAU;MACV,eAAe;MACf,gBAAgB;MAChB,yBAAyB;MACzB,sBAAsB;MACtB,qBAAqB;MACrB,iBAAiB,EAAA;MA1mC7B;QA6mCgB,YAAY,EAAA;MA7mC5B;QAinCgB,UAAU,EAAA","sourcesContent":[":root {\r\n    --backgroundGrey: #aaaaaa;\r\n    --spacingHeight: 30px;\r\n    --labelFamily: \"acumin-pro-condensed-semibold\";\r\n}\r\n\r\nhr.ge {\r\n    border: 1px solid #d0cece;\r\n}\r\n\r\n#ge-propertyTab {\r\n    user-select: none;\r\n    $line-padding-left: 5px;\r\n    $line-padding-bottom: 0px;\r\n    $line-padding-top: 0px;\r\n    $line-padding-right: 18px;\r\n    color:black;\r\n    background: #e2e2e2;\r\n      * {\r\n        font-family: \"acumin-pro-semicondensed\";\r\n        font-size: 12px;\r\n      }\r\n      #header {\r\n        height: 30px;\r\n        font-size: 16px;\r\n        color: white;\r\n        background: white;\r\n        grid-row: 1;\r\n        text-align: center;\r\n        display: grid;\r\n        grid-template-columns: 30px 1fr;        \r\n        -webkit-user-select: none; \r\n        -moz-user-select: none;   \r\n        -ms-user-select: none;    \r\n        user-select: none;                \r\n\r\n        #logo {\r\n            position: relative;\r\n            background: white;\r\n            grid-column: 1; \r\n            width: 32px;\r\n            height: 32px;\r\n            left:0;\r\n            display: flex;\r\n            align-self: center;   \r\n            justify-self: center;\r\n        }        \r\n\r\n        #title {\r\n            background: white;\r\n            color: black;\r\n            grid-column: 2; \r\n            display: grid;\r\n            align-items: center;   \r\n            text-align: center;\r\n        }\r\n    }\r\n\r\n    .range {\r\n        -webkit-appearance: none;\r\n        width: 100%;\r\n        height: 2px;\r\n        background: #bcbcbc;\r\n        border-radius: 5px;\r\n        outline: none;\r\n        opacity: 0.7;\r\n        -webkit-transition: .2s;\r\n        transition: opacity .2s;\r\n    }\r\n    \r\n    .range:hover {\r\n        opacity: 1;\r\n    }\r\n    \r\n    .range::-webkit-slider-thumb {\r\n        -webkit-appearance: none;\r\n        appearance: none;\r\n        width: 14px;\r\n        height: 14px;\r\n        border-radius: 50%;\r\n        background: #e2e2e2;\r\n        border: solid;\r\n        border-width: thin;\r\n        cursor: pointer;\r\n    }\r\n    \r\n    .range::-moz-range-thumb {\r\n        width: 14px;\r\n        height: 14px;\r\n        border-radius: 50%;\r\n        background: rgb(0, 0, 0);\r\n        cursor: pointer;\r\n    }\r\n\r\n    input[type=\"color\"] {\r\n        -webkit-appearance: none;\r\n        border: 1px solid rgba(255, 255, 255, 0.5);\r\n        padding: 0;\r\n        width: 30px;\r\n        height: 20px;\r\n    }\r\n    input[type=\"color\"]::-webkit-color-swatch-wrapper {\r\n        padding: 0;\r\n    }\r\n    input[type=\"color\"]::-webkit-color-swatch {\r\n        border: none;\r\n    }\r\n\r\n    .unit {\r\n        width: 26px;\r\n        height: 26px;\r\n        background-color: white;\r\n        border: none;\r\n        margin-top: 2px;\r\n    }\r\n\r\n    .unit.disabled {\r\n        background-color: #c8c8c8;\r\n    }\r\n\r\n    .sliderLine {\r\n        padding-left: $line-padding-left;\r\n        padding-bottom: $line-padding-bottom;\r\n        padding-top: $line-padding-top;\r\n        padding-right: $line-padding-right;\r\n        height: var(--spacingHeight);;\r\n        display: grid;\r\n        grid-template-rows: 100%;\r\n        grid-template-columns: auto auto auto 1fr;\r\n\r\n        .label {\r\n            grid-column: 2;\r\n            display: flex;\r\n            align-items: center;\r\n            min-width: 15px;\r\n            font-family: var(--labelFamily);\r\n        }\r\n\r\n        .img {\r\n            grid-column: 1;\r\n            display: flex;\r\n            align-items: center;\r\n        }\r\n\r\n\r\n        .slider {\r\n            grid-column: 4;\r\n            grid-row: 1;\r\n            margin-right: 5px;\r\n            width: 90%;\r\n            display: flex;\r\n            align-items: center;\r\n            padding-left: 5px;\r\n        }\r\n\r\n        .floatLine {\r\n            grid-column: 3;\r\n            padding-left: 0px;\r\n            \r\n            .label {\r\n                grid-column: 1;\r\n                display: none;\r\n                align-items: center;\r\n                font-family: var(--labelFamily);\r\n            }\r\n        \r\n            .short {\r\n                grid-column: 1; \r\n                display: flex;\r\n                align-items: center;\r\n                \r\n                input {\r\n                    width: 60px;\r\n                    background-color: white;\r\n                    outline-color: transparent;\r\n                    border: transparent;\r\n                    height: 26px;\r\n                    outline-width: 0px\r\n                }\r\n                \r\n                input::-webkit-outer-spin-button,\r\n                input::-webkit-inner-spin-button {\r\n                  -webkit-appearance: none;\r\n                  margin: 0;\r\n                }\r\n    \r\n                input[type=number] {\r\n                    -moz-appearance: textfield;\r\n                }\r\n            }\r\n        }  \r\n    }     \r\n\r\n    .ge-divider {\r\n        display: grid;\r\n        grid-template-columns: auto auto auto auto auto auto;\r\n        padding-right: $line-padding-right;\r\n    }\r\n\r\n    .ge-divider-short {\r\n        display: grid;\r\n        grid-template-columns: 1fr 1fr;\r\n        padding-right: $line-padding-right;\r\n    }\r\n\r\n    .ge-divider-single {\r\n        display: block;\r\n        padding-right: $line-padding-right;\r\n    }\r\n    \r\n    .ge-grid-divider {\r\n        display: grid;\r\n        grid-template-columns: 150px 1fr auto;\r\n        \r\n        .textLine {\r\n            grid-column: auto;\r\n           \r\n        }\r\n    }\r\n\r\n    .ge-grid-button-divider {\r\n        display: grid;\r\n        grid-template-columns: 60px 60px 60px 60px;\r\n    }\r\n\r\n    .ge-grid-remove {\r\n        display: grid;\r\n        background-color: #c2c2c2;\r\n        margin-bottom: 5px;\r\n        filter: invert(1);\r\n    }\r\n\r\n    .ge-grid-edit {\r\n        display: grid;\r\n        background-color: #878787;\r\n        margin-bottom: 5px;\r\n        filter: invert(1);\r\n\r\n    }\r\n  \r\n    .ge-grid {\r\n        display: grid;\r\n        margin-bottom: 5px;\r\n    }\r\n\r\n\r\n    .textInputLine {\r\n        user-select: none;\r\n        padding-left: $line-padding-left;\r\n        padding-bottom: $line-padding-bottom;\r\n        padding-top: $line-padding-top;\r\n        padding-right: $line-padding-right;\r\n        height: var(--spacingHeight);\r\n        display: grid;\r\n        grid-template-columns: auto auto 1fr;\r\n        .label {\r\n            grid-column: 2;\r\n            display: flex;\r\n            align-items: center;\r\n            min-width: 15px;\r\n            font-family: var(--labelFamily);\r\n        }\r\n\r\n        img {\r\n            width: 30px;\r\n        }\r\n        \r\n        .img {\r\n            grid-column: 1;\r\n            display: flex;\r\n            align-items: center;\r\n        }\r\n\r\n        .value {                        \r\n            display: flex;\r\n            align-items: center;\r\n            grid-column: 3;\r\n            background: transparent;\r\n            height: 30px;\r\n            input {\r\n                width: calc(100% - 5px);\r\n                background-color: white;\r\n                outline-color: transparent;\r\n                border: transparent;\r\n                outline-width: 0px;\r\n                height: 24px;\r\n            }\r\n        }\r\n    }\r\n\r\n    .textInputLine.withUnits {\r\n        grid-template-columns: auto auto 1fr auto;\r\n    }\r\n    \r\n    .textInputArea {\r\n        padding-left: $line-padding-left;\r\n        height: 100%;\r\n        display: grid;\r\n        grid-template-columns: 1fr 120px;\r\n\r\n        .label {\r\n            grid-column: 1;\r\n            display: flex;\r\n            align-items: center;\r\n        }\r\n\r\n        .value {                        \r\n            display: flex;\r\n            align-items: center;\r\n            grid-column: 2;\r\n            \r\n            textarea {\r\n                width: calc(150% - 5px);\r\n                margin-left: -50%;\r\n                height: 40px;\r\n            }\r\n        }\r\n    }\r\n    \r\n    .paneContainer {\r\n        margin-top: 3px;\r\n        display:grid;\r\n        grid-template-rows: 100%;\r\n        grid-template-columns: 100%;\r\n        \r\n        .paneList {\r\n            border-left: 3px solid transparent;\r\n        }\r\n\r\n        &:hover {  \r\n            .paneList {                      \r\n                border-left: 3px solid rgba(51, 122, 183, 0.8);\r\n            }\r\n\r\n            .paneContainer-content {\r\n                .header {\r\n                    .title {   \r\n                        border-left: 3px solid rgb(51, 122, 183);\r\n                    }\r\n                }\r\n            }\r\n        }\r\n        \r\n        .paneContainer-highlight-border {\r\n            grid-row: 1;\r\n            grid-column: 1;\r\n            opacity: 1;\r\n            border: 3px solid red;\r\n            transition: opacity 250ms;\r\n            pointer-events: none;\r\n            \r\n            &.transparent {\r\n                opacity: 0;\r\n            }\r\n        }\r\n\r\n        .paneContainer-content {\r\n            grid-row: 1;\r\n            grid-column: 1;\r\n\r\n            .header {\r\n                display: grid;\r\n                grid-template-columns: 1fr auto;\r\n                background: #cccccc;    \r\n                height: var(--spacingHeight);\r\n                padding-bottom: $line-padding-bottom;\r\n                padding-top: $line-padding-top;\r\n                padding-right: 5px;                        \r\n                cursor: pointer;\r\n                \r\n                .title {                                \r\n                    border-left: 3px solid transparent;\r\n                    padding-left: 5px;\r\n                    grid-column: 1;\r\n                    display: flex;\r\n                    align-items: center;\r\n                }\r\n\r\n                .collapse {\r\n                    grid-column: 2;\r\n                    display: flex;\r\n                    align-items: center;  \r\n                    justify-items: center;\r\n                    transform-origin: center;\r\n\r\n                    &.closed {\r\n                        transform: rotate(180deg);\r\n                    }\r\n                }                        \r\n            }\r\n\r\n            .paneList > div:not(:last-child) {\r\n                border-bottom: 0.5px solid rgba(255, 255, 255, 0.1);\r\n            }\r\n\r\n            .fragment > div:not(:last-child)  {\r\n                border-bottom: 0.5px solid rgba(255, 255, 255, 0.1);\r\n            }\r\n        }\r\n    }\r\n\r\n    .color-picker {\r\n        height: 150px;\r\n        width: 15px;\r\n\r\n        .color-rect-background {\r\n            height: 15px;\r\n            border: 1px black solid;\r\n            cursor: pointer;\r\n            background: repeating-conic-gradient(#E2E2E2 0% 25%, white 0% 50%) 50% / 10px 10px;\r\n            .color-rect {\r\n                height: 100%;\r\n            }\r\n        }\r\n\r\n        .color-picker-cover {\r\n            position: fixed;\r\n            top: 0px;\r\n            right: 0px;\r\n            bottom: 0px;\r\n            left: 0px;\r\n        }\r\n\r\n        .color-picker-float {\r\n            z-index: 2;\r\n            position: absolute;  \r\n        }                \r\n    }\r\n\r\n    .gradient-step {\r\n        display: grid;\r\n        grid-template-rows: 100%;\r\n        grid-template-columns: 20px 30px 40px auto 20px 30px;\r\n        padding-top: 5px;\r\n        padding-left: 5px;\r\n        padding-bottom: 5px;\r\n\r\n        .step {\r\n            grid-row: 1;\r\n            grid-column: 1;\r\n        }\r\n            \r\n        .color {\r\n            grid-row: 1;\r\n            grid-column: 2;\r\n            cursor: pointer;\r\n        }\r\n\r\n        .step-value {       \r\n            margin-left: 5px;     \r\n            grid-row: 1;\r\n            grid-column: 3;\r\n            text-align: right;\r\n            margin-right: 5px;\r\n        }\r\n\r\n        .step-slider {            \r\n            grid-row: 1;\r\n            grid-column: 4;\r\n            display: grid;\r\n            justify-content: stretch;\r\n            align-content: center;\r\n            margin-right: -5px;\r\n            padding-left: 12px;\r\n\r\n            input {\r\n                width: 90%;\r\n            }\r\n        }\r\n\r\n        .gradient-copy {            \r\n            grid-row: 1;\r\n            grid-column: 5;\r\n            display: grid;\r\n            align-content: center;\r\n            justify-content: center;\r\n \r\n            .img {\r\n                height: 20px;\r\n                width: 20px;\r\n            }\r\n            .img:hover {\r\n                cursor: pointer;\r\n            }\r\n\r\n        }\r\n        .gradient-delete {            \r\n            grid-row: 1;\r\n            grid-column: 6;\r\n            display: grid;\r\n            align-content: center;\r\n            justify-content: center;\r\n            .img {\r\n                height: 20px;\r\n                width: 20px;\r\n            }\r\n            .img:hover {\r\n                cursor: pointer;\r\n            }\r\n\r\n        }\r\n\r\n    }\r\n\r\n    .alignment-bar {\r\n        display: flex;\r\n        justify-content: center;\r\n        padding-right: 5px;\r\n    }\r\n\r\n    .command-button {\r\n        cursor: pointer;\r\n        width: 30px;\r\n\r\n        .command-label {\r\n            display: none;\r\n        }        \r\n\r\n        .command-button-icon {\r\n            height: 100%;\r\n            width: 100%;\r\n            display: grid;\r\n            color: white;\r\n            align-content: center;\r\n            justify-content: center;\r\n        }\r\n\r\n        &:hover {\r\n            background-color: white;\r\n        } \r\n        \r\n        .active {\r\n            transform-origin: center;\r\n            background-color: white;\r\n        }\r\n\r\n        img {\r\n            &.active {\r\n                background-color: white;\r\n            }\r\n        }\r\n    }\r\n\r\n    .command-button-alt {\r\n        cursor: pointer;\r\n        width: 40px;\r\n        margin-left: 5px;\r\n        margin-right: 5px;\r\n        .command-label {\r\n            display: none;\r\n        }        \r\n\r\n        background-color: white;\r\n        .command-button-icon {\r\n            height: 100%;\r\n            width: 100%;\r\n            display: grid;\r\n            align-content: center;\r\n            justify-content: center;\r\n        }\r\n        &:hover {\r\n            background-color: #c2c2c2;\r\n            filter: invert(1);\r\n        } \r\n    }\r\n\r\n    .command-button-alt-disabled {\r\n        cursor: pointer;\r\n        pointer-events: none;\r\n        width: 40px;\r\n        margin-left: 5px;\r\n        margin-right: 5px;\r\n        .command-label {\r\n            display: none;\r\n        }        \r\n\r\n        background-color: white;\r\n        .command-button-icon {\r\n            height: 100%;\r\n            width: 100%;\r\n            display: grid;\r\n            align-content: center;\r\n            justify-content: center;\r\n        }\r\n\r\n        img {\r\n            filter: invert(1);\r\n        }\r\n    }\r\n\r\n    \r\n    .command-button-alt-active {\r\n        cursor: pointer;\r\n        pointer-events: none;\r\n        width: 40px;\r\n        margin-left: 5px;\r\n        margin-right: 5px;\r\n        .command-label {\r\n            display: none;\r\n        }        \r\n\r\n        background-color: #c2c2c2;\r\n        filter: invert(1);\r\n        .command-button-icon {\r\n            height: 100%;\r\n            width: 100%;\r\n            display: grid;\r\n            align-content: center;\r\n            justify-content: center;\r\n        }\r\n    }\r\n\r\n    .floatLine {\r\n        user-select: none;\r\n        padding-left: $line-padding-left;\r\n        height: var(--spacingHeight);\r\n        padding-bottom: $line-padding-bottom;\r\n        padding-top: $line-padding-top;\r\n        display: grid;\r\n        grid-template-columns: auto auto 2fr 1fr;\r\n\r\n        .label {\r\n            grid-column: 2;\r\n            display: flex;\r\n            align-items: center;\r\n            min-width: 15px;\r\n            font-family: var(--labelFamily);\r\n        }\r\n\r\n        img {\r\n            width: 30px;\r\n        }\r\n\r\n        .img {\r\n            grid-column: 1;\r\n            display: flex;\r\n            align-items: center;\r\n        }\r\n\r\n        .value {                        \r\n            display: flex;\r\n            align-items: center;\r\n            grid-column: 3;\r\n            background: transparent;\r\n            height: 30px;\r\n            input {\r\n                width: calc(100% - 5px);\r\n                background-color: white;\r\n                outline-color: transparent;\r\n                border: none;\r\n                outline-width: 0px;\r\n                height: 24px;\r\n            }\r\n        }\r\n\r\n        .short {\r\n            grid-column: 2;\r\n            \r\n            display: flex;\r\n            align-items: center;\r\n            \r\n            input {\r\n                width: 27px;\r\n            }\r\n            \r\n            input::-webkit-outer-spin-button,\r\n            input::-webkit-inner-spin-button {\r\n              -webkit-appearance: none;\r\n              margin: 0;\r\n            }\r\n\r\n            input[type=number] {\r\n                -moz-appearance: textfield;\r\n            }\r\n        }\r\n    }\r\n\r\n    .vector3Line {\r\n        padding-left:$line-padding-left;\r\n        padding-bottom: $line-padding-bottom;\r\n        padding-top: $line-padding-top;      \r\n        display: grid;\r\n        .firstLine {\r\n            display: grid;\r\n            grid-template-columns: 1fr auto 20px;\r\n            height: var(--spacingHeight);\r\n\r\n            .label {\r\n                grid-column: 1;\r\n                display: flex;\r\n                align-items: center;\r\n            }\r\n\r\n            .vector {\r\n                grid-column: 2;\r\n                display: flex;\r\n                align-items: center;\r\n                text-align: right;\r\n                opacity: 0.8;\r\n            }\r\n\r\n            .expand {\r\n                grid-column: 3;\r\n                display: grid;\r\n                align-items: center;\r\n                justify-items: center;\r\n                cursor: pointer;\r\n            }\r\n        }\r\n\r\n        .secondLine {\r\n            display: grid;\r\n            padding-right: 5px;  \r\n            border-left: 1px solid rgb(51, 122, 183);\r\n\r\n            .no-right-margin {\r\n                margin-right: 0;\r\n            }\r\n\r\n            .numeric {\r\n                display: grid;\r\n                grid-template-columns: 1fr auto;\r\n            }\r\n\r\n            .numeric-label {\r\n                text-align: right;\r\n                grid-column: 1;\r\n                display: flex;\r\n                align-items: center;                            \r\n                justify-self: right;\r\n                margin-right: 10px;                          \r\n            }\r\n\r\n            .numeric-value {\r\n                width: 120px;\r\n                grid-column: 2;\r\n                display: flex;\r\n                align-items: center;  \r\n                border: 1px solid  rgb(51, 122, 183);\r\n            }                        \r\n        }\r\n    }\r\n\r\n    .buttonLine {\r\n        height: var(--spacingHeight);\r\n        padding-bottom: $line-padding-bottom;\r\n        padding-top: $line-padding-top;\r\n        display: grid;\r\n        align-items: center;\r\n        justify-items: stretch;\r\n        padding-bottom: 5px;\r\n        input[type=\"file\"] {\r\n            display: none;\r\n        }\r\n\r\n        .file-upload {            \r\n            background: var(--backgroundGrey);\r\n            border: 1px solid #424242;\r\n            margin: 5px 10px;\r\n            color:white;\r\n            padding: 4px 5px;\r\n            opacity: 0.9;\r\n            cursor: pointer;\r\n            text-align: center;\r\n            border-radius: 4px;\r\n        }\r\n\r\n        .file-upload:hover {\r\n            opacity: 1.0;\r\n        }\r\n\r\n        .file-upload:active {\r\n            transform: scale(0.98);\r\n            transform-origin: 0.5 0.5;\r\n        }\r\n\r\n        button {\r\n            background: var(--backgroundGrey);\r\n            border: 1px solid #424242;\r\n            margin: 5px 10px 5px 10px;\r\n            color:white;\r\n            padding: 4px 5px;\r\n            opacity: 0.9;\r\n            border-radius: 4px;\r\n        }\r\n\r\n        button:hover {\r\n            opacity: 1.0;\r\n        }\r\n\r\n        button:active {\r\n            background: #282828;\r\n        }   \r\n        \r\n        button:focus {\r\n            border: 1px solid #424242;\r\n            outline: 0px;\r\n        }  \r\n    }\r\n\r\n    .numeric {\r\n        padding-left: $line-padding-left;\r\n        padding-bottom: $line-padding-bottom;\r\n        padding-top: $line-padding-top;\r\n        height: var(--spacingHeight);;\r\n        display: grid;\r\n        grid-template-columns: 1fr 120px auto;\r\n\r\n        .numeric-label {\r\n            grid-column: 1;\r\n            display: flex;\r\n            align-items: center;\r\n        }\r\n\r\n        .number {                        \r\n            display: flex;\r\n            align-items: center;\r\n            grid-column: 2;\r\n            height: 10px;\r\n            .input {\r\n                width: calc(100% - 5px);\r\n                height: 10px;\r\n            }\r\n        }\r\n    }\r\n    \r\n    .checkBoxLine {\r\n        padding-left: $line-padding-left;\r\n        padding-bottom: $line-padding-bottom;\r\n        padding-top: $line-padding-top;\r\n        padding-right: $line-padding-right;\r\n        height: var(--spacingHeight);\r\n        display: grid;\r\n        grid-template-columns: auto auto 1fr ;\r\n\r\n        .label {\r\n            grid-column: 2;\r\n            display: flex;\r\n            align-items: center;\r\n            min-width: 100px;\r\n            margin-left: 15px;\r\n            font-family: var(--labelFamily);\r\n        }\r\n\r\n        img {\r\n            width: 30px;\r\n        }\r\n        \r\n        .img {\r\n            grid-column: 1;\r\n            display: flex;\r\n            align-items: center;\r\n        }\r\n\r\n        .checkBox {\r\n            grid-column: 3;\r\n            display: flex;\r\n            align-items: center;\r\n            margin-left: auto;\r\n            margin-right: 0px;\r\n            \r\n            .lbl {\r\n                position: relative;\r\n                display: block;\r\n                height: 14px;\r\n                width: 34px;\r\n                border-radius: 100px;\r\n                cursor: pointer;\r\n                transition: all 0.3s ease;\r\n                border: solid;\r\n                border-width: thin;\r\n            }\r\n\r\n            .lbl:after {\r\n                position: absolute;\r\n                left: 3px;\r\n                top: 1px;\r\n                display: block;\r\n                width: 10px;\r\n                height: 10px;\r\n                border-radius: 100px;\r\n                background: #e2e2e2;\r\n                box-shadow: 0px 3px 3px rgba(0,0,0,0.05);\r\n                content: '';\r\n                transition: all 0.15s ease;\r\n                border: solid;\r\n                border-width: thin;\r\n            }\r\n\r\n            .lbl:active:after { \r\n                transform: scale(1.15, 0.85); \r\n            }\r\n\r\n            .cbx:checked ~ label { \r\n                background: transparent;\r\n                \r\n            }\r\n\r\n            .cbx:checked ~ label:after {\r\n                left: 20px;\r\n                background: rgb(0, 0, 0);\r\n                border: solid;\r\n                border-width: thin;\r\n            }\r\n\r\n            .cbx.conflict ~ label:after {\r\n                left: 10px;\r\n                background: repeating-linear-gradient(45deg, transparent, transparent 5px, black 5px, black 10px);\r\n            }\r\n\r\n            .cbx:checked ~ label.disabled { \r\n                background: rgb(0, 0, 0);\r\n                cursor: pointer;\r\n            }\r\n\r\n            .cbx:checked ~ label.disabled:after {\r\n                left: 20px;\r\n                background: rgb(85, 85, 85);\r\n                cursor: pointer;\r\n            }\r\n\r\n            .cbx ~ label.disabled {\r\n                background: rgb(85, 85, 85);\r\n                cursor: pointer;\r\n            }\r\n\r\n            .hidden { \r\n                display: none; \r\n            }               \r\n        }                    \r\n    }  \r\n\r\n    .listLine {\r\n        padding-left: $line-padding-left;\r\n        padding-bottom: $line-padding-bottom;\r\n        padding-top: $line-padding-top;\r\n        height: var(--spacingHeight);\r\n        display: grid;\r\n        grid-template-columns: auto 1fr auto ;\r\n\r\n        .label {\r\n            grid-column: 2;\r\n            display: none;\r\n            align-items: center;\r\n        }\r\n\r\n        img {\r\n            width: 30px;\r\n        }\r\n\r\n        .img {\r\n            grid-column: 1;\r\n            display: flex;\r\n            align-items: center;\r\n        }\r\n\r\n        .options {\r\n            grid-column: 2;\r\n            padding-left: 15px;\r\n            display: flex;\r\n            align-items: center;   \r\n            margin-right: 5px;\r\n\r\n            select {\r\n                width: 120px;\r\n                height: 25px;\r\n                border: transparent;\r\n                border-radius: 4px;\r\n            }\r\n        }                    \r\n    }  \r\n                    \r\n    .color3Line {\r\n        padding-left: $line-padding-left;\r\n        padding-bottom: $line-padding-bottom;\r\n        padding-top: $line-padding-top;\r\n        padding-right: $line-padding-right;\r\n        display: grid;\r\n\r\n        .firstLine {\r\n            height: var(--spacingHeight);\r\n            display: grid;\r\n            grid-template-columns: auto auto 1fr;\r\n\r\n            .label {\r\n                grid-column: 2;\r\n                padding-left: 5px;\r\n                display: none;\r\n                align-items: center;\r\n                min-width: 15px;\r\n            }\r\n    \r\n            .img {\r\n                grid-column: 1;\r\n                display: flex;\r\n                align-items: center;\r\n            }\r\n\r\n            img {\r\n                width: 30px;\r\n                height: 30px;\r\n            }\r\n    \r\n            .textInputLine {\r\n                grid-column: 3;\r\n                padding-left: 0px;\r\n            }\r\n    \r\n            .color3 {\r\n                grid-column: 2;                \r\n                margin-top: 6px;\r\n                display: flex;\r\n                align-items: center;\r\n                padding-left: 15px;\r\n                \r\n                input {\r\n                    margin-right: 5px;\r\n                }\r\n            }\r\n\r\n            .textInputLine {\r\n                .value {\r\n                    padding-left: 2px;\r\n                }\r\n            }\r\n\r\n            .copy {\r\n                grid-column: 4;\r\n                display: none;\r\n                align-items: center;\r\n                justify-items: center;\r\n                cursor: pointer;\r\n                color: black;\r\n                img {\r\n                    height: 100%;\r\n                    width: 20px;\r\n                }\r\n            }\r\n\r\n            .expand {\r\n                grid-column: 4;\r\n                display: none;\r\n                align-items: center;\r\n                justify-items: center;\r\n                cursor: pointer;\r\n\r\n                img {\r\n                    height: 100%;\r\n                    width: 20px;\r\n                }\r\n            }\r\n        }   \r\n\r\n        .secondLine {\r\n            display: grid;\r\n            padding-right: 5px;  \r\n            border-left: 1px solid rgb(51, 122, 183);\r\n\r\n            .numeric {\r\n                display: grid;\r\n                grid-template-columns: 1fr auto;\r\n            }\r\n\r\n            .numeric-label {\r\n                text-align: right;\r\n                grid-column: 1;\r\n                display: flex;\r\n                align-items: center;                            \r\n                justify-self: right;\r\n                margin-right: 10px;                          \r\n            }\r\n\r\n            .numeric-value {\r\n                width: 120px;\r\n                grid-column: 2;\r\n                display: flex;\r\n                align-items: center;  \r\n                border: 1px solid  rgb(51, 122, 183);\r\n            }                        \r\n        }                  \r\n    }     \r\n    \r\n    .textLine {\r\n        padding-left: $line-padding-left;\r\n        padding-bottom: $line-padding-bottom;\r\n        padding-top: $line-padding-top;\r\n        padding-right: $line-padding-right;\r\n        height: auto;\r\n        display: grid;\r\n        grid-template-columns: auto auto 2fr 1fr;\r\n        .label {\r\n            grid-column: 2;\r\n            padding-left: 5px;\r\n            padding-top: 4px;\r\n            display: flex;\r\n            align-items: left;\r\n            min-width: 15px;\r\n            color: #a9a9a9;\r\n            font-size: 10px;\r\n            font-family: \"acumin-pro-semicondensed\";\r\n        }\r\n\r\n        img {\r\n            width: 30px;\r\n        }\r\n\r\n        .img {\r\n            grid-column: 1;\r\n            display: flex;\r\n            align-items: center;\r\n        }\r\n\r\n        .link-value {\r\n            grid-column: 2;\r\n            white-space: nowrap;\r\n            text-overflow: ellipsis;\r\n            overflow: hidden;\r\n            text-align: end;\r\n            opacity: 0.8;\r\n            margin:5px;\r\n            margin-top: 6px;\r\n            max-width: 140px;\r\n            text-decoration: underline;\r\n            cursor: pointer;\r\n        }\r\n\r\n        .value {\r\n            display: none;\r\n            grid-column: 3;\r\n            white-space: nowrap;\r\n            text-overflow: ellipsis;\r\n            overflow: hidden;\r\n            text-align: end;\r\n            opacity: 0.8;\r\n            margin:5px;\r\n            margin-top: 6px;\r\n            max-width: 200px;\r\n            -webkit-user-select: text; \r\n            -moz-user-select: text;   \r\n            -ms-user-select: text;    \r\n            user-select: text;                \r\n\r\n            &.check {\r\n                color: green;\r\n            }\r\n\r\n            &.uncheck {\r\n                color: red;\r\n            }  \r\n        }\r\n    }    \r\n\r\n}"],"sourceRoot":""}]);
+___CSS_LOADER_EXPORT___.push([module.i, ":root {\n  --backgroundGrey: #aaaaaa;\n  --spacingHeight: 30px;\n  --labelFamily: \"acumin-pro-condensed-semibold\";\n  --button: #333333;\n  --buttonBackground: #ffffff;\n  --buttonDisabledBackground: #c8c8c8;\n  --buttonPressed: #ffffff;\n  --buttonPressedBackground: #606060; }\n\nhr.ge {\n  border: 1px solid #d0cece; }\n\n#ge-propertyTab {\n  user-select: none;\n  color: black;\n  background: #e2e2e2; }\n  #ge-propertyTab * {\n    font-family: \"acumin-pro-semicondensed\";\n    font-size: 12px; }\n  #ge-propertyTab #header {\n    height: 30px;\n    font-size: 16px;\n    color: white;\n    background: white;\n    grid-row: 1;\n    text-align: center;\n    display: grid;\n    grid-template-columns: 30px 1fr;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none; }\n    #ge-propertyTab #header #logo {\n      position: relative;\n      background: white;\n      grid-column: 1;\n      width: 32px;\n      height: 32px;\n      left: 0;\n      display: flex;\n      align-self: center;\n      justify-self: center; }\n    #ge-propertyTab #header #title {\n      background: white;\n      color: black;\n      grid-column: 2;\n      display: grid;\n      align-items: center;\n      text-align: center; }\n  #ge-propertyTab .range {\n    -webkit-appearance: none;\n    width: 100%;\n    height: 2px;\n    background: #bcbcbc;\n    border-radius: 5px;\n    outline: none;\n    opacity: 0.7;\n    -webkit-transition: .2s;\n    transition: opacity .2s; }\n  #ge-propertyTab .range:hover {\n    opacity: 1; }\n  #ge-propertyTab .range::-webkit-slider-thumb {\n    -webkit-appearance: none;\n    appearance: none;\n    width: 14px;\n    height: 14px;\n    border-radius: 50%;\n    background: #e2e2e2;\n    border: solid;\n    border-width: thin;\n    cursor: pointer; }\n  #ge-propertyTab .range::-moz-range-thumb {\n    width: 14px;\n    height: 14px;\n    border-radius: 50%;\n    background: black;\n    cursor: pointer; }\n  #ge-propertyTab input[type=\"color\"] {\n    -webkit-appearance: none;\n    border: 1px solid rgba(255, 255, 255, 0.5);\n    padding: 0;\n    width: 30px;\n    height: 20px; }\n  #ge-propertyTab input[type=\"color\"]::-webkit-color-swatch-wrapper {\n    padding: 0; }\n  #ge-propertyTab input[type=\"color\"]::-webkit-color-swatch {\n    border: none; }\n  #ge-propertyTab .unit {\n    width: 26px;\n    height: 26px;\n    color: var(--button);\n    background-color: var(--buttonBackground);\n    border: none;\n    margin-top: 2px;\n    cursor: pointer; }\n  #ge-propertyTab .unit.disabled {\n    background-color: var(--buttonDisabledBackground); }\n  #ge-propertyTab .unit:active {\n    color: var(--buttonPressed);\n    background-color: var(--buttonPressedBackground); }\n  #ge-propertyTab .sliderLine {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    padding-right: 18px;\n    height: var(--spacingHeight);\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: auto auto auto 1fr; }\n    #ge-propertyTab .sliderLine .label {\n      grid-column: 2;\n      display: flex;\n      align-items: center;\n      min-width: 15px;\n      font-family: var(--labelFamily); }\n    #ge-propertyTab .sliderLine .img {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .sliderLine .slider {\n      grid-column: 4;\n      grid-row: 1;\n      margin-right: 5px;\n      width: 90%;\n      display: flex;\n      align-items: center;\n      padding-left: 5px; }\n    #ge-propertyTab .sliderLine .floatLine {\n      grid-column: 3;\n      padding-left: 0px; }\n      #ge-propertyTab .sliderLine .floatLine .label {\n        grid-column: 1;\n        display: none;\n        align-items: center;\n        font-family: var(--labelFamily); }\n      #ge-propertyTab .sliderLine .floatLine .short {\n        grid-column: 1;\n        display: flex;\n        align-items: center; }\n        #ge-propertyTab .sliderLine .floatLine .short input {\n          width: 60px;\n          background-color: white;\n          outline-color: transparent;\n          border: transparent;\n          height: 26px;\n          outline-width: 0px; }\n        #ge-propertyTab .sliderLine .floatLine .short input::-webkit-outer-spin-button,\n        #ge-propertyTab .sliderLine .floatLine .short input::-webkit-inner-spin-button {\n          -webkit-appearance: none;\n          margin: 0; }\n        #ge-propertyTab .sliderLine .floatLine .short input[type=number] {\n          -webkit-appearance: textfield;\n          -moz-appearance: textfield;\n          appearance: textfield; }\n  #ge-propertyTab .ge-divider {\n    display: grid;\n    grid-template-columns: auto auto auto auto auto auto;\n    padding-right: 18px; }\n  #ge-propertyTab .ge-divider-short {\n    display: grid;\n    grid-template-columns: 1fr 1fr;\n    padding-right: 18px; }\n  #ge-propertyTab .ge-divider-single {\n    display: block;\n    padding-right: 18px; }\n  #ge-propertyTab .ge-grid-divider {\n    display: grid;\n    grid-template-columns: 150px 1fr auto; }\n    #ge-propertyTab .ge-grid-divider .textLine {\n      grid-column: auto; }\n  #ge-propertyTab .ge-grid-button-divider {\n    display: grid;\n    grid-template-columns: 60px 60px 60px 60px; }\n  #ge-propertyTab .ge-grid-remove {\n    display: grid;\n    background-color: #c2c2c2;\n    margin-bottom: 5px;\n    filter: invert(1); }\n  #ge-propertyTab .ge-grid-edit {\n    display: grid;\n    background-color: #878787;\n    margin-bottom: 5px;\n    filter: invert(1); }\n  #ge-propertyTab .ge-grid {\n    display: grid;\n    margin-bottom: 5px; }\n  #ge-propertyTab .textInputLine {\n    user-select: none;\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    padding-right: 18px;\n    height: var(--spacingHeight);\n    display: grid;\n    grid-template-columns: auto auto 1fr; }\n    #ge-propertyTab .textInputLine .label {\n      grid-column: 2;\n      display: flex;\n      align-items: center;\n      min-width: 15px;\n      font-family: var(--labelFamily); }\n    #ge-propertyTab .textInputLine img {\n      width: 30px; }\n    #ge-propertyTab .textInputLine .img {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .textInputLine .value {\n      display: flex;\n      align-items: center;\n      grid-column: 3;\n      background: transparent;\n      height: 26px;\n      position: relative;\n      background-color: white;\n      margin-top: 2px;\n      overflow-y: hidden;\n      margin-right: 2px; }\n      #ge-propertyTab .textInputLine .value input {\n        width: 100%;\n        outline-color: transparent;\n        border: transparent;\n        outline-width: 0px;\n        height: 24px; }\n      #ge-propertyTab .textInputLine .value input.hasArrows {\n        padding-right: 15px; }\n      #ge-propertyTab .textInputLine .value .arrows {\n        display: none; }\n      #ge-propertyTab .textInputLine .value:hover .arrows, #ge-propertyTab .textInputLine .value:focus .arrows, #ge-propertyTab .textInputLine .value.dragging .arrows {\n        position: absolute;\n        right: 0;\n        display: flex;\n        flex-direction: column;\n        background-color: white;\n        cursor: grab; }\n        #ge-propertyTab .textInputLine .value:hover .arrows .downArrowIcon, #ge-propertyTab .textInputLine .value:hover .arrows .upArrowIcon, #ge-propertyTab .textInputLine .value:focus .arrows .downArrowIcon, #ge-propertyTab .textInputLine .value:focus .arrows .upArrowIcon, #ge-propertyTab .textInputLine .value.dragging .arrows .downArrowIcon, #ge-propertyTab .textInputLine .value.dragging .arrows .upArrowIcon {\n          width: 15px;\n          height: 15px; }\n      #ge-propertyTab .textInputLine .value.dragging .arrows {\n        background-color: var(--buttonPressedBackground); }\n        #ge-propertyTab .textInputLine .value.dragging .arrows .downArrowIcon, #ge-propertyTab .textInputLine .value.dragging .arrows .upArrowIcon {\n          filter: invert(100%) brightness(500%); }\n  #ge-propertyTab .textInputLine.withUnits {\n    grid-template-columns: auto auto 1fr auto; }\n  #ge-propertyTab .textInputArea {\n    padding-left: 5px;\n    height: 100%;\n    display: grid;\n    grid-template-columns: 1fr 120px; }\n    #ge-propertyTab .textInputArea .label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .textInputArea .value {\n      display: flex;\n      align-items: center;\n      grid-column: 2; }\n      #ge-propertyTab .textInputArea .value textarea {\n        width: calc(150% - 5px);\n        margin-left: -50%;\n        height: 40px; }\n  #ge-propertyTab .paneContainer {\n    margin-top: 3px;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 100%; }\n    #ge-propertyTab .paneContainer .paneList {\n      border-left: 3px solid transparent; }\n    #ge-propertyTab .paneContainer:hover .paneList {\n      border-left: 3px solid rgba(51, 122, 183, 0.8); }\n    #ge-propertyTab .paneContainer:hover .paneContainer-content .header .title {\n      border-left: 3px solid #337ab7; }\n    #ge-propertyTab .paneContainer .paneContainer-highlight-border {\n      grid-row: 1;\n      grid-column: 1;\n      opacity: 1;\n      border: 3px solid red;\n      transition: opacity 250ms;\n      pointer-events: none; }\n      #ge-propertyTab .paneContainer .paneContainer-highlight-border.transparent {\n        opacity: 0; }\n    #ge-propertyTab .paneContainer .paneContainer-content {\n      grid-row: 1;\n      grid-column: 1; }\n      #ge-propertyTab .paneContainer .paneContainer-content .header {\n        display: grid;\n        grid-template-columns: 1fr auto;\n        background: #cccccc;\n        height: var(--spacingHeight);\n        padding-bottom: 0px;\n        padding-top: 0px;\n        padding-right: 5px;\n        cursor: pointer; }\n        #ge-propertyTab .paneContainer .paneContainer-content .header .title {\n          border-left: 3px solid transparent;\n          padding-left: 5px;\n          grid-column: 1;\n          display: flex;\n          align-items: center; }\n        #ge-propertyTab .paneContainer .paneContainer-content .header .collapse {\n          grid-column: 2;\n          display: flex;\n          align-items: center;\n          justify-items: center;\n          transform-origin: center; }\n          #ge-propertyTab .paneContainer .paneContainer-content .header .collapse.closed {\n            transform: rotate(180deg); }\n      #ge-propertyTab .paneContainer .paneContainer-content .paneList > div:not(:last-child) {\n        border-bottom: 0.5px solid rgba(255, 255, 255, 0.1); }\n      #ge-propertyTab .paneContainer .paneContainer-content .fragment > div:not(:last-child) {\n        border-bottom: 0.5px solid rgba(255, 255, 255, 0.1); }\n  #ge-propertyTab .color-picker {\n    height: 150px;\n    width: 15px; }\n    #ge-propertyTab .color-picker .color-rect-background {\n      height: 15px;\n      border: 1px black solid;\n      cursor: pointer;\n      background: repeating-conic-gradient(#E2E2E2 0% 25%, white 0% 50%) 50%/10px 10px; }\n      #ge-propertyTab .color-picker .color-rect-background .color-rect {\n        height: 100%; }\n    #ge-propertyTab .color-picker .color-picker-cover {\n      position: fixed;\n      top: 0px;\n      right: 0px;\n      bottom: 0px;\n      left: 0px; }\n    #ge-propertyTab .color-picker .color-picker-float {\n      z-index: 2;\n      position: absolute; }\n  #ge-propertyTab .gradient-step {\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 20px 30px 40px auto 20px 30px;\n    padding-top: 5px;\n    padding-left: 5px;\n    padding-bottom: 5px; }\n    #ge-propertyTab .gradient-step .step {\n      grid-row: 1;\n      grid-column: 1; }\n    #ge-propertyTab .gradient-step .color {\n      grid-row: 1;\n      grid-column: 2;\n      cursor: pointer; }\n    #ge-propertyTab .gradient-step .step-value {\n      margin-left: 5px;\n      grid-row: 1;\n      grid-column: 3;\n      text-align: right;\n      margin-right: 5px; }\n    #ge-propertyTab .gradient-step .step-slider {\n      grid-row: 1;\n      grid-column: 4;\n      display: grid;\n      justify-content: stretch;\n      align-content: center;\n      margin-right: -5px;\n      padding-left: 12px; }\n      #ge-propertyTab .gradient-step .step-slider input {\n        width: 90%; }\n    #ge-propertyTab .gradient-step .gradient-copy {\n      grid-row: 1;\n      grid-column: 5;\n      display: grid;\n      align-content: center;\n      justify-content: center; }\n      #ge-propertyTab .gradient-step .gradient-copy .img {\n        height: 20px;\n        width: 20px; }\n      #ge-propertyTab .gradient-step .gradient-copy .img:hover {\n        cursor: pointer; }\n    #ge-propertyTab .gradient-step .gradient-delete {\n      grid-row: 1;\n      grid-column: 6;\n      display: grid;\n      align-content: center;\n      justify-content: center; }\n      #ge-propertyTab .gradient-step .gradient-delete .img {\n        height: 20px;\n        width: 20px; }\n      #ge-propertyTab .gradient-step .gradient-delete .img:hover {\n        cursor: pointer; }\n  #ge-propertyTab .alignment-bar {\n    display: flex;\n    justify-content: center;\n    padding-right: 5px; }\n  #ge-propertyTab .command-button {\n    cursor: pointer;\n    width: 30px; }\n    #ge-propertyTab .command-button .command-label {\n      display: none; }\n    #ge-propertyTab .command-button .command-button-icon {\n      height: 100%;\n      width: 100%;\n      display: grid;\n      color: white;\n      align-content: center;\n      justify-content: center; }\n    #ge-propertyTab .command-button:hover {\n      background-color: white; }\n    #ge-propertyTab .command-button .active {\n      transform-origin: center;\n      background-color: white; }\n    #ge-propertyTab .command-button img.active {\n      background-color: white; }\n  #ge-propertyTab .command-button-alt {\n    cursor: pointer;\n    width: 40px;\n    margin-left: 5px;\n    margin-right: 5px;\n    background-color: white; }\n    #ge-propertyTab .command-button-alt .command-label {\n      display: none; }\n    #ge-propertyTab .command-button-alt .command-button-icon {\n      height: 100%;\n      width: 100%;\n      display: grid;\n      align-content: center;\n      justify-content: center; }\n    #ge-propertyTab .command-button-alt:hover {\n      background-color: #c2c2c2;\n      filter: invert(1); }\n  #ge-propertyTab .command-button-alt-disabled {\n    cursor: pointer;\n    pointer-events: none;\n    width: 40px;\n    margin-left: 5px;\n    margin-right: 5px;\n    background-color: white; }\n    #ge-propertyTab .command-button-alt-disabled .command-label {\n      display: none; }\n    #ge-propertyTab .command-button-alt-disabled .command-button-icon {\n      height: 100%;\n      width: 100%;\n      display: grid;\n      align-content: center;\n      justify-content: center; }\n    #ge-propertyTab .command-button-alt-disabled img {\n      filter: invert(1); }\n  #ge-propertyTab .command-button-alt-active {\n    cursor: pointer;\n    pointer-events: none;\n    width: 40px;\n    margin-left: 5px;\n    margin-right: 5px;\n    background-color: #c2c2c2;\n    filter: invert(1); }\n    #ge-propertyTab .command-button-alt-active .command-label {\n      display: none; }\n    #ge-propertyTab .command-button-alt-active .command-button-icon {\n      height: 100%;\n      width: 100%;\n      display: grid;\n      align-content: center;\n      justify-content: center; }\n  #ge-propertyTab .floatLine {\n    user-select: none;\n    padding-left: 5px;\n    height: var(--spacingHeight);\n    padding-bottom: 0px;\n    padding-top: 0px;\n    display: grid;\n    grid-template-columns: auto auto 2fr 1fr; }\n    #ge-propertyTab .floatLine .label {\n      grid-column: 2;\n      display: flex;\n      align-items: center;\n      min-width: 15px;\n      font-family: var(--labelFamily); }\n    #ge-propertyTab .floatLine img {\n      width: 30px; }\n    #ge-propertyTab .floatLine .img {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .floatLine .value {\n      display: flex;\n      align-items: center;\n      grid-column: 3;\n      background: transparent;\n      height: 30px;\n      margin-right: 2px; }\n      #ge-propertyTab .floatLine .value input {\n        width: 100%;\n        background-color: white;\n        outline-color: transparent;\n        border: none;\n        outline-width: 0px;\n        height: 24px; }\n    #ge-propertyTab .floatLine .short {\n      grid-column: 2;\n      display: flex;\n      align-items: center; }\n      #ge-propertyTab .floatLine .short input {\n        width: 27px; }\n      #ge-propertyTab .floatLine .short input::-webkit-outer-spin-button,\n      #ge-propertyTab .floatLine .short input::-webkit-inner-spin-button {\n        -webkit-appearance: none;\n        margin: 0; }\n      #ge-propertyTab .floatLine .short input[type=number] {\n        -moz-appearance: textfield; }\n  #ge-propertyTab .vector3Line {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    display: grid; }\n    #ge-propertyTab .vector3Line .firstLine {\n      display: grid;\n      grid-template-columns: 1fr auto 20px;\n      height: var(--spacingHeight); }\n      #ge-propertyTab .vector3Line .firstLine .label {\n        grid-column: 1;\n        display: flex;\n        align-items: center; }\n      #ge-propertyTab .vector3Line .firstLine .vector {\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        text-align: right;\n        opacity: 0.8; }\n      #ge-propertyTab .vector3Line .firstLine .expand {\n        grid-column: 3;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n    #ge-propertyTab .vector3Line .secondLine {\n      display: grid;\n      padding-right: 5px;\n      border-left: 1px solid #337ab7; }\n      #ge-propertyTab .vector3Line .secondLine .no-right-margin {\n        margin-right: 0; }\n      #ge-propertyTab .vector3Line .secondLine .numeric {\n        display: grid;\n        grid-template-columns: 1fr auto; }\n      #ge-propertyTab .vector3Line .secondLine .numeric-label {\n        text-align: right;\n        grid-column: 1;\n        display: flex;\n        align-items: center;\n        justify-self: right;\n        margin-right: 10px; }\n      #ge-propertyTab .vector3Line .secondLine .numeric-value {\n        width: 120px;\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        border: 1px solid #337ab7; }\n  #ge-propertyTab .buttonLine {\n    height: var(--spacingHeight);\n    padding-bottom: 0px;\n    padding-top: 0px;\n    display: grid;\n    align-items: center;\n    justify-items: stretch;\n    padding-bottom: 5px; }\n    #ge-propertyTab .buttonLine input[type=\"file\"] {\n      display: none; }\n    #ge-propertyTab .buttonLine .file-upload {\n      background: var(--backgroundGrey);\n      border: 1px solid #424242;\n      margin: 5px 10px;\n      color: white;\n      padding: 4px 5px;\n      opacity: 0.9;\n      cursor: pointer;\n      text-align: center;\n      border-radius: 4px; }\n    #ge-propertyTab .buttonLine .file-upload:hover {\n      opacity: 1.0; }\n    #ge-propertyTab .buttonLine .file-upload:active {\n      transform: scale(0.98);\n      transform-origin: 0.5 0.5; }\n    #ge-propertyTab .buttonLine button {\n      background: var(--backgroundGrey);\n      border: 1px solid #424242;\n      margin: 5px 10px 5px 10px;\n      color: white;\n      padding: 4px 5px;\n      opacity: 0.9;\n      border-radius: 4px; }\n    #ge-propertyTab .buttonLine button:hover {\n      opacity: 1.0; }\n    #ge-propertyTab .buttonLine button:active {\n      background: #282828; }\n    #ge-propertyTab .buttonLine button:focus {\n      border: 1px solid #424242;\n      outline: 0px; }\n  #ge-propertyTab .numeric {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    height: var(--spacingHeight);\n    display: grid;\n    grid-template-columns: 1fr 120px auto; }\n    #ge-propertyTab .numeric .numeric-label {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .numeric .number {\n      display: flex;\n      align-items: center;\n      grid-column: 2;\n      height: 10px; }\n      #ge-propertyTab .numeric .number .input {\n        width: calc(100% - 5px);\n        height: 10px; }\n  #ge-propertyTab .checkBoxLine {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    padding-right: 18px;\n    height: var(--spacingHeight);\n    display: grid;\n    grid-template-columns: auto auto 1fr; }\n    #ge-propertyTab .checkBoxLine .label {\n      grid-column: 2;\n      display: flex;\n      align-items: center;\n      min-width: 100px;\n      margin-left: 15px;\n      font-family: var(--labelFamily); }\n    #ge-propertyTab .checkBoxLine img {\n      width: 30px; }\n    #ge-propertyTab .checkBoxLine .img {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .checkBoxLine .checkBox {\n      grid-column: 3;\n      display: flex;\n      align-items: center;\n      margin-left: auto;\n      margin-right: 0px; }\n      #ge-propertyTab .checkBoxLine .checkBox .lbl {\n        position: relative;\n        display: block;\n        height: 14px;\n        width: 34px;\n        border-radius: 100px;\n        cursor: pointer;\n        transition: all 0.3s ease;\n        border: solid;\n        border-width: thin; }\n      #ge-propertyTab .checkBoxLine .checkBox .lbl:after {\n        position: absolute;\n        left: 3px;\n        top: 1px;\n        display: block;\n        width: 10px;\n        height: 10px;\n        border-radius: 100px;\n        background: #e2e2e2;\n        box-shadow: 0px 3px 3px rgba(0, 0, 0, 0.05);\n        content: '';\n        transition: all 0.15s ease;\n        border: solid;\n        border-width: thin; }\n      #ge-propertyTab .checkBoxLine .checkBox .lbl:active:after {\n        transform: scale(1.15, 0.85); }\n      #ge-propertyTab .checkBoxLine .checkBox .cbx:checked ~ label {\n        background: transparent; }\n      #ge-propertyTab .checkBoxLine .checkBox .cbx:checked ~ label:after {\n        left: 20px;\n        background: black;\n        border: solid;\n        border-width: thin; }\n      #ge-propertyTab .checkBoxLine .checkBox .cbx.conflict ~ label:after {\n        left: 10px;\n        background: repeating-linear-gradient(45deg, transparent, transparent 5px, black 5px, black 10px); }\n      #ge-propertyTab .checkBoxLine .checkBox .cbx:checked ~ label.disabled {\n        background: black;\n        cursor: pointer; }\n      #ge-propertyTab .checkBoxLine .checkBox .cbx:checked ~ label.disabled:after {\n        left: 20px;\n        background: #555555;\n        cursor: pointer; }\n      #ge-propertyTab .checkBoxLine .checkBox .cbx ~ label.disabled {\n        background: #555555;\n        cursor: pointer; }\n      #ge-propertyTab .checkBoxLine .checkBox .hidden {\n        display: none; }\n  #ge-propertyTab .listLine {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    height: var(--spacingHeight);\n    display: grid;\n    grid-template-columns: auto 1fr auto; }\n    #ge-propertyTab .listLine .label {\n      grid-column: 2;\n      display: none;\n      align-items: center; }\n    #ge-propertyTab .listLine img {\n      width: 30px; }\n    #ge-propertyTab .listLine .img {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .listLine .options {\n      grid-column: 2;\n      padding-left: 15px;\n      display: flex;\n      align-items: center;\n      margin-right: 5px; }\n      #ge-propertyTab .listLine .options select {\n        width: 120px;\n        height: 25px;\n        border: transparent;\n        border-radius: 4px; }\n  #ge-propertyTab .color3Line {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    padding-right: 18px;\n    display: grid; }\n    #ge-propertyTab .color3Line .firstLine {\n      height: var(--spacingHeight);\n      display: grid;\n      grid-template-columns: auto auto 1fr; }\n      #ge-propertyTab .color3Line .firstLine .label {\n        grid-column: 2;\n        padding-left: 5px;\n        display: none;\n        align-items: center;\n        min-width: 15px; }\n      #ge-propertyTab .color3Line .firstLine .img {\n        grid-column: 1;\n        display: flex;\n        align-items: center; }\n      #ge-propertyTab .color3Line .firstLine img {\n        width: 30px;\n        height: 30px; }\n      #ge-propertyTab .color3Line .firstLine .textInputLine {\n        grid-column: 3;\n        padding-left: 0px; }\n      #ge-propertyTab .color3Line .firstLine .color3 {\n        grid-column: 2;\n        margin-top: 6px;\n        display: flex;\n        align-items: center;\n        padding-left: 15px; }\n        #ge-propertyTab .color3Line .firstLine .color3 input {\n          margin-right: 5px; }\n      #ge-propertyTab .color3Line .firstLine .textInputLine .value {\n        padding-left: 2px; }\n      #ge-propertyTab .color3Line .firstLine .copy {\n        grid-column: 4;\n        display: none;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer;\n        color: black; }\n        #ge-propertyTab .color3Line .firstLine .copy img {\n          height: 100%;\n          width: 20px; }\n      #ge-propertyTab .color3Line .firstLine .expand {\n        grid-column: 4;\n        display: none;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n        #ge-propertyTab .color3Line .firstLine .expand img {\n          height: 100%;\n          width: 20px; }\n    #ge-propertyTab .color3Line .secondLine {\n      display: grid;\n      padding-right: 5px;\n      border-left: 1px solid #337ab7; }\n      #ge-propertyTab .color3Line .secondLine .numeric {\n        display: grid;\n        grid-template-columns: 1fr auto; }\n      #ge-propertyTab .color3Line .secondLine .numeric-label {\n        text-align: right;\n        grid-column: 1;\n        display: flex;\n        align-items: center;\n        justify-self: right;\n        margin-right: 10px; }\n      #ge-propertyTab .color3Line .secondLine .numeric-value {\n        width: 120px;\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        border: 1px solid #337ab7; }\n  #ge-propertyTab .textLine {\n    padding-left: 5px;\n    padding-bottom: 0px;\n    padding-top: 0px;\n    padding-right: 18px;\n    height: auto;\n    display: grid;\n    grid-template-columns: auto auto 2fr 1fr; }\n    #ge-propertyTab .textLine .label {\n      grid-column: 2;\n      padding-left: 5px;\n      padding-top: 4px;\n      display: flex;\n      align-items: left;\n      min-width: 15px;\n      color: #a9a9a9;\n      font-size: 10px;\n      font-family: \"acumin-pro-semicondensed\"; }\n    #ge-propertyTab .textLine img {\n      width: 30px; }\n    #ge-propertyTab .textLine .img {\n      grid-column: 1;\n      display: flex;\n      align-items: center; }\n    #ge-propertyTab .textLine .link-value {\n      grid-column: 2;\n      white-space: nowrap;\n      text-overflow: ellipsis;\n      overflow: hidden;\n      text-align: end;\n      opacity: 0.8;\n      margin: 5px;\n      margin-top: 6px;\n      max-width: 140px;\n      text-decoration: underline;\n      cursor: pointer; }\n    #ge-propertyTab .textLine .value {\n      display: none;\n      grid-column: 3;\n      white-space: nowrap;\n      text-overflow: ellipsis;\n      overflow: hidden;\n      text-align: end;\n      opacity: 0.8;\n      margin: 5px;\n      margin-top: 6px;\n      max-width: 200px;\n      -webkit-user-select: text;\n      -moz-user-select: text;\n      -ms-user-select: text;\n      user-select: text; }\n      #ge-propertyTab .textLine .value.check {\n        color: green; }\n      #ge-propertyTab .textLine .value.uncheck {\n        color: red; }\n", "",{"version":3,"sources":["webpack://./components/propertyTab/propertyTab.scss"],"names":[],"mappings":"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","sourcesContent":[":root {\r\n    --backgroundGrey: #aaaaaa;\r\n    --spacingHeight: 30px;\r\n    --labelFamily: \"acumin-pro-condensed-semibold\";\r\n    --button: #333333;\r\n    --buttonBackground: #ffffff;\r\n    --buttonDisabledBackground: #c8c8c8;\r\n    --buttonPressed: #ffffff;\r\n    --buttonPressedBackground: #606060;\r\n}\r\n\r\nhr.ge {\r\n    border: 1px solid #d0cece;\r\n}\r\n\r\n#ge-propertyTab {\r\n    user-select: none;\r\n    $line-padding-left: 5px;\r\n    $line-padding-bottom: 0px;\r\n    $line-padding-top: 0px;\r\n    $line-padding-right: 18px;\r\n    color:black;\r\n    background: #e2e2e2;\r\n      * {\r\n        font-family: \"acumin-pro-semicondensed\";\r\n        font-size: 12px;\r\n      }\r\n      #header {\r\n        height: 30px;\r\n        font-size: 16px;\r\n        color: white;\r\n        background: white;\r\n        grid-row: 1;\r\n        text-align: center;\r\n        display: grid;\r\n        grid-template-columns: 30px 1fr;        \r\n        -webkit-user-select: none; \r\n        -moz-user-select: none;   \r\n        -ms-user-select: none;    \r\n        user-select: none;                \r\n\r\n        #logo {\r\n            position: relative;\r\n            background: white;\r\n            grid-column: 1; \r\n            width: 32px;\r\n            height: 32px;\r\n            left:0;\r\n            display: flex;\r\n            align-self: center;   \r\n            justify-self: center;\r\n        }        \r\n\r\n        #title {\r\n            background: white;\r\n            color: black;\r\n            grid-column: 2; \r\n            display: grid;\r\n            align-items: center;   \r\n            text-align: center;\r\n        }\r\n    }\r\n\r\n    .range {\r\n        -webkit-appearance: none;\r\n        width: 100%;\r\n        height: 2px;\r\n        background: #bcbcbc;\r\n        border-radius: 5px;\r\n        outline: none;\r\n        opacity: 0.7;\r\n        -webkit-transition: .2s;\r\n        transition: opacity .2s;\r\n    }\r\n    \r\n    .range:hover {\r\n        opacity: 1;\r\n    }\r\n    \r\n    .range::-webkit-slider-thumb {\r\n        -webkit-appearance: none;\r\n        appearance: none;\r\n        width: 14px;\r\n        height: 14px;\r\n        border-radius: 50%;\r\n        background: #e2e2e2;\r\n        border: solid;\r\n        border-width: thin;\r\n        cursor: pointer;\r\n    }\r\n    \r\n    .range::-moz-range-thumb {\r\n        width: 14px;\r\n        height: 14px;\r\n        border-radius: 50%;\r\n        background: rgb(0, 0, 0);\r\n        cursor: pointer;\r\n    }\r\n\r\n    input[type=\"color\"] {\r\n        -webkit-appearance: none;\r\n        border: 1px solid rgba(255, 255, 255, 0.5);\r\n        padding: 0;\r\n        width: 30px;\r\n        height: 20px;\r\n    }\r\n    input[type=\"color\"]::-webkit-color-swatch-wrapper {\r\n        padding: 0;\r\n    }\r\n    input[type=\"color\"]::-webkit-color-swatch {\r\n        border: none;\r\n    }\r\n\r\n    .unit {\r\n        width: 26px;\r\n        height: 26px;\r\n        color: var(--button);\r\n        background-color: var(--buttonBackground);\r\n        border: none;\r\n        margin-top: 2px;\r\n        cursor: pointer;\r\n    }\r\n\r\n    .unit.disabled {\r\n        background-color: var(--buttonDisabledBackground);\r\n    }\r\n\r\n    .unit:active {\r\n        color: var(--buttonPressed);\r\n        background-color: var(--buttonPressedBackground);\r\n    }\r\n\r\n    .sliderLine {\r\n        padding-left: $line-padding-left;\r\n        padding-bottom: $line-padding-bottom;\r\n        padding-top: $line-padding-top;\r\n        padding-right: $line-padding-right;\r\n        height: var(--spacingHeight);;\r\n        display: grid;\r\n        grid-template-rows: 100%;\r\n        grid-template-columns: auto auto auto 1fr;\r\n\r\n        .label {\r\n            grid-column: 2;\r\n            display: flex;\r\n            align-items: center;\r\n            min-width: 15px;\r\n            font-family: var(--labelFamily);\r\n        }\r\n\r\n        .img {\r\n            grid-column: 1;\r\n            display: flex;\r\n            align-items: center;\r\n        }\r\n\r\n\r\n        .slider {\r\n            grid-column: 4;\r\n            grid-row: 1;\r\n            margin-right: 5px;\r\n            width: 90%;\r\n            display: flex;\r\n            align-items: center;\r\n            padding-left: 5px;\r\n        }\r\n\r\n        .floatLine {\r\n            grid-column: 3;\r\n            padding-left: 0px;\r\n            \r\n            .label {\r\n                grid-column: 1;\r\n                display: none;\r\n                align-items: center;\r\n                font-family: var(--labelFamily);\r\n            }\r\n        \r\n            .short {\r\n                grid-column: 1; \r\n                display: flex;\r\n                align-items: center;\r\n                \r\n                input {\r\n                    width: 60px;\r\n                    background-color: white;\r\n                    outline-color: transparent;\r\n                    border: transparent;\r\n                    height: 26px;\r\n                    outline-width: 0px\r\n                }\r\n                \r\n                input::-webkit-outer-spin-button,\r\n                input::-webkit-inner-spin-button {\r\n                  -webkit-appearance: none;\r\n                  margin: 0;\r\n                }\r\n    \r\n                input[type=number] {\r\n                    -webkit-appearance: textfield;\r\n                    -moz-appearance: textfield;\r\n                    appearance: textfield;\r\n                }\r\n            }\r\n        }  \r\n    }     \r\n\r\n    .ge-divider {\r\n        display: grid;\r\n        grid-template-columns: auto auto auto auto auto auto;\r\n        padding-right: $line-padding-right;\r\n    }\r\n\r\n    .ge-divider-short {\r\n        display: grid;\r\n        grid-template-columns: 1fr 1fr;\r\n        padding-right: $line-padding-right;\r\n    }\r\n\r\n    .ge-divider-single {\r\n        display: block;\r\n        padding-right: $line-padding-right;\r\n    }\r\n    \r\n    .ge-grid-divider {\r\n        display: grid;\r\n        grid-template-columns: 150px 1fr auto;\r\n        \r\n        .textLine {\r\n            grid-column: auto;\r\n           \r\n        }\r\n    }\r\n\r\n    .ge-grid-button-divider {\r\n        display: grid;\r\n        grid-template-columns: 60px 60px 60px 60px;\r\n    }\r\n\r\n    .ge-grid-remove {\r\n        display: grid;\r\n        background-color: #c2c2c2;\r\n        margin-bottom: 5px;\r\n        filter: invert(1);\r\n    }\r\n\r\n    .ge-grid-edit {\r\n        display: grid;\r\n        background-color: #878787;\r\n        margin-bottom: 5px;\r\n        filter: invert(1);\r\n\r\n    }\r\n  \r\n    .ge-grid {\r\n        display: grid;\r\n        margin-bottom: 5px;\r\n    }\r\n\r\n\r\n    .textInputLine {\r\n        user-select: none;\r\n        padding-left: $line-padding-left;\r\n        padding-bottom: $line-padding-bottom;\r\n        padding-top: $line-padding-top;\r\n        padding-right: $line-padding-right;\r\n        height: var(--spacingHeight);\r\n        display: grid;\r\n        grid-template-columns: auto auto 1fr;\r\n        .label {\r\n            grid-column: 2;\r\n            display: flex;\r\n            align-items: center;\r\n            min-width: 15px;\r\n            font-family: var(--labelFamily);\r\n        }\r\n\r\n        img {\r\n            width: 30px;\r\n        }\r\n        \r\n        .img {\r\n            grid-column: 1;\r\n            display: flex;\r\n            align-items: center;\r\n        }\r\n\r\n        .value {                        \r\n            display: flex;\r\n            align-items: center;\r\n            grid-column: 3;\r\n            background: transparent;\r\n            height: 26px;\r\n            position: relative;\r\n            background-color: white;\r\n            margin-top: 2px;\r\n            overflow-y: hidden;\r\n            margin-right: 2px;\r\n            input {\r\n                width: 100%;\r\n                outline-color: transparent;\r\n                border: transparent;\r\n                outline-width: 0px;\r\n                height: 24px;\r\n            }\r\n            input.hasArrows {\r\n                padding-right: 15px;\r\n            }\r\n            .arrows {\r\n                display: none;\r\n            }\r\n            &:hover .arrows, &:focus .arrows, &.dragging .arrows {\r\n                position: absolute;\r\n                right: 0;\r\n                display: flex;\r\n                flex-direction: column;\r\n                background-color: white;\r\n                cursor: grab;\r\n                .downArrowIcon, .upArrowIcon {\r\n                    width: 15px;\r\n                    height: 15px;\r\n                }\r\n            }\r\n            &.dragging .arrows {\r\n                background-color: var(--buttonPressedBackground);\r\n                .downArrowIcon, .upArrowIcon {\r\n                    filter: invert(100%) brightness(500%);\r\n                }\r\n            }\r\n        }\r\n    }\r\n\r\n    .textInputLine.withUnits {\r\n        grid-template-columns: auto auto 1fr auto;\r\n    }\r\n    \r\n    .textInputArea {\r\n        padding-left: $line-padding-left;\r\n        height: 100%;\r\n        display: grid;\r\n        grid-template-columns: 1fr 120px;\r\n\r\n        .label {\r\n            grid-column: 1;\r\n            display: flex;\r\n            align-items: center;\r\n        }\r\n\r\n        .value {                        \r\n            display: flex;\r\n            align-items: center;\r\n            grid-column: 2;\r\n            \r\n            textarea {\r\n                width: calc(150% - 5px);\r\n                margin-left: -50%;\r\n                height: 40px;\r\n            }\r\n        }\r\n    }\r\n    \r\n    .paneContainer {\r\n        margin-top: 3px;\r\n        display:grid;\r\n        grid-template-rows: 100%;\r\n        grid-template-columns: 100%;\r\n        \r\n        .paneList {\r\n            border-left: 3px solid transparent;\r\n        }\r\n\r\n        &:hover {  \r\n            .paneList {                      \r\n                border-left: 3px solid rgba(51, 122, 183, 0.8);\r\n            }\r\n\r\n            .paneContainer-content {\r\n                .header {\r\n                    .title {   \r\n                        border-left: 3px solid rgb(51, 122, 183);\r\n                    }\r\n                }\r\n            }\r\n        }\r\n        \r\n        .paneContainer-highlight-border {\r\n            grid-row: 1;\r\n            grid-column: 1;\r\n            opacity: 1;\r\n            border: 3px solid red;\r\n            transition: opacity 250ms;\r\n            pointer-events: none;\r\n            \r\n            &.transparent {\r\n                opacity: 0;\r\n            }\r\n        }\r\n\r\n        .paneContainer-content {\r\n            grid-row: 1;\r\n            grid-column: 1;\r\n\r\n            .header {\r\n                display: grid;\r\n                grid-template-columns: 1fr auto;\r\n                background: #cccccc;    \r\n                height: var(--spacingHeight);\r\n                padding-bottom: $line-padding-bottom;\r\n                padding-top: $line-padding-top;\r\n                padding-right: 5px;                        \r\n                cursor: pointer;\r\n                \r\n                .title {                                \r\n                    border-left: 3px solid transparent;\r\n                    padding-left: 5px;\r\n                    grid-column: 1;\r\n                    display: flex;\r\n                    align-items: center;\r\n                }\r\n\r\n                .collapse {\r\n                    grid-column: 2;\r\n                    display: flex;\r\n                    align-items: center;  \r\n                    justify-items: center;\r\n                    transform-origin: center;\r\n\r\n                    &.closed {\r\n                        transform: rotate(180deg);\r\n                    }\r\n                }                        \r\n            }\r\n\r\n            .paneList > div:not(:last-child) {\r\n                border-bottom: 0.5px solid rgba(255, 255, 255, 0.1);\r\n            }\r\n\r\n            .fragment > div:not(:last-child)  {\r\n                border-bottom: 0.5px solid rgba(255, 255, 255, 0.1);\r\n            }\r\n        }\r\n    }\r\n\r\n    .color-picker {\r\n        height: 150px;\r\n        width: 15px;\r\n\r\n        .color-rect-background {\r\n            height: 15px;\r\n            border: 1px black solid;\r\n            cursor: pointer;\r\n            background: repeating-conic-gradient(#E2E2E2 0% 25%, white 0% 50%) 50% / 10px 10px;\r\n            .color-rect {\r\n                height: 100%;\r\n            }\r\n        }\r\n\r\n        .color-picker-cover {\r\n            position: fixed;\r\n            top: 0px;\r\n            right: 0px;\r\n            bottom: 0px;\r\n            left: 0px;\r\n        }\r\n\r\n        .color-picker-float {\r\n            z-index: 2;\r\n            position: absolute;  \r\n        }                \r\n    }\r\n\r\n    .gradient-step {\r\n        display: grid;\r\n        grid-template-rows: 100%;\r\n        grid-template-columns: 20px 30px 40px auto 20px 30px;\r\n        padding-top: 5px;\r\n        padding-left: 5px;\r\n        padding-bottom: 5px;\r\n\r\n        .step {\r\n            grid-row: 1;\r\n            grid-column: 1;\r\n        }\r\n            \r\n        .color {\r\n            grid-row: 1;\r\n            grid-column: 2;\r\n            cursor: pointer;\r\n        }\r\n\r\n        .step-value {       \r\n            margin-left: 5px;     \r\n            grid-row: 1;\r\n            grid-column: 3;\r\n            text-align: right;\r\n            margin-right: 5px;\r\n        }\r\n\r\n        .step-slider {            \r\n            grid-row: 1;\r\n            grid-column: 4;\r\n            display: grid;\r\n            justify-content: stretch;\r\n            align-content: center;\r\n            margin-right: -5px;\r\n            padding-left: 12px;\r\n\r\n            input {\r\n                width: 90%;\r\n            }\r\n        }\r\n\r\n        .gradient-copy {            \r\n            grid-row: 1;\r\n            grid-column: 5;\r\n            display: grid;\r\n            align-content: center;\r\n            justify-content: center;\r\n \r\n            .img {\r\n                height: 20px;\r\n                width: 20px;\r\n            }\r\n            .img:hover {\r\n                cursor: pointer;\r\n            }\r\n\r\n        }\r\n        .gradient-delete {            \r\n            grid-row: 1;\r\n            grid-column: 6;\r\n            display: grid;\r\n            align-content: center;\r\n            justify-content: center;\r\n            .img {\r\n                height: 20px;\r\n                width: 20px;\r\n            }\r\n            .img:hover {\r\n                cursor: pointer;\r\n            }\r\n\r\n        }\r\n\r\n    }\r\n\r\n    .alignment-bar {\r\n        display: flex;\r\n        justify-content: center;\r\n        padding-right: 5px;\r\n    }\r\n\r\n    .command-button {\r\n        cursor: pointer;\r\n        width: 30px;\r\n\r\n        .command-label {\r\n            display: none;\r\n        }        \r\n\r\n        .command-button-icon {\r\n            height: 100%;\r\n            width: 100%;\r\n            display: grid;\r\n            color: white;\r\n            align-content: center;\r\n            justify-content: center;\r\n        }\r\n\r\n        &:hover {\r\n            background-color: white;\r\n        } \r\n        \r\n        .active {\r\n            transform-origin: center;\r\n            background-color: white;\r\n        }\r\n\r\n        img {\r\n            &.active {\r\n                background-color: white;\r\n            }\r\n        }\r\n    }\r\n\r\n    .command-button-alt {\r\n        cursor: pointer;\r\n        width: 40px;\r\n        margin-left: 5px;\r\n        margin-right: 5px;\r\n        .command-label {\r\n            display: none;\r\n        }        \r\n\r\n        background-color: white;\r\n        .command-button-icon {\r\n            height: 100%;\r\n            width: 100%;\r\n            display: grid;\r\n            align-content: center;\r\n            justify-content: center;\r\n        }\r\n        &:hover {\r\n            background-color: #c2c2c2;\r\n            filter: invert(1);\r\n        } \r\n    }\r\n\r\n    .command-button-alt-disabled {\r\n        cursor: pointer;\r\n        pointer-events: none;\r\n        width: 40px;\r\n        margin-left: 5px;\r\n        margin-right: 5px;\r\n        .command-label {\r\n            display: none;\r\n        }        \r\n\r\n        background-color: white;\r\n        .command-button-icon {\r\n            height: 100%;\r\n            width: 100%;\r\n            display: grid;\r\n            align-content: center;\r\n            justify-content: center;\r\n        }\r\n\r\n        img {\r\n            filter: invert(1);\r\n        }\r\n    }\r\n\r\n    \r\n    .command-button-alt-active {\r\n        cursor: pointer;\r\n        pointer-events: none;\r\n        width: 40px;\r\n        margin-left: 5px;\r\n        margin-right: 5px;\r\n        .command-label {\r\n            display: none;\r\n        }        \r\n\r\n        background-color: #c2c2c2;\r\n        filter: invert(1);\r\n        .command-button-icon {\r\n            height: 100%;\r\n            width: 100%;\r\n            display: grid;\r\n            align-content: center;\r\n            justify-content: center;\r\n        }\r\n    }\r\n\r\n    .floatLine {\r\n        user-select: none;\r\n        padding-left: $line-padding-left;\r\n        height: var(--spacingHeight);\r\n        padding-bottom: $line-padding-bottom;\r\n        padding-top: $line-padding-top;\r\n        display: grid;\r\n        grid-template-columns: auto auto 2fr 1fr;\r\n\r\n        .label {\r\n            grid-column: 2;\r\n            display: flex;\r\n            align-items: center;\r\n            min-width: 15px;\r\n            font-family: var(--labelFamily);\r\n        }\r\n\r\n        img {\r\n            width: 30px;\r\n        }\r\n\r\n        .img {\r\n            grid-column: 1;\r\n            display: flex;\r\n            align-items: center;\r\n        }\r\n\r\n        .value {                        \r\n            display: flex;\r\n            align-items: center;\r\n            grid-column: 3;\r\n            background: transparent;\r\n            height: 30px;\r\n            margin-right: 2px;\r\n            input {\r\n                width: 100%;\r\n                background-color: white;\r\n                outline-color: transparent;\r\n                border: none;\r\n                outline-width: 0px;\r\n                height: 24px;\r\n            }\r\n        }\r\n\r\n        .short {\r\n            grid-column: 2;\r\n            \r\n            display: flex;\r\n            align-items: center;\r\n            \r\n            input {\r\n                width: 27px;\r\n            }\r\n            \r\n            input::-webkit-outer-spin-button,\r\n            input::-webkit-inner-spin-button {\r\n              -webkit-appearance: none;\r\n              margin: 0;\r\n            }\r\n\r\n            input[type=number] {\r\n                -moz-appearance: textfield;\r\n            }\r\n        }\r\n    }\r\n\r\n    .vector3Line {\r\n        padding-left:$line-padding-left;\r\n        padding-bottom: $line-padding-bottom;\r\n        padding-top: $line-padding-top;      \r\n        display: grid;\r\n        .firstLine {\r\n            display: grid;\r\n            grid-template-columns: 1fr auto 20px;\r\n            height: var(--spacingHeight);\r\n\r\n            .label {\r\n                grid-column: 1;\r\n                display: flex;\r\n                align-items: center;\r\n            }\r\n\r\n            .vector {\r\n                grid-column: 2;\r\n                display: flex;\r\n                align-items: center;\r\n                text-align: right;\r\n                opacity: 0.8;\r\n            }\r\n\r\n            .expand {\r\n                grid-column: 3;\r\n                display: grid;\r\n                align-items: center;\r\n                justify-items: center;\r\n                cursor: pointer;\r\n            }\r\n        }\r\n\r\n        .secondLine {\r\n            display: grid;\r\n            padding-right: 5px;  \r\n            border-left: 1px solid rgb(51, 122, 183);\r\n\r\n            .no-right-margin {\r\n                margin-right: 0;\r\n            }\r\n\r\n            .numeric {\r\n                display: grid;\r\n                grid-template-columns: 1fr auto;\r\n            }\r\n\r\n            .numeric-label {\r\n                text-align: right;\r\n                grid-column: 1;\r\n                display: flex;\r\n                align-items: center;                            \r\n                justify-self: right;\r\n                margin-right: 10px;                          \r\n            }\r\n\r\n            .numeric-value {\r\n                width: 120px;\r\n                grid-column: 2;\r\n                display: flex;\r\n                align-items: center;  \r\n                border: 1px solid  rgb(51, 122, 183);\r\n            }                        \r\n        }\r\n    }\r\n\r\n    .buttonLine {\r\n        height: var(--spacingHeight);\r\n        padding-bottom: $line-padding-bottom;\r\n        padding-top: $line-padding-top;\r\n        display: grid;\r\n        align-items: center;\r\n        justify-items: stretch;\r\n        padding-bottom: 5px;\r\n        input[type=\"file\"] {\r\n            display: none;\r\n        }\r\n\r\n        .file-upload {            \r\n            background: var(--backgroundGrey);\r\n            border: 1px solid #424242;\r\n            margin: 5px 10px;\r\n            color:white;\r\n            padding: 4px 5px;\r\n            opacity: 0.9;\r\n            cursor: pointer;\r\n            text-align: center;\r\n            border-radius: 4px;\r\n        }\r\n\r\n        .file-upload:hover {\r\n            opacity: 1.0;\r\n        }\r\n\r\n        .file-upload:active {\r\n            transform: scale(0.98);\r\n            transform-origin: 0.5 0.5;\r\n        }\r\n\r\n        button {\r\n            background: var(--backgroundGrey);\r\n            border: 1px solid #424242;\r\n            margin: 5px 10px 5px 10px;\r\n            color:white;\r\n            padding: 4px 5px;\r\n            opacity: 0.9;\r\n            border-radius: 4px;\r\n        }\r\n\r\n        button:hover {\r\n            opacity: 1.0;\r\n        }\r\n\r\n        button:active {\r\n            background: #282828;\r\n        }   \r\n        \r\n        button:focus {\r\n            border: 1px solid #424242;\r\n            outline: 0px;\r\n        }  \r\n    }\r\n\r\n    .numeric {\r\n        padding-left: $line-padding-left;\r\n        padding-bottom: $line-padding-bottom;\r\n        padding-top: $line-padding-top;\r\n        height: var(--spacingHeight);;\r\n        display: grid;\r\n        grid-template-columns: 1fr 120px auto;\r\n\r\n        .numeric-label {\r\n            grid-column: 1;\r\n            display: flex;\r\n            align-items: center;\r\n        }\r\n\r\n        .number {                        \r\n            display: flex;\r\n            align-items: center;\r\n            grid-column: 2;\r\n            height: 10px;\r\n            .input {\r\n                width: calc(100% - 5px);\r\n                height: 10px;\r\n            }\r\n        }\r\n    }\r\n    \r\n    .checkBoxLine {\r\n        padding-left: $line-padding-left;\r\n        padding-bottom: $line-padding-bottom;\r\n        padding-top: $line-padding-top;\r\n        padding-right: $line-padding-right;\r\n        height: var(--spacingHeight);\r\n        display: grid;\r\n        grid-template-columns: auto auto 1fr ;\r\n\r\n        .label {\r\n            grid-column: 2;\r\n            display: flex;\r\n            align-items: center;\r\n            min-width: 100px;\r\n            margin-left: 15px;\r\n            font-family: var(--labelFamily);\r\n        }\r\n\r\n        img {\r\n            width: 30px;\r\n        }\r\n        \r\n        .img {\r\n            grid-column: 1;\r\n            display: flex;\r\n            align-items: center;\r\n        }\r\n\r\n        .checkBox {\r\n            grid-column: 3;\r\n            display: flex;\r\n            align-items: center;\r\n            margin-left: auto;\r\n            margin-right: 0px;\r\n            \r\n            .lbl {\r\n                position: relative;\r\n                display: block;\r\n                height: 14px;\r\n                width: 34px;\r\n                border-radius: 100px;\r\n                cursor: pointer;\r\n                transition: all 0.3s ease;\r\n                border: solid;\r\n                border-width: thin;\r\n            }\r\n\r\n            .lbl:after {\r\n                position: absolute;\r\n                left: 3px;\r\n                top: 1px;\r\n                display: block;\r\n                width: 10px;\r\n                height: 10px;\r\n                border-radius: 100px;\r\n                background: #e2e2e2;\r\n                box-shadow: 0px 3px 3px rgba(0,0,0,0.05);\r\n                content: '';\r\n                transition: all 0.15s ease;\r\n                border: solid;\r\n                border-width: thin;\r\n            }\r\n\r\n            .lbl:active:after { \r\n                transform: scale(1.15, 0.85); \r\n            }\r\n\r\n            .cbx:checked ~ label { \r\n                background: transparent;\r\n                \r\n            }\r\n\r\n            .cbx:checked ~ label:after {\r\n                left: 20px;\r\n                background: rgb(0, 0, 0);\r\n                border: solid;\r\n                border-width: thin;\r\n            }\r\n\r\n            .cbx.conflict ~ label:after {\r\n                left: 10px;\r\n                background: repeating-linear-gradient(45deg, transparent, transparent 5px, black 5px, black 10px);\r\n            }\r\n\r\n            .cbx:checked ~ label.disabled { \r\n                background: rgb(0, 0, 0);\r\n                cursor: pointer;\r\n            }\r\n\r\n            .cbx:checked ~ label.disabled:after {\r\n                left: 20px;\r\n                background: rgb(85, 85, 85);\r\n                cursor: pointer;\r\n            }\r\n\r\n            .cbx ~ label.disabled {\r\n                background: rgb(85, 85, 85);\r\n                cursor: pointer;\r\n            }\r\n\r\n            .hidden { \r\n                display: none; \r\n            }               \r\n        }                    \r\n    }  \r\n\r\n    .listLine {\r\n        padding-left: $line-padding-left;\r\n        padding-bottom: $line-padding-bottom;\r\n        padding-top: $line-padding-top;\r\n        height: var(--spacingHeight);\r\n        display: grid;\r\n        grid-template-columns: auto 1fr auto ;\r\n\r\n        .label {\r\n            grid-column: 2;\r\n            display: none;\r\n            align-items: center;\r\n        }\r\n\r\n        img {\r\n            width: 30px;\r\n        }\r\n\r\n        .img {\r\n            grid-column: 1;\r\n            display: flex;\r\n            align-items: center;\r\n        }\r\n\r\n        .options {\r\n            grid-column: 2;\r\n            padding-left: 15px;\r\n            display: flex;\r\n            align-items: center;   \r\n            margin-right: 5px;\r\n\r\n            select {\r\n                width: 120px;\r\n                height: 25px;\r\n                border: transparent;\r\n                border-radius: 4px;\r\n            }\r\n        }                    \r\n    }  \r\n                    \r\n    .color3Line {\r\n        padding-left: $line-padding-left;\r\n        padding-bottom: $line-padding-bottom;\r\n        padding-top: $line-padding-top;\r\n        padding-right: $line-padding-right;\r\n        display: grid;\r\n\r\n        .firstLine {\r\n            height: var(--spacingHeight);\r\n            display: grid;\r\n            grid-template-columns: auto auto 1fr;\r\n\r\n            .label {\r\n                grid-column: 2;\r\n                padding-left: 5px;\r\n                display: none;\r\n                align-items: center;\r\n                min-width: 15px;\r\n            }\r\n    \r\n            .img {\r\n                grid-column: 1;\r\n                display: flex;\r\n                align-items: center;\r\n            }\r\n\r\n            img {\r\n                width: 30px;\r\n                height: 30px;\r\n            }\r\n    \r\n            .textInputLine {\r\n                grid-column: 3;\r\n                padding-left: 0px;\r\n            }\r\n    \r\n            .color3 {\r\n                grid-column: 2;                \r\n                margin-top: 6px;\r\n                display: flex;\r\n                align-items: center;\r\n                padding-left: 15px;\r\n                \r\n                input {\r\n                    margin-right: 5px;\r\n                }\r\n            }\r\n\r\n            .textInputLine {\r\n                .value {\r\n                    padding-left: 2px;\r\n                }\r\n            }\r\n\r\n            .copy {\r\n                grid-column: 4;\r\n                display: none;\r\n                align-items: center;\r\n                justify-items: center;\r\n                cursor: pointer;\r\n                color: black;\r\n                img {\r\n                    height: 100%;\r\n                    width: 20px;\r\n                }\r\n            }\r\n\r\n            .expand {\r\n                grid-column: 4;\r\n                display: none;\r\n                align-items: center;\r\n                justify-items: center;\r\n                cursor: pointer;\r\n\r\n                img {\r\n                    height: 100%;\r\n                    width: 20px;\r\n                }\r\n            }\r\n        }   \r\n\r\n        .secondLine {\r\n            display: grid;\r\n            padding-right: 5px;  \r\n            border-left: 1px solid rgb(51, 122, 183);\r\n\r\n            .numeric {\r\n                display: grid;\r\n                grid-template-columns: 1fr auto;\r\n            }\r\n\r\n            .numeric-label {\r\n                text-align: right;\r\n                grid-column: 1;\r\n                display: flex;\r\n                align-items: center;                            \r\n                justify-self: right;\r\n                margin-right: 10px;                          \r\n            }\r\n\r\n            .numeric-value {\r\n                width: 120px;\r\n                grid-column: 2;\r\n                display: flex;\r\n                align-items: center;  \r\n                border: 1px solid  rgb(51, 122, 183);\r\n            }                        \r\n        }                  \r\n    }     \r\n    \r\n    .textLine {\r\n        padding-left: $line-padding-left;\r\n        padding-bottom: $line-padding-bottom;\r\n        padding-top: $line-padding-top;\r\n        padding-right: $line-padding-right;\r\n        height: auto;\r\n        display: grid;\r\n        grid-template-columns: auto auto 2fr 1fr;\r\n        .label {\r\n            grid-column: 2;\r\n            padding-left: 5px;\r\n            padding-top: 4px;\r\n            display: flex;\r\n            align-items: left;\r\n            min-width: 15px;\r\n            color: #a9a9a9;\r\n            font-size: 10px;\r\n            font-family: \"acumin-pro-semicondensed\";\r\n        }\r\n\r\n        img {\r\n            width: 30px;\r\n        }\r\n\r\n        .img {\r\n            grid-column: 1;\r\n            display: flex;\r\n            align-items: center;\r\n        }\r\n\r\n        .link-value {\r\n            grid-column: 2;\r\n            white-space: nowrap;\r\n            text-overflow: ellipsis;\r\n            overflow: hidden;\r\n            text-align: end;\r\n            opacity: 0.8;\r\n            margin:5px;\r\n            margin-top: 6px;\r\n            max-width: 140px;\r\n            text-decoration: underline;\r\n            cursor: pointer;\r\n        }\r\n\r\n        .value {\r\n            display: none;\r\n            grid-column: 3;\r\n            white-space: nowrap;\r\n            text-overflow: ellipsis;\r\n            overflow: hidden;\r\n            text-align: end;\r\n            opacity: 0.8;\r\n            margin:5px;\r\n            margin-top: 6px;\r\n            max-width: 200px;\r\n            -webkit-user-select: text; \r\n            -moz-user-select: text;   \r\n            -ms-user-select: text;    \r\n            user-select: text;                \r\n\r\n            &.check {\r\n                color: green;\r\n            }\r\n\r\n            &.uncheck {\r\n                color: red;\r\n            }  \r\n        }\r\n    }    \r\n\r\n}"],"sourceRoot":""}]);
 // Exports
 /* harmony default export */ __webpack_exports__["default"] = (___CSS_LOADER_EXPORT___);
 
@@ -10122,9 +10122,9 @@ ___CSS_LOADER_EXPORT___.push([module.i, ":root {\n  --backgroundGrey: #aaaaaa;\n
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./components/sceneExplorer/sceneExplorer.scss":
-/*!**************************************************************************************************************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!E:/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/sceneExplorer/sceneExplorer.scss ***!
-  \**************************************************************************************************************************************************************************/
+/*!************************************************************************************************************************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/sceneExplorer/sceneExplorer.scss ***!
+  \************************************************************************************************************************************************************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -10147,9 +10147,9 @@ ___CSS_LOADER_EXPORT___.push([module.i, "#ge-scene-explorer-host {\n  position: 
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./diagram/workbenchCanvas.scss":
-/*!***********************************************************************************************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!E:/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./diagram/workbenchCanvas.scss ***!
-  \***********************************************************************************************************************************************************/
+/*!*********************************************************************************************************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/sass-loader/dist/cjs.js!./diagram/workbenchCanvas.scss ***!
+  \*********************************************************************************************************************************************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -10172,9 +10172,9 @@ ___CSS_LOADER_EXPORT___.push([module.i, "#workbench-canvas {\n  grid-column: 1;\
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./main.scss":
-/*!****************************************************************************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!E:/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./main.scss ***!
-  \****************************************************************************************************************************************/
+/*!**************************************************************************************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/sass-loader/dist/cjs.js!./main.scss ***!
+  \**************************************************************************************************************************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -10197,9 +10197,9 @@ ___CSS_LOADER_EXPORT___.push([module.i, ":root {\n  --blackBarHeight: 55px; }\n\
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./scss/commandBar.scss":
-/*!***************************************************************************************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!E:/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./scss/commandBar.scss ***!
-  \***************************************************************************************************************************************************/
+/*!*************************************************************************************************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/sass-loader/dist/cjs.js!./scss/commandBar.scss ***!
+  \*************************************************************************************************************************************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -10222,9 +10222,9 @@ ___CSS_LOADER_EXPORT___.push([module.i, ":root {\n  --selectionGrey: #666666; }\
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./scss/header.scss":
-/*!***********************************************************************************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!E:/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./scss/header.scss ***!
-  \***********************************************************************************************************************************************/
+/*!*********************************************************************************************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/sass-loader/dist/cjs.js!./scss/header.scss ***!
+  \*********************************************************************************************************************************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -10247,9 +10247,9 @@ ___CSS_LOADER_EXPORT___.push([module.i, "#ge-header {\n  width: 100%;\n  grid-co
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/dist/cjs.js!./sharedUiComponents/colorPicker/colorPicker.scss":
-/*!******************************************************************************************************************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/css-loader/dist/cjs.js!E:/Babylon/Babylon.js/node_modules/sass-loader/dist/cjs.js!./sharedUiComponents/colorPicker/colorPicker.scss ***!
-  \******************************************************************************************************************************************************************************/
+/*!****************************************************************************************************************************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/css-loader/dist/cjs.js!C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/sass-loader/dist/cjs.js!./sharedUiComponents/colorPicker/colorPicker.scss ***!
+  \****************************************************************************************************************************************************************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -10272,9 +10272,9 @@ ___CSS_LOADER_EXPORT___.push([module.i, ".color-picker-container {\n  width: 320
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/runtime/api.js":
-/*!*************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/css-loader/dist/runtime/api.js ***!
-  \*************************************************************************/
+/*!************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/css-loader/dist/runtime/api.js ***!
+  \************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10349,9 +10349,9 @@ module.exports = function (cssWithMappingToString) {
 /***/ }),
 
 /***/ "../../node_modules/css-loader/dist/runtime/cssWithMappingToString.js":
-/*!********************************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/css-loader/dist/runtime/cssWithMappingToString.js ***!
-  \********************************************************************************************/
+/*!*******************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/css-loader/dist/runtime/cssWithMappingToString.js ***!
+  \*******************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10396,9 +10396,9 @@ module.exports = function cssWithMappingToString(item) {
 /***/ }),
 
 /***/ "../../node_modules/object-assign/index.js":
-/*!*****************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/object-assign/index.js ***!
-  \*****************************************************************/
+/*!****************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/object-assign/index.js ***!
+  \****************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10498,9 +10498,9 @@ module.exports = shouldUseNative() ? Object.assign : function (target, source) {
 /***/ }),
 
 /***/ "../../node_modules/process/browser.js":
-/*!*************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/process/browser.js ***!
-  \*************************************************************/
+/*!************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/process/browser.js ***!
+  \************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -10693,9 +10693,9 @@ process.umask = function() { return 0; };
 /***/ }),
 
 /***/ "../../node_modules/prop-types/checkPropTypes.js":
-/*!***********************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/prop-types/checkPropTypes.js ***!
-  \***********************************************************************/
+/*!**********************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/prop-types/checkPropTypes.js ***!
+  \**********************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10807,9 +10807,9 @@ module.exports = checkPropTypes;
 /***/ }),
 
 /***/ "../../node_modules/prop-types/factoryWithTypeCheckers.js":
-/*!********************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/prop-types/factoryWithTypeCheckers.js ***!
-  \********************************************************************************/
+/*!*******************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/prop-types/factoryWithTypeCheckers.js ***!
+  \*******************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11410,9 +11410,9 @@ module.exports = function(isValidElement, throwOnDirectAccess) {
 /***/ }),
 
 /***/ "../../node_modules/prop-types/index.js":
-/*!**************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/prop-types/index.js ***!
-  \**************************************************************/
+/*!*************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/prop-types/index.js ***!
+  \*************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11436,9 +11436,9 @@ if (true) {
 /***/ }),
 
 /***/ "../../node_modules/prop-types/lib/ReactPropTypesSecret.js":
-/*!*********************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/prop-types/lib/ReactPropTypesSecret.js ***!
-  \*********************************************************************************/
+/*!********************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/prop-types/lib/ReactPropTypesSecret.js ***!
+  \********************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11460,9 +11460,9 @@ module.exports = ReactPropTypesSecret;
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/AbstractMenu.js":
-/*!********************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/react-contextmenu/es6/AbstractMenu.js ***!
-  \********************************************************************************/
+/*!*******************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/react-contextmenu/es6/AbstractMenu.js ***!
+  \*******************************************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -11686,9 +11686,9 @@ var _initialiseProps = function _initialiseProps() {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/ContextMenu.js":
-/*!*******************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/react-contextmenu/es6/ContextMenu.js ***!
-  \*******************************************************************************/
+/*!******************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/react-contextmenu/es6/ContextMenu.js ***!
+  \******************************************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -12003,9 +12003,9 @@ ContextMenu.defaultProps = {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/ContextMenuTrigger.js":
-/*!**************************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/react-contextmenu/es6/ContextMenuTrigger.js ***!
-  \**************************************************************************************/
+/*!*************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/react-contextmenu/es6/ContextMenuTrigger.js ***!
+  \*************************************************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -12203,9 +12203,9 @@ ContextMenuTrigger.defaultProps = {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/MenuItem.js":
-/*!****************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/react-contextmenu/es6/MenuItem.js ***!
-  \****************************************************************************/
+/*!***************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/react-contextmenu/es6/MenuItem.js ***!
+  \***************************************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -12343,9 +12343,9 @@ MenuItem.defaultProps = {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/SubMenu.js":
-/*!***************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/react-contextmenu/es6/SubMenu.js ***!
-  \***************************************************************************/
+/*!**************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/react-contextmenu/es6/SubMenu.js ***!
+  \**************************************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -12683,9 +12683,9 @@ SubMenu.defaultProps = {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/actions.js":
-/*!***************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/react-contextmenu/es6/actions.js ***!
-  \***************************************************************************/
+/*!**************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/react-contextmenu/es6/actions.js ***!
+  \**************************************************************************************************/
 /*! exports provided: MENU_SHOW, MENU_HIDE, dispatchGlobalEvent, showMenu, hideMenu */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -12743,9 +12743,9 @@ function hideMenu() {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/connectMenu.js":
-/*!*******************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/react-contextmenu/es6/connectMenu.js ***!
-  \*******************************************************************************/
+/*!******************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/react-contextmenu/es6/connectMenu.js ***!
+  \******************************************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -12841,9 +12841,9 @@ var ignoredTriggerProps = [].concat(_toConsumableArray(Object.keys(_ContextMenuT
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/globalEventListener.js":
-/*!***************************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/react-contextmenu/es6/globalEventListener.js ***!
-  \***************************************************************************************/
+/*!**************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/react-contextmenu/es6/globalEventListener.js ***!
+  \**************************************************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -12903,9 +12903,9 @@ var GlobalEventListener = function GlobalEventListener() {
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/helpers.js":
-/*!***************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/react-contextmenu/es6/helpers.js ***!
-  \***************************************************************************/
+/*!**************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/react-contextmenu/es6/helpers.js ***!
+  \**************************************************************************************************/
 /*! exports provided: callIfExists, hasOwnProp, uniqueId, cssClasses, store, canUseDOM */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -12952,9 +12952,9 @@ var canUseDOM = Boolean(typeof window !== 'undefined' && window.document && wind
 /***/ }),
 
 /***/ "../../node_modules/react-contextmenu/es6/index.js":
-/*!*************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/react-contextmenu/es6/index.js ***!
-  \*************************************************************************/
+/*!************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/react-contextmenu/es6/index.js ***!
+  \************************************************************************************************/
 /*! exports provided: ContextMenu, ContextMenuTrigger, MenuItem, SubMenu, connectMenu, hideMenu, showMenu */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -12990,9 +12990,9 @@ __webpack_require__.r(__webpack_exports__);
 /***/ }),
 
 /***/ "../../node_modules/react-dom/cjs/react-dom.development.js":
-/*!*********************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/react-dom/cjs/react-dom.development.js ***!
-  \*********************************************************************************/
+/*!********************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/react-dom/cjs/react-dom.development.js ***!
+  \********************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -38014,9 +38014,9 @@ exports.version = ReactVersion;
 /***/ }),
 
 /***/ "../../node_modules/react-dom/index.js":
-/*!*************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/react-dom/index.js ***!
-  \*************************************************************/
+/*!************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/react-dom/index.js ***!
+  \************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -38059,9 +38059,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/react-is/cjs/react-is.development.js":
-/*!*******************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/react-is/cjs/react-is.development.js ***!
-  \*******************************************************************************/
+/*!******************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/react-is/cjs/react-is.development.js ***!
+  \******************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -38252,9 +38252,9 @@ exports.typeOf = typeOf;
 /***/ }),
 
 /***/ "../../node_modules/react-is/index.js":
-/*!************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/react-is/index.js ***!
-  \************************************************************/
+/*!***********************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/react-is/index.js ***!
+  \***********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -38269,9 +38269,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/react/cjs/react.development.js":
-/*!*************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/react/cjs/react.development.js ***!
-  \*************************************************************************/
+/*!************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/react/cjs/react.development.js ***!
+  \************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -40193,9 +40193,9 @@ exports.version = ReactVersion;
 /***/ }),
 
 /***/ "../../node_modules/react/index.js":
-/*!*********************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/react/index.js ***!
-  \*********************************************************/
+/*!********************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/react/index.js ***!
+  \********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -40210,9 +40210,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/scheduler/cjs/scheduler-tracing.development.js":
-/*!*****************************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/scheduler/cjs/scheduler-tracing.development.js ***!
-  \*****************************************************************************************/
+/*!****************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/scheduler/cjs/scheduler-tracing.development.js ***!
+  \****************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -40571,9 +40571,9 @@ exports.unstable_wrap = unstable_wrap;
 /***/ }),
 
 /***/ "../../node_modules/scheduler/cjs/scheduler.development.js":
-/*!*********************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/scheduler/cjs/scheduler.development.js ***!
-  \*********************************************************************************/
+/*!********************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/scheduler/cjs/scheduler.development.js ***!
+  \********************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -41441,9 +41441,9 @@ exports.unstable_wrapCallback = unstable_wrapCallback;
 /***/ }),
 
 /***/ "../../node_modules/scheduler/index.js":
-/*!*************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/scheduler/index.js ***!
-  \*************************************************************/
+/*!************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/scheduler/index.js ***!
+  \************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -41458,9 +41458,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/scheduler/tracing.js":
-/*!***************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/scheduler/tracing.js ***!
-  \***************************************************************/
+/*!**************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/scheduler/tracing.js ***!
+  \**************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -41475,9 +41475,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/setimmediate/setImmediate.js":
-/*!***********************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/setimmediate/setImmediate.js ***!
-  \***********************************************************************/
+/*!**********************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/setimmediate/setImmediate.js ***!
+  \**********************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -41673,9 +41673,9 @@ if (false) {} else {
 /***/ }),
 
 /***/ "../../node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js":
-/*!************************************************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js ***!
-  \************************************************************************************************/
+/*!***********************************************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js ***!
+  \***********************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -41953,9 +41953,9 @@ module.exports = function (list, options) {
 /***/ }),
 
 /***/ "../../node_modules/timers-browserify/main.js":
-/*!********************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/timers-browserify/main.js ***!
-  \********************************************************************/
+/*!*******************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/timers-browserify/main.js ***!
+  \*******************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -42028,9 +42028,9 @@ exports.clearImmediate = (typeof self !== "undefined" && self.clearImmediate) ||
 /***/ }),
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
-/*!*************************************************************!*\
-  !*** E:/Babylon/Babylon.js/node_modules/tslib/tslib.es6.js ***!
-  \*************************************************************/
+/*!************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  \************************************************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __createBinding, __exportStar, __values, __read, __spread, __spreadArrays, __spreadArray, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault, __classPrivateFieldGet, __classPrivateFieldSet */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -42335,9 +42335,9 @@ module.exports = g;
 /***/ }),
 
 /***/ "../../sharedUiComponents/imgs/fillColorIcon.svg":
-/*!***********************************************************************!*\
-  !*** E:/Babylon/Babylon.js/sharedUiComponents/imgs/fillColorIcon.svg ***!
-  \***********************************************************************/
+/*!**********************************************************************************************!*\
+  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/sharedUiComponents/imgs/fillColorIcon.svg ***!
+  \**********************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -43199,7 +43199,7 @@ var CommandBarComponent = /** @class */ (function (_super) {
                         {
                             label: "Delete Selected",
                             onClick: function () {
-                                _this.props.globalState.workbench.selectedGuiNodes.forEach(function (guiNode) {
+                                _this.props.globalState.selectedControls.forEach(function (guiNode) {
                                     var _a;
                                     if (guiNode !== _this.props.globalState.guiTexture.getChildren()[0]) {
                                         _this.props.globalState.guiTexture.removeControl(guiNode);
@@ -43207,7 +43207,7 @@ var CommandBarComponent = /** @class */ (function (_super) {
                                         guiNode.dispose();
                                     }
                                 });
-                                _this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+                                _this.props.globalState.setSelection([]);
                             },
                         },
                         {
@@ -43714,6 +43714,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _sharedUiComponents_lines_colorLineComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/colorLineComponent */ "./sharedUiComponents/lines/colorLineComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../../../sharedUiComponents/lines/targetsProxy */ "./sharedUiComponents/lines/targetsProxy.tsx");
 /* harmony import */ var _diagram_coordinateHelper__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../../../../diagram/coordinateHelper */ "./diagram/coordinateHelper.tsx");
+/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! babylonjs/Maths/math */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_12___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_12__);
+
 
 
 
@@ -43754,8 +43757,42 @@ var descendantsOnlyPaddingIcon = __webpack_require__(/*! ../../../../sharedUiCom
 var CommonControlPropertyGridComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(CommonControlPropertyGridComponent, _super);
     function CommonControlPropertyGridComponent(props) {
-        return _super.call(this, props) || this;
+        var _a;
+        var _this = _super.call(this, props) || this;
+        var controls = _this.props.controls;
+        for (var _i = 0, controls_1 = controls; _i < controls_1.length; _i++) {
+            var control = controls_1[_i];
+            var transformed = _this._getTransformedReferenceCoordinate(control);
+            if (!control.metadata) {
+                control.metadata = {};
+            }
+            control.metadata._previousCenter = transformed;
+        }
+        _this._onPropertyChangedObserver = (_a = _this.props.onPropertyChangedObservable) === null || _a === void 0 ? void 0 : _a.add(function (event) {
+            var isTransformEvent = event.property === "transformCenterX" || event.property === "transformCenterY";
+            for (var _i = 0, controls_2 = controls; _i < controls_2.length; _i++) {
+                var control = controls_2[_i];
+                var transformed = _this._getTransformedReferenceCoordinate(control);
+                if (isTransformEvent && control.metadata._previousCenter) {
+                    // Calculate the difference between current center and previous center
+                    var diff = transformed.subtract(control.metadata._previousCenter);
+                    control.leftInPixels -= diff.x;
+                    control.topInPixels -= diff.y;
+                    // Update center in reference to left and top positions
+                    transformed = _this._getTransformedReferenceCoordinate(control);
+                }
+                control.metadata._previousCenter = transformed;
+            }
+            _this.forceUpdate();
+        });
+        return _this;
     }
+    CommonControlPropertyGridComponent.prototype._getTransformedReferenceCoordinate = function (control) {
+        var nodeMatrix = _diagram_coordinateHelper__WEBPACK_IMPORTED_MODULE_11__["CoordinateHelper"].getNodeMatrix(control);
+        var transformed = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_12__["Vector2"](1, 1);
+        nodeMatrix.transformCoordinates(1, 1, transformed);
+        return transformed;
+    };
     CommonControlPropertyGridComponent.prototype._updateAlignment = function (alignment, value) {
         for (var _i = 0, _a = this.props.controls; _i < _a.length; _i++) {
             var control = _a[_i];
@@ -43805,14 +43842,20 @@ var CommonControlPropertyGridComponent = /** @class */ (function (_super) {
                 });
         }
     };
+    CommonControlPropertyGridComponent.prototype.componentWillUnmount = function () {
+        var _a;
+        if (this._onPropertyChangedObserver) {
+            (_a = this.props.onPropertyChangedObservable) === null || _a === void 0 ? void 0 : _a.remove(this._onPropertyChangedObserver);
+        }
+    };
     CommonControlPropertyGridComponent.prototype.render = function () {
         var _this = this;
         var controls = this.props.controls;
         var firstControl = controls[0];
         var horizontalAlignment = firstControl.horizontalAlignment;
         var verticalAlignment = firstControl.verticalAlignment;
-        for (var _i = 0, controls_1 = controls; _i < controls_1.length; _i++) {
-            var control = controls_1[_i];
+        for (var _i = 0, controls_3 = controls; _i < controls_3.length; _i++) {
+            var control = controls_3[_i];
             if (control.horizontalAlignment !== horizontalAlignment) {
                 horizontalAlignment = babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["Control"].HORIZONTAL_ALIGNMENT_CENTER;
             }
@@ -43860,9 +43903,32 @@ var CommonControlPropertyGridComponent = /** @class */ (function (_super) {
                 return _sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_10__["conflictingValuesPlaceholder"];
             }
         };
+        var increment = function (propertyName, amount, minimum, maximum) {
+            var _a;
+            for (var _i = 0, controls_4 = controls; _i < controls_4.length; _i++) {
+                var control = controls_4[_i];
+                var initialValue = control[propertyName];
+                var initialUnit = control["_" + propertyName]._unit;
+                var newValue = control["".concat(propertyName, "InPixels")] + amount;
+                if (minimum !== undefined && newValue < minimum)
+                    newValue = minimum;
+                if (maximum !== undefined && newValue > maximum)
+                    newValue = maximum;
+                control["".concat(propertyName, "InPixels")] = newValue;
+                if (initialUnit === babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["ValueAndUnit"].UNITMODE_PERCENTAGE) {
+                    _diagram_coordinateHelper__WEBPACK_IMPORTED_MODULE_11__["CoordinateHelper"].convertToPercentage(control, [propertyName]);
+                }
+                (_a = _this.props.onPropertyChangedObservable) === null || _a === void 0 ? void 0 : _a.notifyObservers({
+                    object: control,
+                    property: propertyName,
+                    initialValue: initialValue,
+                    value: control[propertyName]
+                });
+            }
+        };
         var convertUnits = function (unit, property) {
-            for (var _i = 0, controls_2 = controls; _i < controls_2.length; _i++) {
-                var control = controls_2[_i];
+            for (var _i = 0, controls_5 = controls; _i < controls_5.length; _i++) {
+                var control = controls_5[_i];
                 if (unit === "PX") {
                     _diagram_coordinateHelper__WEBPACK_IMPORTED_MODULE_11__["CoordinateHelper"].convertToPercentage(control, [property], _this.props.onPropertyChangedObservable);
                 }
@@ -43893,12 +43959,12 @@ var CommonControlPropertyGridComponent = /** @class */ (function (_super) {
                         _this._updateAlignment("verticalAlignment", babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["Control"].VERTICAL_ALIGNMENT_BOTTOM);
                     } })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { numbersOnly: true, iconLabel: "Position", icon: positionIcon, lockObject: this.props.lockObject, label: "X", delayInput: true, value: getValue("_left"), onChange: function (newValue) { return _this._checkAndUpdateValues("left", newValue); }, unit: getUnitString("_left"), onUnitClicked: function (unit) { return convertUnits(unit, "left"); } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { numbersOnly: true, lockObject: this.props.lockObject, label: "Y", delayInput: true, value: getValue("_top"), onChange: function (newValue) { return _this._checkAndUpdateValues("top", newValue); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable, unit: getUnitString("_top"), onUnitClicked: function (unit) { return convertUnits(unit, "top"); } })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { numbersOnly: true, iconLabel: "Position", icon: positionIcon, lockObject: this.props.lockObject, label: "X", delayInput: true, value: getValue("_left"), onChange: function (newValue) { return _this._checkAndUpdateValues("left", newValue); }, unit: getUnitString("_left"), onUnitClicked: function (unit) { return convertUnits(unit, "left"); }, arrows: true, arrowsIncrement: function (amount) { return increment("left", amount); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { numbersOnly: true, lockObject: this.props.lockObject, label: "Y", delayInput: true, value: getValue("_top"), onChange: function (newValue) { return _this._checkAndUpdateValues("top", newValue); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable, unit: getUnitString("_top"), onUnitClicked: function (unit) { return convertUnits(unit, "top"); }, arrows: true, arrowsIncrement: function (amount) { return increment("top", amount); } })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { numbersOnly: true, iconLabel: "Scale", icon: sizeIcon, lockObject: this.props.lockObject, label: "W", delayInput: true, value: getValue("_width"), onPropertyChangedObservable: this.props.onPropertyChangedObservable, onChange: function (newValue) {
-                        for (var _i = 0, controls_3 = controls; _i < controls_3.length; _i++) {
-                            var control = controls_3[_i];
+                        for (var _i = 0, controls_6 = controls; _i < controls_6.length; _i++) {
+                            var control = controls_6[_i];
                             if (control.typeName === "Image") {
                                 control.autoScale = false;
                             }
@@ -43912,10 +43978,10 @@ var CommonControlPropertyGridComponent = /** @class */ (function (_super) {
                             }
                         }
                         _this._checkAndUpdateValues("width", newValue);
-                    }, unit: getUnitString("_width"), onUnitClicked: function (unit) { return convertUnits(unit, "width"); } }),
+                    }, unit: getUnitString("_width"), onUnitClicked: function (unit) { return convertUnits(unit, "width"); }, arrows: true, arrowsIncrement: function (amount) { return increment("width", amount); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { numbersOnly: true, lockObject: this.props.lockObject, label: "H", delayInput: true, value: getValue("_height"), onPropertyChangedObservable: this.props.onPropertyChangedObservable, onChange: function (newValue) {
-                        for (var _i = 0, controls_4 = controls; _i < controls_4.length; _i++) {
-                            var control = controls_4[_i];
+                        for (var _i = 0, controls_7 = controls; _i < controls_7.length; _i++) {
+                            var control = controls_7[_i];
                             if (control.typeName === "Image") {
                                 control.autoScale = false;
                             }
@@ -43929,34 +43995,34 @@ var CommonControlPropertyGridComponent = /** @class */ (function (_super) {
                             }
                         }
                         _this._checkAndUpdateValues("height", newValue);
-                    }, unit: getUnitString("_height"), onUnitClicked: function (unit) { return convertUnits(unit, "height"); } })),
+                    }, unit: getUnitString("_height"), onUnitClicked: function (unit) { return convertUnits(unit, "height"); }, arrows: true, arrowsIncrement: function (amount) { return increment("height", amount); } })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { numbersOnly: true, iconLabel: "Padding", icon: verticalMarginIcon, lockObject: this.props.lockObject, label: "T", delayInput: true, value: getValue("_paddingTop"), onChange: function (newValue) {
                         _this._checkAndUpdateValues("paddingTop", newValue);
                         _this._markChildrenAsDirty();
-                    }, onPropertyChangedObservable: this.props.onPropertyChangedObservable, unit: getUnitString("_paddingTop"), onUnitClicked: function (unit) { return convertUnits(unit, "paddingTop"); } }),
+                    }, onPropertyChangedObservable: this.props.onPropertyChangedObservable, unit: getUnitString("_paddingTop"), onUnitClicked: function (unit) { return convertUnits(unit, "paddingTop"); }, arrows: true, arrowsIncrement: function (amount) { return increment("paddingTop", amount, 0); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { numbersOnly: true, lockObject: this.props.lockObject, label: "B", delayInput: true, value: getValue("_paddingBottom"), onChange: function (newValue) {
                         _this._checkAndUpdateValues("paddingBottom", newValue);
                         _this._markChildrenAsDirty();
-                    }, onPropertyChangedObservable: this.props.onPropertyChangedObservable, unit: getUnitString("_paddingBottom"), onUnitClicked: function (unit) { return convertUnits(unit, "paddingBottom"); } })),
+                    }, onPropertyChangedObservable: this.props.onPropertyChangedObservable, unit: getUnitString("_paddingBottom"), onUnitClicked: function (unit) { return convertUnits(unit, "paddingBottom"); }, arrows: true, arrowsIncrement: function (amount) { return increment("paddingBottom", amount, 0); } })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { numbersOnly: true, iconLabel: "Horizontal Margins", icon: horizontalMarginIcon, lockObject: this.props.lockObject, label: "L", delayInput: true, value: getValue("_paddingLeft"), onChange: function (newValue) {
                         _this._checkAndUpdateValues("paddingLeft", newValue);
                         _this._markChildrenAsDirty();
-                    }, onPropertyChangedObservable: this.props.onPropertyChangedObservable, unit: getUnitString("_paddingLeft"), onUnitClicked: function (unit) { return convertUnits(unit, "paddingLeft"); } }),
+                    }, onPropertyChangedObservable: this.props.onPropertyChangedObservable, unit: getUnitString("_paddingLeft"), onUnitClicked: function (unit) { return convertUnits(unit, "paddingLeft"); }, arrows: true, arrowsIncrement: function (amount) { return increment("paddingLeft", amount); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { numbersOnly: true, lockObject: this.props.lockObject, label: "R", delayInput: true, value: getValue("_paddingRight"), onChange: function (newValue) {
                         _this._checkAndUpdateValues("paddingRight", newValue);
                         _this._markChildrenAsDirty();
-                    }, onPropertyChangedObservable: this.props.onPropertyChangedObservable, unit: getUnitString("_paddingRight"), onUnitClicked: function (unit) { return convertUnits(unit, "paddingRight"); } })),
+                    }, onPropertyChangedObservable: this.props.onPropertyChangedObservable, unit: getUnitString("_paddingRight"), onUnitClicked: function (unit) { return convertUnits(unit, "paddingRight"); }, arrows: true, arrowsIncrement: function (amount) { return increment("paddingRight", amount); } })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_8__["CheckBoxLineComponent"], { iconLabel: "Padding does not affect the parameters of this control, only the descendants of this control.", icon: descendantsOnlyPaddingIcon, label: "PAD ONLY DESCENDENTS", target: proxy, propertyName: "descendentsOnlyPadding", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", { className: "ge" }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_2__["TextLineComponent"], { tooltip: "", label: "TRANSFORMATION", value: " ", color: "grey" }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { iconLabel: "Transform Center", icon: positionIcon, lockObject: this.props.lockObject, label: "X", target: proxy, propertyName: "transformCenterX", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Y", target: proxy, propertyName: "transformCenterY", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { iconLabel: "Transform Center", icon: positionIcon, lockObject: this.props.lockObject, label: "X", target: proxy, propertyName: "transformCenterX", onPropertyChangedObservable: this.props.onPropertyChangedObservable, arrows: true, step: 0.0005, numbersOnly: true }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Y", target: proxy, propertyName: "transformCenterY", onPropertyChangedObservable: this.props.onPropertyChangedObservable, arrows: true, step: 0.0005, numbersOnly: true })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "ge-divider" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { iconLabel: "Scale", icon: scaleIcon, lockObject: this.props.lockObject, label: "X", target: proxy, propertyName: "scaleX", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Y", target: proxy, propertyName: "scaleY", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { iconLabel: "Scale", icon: scaleIcon, lockObject: this.props.lockObject, label: "X", target: proxy, propertyName: "scaleX", onPropertyChangedObservable: this.props.onPropertyChangedObservable, arrows: true, step: 0.0005, numbersOnly: true }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Y", target: proxy, propertyName: "scaleY", onPropertyChangedObservable: this.props.onPropertyChangedObservable, arrows: true, step: 0.0005, numbersOnly: true })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__["SliderLineComponent"], { iconLabel: "Rotation", lockObject: this.props.lockObject, icon: rotationIcon, label: "R", target: proxy, decimalCount: 2, propertyName: "rotation", minimum: 0, maximum: 2 * Math.PI, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("hr", { className: "ge" }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_2__["TextLineComponent"], { tooltip: "", label: "APPEARANCE", value: " ", color: "grey" }),
@@ -45325,9 +45391,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _propertyGrids_gui_scrollViewerPropertyGridComponent__WEBPACK_IMPORTED_MODULE_20__ = __webpack_require__(/*! ./propertyGrids/gui/scrollViewerPropertyGridComponent */ "./components/propertyTab/propertyGrids/gui/scrollViewerPropertyGridComponent.tsx");
 /* harmony import */ var _propertyGrids_gui_ellipsePropertyGridComponent__WEBPACK_IMPORTED_MODULE_21__ = __webpack_require__(/*! ./propertyGrids/gui/ellipsePropertyGridComponent */ "./components/propertyTab/propertyGrids/gui/ellipsePropertyGridComponent.tsx");
 /* harmony import */ var _propertyGrids_gui_checkboxPropertyGridComponent__WEBPACK_IMPORTED_MODULE_22__ = __webpack_require__(/*! ./propertyGrids/gui/checkboxPropertyGridComponent */ "./components/propertyTab/propertyGrids/gui/checkboxPropertyGridComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_23__ = __webpack_require__(/*! babylonjs-gui/2D/controls/control */ "babylonjs-gui/2D/valueAndUnit");
-/* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_23___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_23__);
-/* harmony import */ var _propertyGrids_gui_controlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_24__ = __webpack_require__(/*! ./propertyGrids/gui/controlPropertyGridComponent */ "./components/propertyTab/propertyGrids/gui/controlPropertyGridComponent.tsx");
+/* harmony import */ var _propertyGrids_gui_controlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_23__ = __webpack_require__(/*! ./propertyGrids/gui/controlPropertyGridComponent */ "./components/propertyTab/propertyGrids/gui/controlPropertyGridComponent.tsx");
+/* harmony import */ var babylonjs_gui_2D_advancedDynamicTexture__WEBPACK_IMPORTED_MODULE_24__ = __webpack_require__(/*! babylonjs-gui/2D/advancedDynamicTexture */ "babylonjs-gui/2D/valueAndUnit");
+/* harmony import */ var babylonjs_gui_2D_advancedDynamicTexture__WEBPACK_IMPORTED_MODULE_24___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_advancedDynamicTexture__WEBPACK_IMPORTED_MODULE_24__);
 /* harmony import */ var _sharedUiComponents_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_25__ = __webpack_require__(/*! ../../sharedUiComponents/lines/optionsLineComponent */ "./sharedUiComponents/lines/optionsLineComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_26__ = __webpack_require__(/*! ../../sharedUiComponents/lines/floatLineComponent */ "./sharedUiComponents/lines/floatLineComponent.tsx");
 /* harmony import */ var _sharedUiComponents_lines_colorLineComponent__WEBPACK_IMPORTED_MODULE_27__ = __webpack_require__(/*! ../../sharedUiComponents/lines/colorLineComponent */ "./sharedUiComponents/lines/colorLineComponent.tsx");
@@ -45337,7 +45403,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _propertyGrids_gui_buttonPropertyGridComponent__WEBPACK_IMPORTED_MODULE_31__ = __webpack_require__(/*! ./propertyGrids/gui/buttonPropertyGridComponent */ "./components/propertyTab/propertyGrids/gui/buttonPropertyGridComponent.tsx");
 /* harmony import */ var _guiNodeTools__WEBPACK_IMPORTED_MODULE_32__ = __webpack_require__(/*! ../../guiNodeTools */ "./guiNodeTools.ts");
 /* harmony import */ var _sharedUiComponents_lines_targetsProxy__WEBPACK_IMPORTED_MODULE_33__ = __webpack_require__(/*! ../../sharedUiComponents/lines/targetsProxy */ "./sharedUiComponents/lines/targetsProxy.tsx");
-
 
 
 
@@ -45436,7 +45501,7 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                         }
                     }
                 };
-                xmlHttp.open("POST", babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_23__["AdvancedDynamicTexture"].SnippetUrl + (adt.snippetId ? "/" + adt.snippetId : ""), true);
+                xmlHttp.open("POST", babylonjs_gui_2D_advancedDynamicTexture__WEBPACK_IMPORTED_MODULE_24__["AdvancedDynamicTexture"].SnippetUrl + (adt.snippetId ? "/" + adt.snippetId : ""), true);
                 xmlHttp.setRequestHeader("Content-Type", "application/json");
                 var dataToSend = {
                     payload: JSON.stringify({
@@ -45483,7 +45548,6 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                 return [2 /*return*/];
             });
         }); };
-        _this.state = { currentNode: null };
         _this._lockObject = new _sharedUiComponents_tabs_propertyGrids_lockObject__WEBPACK_IMPORTED_MODULE_8__["LockObject"]();
         _this.props.globalState.lockObject = _this._lockObject;
         _this.props.globalState.onSaveObservable.add(function () {
@@ -45503,13 +45567,8 @@ var PropertyTabComponent = /** @class */ (function (_super) {
     }
     PropertyTabComponent.prototype.componentDidMount = function () {
         var _this = this;
-        this.props.globalState.onSelectionChangedObservable.add(function (selection) {
-            if (selection instanceof babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_23__["Control"]) {
-                _this.setState({ currentNode: selection });
-            }
-            else {
-                _this.setState({ currentNode: null });
-            }
+        this.props.globalState.onSelectionChangedObservable.add(function () {
+            _this.forceUpdate();
         });
         this.props.globalState.onResizeObservable.add(function (newSize) {
             _this.forceUpdate();
@@ -45527,7 +45586,7 @@ var PropertyTabComponent = /** @class */ (function (_super) {
         babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["Tools"].ReadFile(file, function (data) {
             var decoder = new TextDecoder("utf-8");
             _this.props.globalState.workbench.loadFromJson(JSON.parse(decoder.decode(data)));
-            _this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+            _this.props.globalState.setSelection([]);
         }, undefined, true);
     };
     PropertyTabComponent.prototype.save = function (saveCallback) {
@@ -45644,13 +45703,13 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                             var guiElement = _guiNodeTools__WEBPACK_IMPORTED_MODULE_32__["GUINodeTools"].CreateControlFromString(value);
                             var newGuiNode = _this.props.globalState.workbench.createNewGuiNode(guiElement);
                             button.addControl(newGuiNode);
-                            _this.props.globalState.onSelectionChangedObservable.notifyObservers(newGuiNode);
+                            _this.props.globalState.select(newGuiNode);
                         }
                     } }));
             }
         }
         var controls = nodes;
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_controlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_24__["ControlPropertyGridComponent"], { controls: controls, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }));
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_gui_controlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_23__["ControlPropertyGridComponent"], { controls: controls, lockObject: this._lockObject, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }));
     };
     PropertyTabComponent.prototype.renderControlIcon = function (nodes) {
         var node = nodes[0];
@@ -45751,8 +45810,8 @@ var PropertyTabComponent = /** @class */ (function (_super) {
             this.props.globalState.onResponsiveChangeObservable.notifyObservers(false);
             babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["DataStorage"].WriteBoolean("Responsive", false);
         }
-        if (this.state.currentNode && this.props.globalState.workbench.selectedGuiNodes.length > 0) {
-            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "ge-propertyTab" }, this.renderNode(this.props.globalState.workbench.selectedGuiNodes)));
+        if (this.props.globalState.selectedControls.length > 0) {
+            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "ge-propertyTab" }, this.renderNode(this.props.globalState.selectedControls)));
         }
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "ge-propertyTab" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "header" },
@@ -46091,14 +46150,14 @@ var SceneExplorerComponent = /** @class */ (function (_super) {
                 data.found = true;
                 if (!goNext) {
                     if (data.previousOne) {
-                        this.props.globalState.onSelectionChangedObservable.notifyObservers(data.previousOne);
+                        this.props.globalState.select(data.previousOne);
                     }
                     return true;
                 }
             }
             else {
                 if (data.found) {
-                    this.props.globalState.onSelectionChangedObservable.notifyObservers(item);
+                    this.props.globalState.select(item);
                     return true;
                 }
                 data.previousOne = item;
@@ -46129,7 +46188,7 @@ var SceneExplorerComponent = /** @class */ (function (_super) {
                 break;
             case "Enter":
             case "ArrowRight":
-                this.props.globalState.workbench.selectedGuiNodes.forEach(function (node) {
+                this.props.globalState.selectedControls.forEach(function (node) {
                     var reservedDataStore = node.reservedDataStore;
                     if (reservedDataStore && reservedDataStore.setExpandedState) {
                         reservedDataStore.setExpandedState(true);
@@ -46139,7 +46198,7 @@ var SceneExplorerComponent = /** @class */ (function (_super) {
                 this.forceUpdate();
                 return;
             case "ArrowLeft":
-                this.props.globalState.workbench.selectedGuiNodes.forEach(function (node) {
+                this.props.globalState.selectedControls.forEach(function (node) {
                     var reservedDataStore = node.reservedDataStore;
                     console.log(reservedDataStore);
                     if (reservedDataStore && reservedDataStore.setExpandedState) {
@@ -46153,7 +46212,7 @@ var SceneExplorerComponent = /** @class */ (function (_super) {
             case "Backspace":
                 if (this.state.selectedEntity !== this.props.globalState.guiTexture.getChildren()[0]) {
                     this.state.selectedEntity.dispose();
-                    this.props.globalState.workbench.selectedGuiNodes.forEach(function (node) {
+                    this.props.globalState.selectedControls.forEach(function (node) {
                         if (node !== _this.props.globalState.guiTexture.getChildren()[0]) {
                             node.dispose();
                         }
@@ -46167,7 +46226,7 @@ var SceneExplorerComponent = /** @class */ (function (_super) {
         }
         keyEvent.preventDefault();
         if (scene) {
-            var selectedEntity = this.props.globalState.workbench.selectedGuiNodes[this.props.globalState.workbench.selectedGuiNodes.length - 1];
+            var selectedEntity = this.props.globalState.selectedControls[this.props.globalState.selectedControls.length - 1];
             var data = {};
             if (!this.findSiblings(null, scene.rootNodes, selectedEntity, goNext, data)) {
                 if (!this.findSiblings(null, scene.materials, selectedEntity, goNext, data)) {
@@ -46190,12 +46249,12 @@ var SceneExplorerComponent = /** @class */ (function (_super) {
                 event.preventDefault();
             }, onClick: function (event) {
                 if (!_this.props.globalState.selectionLock) {
-                    _this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+                    _this.props.globalState.setSelection([]);
                 }
                 else {
                     _this.props.globalState.selectionLock = false;
                 }
-            }, onContextMenu: function (ev) { return ev.preventDefault(); } }, guiElements && guiElements.length > 0 && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_treeItemComponent__WEBPACK_IMPORTED_MODULE_2__["TreeItemComponent"], { globalState: this.props.globalState, extensibilityGroups: this.props.extensibilityGroups, selectedEntities: this.props.globalState.workbench.selectedGuiNodes, items: guiElements, label: "GUI", offset: 1, filter: this.state.filter }))));
+            }, onContextMenu: function (ev) { return ev.preventDefault(); } }, guiElements && guiElements.length > 0 && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_treeItemComponent__WEBPACK_IMPORTED_MODULE_2__["TreeItemComponent"], { globalState: this.props.globalState, extensibilityGroups: this.props.extensibilityGroups, selectedEntities: this.props.globalState.selectedControls, items: guiElements, label: "GUI", offset: 1, filter: this.state.filter }))));
     };
     SceneExplorerComponent.prototype.onClose = function () {
         if (!this.props.onClose) {
@@ -46459,8 +46518,8 @@ var TreeItemSelectableComponent = /** @class */ (function (_super) {
          */
         _this._secondDragEnter = false;
         _this.state = { dragOver: false, dragOverLocation: _globalState__WEBPACK_IMPORTED_MODULE_4__["DragOverLocation"].NONE, isHovered: false, isSelected: _this.props.selectedEntities.includes(_this.props.entity) };
-        _this._onSelectionChangedObservable = props.globalState.onSelectionChangedObservable.add(function (selection) {
-            _this.setState({ isSelected: selection === _this.props.entity });
+        _this._onSelectionChangedObservable = props.globalState.onSelectionChangedObservable.add(function () {
+            _this.setState({ isSelected: _this.props.globalState.selectedControls.includes(_this.props.entity) });
         });
         _this._onDraggingEndObservable = props.globalState.onDraggingEndObservable.add(function () {
             _this.setState({ dragOverLocation: _globalState__WEBPACK_IMPORTED_MODULE_4__["DragOverLocation"].NONE });
@@ -46499,11 +46558,8 @@ var TreeItemSelectableComponent = /** @class */ (function (_super) {
         this.props.globalState.onParentingChangeObservable.remove(this._onDraggingStartObservable);
     };
     TreeItemSelectableComponent.prototype.onSelect = function () {
-        if (!this.props.globalState.onSelectionChangedObservable) {
-            return;
-        }
         var entity = this.props.entity;
-        this.props.globalState.onSelectionChangedObservable.notifyObservers(entity);
+        this.props.globalState.select(entity);
         this.props.globalState.selectionLock = true;
     };
     TreeItemSelectableComponent.prototype.renderChildren = function (isExpanded, offset) {
@@ -46571,7 +46627,7 @@ var TreeItemSelectableComponent = /** @class */ (function (_super) {
         className +=
             this.state.dragOver && this.state.dragOverLocation == _globalState__WEBPACK_IMPORTED_MODULE_4__["DragOverLocation"].BELOW && entity.parent ? " seBelow" : "";
         return (react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", null,
-            react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", { className: className, style: marginStyle, onClick: function () {
+            react__WEBPACK_IMPORTED_MODULE_3__["createElement"]("div", { className: className, style: marginStyle, onPointerUp: function () {
                     _this.onSelect();
                 }, onPointerEnter: function () { return _this.setState({ isHovered: true }); }, onPointerLeave: function () { return _this.setState({ isHovered: false }); }, onDragStart: function () {
                     _this.props.globalState.draggedControl = _this.props.entity;
@@ -47073,9 +47129,16 @@ var GuiGizmoComponent = /** @class */ (function (_super) {
             }
             if (_this.state.isRotating) {
                 var angle = Math.atan2(scene.pointerY - _this._rotation.pivot.y, scene.pointerX - _this._rotation.pivot.x);
-                for (var _i = 0, _a = _this.props.globalState.workbench.selectedGuiNodes; _i < _a.length; _i++) {
+                for (var _i = 0, _a = _this.props.globalState.selectedControls; _i < _a.length; _i++) {
                     var control = _a[_i];
+                    var oldRotation = control.rotation;
                     control.rotation += (angle - _this._rotation.initialAngleToPivot);
+                    _this.props.globalState.onPropertyChangedObservable.notifyObservers({
+                        object: control,
+                        property: 'rotation',
+                        value: control.rotation,
+                        initialValue: oldRotation
+                    });
                 }
                 _this._rotation.initialAngleToPivot = angle;
                 _this.props.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
@@ -47086,7 +47149,7 @@ var GuiGizmoComponent = /** @class */ (function (_super) {
             var node = _this.props.control;
             _this._localBounds = _coordinateHelper__WEBPACK_IMPORTED_MODULE_4__["CoordinateHelper"].computeLocalBounds(node);
             _this._storedValues = new _coordinateHelper__WEBPACK_IMPORTED_MODULE_4__["Rect"](node.leftInPixels, node.topInPixels, node.leftInPixels + node.widthInPixels, node.topInPixels + node.heightInPixels);
-            for (var _i = 0, _a = _this.props.globalState.workbench.selectedGuiNodes; _i < _a.length; _i++) {
+            for (var _i = 0, _a = _this.props.globalState.selectedControls; _i < _a.length; _i++) {
                 var node_1 = _a[_i];
                 node_1.metadata.localBounds = _coordinateHelper__WEBPACK_IMPORTED_MODULE_4__["CoordinateHelper"].computeLocalBounds(node_1);
                 node_1.metadata.storedValues = new _coordinateHelper__WEBPACK_IMPORTED_MODULE_4__["Rect"](node_1.leftInPixels, node_1.topInPixels, node_1.leftInPixels + node_1.widthInPixels, node_1.topInPixels + node_1.heightInPixels);
@@ -47244,7 +47307,7 @@ var GuiGizmoComponent = /** @class */ (function (_super) {
             node.metadata.localBounds = nb;
         };
         var this_1 = this;
-        for (var _i = 0, _a = this.props.globalState.workbench.selectedGuiNodes; _i < _a.length; _i++) {
+        for (var _i = 0, _a = this.props.globalState.selectedControls; _i < _a.length; _i++) {
             var node = _a[_i];
             _loop_1(node);
         }
@@ -47252,12 +47315,12 @@ var GuiGizmoComponent = /** @class */ (function (_super) {
     };
     GuiGizmoComponent.prototype._updateNodeFromLocalBounds = function () {
         var scalePoint = this.state.scalePoints[this.state.scalePointDragging];
-        var left = scalePoint.horizontalPosition === ScalePointPosition.Left && scalePoint.verticalPosition !== ScalePointPosition.Center;
-        var top = scalePoint.verticalPosition === ScalePointPosition.Top && scalePoint.horizontalPosition !== ScalePointPosition.Center;
-        for (var _i = 0, _a = this.props.globalState.workbench.selectedGuiNodes; _i < _a.length; _i++) {
+        var left = scalePoint.horizontalPosition === ScalePointPosition.Left;
+        var top = scalePoint.verticalPosition === ScalePointPosition.Top;
+        for (var _i = 0, _a = this.props.globalState.selectedControls; _i < _a.length; _i++) {
             var selectedControl = _a[_i];
-            var width = selectedControl.metadata.localBounds.right - selectedControl.metadata.localBounds.left;
-            var height = selectedControl.metadata.localBounds.bottom - selectedControl.metadata.localBounds.top;
+            var width = selectedControl.metadata.localBounds.width;
+            var height = selectedControl.metadata.localBounds.height;
             // calculate the center point
             var localRotation = _coordinateHelper__WEBPACK_IMPORTED_MODULE_4__["CoordinateHelper"].getRotation(selectedControl, true);
             var localScaling = _coordinateHelper__WEBPACK_IMPORTED_MODULE_4__["CoordinateHelper"].getScale(selectedControl, true);
@@ -47314,7 +47377,14 @@ var GuiGizmoComponent = /** @class */ (function (_super) {
                 }
                 // compute real change in property
                 var initialUnit = selectedControl["_".concat(property)].unit;
+                var oldPixels = selectedControl["".concat(property, "InPixels")];
                 selectedControl["".concat(property, "InPixels")] = newPixels;
+                this.props.globalState.onPropertyChangedObservable.notifyObservers({
+                    object: selectedControl,
+                    property: "".concat(property, "InPixels"),
+                    value: newPixels,
+                    initialValue: oldPixels
+                });
                 if (initialUnit === babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_1__["ValueAndUnit"].UNITMODE_PERCENTAGE) {
                     _coordinateHelper__WEBPACK_IMPORTED_MODULE_4__["CoordinateHelper"].convertToPercentage(selectedControl, [property]);
                 }
@@ -47429,7 +47499,7 @@ var GizmoWrapper = /** @class */ (function (_super) {
     };
     GizmoWrapper.prototype.render = function () {
         var _this = this;
-        var controls = this.props.globalState.workbench.selectedGuiNodes;
+        var controls = this.props.globalState.selectedControls;
         return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null, controls.map(function (control) {
             return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_guiGizmo__WEBPACK_IMPORTED_MODULE_2__["GuiGizmoComponent"], { globalState: _this.props.globalState, control: control, key: control.uniqueId });
         }));
@@ -47497,7 +47567,6 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         _this._setConstraintDirection = false;
         _this._mouseStartPointX = null;
         _this._mouseStartPointY = null;
-        _this._selectedGuiNodes = [];
         _this._ctrlKeyIsPressed = false;
         _this._altKeyIsPressed = false;
         _this._constraintDirection = ConstraintDirection.NONE;
@@ -47508,7 +47577,6 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         _this._mainSelection = null;
         _this._selectionDepth = 0;
         _this._doubleClick = null;
-        _this._lockMainSelection = false;
         _this._liveGuiTextureRerender = true;
         _this._anyControlClicked = true;
         _this._nextLiveGuiRender = -1;
@@ -47538,14 +47606,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
             }
             if (_this._ctrlKeyIsPressed && !_this.props.globalState.lockObject.lock) {
                 if (evt.key === "a") {
-                    _this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
-                    var index_1 = 0;
-                    _this.nodes.forEach(function (node) {
-                        if (index_1++) {
-                            //skip the first node, the background
-                            _this.selectAllGUI(node);
-                        }
-                    });
+                    _this.props.globalState.setSelection(_this.trueRootContainer.children);
                 }
             }
             if (_this._forceZooming) {
@@ -47560,37 +47621,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         _this.isUp = true;
         _this._rootContainer = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
         _this._responsive = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_4__["DataStorage"].ReadBoolean("Responsive", true);
-        props.globalState.onSelectionChangedObservable.add(function (selection) {
-            if (!selection) {
-                _this.updateNodeOutlines();
-                _this._selectedGuiNodes = [];
-                _this._mainSelection = null;
-            }
-            else {
-                if (selection instanceof babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["Control"]) {
-                    if (_this._ctrlKeyIsPressed) {
-                        var index = _this._selectedGuiNodes.indexOf(selection);
-                        if (index === -1) {
-                            _this._selectedGuiNodes.push(selection);
-                        }
-                        else {
-                            _this.updateNodeOutlines();
-                            _this._selectedGuiNodes.splice(index, 1);
-                        }
-                    }
-                    else if (_this._selectedGuiNodes.length <= 1) {
-                        _this.updateNodeOutlines();
-                        _this._selectedGuiNodes = [selection];
-                        if (!_this._lockMainSelection && selection != _this.props.globalState.guiTexture._rootContainer) {
-                            //incase the selection did not come from the canvas and mouse
-                            _this._mainSelection = selection;
-                        }
-                        _this._lockMainSelection = false;
-                    }
-                    _this.updateNodeOutlines();
-                }
-            }
-        });
+        props.globalState.onSelectionChangedObservable.add(function () { return _this.updateNodeOutlines(); });
         props.globalState.onPanObservable.add(function () {
             _this._forcePanning = !_this._forcePanning;
             _this._forceSelecting = false;
@@ -47740,7 +47771,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
     });
     Object.defineProperty(WorkbenchComponent.prototype, "selectedGuiNodes", {
         get: function () {
-            return this._selectedGuiNodes;
+            return this.props.globalState.selectedControls;
         },
         enumerable: false,
         configurable: true
@@ -47768,9 +47799,9 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         return parent;
     };
     WorkbenchComponent.prototype.determineMouseSelection = function (selection) {
-        if (selection && this._selectedGuiNodes.length <= 1) {
+        if (this.props.globalState.selectedControls.length <= 1) {
             // if we're still on the same main selection, got down the tree.
-            if (selection === this._selectedGuiNodes[0] || selection === this._mainSelection) {
+            if (selection === this.props.globalState.selectedControls[0]) {
                 selection = this._getParentWithDepth(selection);
             }
             else { // get the start of our tree by getting our max parent and storing our main selected control
@@ -47783,19 +47814,18 @@ var WorkbenchComponent = /** @class */ (function (_super) {
                 this._mainSelection = selection;
             }
         }
-        this._lockMainSelection = true;
-        this.props.globalState.onSelectionChangedObservable.notifyObservers(selection);
+        this.props.globalState.select(selection);
     };
     WorkbenchComponent.prototype._deleteSelectedNodes = function () {
         var _a;
-        for (var _i = 0, _b = this._selectedGuiNodes; _i < _b.length; _i++) {
+        for (var _i = 0, _b = this.props.globalState.selectedControls; _i < _b.length; _i++) {
             var control = _b[_i];
             this.props.globalState.guiTexture.removeControl(control);
             (_a = this.props.globalState.liveGuiTexture) === null || _a === void 0 ? void 0 : _a.removeControl(control);
             control.dispose();
         }
         ;
-        this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+        this.props.globalState.setSelection([]);
     };
     WorkbenchComponent.prototype.copyToClipboard = function (copyFn) {
         var controlList = [];
@@ -47818,12 +47848,12 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         try {
             var parsed = JSON.parse(clipboardContents);
             if (parsed.GUIClipboard) {
-                this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+                var newSelection = [];
                 for (var _i = 0, _a = parsed.controls; _i < _a.length; _i++) {
                     var control = _a[_i];
-                    var newControl = this.appendBlock(babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["Control"].Parse(control, this.props.globalState.guiTexture));
-                    this.props.globalState.onSelectionChangedObservable.notifyObservers(newControl);
+                    newSelection.push(this.appendBlock(babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["Control"].Parse(control, this.props.globalState.guiTexture)));
                 }
+                this.props.globalState.setSelection(newSelection);
                 return true;
             }
         }
@@ -47849,19 +47879,19 @@ var WorkbenchComponent = /** @class */ (function (_super) {
             else {
                 (_b = original.parent) === null || _b === void 0 ? void 0 : _b.addControl(newControl);
             }
-            var index_2 = 1;
+            var index_1 = 1;
             while (this.props.globalState.guiTexture.getDescendants(false).filter(
             //search if there are any copies
-            function (control) { return control.name === "".concat(newControl.name, " Copy ").concat(index_2); }).length) {
-                index_2++;
+            function (control) { return control.name === "".concat(newControl.name, " Copy ").concat(index_1); }).length) {
+                index_1++;
             }
-            newControl.name = "".concat(newControl.name, " Copy ").concat(index_2);
-            this.props.globalState.onSelectionChangedObservable.notifyObservers(newControl);
+            newControl.name = "".concat(newControl.name, " Copy ").concat(index_1);
+            this.props.globalState.select(newControl);
         }
     };
     WorkbenchComponent.prototype.selectAllGUI = function (node) {
         var _this = this;
-        this.globalState.onSelectionChangedObservable.notifyObservers(node);
+        this.globalState.select(node);
         if (node instanceof babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_3__["Container"]) {
             node.children.forEach(function (child) {
                 _this.selectAllGUI(child);
@@ -47894,7 +47924,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
     WorkbenchComponent.prototype.loadFromJson = function (serializationObject) {
         var _a;
         this.removeEditorTransformation();
-        this.globalState.onSelectionChangedObservable.notifyObservers(null);
+        this.props.globalState.setSelection([]);
         if (this.props.globalState.liveGuiTexture) {
             (_a = this.globalState.liveGuiTexture) === null || _a === void 0 ? void 0 : _a.parseContent(serializationObject, true);
             this.synchronizeLiveGUI();
@@ -47913,7 +47943,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
                 switch (_b.label) {
                     case 0:
                         this.removeEditorTransformation();
-                        this.globalState.onSelectionChangedObservable.notifyObservers(null);
+                        this.props.globalState.setSelection([]);
                         if (!this.props.globalState.liveGuiTexture) return [3 /*break*/, 2];
                         return [4 /*yield*/, ((_a = this.globalState.liveGuiTexture) === null || _a === void 0 ? void 0 : _a.parseFromSnippetAsync(snippetId, true))];
                     case 1:
@@ -47944,13 +47974,13 @@ var WorkbenchComponent = /** @class */ (function (_super) {
             _this.createNewGuiNode(guiElement);
         });
         this._isOverGUINode = [];
-        this.globalState.onSelectionChangedObservable.notifyObservers(null);
+        this.globalState.setSelection([]);
         this.globalState.onFitToWindowObservable.notifyObservers();
     };
     WorkbenchComponent.prototype.updateNodeOutlines = function () {
         for (var _i = 0, _a = this._trueRootContainer.getDescendants(); _i < _a.length; _i++) {
             var guiControl = _a[_i];
-            guiControl.isHighlighted = guiControl.getClassName() === "Grid" && (this.props.globalState.outlines || this.props.globalState.workbench.selectedGuiNodes.includes(guiControl));
+            guiControl.isHighlighted = guiControl.getClassName() === "Grid" && (this.props.globalState.outlines || this.props.globalState.selectedControls.includes(guiControl));
             guiControl.highlightLineWidth = 5;
         }
     };
@@ -48134,7 +48164,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         return index;
     };
     WorkbenchComponent.prototype.isSelected = function (value, guiNode) {
-        this.globalState.onSelectionChangedObservable.notifyObservers(guiNode);
+        this.globalState.select(guiNode);
     };
     WorkbenchComponent.prototype._onMove = function (guiControl, evt, startPos, ignorClick) {
         if (ignorClick === void 0) { ignorClick = false; }
@@ -48200,7 +48230,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         (_a = this._rootContainer.current) === null || _a === void 0 ? void 0 : _a.setPointerCapture(evt.pointerId);
         if (this._isOverGUINode.length === 0 && !evt.button) {
             if (this._forceSelecting) {
-                this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+                this.props.globalState.setSelection([]);
             }
             return;
         }
@@ -48356,7 +48386,7 @@ var WorkbenchComponent = /** @class */ (function (_super) {
                 // if we click in the scene and we don't hit any controls, deselect all
                 _this._scene.onAfterRenderObservable.addOnce(function () {
                     if (!_this._anyControlClicked) {
-                        _this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+                        _this.props.globalState.setSelection([]);
                     }
                     _this._anyControlClicked = false;
                 });
@@ -48514,10 +48544,12 @@ module.exports = content.locals || {};
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "DragOverLocation", function() { return DragOverLocation; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "GlobalState", function() { return GlobalState; });
-/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/observable");
-/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _sharedUiComponents_tabs_propertyGrids_lockObject__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./sharedUiComponents/tabs/propertyGrids/lockObject */ "./sharedUiComponents/tabs/propertyGrids/lockObject.ts");
-/* harmony import */ var _diagram_coordinateHelper__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./diagram/coordinateHelper */ "./diagram/coordinateHelper.tsx");
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _sharedUiComponents_tabs_propertyGrids_lockObject__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./sharedUiComponents/tabs/propertyGrids/lockObject */ "./sharedUiComponents/tabs/propertyGrids/lockObject.ts");
+/* harmony import */ var _diagram_coordinateHelper__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./diagram/coordinateHelper */ "./diagram/coordinateHelper.tsx");
+
 
 
 
@@ -48532,56 +48564,58 @@ var DragOverLocation;
 })(DragOverLocation || (DragOverLocation = {}));
 var GlobalState = /** @class */ (function () {
     function GlobalState() {
-        this.onSelectionChangedObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
-        this.onResizeObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
-        this.onBuiltObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
-        this.onResetRequiredObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
-        this.onUpdateRequiredObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
-        this.onLogRequiredObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
-        this.onErrorMessageDialogRequiredObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
-        this.onIsLoadingChanged = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
-        this.onSelectionBoxMoved = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
-        this.onNewSceneObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
-        this.onGuiNodeRemovalObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
-        this.onPopupClosedObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.selectedControls = [];
+        this.onSelectionChangedObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Observable"]();
+        this.onResizeObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Observable"]();
+        this.onBuiltObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Observable"]();
+        this.onResetRequiredObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Observable"]();
+        this.onUpdateRequiredObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Observable"]();
+        this.onLogRequiredObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Observable"]();
+        this.onErrorMessageDialogRequiredObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Observable"]();
+        this.onIsLoadingChanged = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Observable"]();
+        this.onSelectionBoxMoved = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Observable"]();
+        this.onNewSceneObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Observable"]();
+        this.onGuiNodeRemovalObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Observable"]();
+        this.onPopupClosedObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Observable"]();
         this._outlines = false;
-        this.onOutlineChangedObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.isMultiSelecting = false;
+        this.onOutlineChangedObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Observable"]();
         this.blockKeyboardEvents = false;
-        this.onPropertyChangedObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
-        this.onZoomObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
-        this.onFitToWindowObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
-        this.onPanObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
-        this.onSelectionButtonObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
-        this.onLoadObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
-        this.onSaveObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
-        this.onSnippetLoadObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
-        this.onSnippetSaveObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
-        this.onResponsiveChangeObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
-        this.onParentingChangeObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
-        this.onDropObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
-        this.onPropertyGridUpdateRequiredObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
-        this.onDraggingEndObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
-        this.onDraggingStartObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
-        this.onWindowResizeObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
-        this.onGizmoUpdateRequireObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
-        this.onArtBoardUpdateRequiredObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
-        this.onBackgroundColorChangeObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
-        this.onPointerMoveObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
-        this.onPointerUpObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onPropertyChangedObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Observable"]();
+        this.onZoomObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Observable"]();
+        this.onFitToWindowObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Observable"]();
+        this.onPanObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Observable"]();
+        this.onSelectionButtonObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Observable"]();
+        this.onLoadObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Observable"]();
+        this.onSaveObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Observable"]();
+        this.onSnippetLoadObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Observable"]();
+        this.onSnippetSaveObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Observable"]();
+        this.onResponsiveChangeObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Observable"]();
+        this.onParentingChangeObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Observable"]();
+        this.onDropObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Observable"]();
+        this.onPropertyGridUpdateRequiredObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Observable"]();
+        this.onDraggingEndObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Observable"]();
+        this.onDraggingStartObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Observable"]();
+        this.onWindowResizeObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Observable"]();
+        this.onGizmoUpdateRequireObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Observable"]();
+        this.onArtBoardUpdateRequiredObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Observable"]();
+        this.onBackgroundColorChangeObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Observable"]();
+        this.onPointerMoveObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Observable"]();
+        this.onPointerUpObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Observable"]();
         this.draggedControl = null;
-        this.onCopyObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
-        this.onCutObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
-        this.onPasteObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onCopyObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Observable"]();
+        this.onCutObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Observable"]();
+        this.onPasteObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Observable"]();
         this.isSaving = false;
-        this.lockObject = new _sharedUiComponents_tabs_propertyGrids_lockObject__WEBPACK_IMPORTED_MODULE_1__["LockObject"]();
-        this.controlCamera = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].ReadBoolean("ControlCamera", true);
+        this.lockObject = new _sharedUiComponents_tabs_propertyGrids_lockObject__WEBPACK_IMPORTED_MODULE_2__["LockObject"]();
+        this.controlCamera = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["DataStorage"].ReadBoolean("ControlCamera", true);
         var defaultBrightness = 204 / 255.0;
-        var r = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].ReadNumber("BackgroundColorR", defaultBrightness);
-        var g = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].ReadNumber("BackgroundColorG", defaultBrightness);
-        var b = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].ReadNumber("BackgroundColorB", defaultBrightness);
-        this.backgroundColor = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Color3"](r, g, b);
+        var r = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["DataStorage"].ReadNumber("BackgroundColorR", defaultBrightness);
+        var g = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["DataStorage"].ReadNumber("BackgroundColorG", defaultBrightness);
+        var b = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["DataStorage"].ReadNumber("BackgroundColorB", defaultBrightness);
+        this.backgroundColor = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Color3"](r, g, b);
         this.onBackgroundColorChangeObservable.notifyObservers();
-        _diagram_coordinateHelper__WEBPACK_IMPORTED_MODULE_2__["CoordinateHelper"].globalState = this;
+        _diagram_coordinateHelper__WEBPACK_IMPORTED_MODULE_3__["CoordinateHelper"].globalState = this;
     }
     /** adds copy, cut and paste listeners to the host window */
     GlobalState.prototype.registerEventListeners = function () {
@@ -48608,6 +48642,12 @@ var GlobalState = /** @class */ (function () {
                 event.preventDefault();
             }
         });
+        this.hostDocument.addEventListener("keydown", function (evt) { return _this._updateKeys(evt); });
+        this.hostDocument.addEventListener("keyup", function (evt) { return _this._updateKeys(evt); });
+        this.hostDocument.addEventListener("keypress", function (evt) { return _this._updateKeys(evt); });
+    };
+    GlobalState.prototype._updateKeys = function (event) {
+        this.isMultiSelecting = event.ctrlKey;
     };
     Object.defineProperty(GlobalState.prototype, "backgroundColor", {
         get: function () {
@@ -48616,9 +48656,9 @@ var GlobalState = /** @class */ (function () {
         set: function (value) {
             this._backgroundColor = value;
             this.onBackgroundColorChangeObservable.notifyObservers();
-            babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].WriteNumber("BackgroundColorR", value.r);
-            babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].WriteNumber("BackgroundColorG", value.g);
-            babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataStorage"].WriteNumber("BackgroundColorB", value.b);
+            babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["DataStorage"].WriteNumber("BackgroundColorR", value.r);
+            babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["DataStorage"].WriteNumber("BackgroundColorG", value.g);
+            babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["DataStorage"].WriteNumber("BackgroundColorB", value.b);
         },
         enumerable: false,
         configurable: true
@@ -48634,6 +48674,31 @@ var GlobalState = /** @class */ (function () {
         enumerable: false,
         configurable: true
     });
+    GlobalState.prototype.select = function (control) {
+        if (this.isMultiSelecting && this.isMultiSelectable(control)) {
+            var index = this.selectedControls.indexOf(control);
+            if (index === -1) {
+                this.setSelection(Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__spreadArray"])(Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__spreadArray"])([], this.selectedControls, true), [control], false));
+            }
+            else {
+                this.setSelection(this.selectedControls.filter(function (node) { return node !== control; }));
+            }
+        }
+        else {
+            this.setSelection([control]);
+        }
+    };
+    GlobalState.prototype.setSelection = function (controls) {
+        this.selectedControls = Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__spreadArray"])([], controls, true);
+        this.onSelectionChangedObservable.notifyObservers();
+    };
+    GlobalState.prototype.isMultiSelectable = function (control) {
+        if (this.selectedControls.length === 0)
+            return true;
+        if (this.selectedControls[0].parent === control.parent)
+            return true;
+        return false;
+    };
     return GlobalState;
 }());
 
@@ -50432,7 +50497,7 @@ var ColorLineComponent = /** @class */ (function (_super) {
                         _this.setColorFromString(newValue);
                     }, onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "copy hoverIcon", onClick: function () { return _this.copyToClipboard(); }, title: "Copy to clipboard" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: copyIcon, alt: "" })),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: copyIcon, alt: "Copy" })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "expand hoverIcon", onClick: function () { return _this.switchExpandState(); }, title: "Expand" }, chevron)),
             this.state.isExpanded && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "secondLine" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_3__["NumericInputComponent"], { label: "r", value: this.state.color.r, onChange: function (value) { return _this.updateStateR(value); } }),
@@ -50752,6 +50817,59 @@ var FloatLineComponent = /** @class */ (function (_super) {
             this.props.useEuler && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sliderLineComponent__WEBPACK_IMPORTED_MODULE_2__["SliderLineComponent"], { label: this.props.label, minimum: 0, maximum: 360, step: 0.1, directValue: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Tools"].ToDegrees(valueAsNumber), onChange: function (value) { return _this.updateValue(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Tools"].ToRadians(value).toString()); } }))));
     };
     return FloatLineComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./sharedUiComponents/lines/inputArrowsComponent.tsx":
+/*!***********************************************************!*\
+  !*** ./sharedUiComponents/lines/inputArrowsComponent.tsx ***!
+  \***********************************************************/
+/*! exports provided: InputArrowsComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "InputArrowsComponent", function() { return InputArrowsComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+
+
+var upArrowIcon = __webpack_require__(/*! ./valueUpArrowIcon.svg */ "./sharedUiComponents/lines/valueUpArrowIcon.svg");
+var downArrowIcon = __webpack_require__(/*! ./valueDownArrowIcon.svg */ "./sharedUiComponents/lines/valueDownArrowIcon.svg");
+var InputArrowsComponent = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(InputArrowsComponent, _super);
+    function InputArrowsComponent() {
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this._arrowsRef = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
+        _this._drag = function (event) {
+            _this.props.incrementValue(event.movementY);
+        };
+        _this._releaseListener = function () {
+            var _a, _b;
+            _this.props.setDragging(false);
+            (_a = _this._arrowsRef.current) === null || _a === void 0 ? void 0 : _a.ownerDocument.exitPointerLock();
+            window.removeEventListener("pointerup", _this._releaseListener);
+            (_b = _this._arrowsRef.current) === null || _b === void 0 ? void 0 : _b.ownerDocument.removeEventListener("mousemove", _this._drag);
+        };
+        return _this;
+    }
+    InputArrowsComponent.prototype.render = function () {
+        var _this = this;
+        return react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "arrows", ref: this._arrowsRef, onPointerDown: function (event) {
+                var _a, _b;
+                _this.props.setDragging(true);
+                (_a = _this._arrowsRef.current) === null || _a === void 0 ? void 0 : _a.requestPointerLock();
+                window.addEventListener("pointerup", _this._releaseListener);
+                (_b = _this._arrowsRef.current) === null || _b === void 0 ? void 0 : _b.ownerDocument.addEventListener("mousemove", _this._drag);
+            }, onDragStart: function (evt) { return evt.preventDefault(); } },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { className: "upArrowIcon", src: upArrowIcon, alt: "Increase Value" }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { className: "downArrowIcon", src: downArrowIcon, alt: "Increase Value" }));
+    };
+    return InputArrowsComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
 
 
@@ -51108,7 +51226,7 @@ var SliderLineComponent = /** @class */ (function (_super) {
                 }, onChange: function (evt) {
                     var changed = _this.prepareDataToRead(_this.state.value);
                     _this.onChange(changed);
-                } }),
+                }, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "slider" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { className: "range", type: "range", step: this.props.step, min: this.prepareDataToRead(this.props.minimum), max: this.prepareDataToRead(this.props.maximum), value: this.prepareDataToRead(this.state.value), onInput: function (evt) { return _this.onInput(evt.target.value); }, onChange: function (evt) { return _this.onChange(evt.target.value); } }))));
     };
@@ -51194,6 +51312,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _targetsProxy__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./targetsProxy */ "./sharedUiComponents/lines/targetsProxy.tsx");
+/* harmony import */ var _inputArrowsComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./inputArrowsComponent */ "./sharedUiComponents/lines/inputArrowsComponent.tsx");
+
 
 
 
@@ -51202,7 +51322,10 @@ var TextInputLineComponent = /** @class */ (function (_super) {
     function TextInputLineComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._localChange = false;
-        _this.state = { value: (_this.props.value !== undefined ? _this.props.value : _this.props.target[_this.props.propertyName]) || "" };
+        _this.state = {
+            value: (_this.props.value !== undefined ? _this.props.value : _this.props.target[_this.props.propertyName]) || "",
+            dragging: false
+        };
         return _this;
     }
     TextInputLineComponent.prototype.componentWillUnmount = function () {
@@ -51218,6 +51341,8 @@ var TextInputLineComponent = /** @class */ (function (_super) {
             nextState.value = newValue || "";
             return true;
         }
+        if (nextState.dragging != this.state.dragging)
+            return true;
         return false;
     };
     TextInputLineComponent.prototype.raiseOnPropertyChanged = function (newValue, previousValue) {
@@ -51256,6 +51381,29 @@ var TextInputLineComponent = /** @class */ (function (_super) {
         }
         this.raiseOnPropertyChanged(value, store);
     };
+    TextInputLineComponent.prototype.incrementValue = function (amount) {
+        if (this.props.step) {
+            amount *= this.props.step;
+        }
+        if (this.props.arrowsIncrement) {
+            this.props.arrowsIncrement(amount);
+            return;
+        }
+        var currentValue = parseFloat(this.state.value);
+        this.updateValue((currentValue + amount).toFixed(2));
+    };
+    TextInputLineComponent.prototype.onKeyDown = function (event) {
+        if (this.props.arrows) {
+            if (event.key === "ArrowUp") {
+                this.incrementValue(-1);
+                event.preventDefault();
+            }
+            if (event.key === "ArrowDown") {
+                this.incrementValue(1);
+                event.preventDefault();
+            }
+        }
+    };
     TextInputLineComponent.prototype.render = function () {
         var _this = this;
         var value = this.state.value === _targetsProxy__WEBPACK_IMPORTED_MODULE_2__["conflictingValuesPlaceholder"] ? "" : this.state.value;
@@ -51263,11 +51411,13 @@ var TextInputLineComponent = /** @class */ (function (_super) {
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: this.props.unit !== undefined ? "textInputLine withUnits" : "textInputLine" },
             this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, title: this.props.iconLabel, alt: this.props.iconLabel, color: "black", className: "icon" }),
             (!this.props.icon || (this.props.icon && this.props.label != "")) && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label)),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "value" + (this.props.noUnderline === true ? " noUnderline" : "") },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "value".concat(this.props.noUnderline === true ? " noUnderline" : "").concat(this.props.arrows ? " hasArrows" : "").concat(this.state.dragging ? " dragging" : "") },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { value: value, onBlur: function () {
                         _this.props.lockObject.lock = false;
                         _this.updateValue((_this.props.value !== undefined ? _this.props.value : _this.props.target[_this.props.propertyName]) || "");
-                    }, onFocus: function () { return (_this.props.lockObject.lock = true); }, onChange: function (evt) { return _this.updateValue(evt.target.value); }, placeholder: placeholder })),
+                    }, onFocus: function () { return (_this.props.lockObject.lock = true); }, onChange: function (evt) { return _this.updateValue(evt.target.value); }, onKeyDown: function (evt) { return _this.onKeyDown(evt); }, placeholder: placeholder }),
+                this.props.arrows &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_inputArrowsComponent__WEBPACK_IMPORTED_MODULE_3__["InputArrowsComponent"], { incrementValue: function (amount) { return _this.incrementValue(amount); }, setDragging: function (dragging) { return _this.setState({ dragging: dragging }); } })),
             this.props.unit !== undefined && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.props.unitLocked ? "unit disabled" : "unit", onClick: function () { if (_this.props.onUnitClicked && !_this.props.unitLocked)
                     _this.props.onUnitClicked(_this.props.unit || ""); } }, this.props.unit)));
     };
@@ -51329,6 +51479,28 @@ var TextLineComponent = /** @class */ (function (_super) {
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
 
 
+
+/***/ }),
+
+/***/ "./sharedUiComponents/lines/valueDownArrowIcon.svg":
+/*!*********************************************************!*\
+  !*** ./sharedUiComponents/lines/valueDownArrowIcon.svg ***!
+  \*********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg id='icons' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 15 15'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23333;%7D%3C/style%3E%3C/defs%3E%3Cpath class='cls-1' d='M4.09,5.55a.61.61,0,0,1,.85,0l2,2V1.79a.6.6,0,1,1,1.2,0V7.52l2-2a.61.61,0,0,1,.85,0,.6.6,0,0,1,0,.84l-3,3a.6.6,0,0,1-.84,0l-3-3A.6.6,0,0,1,4.09,5.55Z'/%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "./sharedUiComponents/lines/valueUpArrowIcon.svg":
+/*!*******************************************************!*\
+  !*** ./sharedUiComponents/lines/valueUpArrowIcon.svg ***!
+  \*******************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg id='icons' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 15 15'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23333;%7D%3C/style%3E%3C/defs%3E%3Cpath class='cls-1' d='M4.09,9.45a.6.6,0,0,1,0-.84l3-3a.6.6,0,0,1,.84,0l3,3a.6.6,0,0,1,0,.84.61.61,0,0,1-.85,0l-2-2v5.73a.6.6,0,0,1-1.2,0V7.48l-2,2A.61.61,0,0,1,4.09,9.45Z'/%3E%3C/svg%3E"
 
 /***/ }),
 
@@ -51935,7 +52107,7 @@ var WorkbenchEditor = /** @class */ (function (_super) {
     WorkbenchEditor.prototype.onCreate = function (value) {
         var guiElement = _guiNodeTools__WEBPACK_IMPORTED_MODULE_6__["GUINodeTools"].CreateControlFromString(value);
         var newGuiNode = this.props.globalState.workbench.appendBlock(guiElement);
-        this.props.globalState.onSelectionChangedObservable.notifyObservers(newGuiNode);
+        this.props.globalState.select(newGuiNode);
         this.props.globalState.onPointerUpObservable.notifyObservers(null);
         this.forceUpdate();
         return newGuiNode;

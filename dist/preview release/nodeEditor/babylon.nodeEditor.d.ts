@@ -1907,6 +1907,18 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
+    interface IInputArrowsComponentProps {
+        incrementValue: (amount: number) => void;
+        setDragging: (dragging: boolean) => void;
+    }
+    export class InputArrowsComponent extends React.Component<IInputArrowsComponentProps> {
+        private _arrowsRef;
+        private _drag;
+        private _releaseListener;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
     interface ITextInputLineComponentProps {
         label: string;
         lockObject: LockObject;
@@ -1923,18 +1935,25 @@ declare module NODEEDITOR {
         unit?: string;
         onUnitClicked?: (unit: string) => void;
         unitLocked?: boolean;
+        arrows?: boolean;
+        arrowsIncrement?: (amount: number) => void;
+        step?: number;
     }
     export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, {
         value: string;
+        dragging: boolean;
     }> {
         private _localChange;
         constructor(props: ITextInputLineComponentProps);
         componentWillUnmount(): void;
         shouldComponentUpdate(nextProps: ITextInputLineComponentProps, nextState: {
             value: string;
+            dragging: boolean;
         }): boolean;
         raiseOnPropertyChanged(newValue: string, previousValue: string): void;
         updateValue(value: string): void;
+        incrementValue(amount: number): void;
+        onKeyDown(event: React.KeyboardEvent): void;
         render(): JSX.Element;
     }
 }

@@ -44,6 +44,7 @@ export type MaterialPluginPrepareEffect = {
     customCode?: ShaderCustomProcessingFunction;
     uniforms: string[];
     samplers: string[];
+    uniformBuffersNames: string[];
 };
 
 /** @hidden */
