@@ -655,7 +655,9 @@ export class Sound {
         this._position.copyFrom(newPosition);
 
         if (Engine.audioEngine?.canUseWebAudio && this.spatialSound && this._soundPanner && !isNaN(this._position.x) && !isNaN(this._position.y) && !isNaN(this._position.z)) {
-            this._soundPanner.setPosition(this._position.x, this._position.y, this._position.z);
+            this._soundPanner.positionX.value = this._position.x;
+            this._soundPanner.positionY.value = this._position.y;
+            this._soundPanner.positionZ.value = this._position.z;
         }
     }
 
@@ -679,7 +681,9 @@ export class Sound {
         var mat = this._connectedTransformNode.getWorldMatrix();
         var direction = Vector3.TransformNormal(this._localDirection, mat);
         direction.normalize();
-        this._soundPanner.setOrientation(direction.x, direction.y, direction.z);
+        this._soundPanner.orientationX.value = direction.x;
+        this._soundPanner.orientationY.value = direction.y;
+        this._soundPanner.orientationZ.value = direction.z;
     }
 
     /** @hidden */
@@ -716,7 +720,9 @@ export class Sound {
                 if (!this._soundSource || !this._streamingSource) {
                     if (this.spatialSound && this._soundPanner) {
                         if (!isNaN(this._position.x) && !isNaN(this._position.y) && !isNaN(this._position.z)) {
-                            this._soundPanner.setPosition(this._position.x, this._position.y, this._position.z);
+                            this._soundPanner.positionX.value = this._position.x;
+                            this._soundPanner.positionY.value = this._position.y;
+                            this._soundPanner.positionZ.value = this._position.z;
                         }
                         if (this._isDirectional) {
                             this._soundPanner.coneInnerAngle = this._coneInnerAngle;

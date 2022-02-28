@@ -764,7 +764,7 @@ class CommandBufferEncoder {
 /** @hidden */
 export class NativeEngine extends Engine {
     // This must match the protocol version in NativeEngine.cpp
-    private static readonly PROTOCOL_VERSION = 2;
+    private static readonly PROTOCOL_VERSION = 3;
 
     private readonly _engine: INativeEngine = new _native.Engine();
     private readonly _camera: Nullable<INativeCamera> = _native.Camera ? new _native.Camera() : null;

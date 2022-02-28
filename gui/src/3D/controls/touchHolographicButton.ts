@@ -254,7 +254,7 @@ export class TouchHolographicButton extends TouchButton3D {
         };
 
         this.pointerDownAnimation = () => {
-            if (this._frontPlate && !this._isNearPressed) {
+            if (this._frontPlate && !this.isActiveNearInteraction) {
                 this._frontPlate.scaling.z = this._frontPlateDepth * 0.2;
                 this._frontPlate.position = Vector3.Forward(this._frontPlate._scene.useRightHandedSystem).scale((this._frontPlateDepth - (0.2 * this._frontPlateDepth)) / 2);
                 this._textPlate.position = Vector3.Forward(this._textPlate._scene.useRightHandedSystem).scale(-(this._backPlateDepth + (0.2 * this._frontPlateDepth)) / 2);
@@ -269,7 +269,7 @@ export class TouchHolographicButton extends TouchButton3D {
         };
 
         this.onPointerMoveObservable.add((position) => {
-            if (this._frontPlate && this._isNearPressed) {
+            if (this._frontPlate && this.isActiveNearInteraction) {
                 const scale = Vector3.Zero();
                 if (this._backPlate.getWorldMatrix().decompose(scale, undefined, undefined)) {
                     let interactionHeight = this._getInteractionHeight(position, this._backPlate.getAbsolutePosition()) / scale.z;
