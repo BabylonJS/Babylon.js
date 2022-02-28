@@ -36495,7 +36495,7 @@ declare module BABYLON {
          */
         onCollideObservable: Observable<AbstractMesh>;
         /** Set a function to call when this mesh collides with another one */
-        set onCollide(callback: () => void);
+        set onCollide(callback: (collidedMesh?: AbstractMesh) => void);
         /**
          * An event triggered when the collision's position changes
          */

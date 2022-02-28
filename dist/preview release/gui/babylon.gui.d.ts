@@ -376,6 +376,7 @@ declare module BABYLON.GUI {
         private _resizeObserver;
         private _preKeyboardObserver;
         private _pointerMoveObserver;
+        private _sceneRenderObserver;
         private _pointerObserver;
         private _canvasPointerOutObserver;
         private _canvasBlurObserver;
@@ -549,6 +550,13 @@ declare module BABYLON.GUI {
         get clipboardData(): string;
         set clipboardData(value: string);
         /**
+         * If set to true, every scene render will trigger a pointer event for the GUI
+         * if it is linked to a mesh or has controls linked to a mesh. This will allow
+         * you to catch the pointer moving around the GUI due to camera or mesh movements,
+         * but it has a performance cost.
+         */
+        checkPointerEveryFrame: boolean;
+        /**
          * Creates a new AdvancedDynamicTexture
          * @param name defines the name of the texture
          * @param width defines the width of the texture
@@ -650,6 +658,7 @@ declare module BABYLON.GUI {
         }, control: Control): void;
         /** @hidden */
         _cleanControlAfterRemoval(control: Control): void;
+        private _translateToPicking;
         /** Attach to all scene events required to support pointer events */
         attach(): void;
         /** @hidden */
@@ -678,6 +687,7 @@ declare module BABYLON.GUI {
          */
         moveFocusToControl(control: IFocusableControl): void;
         private _manageFocus;
+        private _attachPickingToSceneRender;
         private _attachToOnPointerOut;
         private _attachToOnBlur;
         /**
@@ -1413,17 +1423,17 @@ declare module BABYLON.GUI {
          */
         contains(x: number, y: number): boolean;
         /** @hidden */
-        _processPicking(x: number, y: number, pi: BABYLON.PointerInfoBase, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
+        _processPicking(x: number, y: number, pi: BABYLON.Nullable<BABYLON.PointerInfoBase>, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
         /** @hidden */
-        _onPointerMove(target: Control, coordinates: BABYLON.Vector2, pointerId: number, pi: BABYLON.PointerInfoBase): void;
+        _onPointerMove(target: Control, coordinates: BABYLON.Vector2, pointerId: number, pi: BABYLON.Nullable<BABYLON.PointerInfoBase>): void;
         /** @hidden */
-        _onPointerEnter(target: Control, pi: BABYLON.PointerInfoBase): boolean;
+        _onPointerEnter(target: Control, pi: BABYLON.Nullable<BABYLON.PointerInfoBase>): boolean;
         /** @hidden */
         _onPointerOut(target: Control, pi: BABYLON.Nullable<BABYLON.PointerInfoBase>, force?: boolean): void;
         /** @hidden */
-        _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, pi: BABYLON.PointerInfoBase): boolean;
+        _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, pi: BABYLON.Nullable<BABYLON.PointerInfoBase>): boolean;
         /** @hidden */
-        _onPointerUp(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean, pi?: BABYLON.PointerInfoBase): void;
+        _onPointerUp(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean, pi?: BABYLON.Nullable<BABYLON.PointerInfoBase>): void;
         /** @hidden */
         _forcePointerUp(pointerId?: BABYLON.Nullable<number>): void;
         /** @hidden */
@@ -1431,7 +1441,7 @@ declare module BABYLON.GUI {
         /** @hidden */
         _onCanvasBlur(): void;
         /** @hidden */
-        _processObservables(type: number, x: number, y: number, pi: BABYLON.PointerInfoBase, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
+        _processObservables(type: number, x: number, y: number, pi: BABYLON.Nullable<BABYLON.PointerInfoBase>, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
         private _prepareFont;
         /**
          * Serializes the current control
@@ -1603,7 +1613,7 @@ declare module BABYLON.GUI {
         _draw(context: BABYLON.ICanvasRenderingContext, invalidatedRectangle?: Measure): void;
         getDescendantsToRef(results: Control[], directDescendantsOnly?: boolean, predicate?: (control: Control) => boolean): void;
         /** @hidden */
-        _processPicking(x: number, y: number, pi: BABYLON.PointerInfoBase, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
+        _processPicking(x: number, y: number, pi: BABYLON.Nullable<BABYLON.PointerInfoBase>, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
         /** @hidden */
         protected _additionalProcessing(parentMeasure: Measure, context: BABYLON.ICanvasRenderingContext): void;
         /**

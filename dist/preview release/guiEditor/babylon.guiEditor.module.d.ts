@@ -201,6 +201,7 @@ declare module "babylonjs-gui-editor/diagram/workbench" {
         synchronizeLiveGUI(): void;
         addControls(scene: Scene): void;
         panning(): void;
+        moveControls(moveHorizontal: boolean, amount: number): void;
         zoomWheel(event: IWheelEvent): number;
         zooming(delta: number): void;
         zeroIfClose(vec: Vector3): void;
@@ -2649,6 +2650,7 @@ declare module GUIEDITOR {
         synchronizeLiveGUI(): void;
         addControls(scene: BABYLON.Scene): void;
         panning(): void;
+        moveControls(moveHorizontal: boolean, amount: number): void;
         zoomWheel(event: BABYLON.IWheelEvent): number;
         zooming(delta: number): void;
         zeroIfClose(vec: BABYLON.Vector3): void;
