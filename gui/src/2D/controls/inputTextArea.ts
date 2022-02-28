@@ -615,7 +615,7 @@ export class InputTextArea extends InputText {
             if (currentHeight > height && n > 1) {
                 var lastLine = lines[n - 2] as {text: string; width: number, lineEnding: string};
                 var currentLine = lines[n - 1] as {text: string; width: number, lineEnding: string};
-                lines[n - 2] = this._parseLineEllipsis(`${lastLine.text}${currentLine.text}`, width, context);
+                lines[n - 2] = this._parseLineEllipsis(`${lastLine.text}${lastLine.lineEnding}${currentLine.text}`, width, context);
                 var linesToRemove = lines.length - n + 1;
                 for (var i = 0; i < linesToRemove; i++) {
                     lines.pop();
