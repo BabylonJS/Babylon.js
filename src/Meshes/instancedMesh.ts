@@ -558,7 +558,11 @@ Mesh.prototype.registerInstancedBuffer = function (kind: string, stride: number)
     this._userInstancedBuffersStorage.strides[kind] = stride;
     this._userInstancedBuffersStorage.sizes[kind] = stride * 32; // Initial size
     this._userInstancedBuffersStorage.data[kind] = new Float32Array(this._userInstancedBuffersStorage.sizes[kind]);
-    this._userInstancedBuffersStorage.vertexBuffers[kind] = new VertexBuffer(this.getEngine(), this._userInstancedBuffersStorage.data[kind], kind, true, false, stride, true);
+    let kindSubstitution = kind;
+    if (kind === VertexBuffer.ColorKind) {
+        kindSubstitution = VertexBuffer.ColorInstanceKind;
+    }
+    this._userInstancedBuffersStorage.vertexBuffers[kindSubstitution] = new VertexBuffer(this.getEngine(), this._userInstancedBuffersStorage.data[kind], kindSubstitution, true, false, stride, true);
 
     for (var instance of this.instances) {
         instance.instancedBuffers[kind] = null;
@@ -581,12 +585,17 @@ Mesh.prototype._processInstancedBuffers = function (visibleInstances: InstancedM
             size *= 2;
         }
 
+        let kindSubstitution = kind;
+        if (kind === VertexBuffer.ColorKind) {
+            kindSubstitution = VertexBuffer.ColorInstanceKind;
+        }
+
         if (this._userInstancedBuffersStorage.data[kind].length != size) {
             this._userInstancedBuffersStorage.data[kind] = new Float32Array(size);
             this._userInstancedBuffersStorage.sizes[kind] = size;
-            if (this._userInstancedBuffersStorage.vertexBuffers[kind]) {
-                this._userInstancedBuffersStorage.vertexBuffers[kind]!.dispose();
-                this._userInstancedBuffersStorage.vertexBuffers[kind] = null;
+            if (this._userInstancedBuffersStorage.vertexBuffers[kindSubstitution]) {
+                this._userInstancedBuffersStorage.vertexBuffers[kindSubstitution]!.dispose();
+                this._userInstancedBuffersStorage.vertexBuffers[kindSubstitution] = null;
             }
         }
 
@@ -625,11 +634,11 @@ Mesh.prototype._processInstancedBuffers = function (visibleInstances: InstancedM
         }
 
         // Update vertex buffer
-        if (!this._userInstancedBuffersStorage.vertexBuffers[kind]) {
-            this._userInstancedBuffersStorage.vertexBuffers[kind] = new VertexBuffer(this.getEngine(), this._userInstancedBuffersStorage.data[kind], kind, true, false, stride, true);
+        if (!this._userInstancedBuffersStorage.vertexBuffers[kindSubstitution]) {
+            this._userInstancedBuffersStorage.vertexBuffers[kindSubstitution] = new VertexBuffer(this.getEngine(), this._userInstancedBuffersStorage.data[kind], kindSubstitution, true, false, stride, true);
             this._invalidateInstanceVertexArrayObject();
         } else {
-            this._userInstancedBuffersStorage.vertexBuffers[kind]!.updateDirectly(data, 0);
+            this._userInstancedBuffersStorage.vertexBuffers[kindSubstitution]!.updateDirectly(data, 0);
         }
     }
 };
@@ -658,7 +667,11 @@ Mesh.prototype._disposeInstanceSpecificData = function () {
 
     for (var kind in this.instancedBuffers) {
         if (this._userInstancedBuffersStorage.vertexBuffers[kind]) {
-            this._userInstancedBuffersStorage.vertexBuffers[kind]!.dispose();
+            let kindSubstitution = kind;
+            if (kind === VertexBuffer.ColorKind) {
+                kindSubstitution = VertexBuffer.ColorInstanceKind;
+            }
+            this._userInstancedBuffersStorage.vertexBuffers[kindSubstitution]!.dispose();
         }
     }
 
