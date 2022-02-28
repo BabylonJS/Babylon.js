@@ -729,16 +729,16 @@ export class InputTextArea extends InputText {
 
     private _drawText(text: string, textWidth: number, y: number, context: ICanvasRenderingContext): void {
         var width = this._currentMeasure.width;
-        var x = 0;
+        var x = this._scrollLeft as number;
         switch (this._textHorizontalAlignment) {
             case Control.HORIZONTAL_ALIGNMENT_LEFT:
-                x = 0;
+                x += 0;
                 break;
             case Control.HORIZONTAL_ALIGNMENT_RIGHT:
-                x = width - textWidth;
+                x += width - textWidth;
                 break;
             case Control.HORIZONTAL_ALIGNMENT_CENTER:
-                x = (width - textWidth) / 2;
+                x += (width - textWidth) / 2;
                 break;
         }
 
@@ -752,7 +752,7 @@ export class InputTextArea extends InputText {
         if (this.outlineWidth) {
             context.strokeText(text, this._currentMeasure.left + x, y);
         }
-        context.fillText(text, (this._scrollLeft as number) /* this._currentMeasure.left*/ + x, y);
+        context.fillText(text, x, y);
     }
 
     /** @hidden */
@@ -893,7 +893,7 @@ export class InputTextArea extends InputText {
         // here we define the visible reactangle to clip it in next line
         //context.rect(clipTextLeft, this._currentMeasure.top + (this._currentMeasure.height - this._fontOffset.height) / 2, availableWidth + 2, this._currentMeasure.height);
         context.rect(clipTextLeft, this._currentMeasure.top , this._availableWidth + 2, this._currentMeasure.height);
-        //context.clip();
+        context.clip();
 
         //if (this._isFocused && this._textWidth > availableWidth) {
 
