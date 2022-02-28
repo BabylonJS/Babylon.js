@@ -174,7 +174,7 @@ export class InputTextArea extends InputText {
 
                 this.text = this._lines.filter((e) => e.text !== "").map((e) => e.text + e.lineEnding).join("");
 
-                this._lines = this._breakLines(this._availableWidth, this._contextForBreakLines);
+                this._lines = this._breakLines(this._availableWidth, this._currentMeasure.height, this._contextForBreakLines);
 
                 if (this._selectedLineIndex > 0) {
                     const lengthDiff = this._oldlines[this._selectedLineIndex - 1].length - this._lines[this._selectedLineIndex - 1].text.length;
@@ -224,7 +224,7 @@ export class InputTextArea extends InputText {
 
                 this.text = this._lines.filter((e) => e.text !== "").map((e) => e.text + e.lineEnding).join("");
 
-                this._lines = this._breakLines(this._availableWidth, this._contextForBreakLines);
+                this._lines = this._breakLines(this._availableWidth, this._currentMeasure.height, this._contextForBreakLines);
 
                 if (this._selectedLineIndex > 0) {
                     const lengthDiff = this._oldlines[this._selectedLineIndex - 1].length - this._lines[this._selectedLineIndex - 1].text.length;
@@ -509,7 +509,7 @@ export class InputTextArea extends InputText {
                 this._lines[this._selectedLineIndex].text = this._lines[this._selectedLineIndex].text.substring(0, this._cursorIndex) + key + this._lines[this._selectedLineIndex].text.substring(this._cursorIndex);
                 this.text = this._lines.filter((e) => e.text !== "").map((e) => e.text + e.lineEnding).join("");
 
-                this._lines = this._breakLines(this._availableWidth, this._contextForBreakLines);
+                this._lines = this._breakLines(this._availableWidth, this._currentMeasure.height, this._contextForBreakLines);
 
                 this._cursorIndex += key.length;
 
@@ -608,7 +608,7 @@ export class InputTextArea extends InputText {
         return lines;
     }
 
-    protected _breakLines(refWidth: number, context: ICanvasRenderingContext): object[] {
+    protected _breakLines(refWidth: number, refHeight: number,  context: ICanvasRenderingContext): object[] {
         var lines: { text: string, width: number, lineEnding: string }[] = [];
         var _lines = this.text.split("\n");
 
@@ -643,7 +643,7 @@ export class InputTextArea extends InputText {
         super._processMeasures(parentMeasure, context);
 
         // Prepare lines
-        this._lines = this._breakLines(this._availableWidth, context);
+        this._lines = this._breakLines(this._availableWidth, this._currentMeasure.height, context);
         // can we find a cleaner implementation here?
         this._contextForBreakLines = context;
 
@@ -759,7 +759,7 @@ export class InputTextArea extends InputText {
         const line = this._lines[this._selectedLineIndex];
         line.text = line.text.substring(0, innerPosition) + data + line.text.substring(innerPosition);
         this.text = this._lines.filter((e) => e.text !== "").map((e) => e.text + e.lineEnding).join("");
-        this._lines = this._breakLines(this._availableWidth, this._contextForBreakLines);
+        this._lines = this._breakLines(this._availableWidth, this._currentMeasure.height, this._contextForBreakLines);
         this._cursorOffset = this._lines[this._selectedLineIndex].text.length - innerPosition;
 
         this._textHasChanged();
@@ -1099,7 +1099,7 @@ export class InputTextArea extends InputText {
                 if (!this._fontOffset) {
                     this._fontOffset = Control._GetFontOffset(context.font);
                 }
-                const lines = this._lines ? this._lines : this._breakLines(this._availableWidth, context);
+                const lines = this._lines ? this._lines : this._breakLines(this._availableWidth, this._currentMeasure.height, context);
 
                 let newHeight = this.paddingTopInPixels + this.paddingBottomInPixels + this._fontOffset.height * lines.length;
 
