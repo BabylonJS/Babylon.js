@@ -65,7 +65,7 @@ export class InternalDeviceSourceManager implements IDisposable {
             }
         };
 
-        this._deviceInputSystem.onInputChanged = (deviceType: DeviceType, deviceSlot: number, inputIndex: number, previousState: Nullable<number>, currentState: Nullable<number>, eventData?: IUIEvent) => {
+        this._deviceInputSystem.onInputChanged = (eventData: IUIEvent) => {
             if (eventData) {
                 for (const manager of this._registeredManagers) {
                     manager.onInputChangedObservable.notifyObservers(eventData);

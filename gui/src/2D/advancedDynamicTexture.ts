@@ -46,7 +46,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     private _preKeyboardObserver: Nullable<Observer<KeyboardInfoPre>>;
     private _pointerMoveObserver: Nullable<Observer<PointerInfoPre>>;
     private _pointerObserver: Nullable<Observer<PointerInfo>>;
-    private _canvasPointerOutObserver: Nullable<Observer<IPointerEvent>>;
+    private _canvasPointerOutObserver: Nullable<Observer<PointerEvent>>;
     private _canvasBlurObserver: Nullable<Observer<Engine>>;
     private _background: string;
     /** @hidden */

@@ -1,4 +1,4 @@
-import { IDeviceInputSystem } from "../../DeviceInput/InputDevices/inputInterfaces";
+import { INativeInput } from "../../DeviceInput/InputDevices/inputInterfaces";
 import { InternalTexture } from "../../Materials/Textures/internalTexture";
 import { Nullable } from "../../types";
 import { ICanvas, IImage } from "../ICanvas";
@@ -215,8 +215,8 @@ interface INativeImageConstructor {
 
 /** @hidden */
 interface IDeviceInputSystemConstructor {
-    prototype: IDeviceInputSystem;
-    new(): IDeviceInputSystem;
+    prototype: INativeInput;
+    new(): INativeInput;
 }
 
 /** @hidden */

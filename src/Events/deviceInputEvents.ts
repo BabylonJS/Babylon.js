@@ -117,11 +117,6 @@ export interface IKeyboardEvent extends IUIEvent {
 export interface IMouseEvent extends IUIEvent {
     // Properties
     /**
-     * DeviceType
-     */
-    deviceType: DeviceType.Mouse | DeviceType.Touch;
-
-    /**
      * Status of Alt key being pressed
      */
     altKey: boolean;
@@ -242,11 +237,6 @@ export interface IMouseEvent extends IUIEvent {
  */
 export interface IPointerEvent extends IMouseEvent {
     // Properties
-    /**
-     * DeviceType
-     */
-    deviceType: DeviceType.Mouse | DeviceType.Touch;
-
     /**
      * Pointer Event ID
      */

@@ -11,7 +11,6 @@ import { ArcRotateCamera } from "babylonjs/Cameras/arcRotateCamera";
 import { HemisphericLight } from "babylonjs/Lights/hemisphericLight";
 import { Axis } from "babylonjs/Maths/math.axis";
 import { PointerEventTypes } from "babylonjs/Events/pointerEvents";
-import { IWheelEvent } from "babylonjs/Events/deviceInputEvents";
 import { Epsilon } from "babylonjs/Maths/math.constants";
 import { Container } from "babylonjs-gui/2D/controls/container";
 import { KeyboardEventTypes, KeyboardInfo } from "babylonjs/Events/keyboardEvents";
@@ -24,7 +23,6 @@ import { ISize } from "babylonjs/Maths/math";
 import { Texture } from "babylonjs/Materials/Textures/texture";
 import { CoordinateHelper } from "./coordinateHelper";
 import { Logger } from "babylonjs/Misc/logger";
-import { DeviceType, PointerInput } from "babylonjs/DeviceInput/InputDevices/deviceEnums";
 require("./workbenchCanvas.scss");
 
 export interface IWorkbenchComponentProps {
@@ -854,16 +852,8 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     //Add zoom and pan controls
     addControls(scene: Scene) {
 
-        const zoomFnScrollWheel = (e: IWheelEvent | WheelEvent) => {
-            let ev: any = e;
-
-            if (!ev.deviceType) {
-                ev.deviceType = DeviceType.Mouse;
-                ev.deviceSlot = 0;
-                ev.inputIndex = PointerInput.MouseWheelY;
-            }
-
-            const delta = this.zoomWheel(ev);
+        const zoomFnScrollWheel = (e: WheelEvent) => {
+            const delta = this.zoomWheel(e);
             this.zooming(1 + (delta / 1000));
         };
 
@@ -984,7 +974,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     }
 
     //Get the wheel delta
-    zoomWheel(event: IWheelEvent) {
+    zoomWheel(event: WheelEvent) {
 
         event.preventDefault();
         let delta = 0;

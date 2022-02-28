@@ -9,7 +9,7 @@ import { Constants } from "../Engines/constants";
 import { ActionEvent } from "../Actions/actionEvent";
 import { KeyboardEventTypes, KeyboardInfoPre, KeyboardInfo } from "../Events/keyboardEvents";
 import { DeviceType, PointerInput } from "../DeviceInput/InputDevices/deviceEnums";
-import { IUIEvent, IKeyboardEvent, IMouseEvent, IPointerEvent, IWheelEvent } from "../Events/deviceInputEvents";
+import { IKeyboardEvent, IMouseEvent, IPointerEvent, IWheelEvent } from "../Events/deviceInputEvents";
 import { DeviceSourceManager } from "../DeviceInput/InputDevices/deviceSourceManager";
 import { EngineStore } from "../Engines/engineStore";
 
@@ -859,33 +859,33 @@ export class InputManager {
         };
 
         this._deviceSourceManager.onInputChangedObservable.add((eventData) => {
-            const evt: IUIEvent = eventData;
             // Keyboard Events
             if (eventData.deviceType === DeviceType.Keyboard) {
                 if (eventData.type === "keydown") {
-                    this._onKeyDown(evt as IKeyboardEvent);
+                    this._onKeyDown(eventData as IKeyboardEvent);
                 }
 
                 if (eventData.type === "keyup") {
-                    this._onKeyUp(evt as IKeyboardEvent);
+                    this._onKeyUp(eventData as IKeyboardEvent);
                 }
             }
 
             // Pointer Events
             if (eventData.deviceType === DeviceType.Mouse || eventData.deviceType === DeviceType.Touch) {
-                if (attachDown && eventData.inputIndex >= PointerInput.LeftClick && eventData.inputIndex <= PointerInput.RightClick && eventData.type.indexOf("down") !== -1) {
-                    this._onPointerDown(evt as IPointerEvent);
+                let pointer = this._deviceSourceManager?.getDeviceSource(eventData.deviceType, eventData.deviceSlot);
+                if (attachDown && eventData.inputIndex >= PointerInput.LeftClick && eventData.inputIndex <= PointerInput.RightClick && pointer?.getInput(eventData.inputIndex) === 1) {
+                    this._onPointerDown(eventData as IPointerEvent);
                 }
 
-                if (attachUp && eventData.inputIndex >= PointerInput.LeftClick && eventData.inputIndex <= PointerInput.RightClick && eventData.type.indexOf("up") !== -1) {
-                    this._onPointerUp(evt as IPointerEvent);
+                if (attachUp && eventData.inputIndex >= PointerInput.LeftClick && eventData.inputIndex <= PointerInput.RightClick && pointer?.getInput(eventData.inputIndex) === 0) {
+                    this._onPointerUp(eventData as IPointerEvent);
                 }
 
                 if (attachMove) {
                     if (eventData.inputIndex === PointerInput.Move) {
-                        this._onPointerMove(evt as IPointerEvent);
+                        this._onPointerMove(eventData as IPointerEvent);
                     } else if (eventData.inputIndex === PointerInput.MouseWheelX || eventData.inputIndex === PointerInput.MouseWheelY || eventData.inputIndex === PointerInput.MouseWheelZ) {
-                        this._onPointerMove(evt as IWheelEvent);
+                        this._onPointerMove(eventData as IWheelEvent);
                     }
                 }
             }
