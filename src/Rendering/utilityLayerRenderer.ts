@@ -159,6 +159,9 @@ export class UtilityLayerRenderer implements IDisposable {
         this.utilityLayerScene.useRightHandedSystem = originalScene.useRightHandedSystem;
         this.utilityLayerScene._allowPostProcessClearColor = false;
 
+        // Deactivate post processes
+        this.utilityLayerScene.postProcessesEnabled = false;
+
         // Detach controls on utility scene, events will be fired by logic below to handle picking priority
         this.utilityLayerScene.detachControl();
 
