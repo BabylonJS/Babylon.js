@@ -2007,7 +2007,7 @@ export class Control {
     }
 
     /** @hidden */
-    public _processPicking(x: number, y: number, pi: PointerInfoBase, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean {
+    public _processPicking(x: number, y: number, pi: Nullable<PointerInfoBase>, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean {
         if (!this._isEnabled) {
             return false;
         }
@@ -2025,7 +2025,7 @@ export class Control {
     }
 
     /** @hidden */
-    public _onPointerMove(target: Control, coordinates: Vector2, pointerId: number, pi: PointerInfoBase): void {
+    public _onPointerMove(target: Control, coordinates: Vector2, pointerId: number, pi: Nullable<PointerInfoBase>): void {
         var canNotify: boolean = this.onPointerMoveObservable.notifyObservers(coordinates, -1, target, this, pi);
 
         if (canNotify && this.parent != null) {
@@ -2034,7 +2034,7 @@ export class Control {
     }
 
     /** @hidden */
-    public _onPointerEnter(target: Control, pi: PointerInfoBase): boolean {
+    public _onPointerEnter(target: Control, pi: Nullable<PointerInfoBase>): boolean {
         if (!this._isEnabled) {
             return false;
         }
@@ -2076,7 +2076,7 @@ export class Control {
     }
 
     /** @hidden */
-    public _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, pi: PointerInfoBase): boolean {
+    public _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, pi: Nullable<PointerInfoBase>): boolean {
         // Prevent pointerout to lose control context.
         // Event redundancy is checked inside the function.
         this._onPointerEnter(this, pi);
@@ -2099,7 +2099,7 @@ export class Control {
     }
 
     /** @hidden */
-    public _onPointerUp(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean, pi?: PointerInfoBase): void {
+    public _onPointerUp(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean, pi?: Nullable<PointerInfoBase>): void {
         if (!this._isEnabled) {
             return;
         }
@@ -2145,7 +2145,7 @@ export class Control {
     public _onCanvasBlur(): void { }
 
     /** @hidden */
-    public _processObservables(type: number, x: number, y: number, pi: PointerInfoBase, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean {
+    public _processObservables(type: number, x: number, y: number, pi: Nullable<PointerInfoBase>, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean {
         if (!this._isEnabled) {
             return false;
         }

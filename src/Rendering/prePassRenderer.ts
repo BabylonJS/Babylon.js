@@ -273,7 +273,11 @@ export class PrePassRenderer {
             if (effect._multiTarget && isPrePassCapable && !excluded) {
                 this._engine.bindAttachments(this._multiRenderAttachments);
             } else {
-                this._engine.bindAttachments(this._defaultAttachments);
+                if (this._engine._currentRenderTarget) {
+                    this._engine.bindAttachments(this._defaultAttachments);
+                } else {
+                    this._engine.restoreSingleAttachment();
+                }
 
                 if (this._geometryBuffer && this.currentRTisSceneRT && !excluded) {
                     this._geometryBuffer.renderList!.push(subMesh.getRenderingMesh());
@@ -368,7 +372,11 @@ export class PrePassRenderer {
      */
     public restoreAttachments() {
         if (this.enabled && this._currentTarget.enabled && this._defaultAttachments) {
-            this._engine.bindAttachments(this._defaultAttachments);
+            if (this._engine._currentRenderTarget) {
+                this._engine.bindAttachments(this._defaultAttachments);
+            } else {
+                this._engine.restoreSingleAttachment();
+            }
         }
     }
 

@@ -667,6 +667,13 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
          * Gets or sets a boolean indicating that the canvas must be reverted on Y when updating the texture
          */
         _this.applyYInversionOnUpdate = true;
+        /**
+         * If set to true, every scene render will trigger a pointer event for the GUI
+         * if it is linked to a mesh or has controls linked to a mesh. This will allow
+         * you to catch the pointer moving around the GUI due to camera or mesh movements,
+         * but it has a performance cost.
+         */
+        _this.checkPointerEveryFrame = false;
         _this._useInvalidateRectOptimization = true;
         // Invalidated rectangle which is the combination of all invalidated controls after they have been rotated into absolute position
         _this._invalidatedRectangle = null;
@@ -1140,6 +1147,9 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
         if (this._pointerMoveObserver) {
             scene.onPrePointerObservable.remove(this._pointerMoveObserver);
         }
+        if (this._sceneRenderObserver) {
+            scene.onBeforeRenderObservable.remove(this._sceneRenderObserver);
+        }
         if (this._pointerObserver) {
             scene.onPointerObservable.remove(this._pointerObserver);
         }
@@ -1377,6 +1387,61 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
         this._cleanControlAfterRemovalFromList(this._lastControlDown, control);
         this._cleanControlAfterRemovalFromList(this._lastControlOver, control);
     };
+    AdvancedDynamicTexture.prototype._translateToPicking = function (scene, tempViewport, pi) {
+        var camera = scene.cameraToUseForPointers || scene.activeCamera;
+        var engine = scene.getEngine();
+        var originalCameraToUseForPointers = scene.cameraToUseForPointers;
+        if (!camera) {
+            tempViewport.x = 0;
+            tempViewport.y = 0;
+            tempViewport.width = engine.getRenderWidth();
+            tempViewport.height = engine.getRenderHeight();
+        }
+        else {
+            if (camera.rigCameras.length) {
+                // rig camera - we need to find the camera to use for this event
+                var rigViewport_1 = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Viewport"](0, 0, 1, 1);
+                camera.rigCameras.forEach(function (rigCamera) {
+                    // generate the viewport of this camera
+                    rigCamera.viewport.toGlobalToRef(engine.getRenderWidth(), engine.getRenderHeight(), rigViewport_1);
+                    var x = scene.pointerX / engine.getHardwareScalingLevel() - rigViewport_1.x;
+                    var y = scene.pointerY / engine.getHardwareScalingLevel() - (engine.getRenderHeight() - rigViewport_1.y - rigViewport_1.height);
+                    // check if the pointer is in the camera's viewport
+                    if (x < 0 || y < 0 || x > rigViewport_1.width || y > rigViewport_1.height) {
+                        // out of viewport - don't use this camera
+                        return;
+                    }
+                    // set the camera to use for pointers until this pointer loop is over
+                    scene.cameraToUseForPointers = rigCamera;
+                    // set the viewport
+                    tempViewport.x = rigViewport_1.x;
+                    tempViewport.y = rigViewport_1.y;
+                    tempViewport.width = rigViewport_1.width;
+                    tempViewport.height = rigViewport_1.height;
+                });
+            }
+            else {
+                camera.viewport.toGlobalToRef(engine.getRenderWidth(), engine.getRenderHeight(), tempViewport);
+            }
+        }
+        var x = scene.pointerX / engine.getHardwareScalingLevel() - tempViewport.x;
+        var y = scene.pointerY / engine.getHardwareScalingLevel() - (engine.getRenderHeight() - tempViewport.y - tempViewport.height);
+        this._shouldBlockPointer = false;
+        // Do picking modifies _shouldBlockPointer
+        if (pi) {
+            var pointerId = pi.event.pointerId || this._defaultMousePointerId;
+            this._doPicking(x, y, pi, pi.type, pointerId, pi.event.button, pi.event.deltaX, pi.event.deltaY);
+            // Avoid overwriting a true skipOnPointerObservable to false
+            if (this._shouldBlockPointer) {
+                pi.skipOnPointerObservable = this._shouldBlockPointer;
+            }
+        }
+        else {
+            this._doPicking(x, y, null, babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["PointerEventTypes"].POINTERMOVE, this._defaultMousePointerId, 0);
+        }
+        // if overridden by a rig camera - reset back to the original value
+        scene.cameraToUseForPointers = originalCameraToUseForPointers;
+    };
     /** Attach to all scene events required to support pointer events */
     AdvancedDynamicTexture.prototype.attach = function () {
         var _this = this;
@@ -1398,55 +1463,9 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
             if (pi.type === babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["PointerEventTypes"].POINTERMOVE && pi.event.pointerId) {
                 _this._defaultMousePointerId = pi.event.pointerId; // This is required to make sure we have the correct pointer ID for wheel
             }
-            var camera = scene.cameraToUseForPointers || scene.activeCamera;
-            var engine = scene.getEngine();
-            var originalCameraToUseForPointers = scene.cameraToUseForPointers;
-            if (!camera) {
-                tempViewport.x = 0;
-                tempViewport.y = 0;
-                tempViewport.width = engine.getRenderWidth();
-                tempViewport.height = engine.getRenderHeight();
-            }
-            else {
-                if (camera.rigCameras.length) {
-                    // rig camera - we need to find the camera to use for this event
-                    var rigViewport_1 = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Viewport"](0, 0, 1, 1);
-                    camera.rigCameras.forEach(function (rigCamera) {
-                        // generate the viewport of this camera
-                        rigCamera.viewport.toGlobalToRef(engine.getRenderWidth(), engine.getRenderHeight(), rigViewport_1);
-                        var x = scene.pointerX / engine.getHardwareScalingLevel() - rigViewport_1.x;
-                        var y = scene.pointerY / engine.getHardwareScalingLevel() - (engine.getRenderHeight() - rigViewport_1.y - rigViewport_1.height);
-                        // check if the pointer is in the camera's viewport
-                        if (x < 0 || y < 0 || x > rigViewport_1.width || y > rigViewport_1.height) {
-                            // out of viewport - don't use this camera
-                            return;
-                        }
-                        // set the camera to use for pointers until this pointer loop is over
-                        scene.cameraToUseForPointers = rigCamera;
-                        // set the viewport
-                        tempViewport.x = rigViewport_1.x;
-                        tempViewport.y = rigViewport_1.y;
-                        tempViewport.width = rigViewport_1.width;
-                        tempViewport.height = rigViewport_1.height;
-                    });
-                }
-                else {
-                    camera.viewport.toGlobalToRef(engine.getRenderWidth(), engine.getRenderHeight(), tempViewport);
-                }
-            }
-            var x = scene.pointerX / engine.getHardwareScalingLevel() - tempViewport.x;
-            var y = scene.pointerY / engine.getHardwareScalingLevel() - (engine.getRenderHeight() - tempViewport.y - tempViewport.height);
-            _this._shouldBlockPointer = false;
-            // Do picking modifies _shouldBlockPointer
-            var pointerId = pi.event.pointerId || _this._defaultMousePointerId;
-            _this._doPicking(x, y, pi, pi.type, pointerId, pi.event.button, pi.event.deltaX, pi.event.deltaY);
-            // Avoid overwriting a true skipOnPointerObservable to false
-            if (_this._shouldBlockPointer) {
-                pi.skipOnPointerObservable = _this._shouldBlockPointer;
-            }
-            // if overridden by a rig camera - reset back to the original value
-            scene.cameraToUseForPointers = originalCameraToUseForPointers;
+            _this._translateToPicking(scene, tempViewport, pi);
         });
+        this._attachPickingToSceneRender(scene, function () { return _this._translateToPicking(scene, tempViewport, null); }, false);
         this._attachToOnPointerOut(scene);
         this._attachToOnBlur(scene);
     };
@@ -1532,6 +1551,23 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
             }
         });
         mesh.enablePointerMoveEvents = supportPointerMove;
+        this._attachPickingToSceneRender(scene, function () {
+            var pointerId = _this._defaultMousePointerId;
+            var pick = scene === null || scene === void 0 ? void 0 : scene.pick(scene.pointerX, scene.pointerY);
+            if (pick && pick.hit && pick.pickedMesh === mesh) {
+                var uv = pick.getTextureCoordinates();
+                if (uv) {
+                    var size = _this.getSize();
+                    _this._doPicking(uv.x * size.width, (_this.applyYInversionOnUpdate ? 1.0 - uv.y : uv.y) * size.height, null, babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["PointerEventTypes"].POINTERMOVE, pointerId, 0);
+                }
+            }
+            else {
+                if (_this._lastControlOver[pointerId]) {
+                    _this._lastControlOver[pointerId]._onPointerOut(_this._lastControlOver[pointerId], null, true);
+                }
+                delete _this._lastControlOver[pointerId];
+            }
+        }, true);
         this._attachToOnPointerOut(scene);
         this._attachToOnBlur(scene);
     };
@@ -1559,6 +1595,17 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
                 this.focusedControl = null;
             }
         }
+    };
+    AdvancedDynamicTexture.prototype._attachPickingToSceneRender = function (scene, pickFunction, forcePicking) {
+        var _this = this;
+        this._sceneRenderObserver = scene.onBeforeRenderObservable.add(function () {
+            if (!_this.checkPointerEveryFrame) {
+                return;
+            }
+            if (_this._linkedControls.length > 0 || forcePicking) {
+                pickFunction();
+            }
+        });
     };
     AdvancedDynamicTexture.prototype._attachToOnPointerOut = function (scene) {
         var _this = this;

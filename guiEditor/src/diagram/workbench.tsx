@@ -36,6 +36,9 @@ export enum ConstraintDirection {
     Y = 3, // Vertical constraint
 }
 
+const ARROW_KEY_MOVEMENT_SMALL = 1; // px
+const ARROW_KEY_MOVEMENT_LARGE = 5; // px
+
 export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps> {
     private _rootContainer: React.RefObject<HTMLCanvasElement>;
     private _setConstraintDirection: boolean = false;
@@ -934,6 +937,17 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 case "F":
                     this.globalState.onFitToWindowObservable.notifyObservers();
                     break;
+                case "ArrowUp": // move up
+                    this.moveControls(false, k.event.shiftKey ? -ARROW_KEY_MOVEMENT_LARGE : -ARROW_KEY_MOVEMENT_SMALL);
+                    break;
+                case "ArrowDown": // move down
+                    this.moveControls(false, k.event.shiftKey ? ARROW_KEY_MOVEMENT_LARGE : ARROW_KEY_MOVEMENT_SMALL);
+                    break;
+                case "ArrowLeft": // move left
+                    this.moveControls(true, k.event.shiftKey ? -ARROW_KEY_MOVEMENT_LARGE : -ARROW_KEY_MOVEMENT_SMALL);
+                    break;
+                case "ArrowRight": // move right
+                    this.moveControls(true, k.event.shiftKey ? ARROW_KEY_MOVEMENT_LARGE : ARROW_KEY_MOVEMENT_SMALL);
                 default:
                     break;
             }
@@ -972,6 +986,34 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this._initialPanningOffset = this.getScaledPointerPosition();
         this.props.globalState.onArtBoardUpdateRequiredObservable.notifyObservers();
         this.props.globalState.onGizmoUpdateRequireObservable.notifyObservers();
+    }
+
+    // Move the selected controls. Can be either on horizontal (leftInPixels) or 
+    // vertical (topInPixels) direction
+    moveControls(moveHorizontal: boolean, amount: number) {
+        for (let selectedControl of this.props.globalState.workbench.selectedGuiNodes) {
+            if (moveHorizontal) { // move horizontal
+                const prevValue = selectedControl.leftInPixels;
+                selectedControl.leftInPixels += amount;
+                this.props.globalState.onPropertyChangedObservable.notifyObservers({
+                    object: selectedControl,
+                    property: "leftInPixels",
+                    value: selectedControl.leftInPixels,
+                    initialValue: prevValue
+                });
+                this.props.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
+            } else { // move vertical
+                const prevValue = selectedControl.topInPixels;
+                selectedControl.topInPixels += amount;
+                this.props.globalState.onPropertyChangedObservable.notifyObservers({
+                    object: selectedControl,
+                    property: "topInPixels",
+                    value: selectedControl.topInPixels,
+                    initialValue: prevValue
+                });
+                this.props.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
+            }
+        }
     }
 
     //Get the wheel delta

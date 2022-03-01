@@ -182,6 +182,7 @@ declare module GUIEDITOR {
         synchronizeLiveGUI(): void;
         addControls(scene: BABYLON.Scene): void;
         panning(): void;
+        moveControls(moveHorizontal: boolean, amount: number): void;
         zoomWheel(event: BABYLON.IWheelEvent): number;
         zooming(delta: number): void;
         zeroIfClose(vec: BABYLON.Vector3): void;
