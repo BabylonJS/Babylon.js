@@ -193,6 +193,7 @@ void main(void)
 		gl_FragColor = getBlurColor(blur_amount * 1.7);
 
 		// if we have computed highlights: enhance highlights
+		// cast explanation : https://github.com/BabylonJS/Babylon.js/pull/12070
 		if (float(highlights) != 0.) {
 			gl_FragColor.rgb += clamp(coc, 0.0, 1.0)*texture2D(highlightsSampler, distorted_coords).rgb;
 		}

@@ -18,6 +18,7 @@ void main(void) {
 
 	vec4 color = texture2D(diffuseSampler, vUV);
 
+	// cast explanation : https://github.com/BabylonJS/Babylon.js/pull/12070
 	if (float(alphaTest) != 0.)
 	{
 		if (color.a < 0.95)
