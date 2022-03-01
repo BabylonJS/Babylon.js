@@ -36,6 +36,13 @@ interface CanvasRenderingContext2D {
     msImageSmoothingEnabled: boolean;
 }
 
+// Babylon Extension to enable Native compatibility
+interface UIEvent {
+    deviceType: number;
+    deviceSlot: number;
+    inputIndex: number;
+}
+
 interface MouseEvent {
     mozMovementX: number;
     mozMovementY: number;

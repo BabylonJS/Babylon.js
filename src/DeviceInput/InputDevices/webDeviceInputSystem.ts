@@ -36,7 +36,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
     }
 
     public onDeviceDisconnected: (deviceType: DeviceType, deviceSlot: number) => void;
-    public onInputChanged: (eventData: any) => void;
+    public onInputChanged: (eventData: IUIEvent) => void;
 
     // Private Members
     private _inputs: Array<{ [deviceSlot: number]: Array<number> }> = [];

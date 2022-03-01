@@ -267,7 +267,7 @@ export class InputManager {
      * @param pointerEventInit pointer event state to be used when simulating the pointer event (eg. pointer id for multitouch)
      */
     public simulatePointerMove(pickResult: PickingInfo, pointerEventInit?: PointerEventInit): void {
-        let evt: any = new PointerEvent("pointermove", pointerEventInit);
+        const evt = new PointerEvent("pointermove", pointerEventInit);
         evt.deviceType = evt.pointerType === "mouse" ? DeviceType.Mouse : DeviceType.Touch;
         evt.deviceSlot = evt.pointerId || 0;
         evt.inputIndex = PointerInput.Move;
@@ -285,7 +285,7 @@ export class InputManager {
      * @param pointerEventInit pointer event state to be used when simulating the pointer event (eg. pointer id for multitouch)
      */
     public simulatePointerDown(pickResult: PickingInfo, pointerEventInit?: PointerEventInit): void {
-        let evt: any = new PointerEvent("pointerdown", pointerEventInit);
+        const evt = new PointerEvent("pointerdown", pointerEventInit);
         evt.deviceType = evt.pointerType === "mouse" ? DeviceType.Mouse : DeviceType.Touch;
         evt.deviceSlot = evt.pointerId || 0;
         evt.inputIndex = evt.button + 2;
@@ -382,7 +382,7 @@ export class InputManager {
      * @param doubleTap indicates that the pointer up event should be considered as part of a double click (false by default)
      */
     public simulatePointerUp(pickResult: PickingInfo, pointerEventInit?: PointerEventInit, doubleTap?: boolean): void {
-        let evt: any = new PointerEvent("pointerup", pointerEventInit);
+        let evt = new PointerEvent("pointerup", pointerEventInit);
         evt.deviceType = evt.pointerType === "mouse" ? DeviceType.Mouse : DeviceType.Touch;
         evt.deviceSlot = evt.pointerId || 0;
         evt.inputIndex = PointerInput.Move;
