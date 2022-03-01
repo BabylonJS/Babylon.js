@@ -3,7 +3,7 @@ import { DeviceType } from './deviceEnums';
 import { Nullable } from '../../types';
 import { Observable, Observer } from '../../Misc/observable';
 import { DeviceSource } from './deviceSource';
-import { InternalDeviceSourceManager } from './internalDeviceSourceManager';
+import { InternalDeviceSourceManager, IObservableManager } from './internalDeviceSourceManager';
 import { IDisposable } from '../../scene';
 import { ThinEngine } from '../../Engines/thinEngine';
 import { IUIEvent } from '../../Events/deviceInputEvents';
@@ -11,7 +11,7 @@ import { IUIEvent } from '../../Events/deviceInputEvents';
 /**
  * Class to keep track of devices
  */
-export class DeviceSourceManager implements IDisposable {
+export class DeviceSourceManager implements IDisposable, IObservableManager {
     // Public Members
     /**
      * Observable to be triggered when after a device is connected, any new observers added will be triggered against already connected devices

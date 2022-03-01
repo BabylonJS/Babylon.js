@@ -70,6 +70,8 @@ export class InternalDeviceSourceManager implements IDisposable {
                 for (const manager of this._registeredManagers) {
                     manager.onInputChangedObservable.notifyObservers(eventData);
                 }
+
+                this._devices[eventData.deviceType][eventData.deviceSlot].onInputChangedObservable.notifyObservers(eventData);
             }
         };
     }
