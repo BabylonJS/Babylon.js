@@ -172,7 +172,7 @@ void main(void)
 	float coc = abs(aperture * (screen_distance * (inverse_focal_length - 1.0 / distance) - 1.0));
 
 	// disable blur
-	if (dof_enabled == false || coc < 0.07) { coc = 0.0; }
+	if (float(dof_enabled) == 0. || coc < 0.07) { coc = 0.0; }
 
 	// blur from edge blur effect
 	float edge_blur_amount = 0.0;
@@ -193,11 +193,11 @@ void main(void)
 		gl_FragColor = getBlurColor(blur_amount * 1.7);
 
 		// if we have computed highlights: enhance highlights
-		if (highlights) {
+		if (float(highlights) != 0.) {
 			gl_FragColor.rgb += clamp(coc, 0.0, 1.0)*texture2D(highlightsSampler, distorted_coords).rgb;
 		}
 
-		if (blur_noise) {
+		if (float(blur_noise) != 0.) {
 			// we put a slight amount of noise in the blurred color
 			vec2 noise = rand(distorted_coords) * 0.01 * blur_amount;
 			vec2 blurred_coord = vec2(distorted_coords.x + noise.x, distorted_coords.y + noise.y);
