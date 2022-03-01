@@ -280,7 +280,7 @@ export class MorphTarget implements IAnimatable {
      * @param scene defines the hosting scene
      * @returns a new MorphTarget
      */
-    public static Parse(serializationObject: any, scene: Scene): MorphTarget {
+    public static Parse(serializationObject: any, scene?: Scene): MorphTarget {
         var result = new MorphTarget(serializationObject.name, serializationObject.influence);
 
         result.setPositions(serializationObject.positions);
@@ -308,7 +308,7 @@ export class MorphTarget implements IAnimatable {
                 }
             }
 
-            if (serializationObject.autoAnimate) {
+            if (serializationObject.autoAnimate && scene) {
                 scene.beginAnimation(result, serializationObject.autoAnimateFrom, serializationObject.autoAnimateTo, serializationObject.autoAnimateLoop, serializationObject.autoAnimateSpeed || 1.0);
             }
         }
