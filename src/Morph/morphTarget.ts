@@ -277,9 +277,10 @@ export class MorphTarget implements IAnimatable {
     /**
      * Creates a new target from serialized data
      * @param serializationObject defines the serialized data to use
+     * @param scene defines the hosting scene
      * @returns a new MorphTarget
      */
-    public static Parse(serializationObject: any): MorphTarget {
+    public static Parse(serializationObject: any, scene?: Scene): MorphTarget {
         var result = new MorphTarget(serializationObject.name, serializationObject.influence);
 
         result.setPositions(serializationObject.positions);
@@ -305,6 +306,10 @@ export class MorphTarget implements IAnimatable {
                 if (internalClass) {
                     result.animations.push(internalClass.Parse(parsedAnimation));
                 }
+            }
+
+            if (serializationObject.autoAnimate && scene) {
+                scene.beginAnimation(result, serializationObject.autoAnimateFrom, serializationObject.autoAnimateTo, serializationObject.autoAnimateLoop, serializationObject.autoAnimateSpeed || 1.0);
             }
         }
 
