@@ -8,7 +8,7 @@ import { Observable } from "babylonjs/Misc/observable";
 import { GlobalState } from '../globalState';
 import { PropertyChangedEvent } from "../sharedUiComponents/propertyChangedEvent";
 
-export type DimensionProperties = "width" | "left" | "height" | "top" | "paddingLeft" | "paddingRight" | "paddingTop" | "paddingBottom";
+export type DimensionProperties = "width" | "left" | "height" | "top" | "paddingLeft" | "paddingRight" | "paddingTop" | "paddingBottom" | "fontSize";
 
 export class Rect {
     public top: number;

@@ -19,6 +19,8 @@ import { CoordinateHelper, DimensionProperties } from "../../../../diagram/coord
 import { Vector2 } from "babylonjs/Maths/math";
 import { Observer } from "babylonjs/Misc/observable";
 import { Nullable } from "babylonjs/types";
+import { IconComponent } from "../../../../sharedUiComponents/lines/iconComponent";
+import { OptionsLineComponent } from "../../../../sharedUiComponents/lines/optionsLineComponent";
 
 const sizeIcon: string = require("../../../../sharedUiComponents/imgs/sizeIcon.svg");
 const verticalMarginIcon: string = require("../../../../sharedUiComponents/imgs/verticalMarginIcon.svg");
@@ -27,7 +29,9 @@ const fontFamilyIcon: string = require("../../../../sharedUiComponents/imgs/font
 const alphaIcon: string = require("../../../../sharedUiComponents/imgs/alphaIcon.svg");
 const fontSizeIcon: string = require("../../../../sharedUiComponents/imgs/fontSizeIcon.svg");
 const fontStyleIcon: string = require("../../../../sharedUiComponents/imgs/fontStyleIcon.svg");
+const fontWeightIcon: string = require("../../../../sharedUiComponents/imgs/fontWeightIcon.svg");
 const rotationIcon: string = require("../../../../sharedUiComponents/imgs/rotationIcon.svg");
+const pivotIcon: string = require("../../../../sharedUiComponents/imgs/pivotIcon.svg");
 const scaleIcon: string = require("../../../../sharedUiComponents/imgs/scaleIcon.svg");
 const shadowBlurIcon: string = require("../../../../sharedUiComponents/imgs/shadowBlurIcon.svg");
 const horizontalMarginIcon: string = require("../../../../sharedUiComponents/imgs/horizontalMarginIcon.svg");
@@ -51,7 +55,7 @@ interface ICommonControlPropertyGridComponentProps {
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
 
-type ControlProperty = keyof Control | "_paddingLeft" | "_paddingRight" | "_paddingTop" | "_paddingBottom";
+type ControlProperty = keyof Control | "_paddingLeft" | "_paddingRight" | "_paddingTop" | "_paddingBottom" | "_fontSize";
 
 export class CommonControlPropertyGridComponent extends React.Component<ICommonControlPropertyGridComponentProps> {
 
@@ -233,6 +237,12 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
             }
         }
 
+        const fontStyleOptions = [
+            {label: "regular", value: 0},
+            {label: "italic", value: 1},
+            {label: "oblique", value: 2}
+        ];
+
         return (
             <div>
                 <div className="ge-divider alignment-bar">
@@ -292,10 +302,12 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                     />
                 </div>
                 <div className="ge-divider">
+                    <IconComponent
+                        icon={positionIcon}
+                        label={"Position"}
+                    />
                     <TextInputLineComponent
                         numbersOnly={true}
-                        iconLabel={"Position"}
-                        icon={positionIcon}
                         lockObject={this.props.lockObject}
                         label="X"
                         delayInput={true}
@@ -321,10 +333,12 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                     />
                 </div>
                 <div className="ge-divider">
+                    <IconComponent
+                        icon={sizeIcon}
+                        label={"Size"}
+                    />
                     <TextInputLineComponent
                         numbersOnly={true}
-                        iconLabel={"Scale"}
-                        icon={sizeIcon}
                         lockObject={this.props.lockObject}
                         label="W"
                         delayInput={true}
@@ -381,10 +395,12 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                     />
                 </div>
                 <div className="ge-divider">
+                    <IconComponent
+                        icon={verticalMarginIcon}
+                        label={"Vertical Padding"}
+                    />
                     <TextInputLineComponent
                         numbersOnly={true}
-                        iconLabel={"Padding"}
-                        icon={verticalMarginIcon}
                         lockObject={this.props.lockObject}
                         label="T"
                         delayInput={true}
@@ -417,10 +433,12 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                     />
                 </div>
                 <div className="ge-divider">
+                    <IconComponent
+                        icon={horizontalMarginIcon}
+                        label={"Horizontal Padding"}
+                    />
                     <TextInputLineComponent
                         numbersOnly={true}
-                        iconLabel={"Horizontal Margins"}
-                        icon={horizontalMarginIcon}
                         lockObject={this.props.lockObject}
                         label="L"
                         delayInput={true}
@@ -452,20 +470,51 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         arrowsIncrement={amount => increment("paddingRight", amount)}
                     />
                 </div>
-                <CheckBoxLineComponent
-                    iconLabel={"Padding does not affect the parameters of this control, only the descendants of this control."}
-                    icon={descendantsOnlyPaddingIcon}
-                    label="PAD ONLY DESCENDENTS"
-                    target={proxy}
-                    propertyName="descendentsOnlyPadding"
-                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                />
+                <div className="ge-divider">
+                    <IconComponent
+                        icon={descendantsOnlyPaddingIcon}
+                        label={"Makes padding affect only the descendants of this control"}
+                    />
+                    <CheckBoxLineComponent
+                        label="ONLY PAD DESCENDANTS"
+                        target={proxy}
+                        propertyName="descendentsOnlyPadding"
+                    />
+                </div>
                 <hr className="ge" />
                 <TextLineComponent tooltip="" label="TRANSFORMATION" value=" " color="grey"></TextLineComponent>
                 <div className="ge-divider">
+                    <IconComponent
+                        icon={scaleIcon}
+                        label={"Scale"}
+                    />
                     <TextInputLineComponent
-                        iconLabel={"Transform Center"}
-                        icon={positionIcon}
+                        lockObject={this.props.lockObject}
+                        label="X"
+                        target={proxy}
+                        propertyName="scaleX"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        arrows={true}
+                        step={0.0005}
+                        numbersOnly={true}
+                    />
+                    <TextInputLineComponent
+                        lockObject={this.props.lockObject}
+                        label="Y"
+                        target={proxy}
+                        propertyName="scaleY"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        arrows={true}
+                        step={0.0005}
+                        numbersOnly={true}
+                    />
+                </div>
+                <div className="ge-divider">
+                    <IconComponent
+                        icon={pivotIcon}
+                        label={"Transform Center"}
+                    />
+                    <TextInputLineComponent
                         lockObject={this.props.lockObject}
                         label="X"
                         target={proxy}
@@ -487,105 +536,103 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                     />
                 </div>
                 <div className="ge-divider">
-                    <TextInputLineComponent
-                        iconLabel={"Scale"}
-                        icon={scaleIcon}
-                        lockObject={this.props.lockObject}
-                        label="X"
-                        target={proxy}
-                        propertyName="scaleX"
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                        arrows={true}
-                        step={0.0005}
-                        numbersOnly={true}
+                    <IconComponent
+                            icon={rotationIcon}
+                            label={"Rotation"}
                     />
-                    <TextInputLineComponent
+                    <SliderLineComponent
+                        iconLabel={"Rotation"}
                         lockObject={this.props.lockObject}
-                        label="Y"
+                        label="R"
                         target={proxy}
-                        propertyName="scaleY"
+                        decimalCount={2}
+                        propertyName="rotation"
+                        minimum={0}
+                        maximum={2 * Math.PI}
+                        step={0.01}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                        arrows={true}
-                        step={0.0005}
-                        numbersOnly={true}
                     />
                 </div>
-                <SliderLineComponent
-                    iconLabel={"Rotation"}
-                    lockObject={this.props.lockObject}
-                    icon={rotationIcon}
-                    label="R"
-                    target={proxy}
-                    decimalCount={2}
-                    propertyName="rotation"
-                    minimum={0}
-                    maximum={2 * Math.PI}
-                    step={0.01}
-                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                />
                 <hr className="ge" />
-                <TextLineComponent tooltip="" label="APPEARANCE" value=" " color="grey"></TextLineComponent>
+                <TextLineComponent tooltip="" label="APPEARANCE" value=" " color="grey"/>
                 {controls.every(control => control.color !== undefined && control.typeName !== "Image" && control.typeName !== "ImageBasedSlider" && control.typeName !== "ColorPicker") && (
-                    <ColorLineComponent
-                        iconLabel={"Color"}
+                <div className="ge-divider">
+                    <IconComponent
                         icon={colorIcon}
+                        label={"Outline Color"}
+                    />
+                    <ColorLineComponent
                         lockObject={this.props.lockObject}
                         label="Outline Color"
                         target={proxy}
                         propertyName="color"
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
+                </div>
                 )}
-                {controls.every(control => (control as any).background !== undefined) && (
-                    <ColorLineComponent
-                        iconLabel={"Background"}
+                {controls.every(control => (control as any).background !== undefined) && 
+                <div className="ge-divider">
+                    <IconComponent
                         icon={fillColorIcon}
+                        label={"Background Color"}
+                    />
+                    <ColorLineComponent
                         lockObject={this.props.lockObject}
                         label="Background Color"
                         target={proxy}
                         propertyName="background"
+                    />
+                </div>}
+                <div className="ge-divider">
+                    <IconComponent
+                        icon={alphaIcon}
+                        label={"Alpha"}
+                    />
+                    <SliderLineComponent
+                        lockObject={this.props.lockObject}
+                        label="A"
+                        target={proxy}
+                        propertyName="alpha"
+                        minimum={0}
+                        maximum={1}
+                        step={0.01}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
-                )}
-                <SliderLineComponent
-                    lockObject={this.props.lockObject}
-                    iconLabel={"Alpha"}
-                    icon={alphaIcon}
-                    label=" "
-                    target={proxy}
-                    propertyName="alpha"
-                    minimum={0}
-                    maximum={1}
-                    step={0.01}
-                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                />
-                <ColorLineComponent
-                    iconLabel={"Shadow Color"}
-                    icon={shadowColorIcon}
-                    lockObject={this.props.lockObject}
-                    label=""
-                    target={proxy}
-                    propertyName="shadowColor"
-                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    disableAlpha={true}
-                />
+                </div>
                 <div className="ge-divider">
-                    <FloatLineComponent
-                        iconLabel={"Shadow Offset X"}
-                        icon={shadowOffsetXIcon}
+                    <IconComponent
+                        icon={shadowColorIcon}
+                        label={"Shadow Color"}
+                    />
+                    <ColorLineComponent
                         lockObject={this.props.lockObject}
                         label=""
+                        target={proxy}
+                        propertyName="shadowColor"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        disableAlpha={true}
+                    />
+                </div>
+                <div className="ge-divider">
+                    <IconComponent
+                        icon={shadowOffsetXIcon}
+                        label={"Shadow Offset X"}
+                    />
+                    <FloatLineComponent
+                        lockObject={this.props.lockObject}
+                        label="X"
                         target={proxy}
                         propertyName="shadowOffsetX"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         unit="PX"
                         unitLocked={true}
                     />
-                    <FloatLineComponent
-                        iconLabel={"Shadow Offset Y"}
+                    <IconComponent
                         icon={shadowOffsetYIcon}
+                        label={"Shadow Offset Y"}
+                    />
+                    <FloatLineComponent
                         lockObject={this.props.lockObject}
-                        label=""
+                        label="Y"
                         target={proxy}
                         propertyName="shadowOffsetY"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
@@ -594,11 +641,13 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                     />
                 </div>
                 <div className="ge-divider">
-                    <FloatLineComponent
-                        iconLabel={"Shadow Blur"}
+                    <IconComponent
                         icon={shadowBlurIcon}
+                        label={"Shadow Blur"}
+                    />
+                    <FloatLineComponent
                         lockObject={this.props.lockObject}
-                        label=""
+                        label=" "
                         target={proxy}
                         propertyName="shadowBlur"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
@@ -607,10 +656,12 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                 {showTextProperties && <>
                     <hr className="ge" />
                     <TextLineComponent tooltip="" label="FONT STYLE" value=" " color="grey"></TextLineComponent>
-                    <div className="ge-divider-single">
-                        <TextInputLineComponent
-                            iconLabel={"Font Family"}
+                    <div className="ge-divider">
+                        <IconComponent
                             icon={fontFamilyIcon}
+                            label={"Font Family"}
+                        />
+                        <TextInputLineComponent
                             lockObject={this.props.lockObject}
                             label=""
                             target={proxy}
@@ -618,23 +669,12 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                             onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         />
                     </div>
-                    <div className="ge-divider-single">
-                        <TextInputLineComponent
-                            iconLabel={"Font Size"}
-                            icon={fontSizeIcon}
-                            lockObject={this.props.lockObject}
-                            label=""
-                            target={proxy}
-                            numbersOnly={true}
-                            propertyName="fontSize"
-                            onChange={(newValue) => this._checkAndUpdateValues("fontSize", newValue)}
-                            onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    <div className="ge-divider">
+                        <IconComponent
+                            icon={fontWeightIcon}
+                            label={"Font Weight"}
                         />
-                    </div>
-                    <div className="ge-divider-single">
                         <TextInputLineComponent
-                            iconLabel={"Font Weight"}
-                            icon={shadowBlurIcon}
                             lockObject={this.props.lockObject}
                             label=""
                             target={proxy}
@@ -642,15 +682,54 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                             onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         />
                     </div>
-                    <div className="ge-divider-single">
-                        <TextInputLineComponent
-                            iconLabel={"Font Style"}
+                    <div className="ge-divider">
+                        <IconComponent
                             icon={fontStyleIcon}
+                            label={"Font Style"}
+                        />
+                        <OptionsLineComponent
+                            label=""
+                            target={proxy}
+                            propertyName="fontStyle"
+                            options={fontStyleOptions}
+                            onSelect={(newValue) => {
+                                proxy.fontStyle=["", "italic", "oblique"][newValue];
+                            }}
+                            extractValue={() => {
+                                switch (proxy.fontStyle) {
+                                    case "italic":
+                                        return 1;
+                                    case "oblique":
+                                        return 2;
+                                    default:
+                                        return 0;
+                                }
+                            }}
+                        />
+                        {/* <TextInputLineComponent
                             lockObject={this.props.lockObject}
                             label=""
                             target={proxy}
                             propertyName="fontStyle"
                             onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        /> */}
+                    </div>
+                    <div className="ge-divider">
+                        <IconComponent
+                            icon={fontSizeIcon}
+                            label={"Font Size"}
+                        />
+                        <TextInputLineComponent
+                            lockObject={this.props.lockObject}
+                            label=""
+                            numbersOnly={true}
+                            value={getValue("_fontSize")}
+                            onChange={(newValue) => this._checkAndUpdateValues("fontSize", newValue)}
+                            onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                            unit={getUnitString("_fontSize")}
+                            onUnitClicked={unit => convertUnits(unit, "fontSize")}
+                            arrows={true}
+                            arrowsIncrement={amount => increment("fontSize", amount, 0)}    
                         />
                     </div>
                 </>}
