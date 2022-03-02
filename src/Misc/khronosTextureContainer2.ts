@@ -3,6 +3,7 @@ import { ThinEngine } from "../Engines/thinEngine";
 import { Constants } from '../Engines/constants';
 import { WorkerPool } from './workerPool';
 import { Tools } from "./tools";
+import { Nullable } from "../types";
 
 declare var KTX2DECODER: any;
 
@@ -30,7 +31,16 @@ export class KhronosTextureContainer2 {
      *     URLConfig.wasmZSTDDecoder
      * You can see their default values in this PG: https://playground.babylonjs.com/#EIJH8L#29
      */
-    public static URLConfig = {
+    public static URLConfig: {
+        jsDecoderModule: string;
+        wasmUASTCToASTC: Nullable<string>;
+        wasmUASTCToBC7: Nullable<string>;
+        wasmUASTCToRGBA_UNORM: Nullable<string>;
+        wasmUASTCToRGBA_SRGB: Nullable<string>;
+        jsMSCTranscoder: Nullable<string>;
+        wasmMSCTranscoder: Nullable<string>;
+        wasmZSTDDecoder: Nullable<string>;
+    } = {
         jsDecoderModule: "https://preview.babylonjs.com/babylon.ktx2Decoder.js",
         wasmUASTCToASTC: null,
         wasmUASTCToBC7: null,
