@@ -85,7 +85,6 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
     }
 
     render() {
-        console.log(this.state.value);
         return (
             <div className="listLine">
                 {this.props.icon && <img src={this.props.icon} title={this.props.iconLabel} alt={this.props.iconLabel} color="black" className="icon" />}
