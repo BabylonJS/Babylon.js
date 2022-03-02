@@ -13,28 +13,10 @@ import { GizmoWrapper } from "./diagram/guiGizmoWrapper";
 import { Nullable } from "babylonjs/types";
 import { ArtBoardComponent } from './diagram/artBoard';
 import { Control } from "babylonjs-gui/2D/controls/control";
+import { ControlTypes } from "./controlTypes";
 
 require("./main.scss");
 require("./scss/header.scss");
-
-const rectangleIcon: string = require("../public/imgs/rectangleIcon.svg");
-const ellipseIcon: string = require("../public/imgs/ellipseIcon.svg");
-const gridIcon: string = require("../public/imgs/gridIcon.svg");
-const stackPanelIcon: string = require("../public/imgs/stackPanelIcon.svg");
-const textBoxIcon: string = require("../public/imgs/textBoxIcon.svg");
-const sliderIcon: string = require("../public/imgs/sliderIcon.svg");
-const imageBasedSliderIcon: string = require("../public/imgs/imageSliderIcon.svg");
-const buttonIcon: string = require("../public/imgs/buttonIcon.svg");
-const passwordFieldIcon: string = require("../public/imgs/passwordFieldIcon.svg");
-const checkboxIcon: string = require("../public/imgs/checkboxIcon.svg");
-const imageIcon: string = require("../public/imgs/imageIcon.svg");
-const keyboardIcon: string = require("../public/imgs/keyboardIcon.svg");
-const inputFieldIcon: string = require("../public/imgs/inputFieldIcon.svg");
-const lineIcon: string = require("../public/imgs/lineIcon.svg");
-const displaygridIcon: string = require("../public/imgs/displaygridIcon.svg");
-const colorPickerIcon: string = require("../public/imgs/colorPickerIcon.svg");
-const scrollbarIcon: string = require("../public/imgs/scrollbarIcon.svg");
-const radioButtonIcon: string = require("../public/imgs/radioButtonIcon.svg");
 
 interface IGraphEditorProps {
     globalState: GlobalState;
@@ -45,7 +27,6 @@ interface IGraphEditorState {
 }
 
 export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEditorState> {
-    private _startX: number;
     private _moveInProgress: boolean;
 
     private _leftWidth = DataStorage.ReadNumber("LeftWidth", 200);
@@ -54,6 +35,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
 
     private _popUpWindow: Window;
     private _draggedItem: Nullable<string>;
+    private _rootRef: React.RefObject<HTMLDivElement>;
 
     componentDidMount() {
         if (navigator.userAgent.indexOf("Mobile") !== -1) {
@@ -63,6 +45,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
 
     constructor(props: IGraphEditorProps) {
         super(props);
+        this._rootRef = React.createRef();
 
         this.state = {
             showPreviewPopUp: false,
@@ -86,7 +69,6 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
             },
             false
         );
-        this.createItems();
 
         this.props.globalState.onBackgroundColorChangeObservable.add(() => this.forceUpdate());
         this.props.globalState.onDropObservable.add(() => {
@@ -106,7 +88,6 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
     }
 
     onPointerDown(evt: React.PointerEvent<HTMLDivElement>) {
-        this._startX = evt.clientX;
         this._moveInProgress = true;
         evt.currentTarget.setPointerCapture(evt.pointerId);
     }
@@ -121,29 +102,25 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
             return;
         }
 
-        const deltaX = evt.clientX - this._startX;
         const rootElement = evt.currentTarget.ownerDocument!.getElementById("gui-editor-workbench-root") as HTMLDivElement;
 
         const maxWidth = this.props.globalState.hostWindow.innerWidth - this._toolBarIconSize - 8;
 
         if (forLeft) {
-            this._leftWidth += deltaX;
-            this._leftWidth = Math.max(150, Math.min(maxWidth - this._rightWidth, this._leftWidth));
+            this._leftWidth = Math.max(150, Math.min(maxWidth - this._rightWidth, evt.clientX - this._rootRef.current!.clientLeft));
             DataStorage.WriteNumber("LeftWidth", this._leftWidth);
         } else {
-            this._rightWidth -= deltaX;
-            this._rightWidth = Math.max(250, Math.min(maxWidth - this._leftWidth, this._rightWidth));
+            this._rightWidth = Math.max(250, Math.min(maxWidth - this._leftWidth, (this._rootRef.current!.clientLeft + this._rootRef.current!.clientWidth) - evt.clientX));
             DataStorage.WriteNumber("RightWidth", this._rightWidth);
         }
 
         rootElement.style.gridTemplateColumns = this.buildColumnLayout();
 
-        this._startX = evt.clientX;
         this.props.globalState.onWindowResizeObservable.notifyObservers();
     }
 
     buildColumnLayout() {
-        return `${this._leftWidth}px 4px ${this._toolBarIconSize}px calc(100% - ${this._leftWidth + this._toolBarIconSize + 8 + this._rightWidth}px) 4px ${this._rightWidth}px`;
+        return `${this._leftWidth}px 4px ${this._toolBarIconSize}px calc(100% - ${this._leftWidth + this._toolBarIconSize + 8 + this._rightWidth}px) ${this._rightWidth}px`;
     }
 
     handlePopUp = () => {
@@ -252,6 +229,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                         }
                         this.props.globalState.blockKeyboardEvents = false;
                     }}
+                    ref={this._rootRef}
                 >
                     {/* Node creation menu */}
 
@@ -279,16 +257,14 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                         <WorkbenchComponent ref={"workbenchCanvas"} globalState={this.props.globalState} />
                         <GizmoWrapper globalState={this.props.globalState} />
                     </div>
-
-                    <div
-                        id="rightGrab"
-                        onPointerDown={(evt) => this.onPointerDown(evt)}
-                        onPointerUp={(evt) => this.onPointerUp(evt)}
-                        onPointerMove={(evt) => this.resizeColumns(evt, false)}
-                    ></div>
-
                     {/* Property tab */}
                     <div className="right-panel">
+                        <div
+                            id="rightGrab"
+                            onPointerDown={(evt) => this.onPointerDown(evt)}
+                            onPointerUp={(evt) => this.onPointerUp(evt)}
+                            onPointerMove={(evt) => this.resizeColumns(evt, false)}
+                        ></div>
                         <PropertyTabComponent globalState={this.props.globalState} />
                     </div>
 
@@ -299,149 +275,6 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                 <div className="wait-screen hidden">Processing...please wait</div>
             </Portal>
         );
-    }
-
-    _items: {
-        label: string;
-        icon?: string;
-        fileButton?: boolean;
-        onClick?: () => void;
-        onCheck?: (value: boolean) => void;
-        storeKey?: string;
-        isActive?: boolean;
-        defaultValue?: boolean | string;
-        subItems?: string[];
-    }[];
-
-    createItems() {
-        this._items = [
-            {
-                label: "Rectangle",
-                icon: rectangleIcon,
-                onClick: () => {
-                    this.onCreate("Rectangle");
-                },
-            },
-            {
-                label: "Ellipse",
-                icon: ellipseIcon,
-                onClick: () => {
-                    this.onCreate("Ellipse");
-                },
-            },
-            {
-                label: "StackPanel",
-                icon: stackPanelIcon,
-                onClick: () => {
-                    this.onCreate("StackPanel");
-                },
-            },
-            {
-                label: "Grid",
-                icon: gridIcon,
-                onClick: () => {
-                    this.onCreate("Grid");
-                },
-            },
-            {
-                label: "ScrollViewer",
-                icon: scrollbarIcon,
-                onClick: () => {
-                    this.onCreate("ScrollViewer");
-                },
-            },
-            {
-                label: "Line",
-                icon: lineIcon,
-                onClick: () => {
-                    this.onCreate("Line");
-                },
-            },
-            {
-                label: "Text",
-                icon: textBoxIcon,
-                onClick: () => {
-                    this.onCreate("Text");
-                },
-            },
-            {
-                label: "InputText",
-                icon: inputFieldIcon,
-                onClick: () => {
-                    this.onCreate("InputText");
-                },
-            },
-            {
-                label: "InputPassword",
-                icon: passwordFieldIcon,
-                onClick: () => {
-                    this.onCreate("InputPassword");
-                },
-            },
-            {
-                label: "Image",
-                icon: imageIcon,
-                onClick: () => {
-                    this.onCreate("Image");
-                },
-            },
-            {
-                label: "DisplayGrid",
-                icon: displaygridIcon,
-                onClick: () => {
-                    this.onCreate("DisplayGrid");
-                },
-            },
-            {
-                label: "TextButton",
-                icon: buttonIcon,
-                onClick: () => {
-                    this.onCreate("TextButton");
-                },
-            },
-            {
-                label: "Checkbox",
-                icon: checkboxIcon,
-                onClick: () => {
-                    this.onCreate("Checkbox");
-                },
-            },
-            {
-                label: "RadioButton",
-                icon: radioButtonIcon,
-                onClick: () => {
-                    this.onCreate("RadioButton");
-                },
-            },
-            {
-                label: "Slider",
-                icon: sliderIcon,
-                onClick: () => {
-                    this.onCreate("Slider");
-                },
-            },
-            {
-                label: "ImageBasedSlider",
-                icon: imageBasedSliderIcon,
-                onClick: () => {
-                    this.onCreate("ImageBasedSlider");
-                },
-            },
-            {
-                label: "VirtualKeyboard",
-                icon: keyboardIcon,
-                onClick: () => {
-                    this.onCreate("VirtualKeyboard");
-                },
-            },
-            {
-                label: "ColorPicker",
-                icon: colorPickerIcon,
-                onClick: () => {
-                    this.onCreate("ColorPicker");
-                },
-            },
-        ];
     }
 
     onCreate(value: string): Control {
@@ -460,40 +293,22 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                     {<div className="blackLine"></div>}
                     {
                         <div className={"toolbar-content sub1"}>
-                            {this._items.map((m) => {
+                            {ControlTypes.map((type) => {
                                 return (
                                     <div
-                                        className={"toolbar-label" + (m.isActive ? " active" : "")}
-                                        key={m.label}
-                                        onDragStart={(evt) => { this._draggedItem = m.label }}
+                                        className={"toolbar-label"}
+                                        key={type.className}
+                                        onDragStart={(evt) => { this._draggedItem = type.className }}
                                         onClick={() => {
-                                            if (!m.onClick) {
-                                                this.forceUpdate();
-                                                return;
-                                            }
-                                            if (!m.subItems) {
-                                                m.onClick();
-                                            }
+                                            this.onCreate(type.className);
                                         }}
-                                        title={m.label}
+                                        title={type.className}
                                     >
-                                        {!m.icon && <div className="toolbar-label-text">{(m.isActive ? "> " : "") + m.label}</div>}
-                                        {m.icon && (
-                                            <div className="toolbar-icon" draggable={true}>
-                                                <img src={m.icon} width="40px" height={"40px"} />
-                                            </div>
-                                        )}
-                                        {m.onCheck && (
-                                            <input
-                                                type="checkBox"
-                                                className="toolbar-label-check"
-                                                onChange={(evt) => {
-                                                    this.forceUpdate();
-                                                    m.onCheck!(evt.target.checked);
-                                                }}
-                                                checked={false}
-                                            />
-                                        )}
+                                    {type.icon && (
+                                        <div className="toolbar-icon" draggable={true}>
+                                            <img src={type.icon} alt={type.className} width="40px" height={"40px"} />
+                                        </div>
+                                    )}
                                     </div>
                                 );
                             })}
