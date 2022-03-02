@@ -939,7 +939,7 @@ export class ArcRotateCamera extends TargetCamera {
             localDirection.multiplyInPlace(this.panningAxis);
             Vector3.TransformNormalToRef(localDirection, this._cameraTransformMatrix, this._transformedDirection);
             // Eliminate y if mapPanning is enabled
-            if (this.mapPanning) {
+            if (this.mapPanning || !this.panningAxis.y) {
                 this._transformedDirection.y = 0;
             }
 
