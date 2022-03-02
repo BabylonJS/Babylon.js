@@ -107,8 +107,8 @@ export class DeviceEventFactory {
         const pointerX = deviceInputSystem.pollInput(deviceType, deviceSlot, PointerInput.Horizontal);
         const pointerY = deviceInputSystem.pollInput(deviceType, deviceSlot, PointerInput.Vertical);
         // If dealing with a change to the delta, grab values for event init
-        const movementX = inputIndex === PointerInput.DeltaHorizontal ? currentState : 0;
-        const movementY = inputIndex === PointerInput.DeltaVertical ? currentState : 0;
+        const movementX = deviceInputSystem.pollInput(deviceType, deviceSlot, PointerInput.DeltaHorizontal);
+        const movementY = deviceInputSystem.pollInput(deviceType, deviceSlot, PointerInput.DeltaVertical);
         // Get offsets from container
         const offsetX = inputIndex === PointerInput.DeltaHorizontal && elementToAttachTo ? movementX! - elementToAttachTo.getBoundingClientRect().x : 0;
         const offsetY = inputIndex === PointerInput.DeltaVertical && elementToAttachTo ? movementY! - elementToAttachTo.getBoundingClientRect().y : 0;
