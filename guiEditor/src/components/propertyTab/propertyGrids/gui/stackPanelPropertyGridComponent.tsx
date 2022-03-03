@@ -8,9 +8,9 @@ import { CheckBoxLineComponent } from "../../../../sharedUiComponents/lines/chec
 import { TextLineComponent } from "../../../../sharedUiComponents/lines/textLineComponent";
 import { FloatLineComponent } from "../../../../sharedUiComponents/lines/floatLineComponent";
 import { makeTargetsProxy } from "../../../../sharedUiComponents/lines/targetsProxy";
+import { ContainerPropertyGridComponent } from "./containerPropertyGridComponent";
 
 const verticalMarginIcon: string = require("../../../../sharedUiComponents/imgs/verticalMarginIcon.svg");
-const clipContentsIcon: string = require("../../../../sharedUiComponents/imgs/clipContentsIcon.svg");
 
 interface IStackPanelPropertyGridComponentProps {
     stackPanels: StackPanel[];
@@ -24,38 +24,32 @@ export class StackPanelPropertyGridComponent extends React.Component<IStackPanel
     }
 
     render() {
-        const stackPanels = this.props.stackPanels;
+        const {stackPanels, lockObject, onPropertyChangedObservable} = this.props;
 
         return (
             <div className="pane">
-                <CommonControlPropertyGridComponent lockObject={this.props.lockObject} controls={stackPanels} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <CommonControlPropertyGridComponent lockObject={lockObject} controls={stackPanels} onPropertyChangedObservable={onPropertyChangedObservable} />
                 <hr />
                 <TextLineComponent label="STACKPANEL" value=" " color="grey"></TextLineComponent>
-                <CheckBoxLineComponent
-                    iconLabel={"Clip children"}
-                    icon={clipContentsIcon}
-                    label="CLIP CHILDREN"
-                    target={makeTargetsProxy(stackPanels, this.props.onPropertyChangedObservable)}
-                    propertyName="clipChildren"
-                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                />
+                <ContainerPropertyGridComponent containers={stackPanels} onPropertyChangedObservable={onPropertyChangedObservable}/>
+
                 <CheckBoxLineComponent
                     iconLabel={"Vertical"}
                     icon={verticalMarginIcon}
                     label="VERTICAL"
-                    target={makeTargetsProxy(stackPanels, this.props.onPropertyChangedObservable)}
+                    target={makeTargetsProxy(stackPanels, onPropertyChangedObservable)}
                     propertyName="isVertical"
-                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    onPropertyChangedObservable={onPropertyChangedObservable}
                 />
                 <FloatLineComponent
-                    lockObject={this.props.lockObject}
+                    lockObject={lockObject}
                     label=""
                     icon={verticalMarginIcon}
                     iconLabel="spacing"
-                    target={makeTargetsProxy(stackPanels, this.props.onPropertyChangedObservable)}
+                    target={makeTargetsProxy(stackPanels, onPropertyChangedObservable)}
                     propertyName="spacing"
                     defaultValue={0}
-                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    onPropertyChangedObservable={onPropertyChangedObservable}
                     onChange={() => stackPanels.forEach(panel => panel._markAsDirty())}
                 />
             </div>
