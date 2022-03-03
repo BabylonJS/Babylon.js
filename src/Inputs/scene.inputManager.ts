@@ -878,12 +878,13 @@ export class InputManager {
             }
             else if (deviceSource.deviceType === DeviceType.Touch) {
                 deviceSource.onInputChangedObservable.add((eventData) => {
-                    if ((eventData.inputIndex === PointerInput.LeftClick || eventData.inputIndex === PointerInput.MiddleClick || eventData.inputIndex === PointerInput.RightClick)) {
-                        if (attachDown) {
+                    const evt = eventData as IPointerEvent;
+                    if ((eventData.inputIndex === PointerInput.LeftClick)) {
+                        if (attachDown && evt.type === "pointerdown") {
                             this._onPointerDown(eventData as IPointerEvent);
 
                         }
-                        else if (attachUp) {
+                        else if (attachUp && evt.type === "pointerup") {
                             this._onPointerUp(eventData as IPointerEvent);
                         }
                     }
