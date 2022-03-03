@@ -88,7 +88,7 @@ export class DeviceSourceManager implements IDisposable, IObservableManager {
 
         this._onInputChanged = (deviceType: DeviceType, deviceSlot: number, eventData: IUIEvent) => {
             this._devices[deviceType][deviceSlot]?.onInputChangedObservable.notifyObservers(eventData);
-        }
+        };
 
         if (!this._engine._deviceSourceManager) {
             this._engine._deviceSourceManager = new InternalDeviceSourceManager(engine);
