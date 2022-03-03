@@ -48,6 +48,8 @@ export class InputTextArea extends InputText {
     private _availableWidth: number;
     private _availableHeight: number;
 
+    private _scrollTop: Nullable<number>;
+
     /**
      * Gets or sets outlineWidth of the text to display
      */
@@ -923,7 +925,19 @@ export class InputTextArea extends InputText {
             this._scrollLeft = clipTextLeft;
         }
 
-        rootY += this._currentMeasure.top + this._margin.getValueInPixel(this._host, this._tempParentMeasure.height);
+        let selectedHeight = this._selectedLineIndex * this._fontOffset.height;
+
+        if (this._isFocused && selectedHeight > this._availableHeight) {
+            let textTop = clipTextTop - selectedHeight + this._availableHeight;
+            
+            if (!this._scrollTop) {
+                this._scrollTop = textTop;
+            }
+        } else {
+            this._scrollTop = clipTextTop;
+        }
+
+        rootY += this._scrollTop;
 
         for (let i = 0; i < this._lines.length; i++) {
             const line = this._lines[i];
@@ -1046,13 +1060,16 @@ export class InputTextArea extends InputText {
                     this._markAsDirty();
                 }
 
-                let cursorTop = this._currentMeasure.top + this._margin.getValueInPixel(this._host, this._tempParentMeasure.height); //cursorTop distance from top to cursor start
-                if (this.lastClickedCoordinateY <= this._fontOffset.height) {
-                    // Nothing to do here
-                } else if (this.lastClickedCoordinateY > this._fontOffset.height * (this._lines.length - 1)) {
-                    cursorTop += (this._fontOffset.height * (this._lines.length - 1));
-                } else {
-                    cursorTop += (Math.floor(this.lastClickedCoordinateY / this._fontOffset.height)) * this._fontOffset.height;
+                let cursorTop = this._scrollTop + this._selectedLineIndex * this._fontOffset.height; //cursorTop distance from top to cursor start
+                
+                if (cursorTop < clipTextTop) {
+                    this._scrollTop += (clipTextTop - cursorTop);
+                    cursorTop = clipTextTop;
+                    this._markAsDirty();
+                } else if (cursorTop > clipTextTop) {
+                    this._scrollTop += clipTextTop + this._availableHeight - cursorTop - this._fontOffset.height;
+                    cursorTop = clipTextTop + this._availableHeight - this._fontOffset.height;
+                    this._markAsDirty();
                 }
 
                 context.fillRect(cursorLeft, cursorTop, 2, this._fontOffset.height);
