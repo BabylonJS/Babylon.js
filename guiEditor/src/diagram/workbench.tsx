@@ -666,7 +666,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         } else if (this._constraintDirection === ConstraintDirection.Y) {
             newX = 0;
         }
-        let referenceAxis = new Vector2(newX, newY);
+        const referenceAxis = new Vector2(newX, newY);
         
         if (guiControl.typeName === "Line") {
             let line = guiControl as Line;
