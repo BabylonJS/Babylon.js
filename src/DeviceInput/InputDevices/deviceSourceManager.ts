@@ -23,6 +23,9 @@ export class DeviceSourceManager implements IDisposable, IObservableManager {
      */
     public readonly onDeviceDisconnectedObservable: Observable<DeviceSource<DeviceType>>;
 
+    /** @hidden */
+    public readonly _onInputChanged: (deviceType: DeviceType, deviceSlot: number, eventData: IUIEvent) => void;
+
     // Private Members
     private _engine: Engine;
     private _onDisposeObserver: Nullable<Observer<ThinEngine>>;
@@ -83,6 +86,10 @@ export class DeviceSourceManager implements IDisposable, IObservableManager {
         this._firstDevice = new Array<number>(numberOfDeviceTypes);
         this._engine = engine;
 
+        this._onInputChanged = (deviceType: DeviceType, deviceSlot: number, eventData: IUIEvent) => {
+            this._devices[deviceType][deviceSlot]?.onInputChangedObservable.notifyObservers(eventData);
+        }
+
         if (!this._engine._deviceSourceManager) {
             this._engine._deviceSourceManager = new InternalDeviceSourceManager(engine);
         }
@@ -122,11 +129,6 @@ export class DeviceSourceManager implements IDisposable, IObservableManager {
     }
 
     // Hidden Functions
-    /** @hidden */
-    public _onInputChanged (deviceType: DeviceType, deviceSlot: number, eventData: IUIEvent): void {
-        this._devices[deviceType][deviceSlot].onInputChangedObservable.notifyObservers(eventData);
-    }
-
     /** @hidden */
     public _addDevice(deviceSource: DeviceSource<DeviceType>): void {
         if (!this._devices[deviceSource.deviceType]) {
