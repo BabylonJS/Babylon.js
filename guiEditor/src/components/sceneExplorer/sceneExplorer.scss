@@ -399,18 +399,28 @@
             grid-column: 2;
             display: grid;
             align-items: center;
+            grid-template-columns: auto 1fr auto auto auto;
+
+            .controlType {
+                grid-column: 1;
+                img {
+                    width: 32px;
+                    height: 32px;
+                    filter: invert(100%);
+                }
+            }
 
             .highlight {
-                grid-column: 2;
+                grid-column: 3;
             }
 
             .visibility {
-                grid-column: 3;
+                grid-column: 4;
             }
 
             .extensions {
                 width: 20px;
-                grid-column: 4;
+                grid-column: 5;
             }
         }   
         
