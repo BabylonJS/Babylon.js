@@ -5,12 +5,11 @@ import { CommonControlPropertyGridComponent } from "../gui/commonControlProperty
 import { LockObject } from "../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { Rectangle } from "babylonjs-gui/2D/controls/rectangle";
 import { FloatLineComponent } from "../../../../sharedUiComponents/lines/floatLineComponent";
-import { CheckBoxLineComponent } from "../../../../sharedUiComponents/lines/checkBoxLineComponent";
 import { TextLineComponent } from "../../../../sharedUiComponents/lines/textLineComponent";
 import { makeTargetsProxy } from "../../../../sharedUiComponents/lines/targetsProxy";
+import { ContainerPropertyGridComponent } from "./containerPropertyGridComponent";
 
 const conerRadiusIcon: string = require("../../../../sharedUiComponents/imgs/conerRadiusIcon.svg");
-const clipContentsIcon: string = require("../../../../sharedUiComponents/imgs/clipContentsIcon.svg");
 const strokeWeightIcon: string = require("../../../../sharedUiComponents/imgs/strokeWeightIcon.svg");
 
 interface IRectanglePropertyGridComponentProps {
@@ -25,11 +24,11 @@ export class RectanglePropertyGridComponent extends React.Component<IRectanglePr
     }
 
     render() {
-        const rectangles = this.props.rectangles;
+        const {rectangles, lockObject, onPropertyChangedObservable} = this.props;
 
         return (
             <div className="pane">
-                <CommonControlPropertyGridComponent lockObject={this.props.lockObject} controls={rectangles} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <CommonControlPropertyGridComponent lockObject={lockObject} controls={rectangles} onPropertyChangedObservable={onPropertyChangedObservable} />
                 <hr />
                 <TextLineComponent label="RECTANGLE" value=" " color="grey"></TextLineComponent>
                 <div className="ge-divider">
@@ -38,9 +37,9 @@ export class RectanglePropertyGridComponent extends React.Component<IRectanglePr
                         icon={strokeWeightIcon}
                         lockObject={this.props.lockObject}
                         label=""
-                        target={makeTargetsProxy(rectangles, this.props.onPropertyChangedObservable)}
+                        target={makeTargetsProxy(rectangles, onPropertyChangedObservable)}
                         propertyName="thickness"
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        onPropertyChangedObservable={onPropertyChangedObservable}
                         unit="PX"
                         unitLocked={true}
                     />
@@ -49,23 +48,16 @@ export class RectanglePropertyGridComponent extends React.Component<IRectanglePr
                     <FloatLineComponent
                         iconLabel="Corner Radius"
                         icon={conerRadiusIcon}
-                        lockObject={this.props.lockObject}
+                        lockObject={lockObject}
                         label=""
-                        target={makeTargetsProxy(rectangles, this.props.onPropertyChangedObservable)}
+                        target={makeTargetsProxy(rectangles, onPropertyChangedObservable)}
                         propertyName="cornerRadius"
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        onPropertyChangedObservable={onPropertyChangedObservable}
                         unit="PX"
                         unitLocked={true}
                     />
                 </div>
-                <CheckBoxLineComponent
-                    iconLabel="Clip Content"
-                    icon={clipContentsIcon}
-                    label="CLIP CONTENT"
-                    target={makeTargetsProxy(rectangles, this.props.onPropertyChangedObservable)}
-                    propertyName="clipChildren"
-                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                />
+                <ContainerPropertyGridComponent containers={rectangles} onPropertyChangedObservable={onPropertyChangedObservable}/>
             </div>
         );
     }

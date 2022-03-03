@@ -375,7 +375,7 @@ export class ProceduralTexture extends Texture {
      * @param size Define the new size the texture should have
      * @param generateMipMaps Define whether the new texture should create mip maps
      */
-    public resize(size: number, generateMipMaps: boolean): void {
+    public resize(size: TextureSize, generateMipMaps: boolean): void {
         if (this._fallbackTextureUsed) {
             return;
         }

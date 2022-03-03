@@ -11,7 +11,7 @@ interface IInputArrowsComponentProps {
 export class InputArrowsComponent extends React.Component<IInputArrowsComponentProps> {
     private _arrowsRef = React.createRef<HTMLDivElement>();
     private _drag = (event: MouseEvent) => {
-        this.props.incrementValue(event.movementY);
+        this.props.incrementValue(-event.movementY);
     }
     private _releaseListener = () => {
         this.props.setDragging(false);

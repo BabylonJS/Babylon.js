@@ -235,7 +235,7 @@ export class ColorLineComponent extends React.Component<IColorLineComponentProps
                             }}
                         />
                     </div>
-                    {this.props.icon && this.props.lockObject && (
+                    {this.props.lockObject && (
                         <TextInputLineComponent
                             lockObject={this.props.lockObject}
                             label=""
