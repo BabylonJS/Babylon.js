@@ -46,6 +46,7 @@ export class InputTextArea extends InputText {
     private _lastClickedLineIndex = -1;
 
     private _availableWidth: number;
+    private _availableHeight: number;
 
     /**
      * Gets or sets outlineWidth of the text to display
@@ -843,6 +844,7 @@ export class InputTextArea extends InputText {
         // clipTextLeft is the start of the InputTextPosition + margin
         // _currentMeasure := left, top, width, height
         let clipTextLeft = this._currentMeasure.left + this._margin.getValueInPixel(this._host, this._tempParentMeasure.width);
+        let clipTextTop = this._currentMeasure.top + this._margin.getValueInPixel(this._host, this._tempParentMeasure.height);
         // sets the color of the rectangle (border if background available)
         if (this.color) {
             context.fillStyle = this.color;
@@ -885,6 +887,7 @@ export class InputTextArea extends InputText {
         // OLD let rootY = this._fontOffset.ascent + (this._currentMeasure.height - this._fontOffset.height) / 2;
         // availableWidth is basically the width of our inputField
         this._availableWidth = this._width.getValueInPixel(this._host, this._tempParentMeasure.width) - marginWidth;
+        this._availableHeight = this._height.getValueInPixel(this._host, this._tempParentMeasure.height) - marginWidth;
 
         context.save();
         context.beginPath();
@@ -892,7 +895,7 @@ export class InputTextArea extends InputText {
 
         // here we define the visible reactangle to clip it in next line
         //context.rect(clipTextLeft, this._currentMeasure.top + (this._currentMeasure.height - this._fontOffset.height) / 2, availableWidth + 2, this._currentMeasure.height);
-        context.rect(clipTextLeft, this._currentMeasure.top , this._availableWidth + 2, this._currentMeasure.height);
+        context.rect(clipTextLeft, clipTextTop , this._availableWidth + 2, this._availableHeight + 2);
         context.clip();
 
         //if (this._isFocused && this._textWidth > availableWidth) {
