@@ -1,3 +1,4 @@
+import { IUIEvent } from "../../Events/deviceInputEvents";
 import { IDisposable } from "../../scene";
 import { Nullable } from "../../types";
 import { DeviceType } from "./deviceEnums";
@@ -38,42 +39,6 @@ export interface INativeInput extends IDisposable {
     isDeviceAvailable(deviceType: DeviceType): boolean;
 }
 
-export interface IDeviceEvent {
-    // Properties
-
-    /**
-     * Input array index
-     */
-    inputIndex: number;
-
-    /**
-     * Current target for an event
-     */
-    currentTarget?: any;
-
-    /**
-     * Alias for target
-     * @deprecated
-     */
-    srcElement?: any;
-
-    /**
-     * Type of event
-     */
-    type: string;
-
-    /**
-     * Reference to object where object was dispatched
-     */
-    target: any;
-
-    // Methods
-    /**
-     * Tells user agent what to do when not explicitly handled
-     */
-    preventDefault: () => void;
-}
-
 /**
  * Interface for DeviceInputSystem implementations (JS and Native)
  */
@@ -92,7 +57,7 @@ export interface IDeviceInputSystem extends IDisposable {
     /**
      * Callback for when an input is changed
      */
-    onInputChanged: (deviceType: DeviceType, deviceSlot: number, eventData: IDeviceEvent) => void;
+    onInputChanged: (deviceType: DeviceType, deviceSlot: number, eventData: IUIEvent) => void;
 
     // Functions
     /**

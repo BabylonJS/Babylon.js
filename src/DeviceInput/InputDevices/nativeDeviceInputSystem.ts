@@ -1,7 +1,8 @@
+import { IUIEvent } from "../../Events/deviceInputEvents";
 import { Nullable } from "../../types";
 import { DeviceEventFactory } from "../Helpers/eventFactory";
 import { DeviceType, PointerInput } from "./deviceEnums";
-import { IDeviceEvent, IDeviceInputSystem, INativeInput } from "./inputInterfaces";
+import { IDeviceInputSystem, INativeInput } from "./inputInterfaces";
 
 /** @hidden */
 enum NativePointerInput {
@@ -35,7 +36,7 @@ enum NativePointerInput {
 export class NativeDeviceInputSystem implements IDeviceInputSystem {
     public onDeviceConnected = (deviceType: DeviceType, deviceSlot: number) => { };
     public onDeviceDisconnected = (deviceType: DeviceType, deviceSlot: number) => { };
-    public onInputChanged = (deviceType: DeviceType, deviceSlot: number, eventData: IDeviceEvent) => { };
+    public onInputChanged = (deviceType: DeviceType, deviceSlot: number, eventData: IUIEvent) => { };
 
     private readonly _nativeInput: INativeInput;
 

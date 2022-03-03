@@ -852,30 +852,7 @@ export class InputManager {
             }
         };
 
-        /*const mouse = this._deviceSourceManager.getDeviceSource(DeviceType.Mouse);
-
-        mouse!.onInputChangedObservable.add((eventData) => {
-            if ((eventData.inputIndex === PointerInput.LeftClick || eventData.inputIndex === PointerInput.MiddleClick || eventData.inputIndex === PointerInput.RightClick)) {
-                const evt = eventData as IPointerEvent;
-                if (attachDown && evt.type === "pointerdown") {
-                    this._onPointerDown(evt);
-
-                }
-                else if (attachUp && evt.type === "pointerup") {
-                    this._onPointerUp(evt);
-                }
-            }
-
-            if (attachMove) {
-                if (eventData.inputIndex === PointerInput.Move) {
-                    this._onPointerMove(eventData as IPointerEvent);
-                } else if (eventData.inputIndex === PointerInput.MouseWheelX || eventData.inputIndex === PointerInput.MouseWheelY || eventData.inputIndex === PointerInput.MouseWheelZ) {
-                    this._onPointerMove(eventData as IWheelEvent);
-                }
-            }
-        });*/
-
-        // TODO: Decide if these should be connected at same time as mouse
+        // If a device connects that we can handle, wire up the observable
         this._deviceSourceManager.onDeviceConnectedObservable.add((deviceSource) => {
             if (deviceSource.deviceType === DeviceType.Mouse) {
                 deviceSource.onInputChangedObservable.add((eventData) => {
@@ -883,13 +860,13 @@ export class InputManager {
                         const evt = eventData as IPointerEvent;
                         if (attachDown && evt.type === "pointerdown") {
                             this._onPointerDown(evt);
-        
+
                         }
                         else if (attachUp && evt.type === "pointerup") {
                             this._onPointerUp(evt);
                         }
                     }
-        
+
                     if (attachMove) {
                         if (eventData.inputIndex === PointerInput.Move) {
                             this._onPointerMove(eventData as IPointerEvent);

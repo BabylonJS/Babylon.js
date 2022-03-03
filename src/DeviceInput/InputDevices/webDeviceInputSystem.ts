@@ -6,7 +6,7 @@ import { Tools } from "../../Misc/tools";
 import { Nullable } from "../../types";
 import { DeviceEventFactory } from "../Helpers/eventFactory";
 import { DeviceType, PointerInput } from "./deviceEnums";
-import { IDeviceEvent, IDeviceInputSystem } from "./inputInterfaces";
+import { IDeviceInputSystem } from "./inputInterfaces";
 
 const MAX_KEYCODES = 255;
 const MAX_POINTER_INPUTS = Object.keys(PointerInput).length / 2;
@@ -36,7 +36,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
     }
 
     public onDeviceDisconnected: (deviceType: DeviceType, deviceSlot: number) => void;
-    public onInputChanged: (deviceType: DeviceType, deviceSlot: number, eventData: IDeviceEvent) => void;
+    public onInputChanged: (deviceType: DeviceType, deviceSlot: number, eventData: IUIEvent) => void;
 
     // Private Members
     private _inputs: Array<{ [deviceSlot: number]: Array<number> }> = [];
@@ -82,7 +82,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
 
         this.onDeviceConnected = (deviceType: DeviceType, deviceSlot: number) => { };
         this.onDeviceDisconnected = (deviceType: DeviceType, deviceSlot: number) => { };
-        this.onInputChanged = (deviceType: DeviceType, deviceSlot: number, eventData: IDeviceEvent) => { };
+        this.onInputChanged = (deviceType: DeviceType, deviceSlot: number, eventData: IUIEvent) => { };
 
         this._enableEvents();
 
@@ -116,6 +116,10 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
         const currentValue = device[inputIndex];
         if (currentValue === undefined) {
             throw `Unable to find input ${inputIndex} for device ${DeviceType[deviceType]} in slot ${deviceSlot}`;
+        }
+
+        if (inputIndex === PointerInput.Move) {
+            Tools.Warn(`Unable to provide information for PointerInput.Move.  Try using PointerInput.Horizontal or PointerInput.Vertical for move data.`);
         }
 
         return currentValue;
