@@ -106,20 +106,24 @@ export class DeviceEventFactory {
         const evt = this._createEvent(elementToAttachTo);
         const pointerX = deviceInputSystem.pollInput(deviceType, deviceSlot, PointerInput.Horizontal);
         const pointerY = deviceInputSystem.pollInput(deviceType, deviceSlot, PointerInput.Vertical);
-        // If dealing with a change to the delta, grab values for event init
-        const movementX = deviceInputSystem.pollInput(deviceType, deviceSlot, PointerInput.DeltaHorizontal);
-        const movementY = deviceInputSystem.pollInput(deviceType, deviceSlot, PointerInput.DeltaVertical);
-        // Get offsets from container
-        const offsetX = inputIndex === PointerInput.DeltaHorizontal && elementToAttachTo ? movementX! - elementToAttachTo.getBoundingClientRect().x : 0;
-        const offsetY = inputIndex === PointerInput.DeltaVertical && elementToAttachTo ? movementY! - elementToAttachTo.getBoundingClientRect().y : 0;
+
+        // Handle offsets/deltas based on existence of HTMLElement
+        if (elementToAttachTo) {
+            evt.movementX = 0;
+            evt.movementY = 0;
+            evt.offsetX = evt.movementX - elementToAttachTo.getBoundingClientRect().x;
+            evt.offsetY = evt.movementY - elementToAttachTo.getBoundingClientRect().y;
+        }
+        else {
+            evt.movementX = deviceInputSystem.pollInput(deviceType, deviceSlot, 10); // DeltaHorizontal
+            evt.movementY = deviceInputSystem.pollInput(deviceType, deviceSlot, 11); // DeltaVertical
+            evt.offsetX = 0;
+            evt.offsetY = 0;
+        }
         this._checkNonCharacterKeys(evt, deviceInputSystem);
 
         evt.clientX = pointerX;
         evt.clientY = pointerY;
-        evt.movementX = movementX;
-        evt.movementY = movementY;
-        evt.offsetX = offsetX;
-        evt.offsetY = offsetY;
         evt.x = pointerX;
         evt.y = pointerY;
 

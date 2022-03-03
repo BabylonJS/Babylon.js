@@ -38,8 +38,6 @@ interface CanvasRenderingContext2D {
 
 // Babylon Extension to enable UIEvents to work with our IUIEvents
 interface UIEvent {
-    deviceType: number;
-    deviceSlot: number;
     inputIndex: number;
 }
 

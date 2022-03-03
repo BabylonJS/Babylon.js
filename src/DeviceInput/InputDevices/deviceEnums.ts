@@ -45,11 +45,7 @@ export enum PointerInput {
     MouseWheelY = 8,
     /** Mouse Wheel Z */
     MouseWheelZ = 9,
-    /** Delta X */
-    DeltaHorizontal = 10,
-    /** Delta Y */
-    DeltaVertical = 11,
-    /** Move Catch-all */
+    /** Move Catch-all (Only used in Observable) */
     Move = 12,
 }
 

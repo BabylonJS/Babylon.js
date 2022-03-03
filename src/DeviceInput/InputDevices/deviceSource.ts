@@ -1,8 +1,14 @@
-import { DeviceType } from './deviceEnums';
+import { DeviceType, PointerInput } from './deviceEnums';
 import { Observable } from '../../Misc/observable';
 import { DeviceInput } from './deviceTypes';
 import { IDeviceInputSystem } from './inputInterfaces';
 import { IUIEvent } from '../../Events/deviceInputEvents';
+
+/** @hidden */
+export type DeviceEventInput<T extends DeviceType> =
+    T extends DeviceType.Keyboard | DeviceType.Generic ? number :
+    T extends DeviceType.Mouse | DeviceType.Touch ? Exclude<PointerInput, PointerInput.Horizontal | PointerInput.Vertical> :
+    never;
 
 /**
  * Class that handles all input for a specific device
@@ -12,7 +18,7 @@ export class DeviceSource<T extends DeviceType> {
     /**
      * Observable to handle device input changes per device
      */
-    public readonly onInputChangedObservable = new Observable<IUIEvent>();
+    public readonly onInputChangedObservable = new Observable<IUIEvent & { inputIndex: DeviceEventInput<T> }>();
 
     // Private Members
     private readonly _deviceInputSystem: IDeviceInputSystem;

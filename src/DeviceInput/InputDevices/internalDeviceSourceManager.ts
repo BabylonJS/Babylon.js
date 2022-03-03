@@ -2,7 +2,7 @@ import { IDisposable } from '../../scene';
 import { DeviceType } from './deviceEnums';
 import { Nullable } from '../../types';
 import { Observable } from '../../Misc/observable';
-import { IDeviceInputSystem } from './inputInterfaces';
+import { IDeviceEvent, IDeviceInputSystem } from './inputInterfaces';
 import { NativeDeviceInputSystem } from './nativeDeviceInputSystem';
 import { WebDeviceInputSystem } from './webDeviceInputSystem';
 import { DeviceSource } from './deviceSource';
@@ -65,13 +65,13 @@ export class InternalDeviceSourceManager implements IDisposable {
             }
         };
 
-        this._deviceInputSystem.onInputChanged = (eventData: IUIEvent) => {
+        this._deviceInputSystem.onInputChanged = (deviceType: DeviceType, deviceSlot: number, eventData: IDeviceEvent) => {
             if (eventData) {
                 for (const manager of this._registeredManagers) {
                     manager.onInputChangedObservable.notifyObservers(eventData);
                 }
 
-                this._devices[eventData.deviceType][eventData.deviceSlot].onInputChangedObservable.notifyObservers(eventData);
+                this._devices[deviceType][deviceSlot].onInputChangedObservable.notifyObservers(eventData);
             }
         };
     }

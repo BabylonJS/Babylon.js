@@ -1,5 +1,3 @@
-import { DeviceType } from "../DeviceInput/InputDevices/deviceEnums";
-
 /**
  * Event Types
  */
@@ -18,14 +16,6 @@ export enum DeviceInputEventType {
  */
 export interface IUIEvent {
     // Properties
-    /**
-     * Device type
-     */
-    deviceType: DeviceType;
-    /**
-     * Device slot
-     */
-    deviceSlot: number;
     /**
      * Input array index
      */
@@ -64,11 +54,6 @@ export interface IUIEvent {
  */
 export interface IKeyboardEvent extends IUIEvent {
     // Properties
-    /**
-     * DeviceType
-     */
-    deviceType: DeviceType.Keyboard;
-
     /**
      * Status of Alt key being pressed
      */
@@ -253,11 +238,6 @@ export interface IPointerEvent extends IMouseEvent {
  */
 export interface IWheelEvent extends IMouseEvent {
     // Properties
-    /**
-     * DeviceType
-     */
-    deviceType: DeviceType.Mouse;
-
     /**
      * Units for delta value
      */
