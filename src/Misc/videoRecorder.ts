@@ -106,7 +106,7 @@ export class VideoRecorder {
      * @param engine Defines the BabylonJS Engine you wish to record.
      * @param options Defines options that can be used to customize the capture.
      */
-    constructor(engine: Engine, options: Nullable<VideoRecorderOptions> = null) {
+    constructor(engine: Engine, options: Partial<VideoRecorderOptions> = {}) {
         if (!VideoRecorder.IsSupported(engine)) {
             throw "Your browser does not support recording so far.";
         }
