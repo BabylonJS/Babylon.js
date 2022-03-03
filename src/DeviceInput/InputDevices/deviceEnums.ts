@@ -25,9 +25,9 @@ export enum DeviceType {
  * Enum for All Pointers (Touch/Mouse)
  */
 export enum PointerInput {
-    /** Horizontal Axis */
+    /** Horizontal Axis (Not used in events/observables; only in polling) */
     Horizontal = 0,
-    /** Vertical Axis */
+    /** Vertical Axis (Not used in events/observables; only in polling) */
     Vertical = 1,
     /** Left Click or Touch */
     LeftClick = 2,
@@ -45,7 +45,7 @@ export enum PointerInput {
     MouseWheelY = 8,
     /** Mouse Wheel Z */
     MouseWheelZ = 9,
-    /** Move Catch-all (Only used in Observable) */
+    /** Used in events/observables to identify if x/y changes occurred */
     Move = 12,
 }
 

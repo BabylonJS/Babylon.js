@@ -5,7 +5,7 @@ import { DeviceType, PointerInput } from "./deviceEnums";
 import { IDeviceInputSystem, INativeInput } from "./inputInterfaces";
 
 /** @hidden */
-enum NativePointerInput {
+export enum NativePointerInput {
     /** Horizontal Axis */
     Horizontal = PointerInput.Horizontal,
     /** Vertical Axis */
@@ -51,7 +51,7 @@ export class NativeDeviceInputSystem implements IDeviceInputSystem {
             this.onDeviceDisconnected(deviceType, deviceSlot);
         };
 
-        this._nativeInput.onInputChanged = (deviceType, deviceSlot, inputIndex, previousState, currentState) => {
+        this._nativeInput.onInputChanged = (deviceType, deviceSlot, inputIndex, currentState) => {
             const idx = (inputIndex === NativePointerInput.Horizontal || inputIndex === NativePointerInput.Vertical || inputIndex === NativePointerInput.DeltaHorizontal || inputIndex === NativePointerInput.DeltaVertical) ? PointerInput.Move : inputIndex;
             const evt = DeviceEventFactory.CreateDeviceEvent(deviceType, deviceSlot, idx, currentState, this);
 
@@ -98,7 +98,7 @@ export class NativeDeviceInputSystem implements IDeviceInputSystem {
         let nativeInput = {
             onDeviceConnected: (deviceType: DeviceType, deviceSlot: number) => { },
             onDeviceDisconnected: (deviceType: DeviceType, deviceSlot: number) => { },
-            onInputChanged: (deviceType: DeviceType, deviceSlot: number, inputIndex: number, previousState: Nullable<number>, currentState: Nullable<number>) => { },
+            onInputChanged: (deviceType: DeviceType, deviceSlot: number, inputIndex: number, currentState: Nullable<number>) => { },
             pollInput: () => { return 0; },
             isDeviceAvailable: () => { return false; },
             dispose: () => { },

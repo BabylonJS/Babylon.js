@@ -23,9 +23,6 @@ export class DeviceSourceManager implements IDisposable, IObservableManager {
      */
     public readonly onDeviceDisconnectedObservable: Observable<DeviceSource<DeviceType>>;
 
-    /** @hidden */
-    public readonly _onInputChanged: (deviceType: DeviceType, deviceSlot: number, eventData: IUIEvent) => void;
-
     // Private Members
     private _engine: Engine;
     private _onDisposeObserver: Nullable<Observer<ThinEngine>>;
@@ -69,9 +66,9 @@ export class DeviceSourceManager implements IDisposable, IObservableManager {
      */
     public getDevices(): ReadonlyArray<DeviceSource<DeviceType>> {
         const deviceArray = new Array<DeviceSource<DeviceType>>();
-        this._devices.forEach((deviceSet) => {
+        for (const deviceSet of this._devices) {
             deviceArray.push.apply(deviceArray, deviceSet);
-        });
+        }
 
         return deviceArray;
     }
@@ -85,10 +82,6 @@ export class DeviceSourceManager implements IDisposable, IObservableManager {
         this._devices = new Array<Array<DeviceSource<DeviceType>>>(numberOfDeviceTypes);
         this._firstDevice = new Array<number>(numberOfDeviceTypes);
         this._engine = engine;
-
-        this._onInputChanged = (deviceType: DeviceType, deviceSlot: number, eventData: IUIEvent) => {
-            this._devices[deviceType][deviceSlot]?.onInputChangedObservable.notifyObservers(eventData);
-        };
 
         if (!this._engine._deviceSourceManager) {
             this._engine._deviceSourceManager = new InternalDeviceSourceManager(engine);
@@ -152,6 +145,11 @@ export class DeviceSourceManager implements IDisposable, IObservableManager {
         }
         // Even if we don't delete a device, we should still check for the first device as things may have gotten out of sync.
         this._updateFirstDevices(deviceType);
+    }
+
+    /** @hidden */
+    public _onInputChanged(deviceType: DeviceType, deviceSlot: number, eventData: IUIEvent): void {
+        this._devices[deviceType][deviceSlot]?.onInputChangedObservable.notifyObservers(eventData);
     }
 
     // Private Functions

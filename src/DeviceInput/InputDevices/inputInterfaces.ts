@@ -20,7 +20,7 @@ export interface INativeInput extends IDisposable {
     /**
      * Callback for when input is changed on a device
      */
-    onInputChanged: (deviceType: DeviceType, deviceSlot: number, inputIndex: number, previousState: Nullable<number>, currentState: Nullable<number>) => void;
+    onInputChanged: (deviceType: DeviceType, deviceSlot: number, inputIndex: number, currentState: Nullable<number>) => void;
 
     /**
      * Checks for current device input value, given an id and input index.

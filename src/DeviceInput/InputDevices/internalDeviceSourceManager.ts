@@ -24,7 +24,7 @@ export interface IObservableManager {
     onDeviceDisconnectedObservable: Observable<DeviceSource<DeviceType>>;
 
     // Functions
-    _onInputChanged (deviceType: DeviceType, deviceSlot: number, eventData: IUIEvent): void;
+    _onInputChanged(deviceType: DeviceType, deviceSlot: number, eventData: IUIEvent): void;
     _addDevice(deviceSource: DeviceSource<DeviceType>): void;
     _removeDevice(deviceType: DeviceType, deviceSlot: number): void;
 }

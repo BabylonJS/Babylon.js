@@ -3,6 +3,7 @@ import { EventConstants, IUIEvent } from "../../Events/deviceInputEvents";
 import { Nullable } from "../../types";
 import { DeviceType, PointerInput } from "../InputDevices/deviceEnums";
 import { IDeviceInputSystem } from "../InputDevices/inputInterfaces";
+import { NativePointerInput } from "../InputDevices/nativeDeviceInputSystem";
 
 /**
  * Class to wrap DeviceInputSystem data into an event object
@@ -115,8 +116,8 @@ export class DeviceEventFactory {
             evt.offsetY = evt.movementY - elementToAttachTo.getBoundingClientRect().y;
         }
         else {
-            evt.movementX = deviceInputSystem.pollInput(deviceType, deviceSlot, 10); // DeltaHorizontal
-            evt.movementY = deviceInputSystem.pollInput(deviceType, deviceSlot, 11); // DeltaVertical
+            evt.movementX = deviceInputSystem.pollInput(deviceType, deviceSlot, NativePointerInput.DeltaHorizontal); // DeltaHorizontal
+            evt.movementY = deviceInputSystem.pollInput(deviceType, deviceSlot, NativePointerInput.DeltaVertical); // DeltaVertical
             evt.offsetX = 0;
             evt.offsetY = 0;
         }
