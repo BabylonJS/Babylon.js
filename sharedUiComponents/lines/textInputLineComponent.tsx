@@ -6,7 +6,7 @@ import { conflictingValuesPlaceholder } from './targetsProxy';
 import { InputArrowsComponent } from "./inputArrowsComponent";
 
 interface ITextInputLineComponentProps {
-    label: string;
+    label?: string;
     lockObject: LockObject;
     target?: any;
     propertyName?: string;
@@ -118,11 +118,11 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
     onKeyDown(event: React.KeyboardEvent) {
         if (this.props.arrows) {
             if (event.key === "ArrowUp") {
-                this.incrementValue(-1);
+                this.incrementValue(1);
                 event.preventDefault();
             }
             if (event.key === "ArrowDown") {
-                this.incrementValue(1);
+                this.incrementValue(-1);
                 event.preventDefault();
             }
         }
@@ -134,7 +134,7 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
         return (
             <div className={this.props.unit !== undefined ? "textInputLine withUnits" : "textInputLine"}>
                 {this.props.icon && <img src={this.props.icon} title={this.props.iconLabel} alt={this.props.iconLabel} color="black" className="icon" />}
-                {(!this.props.icon || (this.props.icon && this.props.label != "")) && (
+                {(this.props.label !== undefined) && (
                     <div className="label" title={this.props.label}>
                         {this.props.label}
                     </div>

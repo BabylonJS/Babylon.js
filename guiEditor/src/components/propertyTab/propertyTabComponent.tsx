@@ -1,8 +1,6 @@
 import * as React from "react";
 import { GlobalState } from "../../globalState";
 import { Nullable } from "babylonjs/types";
-import { ButtonLineComponent } from "../../sharedUiComponents/lines/buttonLineComponent";
-import { FileButtonLineComponent } from "../../sharedUiComponents/lines/fileButtonLineComponent";
 import { Tools } from "babylonjs/Misc/tools";
 import { CheckBoxLineComponent } from "../../sharedUiComponents/lines/checkBoxLineComponent";
 import { DataStorage } from "babylonjs/Misc/dataStorage";
@@ -245,7 +243,6 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 <TextInputLineComponent
                     noUnderline={true}
                     lockObject={this._lockObject}
-                    label=""
                     target={makeTargetsProxy(nodes, this.props.globalState.onPropertyChangedObservable)}
                     propertyName="name"
                     onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable}
@@ -546,10 +543,6 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
 
         return (
             <div id="ge-propertyTab">
-                <div id="header">
-                    <img id="logo" src={adtIcon} />
-                    <div id="title">AdvancedDynamicTexture</div>
-                </div>
                 <div>
                     <TextLineComponent tooltip="" label="ART BOARD" value=" " color="grey"></TextLineComponent>
                     {this.props.globalState.workbench._scene !== undefined && (
@@ -633,24 +626,6 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                             ></FloatLineComponent>
                         </div>
                     )}
-                    <hr className="ge" />
-                    <TextLineComponent tooltip="" label="FILE" value=" " color="grey"></TextLineComponent>
-                    <FileButtonLineComponent label="Load" onClick={(file) => this.load(file)} accept=".json" />
-                    <ButtonLineComponent
-                        label="Save"
-                        onClick={() => {
-                            this.props.globalState.onSaveObservable.notifyObservers();
-                        }}
-                    />
-                    <hr className="ge" />
-                    <TextLineComponent tooltip="" label="SNIPPET" value=" " color="grey"></TextLineComponent>
-                    <ButtonLineComponent label="Load from snippet server" onClick={() => this.loadFromSnippet()} />
-                    <ButtonLineComponent
-                        label="Save to snippet server"
-                        onClick={() => {
-                            this.props.globalState.onSnippetSaveObservable.notifyObservers();
-                        }}
-                    />
                     <hr className="ge" />
                     {this.renderNode([this.props.globalState.workbench.trueRootContainer])}
                 </div>
