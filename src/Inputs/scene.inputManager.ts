@@ -858,16 +858,16 @@ export class InputManager {
                 deviceSource.onInputChangedObservable.add((eventData) => {
                     if ((eventData.inputIndex === PointerInput.LeftClick || eventData.inputIndex === PointerInput.MiddleClick || eventData.inputIndex === PointerInput.RightClick)) {
                         const evt = eventData as IPointerEvent;
-                        if (attachDown && evt.type === "pointerdown") {
+                        if (attachDown && deviceSource.getInput(evt.inputIndex) === 1) {
                             this._onPointerDown(evt);
 
                         }
-                        else if (attachUp && evt.type === "pointerup") {
+                        else if (attachUp && deviceSource.getInput(evt.inputIndex) === 0) {
                             this._onPointerUp(evt);
                         }
                     }
 
-                    if (attachMove) {
+                    else if (attachMove) {
                         if (eventData.inputIndex === PointerInput.Move) {
                             this._onPointerMove(eventData as IPointerEvent);
                         } else if (eventData.inputIndex === PointerInput.MouseWheelX || eventData.inputIndex === PointerInput.MouseWheelY || eventData.inputIndex === PointerInput.MouseWheelZ) {
@@ -880,11 +880,11 @@ export class InputManager {
                 deviceSource.onInputChangedObservable.add((eventData) => {
                     const evt = eventData as IPointerEvent;
                     if ((eventData.inputIndex === PointerInput.LeftClick)) {
-                        if (attachDown && evt.type === "pointerdown") {
+                        if (attachDown && deviceSource.getInput(evt.inputIndex) === 1) {
                             this._onPointerDown(eventData as IPointerEvent);
 
                         }
-                        else if (attachUp && evt.type === "pointerup") {
+                        else if (attachUp && deviceSource.getInput(evt.inputIndex) === 0) {
                             this._onPointerUp(eventData as IPointerEvent);
                         }
                     }

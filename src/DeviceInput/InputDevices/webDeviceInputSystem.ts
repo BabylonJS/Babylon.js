@@ -411,10 +411,9 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
 
                 // Lets Propagate the event for move with same position.
                 if (!this._usingSafari && evt.button !== -1) {
-                    const inputIndex = evt.button + 2;
+                    deviceEvent.inputIndex = evt.button + 2;
                     pointer[evt.button + 2] = (pointer[evt.button + 2] ? 0 : 1); // Reverse state of button if evt.button has value
-                    const ev: IUIEvent = DeviceEventFactory.CreateDeviceEvent(deviceType, deviceSlot, inputIndex, pointer[evt.button + 2], this, this._elementToAttachTo);
-                    this.onInputChanged(deviceType, deviceSlot, ev);
+                    this.onInputChanged(deviceType, deviceSlot, deviceEvent);
                 }
             }
         });
