@@ -246,7 +246,7 @@ export class Slider3D extends Control3D {
 
         pointerDragBehavior.onDragStartObservable.add((event) => {
             this._draggedPosition = this._sliderThumb.position.x;
-        })
+        });
 
         pointerDragBehavior.onDragObservable.add((event) => {
             this._draggedPosition += event.dragDistance / this.scaling.x;
