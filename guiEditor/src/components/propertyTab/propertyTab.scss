@@ -111,6 +111,11 @@ hr.ge {
         border: none;
     }
 
+    .icon {
+        width: 30px;
+        height: 30px;
+    }
+
     .unit {
         width: 26px;
         height: 26px;
@@ -131,14 +136,11 @@ hr.ge {
     }
 
     .sliderLine {
-        padding-left: $line-padding-left;
-        padding-bottom: $line-padding-bottom;
-        padding-top: $line-padding-top;
-        padding-right: $line-padding-right;
         height: var(--spacingHeight);;
         display: grid;
         grid-template-rows: 100%;
         grid-template-columns: auto auto auto 1fr;
+        flex-grow: 1;
 
         .label {
             grid-column: 2;
@@ -154,12 +156,10 @@ hr.ge {
             align-items: center;
         }
 
-
         .slider {
             grid-column: 4;
             grid-row: 1;
             margin-right: 5px;
-            width: 90%;
             display: flex;
             align-items: center;
             padding-left: 5px;
@@ -205,23 +205,13 @@ hr.ge {
         }  
     }     
 
-    .ge-divider {
-        display: grid;
-        grid-template-columns: auto auto auto auto auto auto;
+    .ge-divider, .ge-divider-short, .ge-divider-single {
+        display: flex;
+        flex-direction: row;
         padding-right: $line-padding-right;
+        align-items: center;
+        padding-left: 5px;
     }
-
-    .ge-divider-short {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        padding-right: $line-padding-right;
-    }
-
-    .ge-divider-single {
-        display: block;
-        padding-right: $line-padding-right;
-    }
-    
     .ge-grid-divider {
         display: grid;
         grid-template-columns: 150px 1fr auto;
@@ -260,13 +250,13 @@ hr.ge {
 
     .textInputLine {
         user-select: none;
-        padding-left: $line-padding-left;
         padding-bottom: $line-padding-bottom;
         padding-top: $line-padding-top;
-        padding-right: $line-padding-right;
+        padding-right: 5px;
         height: var(--spacingHeight);
         display: grid;
         grid-template-columns: auto auto 1fr;
+        flex-grow: 1;
         .label {
             grid-column: 2;
             display: flex;
@@ -442,14 +432,15 @@ hr.ge {
     }
 
     .color-picker {
-        height: 150px;
-        width: 15px;
+        height: 26px;
+        width: 26px;
 
         .color-rect-background {
-            height: 15px;
+            width: calc(100% - 2px);
+            height: calc(100% - 2px);
             border: 1px black solid;
             cursor: pointer;
-            background: repeating-conic-gradient(#E2E2E2 0% 25%, white 0% 50%) 50% / 10px 10px;
+            background: repeating-conic-gradient(#E2E2E2 0% 25%, white 0% 50%) 50% / 100% 100%;
             .color-rect {
                 height: 100%;
             }
@@ -654,12 +645,12 @@ hr.ge {
 
     .floatLine {
         user-select: none;
-        padding-left: $line-padding-left;
         height: var(--spacingHeight);
         padding-bottom: $line-padding-bottom;
         padding-top: $line-padding-top;
         display: grid;
-        grid-template-columns: auto auto 2fr 1fr;
+        grid-template-columns: auto auto 2fr auto;
+        flex-grow: 1;
 
         .label {
             grid-column: 2;
@@ -719,7 +710,6 @@ hr.ge {
     }
 
     .vector3Line {
-        padding-left:$line-padding-left;
         padding-bottom: $line-padding-bottom;
         padding-top: $line-padding-top;      
         display: grid;
@@ -842,7 +832,6 @@ hr.ge {
     }
 
     .numeric {
-        padding-left: $line-padding-left;
         padding-bottom: $line-padding-bottom;
         padding-top: $line-padding-top;
         height: var(--spacingHeight);;
@@ -868,13 +857,12 @@ hr.ge {
     }
     
     .checkBoxLine {
-        padding-left: $line-padding-left;
         padding-bottom: $line-padding-bottom;
         padding-top: $line-padding-top;
-        padding-right: $line-padding-right;
         height: var(--spacingHeight);
         display: grid;
-        grid-template-columns: auto auto 1fr ;
+        grid-template-columns: auto 1fr auto ;
+        flex-grow: 1;
 
         .label {
             grid-column: 2;
@@ -974,12 +962,12 @@ hr.ge {
     }  
 
     .listLine {
-        padding-left: $line-padding-left;
         padding-bottom: $line-padding-bottom;
         padding-top: $line-padding-top;
         height: var(--spacingHeight);
         display: grid;
         grid-template-columns: auto 1fr auto ;
+        flex-grow: 1;
 
         .label {
             grid-column: 2;
@@ -1014,16 +1002,16 @@ hr.ge {
     }  
                     
     .color3Line {
-        padding-left: $line-padding-left;
+        padding-left: 15px;
         padding-bottom: $line-padding-bottom;
         padding-top: $line-padding-top;
-        padding-right: $line-padding-right;
         display: grid;
+        flex-grow: 1;
 
         .firstLine {
             height: var(--spacingHeight);
-            display: grid;
-            grid-template-columns: auto auto 1fr;
+            display: flex;
+            align-items: center;
 
             .label {
                 grid-column: 2;
@@ -1046,15 +1034,13 @@ hr.ge {
     
             .textInputLine {
                 grid-column: 3;
-                padding-left: 0px;
+                padding-left: 2px;
+                flex-grow: 1;
             }
     
             .color3 {
-                grid-column: 2;                
-                margin-top: 6px;
                 display: flex;
                 align-items: center;
-                padding-left: 15px;
                 
                 input {
                     margin-right: 5px;
