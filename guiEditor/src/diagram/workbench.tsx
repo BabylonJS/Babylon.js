@@ -669,7 +669,8 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         } else if (this._constraintDirection === ConstraintDirection.Y) {
             newX = 0;
         }
-
+        const referenceAxis = new Vector2(newX, newY);
+        
         if (guiControl.typeName === "Line") {
             let line = guiControl as Line;
             const x1 = (line.x1 as string).substr(0, (line.x1 as string).length - 2); //removing the 'px'
@@ -683,8 +684,24 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             return true;
         }
 
-        guiControl.leftInPixels += newX;
-        guiControl.topInPixels += newY;
+        let totalRotation = 0;
+        let currentControl : Nullable<Control> = guiControl;
+        while (currentControl) {
+            totalRotation += currentControl.rotation;
+
+            currentControl = currentControl.parent;
+        }
+        const rotatedReferenceAxis = new Vector2(0,0);
+
+        // Rotate the reference axis by the total rotation of the control
+        const sinR = Math.sin(-totalRotation);
+        const cosR = Math.cos(-totalRotation);
+        rotatedReferenceAxis.x = cosR * referenceAxis.x - sinR * referenceAxis.y;
+        rotatedReferenceAxis.y = sinR * referenceAxis.x + cosR * referenceAxis.y;
+        
+        // Apply the amount of change
+        guiControl.leftInPixels += rotatedReferenceAxis.x;
+        guiControl.topInPixels += rotatedReferenceAxis.y;
 
         //convert to percentage
         if (this._responsive) {
