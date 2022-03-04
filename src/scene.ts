@@ -4491,6 +4491,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         for (let request of this._activeRequests) {
             request.abort();
         }
+        this._activeRequests = [];
 
         // Events
         this.onDisposeObservable.notifyObservers(this);
