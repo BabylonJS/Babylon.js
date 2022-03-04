@@ -33,6 +33,7 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
     protected _buttonsPressed: number;
 
     private _currentActiveButton: number = -1;
+    private _contextMenuBind: EventListener;
 
     /**
      * Defines the buttons associated with the input to handle camera move.
@@ -240,8 +241,9 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
             this.onLostFocus();
         };
 
-        element && element.addEventListener("contextmenu",
-            <EventListener>this.onContextMenu.bind(this), false);
+        this._contextMenuBind = this.onContextMenu.bind(this);
+
+        element && element.addEventListener("contextmenu", this._contextMenuBind, false);
 
         let hostWindow = this.camera.getScene().getEngine().getHostWindow();
 
@@ -275,9 +277,9 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
             this.camera.getScene().onPointerObservable.remove(this._observer);
             this._observer = null;
 
-            if (this.onContextMenu) {
+            if (this._contextMenuBind) {
                 const inputElement = this.camera.getScene().getEngine().getInputElement();
-                inputElement && inputElement.removeEventListener("contextmenu", <EventListener>this.onContextMenu);
+                inputElement && inputElement.removeEventListener("contextmenu", this._contextMenuBind);
             }
 
             this._onLostFocus = null;
