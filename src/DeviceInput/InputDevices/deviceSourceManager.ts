@@ -149,7 +149,7 @@ export class DeviceSourceManager implements IDisposable, IObservableManager {
 
     /** @hidden */
     public _onInputChanged(deviceType: DeviceType, deviceSlot: number, eventData: IUIEvent): void {
-        this._devices[deviceType][deviceSlot]?.onInputChangedObservable.notifyObservers(eventData);
+        this._devices[deviceType]?.[deviceSlot]?.onInputChangedObservable.notifyObservers(eventData);
     }
 
     // Private Functions
