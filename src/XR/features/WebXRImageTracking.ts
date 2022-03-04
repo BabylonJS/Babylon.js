@@ -4,6 +4,7 @@ import { Observable } from "../../Misc/observable";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
 import { Matrix } from "../../Maths/math.vector";
 import { Nullable } from "../../types";
+import { Tools } from "../../Misc/tools";
 
 declare const XRImageTrackingResult: XRImageTrackingResult;
 
@@ -179,18 +180,24 @@ export class WebXRImageTracking extends WebXRAbstractFeature {
             }
         });
 
-        const images = await Promise.all(promises);
+        try
+        {
+            const images = await Promise.all(promises);
 
-        this._originalTrackingRequest = images.map((image, idx) => {
+            this._originalTrackingRequest = images.map((image, idx) => {
+                return {
+                    image,
+                    widthInMeters: this.options.images[idx].estimatedRealWorldWidth,
+                };
+            });
+
             return {
-                image,
-                widthInMeters: this.options.images[idx].estimatedRealWorldWidth,
+                trackedImages: this._originalTrackingRequest,
             };
-        });
-
-        return {
-            trackedImages: this._originalTrackingRequest,
-        };
+        } catch (ex) {
+            Tools.Error("Error loading images for tracking, WebXRImageTracking disabled for this session.");
+            return {};
+        }
     }
 
     protected _onXRFrame(_xrFrame: XRFrame) {
