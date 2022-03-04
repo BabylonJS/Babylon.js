@@ -49,6 +49,34 @@ export enum PointerInput {
     Move = 12,
 }
 
+/** @hidden */
+export enum NativePointerInput {
+    /** Horizontal Axis */
+    Horizontal = PointerInput.Horizontal,
+    /** Vertical Axis */
+    Vertical = 1,
+    /** Left Click or Touch */
+    LeftClick = 2,
+    /** Middle Click */
+    MiddleClick = 3,
+    /** Right Click */
+    RightClick = 4,
+    /** Browser Back */
+    BrowserBack = 5,
+    /** Browser Forward */
+    BrowserForward = 6,
+    /** Mouse Wheel X */
+    MouseWheelX = 7,
+    /** Mouse Wheel Y */
+    MouseWheelY = 8,
+    /** Mouse Wheel Z */
+    MouseWheelZ = 9,
+    /** Delta X */
+    DeltaHorizontal = 10,
+    /** Delta Y */
+    DeltaVertical = 11,
+}
+
 /**
  * Enum for Dual Shock Gamepad
  */

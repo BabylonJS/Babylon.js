@@ -1,36 +1,8 @@
 import { IUIEvent } from "../../Events/deviceInputEvents";
 import { Nullable } from "../../types";
 import { DeviceEventFactory } from "../Helpers/eventFactory";
-import { DeviceType, PointerInput } from "./deviceEnums";
+import { DeviceType, NativePointerInput, PointerInput } from "./deviceEnums";
 import { IDeviceInputSystem, INativeInput } from "./inputInterfaces";
-
-/** @hidden */
-export enum NativePointerInput {
-    /** Horizontal Axis */
-    Horizontal = PointerInput.Horizontal,
-    /** Vertical Axis */
-    Vertical = 1,
-    /** Left Click or Touch */
-    LeftClick = 2,
-    /** Middle Click */
-    MiddleClick = 3,
-    /** Right Click */
-    RightClick = 4,
-    /** Browser Back */
-    BrowserBack = 5,
-    /** Browser Forward */
-    BrowserForward = 6,
-    /** Mouse Wheel X */
-    MouseWheelX = 7,
-    /** Mouse Wheel Y */
-    MouseWheelY = 8,
-    /** Mouse Wheel Z */
-    MouseWheelZ = 9,
-    /** Delta X */
-    DeltaHorizontal = 10,
-    /** Delta Y */
-    DeltaVertical = 11,
-}
 
 /** @hidden */
 export class NativeDeviceInputSystem implements IDeviceInputSystem {
