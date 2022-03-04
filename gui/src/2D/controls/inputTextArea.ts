@@ -11,21 +11,18 @@ import { InputText } from "./inputText";
 import { ICanvasRenderingContext } from "babylonjs/Engines/ICanvas";
 import { PointerInfoBase } from "babylonjs/Events/pointerEvents";
 import { IKeyboardEvent } from "babylonjs/Events/deviceInputEvents";
-import { TextWrapping } from "./textBlock";
 
 /**
  * Class used to create input text control
  */
 export class InputTextArea extends InputText {
 
-    private _textWrapping = TextWrapping.WordWrap;
     private _textHorizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
     private _textVerticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
 
     private _lines: any[];
     private _oldlines: string[] = [];
     private _clicked: boolean;
-    private _resizeToFit: boolean = false;
     private _lineSpacing: ValueAndUnit = new ValueAndUnit(0);
     private _outlineWidth: number = 0;
     private _outlineColor: string = "white";
@@ -555,21 +552,6 @@ export class InputTextArea extends InputText {
         this._oldlines = this._lines.map((l) => l.text);
     }
 
-    protected _parseLineEllipsis(line: string = '', width: number,
-        context: ICanvasRenderingContext): { text: string, width: number, lineEnding: string } {
-        var lineWidth = context.measureText(line).width;
-
-        if (lineWidth > width) {
-            line += '…';
-        }
-        while (line.length > 2 && lineWidth > width) {
-            line = line.slice(0, -2) + '…';
-            lineWidth = context.measureText(line).width;
-        }
-
-        return { text: line, width: lineWidth, lineEnding: " " };
-    }
-
     protected _parseLineWordWrap(line: string = '', width: number,
         context: ICanvasRenderingContext): { text: string, width: number, lineEnding: string }[] {
         const lines = [];
@@ -611,57 +593,13 @@ export class InputTextArea extends InputText {
         return lines;
     }
 
-    protected _parseLineWordWrapEllipsis(line: string = "", width: number, height: number, context: ICanvasRenderingContext):  { text: string, width: number, lineEnding: string }[] {
-        var lines = this._parseLineWordWrap(line, width, context);
-        for (var n = 1; n <= lines.length; n++) {
-            const currentHeight = this._computeHeightForLinesOf(n);
-            if (currentHeight > height && n > 1) {
-                var lastLine = lines[n - 2] as {text: string; width: number, lineEnding: string};
-                var currentLine = lines[n - 1] as {text: string; width: number, lineEnding: string};
-                lines[n - 2] = this._parseLineEllipsis(`${lastLine.text}${lastLine.lineEnding}${currentLine.text}`, width, context);
-                var linesToRemove = lines.length - n + 1;
-                for (var i = 0; i < linesToRemove; i++) {
-                    lines.pop();
-                }
-                return lines;
-            }
-        }
-
-        return lines;
-    }
-
-    private _computeHeightForLinesOf(lineCount: number): number {
-        let newHeight = this._paddingTopInPixels + this._paddingBottomInPixels + this._fontOffset.height * lineCount;
-
-        if (lineCount > 0 && this._lineSpacing.internalValue !== 0) {
-            let lineSpacing = 0;
-            if (this._lineSpacing.isPixel) {
-                lineSpacing = this._lineSpacing.getValue(this._host);
-            } else {
-                lineSpacing = this._lineSpacing.getValue(this._host) * this._height.getValueInPixel(this._host, this._cachedParentMeasure.height);
-            }
-
-            newHeight += (lineCount - 1) * lineSpacing;
-        }
-
-        return newHeight;
-    }
-
     protected _breakLines(refWidth: number, refHeight: number,  context: ICanvasRenderingContext): object[] {
         var lines: { text: string, width: number, lineEnding: string }[] = [];
         var _lines = this.text.split("\n");
 
-        if (this._textWrapping === TextWrapping.Ellipsis) {
-            for (var _line of _lines) {
-                lines.push(this._parseLineEllipsis(_line, refWidth, context));
-            }
-        } else if (this._textWrapping === TextWrapping.WordWrap) {
+        if (this.clipContent) {
             for (var _line of _lines) {
                 lines.push(...this._parseLineWordWrap(_line, refWidth, context));
-            }
-        } else if (this._textWrapping === TextWrapping.WordWrapEllipsis) {
-            for (var _line of _lines) {
-                lines.push(...this._parseLineWordWrapEllipsis(_line, refWidth, refHeight!, context));
             }
         } else {
             for (var _line of _lines) {
@@ -699,33 +637,6 @@ export class InputTextArea extends InputText {
 
             if (line.width > maxLineWidth) {
                 maxLineWidth = line.width;
-            }
-        }
-
-        if (this._resizeToFit) {
-            if (this._textWrapping === TextWrapping.Clip) {
-                let newWidth = this.paddingLeftInPixels + this.paddingRightInPixels + maxLineWidth;
-                if (newWidth !== this._width.internalValue) {
-                    this._width.updateInPlace(newWidth, ValueAndUnit.UNITMODE_PIXEL);
-                    this._rebuildLayout = true;
-                }
-            }
-            let newHeight = this.paddingTopInPixels + this.paddingBottomInPixels + this._fontOffset.height * this._lines.length;
-
-            if (this._lines.length > 0 && this._lineSpacing.internalValue !== 0) {
-                let lineSpacing = 0;
-                if (this._lineSpacing.isPixel) {
-                    lineSpacing = this._lineSpacing.getValue(this._host);
-                } else {
-                    lineSpacing = (this._lineSpacing.getValue(this._host) * this._height.getValueInPixel(this._host, this._cachedParentMeasure.height));
-                }
-
-                newHeight += (this._lines.length - 1) * lineSpacing;
-            }
-
-            if (newHeight !== this._height.internalValue) {
-                this._height.updateInPlace(newHeight, ValueAndUnit.UNITMODE_PIXEL);
-                this._rebuildLayout = true;
             }
         }
     }
