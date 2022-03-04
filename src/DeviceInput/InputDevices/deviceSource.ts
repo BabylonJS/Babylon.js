@@ -4,7 +4,6 @@ import { DeviceInput } from './deviceTypes';
 import { IDeviceInputSystem } from './inputInterfaces';
 import { IUIEvent } from '../../Events/deviceInputEvents';
 
-/** @hidden */
 type DeviceEventInput<T extends DeviceType> =
     T extends DeviceType.Keyboard | DeviceType.Generic ? number :
     T extends DeviceType.Mouse | DeviceType.Touch ? Exclude<PointerInput, PointerInput.Horizontal | PointerInput.Vertical> :
