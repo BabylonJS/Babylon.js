@@ -6,7 +6,7 @@ import { ICameraInput, CameraInputTypes } from "../../Cameras/cameraInputsManage
 import { PointerInfo, PointerEventTypes } from "../../Events/pointerEvents";
 import { Tools } from '../../Misc/tools';
 import { Plane } from '../../Maths/math.plane';
-import { Vector3, Matrix } from '../../Maths/math.vector';
+import { Vector3, Matrix, TmpVectors } from '../../Maths/math.vector';
 import { Epsilon } from "../../Maths/math.constants";
 import { EventConstants, IWheelEvent } from "../../Events/deviceInputEvents";
 import { Scalar } from "../../Maths/math.scalar";
@@ -248,10 +248,13 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
 
         // Now this vector tells us how much we also need to pan the camera
         // so the targeted mouse location becomes the center of zooming.
-        const directionToZoomLocation = vec.subtract(camera.target);
-        const offset = directionToZoomLocation.scale(ratio);
-        offset.scaleInPlace(inertiaComp);
-        this._inertialPanning.addInPlace(offset);
+
+        const directionToZoomLocation = TmpVectors.Vector3[6];
+        vec.subtractToRef(camera.target, directionToZoomLocation);
+        directionToZoomLocation.normalize();
+        directionToZoomLocation.scaleInPlace(ratio);
+        directionToZoomLocation.scaleInPlace(inertiaComp);
+        this._inertialPanning.addInPlace(directionToZoomLocation);
 
         camera.inertialRadiusOffset += delta;
     }
