@@ -75,18 +75,28 @@ export class WorkerPool implements IDisposable {
     }
 }
 
-export interface AutoReleaseWorkPoolOptions {
+/**
+ * Options for AutoReleaseWorkerPool
+ */
+export interface AutoReleaseWorkerPoolOptions {
+    /**
+     * Idle time elapsed before workers are terminated.
+     */
     idleTimeElapsedBeforeRelease: number;
 }
 
+/**
+ * Similar to the WorkerPool class except it creates and destroys workers automatically with a maximum of `maxWorkers` workers.
+ * Workers are terminated when it is idle for at least `idleTimeElapsedBeforeRelease` milliseconds.
+ */
 export class AutoReleaseWorkerPool extends WorkerPool {
-    public static DefaultOptions: AutoReleaseWorkPoolOptions = {
+    public static DefaultOptions: AutoReleaseWorkerPoolOptions = {
         idleTimeElapsedBeforeRelease: 1000
     };
 
     private readonly _maxWorkers: number;
     private readonly _createWorkerAsync: () => Promise<Worker>;
-    private readonly _options: AutoReleaseWorkPoolOptions;
+    private readonly _options: AutoReleaseWorkerPoolOptions;
 
     constructor(maxWorkers: number, createWorkerAsync: () => Promise<Worker>, options = AutoReleaseWorkerPool.DefaultOptions) {
         super([]);
