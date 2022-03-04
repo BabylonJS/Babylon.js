@@ -47,7 +47,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     private _pointerMoveObserver: Nullable<Observer<PointerInfoPre>>;
     private _sceneRenderObserver: Nullable<Observer<Scene>>;
     private _pointerObserver: Nullable<Observer<PointerInfo>>;
-    private _canvasPointerOutObserver: Nullable<Observer<IPointerEvent>>;
+    private _canvasPointerOutObserver: Nullable<Observer<PointerEvent>>;
     private _canvasBlurObserver: Nullable<Observer<Engine>>;
     private _background: string;
     /** @hidden */

@@ -11,6 +11,7 @@ import { IDisposable, Scene } from "babylonjs/scene";
 
 import { Container3D } from "./controls/container3D";
 import { Control3D } from "./controls/control3D";
+import { IPointerEvent } from "babylonjs/Events/deviceInputEvents";
 
 /**
  * Class used to manage 3D user interface
@@ -152,7 +153,7 @@ export class GUI3DManager implements IDisposable {
             return false;
         }
 
-        let pointerEvent = <PointerEvent>pi.event;
+        let pointerEvent = <IPointerEvent>pi.event;
 
         let pointerId = pointerEvent.pointerId || 0;
         let buttonIndex = pointerEvent.button;

@@ -9,7 +9,7 @@ import { Constants } from "../Engines/constants";
 import { ActionEvent } from "../Actions/actionEvent";
 import { KeyboardEventTypes, KeyboardInfoPre, KeyboardInfo } from "../Events/keyboardEvents";
 import { DeviceType, PointerInput } from "../DeviceInput/InputDevices/deviceEnums";
-import { IEvent, IKeyboardEvent, IMouseEvent, IPointerEvent, IWheelEvent } from "../Events/deviceInputEvents";
+import { IKeyboardEvent, IMouseEvent, IPointerEvent, IWheelEvent } from "../Events/deviceInputEvents";
 import { DeviceSourceManager } from "../DeviceInput/InputDevices/deviceSourceManager";
 import { EngineStore } from "../Engines/engineStore";
 
@@ -64,7 +64,7 @@ export class InputManager {
 
     /** This is a defensive check to not allow control attachment prior to an already active one. If already attached, previous control is unattached before attaching the new one. */
     private _alreadyAttached = false;
-    private _alreadyAttachedTo: HTMLElement;
+    private _alreadyAttachedTo: Nullable<HTMLElement>;
 
     // Pointers
     private _onPointerMove: (evt: IMouseEvent) => void;
@@ -267,7 +267,8 @@ export class InputManager {
      * @param pointerEventInit pointer event state to be used when simulating the pointer event (eg. pointer id for multitouch)
      */
     public simulatePointerMove(pickResult: PickingInfo, pointerEventInit?: PointerEventInit): void {
-        let evt = new PointerEvent("pointermove", pointerEventInit);
+        const evt = new PointerEvent("pointermove", pointerEventInit);
+        evt.inputIndex = PointerInput.Move;
 
         if (this._checkPrePointerObservable(pickResult, evt, PointerEventTypes.POINTERMOVE)) {
             return;
@@ -282,7 +283,8 @@ export class InputManager {
      * @param pointerEventInit pointer event state to be used when simulating the pointer event (eg. pointer id for multitouch)
      */
     public simulatePointerDown(pickResult: PickingInfo, pointerEventInit?: PointerEventInit): void {
-        let evt = new PointerEvent("pointerdown", pointerEventInit);
+        const evt = new PointerEvent("pointerdown", pointerEventInit);
+        evt.inputIndex = evt.button + 2;
 
         if (this._checkPrePointerObservable(pickResult, evt, PointerEventTypes.POINTERDOWN)) {
             return;
@@ -377,6 +379,7 @@ export class InputManager {
      */
     public simulatePointerUp(pickResult: PickingInfo, pointerEventInit?: PointerEventInit, doubleTap?: boolean): void {
         let evt = new PointerEvent("pointerup", pointerEventInit);
+        evt.inputIndex = PointerInput.Move;
         let clickInfo = new _ClickInfo();
 
         if (doubleTap) {
@@ -849,36 +852,58 @@ export class InputManager {
             }
         };
 
-        this._deviceSourceManager.onInputChangedObservable.add((eventData) => {
-            const evt: IEvent = eventData;
-            // Keyboard Events
-            if (eventData.deviceType === DeviceType.Keyboard) {
-                if (eventData.currentState === 1) {
-                    this._onKeyDown(evt as IKeyboardEvent);
-                }
+        // If a device connects that we can handle, wire up the observable
+        this._deviceSourceManager.onDeviceConnectedObservable.add((deviceSource) => {
+            if (deviceSource.deviceType === DeviceType.Mouse) {
+                deviceSource.onInputChangedObservable.add((eventData) => {
+                    if ((eventData.inputIndex === PointerInput.LeftClick || eventData.inputIndex === PointerInput.MiddleClick || eventData.inputIndex === PointerInput.RightClick)) {
+                        const evt = eventData as IPointerEvent;
+                        if (attachDown && deviceSource.getInput(evt.inputIndex) === 1) {
+                            this._onPointerDown(evt);
 
-                if (eventData.currentState === 0) {
-                    this._onKeyUp(evt as IKeyboardEvent);
-                }
-            }
-
-            // Pointer Events
-            if (eventData.deviceType === DeviceType.Mouse || eventData.deviceType === DeviceType.Touch) {
-                if (attachDown && eventData.inputIndex >= PointerInput.LeftClick && eventData.inputIndex <= PointerInput.RightClick && eventData.currentState === 1) {
-                    this._onPointerDown(evt as IPointerEvent);
-                }
-
-                if (attachUp && eventData.inputIndex >= PointerInput.LeftClick && eventData.inputIndex <= PointerInput.RightClick && eventData.currentState === 0) {
-                    this._onPointerUp(evt as IPointerEvent);
-                }
-
-                if (attachMove) {
-                    if (eventData.inputIndex === PointerInput.Move) {
-                        this._onPointerMove(evt as IPointerEvent);
-                    } else if (eventData.inputIndex === PointerInput.MouseWheelX || eventData.inputIndex === PointerInput.MouseWheelY || eventData.inputIndex === PointerInput.MouseWheelZ) {
-                        this._onPointerMove(evt as IWheelEvent);
+                        }
+                        else if (attachUp && deviceSource.getInput(evt.inputIndex) === 0) {
+                            this._onPointerUp(evt);
+                        }
                     }
-                }
+
+                    else if (attachMove) {
+                        if (eventData.inputIndex === PointerInput.Move) {
+                            this._onPointerMove(eventData as IPointerEvent);
+                        } else if (eventData.inputIndex === PointerInput.MouseWheelX || eventData.inputIndex === PointerInput.MouseWheelY || eventData.inputIndex === PointerInput.MouseWheelZ) {
+                            this._onPointerMove(eventData as IWheelEvent);
+                        }
+                    }
+                });
+            }
+            else if (deviceSource.deviceType === DeviceType.Touch) {
+                deviceSource.onInputChangedObservable.add((eventData) => {
+                    const evt = eventData as IPointerEvent;
+                    if ((eventData.inputIndex === PointerInput.LeftClick)) {
+                        if (attachDown && deviceSource.getInput(evt.inputIndex) === 1) {
+                            this._onPointerDown(eventData as IPointerEvent);
+
+                        }
+                        else if (attachUp && deviceSource.getInput(evt.inputIndex) === 0) {
+                            this._onPointerUp(eventData as IPointerEvent);
+                        }
+                    }
+
+                    if (attachMove && eventData.inputIndex === PointerInput.Move) {
+                        this._onPointerMove(eventData as IPointerEvent);
+                    }
+                });
+            }
+            else if (deviceSource.deviceType === DeviceType.Keyboard) {
+                deviceSource.onInputChangedObservable.add((eventData) => {
+                    const evt = eventData as IKeyboardEvent;
+                    if (evt.type === "keydown") {
+                        this._onKeyDown(evt);
+                    }
+                    else if (evt.type === "keyup") {
+                        this._onKeyUp(evt);
+                    }
+                });
             }
         });
 
@@ -899,6 +924,7 @@ export class InputManager {
             }
 
             this._alreadyAttached = false;
+            this._alreadyAttachedTo = null;
         }
     }
 
