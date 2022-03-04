@@ -9,6 +9,7 @@ import { HemisphericLight } from "../Lights/hemisphericLight";
 import { Vector3 } from "../Maths/math.vector";
 import { Camera } from "../Cameras/camera";
 import { Color3 } from "../Maths/math.color";
+import { IPointerEvent } from "../Events/deviceInputEvents";
 
 /**
  * Renders a layer on top of an existing scene
@@ -186,7 +187,7 @@ export class UtilityLayerRenderer implements IDisposable {
                 }
                 this.utilityLayerScene.pointerX = originalScene.pointerX;
                 this.utilityLayerScene.pointerY = originalScene.pointerY;
-                let pointerEvent = <PointerEvent>prePointerInfo.event;
+                let pointerEvent = <IPointerEvent>prePointerInfo.event;
                 if (originalScene!.isPointerCaptured(pointerEvent.pointerId)) {
                     this._pointerCaptures[pointerEvent.pointerId] = false;
                     return;
@@ -262,7 +263,7 @@ export class UtilityLayerRenderer implements IDisposable {
                     }
                 } else {
                     let originalScenePick = getNearPickDataForScene(originalScene);
-                    let pointerEvent = <PointerEvent>prePointerInfo.event;
+                    let pointerEvent = <IPointerEvent>prePointerInfo.event;
 
                     // If the layer can be occluded by the original scene, only fire pointer events to the first layer that hit they ray
                     if (originalScenePick && utilityScenePick) {
@@ -340,7 +341,7 @@ export class UtilityLayerRenderer implements IDisposable {
         this._updateCamera();
     }
 
-    private _notifyObservers(prePointerInfo: PointerInfoPre, pickInfo: PickingInfo, pointerEvent: PointerEvent) {
+    private _notifyObservers(prePointerInfo: PointerInfoPre, pickInfo: PickingInfo, pointerEvent: IPointerEvent) {
         if (!prePointerInfo.skipOnPointerObservable) {
             this.utilityLayerScene.onPointerObservable.notifyObservers(new PointerInfo(prePointerInfo.type, prePointerInfo.event, pickInfo), prePointerInfo.type);
             this._lastPointerEvents[pointerEvent.pointerId] = true;
