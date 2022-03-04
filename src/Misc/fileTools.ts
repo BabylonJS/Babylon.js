@@ -404,13 +404,30 @@ export const RequestFile = (url: string, onSuccess: (data: string | ArrayBuffer,
     };
 
     const requestFile = () => {
-        let request = new WebRequest();
+        let request: Nullable<WebRequest> = new WebRequest();
         let retryHandle: Nullable<ReturnType<typeof setTimeout>> = null;
+        let onReadyStateChange: () => void;
+
+        const onLoadEnd = () => {
+            if (request) {
+                if (onProgress) {
+                    request.removeEventListener("progress", onProgress);
+                }
+                if (onReadyStateChange) {
+                    request.removeEventListener("readystatechange", onReadyStateChange);
+                }
+                request.removeEventListener("loadend", onLoadEnd);
+            }
+            fileRequest.onCompleteObservable.notifyObservers(fileRequest);
+            fileRequest.onCompleteObservable.clear();
+        };
 
         fileRequest.abort = () => {
             aborted = true;
 
-            if (request.readyState !== (XMLHttpRequest.DONE || 4)) {
+            onLoadEnd();
+
+            if (request && request.readyState !== (XMLHttpRequest.DONE || 4)) {
                 request.abort();
             }
 
@@ -418,11 +435,13 @@ export const RequestFile = (url: string, onSuccess: (data: string | ArrayBuffer,
                 clearTimeout(retryHandle);
                 retryHandle = null;
             }
+
+            request = null;
         };
 
         const handleError = (error: any) => {
             const message = error.message || "Unknown error";
-            if (onError) {
+            if (onError && request) {
                 onError(new RequestFileError(message, request));
             } else {
                 Logger.Error(message);
@@ -430,6 +449,9 @@ export const RequestFile = (url: string, onSuccess: (data: string | ArrayBuffer,
         };
 
         const retryLoop = (retryIndex: number) => {
+            if (!request) {
+                return;
+            }
             request.open('GET', loadUrl);
 
             if (onOpened) {
@@ -449,16 +471,10 @@ export const RequestFile = (url: string, onSuccess: (data: string | ArrayBuffer,
                 request.addEventListener("progress", onProgress);
             }
 
-            const onLoadEnd = () => {
-                request.removeEventListener("loadend", onLoadEnd);
-                fileRequest.onCompleteObservable.notifyObservers(fileRequest);
-                fileRequest.onCompleteObservable.clear();
-            };
-
             request.addEventListener("loadend", onLoadEnd);
 
-            const onReadyStateChange = () => {
-                if (aborted) {
+            onReadyStateChange = () => {
+                if (aborted || !request) {
                     return;
                 }
 
