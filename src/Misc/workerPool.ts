@@ -1,5 +1,6 @@
 import { IDisposable } from "../scene";
 
+/** @ignore */
 interface WorkerInfo {
     workerPromise: Promise<Worker>;
     idle: boolean;
@@ -90,6 +91,10 @@ export interface AutoReleaseWorkerPoolOptions {
  * Workers are terminated when it is idle for at least `idleTimeElapsedBeforeRelease` milliseconds.
  */
 export class AutoReleaseWorkerPool extends WorkerPool {
+    /**
+     * Default options for the constructor.
+     * Override to change the defaults.
+     */
     public static DefaultOptions: AutoReleaseWorkerPoolOptions = {
         idleTimeElapsedBeforeRelease: 1000
     };
