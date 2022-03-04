@@ -10,6 +10,7 @@ import { TransformNode } from "../../Meshes/transformNode";
 import { PickingInfo } from "../../Collisions/pickingInfo";
 import { Camera } from "../../Cameras/camera";
 import { Ray } from "../../Culling/ray";
+import { IPointerEvent } from "../../Events/deviceInputEvents";
 
 /**
  * Data store to track virtual pointers movement
@@ -292,12 +293,12 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
         };
 
         this._pointerObserver = this._scene.onPointerObservable.add((pointerInfo, eventState) => {
-            const pointerId = (<PointerEvent>pointerInfo.event).pointerId;
+            const pointerId = (<IPointerEvent>pointerInfo.event).pointerId;
             if (!this._virtualMeshesInfo[pointerId]) {
                 this._virtualMeshesInfo[pointerId] = this._createVirtualMeshInfo();
             }
             const virtualMeshesInfo = this._virtualMeshesInfo[pointerId];
-            const isXRPointer = (<PointerEvent>pointerInfo.event).pointerType === "xr";
+            const isXRPointer = (<IPointerEvent>pointerInfo.event).pointerType === "xr";
 
             if (pointerInfo.type == PointerEventTypes.POINTERDOWN) {
                 if (

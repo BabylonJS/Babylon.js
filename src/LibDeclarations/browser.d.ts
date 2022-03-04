@@ -36,6 +36,11 @@ interface CanvasRenderingContext2D {
     msImageSmoothingEnabled: boolean;
 }
 
+// Babylon Extension to enable UIEvents to work with our IUIEvents
+interface UIEvent {
+    inputIndex: number;
+}
+
 interface MouseEvent {
     mozMovementX: number;
     mozMovementY: number;

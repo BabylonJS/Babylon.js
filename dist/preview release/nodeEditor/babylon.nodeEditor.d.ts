@@ -1828,8 +1828,6 @@ declare module NODEEDITOR {
         isDisabled?: boolean;
         isConflict: boolean;
     }> {
-        private static _UniqueIdSeed;
-        private _uniqueId;
         private _localChange;
         constructor(props: ICheckBoxLineComponentProps);
         shouldComponentUpdate(nextProps: ICheckBoxLineComponentProps, nextState: {
@@ -1920,7 +1918,7 @@ declare module NODEEDITOR {
 }
 declare module NODEEDITOR {
     interface ITextInputLineComponentProps {
-        label: string;
+        label?: string;
         lockObject: LockObject;
         target?: any;
         propertyName?: string;
@@ -2203,6 +2201,15 @@ declare module NODEEDITOR {
     }
     export class IconButtonLineComponent extends React.Component<IIconButtonLineComponentProps> {
         constructor(props: IIconButtonLineComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface IIconComponentProps {
+        icon: string;
+        label?: string;
+    }
+    export class IconComponent extends React.Component<IIconComponentProps> {
         render(): JSX.Element;
     }
 }

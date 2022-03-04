@@ -19361,6 +19361,7 @@ var Slider3D = /** @class */ (function (_super) {
                 return;
             }
             this._value = Math.max(Math.min(value, this._maximum), this._minimum);
+            this._sliderThumb.position.x = this._convertToPosition(this.value);
             this.onValueChangedObservable.notifyObservers(this._value);
         },
         enumerable: false,
@@ -19481,13 +19482,12 @@ var Slider3D = /** @class */ (function (_super) {
         var _this = this;
         var pointerDragBehavior = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["PointerDragBehavior"]({ dragAxis: babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Right() });
         pointerDragBehavior.moveAttached = false;
-        pointerDragBehavior.onDragObservable.add(function (event) {
-            var newPosition = _this._sliderThumb.position.x + event.dragDistance / _this.scaling.x;
-            _this._sliderThumb.position.x = Math.max(Math.min(newPosition, _this.end), _this.start);
-            _this.value = _this._convertToValue(_this._sliderThumb.position.x);
+        pointerDragBehavior.onDragStartObservable.add(function (event) {
+            _this._draggedPosition = _this._sliderThumb.position.x;
         });
-        pointerDragBehavior.onDragEndObservable.add(function (event) {
-            _this._sliderThumb.position.x = _this._convertToPosition(_this.value);
+        pointerDragBehavior.onDragObservable.add(function (event) {
+            _this._draggedPosition += event.dragDistance / _this.scaling.x;
+            _this.value = _this._convertToValue(_this._draggedPosition);
         });
         return pointerDragBehavior;
     };
