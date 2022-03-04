@@ -1,33 +1,7 @@
-import { IEvent } from "../../Events/deviceInputEvents";
+import { IUIEvent } from "../../Events/deviceInputEvents";
 import { IDisposable } from "../../scene";
 import { Nullable } from "../../types";
 import { DeviceType } from "./deviceEnums";
-
-/**
- * Interface for Observables in DeviceInputSystem
- */
-export interface IDeviceEvent extends IEvent {
-    /**
-     * Device type
-     */
-    deviceType: DeviceType;
-    /**
-     * Device slot
-     */
-    deviceSlot: number;
-    /**
-     * Input array index
-     */
-    inputIndex: number;
-    /**
-     * Previous state of given input
-     */
-    previousState: Nullable<number>;
-    /**
-     * Current state of given input
-     */
-    currentState: Nullable<number>;
-}
 
 /**
  * Interface for NativeInput object
@@ -46,7 +20,7 @@ export interface INativeInput extends IDisposable {
     /**
      * Callback for when input is changed on a device
      */
-    onInputChanged: (deviceType: DeviceType, deviceSlot: number, inputIndex: number, previousState: Nullable<number>, currentState: Nullable<number>, eventData?: any) => void;
+    onInputChanged: (deviceType: DeviceType, deviceSlot: number, inputIndex: number, currentState: Nullable<number>) => void;
 
     /**
      * Checks for current device input value, given an id and input index.
@@ -83,7 +57,7 @@ export interface IDeviceInputSystem extends IDisposable {
     /**
      * Callback for when an input is changed
      */
-    onInputChanged: (deviceEvent: IDeviceEvent) => void;
+    onInputChanged: (deviceType: DeviceType, deviceSlot: number, eventData: IUIEvent) => void;
 
     // Functions
     /**

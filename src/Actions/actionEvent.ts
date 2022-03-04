@@ -3,7 +3,6 @@ import { Nullable } from "../types";
 import { Sprite } from "../Sprites/sprite";
 import { Scene } from "../scene";
 import { Vector2 } from "../Maths/math.vector";
-import { IEvent } from "../Events/deviceInputEvents";
 
 /**
  * Interface used to define ActionEvent
@@ -58,7 +57,7 @@ export class ActionEvent implements IActionEvent {
      * @param additionalData additional data for the event
      * @returns the new ActionEvent
      */
-    public static CreateNew(source: AbstractMesh, evt?: IEvent, additionalData?: any): ActionEvent {
+    public static CreateNew(source: AbstractMesh, evt?: any, additionalData?: any): ActionEvent {
         var scene = source.getScene();
         return new ActionEvent(source, scene.pointerX, scene.pointerY, scene.meshUnderPointer || source, evt, additionalData);
     }
@@ -71,7 +70,7 @@ export class ActionEvent implements IActionEvent {
      * @param additionalData additional data for the event
      * @returns the new ActionEvent
      */
-    public static CreateNewFromSprite(source: Sprite, scene: Scene, evt?: IEvent, additionalData?: any): ActionEvent {
+    public static CreateNewFromSprite(source: Sprite, scene: Scene, evt?: any, additionalData?: any): ActionEvent {
         return new ActionEvent(source, scene.pointerX, scene.pointerY, scene.meshUnderPointer, evt, additionalData);
     }
 
@@ -81,7 +80,7 @@ export class ActionEvent implements IActionEvent {
      * @param evt The original (browser) event
      * @returns the new ActionEvent
      */
-    public static CreateNewFromScene(scene: Scene, evt: IEvent): ActionEvent {
+    public static CreateNewFromScene(scene: Scene, evt: any): ActionEvent {
         return new ActionEvent(null, scene.pointerX, scene.pointerY, scene.meshUnderPointer, evt);
     }
 
