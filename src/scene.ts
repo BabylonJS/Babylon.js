@@ -4463,10 +4463,6 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         this._pointerDownStage.clear();
         this._pointerUpStage.clear();
 
-        for (let component of this._components) {
-            component.dispose();
-        }
-
         this.importedMeshesFiles = new Array<string>();
 
         if (this.stopAllAnimations) {
@@ -4495,6 +4491,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         for (let request of this._activeRequests) {
             request.abort();
         }
+        this._activeRequests = [];
 
         // Events
         this.onDisposeObservable.notifyObservers(this);
@@ -4624,6 +4621,11 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
         // Post-processes
         this.postProcessManager.dispose();
+
+        // Components
+        for (let component of this._components) {
+            component.dispose();
+        }
 
         // Remove from engine
         index = this._engine.scenes.indexOf(this);

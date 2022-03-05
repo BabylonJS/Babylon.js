@@ -19,6 +19,7 @@ import { Color3 } from '../Maths/math.color';
 import "../Meshes/Builders/boxBuilder";
 import { LinesMesh } from '../Meshes/linesMesh';
 import { Epsilon } from '../Maths/math.constants';
+import { IPointerEvent } from "../Events/deviceInputEvents";
 
 /**
  * Bounding box gizmo
@@ -396,17 +397,17 @@ export class BoundingBoxGizmo extends Gizmo {
         // Hover color change
         var pointerIds = new Array<AbstractMesh>();
         this._pointerObserver = gizmoLayer.utilityLayerScene.onPointerObservable.add((pointerInfo) => {
-            if (!pointerIds[(<PointerEvent>pointerInfo.event).pointerId]) {
+            if (!pointerIds[(<IPointerEvent>pointerInfo.event).pointerId]) {
                 this._rotateSpheresParent.getChildMeshes().concat(this._scaleBoxesParent.getChildMeshes()).forEach((mesh) => {
                     if (pointerInfo.pickInfo && pointerInfo.pickInfo.pickedMesh == mesh) {
-                        pointerIds[(<PointerEvent>pointerInfo.event).pointerId] = mesh;
+                        pointerIds[(<IPointerEvent>pointerInfo.event).pointerId] = mesh;
                         mesh.material = this.hoverColoredMaterial;
                     }
                 });
             } else {
-                if (pointerInfo.pickInfo && pointerInfo.pickInfo.pickedMesh != pointerIds[(<PointerEvent>pointerInfo.event).pointerId]) {
-                    pointerIds[(<PointerEvent>pointerInfo.event).pointerId].material = this.coloredMaterial;
-                    delete pointerIds[(<PointerEvent>pointerInfo.event).pointerId];
+                if (pointerInfo.pickInfo && pointerInfo.pickInfo.pickedMesh != pointerIds[(<IPointerEvent>pointerInfo.event).pointerId]) {
+                    pointerIds[(<IPointerEvent>pointerInfo.event).pointerId].material = this.coloredMaterial;
+                    delete pointerIds[(<IPointerEvent>pointerInfo.event).pointerId];
                 }
             }
         });

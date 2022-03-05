@@ -14,8 +14,13 @@ export enum DeviceInputEventType {
 /**
  * Native friendly interface for Event Object
  */
-export interface IEvent {
+export interface IUIEvent {
     // Properties
+    /**
+     * Input array index
+     */
+    inputIndex: number;
+
     /**
      * Current target for an event
      */
@@ -42,27 +47,6 @@ export interface IEvent {
      * Tells user agent what to do when not explicitly handled
      */
     preventDefault: () => void;
-}
-
-/**
- * Native friendly interface for UIEvent Object
- */
-export interface IUIEvent extends IEvent {
-    // Properties
-    /**
-     * Provides current click count
-     */
-    detail: number;
-
-    /**
-     * Horizontal coordinate of event
-     */
-    pageX: number;
-
-    /**
-     * Vertical coordinate of event
-     */
-    pageY: number;
 }
 
 /**
@@ -148,6 +132,11 @@ export interface IMouseEvent extends IUIEvent {
     ctrlKey: boolean;
 
     /**
+     * Provides current click count
+     */
+    detail?: number;
+
+    /**
      * Status of Meta key (eg. Windows key) being pressed
      */
     metaKey: boolean;
@@ -191,6 +180,16 @@ export interface IMouseEvent extends IUIEvent {
      * Current coordinate of Y within container
      */
     offsetY: number;
+
+    /**
+     * Horizontal coordinate of event
+     */
+    pageX: number;
+
+    /**
+     * Vertical coordinate of event
+     */
+    pageY: number;
 
     /**
      * Status of Shift key being pressed

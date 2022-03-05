@@ -3,6 +3,11 @@
 }
 
 .ge-commands {
+    * {
+        font-family: "acumin-pro-condensed";
+        font-weight: 600;
+        font-size: 12px;
+    }
     grid-row: 1;
     grid-column: 1;
     user-select: none;
@@ -56,6 +61,7 @@
     .command-button {
         cursor: pointer;
         width: 55px;
+        height: 55px;
 
         .command-label {
             display: none;
@@ -194,7 +200,6 @@
             } 
 
             .command-dropdown-label-text {
-                font-family: Arial;
                 font-size: 12px;
                 grid-column: 1;
                 grid-row: 1;
@@ -269,7 +274,6 @@
             grid-template-columns: 1fr 20px;
             grid-template-rows: 100%;
             position: relative;
-            font-family: Arial;
             font-size: 12px;
             grid-column: 1;
             grid-row: 1;
@@ -296,5 +300,134 @@
             }
         }
     }
+    
+    .divider {
+        display: flex;
+        align-items: center;
+        border-right: 1px solid black;
+        color: white;
+        &:last-of-type {
+            border-right: none;
+        }
+        &.padded {
+            padding-left: 10px;
+            padding-right: 10px;
+        }
+    }
 
+    .floatLine, .checkBoxLine {
+        display: flex;
+        align-items: center;
+    }
+
+    .checkBoxLine {
+        .icon {
+            filter: brightness(10);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .checkBox {
+            height: 40px;
+        }
+    }
+
+    .color3Line {
+        display: grid;
+
+        .firstLine {
+            display: flex;
+            align-items: center;
+
+            .label {
+                padding-right: 5px;
+            }
+
+            .textInputLine {
+                .value {
+                    padding-left: 2px;
+                }
+            }
+
+            .copy {
+                display: none;
+            }
+
+            .expand {
+                display: none;
+            }
+        }   
+
+        .secondLine {
+            display: grid;
+            padding-right: 5px;  
+            border-left: 1px solid rgb(51, 122, 183);
+
+            .numeric {
+                display: grid;
+                grid-template-columns: 1fr auto;
+            }
+
+            .numeric-label {
+                text-align: right;
+                grid-column: 1;
+                display: flex;
+                align-items: center;                            
+                justify-self: right;
+                margin-right: 10px;                          
+            }
+
+            .numeric-value {
+                width: 120px;
+                grid-column: 2;
+                display: flex;
+                align-items: center;  
+                border: 1px solid  rgb(51, 122, 183);
+            }                        
+        }                  
+    }
+
+    .color-picker {
+        height: 26px;
+        width: 26px;
+
+        .color-rect-background {
+            width: calc(100% - 2px);
+            height: calc(100% - 2px);
+            border: 1px solid white;
+            cursor: pointer;
+            background: repeating-conic-gradient(#E2E2E2 0% 25%, white 0% 50%) 50% / 100% 100%;
+            .color-rect {
+                height: 100%;
+            }
+        }
+
+        .color-picker-cover {
+            position: fixed;
+            top: 0px;
+            right: 0px;
+            bottom: 0px;
+            left: 0px;
+            z-index: 2;
+        }
+
+        .color-picker-float {
+            position: absolute;  
+        }                
+    }
+
+    .floatLine input, .listLine select {
+        background-color: #000000;
+        color: white;
+        margin: 5px;
+        outline: none;
+        padding: 5px;
+        border: none;
+    }
+
+    .listLine select {
+        width: 150px;
+    }
 }
