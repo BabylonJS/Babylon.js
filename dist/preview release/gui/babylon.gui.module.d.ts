@@ -6965,6 +6965,7 @@ declare module "babylonjs-gui/3D/controls/slider3D" {
         private _maximum;
         private _value;
         private _step;
+        private _draggedPosition;
         /** Observable raised when the sldier value changes */
         onValueChangedObservable: Observable<number>;
         /**
@@ -13713,6 +13714,7 @@ declare module BABYLON.GUI {
         private _maximum;
         private _value;
         private _step;
+        private _draggedPosition;
         /** BABYLON.Observable raised when the sldier value changes */
         onValueChangedObservable: BABYLON.Observable<number>;
         /**
