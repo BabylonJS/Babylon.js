@@ -536,20 +536,22 @@ export class VertexData {
         }
 
         const totalIndices = others.reduce((indexSum, vertexData) => indexSum + (vertexData.indices?.length ?? 0), this.indices?.length ?? 0);
+        const sliceIndices = others.some((vertexData) => vertexData.indices === this.indices);
+        let indices = sliceIndices ? this.indices?.slice() : this.indices;
         if (totalIndices > 0) {
 
             let indicesOffset = this.indices?.length ?? 0;
 
-            if (!this.indices) {
-                this.indices = new Array<number>(totalIndices);
+            if (!indices) {
+                indices = new Array<number>(totalIndices);
             }
 
-            if (this.indices.length !== totalIndices) {
+            if (indices.length !== totalIndices) {
                 if (Array.isArray(this.indices)) {
                     this.indices.length = totalIndices;
                 } else {
                     const temp = use32BitsIndices || this.indices instanceof Uint32Array ? new Uint32Array(totalIndices) : new Uint16Array(totalIndices);
-                    temp.set(this.indices);
+                    temp.set(indices);
                     this.indices = temp;
                 }
 
@@ -562,21 +564,23 @@ export class VertexData {
             for (const [other, transform] of vertexDatas) {
                 if (other.indices) {
                     for (let index = 0; index < other.indices.length; index++) {
-                        this.indices[indicesOffset + index] = other.indices[index] + positionsOffset;
+                        indices[indicesOffset + index] = other.indices[index] + positionsOffset;
                     }
 
                     if (transform && transform.determinant() < 0) {
-                        VertexData._FlipFaces(this.indices, indicesOffset, other.indices.length);
+                        VertexData._FlipFaces(indices, indicesOffset, other.indices.length);
                     }
 
                     // The call to _validate already checked for positions
                     positionsOffset += other.positions!.length / 3;
-                    indicesOffset += other.indices.length;
+                    indicesOffset += length;
 
                     if (isAsync) { yield; }
                 }
             }
         }
+
+        this.indices = indices!;
 
         this.positions = VertexData._mergeElement(VertexBuffer.PositionKind, this.positions, transform, vertexDatas.map((other) => [other[0].positions, other[1]]));
         if (isAsync) { yield; }
