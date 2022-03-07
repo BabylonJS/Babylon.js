@@ -148,6 +148,7 @@ hr.ge {
             align-items: center;
             min-width: 15px;
             font-family: var(--labelFamily);
+            font-weight: 600;
         }
 
         .img {
@@ -174,6 +175,7 @@ hr.ge {
                 display: none;
                 align-items: center;
                 font-family: var(--labelFamily);
+                font-weight: 600;
             }
         
             .short {
@@ -263,6 +265,7 @@ hr.ge {
             align-items: center;
             min-width: 15px;
             font-family: var(--labelFamily);
+            font-weight: 600;
         }
 
         img {
@@ -314,7 +317,7 @@ hr.ge {
             &.dragging .arrows {
                 background-color: var(--buttonPressedBackground);
                 .downArrowIcon, .upArrowIcon {
-                    filter: invert(100%) brightness(500%);
+                    filter: brightness(10);
                 }
             }
         }
@@ -447,6 +450,7 @@ hr.ge {
         }
 
         .color-picker-cover {
+            z-index: 2;
             position: fixed;
             top: 0px;
             right: 0px;
@@ -455,8 +459,7 @@ hr.ge {
         }
 
         .color-picker-float {
-            z-index: 2;
-            position: absolute;  
+            position: absolute;
         }                
     }
 
@@ -658,6 +661,7 @@ hr.ge {
             align-items: center;
             min-width: 15px;
             font-family: var(--labelFamily);
+            font-weight: 600;
         }
 
         img {
