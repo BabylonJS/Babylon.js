@@ -1,5 +1,5 @@
 import { Tools } from "../../Misc/tools";
-import { WorkerPool } from '../../Misc/workerPool';
+import { AutoReleaseWorkerPool } from '../../Misc/workerPool';
 import { Nullable } from "../../types";
 import { IDisposable } from "../../scene";
 import { VertexData } from "../../Meshes/mesh.vertexData";
@@ -231,7 +231,7 @@ export interface IDracoCompressionConfiguration {
  * @see https://www.babylonjs-playground.com/#N3EK4B#0
  */
 export class DracoCompression implements IDisposable {
-    private _workerPoolPromise?: Promise<WorkerPool>;
+    private _workerPoolPromise?: Promise<AutoReleaseWorkerPool>;
     private _decoderModulePromise?: Promise<any>;
 
     /**
@@ -303,9 +303,9 @@ export class DracoCompression implements IDisposable {
             this._workerPoolPromise = decoderInfo.wasmBinaryPromise.then((decoderWasmBinary) => {
                 const workerContent = `${decodeMesh}(${worker})()`;
                 const workerBlobUrl = URL.createObjectURL(new Blob([workerContent], { type: "application/javascript" }));
-                const workerPromises = new Array<Promise<Worker>>(numWorkers);
-                for (let i = 0; i < workerPromises.length; i++) {
-                    workerPromises[i] = new Promise((resolve, reject) => {
+
+                return new AutoReleaseWorkerPool(numWorkers, () => {
+                    return new Promise((resolve, reject) => {
                         const worker = new Worker(workerBlobUrl);
                         const onError = (error: ErrorEvent) => {
                             worker.removeEventListener("error", onError);
@@ -332,10 +332,6 @@ export class DracoCompression implements IDisposable {
                             }
                         });
                     });
-                }
-
-                return Promise.all(workerPromises).then((workers) => {
-                    return new WorkerPool(workers);
                 });
             });
         }

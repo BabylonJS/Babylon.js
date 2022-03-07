@@ -1,5 +1,5 @@
 import { Engine } from 'babylonjs/Engines/engine';
-import { ISceneLoaderPlugin, ISceneLoaderPluginAsync, ISceneLoaderProgressEvent } from 'babylonjs/Loading/sceneLoader';
+import { ISceneLoaderPlugin, ISceneLoaderPluginAsync, ISceneLoaderProgressEvent, SceneLoader } from 'babylonjs/Loading/sceneLoader';
 import { Observable } from 'babylonjs/Misc/observable';
 import { Scene } from 'babylonjs/scene';
 import { RenderingManager } from 'babylonjs/Rendering/renderingManager';
@@ -20,6 +20,7 @@ import { viewerManager } from './viewerManager';
 import { ViewerConfiguration } from '../configuration/configuration';
 import { IObserversConfiguration } from '../configuration/interfaces/observersConfiguration';
 import { IModelConfiguration } from '../configuration/interfaces/modelConfiguration';
+import { GLTFFileLoader } from 'babylonjs-loaders/glTF/glTFFileLoader';
 
 /**
  * The AbstractViewer is the center of Babylon's viewer.
@@ -648,6 +649,21 @@ export abstract class AbstractViewer {
         if (viewerGlobals.disableWebGL2Support) {
             config.engineOptions = config.engineOptions || {};
             config.engineOptions.disableWebGL2Support = true;
+        }
+
+        if(this.configuration["3dCommerceCertified"]) {
+            config.engineOptions = config.engineOptions || {};
+            config.engineOptions.forceSRGBBufferSupportState = true;
+            const loader = SceneLoader.GetPluginForExtension(".gltf");
+            if(loader) {
+                (loader as GLTFFileLoader).transparencyAsCoverage = true;
+            }
+            SceneLoader.OnPluginActivatedObservable.add((plugin) => {
+                if (plugin.name === "gltf") {
+                    const loader = plugin as GLTFFileLoader;
+                    loader.transparencyAsCoverage = true;
+                }
+            });
         }
 
         this.engine = new Engine(this.canvas, !!config.antialiasing, config.engineOptions);

@@ -465,8 +465,6 @@ declare module "babylonjs-inspector/sharedUiComponents/lines/checkBoxLineCompone
         isDisabled?: boolean;
         isConflict: boolean;
     }> {
-        private static _UniqueIdSeed;
-        private _uniqueId;
         private _localChange;
         constructor(props: ICheckBoxLineComponentProps);
         shouldComponentUpdate(nextProps: ICheckBoxLineComponentProps, nextState: {
@@ -992,7 +990,7 @@ declare module "babylonjs-inspector/sharedUiComponents/lines/textInputLineCompon
     import { PropertyChangedEvent } from "babylonjs-inspector/sharedUiComponents/propertyChangedEvent";
     import { LockObject } from "babylonjs-inspector/sharedUiComponents/tabs/propertyGrids/lockObject";
     interface ITextInputLineComponentProps {
-        label: string;
+        label?: string;
         lockObject: LockObject;
         target?: any;
         propertyName?: string;
@@ -5072,6 +5070,16 @@ declare module "babylonjs-inspector/sharedUiComponents/lines/iconButtonLineCompo
         render(): JSX.Element;
     }
 }
+declare module "babylonjs-inspector/sharedUiComponents/lines/iconComponent" {
+    import * as React from "react";
+    interface IIconComponentProps {
+        icon: string;
+        label?: string;
+    }
+    export class IconComponent extends React.Component<IIconComponentProps> {
+        render(): JSX.Element;
+    }
+}
 declare module "babylonjs-inspector/sharedUiComponents/lines/popup" {
     export class Popup {
         static CreatePopup(title: string, windowVariableName: string, width?: number, height?: number): HTMLDivElement | null;
@@ -5509,8 +5517,6 @@ declare module INSPECTOR {
         isDisabled?: boolean;
         isConflict: boolean;
     }> {
-        private static _UniqueIdSeed;
-        private _uniqueId;
         private _localChange;
         constructor(props: ICheckBoxLineComponentProps);
         shouldComponentUpdate(nextProps: ICheckBoxLineComponentProps, nextState: {
@@ -5992,7 +5998,7 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     interface ITextInputLineComponentProps {
-        label: string;
+        label?: string;
         lockObject: LockObject;
         target?: any;
         propertyName?: string;
@@ -9336,6 +9342,15 @@ declare module INSPECTOR {
     }
     export class IconButtonLineComponent extends React.Component<IIconButtonLineComponentProps> {
         constructor(props: IIconButtonLineComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface IIconComponentProps {
+        icon: string;
+        label?: string;
+    }
+    export class IconComponent extends React.Component<IIconComponentProps> {
         render(): JSX.Element;
     }
 }

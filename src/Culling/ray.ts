@@ -730,7 +730,7 @@ Scene.prototype._internalPick = function (rayFunction: (world: Matrix, enableDis
             if (result) {
                 if (onlyBoundingInfo) {
                     // the user only asked for a bounding info check so we can return
-                    return pickingInfo;
+                    return result;
                 }
                 const tmpMatrix = TmpVectors.Matrix[1];
                 let thinMatrices = (mesh as Mesh).thinInstanceGetWorldMatrices();
