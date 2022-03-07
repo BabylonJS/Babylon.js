@@ -397,6 +397,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
 
     private readonly _hoverRadius = 0.1;
     private readonly _pickRadius = 0.02;
+    private readonly _controllerPickRadius = 0.03; // The radius is slightly larger here to make it easier to manipulate since it's not tied to the hand position
     private readonly _nearGrabLengthScale = 5;
 
     private _processTouchPoint(id: string, position: Vector3, orientation: Quaternion) {
@@ -421,10 +422,11 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
         Object.keys(this._controllers).forEach((id) => {
             // only do this for the selected pointer
             const controllerData = this._controllers[id];
+            const handData = controllerData.xrController?.inputSource.hand;
             // If near interaction is not enabled/available for this controller, return early
             if ((!this._options.enableNearInteractionOnAllControllers && id !== this._attachedController) ||
                 !controllerData.xrController ||
-                (!controllerData.xrController.inputSource.hand && (!this._options.nearInteractionControllerMode || !controllerData.xrController.inputSource.gamepad))) {
+                (!handData && (!this._options.nearInteractionControllerMode || !controllerData.xrController.inputSource.gamepad))) {
                 controllerData.pick = null;
                 return;
             }
@@ -433,9 +435,8 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
 
             // Every frame check collisions/input
             if (controllerData.xrController) {
-                const hand = controllerData.xrController.inputSource.hand;
-                if (hand) {
-                    const xrIndexTip = hand.get("index-finger-tip");
+                if (handData) {
+                    const xrIndexTip = handData.get("index-finger-tip");
                     if (xrIndexTip) {
                         let indexTipPose = _xrFrame.getJointPose!(xrIndexTip, this._xrSessionManager.referenceSpace);
                         if (indexTipPose && indexTipPose.transform) {
@@ -521,10 +522,11 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                 // near interaction pick
                 if (controllerData.hoverInteraction) {
                     let utilitySceneNearPick = null;
+                    const radius = !!handData ? this._pickRadius : this._controllerPickRadius;
                     if (this._options.useUtilityLayer && this._utilityLayerScene) {
-                        utilitySceneNearPick = this._pickWithSphere(controllerData, this._pickRadius, this._utilityLayerScene, (mesh: AbstractMesh) => this._nearPickPredicate(mesh));
+                        utilitySceneNearPick = this._pickWithSphere(controllerData, radius, this._utilityLayerScene, (mesh: AbstractMesh) => this._nearPickPredicate(mesh));
                     }
-                    let originalSceneNearPick = this._pickWithSphere(controllerData, this._pickRadius, this._scene, (mesh: AbstractMesh) => this._nearPickPredicate(mesh));
+                    let originalSceneNearPick = this._pickWithSphere(controllerData, radius, this._scene, (mesh: AbstractMesh) => this._nearPickPredicate(mesh));
                     let pickInfo = accuratePickInfo(originalSceneNearPick, utilitySceneNearPick);
                     const nearPick = populateNearInteractionInfo(pickInfo);
                     if (nearPick.hit) {
@@ -765,18 +767,11 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
         }
     }
 
-    private readonly _hoverSize = new Vector3(0.03, 0.03, 0.03);
-    private readonly _touchSize = new Vector3(0.04, 0.04, 0.04);
-    private readonly _hydrateTransitionSize = new Vector3(0.035, 0.035, 0.035);
-    private readonly _touchHoverTransitionSize = new Vector3(0.024, 0.024, 0.024);
-    private readonly _hoverTouchTransitionSize = new Vector3(0.046, 0.046, 0.046);
-
     private _generateNewTouchPointMesh() {
         // populate information for near hover, pick and pinch
         const meshCreationScene = this._options.useUtilityLayer ? this._options.customUtilityLayerScene || UtilityLayerRenderer.DefaultUtilityLayer.utilityLayerScene : this._scene;
 
         let touchCollisionMesh = CreateSphere("PickSphere", { diameter: 1 }, meshCreationScene);
-        touchCollisionMesh.scaling.set(this._pickRadius, this._pickRadius, this._pickRadius);
         touchCollisionMesh.isVisible = false;
 
         // Generate the material for the touch mesh visuals
@@ -791,23 +786,33 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
         const easingFunction = new QuadraticEase();
         easingFunction.setEasingMode(EasingFunction.EASINGMODE_EASEINOUT);
 
+        const hoverSizeVec = new Vector3(this._controllerPickRadius, this._controllerPickRadius, this._controllerPickRadius);
+        const touchSize = this._controllerPickRadius * (4 / 3);
+        const touchSizeVec = new Vector3(touchSize, touchSize, touchSize);
+        const hydrateTransitionSize = this._controllerPickRadius * (7 / 6);
+        const hydrateTransitionSizeVec = new Vector3(hydrateTransitionSize, hydrateTransitionSize, hydrateTransitionSize);
+        const touchHoverTransitionSize = this._controllerPickRadius * (4 / 5);
+        const touchHoverTransitionSizeVec = new Vector3(touchHoverTransitionSize, touchHoverTransitionSize, touchHoverTransitionSize);
+        const hoverTouchTransitionSize = this._controllerPickRadius * (3 / 2);
+        const hoverTouchTransitionSizeVec = new Vector3(hoverTouchTransitionSize, hoverTouchTransitionSize, hoverTouchTransitionSize);
+
         let touchKeys = [
-            {frame:  0, value: this._hoverSize},
-            {frame: 10, value: this._hoverTouchTransitionSize},
-            {frame: 18, value: this._touchSize}
+            {frame:  0, value: hoverSizeVec},
+            {frame: 10, value: hoverTouchTransitionSizeVec},
+            {frame: 18, value: touchSizeVec}
         ];
         let releaseKeys = [
-            {frame:  0, value: this._touchSize},
-            {frame: 10, value: this._touchHoverTransitionSize},
-            {frame: 18, value: this._hoverSize}
+            {frame:  0, value: touchSizeVec},
+            {frame: 10, value: touchHoverTransitionSizeVec},
+            {frame: 18, value: hoverSizeVec}
         ];
         let hydrateKeys = [
             {frame:  0, value: Vector3.ZeroReadOnly},
-            {frame: 12, value: this._hydrateTransitionSize},
-            {frame: 15, value: this._hoverSize}
+            {frame: 12, value: hydrateTransitionSizeVec},
+            {frame: 15, value: hoverSizeVec}
         ];
         let dehydrateKeys = [
-            {frame:  0, value: this._hoverSize},
+            {frame:  0, value: hoverSizeVec},
             {frame: 10, value: Vector3.ZeroReadOnly},
             {frame: 15, value: Vector3.ZeroReadOnly}
         ];
