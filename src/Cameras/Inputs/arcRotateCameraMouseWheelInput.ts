@@ -4,9 +4,9 @@ import { EventState, Observer } from "../../Misc/observable";
 import { ArcRotateCamera } from "../../Cameras/arcRotateCamera";
 import { ICameraInput, CameraInputTypes } from "../../Cameras/cameraInputsManager";
 import { PointerInfo, PointerEventTypes } from "../../Events/pointerEvents";
-import { Tools } from '../../Misc/tools';
-import { Plane } from '../../Maths/math.plane';
-import { Vector3, Matrix, TmpVectors } from '../../Maths/math.vector';
+import { Tools } from "../../Misc/tools";
+import { Plane } from "../../Maths/math.plane";
+import { Vector3, Matrix, TmpVectors } from "../../Maths/math.vector";
 import { Epsilon } from "../../Maths/math.constants";
 import { EventConstants, IWheelEvent } from "../../Events/deviceInputEvents";
 import { Scalar } from "../../Maths/math.scalar";
@@ -61,7 +61,7 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
 
     protected computeDeltaFromMouseWheelLegacyEvent(mouseWheelDelta: number, radius: number) {
         var delta = 0;
-        var wheelDelta = (mouseWheelDelta * 0.01 * this.wheelDeltaPercentage) * radius;
+        var wheelDelta = mouseWheelDelta * 0.01 * this.wheelDeltaPercentage * radius;
         if (mouseWheelDelta > 0) {
             delta = wheelDelta / (1.0 + this.wheelDeltaPercentage);
         } else {
@@ -79,21 +79,21 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
         noPreventDefault = Tools.BackCompatCameraNoPreventDefault(arguments);
         this._wheel = (p, s) => {
             //sanity check - this should be a PointerWheel event.
-            if (p.type !== PointerEventTypes.POINTERWHEEL) { return; }
+            if (p.type !== PointerEventTypes.POINTERWHEEL) {
+                return;
+            }
             var event = <IWheelEvent>p.event;
             var delta = 0;
 
             let mouseWheelLegacyEvent = event as any;
             let wheelDelta = 0;
 
-            const platformScale = event.deltaMode === EventConstants.DOM_DELTA_LINE ? ffMultiplier : 1;  // If this happens to be set to DOM_DELTA_LINE, adjust accordingly
+            const platformScale = event.deltaMode === EventConstants.DOM_DELTA_LINE ? ffMultiplier : 1; // If this happens to be set to DOM_DELTA_LINE, adjust accordingly
             if (event.deltaY !== undefined) {
                 wheelDelta = -(event.deltaY * platformScale);
-            }
-            else if ((<any>event).wheelDeltaY !== undefined) {
+            } else if ((<any>event).wheelDeltaY !== undefined) {
                 wheelDelta = -((<any>event).wheelDeltaY * platformScale);
-            }
-            else {
+            } else {
                 wheelDelta = mouseWheelLegacyEvent.wheelDelta;
             }
 
@@ -203,7 +203,7 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
     private _updateHitPlane() {
         var camera = this.camera;
         var direction = camera.target.subtract(camera.position);
-        this._hitPlane = Plane.FromPositionAndNormal(Vector3.Zero(), direction);
+        this._hitPlane = Plane.FromPositionAndNormal(camera.target, direction);
     }
 
     // Get position on the hit plane
@@ -219,6 +219,7 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
         if (this._hitPlane) {
             distance = ray.intersectsPlane(this._hitPlane) ?? 0;
         }
+        console.log(distance);
 
         // not using this ray again, so modifying its vectors here is fine
         return ray.origin.addInPlace(ray.direction.scaleInPlace(distance));
@@ -251,7 +252,6 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
 
         const directionToZoomLocation = TmpVectors.Vector3[6];
         vec.subtractToRef(camera.target, directionToZoomLocation);
-        directionToZoomLocation.normalize();
         directionToZoomLocation.scaleInPlace(ratio);
         directionToZoomLocation.scaleInPlace(inertiaComp);
         this._inertialPanning.addInPlace(directionToZoomLocation);
