@@ -2260,6 +2260,35 @@ export class NativeEngine extends Engine {
         }
     }
 
+    /** @hidden */
+    /**
+     * Engine abstraction for loading and creating an image bitmap from a given source string.
+     * @param imageSource source to load the image from.
+     * @param options An object that sets options for the image's extraction.
+     * @returns ImageBitmap
+     */
+     public createImageBitmapFromSource(imageSource: string, options?: ImageBitmapOptions): Promise<ImageBitmap> {
+        const promise = new Promise<ImageBitmap>((resolve, reject) => {
+            const image = this.createCanvasImage();
+            image.onload = () => {
+                const imageBitmap = this._engine.createImageBitmap(image);
+                if (imageBitmap) {
+                    resolve(imageBitmap);
+                    return;
+                } else {
+                    reject (`Error loading image ${image.src}`);
+                }
+            };
+            image.onerror = () => {
+                reject(`Error loading image ${image.src}`);
+            };
+
+            image.src = imageSource;
+        });
+
+        return promise;
+    }
+
     /**
      * Engine abstraction for createImageBitmap
      * @param image source for image
