@@ -219,7 +219,6 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
         if (this._hitPlane) {
             distance = ray.intersectsPlane(this._hitPlane) ?? 0;
         }
-        console.log(distance);
 
         // not using this ray again, so modifying its vectors here is fine
         return ray.origin.addInPlace(ray.direction.scaleInPlace(distance));
