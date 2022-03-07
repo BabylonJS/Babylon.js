@@ -46,7 +46,7 @@ export class ElbowBlock extends NodeMaterialBlock {
     /**
      * Gets or sets the target of the block
      */
-    public get target() {        
+    public get target() {
         let input = this._inputs[0];
         if (input.isConnected) {
             let block = input.connectedPoint!.ownerBlock;
