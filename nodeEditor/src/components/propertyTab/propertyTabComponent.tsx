@@ -36,6 +36,7 @@ import { PreviewType } from "../preview/previewType";
 import { TextInputLineComponent } from "../../sharedComponents/textInputLineComponent";
 import { InputsPropertyTabComponent } from "./inputsPropertyTabComponent";
 import { Constants } from "babylonjs/Engines/constants";
+import { LogEntry } from "../log/logComponent";
 require("./propertyTab.scss");
 
 interface IPropertyTabComponentProps {
@@ -233,15 +234,15 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
 
     customSave() {
         this.setState({ uploadInProgress: true });
-        this.props.globalState.onLogRequiredObservable.notifyObservers({ message: "Saving your material to Babylon.js snippet server...", isError: false });
+        this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Saving your material to Babylon.js snippet server...", false));
         this.props.globalState
             .customSave!.action(SerializationTools.Serialize(this.props.globalState.nodeMaterial, this.props.globalState))
             .then(() => {
-                this.props.globalState.onLogRequiredObservable.notifyObservers({ message: "Material saved successfully", isError: false });
+                this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Material saved successfully", false));
                 this.setState({ uploadInProgress: false });
             })
             .catch((err) => {
-                this.props.globalState.onLogRequiredObservable.notifyObservers({ message: err, isError: true });
+                this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(err, true));
                 this.setState({ uploadInProgress: false });
             });
     }
