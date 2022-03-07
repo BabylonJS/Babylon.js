@@ -9,6 +9,8 @@ interface ILogComponentProps {
 }
 
 export class LogEntry {
+    public time = new Date();
+
     constructor(public message: string, public isError: boolean) {}
 }
 
@@ -38,17 +40,12 @@ export class LogComponent extends React.Component<ILogComponentProps, { logs: Lo
     }
 
     render() {
-        var today = new Date();
-        var h = today.getHours();
-        var m = today.getMinutes();
-        var s = today.getSeconds();
-
         return (
             <div id="nme-log-console" ref={"log-console"}>
                 {this.state.logs.map((l, i) => {
                     return (
                         <div key={i} className={"log" + (l.isError ? " error" : "")}>
-                            {h + ":" + m + ":" + s + ": " + l.message}
+                            {l.time.getHours() + ":" + l.time.getMinutes() + ":" + l.time.getSeconds() + ": " + l.message}
                         </div>
                     );
                 })}
