@@ -1,5 +1,5 @@
 import { GraphNode } from './graphNode';
-import { GraphCanvasComponent, FramePortData } from './graphCanvas';
+import { GraphCanvasComponent } from './graphCanvas';
 import { Nullable } from 'babylonjs/types';
 import { Observer, Observable } from 'babylonjs/Misc/observable';
 import { NodeLink } from './nodeLink';
@@ -9,6 +9,7 @@ import { NodePort } from './nodePort';
 import { SerializationTools } from '../serializationTools';
 import { StringTools } from '../sharedUiComponents/stringTools';
 import { FrameNodePort } from './frameNodePort';
+import { ISelectionChangedOptions } from '../globalState';
 
 enum ResizingDirection {
     Right,
@@ -51,7 +52,7 @@ export class GraphFrame {
     private _ownerCanvas: GraphCanvasComponent;
     private _mouseStartPointX: Nullable<number> = null;
     private _mouseStartPointY: Nullable<number> = null;
-    private _onSelectionChangedObserver: Nullable<Observer<Nullable<GraphFrame | GraphNode | NodeLink | NodePort | FramePortData>>>;
+    private _onSelectionChangedObserver: Nullable<Observer<Nullable<ISelectionChangedOptions>>>;
     private _onGraphNodeRemovalObserver: Nullable<Observer<GraphNode>>;
     private _onExposePortOnFrameObserver: Nullable<Observer<GraphNode>>;
     private _onNodeLinkDisposedObservers: Nullable<Observer<NodeLink>>[] = [];
@@ -627,7 +628,8 @@ export class GraphFrame {
         this._headerTextElement.addEventListener("pointerup", evt => this._onUp(evt));
         this._headerTextElement.addEventListener("pointermove", evt => this._onMove(evt));
 
-        this._onSelectionChangedObserver = canvas.globalState.onSelectionChangedObservable.add(node => {
+        this._onSelectionChangedObserver = canvas.globalState.onSelectionChangedObservable.add((options) => {
+            const {selection: node} = options || {}
             if (node === this) {
                 this.element.classList.add("selected");
             } else {
@@ -718,7 +720,7 @@ export class GraphFrame {
         this._mouseStartPointY = evt.clientY;
 
         this._headerTextElement.setPointerCapture(evt.pointerId);
-        this._ownerCanvas.globalState.onSelectionChangedObservable.notifyObservers(this);
+        this._ownerCanvas.globalState.onSelectionChangedObservable.notifyObservers({selection: this});
 
         this._ownerCanvas._frameIsMoving = true;
 

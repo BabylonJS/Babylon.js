@@ -1,16 +1,13 @@
 import * as React from "react";
 import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
-import { GlobalState } from "../../globalState";
+import { GlobalState, ISelectionChangedOptions } from "../../globalState";
 import { TextInputLineComponent } from "../../sharedComponents/textInputLineComponent";
 import { ButtonLineComponent } from "../../sharedComponents/buttonLineComponent";
 import { FramePortPosition, GraphFrame } from "../graphFrame";
 import { Nullable } from "babylonjs/types";
 import { Observer } from "babylonjs/Misc/observable";
 import { FrameNodePort } from "../frameNodePort";
-import { NodePort } from "../nodePort";
-import { GraphNode } from "../graphNode";
-import { NodeLink } from "../nodeLink";
-import { FramePortData, isFramePortData } from "../graphCanvas";
+import { isFramePortData } from "../graphCanvas";
 
 export interface IFrameNodePortPropertyTabComponentProps {
     globalState: GlobalState;
@@ -20,7 +17,7 @@ export interface IFrameNodePortPropertyTabComponentProps {
 
 export class FrameNodePortPropertyTabComponent extends React.Component<IFrameNodePortPropertyTabComponentProps, { port: FrameNodePort }> {
     private _onFramePortPositionChangedObserver: Nullable<Observer<FrameNodePort>>;
-    private _onSelectionChangedObserver: Nullable<Observer<Nullable<GraphFrame | NodePort | GraphNode | NodeLink | FramePortData>>>;
+    private _onSelectionChangedObserver: Nullable<Observer<Nullable<ISelectionChangedOptions>>>;
 
     constructor(props: IFrameNodePortPropertyTabComponentProps) {
         super(props);
@@ -29,7 +26,8 @@ export class FrameNodePortPropertyTabComponent extends React.Component<IFrameNod
         };
 
         const _this = this;
-        this._onSelectionChangedObserver = this.props.globalState.onSelectionChangedObservable.add((selection) => {
+        this._onSelectionChangedObserver = this.props.globalState.onSelectionChangedObservable.add((options) => {
+            const {selection} = options || {};
             if (isFramePortData(selection)) {
                 selection.port.onFramePortPositionChangedObservable.clear();
                 _this._onFramePortPositionChangedObserver = selection.port.onFramePortPositionChangedObservable.add((port: FrameNodePort) => {
