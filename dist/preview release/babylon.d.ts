@@ -1121,6 +1121,10 @@ declare module BABYLON {
          */
         onload: ((this: GlobalEventHandlers, ev: Event) => any) | null;
         /**
+         * Error callback.
+         */
+        onerror: ((this: GlobalEventHandlers, ev: Event) => any) | null;
+        /**
          * Image source.
          */
         src: string;
@@ -21462,7 +21466,7 @@ declare module BABYLON {
     export class NodeMaterialBlock {
         private _buildId;
         private _buildTarget;
-        private _target;
+        protected _target: NodeMaterialBlockTargets;
         private _isFinalMerger;
         private _isInput;
         private _name;
@@ -38149,7 +38153,9 @@ declare module BABYLON {
         markAsDirty(property?: string): Node;
         /**
          * Defines the passed node as the parent of the current node.
-         * The node will remain exactly where it is and its position / rotation will be updated accordingly
+         * The node will remain exactly where it is and its position / rotation will be updated accordingly.
+         * Note that if the mesh has a pivot matrix / point defined it will be applied after the parent was updated.
+         * In that case the node will not remain in the same space as it is, as the pivot will be applied.
          * @see https://doc.babylonjs.com/how_to/parenting
          * @param node the node ot set as the parent
          * @param preserveScalingSign if true, keep scaling sign of child. Otherwise, scaling sign might change.
@@ -44188,6 +44194,14 @@ declare module BABYLON {
          * Gets the latest created scene
          */
         static get LastCreatedScene(): Nullable<Scene>;
+        /** @hidden */
+        /**
+         * Engine abstraction for loading and creating an image bitmap from a given source string.
+         * @param imageSource source to load the image from.
+         * @param options An object that sets options for the image's extraction.
+         * @returns ImageBitmap.
+         */
+        createImageBitmapFromSource(imageSource: string, options?: ImageBitmapOptions): Promise<ImageBitmap>;
         /**
          * Engine abstraction for createImageBitmap
          * @param image source for image
@@ -47206,7 +47220,7 @@ declare module BABYLON {
         getTextureHeight(texture: WebGLTexture): number;
         copyTexture(desination: Nullable<WebGLTexture>, source: Nullable<WebGLTexture>): void;
         deleteTexture(texture: Nullable<WebGLTexture>): void;
-        createImageBitmap(data: ArrayBufferView): ImageBitmap;
+        createImageBitmap(data: ArrayBufferView | IImage): ImageBitmap;
         resizeImageBitmap(image: ImageBitmap, bufferWidth: number, bufferHeight: number): Uint8Array;
         createFrameBuffer(texture: WebGLTexture, width: number, height: number, format: number, generateStencilBuffer: boolean, generateDepthBuffer: boolean, generateMips: boolean): WebGLFramebuffer;
         getRenderWidth(): number;
@@ -67242,6 +67256,14 @@ declare module BABYLON {
         _createDepthStencilTexture(size: TextureSize, options: DepthTextureCreationOptions, rtWrapper: RenderTargetWrapper): InternalTexture;
         /** @hidden */
         _releaseFramebufferObjects(framebuffer: Nullable<WebGLFramebuffer>): void;
+        /** @hidden */
+        /**
+         * Engine abstraction for loading and creating an image bitmap from a given source string.
+         * @param imageSource source to load the image from.
+         * @param options An object that sets options for the image's extraction.
+         * @returns ImageBitmap
+         */
+        createImageBitmapFromSource(imageSource: string, options?: ImageBitmapOptions): Promise<ImageBitmap>;
         /**
          * Engine abstraction for createImageBitmap
          * @param image source for image
@@ -72233,12 +72255,18 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+    /** @ignore */
+    interface WorkerInfo {
+        workerPromise: Promise<Worker>;
+        idle: boolean;
+        timeoutId?: number;
+    }
     /**
      * Helper class to push actions to a pool of workers.
      */
     export class WorkerPool implements IDisposable {
-        private _workerInfos;
-        private _pendingActions;
+        protected _workerInfos: Array<WorkerInfo>;
+        protected _pendingActions: ((worker: Worker, onComplete: () => void) => void)[];
         /**
          * Constructor
          * @param workers Array of workers to use for actions
@@ -72254,7 +72282,34 @@ declare module BABYLON {
          * @param action The action to perform. Call onComplete when the action is complete.
          */
         push(action: (worker: Worker, onComplete: () => void) => void): void;
-        private _execute;
+        protected _executeOnIdleWorker(action: (worker: Worker, onComplete: () => void) => void): boolean;
+        protected _execute(workerInfo: WorkerInfo, action: (worker: Worker, onComplete: () => void) => void): void;
+    }
+    /**
+     * Options for AutoReleaseWorkerPool
+     */
+    export interface AutoReleaseWorkerPoolOptions {
+        /**
+         * Idle time elapsed before workers are terminated.
+         */
+        idleTimeElapsedBeforeRelease: number;
+    }
+    /**
+     * Similar to the WorkerPool class except it creates and destroys workers automatically with a maximum of `maxWorkers` workers.
+     * Workers are terminated when it is idle for at least `idleTimeElapsedBeforeRelease` milliseconds.
+     */
+    export class AutoReleaseWorkerPool extends WorkerPool {
+        /**
+         * Default options for the constructor.
+         * Override to change the defaults.
+         */
+        static DefaultOptions: AutoReleaseWorkerPoolOptions;
+        private readonly _maxWorkers;
+        private readonly _createWorkerAsync;
+        private readonly _options;
+        constructor(maxWorkers: number, createWorkerAsync: () => Promise<Worker>, options?: AutoReleaseWorkerPoolOptions);
+        push(action: (worker: Worker, onComplete: () => void) => void): void;
+        protected _execute(workerInfo: WorkerInfo, action: (worker: Worker, onComplete: () => void) => void): void;
     }
 }
 declare module BABYLON {
@@ -72263,9 +72318,7 @@ declare module BABYLON {
      */
     export class KhronosTextureContainer2 {
         private static _WorkerPoolPromise?;
-        private static _NoWorkerPromise?;
-        private static _Initialized;
-        private static _Ktx2Decoder;
+        private static _DecoderModulePromise?;
         /**
          * URLs to use when loading the KTX2 decoder module as well as its dependencies
          * If a url is null, the default url is used (pointing to https://preview.babylonjs.com)
@@ -72297,7 +72350,7 @@ declare module BABYLON {
         static DefaultNumWorkers: number;
         private static GetDefaultNumWorkers;
         private _engine;
-        private static _CreateWorkerPool;
+        private static _Initialize;
         /**
          * Constructor
          * @param engine The engine to use
@@ -72306,10 +72359,6 @@ declare module BABYLON {
         constructor(engine: ThinEngine, numWorkers?: number);
         /** @hidden */
         uploadAsync(data: ArrayBufferView, internalTexture: InternalTexture, options?: any): Promise<void>;
-        /**
-         * Stop all async operations and release resources.
-         */
-        dispose(): void;
         protected _createTexture(data: any, internalTexture: InternalTexture, options?: any): void;
         /**
          * Checks if the given data starts with a KTX2 file identifier.
@@ -79773,6 +79822,11 @@ declare module BABYLON {
          * Gets the output component
          */
         get output(): NodeMaterialConnectionPoint;
+        /**
+         * Gets or sets the target of the block
+         */
+        get target(): NodeMaterialBlockTargets;
+        set target(value: NodeMaterialBlockTargets);
         protected _buildBlock(state: NodeMaterialBuildState): this;
     }
 }
@@ -90409,6 +90463,7 @@ declare module BABYLON {
          * The image was found and its state was updated.
          */
         onTrackedImageUpdatedObservable: Observable<IWebXRTrackedImage>;
+        private _trackableScoresReceived;
         private _trackedImages;
         private _originalTrackingRequest;
         /**
@@ -90457,7 +90512,7 @@ declare module BABYLON {
          */
         getXRSessionInitExtension(): Promise<Partial<XRSessionInit>>;
         protected _onXRFrame(_xrFrame: XRFrame): void;
-        private _init;
+        private _checkScores;
     }
 }
 declare module BABYLON {
@@ -91304,6 +91359,7 @@ declare module BABYLON {
         readonly fillJointRadii: any;
         readonly getLightEstimate: () => never;
         get featurePointCloud(): number[] | undefined;
+        readonly getImageTrackingResults: any;
     }
 }
 declare module BABYLON {

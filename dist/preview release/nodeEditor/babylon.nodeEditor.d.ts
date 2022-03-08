@@ -14,6 +14,7 @@ declare module NODEEDITOR {
     export class LogEntry {
         message: string;
         isError: boolean;
+        time: Date;
         constructor(message: string, isError: boolean);
     }
     export class LogComponent extends React.Component<ILogComponentProps, {

@@ -291,46 +291,14 @@ declare module GUIEDITOR {
     }
 }
 declare module GUIEDITOR {
-    export const conflictingValuesPlaceholder = "\u2014";
-    /**
-     *
-     * @param propertyName the property that the input changes
-     * @param targets a list of selected targets
-     * @param defaultValue the value that should be returned when two targets have conflicting values
-     * @param setter an optional setter function to override the default setter behavior
-     * @returns a proxy object that can be passed as a target into the input
-     */
-    export function makeTargetsProxy<Type>(targets: Type[], onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>, getProperty?: (target: Type, property: keyof Type) => any): any;
-}
-declare module GUIEDITOR {
-    export interface ICheckBoxLineComponentProps {
-        label?: string;
-        target?: any;
-        propertyName?: string;
-        isSelected?: () => boolean;
-        onSelect?: (value: boolean) => void;
-        onValueChanged?: () => void;
-        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
-        disabled?: boolean;
-        icon?: string;
-        iconLabel?: string;
-        faIcons?: {
-        };
-    }
-    export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponentProps, {
-        isSelected: boolean;
-        isDisabled?: boolean;
-        isConflict: boolean;
-    }> {
-        private _localChange;
-        constructor(props: ICheckBoxLineComponentProps);
-        shouldComponentUpdate(nextProps: ICheckBoxLineComponentProps, nextState: {
-            isSelected: boolean;
-            isDisabled: boolean;
-            isConflict: boolean;
-        }): boolean;
-        onChange(): void;
-        render(): JSX.Element;
+    export class StringTools {
+        private static _SaveAs;
+        private static _Click;
+        /**
+         * Download a string into a file that will be saved locally by the browser
+         * @param content defines the string to download locally as a file
+         */
+        static DownloadAsFile(document: HTMLDocument, content: string, filename: string): void;
     }
 }
 declare module GUIEDITOR {
@@ -355,15 +323,16 @@ declare module GUIEDITOR {
     }
 }
 declare module GUIEDITOR {
-    export class StringTools {
-        private static _SaveAs;
-        private static _Click;
-        /**
-         * Download a string into a file that will be saved locally by the browser
-         * @param content defines the string to download locally as a file
-         */
-        static DownloadAsFile(document: HTMLDocument, content: string, filename: string): void;
-    }
+    export const conflictingValuesPlaceholder = "\u2014";
+    /**
+     *
+     * @param propertyName the property that the input changes
+     * @param targets a list of selected targets
+     * @param defaultValue the value that should be returned when two targets have conflicting values
+     * @param setter an optional setter function to override the default setter behavior
+     * @returns a proxy object that can be passed as a target into the input
+     */
+    export function makeTargetsProxy<Type>(targets: Type[], onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>, getProperty?: (target: Type, property: keyof Type) => any): any;
 }
 declare module GUIEDITOR {
     interface IFloatLineComponentProps {
@@ -504,6 +473,37 @@ declare module GUIEDITOR {
     }
     export class CommandButtonComponent extends React.Component<ICommandButtonComponentProps> {
         constructor(props: ICommandButtonComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module GUIEDITOR {
+    export interface ICheckBoxLineComponentProps {
+        label?: string;
+        target?: any;
+        propertyName?: string;
+        isSelected?: () => boolean;
+        onSelect?: (value: boolean) => void;
+        onValueChanged?: () => void;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+        disabled?: boolean;
+        icon?: string;
+        iconLabel?: string;
+        faIcons?: {
+        };
+    }
+    export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponentProps, {
+        isSelected: boolean;
+        isDisabled?: boolean;
+        isConflict: boolean;
+    }> {
+        private _localChange;
+        constructor(props: ICheckBoxLineComponentProps);
+        shouldComponentUpdate(nextProps: ICheckBoxLineComponentProps, nextState: {
+            isSelected: boolean;
+            isDisabled: boolean;
+            isConflict: boolean;
+        }): boolean;
+        onChange(): void;
         render(): JSX.Element;
     }
 }
@@ -1009,7 +1009,6 @@ declare module GUIEDITOR {
         private _onBuiltObserver;
         private _timerIntervalId;
         private _lockObject;
-        private _sizeOption;
         constructor(props: IPropertyTabComponentProps);
         componentDidMount(): void;
         componentWillUnmount(): void;
@@ -1275,6 +1274,7 @@ declare module GUIEDITOR {
         private _panning;
         private _zooming;
         private _selecting;
+        private _sizeOption;
         constructor(props: ICommandBarComponentProps);
         render(): JSX.Element;
     }
