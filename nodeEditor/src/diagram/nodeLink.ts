@@ -1,10 +1,10 @@
-import { GraphCanvasComponent, FramePortData } from './graphCanvas';
+import { GraphCanvasComponent } from './graphCanvas';
 import { GraphNode } from './graphNode';
 import { NodePort } from './nodePort';
 import { Nullable } from 'babylonjs/types';
 import { Observer, Observable } from 'babylonjs/Misc/observable';
-import { GraphFrame } from './graphFrame';
 import { FrameNodePort } from './frameNodePort';
+import { ISelectionChangedOptions } from '../globalState';
 
 export class NodeLink {
     private _graphCanvas: GraphCanvasComponent;
@@ -14,7 +14,7 @@ export class NodeLink {
     private _nodeB?: GraphNode;
     private _path: SVGPathElement;
     private _selectionPath: SVGPathElement;
-    private _onSelectionChangedObserver: Nullable<Observer<Nullable<GraphFrame | GraphNode | NodeLink | NodePort | FramePortData>>>;
+    private _onSelectionChangedObserver: Nullable<Observer<Nullable<ISelectionChangedOptions>>>;
     private _isVisible = true;
 
     public onDisposedObservable = new Observable<NodeLink>();
@@ -113,7 +113,8 @@ export class NodeLink {
             this.update();
         }
 
-        this._onSelectionChangedObserver = this._graphCanvas.globalState.onSelectionChangedObservable.add((selection) => {
+        this._onSelectionChangedObserver = this._graphCanvas.globalState.onSelectionChangedObservable.add((options) => {
+            const {selection} = options || {};
             if (selection === this) {
                 this._path.classList.add("selected");
                 this._selectionPath.classList.add("selected");
@@ -125,7 +126,7 @@ export class NodeLink {
     }
 
     onClick() {
-        this._graphCanvas.globalState.onSelectionChangedObservable.notifyObservers(this);
+        this._graphCanvas.globalState.onSelectionChangedObservable.notifyObservers({selection: this});
     }
 
     public dispose(notify = true) {
