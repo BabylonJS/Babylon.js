@@ -692,6 +692,11 @@ export class Geometry implements IGetSetVerticesData {
         } else {
             if (!data) {
                 data = this.getVerticesData(VertexBuffer.PositionKind)!;
+                // This can happen if the buffer comes from a Hardware Buffer where
+                // The data have not been uploaded by Babylon. (ex: Compute Shaders and Storage Buffers)
+                if (!data) {
+                    return;
+                }
             }
 
             this._extend = extractMinAndMax(data, 0, this._totalVertices, this.boundingBias, 3);
