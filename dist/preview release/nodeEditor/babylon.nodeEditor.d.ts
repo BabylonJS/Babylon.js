@@ -100,25 +100,6 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
-    export class FrameNodePort extends NodePort {
-        connectionPoint: BABYLON.NodeMaterialConnectionPoint;
-        node: GraphNode;
-        private _parentFrameId;
-        private _isInput;
-        private _framePortPosition;
-        private _framePortId;
-        private _onFramePortPositionChangedObservable;
-        get parentFrameId(): number;
-        get onFramePortPositionChangedObservable(): BABYLON.Observable<FrameNodePort>;
-        get isInput(): boolean;
-        get framePortId(): number;
-        get framePortPosition(): FramePortPosition;
-        set framePortPosition(position: FramePortPosition);
-        constructor(portContainer: HTMLElement, connectionPoint: BABYLON.NodeMaterialConnectionPoint, node: GraphNode, globalState: GlobalState, isInput: boolean, framePortId: number, parentFrameId: number);
-        static CreateFrameNodePortElement(connectionPoint: BABYLON.NodeMaterialConnectionPoint, node: GraphNode, root: HTMLElement, displayManager: BABYLON.Nullable<IDisplayManager>, globalState: GlobalState, isInput: boolean, framePortId: number, parentFrameId: number): FrameNodePort;
-    }
-}
-declare module NODEEDITOR {
     export enum FramePortPosition {
         Top = 0,
         Middle = 1,
@@ -267,6 +248,25 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
+    export class FrameNodePort extends NodePort {
+        connectionPoint: BABYLON.NodeMaterialConnectionPoint;
+        node: GraphNode;
+        private _parentFrameId;
+        private _isInput;
+        private _framePortPosition;
+        private _framePortId;
+        private _onFramePortPositionChangedObservable;
+        get parentFrameId(): number;
+        get onFramePortPositionChangedObservable(): BABYLON.Observable<FrameNodePort>;
+        get isInput(): boolean;
+        get framePortId(): number;
+        get framePortPosition(): FramePortPosition;
+        set framePortPosition(position: FramePortPosition);
+        constructor(portContainer: HTMLElement, connectionPoint: BABYLON.NodeMaterialConnectionPoint, node: GraphNode, globalState: GlobalState, isInput: boolean, framePortId: number, parentFrameId: number);
+        static CreateFrameNodePortElement(connectionPoint: BABYLON.NodeMaterialConnectionPoint, node: GraphNode, root: HTMLElement, displayManager: BABYLON.Nullable<IDisplayManager>, globalState: GlobalState, isInput: boolean, framePortId: number, parentFrameId: number): FrameNodePort;
+    }
+}
+declare module NODEEDITOR {
     export class NodePort {
         connectionPoint: BABYLON.NodeMaterialConnectionPoint;
         node: GraphNode;
@@ -275,7 +275,7 @@ declare module NODEEDITOR {
         protected _globalState: GlobalState;
         protected _portLabelElement: Element;
         protected _onCandidateLinkMovedObserver: BABYLON.Nullable<BABYLON.Observer<BABYLON.Nullable<BABYLON.Vector2>>>;
-        protected _onSelectionChangedObserver: BABYLON.Nullable<BABYLON.Observer<BABYLON.Nullable<GraphFrame | GraphNode | NodeLink | NodePort | FramePortData>>>;
+        protected _onSelectionChangedObserver: BABYLON.Nullable<BABYLON.Observer<BABYLON.Nullable<ISelectionChangedOptions>>>;
         protected _exposedOnFrame: boolean;
         delegatedPort: BABYLON.Nullable<FrameNodePort>;
         get element(): HTMLDivElement;
@@ -1372,12 +1372,16 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
+    export class ISelectionChangedOptions {
+        selection: BABYLON.Nullable<GraphNode | NodeLink | GraphFrame | NodePort | FramePortData>;
+        forceKeepSelection?: boolean;
+    }
     export class GlobalState {
         nodeMaterial: BABYLON.NodeMaterial;
         hostElement: HTMLElement;
         hostDocument: HTMLDocument;
         hostWindow: Window;
-        onSelectionChangedObservable: BABYLON.Observable<BABYLON.Nullable<GraphFrame | GraphNode | NodePort | NodeLink | FramePortData>>;
+        onSelectionChangedObservable: BABYLON.Observable<BABYLON.Nullable<ISelectionChangedOptions>>;
         onRebuildRequiredObservable: BABYLON.Observable<boolean>;
         onBuiltObservable: BABYLON.Observable<void>;
         onResetRequiredObservable: BABYLON.Observable<void>;

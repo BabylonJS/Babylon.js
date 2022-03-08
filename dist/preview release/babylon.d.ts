@@ -30884,11 +30884,12 @@ declare module BABYLON {
          * Merges the passed VertexData into the current one
          * @param others the VertexData to be merged into the current one
          * @param use32BitsIndices defines a boolean indicating if indices must be store in a 32 bits array
+         * @param forceCloneIndices defines a boolean indicating if indices are forced to be cloned
          * @returns the modified VertexData
          */
-        merge(others: VertexData | VertexData[], use32BitsIndices?: boolean): VertexData;
+        merge(others: VertexData | VertexData[], use32BitsIndices?: boolean, forceCloneIndices?: boolean): VertexData;
         /** @hidden */
-        _mergeCoroutine(transform: Matrix | undefined, vertexDatas: (readonly [vertexData: VertexData, transform?: Matrix])[], use32BitsIndices: boolean | undefined, isAsync: boolean): Coroutine<VertexData>;
+        _mergeCoroutine(transform: Matrix | undefined, vertexDatas: (readonly [vertexData: VertexData, transform?: Matrix])[], use32BitsIndices: boolean | undefined, isAsync: boolean, forceCloneIndices: boolean): Coroutine<VertexData>;
         private static _mergeElement;
         private _validate;
         /**

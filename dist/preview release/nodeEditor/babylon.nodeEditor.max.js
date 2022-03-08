@@ -57549,7 +57549,8 @@ var PropertyTabComponent = /** @class */ (function (_super) {
     }
     PropertyTabComponent.prototype.componentDidMount = function () {
         var _this = this;
-        this.props.globalState.onSelectionChangedObservable.add(function (selection) {
+        this.props.globalState.onSelectionChangedObservable.add(function (options) {
+            var selection = (options || {}).selection;
             if (selection instanceof _diagram_graphNode__WEBPACK_IMPORTED_MODULE_9__["GraphNode"]) {
                 _this.setState({ currentNode: selection, currentFrame: null, currentFrameNodePort: null, currentNodePort: null });
             }
@@ -58631,7 +58632,8 @@ var FrameNodePort = /** @class */ (function (_super) {
         _this._parentFrameId = parentFrameId;
         _this._isInput = isInput;
         _this._framePortId = framePortId;
-        _this._onSelectionChangedObserver = _this._globalState.onSelectionChangedObservable.add(function (selection) {
+        _this._onSelectionChangedObserver = _this._globalState.onSelectionChangedObservable.add(function (options) {
+            var selection = (options || {}).selection;
             if (Object(_graphCanvas__WEBPACK_IMPORTED_MODULE_3__["isFramePortData"])(selection) && selection.port === _this) {
                 _this._img.classList.add("selected");
             }
@@ -58814,7 +58816,8 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
         _this._oldY = -1;
         _this._frameIsMoving = false;
         _this._isLoading = false;
-        props.globalState.onSelectionChangedObservable.add(function (selection) {
+        props.globalState.onSelectionChangedObservable.add(function (options) {
+            var _b = options || {}, selection = _b.selection, forceKeepSelection = _b.forceKeepSelection;
             if (!selection) {
                 _this._selectedNodes = [];
                 _this._selectedLink = null;
@@ -58835,7 +58838,7 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
                     _this._selectedPort = null;
                 }
                 else if (selection instanceof _graphNode__WEBPACK_IMPORTED_MODULE_3__["GraphNode"]) {
-                    if (_this._ctrlKeyIsPressed) {
+                    if (_this._ctrlKeyIsPressed || forceKeepSelection) {
                         if (_this._selectedNodes.indexOf(selection) === -1) {
                             _this._selectedNodes.push(selection);
                         }
@@ -59358,11 +59361,11 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
                             frame: frame,
                             port: port_1,
                         };
-                        this.props.globalState.onSelectionChangedObservable.notifyObservers(data);
+                        this.props.globalState.onSelectionChangedObservable.notifyObservers({ selection: data });
                     }
                 }
                 else if (this._candidateLink.portA instanceof _nodePort__WEBPACK_IMPORTED_MODULE_6__["NodePort"]) {
-                    this.props.globalState.onSelectionChangedObservable.notifyObservers(this._candidateLink.portA);
+                    this.props.globalState.onSelectionChangedObservable.notifyObservers({ selection: this._candidateLink.portA });
                 }
             }
             this._candidateLink.dispose();
@@ -59378,7 +59381,7 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
             this._frames.push(newFrame);
             this._frameCandidate.parentElement.removeChild(this._frameCandidate);
             this._frameCandidate = null;
-            this.props.globalState.onSelectionChangedObservable.notifyObservers(newFrame);
+            this.props.globalState.onSelectionChangedObservable.notifyObservers({ selection: newFrame });
         }
     };
     GraphCanvasComponent.prototype.onWheel = function (evt) {
@@ -59605,7 +59608,7 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
     GraphCanvasComponent.prototype.addFrame = function (frameData) {
         var frame = _graphFrame__WEBPACK_IMPORTED_MODULE_7__["GraphFrame"].Parse(frameData, this, this.props.globalState.nodeMaterial.editorData.map);
         this._frames.push(frame);
-        this.globalState.onSelectionChangedObservable.notifyObservers(frame);
+        this.globalState.onSelectionChangedObservable.notifyObservers({ selection: frame });
     };
     GraphCanvasComponent.prototype.render = function () {
         var _this = this;
@@ -60243,7 +60246,8 @@ var GraphFrame = /** @class */ (function () {
         this._headerTextElement.addEventListener("pointerdown", function (evt) { return _this_1._onDown(evt); });
         this._headerTextElement.addEventListener("pointerup", function (evt) { return _this_1._onUp(evt); });
         this._headerTextElement.addEventListener("pointermove", function (evt) { return _this_1._onMove(evt); });
-        this._onSelectionChangedObserver = canvas.globalState.onSelectionChangedObservable.add(function (node) {
+        this._onSelectionChangedObserver = canvas.globalState.onSelectionChangedObservable.add(function (options) {
+            var node = (options || {}).selection;
             if (node === _this_1) {
                 _this_1.element.classList.add("selected");
             }
@@ -60749,7 +60753,7 @@ var GraphFrame = /** @class */ (function () {
         this._mouseStartPointX = evt.clientX;
         this._mouseStartPointY = evt.clientY;
         this._headerTextElement.setPointerCapture(evt.pointerId);
-        this._ownerCanvas.globalState.onSelectionChangedObservable.notifyObservers(this);
+        this._ownerCanvas.globalState.onSelectionChangedObservable.notifyObservers({ selection: this });
         this._ownerCanvas._frameIsMoving = true;
         this.move(this._ownerCanvas.getGridPosition(this.x), this._ownerCanvas.getGridPosition(this.y));
     };
@@ -61105,7 +61109,8 @@ var GraphNode = /** @class */ (function () {
         this._isVisible = true;
         this._enclosingFrameId = -1;
         this._globalState = globalState;
-        this._onSelectionChangedObserver = this._globalState.onSelectionChangedObservable.add(function (node) {
+        this._onSelectionChangedObserver = this._globalState.onSelectionChangedObservable.add(function (options) {
+            var node = (options || {}).selection;
             if (node === _this) {
                 _this._visual.classList.add("selected");
             }
@@ -61284,7 +61289,7 @@ var GraphNode = /** @class */ (function () {
                 }
             }
             else {
-                this._globalState.onSelectionChangedObservable.notifyObservers(this);
+                this._globalState.onSelectionChangedObservable.notifyObservers({ selection: this });
             }
         },
         enumerable: false,
@@ -61400,7 +61405,7 @@ var GraphNode = /** @class */ (function () {
         }
         var indexInSelection = this._ownerCanvas.selectedNodes.indexOf(this);
         if (indexInSelection === -1) {
-            this._globalState.onSelectionChangedObservable.notifyObservers(this);
+            this._globalState.onSelectionChangedObservable.notifyObservers({ selection: this });
         }
         else if (evt.ctrlKey) {
             this.isSelected = false;
@@ -61593,7 +61598,8 @@ var NodeLink = /** @class */ (function () {
             // Update
             this.update();
         }
-        this._onSelectionChangedObserver = this._graphCanvas.globalState.onSelectionChangedObservable.add(function (selection) {
+        this._onSelectionChangedObserver = this._graphCanvas.globalState.onSelectionChangedObservable.add(function (options) {
+            var selection = (options || {}).selection;
             if (selection === _this) {
                 _this._path.classList.add("selected");
                 _this._selectionPath.classList.add("selected");
@@ -61682,7 +61688,7 @@ var NodeLink = /** @class */ (function () {
         this._path.setAttribute("stroke", this._portA.element.style.backgroundColor);
     };
     NodeLink.prototype.onClick = function () {
-        this._graphCanvas.globalState.onSelectionChangedObservable.notifyObservers(this);
+        this._graphCanvas.globalState.onSelectionChangedObservable.notifyObservers({ selection: this });
     };
     NodeLink.prototype.dispose = function (notify) {
         if (notify === void 0) { notify = true; }
@@ -61755,7 +61761,8 @@ var NodePort = /** @class */ (function () {
             _this._element.classList.add("selected");
             _this._globalState.onCandidatePortSelectedObservable.notifyObservers(_this);
         });
-        this._onSelectionChangedObserver = this._globalState.onSelectionChangedObservable.add(function (selection) {
+        this._onSelectionChangedObserver = this._globalState.onSelectionChangedObservable.add(function (options) {
+            var selection = (options || {}).selection;
             if (selection === _this) {
                 _this._img.classList.add("selected");
             }
@@ -62068,7 +62075,8 @@ var FrameNodePortPropertyTabComponent = /** @class */ (function (_super) {
             port: _this_1.props.frameNodePort,
         };
         var _this = _this_1;
-        _this_1._onSelectionChangedObserver = _this_1.props.globalState.onSelectionChangedObservable.add(function (selection) {
+        _this_1._onSelectionChangedObserver = _this_1.props.globalState.onSelectionChangedObservable.add(function (options) {
+            var selection = (options || {}).selection;
             if (Object(_graphCanvas__WEBPACK_IMPORTED_MODULE_6__["isFramePortData"])(selection)) {
                 selection.port.onFramePortPositionChangedObservable.clear();
                 _this._onFramePortPositionChangedObserver = selection.port.onFramePortPositionChangedObservable.add(function (port) {
@@ -63765,11 +63773,12 @@ PropertyLedger.RegisteredControls["ColorMergerBlock"] = _properties_colorMergerP
 /*!************************!*\
   !*** ./globalState.ts ***!
   \************************/
-/*! exports provided: GlobalState */
+/*! exports provided: ISelectionChangedOptions, GlobalState */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ISelectionChangedOptions", function() { return ISelectionChangedOptions; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "GlobalState", function() { return GlobalState; });
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/dataStorage");
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__);
@@ -63779,6 +63788,12 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
+var ISelectionChangedOptions = /** @class */ (function () {
+    function ISelectionChangedOptions() {
+    }
+    return ISelectionChangedOptions;
+}());
 
 var GlobalState = /** @class */ (function () {
     function GlobalState() {
@@ -64177,7 +64192,7 @@ var GraphEditor = /** @class */ (function (_super) {
                         newFrame.isCollapsed = true;
                     }
                     // Select
-                    _this.props.globalState.onSelectionChangedObservable.notifyObservers(newFrame);
+                    _this.props.globalState.onSelectionChangedObservable.notifyObservers({ selection: newFrame });
                     return;
                 }
                 if (!_this._copiedNodes.length) {
@@ -64330,7 +64345,7 @@ var GraphEditor = /** @class */ (function (_super) {
             newNode.cleanAccumulation();
             newNodes.push(newNode);
             if (selectNew) {
-                this.props.globalState.onSelectionChangedObservable.notifyObservers(newNode);
+                this.props.globalState.onSelectionChangedObservable.notifyObservers({ selection: newNode, forceKeepSelection: true });
             }
         }
         // Relink
@@ -64547,7 +64562,7 @@ var GraphEditor = /** @class */ (function (_super) {
         newNode.y = y / this._graphCanvas.zoom;
         newNode.cleanAccumulation();
         this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
-        this.props.globalState.onSelectionChangedObservable.notifyObservers(newNode);
+        this.props.globalState.onSelectionChangedObservable.notifyObservers({ selection: newNode });
         var block = newNode.block;
         x -= this.NodeWidth + 150;
         block.inputs.forEach(function (connection) {
