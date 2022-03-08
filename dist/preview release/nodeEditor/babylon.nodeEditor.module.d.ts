@@ -102,6 +102,7 @@ declare module "babylonjs-node-editor/components/log/logComponent" {
     export class LogEntry {
         message: string;
         isError: boolean;
+        time: Date;
         constructor(message: string, isError: boolean);
     }
     export class LogComponent extends React.Component<ILogComponentProps, {
@@ -3177,6 +3178,7 @@ declare module NODEEDITOR {
     export class LogEntry {
         message: string;
         isError: boolean;
+        time: Date;
         constructor(message: string, isError: boolean);
     }
     export class LogComponent extends React.Component<ILogComponentProps, {
