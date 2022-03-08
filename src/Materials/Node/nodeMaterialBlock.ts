@@ -20,7 +20,7 @@ import { EffectFallbacks } from '../effectFallbacks';
 export class NodeMaterialBlock {
     private _buildId: number;
     private _buildTarget: NodeMaterialBlockTargets;
-    private _target: NodeMaterialBlockTargets;
+    protected _target: NodeMaterialBlockTargets;
     private _isFinalMerger = false;
     private _isInput = false;
     private _name = "";
