@@ -9,6 +9,7 @@ import { BoundingSphere } from "./boundingSphere";
 import { Scene } from "../scene";
 import { Camera } from "../Cameras/camera";
 import { Plane } from "../Maths/math.plane";
+import { EngineStore } from "../Engines/engineStore";
 
 declare type Mesh = import("../Meshes/mesh").Mesh;
 
@@ -576,16 +577,18 @@ export class Ray {
      * @param projection defines the projection matrix to use
      */
     public unprojectRayToRef(sourceX: float, sourceY: float, viewportWidth: number, viewportHeight: number, world: DeepImmutable<Matrix>, view: DeepImmutable<Matrix>, projection: DeepImmutable<Matrix>): void {
-        var matrix = TmpVectors.Matrix[0];
+        const matrix = TmpVectors.Matrix[0];
         world.multiplyToRef(view, matrix);
         matrix.multiplyToRef(projection, matrix);
         matrix.invert();
-        var nearScreenSource = TmpVectors.Vector3[0];
+
+        const nearScreenSource = TmpVectors.Vector3[0];
         nearScreenSource.x = (sourceX / viewportWidth) * 2 - 1;
         nearScreenSource.y = -((sourceY / viewportHeight) * 2 - 1);
-        nearScreenSource.z = -1.0;
+        nearScreenSource.z = EngineStore.LastCreatedEngine?.isNDCHalfZRange ? 0 : -1;
+
         // far Z need to be close but < to 1 or camera projection matrix with maxZ = 0 will NaN
-        var farScreenSource = TmpVectors.Vector3[1].copyFromFloats(nearScreenSource.x, nearScreenSource.y, 1.0 - 1e-8);
+        const farScreenSource = TmpVectors.Vector3[1].copyFromFloats(nearScreenSource.x, nearScreenSource.y, 1.0 - 1e-8);
         const nearVec3 = TmpVectors.Vector3[2];
         const farVec3 = TmpVectors.Vector3[3];
         Vector3._UnprojectFromInvertedMatrixToRef(nearScreenSource, matrix, nearVec3);
