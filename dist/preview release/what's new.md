@@ -74,6 +74,7 @@
 - Added `getCreationOptions` on `ThinEngine`. ([carolhmj](https://github.com/carolhmj))
 - Added `CompatibilityOptions.UseOpenGLOrientationForUV` to define if the system should use OpenGL convention for UVs when creating geometry or loading .babylon files (false by default) ([Deltakosh](https://github.com/deltakosh))
 - Added RuntimeError and errorCodes for runtime errors. ([jp833](https://github.com/jp833))
+- Added `AutoReleaseWorkerPool` which will automatically terminate idle workers after a specified amount of time and use them in KTX2 and Draco decoders. ([bghgary](https://github.com/bghgary))
 
 ### Engine
 
@@ -107,6 +108,7 @@
 - Added support for normalized attributes ([#11685](https://github.com/BabylonJS/Babylon.js/issues/11685)) ([RaananW](https://github.com/RaananW))
 - Added fallback error logging on mesh loading tasks if no error handler is defined. ([carolhmj](https://github.com/carolhmj))
 - Updated the glTF loader to place the skinned mesh as a sibling of the skeleton root node instead of using `skeleton.overrideMesh`. ([bghgary](https://github.com/bghgary))
+- Added support for `--bm` bump multiplier to OBJ loader ([brianzinn](https://github.com/brianzinn))
 
 ### Navigation
 
@@ -140,6 +142,7 @@
 - Added `mesh.onMeshReadyObservable` to get notified when a mesh is ready ([RaananW](https://github.com/RaananW))
 - Added support for morph targets to the mesh `BoundingInfo` refresh. ([EricBeetsOfficial-Opuscope](https://github.com/EricBeetsOfficial-Opuscope))
 - Added support for screen coverage in addition to distance for LOds. ([CraigFeldspar](https://github.com/CraigFeldspar))
+- Decreased memory usage and improved performance of `Mesh.MergeMeshes`. ([ryantrem](https://github.com/ryantrem))
 
 ### Inspector
 
@@ -154,7 +157,7 @@
 - When user hits the "New Key" button on ACE but a key already exists on that frame, update existing frame's values instead of creating a new one. ([carolhmj](https://github.com/carolhmj))
 - Added live connection to GUI editor ([darraghjburke](https://github.com/darraghjburke))
 - Add `getAlphaFromRGB` checkbox on Texture view ([carolhmj](https://github.com/carolhmj))
-
+- Make sure popups are closed when page refreshes ([RaananW](https://github.com/RaananW))
 
 ### Playground
 
@@ -341,11 +344,13 @@
 - Fix issue with cursor and 'doNotHandleCursors' on GUI ([msDestiny14](https://github.com/msDestiny14))
 - Fix issue with multi-views when using a transparent scene clear color ([Popov72](https://github.com/Popov72))
 - Fix issue with multi-views when using a hardware scaling level different from 1 ([Popov72](https://github.com/Popov72))
+- Fix matrix update for `PointerDragBehavior` and mesh with pivot ([cedricguillemet](https://github.com/cedricguillemet))
 - Fix thin instances + animated bones not rendered in the depth renderer ([Popov72](https://github.com/Popov72))
 - Fix issue with WebXR teleportation logic which would cause positional headlocking on teleporation frames ([syntheticmagus](https://github.com/syntheticmagus))
 - Fix for GUI renderAtIdealSize ([msDestiny14](https://github.com/msDestiny14))
 - Fix the strength input parameter of the NME `PerturbNormal` block that was handled as a 1/strength value ([Popov72](https://github.com/Popov72))
 - Fix an issue with audio engine not being garbage-collected when engine is disposed ([RaananW](https://github.com/RaananW))
+- Fix deprecated audio methods setPosition/setOrientation with new position/orientation values ([CedricGuillemet](https://github.com/CedricGuillemet))
 - Fix the NME `NormalBlend` block ([Popov72](https://github.com/Popov72))
 - Fix Compatibility with NPM 7 ([Sebavan](https://github.com/sebavan))
 - Fix for cloning meshes for 3D GUIs ([msDestiny14](https://github.com/msDestiny14))
@@ -410,6 +415,7 @@
 - Fix keypoint drag in ACE ([carolhmj](https://github.com/carolhmj))
 - Fix spherical harmonics computation ([Meakk](https://github.com/Meakk))
 - Fix KTX and DDS loading with baked mipmaps ([Meakk](https://github.com/Meakk))
+- Fix text rendering speed when `TextWrapping.Ellipsis` is used ([carolhmj](https://github.com/carolhmj))
 
 ## Breaking changes
 
@@ -444,3 +450,5 @@
 - Cloning and creating instances of a mesh now refreshes the bounding box applying skins and morph targets. ([bghgary](https://github.com/bghgary))
 - `KeyboardInfoPre.skipOnPointerObservable` is now correctly renamed to `KeyboardInfoPre.skipOnKeyboardObservable`. ([bghgary](https://github.com/bghgary))
 - GLTF Animations are loaded at 60 FPS by default. ([carolhmj](https://github.com/carolhmj))
+- `currentState` and `previousState` have been removed from use in `onInputChangedObservable` in the `DeviceSourceManager` ([PolygonalSun](https://github.com/PolygonalSun))
+- `PointerInput` movement enums are no longer being used in any movement event handling in the `DeviceInputSystem` and `InputManager` ([PolygonalSun](https://github.com/PolygonalSun))

@@ -11,6 +11,7 @@ import { PivotTools } from '../../Misc/pivotTools';
 import { ArcRotateCamera } from '../../Cameras/arcRotateCamera';
 import "../../Meshes/Builders/planeBuilder";
 import { CreatePlane } from "../../Meshes/Builders/planeBuilder";
+import { IPointerEvent } from "../../Events/deviceInputEvents";
 
 /**
  * A behavior that when attached to a mesh will allow the mesh to be dragged around the screen based on pointer events
@@ -225,18 +226,18 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
             if (pointerInfo.type == PointerEventTypes.POINTERDOWN) {
 
                 if (this.startAndReleaseDragOnPointerEvents && !this.dragging && pointerInfo.pickInfo && pointerInfo.pickInfo.hit && pointerInfo.pickInfo.pickedMesh && pointerInfo.pickInfo.pickedPoint && pointerInfo.pickInfo.ray && pickPredicate(pointerInfo.pickInfo.pickedMesh)) {
-                    this._startDrag((<PointerEvent>pointerInfo.event).pointerId, pointerInfo.pickInfo.ray, pointerInfo.pickInfo.pickedPoint);
+                    this._startDrag((<IPointerEvent>pointerInfo.event).pointerId, pointerInfo.pickInfo.ray, pointerInfo.pickInfo.pickedPoint);
                 }
             } else if (pointerInfo.type == PointerEventTypes.POINTERUP) {
-                if (this.startAndReleaseDragOnPointerEvents && this.currentDraggingPointerId == (<PointerEvent>pointerInfo.event).pointerId) {
+                if (this.startAndReleaseDragOnPointerEvents && this.currentDraggingPointerId == (<IPointerEvent>pointerInfo.event).pointerId) {
                     this.releaseDrag();
                 }
             } else if (pointerInfo.type == PointerEventTypes.POINTERMOVE) {
-                var pointerId = (<PointerEvent>pointerInfo.event).pointerId;
+                var pointerId = (<IPointerEvent>pointerInfo.event).pointerId;
 
                 // If drag was started with anyMouseID specified, set pointerID to the next mouse that moved
                 if (this.currentDraggingPointerId === PointerDragBehavior._AnyMouseId && pointerId !== PointerDragBehavior._AnyMouseId) {
-                    const evt = <PointerEvent>pointerInfo.event;
+                    const evt = <IPointerEvent>pointerInfo.event;
                     const isMouseEvent = evt.pointerType === "mouse" || (!this._scene.getEngine().hostInformation.isMobile && evt instanceof MouseEvent);
                     if (isMouseEvent) {
                         if (this._lastPointerRay[this.currentDraggingPointerId]) {
@@ -264,6 +265,7 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
 
         this._beforeRenderObserver = this._scene.onBeforeRenderObservable.add(() => {
             if (this._moving && this.moveAttached) {
+                let needMatrixUpdate = false;
                 PivotTools._RemoveAndStorePivotPoint(this.attachedNode);
                 // Slowly move mesh to avoid jitter
                 this._targetPosition.subtractToRef((this.attachedNode).absolutePosition, this._tmpVector);
@@ -271,8 +273,12 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
                 (this.attachedNode).getAbsolutePosition().addToRef(this._tmpVector, this._tmpVector);
                 if (this.validateDrag(this._tmpVector)) {
                     (this.attachedNode).setAbsolutePosition(this._tmpVector);
+                    needMatrixUpdate = true;
                 }
                 PivotTools._RestorePivotPoint(this.attachedNode);
+                if (needMatrixUpdate) {
+                    (this.attachedNode).computeWorldMatrix();
+                }
             }
         });
     }

@@ -93,6 +93,13 @@ export class TouchHolographicButton extends TouchButton3D {
     }
 
     /**
+     * Gets the mesh used to render this control
+     */
+    public get mesh(): Nullable<AbstractMesh> {
+        return this._backPlate as AbstractMesh;
+    }
+
+    /**
      * Text to be displayed on the tooltip shown when hovering on the button. When set to null tooltip is disabled. (Default: null)
      */
     public set tooltipText(text: Nullable<string>) {
@@ -247,7 +254,7 @@ export class TouchHolographicButton extends TouchButton3D {
         };
 
         this.pointerDownAnimation = () => {
-            if (this._frontPlate && !this._isNearPressed) {
+            if (this._frontPlate && !this.isActiveNearInteraction) {
                 this._frontPlate.scaling.z = this._frontPlateDepth * 0.2;
                 this._frontPlate.position = Vector3.Forward(this._frontPlate._scene.useRightHandedSystem).scale((this._frontPlateDepth - (0.2 * this._frontPlateDepth)) / 2);
                 this._textPlate.position = Vector3.Forward(this._textPlate._scene.useRightHandedSystem).scale(-(this._backPlateDepth + (0.2 * this._frontPlateDepth)) / 2);
@@ -262,7 +269,7 @@ export class TouchHolographicButton extends TouchButton3D {
         };
 
         this.onPointerMoveObservable.add((position) => {
-            if (this._frontPlate && this._isNearPressed) {
+            if (this._frontPlate && this.isActiveNearInteraction) {
                 const scale = Vector3.Zero();
                 if (this._backPlate.getWorldMatrix().decompose(scale, undefined, undefined)) {
                     let interactionHeight = this._getInteractionHeight(position, this._backPlate.getAbsolutePosition()) / scale.z;
@@ -364,7 +371,7 @@ export class TouchHolographicButton extends TouchButton3D {
             scene
         );
 
-        this._backPlate.position = Vector3.Forward(scene.useRightHandedSystem).scale(-this._backPlateDepth / 2);
+        this._backPlate.position = Vector3.Forward(scene.useRightHandedSystem).scale(this._backPlateDepth / 2);
         this._backPlate.isPickable = false;
 
         this._textPlate = <Mesh>super._createNode(scene);
@@ -375,10 +382,13 @@ export class TouchHolographicButton extends TouchButton3D {
         this._backPlate.addChild(collisionMesh);
         this._backPlate.addChild(this._textPlate);
 
+        let tn = new TransformNode(`{this.name}_root`, scene);
+        this._backPlate.setParent(tn);
+
         this.collisionMesh = collisionMesh;
         this.collidableFrontDirection = this._backPlate.forward.negate(); // Mesh is facing the wrong way
 
-        return this._backPlate;
+        return tn;
     }
 
     protected _applyFacade(facadeTexture: AdvancedDynamicTexture) {

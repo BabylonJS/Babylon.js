@@ -6,6 +6,7 @@ import * as React from "react";
 import { DragOverLocation, GlobalState } from "../../../../globalState";
 import { Grid } from "babylonjs-gui/2D/controls/grid";
 import { Container } from "babylonjs-gui/2D/controls/container";
+import { ControlTypes } from "../../../../controlTypes";
 
 const visibilityNotActiveIcon: string = require("../../../../../public/imgs/visibilityNotActiveIcon.svg");
 const visibilityActiveIcon: string = require("../../../../../public/imgs/visibilityActiveIcon.svg");
@@ -18,7 +19,7 @@ interface IControlTreeItemComponentProps {
     onClick: () => void;
     globalState: GlobalState;
     isHovered: boolean;
-    dragOverHover: boolean;
+    isDragOver: boolean;
     dragOverLocation: DragOverLocation;
 }
 
@@ -57,8 +58,12 @@ export class ControlTreeItemComponent extends React.Component<IControlTreeItemCo
             bracket = (control.parent as Grid).getChildCellInfo(this.props.control);
         }
         let draggingSelf = this.props.globalState.draggedControl === control;
+        const controlType = ControlTypes.find(type => type.className === control.getClassName());
         return (
             <div className="controlTools">
+                {controlType && <div className="controlType icon">
+                    <img src={controlType.icon} alt={controlType.className}/>
+                </div>}
                 <TreeItemLabelComponent
                     label={control.name}
                     bracket={bracket}
@@ -67,7 +72,7 @@ export class ControlTreeItemComponent extends React.Component<IControlTreeItemCo
                     setRenaming={renaming => this.setState({isRenaming: renaming})}
                     renaming={this.state.isRenaming}
                 />
-                {!draggingSelf && this.props.dragOverHover && this.props.dragOverLocation == DragOverLocation.CENTER && control instanceof Container && (
+                {!draggingSelf && this.props.isDragOver && this.props.dragOverLocation == DragOverLocation.CENTER && control instanceof Container && (
                     <>
                         <div className="makeChild icon" onClick={() => this.highlight()} title="Make Child">
                             <img src={makeChildOfContainerIcon} />

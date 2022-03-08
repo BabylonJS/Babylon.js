@@ -37,9 +37,12 @@
 }
 
 #rightGrab {
-    grid-row: 1 / span 2;
-    grid-column: 5;
     cursor: ew-resize;
+    width: 5px;
+    height: 1000000px;
+    position: absolute;
+    top: 0;
+    left: 0;
 }
 
 
@@ -101,12 +104,13 @@
 
 .right-panel {
     grid-row: 1 / span 2;
-    grid-column: 6;
+    grid-column: 5;
     display: grid;
     grid-template-rows: 1fr 40px auto 40px;
     grid-template-columns: 100%;
     height: calc(100% - var(--blackBarHeight));
     overflow-y: auto;
+    position: relative;
 
     #propertyTab {
         grid-row: 1;

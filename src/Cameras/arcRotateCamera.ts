@@ -1,4 +1,4 @@
-import { serialize, serializeAsVector3, serializeAsMeshReference } from "../Misc/decorators";
+import { serialize, serializeAsVector3, serializeAsMeshReference, serializeAsVector2 } from "../Misc/decorators";
 import { Observable } from "../Misc/observable";
 import { Nullable } from "../types";
 import { Scene } from "../scene";
@@ -508,7 +508,7 @@ export class ArcRotateCamera extends TargetCamera {
     /**
      * Defines a screen offset for the camera position.
      */
-    @serialize()
+    @serializeAsVector2()
     public targetScreenOffset = Vector2.Zero();
 
     /**
@@ -939,7 +939,7 @@ export class ArcRotateCamera extends TargetCamera {
             localDirection.multiplyInPlace(this.panningAxis);
             Vector3.TransformNormalToRef(localDirection, this._cameraTransformMatrix, this._transformedDirection);
             // Eliminate y if mapPanning is enabled
-            if (this.mapPanning) {
+            if (this.mapPanning || !this.panningAxis.y) {
                 this._transformedDirection.y = 0;
             }
 

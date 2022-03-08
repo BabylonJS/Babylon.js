@@ -86,15 +86,47 @@ export class TextureBlock extends NodeMaterialBlock {
         return !!this._imageSource;
     }
 
+    private _convertToGammaSpace = false;
     /**
      * Gets or sets a boolean indicating if content needs to be converted to gamma space
      */
-    public convertToGammaSpace = false;
+    public set convertToGammaSpace(value: boolean) {
+        if (value === this._convertToGammaSpace) {
+            return;
+        }
 
+        this._convertToGammaSpace = value;
+        if (this.texture) {
+            const scene = this.texture.getScene() ?? EngineStore.LastCreatedScene;
+            scene?.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
+                return mat.hasTexture(this.texture!);
+            });
+        }
+    }
+    public get convertToGammaSpace(): boolean {
+        return this._convertToGammaSpace;
+    }
+
+    private _convertToLinearSpace = false;
     /**
      * Gets or sets a boolean indicating if content needs to be converted to linear space
      */
-    public convertToLinearSpace = false;
+    public set convertToLinearSpace(value: boolean) {
+        if (value === this._convertToLinearSpace) {
+            return;
+        }
+
+        this._convertToLinearSpace = value;
+        if (this.texture) {
+            const scene = this.texture.getScene() ?? EngineStore.LastCreatedScene;
+            scene?.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
+                return mat.hasTexture(this.texture!);
+            });
+        }
+    }
+    public get convertToLinearSpace(): boolean {
+        return this._convertToLinearSpace;
+    }
 
     /**
      * Gets or sets a boolean indicating if multiplication of texture with level should be disabled

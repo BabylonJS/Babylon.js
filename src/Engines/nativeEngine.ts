@@ -764,7 +764,7 @@ class CommandBufferEncoder {
 /** @hidden */
 export class NativeEngine extends Engine {
     // This must match the protocol version in NativeEngine.cpp
-    private static readonly PROTOCOL_VERSION = 2;
+    private static readonly PROTOCOL_VERSION = 4;
 
     private readonly _engine: INativeEngine = new _native.Engine();
     private readonly _camera: Nullable<INativeCamera> = _native.Camera ? new _native.Camera() : null;
@@ -2258,6 +2258,35 @@ export class NativeEngine extends Engine {
             this._commandBufferEncoder.encodeCommandArgAsNativeData(framebuffer as NativeData);
             this._commandBufferEncoder.finishEncodingCommand();
         }
+    }
+
+    /** @hidden */
+    /**
+     * Engine abstraction for loading and creating an image bitmap from a given source string.
+     * @param imageSource source to load the image from.
+     * @param options An object that sets options for the image's extraction.
+     * @returns ImageBitmap
+     */
+     public createImageBitmapFromSource(imageSource: string, options?: ImageBitmapOptions): Promise<ImageBitmap> {
+        const promise = new Promise<ImageBitmap>((resolve, reject) => {
+            const image = this.createCanvasImage();
+            image.onload = () => {
+                const imageBitmap = this._engine.createImageBitmap(image);
+                if (imageBitmap) {
+                    resolve(imageBitmap);
+                    return;
+                } else {
+                    reject (`Error loading image ${image.src}`);
+                }
+            };
+            image.onerror = () => {
+                reject(`Error loading image ${image.src}`);
+            };
+
+            image.src = imageSource;
+        });
+
+        return promise;
     }
 
     /**

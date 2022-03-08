@@ -20,13 +20,13 @@ export enum DragOverLocation {
 }
 
 export class GlobalState {
-    [x: string]: any;
     liveGuiTexture: Nullable<AdvancedDynamicTexture>;
     guiTexture: AdvancedDynamicTexture;
     hostElement: HTMLElement;
     hostDocument: HTMLDocument;
     hostWindow: Window;
-    onSelectionChangedObservable = new Observable<Nullable<Control>>();
+    selectedControls: Control[] = [];
+    onSelectionChangedObservable = new Observable<void>();
     onResizeObservable = new Observable<ISize>();
     onBuiltObservable = new Observable<void>();
     onResetRequiredObservable = new Observable<void>();
@@ -40,6 +40,7 @@ export class GlobalState {
     onPopupClosedObservable = new Observable<void>();
     private _backgroundColor: Color3;
     private _outlines: boolean = false;
+    isMultiSelecting: boolean = false;
     onOutlineChangedObservable = new Observable<void>();
     blockKeyboardEvents = false;
     controlCamera: boolean;
@@ -57,6 +58,7 @@ export class GlobalState {
     onSnippetSaveObservable = new Observable<void>();
     onResponsiveChangeObservable = new Observable<boolean>();
     onParentingChangeObservable = new Observable<Nullable<Control>>();
+    onDropObservable = new Observable<void>();
     onPropertyGridUpdateRequiredObservable = new Observable<void>();
     onDraggingEndObservable = new Observable<void>();
     onDraggingStartObservable = new Observable<void>();
@@ -68,6 +70,9 @@ export class GlobalState {
     onPointerUpObservable = new Observable<Nullable<React.PointerEvent<HTMLCanvasElement> | PointerEvent>>();
     draggedControl: Nullable<Control> = null;
     draggedControlDirection: DragOverLocation;
+    onCopyObservable = new Observable<(content: string) => void>();
+    onCutObservable = new Observable<(content: string) => void>();
+    onPasteObservable = new Observable<string>();
     isSaving = false;
     public lockObject = new LockObject();
     storeEditorData: (serializationObject: any) => void;
@@ -85,6 +90,38 @@ export class GlobalState {
         this.onBackgroundColorChangeObservable.notifyObservers();
 
         CoordinateHelper.globalState = this;
+    }
+
+    /** adds copy, cut and paste listeners to the host window */
+    public registerEventListeners() {
+        this.hostDocument.addEventListener("copy", (event) => {
+            const target = event.target as HTMLElement;
+            if (!target.isContentEditable && target.tagName !== "input" && target.tagName !== "textarea") {
+                this.onCopyObservable.notifyObservers(content => event.clipboardData?.setData("text/plain", content));
+                event.preventDefault();
+            }
+        });
+        this.hostDocument.addEventListener("cut", (event) => {
+            const target = event.target as HTMLElement;
+            if (!target.isContentEditable && target.tagName !== "input" && target.tagName !== "textarea") {
+                this.onCutObservable.notifyObservers(content => event.clipboardData?.setData("text/plain", content));
+                event.preventDefault();
+            }
+        });
+        this.hostDocument.addEventListener("paste", (event) => {
+            const target = event.target as HTMLElement;
+            if (!target.isContentEditable && target.tagName !== "input" && target.tagName !== "textarea") {
+                this.onPasteObservable.notifyObservers(event.clipboardData?.getData("text") || "");
+                event.preventDefault();
+            }
+        });
+        this.hostDocument.addEventListener("keydown", evt => this._updateKeys(evt));
+        this.hostDocument.addEventListener("keyup", evt => this._updateKeys(evt));
+        this.hostDocument.addEventListener("keypress", evt => this._updateKeys(evt));
+    }
+
+    private _updateKeys(event: KeyboardEvent) {
+        this.isMultiSelecting = event.ctrlKey;
     }
 
     public get backgroundColor() {
@@ -106,5 +143,29 @@ export class GlobalState {
     public set outlines(value: boolean) {
         this._outlines = value;
         this.onOutlineChangedObservable.notifyObservers();
+    }
+
+    public select(control: Control) {
+        if (this.isMultiSelecting && this.isMultiSelectable(control)) {
+            let index = this.selectedControls.indexOf(control);
+            if (index === -1) {
+                this.setSelection([...this.selectedControls, control])
+            } else {
+                this.setSelection(this.selectedControls.filter(node => node !== control));
+            }
+        } else {
+            this.setSelection([control]);
+        }
+    }
+
+    public setSelection(controls: Control[]) {
+        this.selectedControls = [...controls];
+        this.onSelectionChangedObservable.notifyObservers();
+    }
+
+    public isMultiSelectable(control: Control) : boolean {
+        if (this.selectedControls.length === 0) return true;
+        if (this.selectedControls[0].parent === control.parent) return true;
+        return false;
     }
 }

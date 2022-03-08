@@ -25,7 +25,6 @@ import "./Extensions/engine.alpha";
 import "./Extensions/engine.readTexture";
 import "./Extensions/engine.dynamicBuffer";
 import { IAudioEngine } from '../Audio/Interfaces/IAudioEngine';
-import { IPointerEvent } from "../Events/deviceInputEvents";
 
 declare type Material = import("../Materials/material").Material;
 declare type PostProcess = import("../PostProcesses/postProcess").PostProcess;
@@ -291,6 +290,33 @@ export class Engine extends ThinEngine {
         return EngineStore.LastCreatedScene;
     }
 
+    /** @hidden */
+    /**
+     * Engine abstraction for loading and creating an image bitmap from a given source string.
+     * @param imageSource source to load the image from.
+     * @param options An object that sets options for the image's extraction.
+     * @returns ImageBitmap.
+     */
+    public createImageBitmapFromSource(imageSource: string, options?: ImageBitmapOptions): Promise<ImageBitmap> {
+        const promise = new Promise<ImageBitmap>((resolve, reject) => {
+            const image = new Image();
+            image.onload = () => {
+                image.decode().then(() => {
+                    this.createImageBitmap(image, options).then((imageBitmap) => {
+                        resolve(imageBitmap);
+                    });
+                });
+            };
+            image.onerror = () => {
+                reject(`Error loading image ${image.src}`);
+            };
+
+            image.src = imageSource;
+        });
+
+        return promise;
+    }
+
     /**
      * Engine abstraction for createImageBitmap
      * @param image source for image
@@ -409,7 +435,7 @@ export class Engine extends ThinEngine {
     /**
      * Observable event triggered each time the canvas receives pointerout event
      */
-    public onCanvasPointerOutObservable = new Observable<IPointerEvent>();
+    public onCanvasPointerOutObservable = new Observable<PointerEvent>();
 
     /**
      * Observable raised when the engine begins a new frame

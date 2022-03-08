@@ -218,7 +218,7 @@
         -webkit-user-select: none; 
         -moz-user-select: none;   
         -ms-user-select: none;    
-        user-select: none;         
+        user-select: none;
         display: grid;
         grid-template-columns: 20px 1fr;
         border: 2px solid transparent;
@@ -248,7 +248,7 @@
         }
 
         &.parent {
-            background: #ffffff ;
+            background: #ffffff;
             color: black;
         }
         
@@ -399,36 +399,42 @@
             grid-column: 2;
             display: grid;
             align-items: center;
+            grid-template-columns: auto 1fr auto auto auto;
+
+            .controlType {
+                grid-column: 1;
+                img {
+                    width: 32px;
+                    height: 32px;
+                    filter: invert(100%);
+                }
+            }
 
             .highlight {
-                grid-column: 2;
+                grid-column: 3;
             }
 
             .visibility {
-                grid-column: 3;
+                grid-column: 4;
             }
 
             .extensions {
                 width: 20px;
-                grid-column: 4;
+                grid-column: 5;
             }
         }   
         
         .title {
-            grid-column: 1;
             background: transparent;
             white-space: nowrap;
             overflow: hidden;
             min-width: 0;
-            margin-right: 5px;     
-            display: grid;
+            margin-right: 5px;
             align-items: center;  
-            grid-template-columns: 1fr; 
             height: 24px;
             cursor: pointer;
 
             .titleText {
-                grid-column: 1;
                 white-space: nowrap;
                 text-overflow: ellipsis;
                 overflow: hidden;

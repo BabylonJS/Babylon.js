@@ -604,7 +604,6 @@ export class EnvironmentHelper {
             this._groundMirror.anisotropicFilteringLevel = 1;
             this._groundMirror.wrapU = wrapping;
             this._groundMirror.wrapV = wrapping;
-            this._groundMirror.gammaSpace = false;
 
             if (this._groundMirror.renderList) {
                 for (let i = 0; i < this._scene.meshes.length; i++) {
@@ -618,11 +617,12 @@ export class EnvironmentHelper {
             }
         }
 
+        const gammaGround = this._options.groundColor.toGammaSpace();
         this._groundMirror.clearColor = new Color4(
-            this._options.groundColor.r,
-            this._options.groundColor.g,
-            this._options.groundColor.b,
-            1);
+            gammaGround.r,
+            gammaGround.g,
+            gammaGround.b,
+        1);
         this._groundMirror.adaptiveBlurKernel = this._options.groundMirrorBlurKernel;
     }
 

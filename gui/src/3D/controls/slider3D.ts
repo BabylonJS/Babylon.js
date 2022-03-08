@@ -46,6 +46,8 @@ export class Slider3D extends Control3D {
     private _value: number;
     private _step: number;
 
+    private _draggedPosition: number;
+
     /** Observable raised when the sldier value changes */
     public onValueChangedObservable = new Observable<number>();
 
@@ -127,6 +129,9 @@ export class Slider3D extends Control3D {
         }
 
         this._value = Math.max(Math.min(value, this._maximum), this._minimum);
+        if (this._sliderThumb) {
+            this._sliderThumb.position.x = this._convertToPosition(this.value);
+        }
         this.onValueChangedObservable.notifyObservers(this._value);
     }
 
@@ -241,14 +246,13 @@ export class Slider3D extends Control3D {
         const pointerDragBehavior = new PointerDragBehavior({ dragAxis: Vector3.Right() });
         pointerDragBehavior.moveAttached = false;
 
-        pointerDragBehavior.onDragObservable.add((event) => {
-            const newPosition = this._sliderThumb.position.x + event.dragDistance / this.scaling.x;
-            this._sliderThumb.position.x = Math.max(Math.min(newPosition, this.end), this.start);
-            this.value = this._convertToValue(this._sliderThumb.position.x);
+        pointerDragBehavior.onDragStartObservable.add((event) => {
+            this._draggedPosition = this._sliderThumb.position.x;
         });
 
-        pointerDragBehavior.onDragEndObservable.add((event) => {
-            this._sliderThumb.position.x = this._convertToPosition(this.value);
+        pointerDragBehavior.onDragObservable.add((event) => {
+            this._draggedPosition += event.dragDistance / this.scaling.x;
+            this.value = this._convertToValue(this._draggedPosition);
         });
 
         return pointerDragBehavior;

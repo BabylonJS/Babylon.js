@@ -401,6 +401,7 @@ declare module "babylonjs-gui/2D/advancedDynamicTexture" {
         private _resizeObserver;
         private _preKeyboardObserver;
         private _pointerMoveObserver;
+        private _sceneRenderObserver;
         private _pointerObserver;
         private _canvasPointerOutObserver;
         private _canvasBlurObserver;
@@ -574,6 +575,13 @@ declare module "babylonjs-gui/2D/advancedDynamicTexture" {
         get clipboardData(): string;
         set clipboardData(value: string);
         /**
+         * If set to true, every scene render will trigger a pointer event for the GUI
+         * if it is linked to a mesh or has controls linked to a mesh. This will allow
+         * you to catch the pointer moving around the GUI due to camera or mesh movements,
+         * but it has a performance cost.
+         */
+        checkPointerEveryFrame: boolean;
+        /**
          * Creates a new AdvancedDynamicTexture
          * @param name defines the name of the texture
          * @param width defines the width of the texture
@@ -675,6 +683,7 @@ declare module "babylonjs-gui/2D/advancedDynamicTexture" {
         }, control: Control): void;
         /** @hidden */
         _cleanControlAfterRemoval(control: Control): void;
+        private _translateToPicking;
         /** Attach to all scene events required to support pointer events */
         attach(): void;
         /** @hidden */
@@ -703,6 +712,7 @@ declare module "babylonjs-gui/2D/advancedDynamicTexture" {
          */
         moveFocusToControl(control: IFocusableControl): void;
         private _manageFocus;
+        private _attachPickingToSceneRender;
         private _attachToOnPointerOut;
         private _attachToOnBlur;
         /**
@@ -784,6 +794,7 @@ declare module "babylonjs-gui/2D/advancedDynamicTexture" {
          */
         scaleTo(width: number, height: number): void;
     }
+    export { IFocusableControl };
 }
 declare module "babylonjs-gui/2D/controls/control" {
     import { Nullable } from "babylonjs/types";
@@ -1451,17 +1462,17 @@ declare module "babylonjs-gui/2D/controls/control" {
          */
         contains(x: number, y: number): boolean;
         /** @hidden */
-        _processPicking(x: number, y: number, pi: PointerInfoBase, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
+        _processPicking(x: number, y: number, pi: Nullable<PointerInfoBase>, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
         /** @hidden */
-        _onPointerMove(target: Control, coordinates: Vector2, pointerId: number, pi: PointerInfoBase): void;
+        _onPointerMove(target: Control, coordinates: Vector2, pointerId: number, pi: Nullable<PointerInfoBase>): void;
         /** @hidden */
-        _onPointerEnter(target: Control, pi: PointerInfoBase): boolean;
+        _onPointerEnter(target: Control, pi: Nullable<PointerInfoBase>): boolean;
         /** @hidden */
         _onPointerOut(target: Control, pi: Nullable<PointerInfoBase>, force?: boolean): void;
         /** @hidden */
-        _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, pi: PointerInfoBase): boolean;
+        _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, pi: Nullable<PointerInfoBase>): boolean;
         /** @hidden */
-        _onPointerUp(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean, pi?: PointerInfoBase): void;
+        _onPointerUp(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean, pi?: Nullable<PointerInfoBase>): void;
         /** @hidden */
         _forcePointerUp(pointerId?: Nullable<number>): void;
         /** @hidden */
@@ -1469,7 +1480,7 @@ declare module "babylonjs-gui/2D/controls/control" {
         /** @hidden */
         _onCanvasBlur(): void;
         /** @hidden */
-        _processObservables(type: number, x: number, y: number, pi: PointerInfoBase, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
+        _processObservables(type: number, x: number, y: number, pi: Nullable<PointerInfoBase>, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
         private _prepareFont;
         /**
          * Serializes the current control
@@ -1648,7 +1659,7 @@ declare module "babylonjs-gui/2D/controls/container" {
         _draw(context: ICanvasRenderingContext, invalidatedRectangle?: Measure): void;
         getDescendantsToRef(results: Control[], directDescendantsOnly?: boolean, predicate?: (control: Control) => boolean): void;
         /** @hidden */
-        _processPicking(x: number, y: number, pi: PointerInfoBase, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
+        _processPicking(x: number, y: number, pi: Nullable<PointerInfoBase>, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
         /** @hidden */
         protected _additionalProcessing(parentMeasure: Measure, context: ICanvasRenderingContext): void;
         /**
@@ -1853,6 +1864,7 @@ declare module "babylonjs-gui/2D/controls/textBlock" {
         protected _applyStates(context: ICanvasRenderingContext): void;
         protected _breakLines(refWidth: number, refHeight: number, context: ICanvasRenderingContext): object[];
         protected _parseLine(line: string | undefined, context: ICanvasRenderingContext): object;
+        private _getCharsToRemove;
         protected _parseLineEllipsis(line: string | undefined, width: number, context: ICanvasRenderingContext): object;
         protected _parseLineWordWrap(line: string | undefined, width: number, context: ICanvasRenderingContext): object[];
         protected _parseLineWordWrapEllipsis(line: string | undefined, width: number, height: number, context: ICanvasRenderingContext): object[];
@@ -2416,6 +2428,8 @@ declare module "babylonjs-gui/2D/controls/inputText" {
         private _autoStretchWidth;
         private _maxWidth;
         private _isFocused;
+        /** the type of device that most recently focused the input: "mouse", "touch" or "pen" */
+        private _focusedBy;
         private _blinkTimeout;
         private _blinkIsEven;
         private _cursorOffset;
@@ -4376,7 +4390,8 @@ declare module "babylonjs-gui/3D/controls/touchButton3D" {
     export class TouchButton3D extends Button3D {
         private _collisionMesh;
         private _collidableFrontDirection;
-        protected _isNearPressed: boolean;
+        private _isNearPressed;
+        private _interactionSurfaceHeight;
         private _isToggleButton;
         private _toggleState;
         private _toggleButtonCallback;
@@ -4390,6 +4405,10 @@ declare module "babylonjs-gui/3D/controls/touchButton3D" {
          * @param collisionMesh mesh to track collisions with
          */
         constructor(name?: string, collisionMesh?: Mesh);
+        /**
+         * Whether the current interaction is caused by near interaction or not
+         */
+        get isActiveNearInteraction(): boolean;
         /**
          * Sets the front-facing direction of the button. Pass in Vector3.Zero to allow interactions from any direction
          * @param frontDir the forward direction of the button
@@ -4418,6 +4437,12 @@ declare module "babylonjs-gui/3D/controls/touchButton3D" {
         get isToggled(): boolean;
         protected _onToggle(newState: boolean): void;
         private _isInteractionInFrontOfButton;
+        /**
+         * Get the height of the touchPoint from the collidable part of the button
+         * @param touchPoint the point to compare to the button, in absolute position
+         * @returns the depth of the touch point into the front of the button
+         */
+        getPressDepth(touchPoint: Vector3): number;
         protected _getInteractionHeight(interactionPos: Vector3, basePos: Vector3): number;
         /** @hidden */
         _generatePointerEventType(providedType: number, nearMeshPosition: Vector3, activeInteractionCount: number): number;
@@ -5124,6 +5149,7 @@ declare module "babylonjs-gui/3D/controls/touchHolographicButton" {
     import { FluentButtonMaterial } from "babylonjs-gui/3D/materials/fluentButton/fluentButtonMaterial";
     import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
     import { TouchButton3D } from "babylonjs-gui/3D/controls/touchButton3D";
+    import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
     /**
      * Class used to create a holographic button in 3D
      * @since 5.0.0
@@ -5165,6 +5191,10 @@ declare module "babylonjs-gui/3D/controls/touchHolographicButton" {
          */
         set renderingGroupId(id: number);
         get renderingGroupId(): number;
+        /**
+         * Gets the mesh used to render this control
+         */
+        get mesh(): Nullable<AbstractMesh>;
         /**
          * Text to be displayed on the tooltip shown when hovering on the button. When set to null tooltip is disabled. (Default: null)
          */
@@ -5514,6 +5544,7 @@ declare module "babylonjs-gui/3D/gizmos/slateGizmo" {
          * Value we use to offset handles from mesh
          */
         private _margin;
+        private _handleSize;
         private _attachedSlate;
         private _existingSlateScale;
         /**
@@ -5524,10 +5555,6 @@ declare module "babylonjs-gui/3D/gizmos/slateGizmo" {
          * The distance away from the object which the draggable meshes should appear world sized when fixedScreenSize is set to true (default: 10)
          */
         fixedScreenSizeDistanceFactor: number;
-        /**
-         * Size of the handles (meters in XR)
-         */
-        handleSize: number;
         /**
          * The slate attached to this gizmo
          */
@@ -5546,6 +5573,7 @@ declare module "babylonjs-gui/3D/gizmos/slateGizmo" {
          */
         updateBoundingBox(): void;
         private _updateHandlesPosition;
+        private _updateHandlesScaling;
         protected _update(): void;
         dispose(): void;
     }
@@ -5750,22 +5778,6 @@ declare module "babylonjs-gui/3D/controls/holographicSlate" {
         static FOLLOW_ICON_FILENAME: string;
         private static DEFAULT_TEXT_RESOLUTION_Y;
         /**
-         * 2D dimensions of the slate
-         */
-        dimensions: Vector2;
-        /**
-         * Minimum dimensions of the slate
-         */
-        minDimensions: Vector2;
-        /**
-         * Default dimensions of the slate
-         */
-        readonly defaultDimensions: Vector2;
-        /**
-         * Height of the title bar component
-         */
-        titleBarHeight: number;
-        /**
          * Margin between title bar and contentplate
          */
         titleBarMargin: number;
@@ -5773,7 +5785,10 @@ declare module "babylonjs-gui/3D/controls/holographicSlate" {
          * Origin in local coordinates (top left corner)
          */
         origin: Vector3;
+        private _dimensions;
+        private _titleBarHeight;
         private _titleBarMaterial;
+        private _backMaterial;
         private _contentMaterial;
         private _pickedPointObserver;
         private _positionChangedObserver;
@@ -5791,9 +5806,29 @@ declare module "babylonjs-gui/3D/controls/holographicSlate" {
         protected _titleBar: Mesh;
         protected _titleBarTitle: Mesh;
         protected _contentPlate: Mesh;
-        protected _followButton: TouchHolographicButton;
+        protected _backPlate: Mesh;
+        /** @hidden */
+        _followButton: TouchHolographicButton;
         protected _closeButton: TouchHolographicButton;
         protected _contentScaleRatio: number;
+        /**
+         * 2D dimensions of the slate
+         */
+        get dimensions(): Vector2;
+        set dimensions(value: Vector2);
+        /**
+         * Minimum dimensions of the slate
+         */
+        minDimensions: Vector2;
+        /**
+         * Default dimensions of the slate
+         */
+        readonly defaultDimensions: Vector2;
+        /**
+         * Height of the title bar component
+         */
+        get titleBarHeight(): number;
+        set titleBarHeight(value: number);
         /**
          * Rendering ground id of all the meshes
          */
@@ -5834,8 +5869,9 @@ declare module "babylonjs-gui/3D/controls/holographicSlate" {
         _prepareNode(scene: Scene): void;
         /**
          * Resets the aspect and pose of the slate so it is right in front of the active camera, facing towards it.
+         * @param resetAspect Should the slate's dimensions/aspect ratio be reset as well
          */
-        resetDefaultAspectAndPose(): void;
+        resetDefaultAspectAndPose(resetAspect?: boolean): void;
         /**
          * Releases all associated resources
          */
@@ -6929,6 +6965,7 @@ declare module "babylonjs-gui/3D/controls/slider3D" {
         private _maximum;
         private _value;
         private _step;
+        private _draggedPosition;
         /** Observable raised when the sldier value changes */
         onValueChangedObservable: Observable<number>;
         /**
@@ -7547,6 +7584,7 @@ declare module BABYLON.GUI {
         private _resizeObserver;
         private _preKeyboardObserver;
         private _pointerMoveObserver;
+        private _sceneRenderObserver;
         private _pointerObserver;
         private _canvasPointerOutObserver;
         private _canvasBlurObserver;
@@ -7720,6 +7758,13 @@ declare module BABYLON.GUI {
         get clipboardData(): string;
         set clipboardData(value: string);
         /**
+         * If set to true, every scene render will trigger a pointer event for the GUI
+         * if it is linked to a mesh or has controls linked to a mesh. This will allow
+         * you to catch the pointer moving around the GUI due to camera or mesh movements,
+         * but it has a performance cost.
+         */
+        checkPointerEveryFrame: boolean;
+        /**
          * Creates a new AdvancedDynamicTexture
          * @param name defines the name of the texture
          * @param width defines the width of the texture
@@ -7821,6 +7866,7 @@ declare module BABYLON.GUI {
         }, control: Control): void;
         /** @hidden */
         _cleanControlAfterRemoval(control: Control): void;
+        private _translateToPicking;
         /** Attach to all scene events required to support pointer events */
         attach(): void;
         /** @hidden */
@@ -7849,6 +7895,7 @@ declare module BABYLON.GUI {
          */
         moveFocusToControl(control: IFocusableControl): void;
         private _manageFocus;
+        private _attachPickingToSceneRender;
         private _attachToOnPointerOut;
         private _attachToOnBlur;
         /**
@@ -8584,17 +8631,17 @@ declare module BABYLON.GUI {
          */
         contains(x: number, y: number): boolean;
         /** @hidden */
-        _processPicking(x: number, y: number, pi: BABYLON.PointerInfoBase, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
+        _processPicking(x: number, y: number, pi: BABYLON.Nullable<BABYLON.PointerInfoBase>, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
         /** @hidden */
-        _onPointerMove(target: Control, coordinates: BABYLON.Vector2, pointerId: number, pi: BABYLON.PointerInfoBase): void;
+        _onPointerMove(target: Control, coordinates: BABYLON.Vector2, pointerId: number, pi: BABYLON.Nullable<BABYLON.PointerInfoBase>): void;
         /** @hidden */
-        _onPointerEnter(target: Control, pi: BABYLON.PointerInfoBase): boolean;
+        _onPointerEnter(target: Control, pi: BABYLON.Nullable<BABYLON.PointerInfoBase>): boolean;
         /** @hidden */
         _onPointerOut(target: Control, pi: BABYLON.Nullable<BABYLON.PointerInfoBase>, force?: boolean): void;
         /** @hidden */
-        _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, pi: BABYLON.PointerInfoBase): boolean;
+        _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, pi: BABYLON.Nullable<BABYLON.PointerInfoBase>): boolean;
         /** @hidden */
-        _onPointerUp(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean, pi?: BABYLON.PointerInfoBase): void;
+        _onPointerUp(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean, pi?: BABYLON.Nullable<BABYLON.PointerInfoBase>): void;
         /** @hidden */
         _forcePointerUp(pointerId?: BABYLON.Nullable<number>): void;
         /** @hidden */
@@ -8602,7 +8649,7 @@ declare module BABYLON.GUI {
         /** @hidden */
         _onCanvasBlur(): void;
         /** @hidden */
-        _processObservables(type: number, x: number, y: number, pi: BABYLON.PointerInfoBase, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
+        _processObservables(type: number, x: number, y: number, pi: BABYLON.Nullable<BABYLON.PointerInfoBase>, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
         private _prepareFont;
         /**
          * Serializes the current control
@@ -8774,7 +8821,7 @@ declare module BABYLON.GUI {
         _draw(context: BABYLON.ICanvasRenderingContext, invalidatedRectangle?: Measure): void;
         getDescendantsToRef(results: Control[], directDescendantsOnly?: boolean, predicate?: (control: Control) => boolean): void;
         /** @hidden */
-        _processPicking(x: number, y: number, pi: BABYLON.PointerInfoBase, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
+        _processPicking(x: number, y: number, pi: BABYLON.Nullable<BABYLON.PointerInfoBase>, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
         /** @hidden */
         protected _additionalProcessing(parentMeasure: Measure, context: BABYLON.ICanvasRenderingContext): void;
         /**
@@ -8971,6 +9018,7 @@ declare module BABYLON.GUI {
         protected _applyStates(context: BABYLON.ICanvasRenderingContext): void;
         protected _breakLines(refWidth: number, refHeight: number, context: BABYLON.ICanvasRenderingContext): object[];
         protected _parseLine(line: string | undefined, context: BABYLON.ICanvasRenderingContext): object;
+        private _getCharsToRemove;
         protected _parseLineEllipsis(line: string | undefined, width: number, context: BABYLON.ICanvasRenderingContext): object;
         protected _parseLineWordWrap(line: string | undefined, width: number, context: BABYLON.ICanvasRenderingContext): object[];
         protected _parseLineWordWrapEllipsis(line: string | undefined, width: number, height: number, context: BABYLON.ICanvasRenderingContext): object[];
@@ -9494,6 +9542,8 @@ declare module BABYLON.GUI {
         private _autoStretchWidth;
         private _maxWidth;
         private _isFocused;
+        /** the type of device that most recently focused the input: "mouse", "touch" or "pen" */
+        private _focusedBy;
         private _blinkTimeout;
         private _blinkIsEven;
         private _cursorOffset;
@@ -11281,7 +11331,8 @@ declare module BABYLON.GUI {
     export class TouchButton3D extends Button3D {
         private _collisionMesh;
         private _collidableFrontDirection;
-        protected _isNearPressed: boolean;
+        private _isNearPressed;
+        private _interactionSurfaceHeight;
         private _isToggleButton;
         private _toggleState;
         private _toggleButtonCallback;
@@ -11295,6 +11346,10 @@ declare module BABYLON.GUI {
          * @param collisionMesh mesh to track collisions with
          */
         constructor(name?: string, collisionMesh?: BABYLON.Mesh);
+        /**
+         * Whether the current interaction is caused by near interaction or not
+         */
+        get isActiveNearInteraction(): boolean;
         /**
          * Sets the front-facing direction of the button. Pass in BABYLON.Vector3.Zero to allow interactions from any direction
          * @param frontDir the forward direction of the button
@@ -11323,6 +11378,12 @@ declare module BABYLON.GUI {
         get isToggled(): boolean;
         protected _onToggle(newState: boolean): void;
         private _isInteractionInFrontOfButton;
+        /**
+         * Get the height of the touchPoint from the collidable part of the button
+         * @param touchPoint the point to compare to the button, in absolute position
+         * @returns the depth of the touch point into the front of the button
+         */
+        getPressDepth(touchPoint: BABYLON.Vector3): number;
         protected _getInteractionHeight(interactionPos: BABYLON.Vector3, basePos: BABYLON.Vector3): number;
         /** @hidden */
         _generatePointerEventType(providedType: number, nearMeshPosition: BABYLON.Vector3, activeInteractionCount: number): number;
@@ -12006,6 +12067,10 @@ declare module BABYLON.GUI {
         set renderingGroupId(id: number);
         get renderingGroupId(): number;
         /**
+         * Gets the mesh used to render this control
+         */
+        get mesh(): BABYLON.Nullable<BABYLON.AbstractMesh>;
+        /**
          * Text to be displayed on the tooltip shown when hovering on the button. When set to null tooltip is disabled. (Default: null)
          */
         set tooltipText(text: BABYLON.Nullable<string>);
@@ -12330,6 +12395,7 @@ declare module BABYLON.GUI {
          * Value we use to offset handles from mesh
          */
         private _margin;
+        private _handleSize;
         private _attachedSlate;
         private _existingSlateScale;
         /**
@@ -12340,10 +12406,6 @@ declare module BABYLON.GUI {
          * The distance away from the object which the draggable meshes should appear world sized when fixedScreenSize is set to true (default: 10)
          */
         fixedScreenSizeDistanceFactor: number;
-        /**
-         * Size of the handles (meters in XR)
-         */
-        handleSize: number;
         /**
          * The slate attached to this gizmo
          */
@@ -12362,6 +12424,7 @@ declare module BABYLON.GUI {
          */
         updateBoundingBox(): void;
         private _updateHandlesPosition;
+        private _updateHandlesScaling;
         protected _update(): void;
         dispose(): void;
     }
@@ -12544,22 +12607,6 @@ declare module BABYLON.GUI {
         static FOLLOW_ICON_FILENAME: string;
         private static DEFAULT_TEXT_RESOLUTION_Y;
         /**
-         * 2D dimensions of the slate
-         */
-        dimensions: BABYLON.Vector2;
-        /**
-         * Minimum dimensions of the slate
-         */
-        minDimensions: BABYLON.Vector2;
-        /**
-         * Default dimensions of the slate
-         */
-        readonly defaultDimensions: BABYLON.Vector2;
-        /**
-         * Height of the title bar component
-         */
-        titleBarHeight: number;
-        /**
          * Margin between title bar and contentplate
          */
         titleBarMargin: number;
@@ -12567,7 +12614,10 @@ declare module BABYLON.GUI {
          * Origin in local coordinates (top left corner)
          */
         origin: BABYLON.Vector3;
+        private _dimensions;
+        private _titleBarHeight;
         private _titleBarMaterial;
+        private _backMaterial;
         private _contentMaterial;
         private _pickedPointObserver;
         private _positionChangedObserver;
@@ -12585,9 +12635,29 @@ declare module BABYLON.GUI {
         protected _titleBar: BABYLON.Mesh;
         protected _titleBarTitle: BABYLON.Mesh;
         protected _contentPlate: BABYLON.Mesh;
-        protected _followButton: TouchHolographicButton;
+        protected _backPlate: BABYLON.Mesh;
+        /** @hidden */
+        _followButton: TouchHolographicButton;
         protected _closeButton: TouchHolographicButton;
         protected _contentScaleRatio: number;
+        /**
+         * 2D dimensions of the slate
+         */
+        get dimensions(): BABYLON.Vector2;
+        set dimensions(value: BABYLON.Vector2);
+        /**
+         * Minimum dimensions of the slate
+         */
+        minDimensions: BABYLON.Vector2;
+        /**
+         * Default dimensions of the slate
+         */
+        readonly defaultDimensions: BABYLON.Vector2;
+        /**
+         * Height of the title bar component
+         */
+        get titleBarHeight(): number;
+        set titleBarHeight(value: number);
         /**
          * Rendering ground id of all the meshes
          */
@@ -12628,8 +12698,9 @@ declare module BABYLON.GUI {
         _prepareNode(scene: BABYLON.Scene): void;
         /**
          * Resets the aspect and pose of the slate so it is right in front of the active camera, facing towards it.
+         * @param resetAspect Should the slate's dimensions/aspect ratio be reset as well
          */
-        resetDefaultAspectAndPose(): void;
+        resetDefaultAspectAndPose(resetAspect?: boolean): void;
         /**
          * Releases all associated resources
          */
@@ -13643,6 +13714,7 @@ declare module BABYLON.GUI {
         private _maximum;
         private _value;
         private _step;
+        private _draggedPosition;
         /** BABYLON.Observable raised when the sldier value changes */
         onValueChangedObservable: BABYLON.Observable<number>;
         /**

@@ -235,7 +235,7 @@ export class ColorLineComponent extends React.Component<IColorLineComponentProps
                             }}
                         />
                     </div>
-                    {this.props.icon && this.props.lockObject && (
+                    {this.props.lockObject && (
                         <TextInputLineComponent
                             lockObject={this.props.lockObject}
                             label=""
@@ -248,7 +248,7 @@ export class ColorLineComponent extends React.Component<IColorLineComponentProps
                         />
                     )}
                     <div className="copy hoverIcon" onClick={() => this.copyToClipboard()} title="Copy to clipboard">
-                        <img src={copyIcon} alt="" />
+                        <img src={copyIcon} alt="Copy" />
                     </div>
                     <div className="expand hoverIcon" onClick={() => this.switchExpandState()} title="Expand">
                         {chevron}

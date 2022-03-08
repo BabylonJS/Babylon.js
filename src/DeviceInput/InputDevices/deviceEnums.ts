@@ -25,8 +25,34 @@ export enum DeviceType {
  * Enum for All Pointers (Touch/Mouse)
  */
 export enum PointerInput {
-    /** Horizontal Axis */
+    /** Horizontal Axis (Not used in events/observables; only in polling) */
     Horizontal = 0,
+    /** Vertical Axis (Not used in events/observables; only in polling) */
+    Vertical = 1,
+    /** Left Click or Touch */
+    LeftClick = 2,
+    /** Middle Click */
+    MiddleClick = 3,
+    /** Right Click */
+    RightClick = 4,
+    /** Browser Back */
+    BrowserBack = 5,
+    /** Browser Forward */
+    BrowserForward = 6,
+    /** Mouse Wheel X */
+    MouseWheelX = 7,
+    /** Mouse Wheel Y */
+    MouseWheelY = 8,
+    /** Mouse Wheel Z */
+    MouseWheelZ = 9,
+    /** Used in events/observables to identify if x/y changes occurred */
+    Move = 12,
+}
+
+/** @hidden */
+export enum NativePointerInput {
+    /** Horizontal Axis */
+    Horizontal = PointerInput.Horizontal,
     /** Vertical Axis */
     Vertical = 1,
     /** Left Click or Touch */
@@ -49,8 +75,6 @@ export enum PointerInput {
     DeltaHorizontal = 10,
     /** Delta Y */
     DeltaVertical = 11,
-    /** Move Catch-all */
-    Move = 12,
 }
 
 /**

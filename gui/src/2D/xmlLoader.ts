@@ -1,6 +1,8 @@
 import { GetClass } from 'babylonjs/Misc/typeStore';
 import { Nullable } from 'babylonjs/types';
 
+const XmlLoaderError = "XmlLoader Exception : XML file is malformed or corrupted.";
+
 /**
 * Class used to load GUI via XML.
 */
@@ -339,7 +341,13 @@ export class XmlLoader {
         xhttp.onload = () => {
             if (xhttp.readyState === 4 && xhttp.status === 200) {
                 if (!xhttp.responseXML) {
-                    throw "XmlLoader Exception : XML file is malformed or corrupted.";
+                    if (onError) {
+                        onError(XmlLoaderError);
+                        return;
+                    }
+                    else {
+                        throw XmlLoaderError;
+                    }
                 }
 
                 let xmlDoc = xhttp.responseXML.documentElement;

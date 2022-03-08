@@ -210,31 +210,13 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         this.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
     }
 
-    /** @hidden */
-    protected _environmentIntensity: number = 1;
     /**
      * Intensity of the environment in all pbr material.
      * This dims or reinforces the IBL lighting overall (reflection and diffuse).
      * As in the majority of the scene they are the same (exception for multi room and so on),
      * this is easier to reference from here than from all the materials.
      */
-    public get environmentIntensity(): number {
-        return this._environmentIntensity;
-    }
-    /**
-     * Intensity of the environment in all pbr material.
-     * This dims or reinforces the IBL lighting overall (reflection and diffuse).
-     * As in the majority of the scene they are the same (exception for multi room and so on),
-     * this is easier to set here than in all the materials.
-     */
-    public set environmentIntensity(value: number) {
-        if (this._environmentIntensity === value) {
-            return;
-        }
-
-        this._environmentIntensity = value;
-        this.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
-    }
+    public environmentIntensity: number = 1;
 
     /** @hidden */
     protected _imageProcessingConfiguration: ImageProcessingConfiguration;
@@ -4481,10 +4463,6 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         this._pointerDownStage.clear();
         this._pointerUpStage.clear();
 
-        for (let component of this._components) {
-            component.dispose();
-        }
-
         this.importedMeshesFiles = new Array<string>();
 
         if (this.stopAllAnimations) {
@@ -4513,6 +4491,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         for (let request of this._activeRequests) {
             request.abort();
         }
+        this._activeRequests = [];
 
         // Events
         this.onDisposeObservable.notifyObservers(this);
@@ -4642,6 +4621,11 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
         // Post-processes
         this.postProcessManager.dispose();
+
+        // Components
+        for (let component of this._components) {
+            component.dispose();
+        }
 
         // Remove from engine
         index = this._engine.scenes.indexOf(this);

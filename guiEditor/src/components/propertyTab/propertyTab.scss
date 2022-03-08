@@ -2,6 +2,11 @@
     --backgroundGrey: #aaaaaa;
     --spacingHeight: 30px;
     --labelFamily: "acumin-pro-condensed-semibold";
+    --button: #333333;
+    --buttonBackground: #ffffff;
+    --buttonDisabledBackground: #c8c8c8;
+    --buttonPressed: #ffffff;
+    --buttonPressedBackground: #606060;
 }
 
 hr.ge {
@@ -106,27 +111,36 @@ hr.ge {
         border: none;
     }
 
+    .icon {
+        width: 30px;
+        height: 30px;
+    }
+
     .unit {
         width: 26px;
         height: 26px;
-        background-color: white;
+        color: var(--button);
+        background-color: var(--buttonBackground);
         border: none;
         margin-top: 2px;
+        cursor: pointer;
     }
 
     .unit.disabled {
-        background-color: #c8c8c8;
+        background-color: var(--buttonDisabledBackground);
+    }
+
+    .unit:active {
+        color: var(--buttonPressed);
+        background-color: var(--buttonPressedBackground);
     }
 
     .sliderLine {
-        padding-left: $line-padding-left;
-        padding-bottom: $line-padding-bottom;
-        padding-top: $line-padding-top;
-        padding-right: $line-padding-right;
         height: var(--spacingHeight);;
         display: grid;
         grid-template-rows: 100%;
         grid-template-columns: auto auto auto 1fr;
+        flex-grow: 1;
 
         .label {
             grid-column: 2;
@@ -134,6 +148,7 @@ hr.ge {
             align-items: center;
             min-width: 15px;
             font-family: var(--labelFamily);
+            font-weight: 600;
         }
 
         .img {
@@ -142,12 +157,10 @@ hr.ge {
             align-items: center;
         }
 
-
         .slider {
             grid-column: 4;
             grid-row: 1;
             margin-right: 5px;
-            width: 90%;
             display: flex;
             align-items: center;
             padding-left: 5px;
@@ -162,6 +175,7 @@ hr.ge {
                 display: none;
                 align-items: center;
                 font-family: var(--labelFamily);
+                font-weight: 600;
             }
         
             .short {
@@ -185,29 +199,21 @@ hr.ge {
                 }
     
                 input[type=number] {
+                    -webkit-appearance: textfield;
                     -moz-appearance: textfield;
+                    appearance: textfield;
                 }
             }
         }  
     }     
 
-    .ge-divider {
-        display: grid;
-        grid-template-columns: auto auto auto auto auto auto;
+    .ge-divider, .ge-divider-short, .ge-divider-single {
+        display: flex;
+        flex-direction: row;
         padding-right: $line-padding-right;
+        align-items: center;
+        padding-left: 5px;
     }
-
-    .ge-divider-short {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        padding-right: $line-padding-right;
-    }
-
-    .ge-divider-single {
-        display: block;
-        padding-right: $line-padding-right;
-    }
-    
     .ge-grid-divider {
         display: grid;
         grid-template-columns: 150px 1fr auto;
@@ -246,19 +252,20 @@ hr.ge {
 
     .textInputLine {
         user-select: none;
-        padding-left: $line-padding-left;
         padding-bottom: $line-padding-bottom;
         padding-top: $line-padding-top;
-        padding-right: $line-padding-right;
+        padding-right: 5px;
         height: var(--spacingHeight);
         display: grid;
         grid-template-columns: auto auto 1fr;
+        flex-grow: 1;
         .label {
             grid-column: 2;
             display: flex;
             align-items: center;
             min-width: 15px;
             font-family: var(--labelFamily);
+            font-weight: 600;
         }
 
         img {
@@ -276,14 +283,42 @@ hr.ge {
             align-items: center;
             grid-column: 3;
             background: transparent;
-            height: 30px;
+            height: 26px;
+            position: relative;
+            background-color: white;
+            margin-top: 2px;
+            overflow-y: hidden;
+            margin-right: 2px;
             input {
-                width: calc(100% - 5px);
-                background-color: white;
+                width: 100%;
                 outline-color: transparent;
                 border: transparent;
                 outline-width: 0px;
                 height: 24px;
+            }
+            input.hasArrows {
+                padding-right: 15px;
+            }
+            .arrows {
+                display: none;
+            }
+            &:hover .arrows, &:focus .arrows, &.dragging .arrows {
+                position: absolute;
+                right: 0;
+                display: flex;
+                flex-direction: column;
+                background-color: white;
+                cursor: grab;
+                .downArrowIcon, .upArrowIcon {
+                    width: 15px;
+                    height: 15px;
+                }
+            }
+            &.dragging .arrows {
+                background-color: var(--buttonPressedBackground);
+                .downArrowIcon, .upArrowIcon {
+                    filter: brightness(10);
+                }
             }
         }
     }
@@ -400,20 +435,22 @@ hr.ge {
     }
 
     .color-picker {
-        height: 150px;
-        width: 15px;
+        height: 26px;
+        width: 26px;
 
         .color-rect-background {
-            height: 15px;
+            width: calc(100% - 2px);
+            height: calc(100% - 2px);
             border: 1px black solid;
             cursor: pointer;
-            background: repeating-conic-gradient(#E2E2E2 0% 25%, white 0% 50%) 50% / 10px 10px;
+            background: repeating-conic-gradient(#E2E2E2 0% 25%, white 0% 50%) 50% / 100% 100%;
             .color-rect {
                 height: 100%;
             }
         }
 
         .color-picker-cover {
+            z-index: 2;
             position: fixed;
             top: 0px;
             right: 0px;
@@ -422,8 +459,7 @@ hr.ge {
         }
 
         .color-picker-float {
-            z-index: 2;
-            position: absolute;  
+            position: absolute;
         }                
     }
 
@@ -612,12 +648,12 @@ hr.ge {
 
     .floatLine {
         user-select: none;
-        padding-left: $line-padding-left;
         height: var(--spacingHeight);
         padding-bottom: $line-padding-bottom;
         padding-top: $line-padding-top;
         display: grid;
-        grid-template-columns: auto auto 2fr 1fr;
+        grid-template-columns: auto auto 2fr auto;
+        flex-grow: 1;
 
         .label {
             grid-column: 2;
@@ -625,6 +661,7 @@ hr.ge {
             align-items: center;
             min-width: 15px;
             font-family: var(--labelFamily);
+            font-weight: 600;
         }
 
         img {
@@ -643,8 +680,9 @@ hr.ge {
             grid-column: 3;
             background: transparent;
             height: 30px;
+            margin-right: 2px;
             input {
-                width: calc(100% - 5px);
+                width: 100%;
                 background-color: white;
                 outline-color: transparent;
                 border: none;
@@ -676,7 +714,6 @@ hr.ge {
     }
 
     .vector3Line {
-        padding-left:$line-padding-left;
         padding-bottom: $line-padding-bottom;
         padding-top: $line-padding-top;      
         display: grid;
@@ -799,7 +836,6 @@ hr.ge {
     }
 
     .numeric {
-        padding-left: $line-padding-left;
         padding-bottom: $line-padding-bottom;
         padding-top: $line-padding-top;
         height: var(--spacingHeight);;
@@ -825,13 +861,12 @@ hr.ge {
     }
     
     .checkBoxLine {
-        padding-left: $line-padding-left;
         padding-bottom: $line-padding-bottom;
         padding-top: $line-padding-top;
-        padding-right: $line-padding-right;
         height: var(--spacingHeight);
         display: grid;
-        grid-template-columns: auto auto 1fr ;
+        grid-template-columns: auto 1fr auto ;
+        flex-grow: 1;
 
         .label {
             grid-column: 2;
@@ -858,38 +893,6 @@ hr.ge {
             align-items: center;
             margin-left: auto;
             margin-right: 0px;
-            
-            .lbl {
-                position: relative;
-                display: block;
-                height: 14px;
-                width: 34px;
-                border-radius: 100px;
-                cursor: pointer;
-                transition: all 0.3s ease;
-                border: solid;
-                border-width: thin;
-            }
-
-            .lbl:after {
-                position: absolute;
-                left: 3px;
-                top: 1px;
-                display: block;
-                width: 10px;
-                height: 10px;
-                border-radius: 100px;
-                background: #e2e2e2;
-                box-shadow: 0px 3px 3px rgba(0,0,0,0.05);
-                content: '';
-                transition: all 0.15s ease;
-                border: solid;
-                border-width: thin;
-            }
-
-            .lbl:active:after { 
-                transform: scale(1.15, 0.85); 
-            }
 
             .cbx:checked ~ label { 
                 background: transparent;
@@ -931,12 +934,12 @@ hr.ge {
     }  
 
     .listLine {
-        padding-left: $line-padding-left;
         padding-bottom: $line-padding-bottom;
         padding-top: $line-padding-top;
         height: var(--spacingHeight);
         display: grid;
         grid-template-columns: auto 1fr auto ;
+        flex-grow: 1;
 
         .label {
             grid-column: 2;
@@ -971,16 +974,16 @@ hr.ge {
     }  
                     
     .color3Line {
-        padding-left: $line-padding-left;
+        padding-left: 15px;
         padding-bottom: $line-padding-bottom;
         padding-top: $line-padding-top;
-        padding-right: $line-padding-right;
         display: grid;
+        flex-grow: 1;
 
         .firstLine {
             height: var(--spacingHeight);
-            display: grid;
-            grid-template-columns: auto auto 1fr;
+            display: flex;
+            align-items: center;
 
             .label {
                 grid-column: 2;
@@ -1003,15 +1006,13 @@ hr.ge {
     
             .textInputLine {
                 grid-column: 3;
-                padding-left: 0px;
+                padding-left: 2px;
+                flex-grow: 1;
             }
     
             .color3 {
-                grid-column: 2;                
-                margin-top: 6px;
                 display: flex;
                 align-items: center;
-                padding-left: 15px;
                 
                 input {
                     margin-right: 5px;

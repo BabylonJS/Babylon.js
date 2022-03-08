@@ -1,13 +1,8 @@
 import * as React from "react";
 import { GlobalState } from "../../globalState";
 import { Nullable } from "babylonjs/types";
-import { ButtonLineComponent } from "../../sharedUiComponents/lines/buttonLineComponent";
-import { FileButtonLineComponent } from "../../sharedUiComponents/lines/fileButtonLineComponent";
 import { Tools } from "babylonjs/Misc/tools";
-import { CheckBoxLineComponent } from "../../sharedUiComponents/lines/checkBoxLineComponent";
-import { DataStorage } from "babylonjs/Misc/dataStorage";
 import { Observer } from "babylonjs/Misc/observable";
-import { TextLineComponent } from "../../sharedUiComponents/lines/textLineComponent";
 import { StringTools } from "../../sharedUiComponents/stringTools";
 import { LockObject } from "../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { SliderGenericPropertyGridComponent } from "./propertyGrids/gui/sliderGenericPropertyGridComponent";
@@ -41,9 +36,6 @@ import { CheckboxPropertyGridComponent } from "./propertyGrids/gui/checkboxPrope
 import { Control } from "babylonjs-gui/2D/controls/control";
 import { ControlPropertyGridComponent } from "./propertyGrids/gui/controlPropertyGridComponent";
 import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
-import { OptionsLineComponent } from "../../sharedUiComponents/lines/optionsLineComponent";
-import { FloatLineComponent } from "../../sharedUiComponents/lines/floatLineComponent";
-import { ColorLineComponent } from "../../sharedUiComponents/lines/colorLineComponent";
 
 import { TextInputLineComponent } from "../../sharedUiComponents/lines/textInputLineComponent";
 import { ParentingPropertyGridComponent } from "../parentingPropertyGridComponent";
@@ -56,9 +48,6 @@ import { makeTargetsProxy } from "../../sharedUiComponents/lines/targetsProxy";
 
 require("./propertyTab.scss");
 const adtIcon: string = require("../../../public/imgs/adtIcon.svg");
-const responsiveIcon: string = require("../../../public/imgs/responsiveIcon.svg");
-const canvasSizeIcon: string = require("../../../public/imgs/canvasSizeIcon.svg");
-const artboardColorIcon: string = require("../../../../sharedUiComponents/imgs/fillColorIcon.svg");
 const rectangleIcon: string = require("../../../public/imgs/rectangleIconDark.svg");
 const ellipseIcon: string = require("../../../public/imgs/ellipseIconDark.svg");
 const gridIcon: string = require("../../../public/imgs/gridIconDark.svg");
@@ -76,26 +65,19 @@ const colorPickerIcon: string = require("../../../public/imgs/colorPickerIconDar
 const scrollbarIcon: string = require("../../../public/imgs/scrollbarIconDark.svg");
 const imageSliderIcon: string = require("../../../public/imgs/imageSliderIconDark.svg");
 const radioButtonIcon: string = require("../../../public/imgs/radioButtonIconDark.svg");
-const MAX_TEXTURE_SIZE = 16384; //2^14
 
 interface IPropertyTabComponentProps {
     globalState: GlobalState;
 }
 
-interface IPropertyTabComponentState {
-    currentNode: Nullable<Control>;
-}
-
-export class PropertyTabComponent extends React.Component<IPropertyTabComponentProps, IPropertyTabComponentState> {
+export class PropertyTabComponent extends React.Component<IPropertyTabComponentProps> {
     private _onBuiltObserver: Nullable<Observer<void>>;
     private _timerIntervalId: number;
     private _lockObject: LockObject;
-    private _sizeOption: number;
 
     constructor(props: IPropertyTabComponentProps) {
         super(props);
 
-        this.state = { currentNode: null };
         this._lockObject = new LockObject();
         this.props.globalState.lockObject = this._lockObject;
         this.props.globalState.onSaveObservable.add(() => {
@@ -116,12 +98,8 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
     }
 
     componentDidMount() {
-        this.props.globalState.onSelectionChangedObservable.add((selection) => {
-            if (selection instanceof Control) {
-                this.setState({ currentNode: selection });
-            } else {
-                this.setState({ currentNode: null });
-            }
+        this.props.globalState.onSelectionChangedObservable.add(() => {
+            this.forceUpdate();
         });
         this.props.globalState.onResizeObservable.add((newSize) => {
             this.forceUpdate();
@@ -144,7 +122,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 const decoder = new TextDecoder("utf-8");
                 this.props.globalState.workbench.loadFromJson(JSON.parse(decoder.decode(data)));
 
-                this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+                this.props.globalState.setSelection([]);
             },
             undefined,
             true
@@ -254,7 +232,6 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 <TextInputLineComponent
                     noUnderline={true}
                     lockObject={this._lockObject}
-                    label=""
                     target={makeTargetsProxy(nodes, this.props.globalState.onPropertyChangedObservable)}
                     propertyName="name"
                     onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable}
@@ -431,7 +408,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                                 const guiElement = GUINodeTools.CreateControlFromString(value);
                                 const newGuiNode = this.props.globalState.workbench.createNewGuiNode(guiElement);    
                                 button.addControl(newGuiNode);
-                                this.props.globalState.onSelectionChangedObservable.notifyObservers(newGuiNode);
+                                this.props.globalState.select(newGuiNode);
                             }
                         }}
                     />
@@ -509,160 +486,12 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
 
     render() {
         if (this.props.globalState.guiTexture == undefined) return null;
-        const _sizeValues = [
-            {width: 1920, height: 1080},
-            {width: 1366, height: 768},
-            {width: 1280, height: 800},
-            {width: 3840, height: 2160},
-            {width: 750, height: 1334},
-            {width: 1125, height: 2436},
-            {width: 1170, height: 2532},
-            {width: 1284, height: 2778},
-            {width: 1080, height: 2220},
-            {width: 1080, height: 2340},
-            {width: 1024, height: 1024},
-            {width: 2048, height: 2048},
-        ];
-        const _sizeOptions = [
-            { label: "Web (1920)", value: 0 },
-            { label: "Web (1366)", value: 1 },
-            { label: "Web (1280)", value: 2 },
-            { label: "Web (3840)", value: 3 },
-            { label: "iPhone 8 (750)", value: 4 },
-            { label: "iPhone X, 11 (1125)", value: 5 },
-            { label: "iPhone 12 (1170)", value: 6 },
-            { label: "iPhone Pro Max (1284)", value: 7 },
-            { label: "Google Pixel 4 (1080)", value: 8 },
-            { label: "Google Pixel 5 (1080)", value: 9 },
-            { label: "Square (1024)", value: 10 },
-            { label: "Square (2048)", value: 11 },
-        ];
-
-        const size = {...this.props.globalState.workbench.guiSize};
-        this._sizeOption = _sizeValues.findIndex((value) => value.width == size.width && value.height == size.height);
-        if (this._sizeOption < 0) {
-            this.props.globalState.onResponsiveChangeObservable.notifyObservers(false);
-            DataStorage.WriteBoolean("Responsive", false);
-        }
-
-        if (this.state.currentNode && this.props.globalState.workbench.selectedGuiNodes.length > 0) {
-            return (
-                <div id="ge-propertyTab">
-                    {this.renderNode(this.props.globalState.workbench.selectedGuiNodes)}
-                </div>
-            );
-        }
-
+        const nodesToRender = this.props.globalState.selectedControls.length > 0 ?
+            this.props.globalState.selectedControls :
+            [this.props.globalState.workbench.trueRootContainer];
         return (
             <div id="ge-propertyTab">
-                <div id="header">
-                    <img id="logo" src={adtIcon} />
-                    <div id="title">AdvancedDynamicTexture</div>
-                </div>
-                <div>
-                    <TextLineComponent tooltip="" label="ART BOARD" value=" " color="grey"></TextLineComponent>
-                    {this.props.globalState.workbench._scene !== undefined && (
-                        <ColorLineComponent
-                            iconLabel={"Background Color"}
-                            lockObject={this._lockObject}
-                            icon={artboardColorIcon}
-                            label=""
-                            target={this.props.globalState}
-                            propertyName="backgroundColor"
-                            disableAlpha={true}
-                        />
-                    )}
-                    <hr className="ge" />
-                    <TextLineComponent tooltip="" label="CANVAS" value=" " color="grey"></TextLineComponent>
-                    <CheckBoxLineComponent
-                        label="RESPONSIVE"
-                        iconLabel="A responsive layout for the AdvancedDynamicTexture will resize the UI layout and reflow controls to accommodate different device screen sizes"
-                        icon={responsiveIcon}
-                        isSelected={() => DataStorage.ReadBoolean("Responsive", true)}
-                        onSelect={(value: boolean) => {
-                            this.props.globalState.onResponsiveChangeObservable.notifyObservers(value);
-                            DataStorage.WriteBoolean("Responsive", value);
-                            this._sizeOption = _sizeOptions.length;
-                            if (value) {
-                                this._sizeOption = 0;
-                                this.props.globalState.workbench.guiSize = _sizeValues[this._sizeOption];
-                            }
-                            this.forceUpdate();
-                        }}
-                    />
-                    {DataStorage.ReadBoolean("Responsive", true) && (
-                        <OptionsLineComponent
-                            label=""
-                            iconLabel="Size"
-                            options={_sizeOptions}
-                            icon={canvasSizeIcon}
-                            target={this}
-                            propertyName={"_sizeOption"}
-                            noDirectUpdate={true}
-                            onSelect={(value: any) => {
-                                this._sizeOption = value;
-                                if (this._sizeOption !== _sizeOptions.length) {
-                                    const newSize = _sizeValues[this._sizeOption];
-                                    this.props.globalState.workbench.guiSize = newSize;
-                                }
-                                this.forceUpdate();
-                            }}
-                        />
-                    )}
-                    {!DataStorage.ReadBoolean("Responsive", true) && (
-                        <div className="ge-divider">
-                            <FloatLineComponent
-                                icon={canvasSizeIcon}
-                                iconLabel="Canvas Size"
-                                label="W"
-                                target={size}
-                                propertyName="width"
-                                isInteger={true}
-                                min={1}
-                                max={MAX_TEXTURE_SIZE}
-                                onChange={(newvalue) => {
-                                    if (!isNaN(newvalue)) {
-                                        this.props.globalState.workbench.guiSize = {width: newvalue, height: size.height};
-                                    }
-                                }}
-                            ></FloatLineComponent>
-                            <FloatLineComponent
-                                icon={canvasSizeIcon}
-                                label="H"
-                                target={size}
-                                propertyName="height"
-                                isInteger={true}
-                                min={1}
-                                max={MAX_TEXTURE_SIZE}
-                                onChange={(newvalue) => {
-                                    if (!isNaN(newvalue)) {
-                                        this.props.globalState.workbench.guiSize = {width: size.width, height: newvalue};
-                                    }
-                                }}
-                            ></FloatLineComponent>
-                        </div>
-                    )}
-                    <hr className="ge" />
-                    <TextLineComponent tooltip="" label="FILE" value=" " color="grey"></TextLineComponent>
-                    <FileButtonLineComponent label="Load" onClick={(file) => this.load(file)} accept=".json" />
-                    <ButtonLineComponent
-                        label="Save"
-                        onClick={() => {
-                            this.props.globalState.onSaveObservable.notifyObservers();
-                        }}
-                    />
-                    <hr className="ge" />
-                    <TextLineComponent tooltip="" label="SNIPPET" value=" " color="grey"></TextLineComponent>
-                    <ButtonLineComponent label="Load from snippet server" onClick={() => this.loadFromSnippet()} />
-                    <ButtonLineComponent
-                        label="Save to snippet server"
-                        onClick={() => {
-                            this.props.globalState.onSnippetSaveObservable.notifyObservers();
-                        }}
-                    />
-                    <hr className="ge" />
-                    {this.renderNode([this.props.globalState.workbench.trueRootContainer])}
-                </div>
+                {this.renderNode(nodesToRender)}
             </div>
         );
     }

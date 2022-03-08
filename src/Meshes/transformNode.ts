@@ -46,10 +46,8 @@ export class TransformNode extends Node {
     private static _TmpTranslation = Vector3.Zero();
 
     private _forward = new Vector3(0, 0, 1);
-    private _forwardInverted = new Vector3(0, 0, -1);
     private _up = new Vector3(0, 1, 0);
     private _right = new Vector3(1, 0, 0);
-    private _rightInverted = new Vector3(-1, 0, 0);
 
     // Properties
     @serializeAsVector3("position")
@@ -254,30 +252,36 @@ export class TransformNode extends Node {
      * The forward direction of that transform in world space.
      */
     public get forward(): Vector3 {
-        return Vector3.Normalize(Vector3.TransformNormal(
-            this.getScene().useRightHandedSystem ? this._forwardInverted : this._forward,
-            this.getWorldMatrix()
-        ));
+        Vector3.TransformNormalFromFloatsToRef(
+            0, 0, this.getScene().useRightHandedSystem ? -1.0 : 1.0,
+            this.getWorldMatrix(),
+            this._forward
+        );
+        return this._forward.normalize();
     }
 
     /**
      * The up direction of that transform in world space.
      */
     public get up(): Vector3 {
-        return Vector3.Normalize(Vector3.TransformNormal(
-            this._up,
-            this.getWorldMatrix()
-        ));
+        Vector3.TransformNormalFromFloatsToRef(
+            0, 1, 0,
+            this.getWorldMatrix(),
+            this._up
+        );
+        return this._up.normalize();
     }
 
     /**
      * The right direction of that transform in world space.
      */
     public get right(): Vector3 {
-        return Vector3.Normalize(Vector3.TransformNormal(
-            this.getScene().useRightHandedSystem ? this._rightInverted : this._right,
-            this.getWorldMatrix()
-        ));
+        Vector3.TransformNormalFromFloatsToRef(
+            this.getScene().useRightHandedSystem ? -1.0 : 1.0, 0, 0,
+            this.getWorldMatrix(),
+            this._right
+        );
+        return this._right.normalize();
     }
 
     /**
@@ -745,7 +749,9 @@ export class TransformNode extends Node {
 
     /**
      * Defines the passed node as the parent of the current node.
-     * The node will remain exactly where it is and its position / rotation will be updated accordingly
+     * The node will remain exactly where it is and its position / rotation will be updated accordingly.
+     * Note that if the mesh has a pivot matrix / point defined it will be applied after the parent was updated.
+     * In that case the node will not remain in the same space as it is, as the pivot will be applied.
      * @see https://doc.babylonjs.com/how_to/parenting
      * @param node the node ot set as the parent
      * @param preserveScalingSign if true, keep scaling sign of child. Otherwise, scaling sign might change.

@@ -5,11 +5,10 @@ import { CommonControlPropertyGridComponent } from "../gui/commonControlProperty
 import { LockObject } from "../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
 import { Ellipse } from "babylonjs-gui/2D/controls/ellipse";
 import { FloatLineComponent } from "../../../../sharedUiComponents/lines/floatLineComponent";
-import { CheckBoxLineComponent } from "../../../../sharedUiComponents/lines/checkBoxLineComponent";
 import { TextLineComponent } from "../../../../sharedUiComponents/lines/textLineComponent";
 import { makeTargetsProxy } from "../../../../sharedUiComponents/lines/targetsProxy";
+import { ContainerPropertyGridComponent } from "./containerPropertyGridComponent";
 
-const clipContentsIcon: string = require("../../../../sharedUiComponents/imgs/clipContentsIcon.svg");
 const strokeWeightIcon: string = require("../../../../sharedUiComponents/imgs/strokeWeightIcon.svg");
 
 interface IEllipsePropertyGridComponentProps {
@@ -24,34 +23,27 @@ export class EllipsePropertyGridComponent extends React.Component<IEllipseProper
     }
 
     render() {
-        const ellipses = this.props.ellipses;
+        const {ellipses, onPropertyChangedObservable, lockObject} = this.props;
 
         return (
             <div className="pane">
-                <CommonControlPropertyGridComponent lockObject={this.props.lockObject} controls={ellipses} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <CommonControlPropertyGridComponent lockObject={lockObject} controls={ellipses} onPropertyChangedObservable={onPropertyChangedObservable} />
                 <hr />
                 <TextLineComponent label="ELLIPSE" value=" " color="grey"></TextLineComponent>
                 <div className="ge-divider">
                 <FloatLineComponent
                     iconLabel="Stroke Weight"
                     icon={strokeWeightIcon}
-                    lockObject={this.props.lockObject}
+                    lockObject={lockObject}
                     label=""
-                    target={makeTargetsProxy(ellipses, this.props.onPropertyChangedObservable)}
+                    target={makeTargetsProxy(ellipses, onPropertyChangedObservable)}
                     propertyName="thickness"
-                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    onPropertyChangedObservable={onPropertyChangedObservable}
                     unit={"PX"}
                     unitLocked={true}
                 />
                 </div>
-                <CheckBoxLineComponent
-                    iconLabel="Clip Content"
-                    icon={clipContentsIcon}
-                    label="CLIP CONTENT"
-                    target={makeTargetsProxy(ellipses, this.props.onPropertyChangedObservable)}
-                    propertyName="clipChildren"
-                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                />
+                <ContainerPropertyGridComponent containers={ellipses} onPropertyChangedObservable={onPropertyChangedObservable}/>
             </div>
         );
     }
