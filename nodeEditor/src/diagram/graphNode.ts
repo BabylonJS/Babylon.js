@@ -1,9 +1,9 @@
 import { NodeMaterialBlock } from 'babylonjs/Materials/Node/nodeMaterialBlock';
-import { GlobalState } from '../globalState';
+import { GlobalState, ISelectionChangedOptions } from '../globalState';
 import { Nullable } from 'babylonjs/types';
 import { Observer } from 'babylonjs/Misc/observable';
 import { NodeMaterialConnectionPoint } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPoint';
-import { GraphCanvasComponent, FramePortData } from './graphCanvas';
+import { GraphCanvasComponent } from './graphCanvas';
 import { PropertyLedger } from './propertyLedger';
 import * as React from 'react';
 import { GenericPropertyComponent } from './properties/genericNodePropertyComponent';
@@ -35,7 +35,7 @@ export class GraphNode {
     private _mouseStartPointX: Nullable<number> = null;
     private _mouseStartPointY: Nullable<number> = null;
     private _globalState: GlobalState;
-    private _onSelectionChangedObserver: Nullable<Observer<Nullable<GraphFrame | GraphNode | NodeLink | NodePort | FramePortData>>>;
+    private _onSelectionChangedObserver: Nullable<Observer<Nullable<ISelectionChangedOptions>>>;
     private _onSelectionBoxMovedObserver: Nullable<Observer<ClientRect | DOMRect>>;
     private _onFrameCreatedObserver: Nullable<Observer<GraphFrame>>;
     private _onUpdateRequiredObserver: Nullable<Observer<Nullable<NodeMaterialBlock>>>;
@@ -172,14 +172,15 @@ export class GraphNode {
                 this._ownerCanvas.selectedNodes.splice(indexInSelection, 1);
             }
         } else {
-            this._globalState.onSelectionChangedObservable.notifyObservers(this);
+            this._globalState.onSelectionChangedObservable.notifyObservers({selection: this});
         }
     }
 
     public constructor(public block: NodeMaterialBlock, globalState: GlobalState) {
         this._globalState = globalState;
 
-        this._onSelectionChangedObserver = this._globalState.onSelectionChangedObservable.add((node) => {
+        this._onSelectionChangedObserver = this._globalState.onSelectionChangedObservable.add((options) => {
+            const {selection: node} = options || {};
             if (node === this) {
                 this._visual.classList.add("selected");
             } else {
@@ -329,7 +330,7 @@ export class GraphNode {
 
         const indexInSelection = this._ownerCanvas.selectedNodes.indexOf(this);
         if (indexInSelection === -1) {
-            this._globalState.onSelectionChangedObservable.notifyObservers(this);
+            this._globalState.onSelectionChangedObservable.notifyObservers({selection: this});
         } else if (evt.ctrlKey) {
             this.isSelected = false;
         }

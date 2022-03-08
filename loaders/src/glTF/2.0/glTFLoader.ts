@@ -1183,6 +1183,10 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     private _findSkeletonRootNode(context: string, joints: Array<number>): Nullable<INode> {
+        if (joints.length === 0) {
+            return null;
+        }
+
         const paths: { [joint: number]: Array<INode> } = {};
         for (const index of joints) {
             const path = new Array<INode>();
