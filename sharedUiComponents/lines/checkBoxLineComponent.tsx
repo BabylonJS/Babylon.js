@@ -101,7 +101,7 @@ export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponen
                     </div>}
                 {this.props.faIcons && <FontAwesomeIcon className={`cbx ${this.props.disabled ? "disabled" : ""}`} icon={this.state.isSelected ? this.props.faIcons.enabled : this.props.faIcons.disabled} onClick={() => !this.props.disabled && this.onChange()}/>}
                 {!this.props.faIcons && <div className="checkBox">
-                    <label className="container">
+                    <label className={`container lbl${!!this.props.disabled ? " disabled" : ""}`}>
                         <input
                             type="checkbox"
                             className={`cbx hidden ${this.state.isConflict ? "conflict" : ""}`}

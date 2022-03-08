@@ -893,38 +893,6 @@ hr.ge {
             align-items: center;
             margin-left: auto;
             margin-right: 0px;
-            
-            .lbl {
-                position: relative;
-                display: block;
-                height: 14px;
-                width: 34px;
-                border-radius: 100px;
-                cursor: pointer;
-                transition: all 0.3s ease;
-                border: solid;
-                border-width: thin;
-            }
-
-            .lbl:after {
-                position: absolute;
-                left: 3px;
-                top: 1px;
-                display: block;
-                width: 10px;
-                height: 10px;
-                border-radius: 100px;
-                background: #e2e2e2;
-                box-shadow: 0px 3px 3px rgba(0,0,0,0.05);
-                content: '';
-                transition: all 0.15s ease;
-                border: solid;
-                border-width: thin;
-            }
-
-            .lbl:active:after { 
-                transform: scale(1.15, 0.85); 
-            }
 
             .cbx:checked ~ label { 
                 background: transparent;
