@@ -836,9 +836,9 @@ export class InputTextArea extends InputText {
             this._scrollLeft = clipTextLeft;
         }
 
-        let selectedHeight = this._selectedLineIndex * this._fontOffset.height;
+        let selectedHeight = (this._selectedLineIndex + 1)   * this._fontOffset.height;
 
-        if (this._isFocused && selectedHeight > this._availableHeight) {
+        if (this._isFocused) {
             let textTop = clipTextTop - selectedHeight + this._availableHeight;
             
             if (!this._scrollTop) {
@@ -977,8 +977,8 @@ export class InputTextArea extends InputText {
                     this._scrollTop += (clipTextTop - cursorTop);
                     cursorTop = clipTextTop;
                     this._markAsDirty();
-                } else if (cursorTop > clipTextTop) {
-                    this._scrollTop += clipTextTop + this._availableHeight - cursorTop - this._fontOffset.height;
+                } else if (cursorTop + this._fontOffset.height > clipTextTop + this._availableHeight) {
+                    this._scrollTop += (clipTextTop + this._availableHeight - cursorTop - this._fontOffset.height);
                     cursorTop = clipTextTop + this._availableHeight - this._fontOffset.height;
                     this._markAsDirty();
                 }
