@@ -848,6 +848,24 @@ export class InputTextArea extends InputText {
             this._scrollTop = clipTextTop;
         }
 
+        // Text
+        rootY += this._scrollTop;
+
+        for (let i = 0; i < this._lines.length; i++) {
+            const line = this._lines[i];
+
+            if (i !== 0 && this._lineSpacing.internalValue !== 0) {
+
+                if (this._lineSpacing.isPixel) {
+                    rootY += this._lineSpacing.getValue(this._host);
+        } else {
+                    rootY = rootY + (this._lineSpacing.getValue(this._host) * this._height.getValueInPixel(this._host, this._cachedParentMeasure.height));
+                }
+        }
+
+            this._drawText(line.text, line.width, rootY, context);
+            rootY += this._fontOffset.height;
+        }
         // filltext (<text>, x,y) Startcoordinates;
         //context.fillText(text, this._scrollLeft, this._currentMeasure.top + rootY);
 
@@ -968,26 +986,8 @@ export class InputTextArea extends InputText {
                 context.fillRect(cursorLeft, cursorTop, 2, this._fontOffset.height);
             }
         }
+
         context.restore();
-
-        // Text
-        rootY += this._scrollTop;
-
-        for (let i = 0; i < this._lines.length; i++) {
-            const line = this._lines[i];
-
-            if (i !== 0 && this._lineSpacing.internalValue !== 0) {
-
-                if (this._lineSpacing.isPixel) {
-                    rootY += this._lineSpacing.getValue(this._host);
-                } else {
-                    rootY = rootY + (this._lineSpacing.getValue(this._host) * this._height.getValueInPixel(this._host, this._cachedParentMeasure.height));
-                }
-            }
-
-            this._drawText(line.text, line.width, rootY, context);
-            rootY += this._fontOffset.height;
-        }
 
         // Caret Blinking
         clearTimeout(this._blinkTimeout);
