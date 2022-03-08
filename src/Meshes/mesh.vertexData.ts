@@ -502,15 +502,16 @@ export class VertexData {
      * Merges the passed VertexData into the current one
      * @param others the VertexData to be merged into the current one
      * @param use32BitsIndices defines a boolean indicating if indices must be store in a 32 bits array
+     * @param forceCloneIndices defines a boolean indicating if indices are forced to be cloned
      * @returns the modified VertexData
      */
-    public merge(others: VertexData | VertexData[], use32BitsIndices = false, cloneIndices = false) {
+    public merge(others: VertexData | VertexData[], use32BitsIndices = false, forceCloneIndices = false) {
         const vertexDatas: [vertexData: VertexData, transform?: Matrix][] = Array.isArray(others) ? others.map((other) => [other, undefined]) : [[others, undefined]];
-        return runCoroutineSync(this._mergeCoroutine(undefined, vertexDatas, use32BitsIndices, false, cloneIndices));
+        return runCoroutineSync(this._mergeCoroutine(undefined, vertexDatas, use32BitsIndices, false, forceCloneIndices));
     }
 
     /** @hidden */
-    public *_mergeCoroutine(transform: Matrix | undefined, vertexDatas: (readonly [vertexData: VertexData, transform?: Matrix])[], use32BitsIndices = false, isAsync: boolean, cloneIndices: boolean): Coroutine<VertexData> {
+    public *_mergeCoroutine(transform: Matrix | undefined, vertexDatas: (readonly [vertexData: VertexData, transform?: Matrix])[], use32BitsIndices = false, isAsync: boolean, forceCloneIndices: boolean): Coroutine<VertexData> {
         this._validate();
 
         const others = vertexDatas.map((vertexData) => vertexData[0]);
@@ -536,7 +537,7 @@ export class VertexData {
         }
 
         const totalIndices = others.reduce((indexSum, vertexData) => indexSum + (vertexData.indices?.length ?? 0), this.indices?.length ?? 0);
-        const sliceIndices = cloneIndices || others.some((vertexData) => vertexData.indices === this.indices);
+        const sliceIndices = forceCloneIndices || others.some((vertexData) => vertexData.indices === this.indices);
         let indices = sliceIndices ? this.indices?.slice() : this.indices;
         if (totalIndices > 0) {
 
