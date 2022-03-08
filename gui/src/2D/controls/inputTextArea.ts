@@ -840,7 +840,7 @@ export class InputTextArea extends InputText {
 
         if (this._isFocused) {
             let textTop = clipTextTop - selectedHeight + this._availableHeight;
-            
+
             if (!this._scrollTop) {
                 this._scrollTop = textTop;
             }
@@ -972,7 +972,7 @@ export class InputTextArea extends InputText {
                 }
 
                 let cursorTop = this._scrollTop + this._selectedLineIndex * this._fontOffset.height; //cursorTop distance from top to cursor start
-                
+
                 if (cursorTop < clipTextTop) {
                     this._scrollTop += (clipTextTop - cursorTop);
                     cursorTop = clipTextTop;
