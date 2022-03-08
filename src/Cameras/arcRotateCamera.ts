@@ -58,7 +58,6 @@ export class ArcRotateCamera extends TargetCamera {
     /**
      * Defines the target point of the camera.
      * The camera looks towards it form the radius distance.
-     * Please note that you can set the target to a mesh and thus the target will be copied from mesh.position
      */
     public get target(): Vector3 {
         return this._target;
@@ -70,6 +69,7 @@ export class ArcRotateCamera extends TargetCamera {
     /**
      * Defines the target mesh of the camera.
      * The camera looks towards it from the radius distance.
+     * Please note that setting a target host will disable panning.
      */
     public get targetHost(): Nullable<AbstractMesh> {
         return this._targetHost;
@@ -1069,8 +1069,11 @@ export class ArcRotateCamera extends TargetCamera {
      * @param target Defines the new target as a Vector or a mesh
      * @param toBoundingCenter In case of a mesh target, defines whether to target the mesh position or its bounding information center
      * @param allowSamePosition If false, prevents reapplying the new computed position if it is identical to the current one (optim)
+     * @param cloneAlphaBetaRadius If true, replicate the current setup (alpha, beta, radius) on the new target
+     * 
+     * Please note that setting a target as a mesh will disable panning.
      */
-    public setTarget(target: AbstractMesh | Vector3, toBoundingCenter = false, allowSamePosition = false): void {
+    public setTarget(target: AbstractMesh | Vector3, toBoundingCenter = false, allowSamePosition = false, cloneAlphaBetaRadius = false): void {
         if ((<any>target).getBoundingInfo) {
             if (toBoundingCenter) {
                 this._targetBoundingCenter = (<any>target).getBoundingInfo().boundingBox.centerWorld.clone();
@@ -1094,7 +1097,9 @@ export class ArcRotateCamera extends TargetCamera {
             this.onMeshTargetChangedObservable.notifyObservers(null);
         }
 
-        this.rebuildAnglesAndRadius();
+        if (!cloneAlphaBetaRadius) {
+            this.rebuildAnglesAndRadius();
+        }
     }
 
     /** @hidden */

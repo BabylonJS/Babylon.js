@@ -72,6 +72,7 @@ export class TargetCamera extends Camera {
 
     /**
      * Define the current target of the camera as an object or a position.
+     * Please note that locking a target will disable panning.
      */
     @serializeAsMeshReference("lockedTargetId")
     public lockedTarget: any = null;
