@@ -11,21 +11,18 @@ import { InputText } from "./inputText";
 import { ICanvasRenderingContext } from "babylonjs/Engines/ICanvas";
 import { PointerInfoBase } from "babylonjs/Events/pointerEvents";
 import { IKeyboardEvent } from "babylonjs/Events/deviceInputEvents";
-import { TextWrapping } from "./textBlock";
 
 /**
  * Class used to create input text control
  */
 export class InputTextArea extends InputText {
 
-    private _textWrapping = TextWrapping.WordWrap;
     private _textHorizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
     private _textVerticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
 
     private _lines: any[];
     private _oldlines: string[] = [];
     private _clicked: boolean;
-    private _resizeToFit: boolean = false;
     private _lineSpacing: ValueAndUnit = new ValueAndUnit(0);
     private _outlineWidth: number = 0;
     private _outlineColor: string = "white";
@@ -46,6 +43,9 @@ export class InputTextArea extends InputText {
     private _lastClickedLineIndex = -1;
 
     private _availableWidth: number;
+    private _availableHeight: number;
+
+    private _scrollTop: Nullable<number>;
 
     /**
      * Gets or sets outlineWidth of the text to display
@@ -552,21 +552,6 @@ export class InputTextArea extends InputText {
         this._oldlines = this._lines.map((l) => l.text);
     }
 
-    protected _parseLineEllipsis(line: string = '', width: number,
-        context: ICanvasRenderingContext): { text: string, width: number, lineEnding: string } {
-        var lineWidth = context.measureText(line).width;
-
-        if (lineWidth > width) {
-            line += '…';
-        }
-        while (line.length > 2 && lineWidth > width) {
-            line = line.slice(0, -2) + '…';
-            lineWidth = context.measureText(line).width;
-        }
-
-        return { text: line, width: lineWidth, lineEnding: " " };
-    }
-
     protected _parseLineWordWrap(line: string = '', width: number,
         context: ICanvasRenderingContext): { text: string, width: number, lineEnding: string }[] {
         const lines = [];
@@ -608,57 +593,13 @@ export class InputTextArea extends InputText {
         return lines;
     }
 
-    protected _parseLineWordWrapEllipsis(line: string = "", width: number, height: number, context: ICanvasRenderingContext):  { text: string, width: number, lineEnding: string }[] {
-        var lines = this._parseLineWordWrap(line, width, context);
-        for (var n = 1; n <= lines.length; n++) {
-            const currentHeight = this._computeHeightForLinesOf(n);
-            if (currentHeight > height && n > 1) {
-                var lastLine = lines[n - 2] as {text: string; width: number, lineEnding: string};
-                var currentLine = lines[n - 1] as {text: string; width: number, lineEnding: string};
-                lines[n - 2] = this._parseLineEllipsis(`${lastLine.text}${currentLine.text}`, width, context);
-                var linesToRemove = lines.length - n + 1;
-                for (var i = 0; i < linesToRemove; i++) {
-                    lines.pop();
-                }
-                return lines;
-            }
-        }
-
-        return lines;
-    }
-
-    private _computeHeightForLinesOf(lineCount: number): number {
-        let newHeight = this._paddingTopInPixels + this._paddingBottomInPixels + this._fontOffset.height * lineCount;
-
-        if (lineCount > 0 && this._lineSpacing.internalValue !== 0) {
-            let lineSpacing = 0;
-            if (this._lineSpacing.isPixel) {
-                lineSpacing = this._lineSpacing.getValue(this._host);
-            } else {
-                lineSpacing = this._lineSpacing.getValue(this._host) * this._height.getValueInPixel(this._host, this._cachedParentMeasure.height);
-            }
-
-            newHeight += (lineCount - 1) * lineSpacing;
-        }
-
-        return newHeight;
-    }
-
     protected _breakLines(refWidth: number, refHeight: number,  context: ICanvasRenderingContext): object[] {
         var lines: { text: string, width: number, lineEnding: string }[] = [];
         var _lines = this.text.split("\n");
 
-        if (this._textWrapping === TextWrapping.Ellipsis) {
-            for (var _line of _lines) {
-                lines.push(this._parseLineEllipsis(_line, refWidth, context));
-            }
-        } else if (this._textWrapping === TextWrapping.WordWrap) {
+        if (this.clipContent) {
             for (var _line of _lines) {
                 lines.push(...this._parseLineWordWrap(_line, refWidth, context));
-            }
-        } else if (this._textWrapping === TextWrapping.WordWrapEllipsis) {
-            for (var _line of _lines) {
-                lines.push(...this._parseLineWordWrapEllipsis(_line, refWidth, refHeight!, context));
             }
         } else {
             for (var _line of _lines) {
@@ -698,47 +639,20 @@ export class InputTextArea extends InputText {
                 maxLineWidth = line.width;
             }
         }
-
-        if (this._resizeToFit) {
-            if (this._textWrapping === TextWrapping.Clip) {
-                let newWidth = this.paddingLeftInPixels + this.paddingRightInPixels + maxLineWidth;
-                if (newWidth !== this._width.internalValue) {
-                    this._width.updateInPlace(newWidth, ValueAndUnit.UNITMODE_PIXEL);
-                    this._rebuildLayout = true;
-                }
-            }
-            let newHeight = this.paddingTopInPixels + this.paddingBottomInPixels + this._fontOffset.height * this._lines.length;
-
-            if (this._lines.length > 0 && this._lineSpacing.internalValue !== 0) {
-                let lineSpacing = 0;
-                if (this._lineSpacing.isPixel) {
-                    lineSpacing = this._lineSpacing.getValue(this._host);
-                } else {
-                    lineSpacing = (this._lineSpacing.getValue(this._host) * this._height.getValueInPixel(this._host, this._cachedParentMeasure.height));
-                }
-
-                newHeight += (this._lines.length - 1) * lineSpacing;
-            }
-
-            if (newHeight !== this._height.internalValue) {
-                this._height.updateInPlace(newHeight, ValueAndUnit.UNITMODE_PIXEL);
-                this._rebuildLayout = true;
-            }
-        }
     }
 
     private _drawText(text: string, textWidth: number, y: number, context: ICanvasRenderingContext): void {
         var width = this._currentMeasure.width;
-        var x = 0;
+        var x = this._scrollLeft as number;
         switch (this._textHorizontalAlignment) {
             case Control.HORIZONTAL_ALIGNMENT_LEFT:
-                x = 0;
+                x += 0;
                 break;
             case Control.HORIZONTAL_ALIGNMENT_RIGHT:
-                x = width - textWidth;
+                x += width - textWidth;
                 break;
             case Control.HORIZONTAL_ALIGNMENT_CENTER:
-                x = (width - textWidth) / 2;
+                x += (width - textWidth) / 2;
                 break;
         }
 
@@ -752,7 +666,7 @@ export class InputTextArea extends InputText {
         if (this.outlineWidth) {
             context.strokeText(text, this._currentMeasure.left + x, y);
         }
-        context.fillText(text, (this._scrollLeft as number) /* this._currentMeasure.left*/ + x, y);
+        context.fillText(text, x, y);
     }
 
     /** @hidden */
@@ -843,6 +757,7 @@ export class InputTextArea extends InputText {
         // clipTextLeft is the start of the InputTextPosition + margin
         // _currentMeasure := left, top, width, height
         let clipTextLeft = this._currentMeasure.left + this._margin.getValueInPixel(this._host, this._tempParentMeasure.width);
+        let clipTextTop = this._currentMeasure.top + this._margin.getValueInPixel(this._host, this._tempParentMeasure.height);
         // sets the color of the rectangle (border if background available)
         if (this.color) {
             context.fillStyle = this.color;
@@ -885,6 +800,7 @@ export class InputTextArea extends InputText {
         // OLD let rootY = this._fontOffset.ascent + (this._currentMeasure.height - this._fontOffset.height) / 2;
         // availableWidth is basically the width of our inputField
         this._availableWidth = this._width.getValueInPixel(this._host, this._tempParentMeasure.width) - marginWidth;
+        this._availableHeight = this._height.getValueInPixel(this._host, this._tempParentMeasure.height) - marginWidth;
 
         context.save();
         context.beginPath();
@@ -892,8 +808,8 @@ export class InputTextArea extends InputText {
 
         // here we define the visible reactangle to clip it in next line
         //context.rect(clipTextLeft, this._currentMeasure.top + (this._currentMeasure.height - this._fontOffset.height) / 2, availableWidth + 2, this._currentMeasure.height);
-        context.rect(clipTextLeft, this._currentMeasure.top , this._availableWidth + 2, this._currentMeasure.height);
-        //context.clip();
+        context.rect(clipTextLeft, clipTextTop , this._availableWidth + 2, this._availableHeight + 2);
+        context.clip();
 
         //if (this._isFocused && this._textWidth > availableWidth) {
 
@@ -920,7 +836,20 @@ export class InputTextArea extends InputText {
             this._scrollLeft = clipTextLeft;
         }
 
-        rootY += this._currentMeasure.top + this._margin.getValueInPixel(this._host, this._tempParentMeasure.height);
+        let selectedHeight = (this._selectedLineIndex + 1)   * this._fontOffset.height;
+
+        if (this._isFocused) {
+            let textTop = clipTextTop - selectedHeight + this._availableHeight;
+            
+            if (!this._scrollTop) {
+                this._scrollTop = textTop;
+            }
+        } else {
+            this._scrollTop = clipTextTop;
+        }
+
+        // Text
+        rootY += this._scrollTop;
 
         for (let i = 0; i < this._lines.length; i++) {
             const line = this._lines[i];
@@ -929,15 +858,14 @@ export class InputTextArea extends InputText {
 
                 if (this._lineSpacing.isPixel) {
                     rootY += this._lineSpacing.getValue(this._host);
-                } else {
+        } else {
                     rootY = rootY + (this._lineSpacing.getValue(this._host) * this._height.getValueInPixel(this._host, this._cachedParentMeasure.height));
                 }
-            }
+        }
 
             this._drawText(line.text, line.width, rootY, context);
             rootY += this._fontOffset.height;
         }
-
         // filltext (<text>, x,y) Startcoordinates;
         //context.fillText(text, this._scrollLeft, this._currentMeasure.top + rootY);
 
@@ -1043,20 +971,25 @@ export class InputTextArea extends InputText {
                     this._markAsDirty();
                 }
 
-                let cursorTop = this._currentMeasure.top + this._margin.getValueInPixel(this._host, this._tempParentMeasure.height); //cursorTop distance from top to cursor start
-                if (this.lastClickedCoordinateY <= this._fontOffset.height) {
-                    // Nothing to do here
-                } else if (this.lastClickedCoordinateY > this._fontOffset.height * (this._lines.length - 1)) {
-                    cursorTop += (this._fontOffset.height * (this._lines.length - 1));
-                } else {
-                    cursorTop += (Math.floor(this.lastClickedCoordinateY / this._fontOffset.height)) * this._fontOffset.height;
+                let cursorTop = this._scrollTop + this._selectedLineIndex * this._fontOffset.height; //cursorTop distance from top to cursor start
+                
+                if (cursorTop < clipTextTop) {
+                    this._scrollTop += (clipTextTop - cursorTop);
+                    cursorTop = clipTextTop;
+                    this._markAsDirty();
+                } else if (cursorTop + this._fontOffset.height > clipTextTop + this._availableHeight) {
+                    this._scrollTop += (clipTextTop + this._availableHeight - cursorTop - this._fontOffset.height);
+                    cursorTop = clipTextTop + this._availableHeight - this._fontOffset.height;
+                    this._markAsDirty();
                 }
 
                 context.fillRect(cursorLeft, cursorTop, 2, this._fontOffset.height);
             }
         }
+
         context.restore();
 
+        // Caret Blinking
         clearTimeout(this._blinkTimeout);
         this._blinkTimeout = <any>setTimeout(() => {
             this._blinkIsEven = !this._blinkIsEven;
