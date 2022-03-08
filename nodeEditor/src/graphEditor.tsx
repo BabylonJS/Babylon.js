@@ -308,7 +308,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                         }
 
                         // Select
-                        this.props.globalState.onSelectionChangedObservable.notifyObservers(newFrame);
+                        this.props.globalState.onSelectionChangedObservable.notifyObservers({selection: newFrame});
                         return;
                     }
 
@@ -412,7 +412,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             newNodes.push(newNode);
 
             if (selectNew) {
-                this.props.globalState.onSelectionChangedObservable.notifyObservers(newNode);
+                this.props.globalState.onSelectionChangedObservable.notifyObservers({selection: newNode, forceKeepSelection: true});
             }
         }
 
@@ -649,7 +649,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         newNode.cleanAccumulation();
 
         this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
-        this.props.globalState.onSelectionChangedObservable.notifyObservers(newNode);
+        this.props.globalState.onSelectionChangedObservable.notifyObservers({selection: newNode});
 
         let block = newNode.block;
 

@@ -1,14 +1,10 @@
 import * as React from "react";
 import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
-import { GlobalState } from "../../globalState";
+import { GlobalState, ISelectionChangedOptions } from "../../globalState";
 import { TextInputLineComponent } from "../../sharedComponents/textInputLineComponent";
-import { GraphFrame } from "../graphFrame";
 import { Nullable } from "babylonjs/types";
 import { Observer } from "babylonjs/Misc/observable";
 import { NodePort } from "../nodePort";
-import { GraphNode } from "../graphNode";
-import { NodeLink } from "../nodeLink";
-import { FramePortData } from "../graphCanvas";
 import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineComponent";
 import { TextLineComponent } from "../../sharedComponents/textLineComponent";
 
@@ -18,7 +14,7 @@ export interface IFrameNodePortPropertyTabComponentProps {
 }
 
 export class NodePortPropertyTabComponent extends React.Component<IFrameNodePortPropertyTabComponentProps> {
-    private _onSelectionChangedObserver: Nullable<Observer<Nullable<GraphFrame | NodePort | GraphNode | NodeLink | FramePortData>>>;
+    private _onSelectionChangedObserver: Nullable<Observer<Nullable<ISelectionChangedOptions>>>;
 
     constructor(props: IFrameNodePortPropertyTabComponentProps) {
         super(props);
