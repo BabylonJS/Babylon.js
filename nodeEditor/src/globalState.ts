@@ -16,12 +16,17 @@ import { FramePortData } from './diagram/graphCanvas';
 import { NodeMaterialModes } from 'babylonjs/Materials/Node/Enums/nodeMaterialModes';
 import { ParticleSystem } from "babylonjs/Particles/particleSystem";
 
+export class ISelectionChangedOptions {
+    selection: Nullable<GraphNode | NodeLink | GraphFrame | NodePort | FramePortData>
+    forceKeepSelection?: boolean
+}
+
 export class GlobalState {
     nodeMaterial: NodeMaterial;
     hostElement: HTMLElement;
     hostDocument: HTMLDocument;
     hostWindow: Window;
-    onSelectionChangedObservable = new Observable<Nullable<GraphNode | NodeLink | GraphFrame | NodePort | FramePortData>>();
+    onSelectionChangedObservable = new Observable<Nullable<ISelectionChangedOptions>>();
     onRebuildRequiredObservable = new Observable<boolean>();
     onBuiltObservable = new Observable<void>();
     onResetRequiredObservable = new Observable<void>();    
