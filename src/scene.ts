@@ -3836,6 +3836,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         if (this._skeletonsEnabled && mesh.skeleton !== null && mesh.skeleton !== undefined) {
             if (this._activeSkeletons.pushNoDuplicate(mesh.skeleton)) {
                 mesh.skeleton.prepare();
+                this._activeBones.addCount(mesh.skeleton.bones.length, false);
             }
 
             if (!mesh.computeBonesUsingShaders) {
