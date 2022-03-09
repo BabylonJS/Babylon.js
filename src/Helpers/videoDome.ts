@@ -2,6 +2,9 @@ import { Scene } from "../scene";
 import { Texture } from "../Materials/Textures/texture";
 import { VideoTexture, VideoTextureSettings } from "../Materials/Textures/videoTexture";
 import { TextureDome } from "./textureDome";
+import { PointerEventTypes, PointerInfo } from "../Events/pointerEvents";
+import { Nullable } from "../types";
+import { Observer } from "../Misc/observable";
 
 declare type Camera = import("../Cameras/camera").Camera;
 
@@ -45,18 +48,34 @@ export class VideoDome extends TextureDome<VideoTexture> {
         this.textureMode = value;
     }
 
+    private _pointerObserver: Nullable<Observer<PointerInfo>>;
+    private _textureObserver: Nullable<Observer<Texture>>;
+
     protected _initTexture(urlsOrElement: string | string[] | HTMLVideoElement, scene: Scene, options: any): VideoTexture {
         const tempOptions: VideoTextureSettings = { loop: options.loop, autoPlay: options.autoPlay, autoUpdateTexture: true, poster: options.poster };
         const texture = new VideoTexture((this.name || "videoDome") + "_texture", urlsOrElement, scene, options.generateMipMaps, this._useDirectMapping, Texture.TRILINEAR_SAMPLINGMODE, tempOptions);
         // optional configuration
         if (options.clickToPlay) {
-            scene.onPointerUp = () => {
-                this._texture.video.play();
-            };
+            this._pointerObserver = scene.onPointerObservable.add((pointerInfo) => {
+                if (pointerInfo.type !== PointerEventTypes.POINTERUP) {
+                    this._texture.video.play();
+                }
+            });
         }
-        texture.onLoadObservable.add(() => {
+        this._textureObserver = texture.onLoadObservable.add(() => {
             this.onLoadObservable.notifyObservers();
         });
         return texture;
+    }
+
+    /**
+     * Releases resources associated with this node.
+     * @param doNotRecurse Set to true to not recurse into each children (recurse into each children by default)
+     * @param disposeMaterialAndTextures Set to true to also dispose referenced materials and textures (false by default)
+     */
+    public dispose(doNotRecurse?: boolean, disposeMaterialAndTextures = false): void {
+        this._texture.onLoadObservable.remove(this._textureObserver);
+        this._scene.onPointerObservable.remove(this._pointerObserver);
+        super.dispose(doNotRecurse, disposeMaterialAndTextures);
     }
 }
