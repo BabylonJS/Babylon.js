@@ -93,7 +93,7 @@ export class PointsCloudSystem implements IDisposable {
     /**
      * Creates a PCS (Points Cloud System) object
      * @param name (String) is the PCS name, this will be the underlying mesh name
-     * @param pointSize (number) is the size for each point
+     * @param pointSize (number) is the size for each point. Has no effect on a WebGPU engine.
      * @param scene (Scene) is the scene in which the PCS is added
      * @param options defines the options of the PCS e.g.
      * * updatable (optional boolean, default true) : if the PCS must be updatable or immutable
