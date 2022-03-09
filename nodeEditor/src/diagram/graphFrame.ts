@@ -629,11 +629,21 @@ export class GraphFrame {
         this._headerTextElement.addEventListener("pointermove", evt => this._onMove(evt));
 
         this._onSelectionChangedObserver = canvas.globalState.onSelectionChangedObservable.add((options) => {
-            const {selection: node} = options || {}
-            if (node === this) {
+            if (this._ownerCanvas.selectedFrames.indexOf(this) !== -1) {
                 this.element.classList.add("selected");
             } else {
                 this.element.classList.remove("selected");
+            }
+        });
+
+        canvas.globalState.onSelectionBoxMoved.add((rect1) => {
+            const rect2 = this.element.getBoundingClientRect();
+            var overlap = !(rect1.right < rect2.left ||
+                rect1.left > rect2.right ||
+                rect1.bottom < rect2.top ||
+                rect1.top > rect2.bottom);
+            if (overlap) {
+                canvas.globalState.onSelectionChangedObservable.notifyObservers({selection: this, forceKeepSelection: true});
             }
         });
 
@@ -714,17 +724,22 @@ export class GraphFrame {
     }
 
     private _onDown(evt: PointerEvent) {
-        evt.stopPropagation();
+        
+        this._headerTextElement.setPointerCapture(evt.pointerId);
 
+        const indexInSelection = this._ownerCanvas.selectedFrames.indexOf(this);
+        if (indexInSelection === -1) {
+            this._ownerCanvas.globalState.onSelectionChangedObservable.notifyObservers({selection: this});
+        } else if (evt.ctrlKey) {
+            this._ownerCanvas.selectedFrames.splice(indexInSelection, 1);
+            this.element.classList.remove("selected");
+        }
+        this._ownerCanvas._frameIsMoving = true;
+        
         this._mouseStartPointX = evt.clientX;
         this._mouseStartPointY = evt.clientY;
 
-        this._headerTextElement.setPointerCapture(evt.pointerId);
-        this._ownerCanvas.globalState.onSelectionChangedObservable.notifyObservers({selection: this});
-
-        this._ownerCanvas._frameIsMoving = true;
-
-        this.move(this._ownerCanvas.getGridPosition(this.x), this._ownerCanvas.getGridPosition(this.y))
+        evt.stopPropagation();
     }
 
     public move(newX: number, newY: number, align = true) {
@@ -754,7 +769,7 @@ export class GraphFrame {
         this._ownerCanvas._frameIsMoving = false;
     }
 
-    private _moveFrame(offsetX: number, offsetY: number) {
+    public _moveFrame(offsetX: number, offsetY: number) {
         this.x += offsetX;
         this.y += offsetY;
 
@@ -772,7 +787,13 @@ export class GraphFrame {
         let newX = (evt.clientX - this._mouseStartPointX) / this._ownerCanvas.zoom;
         let newY = (evt.clientY - this._mouseStartPointY) / this._ownerCanvas.zoom;
 
-        this._moveFrame(newX, newY);
+        for (let frame of this._ownerCanvas.selectedFrames) {
+            frame._moveFrame(newX, newY);
+        }
+        for (let node of this._ownerCanvas.selectedNodes) {
+            node.x += newX;
+            node.y += newY;
+        }
 
         this._mouseStartPointX = evt.clientX;
         this._mouseStartPointY = evt.clientY;
