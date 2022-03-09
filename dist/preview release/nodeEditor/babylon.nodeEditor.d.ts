@@ -188,7 +188,7 @@ declare module NODEEDITOR {
         private _onDown;
         move(newX: number, newY: number, align?: boolean): void;
         private _onUp;
-        private _moveFrame;
+        _moveFrame(offsetX: number, offsetY: number): void;
         private _onMove;
         moveFramePortUp(nodePort: FrameNodePort): void;
         private _movePortUp;
@@ -356,7 +356,7 @@ declare module NODEEDITOR {
         private _candidatePort;
         private _gridSize;
         private _selectionBox;
-        private _selectedFrame;
+        private _selectedFrames;
         private _frameCandidate;
         private _frames;
         private _altKeyIsPressed;
@@ -378,7 +378,7 @@ declare module NODEEDITOR {
         set y(value: number);
         get selectedNodes(): GraphNode[];
         get selectedLink(): BABYLON.Nullable<NodeLink>;
-        get selectedFrame(): BABYLON.Nullable<GraphFrame>;
+        get selectedFrames(): GraphFrame[];
         get selectedPort(): BABYLON.Nullable<NodePort>;
         get canvasContainer(): HTMLDivElement;
         get hostCanvas(): HTMLDivElement;
@@ -1703,7 +1703,7 @@ declare module NODEEDITOR {
         private _blocks;
         private _previewManager;
         private _copiedNodes;
-        private _copiedFrame;
+        private _copiedFrames;
         private _mouseLocationX;
         private _mouseLocationY;
         private _onWidgetKeyUpPointer;

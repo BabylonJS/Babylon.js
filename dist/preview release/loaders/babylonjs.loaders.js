@@ -7828,6 +7828,9 @@ var GLTFLoader = /** @class */ (function () {
                 if (node._babylonTransformNode && node._babylonTransformNode.getClassName() === "TransformNode") {
                     transformNodes.push(node._babylonTransformNode);
                 }
+                if (node._babylonTransformNodeForSkin) {
+                    transformNodes.push(node._babylonTransformNodeForSkin);
+                }
             }
         }
         return transformNodes;
@@ -7927,10 +7930,16 @@ var GLTFLoader = /** @class */ (function () {
         if (node.mesh == undefined || node.skin != undefined) {
             var nodeName = node.name || "node".concat(node.index);
             this._babylonScene._blockEntityCollection = !!this._assetContainer;
-            node._babylonTransformNode = new babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["TransformNode"](nodeName, this._babylonScene);
-            node._babylonTransformNode._parentContainer = this._assetContainer;
+            var transformNode = new babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["TransformNode"](nodeName, this._babylonScene);
+            transformNode._parentContainer = this._assetContainer;
             this._babylonScene._blockEntityCollection = false;
-            loadNode(node._babylonTransformNode);
+            if (node.mesh == undefined) {
+                node._babylonTransformNode = transformNode;
+            }
+            else {
+                node._babylonTransformNodeForSkin = transformNode;
+            }
+            loadNode(transformNode);
         }
         if (node.mesh != undefined) {
             if (node.skin == undefined) {
@@ -7943,7 +7952,8 @@ var GLTFLoader = /** @class */ (function () {
                 // transform, which effectively ignores the transform of the skinned mesh, as per spec.
                 var mesh = ArrayItem.Get("".concat(context, "/mesh"), this._gltf.meshes, node.mesh);
                 promises.push(this._loadMeshAsync("/meshes/".concat(mesh.index), node, mesh, function (babylonTransformNode) {
-                    GLTFLoader.AddPointerMetadata(babylonTransformNode, context);
+                    // Duplicate the metadata from the skin node to the skinned mesh in case any loader extension added metadata.
+                    babylonTransformNode.metadata = node._babylonTransformNodeForSkin.metadata;
                     var skin = ArrayItem.Get("".concat(context, "/skin"), _this._gltf.skins, node.skin);
                     promises.push(_this._loadSkinAsync("/skins/".concat(skin.index), node, skin, function (babylonSkeleton) {
                         _this._forEachPrimitive(node, function (babylonMesh) {

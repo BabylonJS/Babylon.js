@@ -1169,6 +1169,8 @@ declare module "babylonjs-loaders/glTF/2.0/glTFLoaderInterfaces" {
         /** @hidden */
         _babylonTransformNode?: TransformNode;
         /** @hidden */
+        _babylonTransformNodeForSkin?: TransformNode;
+        /** @hidden */
         _primitiveBabylonMeshes?: AbstractMesh[];
         /** @hidden */
         _numMorphTargets?: number;
@@ -4282,6 +4284,8 @@ declare module BABYLON.GLTF2.Loader {
         parent?: INode;
         /** @hidden */
         _babylonTransformNode?: TransformNode;
+        /** @hidden */
+        _babylonTransformNodeForSkin?: TransformNode;
         /** @hidden */
         _primitiveBabylonMeshes?: AbstractMesh[];
         /** @hidden */
