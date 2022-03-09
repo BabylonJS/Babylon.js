@@ -2123,6 +2123,11 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param projectionR defines the right Projection matrix to use (if provided)
      */
     public setTransformMatrix(viewL: Matrix, projectionL: Matrix, viewR?: Matrix, projectionR?: Matrix): void {
+        // clear the multiviewSceneUbo if no viewR and projectionR are defined
+        if (!viewR && !projectionR && this._multiviewSceneUbo) {
+            this._multiviewSceneUbo.dispose();
+            this._multiviewSceneUbo = null;
+        }
         if (this._viewUpdateFlag === viewL.updateFlag && this._projectionUpdateFlag === projectionL.updateFlag) {
             return;
         }
