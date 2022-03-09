@@ -176,8 +176,12 @@ export class Skeleton implements IAnimatable {
      * @returns a Float32Array containing matrices data
      */
     public getTransformMatrices(mesh: AbstractMesh): Float32Array {
-        if (this.needInitialSkinMatrix && mesh._bonesTransformMatrices) {
-            return mesh._bonesTransformMatrices;
+        if (this.needInitialSkinMatrix) {
+            if (!mesh._bonesTransformMatrices) {
+                this.prepare();
+            }
+
+            return mesh._bonesTransformMatrices!;
         }
 
         if (!this._transformMatrices) {
@@ -506,29 +510,27 @@ export class Skeleton implements IAnimatable {
             }
         }
 
-        if (!this._isDirty) {
-            return;
-        }
-
         if (this.needInitialSkinMatrix) {
-            for (var index = 0; index < this._meshesWithPoseMatrix.length; index++) {
-                var mesh = this._meshesWithPoseMatrix[index];
+            for (const mesh of this._meshesWithPoseMatrix) {
+                const poseMatrix = mesh.getPoseMatrix();
 
-                var poseMatrix = mesh.getPoseMatrix();
-
+                let needsUpdate = this._isDirty;
                 if (!mesh._bonesTransformMatrices || mesh._bonesTransformMatrices.length !== 16 * (this.bones.length + 1)) {
                     mesh._bonesTransformMatrices = new Float32Array(16 * (this.bones.length + 1));
+                    needsUpdate = true;
+                }
+
+                if (!needsUpdate) {
+                    continue;
                 }
 
                 if (this._synchronizedWithMesh !== mesh) {
                     this._synchronizedWithMesh = mesh;
 
                     // Prepare bones
-                    for (var boneIndex = 0; boneIndex < this.bones.length; boneIndex++) {
-                        var bone = this.bones[boneIndex];
-
+                    for (const bone of this.bones) {
                         if (!bone.getParent()) {
-                            var matrix = bone.getBaseMatrix();
+                            const matrix = bone.getBaseMatrix();
                             matrix.multiplyToRef(poseMatrix, TmpVectors.Matrix[1]);
                             bone._updateDifferenceMatrix(TmpVectors.Matrix[1]);
                         }
@@ -554,6 +556,10 @@ export class Skeleton implements IAnimatable {
                 }
             }
         } else {
+            if (!this._isDirty) {
+                return;
+            }
+
             if (!this._transformMatrices || this._transformMatrices.length !== 16 * (this.bones.length + 1)) {
                 this._transformMatrices = new Float32Array(16 * (this.bones.length + 1));
 
@@ -574,8 +580,6 @@ export class Skeleton implements IAnimatable {
         }
 
         this._isDirty = false;
-
-        this._scene._activeBones.addCount(this.bones.length, false);
     }
 
     /**
