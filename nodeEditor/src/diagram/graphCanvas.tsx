@@ -67,7 +67,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     private _candidatePort: Nullable<NodePort | FrameNodePort> = null;
     private _gridSize = 20;
     private _selectionBox: Nullable<HTMLDivElement> = null;
-    private _selectedFrame: Nullable<GraphFrame> = null;
+    private _selectedFrames: GraphFrame[] = [];
     private _frameCandidate: Nullable<HTMLDivElement> = null;
     private _frames: GraphFrame[] = [];
 
@@ -145,8 +145,8 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     public get selectedLink() {
         return this._selectedLink;
     }
-    public get selectedFrame() {
-        return this._selectedFrame;
+    public get selectedFrames() {
+        return this._selectedFrames;
     }
 
     public get selectedPort() {
@@ -181,19 +181,32 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             if (!selection) {
                 this._selectedNodes = [];
                 this._selectedLink = null;
-                this._selectedFrame = null;
+                this._selectedFrames = [];
                 this._selectedPort = null;
             } else {
                 if (selection instanceof NodeLink) {
                     this._selectedNodes = [];
-                    this._selectedFrame = null;
+                    this._selectedFrames = [];
                     this._selectedLink = selection;
                     this._selectedPort = null;
                 } else if (selection instanceof GraphFrame) {
-                    this._selectedNodes = [];
-                    this._selectedFrame = selection;
-                    this._selectedLink = null;
-                    this._selectedPort = null;
+                    if (selection.isCollapsed) {
+                        if (this._ctrlKeyIsPressed || forceKeepSelection) {
+                            if (this._selectedFrames.indexOf(selection) === -1) {
+                                this._selectedFrames.push(selection);
+                            }
+                        } else {
+                            this._selectedFrames = [selection];
+                            this._selectedNodes = [];
+                            this._selectedLink = null;
+                            this._selectedPort = null;
+                        }
+                    } else {
+                        this._selectedNodes = [];
+                        this._selectedFrames = [selection];
+                        this._selectedLink = null;
+                        this._selectedPort = null;
+                    }
                 } else if (selection instanceof GraphNode) {
                     if (this._ctrlKeyIsPressed || forceKeepSelection) {
                         if (this._selectedNodes.indexOf(selection) === -1) {
@@ -201,15 +214,18 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                         }
                     } else {
                         this._selectedNodes = [selection];
+                        this._selectedFrames = [];
+                        this._selectedLink = null;
+                        this._selectedPort = null;
                     }
                 } else if (selection instanceof NodePort) {
                     this._selectedNodes = [];
-                    this._selectedFrame = null;
+                    this._selectedFrames = [];
                     this._selectedLink = null;
                     this._selectedPort = selection;
                 } else {
                     this._selectedNodes = [];
-                    this._selectedFrame = null;
+                    this._selectedFrames = [];
                     this._selectedLink = null;
                     this._selectedPort = selection.port;
                 }
