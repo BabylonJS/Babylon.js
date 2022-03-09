@@ -376,6 +376,9 @@ export class GraphNode {
             selectedNode.x += newX;
             selectedNode.y += newY;
         }
+        for (let frame of this._ownerCanvas.selectedFrames) {
+            frame._moveFrame(newX, newY);
+        }
 
         this._mouseStartPointX = evt.clientX;
         this._mouseStartPointY = evt.clientY;

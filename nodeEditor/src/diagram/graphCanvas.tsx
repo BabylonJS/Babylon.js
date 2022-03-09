@@ -194,14 +194,12 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                         if (this._ctrlKeyIsPressed || forceKeepSelection) {
                             if (this._selectedFrames.indexOf(selection) === -1) {
                                 this._selectedFrames.push(selection);
-                                selection.isSelected = true;
                             }
                         } else {
                             this._selectedFrames = [selection];
                             this._selectedNodes = [];
                             this._selectedLink = null;
                             this._selectedPort = null;
-                            selection.isSelected = true;
                         }
                     } else {
                         this._selectedNodes = [];
