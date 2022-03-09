@@ -16,12 +16,12 @@
     },
     {
         "label": "Load GPU Particle System from Snippet Server",
-        "documentation": "https://doc.babylonjs.com/toolsAndResources/tools/animationCurveEditor#load-from-the-snippet-server",
+        "documentation": "https://doc.babylonjs.com/babylon101/particles#snippet-server",
         "insertText": "BABYLON.ParticleHelper.CreateFromSnippetAsync(\"${1:your_snippet_url_no_#}\", scene, true).then(system => {\n\n});"
     },
     {
         "label": "Load An Animation From The Snippet Server",
-        "documentation": "https://doc.babylonjs.com/babylon101/particles#snippet-server",
+        "documentation": "https://doc.babylonjs.com/toolsAndResources/tools/animationCurveEditor#load-from-the-snippet-server",
         "insertText": "let animations = await BABYLON.Animation.CreateFromSnippetAsync(\"${1:your_snippet_url_no_#}\");\n${2:object_to_apply_animations_to}.animations = animations;\nscene.beginAnimation(${3:object_to_apply_animations_to}, ${4:starting_frame_number}, ${5:ending_frame_number}, true);\n"
     },
     {
