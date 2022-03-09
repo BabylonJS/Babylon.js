@@ -1211,7 +1211,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      * @param materialSetupCallback defines a custom way of creating and seting up the material on the mesh
      * @returns a new AdvancedDynamicTexture
      */
-    public static CreateForMesh(mesh: AbstractMesh, 
+    public static CreateForMesh(mesh: AbstractMesh,
         width = 1024,
         height = 1024,
         supportPointerMove = true,
