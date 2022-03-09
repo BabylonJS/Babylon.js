@@ -288,7 +288,7 @@ declare module "babylonjs-node-editor/diagram/graphFrame" {
         private _onDown;
         move(newX: number, newY: number, align?: boolean): void;
         private _onUp;
-        private _moveFrame;
+        _moveFrame(offsetX: number, offsetY: number): void;
         private _onMove;
         moveFramePortUp(nodePort: FrameNodePort): void;
         private _movePortUp;
@@ -488,7 +488,7 @@ declare module "babylonjs-node-editor/diagram/graphCanvas" {
         private _candidatePort;
         private _gridSize;
         private _selectionBox;
-        private _selectedFrame;
+        private _selectedFrames;
         private _frameCandidate;
         private _frames;
         private _altKeyIsPressed;
@@ -510,7 +510,7 @@ declare module "babylonjs-node-editor/diagram/graphCanvas" {
         set y(value: number);
         get selectedNodes(): GraphNode[];
         get selectedLink(): Nullable<NodeLink>;
-        get selectedFrame(): Nullable<GraphFrame>;
+        get selectedFrames(): GraphFrame[];
         get selectedPort(): Nullable<NodePort>;
         get canvasContainer(): HTMLDivElement;
         get hostCanvas(): HTMLDivElement;
@@ -2053,7 +2053,7 @@ declare module "babylonjs-node-editor/graphEditor" {
         private _blocks;
         private _previewManager;
         private _copiedNodes;
-        private _copiedFrame;
+        private _copiedFrames;
         private _mouseLocationX;
         private _mouseLocationY;
         private _onWidgetKeyUpPointer;
@@ -3353,7 +3353,7 @@ declare module NODEEDITOR {
         private _onDown;
         move(newX: number, newY: number, align?: boolean): void;
         private _onUp;
-        private _moveFrame;
+        _moveFrame(offsetX: number, offsetY: number): void;
         private _onMove;
         moveFramePortUp(nodePort: FrameNodePort): void;
         private _movePortUp;
@@ -3521,7 +3521,7 @@ declare module NODEEDITOR {
         private _candidatePort;
         private _gridSize;
         private _selectionBox;
-        private _selectedFrame;
+        private _selectedFrames;
         private _frameCandidate;
         private _frames;
         private _altKeyIsPressed;
@@ -3543,7 +3543,7 @@ declare module NODEEDITOR {
         set y(value: number);
         get selectedNodes(): GraphNode[];
         get selectedLink(): BABYLON.Nullable<NodeLink>;
-        get selectedFrame(): BABYLON.Nullable<GraphFrame>;
+        get selectedFrames(): GraphFrame[];
         get selectedPort(): BABYLON.Nullable<NodePort>;
         get canvasContainer(): HTMLDivElement;
         get hostCanvas(): HTMLDivElement;
@@ -4868,7 +4868,7 @@ declare module NODEEDITOR {
         private _blocks;
         private _previewManager;
         private _copiedNodes;
-        private _copiedFrame;
+        private _copiedFrames;
         private _mouseLocationX;
         private _mouseLocationY;
         private _onWidgetKeyUpPointer;

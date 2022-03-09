@@ -58808,7 +58808,7 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
         _this._candidatePort = null;
         _this._gridSize = 20;
         _this._selectionBox = null;
-        _this._selectedFrame = null;
+        _this._selectedFrames = [];
         _this._frameCandidate = null;
         _this._frames = [];
         _this._altKeyIsPressed = false;
@@ -58821,21 +58821,36 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
             if (!selection) {
                 _this._selectedNodes = [];
                 _this._selectedLink = null;
-                _this._selectedFrame = null;
+                _this._selectedFrames = [];
                 _this._selectedPort = null;
             }
             else {
                 if (selection instanceof _nodeLink__WEBPACK_IMPORTED_MODULE_5__["NodeLink"]) {
                     _this._selectedNodes = [];
-                    _this._selectedFrame = null;
+                    _this._selectedFrames = [];
                     _this._selectedLink = selection;
                     _this._selectedPort = null;
                 }
                 else if (selection instanceof _graphFrame__WEBPACK_IMPORTED_MODULE_7__["GraphFrame"]) {
-                    _this._selectedNodes = [];
-                    _this._selectedFrame = selection;
-                    _this._selectedLink = null;
-                    _this._selectedPort = null;
+                    if (selection.isCollapsed) {
+                        if (_this._ctrlKeyIsPressed || forceKeepSelection) {
+                            if (_this._selectedFrames.indexOf(selection) === -1) {
+                                _this._selectedFrames.push(selection);
+                            }
+                        }
+                        else {
+                            _this._selectedFrames = [selection];
+                            _this._selectedNodes = [];
+                            _this._selectedLink = null;
+                            _this._selectedPort = null;
+                        }
+                    }
+                    else {
+                        _this._selectedNodes = [];
+                        _this._selectedFrames = [selection];
+                        _this._selectedLink = null;
+                        _this._selectedPort = null;
+                    }
                 }
                 else if (selection instanceof _graphNode__WEBPACK_IMPORTED_MODULE_3__["GraphNode"]) {
                     if (_this._ctrlKeyIsPressed || forceKeepSelection) {
@@ -58845,17 +58860,20 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
                     }
                     else {
                         _this._selectedNodes = [selection];
+                        _this._selectedFrames = [];
+                        _this._selectedLink = null;
+                        _this._selectedPort = null;
                     }
                 }
                 else if (selection instanceof _nodePort__WEBPACK_IMPORTED_MODULE_6__["NodePort"]) {
                     _this._selectedNodes = [];
-                    _this._selectedFrame = null;
+                    _this._selectedFrames = [];
                     _this._selectedLink = null;
                     _this._selectedPort = selection;
                 }
                 else {
                     _this._selectedNodes = [];
-                    _this._selectedFrame = null;
+                    _this._selectedFrames = [];
                     _this._selectedLink = null;
                     _this._selectedPort = selection.port;
                 }
@@ -58983,9 +59001,9 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
         enumerable: false,
         configurable: true
     });
-    Object.defineProperty(GraphCanvasComponent.prototype, "selectedFrame", {
+    Object.defineProperty(GraphCanvasComponent.prototype, "selectedFrames", {
         get: function () {
-            return this._selectedFrame;
+            return this._selectedFrames;
         },
         enumerable: false,
         configurable: true
@@ -60247,12 +60265,21 @@ var GraphFrame = /** @class */ (function () {
         this._headerTextElement.addEventListener("pointerup", function (evt) { return _this_1._onUp(evt); });
         this._headerTextElement.addEventListener("pointermove", function (evt) { return _this_1._onMove(evt); });
         this._onSelectionChangedObserver = canvas.globalState.onSelectionChangedObservable.add(function (options) {
-            var node = (options || {}).selection;
-            if (node === _this_1) {
+            if (_this_1._ownerCanvas.selectedFrames.indexOf(_this_1) !== -1) {
                 _this_1.element.classList.add("selected");
             }
             else {
                 _this_1.element.classList.remove("selected");
+            }
+        });
+        canvas.globalState.onSelectionBoxMoved.add(function (rect1) {
+            var rect2 = _this_1.element.getBoundingClientRect();
+            var overlap = !(rect1.right < rect2.left ||
+                rect1.left > rect2.right ||
+                rect1.bottom < rect2.top ||
+                rect1.top > rect2.bottom);
+            if (overlap) {
+                canvas.globalState.onSelectionChangedObservable.notifyObservers({ selection: _this_1, forceKeepSelection: true });
             }
         });
         this._onGraphNodeRemovalObserver = canvas.globalState.onGraphNodeRemovalObservable.add(function (node) {
@@ -60749,13 +60776,19 @@ var GraphFrame = /** @class */ (function () {
         this.y = this._ownerCanvas.getGridPosition(this.y);
     };
     GraphFrame.prototype._onDown = function (evt) {
-        evt.stopPropagation();
+        this._headerTextElement.setPointerCapture(evt.pointerId);
+        var indexInSelection = this._ownerCanvas.selectedFrames.indexOf(this);
+        if (indexInSelection === -1) {
+            this._ownerCanvas.globalState.onSelectionChangedObservable.notifyObservers({ selection: this });
+        }
+        else if (evt.ctrlKey) {
+            this._ownerCanvas.selectedFrames.splice(indexInSelection, 1);
+            this.element.classList.remove("selected");
+        }
+        this._ownerCanvas._frameIsMoving = true;
         this._mouseStartPointX = evt.clientX;
         this._mouseStartPointY = evt.clientY;
-        this._headerTextElement.setPointerCapture(evt.pointerId);
-        this._ownerCanvas.globalState.onSelectionChangedObservable.notifyObservers({ selection: this });
-        this._ownerCanvas._frameIsMoving = true;
-        this.move(this._ownerCanvas.getGridPosition(this.x), this._ownerCanvas.getGridPosition(this.y));
+        evt.stopPropagation();
     };
     GraphFrame.prototype.move = function (newX, newY, align) {
         if (align === void 0) { align = true; }
@@ -60795,7 +60828,15 @@ var GraphFrame = /** @class */ (function () {
         }
         var newX = (evt.clientX - this._mouseStartPointX) / this._ownerCanvas.zoom;
         var newY = (evt.clientY - this._mouseStartPointY) / this._ownerCanvas.zoom;
-        this._moveFrame(newX, newY);
+        for (var _i = 0, _a = this._ownerCanvas.selectedFrames; _i < _a.length; _i++) {
+            var frame = _a[_i];
+            frame._moveFrame(newX, newY);
+        }
+        for (var _b = 0, _c = this._ownerCanvas.selectedNodes; _b < _c.length; _b++) {
+            var node = _c[_b];
+            node.x += newX;
+            node.y += newY;
+        }
         this._mouseStartPointX = evt.clientX;
         this._mouseStartPointY = evt.clientY;
         evt.stopPropagation();
@@ -61444,6 +61485,10 @@ var GraphNode = /** @class */ (function () {
             var selectedNode = _a[_i];
             selectedNode.x += newX;
             selectedNode.y += newY;
+        }
+        for (var _b = 0, _c = this._ownerCanvas.selectedFrames; _b < _c.length; _b++) {
+            var frame = _c[_b];
+            frame._moveFrame(newX, newY);
         }
         this._mouseStartPointX = evt.clientX;
         this._mouseStartPointY = evt.clientY;
@@ -63918,7 +63963,7 @@ var GraphEditor = /** @class */ (function (_super) {
         _this._rightWidth = babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_6__["DataStorage"].ReadNumber("RightWidth", 300);
         _this._blocks = new Array();
         _this._copiedNodes = [];
-        _this._copiedFrame = null;
+        _this._copiedFrames = [];
         _this._mouseLocationX = 0;
         _this._mouseLocationY = 0;
         _this.handlePopUp = function () {
@@ -64109,26 +64154,28 @@ var GraphEditor = /** @class */ (function (_super) {
                 if (_this._graphCanvas.selectedLink) {
                     _this._graphCanvas.selectedLink.dispose();
                 }
-                if (_this._graphCanvas.selectedFrame) {
-                    var frame = _this._graphCanvas.selectedFrame;
-                    if (frame.isCollapsed) {
-                        while (frame.nodes.length > 0) {
-                            var targetBlock = frame.nodes[0].block;
-                            _this.props.globalState.nodeMaterial.removeBlock(targetBlock);
-                            var blockIndex = _this._blocks.indexOf(targetBlock);
-                            if (blockIndex > -1) {
-                                _this._blocks.splice(blockIndex, 1);
+                if (_this._graphCanvas.selectedFrames.length) {
+                    for (var _a = 0, _b = _this._graphCanvas.selectedFrames; _a < _b.length; _a++) {
+                        var frame = _b[_a];
+                        if (frame.isCollapsed) {
+                            while (frame.nodes.length > 0) {
+                                var targetBlock = frame.nodes[0].block;
+                                _this.props.globalState.nodeMaterial.removeBlock(targetBlock);
+                                var blockIndex = _this._blocks.indexOf(targetBlock);
+                                if (blockIndex > -1) {
+                                    _this._blocks.splice(blockIndex, 1);
+                                }
+                                frame.nodes[0].dispose();
                             }
-                            frame.nodes[0].dispose();
+                            frame.isCollapsed = false;
                         }
-                        frame.isCollapsed = false;
+                        else {
+                            frame.nodes.forEach(function (node) {
+                                node.enclosingFrameId = -1;
+                            });
+                        }
+                        frame.dispose();
                     }
-                    else {
-                        frame.nodes.forEach(function (node) {
-                            node.enclosingFrameId = -1;
-                        });
-                    }
-                    _this._graphCanvas.selectedFrame.dispose();
                 }
                 _this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
                 _this.props.globalState.onRebuildRequiredObservable.notifyObservers(false);
@@ -64140,10 +64187,13 @@ var GraphEditor = /** @class */ (function (_super) {
             if (evt.key === "c" || evt.key === "C") {
                 // Copy
                 _this._copiedNodes = [];
-                _this._copiedFrame = null;
-                if (_this._graphCanvas.selectedFrame) {
-                    _this._copiedFrame = _this._graphCanvas.selectedFrame;
-                    _this._copiedFrame.serialize(true);
+                _this._copiedFrames = [];
+                if (_this._graphCanvas.selectedFrames.length) {
+                    for (var _c = 0, _d = _this._graphCanvas.selectedFrames; _c < _d.length; _c++) {
+                        var frame = _d[_c];
+                        frame.serialize(true);
+                        _this._copiedFrames.push(frame);
+                    }
                     return;
                 }
                 var selectedItems = _this._graphCanvas.selectedNodes;
@@ -64161,39 +64211,42 @@ var GraphEditor = /** @class */ (function (_super) {
                 var rootElement = _this.props.globalState.hostDocument.querySelector(".diagram-container");
                 var zoomLevel = _this._graphCanvas.zoom;
                 var currentY = (_this._mouseLocationY - rootElement.offsetTop - _this._graphCanvas.y - 20) / zoomLevel;
-                if (_this._copiedFrame) {
-                    // New frame
-                    var newFrame = new _diagram_graphFrame__WEBPACK_IMPORTED_MODULE_14__["GraphFrame"](null, _this._graphCanvas, true);
-                    _this._graphCanvas.frames.push(newFrame);
-                    newFrame.width = _this._copiedFrame.width;
-                    newFrame.height = _this._copiedFrame.height;
-                    newFrame.width / 2;
-                    newFrame.name = _this._copiedFrame.name;
-                    newFrame.color = _this._copiedFrame.color;
-                    var currentX_1 = (_this._mouseLocationX - rootElement.offsetLeft - _this._graphCanvas.x) / zoomLevel;
-                    newFrame.x = currentX_1 - newFrame.width / 2;
-                    newFrame.y = currentY;
-                    // Paste nodes
-                    if (_this._copiedFrame.nodes.length) {
-                        currentX_1 = newFrame.x + _this._copiedFrame.nodes[0].x - _this._copiedFrame.x;
-                        currentY = newFrame.y + _this._copiedFrame.nodes[0].y - _this._copiedFrame.y;
-                        _this._graphCanvas._frameIsMoving = true;
-                        var newNodes = _this.pasteSelection(_this._copiedFrame.nodes, currentX_1, currentY);
-                        if (newNodes) {
-                            for (var _a = 0, newNodes_1 = newNodes; _a < newNodes_1.length; _a++) {
-                                var node = newNodes_1[_a];
-                                newFrame.syncNode(node);
+                if (_this._copiedFrames.length) {
+                    for (var _e = 0, _f = _this._copiedFrames; _e < _f.length; _e++) {
+                        var frame = _f[_e];
+                        // New frame
+                        var newFrame = new _diagram_graphFrame__WEBPACK_IMPORTED_MODULE_14__["GraphFrame"](null, _this._graphCanvas, true);
+                        _this._graphCanvas.frames.push(newFrame);
+                        newFrame.width = frame.width;
+                        newFrame.height = frame.height;
+                        newFrame.width / 2;
+                        newFrame.name = frame.name;
+                        newFrame.color = frame.color;
+                        var currentX_1 = (_this._mouseLocationX - rootElement.offsetLeft - _this._graphCanvas.x) / zoomLevel;
+                        newFrame.x = currentX_1 - newFrame.width / 2;
+                        newFrame.y = currentY;
+                        // Paste nodes
+                        if (frame.nodes.length) {
+                            currentX_1 = newFrame.x + frame.nodes[0].x - frame.x;
+                            currentY = newFrame.y + frame.nodes[0].y - frame.y;
+                            _this._graphCanvas._frameIsMoving = true;
+                            var newNodes = _this.pasteSelection(frame.nodes, currentX_1, currentY);
+                            if (newNodes) {
+                                for (var _g = 0, newNodes_1 = newNodes; _g < newNodes_1.length; _g++) {
+                                    var node = newNodes_1[_g];
+                                    newFrame.syncNode(node);
+                                }
                             }
+                            _this._graphCanvas._frameIsMoving = false;
                         }
-                        _this._graphCanvas._frameIsMoving = false;
+                        newFrame.adjustPorts();
+                        if (frame.isCollapsed) {
+                            newFrame.isCollapsed = true;
+                        }
+                        // Select
+                        _this.props.globalState.onSelectionChangedObservable.notifyObservers({ selection: newFrame, forceKeepSelection: true });
+                        return;
                     }
-                    newFrame.adjustPorts();
-                    if (_this._copiedFrame.isCollapsed) {
-                        newFrame.isCollapsed = true;
-                    }
-                    // Select
-                    _this.props.globalState.onSelectionChangedObservable.notifyObservers({ selection: newFrame });
-                    return;
                 }
                 if (!_this._copiedNodes.length) {
                     return;

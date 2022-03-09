@@ -22725,6 +22725,7 @@ declare module BABYLON {
         inverseRotationSpeed: number;
         /**
          * Define the current target of the camera as an object or a position.
+         * Please note that locking a target will disable panning.
          */
         lockedTarget: any;
         /** @hidden */
@@ -53838,13 +53839,13 @@ declare module BABYLON {
         /**
          * Defines the target point of the camera.
          * The camera looks towards it form the radius distance.
-         * Please note that you can set the target to a mesh and thus the target will be copied from mesh.position
          */
         get target(): Vector3;
         set target(value: Vector3);
         /**
          * Defines the target mesh of the camera.
          * The camera looks towards it from the radius distance.
+         * Please note that setting a target host will disable panning.
          */
         get targetHost(): Nullable<AbstractMesh>;
         set targetHost(value: Nullable<AbstractMesh>);
@@ -54209,11 +54210,13 @@ declare module BABYLON {
         /**
          * Defines the target the camera should look at.
          * This will automatically adapt alpha beta and radius to fit within the new target.
+         * Please note that setting a target as a mesh will disable panning.
          * @param target Defines the new target as a Vector or a mesh
          * @param toBoundingCenter In case of a mesh target, defines whether to target the mesh position or its bounding information center
          * @param allowSamePosition If false, prevents reapplying the new computed position if it is identical to the current one (optim)
+         * @param cloneAlphaBetaRadius If true, replicate the current setup (alpha, beta, radius) on the new target
          */
-        setTarget(target: AbstractMesh | Vector3, toBoundingCenter?: boolean, allowSamePosition?: boolean): void;
+        setTarget(target: AbstractMesh | Vector3, toBoundingCenter?: boolean, allowSamePosition?: boolean, cloneAlphaBetaRadius?: boolean): void;
         /** @hidden */
         _getViewMatrix(): Matrix;
         protected _onCollisionPositionChange: (collisionId: number, newPosition: Vector3, collidedMesh?: Nullable<AbstractMesh>) => void;
@@ -72498,7 +72501,15 @@ declare module BABYLON {
          * @see textureMode
          */
         set videoMode(value: number);
+        private _pointerObserver;
+        private _textureObserver;
         protected _initTexture(urlsOrElement: string | string[] | HTMLVideoElement, scene: Scene, options: any): VideoTexture;
+        /**
+         * Releases resources associated with this node.
+         * @param doNotRecurse Set to true to not recurse into each children (recurse into each children by default)
+         * @param disposeMaterialAndTextures Set to true to also dispose referenced materials and textures (false by default)
+         */
+        dispose(doNotRecurse?: boolean, disposeMaterialAndTextures?: boolean): void;
     }
 }
 declare module BABYLON {
@@ -82738,7 +82749,7 @@ declare module BABYLON {
         /**
          * Creates a PCS (Points Cloud System) object
          * @param name (String) is the PCS name, this will be the underlying mesh name
-         * @param pointSize (number) is the size for each point
+         * @param pointSize (number) is the size for each point. Has no effect on a WebGPU engine.
          * @param scene (Scene) is the scene in which the PCS is added
          * @param options defines the options of the PCS e.g.
          * * updatable (optional boolean, default true) : if the PCS must be updatable or immutable
