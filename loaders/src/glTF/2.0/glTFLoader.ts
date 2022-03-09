@@ -586,6 +586,9 @@ export class GLTFLoader implements IGLTFLoader {
                 if (node._babylonTransformNode && node._babylonTransformNode.getClassName() === "TransformNode") {
                     transformNodes.push(node._babylonTransformNode);
                 }
+                if (node._babylonTransformNodeForSkin) {
+                    transformNodes.push(node._babylonTransformNodeForSkin);
+                }
             }
         }
 
@@ -696,10 +699,15 @@ export class GLTFLoader implements IGLTFLoader {
         if (node.mesh == undefined || node.skin != undefined) {
             const nodeName = node.name || `node${node.index}`;
             this._babylonScene._blockEntityCollection = !!this._assetContainer;
-            node._babylonTransformNode = new TransformNode(nodeName, this._babylonScene);
-            node._babylonTransformNode._parentContainer = this._assetContainer;
+            const transformNode = new TransformNode(nodeName, this._babylonScene);
+            transformNode._parentContainer = this._assetContainer;
             this._babylonScene._blockEntityCollection = false;
-            loadNode(node._babylonTransformNode);
+            if (node.mesh == undefined) {
+                node._babylonTransformNode = transformNode;
+            } else {
+                node._babylonTransformNodeForSkin = transformNode;
+            }
+            loadNode(transformNode);
         }
 
         if (node.mesh != undefined) {
@@ -713,7 +721,8 @@ export class GLTFLoader implements IGLTFLoader {
 
                 const mesh = ArrayItem.Get(`${context}/mesh`, this._gltf.meshes, node.mesh);
                 promises.push(this._loadMeshAsync(`/meshes/${mesh.index}`, node, mesh, (babylonTransformNode) => {
-                    GLTFLoader.AddPointerMetadata(babylonTransformNode, context);
+                    // Duplicate the metadata from the skin node to the skinned mesh in case any loader extension added metadata.
+                    babylonTransformNode.metadata = node._babylonTransformNodeForSkin!.metadata;
 
                     const skin = ArrayItem.Get(`${context}/skin`, this._gltf.skins, node.skin);
                     promises.push(this._loadSkinAsync(`/skins/${skin.index}`, node, skin, (babylonSkeleton) => {
