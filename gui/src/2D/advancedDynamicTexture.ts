@@ -25,7 +25,6 @@ import { WebRequest } from "babylonjs/Misc/webRequest";
 import { IPointerEvent, IWheelEvent } from "babylonjs/Events/deviceInputEvents";
 import { RandomGUID } from "babylonjs/Misc/guid";
 import { GetClass } from "babylonjs/Misc/typeStore";
-import { _WarnImport } from "babylonjs/Misc/devTools";
 
 declare type StandardMaterial = import("babylonjs/Materials/standardMaterial").StandardMaterial;
 
@@ -1239,7 +1238,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     private static _CreateMaterial(mesh: AbstractMesh, uniqueId: string, texture: AdvancedDynamicTexture, onlyAlphaTesting: boolean): void {
         const internalClassType = GetClass("BABYLON.StandardMaterial");
         if (!internalClassType) {
-            throw _WarnImport("StandardMaterial");
+            throw "StandardMaterial needs to be imported before as it contains a side-effect required by your code.";
         }
 
         const material: StandardMaterial = new internalClassType(`AdvancedDynamicTextureMaterial for ${mesh.name} [${uniqueId}]`, mesh.getScene());
