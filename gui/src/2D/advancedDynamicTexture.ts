@@ -6,7 +6,6 @@ import { PointerInfoPre, PointerInfo, PointerEventTypes, PointerInfoBase } from 
 import { ClipboardEventTypes, ClipboardInfo } from "babylonjs/Events/clipboardEvents";
 import { KeyboardInfoPre, KeyboardEventTypes } from "babylonjs/Events/keyboardEvents";
 import { Camera } from "babylonjs/Cameras/camera";
-import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
 import { Texture } from "babylonjs/Materials/Textures/texture";
 import { DynamicTexture } from "babylonjs/Materials/Textures/dynamicTexture";
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
@@ -25,6 +24,9 @@ import { Color3 } from "babylonjs/Maths/math.color";
 import { WebRequest } from "babylonjs/Misc/webRequest";
 import { IPointerEvent, IWheelEvent } from "babylonjs/Events/deviceInputEvents";
 import { RandomGUID } from "babylonjs/Misc/guid";
+import { GetClass } from "babylonjs/Misc/typeStore";
+
+declare type StandardMaterial = import("babylonjs/Materials/standardMaterial").StandardMaterial;
 
 /**
  * Class used to create texture to support 2D GUI elements
@@ -1205,12 +1207,19 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      * @param supportPointerMove defines a boolean indicating if the texture must capture move events (true by default)
      * @param onlyAlphaTesting defines a boolean indicating that alpha blending will not be used (only alpha testing) (false by default)
      * @param invertY defines if the texture needs to be inverted on the y axis during loading (true by default)
+     * @param materialSetupCallback defines a custom way of creating and seting up the material on the mesh
      * @returns a new AdvancedDynamicTexture
      */
-    public static CreateForMesh(mesh: AbstractMesh, width = 1024, height = 1024, supportPointerMove = true, onlyAlphaTesting = false, invertY?: boolean): AdvancedDynamicTexture {
+    public static CreateForMesh(mesh: AbstractMesh,
+        width = 1024,
+        height = 1024,
+        supportPointerMove = true,
+        onlyAlphaTesting = false,
+        invertY?: boolean,
+        materialSetupCallback: (mesh: AbstractMesh, uniqueId: string, texture: AdvancedDynamicTexture, onlyAlphaTesting: boolean) => void = this._CreateMaterial): AdvancedDynamicTexture {
         // use a unique ID in name so serialization will work even if you create two ADTs for a single mesh
         const uniqueId = RandomGUID();
-        var result = new AdvancedDynamicTexture(
+        const result = new AdvancedDynamicTexture(
             `AdvancedDynamicTexture for ${mesh.name} [${uniqueId}]`,
             width,
             height,
@@ -1219,21 +1228,32 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             Texture.TRILINEAR_SAMPLINGMODE,
             invertY
         );
-        var material = new StandardMaterial(`AdvancedDynamicTextureMaterial for ${mesh.name} [${uniqueId}]`, mesh.getScene());
+
+        materialSetupCallback(mesh, uniqueId, result, onlyAlphaTesting);
+
+        result.attachToMesh(mesh, supportPointerMove);
+        return result;
+    }
+
+    private static _CreateMaterial(mesh: AbstractMesh, uniqueId: string, texture: AdvancedDynamicTexture, onlyAlphaTesting: boolean): void {
+        const internalClassType = GetClass("BABYLON.StandardMaterial");
+        if (!internalClassType) {
+            throw "StandardMaterial needs to be imported before as it contains a side-effect required by your code.";
+        }
+
+        const material: StandardMaterial = new internalClassType(`AdvancedDynamicTextureMaterial for ${mesh.name} [${uniqueId}]`, mesh.getScene());
         material.backFaceCulling = false;
         material.diffuseColor = Color3.Black();
         material.specularColor = Color3.Black();
         if (onlyAlphaTesting) {
-            material.diffuseTexture = result;
-            material.emissiveTexture = result;
-            result.hasAlpha = true;
+            material.diffuseTexture = texture;
+            material.emissiveTexture = texture;
+            texture.hasAlpha = true;
         } else {
-            material.emissiveTexture = result;
-            material.opacityTexture = result;
+            material.emissiveTexture = texture;
+            material.opacityTexture = texture;
         }
         mesh.material = material;
-        result.attachToMesh(mesh, supportPointerMove);
-        return result;
     }
 
     /**
