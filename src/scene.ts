@@ -2124,7 +2124,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      */
     public setTransformMatrix(viewL: Matrix, projectionL: Matrix, viewR?: Matrix, projectionR?: Matrix): void {
         // clear the multiviewSceneUbo if no viewR and projectionR are defined
-        if(!viewR && !projectionR && this._multiviewSceneUbo) {
+        if (!viewR && !projectionR && this._multiviewSceneUbo) {
             this._multiviewSceneUbo.dispose();
             this._multiviewSceneUbo = null;
         }
