@@ -7,6 +7,7 @@ import { IPlaneLike } from './math.like';
 import { RegisterClass } from '../Misc/typeStore';
 import { Plane } from './math.plane';
 import { PerformanceConfigurator } from '../Engines/performanceConfigurator';
+import { EngineStore } from "../Engines/engineStore";
 
 type TransformNode = import('../Meshes/transformNode').TransformNode;
 
@@ -2124,14 +2125,7 @@ export class Vector3 {
      * @returns the new Vector3
      */
     public static UnprojectFromTransform(source: Vector3, viewportWidth: number, viewportHeight: number, world: DeepImmutable<Matrix>, transform: DeepImmutable<Matrix>): Vector3 {
-        var matrix = MathTmp.Matrix[0];
-        world.multiplyToRef(transform, matrix);
-        matrix.invert();
-        source.x = source._x / viewportWidth * 2 - 1;
-        source.y = -(source._y / viewportHeight * 2 - 1);
-        const vector = new Vector3();
-        Vector3._UnprojectFromInvertedMatrixToRef(source, matrix, vector);
-        return vector;
+        return this.Unproject(source, viewportWidth, viewportHeight, world, transform, Matrix.IdentityReadOnly);
     }
 
     /**
@@ -2179,14 +2173,21 @@ export class Vector3 {
      * @param result defines the Vector3 where to store the result
      */
     public static UnprojectFloatsToRef(sourceX: float, sourceY: float, sourceZ: float, viewportWidth: number, viewportHeight: number, world: DeepImmutable<Matrix>, view: DeepImmutable<Matrix>, projection: DeepImmutable<Matrix>, result: Vector3): void {
-        var matrix = MathTmp.Matrix[0];
+        const matrix = MathTmp.Matrix[0];
         world.multiplyToRef(view, matrix);
         matrix.multiplyToRef(projection, matrix);
         matrix.invert();
-        var screenSource = MathTmp.Vector3[0];
+
+        const screenSource = MathTmp.Vector3[0];
         screenSource.x = sourceX / viewportWidth * 2 - 1;
         screenSource.y = -(sourceY / viewportHeight * 2 - 1);
-        screenSource.z = 2 * sourceZ - 1.0;
+        if (EngineStore.LastCreatedEngine?.isNDCHalfZRange) {
+            screenSource.z = sourceZ;
+        }
+        else {
+            screenSource.z = 2 * sourceZ - 1.0;
+        }
+
         Vector3._UnprojectFromInvertedMatrixToRef(screenSource, matrix, result);
     }
 
