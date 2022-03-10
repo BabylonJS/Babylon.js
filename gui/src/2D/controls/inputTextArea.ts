@@ -1018,79 +1018,12 @@ export class InputTextArea extends InputText {
         context.restore();
     }
 
-    protected _renderLines(context: ICanvasRenderingContext): void {
-        var height = this._currentMeasure.height;
-        var rootY = 0;
-        switch (this._textVerticalAlignment) {
-            case Control.VERTICAL_ALIGNMENT_TOP:
-                rootY = this._fontOffset.ascent;
-                break;
-            case Control.VERTICAL_ALIGNMENT_BOTTOM:
-                rootY = height - this._fontOffset.height * (this._lines.length - 1) - this._fontOffset.descent;
-                break;
-            case Control.VERTICAL_ALIGNMENT_CENTER:
-                rootY = this._fontOffset.ascent + (height - this._fontOffset.height * this._lines.length) / 2;
-                break;
-        }
-
-        rootY += this._currentMeasure.top + this._margin.getValueInPixel(this._host, this._tempParentMeasure.height);
-
-        for (let i = 0; i < this._lines.length; i++) {
-            const line = this._lines[i];
-
-            if (i !== 0 && this._lineSpacing.internalValue !== 0) {
-
-                if (this._lineSpacing.isPixel) {
-                    rootY += this._lineSpacing.getValue(this._host);
-                } else {
-                    rootY = rootY + (this._lineSpacing.getValue(this._host) * this._height.getValueInPixel(this._host, this._cachedParentMeasure.height));
-                }
-            }
-
-            this._drawText(line.text, line.width, rootY, context);
-            rootY += this._fontOffset.height;
-        }
-    }
-
     protected _applyStates(context: ICanvasRenderingContext): void {
         super._applyStates(context);
         if (this.outlineWidth) {
             context.lineWidth = this.outlineWidth;
             context.strokeStyle = this.outlineColor;
         }
-    }
-
-    /**
-     * Given a width constraint applied on the text block, find the expected height
-     * @returns expected height
-     */
-    public computeExpectedHeight(): number {
-        if (this.text && this.widthInPixels) {
-            const context = document.createElement('canvas').getContext('2d') as ICanvasRenderingContext;
-            if (context) {
-                this._applyStates(context);
-                if (!this._fontOffset) {
-                    this._fontOffset = Control._GetFontOffset(context.font);
-                }
-                const lines = this._lines ? this._lines : this._breakLines(this._availableWidth, this._currentMeasure.height, context);
-
-                let newHeight = this.paddingTopInPixels + this.paddingBottomInPixels + this._fontOffset.height * lines.length;
-
-                if (lines.length > 0 && this._lineSpacing.internalValue !== 0) {
-                    let lineSpacing = 0;
-                    if (this._lineSpacing.isPixel) {
-                        lineSpacing = this._lineSpacing.getValue(this._host);
-                    } else {
-                        lineSpacing = (this._lineSpacing.getValue(this._host) * this._height.getValueInPixel(this._host, this._cachedParentMeasure.height));
-                    }
-
-                    newHeight += (lines.length - 1) * lineSpacing;
-                }
-
-                return newHeight;
-            }
-        }
-        return 0;
     }
 
     public _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, pi: PointerInfoBase): boolean {
