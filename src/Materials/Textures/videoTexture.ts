@@ -129,29 +129,27 @@ export class VideoTexture extends Texture {
         generateMipMaps = false,
         invertY = false,
         samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
-        settings?: VideoTextureSettings,
+        settings: Partial<VideoTextureSettings> = {},
         onError?: Nullable<(message?: string, exception?: any) => void>
     ) {
         super(null, scene, !generateMipMaps, invertY);
 
-        if (!settings) {
-            settings = {
-                autoPlay: true,
-                loop: true,
-                autoUpdateTexture: true,
-            };
-        }
+        this._settings = {
+            autoPlay: true,
+            loop: true,
+            autoUpdateTexture: true,
+            ...settings
+        };
 
         this._onError = onError;
 
         this._generateMipMaps = generateMipMaps;
         this._initialSamplingMode = samplingMode;
-        this.autoUpdateTexture = settings.autoUpdateTexture;
+        this.autoUpdateTexture = this._settings.autoUpdateTexture;
 
         this._currentSrc = src;
         this.name = name || this._getName(src);
         this.video = this._getVideo(src);
-        this._settings = settings;
 
         if (settings.poster) {
             this.video.poster = settings.poster;
