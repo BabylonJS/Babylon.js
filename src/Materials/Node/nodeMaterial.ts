@@ -1381,7 +1381,7 @@ export class NodeMaterial extends PushMaterial {
     public dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean, notBoundToMesh?: boolean): void {
 
         if (forceDisposeTextures) {
-            for (var texture of this._sharedData.textureBlocks.filter((tb) => tb.texture).map((tb) => tb.texture!)) {
+            for (var texture of this.getTextureBlocks().filter((tb) => tb.texture).map((tb) => tb.texture!)) {
                 texture.dispose();
             }
         }
