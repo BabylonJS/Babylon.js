@@ -145,14 +145,8 @@ export class ProceduralTexture extends Texture {
 
         this._fallbackTexture = fallbackTexture;
 
-        if (isCube) {
-            this._rtWrapper = this._fullEngine.createRenderTargetCubeTexture(size as number, { generateMipMaps: generateMipMaps, generateDepthBuffer: false, generateStencilBuffer: false, type: textureType });
-            this.setFloat("face", 0);
-        }
-        else {
-            this._rtWrapper = this._fullEngine.createRenderTargetTexture(size, { generateMipMaps: generateMipMaps, generateDepthBuffer: false, generateStencilBuffer: false, type: textureType });
-        }
-        this._texture = this._rtWrapper.texture;
+        const rtWrapper = this._createRtWrapper(isCube, size, generateMipMaps, textureType);
+        this._texture = rtWrapper.texture;
 
         // VBO
         var vertices = [];
@@ -164,6 +158,17 @@ export class ProceduralTexture extends Texture {
         this._vertexBuffers[VertexBuffer.PositionKind] = new VertexBuffer(this._fullEngine, vertices, VertexBuffer.PositionKind, false, false, 2);
 
         this._createIndexBuffer();
+    }
+
+    private _createRtWrapper(isCube: boolean, size: TextureSize, generateMipMaps: boolean, textureType: number) {
+        if (isCube) {
+            this._rtWrapper = this._fullEngine.createRenderTargetCubeTexture(size as number, { generateMipMaps: generateMipMaps, generateDepthBuffer: false, generateStencilBuffer: false, type: textureType });
+            this.setFloat("face", 0);
+        }
+        else {
+            this._rtWrapper = this._fullEngine.createRenderTargetTexture(size, { generateMipMaps: generateMipMaps, generateDepthBuffer: false, generateStencilBuffer: false, type: textureType });
+        }
+        return this._rtWrapper;
     }
 
     /**
@@ -262,6 +267,10 @@ export class ProceduralTexture extends Texture {
 
         if (this._fallbackTextureUsed) {
             return true;
+        }
+
+        if (!this._texture) {
+            return false;
         }
 
         let defines = this._getDefines();
@@ -376,13 +385,15 @@ export class ProceduralTexture extends Texture {
      * @param generateMipMaps Define whether the new texture should create mip maps
      */
     public resize(size: TextureSize, generateMipMaps: boolean): void {
-        if (this._fallbackTextureUsed) {
+        if (this._fallbackTextureUsed || !this._rtWrapper || !this._texture) {
             return;
         }
 
-        this._rtWrapper?.dispose();
-        this._rtWrapper = this._fullEngine.createRenderTargetTexture(size, { generateMipMaps, generateDepthBuffer: false, generateStencilBuffer: false, type: this._textureType });
-        this._texture = this._rtWrapper.texture;
+        const isCube = this._texture.isCube;
+        this._rtWrapper.dispose();
+
+        const rtWrapper = this._createRtWrapper(isCube, size, generateMipMaps, this._textureType);
+        this._texture = rtWrapper.texture;
 
         // Update properties
         this._size = size;
