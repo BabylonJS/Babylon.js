@@ -490,7 +490,7 @@ export class Node implements IBehaviorAware<Node> {
             return true;
         }
 
-        if (this._parentUpdateId !== this._parentNode._childUpdateId) {
+        if (this._parentNode._isDirty || this._parentUpdateId !== this._parentNode._childUpdateId) {
             return false;
         }
 
