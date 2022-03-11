@@ -13343,6 +13343,7 @@ declare module BABYLON {
          * @param textureType The FBO internal texture type
          */
         constructor(name: string, size: TextureSize, fragment: any, scene: Nullable<Scene>, fallbackTexture?: Nullable<Texture>, generateMipMaps?: boolean, isCube?: boolean, textureType?: number);
+        private _createRtWrapper;
         /**
          * The effect that is created when initializing the post process.
          * @returns The created effect corresponding the the postprocess.
@@ -45379,7 +45380,7 @@ declare module BABYLON {
          * @param settings allows finer control over video usage
          * @param onError defines a callback triggered when an error occurred during the loading session
          */
-        constructor(name: Nullable<string>, src: string | string[] | HTMLVideoElement, scene: Nullable<Scene>, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number, settings?: VideoTextureSettings, onError?: Nullable<(message?: string, exception?: any) => void>);
+        constructor(name: Nullable<string>, src: string | string[] | HTMLVideoElement, scene: Nullable<Scene>, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number, settings?: Partial<VideoTextureSettings>, onError?: Nullable<(message?: string, exception?: any) => void>);
         /**
          * Get the current class name of the video texture useful for serialization or dynamic coding.
          * @returns "VideoTexture"
@@ -85185,7 +85186,7 @@ declare module BABYLON {
          * {
          *      chromatic_aberration: number;       // from 0 to x (1 for realism)
          *      edge_blur: number;                  // from 0 to x (1 for realism)
-         *      distortion: number;                 // from 0 to x (1 for realism)
+         *      distortion: number;                 // from 0 to x (1 for realism), note that this will effect the pointer position precision
          *      grain_amount: number;               // from 0 to 1
          *      grain_texture: BABYLON.Texture;     // texture to use for grain effect; if unset, use random B&W noise
          *      dof_focus_distance: number;         // depth-of-field: focus distance; unset to disable (disabled by default)
