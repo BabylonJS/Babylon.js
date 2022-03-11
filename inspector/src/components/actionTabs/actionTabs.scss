@@ -821,6 +821,10 @@ $line-padding-left: 2px;
                             border-radius: 100px;
                             cursor: pointer;
                             transition: all 0.3s ease;
+
+                            &.checked {
+                                background: rgb(51, 122, 183);
+                            }
                         }
 
                         .lbl:after {
@@ -835,19 +839,30 @@ $line-padding-left: 2px;
                             box-shadow: 0px 3px 3px rgba(0,0,0,0.05);
                             content: '';
                             transition: all 0.15s ease;
+
+                            &.checked {
+                                left: 20px;
+                                background: rgb(22, 73, 117);
+                            }    
+                        }
+
+                        .lbl.checked:after {
+                            position: absolute;
+                            top: 2px;
+                            display: block;
+                            width: 10px;
+                            height: 10px;
+                            border-radius: 100px;
+                            background: #fff;
+                            box-shadow: 0px 3px 3px rgba(0,0,0,0.05);
+                            content: '';
+                            transition: all 0.15s ease;
+                            left: 20px;
+                            background: rgb(22, 73, 117);
                         }
 
                         .lbl:active:after { 
                             transform: scale(1.15, 0.85); 
-                        }
-
-                        .cbx:checked ~ label { 
-                            background: rgb(51, 122, 183);
-                        }
-
-                        .cbx:checked ~ label:after {
-                            left: 20px;
-                            background: rgb(22, 73, 117);
                         }
 
                         .hidden { 
