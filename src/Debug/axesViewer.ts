@@ -52,7 +52,7 @@ export class AxesViewer {
      * @param yAxis defines the node hierarchy used to render the y-axis
      * @param zAxis defines the node hierarchy used to render the z-axis
      */
-    constructor(scene?: Scene, scaleLines = 1, renderingGroupId: Nullable<number> = 2, xAxis?: TransformNode, yAxis?: TransformNode, zAxis?: TransformNode) {
+    constructor(scene?: Scene, scaleLines = 1, renderingGroupId: Nullable<number> = 2, xAxis?: TransformNode, yAxis?: TransformNode, zAxis?: TransformNode, lineThickness=1) {
         scene = scene || <Scene>EngineStore.LastCreatedScene;
         if (!scene) {
             return;
@@ -63,21 +63,21 @@ export class AxesViewer {
             var redColoredMaterial = new StandardMaterial("", scene);
             redColoredMaterial.disableLighting = true;
             redColoredMaterial.emissiveColor = Color3.Red().scale(0.5);
-            xAxis = AxisDragGizmo._CreateArrow(scene, redColoredMaterial);
+            xAxis = AxisDragGizmo._CreateArrow(scene, redColoredMaterial, lineThickness);
         }
 
         if (!yAxis) {
             var greenColoredMaterial = new StandardMaterial("", scene);
             greenColoredMaterial.disableLighting = true;
             greenColoredMaterial.emissiveColor = Color3.Green().scale(0.5);
-            yAxis = AxisDragGizmo._CreateArrow(scene, greenColoredMaterial);
+            yAxis = AxisDragGizmo._CreateArrow(scene, greenColoredMaterial, lineThickness);
         }
 
         if (!zAxis) {
             var blueColoredMaterial = new StandardMaterial("", scene);
             blueColoredMaterial.disableLighting = true;
             blueColoredMaterial.emissiveColor = Color3.Blue().scale(0.5);
-            zAxis = AxisDragGizmo._CreateArrow(scene, blueColoredMaterial);
+            zAxis = AxisDragGizmo._CreateArrow(scene, blueColoredMaterial, lineThickness);
         }
 
         this._xAxis = xAxis;
