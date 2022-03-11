@@ -239,6 +239,16 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
     public loadAllMaterials = false;
 
     /**
+     * If true, load only all the materials defined in the file. Defaults to false.
+     */
+    public loadOnlyMaterials = false;
+
+    /**
+     * If true, do not load any materials defined in the file. Defaults to false.
+     */
+     public skipMaterials = false;
+
+    /**
      * If true, load the color (gamma encoded) textures into sRGB buffers (if supported by the GPU), which will yield more accurate results when sampling the texture. Defaults to true.
      */
     public useSRGBBuffers = true;
