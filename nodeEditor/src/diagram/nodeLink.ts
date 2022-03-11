@@ -5,7 +5,6 @@ import { Nullable } from 'babylonjs/types';
 import { Observer, Observable } from 'babylonjs/Misc/observable';
 import { FrameNodePort } from './frameNodePort';
 import { ISelectionChangedOptions } from '../globalState';
-import { GraphEditor } from '../graphEditor';
 import { ElbowBlock } from 'babylonjs/Materials/Node/Blocks/elbowBlock';
 
 export class NodeLink {
