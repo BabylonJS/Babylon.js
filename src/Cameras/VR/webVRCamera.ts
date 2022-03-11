@@ -523,7 +523,7 @@ export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
 
     /**
      * Detach the current controls from the specified dom element.
-     * @param ignored defines an ignored parameter kept for backward compatibility. If you want to define the source input element, you can set engine.inputElement before calling camera.attachControl
+     * @param ignored defines an ignored parameter kept for backward compatibility.
      */
     public detachControl(ignored?: any): void {
         this.getScene().gamepadManager.onGamepadConnectedObservable.remove(this._onGamepadConnectedObserver);

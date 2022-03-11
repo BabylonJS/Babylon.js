@@ -5,6 +5,7 @@ import { Nullable } from 'babylonjs/types';
 import { Observer, Observable } from 'babylonjs/Misc/observable';
 import { FrameNodePort } from './frameNodePort';
 import { ISelectionChangedOptions } from '../globalState';
+import { ElbowBlock } from 'babylonjs/Materials/Node/Blocks/elbowBlock';
 
 export class NodeLink {
     private _graphCanvas: GraphCanvasComponent;
@@ -106,7 +107,7 @@ export class NodeLink {
 
         svg.appendChild(this._selectionPath);
 
-        this._selectionPath.onmousedown = () => this.onClick();
+        this._selectionPath.onmousedown = (evt: MouseEvent) => this.onClick(evt);
 
         if (this._portB) {
             // Update
@@ -125,7 +126,35 @@ export class NodeLink {
         });
     }
 
-    onClick() {
+    onClick(evt: MouseEvent) {
+        if (evt.altKey) {
+            // Create an elbow at the clicked location
+            this._graphCanvas.globalState.onNewNodeCreatedObservable.addOnce((newNode) => {
+                const newElbowBlock = newNode.block as ElbowBlock;
+                const nodeA = this._nodeA;
+                const pointA = this._portA.connectionPoint;
+                const nodeB = this._nodeB!;
+                const pointB = this._portB!.connectionPoint;
+
+                // Delete previous link
+                this.dispose();
+
+                // Connect to Elbow block
+                this._graphCanvas.connectNodes(nodeA, pointA, newNode, newElbowBlock.input);
+                this._graphCanvas.connectNodes(newNode, newElbowBlock.output, nodeB, pointB);
+
+                this._graphCanvas.globalState.onRebuildRequiredObservable.notifyObservers(true);
+            });
+
+            this._graphCanvas.globalState.onNewBlockRequiredObservable.notifyObservers({
+                type: "ElbowBlock",
+                targetX: evt.clientX,
+                targetY: evt.clientY,
+                needRepositioning: true
+            });
+            return;
+        }
+
         this._graphCanvas.globalState.onSelectionChangedObservable.notifyObservers({selection: this});
     }
 

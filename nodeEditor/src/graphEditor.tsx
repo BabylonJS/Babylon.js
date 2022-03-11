@@ -44,8 +44,11 @@ interface IInternalPreviewAreaOptions extends IInspectorOptions {
 }
 
 export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditorState> {
-    private readonly NodeWidth = 100;
+    public static readonly NodeWidth = 100;
+    private _graphCanvasRef: React.RefObject<GraphCanvasComponent>;
+    private _diagramContainerRef: React.RefObject<HTMLDivElement>;
     private _graphCanvas: GraphCanvasComponent;
+    private _diagramContainer: HTMLDivElement;
 
     private _startX: number;
     private _moveInProgress: boolean;
@@ -117,7 +120,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
     componentDidMount() {
         if (this.props.globalState.hostDocument) {
-            this._graphCanvas = this.refs["graphCanvas"] as GraphCanvasComponent;
+            this._graphCanvas = this._graphCanvasRef.current!;
+            this._diagramContainer = this._diagramContainerRef.current!;
             this._previewManager = new PreviewManager(this.props.globalState.hostDocument.getElementById("preview-canvas") as HTMLCanvasElement, this.props.globalState);
             (this.props.globalState as any)._previewManager = this._previewManager;
         }
@@ -150,6 +154,21 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         this.state = {
             showPreviewPopUp: false,
         };
+
+        this._graphCanvasRef = React.createRef();
+        this._diagramContainerRef = React.createRef();
+
+        this.props.globalState.onNewBlockRequiredObservable.add((eventData) => {
+            let targetX = eventData.targetX;
+            let targetY = eventData.targetY;
+
+            if (eventData.needRepositioning) {
+                targetX = targetX - this._diagramContainer.offsetLeft;
+                targetY = targetY - this._diagramContainer.offsetTop;
+            }
+
+            this.emitNewBlock(eventData.type, targetX, targetY);
+        });
 
         this.props.globalState.onRebuildRequiredObservable.add((autoConfigure) => {
             if (this.props.globalState.nodeMaterial) {
@@ -212,7 +231,6 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
                     if (this._graphCanvas.selectedFrames.length) {
                         for (let frame of this._graphCanvas.selectedFrames) {
-                            
                             if (frame.isCollapsed) {
                                 while (frame.nodes.length > 0) {
                                     let targetBlock = frame.nodes[0].block;
@@ -321,7 +339,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                         return;
                     }
 
-                    let currentX = (this._mouseLocationX - rootElement.offsetLeft - this._graphCanvas.x - this.NodeWidth) / zoomLevel;
+                    let currentX = (this._mouseLocationX - rootElement.offsetLeft - this._graphCanvas.x - GraphEditor.NodeWidth) / zoomLevel;
                     this.pasteSelection(this._copiedNodes, currentX, currentY, true);
                 }
             },
@@ -579,14 +597,13 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         return `${this._leftWidth}px 4px calc(100% - ${this._leftWidth + 8 + this._rightWidth}px) 4px ${this._rightWidth}px`;
     }
 
-    emitNewBlock(event: React.DragEvent<HTMLDivElement>) {
-        var data = event.dataTransfer.getData("babylonjs-material-node") as string;
+    emitNewBlock(blockType: string, targetX: number, targetY: number) {
         let newNode: GraphNode;
 
         let customBlockData: any;
 
-        if (data.indexOf("CustomBlock") > -1) {
-            let storageData = localStorage.getItem(data);
+        if (blockType.indexOf("CustomBlock") > -1) {
+            let storageData = localStorage.getItem(blockType);
             if (!storageData) {
                 this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers(`Error loading custom block`);
                 return;
@@ -597,14 +614,14 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                 this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers(`Error parsing custom block`);
                 return;
             }
-        } else if (data.indexOf("Custom") > -1) {
-            let storageData = localStorage.getItem(data);
+        } else if (blockType.indexOf("Custom") > -1) {
+            let storageData = localStorage.getItem(blockType);
             if (storageData) {
                 let frameData = JSON.parse(storageData);
 
                 //edit position before loading.
-                let newX = (event.clientX - event.currentTarget.offsetLeft - this._graphCanvas.x - this.NodeWidth) / this._graphCanvas.zoom;
-                let newY = (event.clientY - event.currentTarget.offsetTop - this._graphCanvas.y - 20) / this._graphCanvas.zoom;
+                let newX = (targetX - this._graphCanvas.x - GraphEditor.NodeWidth) / this._graphCanvas.zoom;
+                let newY = (targetY - this._graphCanvas.y - 20) / this._graphCanvas.zoom;
                 let oldX = frameData.editorData.frames[0].x;
                 let oldY = frameData.editorData.frames[0].y;
                 frameData.editorData.frames[0].x = newX;
@@ -621,15 +638,15 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             }
         }
 
-        if (data.indexOf("Block") === -1) {
-            newNode = this.addValueNode(data);
+        if (blockType.indexOf("Block") === -1) {
+            newNode = this.addValueNode(blockType);
         } else {
             let block: NodeMaterialBlock;
             if (customBlockData) {
                 block = new CustomBlock("");
                 (block as CustomBlock).options = customBlockData;
             } else {
-                block = BlockTools.GetBlockFromString(data, this.props.globalState.nodeMaterial.getScene(), this.props.globalState.nodeMaterial)!;
+                block = BlockTools.GetBlockFromString(blockType, this.props.globalState.nodeMaterial.getScene(), this.props.globalState.nodeMaterial)!;
             }
 
             if (block.isUnique) {
@@ -646,19 +663,30 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             newNode = this.createNodeFromObject(block);
         }
 
-        let x = event.clientX - event.currentTarget.offsetLeft - this._graphCanvas.x - this.NodeWidth;
-        let y = event.clientY - event.currentTarget.offsetTop - this._graphCanvas.y - 20;
+        // Size exceptions
+        let offsetX = GraphEditor.NodeWidth;
+        let offsetY = 20;
+
+        if (blockType === "ElbowBlock") {
+            offsetX = 10;
+            offsetY = 10;
+        }
+
+        // Drop
+        let x = targetX - this._graphCanvas.x - offsetX * this._graphCanvas.zoom;
+        let y = targetY - this._graphCanvas.y - offsetY * this._graphCanvas.zoom;
 
         newNode.x = x / this._graphCanvas.zoom;
         newNode.y = y / this._graphCanvas.zoom;
         newNode.cleanAccumulation();
 
+        this.props.globalState.onNewNodeCreatedObservable.notifyObservers(newNode);
         this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
         this.props.globalState.onSelectionChangedObservable.notifyObservers({ selection: newNode });
 
         let block = newNode.block;
 
-        x -= this.NodeWidth + 150;
+        x -= GraphEditor.NodeWidth + 150;
 
         block.inputs.forEach((connection) => {
             if (connection.connectedPoint) {
@@ -677,6 +705,12 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         });
 
         this.forceUpdate();
+    }
+
+    dropNewBlock(event: React.DragEvent<HTMLDivElement>) {
+        var data = event.dataTransfer.getData("babylonjs-material-node") as string;
+
+        this.emitNewBlock(data, event.clientX - this._diagramContainer.offsetLeft, event.clientY - this._diagramContainer.offsetTop);
     }
 
     handlePopUp = () => {
@@ -878,15 +912,16 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                     {/* The node graph diagram */}
                     <div
                         className="diagram-container"
+                        ref={this._diagramContainerRef}
                         onDrop={(event) => {
-                            this.emitNewBlock(event);
+                            this.dropNewBlock(event);
                         }}
                         onDragOver={(event) => {
                             event.preventDefault();
                         }}
                     >
                         <GraphCanvasComponent
-                            ref={"graphCanvas"}
+                            ref={this._graphCanvasRef}
                             globalState={this.props.globalState}
                             onEmitNewBlock={(block) => {
                                 return this.createNodeFromObject(block);
