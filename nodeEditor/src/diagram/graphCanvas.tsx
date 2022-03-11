@@ -35,7 +35,9 @@ export type FramePortData = {
 export const isFramePortData = (variableToCheck: any): variableToCheck is FramePortData => {
     if (variableToCheck) {
         return (variableToCheck as FramePortData).port !== undefined;
-    } else return false;
+    } else {
+        return false;
+    }
 };
 
 export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentProps> {
@@ -944,6 +946,17 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             });
         }
 
+        this.connectNodes(nodeA, pointA, nodeB, pointB);
+
+        linksToNotifyForDispose?.forEach((link) => {
+            link.onDisposedObservable.notifyObservers(link);
+            link.onDisposedObservable.clear();
+        });
+
+        this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
+    }
+
+    connectNodes(nodeA: GraphNode, pointA: NodeMaterialConnectionPoint, nodeB: GraphNode, pointB: NodeMaterialConnectionPoint) {
         pointA.connectTo(pointB);
         this.connectPorts(pointA, pointB);
 
@@ -954,13 +967,6 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         const visitedLinks = new Set<NodeLink>([nodeB.links[nodeB.links.length - 1]]);
 
         GraphCanvasComponent._RefreshNode(nodeB, visitedNodes, visitedLinks);
-
-        linksToNotifyForDispose?.forEach((link) => {
-            link.onDisposedObservable.notifyObservers(link);
-            link.onDisposedObservable.clear();
-        });
-
-        this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
     }
 
     processEditorData(editorData: IEditorData) {
