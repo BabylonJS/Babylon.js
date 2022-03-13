@@ -7,6 +7,7 @@ import { Scene } from "../scene";
 import { Light } from "../Lights/light";
 import { SerializationHelper } from "./decorators";
 import { Texture } from "../Materials/Textures/texture";
+import { CubeTexture } from "../Materials/Textures/cubeTexture";
 
 var serializedGeometries: Geometry[] = [];
 var serializeGeometry = (geometry: Geometry, serializationGeometries: any): any => {
@@ -245,6 +246,7 @@ export class SceneSerializer {
         // Environment texture
         if (scene.environmentTexture) {
             serializationObject.environmentTexture = scene.environmentTexture.name;
+            serializationObject.environmentTextureRotationY = (scene.environmentTexture as CubeTexture).rotationY;
         }
 
         // Environment Intensity
