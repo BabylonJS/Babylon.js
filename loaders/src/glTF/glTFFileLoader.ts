@@ -17,6 +17,7 @@ import { GLTFValidation } from "./glTFValidation";
 import { DecodeBase64UrlToBinary, LoadFileError } from "babylonjs/Misc/fileTools";
 import { StringTools } from "babylonjs/Misc/stringTools";
 import { RuntimeError, ErrorCodes } from "babylonjs/Misc/error";
+import { IMaterial } from "babylonjs-gltf2interface";
 
 interface IFileRequestInfo extends IFileRequest {
     _lengthComputable?: boolean;
@@ -246,7 +247,13 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
     /**
      * If true, do not load any materials defined in the file. Defaults to false.
      */
-     public skipMaterials = false;
+    public skipMaterials = false;
+
+    /**
+     * If defined, provides a callback to override a specific material from a GLTF file.
+     * If the callback returns null, the requested gltf material will be loaded.
+     */
+    public customMaterialLoad: Nullable<(material: IMaterial) => Nullable<Material>> = null;
 
     /**
      * If true, load the color (gamma encoded) textures into sRGB buffers (if supported by the GPU), which will yield more accurate results when sampling the texture. Defaults to true.
