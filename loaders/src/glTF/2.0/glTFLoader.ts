@@ -1862,6 +1862,13 @@ export class GLTFLoader implements IGLTFLoader {
 
     /** @hidden */
     public _loadMaterialAsync(context: string, material: IMaterial, babylonMesh: Nullable<Mesh>, babylonDrawMode: number, assign: (babylonMaterial: Material) => void = () => { }): Promise<Material> {
+        if (this.parent.customMaterialLoad) {
+            const customMaterial = this.parent.customMaterialLoad(material);
+            if (customMaterial) {
+                return Promise.resolve(customMaterial);
+            }
+        }
+
         const extensionPromise = this._extensionsLoadMaterialAsync(context, material, babylonMesh, babylonDrawMode, assign);
         if (extensionPromise) {
             return extensionPromise;
