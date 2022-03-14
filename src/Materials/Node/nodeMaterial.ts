@@ -1639,12 +1639,13 @@ export class NodeMaterial extends PushMaterial {
     /**
      * Loads the current Node Material from a url pointing to a file save by the Node Material Editor
      * @param url defines the url to load from
+     * @param rootUrl defines the root URL for nested url in the node material
      * @returns a promise that will fulfil when the material is fully loaded
      */
-    public loadAsync(url: string) {
+    public loadAsync(url: string, rootUrl: string = "") {
         return this.getScene()._loadFileAsync(url).then((data) => {
             const serializationObject = JSON.parse(data as string);
-            this.loadFromSerialization(serializationObject, "");
+            this.loadFromSerialization(serializationObject, rootUrl);
         });
     }
 
@@ -1934,13 +1935,14 @@ export class NodeMaterial extends PushMaterial {
      * @param name defines the name of the material to create
      * @param url defines the url to load from
      * @param scene defines the hosting scene
+     * @param rootUrl defines the root URL for nested url in the node material
      * @returns a promise that will resolve to the new node material
      */
-    public static ParseFromFileAsync(name: string, url: string, scene: Scene): Promise<NodeMaterial> {
+    public static ParseFromFileAsync(name: string, url: string, scene: Scene, rootUrl: string = ""): Promise<NodeMaterial> {
         var material = new NodeMaterial(name, scene);
 
         return new Promise((resolve, reject) => {
-            return material.loadAsync(url).then(() => {
+            return material.loadAsync(url, rootUrl).then(() => {
                 material.build();
                 resolve(material);
             }).catch(reject);
