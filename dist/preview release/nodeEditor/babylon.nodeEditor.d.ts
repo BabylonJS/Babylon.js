@@ -314,7 +314,7 @@ declare module NODEEDITOR {
         get nodeB(): GraphNode | undefined;
         update(endX?: number, endY?: number, straight?: boolean): void;
         constructor(graphCanvas: GraphCanvasComponent, portA: NodePort, nodeA: GraphNode, portB?: NodePort, nodeB?: GraphNode);
-        onClick(): void;
+        onClick(evt: MouseEvent): void;
         dispose(notify?: boolean): void;
     }
 }
@@ -404,6 +404,7 @@ declare module NODEEDITOR {
         onWheel(evt: React.WheelEvent): void;
         zoomToFit(): void;
         processCandidatePort(): void;
+        connectNodes(nodeA: GraphNode, pointA: BABYLON.NodeMaterialConnectionPoint, nodeB: GraphNode, pointB: BABYLON.NodeMaterialConnectionPoint): void;
         processEditorData(editorData: IEditorData): void;
         addFrame(frameData: IFrameData): void;
         render(): JSX.Element;
@@ -1381,6 +1382,7 @@ declare module NODEEDITOR {
         hostElement: HTMLElement;
         hostDocument: HTMLDocument;
         hostWindow: Window;
+        onNewNodeCreatedObservable: BABYLON.Observable<GraphNode>;
         onSelectionChangedObservable: BABYLON.Observable<BABYLON.Nullable<ISelectionChangedOptions>>;
         onRebuildRequiredObservable: BABYLON.Observable<boolean>;
         onBuiltObservable: BABYLON.Observable<void>;
@@ -1404,6 +1406,12 @@ declare module NODEEDITOR {
         onImportFrameObservable: BABYLON.Observable<any>;
         onGraphNodeRemovalObservable: BABYLON.Observable<GraphNode>;
         onPopupClosedObservable: BABYLON.Observable<void>;
+        onNewBlockRequiredObservable: BABYLON.Observable<{
+            type: string;
+            targetX: number;
+            targetY: number;
+            needRepositioning?: boolean | undefined;
+        }>;
         onGetNodeFromBlock: (block: BABYLON.NodeMaterialBlock) => GraphNode;
         onGridSizeChanged: BABYLON.Observable<void>;
         onExposePortOnFrameObservable: BABYLON.Observable<GraphNode>;
@@ -1694,8 +1702,11 @@ declare module NODEEDITOR {
         embedHostWidth?: string;
     }
     export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditorState> {
-        private readonly NodeWidth;
+        static readonly NodeWidth: number;
+        private _graphCanvasRef;
+        private _diagramContainerRef;
         private _graphCanvas;
+        private _diagramContainer;
         private _startX;
         private _moveInProgress;
         private _leftWidth;
@@ -1731,7 +1742,8 @@ declare module NODEEDITOR {
         onPointerUp(evt: React.PointerEvent<HTMLDivElement>): void;
         resizeColumns(evt: React.PointerEvent<HTMLDivElement>, forLeft?: boolean): void;
         buildColumnLayout(): string;
-        emitNewBlock(event: React.DragEvent<HTMLDivElement>): void;
+        emitNewBlock(blockType: string, targetX: number, targetY: number): void;
+        dropNewBlock(event: React.DragEvent<HTMLDivElement>): void;
         handlePopUp: () => void;
         handleClosingPopUp: () => void;
         initiatePreviewArea: (canvas?: HTMLCanvasElement) => void;
