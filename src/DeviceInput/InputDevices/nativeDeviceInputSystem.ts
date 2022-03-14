@@ -16,9 +16,7 @@ export class NativeDeviceInputSystem implements IDeviceInputSystem {
             if (inputs) {
                 for (const deviceSlotKey in inputs) {
                     const deviceSlot = +deviceSlotKey;
-                    if (this._inputs[deviceType][deviceSlot]) {
-                        this._onDeviceConnected(deviceType, deviceSlot);
-                    }
+                    this._onDeviceConnected(deviceType, deviceSlot);
                 }
             }
         }
