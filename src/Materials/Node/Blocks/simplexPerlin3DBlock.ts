@@ -85,6 +85,7 @@ export class SimplexPerlin3DBlock extends NodeMaterialBlock {
         functionString += `const float SIMPLEX_CORNER_POS = 0.5;\r\n`;
         functionString += `const float SIMPLEX_TETRAHADRON_HEIGHT = 0.70710678118654752440084436210485;\r\n`;
         functionString += `float SimplexPerlin3D( vec3 P ){\r\n`;
+        functionString += `    P.x = P == vec3(0., 0., 0.) ? 0.00001 : P.x;\r\n`;
         functionString += `    P *= SIMPLEX_TETRAHADRON_HEIGHT;\r\n`;
         functionString += `    vec3 Pi = floor( P + dot( P, vec3( SKEWFACTOR) ) );`;
         functionString += `    vec3 x0 = P - Pi + dot(Pi, vec3( UNSKEWFACTOR ) );\r\n`;

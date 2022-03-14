@@ -3,8 +3,8 @@ import { WebXRSessionManager } from "../webXRSessionManager";
 import { Observable } from "../../Misc/observable";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
 import { Matrix } from "../../Maths/math.vector";
-import { Tools } from "../../Misc/tools";
 import { Nullable } from "../../types";
+import { Tools } from "../../Misc/tools";
 
 declare const XRImageTrackingResult: XRImageTrackingResult;
 
@@ -91,6 +91,7 @@ export class WebXRImageTracking extends WebXRAbstractFeature {
      */
     public onTrackedImageUpdatedObservable: Observable<IWebXRTrackedImage> = new Observable();
 
+    private _trackableScoresReceived: boolean = false;
     private _trackedImages: IWebXRTrackedImage[] = [];
 
     private _originalTrackingRequest: XRTrackedImageInit[];
@@ -109,17 +110,6 @@ export class WebXRImageTracking extends WebXRAbstractFeature {
     ) {
         super(_xrSessionManager);
         this.xrNativeFeatureName = "image-tracking";
-        if (this.options.images.length === 0) {
-            // no images provided?... return.
-            return;
-        }
-        if (this._xrSessionManager.session) {
-            this._init();
-        } else {
-            this._xrSessionManager.onXRSessionInit.addOnce(() => {
-                this._init();
-            });
-        }
     }
 
     /**
@@ -184,47 +174,47 @@ export class WebXRImageTracking extends WebXRAbstractFeature {
         }
         const promises = this.options.images.map((image) => {
             if (typeof image.src === "string") {
-                const p = new Promise<ImageBitmap>((resolve, reject) => {
-                    if (typeof image.src === "string") {
-                        const img = new Image();
-                        img.src = image.src;
-                        img.onload = () => {
-                            img.decode().then(() => {
-                                this._xrSessionManager.scene.getEngine().createImageBitmap(img).then((imageBitmap) => {
-                                    resolve(imageBitmap);
-                                });
-                            });
-                        };
-                        img.onerror = () => {
-                            Tools.Error(`Error loading image ${image.src}`);
-                            reject(`Error loading image ${image.src}`);
-                        };
-                    }
-                });
-                return p;
+                return this._xrSessionManager.scene.getEngine().createImageBitmapFromSource(image.src);
             } else {
                 return Promise.resolve(image.src); // resolve is probably unneeded
             }
         });
 
-        const images = await Promise.all(promises);
+        try
+        {
+            const images = await Promise.all(promises);
 
-        this._originalTrackingRequest = images.map((image, idx) => {
+            this._originalTrackingRequest = images.map((image, idx) => {
+                return {
+                    image,
+                    widthInMeters: this.options.images[idx].estimatedRealWorldWidth,
+                };
+            });
+
             return {
-                image,
-                widthInMeters: this.options.images[idx].estimatedRealWorldWidth,
+                trackedImages: this._originalTrackingRequest,
             };
-        });
-
-        return {
-            trackedImages: this._originalTrackingRequest,
-        };
+        } catch (ex) {
+            Tools.Error("Error loading images for tracking, WebXRImageTracking disabled for this session.");
+            return {};
+        }
     }
 
     protected _onXRFrame(_xrFrame: XRFrame) {
         if (!_xrFrame.getImageTrackingResults) {
             return;
         }
+
+        // Image tracking scores may be generated a few frames after the XR Session initializes.
+        // If we haven't received scores yet, then check scores first then bail out if necessary.
+        if (!this._trackableScoresReceived) {
+            this._checkScores();
+
+            if (!this._trackableScoresReceived) {
+                return;
+            }
+        }
+
         const imageTrackedResults = _xrFrame.getImageTrackingResults();
         for (const result of imageTrackedResults) {
             let changed = false;
@@ -267,12 +257,12 @@ export class WebXRImageTracking extends WebXRAbstractFeature {
         }
     }
 
-    private async _init() {
-        if (!this._xrSessionManager.session.getTrackedImageScores) {
+    private _checkScores(): void {
+        if (!this._xrSessionManager.session.getTrackedImageScores || this._trackableScoresReceived) {
             return;
         }
-        //
-        const imageScores = await this._xrSessionManager.session.getTrackedImageScores();
+
+        const imageScores = this._xrSessionManager.session.getTrackedImageScores();
         // check the scores for all
         for (let idx = 0; idx < imageScores.length; ++idx) {
             if (imageScores[idx] == "untrackable") {
@@ -289,6 +279,8 @@ export class WebXRImageTracking extends WebXRAbstractFeature {
                 this.onTrackableImageFoundObservable.notifyObservers(imageObject);
             }
         }
+
+        this._trackableScoresReceived ||= imageScores.length > 0;
     }
 }
 

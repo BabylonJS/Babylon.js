@@ -78,7 +78,7 @@ export class LensRenderingPipeline extends PostProcessRenderPipeline {
      * {
      *      chromatic_aberration: number;       // from 0 to x (1 for realism)
      *      edge_blur: number;                  // from 0 to x (1 for realism)
-     *      distortion: number;                 // from 0 to x (1 for realism)
+     *      distortion: number;                 // from 0 to x (1 for realism), note that this will effect the pointer position precision
      *      grain_amount: number;               // from 0 to 1
      *      grain_texture: BABYLON.Texture;     // texture to use for grain effect; if unset, use random B&W noise
      *      dof_focus_distance: number;         // depth-of-field: focus distance; unset to disable (disabled by default)

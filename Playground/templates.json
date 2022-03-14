@@ -20,6 +20,11 @@
         "insertText": "BABYLON.ParticleHelper.CreateFromSnippetAsync(\"${1:your_snippet_url_no_#}\", scene, true).then(system => {\n\n});"
     },
     {
+        "label": "Load An Animation From The Snippet Server",
+        "documentation": "https://doc.babylonjs.com/toolsAndResources/tools/animationCurveEditor#load-from-the-snippet-server",
+        "insertText": "let animations = await BABYLON.Animation.CreateFromSnippetAsync(\"${1:your_snippet_url_no_#}\");\n${2:object_to_apply_animations_to}.animations = animations;\nscene.beginAnimation(${3:object_to_apply_animations_to}, ${4:starting_frame_number}, ${5:ending_frame_number}, true);\n"
+    },
+    {
         "label": "Create a cylinder",
         "documentation": "https://doc.babylonjs.com/how_to/set_shapes",
         "insertText": "var cylinder = BABYLON.MeshBuilder.CreateCylinder(\"${1:cylinder}\", {height: ${2:2}, diameter: ${3:1}}, scene);"

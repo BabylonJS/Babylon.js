@@ -7,6 +7,8 @@
     width: 100%; 
     overflow: hidden;
     overflow-y: auto;
+    grid-row: 2;
+    grid-column: 3;
 
     .log {
         color: white;

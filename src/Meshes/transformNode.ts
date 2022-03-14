@@ -749,7 +749,9 @@ export class TransformNode extends Node {
 
     /**
      * Defines the passed node as the parent of the current node.
-     * The node will remain exactly where it is and its position / rotation will be updated accordingly
+     * The node will remain exactly where it is and its position / rotation will be updated accordingly.
+     * Note that if the mesh has a pivot matrix / point defined it will be applied after the parent was updated.
+     * In that case the node will not remain in the same space as it is, as the pivot will be applied.
      * @see https://doc.babylonjs.com/how_to/parenting
      * @param node the node ot set as the parent
      * @param preserveScalingSign if true, keep scaling sign of child. Otherwise, scaling sign might change.

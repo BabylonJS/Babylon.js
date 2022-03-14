@@ -57,8 +57,7 @@ export class ArcRotateCamera extends TargetCamera {
 
     /**
      * Defines the target point of the camera.
-     * The camera looks towards it form the radius distance.
-     * Please note that you can set the target to a mesh and thus the target will be copied from mesh.position
+     * The camera looks towards it from the radius distance.
      */
     public get target(): Vector3 {
         return this._target;
@@ -70,6 +69,7 @@ export class ArcRotateCamera extends TargetCamera {
     /**
      * Defines the target mesh of the camera.
      * The camera looks towards it from the radius distance.
+     * Please note that setting a target host will disable panning.
      */
     public get targetHost(): Nullable<AbstractMesh> {
         return this._targetHost;
@@ -815,7 +815,7 @@ export class ArcRotateCamera extends TargetCamera {
     public attachControl(noPreventDefault?: boolean): void;
     /**
      * Attach the input controls to a specific dom element to get the input from.
-     * @param ignored defines an ignored parameter kept for backward compatibility. If you want to define the source input element, you can set engine.inputElement before calling camera.attachControl
+     * @param ignored defines an ignored parameter kept for backward compatibility.
      * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
      */
     public attachControl(ignored: any, noPreventDefault?: boolean): void;
@@ -827,7 +827,7 @@ export class ArcRotateCamera extends TargetCamera {
     public attachControl(noPreventDefault: boolean, useCtrlForPanning: boolean): void;
     /**
      * Attached controls to the current camera.
-     * @param ignored defines an ignored parameter kept for backward compatibility. If you want to define the source input element, you can set engine.inputElement before calling camera.attachControl
+     * @param ignored defines an ignored parameter kept for backward compatibility.
      * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
      * @param useCtrlForPanning  Defines whether ctrl is used for panning within the controls
      */
@@ -841,7 +841,7 @@ export class ArcRotateCamera extends TargetCamera {
     public attachControl(noPreventDefault: boolean, useCtrlForPanning: boolean, panningMouseButton: number): void;
     /**
      * Attached controls to the current camera.
-     * @param ignored defines an ignored parameter kept for backward compatibility. If you want to define the source input element, you can set engine.inputElement before calling camera.attachControl
+     * @param ignored defines an ignored parameter kept for backward compatibility.
      * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
      * @param useCtrlForPanning  Defines whether ctrl is used for panning within the controls
      * @param panningMouseButton Defines whether panning is allowed through mouse click button
@@ -877,12 +877,12 @@ export class ArcRotateCamera extends TargetCamera {
     public detachControl(): void;
     /**
      * Detach the current controls from the specified dom element.
-     * @param ignored defines an ignored parameter kept for backward compatibility. If you want to define the source input element, you can set engine.inputElement before calling camera.attachControl
+     * @param ignored defines an ignored parameter kept for backward compatibility.
      */
     public detachControl(ignored: any): void;
     /**
      * Detach the current controls from the specified dom element.
-     * @param ignored defines an ignored parameter kept for backward compatibility. If you want to define the source input element, you can set engine.inputElement before calling camera.attachControl
+     * @param ignored defines an ignored parameter kept for backward compatibility.
      */
     public detachControl(ignored?: any): void {
         this.inputs.detachElement();
@@ -1066,11 +1066,13 @@ export class ArcRotateCamera extends TargetCamera {
     /**
      * Defines the target the camera should look at.
      * This will automatically adapt alpha beta and radius to fit within the new target.
+     * Please note that setting a target as a mesh will disable panning.
      * @param target Defines the new target as a Vector or a mesh
      * @param toBoundingCenter In case of a mesh target, defines whether to target the mesh position or its bounding information center
      * @param allowSamePosition If false, prevents reapplying the new computed position if it is identical to the current one (optim)
+     * @param cloneAlphaBetaRadius If true, replicate the current setup (alpha, beta, radius) on the new target
      */
-    public setTarget(target: AbstractMesh | Vector3, toBoundingCenter = false, allowSamePosition = false): void {
+    public setTarget(target: AbstractMesh | Vector3, toBoundingCenter = false, allowSamePosition = false, cloneAlphaBetaRadius = false): void {
         if ((<any>target).getBoundingInfo) {
             if (toBoundingCenter) {
                 this._targetBoundingCenter = (<any>target).getBoundingInfo().boundingBox.centerWorld.clone();
@@ -1094,7 +1096,9 @@ export class ArcRotateCamera extends TargetCamera {
             this.onMeshTargetChangedObservable.notifyObservers(null);
         }
 
-        this.rebuildAnglesAndRadius();
+        if (!cloneAlphaBetaRadius) {
+            this.rebuildAnglesAndRadius();
+        }
     }
 
     /** @hidden */

@@ -16,15 +16,21 @@ import { FramePortData } from './diagram/graphCanvas';
 import { NodeMaterialModes } from 'babylonjs/Materials/Node/Enums/nodeMaterialModes';
 import { ParticleSystem } from "babylonjs/Particles/particleSystem";
 
+export class ISelectionChangedOptions {
+    selection: Nullable<GraphNode | NodeLink | GraphFrame | NodePort | FramePortData>;
+    forceKeepSelection?: boolean;
+}
+
 export class GlobalState {
     nodeMaterial: NodeMaterial;
     hostElement: HTMLElement;
     hostDocument: HTMLDocument;
     hostWindow: Window;
-    onSelectionChangedObservable = new Observable<Nullable<GraphNode | NodeLink | GraphFrame | NodePort | FramePortData>>();
+    onNewNodeCreatedObservable = new Observable<GraphNode>();
+    onSelectionChangedObservable = new Observable<Nullable<ISelectionChangedOptions>>();
     onRebuildRequiredObservable = new Observable<boolean>();
     onBuiltObservable = new Observable<void>();
-    onResetRequiredObservable = new Observable<void>();    
+    onResetRequiredObservable = new Observable<void>();
     onUpdateRequiredObservable = new Observable<Nullable<NodeMaterialBlock>>();
     onZoomToFitRequiredObservable = new Observable<void>();
     onReOrganizedRequiredObservable = new Observable<void>();
@@ -44,6 +50,7 @@ export class GlobalState {
     onImportFrameObservable = new Observable<any>();
     onGraphNodeRemovalObservable = new Observable<GraphNode>();
     onPopupClosedObservable = new Observable<void>();
+    onNewBlockRequiredObservable = new Observable<{type: string, targetX: number, targetY: number, needRepositioning?: boolean}>();
     onGetNodeFromBlock: (block: NodeMaterialBlock) => GraphNode;
     onGridSizeChanged = new Observable<void>();
     onExposePortOnFrameObservable = new Observable<GraphNode>();

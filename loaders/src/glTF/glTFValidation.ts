@@ -117,12 +117,14 @@ export class GLTFValidation {
                             worker.removeEventListener("error", onError);
                             worker.removeEventListener("message", onMessage);
                             resolve(data.value);
+                            worker.terminate();
                             break;
                         }
                         case "validate.reject": {
                             worker.removeEventListener("error", onError);
                             worker.removeEventListener("message", onMessage);
                             reject(data.reason);
+                            worker.terminate();
                         }
                     }
                 };
