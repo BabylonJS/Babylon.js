@@ -249,12 +249,6 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
     public skipMaterials = false;
 
     /**
-     * If defined, provides a callback to override a specific material from a GLTF file.
-     * If the callback returns null, the requested gltf material will be loaded.
-     */
-    public customMaterialLoad: Nullable<(material: GLTF2.IMaterial) => Nullable<Material>> = null;
-
-    /**
      * If true, load the color (gamma encoded) textures into sRGB buffers (if supported by the GPU), which will yield more accurate results when sampling the texture. Defaults to true.
      */
     public useSRGBBuffers = true;
