@@ -114,6 +114,10 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
         //should a new body be created for this impostor?
         if (impostor.isBodyInitRequired()) {
             var shape = this._createShape(impostor);
+            if (!shape) {
+                Logger.Warn("It was not possible to create a physics body for this object.");
+                return;
+            }
 
             //unregister events, if body is being changed
             var oldBody = impostor.physicsBody;
@@ -350,6 +354,7 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
                 var rawVerts = object.getVerticesData ? object.getVerticesData(VertexBuffer.PositionKind) : [];
                 var rawFaces = object.getIndices ? object.getIndices() : [];
                 if (!rawVerts) {
+                    Logger.Warn("Tried to create a MeshImpostor for an object without vertices. This will fail.");
                     return;
                 }
                 // get only scale! so the object could transform correctly.
