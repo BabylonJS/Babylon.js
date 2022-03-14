@@ -48,14 +48,11 @@ export class ColorPickerLineComponent extends React.Component<IColorPickerCompon
     }
 
     shouldComponentUpdate(nextProps: IColorPickerComponentProps, nextState: IColorPickerComponentState) {
-        let result = nextProps.value.toHexString() !== this.props.value.toHexString() || nextState.hex !== this.state.hex || nextState.pickerEnabled !== this.state.pickerEnabled;
-
         if (nextProps.value.toHexString() !== this.props.value.toHexString()) {
             nextState.color = nextProps.value;
             nextState.hex = nextProps.value.toHexString();
         }
-
-        return result;
+        return true;
     }
 
     componentDidUpdate() {
@@ -68,7 +65,6 @@ export class ColorPickerLineComponent extends React.Component<IColorPickerCompon
 
     setPickerState(enabled: boolean) {
         this.setState({ pickerEnabled: enabled });
-        this.props.globalState.blockKeyboardEvents = enabled;
     }
 
     render() {
@@ -81,16 +77,16 @@ export class ColorPickerLineComponent extends React.Component<IColorPickerCompon
                 <div className="color-rect" ref={this._floatHostRef} style={{ background: this.state.hex }} onClick={() => this.setPickerState(true)}></div>
                 {this.state.pickerEnabled && (
                     <>
-                        <div className="color-picker-cover" onClick={() => this.setPickerState(false)}></div>
-                        <div className="color-picker-float" ref={this._floatRef}>
-                            <ColorPicker
-                                color={color}
-                                onColorChanged={(color: Color3 | Color4) => {
-                                    const hex = color.toHexString();
-                                    this.setState({ hex, color });
-                                    this.props.onColorChanged(hex);
-                                }}
-                            />
+                        <div className="color-picker-cover" onClick={() => this.setPickerState(false)}>
+                            <div className="color-picker-float" onClick={ev => ev.stopPropagation()} ref={this._floatRef}>
+                                <ColorPicker
+                                    color={color}
+                                    onColorChanged={(color: Color3 | Color4) => {
+                                        const hex = color.toHexString();
+                                        this.props.onColorChanged(hex);
+                                    }}
+                                />
+                            </div>
                         </div>
                     </>
                 )}
