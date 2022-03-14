@@ -6,21 +6,45 @@ import { IDeviceInputSystem, INativeInput } from "./inputInterfaces";
 
 /** @hidden */
 export class NativeDeviceInputSystem implements IDeviceInputSystem {
-    public onDeviceConnected = (deviceType: DeviceType, deviceSlot: number) => { };
+    /** onDeviceConnected property */
+    public set onDeviceConnected(callback: (deviceType: DeviceType, deviceSlot: number) => void) {
+        this._onDeviceConnected = callback;
+
+        // Iterate through each active device and rerun new callback
+        for (let deviceType = 0; deviceType < this._inputs.length; deviceType++) {
+            const inputs = this._inputs[deviceType];
+            if (inputs) {
+                for (const deviceSlotKey in inputs) {
+                    const deviceSlot = +deviceSlotKey;
+                    if (this._inputs[deviceType][deviceSlot]) {
+                        this._onDeviceConnected(deviceType, deviceSlot);
+                    }
+                }
+            }
+        }
+    }
+
+    public get onDeviceConnected(): (deviceType: DeviceType, deviceSlot: number) => void {
+        return this._onDeviceConnected;
+    }
     public onDeviceDisconnected = (deviceType: DeviceType, deviceSlot: number) => { };
     public onInputChanged = (deviceType: DeviceType, deviceSlot: number, eventData: IUIEvent) => { };
 
     private readonly _nativeInput: INativeInput;
+    private _onDeviceConnected: (deviceType: DeviceType, deviceSlot: number) => void = (deviceType: DeviceType, deviceSlot: number) => { };
+    private _inputs: Array<Array<number>> = [];
 
     public constructor(nativeInput?: INativeInput) {
         this._nativeInput = nativeInput || this._createDummyNativeInput();
 
         this._nativeInput.onDeviceConnected = (deviceType, deviceSlot) => {
+            this._registerDevice(deviceType, deviceSlot);
             this.onDeviceConnected(deviceType, deviceSlot);
         };
 
         this._nativeInput.onDeviceDisconnected = (deviceType, deviceSlot) => {
             this.onDeviceDisconnected(deviceType, deviceSlot);
+            this._unregisterDevice(deviceType, deviceSlot);
         };
 
         this._nativeInput.onInputChanged = (deviceType, deviceSlot, inputIndex, currentState) => {
@@ -77,5 +101,37 @@ export class NativeDeviceInputSystem implements IDeviceInputSystem {
         };
 
         return nativeInput;
+    }
+
+    /**
+     * Add device and inputs to device array
+     * @param deviceType Enum specifiying device type
+     * @param deviceSlot "Slot" or index that device is referenced in
+     */
+    private _registerDevice(deviceType: DeviceType, deviceSlot: number): void {
+        if (deviceSlot === undefined) {
+            throw `Unable to register device ${DeviceType[deviceType]} to undefined slot.`;
+        }
+
+        if (!this._inputs[deviceType]) {
+            this._inputs[deviceType] = [];
+        }
+
+        this._inputs[deviceType].push(deviceSlot);
+    }
+
+    /**
+     * Given a specific device name, remove that device from the device map
+     * @param deviceType Enum specifiying device type
+     * @param deviceSlot "Slot" or index that device is referenced in
+     */
+    private _unregisterDevice(deviceType: DeviceType, deviceSlot: number): void {
+        if (this._inputs[deviceType]) {
+            const idx = this._inputs[deviceType].indexOf(deviceSlot);
+
+            if (idx > -1) {
+                this._inputs[deviceType].splice(idx, 1);
+            }
+        }
     }
 }
