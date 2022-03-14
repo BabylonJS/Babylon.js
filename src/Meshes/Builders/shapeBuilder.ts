@@ -11,8 +11,8 @@ import { Path3D } from "../../Maths/math.path";
  * * The parameter `path` is a required array of successive Vector3. This is the axis curve the shape is extruded along.
  * * The parameter `rotation` (float, default 0 radians) is the angle value to rotate the shape each step (each path point), from the former step (so rotation added each step) along the curve.
  * * The parameter `scale` (float, default 1) is the value to scale the shape.
- * * The parameter `closeShape` (boolean, default false) closes the shape when true.
- * * The parameter `closePath` (boolean, default false) closes the path when true and no caps.
+ * * The parameter `closeShape` (boolean, default false) closes the shape when true, since v5.0.0.
+ * * The parameter `closePath` (boolean, default false) closes the path when true and no caps, since v5.0.0.
  * * The parameter `cap` sets the way the extruded shape is capped. Possible values : BABYLON.Mesh.NO_CAP (default), BABYLON.Mesh.CAP_START, BABYLON.Mesh.CAP_END, BABYLON.Mesh.CAP_ALL
  * * The optional parameter `instance` is an instance of an existing ExtrudedShape object to be updated with the passed `shape`, `path`, `scale` or `rotation` parameters : https://doc.babylonjs.com/how_to/how_to_dynamically_morph_a_mesh#extruded-shape
  * * Remember you can only change the shape or path point positions, not their number when updating an extruded shape.
@@ -56,8 +56,8 @@ export function ExtrudeShape(
  * * It must returns a float value that will be the rotation in radians applied to the shape on each path point.
  * * The parameter `scaleFunction` (JS function) is a custom Javascript function called on each path point. This function is passed the position i of the point in the path and the distance of this point from the beginning of the path
  * * It must returns a float value that will be the scale value applied to the shape on each path point
- * * The parameter `closeShape` (boolean, default false) forces the extrusion underlying ribbon to close all the shape paths in its `pathArray`
- * * The parameter `closePath` (boolean, default false) forces the extrusion underlying ribbon to close its `pathArray` when no caps
+ * * The parameter `closeShape` (boolean, default false) closes the shape when true, since v5.0.0.
+ * * The parameter `closePath` (boolean, default false) closes the path when true and no caps, since v5.0.0.
  * * The parameter `ribbonClosePath` (boolean, default false) forces the extrusion underlying ribbon to close all the paths in its `pathArray` - depreciated in favor of closeShape
  * * The parameter `ribbonCloseArray` (boolean, default false) forces the extrusion underlying ribbon to close its `pathArray` - depreciated in favor of closePath
  * * The parameter `cap` sets the way the extruded shape is capped. Possible values : BABYLON.Mesh.NO_CAP (default), BABYLON.Mesh.CAP_START, BABYLON.Mesh.CAP_END, BABYLON.Mesh.CAP_ALL
