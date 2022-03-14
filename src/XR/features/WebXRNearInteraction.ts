@@ -788,7 +788,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
 
         // Adjust the visual size based off of the size of the touch collision orb.
         // Having the size perfectly match for hover gives a more accurate tell for when the user will start interacting with the target
-        // Sizes for other states are somewhat arbitrary, as they are based on what feels nice during an interaction 
+        // Sizes for other states are somewhat arbitrary, as they are based on what feels nice during an interaction
         const hoverSizeVec = new Vector3(this._controllerPickRadius, this._controllerPickRadius, this._controllerPickRadius);
         const touchSize = this._controllerPickRadius * (4 / 3);
         const touchSizeVec = new Vector3(touchSize, touchSize, touchSize);
