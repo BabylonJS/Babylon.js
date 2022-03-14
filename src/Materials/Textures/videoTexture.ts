@@ -458,7 +458,7 @@ export class VideoTexture extends Texture {
                     videoTexture.onDisposeObservable.addOnce(() => {
                         video.remove();
                     });
-                };
+                }
                 videoTexture.onDisposeObservable.addOnce(() => {
                     removeSource(video);
                 });
