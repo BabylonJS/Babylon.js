@@ -22,7 +22,7 @@ function removeSource(video: HTMLVideoElement): void {
 
     // Prevent non-important errors maybe (https://twitter.com/beraliv/status/1205214277956775936)
     video.removeAttribute("src");
-};
+}
 
 /**
  * Settings for finer control over video usage
