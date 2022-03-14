@@ -51,6 +51,7 @@ export class AxesViewer {
      * @param xAxis defines the node hierarchy used to render the x-axis
      * @param yAxis defines the node hierarchy used to render the y-axis
      * @param zAxis defines the node hierarchy used to render the z-axis
+     * @param lineThickness The line thickness to use when creating the arrow. defaults to 1.
      */
     constructor(scene?: Scene, scaleLines = 1, renderingGroupId: Nullable<number> = 2, xAxis?: TransformNode, yAxis?: TransformNode, zAxis?: TransformNode, lineThickness = 1) {
         scene = scene || <Scene>EngineStore.LastCreatedScene;
