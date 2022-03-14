@@ -57,7 +57,7 @@ export class ArcRotateCamera extends TargetCamera {
 
     /**
      * Defines the target point of the camera.
-     * The camera looks towards it form the radius distance.
+     * The camera looks towards it from the radius distance.
      */
     public get target(): Vector3 {
         return this._target;
