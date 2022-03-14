@@ -509,6 +509,7 @@ export class BoneLookController {
             this._slerping = false;
         }
 
+        this._updateLinkedTransformRotation();
     }
 
     private _getAngleDiff(ang1: number, ang2: number): number {
@@ -569,4 +570,13 @@ export class BoneLookController {
         return false;
     }
 
+    private _updateLinkedTransformRotation(): void {
+        const bone = this.bone;
+        if (bone._linkedTransformNode) {
+            if (!bone._linkedTransformNode.rotationQuaternion) {
+                bone._linkedTransformNode.rotationQuaternion = new Quaternion();
+            }
+            bone.getRotationQuaternionToRef(Space.LOCAL, null, bone._linkedTransformNode.rotationQuaternion);
+        }
+    }
 }
