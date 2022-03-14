@@ -4449,7 +4449,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             if (isAsync) { yield; }
         }
 
-        const mergeCoroutine = sourceVertexData._mergeCoroutine(sourceTransform, meshVertexDatas, allow32BitsIndices, isAsync);
+        const mergeCoroutine = sourceVertexData._mergeCoroutine(sourceTransform, meshVertexDatas, allow32BitsIndices, isAsync, !disposeSource);
         let mergeCoroutineStep = mergeCoroutine.next();
         while (!mergeCoroutineStep.done) {
             if (isAsync) { yield; }

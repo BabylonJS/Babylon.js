@@ -1,16 +1,13 @@
 import { BlockTools } from '../blockTools';
 import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes';
 import { NodeMaterialConnectionPoint } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPoint';
-import { GlobalState } from '../globalState';
+import { GlobalState, ISelectionChangedOptions } from '../globalState';
 import { Nullable } from 'babylonjs/types';
 import { Observer } from 'babylonjs/Misc/observable';
 import { Vector2 } from 'babylonjs/Maths/math.vector';
 import { IDisplayManager } from './display/displayManager';
 import { GraphNode } from './graphNode';
-import { NodeLink } from './nodeLink';
-import { GraphFrame } from './graphFrame';
 import { FrameNodePort } from './frameNodePort';
-import { FramePortData } from './graphCanvas';
 
 export class NodePort {
     protected _element: HTMLDivElement;
@@ -18,7 +15,7 @@ export class NodePort {
     protected _globalState: GlobalState;
     protected _portLabelElement: Element;
     protected _onCandidateLinkMovedObserver: Nullable<Observer<Nullable<Vector2>>>;
-    protected _onSelectionChangedObserver: Nullable<Observer<Nullable<GraphFrame | GraphNode | NodeLink | NodePort | FramePortData>>>;
+    protected _onSelectionChangedObserver: Nullable<Observer<Nullable<ISelectionChangedOptions>>>;
     protected _exposedOnFrame: boolean;
     public delegatedPort: Nullable<FrameNodePort> = null;
 
@@ -158,7 +155,8 @@ export class NodePort {
             this._globalState.onCandidatePortSelectedObservable.notifyObservers(this);
         });
 
-        this._onSelectionChangedObserver = this._globalState.onSelectionChangedObservable.add((selection) => {
+        this._onSelectionChangedObserver = this._globalState.onSelectionChangedObservable.add((options) => {
+            const {selection} = options || {};
             if (selection === this) {
                 this._img.classList.add("selected");
             } else {

@@ -35,7 +35,7 @@ export interface INativeEngine {
     copyTexture(desination: Nullable<WebGLTexture>, source: Nullable<WebGLTexture>): void;
     deleteTexture(texture: Nullable<WebGLTexture>): void;
 
-    createImageBitmap(data: ArrayBufferView): ImageBitmap;
+    createImageBitmap(data: ArrayBufferView | IImage): ImageBitmap;
     resizeImageBitmap(image: ImageBitmap, bufferWidth: number, bufferHeight: number): Uint8Array;
 
     createFrameBuffer(texture: WebGLTexture, width: number, height: number, format: number, generateStencilBuffer: boolean, generateDepthBuffer: boolean, generateMips: boolean): WebGLFramebuffer;

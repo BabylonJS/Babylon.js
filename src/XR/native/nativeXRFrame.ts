@@ -75,6 +75,8 @@ export class NativeXRFrame implements XRFrame {
     public get featurePointCloud(): number[] | undefined {
         return this._nativeImpl.featurePointCloud;
     }
+
+    public readonly getImageTrackingResults = this._nativeImpl.getImageTrackingResults!.bind(this._nativeImpl);
 }
 
 RegisterNativeTypeAsync("NativeXRFrame", NativeXRFrame);

@@ -303,15 +303,17 @@ export class GLTFLoader implements IGLTFLoader {
             const oldBlockMaterialDirtyMechanism = this._babylonScene.blockMaterialDirtyMechanism;
             this._babylonScene.blockMaterialDirtyMechanism = true;
 
-            if (nodes) {
-                promises.push(this.loadSceneAsync("/nodes", { nodes: nodes, index: -1 }));
-            }
-            else if (this._gltf.scene != undefined || (this._gltf.scenes && this._gltf.scenes[0])) {
-                const scene = ArrayItem.Get(`/scene`, this._gltf.scenes, this._gltf.scene || 0);
-                promises.push(this.loadSceneAsync(`/scenes/${scene.index}`, scene));
+            if (!this.parent.loadOnlyMaterials) {
+                if (nodes) {
+                    promises.push(this.loadSceneAsync("/nodes", { nodes: nodes, index: -1 }));
+                }
+                else if (this._gltf.scene != undefined || (this._gltf.scenes && this._gltf.scenes[0])) {
+                    const scene = ArrayItem.Get(`/scene`, this._gltf.scenes, this._gltf.scene || 0);
+                    promises.push(this.loadSceneAsync(`/scenes/${scene.index}`, scene));
+                }
             }
 
-            if (this.parent.loadAllMaterials && this._gltf.materials) {
+            if (!this.parent.skipMaterials && this.parent.loadAllMaterials && this._gltf.materials) {
                 for (let m = 0; m < this._gltf.materials.length; ++m) {
                     const material = this._gltf.materials[m];
                     const context = "/materials/" + m;
@@ -586,6 +588,9 @@ export class GLTFLoader implements IGLTFLoader {
                 if (node._babylonTransformNode && node._babylonTransformNode.getClassName() === "TransformNode") {
                     transformNodes.push(node._babylonTransformNode);
                 }
+                if (node._babylonTransformNodeForSkin) {
+                    transformNodes.push(node._babylonTransformNodeForSkin);
+                }
             }
         }
 
@@ -696,10 +701,15 @@ export class GLTFLoader implements IGLTFLoader {
         if (node.mesh == undefined || node.skin != undefined) {
             const nodeName = node.name || `node${node.index}`;
             this._babylonScene._blockEntityCollection = !!this._assetContainer;
-            node._babylonTransformNode = new TransformNode(nodeName, this._babylonScene);
-            node._babylonTransformNode._parentContainer = this._assetContainer;
+            const transformNode = new TransformNode(nodeName, this._babylonScene);
+            transformNode._parentContainer = this._assetContainer;
             this._babylonScene._blockEntityCollection = false;
-            loadNode(node._babylonTransformNode);
+            if (node.mesh == undefined) {
+                node._babylonTransformNode = transformNode;
+            } else {
+                node._babylonTransformNodeForSkin = transformNode;
+            }
+            loadNode(transformNode);
         }
 
         if (node.mesh != undefined) {
@@ -713,7 +723,8 @@ export class GLTFLoader implements IGLTFLoader {
 
                 const mesh = ArrayItem.Get(`${context}/mesh`, this._gltf.meshes, node.mesh);
                 promises.push(this._loadMeshAsync(`/meshes/${mesh.index}`, node, mesh, (babylonTransformNode) => {
-                    GLTFLoader.AddPointerMetadata(babylonTransformNode, context);
+                    // Duplicate the metadata from the skin node to the skinned mesh in case any loader extension added metadata.
+                    babylonTransformNode.metadata = node._babylonTransformNodeForSkin!.metadata;
 
                     const skin = ArrayItem.Get(`${context}/skin`, this._gltf.skins, node.skin);
                     promises.push(this._loadSkinAsync(`/skins/${skin.index}`, node, skin, (babylonSkeleton) => {
@@ -857,7 +868,7 @@ export class GLTFLoader implements IGLTFLoader {
                 }
                 babylonMesh.material = babylonMaterial;
             }
-            else {
+            else if (!this.parent.skipMaterials) {
                 const material = ArrayItem.Get(`${context}/material`, this._gltf.materials, primitive.material);
                 promises.push(this._loadMaterialAsync(`/materials/${material.index}`, material, babylonMesh, babylonDrawMode, (babylonMaterial) => {
                     babylonMesh.material = babylonMaterial;
@@ -1183,6 +1194,10 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     private _findSkeletonRootNode(context: string, joints: Array<number>): Nullable<INode> {
+        if (joints.length === 0) {
+            return null;
+        }
+
         const paths: { [joint: number]: Array<INode> } = {};
         for (const index of joints) {
             const path = new Array<INode>();

@@ -43,6 +43,32 @@ export class ElbowBlock extends NodeMaterialBlock {
         return this._outputs[0];
     }
 
+    /**
+     * Gets or sets the target of the block
+     */
+    public get target() {
+        let input = this._inputs[0];
+        if (input.isConnected) {
+            let block = input.connectedPoint!.ownerBlock;
+            // Use input type
+
+            if (block.isInput) {
+                return NodeMaterialBlockTargets.Vertex;
+            }
+
+            return block.target;
+        }
+
+        return this._target;
+    }
+
+    public set target(value: NodeMaterialBlockTargets) {
+        if ((this._target & value) !== 0) {
+            return;
+        }
+        this._target = value;
+    }
+
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 

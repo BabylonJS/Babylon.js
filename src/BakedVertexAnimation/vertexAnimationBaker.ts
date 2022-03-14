@@ -74,8 +74,6 @@ export class VertexAnimationBaker {
     private async _executeAnimationFrame(vertexData: Float32Array, frameIndex: number, textureIndex: number): Promise<void> {
         return new Promise<void>((resolve, _reject) => {
             this._scene.beginAnimation(this._mesh.skeleton, frameIndex, frameIndex, false, 1.0, () => {
-                this._mesh.skeleton!.prepare();
-
                 // generate matrices
                 const skeletonMatrices = this._mesh.skeleton!.getTransformMatrices(this._mesh);
                 vertexData.set(skeletonMatrices, textureIndex * skeletonMatrices.length);

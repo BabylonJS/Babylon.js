@@ -90,6 +90,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     private _zoomFactor = 1;
     private _zoomModeIncrement = 0.2;
     private _guiSize = this._defaultGUISize;
+
     public get guiSize() {
         return this._guiSize;
     }
@@ -168,12 +169,13 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
     constructor(props: IWorkbenchComponentProps) {
         super(props);
+        const { globalState } = props;
         this._rootContainer = React.createRef();
         this._responsive = DataStorage.ReadBoolean("Responsive", true);
 
-        props.globalState.onSelectionChangedObservable.add(() => this.updateNodeOutlines());
+        globalState.onSelectionChangedObservable.add(() => this.updateNodeOutlines());
 
-        props.globalState.onPanObservable.add(() => {
+        globalState.onPanObservable.add(() => {
             this._forcePanning = !this._forcePanning;
             this._forceSelecting = false;
             this._forceZooming = false;
@@ -185,14 +187,14 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         });
 
 
-        props.globalState.onSelectionButtonObservable.add(() => {
+        globalState.onSelectionButtonObservable.add(() => {
             this._forceSelecting = !this._forceSelecting;
             this._forcePanning = false;
             this._forceZooming = false;
             this._canvas.style.cursor = "default";
         });
 
-        props.globalState.onZoomObservable.add(() => {
+        globalState.onZoomObservable.add(() => {
             this._forceZooming = !this._forceZooming;
             this._forcePanning = false;
             this._forceSelecting = false;
@@ -203,46 +205,47 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             }
         });
 
-        props.globalState.onFitToWindowObservable.add(() => {
+        globalState.onFitToWindowObservable.add(() => {
             this._panningOffset = new Vector2(0, 0);
             const xFactor = this._engine.getRenderWidth() / this.guiSize.width;
             const yFactor = this._engine.getRenderHeight() / this.guiSize.height;
             this._zoomFactor = Math.min(xFactor, yFactor) * 0.9;
         });
 
-        props.globalState.onOutlineChangedObservable.add(() => {
+        globalState.onOutlineChangedObservable.add(() => {
             this.updateNodeOutlines();
         });
 
-        props.globalState.onSelectionChangedObservable.add(() => {
+        globalState.onSelectionChangedObservable.add(() => {
             this.updateNodeOutlines();
         });
 
-        props.globalState.onParentingChangeObservable.add((control) => {
+        globalState.onParentingChangeObservable.add((control) => {
             this.parent(control);
         });
 
-        props.globalState.onResponsiveChangeObservable.add((value) => {
+        globalState.onResponsiveChangeObservable.add((value) => {
             this._responsive = value;
         });
 
-        this.props.globalState.hostDocument!.addEventListener("keyup", this.keyEvent, false);
+        globalState.hostDocument!.addEventListener("keyup", this.keyEvent, false);
 
         // Hotkey shortcuts
-        this.props.globalState.hostDocument!.addEventListener("keydown", this.keyEvent, false);
-        this.props.globalState.hostDocument!.defaultView!.addEventListener("blur", this.blurEvent, false);
+        globalState.hostDocument!.addEventListener("keydown", this.keyEvent, false);
+        globalState.hostDocument!.defaultView!.addEventListener("blur", this.blurEvent, false);
 
-        props.globalState.onWindowResizeObservable.add(() => {
-            this.props.globalState.onGizmoUpdateRequireObservable.notifyObservers();
-            this.props.globalState.onArtBoardUpdateRequiredObservable.notifyObservers();
+        globalState.onWindowResizeObservable.add(() => {
+            globalState.onGizmoUpdateRequireObservable.notifyObservers();
+            globalState.onArtBoardUpdateRequiredObservable.notifyObservers();
             this._engine.resize();
         });
 
-        props.globalState.onCopyObservable.add(copyFn => this.copyToClipboard(copyFn));
-        props.globalState.onCutObservable.add(copyFn => this.cutToClipboard(copyFn));
-        props.globalState.onPasteObservable.add(content => this.pasteFromClipboard(content));
+        globalState.onCopyObservable.add(copyFn => this.copyToClipboard(copyFn));
+        globalState.onCutObservable.add(copyFn => this.cutToClipboard(copyFn));
+        globalState.onPasteObservable.add(content => this.pasteFromClipboard(content));
 
-        this.props.globalState.workbench = this;
+        globalState.workbench = this;
+        globalState.onResizeObservable.notifyObservers(this._guiSize);
     }
 
     determineMouseSelection(selection: Control) {

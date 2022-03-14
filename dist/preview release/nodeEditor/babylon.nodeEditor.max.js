@@ -10021,7 +10021,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default()(_node_modules_css_loader_dist_runtime_cssWithMappingToString_js__WEBPACK_IMPORTED_MODULE_0___default.a);
 // Module
-___CSS_LOADER_EXPORT___.push([module.i, "#nme-log-console {\n  background: #333333;\n  height: 120px;\n  box-sizing: border-box;\n  margin: 0;\n  padding: 10px;\n  width: 100%;\n  overflow: hidden;\n  overflow-y: auto; }\n  #nme-log-console .log {\n    color: white;\n    font-size: 14px;\n    font-family: 'Courier New', Courier, monospace; }\n    #nme-log-console .log.error {\n      color: red; }\n", "",{"version":3,"sources":["webpack://./components/log/log.scss"],"names":[],"mappings":"AAAA;EACI,mBAAmB;EACnB,aAAa;EACb,sBAAsB;EACtB,SAAS;EACT,aAAa;EACb,WAAW;EACX,gBAAgB;EAChB,gBAAgB,EAAA;EARpB;IAWQ,YAAY;IACZ,eAAe;IACf,8CAA8C,EAAA;IAbtD;MAgBY,UAAS,EAAA","sourcesContent":["#nme-log-console {\r\n    background: #333333;\r\n    height: 120px;\r\n    box-sizing: border-box;\r\n    margin: 0;\r\n    padding: 10px;\r\n    width: 100%; \r\n    overflow: hidden;\r\n    overflow-y: auto;\r\n\r\n    .log {\r\n        color: white;\r\n        font-size: 14px;\r\n        font-family: 'Courier New', Courier, monospace;\r\n\r\n        &.error {\r\n            color:red;\r\n        }\r\n    }\r\n}"],"sourceRoot":""}]);
+___CSS_LOADER_EXPORT___.push([module.i, "#nme-log-console {\n  background: #333333;\n  height: 120px;\n  box-sizing: border-box;\n  margin: 0;\n  padding: 10px;\n  width: 100%;\n  overflow: hidden;\n  overflow-y: auto;\n  grid-row: 2;\n  grid-column: 3; }\n  #nme-log-console .log {\n    color: white;\n    font-size: 14px;\n    font-family: 'Courier New', Courier, monospace; }\n    #nme-log-console .log.error {\n      color: red; }\n", "",{"version":3,"sources":["webpack://./components/log/log.scss"],"names":[],"mappings":"AAAA;EACI,mBAAmB;EACnB,aAAa;EACb,sBAAsB;EACtB,SAAS;EACT,aAAa;EACb,WAAW;EACX,gBAAgB;EAChB,gBAAgB;EAChB,WAAW;EACX,cAAc,EAAA;EAVlB;IAaQ,YAAY;IACZ,eAAe;IACf,8CAA8C,EAAA;IAftD;MAkBY,UAAS,EAAA","sourcesContent":["#nme-log-console {\r\n    background: #333333;\r\n    height: 120px;\r\n    box-sizing: border-box;\r\n    margin: 0;\r\n    padding: 10px;\r\n    width: 100%; \r\n    overflow: hidden;\r\n    overflow-y: auto;\r\n    grid-row: 2;\r\n    grid-column: 3;\r\n\r\n    .log {\r\n        color: white;\r\n        font-size: 14px;\r\n        font-family: 'Courier New', Courier, monospace;\r\n\r\n        &.error {\r\n            color:red;\r\n        }\r\n    }\r\n}"],"sourceRoot":""}]);
 // Exports
 /* harmony default export */ __webpack_exports__["default"] = (___CSS_LOADER_EXPORT___);
 
@@ -55645,6 +55645,7 @@ var LogEntry = /** @class */ (function () {
     function LogEntry(message, isError) {
         this.message = message;
         this.isError = isError;
+        this.time = new Date();
     }
     return LogEntry;
 }());
@@ -55672,12 +55673,8 @@ var LogComponent = /** @class */ (function (_super) {
         logConsole.scrollTop = logConsole.scrollHeight;
     };
     LogComponent.prototype.render = function () {
-        var today = new Date();
-        var h = today.getHours();
-        var m = today.getMinutes();
-        var s = today.getSeconds();
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "nme-log-console", ref: "log-console" }, this.state.logs.map(function (l, i) {
-            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { key: i, className: "log" + (l.isError ? " error" : "") }, h + ":" + m + ":" + s + ": " + l.message));
+            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { key: i, className: "log" + (l.isError ? " error" : "") }, l.time.getHours() + ":" + l.time.getMinutes() + ":" + l.time.getSeconds() + ": " + l.message));
         })));
     };
     return LogComponent;
@@ -57505,6 +57502,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _preview_previewType__WEBPACK_IMPORTED_MODULE_25__ = __webpack_require__(/*! ../preview/previewType */ "./components/preview/previewType.ts");
 /* harmony import */ var _sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_26__ = __webpack_require__(/*! ../../sharedComponents/textInputLineComponent */ "./sharedComponents/textInputLineComponent.tsx");
 /* harmony import */ var _inputsPropertyTabComponent__WEBPACK_IMPORTED_MODULE_27__ = __webpack_require__(/*! ./inputsPropertyTabComponent */ "./components/propertyTab/inputsPropertyTabComponent.tsx");
+/* harmony import */ var _log_logComponent__WEBPACK_IMPORTED_MODULE_28__ = __webpack_require__(/*! ../log/logComponent */ "./components/log/logComponent.tsx");
+
 
 
 
@@ -57550,7 +57549,8 @@ var PropertyTabComponent = /** @class */ (function (_super) {
     }
     PropertyTabComponent.prototype.componentDidMount = function () {
         var _this = this;
-        this.props.globalState.onSelectionChangedObservable.add(function (selection) {
+        this.props.globalState.onSelectionChangedObservable.add(function (options) {
+            var selection = (options || {}).selection;
             if (selection instanceof _diagram_graphNode__WEBPACK_IMPORTED_MODULE_9__["GraphNode"]) {
                 _this.setState({ currentNode: selection, currentFrame: null, currentFrameNodePort: null, currentNodePort: null });
             }
@@ -57631,15 +57631,15 @@ var PropertyTabComponent = /** @class */ (function (_super) {
     PropertyTabComponent.prototype.customSave = function () {
         var _this = this;
         this.setState({ uploadInProgress: true });
-        this.props.globalState.onLogRequiredObservable.notifyObservers({ message: "Saving your material to Babylon.js snippet server...", isError: false });
+        this.props.globalState.onLogRequiredObservable.notifyObservers(new _log_logComponent__WEBPACK_IMPORTED_MODULE_28__["LogEntry"]("Saving your material to Babylon.js snippet server...", false));
         this.props.globalState
             .customSave.action(_serializationTools__WEBPACK_IMPORTED_MODULE_7__["SerializationTools"].Serialize(this.props.globalState.nodeMaterial, this.props.globalState))
             .then(function () {
-            _this.props.globalState.onLogRequiredObservable.notifyObservers({ message: "Material saved successfully", isError: false });
+            _this.props.globalState.onLogRequiredObservable.notifyObservers(new _log_logComponent__WEBPACK_IMPORTED_MODULE_28__["LogEntry"]("Material saved successfully", false));
             _this.setState({ uploadInProgress: false });
         })
             .catch(function (err) {
-            _this.props.globalState.onLogRequiredObservable.notifyObservers({ message: err, isError: true });
+            _this.props.globalState.onLogRequiredObservable.notifyObservers(new _log_logComponent__WEBPACK_IMPORTED_MODULE_28__["LogEntry"](err, true));
             _this.setState({ uploadInProgress: false });
         });
     };
@@ -58632,7 +58632,8 @@ var FrameNodePort = /** @class */ (function (_super) {
         _this._parentFrameId = parentFrameId;
         _this._isInput = isInput;
         _this._framePortId = framePortId;
-        _this._onSelectionChangedObserver = _this._globalState.onSelectionChangedObservable.add(function (selection) {
+        _this._onSelectionChangedObserver = _this._globalState.onSelectionChangedObservable.add(function (options) {
+            var selection = (options || {}).selection;
             if (Object(_graphCanvas__WEBPACK_IMPORTED_MODULE_3__["isFramePortData"])(selection) && selection.port === _this) {
                 _this._img.classList.add("selected");
             }
@@ -58779,8 +58780,9 @@ var isFramePortData = function (variableToCheck) {
     if (variableToCheck) {
         return variableToCheck.port !== undefined;
     }
-    else
+    else {
         return false;
+    }
 };
 var GraphCanvasComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(GraphCanvasComponent, _super);
@@ -58807,7 +58809,7 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
         _this._candidatePort = null;
         _this._gridSize = 20;
         _this._selectionBox = null;
-        _this._selectedFrame = null;
+        _this._selectedFrames = [];
         _this._frameCandidate = null;
         _this._frames = [];
         _this._altKeyIsPressed = false;
@@ -58815,45 +58817,64 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
         _this._oldY = -1;
         _this._frameIsMoving = false;
         _this._isLoading = false;
-        props.globalState.onSelectionChangedObservable.add(function (selection) {
+        props.globalState.onSelectionChangedObservable.add(function (options) {
+            var _b = options || {}, selection = _b.selection, forceKeepSelection = _b.forceKeepSelection;
             if (!selection) {
                 _this._selectedNodes = [];
                 _this._selectedLink = null;
-                _this._selectedFrame = null;
+                _this._selectedFrames = [];
                 _this._selectedPort = null;
             }
             else {
                 if (selection instanceof _nodeLink__WEBPACK_IMPORTED_MODULE_5__["NodeLink"]) {
                     _this._selectedNodes = [];
-                    _this._selectedFrame = null;
+                    _this._selectedFrames = [];
                     _this._selectedLink = selection;
                     _this._selectedPort = null;
                 }
                 else if (selection instanceof _graphFrame__WEBPACK_IMPORTED_MODULE_7__["GraphFrame"]) {
-                    _this._selectedNodes = [];
-                    _this._selectedFrame = selection;
-                    _this._selectedLink = null;
-                    _this._selectedPort = null;
+                    if (selection.isCollapsed) {
+                        if (_this._ctrlKeyIsPressed || forceKeepSelection) {
+                            if (_this._selectedFrames.indexOf(selection) === -1) {
+                                _this._selectedFrames.push(selection);
+                            }
+                        }
+                        else {
+                            _this._selectedFrames = [selection];
+                            _this._selectedNodes = [];
+                            _this._selectedLink = null;
+                            _this._selectedPort = null;
+                        }
+                    }
+                    else {
+                        _this._selectedNodes = [];
+                        _this._selectedFrames = [selection];
+                        _this._selectedLink = null;
+                        _this._selectedPort = null;
+                    }
                 }
                 else if (selection instanceof _graphNode__WEBPACK_IMPORTED_MODULE_3__["GraphNode"]) {
-                    if (_this._ctrlKeyIsPressed) {
+                    if (_this._ctrlKeyIsPressed || forceKeepSelection) {
                         if (_this._selectedNodes.indexOf(selection) === -1) {
                             _this._selectedNodes.push(selection);
                         }
                     }
                     else {
                         _this._selectedNodes = [selection];
+                        _this._selectedFrames = [];
+                        _this._selectedLink = null;
+                        _this._selectedPort = null;
                     }
                 }
                 else if (selection instanceof _nodePort__WEBPACK_IMPORTED_MODULE_6__["NodePort"]) {
                     _this._selectedNodes = [];
-                    _this._selectedFrame = null;
+                    _this._selectedFrames = [];
                     _this._selectedLink = null;
                     _this._selectedPort = selection;
                 }
                 else {
                     _this._selectedNodes = [];
-                    _this._selectedFrame = null;
+                    _this._selectedFrames = [];
                     _this._selectedLink = null;
                     _this._selectedPort = selection.port;
                 }
@@ -58981,9 +59002,9 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
         enumerable: false,
         configurable: true
     });
-    Object.defineProperty(GraphCanvasComponent.prototype, "selectedFrame", {
+    Object.defineProperty(GraphCanvasComponent.prototype, "selectedFrames", {
         get: function () {
-            return this._selectedFrame;
+            return this._selectedFrames;
         },
         enumerable: false,
         configurable: true
@@ -59359,11 +59380,11 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
                             frame: frame,
                             port: port_1,
                         };
-                        this.props.globalState.onSelectionChangedObservable.notifyObservers(data);
+                        this.props.globalState.onSelectionChangedObservable.notifyObservers({ selection: data });
                     }
                 }
                 else if (this._candidateLink.portA instanceof _nodePort__WEBPACK_IMPORTED_MODULE_6__["NodePort"]) {
-                    this.props.globalState.onSelectionChangedObservable.notifyObservers(this._candidateLink.portA);
+                    this.props.globalState.onSelectionChangedObservable.notifyObservers({ selection: this._candidateLink.portA });
                 }
             }
             this._candidateLink.dispose();
@@ -59379,7 +59400,7 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
             this._frames.push(newFrame);
             this._frameCandidate.parentElement.removeChild(this._frameCandidate);
             this._frameCandidate = null;
-            this.props.globalState.onSelectionChangedObservable.notifyObservers(newFrame);
+            this.props.globalState.onSelectionChangedObservable.notifyObservers({ selection: newFrame });
         }
     };
     GraphCanvasComponent.prototype.onWheel = function (evt) {
@@ -59571,6 +59592,14 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
                 });
             });
         }
+        this.connectNodes(nodeA, pointA, nodeB, pointB);
+        linksToNotifyForDispose === null || linksToNotifyForDispose === void 0 ? void 0 : linksToNotifyForDispose.forEach(function (link) {
+            link.onDisposedObservable.notifyObservers(link);
+            link.onDisposedObservable.clear();
+        });
+        this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
+    };
+    GraphCanvasComponent.prototype.connectNodes = function (nodeA, pointA, nodeB, pointB) {
         pointA.connectTo(pointB);
         this.connectPorts(pointA, pointB);
         // Need to potentially propagate the type of pointA to other ports of blocks connected to owner of pointB
@@ -59578,11 +59607,6 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
         var visitedNodes = new Set([nodeA]);
         var visitedLinks = new Set([nodeB.links[nodeB.links.length - 1]]);
         GraphCanvasComponent._RefreshNode(nodeB, visitedNodes, visitedLinks);
-        linksToNotifyForDispose === null || linksToNotifyForDispose === void 0 ? void 0 : linksToNotifyForDispose.forEach(function (link) {
-            link.onDisposedObservable.notifyObservers(link);
-            link.onDisposedObservable.clear();
-        });
-        this.props.globalState.onRebuildRequiredObservable.notifyObservers(true);
     };
     GraphCanvasComponent.prototype.processEditorData = function (editorData) {
         var frames = this._frames.splice(0);
@@ -59606,7 +59630,7 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
     GraphCanvasComponent.prototype.addFrame = function (frameData) {
         var frame = _graphFrame__WEBPACK_IMPORTED_MODULE_7__["GraphFrame"].Parse(frameData, this, this.props.globalState.nodeMaterial.editorData.map);
         this._frames.push(frame);
-        this.globalState.onSelectionChangedObservable.notifyObservers(frame);
+        this.globalState.onSelectionChangedObservable.notifyObservers({ selection: frame });
     };
     GraphCanvasComponent.prototype.render = function () {
         var _this = this;
@@ -60244,12 +60268,22 @@ var GraphFrame = /** @class */ (function () {
         this._headerTextElement.addEventListener("pointerdown", function (evt) { return _this_1._onDown(evt); });
         this._headerTextElement.addEventListener("pointerup", function (evt) { return _this_1._onUp(evt); });
         this._headerTextElement.addEventListener("pointermove", function (evt) { return _this_1._onMove(evt); });
-        this._onSelectionChangedObserver = canvas.globalState.onSelectionChangedObservable.add(function (node) {
-            if (node === _this_1) {
+        this._onSelectionChangedObserver = canvas.globalState.onSelectionChangedObservable.add(function (options) {
+            if (_this_1._ownerCanvas.selectedFrames.indexOf(_this_1) !== -1) {
                 _this_1.element.classList.add("selected");
             }
             else {
                 _this_1.element.classList.remove("selected");
+            }
+        });
+        canvas.globalState.onSelectionBoxMoved.add(function (rect1) {
+            var rect2 = _this_1.element.getBoundingClientRect();
+            var overlap = !(rect1.right < rect2.left ||
+                rect1.left > rect2.right ||
+                rect1.bottom < rect2.top ||
+                rect1.top > rect2.bottom);
+            if (overlap) {
+                canvas.globalState.onSelectionChangedObservable.notifyObservers({ selection: _this_1, forceKeepSelection: true });
             }
         });
         this._onGraphNodeRemovalObserver = canvas.globalState.onGraphNodeRemovalObservable.add(function (node) {
@@ -60746,13 +60780,19 @@ var GraphFrame = /** @class */ (function () {
         this.y = this._ownerCanvas.getGridPosition(this.y);
     };
     GraphFrame.prototype._onDown = function (evt) {
-        evt.stopPropagation();
+        this._headerTextElement.setPointerCapture(evt.pointerId);
+        var indexInSelection = this._ownerCanvas.selectedFrames.indexOf(this);
+        if (indexInSelection === -1) {
+            this._ownerCanvas.globalState.onSelectionChangedObservable.notifyObservers({ selection: this });
+        }
+        else if (evt.ctrlKey) {
+            this._ownerCanvas.selectedFrames.splice(indexInSelection, 1);
+            this.element.classList.remove("selected");
+        }
+        this._ownerCanvas._frameIsMoving = true;
         this._mouseStartPointX = evt.clientX;
         this._mouseStartPointY = evt.clientY;
-        this._headerTextElement.setPointerCapture(evt.pointerId);
-        this._ownerCanvas.globalState.onSelectionChangedObservable.notifyObservers(this);
-        this._ownerCanvas._frameIsMoving = true;
-        this.move(this._ownerCanvas.getGridPosition(this.x), this._ownerCanvas.getGridPosition(this.y));
+        evt.stopPropagation();
     };
     GraphFrame.prototype.move = function (newX, newY, align) {
         if (align === void 0) { align = true; }
@@ -60792,7 +60832,15 @@ var GraphFrame = /** @class */ (function () {
         }
         var newX = (evt.clientX - this._mouseStartPointX) / this._ownerCanvas.zoom;
         var newY = (evt.clientY - this._mouseStartPointY) / this._ownerCanvas.zoom;
-        this._moveFrame(newX, newY);
+        for (var _i = 0, _a = this._ownerCanvas.selectedFrames; _i < _a.length; _i++) {
+            var frame = _a[_i];
+            frame._moveFrame(newX, newY);
+        }
+        for (var _b = 0, _c = this._ownerCanvas.selectedNodes; _b < _c.length; _b++) {
+            var node = _c[_b];
+            node.x += newX;
+            node.y += newY;
+        }
         this._mouseStartPointX = evt.clientX;
         this._mouseStartPointY = evt.clientY;
         evt.stopPropagation();
@@ -61106,7 +61154,8 @@ var GraphNode = /** @class */ (function () {
         this._isVisible = true;
         this._enclosingFrameId = -1;
         this._globalState = globalState;
-        this._onSelectionChangedObserver = this._globalState.onSelectionChangedObservable.add(function (node) {
+        this._onSelectionChangedObserver = this._globalState.onSelectionChangedObservable.add(function (options) {
+            var node = (options || {}).selection;
             if (node === _this) {
                 _this._visual.classList.add("selected");
             }
@@ -61285,7 +61334,7 @@ var GraphNode = /** @class */ (function () {
                 }
             }
             else {
-                this._globalState.onSelectionChangedObservable.notifyObservers(this);
+                this._globalState.onSelectionChangedObservable.notifyObservers({ selection: this });
             }
         },
         enumerable: false,
@@ -61401,7 +61450,7 @@ var GraphNode = /** @class */ (function () {
         }
         var indexInSelection = this._ownerCanvas.selectedNodes.indexOf(this);
         if (indexInSelection === -1) {
-            this._globalState.onSelectionChangedObservable.notifyObservers(this);
+            this._globalState.onSelectionChangedObservable.notifyObservers({ selection: this });
         }
         else if (evt.ctrlKey) {
             this.isSelected = false;
@@ -61440,6 +61489,10 @@ var GraphNode = /** @class */ (function () {
             var selectedNode = _a[_i];
             selectedNode.x += newX;
             selectedNode.y += newY;
+        }
+        for (var _b = 0, _c = this._ownerCanvas.selectedFrames; _b < _c.length; _b++) {
+            var frame = _c[_b];
+            frame._moveFrame(newX, newY);
         }
         this._mouseStartPointX = evt.clientX;
         this._mouseStartPointY = evt.clientY;
@@ -61589,12 +61642,13 @@ var NodeLink = /** @class */ (function () {
         this._selectionPath.setAttribute("fill", "none");
         this._selectionPath.classList.add("selection-link");
         svg.appendChild(this._selectionPath);
-        this._selectionPath.onmousedown = function () { return _this.onClick(); };
+        this._selectionPath.onmousedown = function (evt) { return _this.onClick(evt); };
         if (this._portB) {
             // Update
             this.update();
         }
-        this._onSelectionChangedObserver = this._graphCanvas.globalState.onSelectionChangedObservable.add(function (selection) {
+        this._onSelectionChangedObserver = this._graphCanvas.globalState.onSelectionChangedObservable.add(function (options) {
+            var selection = (options || {}).selection;
             if (selection === _this) {
                 _this._path.classList.add("selected");
                 _this._selectionPath.classList.add("selected");
@@ -61682,8 +61736,32 @@ var NodeLink = /** @class */ (function () {
         }
         this._path.setAttribute("stroke", this._portA.element.style.backgroundColor);
     };
-    NodeLink.prototype.onClick = function () {
-        this._graphCanvas.globalState.onSelectionChangedObservable.notifyObservers(this);
+    NodeLink.prototype.onClick = function (evt) {
+        var _this = this;
+        if (evt.altKey) {
+            // Create an elbow at the clicked location
+            this._graphCanvas.globalState.onNewNodeCreatedObservable.addOnce(function (newNode) {
+                var newElbowBlock = newNode.block;
+                var nodeA = _this._nodeA;
+                var pointA = _this._portA.connectionPoint;
+                var nodeB = _this._nodeB;
+                var pointB = _this._portB.connectionPoint;
+                // Delete previous link
+                _this.dispose();
+                // Connect to Elbow block
+                _this._graphCanvas.connectNodes(nodeA, pointA, newNode, newElbowBlock.input);
+                _this._graphCanvas.connectNodes(newNode, newElbowBlock.output, nodeB, pointB);
+                _this._graphCanvas.globalState.onRebuildRequiredObservable.notifyObservers(true);
+            });
+            this._graphCanvas.globalState.onNewBlockRequiredObservable.notifyObservers({
+                type: "ElbowBlock",
+                targetX: evt.clientX,
+                targetY: evt.clientY,
+                needRepositioning: true
+            });
+            return;
+        }
+        this._graphCanvas.globalState.onSelectionChangedObservable.notifyObservers({ selection: this });
     };
     NodeLink.prototype.dispose = function (notify) {
         if (notify === void 0) { notify = true; }
@@ -61756,7 +61834,8 @@ var NodePort = /** @class */ (function () {
             _this._element.classList.add("selected");
             _this._globalState.onCandidatePortSelectedObservable.notifyObservers(_this);
         });
-        this._onSelectionChangedObserver = this._globalState.onSelectionChangedObservable.add(function (selection) {
+        this._onSelectionChangedObserver = this._globalState.onSelectionChangedObservable.add(function (options) {
+            var selection = (options || {}).selection;
             if (selection === _this) {
                 _this._img.classList.add("selected");
             }
@@ -62069,7 +62148,8 @@ var FrameNodePortPropertyTabComponent = /** @class */ (function (_super) {
             port: _this_1.props.frameNodePort,
         };
         var _this = _this_1;
-        _this_1._onSelectionChangedObserver = _this_1.props.globalState.onSelectionChangedObservable.add(function (selection) {
+        _this_1._onSelectionChangedObserver = _this_1.props.globalState.onSelectionChangedObservable.add(function (options) {
+            var selection = (options || {}).selection;
             if (Object(_graphCanvas__WEBPACK_IMPORTED_MODULE_6__["isFramePortData"])(selection)) {
                 selection.port.onFramePortPositionChangedObservable.clear();
                 _this._onFramePortPositionChangedObserver = selection.port.onFramePortPositionChangedObservable.add(function (port) {
@@ -63766,11 +63846,12 @@ PropertyLedger.RegisteredControls["ColorMergerBlock"] = _properties_colorMergerP
 /*!************************!*\
   !*** ./globalState.ts ***!
   \************************/
-/*! exports provided: GlobalState */
+/*! exports provided: ISelectionChangedOptions, GlobalState */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ISelectionChangedOptions", function() { return ISelectionChangedOptions; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "GlobalState", function() { return GlobalState; });
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/dataStorage");
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__);
@@ -63781,8 +63862,15 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+var ISelectionChangedOptions = /** @class */ (function () {
+    function ISelectionChangedOptions() {
+    }
+    return ISelectionChangedOptions;
+}());
+
 var GlobalState = /** @class */ (function () {
     function GlobalState() {
+        this.onNewNodeCreatedObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onSelectionChangedObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onRebuildRequiredObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onBuiltObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
@@ -63806,6 +63894,7 @@ var GlobalState = /** @class */ (function () {
         this.onImportFrameObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onGraphNodeRemovalObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onPopupClosedObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onNewBlockRequiredObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onGridSizeChanged = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onExposePortOnFrameObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.particleSystemBlendMode = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["ParticleSystem"].BLENDMODE_ONEONE;
@@ -63899,12 +63988,11 @@ var GraphEditor = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(GraphEditor, _super);
     function GraphEditor(props) {
         var _this = _super.call(this, props) || this;
-        _this.NodeWidth = 100;
         _this._leftWidth = babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_6__["DataStorage"].ReadNumber("LeftWidth", 200);
         _this._rightWidth = babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_6__["DataStorage"].ReadNumber("RightWidth", 300);
         _this._blocks = new Array();
         _this._copiedNodes = [];
-        _this._copiedFrame = null;
+        _this._copiedFrames = [];
         _this._mouseLocationX = 0;
         _this._mouseLocationY = 0;
         _this.handlePopUp = function () {
@@ -64049,6 +64137,17 @@ var GraphEditor = /** @class */ (function (_super) {
         _this.state = {
             showPreviewPopUp: false,
         };
+        _this._graphCanvasRef = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
+        _this._diagramContainerRef = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
+        _this.props.globalState.onNewBlockRequiredObservable.add(function (eventData) {
+            var targetX = eventData.targetX;
+            var targetY = eventData.targetY;
+            if (eventData.needRepositioning) {
+                targetX = targetX - _this._diagramContainer.offsetLeft;
+                targetY = targetY - _this._diagramContainer.offsetTop;
+            }
+            _this.emitNewBlock(eventData.type, targetX, targetY);
+        });
         _this.props.globalState.onRebuildRequiredObservable.add(function (autoConfigure) {
             if (_this.props.globalState.nodeMaterial) {
                 _this.buildMaterial(autoConfigure);
@@ -64095,26 +64194,28 @@ var GraphEditor = /** @class */ (function (_super) {
                 if (_this._graphCanvas.selectedLink) {
                     _this._graphCanvas.selectedLink.dispose();
                 }
-                if (_this._graphCanvas.selectedFrame) {
-                    var frame = _this._graphCanvas.selectedFrame;
-                    if (frame.isCollapsed) {
-                        while (frame.nodes.length > 0) {
-                            var targetBlock = frame.nodes[0].block;
-                            _this.props.globalState.nodeMaterial.removeBlock(targetBlock);
-                            var blockIndex = _this._blocks.indexOf(targetBlock);
-                            if (blockIndex > -1) {
-                                _this._blocks.splice(blockIndex, 1);
+                if (_this._graphCanvas.selectedFrames.length) {
+                    for (var _a = 0, _b = _this._graphCanvas.selectedFrames; _a < _b.length; _a++) {
+                        var frame = _b[_a];
+                        if (frame.isCollapsed) {
+                            while (frame.nodes.length > 0) {
+                                var targetBlock = frame.nodes[0].block;
+                                _this.props.globalState.nodeMaterial.removeBlock(targetBlock);
+                                var blockIndex = _this._blocks.indexOf(targetBlock);
+                                if (blockIndex > -1) {
+                                    _this._blocks.splice(blockIndex, 1);
+                                }
+                                frame.nodes[0].dispose();
                             }
-                            frame.nodes[0].dispose();
+                            frame.isCollapsed = false;
                         }
-                        frame.isCollapsed = false;
+                        else {
+                            frame.nodes.forEach(function (node) {
+                                node.enclosingFrameId = -1;
+                            });
+                        }
+                        frame.dispose();
                     }
-                    else {
-                        frame.nodes.forEach(function (node) {
-                            node.enclosingFrameId = -1;
-                        });
-                    }
-                    _this._graphCanvas.selectedFrame.dispose();
                 }
                 _this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
                 _this.props.globalState.onRebuildRequiredObservable.notifyObservers(false);
@@ -64126,10 +64227,13 @@ var GraphEditor = /** @class */ (function (_super) {
             if (evt.key === "c" || evt.key === "C") {
                 // Copy
                 _this._copiedNodes = [];
-                _this._copiedFrame = null;
-                if (_this._graphCanvas.selectedFrame) {
-                    _this._copiedFrame = _this._graphCanvas.selectedFrame;
-                    _this._copiedFrame.serialize(true);
+                _this._copiedFrames = [];
+                if (_this._graphCanvas.selectedFrames.length) {
+                    for (var _c = 0, _d = _this._graphCanvas.selectedFrames; _c < _d.length; _c++) {
+                        var frame = _d[_c];
+                        frame.serialize(true);
+                        _this._copiedFrames.push(frame);
+                    }
                     return;
                 }
                 var selectedItems = _this._graphCanvas.selectedNodes;
@@ -64147,44 +64251,47 @@ var GraphEditor = /** @class */ (function (_super) {
                 var rootElement = _this.props.globalState.hostDocument.querySelector(".diagram-container");
                 var zoomLevel = _this._graphCanvas.zoom;
                 var currentY = (_this._mouseLocationY - rootElement.offsetTop - _this._graphCanvas.y - 20) / zoomLevel;
-                if (_this._copiedFrame) {
-                    // New frame
-                    var newFrame = new _diagram_graphFrame__WEBPACK_IMPORTED_MODULE_14__["GraphFrame"](null, _this._graphCanvas, true);
-                    _this._graphCanvas.frames.push(newFrame);
-                    newFrame.width = _this._copiedFrame.width;
-                    newFrame.height = _this._copiedFrame.height;
-                    newFrame.width / 2;
-                    newFrame.name = _this._copiedFrame.name;
-                    newFrame.color = _this._copiedFrame.color;
-                    var currentX_1 = (_this._mouseLocationX - rootElement.offsetLeft - _this._graphCanvas.x) / zoomLevel;
-                    newFrame.x = currentX_1 - newFrame.width / 2;
-                    newFrame.y = currentY;
-                    // Paste nodes
-                    if (_this._copiedFrame.nodes.length) {
-                        currentX_1 = newFrame.x + _this._copiedFrame.nodes[0].x - _this._copiedFrame.x;
-                        currentY = newFrame.y + _this._copiedFrame.nodes[0].y - _this._copiedFrame.y;
-                        _this._graphCanvas._frameIsMoving = true;
-                        var newNodes = _this.pasteSelection(_this._copiedFrame.nodes, currentX_1, currentY);
-                        if (newNodes) {
-                            for (var _a = 0, newNodes_1 = newNodes; _a < newNodes_1.length; _a++) {
-                                var node = newNodes_1[_a];
-                                newFrame.syncNode(node);
+                if (_this._copiedFrames.length) {
+                    for (var _e = 0, _f = _this._copiedFrames; _e < _f.length; _e++) {
+                        var frame = _f[_e];
+                        // New frame
+                        var newFrame = new _diagram_graphFrame__WEBPACK_IMPORTED_MODULE_14__["GraphFrame"](null, _this._graphCanvas, true);
+                        _this._graphCanvas.frames.push(newFrame);
+                        newFrame.width = frame.width;
+                        newFrame.height = frame.height;
+                        newFrame.width / 2;
+                        newFrame.name = frame.name;
+                        newFrame.color = frame.color;
+                        var currentX_1 = (_this._mouseLocationX - rootElement.offsetLeft - _this._graphCanvas.x) / zoomLevel;
+                        newFrame.x = currentX_1 - newFrame.width / 2;
+                        newFrame.y = currentY;
+                        // Paste nodes
+                        if (frame.nodes.length) {
+                            currentX_1 = newFrame.x + frame.nodes[0].x - frame.x;
+                            currentY = newFrame.y + frame.nodes[0].y - frame.y;
+                            _this._graphCanvas._frameIsMoving = true;
+                            var newNodes = _this.pasteSelection(frame.nodes, currentX_1, currentY);
+                            if (newNodes) {
+                                for (var _g = 0, newNodes_1 = newNodes; _g < newNodes_1.length; _g++) {
+                                    var node = newNodes_1[_g];
+                                    newFrame.syncNode(node);
+                                }
                             }
+                            _this._graphCanvas._frameIsMoving = false;
                         }
-                        _this._graphCanvas._frameIsMoving = false;
+                        newFrame.adjustPorts();
+                        if (frame.isCollapsed) {
+                            newFrame.isCollapsed = true;
+                        }
+                        // Select
+                        _this.props.globalState.onSelectionChangedObservable.notifyObservers({ selection: newFrame, forceKeepSelection: true });
+                        return;
                     }
-                    newFrame.adjustPorts();
-                    if (_this._copiedFrame.isCollapsed) {
-                        newFrame.isCollapsed = true;
-                    }
-                    // Select
-                    _this.props.globalState.onSelectionChangedObservable.notifyObservers(newFrame);
-                    return;
                 }
                 if (!_this._copiedNodes.length) {
                     return;
                 }
-                var currentX = (_this._mouseLocationX - rootElement.offsetLeft - _this._graphCanvas.x - _this.NodeWidth) / zoomLevel;
+                var currentX = (_this._mouseLocationX - rootElement.offsetLeft - _this._graphCanvas.x - GraphEditor.NodeWidth) / zoomLevel;
                 _this.pasteSelection(_this._copiedNodes, currentX, currentY, true);
             }
         }, false);
@@ -64236,7 +64343,8 @@ var GraphEditor = /** @class */ (function (_super) {
     GraphEditor.prototype.componentDidMount = function () {
         var _this = this;
         if (this.props.globalState.hostDocument) {
-            this._graphCanvas = this.refs["graphCanvas"];
+            this._graphCanvas = this._graphCanvasRef.current;
+            this._diagramContainer = this._diagramContainerRef.current;
             this._previewManager = new _components_preview_previewManager__WEBPACK_IMPORTED_MODULE_9__["PreviewManager"](this.props.globalState.hostDocument.getElementById("preview-canvas"), this.props.globalState);
             this.props.globalState._previewManager = this._previewManager;
         }
@@ -64331,7 +64439,7 @@ var GraphEditor = /** @class */ (function (_super) {
             newNode.cleanAccumulation();
             newNodes.push(newNode);
             if (selectNew) {
-                this.props.globalState.onSelectionChangedObservable.notifyObservers(newNode);
+                this.props.globalState.onSelectionChangedObservable.notifyObservers({ selection: newNode, forceKeepSelection: true });
             }
         }
         // Relink
@@ -64478,13 +64586,12 @@ var GraphEditor = /** @class */ (function (_super) {
     GraphEditor.prototype.buildColumnLayout = function () {
         return "".concat(this._leftWidth, "px 4px calc(100% - ").concat(this._leftWidth + 8 + this._rightWidth, "px) 4px ").concat(this._rightWidth, "px");
     };
-    GraphEditor.prototype.emitNewBlock = function (event) {
+    GraphEditor.prototype.emitNewBlock = function (blockType, targetX, targetY) {
         var _this = this;
-        var data = event.dataTransfer.getData("babylonjs-material-node");
         var newNode;
         var customBlockData;
-        if (data.indexOf("CustomBlock") > -1) {
-            var storageData = localStorage.getItem(data);
+        if (blockType.indexOf("CustomBlock") > -1) {
+            var storageData = localStorage.getItem(blockType);
             if (!storageData) {
                 this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers("Error loading custom block");
                 return;
@@ -64495,13 +64602,13 @@ var GraphEditor = /** @class */ (function (_super) {
                 return;
             }
         }
-        else if (data.indexOf("Custom") > -1) {
-            var storageData = localStorage.getItem(data);
+        else if (blockType.indexOf("Custom") > -1) {
+            var storageData = localStorage.getItem(blockType);
             if (storageData) {
                 var frameData = JSON.parse(storageData);
                 //edit position before loading.
-                var newX = (event.clientX - event.currentTarget.offsetLeft - this._graphCanvas.x - this.NodeWidth) / this._graphCanvas.zoom;
-                var newY = (event.clientY - event.currentTarget.offsetTop - this._graphCanvas.y - 20) / this._graphCanvas.zoom;
+                var newX = (targetX - this._graphCanvas.x - GraphEditor.NodeWidth) / this._graphCanvas.zoom;
+                var newY = (targetY - this._graphCanvas.y - 20) / this._graphCanvas.zoom;
                 var oldX = frameData.editorData.frames[0].x;
                 var oldY = frameData.editorData.frames[0].y;
                 frameData.editorData.frames[0].x = newX;
@@ -64517,8 +64624,8 @@ var GraphEditor = /** @class */ (function (_super) {
                 return;
             }
         }
-        if (data.indexOf("Block") === -1) {
-            newNode = this.addValueNode(data);
+        if (blockType.indexOf("Block") === -1) {
+            newNode = this.addValueNode(blockType);
         }
         else {
             var block_1;
@@ -64527,7 +64634,7 @@ var GraphEditor = /** @class */ (function (_super) {
                 block_1.options = customBlockData;
             }
             else {
-                block_1 = _blockTools__WEBPACK_IMPORTED_MODULE_8__["BlockTools"].GetBlockFromString(data, this.props.globalState.nodeMaterial.getScene(), this.props.globalState.nodeMaterial);
+                block_1 = _blockTools__WEBPACK_IMPORTED_MODULE_8__["BlockTools"].GetBlockFromString(blockType, this.props.globalState.nodeMaterial.getScene(), this.props.globalState.nodeMaterial);
             }
             if (block_1.isUnique) {
                 var className = block_1.getClassName();
@@ -64542,15 +64649,24 @@ var GraphEditor = /** @class */ (function (_super) {
             block_1.autoConfigure(this.props.globalState.nodeMaterial);
             newNode = this.createNodeFromObject(block_1);
         }
-        var x = event.clientX - event.currentTarget.offsetLeft - this._graphCanvas.x - this.NodeWidth;
-        var y = event.clientY - event.currentTarget.offsetTop - this._graphCanvas.y - 20;
+        // Size exceptions
+        var offsetX = GraphEditor.NodeWidth;
+        var offsetY = 20;
+        if (blockType === "ElbowBlock") {
+            offsetX = 10;
+            offsetY = 10;
+        }
+        // Drop
+        var x = targetX - this._graphCanvas.x - offsetX * this._graphCanvas.zoom;
+        var y = targetY - this._graphCanvas.y - offsetY * this._graphCanvas.zoom;
         newNode.x = x / this._graphCanvas.zoom;
         newNode.y = y / this._graphCanvas.zoom;
         newNode.cleanAccumulation();
+        this.props.globalState.onNewNodeCreatedObservable.notifyObservers(newNode);
         this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
-        this.props.globalState.onSelectionChangedObservable.notifyObservers(newNode);
+        this.props.globalState.onSelectionChangedObservable.notifyObservers({ selection: newNode });
         var block = newNode.block;
-        x -= this.NodeWidth + 150;
+        x -= GraphEditor.NodeWidth + 150;
         block.inputs.forEach(function (connection) {
             if (connection.connectedPoint) {
                 var existingNodes = _this._graphCanvas.nodes.filter(function (n) {
@@ -64566,6 +64682,10 @@ var GraphEditor = /** @class */ (function (_super) {
             }
         });
         this.forceUpdate();
+    };
+    GraphEditor.prototype.dropNewBlock = function (event) {
+        var data = event.dataTransfer.getData("babylonjs-material-node");
+        this.emitNewBlock(data, event.clientX - this._diagramContainer.offsetLeft, event.clientY - this._diagramContainer.offsetTop);
     };
     GraphEditor.prototype.render = function () {
         var _this = this;
@@ -64583,12 +64703,12 @@ var GraphEditor = /** @class */ (function (_super) {
                 } },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_nodeList_nodeListComponent__WEBPACK_IMPORTED_MODULE_2__["NodeListComponent"], { globalState: this.props.globalState }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "leftGrab", onPointerDown: function (evt) { return _this.onPointerDown(evt); }, onPointerUp: function (evt) { return _this.onPointerUp(evt); }, onPointerMove: function (evt) { return _this.resizeColumns(evt); } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "diagram-container", onDrop: function (event) {
-                        _this.emitNewBlock(event);
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "diagram-container", ref: this._diagramContainerRef, onDrop: function (event) {
+                        _this.dropNewBlock(event);
                     }, onDragOver: function (event) {
                         event.preventDefault();
                     } },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_diagram_graphCanvas__WEBPACK_IMPORTED_MODULE_13__["GraphCanvasComponent"], { ref: "graphCanvas", globalState: this.props.globalState, onEmitNewBlock: function (block) {
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_diagram_graphCanvas__WEBPACK_IMPORTED_MODULE_13__["GraphCanvasComponent"], { ref: this._graphCanvasRef, globalState: this.props.globalState, onEmitNewBlock: function (block) {
                             return _this.createNodeFromObject(block);
                         } })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "rightGrab", onPointerDown: function (evt) { return _this.onPointerDown(evt); }, onPointerUp: function (evt) { return _this.onPointerUp(evt); }, onPointerMove: function (evt) { return _this.resizeColumns(evt, false); } }),
@@ -64601,6 +64721,7 @@ var GraphEditor = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "blocker" }, "Node Material Editor runs only on desktop"),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "wait-screen hidden" }, "Processing...please wait")));
     };
+    GraphEditor.NodeWidth = 100;
     return GraphEditor;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
 

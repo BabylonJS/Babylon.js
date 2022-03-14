@@ -1746,32 +1746,41 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
      * @param supportPointerMove defines a boolean indicating if the texture must capture move events (true by default)
      * @param onlyAlphaTesting defines a boolean indicating that alpha blending will not be used (only alpha testing) (false by default)
      * @param invertY defines if the texture needs to be inverted on the y axis during loading (true by default)
+     * @param materialSetupCallback defines a custom way of creating and seting up the material on the mesh
      * @returns a new AdvancedDynamicTexture
      */
-    AdvancedDynamicTexture.CreateForMesh = function (mesh, width, height, supportPointerMove, onlyAlphaTesting, invertY) {
+    AdvancedDynamicTexture.CreateForMesh = function (mesh, width, height, supportPointerMove, onlyAlphaTesting, invertY, materialSetupCallback) {
         if (width === void 0) { width = 1024; }
         if (height === void 0) { height = 1024; }
         if (supportPointerMove === void 0) { supportPointerMove = true; }
         if (onlyAlphaTesting === void 0) { onlyAlphaTesting = false; }
+        if (materialSetupCallback === void 0) { materialSetupCallback = this._CreateMaterial; }
         // use a unique ID in name so serialization will work even if you create two ADTs for a single mesh
         var uniqueId = Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["RandomGUID"])();
         var result = new AdvancedDynamicTexture("AdvancedDynamicTexture for ".concat(mesh.name, " [").concat(uniqueId, "]"), width, height, mesh.getScene(), true, babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Texture"].TRILINEAR_SAMPLINGMODE, invertY);
-        var material = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["StandardMaterial"]("AdvancedDynamicTextureMaterial for ".concat(mesh.name, " [").concat(uniqueId, "]"), mesh.getScene());
+        materialSetupCallback(mesh, uniqueId, result, onlyAlphaTesting);
+        result.attachToMesh(mesh, supportPointerMove);
+        return result;
+    };
+    AdvancedDynamicTexture._CreateMaterial = function (mesh, uniqueId, texture, onlyAlphaTesting) {
+        var internalClassType = Object(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["GetClass"])("BABYLON.StandardMaterial");
+        if (!internalClassType) {
+            throw "StandardMaterial needs to be imported before as it contains a side-effect required by your code.";
+        }
+        var material = new internalClassType("AdvancedDynamicTextureMaterial for ".concat(mesh.name, " [").concat(uniqueId, "]"), mesh.getScene());
         material.backFaceCulling = false;
         material.diffuseColor = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Color3"].Black();
         material.specularColor = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Color3"].Black();
         if (onlyAlphaTesting) {
-            material.diffuseTexture = result;
-            material.emissiveTexture = result;
-            result.hasAlpha = true;
+            material.diffuseTexture = texture;
+            material.emissiveTexture = texture;
+            texture.hasAlpha = true;
         }
         else {
-            material.emissiveTexture = result;
-            material.opacityTexture = result;
+            material.emissiveTexture = texture;
+            material.opacityTexture = texture;
         }
         mesh.material = material;
-        result.attachToMesh(mesh, supportPointerMove);
-        return result;
     };
     /**
      * Creates a new AdvancedDynamicTexture in projected mode (ie. attached to a mesh) BUT do not create a new material for the mesh. You will be responsible for connecting the texture
@@ -19361,6 +19370,9 @@ var Slider3D = /** @class */ (function (_super) {
                 return;
             }
             this._value = Math.max(Math.min(value, this._maximum), this._minimum);
+            if (this._sliderThumb) {
+                this._sliderThumb.position.x = this._convertToPosition(this.value);
+            }
             this.onValueChangedObservable.notifyObservers(this._value);
         },
         enumerable: false,
@@ -19481,13 +19493,12 @@ var Slider3D = /** @class */ (function (_super) {
         var _this = this;
         var pointerDragBehavior = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["PointerDragBehavior"]({ dragAxis: babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Right() });
         pointerDragBehavior.moveAttached = false;
-        pointerDragBehavior.onDragObservable.add(function (event) {
-            var newPosition = _this._sliderThumb.position.x + event.dragDistance / _this.scaling.x;
-            _this._sliderThumb.position.x = Math.max(Math.min(newPosition, _this.end), _this.start);
-            _this.value = _this._convertToValue(_this._sliderThumb.position.x);
+        pointerDragBehavior.onDragStartObservable.add(function (event) {
+            _this._draggedPosition = _this._sliderThumb.position.x;
         });
-        pointerDragBehavior.onDragEndObservable.add(function (event) {
-            _this._sliderThumb.position.x = _this._convertToPosition(_this.value);
+        pointerDragBehavior.onDragObservable.add(function (event) {
+            _this._draggedPosition += event.dragDistance / _this.scaling.x;
+            _this.value = _this._convertToValue(_this._draggedPosition);
         });
         return pointerDragBehavior;
     };

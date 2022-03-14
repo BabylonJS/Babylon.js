@@ -74,6 +74,7 @@
 - Added `getCreationOptions` on `ThinEngine`. ([carolhmj](https://github.com/carolhmj))
 - Added `CompatibilityOptions.UseOpenGLOrientationForUV` to define if the system should use OpenGL convention for UVs when creating geometry or loading .babylon files (false by default) ([Deltakosh](https://github.com/deltakosh))
 - Added RuntimeError and errorCodes for runtime errors. ([jp833](https://github.com/jp833))
+- Added `AutoReleaseWorkerPool` which will automatically terminate idle workers after a specified amount of time and use them in KTX2 and Draco decoders. ([bghgary](https://github.com/bghgary))
 
 ### Engine
 
@@ -309,6 +310,7 @@
 - Fix issue when scaling is reapplied with BoundingBoxGizmo and GizmoManager ([CedricGuillemet](https://github.com/CedricGuillemet)
 - Fix direct loading of a glTF string that has base64-encoded URI. ([bghgary](https://github.com/bghgary))
 - Fix capsule impostor size computation for ammojs ([CedricGuillemet](https://github.com/CedricGuillemet)
+- Fix passing rootUrl when loading NodeMaterial and nested asset URL ([CedricGuillemet](https://github.com/CedricGuillemet)
 - Fix compound shapes for CannonJS plugin ([cedricguillemet](https://github.com/cedricguillemet))
 - Fix crash of some node materials using instances on iOS ([Popov72](https://github.com/Popov72))
 - Fix the code generated for the NME gradient block ([Popov72](https://github.com/Popov72))
@@ -343,6 +345,7 @@
 - Fix issue with cursor and 'doNotHandleCursors' on GUI ([msDestiny14](https://github.com/msDestiny14))
 - Fix issue with multi-views when using a transparent scene clear color ([Popov72](https://github.com/Popov72))
 - Fix issue with multi-views when using a hardware scaling level different from 1 ([Popov72](https://github.com/Popov72))
+- Fix matrix update for `PointerDragBehavior` and mesh with pivot ([cedricguillemet](https://github.com/cedricguillemet))
 - Fix thin instances + animated bones not rendered in the depth renderer ([Popov72](https://github.com/Popov72))
 - Fix issue with WebXR teleportation logic which would cause positional headlocking on teleporation frames ([syntheticmagus](https://github.com/syntheticmagus))
 - Fix for GUI renderAtIdealSize ([msDestiny14](https://github.com/msDestiny14))

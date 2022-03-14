@@ -47,7 +47,8 @@ export class FrameNodePort extends NodePort {
         this._isInput = isInput;
         this._framePortId = framePortId;
 
-        this._onSelectionChangedObserver = this._globalState.onSelectionChangedObservable.add((selection) => {
+        this._onSelectionChangedObserver = this._globalState.onSelectionChangedObservable.add((options) => {
+            const {selection} = options || {};
             if (isFramePortData(selection) && (selection as FramePortData).port === this) {
                 this._img.classList.add("selected");
             } else {

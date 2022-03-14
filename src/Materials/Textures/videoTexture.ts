@@ -8,6 +8,22 @@ import { Texture } from "../../Materials/Textures/texture";
 import "../../Engines/Extensions/engine.videoTexture";
 import "../../Engines/Extensions/engine.dynamicTexture";
 
+function removeSource(video: HTMLVideoElement): void {
+    // Remove any <source> elements, etc.
+    while (video.firstChild) {
+        video.removeChild(video.firstChild);
+    }
+
+    // detach srcObject
+    video.srcObject = null;
+
+    // Set a blank src (https://html.spec.whatwg.org/multipage/media.html#best-practices-for-authors-using-media-elements)
+    video.src = "";
+
+    // Prevent non-important errors maybe (https://twitter.com/beraliv/status/1205214277956775936)
+    video.removeAttribute("src");
+}
+
 /**
  * Settings for finer control over video usage
  */
@@ -129,29 +145,27 @@ export class VideoTexture extends Texture {
         generateMipMaps = false,
         invertY = false,
         samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
-        settings?: VideoTextureSettings,
+        settings: Partial<VideoTextureSettings> = {},
         onError?: Nullable<(message?: string, exception?: any) => void>
     ) {
         super(null, scene, !generateMipMaps, invertY);
 
-        if (!settings) {
-            settings = {
-                autoPlay: true,
-                loop: true,
-                autoUpdateTexture: true,
-            };
-        }
+        this._settings = {
+            autoPlay: true,
+            loop: true,
+            autoUpdateTexture: true,
+            ...settings
+        };
 
         this._onError = onError;
 
         this._generateMipMaps = generateMipMaps;
         this._initialSamplingMode = samplingMode;
-        this.autoUpdateTexture = settings.autoUpdateTexture;
+        this.autoUpdateTexture = this._settings.autoUpdateTexture;
 
         this._currentSrc = src;
         this.name = name || this._getName(src);
         this.video = this._getVideo(src);
-        this._settings = settings;
 
         if (settings.poster) {
             this.video.poster = settings.poster;
@@ -228,6 +242,11 @@ export class VideoTexture extends Texture {
                 video.appendChild(source);
             });
         }
+
+        this.onDisposeObservable.addOnce(() => {
+            removeSource(video);
+        });
+
         return video;
     }
 
@@ -434,7 +453,17 @@ export class VideoTexture extends Texture {
 
         return new Promise<VideoTexture>((resolve) => {
             let onPlaying = () => {
-                resolve(new VideoTexture("video", video, scene, true, invertY));
+                const videoTexture = new VideoTexture("video", video, scene, true, invertY);
+                if (scene.getEngine()._badOS) {
+                    videoTexture.onDisposeObservable.addOnce(() => {
+                        video.remove();
+                    });
+                }
+                videoTexture.onDisposeObservable.addOnce(() => {
+                    removeSource(video);
+                });
+
+                resolve(videoTexture);
                 video.removeEventListener("playing", onPlaying);
             };
 

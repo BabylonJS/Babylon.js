@@ -129,7 +129,9 @@ export class Slider3D extends Control3D {
         }
 
         this._value = Math.max(Math.min(value, this._maximum), this._minimum);
-        this._sliderThumb.position.x = this._convertToPosition(this.value);
+        if (this._sliderThumb) {
+            this._sliderThumb.position.x = this._convertToPosition(this.value);
+        }
         this.onValueChangedObservable.notifyObservers(this._value);
     }
 

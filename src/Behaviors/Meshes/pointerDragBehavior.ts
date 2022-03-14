@@ -265,6 +265,7 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
 
         this._beforeRenderObserver = this._scene.onBeforeRenderObservable.add(() => {
             if (this._moving && this.moveAttached) {
+                let needMatrixUpdate = false;
                 PivotTools._RemoveAndStorePivotPoint(this.attachedNode);
                 // Slowly move mesh to avoid jitter
                 this._targetPosition.subtractToRef((this.attachedNode).absolutePosition, this._tmpVector);
@@ -272,8 +273,12 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
                 (this.attachedNode).getAbsolutePosition().addToRef(this._tmpVector, this._tmpVector);
                 if (this.validateDrag(this._tmpVector)) {
                     (this.attachedNode).setAbsolutePosition(this._tmpVector);
+                    needMatrixUpdate = true;
                 }
                 PivotTools._RestorePivotPoint(this.attachedNode);
+                if (needMatrixUpdate) {
+                    (this.attachedNode).computeWorldMatrix();
+                }
             }
         });
     }
@@ -488,15 +493,18 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
      *  Detaches the behavior from the mesh
      */
     public detach(): void {
-        this.attachedNode.isNearGrabbable = false;
-
+        if (this.attachedNode) {
+            this.attachedNode.isNearGrabbable = false;
+        }
         if (this._pointerObserver) {
             this._scene.onPointerObservable.remove(this._pointerObserver);
         }
         if (this._beforeRenderObserver) {
             this._scene.onBeforeRenderObservable.remove(this._beforeRenderObserver);
         }
-        this._dragPlane.dispose();
+        if (this._dragPlane) {
+            this._dragPlane.dispose();
+        }
         this.releaseDrag();
     }
 }

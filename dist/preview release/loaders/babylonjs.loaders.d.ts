@@ -1112,6 +1112,8 @@ declare module BABYLON.GLTF2.Loader {
         /** @hidden */
         _babylonTransformNode?: TransformNode;
         /** @hidden */
+        _babylonTransformNodeForSkin?: TransformNode;
+        /** @hidden */
         _primitiveBabylonMeshes?: AbstractMesh[];
         /** @hidden */
         _numMorphTargets?: number;

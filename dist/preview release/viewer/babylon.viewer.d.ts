@@ -1041,6 +1041,7 @@ declare module BabylonViewer {
             };
             environmentMap?: IEnvironmentMapConfiguration;
             vr?: IVRConfiguration;
+            "3dCommerceCertified"?: boolean;
             lab?: {
                     flashlight?: boolean | {
                             exponent?: number;

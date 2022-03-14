@@ -64,7 +64,7 @@ export class InputManager {
 
     /** This is a defensive check to not allow control attachment prior to an already active one. If already attached, previous control is unattached before attaching the new one. */
     private _alreadyAttached = false;
-    private _alreadyAttachedTo: HTMLElement;
+    private _alreadyAttachedTo: Nullable<HTMLElement>;
 
     // Pointers
     private _onPointerMove: (evt: IMouseEvent) => void;
@@ -924,6 +924,7 @@ export class InputManager {
             }
 
             this._alreadyAttached = false;
+            this._alreadyAttachedTo = null;
         }
     }
 

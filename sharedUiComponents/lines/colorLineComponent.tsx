@@ -79,7 +79,7 @@ export class ColorLineComponent extends React.Component<IColorLineComponentProps
             }
             return this.convertToColor(property);
         } else {
-            return property;
+            return property.clone();
         }
     }
  

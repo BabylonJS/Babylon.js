@@ -531,7 +531,11 @@ declare module BABYLON {
     /**
      * Native friendly interface for Event Object
      */
-    export interface IEvent {
+    export interface IUIEvent {
+        /**
+         * Input array index
+         */
+        inputIndex: number;
         /**
          * Current target for an event
          */
@@ -553,23 +557,6 @@ declare module BABYLON {
          * Tells user agent what to do when not explicitly handled
          */
         preventDefault: () => void;
-    }
-    /**
-     * Native friendly interface for UIEvent Object
-     */
-    export interface IUIEvent extends IEvent {
-        /**
-         * Provides current click count
-         */
-        detail: number;
-        /**
-         * Horizontal coordinate of event
-         */
-        pageX: number;
-        /**
-         * Vertical coordinate of event
-         */
-        pageY: number;
     }
     /**
      * Native friendly interface for KeyboardEvent Object
@@ -639,6 +626,10 @@ declare module BABYLON {
          */
         ctrlKey: boolean;
         /**
+         * Provides current click count
+         */
+        detail?: number;
+        /**
          * Status of Meta key (eg. Windows key) being pressed
          */
         metaKey: boolean;
@@ -674,6 +665,14 @@ declare module BABYLON {
          * Current coordinate of Y within container
          */
         offsetY: number;
+        /**
+         * Horizontal coordinate of event
+         */
+        pageX: number;
+        /**
+         * Vertical coordinate of event
+         */
+        pageY: number;
         /**
          * Status of Shift key being pressed
          */
@@ -777,6 +776,31 @@ declare module BABYLON {
      * Enum for All Pointers (Touch/Mouse)
      */
     export enum PointerInput {
+        /** Horizontal Axis (Not used in events/observables; only in polling) */
+        Horizontal = 0,
+        /** Vertical Axis (Not used in events/observables; only in polling) */
+        Vertical = 1,
+        /** Left Click or Touch */
+        LeftClick = 2,
+        /** Middle Click */
+        MiddleClick = 3,
+        /** Right Click */
+        RightClick = 4,
+        /** Browser Back */
+        BrowserBack = 5,
+        /** Browser Forward */
+        BrowserForward = 6,
+        /** Mouse Wheel X */
+        MouseWheelX = 7,
+        /** Mouse Wheel Y */
+        MouseWheelY = 8,
+        /** Mouse Wheel Z */
+        MouseWheelZ = 9,
+        /** Used in events/observables to identify if x/y changes occurred */
+        Move = 12
+    }
+    /** @hidden */
+    export enum NativePointerInput {
         /** Horizontal Axis */
         Horizontal = 0,
         /** Vertical Axis */
@@ -800,9 +824,7 @@ declare module BABYLON {
         /** Delta X */
         DeltaHorizontal = 10,
         /** Delta Y */
-        DeltaVertical = 11,
-        /** Move Catch-all */
-        Move = 12
+        DeltaVertical = 11
     }
     /**
      * Enum for Dual Shock Gamepad
@@ -1001,31 +1023,6 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Interface for Observables in DeviceInputSystem
-     */
-    export interface IDeviceEvent extends IEvent {
-        /**
-         * Device type
-         */
-        deviceType: DeviceType;
-        /**
-         * Device slot
-         */
-        deviceSlot: number;
-        /**
-         * Input array index
-         */
-        inputIndex: number;
-        /**
-         * Previous state of given input
-         */
-        previousState: Nullable<number>;
-        /**
-         * Current state of given input
-         */
-        currentState: Nullable<number>;
-    }
-    /**
      * Interface for NativeInput object
      */
     export interface INativeInput extends IDisposable {
@@ -1040,7 +1037,7 @@ declare module BABYLON {
         /**
          * Callback for when input is changed on a device
          */
-        onInputChanged: (deviceType: DeviceType, deviceSlot: number, inputIndex: number, previousState: Nullable<number>, currentState: Nullable<number>, eventData?: any) => void;
+        onInputChanged: (deviceType: DeviceType, deviceSlot: number, inputIndex: number, currentState: Nullable<number>) => void;
         /**
          * Checks for current device input value, given an id and input index.
          * @param deviceType Type of device
@@ -1071,7 +1068,7 @@ declare module BABYLON {
         /**
          * Callback for when an input is changed
          */
-        onInputChanged: (deviceEvent: IDeviceEvent) => void;
+        onInputChanged: (deviceType: DeviceType, deviceSlot: number, eventData: IUIEvent) => void;
         /**
          * Checks for current device input value, given an id and input index. Throws exception if requested device not initialized.
          * @param deviceType Enum specifiying device type
@@ -1123,6 +1120,10 @@ declare module BABYLON {
          * onload callback.
          */
         onload: ((this: GlobalEventHandlers, ev: Event) => any) | null;
+        /**
+         * Error callback.
+         */
+        onerror: ((this: GlobalEventHandlers, ev: Event) => any) | null;
         /**
          * Image source.
          */
@@ -8412,14 +8413,18 @@ declare module BABYLON {
          * Gets a boolean indicating that this block is linked to an ImageSourceBlock
          */
         get hasImageSource(): boolean;
+        private _convertToGammaSpace;
         /**
          * Gets or sets a boolean indicating if content needs to be converted to gamma space
          */
-        convertToGammaSpace: boolean;
+        set convertToGammaSpace(value: boolean);
+        get convertToGammaSpace(): boolean;
+        private _convertToLinearSpace;
         /**
          * Gets or sets a boolean indicating if content needs to be converted to linear space
          */
-        convertToLinearSpace: boolean;
+        set convertToLinearSpace(value: boolean);
+        get convertToLinearSpace(): boolean;
         /**
          * Gets or sets a boolean indicating if multiplication of texture with level should be disabled
          */
@@ -13338,6 +13343,7 @@ declare module BABYLON {
          * @param textureType The FBO internal texture type
          */
         constructor(name: string, size: TextureSize, fragment: any, scene: Nullable<Scene>, fallbackTexture?: Nullable<Texture>, generateMipMaps?: boolean, isCube?: boolean, textureType?: number);
+        private _createRtWrapper;
         /**
          * The effect that is created when initializing the post process.
          * @returns The created effect corresponding the the postprocess.
@@ -13392,7 +13398,7 @@ declare module BABYLON {
          * @param size Define the new size the texture should have
          * @param generateMipMaps Define whether the new texture should create mip maps
          */
-        resize(size: number, generateMipMaps: boolean): void;
+        resize(size: TextureSize, generateMipMaps: boolean): void;
         private _checkUniform;
         /**
          * Set a texture in the shader program used to render.
@@ -21461,7 +21467,7 @@ declare module BABYLON {
     export class NodeMaterialBlock {
         private _buildId;
         private _buildTarget;
-        private _target;
+        protected _target: NodeMaterialBlockTargets;
         private _isFinalMerger;
         private _isInput;
         private _name;
@@ -22720,6 +22726,7 @@ declare module BABYLON {
         inverseRotationSpeed: number;
         /**
          * Define the current target of the camera as an object or a position.
+         * Please note that locking a target will disable panning.
          */
         lockedTarget: any;
         /** @hidden */
@@ -30879,11 +30886,12 @@ declare module BABYLON {
          * Merges the passed VertexData into the current one
          * @param others the VertexData to be merged into the current one
          * @param use32BitsIndices defines a boolean indicating if indices must be store in a 32 bits array
+         * @param forceCloneIndices defines a boolean indicating if indices are forced to be cloned
          * @returns the modified VertexData
          */
-        merge(others: VertexData | VertexData[], use32BitsIndices?: boolean): VertexData;
+        merge(others: VertexData | VertexData[], use32BitsIndices?: boolean, forceCloneIndices?: boolean): VertexData;
         /** @hidden */
-        _mergeCoroutine(transform: Matrix | undefined, vertexDatas: (readonly [vertexData: VertexData, transform?: Matrix])[], use32BitsIndices: boolean | undefined, isAsync: boolean): Coroutine<VertexData>;
+        _mergeCoroutine(transform: Matrix | undefined, vertexDatas: (readonly [vertexData: VertexData, transform?: Matrix])[], use32BitsIndices: boolean | undefined, isAsync: boolean, forceCloneIndices: boolean): Coroutine<VertexData>;
         private static _mergeElement;
         private _validate;
         /**
@@ -31511,9 +31519,10 @@ declare module BABYLON {
         /**
          * Creates a new target from serialized data
          * @param serializationObject defines the serialized data to use
+         * @param scene defines the hosting scene
          * @returns a new MorphTarget
          */
-        static Parse(serializationObject: any): MorphTarget;
+        static Parse(serializationObject: any, scene?: Scene): MorphTarget;
         /**
          * Creates a MorphTarget from mesh data
          * @param mesh defines the source mesh
@@ -37336,7 +37345,7 @@ declare module BABYLON {
          * @param additionalData additional data for the event
          * @returns the new ActionEvent
          */
-        static CreateNew(source: AbstractMesh, evt?: IEvent, additionalData?: any): ActionEvent;
+        static CreateNew(source: AbstractMesh, evt?: any, additionalData?: any): ActionEvent;
         /**
          * Helper function to auto-create an ActionEvent from a source sprite
          * @param source The source sprite that triggered the event
@@ -37345,14 +37354,14 @@ declare module BABYLON {
          * @param additionalData additional data for the event
          * @returns the new ActionEvent
          */
-        static CreateNewFromSprite(source: Sprite, scene: Scene, evt?: IEvent, additionalData?: any): ActionEvent;
+        static CreateNewFromSprite(source: Sprite, scene: Scene, evt?: any, additionalData?: any): ActionEvent;
         /**
          * Helper function to auto-create an ActionEvent from a scene. If triggered by a mesh use ActionEvent.CreateNew
          * @param scene the scene where the event occurred
          * @param evt The original (browser) event
          * @returns the new ActionEvent
          */
-        static CreateNewFromScene(scene: Scene, evt: IEvent): ActionEvent;
+        static CreateNewFromScene(scene: Scene, evt: any): ActionEvent;
         /**
          * Helper function to auto-create an ActionEvent from a primitive
          * @param prim defines the target primitive
@@ -38147,7 +38156,9 @@ declare module BABYLON {
         markAsDirty(property?: string): Node;
         /**
          * Defines the passed node as the parent of the current node.
-         * The node will remain exactly where it is and its position / rotation will be updated accordingly
+         * The node will remain exactly where it is and its position / rotation will be updated accordingly.
+         * Note that if the mesh has a pivot matrix / point defined it will be applied after the parent was updated.
+         * In that case the node will not remain in the same space as it is, as the pivot will be applied.
          * @see https://doc.babylonjs.com/how_to/parenting
          * @param node the node ot set as the parent
          * @param preserveScalingSign if true, keep scaling sign of child. Otherwise, scaling sign might change.
@@ -41477,7 +41488,7 @@ declare module BABYLON {
      * Decorator used to redirect a function to a native implementation if available.
      * @hidden
      */
-    export function nativeOverride<T extends (...params: any[]) => boolean>(target: any, propertyKey: string, descriptor: TypedPropertyDescriptor<(...params: Parameters<T>) => unknown>, predicate?: T): void;
+    export function nativeOverride<T extends (...params: any) => boolean>(target: any, propertyKey: string, descriptor: TypedPropertyDescriptor<(...params: Parameters<T>) => unknown>, predicate?: T): void;
     /**
      * Decorator used to redirect a function to a native implementation if available.
      * @hidden
@@ -44186,6 +44197,14 @@ declare module BABYLON {
          * Gets the latest created scene
          */
         static get LastCreatedScene(): Nullable<Scene>;
+        /** @hidden */
+        /**
+         * Engine abstraction for loading and creating an image bitmap from a given source string.
+         * @param imageSource source to load the image from.
+         * @param options An object that sets options for the image's extraction.
+         * @returns ImageBitmap.
+         */
+        createImageBitmapFromSource(imageSource: string, options?: ImageBitmapOptions): Promise<ImageBitmap>;
         /**
          * Engine abstraction for createImageBitmap
          * @param image source for image
@@ -44259,7 +44278,7 @@ declare module BABYLON {
         /**
          * Observable event triggered each time the canvas receives pointerout event
          */
-        onCanvasPointerOutObservable: Observable<IPointerEvent>;
+        onCanvasPointerOutObservable: Observable<PointerEvent>;
         /**
          * Observable raised when the engine begins a new frame
          */
@@ -45361,7 +45380,7 @@ declare module BABYLON {
          * @param settings allows finer control over video usage
          * @param onError defines a callback triggered when an error occurred during the loading session
          */
-        constructor(name: Nullable<string>, src: string | string[] | HTMLVideoElement, scene: Nullable<Scene>, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number, settings?: VideoTextureSettings, onError?: Nullable<(message?: string, exception?: any) => void>);
+        constructor(name: Nullable<string>, src: string | string[] | HTMLVideoElement, scene: Nullable<Scene>, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number, settings?: Partial<VideoTextureSettings>, onError?: Nullable<(message?: string, exception?: any) => void>);
         /**
          * Get the current class name of the video texture useful for serialization or dynamic coding.
          * @returns "VideoTexture"
@@ -47204,7 +47223,7 @@ declare module BABYLON {
         getTextureHeight(texture: WebGLTexture): number;
         copyTexture(desination: Nullable<WebGLTexture>, source: Nullable<WebGLTexture>): void;
         deleteTexture(texture: Nullable<WebGLTexture>): void;
-        createImageBitmap(data: ArrayBufferView): ImageBitmap;
+        createImageBitmap(data: ArrayBufferView | IImage): ImageBitmap;
         resizeImageBitmap(image: ImageBitmap, bufferWidth: number, bufferHeight: number): Uint8Array;
         createFrameBuffer(texture: WebGLTexture, width: number, height: number, format: number, generateStencilBuffer: boolean, generateDepthBuffer: boolean, generateMips: boolean): WebGLFramebuffer;
         getRenderWidth(): number;
@@ -48294,9 +48313,13 @@ declare module BABYLON {
     /**
      * Type to handle enforcement of inputs
      */
-    export type DeviceInput<T extends DeviceType> = T extends DeviceType.Keyboard | DeviceType.Generic ? number : T extends DeviceType.Mouse | DeviceType.Touch ? PointerInput : T extends DeviceType.DualShock ? DualShockInput : T extends DeviceType.Xbox ? XboxInput : T extends DeviceType.Switch ? SwitchInput : T extends DeviceType.DualSense ? DualSenseInput : never;
+    export type DeviceInput<T extends DeviceType> = T extends DeviceType.Keyboard | DeviceType.Generic ? number : T extends DeviceType.Mouse | DeviceType.Touch ? Exclude<PointerInput, PointerInput.Move> : T extends DeviceType.DualShock ? DualShockInput : T extends DeviceType.Xbox ? XboxInput : T extends DeviceType.Switch ? SwitchInput : T extends DeviceType.DualSense ? DualSenseInput : never;
 }
 declare module BABYLON {
+    /**
+     * Subset of DeviceInput that only handles pointers and keyboard
+     */
+    type DeviceEventInput<T extends DeviceType> = T extends DeviceType.Keyboard | DeviceType.Generic ? number : T extends DeviceType.Mouse | DeviceType.Touch ? Exclude<PointerInput, PointerInput.Horizontal | PointerInput.Vertical> : never;
     /**
      * Class that handles all input for a specific device
      */
@@ -48308,7 +48331,9 @@ declare module BABYLON {
         /**
          * Observable to handle device input changes per device
          */
-        readonly onInputChangedObservable: Observable<IDeviceEvent>;
+        readonly onInputChangedObservable: Observable<IUIEvent & {
+            inputIndex: DeviceEventInput<T>;
+        }>;
         private readonly _deviceInputSystem;
         /**
          * Default Constructor
@@ -48343,9 +48368,9 @@ declare module BABYLON {
          * @param currentState Current value for given input
          * @param deviceInputSystem Reference to DeviceInputSystem
          * @param elementToAttachTo HTMLElement to reference as target for inputs
-         * @returns IEvent object
+         * @returns IUIEvent object
          */
-        static CreateDeviceEvent(deviceType: DeviceType, deviceSlot: number, inputIndex: number, currentState: Nullable<number>, deviceInputSystem: IDeviceInputSystem, elementToAttachTo?: any): IEvent;
+        static CreateDeviceEvent(deviceType: DeviceType, deviceSlot: number, inputIndex: number, currentState: Nullable<number>, deviceInputSystem: IDeviceInputSystem, elementToAttachTo?: any): IUIEvent;
         /**
          * Creates pointer event
          *
@@ -48355,7 +48380,7 @@ declare module BABYLON {
          * @param currentState Current value for given input
          * @param deviceInputSystem Reference to DeviceInputSystem
          * @param elementToAttachTo HTMLElement to reference as target for inputs
-         * @returns IEvent object (Pointer)
+         * @returns IUIEvent object (Pointer)
          */
         private static _createPointerEvent;
         /**
@@ -48366,7 +48391,7 @@ declare module BABYLON {
          * @param currentState Current value for given input
          * @param deviceInputSystem Reference to DeviceInputSystem
          * @param elementToAttachTo HTMLElement to reference as target for inputs
-         * @returns IEvent object (Wheel)
+         * @returns IUIEvent object (Wheel)
          */
         private static _createWheelEvent;
         /**
@@ -48377,7 +48402,7 @@ declare module BABYLON {
          * @param currentState Current value for given input
          * @param deviceInputSystem Reference to DeviceInputSystem
          * @param elementToAttachTo HTMLElement to reference as target for inputs
-         * @returns IEvent object (Mouse)
+         * @returns IUIEvent object (Mouse)
          */
         private static _createMouseEvent;
         /**
@@ -48408,7 +48433,7 @@ declare module BABYLON {
     export class NativeDeviceInputSystem implements IDeviceInputSystem {
         onDeviceConnected: (deviceType: DeviceType, deviceSlot: number) => void;
         onDeviceDisconnected: (deviceType: DeviceType, deviceSlot: number) => void;
-        onInputChanged: (deviceEvent: IDeviceEvent) => void;
+        onInputChanged: (deviceType: DeviceType, deviceSlot: number, eventData: IUIEvent) => void;
         private readonly _nativeInput;
         constructor(nativeInput?: INativeInput);
         /**
@@ -48443,7 +48468,7 @@ declare module BABYLON {
         set onDeviceConnected(callback: (deviceType: DeviceType, deviceSlot: number) => void);
         get onDeviceConnected(): (deviceType: DeviceType, deviceSlot: number) => void;
         onDeviceDisconnected: (deviceType: DeviceType, deviceSlot: number) => void;
-        onInputChanged: (deviceEvent: IDeviceEvent) => void;
+        onInputChanged: (deviceType: DeviceType, deviceSlot: number, eventData: IUIEvent) => void;
         private _inputs;
         private _gamepads;
         private _keyboardActive;
@@ -48570,64 +48595,40 @@ declare module BABYLON {
     /** @hidden */
     export interface IObservableManager {
         onDeviceConnectedObservable: Observable<DeviceSource<DeviceType>>;
-        onInputChangedObservable: Observable<IDeviceEvent>;
         onDeviceDisconnectedObservable: Observable<DeviceSource<DeviceType>>;
+        _onInputChanged(deviceType: DeviceType, deviceSlot: number, eventData: IUIEvent): void;
+        _addDevice(deviceSource: DeviceSource<DeviceType>): void;
+        _removeDevice(deviceType: DeviceType, deviceSlot: number): void;
     }
     /** @hidden */
     export class InternalDeviceSourceManager implements IDisposable {
         private readonly _devices;
-        private readonly _firstDevice;
         private readonly _deviceInputSystem;
         private readonly _registeredManagers;
         _refCount: number;
         constructor(engine: Engine);
-        readonly getDeviceSource: <T extends DeviceType>(deviceType: T, deviceSlot?: number | undefined) => Nullable<DeviceSource<T>>;
-        readonly getDeviceSources: <T extends DeviceType>(deviceType: T) => readonly DeviceSource<T>[];
-        readonly getDevices: () => ReadonlyArray<DeviceSource<DeviceType>>;
         readonly registerManager: (manager: IObservableManager) => void;
         readonly unregisterManager: (manager: IObservableManager) => void;
         dispose(): void;
-        /**
-         * Function to add device name to device list
-         * @param deviceType Enum specifying device type
-         * @param deviceSlot "Slot" or index that device is referenced in
-         */
-        private _addDevice;
-        /**
-         * Function to remove device name to device list
-         * @param deviceType Enum specifying device type
-         * @param deviceSlot "Slot" or index that device is referenced in
-         */
-        private _removeDevice;
-        /**
-         * Updates array storing first connected device of each type
-         * @param type Type of Device
-         */
-        private _updateFirstDevices;
     }
 }
 declare module BABYLON {
     /**
      * Class to keep track of devices
      */
-    export class DeviceSourceManager implements IDisposable {
+    export class DeviceSourceManager implements IDisposable, IObservableManager {
         /**
          * Observable to be triggered when after a device is connected, any new observers added will be triggered against already connected devices
          */
         readonly onDeviceConnectedObservable: Observable<DeviceSource<DeviceType>>;
-        /**
-         * Observable to be triggered when a device's input is changed
-         */
-        readonly onInputChangedObservable: Observable<IDeviceEvent>;
         /**
          * Observable to be triggered when after a device is disconnected
          */
         readonly onDeviceDisconnectedObservable: Observable<DeviceSource<DeviceType>>;
         private _engine;
         private _onDisposeObserver;
-        private _getDeviceSource;
-        private _getDeviceSources;
-        private _getDevices;
+        private readonly _devices;
+        private readonly _firstDevice;
         /**
          * Gets a DeviceSource, given a type and slot
          * @param deviceType Type of Device
@@ -48655,6 +48656,13 @@ declare module BABYLON {
          * Dispose of DeviceSourceManager
          */
         dispose(): void;
+        /** @hidden */
+        _addDevice(deviceSource: DeviceSource<DeviceType>): void;
+        /** @hidden */
+        _removeDevice(deviceType: DeviceType, deviceSlot: number): void;
+        /** @hidden */
+        _onInputChanged(deviceType: DeviceType, deviceSlot: number, eventData: IUIEvent): void;
+        private _updateFirstDevices;
     }
 }
 declare module BABYLON {
@@ -52247,11 +52255,6 @@ declare module BABYLON {
          */
         isPaused: boolean;
         /**
-         * Does this sound enables spatial sound.
-         * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
-         */
-        spatialSound: boolean;
-        /**
          * Define the reference distance the sound should be heard perfectly.
          * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
          */
@@ -52288,6 +52291,17 @@ declare module BABYLON {
          * Gets the current time for the sound.
          */
         get currentTime(): number;
+        /**
+         * Does this sound enables spatial sound.
+         * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
+         */
+        get spatialSound(): boolean;
+        /**
+         * Does this sound enables spatial sound.
+         * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
+         */
+        set spatialSound(newValue: boolean);
+        private _spatialSound;
         private _panningModel;
         private _playbackRate;
         private _streaming;
@@ -53445,6 +53459,7 @@ declare module BABYLON {
          */
         protected _buttonsPressed: number;
         private _currentActiveButton;
+        private _contextMenuBind;
         /**
          * Defines the buttons associated with the input to handle camera move.
          */
@@ -53825,13 +53840,13 @@ declare module BABYLON {
         /**
          * Defines the target point of the camera.
          * The camera looks towards it form the radius distance.
-         * Please note that you can set the target to a mesh and thus the target will be copied from mesh.position
          */
         get target(): Vector3;
         set target(value: Vector3);
         /**
          * Defines the target mesh of the camera.
          * The camera looks towards it from the radius distance.
+         * Please note that setting a target host will disable panning.
          */
         get targetHost(): Nullable<AbstractMesh>;
         set targetHost(value: Nullable<AbstractMesh>);
@@ -54196,11 +54211,13 @@ declare module BABYLON {
         /**
          * Defines the target the camera should look at.
          * This will automatically adapt alpha beta and radius to fit within the new target.
+         * Please note that setting a target as a mesh will disable panning.
          * @param target Defines the new target as a Vector or a mesh
          * @param toBoundingCenter In case of a mesh target, defines whether to target the mesh position or its bounding information center
          * @param allowSamePosition If false, prevents reapplying the new computed position if it is identical to the current one (optim)
+         * @param cloneAlphaBetaRadius If true, replicate the current setup (alpha, beta, radius) on the new target
          */
-        setTarget(target: AbstractMesh | Vector3, toBoundingCenter?: boolean, allowSamePosition?: boolean): void;
+        setTarget(target: AbstractMesh | Vector3, toBoundingCenter?: boolean, allowSamePosition?: boolean, cloneAlphaBetaRadius?: boolean): void;
         /** @hidden */
         _getViewMatrix(): Matrix;
         protected _onCollisionPositionChange: (collisionId: number, newPosition: Vector3, collidedMesh?: Nullable<AbstractMesh>) => void;
@@ -67244,6 +67261,14 @@ declare module BABYLON {
         _createDepthStencilTexture(size: TextureSize, options: DepthTextureCreationOptions, rtWrapper: RenderTargetWrapper): InternalTexture;
         /** @hidden */
         _releaseFramebufferObjects(framebuffer: Nullable<WebGLFramebuffer>): void;
+        /** @hidden */
+        /**
+         * Engine abstraction for loading and creating an image bitmap from a given source string.
+         * @param imageSource source to load the image from.
+         * @param options An object that sets options for the image's extraction.
+         * @returns ImageBitmap
+         */
+        createImageBitmapFromSource(imageSource: string, options?: ImageBitmapOptions): Promise<ImageBitmap>;
         /**
          * Engine abstraction for createImageBitmap
          * @param image source for image
@@ -72235,12 +72260,18 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+    /** @ignore */
+    interface WorkerInfo {
+        workerPromise: Promise<Worker>;
+        idle: boolean;
+        timeoutId?: number;
+    }
     /**
      * Helper class to push actions to a pool of workers.
      */
     export class WorkerPool implements IDisposable {
-        private _workerInfos;
-        private _pendingActions;
+        protected _workerInfos: Array<WorkerInfo>;
+        protected _pendingActions: ((worker: Worker, onComplete: () => void) => void)[];
         /**
          * Constructor
          * @param workers Array of workers to use for actions
@@ -72256,7 +72287,34 @@ declare module BABYLON {
          * @param action The action to perform. Call onComplete when the action is complete.
          */
         push(action: (worker: Worker, onComplete: () => void) => void): void;
-        private _execute;
+        protected _executeOnIdleWorker(action: (worker: Worker, onComplete: () => void) => void): boolean;
+        protected _execute(workerInfo: WorkerInfo, action: (worker: Worker, onComplete: () => void) => void): void;
+    }
+    /**
+     * Options for AutoReleaseWorkerPool
+     */
+    export interface AutoReleaseWorkerPoolOptions {
+        /**
+         * Idle time elapsed before workers are terminated.
+         */
+        idleTimeElapsedBeforeRelease: number;
+    }
+    /**
+     * Similar to the WorkerPool class except it creates and destroys workers automatically with a maximum of `maxWorkers` workers.
+     * Workers are terminated when it is idle for at least `idleTimeElapsedBeforeRelease` milliseconds.
+     */
+    export class AutoReleaseWorkerPool extends WorkerPool {
+        /**
+         * Default options for the constructor.
+         * Override to change the defaults.
+         */
+        static DefaultOptions: AutoReleaseWorkerPoolOptions;
+        private readonly _maxWorkers;
+        private readonly _createWorkerAsync;
+        private readonly _options;
+        constructor(maxWorkers: number, createWorkerAsync: () => Promise<Worker>, options?: AutoReleaseWorkerPoolOptions);
+        push(action: (worker: Worker, onComplete: () => void) => void): void;
+        protected _execute(workerInfo: WorkerInfo, action: (worker: Worker, onComplete: () => void) => void): void;
     }
 }
 declare module BABYLON {
@@ -72265,9 +72323,7 @@ declare module BABYLON {
      */
     export class KhronosTextureContainer2 {
         private static _WorkerPoolPromise?;
-        private static _NoWorkerPromise?;
-        private static _Initialized;
-        private static _Ktx2Decoder;
+        private static _DecoderModulePromise?;
         /**
          * URLs to use when loading the KTX2 decoder module as well as its dependencies
          * If a url is null, the default url is used (pointing to https://preview.babylonjs.com)
@@ -72285,13 +72341,13 @@ declare module BABYLON {
          */
         static URLConfig: {
             jsDecoderModule: string;
-            wasmUASTCToASTC: null;
-            wasmUASTCToBC7: null;
-            wasmUASTCToRGBA_UNORM: null;
-            wasmUASTCToRGBA_SRGB: null;
-            jsMSCTranscoder: null;
-            wasmMSCTranscoder: null;
-            wasmZSTDDecoder: null;
+            wasmUASTCToASTC: Nullable<string>;
+            wasmUASTCToBC7: Nullable<string>;
+            wasmUASTCToRGBA_UNORM: Nullable<string>;
+            wasmUASTCToRGBA_SRGB: Nullable<string>;
+            jsMSCTranscoder: Nullable<string>;
+            wasmMSCTranscoder: Nullable<string>;
+            wasmZSTDDecoder: Nullable<string>;
         };
         /**
          * Default number of workers used to handle data decoding
@@ -72299,7 +72355,7 @@ declare module BABYLON {
         static DefaultNumWorkers: number;
         private static GetDefaultNumWorkers;
         private _engine;
-        private static _CreateWorkerPool;
+        private static _Initialize;
         /**
          * Constructor
          * @param engine The engine to use
@@ -72308,10 +72364,6 @@ declare module BABYLON {
         constructor(engine: ThinEngine, numWorkers?: number);
         /** @hidden */
         uploadAsync(data: ArrayBufferView, internalTexture: InternalTexture, options?: any): Promise<void>;
-        /**
-         * Stop all async operations and release resources.
-         */
-        dispose(): void;
         protected _createTexture(data: any, internalTexture: InternalTexture, options?: any): void;
         /**
          * Checks if the given data starts with a KTX2 file identifier.
@@ -72450,7 +72502,15 @@ declare module BABYLON {
          * @see textureMode
          */
         set videoMode(value: number);
+        private _pointerObserver;
+        private _textureObserver;
         protected _initTexture(urlsOrElement: string | string[] | HTMLVideoElement, scene: Scene, options: any): VideoTexture;
+        /**
+         * Releases resources associated with this node.
+         * @param doNotRecurse Set to true to not recurse into each children (recurse into each children by default)
+         * @param disposeMaterialAndTextures Set to true to also dispose referenced materials and textures (false by default)
+         */
+        dispose(doNotRecurse?: boolean, disposeMaterialAndTextures?: boolean): void;
     }
 }
 declare module BABYLON {
@@ -79775,6 +79835,11 @@ declare module BABYLON {
          * Gets the output component
          */
         get output(): NodeMaterialConnectionPoint;
+        /**
+         * Gets or sets the target of the block
+         */
+        get target(): NodeMaterialBlockTargets;
+        set target(value: NodeMaterialBlockTargets);
         protected _buildBlock(state: NodeMaterialBuildState): this;
     }
 }
@@ -82685,7 +82750,7 @@ declare module BABYLON {
         /**
          * Creates a PCS (Points Cloud System) object
          * @param name (String) is the PCS name, this will be the underlying mesh name
-         * @param pointSize (number) is the size for each point
+         * @param pointSize (number) is the size for each point. Has no effect on a WebGPU engine.
          * @param scene (Scene) is the scene in which the PCS is added
          * @param options defines the options of the PCS e.g.
          * * updatable (optional boolean, default true) : if the PCS must be updatable or immutable
@@ -85121,7 +85186,7 @@ declare module BABYLON {
          * {
          *      chromatic_aberration: number;       // from 0 to x (1 for realism)
          *      edge_blur: number;                  // from 0 to x (1 for realism)
-         *      distortion: number;                 // from 0 to x (1 for realism)
+         *      distortion: number;                 // from 0 to x (1 for realism), note that this will effect the pointer position precision
          *      grain_amount: number;               // from 0 to 1
          *      grain_texture: BABYLON.Texture;     // texture to use for grain effect; if unset, use random B&W noise
          *      dof_focus_distance: number;         // depth-of-field: focus distance; unset to disable (disabled by default)
@@ -88910,7 +88975,7 @@ declare module BABYLON {
          * @param engine Defines the BabylonJS Engine you wish to record.
          * @param options Defines options that can be used to customize the capture.
          */
-        constructor(engine: Engine, options?: Nullable<VideoRecorderOptions>);
+        constructor(engine: Engine, options?: Partial<VideoRecorderOptions>);
         /**
          * Stops the current recording before the default capture timeout passed in the startRecording function.
          */
@@ -90411,6 +90476,7 @@ declare module BABYLON {
          * The image was found and its state was updated.
          */
         onTrackedImageUpdatedObservable: Observable<IWebXRTrackedImage>;
+        private _trackableScoresReceived;
         private _trackedImages;
         private _originalTrackingRequest;
         /**
@@ -90459,7 +90525,7 @@ declare module BABYLON {
          */
         getXRSessionInitExtension(): Promise<Partial<XRSessionInit>>;
         protected _onXRFrame(_xrFrame: XRFrame): void;
-        private _init;
+        private _checkScores;
     }
 }
 declare module BABYLON {
@@ -91306,6 +91372,7 @@ declare module BABYLON {
         readonly fillJointRadii: any;
         readonly getLightEstimate: () => never;
         get featurePointCloud(): number[] | undefined;
+        readonly getImageTrackingResults: any;
     }
 }
 declare module BABYLON {
@@ -91396,6 +91463,11 @@ interface HTMLCanvasElement {
 
 interface CanvasRenderingContext2D {
     msImageSmoothingEnabled: boolean;
+}
+
+// Babylon Extension to enable UIEvents to work with our IUIEvents
+interface UIEvent {
+    inputIndex: number;
 }
 
 interface MouseEvent {

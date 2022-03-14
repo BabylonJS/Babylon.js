@@ -1,7 +1,7 @@
 import { InternalTexture } from "../Materials/Textures/internalTexture";
 import { ThinEngine } from "../Engines/thinEngine";
 import { Constants } from '../Engines/constants';
-import { WorkerPool } from './workerPool';
+import { AutoReleaseWorkerPool } from './workerPool';
 import { Tools } from "./tools";
 import { Nullable } from "../types";
 
@@ -11,10 +11,8 @@ declare var KTX2DECODER: any;
  * Class for loading KTX2 files
  */
 export class KhronosTextureContainer2 {
-    private static _WorkerPoolPromise?: Promise<WorkerPool>;
-    private static _NoWorkerPromise?: Promise<void>;
-    private static _Initialized: boolean;
-    private static _Ktx2Decoder: any; // used when no worker pool is used
+    private static _WorkerPoolPromise?: Promise<AutoReleaseWorkerPool>;
+    private static _DecoderModulePromise?: Promise<any>;
 
     /**
      * URLs to use when loading the KTX2 decoder module as well as its dependencies
@@ -67,48 +65,43 @@ export class KhronosTextureContainer2 {
 
     private _engine: ThinEngine;
 
-    private static _CreateWorkerPool(numWorkers: number) {
-        this._Initialized = true;
+    private static _Initialize(numWorkers: number) {
+        if (KhronosTextureContainer2._WorkerPoolPromise || KhronosTextureContainer2._DecoderModulePromise) {
+            return;
+        }
 
         if (numWorkers && typeof Worker === "function") {
             KhronosTextureContainer2._WorkerPoolPromise = new Promise((resolve) => {
                 const workerContent = `(${workerFunc})()`;
                 const workerBlobUrl = URL.createObjectURL(new Blob([workerContent], { type: "application/javascript" }));
-                const workerPromises = new Array<Promise<Worker>>(numWorkers);
-                for (let i = 0; i < workerPromises.length; i++) {
-                    workerPromises[i] = new Promise((resolve, reject) => {
-                        const worker = new Worker(workerBlobUrl);
+                resolve(new AutoReleaseWorkerPool(numWorkers, () => new Promise((resolve, reject) => {
+                    const worker = new Worker(workerBlobUrl);
 
-                        const onError = (error: ErrorEvent) => {
+                    const onError = (error: ErrorEvent) => {
+                        worker.removeEventListener("error", onError);
+                        worker.removeEventListener("message", onMessage);
+                        reject(error);
+                    };
+
+                    const onMessage = (message: MessageEvent) => {
+                        if (message.data.action === "init") {
                             worker.removeEventListener("error", onError);
                             worker.removeEventListener("message", onMessage);
-                            reject(error);
-                        };
+                            resolve(worker);
+                        }
+                    };
 
-                        const onMessage = (message: MessageEvent) => {
-                            if (message.data.action === "init") {
-                                worker.removeEventListener("error", onError);
-                                worker.removeEventListener("message", onMessage);
-                                resolve(worker);
-                            }
-                        };
+                    worker.addEventListener("error", onError);
+                    worker.addEventListener("message", onMessage);
 
-                        worker.addEventListener("error", onError);
-                        worker.addEventListener("message", onMessage);
-
-                        worker.postMessage({
-                            action: "init",
-                            urls: KhronosTextureContainer2.URLConfig
-                        });
+                    worker.postMessage({
+                        action: "init",
+                        urls: KhronosTextureContainer2.URLConfig
                     });
-                }
-
-                Promise.all(workerPromises).then((workers) => {
-                    resolve(new WorkerPool(workers));
-                });
+                })));
             });
         } else if (typeof(KTX2DECODER) === "undefined") {
-            KhronosTextureContainer2._NoWorkerPromise = Tools.LoadScriptAsync(KhronosTextureContainer2.URLConfig.jsDecoderModule).then(() => {
+            KhronosTextureContainer2._DecoderModulePromise = Tools.LoadScriptAsync(KhronosTextureContainer2.URLConfig.jsDecoderModule).then(() => {
                 KTX2DECODER.MSCTranscoder.UseFromWorkerThread = false;
                 KTX2DECODER.WASMMemoryManager.LoadBinariesFromCurrentThread = true;
 
@@ -134,10 +127,13 @@ export class KhronosTextureContainer2 {
                 if (urls.wasmZSTDDecoder !== null) {
                     KTX2DECODER.ZSTDDecoder.WasmModuleURL = urls.wasmZSTDDecoder;
                 }
+
+                return new KTX2DECODER.KTX2Decoder();
             });
         } else {
             KTX2DECODER.MSCTranscoder.UseFromWorkerThread = false;
             KTX2DECODER.WASMMemoryManager.LoadBinariesFromCurrentThread = true;
+            KhronosTextureContainer2._DecoderModulePromise = Promise.resolve(new KTX2DECODER.KTX2Decoder());
         }
     }
 
@@ -149,9 +145,7 @@ export class KhronosTextureContainer2 {
     public constructor(engine: ThinEngine, numWorkers = KhronosTextureContainer2.DefaultNumWorkers) {
         this._engine = engine;
 
-        if (!KhronosTextureContainer2._Initialized) {
-            KhronosTextureContainer2._CreateWorkerPool(numWorkers);
-        }
+        KhronosTextureContainer2._Initialize(numWorkers);
     }
 
     /** @hidden */
@@ -206,15 +200,10 @@ export class KhronosTextureContainer2 {
                     });
                 });
             });
-        }
-        else if (KhronosTextureContainer2._NoWorkerPromise) {
-            return KhronosTextureContainer2._NoWorkerPromise.then(() => {
+        } else if (KhronosTextureContainer2._DecoderModulePromise) {
+            return KhronosTextureContainer2._DecoderModulePromise.then((decoder) => {
                 return new Promise((resolve, reject) => {
-                    if (!KhronosTextureContainer2._Ktx2Decoder) {
-                        KhronosTextureContainer2._Ktx2Decoder = new KTX2DECODER.KTX2Decoder();
-                    }
-
-                    KhronosTextureContainer2._Ktx2Decoder.decode(data, caps).then((data: any) => {
+                    decoder.decode(data, caps).then((data: any) => {
                         this._createTexture(data, internalTexture);
                         resolve();
                     }).catch((reason: any) => {
@@ -224,32 +213,7 @@ export class KhronosTextureContainer2 {
             });
         }
 
-        return new Promise((resolve, reject) => {
-            if (!KhronosTextureContainer2._Ktx2Decoder) {
-                KhronosTextureContainer2._Ktx2Decoder = new KTX2DECODER.KTX2Decoder();
-            }
-
-            KhronosTextureContainer2._Ktx2Decoder.decode(data, caps).then((data: any) => {
-                this._createTexture(data, internalTexture);
-                resolve();
-            }).catch((reason: any) => {
-                reject({ message: reason });
-            });
-        });
-    }
-
-    /**
-     * Stop all async operations and release resources.
-     */
-    public dispose(): void {
-        if (KhronosTextureContainer2._WorkerPoolPromise) {
-            KhronosTextureContainer2._WorkerPoolPromise.then((workerPool) => {
-                workerPool.dispose();
-            });
-        }
-
-        delete KhronosTextureContainer2._WorkerPoolPromise;
-        delete KhronosTextureContainer2._NoWorkerPromise;
+        throw new Error("KTX2 decoder module is not available");
     }
 
     protected _createTexture(data: any /* IEncodedData */, internalTexture: InternalTexture, options?: any) {
@@ -326,8 +290,6 @@ export class KhronosTextureContainer2 {
 
 declare function importScripts(...urls: string[]): void;
 declare function postMessage(message: any, transfer?: any[]): void;
-
-declare var KTX2DECODER: any;
 
 function workerFunc(): void {
     let ktx2Decoder: any;

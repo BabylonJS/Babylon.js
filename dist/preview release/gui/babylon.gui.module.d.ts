@@ -755,9 +755,11 @@ declare module "babylonjs-gui/2D/advancedDynamicTexture" {
          * @param supportPointerMove defines a boolean indicating if the texture must capture move events (true by default)
          * @param onlyAlphaTesting defines a boolean indicating that alpha blending will not be used (only alpha testing) (false by default)
          * @param invertY defines if the texture needs to be inverted on the y axis during loading (true by default)
+         * @param materialSetupCallback defines a custom way of creating and seting up the material on the mesh
          * @returns a new AdvancedDynamicTexture
          */
-        static CreateForMesh(mesh: AbstractMesh, width?: number, height?: number, supportPointerMove?: boolean, onlyAlphaTesting?: boolean, invertY?: boolean): AdvancedDynamicTexture;
+        static CreateForMesh(mesh: AbstractMesh, width?: number, height?: number, supportPointerMove?: boolean, onlyAlphaTesting?: boolean, invertY?: boolean, materialSetupCallback?: (mesh: AbstractMesh, uniqueId: string, texture: AdvancedDynamicTexture, onlyAlphaTesting: boolean) => void): AdvancedDynamicTexture;
+        private static _CreateMaterial;
         /**
          * Creates a new AdvancedDynamicTexture in projected mode (ie. attached to a mesh) BUT do not create a new material for the mesh. You will be responsible for connecting the texture
          * @param mesh defines the mesh which will receive the texture
@@ -6965,6 +6967,7 @@ declare module "babylonjs-gui/3D/controls/slider3D" {
         private _maximum;
         private _value;
         private _step;
+        private _draggedPosition;
         /** Observable raised when the sldier value changes */
         onValueChangedObservable: Observable<number>;
         /**
@@ -7937,9 +7940,11 @@ declare module BABYLON.GUI {
          * @param supportPointerMove defines a boolean indicating if the texture must capture move events (true by default)
          * @param onlyAlphaTesting defines a boolean indicating that alpha blending will not be used (only alpha testing) (false by default)
          * @param invertY defines if the texture needs to be inverted on the y axis during loading (true by default)
+         * @param materialSetupCallback defines a custom way of creating and seting up the material on the mesh
          * @returns a new AdvancedDynamicTexture
          */
-        static CreateForMesh(mesh: BABYLON.AbstractMesh, width?: number, height?: number, supportPointerMove?: boolean, onlyAlphaTesting?: boolean, invertY?: boolean): AdvancedDynamicTexture;
+        static CreateForMesh(mesh: BABYLON.AbstractMesh, width?: number, height?: number, supportPointerMove?: boolean, onlyAlphaTesting?: boolean, invertY?: boolean, materialSetupCallback?: (mesh: BABYLON.AbstractMesh, uniqueId: string, texture: AdvancedDynamicTexture, onlyAlphaTesting: boolean) => void): AdvancedDynamicTexture;
+        private static _CreateMaterial;
         /**
          * Creates a new AdvancedDynamicTexture in projected mode (ie. attached to a mesh) BUT do not create a new material for the mesh. You will be responsible for connecting the texture
          * @param mesh defines the mesh which will receive the texture
@@ -13713,6 +13718,7 @@ declare module BABYLON.GUI {
         private _maximum;
         private _value;
         private _step;
+        private _draggedPosition;
         /** BABYLON.Observable raised when the sldier value changes */
         onValueChangedObservable: BABYLON.Observable<number>;
         /**

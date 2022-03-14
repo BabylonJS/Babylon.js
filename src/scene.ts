@@ -2123,6 +2123,11 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param projectionR defines the right Projection matrix to use (if provided)
      */
     public setTransformMatrix(viewL: Matrix, projectionL: Matrix, viewR?: Matrix, projectionR?: Matrix): void {
+        // clear the multiviewSceneUbo if no viewR and projectionR are defined
+        if (!viewR && !projectionR && this._multiviewSceneUbo) {
+            this._multiviewSceneUbo.dispose();
+            this._multiviewSceneUbo = null;
+        }
         if (this._viewUpdateFlag === viewL.updateFlag && this._projectionUpdateFlag === projectionL.updateFlag) {
             return;
         }
@@ -3836,6 +3841,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         if (this._skeletonsEnabled && mesh.skeleton !== null && mesh.skeleton !== undefined) {
             if (this._activeSkeletons.pushNoDuplicate(mesh.skeleton)) {
                 mesh.skeleton.prepare();
+                this._activeBones.addCount(mesh.skeleton.bones.length, false);
             }
 
             if (!mesh.computeBonesUsingShaders) {
@@ -3936,7 +3942,17 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         this._renderId++;
 
         if (!this.prePass && bindFrameBuffer) {
+            let skipInitialClear = true;
+            if (camera._renderingMultiview && camera.outputRenderTarget) {
+                skipInitialClear = camera.outputRenderTarget.skipInitialClear;
+                if (this.autoClear) {
+                    camera.outputRenderTarget.skipInitialClear = false;
+                }
+            }
             this._bindFrameBuffer(this._activeCamera);
+            if (camera._renderingMultiview && camera.outputRenderTarget) {
+                camera.outputRenderTarget.skipInitialClear = skipInitialClear;
+            }
         }
 
         this.updateTransformMatrix();
@@ -4491,6 +4507,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         for (let request of this._activeRequests) {
             request.abort();
         }
+        this._activeRequests = [];
 
         // Events
         this.onDisposeObservable.notifyObservers(this);

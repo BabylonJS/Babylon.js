@@ -1,10 +1,11 @@
-import { GraphCanvasComponent, FramePortData } from './graphCanvas';
+import { GraphCanvasComponent } from './graphCanvas';
 import { GraphNode } from './graphNode';
 import { NodePort } from './nodePort';
 import { Nullable } from 'babylonjs/types';
 import { Observer, Observable } from 'babylonjs/Misc/observable';
-import { GraphFrame } from './graphFrame';
 import { FrameNodePort } from './frameNodePort';
+import { ISelectionChangedOptions } from '../globalState';
+import { ElbowBlock } from 'babylonjs/Materials/Node/Blocks/elbowBlock';
 
 export class NodeLink {
     private _graphCanvas: GraphCanvasComponent;
@@ -14,7 +15,7 @@ export class NodeLink {
     private _nodeB?: GraphNode;
     private _path: SVGPathElement;
     private _selectionPath: SVGPathElement;
-    private _onSelectionChangedObserver: Nullable<Observer<Nullable<GraphFrame | GraphNode | NodeLink | NodePort | FramePortData>>>;
+    private _onSelectionChangedObserver: Nullable<Observer<Nullable<ISelectionChangedOptions>>>;
     private _isVisible = true;
 
     public onDisposedObservable = new Observable<NodeLink>();
@@ -106,14 +107,15 @@ export class NodeLink {
 
         svg.appendChild(this._selectionPath);
 
-        this._selectionPath.onmousedown = () => this.onClick();
+        this._selectionPath.onmousedown = (evt: MouseEvent) => this.onClick(evt);
 
         if (this._portB) {
             // Update
             this.update();
         }
 
-        this._onSelectionChangedObserver = this._graphCanvas.globalState.onSelectionChangedObservable.add((selection) => {
+        this._onSelectionChangedObserver = this._graphCanvas.globalState.onSelectionChangedObservable.add((options) => {
+            const {selection} = options || {};
             if (selection === this) {
                 this._path.classList.add("selected");
                 this._selectionPath.classList.add("selected");
@@ -124,8 +126,36 @@ export class NodeLink {
         });
     }
 
-    onClick() {
-        this._graphCanvas.globalState.onSelectionChangedObservable.notifyObservers(this);
+    onClick(evt: MouseEvent) {
+        if (evt.altKey) {
+            // Create an elbow at the clicked location
+            this._graphCanvas.globalState.onNewNodeCreatedObservable.addOnce((newNode) => {
+                const newElbowBlock = newNode.block as ElbowBlock;
+                const nodeA = this._nodeA;
+                const pointA = this._portA.connectionPoint;
+                const nodeB = this._nodeB!;
+                const pointB = this._portB!.connectionPoint;
+
+                // Delete previous link
+                this.dispose();
+
+                // Connect to Elbow block
+                this._graphCanvas.connectNodes(nodeA, pointA, newNode, newElbowBlock.input);
+                this._graphCanvas.connectNodes(newNode, newElbowBlock.output, nodeB, pointB);
+
+                this._graphCanvas.globalState.onRebuildRequiredObservable.notifyObservers(true);
+            });
+
+            this._graphCanvas.globalState.onNewBlockRequiredObservable.notifyObservers({
+                type: "ElbowBlock",
+                targetX: evt.clientX,
+                targetY: evt.clientY,
+                needRepositioning: true
+            });
+            return;
+        }
+
+        this._graphCanvas.globalState.onSelectionChangedObservable.notifyObservers({selection: this});
     }
 
     public dispose(notify = true) {

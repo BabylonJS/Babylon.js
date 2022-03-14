@@ -94,6 +94,7 @@ export interface ViewerConfiguration {
     environmentMap?: IEnvironmentMapConfiguration;
 
     vr?: IVRConfiguration;
+    "3dCommerceCertified"?: boolean;
 
     // features that are being tested.
     // those features' syntax will change and move out!

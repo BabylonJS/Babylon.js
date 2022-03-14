@@ -38,6 +38,11 @@ export interface IImage {
     onload: ((this: GlobalEventHandlers, ev: Event) => any) | null;
 
     /**
+     * Error callback.
+     */
+    onerror: ((this: GlobalEventHandlers, ev: Event) => any) | null;
+
+    /**
      * Image source.
      */
     src: string;
