@@ -130,7 +130,7 @@ export class RenderingManager {
         for (let index = RenderingManager.MIN_RENDERINGGROUPS; index < RenderingManager.MAX_RENDERINGGROUPS; index++) {
             this._depthStencilBufferAlreadyCleaned = index === RenderingManager.MIN_RENDERINGGROUPS;
             var renderingGroup = this._renderingGroups[index];
-            if (!renderingGroup) {
+            if (!renderingGroup || renderingGroup._empty) {
                 continue;
             }
 
