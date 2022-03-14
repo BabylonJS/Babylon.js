@@ -36,6 +36,9 @@ export class RenderingGroup {
     private _renderTransparent: (subMeshes: SmartArray<SubMesh>) => void;
 
     /** @hidden */
+    public _empty = true;
+
+    /** @hidden */
     public _edgesRenderers = new SmartArrayNoDuplicate<IEdgesRenderer>(16);
 
     public onBeforeTransparentRendering: () => void;
@@ -327,6 +330,7 @@ export class RenderingGroup {
         this._particleSystems.reset();
         this._spriteManagers.reset();
         this._edgesRenderers.reset();
+        this._empty = true;
     }
 
     public dispose(): void {
@@ -379,14 +383,18 @@ export class RenderingGroup {
         if (mesh._edgesRenderer && mesh._edgesRenderer.isEnabled) {
             this._edgesRenderers.pushNoDuplicate(mesh._edgesRenderer);
         }
+
+        this._empty = false;
     }
 
     public dispatchSprites(spriteManager: ISpriteManager) {
         this._spriteManagers.push(spriteManager);
+        this._empty = false;
     }
 
     public dispatchParticles(particleSystem: IParticleSystem) {
         this._particleSystems.push(particleSystem);
+        this._empty = false;
     }
 
     private _renderParticles(activeMeshes: Nullable<AbstractMesh[]>): void {

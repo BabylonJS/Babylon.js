@@ -493,15 +493,18 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
      *  Detaches the behavior from the mesh
      */
     public detach(): void {
-        this.attachedNode.isNearGrabbable = false;
-
+        if (this.attachedNode) {
+            this.attachedNode.isNearGrabbable = false;
+        }
         if (this._pointerObserver) {
             this._scene.onPointerObservable.remove(this._pointerObserver);
         }
         if (this._beforeRenderObserver) {
             this._scene.onBeforeRenderObservable.remove(this._beforeRenderObserver);
         }
-        this._dragPlane.dispose();
+        if (this._dragPlane) {
+            this._dragPlane.dispose();
+        }
         this.releaseDrag();
     }
 }

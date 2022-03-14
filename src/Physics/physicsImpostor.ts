@@ -427,7 +427,7 @@ export class PhysicsImpostor {
     /**
      * Initializes the physics imposter
      * @param object The physics-enabled object used as the physics imposter
-     * @param type The type of the physics imposter
+     * @param type The type of the physics imposter. Types are available as static members of this class.
      * @param _options The options for the physics imposter
      * @param _scene The Babylon scene
      */
@@ -1250,7 +1250,7 @@ export class PhysicsImpostor {
      */
     public static PlaneImpostor = 3;
     /**
-     * Mesh-imposter type
+     * Mesh-imposter type (Only available to objects with vertices data)
      */
     public static MeshImpostor = 4;
     /**
