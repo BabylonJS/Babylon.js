@@ -239,7 +239,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
     public loadAllMaterials = false;
 
     /**
-     * If true, load only all the materials defined in the file. Defaults to false.
+     * If true, load only the materials defined in the file. Defaults to false.
      */
     public loadOnlyMaterials = false;
 
