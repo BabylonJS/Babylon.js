@@ -303,15 +303,17 @@ export class GLTFLoader implements IGLTFLoader {
             const oldBlockMaterialDirtyMechanism = this._babylonScene.blockMaterialDirtyMechanism;
             this._babylonScene.blockMaterialDirtyMechanism = true;
 
-            if (nodes) {
-                promises.push(this.loadSceneAsync("/nodes", { nodes: nodes, index: -1 }));
-            }
-            else if (this._gltf.scene != undefined || (this._gltf.scenes && this._gltf.scenes[0])) {
-                const scene = ArrayItem.Get(`/scene`, this._gltf.scenes, this._gltf.scene || 0);
-                promises.push(this.loadSceneAsync(`/scenes/${scene.index}`, scene));
+            if (!this.parent.loadOnlyMaterials) {
+                if (nodes) {
+                    promises.push(this.loadSceneAsync("/nodes", { nodes: nodes, index: -1 }));
+                }
+                else if (this._gltf.scene != undefined || (this._gltf.scenes && this._gltf.scenes[0])) {
+                    const scene = ArrayItem.Get(`/scene`, this._gltf.scenes, this._gltf.scene || 0);
+                    promises.push(this.loadSceneAsync(`/scenes/${scene.index}`, scene));
+                }
             }
 
-            if (this.parent.loadAllMaterials && this._gltf.materials) {
+            if (!this.parent.skipMaterials && this.parent.loadAllMaterials && this._gltf.materials) {
                 for (let m = 0; m < this._gltf.materials.length; ++m) {
                     const material = this._gltf.materials[m];
                     const context = "/materials/" + m;
@@ -866,7 +868,7 @@ export class GLTFLoader implements IGLTFLoader {
                 }
                 babylonMesh.material = babylonMaterial;
             }
-            else {
+            else if (!this.parent.skipMaterials) {
                 const material = ArrayItem.Get(`${context}/material`, this._gltf.materials, primitive.material);
                 promises.push(this._loadMaterialAsync(`/materials/${material.index}`, material, babylonMesh, babylonDrawMode, (babylonMaterial) => {
                     babylonMesh.material = babylonMaterial;
