@@ -207,6 +207,7 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
         state._emitExtension("derivatives", "#extension GL_OES_standard_derivatives : enable");
 
         let tangentReplaceString = { search: /defined\(TANGENT\)/g, replace: worldTangent.isConnected ? "defined(TANGENT)" : "defined(IGNORE)" };
+        let tbnVarying = { search: /varying mat3 vTBN/g, replace: "" };
 
         if (worldTangent.isConnected) {
             state.compilationString += `vec3 tbnNormal = normalize(${worldNormal.associatedVariableName}.xyz);\r\n`;
@@ -218,6 +219,7 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
         state._emitFunctionFromInclude("bumpFragmentMainFunctions", comments, {
             replaceStrings: [
                 tangentReplaceString,
+                tbnVarying
             ]
         });
 
