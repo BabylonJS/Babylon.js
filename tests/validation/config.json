@@ -35,7 +35,7 @@
         },
         {
             "title": "Particle subemitters",
-            "playgroundId": "#1LK70I#20",
+            "playgroundId": "#1LK70I#21",
             "renderCount": 50,
             "referenceImage": "subemitters.png"
         },
@@ -163,7 +163,7 @@
         {
             "title": "GUI Near Menu",
             "renderCount": 60,
-            "playgroundId":"#2YZFA0#302",
+            "playgroundId": "#2YZFA0#302",
             "referenceImage": "guiNearMenu.png",
             "excludedEngines": ["webgl1"]
         },
@@ -388,7 +388,7 @@
         {
             "title": "Capsule",
             "renderCount": 10,
-            "playgroundId": "#JAFIIU#2",
+            "playgroundId": "#JAFIIU#4",
             "referenceImage": "CreateCapsule.png"
         },
         {
@@ -1056,7 +1056,7 @@
         },
         {
             "title": "Glow layer and LODs",
-            "playgroundId": "#UNS6ZV#2",
+            "playgroundId": "#UNS6ZV#4",
             "referenceImage": "glowlayerandlods.png"
         },
         {
