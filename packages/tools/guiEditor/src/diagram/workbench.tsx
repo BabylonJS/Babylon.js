@@ -205,10 +205,81 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         });
 
         globalState.onFitToWindowObservable.add(() => {
-            this._panningOffset = new Vector2(0, 0);
-            const xFactor = this._engine.getRenderWidth() / this.guiSize.width;
-            const yFactor = this._engine.getRenderHeight() / this.guiSize.height;
-            this._zoomFactor = Math.min(xFactor, yFactor) * 0.9;
+            if (globalState.selectedControls.length) {
+                let minX = Number.MAX_SAFE_INTEGER;
+                let minY = Number.MAX_SAFE_INTEGER;
+                
+                let maxX = -Number.MAX_SAFE_INTEGER;
+                let maxY = -Number.MAX_SAFE_INTEGER;
+
+                // Find bounding box of selected controls
+                for (let selectedControl of globalState.selectedControls) {
+                    let left : number, top : number, right : number, bottom : number;
+
+                    // TODO Should consider the entire canvas space
+                    switch (selectedControl.horizontalAlignment) {
+                        case Control.HORIZONTAL_ALIGNMENT_LEFT:
+                            left = selectedControl.leftInPixels;
+                            break;
+                        case Control.HORIZONTAL_ALIGNMENT_CENTER:
+                            left = selectedControl.leftInPixels - selectedControl.widthInPixels / 2;
+                            break;
+                        case Control.HORIZONTAL_ALIGNMENT_RIGHT:
+                            left = selectedControl.leftInPixels - selectedControl.widthInPixels;
+                            break;
+                        default:
+                            left = selectedControl.leftInPixels;
+                            break;
+                    }
+                    
+                    switch(selectedControl.verticalAlignment) {
+                        case Control.VERTICAL_ALIGNMENT_TOP:
+                            top = selectedControl.topInPixels;                         
+                            break;
+                        case Control.VERTICAL_ALIGNMENT_CENTER:
+                            top = selectedControl.topInPixels - selectedControl.heightInPixels / 2;
+                            break;
+                        case Control.VERTICAL_ALIGNMENT_BOTTOM:
+                            top = selectedControl.topInPixels - selectedControl.heightInPixels;
+                            break;
+                        default:
+                            top = selectedControl.topInPixels;
+                            break;
+                    }
+
+                    right = left! + selectedControl.widthInPixels;
+                    bottom = top! + selectedControl.heightInPixels;
+
+                    minX = Math.min(minX, left);
+                    minY = Math.min(minY, top);
+
+                    maxX = Math.max(maxX, right);
+                    maxY = Math.max(maxY, bottom);
+                }
+                console.log('minX', minX, 'minY', minY, 'maxX', maxX, 'maxY', maxY);
+                
+                // Find width and height of bounding box
+                const width = maxX - minX;
+                const height = maxY - minY;
+                console.log('width', width, 'height', height);
+
+                // Calculate the offset on the center of the bounding box
+                const centerX = (minX + maxX) / 2;
+                const centerY = (minY + maxY) / 2;
+                console.log('centerX', centerX, 'centerY', centerY);
+                this._panningOffset = new Vector2(-centerX, -centerY);
+
+                // Calculate the zoom factors based on width and height
+                const xFactor = this._engine.getRenderWidth() / width;
+                const yFactor = this._engine.getRenderHeight() / height;
+                this._zoomFactor = Math.min(xFactor, yFactor) * 0.9;
+
+            } else {
+                this._panningOffset = new Vector2(0, 0);
+                const xFactor = this._engine.getRenderWidth() / this.guiSize.width;
+                const yFactor = this._engine.getRenderHeight() / this.guiSize.height;
+                this._zoomFactor = Math.min(xFactor, yFactor) * 0.9;
+            }
         });
 
         globalState.onOutlineChangedObservable.add(() => {
