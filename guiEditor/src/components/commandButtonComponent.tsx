@@ -32,7 +32,7 @@ export class CommandButtonComponent extends React.Component<ICommandButtonCompon
         return (
             <div className={divClassName} onClick={this.props.onClick} title={`${this.props.tooltip} ${this.props.shortcut ? " (" + this.props.shortcut + ")" : ""}`}>
                 <div className={iconClassName}>
-                    <img src={this.props.icon} title={this.props.iconLabel} alt={this.props.iconLabel} className={this.props.isActive ? "active" : ""}/>
+                    <img src={this.props.icon} title={this.props.iconLabel} alt={this.props.iconLabel} className={this.props.isActive ? "active" : ""} draggable={false}/>
                 </div>
                 <div className="command-label">
                     {this.props.tooltip}
