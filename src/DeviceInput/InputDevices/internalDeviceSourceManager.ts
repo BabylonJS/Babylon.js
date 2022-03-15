@@ -45,14 +45,7 @@ export class InternalDeviceSourceManager implements IDisposable {
         const numberOfDeviceTypes = Object.keys(DeviceType).length / 2;
         this._devices = new Array<Array<number>>(numberOfDeviceTypes);
 
-        if (typeof _native !== 'undefined') {
-            this._deviceInputSystem = (_native.DeviceInputSystem) ? new NativeDeviceInputSystem(new _native.DeviceInputSystem()) : new NativeDeviceInputSystem();
-        }
-        else {
-            this._deviceInputSystem = new WebDeviceInputSystem(engine);
-        }
-
-        this._deviceInputSystem.onDeviceConnected = (deviceType, deviceSlot) => {
+        const onDeviceConnected = (deviceType: DeviceType, deviceSlot: number) => {
             if (!this._devices[deviceType]) {
                 this._devices[deviceType] = new Array<number>();
             }
@@ -66,7 +59,7 @@ export class InternalDeviceSourceManager implements IDisposable {
             }
         };
 
-        this._deviceInputSystem.onDeviceDisconnected = (deviceType, deviceSlot) => {
+        const onDeviceDisconnected = (deviceType: DeviceType, deviceSlot: number) => {
             if (this._devices[deviceType]?.[deviceSlot]) {
                 delete this._devices[deviceType][deviceSlot];
             }
@@ -75,13 +68,20 @@ export class InternalDeviceSourceManager implements IDisposable {
             }
         };
 
-        this._deviceInputSystem.onInputChanged = (deviceType: DeviceType, deviceSlot: number, eventData: IUIEvent) => {
+        const onInputChanged = (deviceType: DeviceType, deviceSlot: number, eventData: IUIEvent) => {
             if (eventData) {
                 for (const manager of this._registeredManagers) {
                     manager._onInputChanged(deviceType, deviceSlot, eventData);
                 }
             }
         };
+
+        if (typeof _native !== 'undefined') {
+            this._deviceInputSystem = new NativeDeviceInputSystem(onDeviceConnected, onDeviceDisconnected, onInputChanged);
+        }
+        else {
+            this._deviceInputSystem = new WebDeviceInputSystem(engine, onDeviceConnected, onDeviceDisconnected, onInputChanged);
+        }
     }
 
     // Public Functions
