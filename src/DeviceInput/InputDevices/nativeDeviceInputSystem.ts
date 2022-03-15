@@ -3,7 +3,6 @@ import { IUIEvent } from "../../Events/deviceInputEvents";
 import { Nullable } from "../../types";
 import { DeviceEventFactory } from "../Helpers/eventFactory";
 import { DeviceType, NativePointerInput, PointerInput } from "./deviceEnums";
-import { DeviceStatusChangedCallback } from "./deviceTypes";
 import { IDeviceInputSystem, INativeInput } from "./inputInterfaces";
 
 declare const _native: INative;
@@ -12,7 +11,7 @@ declare const _native: INative;
 export class NativeDeviceInputSystem implements IDeviceInputSystem {
     private readonly _nativeInput: INativeInput;
 
-    public constructor(onDeviceConnected: DeviceStatusChangedCallback, onDeviceDisconnected: DeviceStatusChangedCallback, onInputChanged: (deviceType: DeviceType, deviceSlot: number, eventData: IUIEvent) => void) {
+    public constructor(onDeviceConnected: (deviceType: DeviceType, deviceSlot: number) => void, onDeviceDisconnected: (deviceType: DeviceType, deviceSlot: number) => void, onInputChanged: (deviceType: DeviceType, deviceSlot: number, eventData: IUIEvent) => void) {
         this._nativeInput = (_native.DeviceInputSystem) ? new _native.DeviceInputSystem(onDeviceConnected, onDeviceDisconnected, (deviceType, deviceSlot, inputIndex, currentState) => {
             const idx = (inputIndex === NativePointerInput.Horizontal || inputIndex === NativePointerInput.Vertical || inputIndex === NativePointerInput.DeltaHorizontal || inputIndex === NativePointerInput.DeltaVertical) ? PointerInput.Move : inputIndex;
             const evt = DeviceEventFactory.CreateDeviceEvent(deviceType, deviceSlot, idx, currentState, this);

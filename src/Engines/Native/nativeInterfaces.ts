@@ -1,5 +1,4 @@
 import { DeviceType } from "../../DeviceInput/InputDevices/deviceEnums";
-import { DeviceStatusChangedCallback } from "../../DeviceInput/InputDevices/deviceTypes";
 import { INativeInput } from "../../DeviceInput/InputDevices/inputInterfaces";
 import { InternalTexture } from "../../Materials/Textures/internalTexture";
 import { Nullable } from "../../types";
@@ -218,7 +217,7 @@ interface INativeImageConstructor {
 /** @hidden */
 interface IDeviceInputSystemConstructor {
     prototype: INativeInput;
-    new(onDeviceConnected: DeviceStatusChangedCallback, onDeviceDisconnected: DeviceStatusChangedCallback, onInputChanged: (deviceType: DeviceType, deviceSlot: number, inputIndex: number, currentState: number) => void): INativeInput;
+    new(onDeviceConnected: (deviceType: DeviceType, deviceSlot: number) => void, onDeviceDisconnected: (deviceType: DeviceType, deviceSlot: number) => void, onInputChanged: (deviceType: DeviceType, deviceSlot: number, inputIndex: number, currentState: number) => void): INativeInput;
 }
 
 /** @hidden */
