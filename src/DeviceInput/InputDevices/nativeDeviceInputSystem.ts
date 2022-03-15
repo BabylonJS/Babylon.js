@@ -1,15 +1,14 @@
 import { INative } from "../../Engines/Native/nativeInterfaces";
 import { IUIEvent } from "../../Events/deviceInputEvents";
-import { Nullable } from "../../types";
 import { DeviceEventFactory } from "../Helpers/eventFactory";
 import { DeviceType, NativePointerInput, PointerInput } from "./deviceEnums";
-import { IDeviceInputSystem, INativeInput } from "./inputInterfaces";
+import { IDeviceInputSystem } from "./inputInterfaces";
 
 declare const _native: INative;
 
 /** @hidden */
 export class NativeDeviceInputSystem implements IDeviceInputSystem {
-    private readonly _nativeInput: INativeInput;
+    private readonly _nativeInput: IDeviceInputSystem;
 
     public constructor(onDeviceConnected: (deviceType: DeviceType, deviceSlot: number) => void, onDeviceDisconnected: (deviceType: DeviceType, deviceSlot: number) => void, onInputChanged: (deviceType: DeviceType, deviceSlot: number, eventData: IUIEvent) => void) {
         this._nativeInput = (_native.DeviceInputSystem) ? new _native.DeviceInputSystem(onDeviceConnected, onDeviceDisconnected, (deviceType, deviceSlot, inputIndex, currentState) => {
@@ -55,9 +54,6 @@ export class NativeDeviceInputSystem implements IDeviceInputSystem {
      */
     private _createDummyNativeInput() {
         let nativeInput = {
-            onDeviceConnected: (deviceType: DeviceType, deviceSlot: number) => { },
-            onDeviceDisconnected: (deviceType: DeviceType, deviceSlot: number) => { },
-            onInputChanged: (deviceType: DeviceType, deviceSlot: number, inputIndex: number, currentState: Nullable<number>) => { },
             pollInput: () => { return 0; },
             isDeviceAvailable: () => { return false; },
             dispose: () => { },
