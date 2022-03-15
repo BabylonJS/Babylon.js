@@ -1,4 +1,3 @@
-import { IUIEvent } from "../../Events/deviceInputEvents";
 import { IDisposable } from "../../scene";
 import { Nullable } from "../../types";
 import { DeviceType } from "./deviceEnums";
@@ -43,23 +42,6 @@ export interface INativeInput extends IDisposable {
  * Interface for DeviceInputSystem implementations (JS and Native)
  */
 export interface IDeviceInputSystem extends IDisposable {
-    // Callbacks
-    /**
-     * Callback for when a device is connected
-     */
-    onDeviceConnected: (deviceType: DeviceType, deviceSlot: number) => void;
-
-    /**
-     * Callback for when a device is disconnected
-     */
-    onDeviceDisconnected: (deviceType: DeviceType, deviceSlot: number) => void;
-
-    /**
-     * Callback for when an input is changed
-     */
-    onInputChanged: (deviceType: DeviceType, deviceSlot: number, eventData: IUIEvent) => void;
-
-    // Functions
     /**
      * Checks for current device input value, given an id and input index. Throws exception if requested device not initialized.
      * @param deviceType Enum specifiying device type

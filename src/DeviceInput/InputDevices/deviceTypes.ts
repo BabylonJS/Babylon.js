@@ -11,3 +11,8 @@ export type DeviceInput<T extends DeviceType> =
     T extends DeviceType.Switch ? SwitchInput :
     T extends DeviceType.DualSense ? DualSenseInput :
     never;
+
+    /**
+     * Type to define functions that handle connect/disconnect fo devices
+     */
+export type DeviceStatusChangedCallback = (deviceType: DeviceType, deviceSlot: number) => void;

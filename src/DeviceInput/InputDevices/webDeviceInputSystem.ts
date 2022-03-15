@@ -6,6 +6,7 @@ import { Tools } from "../../Misc/tools";
 import { Nullable } from "../../types";
 import { DeviceEventFactory } from "../Helpers/eventFactory";
 import { DeviceType, PointerInput } from "./deviceEnums";
+import { DeviceStatusChangedCallback } from "./deviceTypes";
 import { IDeviceInputSystem } from "./inputInterfaces";
 
 const MAX_KEYCODES = 255;
@@ -14,27 +15,7 @@ const MAX_POINTER_INPUTS = Object.keys(PointerInput).length / 2;
 /** @hidden */
 export class WebDeviceInputSystem implements IDeviceInputSystem {
     /** onDeviceConnected property */
-    public set onDeviceConnected(callback: (deviceType: DeviceType, deviceSlot: number) => void) {
-        this._onDeviceConnected = callback;
-
-        // Iterate through each active device and rerun new callback
-        for (let deviceType = 0; deviceType < this._inputs.length; deviceType++) {
-            const inputs = this._inputs[deviceType];
-            if (inputs) {
-                for (const deviceSlotKey in inputs) {
-                    const deviceSlot = +deviceSlotKey;
-                    if (this._inputs[deviceType][deviceSlot]) {
-                        this._onDeviceConnected(deviceType, deviceSlot);
-                    }
-                }
-            }
-        }
-    }
-
-    public get onDeviceConnected(): (deviceType: DeviceType, deviceSlot: number) => void {
-        return this._onDeviceConnected;
-    }
-
+    public onDeviceConnected: (deviceType: DeviceType, deviceSlot: number) => void;
     public onDeviceDisconnected: (deviceType: DeviceType, deviceSlot: number) => void;
     public onInputChanged: (deviceType: DeviceType, deviceSlot: number, eventData: IUIEvent) => void;
 
@@ -46,8 +27,6 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
     private _elementToAttachTo: HTMLElement;
     private readonly _engine: Engine;
     private readonly _usingSafari: boolean = Tools.IsSafari();
-
-    private _onDeviceConnected: (deviceType: DeviceType, deviceSlot: number) => void;
 
     private _keyboardDownEvent = (evt: any) => { };
     private _keyboardUpEvent = (evt: any) => { };
@@ -76,13 +55,13 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
 
     private _eventPrefix: string;
 
-    constructor(engine: Engine) {
+    constructor(engine: Engine, onDeviceConnected: DeviceStatusChangedCallback, onDeviceDisconnected: DeviceStatusChangedCallback, onInputChanged: (deviceType: DeviceType, deviceSlot: number, eventData: IUIEvent) => void) {
         this._eventPrefix = Tools.GetPointerPrefix(engine);
         this._engine = engine;
 
-        this.onDeviceConnected = (deviceType: DeviceType, deviceSlot: number) => { };
-        this.onDeviceDisconnected = (deviceType: DeviceType, deviceSlot: number) => { };
-        this.onInputChanged = (deviceType: DeviceType, deviceSlot: number, eventData: IUIEvent) => { };
+        this.onDeviceConnected = onDeviceConnected;
+        this.onDeviceDisconnected = onDeviceDisconnected;
+        this.onInputChanged = onInputChanged;
 
         this._enableEvents();
 
