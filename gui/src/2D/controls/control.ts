@@ -1219,7 +1219,7 @@ export class Control {
      * Mark control element as dirty
      * @param force force non visible elements to be marked too
      */
-    public markAsDirty(force: false): void {
+    public markAsDirty(force = false): void {
         this._markAsDirty(force);
     }
 
