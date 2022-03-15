@@ -19,54 +19,35 @@ export interface IColor3LineComponentProps {
     globalState: GlobalState;
 }
 
-export class Color3LineComponent extends React.Component<IColor3LineComponentProps, { isExpanded: boolean; color: Color3 | Color4 }> {
-    private _localChange = false;
+interface IColor3LineComponentState {
+    isExpanded: boolean;
+}
+
+export class Color3LineComponent extends React.Component<IColor3LineComponentProps, IColor3LineComponentState> {
     constructor(props: IColor3LineComponentProps) {
         super(props);
 
-        this.state = { isExpanded: false, color: this.props.target[this.props.propertyName].clone() };
-    }
-
-    shouldComponentUpdate(nextProps: IColor3LineComponentProps, nextState: { color: Color3 | Color4 }) {
-        const currentState = nextProps.target[nextProps.propertyName];
-
-        if (!currentState.equals(nextState.color) || this._localChange) {
-            nextState.color = currentState.clone();
-            this._localChange = false;
-            return true;
-        }
-        return false;
+        this.state = { isExpanded: false };
     }
 
     onChange(newValue: string) {
-        this._localChange = true;
-        const isColor4 = this.props.target[this.props.propertyName].getClassName() === "Color4";
+        const isColor4 = this.getCurrentColor().getClassName() === "Color4";
         const newColor = isColor4 ? Color4.FromHexString(newValue) : Color3.FromHexString(newValue);
 
-        if (this.props.onPropertyChangedObservable) {
-            this.props.onPropertyChangedObservable.notifyObservers({
-                object: this.props.target,
-                property: this.props.propertyName,
-                value: newColor,
-                initialValue: this.state.color,
-            });
-        }
-
-        this.props.target[this.props.propertyName] = newColor;
-
-        this.setState({ color: newColor });
-
-        if (this.props.onChange) {
-            this.props.onChange();
-        }
+        this.updateColor(newColor);
     }
 
     switchExpandState() {
-        this._localChange = true;
         this.setState({ isExpanded: !this.state.isExpanded });
     }
 
-    raiseOnPropertyChanged(previousValue: Color3 | Color4) {
+    updateColor(newValue: Color3 | Color4) {
+        const previousValue = this.getCurrentColor();
+        if (newValue.equals(previousValue as any)) {
+            return;
+        }
+        this.props.target[this.props.propertyName] = newValue;
+        this.forceUpdate();
         if (this.props.onChange) {
             this.props.onChange();
         }
@@ -77,50 +58,25 @@ export class Color3LineComponent extends React.Component<IColor3LineComponentPro
         this.props.onPropertyChangedObservable.notifyObservers({
             object: this.props.target,
             property: this.props.propertyName,
-            value: this.state.color,
+            value: newValue,
             initialValue: previousValue,
         });
     }
 
-    updateStateR(value: number) {
-        this._localChange = true;
+    modifyColor(modifier: (previous: Color3 | Color4) => void) {
+        const color = this.getCurrentColor();
+        modifier(color);
 
-        const store = this.state.color.clone();
-        this.props.target[this.props.propertyName].x = value;
-        this.state.color.r = value;
-        this.props.target[this.props.propertyName] = this.state.color;
-        this.setState({ color: this.state.color });
-
-        this.raiseOnPropertyChanged(store);
+        this.updateColor(color);
     }
 
-    updateStateG(value: number) {
-        this._localChange = true;
-
-        const store = this.state.color.clone();
-        this.props.target[this.props.propertyName].g = value;
-        this.state.color.g = value;
-        this.props.target[this.props.propertyName] = this.state.color;
-        this.setState({ color: this.state.color });
-
-        this.raiseOnPropertyChanged(store);
-    }
-
-    updateStateB(value: number) {
-        this._localChange = true;
-
-        const store = this.state.color.clone();
-        this.props.target[this.props.propertyName].b = value;
-        this.state.color.b = value;
-        this.props.target[this.props.propertyName] = this.state.color;
-        this.setState({ color: this.state.color });
-
-        this.raiseOnPropertyChanged(store);
+    getCurrentColor(): Color3 | Color4 {
+        return this.props.target[this.props.propertyName].clone();
     }
 
     copyToClipboard() {
         var element = document.createElement("div");
-        element.textContent = this.state.color.toHexString();
+        element.textContent = this.getCurrentColor().toHexString();
         document.body.appendChild(element);
 
         if (window.getSelection) {
@@ -136,6 +92,7 @@ export class Color3LineComponent extends React.Component<IColor3LineComponentPro
 
     render() {
         const expandedIcon = this.state.isExpanded ? minusIcon : plusIcon;
+        const color = this.getCurrentColor();
 
         return (
             <div className="color3Line">
@@ -145,7 +102,7 @@ export class Color3LineComponent extends React.Component<IColor3LineComponentPro
                     </div>
                     <div className="color3">
                         <ColorPickerLineComponent
-                            value={this.state.color}
+                            value={color}
                             globalState={this.props.globalState}
                             onColorChanged={(color) => {
                                 this.onChange(color);
@@ -161,9 +118,9 @@ export class Color3LineComponent extends React.Component<IColor3LineComponentPro
                 </div>
                 {this.state.isExpanded && (
                     <div className="secondLine">
-                        <NumericInputComponent globalState={this.props.globalState} label="r" value={this.state.color.r} onChange={(value) => this.updateStateR(value)} />
-                        <NumericInputComponent globalState={this.props.globalState} label="g" value={this.state.color.g} onChange={(value) => this.updateStateG(value)} />
-                        <NumericInputComponent globalState={this.props.globalState} label="b" value={this.state.color.b} onChange={(value) => this.updateStateB(value)} />
+                        <NumericInputComponent globalState={this.props.globalState} label="r" value={color.r} onChange={(value) => this.modifyColor((col) => col.r = value)} />
+                        <NumericInputComponent globalState={this.props.globalState} label="g" value={color.g} onChange={(value) => this.modifyColor((col) => col.g = value)} />
+                        <NumericInputComponent globalState={this.props.globalState} label="b" value={color.b} onChange={(value) => this.modifyColor((col) => col.b = value)} />
                     </div>
                 )}
             </div>

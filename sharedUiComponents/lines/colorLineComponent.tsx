@@ -29,37 +29,26 @@ export interface IColorLineComponentProps {
 interface IColorLineComponentState {
     isExpanded: boolean;
     color: Color4;
-    colorString: string;
 }
 
 export class ColorLineComponent extends React.Component<IColorLineComponentProps, IColorLineComponentState> {
     constructor(props: IColorLineComponentProps) {
         super(props);
 
-        const colorString = this.getValueAsString();
-        const color = this.getValue();
-        this.state = { isExpanded: false, color, colorString};
-
-        if (props.isLinear) {
-            this.state.color.toGammaSpaceToRef(this.state.color);
-        }
+        this.state = { isExpanded: false, color: this.getValue()};
 
         const target = this.props.target;
         target._isLinearColor = props.isLinear; // so that replayRecorder can append toLinearSpace() as appropriate
     }
 
     shouldComponentUpdate(nextProps: IColorLineComponentProps, nextState: IColorLineComponentState) {
-        const stateString = nextState.colorString;
         const stateColor = nextState.color;
-        const propsString = this.getValueAsString(nextProps);
         const propsColor = this.getValue(nextProps);
-        if (stateString !== this.state.colorString || stateColor !== this.state.color) {
-            nextState.colorString = stateString;
+        if (stateColor !== this.state.color) {
             nextState.color = stateColor;
             return true;
         }
-        if (propsString !== this.state.colorString || propsColor !== this.state.color) {
-            nextState.colorString = propsString;
+        if (propsColor !== this.state.color) {
             nextState.color = propsColor;
             return true;
         }
@@ -79,41 +68,23 @@ export class ColorLineComponent extends React.Component<IColorLineComponentProps
             }
             return this.convertToColor(property);
         } else {
+            if (props.isLinear) {
+                return property.toGammaSpace();
+            }
             return property.clone();
-        }
-    }
- 
-    getValueAsString(props = this.props): string {
-        const target = props.target;
-        const property = target[props.propertyName];
-        if (!property) return "";
-        if (typeof property === "string") {
-            return property;
-        } else {
-            return property.toHexString();
         }
     }
 
     setColorFromString(colorString: string) {
-        if (colorString === conflictingValuesPlaceholder) return;
         let color = this.convertToColor(colorString);
-        if (this.props.isLinear) {
-            color = color.toLinearSpace();
-        }
-        this.updateColor(color);
-        this.setState({color, colorString})
+        this.setColor(color);
     }
 
-    setColor(color: Color4) {
+    setColor(newColor: Color4) {
+        this.setState({color: newColor.clone()});
         if (this.props.isLinear) {
-            color = color.toLinearSpace();
+            newColor.toLinearSpaceToRef(newColor);
         }
-        this.updateColor(color);
-        const colorString = this.props.disableAlpha ? this.toColor3(color).toHexString() : color.toHexString();
-        this.setState({color, colorString});
-    }
-
-    updateColor(newColor: Color4) {
         // whether to set properties to color3 or color4
         const setColor = this.props.disableAlpha ? this.toColor3(newColor) : newColor;
 
@@ -176,12 +147,6 @@ export class ColorLineComponent extends React.Component<IColorLineComponentProps
         element.remove();
     }
 
-    public get colorString() {
-        return this.state.colorString;
-    }
-
-    public set colorString(_: string) {}
-
     private convertToColor(color: string): Color4 {
         if (color === "" || color === "transparent") {
             return emptyColor;
@@ -230,8 +195,8 @@ export class ColorLineComponent extends React.Component<IColorLineComponentProps
                         <ColorPickerLineComponent
                             linearHint={this.props.isLinear}
                             value={this.props.disableAlpha ? this.toColor3(this.state.color) : this.state.color}
-                            onColorChanged={(color) => {
-                                this.setColor(this.convertToColor(color));
+                            onColorChanged={(colorString) => {
+                                this.setColorFromString(colorString)
                             }}
                         />
                     </div>
@@ -239,8 +204,7 @@ export class ColorLineComponent extends React.Component<IColorLineComponentProps
                         <TextInputLineComponent
                             lockObject={this.props.lockObject}
                             label=""
-                            target={this}
-                            propertyName="colorString"
+                            value={this.state.color.toHexString()}
                             onChange={(newValue) => {
                                 this.setColorFromString(newValue);
                             }}
