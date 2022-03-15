@@ -265,8 +265,8 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 // Calculate the offset on the center of the bounding box
                 const centerX = (minX + maxX) / 2;
                 const centerY = (minY + maxY) / 2;
-                
-                this._panningOffset = new Vector2(-centerX, -centerY);
+
+                this._panningOffset = new Vector2(-centerX, centerY);
 
                 // Calculate the zoom factors based on width and height
                 const xFactor = this._engine.getRenderWidth() / width;
