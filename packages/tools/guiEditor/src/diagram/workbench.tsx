@@ -216,16 +216,18 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 for (let selectedControl of globalState.selectedControls) {
                     let left : number, top : number, right : number, bottom : number;
 
+                    const parentControl = selectedControl.parent!;
+                    
                     // TODO Should consider the entire canvas space
                     switch (selectedControl.horizontalAlignment) {
                         case Control.HORIZONTAL_ALIGNMENT_LEFT:
-                            left = selectedControl.leftInPixels;
+                            left = selectedControl.leftInPixels - parentControl.widthInPixels / 2;
                             break;
                         case Control.HORIZONTAL_ALIGNMENT_CENTER:
                             left = selectedControl.leftInPixels - selectedControl.widthInPixels / 2;
                             break;
                         case Control.HORIZONTAL_ALIGNMENT_RIGHT:
-                            left = selectedControl.leftInPixels - selectedControl.widthInPixels;
+                            left = parentControl.widthInPixels / 2 - selectedControl.leftInPixels - selectedControl.widthInPixels;
                             break;
                         default:
                             left = selectedControl.leftInPixels;
@@ -234,13 +236,13 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                     
                     switch(selectedControl.verticalAlignment) {
                         case Control.VERTICAL_ALIGNMENT_TOP:
-                            top = selectedControl.topInPixels;                         
+                            top = parentControl.heightInPixels / 2 - selectedControl.topInPixels;                         
                             break;
                         case Control.VERTICAL_ALIGNMENT_CENTER:
                             top = selectedControl.topInPixels - selectedControl.heightInPixels / 2;
                             break;
                         case Control.VERTICAL_ALIGNMENT_BOTTOM:
-                            top = selectedControl.topInPixels - selectedControl.heightInPixels;
+                            top = selectedControl.topInPixels - selectedControl.heightInPixels - parentControl.heightInPixels / 2;
                             break;
                         default:
                             top = selectedControl.topInPixels;
@@ -249,6 +251,8 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
                     right = left! + selectedControl.widthInPixels;
                     bottom = top! + selectedControl.heightInPixels;
+
+                    console.log('left', left, 'top', top, 'right', right, 'bottom', bottom);
 
                     minX = Math.min(minX, left);
                     minY = Math.min(minY, top);
@@ -267,6 +271,9 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 const centerX = (minX + maxX) / 2;
                 const centerY = (minY + maxY) / 2;
                 console.log('centerX', centerX, 'centerY', centerY);
+
+                // Position center relative to world
+
                 this._panningOffset = new Vector2(-centerX, -centerY);
 
                 // Calculate the zoom factors based on width and height
