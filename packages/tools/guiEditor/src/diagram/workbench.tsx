@@ -218,7 +218,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
                     const parentControl = selectedControl.parent!;
                     
-                    // TODO Should consider the entire canvas space
                     switch (selectedControl.horizontalAlignment) {
                         case Control.HORIZONTAL_ALIGNMENT_LEFT:
                             left = selectedControl.leftInPixels - parentControl.widthInPixels / 2;
@@ -252,28 +251,21 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                     right = left! + selectedControl.widthInPixels;
                     bottom = top! + selectedControl.heightInPixels;
 
-                    console.log('left', left, 'top', top, 'right', right, 'bottom', bottom);
-
                     minX = Math.min(minX, left);
                     minY = Math.min(minY, top);
 
                     maxX = Math.max(maxX, right);
                     maxY = Math.max(maxY, bottom);
                 }
-                console.log('minX', minX, 'minY', minY, 'maxX', maxX, 'maxY', maxY);
                 
                 // Find width and height of bounding box
                 const width = maxX - minX;
                 const height = maxY - minY;
-                console.log('width', width, 'height', height);
 
                 // Calculate the offset on the center of the bounding box
                 const centerX = (minX + maxX) / 2;
                 const centerY = (minY + maxY) / 2;
-                console.log('centerX', centerX, 'centerY', centerY);
-
-                // Position center relative to world
-
+                
                 this._panningOffset = new Vector2(-centerX, -centerY);
 
                 // Calculate the zoom factors based on width and height
