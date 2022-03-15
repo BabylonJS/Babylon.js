@@ -648,7 +648,6 @@ declare module GUIEDITOR {
     interface IColorLineComponentState {
         isExpanded: boolean;
         color: BABYLON.Color4;
-        colorString: string;
     }
     export class ColorLineComponent extends React.Component<IColorLineComponentProps, IColorLineComponentState> {
         constructor(props: IColorLineComponentProps);
@@ -656,20 +655,14 @@ declare module GUIEDITOR {
         getValue(props?: Readonly<IColorLineComponentProps> & Readonly<{
             children?: React.ReactNode;
         }>): BABYLON.Color4;
-        getValueAsString(props?: Readonly<IColorLineComponentProps> & Readonly<{
-            children?: React.ReactNode;
-        }>): string;
         setColorFromString(colorString: string): void;
-        setColor(color: BABYLON.Color4): void;
-        updateColor(newColor: BABYLON.Color4): void;
+        setColor(newColor: BABYLON.Color4): void;
         switchExpandState(): void;
         updateStateR(value: number): void;
         updateStateG(value: number): void;
         updateStateB(value: number): void;
         updateStateA(value: number): void;
         copyToClipboard(): void;
-        get colorString(): string;
-        set colorString(_: string);
         private convertToColor;
         private toColor3;
         render(): JSX.Element;

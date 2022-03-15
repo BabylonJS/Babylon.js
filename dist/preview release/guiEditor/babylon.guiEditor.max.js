@@ -50543,28 +50543,19 @@ var ColorLineComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ColorLineComponent, _super);
     function ColorLineComponent(props) {
         var _this = _super.call(this, props) || this;
-        var colorString = _this.getValueAsString();
-        var color = _this.getValue();
-        _this.state = { isExpanded: false, color: color, colorString: colorString };
-        if (props.isLinear) {
-            _this.state.color.toGammaSpaceToRef(_this.state.color);
-        }
+        _this.state = { isExpanded: false, color: _this.getValue() };
         var target = _this.props.target;
         target._isLinearColor = props.isLinear; // so that replayRecorder can append toLinearSpace() as appropriate
         return _this;
     }
     ColorLineComponent.prototype.shouldComponentUpdate = function (nextProps, nextState) {
-        var stateString = nextState.colorString;
         var stateColor = nextState.color;
-        var propsString = this.getValueAsString(nextProps);
         var propsColor = this.getValue(nextProps);
-        if (stateString !== this.state.colorString || stateColor !== this.state.color) {
-            nextState.colorString = stateString;
+        if (stateColor !== this.state.color) {
             nextState.color = stateColor;
             return true;
         }
-        if (propsString !== this.state.colorString || propsColor !== this.state.color) {
-            nextState.colorString = propsString;
+        if (propsColor !== this.state.color) {
             nextState.color = propsColor;
             return true;
         }
@@ -50586,41 +50577,21 @@ var ColorLineComponent = /** @class */ (function (_super) {
             return this.convertToColor(property);
         }
         else {
+            if (props.isLinear) {
+                return property.toGammaSpace();
+            }
             return property.clone();
         }
     };
-    ColorLineComponent.prototype.getValueAsString = function (props) {
-        if (props === void 0) { props = this.props; }
-        var target = props.target;
-        var property = target[props.propertyName];
-        if (!property)
-            return "";
-        if (typeof property === "string") {
-            return property;
-        }
-        else {
-            return property.toHexString();
-        }
-    };
     ColorLineComponent.prototype.setColorFromString = function (colorString) {
-        if (colorString === _targetsProxy__WEBPACK_IMPORTED_MODULE_8__["conflictingValuesPlaceholder"])
-            return;
         var color = this.convertToColor(colorString);
-        if (this.props.isLinear) {
-            color = color.toLinearSpace();
-        }
-        this.updateColor(color);
-        this.setState({ color: color, colorString: colorString });
+        this.setColor(color);
     };
-    ColorLineComponent.prototype.setColor = function (color) {
+    ColorLineComponent.prototype.setColor = function (newColor) {
+        this.setState({ color: newColor.clone() });
         if (this.props.isLinear) {
-            color = color.toLinearSpace();
+            newColor.toLinearSpaceToRef(newColor);
         }
-        this.updateColor(color);
-        var colorString = this.props.disableAlpha ? this.toColor3(color).toHexString() : color.toHexString();
-        this.setState({ color: color, colorString: colorString });
-    };
-    ColorLineComponent.prototype.updateColor = function (newColor) {
         // whether to set properties to color3 or color4
         var setColor = this.props.disableAlpha ? this.toColor3(newColor) : newColor;
         var target = this.props.target;
@@ -50672,14 +50643,6 @@ var ColorLineComponent = /** @class */ (function (_super) {
         document.execCommand("copy");
         element.remove();
     };
-    Object.defineProperty(ColorLineComponent.prototype, "colorString", {
-        get: function () {
-            return this.state.colorString;
-        },
-        set: function (_) { },
-        enumerable: false,
-        configurable: true
-    });
     ColorLineComponent.prototype.convertToColor = function (color) {
         if (color === "" || color === "transparent") {
             return emptyColor;
@@ -50714,10 +50677,10 @@ var ColorLineComponent = /** @class */ (function (_super) {
                 this.props.icon && react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.icon, title: this.props.iconLabel, alt: this.props.iconLabel, className: "icon" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color3" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorPickerComponent__WEBPACK_IMPORTED_MODULE_6__["ColorPickerLineComponent"], { linearHint: this.props.isLinear, value: this.props.disableAlpha ? this.toColor3(this.state.color) : this.state.color, onColorChanged: function (color) {
-                            _this.setColor(_this.convertToColor(color));
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorPickerComponent__WEBPACK_IMPORTED_MODULE_6__["ColorPickerLineComponent"], { linearHint: this.props.isLinear, value: this.props.disableAlpha ? this.toColor3(this.state.color) : this.state.color, onColorChanged: function (colorString) {
+                            _this.setColorFromString(colorString);
                         } })),
-                this.props.lockObject && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_textInputLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "", target: this, propertyName: "colorString", onChange: function (newValue) {
+                this.props.lockObject && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_textInputLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "", value: this.state.color.toHexString(), onChange: function (newValue) {
                         _this.setColorFromString(newValue);
                     }, onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "copy hoverIcon", onClick: function () { return _this.copyToClipboard(); }, title: "Copy to clipboard" },

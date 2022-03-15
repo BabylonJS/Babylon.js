@@ -1287,7 +1287,7 @@ declare module BABYLON.GUI {
          * Mark control element as dirty
          * @param force force non visible elements to be marked too
          */
-        markAsDirty(force: false): void;
+        markAsDirty(force?: boolean): void;
         /**
          * Mark the element and its children as dirty
          */

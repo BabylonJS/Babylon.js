@@ -5505,6 +5505,7 @@ var Control = /** @class */ (function () {
      * @param force force non visible elements to be marked too
      */
     Control.prototype.markAsDirty = function (force) {
+        if (force === void 0) { force = false; }
         this._markAsDirty(force);
     };
     /**
