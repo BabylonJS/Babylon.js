@@ -26,6 +26,9 @@ float fbm(vec2 n) {
 	return total;
 }
 
+
+#define CUSTOM_FRAGMENT_DEFINITIONS
+
 void main(void) {
 	vec3 color = mix(texture2D(dirtSampler, vUV).xyz, texture2D(grassSampler, vUV).xyz, fbm(vUV * dirtAmplifier));
 	gl_FragColor = vec4(color, 1.0);
