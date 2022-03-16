@@ -1,0 +1,93 @@
+{
+    "root": true,
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+        "sourceType": "module",
+        "ecmaVersion": 2020,
+        "ecmaFeatures": {
+            "jsx": true
+        }
+    },
+    // Limit TypeScript linting to TS/TSX
+    // https://github.com/typescript-eslint/typescript-eslint/issues/1928
+    "overrides": [
+        {
+            "files": ["src/**/*.{ts,tsx}"],
+            "extends": [
+                "plugin:@typescript-eslint/eslint-recommended",
+                "plugin:@typescript-eslint/recommended",
+                "plugin:@typescript-eslint/recommended-requiring-type-checking"
+                // "plugin:eslint-plugin-tsdoc/recommended"
+            ],
+            "rules": {
+                "@typescript-eslint/ban-ts-comment": "off",
+                "@typescript-eslint/explicit-function-return-type": "off",
+                "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
+                // All the @typescript-eslint/* rules here...
+                "@typescript-eslint/no-unnecessary-type-arguments": "error",
+                "@typescript-eslint/prefer-nullish-coalescing": "error",
+                "@typescript-eslint/prefer-optional-chain": "error",
+                "tsdoc/syntax": "error"
+            },
+            "parser": "@typescript-eslint/parser",
+            "parserOptions": {
+                "tsconfigRootDir": "./",
+                "project": "./tsconfig.json"
+            }
+        }
+    ],
+    "env": {
+        "browser": true,
+        "node": true,
+        "jest": true
+    },
+    "plugins": [
+        //   "react"
+        // "prettier", // add this if we want to use prettier error reporting
+        "jest",
+        // "@typescript-eslint"
+        "eslint-plugin-tsdoc",
+        "jsdoc"
+    ],
+    "extends": [
+        "eslint:recommended",
+        "plugin:@typescript-eslint/eslint-recommended",
+        "plugin:import/errors",
+        "plugin:import/warnings",
+        "plugin:import/typescript",
+        "plugin:jest/recommended",
+        // "plugin:jsdoc/recommended",
+        "prettier"
+    ],
+    "settings": {
+        "react": {
+            "pragma": "h",
+            "createClass": ""
+        }
+    },
+    "rules": {
+        "block-spacing": "error",
+        // "capitalized-comments": ["error", "always"],
+        // ... All other rules (not @typescript-eslint/*)
+        //   "react/no-adjacent-inline-elements": "error",
+        //   "react/react-in-jsx-scope": "error",
+        //   "react/self-closing-comp": "error",
+        "import/no-unresolved": "off",
+        // should be error, no?
+        "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
+        "no-unused-vars": "off",
+        "no-empty": ["error", { "allowEmptyCatch": true }],
+        "space-infix-ops": "error",
+        "template-curly-spacing": "error",
+        "template-tag-spacing": "error",
+        "jest/no-standalone-expect": ["error", { "additionalTestBlockFunctions": ["afterEach"] }],
+        "jest/valid-expect": "off",
+        "tsdoc/syntax": "warn",
+        "jsdoc/check-param-names": "error",
+        "jsdoc/check-property-names": "error",
+        "jsdoc/require-param": "error",
+        "jsdoc/require-param-name": "error",
+        "jsdoc/require-returns": "error"
+        // "prettier/prettier": "error" // add this if we want to use prettier error reporting.
+    }
+}

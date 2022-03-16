@@ -1,0 +1,11 @@
+{
+    "cSpell.words": [
+        "babylonjs"
+    ],
+    "files.exclude": {
+        "**/node_modules": true,
+        "**/dist": false,
+        "**/@babylonjs/**/*.{js|ts|map}": true,
+        "**/.rollup.cache": true
+    },
+}
