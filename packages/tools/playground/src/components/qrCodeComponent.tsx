@@ -1,7 +1,7 @@
 import * as React from "react";
 import { GlobalState } from "../globalState";
 
-require("../scss/qrCode.scss");
+import "../scss/qrCode.scss";
 
 declare var $: any;
 

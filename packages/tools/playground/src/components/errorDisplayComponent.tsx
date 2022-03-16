@@ -2,7 +2,7 @@ import * as React from "react";
 import { GlobalState } from "../globalState";
 import { Nullable } from "core/types";
 
-require("../scss/errorDisplay.scss");
+import "../scss/errorDisplay.scss";
 
 interface IErrorDisplayComponentProps {
     globalState: GlobalState;

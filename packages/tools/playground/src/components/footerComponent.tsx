@@ -8,7 +8,7 @@ import RenderingOnlyIcon from "../imgs/renderingOnly.svg";
 import RefreshIcon from "../imgs/refresh.svg";
 import EditIcon from "../imgs/edit.svg";
 
-require("../scss/footer.scss");
+import "../scss/footer.scss";
 
 interface IFooterComponentProps {
     globalState: GlobalState;

@@ -4,7 +4,7 @@ import { GlobalState } from "../globalState";
 import CoreLogo from "../imgs/coreLogo.svg";
 import Spinner from "../imgs/spinner.svg";
 
-require("../scss/waitRing.scss");
+import "../scss/waitRing.scss";
 
 interface IWaitRingProps {
     globalState: GlobalState;

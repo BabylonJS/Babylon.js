@@ -2,7 +2,7 @@ import * as React from "react";
 import { MonacoManager } from "../tools/monacoManager";
 import { GlobalState } from "../globalState";
 
-require("../scss/monaco.scss");
+import "../scss/monaco.scss";
 
 interface IMonacoComponentProps {
     className: string;
