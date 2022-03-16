@@ -12,7 +12,7 @@
     ],
     "scripts": {
         "build": "npm run clean && npm run compile",
-        "clean": "rimraf dist && rimraf *.tsbuildinfo && rimraf \"./**/*.!(json|build.json)\"",
+        "clean": "rimraf dist && rimraf *.tsbuildinfo && rimraf \"./**/*.!(md|json|build.json)\"",
         "compile": "tsc -b tsconfig.build.json --verbose",
         "postcompile": "build-tools -c add-js-to-es6 --path ./dist/**/*.js",
         "prepublishOnly": "build-tools -c prepare-es6-build"
