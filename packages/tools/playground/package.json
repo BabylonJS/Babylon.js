@@ -1,0 +1,42 @@
+{
+    "name": "@tools/playground",
+    "private": true,
+    "version": "1.0.0",
+    "scripts": {
+        "build": "webpack",
+        "build:declaration": "build-tools -c pud --config ./config.json",
+        "build:deployment": "npm run clean && webpack --env mode=production",
+        "serve": "webpack serve",
+        "serve:prod": "webpack serve --env mode=production",
+        "serve:https": "webpack serve --env mode=development --server-type https --host ::",
+        "serve:dev": "webpack serve --env mode=development --env watch=all",
+        "clean": "rimraf dist"
+    },
+    "devDependencies": {
+        "@dev/build-tools": "1.0.0",
+        "@dev/core": "1.0.0",
+        "@svgr/webpack": "^6.2.0",
+        "@types/react": "^17.0.30",
+        "@types/react-dom": "^17.0.10",
+        "copy-webpack-plugin": "^9.0.1",
+        "css-loader": "^6.4.0",
+        "file-loader": "^6.2.0",
+        "html-webpack-plugin": "^5.4.0",
+        "mini-css-extract-plugin": "^2.4.3",
+        "monaco-editor": "0.27.0",
+        "monaco-editor-webpack-plugin": "^4.2.0",
+        "react": "^17.0.2",
+        "react-dom": "^17.0.2",
+        "rimraf": "^3.0.2",
+        "sass-loader": "^12.4.0",
+        "split.js": "^1.6.5",
+        "style-loader": "^3.3.0",
+        "ts-debounce": "4.0.0",
+        "typescript": "^4.4.4",
+        "url-loader": "^4.1.1",
+        "webpack": "^5.59.1",
+        "webpack-cli": "^4.9.1",
+        "webpack-merge": "^5.8.0"
+    },
+    "sideEffects": true
+}

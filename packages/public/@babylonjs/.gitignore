@@ -1,0 +1,8 @@
+# ignore the following in those public folders
+node_modules
+*.js
+*.ts
+*.map
+!inspector/**/*.*
+!node-editor/**/*.*
+!gui-editor/**/*.*
