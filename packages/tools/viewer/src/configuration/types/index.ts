@@ -1,10 +1,10 @@
-import { minimalConfiguration } from './minimal';
-import { defaultConfiguration } from './default';
-import { extendedConfiguration } from './extended';
-import { ViewerConfiguration } from '../configuration';
-import { shadowDirectionalLightConfiguration, shadowSpotlLightConfiguration } from './shadowLight';
-import { environmentMapConfiguration } from './environmentMap';
-import { deepmerge } from '../../helper/index';
+import { minimalConfiguration } from "./minimal";
+import { defaultConfiguration } from "./default";
+import { extendedConfiguration } from "./extended";
+import { ViewerConfiguration } from "../configuration";
+import { shadowDirectionalLightConfiguration, shadowSpotlLightConfiguration } from "./shadowLight";
+import { environmentMapConfiguration } from "./environmentMap";
+import { deepmerge } from "../../helper/index";
 
 /**
  * Get the configuration type you need to use as the base for your viewer.
@@ -19,24 +19,24 @@ let getConfigurationType = function (types: string): ViewerConfiguration {
     let typesSeparated = types.split(",");
     typesSeparated.forEach((type) => {
         switch (type.trim()) {
-            case 'environmentMap':
+            case "environmentMap":
                 config = deepmerge(config, environmentMapConfiguration);
                 break;
-            case 'shadowDirectionalLight':
+            case "shadowDirectionalLight":
                 config = deepmerge(config, shadowDirectionalLightConfiguration);
                 break;
-            case 'shadowSpotLight':
+            case "shadowSpotLight":
                 config = deepmerge(config, shadowSpotlLightConfiguration);
                 break;
-            case 'default':
+            case "default":
                 config = deepmerge(config, defaultConfiguration);
                 break;
-            case 'minimal':
+            case "minimal":
                 config = deepmerge(config, minimalConfiguration);
                 break;
-            case 'none':
+            case "none":
                 break;
-            case 'extended':
+            case "extended":
             default:
                 config = deepmerge(config, extendedConfiguration);
                 break;
@@ -47,7 +47,6 @@ let getConfigurationType = function (types: string): ViewerConfiguration {
         }
     });
     return config;
-
 };
 
 export { getConfigurationType, defaultConfiguration, minimalConfiguration };

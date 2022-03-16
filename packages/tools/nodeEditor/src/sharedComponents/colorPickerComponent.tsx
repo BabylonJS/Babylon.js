@@ -78,7 +78,7 @@ export class ColorPickerLineComponent extends React.Component<IColorPickerCompon
                 {this.state.pickerEnabled && (
                     <>
                         <div className="color-picker-cover" onClick={() => this.setPickerState(false)}>
-                            <div className="color-picker-float" onClick={ev => ev.stopPropagation()} ref={this._floatRef}>
+                            <div className="color-picker-float" onClick={(ev) => ev.stopPropagation()} ref={this._floatRef}>
                                 <ColorPicker
                                     color={color}
                                     onColorChanged={(color: Color3 | Color4) => {

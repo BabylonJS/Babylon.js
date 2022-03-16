@@ -15,23 +15,25 @@ interface IContainerPropertyGridComponentProps {
 export class ContainerPropertyGridComponent extends React.Component<IContainerPropertyGridComponentProps> {
     render() {
         const containers = this.props.containers;
-        return <>
-            <CheckBoxLineComponent
-                label="CLIP CONTENT"
-                iconLabel="Clip Content"
-                icon={clipContentsIcon}
-                target={makeTargetsProxy(containers, this.props.onPropertyChangedObservable)}
-                propertyName="clipContent"
-                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-            />
-            <CheckBoxLineComponent
-                label="CLIP CHILDREN"
-                iconLabel="Clip Children"
-                icon={clipContentsIcon}
-                target={makeTargetsProxy(containers, this.props.onPropertyChangedObservable)}
-                propertyName="clipChildren"
-                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-            />
-        </>
+        return (
+            <>
+                <CheckBoxLineComponent
+                    label="CLIP CONTENT"
+                    iconLabel="Clip Content"
+                    icon={clipContentsIcon}
+                    target={makeTargetsProxy(containers, this.props.onPropertyChangedObservable)}
+                    propertyName="clipContent"
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                />
+                <CheckBoxLineComponent
+                    label="CLIP CHILDREN"
+                    iconLabel="Clip Children"
+                    icon={clipContentsIcon}
+                    target={makeTargetsProxy(containers, this.props.onPropertyChangedObservable)}
+                    propertyName="clipChildren"
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                />
+            </>
+        );
     }
 }

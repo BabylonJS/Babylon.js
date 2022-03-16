@@ -23,7 +23,7 @@ interface IControlTreeItemComponentProps {
     dragOverLocation: DragOverLocation;
 }
 
-export class ControlTreeItemComponent extends React.Component<IControlTreeItemComponentProps, { isActive: boolean; isVisible: boolean, isRenaming: boolean }> {
+export class ControlTreeItemComponent extends React.Component<IControlTreeItemComponentProps, { isActive: boolean; isVisible: boolean; isRenaming: boolean }> {
     constructor(props: IControlTreeItemComponentProps) {
         super(props);
 
@@ -58,18 +58,20 @@ export class ControlTreeItemComponent extends React.Component<IControlTreeItemCo
             bracket = (control.parent as Grid).getChildCellInfo(this.props.control);
         }
         let draggingSelf = this.props.globalState.draggedControl === control;
-        const controlType = ControlTypes.find(type => type.className === control.getClassName());
+        const controlType = ControlTypes.find((type) => type.className === control.getClassName());
         return (
             <div className="controlTools">
-                {controlType && <div className="controlType icon">
-                    <img src={controlType.icon} alt={controlType.className}/>
-                </div>}
+                {controlType && (
+                    <div className="controlType icon">
+                        <img src={controlType.icon} alt={controlType.className} />
+                    </div>
+                )}
                 <TreeItemLabelComponent
                     label={control.name}
                     bracket={bracket}
                     onClick={() => this.props.onClick()}
-                    onChange={name => this.onRename(name)}
-                    setRenaming={renaming => this.setState({isRenaming: renaming})}
+                    onChange={(name) => this.onRename(name)}
+                    setRenaming={(renaming) => this.setState({ isRenaming: renaming })}
                     renaming={this.state.isRenaming}
                 />
                 {!draggingSelf && this.props.isDragOver && this.props.dragOverLocation == DragOverLocation.CENTER && control instanceof Container && (

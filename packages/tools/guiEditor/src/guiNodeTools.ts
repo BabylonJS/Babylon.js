@@ -7,7 +7,7 @@ import { Rectangle } from "gui/2D/controls/rectangle";
 import { Slider } from "gui/2D/controls/sliders/slider";
 import { TextBlock } from "gui/2D/controls/textBlock";
 import { VirtualKeyboard } from "gui/2D/controls/virtualKeyboard";
-import { Image } from "gui/2D/controls/image"
+import { Image } from "gui/2D/controls/image";
 import { InputText } from "gui/2D/controls/inputText";
 import { InputPassword } from "gui/2D/controls/inputPassword";
 import { Grid } from "gui/2D/controls/grid";
@@ -50,7 +50,7 @@ export class GUINodeTools {
             case "Rectangle":
                 element = new Rectangle("Rectangle");
                 element.color = "#cccccc";
-                element.background = "transparent"
+                element.background = "transparent";
                 element.isPointerBlocker = true;
                 element.thickness = 1;
                 return element;

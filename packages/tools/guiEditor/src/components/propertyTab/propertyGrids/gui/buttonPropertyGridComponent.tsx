@@ -28,7 +28,7 @@ export class ButtonPropertyGridComponent extends React.Component<IButtonProperty
     }
 
     render() {
-        const {rectangles, lockObject, onPropertyChangedObservable, onAddComponent} = this.props;
+        const { rectangles, lockObject, onPropertyChangedObservable, onAddComponent } = this.props;
 
         return (
             <div className="pane">
@@ -55,7 +55,7 @@ export class ButtonPropertyGridComponent extends React.Component<IButtonProperty
                         onPropertyChangedObservable={onPropertyChangedObservable}
                     />
                 </div>
-                <ContainerPropertyGridComponent containers={rectangles} onPropertyChangedObservable={onPropertyChangedObservable}/>
+                <ContainerPropertyGridComponent containers={rectangles} onPropertyChangedObservable={onPropertyChangedObservable} />
                 <hr />
                 <TextLineComponent label="BUTTON" value=" " color="grey"></TextLineComponent>
                 <div className="ge-divider">

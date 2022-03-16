@@ -30,7 +30,11 @@ export class DisplayGridPropertyGridComponent extends React.Component<IDisplayGr
 
         return (
             <div className="pane">
-                <CommonControlPropertyGridComponent lockObject={this.props.lockObject} controls={displayGrids} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <CommonControlPropertyGridComponent
+                    lockObject={this.props.lockObject}
+                    controls={displayGrids}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                />
                 <hr />
                 <TextLineComponent label="DISPLAY GRID" value=" " color="grey"></TextLineComponent>
                 <div className="ge-divider">

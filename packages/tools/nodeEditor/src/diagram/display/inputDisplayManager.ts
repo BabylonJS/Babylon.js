@@ -1,27 +1,27 @@
-import { IDisplayManager } from './displayManager';
-import { NodeMaterialBlock } from 'core/Materials/Node/nodeMaterialBlock';
-import { InputBlock } from 'core/Materials/Node/Blocks/Input/inputBlock';
-import { NodeMaterialSystemValues } from 'core/Materials/Node/Enums/nodeMaterialSystemValues';
-import { NodeMaterialBlockConnectionPointTypes } from 'core/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes';
-import { AnimatedInputBlockTypes } from 'core/Materials/Node/Blocks/Input/animatedInputBlockTypes';
-import { Vector2, Vector3, Vector4 } from 'core/Maths/math.vector';
-import { Color3 } from 'core/Maths/math.color';
-import { BlockTools } from '../../blockTools';
+import { IDisplayManager } from "./displayManager";
+import { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
+import { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
+import { NodeMaterialSystemValues } from "core/Materials/Node/Enums/nodeMaterialSystemValues";
+import { NodeMaterialBlockConnectionPointTypes } from "core/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes";
+import { AnimatedInputBlockTypes } from "core/Materials/Node/Blocks/Input/animatedInputBlockTypes";
+import { Vector2, Vector3, Vector4 } from "core/Maths/math.vector";
+import { Color3 } from "core/Maths/math.color";
+import { BlockTools } from "../../blockTools";
 
 const inputNameToAttributeValue: { [name: string]: string } = {
-    "position2d": "position",
-    "particle_uv": "uv",
-    "particle_color": "color",
-    "particle_texturemask": "textureMask",
-    "particle_positionw": "positionW",
+    position2d: "position",
+    particle_uv: "uv",
+    particle_color: "color",
+    particle_texturemask: "textureMask",
+    particle_positionw: "positionW",
 };
 
 const inputNameToAttributeName: { [name: string]: string } = {
-    "position2d": "screen",
-    "particle_uv": "particle",
-    "particle_color": "particle",
-    "particle_texturemask": "particle",
-    "particle_positionw": "particle",
+    position2d: "screen",
+    particle_uv: "particle",
+    particle_color: "particle",
+    particle_texturemask: "particle",
+    particle_positionw: "particle",
 };
 
 export class InputDisplayManager implements IDisplayManager {
@@ -84,7 +84,7 @@ export class InputDisplayManager implements IDisplayManager {
 
         if (inputBlock.isAttribute) {
             const attrVal = inputNameToAttributeValue[inputBlock.name] ?? inputBlock.name;
-            const attrName = inputNameToAttributeName[inputBlock.name] ?? 'mesh';
+            const attrName = inputNameToAttributeName[inputBlock.name] ?? "mesh";
             value = attrName + "." + attrVal;
         } else if (inputBlock.isSystemValue) {
             switch (inputBlock.systemValue) {
@@ -120,7 +120,7 @@ export class InputDisplayManager implements IDisplayManager {
                     break;
                 case NodeMaterialSystemValues.MaterialAlpha:
                     value = "Material alpha";
-                    break;                    
+                    break;
             }
         } else {
             switch (inputBlock.type) {

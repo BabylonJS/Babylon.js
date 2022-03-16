@@ -1,12 +1,11 @@
-import { Observable } from 'core/Misc/observable';
-import { AbstractViewer } from './viewer';
+import { Observable } from "core/Misc/observable";
+import { AbstractViewer } from "./viewer";
 
 /**
  * The viewer manager is the container for all viewers currently registered on this page.
  * It is possible to have more than one viewer on a single page.
  */
 export class ViewerManager {
-
     private _viewers: { [key: string]: AbstractViewer };
 
     /**

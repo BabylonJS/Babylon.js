@@ -4,7 +4,7 @@ import { DefaultViewer, AbstractViewer, Version, viewerManager } from "../../../
 
 export let name = "viewer manager tests";
 
-describe('Viewer Manager', function () {
+describe("Viewer Manager", function () {
     it("should be defined when the library is loaded", (done) => {
         assert.isDefined(viewerManager, "viewerManager is not defined");
         done();
@@ -32,12 +32,15 @@ describe('Viewer Manager', function () {
         element.id = randomString;
 
         let viewer = Helper.getNewViewerInstance(element);
-        viewerManager.getViewerPromiseById(randomString).then(() => {
-            viewer.dispose();
-            done();
-        }, (error) => {
-            assert.fail();
-        });
+        viewerManager.getViewerPromiseById(randomString).then(
+            () => {
+                viewer.dispose();
+                done();
+            },
+            (error) => {
+                assert.fail();
+            }
+        );
     });
 
     it("should trigger observers when viewer constructed and disposed", (done) => {
@@ -81,6 +84,5 @@ describe('Viewer Manager', function () {
         };
 
         viewerManager.dispose();
-
     });
 });

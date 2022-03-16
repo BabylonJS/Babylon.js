@@ -34,7 +34,9 @@ export class HeaderComponent extends React.Component<IHeaderComponentProps> {
         this._refVersionNumber.current!.innerHTML = Engine.Version;
 
         if (EngineStore.LastCreatedEngine && EngineStore.LastCreatedEngine.name) {
-            this._refVersionNumber.current!.innerHTML += ` (${EngineStore.LastCreatedEngine.name}${EngineStore.LastCreatedEngine.version > 1 ? EngineStore.LastCreatedEngine.version : ""})`;
+            this._refVersionNumber.current!.innerHTML += ` (${EngineStore.LastCreatedEngine.name}${
+                EngineStore.LastCreatedEngine.version > 1 ? EngineStore.LastCreatedEngine.version : ""
+            })`;
         }
     }
 

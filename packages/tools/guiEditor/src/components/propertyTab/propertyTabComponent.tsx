@@ -221,42 +221,44 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             return;
         }
         this.props.globalState.workbench.loadFromSnippet(snippedId);
-    };
+    }
 
     renderNode(nodes: Control[]) {
         const node = nodes[0];
-        return <>
-        <div id="header">
-            <img id="logo" src={this.renderControlIcon(nodes)} />
-            <div id="title">
-                <TextInputLineComponent
-                    noUnderline={true}
-                    lockObject={this._lockObject}
-                    target={makeTargetsProxy(nodes, this.props.globalState.onPropertyChangedObservable)}
-                    propertyName="name"
-                    onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable}
-                />
-            </div>
-        </div>
-        {this.renderProperties(nodes)}
-        {node?.parent?.typeName === "Grid" && (
-            <ParentingPropertyGridComponent
-                control={node}
-                onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable}
-                lockObject={this._lockObject}
-            ></ParentingPropertyGridComponent>
-        )}
-        </>;
+        return (
+            <>
+                <div id="header">
+                    <img id="logo" src={this.renderControlIcon(nodes)} />
+                    <div id="title">
+                        <TextInputLineComponent
+                            noUnderline={true}
+                            lockObject={this._lockObject}
+                            target={makeTargetsProxy(nodes, this.props.globalState.onPropertyChangedObservable)}
+                            propertyName="name"
+                            onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable}
+                        />
+                    </div>
+                </div>
+                {this.renderProperties(nodes)}
+                {node?.parent?.typeName === "Grid" && (
+                    <ParentingPropertyGridComponent
+                        control={node}
+                        onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable}
+                        lockObject={this._lockObject}
+                    ></ParentingPropertyGridComponent>
+                )}
+            </>
+        );
     }
 
-    /** 
+    /**
      * returns the class name of a list of controls if they share a class, or an empty string if not
      */
     getControlsCommonClassName(nodes: Control[]) {
         if (nodes.length === 0) return "";
         const firstNode = nodes[0];
         const firstClass = firstNode.getClassName();
-        for(const node of nodes) {
+        for (const node of nodes) {
             if (node.getClassName() !== firstClass) {
                 return "";
             }
@@ -300,12 +302,18 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             }
             case "Image": {
                 const images = nodes as Image[];
-                return <ImagePropertyGridComponent images={images} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />;
+                return (
+                    <ImagePropertyGridComponent images={images} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />
+                );
             }
             case "Slider": {
                 const sliders = nodes as Slider[];
                 return (
-                    <SliderGenericPropertyGridComponent sliders={sliders} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />
+                    <SliderGenericPropertyGridComponent
+                        sliders={sliders}
+                        lockObject={this._lockObject}
+                        onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable}
+                    />
                 );
             }
             case "ImageBasedSlider": {
@@ -406,7 +414,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         onAddComponent={(value) => {
                             for (const button of buttons) {
                                 const guiElement = GUINodeTools.CreateControlFromString(value);
-                                const newGuiNode = this.props.globalState.workbench.createNewGuiNode(guiElement);    
+                                const newGuiNode = this.props.globalState.workbench.createNewGuiNode(guiElement);
                                 button.addControl(newGuiNode);
                                 this.props.globalState.select(newGuiNode);
                             }
@@ -417,9 +425,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         }
 
         const controls = nodes as Control[];
-        return (
-            <ControlPropertyGridComponent controls={controls} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />
-        );
+        return <ControlPropertyGridComponent controls={controls} lockObject={this._lockObject} onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable} />;
     }
 
     renderControlIcon(nodes: Control[]) {
@@ -486,13 +492,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
 
     render() {
         if (this.props.globalState.guiTexture == undefined) return null;
-        const nodesToRender = this.props.globalState.selectedControls.length > 0 ?
-            this.props.globalState.selectedControls :
-            [this.props.globalState.workbench.trueRootContainer];
-        return (
-            <div id="ge-propertyTab">
-                {this.renderNode(nodesToRender)}
-            </div>
-        );
+        const nodesToRender = this.props.globalState.selectedControls.length > 0 ? this.props.globalState.selectedControls : [this.props.globalState.workbench.trueRootContainer];
+        return <div id="ge-propertyTab">{this.renderNode(nodesToRender)}</div>;
     }
 }

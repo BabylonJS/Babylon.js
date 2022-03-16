@@ -5,7 +5,7 @@ import { Rectangle } from "gui/2D/controls/rectangle";
 import { Matrix2D } from "gui/2D/math2D";
 import { Vector2 } from "core/Maths/math.vector";
 import { Observable } from "core/Misc/observable";
-import { GlobalState } from '../globalState';
+import { GlobalState } from "../globalState";
 import { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
 
 export type DimensionProperties = "width" | "left" | "height" | "top" | "paddingLeft" | "paddingRight" | "paddingTop" | "paddingBottom" | "fontSize";
@@ -25,7 +25,7 @@ export class Rect {
     public clone() {
         return new Rect(this.left, this.top, this.right, this.bottom);
     }
-    
+
     public get center() {
         const topLeft = new Vector2(this.left, this.top);
         return topLeft.addInPlace(new Vector2(this.right, this.bottom).subtractInPlace(topLeft).multiplyByFloats(0.5, 0.5));
@@ -89,7 +89,7 @@ export class CoordinateHelper {
      * @param useStoredValues should the stored (cached) values be used to calculate the matrix
      * @returns a new matrix for the control
      */
-     public static getNodeMatrix(node: Control, storedValues?: Rect): Matrix2D {
+    public static getNodeMatrix(node: Control, storedValues?: Rect): Matrix2D {
         const size = this.globalState.guiTexture.getSize();
         // parent should always be defined, but stay safe
         const parentWidth = node.parent ? node.parent._currentMeasure.width : size.width;
@@ -161,7 +161,7 @@ export class CoordinateHelper {
      * @param useStoredValuesIfPossible used stored valued (cached when pointer down is clicked)
      * @returns the world matrix for this node
      */
-     public static nodeToRTTWorldMatrix(node: Control, storedValues?: Rect): Matrix2D {
+    public static nodeToRTTWorldMatrix(node: Control, storedValues?: Rect): Matrix2D {
         const listOfNodes = [node];
         let parent = node.parent;
         let child = node;
@@ -211,7 +211,7 @@ export class CoordinateHelper {
     public static mousePointerToRTTSpace(node: Control, x?: number, y?: number) {
         const scene = this.globalState.workbench._scene;
         const engine = scene.getEngine();
-        return new Vector2((x || scene.pointerX) - engine.getRenderWidth() / 2, (y || scene.pointerY)- engine.getRenderHeight() / 2);
+        return new Vector2((x || scene.pointerX) - engine.getRenderWidth() / 2, (y || scene.pointerY) - engine.getRenderHeight() / 2);
     }
 
     private static resetMatrixArray() {
@@ -224,10 +224,14 @@ export class CoordinateHelper {
         return new Rect(-node.widthInPixels * 0.5, -node.heightInPixels * 0.5, node.widthInPixels * 0.5, node.heightInPixels * 0.5);
     }
 
-    /** 
+    /**
      * converts a node's dimensions to percentage, properties can be specified as a list, or can convert all
-    */
-    public static convertToPercentage(guiControl: Control, properties: DimensionProperties[] = ["left", "top", "width", "height"], onPropertyChangedObservable?: Observable<PropertyChangedEvent>) {
+     */
+    public static convertToPercentage(
+        guiControl: Control,
+        properties: DimensionProperties[] = ["left", "top", "width", "height"],
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>
+    ) {
         let ratioX = 1;
         let ratioY = 1;
         if (guiControl.parent) {
@@ -245,16 +249,16 @@ export class CoordinateHelper {
                 ratioY = guiControl.parent._currentMeasure.height;
             }
         }
-        for(const property of properties) {
+        for (const property of properties) {
             const initialValue = guiControl[property];
-            const ratio = (property === "left" || property === "width" || property === "paddingLeft" || property === "paddingRight") ? ratioX : ratioY;
-            const newValue = guiControl[`${property}InPixels`] * 100 / ratio;
+            const ratio = property === "left" || property === "width" || property === "paddingLeft" || property === "paddingRight" ? ratioX : ratioY;
+            const newValue = (guiControl[`${property}InPixels`] * 100) / ratio;
             guiControl[property] = `${newValue.toFixed(2)}%`;
             onPropertyChangedObservable?.notifyObservers({
                 object: guiControl,
                 initialValue,
                 value: guiControl[property],
-                property
+                property,
             });
         }
     }
@@ -263,8 +267,12 @@ export class CoordinateHelper {
         return Math.floor(value * 100) / 100;
     }
 
-    public static convertToPixels(guiControl: Control, properties: DimensionProperties[] = ["left", "top", "width", "height"], onPropertyChangedObservable?: Observable<PropertyChangedEvent>) {
-        for(const property of properties) {
+    public static convertToPixels(
+        guiControl: Control,
+        properties: DimensionProperties[] = ["left", "top", "width", "height"],
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>
+    ) {
+        for (const property of properties) {
             guiControl[`_${property}`] = new ValueAndUnit(this.round(guiControl[`${property}InPixels`]), ValueAndUnit.UNITMODE_PIXEL);
         }
     }

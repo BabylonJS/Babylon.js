@@ -11,7 +11,7 @@ import { AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
  */
 export interface IGUIEditorOptions {
     liveGuiTexture?: AdvancedDynamicTexture;
-    customLoad: { label: string; action: (data: string) => Promise<string>; } | undefined;
+    customLoad: { label: string; action: (data: string) => Promise<string> } | undefined;
     hostElement?: HTMLElement;
     customSave?: { label: string; action: (data: string) => Promise<string> };
     currentSnippetToken?: string;
@@ -72,7 +72,6 @@ export class GUIEditor {
             if (options.currentSnippetToken) {
                 try {
                     await globalState.workbench.loadFromSnippet(options.currentSnippetToken);
-
                 } catch (error) {
                     //swallow and continue
                 }

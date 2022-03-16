@@ -24,14 +24,14 @@ export class StackPanelPropertyGridComponent extends React.Component<IStackPanel
     }
 
     render() {
-        const {stackPanels, lockObject, onPropertyChangedObservable} = this.props;
+        const { stackPanels, lockObject, onPropertyChangedObservable } = this.props;
 
         return (
             <div className="pane">
                 <CommonControlPropertyGridComponent lockObject={lockObject} controls={stackPanels} onPropertyChangedObservable={onPropertyChangedObservable} />
                 <hr />
                 <TextLineComponent label="STACKPANEL" value=" " color="grey"></TextLineComponent>
-                <ContainerPropertyGridComponent containers={stackPanels} onPropertyChangedObservable={onPropertyChangedObservable}/>
+                <ContainerPropertyGridComponent containers={stackPanels} onPropertyChangedObservable={onPropertyChangedObservable} />
 
                 <CheckBoxLineComponent
                     iconLabel={"Vertical"}
@@ -50,7 +50,7 @@ export class StackPanelPropertyGridComponent extends React.Component<IStackPanel
                     propertyName="spacing"
                     defaultValue={0}
                     onPropertyChangedObservable={onPropertyChangedObservable}
-                    onChange={() => stackPanels.forEach(panel => panel._markAsDirty())}
+                    onChange={() => stackPanels.forEach((panel) => panel._markAsDirty())}
                 />
             </div>
         );

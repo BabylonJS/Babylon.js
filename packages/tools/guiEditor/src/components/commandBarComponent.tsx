@@ -26,18 +26,18 @@ interface ICommandBarComponentProps {
 }
 
 const _sizeValues = [
-    {width: 1920, height: 1080},
-    {width: 1366, height: 768},
-    {width: 1280, height: 800},
-    {width: 3840, height: 2160},
-    {width: 750, height: 1334},
-    {width: 1125, height: 2436},
-    {width: 1170, height: 2532},
-    {width: 1284, height: 2778},
-    {width: 1080, height: 2220},
-    {width: 1080, height: 2340},
-    {width: 1024, height: 1024},
-    {width: 2048, height: 2048},
+    { width: 1920, height: 1080 },
+    { width: 1366, height: 768 },
+    { width: 1280, height: 800 },
+    { width: 3840, height: 2160 },
+    { width: 750, height: 1334 },
+    { width: 1125, height: 2436 },
+    { width: 1170, height: 2532 },
+    { width: 1284, height: 2778 },
+    { width: 1080, height: 2220 },
+    { width: 1080, height: 2340 },
+    { width: 1024, height: 1024 },
+    { width: 2048, height: 2048 },
 ];
 
 const _sizeOptions = [
@@ -96,7 +96,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
     }
 
     public render() {
-        const size = this.props.globalState.workbench ? {...this.props.globalState.workbench.guiSize} : {width: 0, height: 0};
+        const size = this.props.globalState.workbench ? { ...this.props.globalState.workbench.guiSize } : { width: 0, height: 0 };
         this._sizeOption = _sizeValues.findIndex((value) => value.width == size.width && value.height == size.height);
         if (this._sizeOption < 0) {
             this.props.globalState.onResponsiveChangeObservable.notifyObservers(false);
@@ -139,15 +139,16 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                                 {
                                     label: "Copy Selected",
                                     onClick: () => {
-                                        this.props.globalState.onCopyObservable.notifyObservers(content => this.props.globalState.hostWindow.navigator.clipboard.writeText(content));
-
+                                        this.props.globalState.onCopyObservable.notifyObservers((content) =>
+                                            this.props.globalState.hostWindow.navigator.clipboard.writeText(content)
+                                        );
                                     },
                                 },
                                 {
                                     label: "Paste",
                                     onClick: async () => {
                                         this.props.globalState.onPasteObservable.notifyObservers(await this.props.globalState.hostWindow.navigator.clipboard.readText());
-                                    }
+                                    },
                                 },
                                 {
                                     label: "Delete Selected",
@@ -174,7 +175,6 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                                         window.open("https://forum.babylonjs.com/t/introducing-the-gui-editor-alpha/24578", "_blank");
                                     },
                                 },
-
                             ]}
                         />
                         <CommandButtonComponent
@@ -220,16 +220,11 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                             shortcut="G"
                             icon={guidesIcon}
                             isActive={this.props.globalState.outlines}
-                            onClick={() => this.props.globalState.outlines = !this.props.globalState.outlines}
+                            onClick={() => (this.props.globalState.outlines = !this.props.globalState.outlines)}
                         />
                     </div>
                     <div className="divider padded">
-                        <ColorLineComponent
-                            label={"Artboard:"}
-                            target={this.props.globalState}
-                            propertyName="backgroundColor"
-                            disableAlpha={true}
-                        />
+                        <ColorLineComponent label={"Artboard:"} target={this.props.globalState} propertyName="backgroundColor" disableAlpha={true} />
                     </div>
                     <div className="divider padded">
                         <CheckBoxLineComponent
@@ -247,54 +242,54 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                                 this.forceUpdate();
                             }}
                         />
-                        {DataStorage.ReadBoolean("Responsive", true) &&
-                        <OptionsLineComponent
-                            label=""
-                            iconLabel="Size"
-                            options={_sizeOptions}
-                            target={this}
-                            propertyName={"_sizeOption"}
-                            noDirectUpdate={true}
-                            onSelect={(value: any) => {
-                                this._sizeOption = value;
-                                if (this._sizeOption !== _sizeOptions.length) {
-                                    const newSize = _sizeValues[this._sizeOption];
-                                    this.props.globalState.workbench.guiSize = newSize;
-                                }
-                                this.forceUpdate();
-                            }}
-                        />
-                        }
+                        {DataStorage.ReadBoolean("Responsive", true) && (
+                            <OptionsLineComponent
+                                label=""
+                                iconLabel="Size"
+                                options={_sizeOptions}
+                                target={this}
+                                propertyName={"_sizeOption"}
+                                noDirectUpdate={true}
+                                onSelect={(value: any) => {
+                                    this._sizeOption = value;
+                                    if (this._sizeOption !== _sizeOptions.length) {
+                                        const newSize = _sizeValues[this._sizeOption];
+                                        this.props.globalState.workbench.guiSize = newSize;
+                                    }
+                                    this.forceUpdate();
+                                }}
+                            />
+                        )}
                         {!DataStorage.ReadBoolean("Responsive", true) && (
-                        <>
-                            <FloatLineComponent
-                                label="W"
-                                target={size}
-                                propertyName="width"
-                                isInteger={true}
-                                min={1}
-                                max={MAX_TEXTURE_SIZE}
-                                onChange={(newvalue) => {
-                                    if (!isNaN(newvalue)) {
-                                        this.props.globalState.workbench.guiSize = {width: newvalue, height: size.height};
-                                    }
-                                }}
-                            ></FloatLineComponent>
-                            <FloatLineComponent
-                                label="H"
-                                target={size}
-                                propertyName="height"
-                                isInteger={true}
-                                min={1}
-                                max={MAX_TEXTURE_SIZE}
-                                onChange={(newvalue) => {
-                                    if (!isNaN(newvalue)) {
-                                        this.props.globalState.workbench.guiSize = {width: size.width, height: newvalue};
-                                    }
-                                }}
-                            ></FloatLineComponent>
-                        </>
-                    )}
+                            <>
+                                <FloatLineComponent
+                                    label="W"
+                                    target={size}
+                                    propertyName="width"
+                                    isInteger={true}
+                                    min={1}
+                                    max={MAX_TEXTURE_SIZE}
+                                    onChange={(newvalue) => {
+                                        if (!isNaN(newvalue)) {
+                                            this.props.globalState.workbench.guiSize = { width: newvalue, height: size.height };
+                                        }
+                                    }}
+                                ></FloatLineComponent>
+                                <FloatLineComponent
+                                    label="H"
+                                    target={size}
+                                    propertyName="height"
+                                    isInteger={true}
+                                    min={1}
+                                    max={MAX_TEXTURE_SIZE}
+                                    onChange={(newvalue) => {
+                                        if (!isNaN(newvalue)) {
+                                            this.props.globalState.workbench.guiSize = { width: size.width, height: newvalue };
+                                        }
+                                    }}
+                                ></FloatLineComponent>
+                            </>
+                        )}
                     </div>
                 </div>
                 <div className="commands-right">

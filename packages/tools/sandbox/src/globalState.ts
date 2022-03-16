@@ -1,11 +1,11 @@
-import { Observable } from 'core/Misc/observable';
-import { Scene } from 'core/scene';
-import { FilesInput } from 'core/Misc/filesInput';
+import { Observable } from "core/Misc/observable";
+import { Scene } from "core/scene";
+import { FilesInput } from "core/Misc/filesInput";
 
 export class GlobalState {
     public currentScene: Scene;
-    public onSceneLoaded = new Observable<{ scene: Scene, filename: string }>();
-    public onError = new Observable<{ scene?: Scene, message?: string }>();
+    public onSceneLoaded = new Observable<{ scene: Scene; filename: string }>();
+    public onError = new Observable<{ scene?: Scene; message?: string }>();
     public onEnvironmentChanged = new Observable<string>();
     public onRequestClickInterceptor = new Observable<void>();
     public onClickInterceptorClicked = new Observable<void>();

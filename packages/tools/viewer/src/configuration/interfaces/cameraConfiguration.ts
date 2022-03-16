@@ -1,6 +1,6 @@
 export interface ICameraConfiguration {
-    position?: { x: number, y: number, z: number };
-    rotation?: { x: number, y: number, z: number, w: number };
+    position?: { x: number; y: number; z: number };
+    rotation?: { x: number; y: number; z: number; w: number };
     fov?: number;
     fovMode?: number;
     minZ?: number;

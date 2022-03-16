@@ -11,11 +11,10 @@ const cache: { [key: string]: (sceneManager: SceneManager) => boolean } = {};
 export function getCustomOptimizerByName(name: string, upgrade?: boolean) {
     if (!cache[name]) {
         switch (name) {
-            case 'extended':
+            case "extended":
                 if (upgrade) {
                     return extendedUpgrade;
-                }
-                else {
+                } else {
                     return extendedDegrade;
                 }
         }

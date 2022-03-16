@@ -103,8 +103,8 @@ export interface SamplingParameters {
      */
     wrapT?: TextureWrapMode;
     /**
-    * Anisotropic filtering samples
-    */
+     * Anisotropic filtering samples
+     */
     maxAnisotropy?: number;
 }
 
@@ -137,19 +137,18 @@ export type MipmapsCube = Mipmaps<Faces<TextureSource>>;
  * A minimal WebGL cubemap descriptor
  */
 export class TextureCube {
-
     /**
      * Returns the width of a face of the texture or 0 if not available
      */
     public get Width(): number {
-        return (this.source && this.source[0] && this.source[0][0]) ? this.source[0][0].width : 0;
+        return this.source && this.source[0] && this.source[0][0] ? this.source[0][0].width : 0;
     }
 
     /**
      * Returns the height of a face of the texture or 0 if not available
      */
     public get Height(): number {
-        return (this.source && this.source[0] && this.source[0][0]) ? this.source[0][0].height : 0;
+        return this.source && this.source[0] && this.source[0][0] ? this.source[0][0].height : 0;
     }
 
     /**
@@ -158,18 +157,17 @@ export class TextureCube {
      * @param type WebGL pixel type of the supplied data and texture on the GPU
      * @param source An array containing mipmap levels of faces, where each mipmap level is an array of faces and each face is a TextureSource object
      */
-    constructor(public internalFormat: PixelFormat, public type: PixelType, public source: MipmapsCube = []) { }
+    constructor(public internalFormat: PixelFormat, public type: PixelType, public source: MipmapsCube = []) {}
 }
 
 /**
-     * A static class providing methods to aid working with Bablyon textures.
-     */
+ * A static class providing methods to aid working with Bablyon textures.
+ */
 export class TextureUtils {
-
     /**
      * A prefix used when storing a babylon texture object reference on a Spectre texture object
      */
-    public static BabylonTextureKeyPrefix = '__babylonTexture_';
+    public static BabylonTextureKeyPrefix = "__babylonTexture_";
 
     /**
      * Controls anisotropic filtering for deserialized textures.
@@ -189,29 +187,29 @@ export class TextureUtils {
      * @return Babylon cube texture
      */
     public static GetBabylonCubeTexture(scene: Scene, textureCube: TextureCube, automaticMipmaps: boolean, environment = false, singleLod = false): CubeTexture {
-        if (!textureCube) { throw new Error("no texture cube provided"); }
+        if (!textureCube) {
+            throw new Error("no texture cube provided");
+        }
 
         var parameters: SamplingParameters;
         if (environment) {
             parameters = singleLod ? TextureUtils._EnvironmentSingleMipSampling : TextureUtils._EnvironmentSampling;
-        }
-        else {
+        } else {
             parameters = {
                 magFilter: TextureMagFilter.NEAREST,
                 minFilter: TextureMinFilter.NEAREST,
                 wrapS: TextureWrapMode.CLAMP_TO_EDGE,
-                wrapT: TextureWrapMode.CLAMP_TO_EDGE
+                wrapT: TextureWrapMode.CLAMP_TO_EDGE,
             };
         }
 
-        let key = TextureUtils.BabylonTextureKeyPrefix + parameters.magFilter + '' + parameters.minFilter + '' + parameters.wrapS + '' + parameters.wrapT;
+        let key = TextureUtils.BabylonTextureKeyPrefix + parameters.magFilter + "" + parameters.minFilter + "" + parameters.wrapS + "" + parameters.wrapT;
 
         let babylonTexture: CubeTexture = (<any>textureCube)[key];
 
         if (!babylonTexture) {
-
             //initialize babylon texture
-            babylonTexture = new CubeTexture('', scene);
+            babylonTexture = new CubeTexture("", scene);
             if (environment) {
                 babylonTexture.lodGenerationOffset = TextureUtils.EnvironmentLODOffset;
                 babylonTexture.lodGenerationScale = TextureUtils.EnvironmentLODScale;
@@ -233,25 +231,37 @@ export class TextureUtils {
             let texturesUploaded = 0;
 
             var textureComplete = function () {
-                return texturesUploaded === ((maxMipLevel + 1) * 6);
+                return texturesUploaded === (maxMipLevel + 1) * 6;
             };
 
             var uploadFace = function (i: number, level: number, face: TextureSource) {
-                if (!glTexture) { return; }
+                if (!glTexture) {
+                    return;
+                }
 
                 if (i === 0 && level === 0) {
                     internalTexture.width = face.width;
                     internalTexture.height = face.height;
                 }
 
-                let gl = (<any>(scene.getEngine()))._gl;
+                let gl = (<any>scene.getEngine())._gl;
                 gl.bindTexture(gl.TEXTURE_CUBE_MAP, glTexture);
                 scene.getEngine()._unpackFlipY(false);
                 if (face instanceof HTMLElement || face instanceof ImageData) {
                     gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, level, textureCube.internalFormat, textureCube.internalFormat, textureCube.type, <any>face);
                 } else {
                     let textureData = <TextureData>face;
-                    gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, level, textureCube.internalFormat, textureData.width, textureData.height, 0, textureData.format, textureCube.type, textureData.data);
+                    gl.texImage2D(
+                        gl.TEXTURE_CUBE_MAP_POSITIVE_X + i,
+                        level,
+                        textureCube.internalFormat,
+                        textureData.width,
+                        textureData.height,
+                        0,
+                        textureData.format,
+                        textureCube.type,
+                        textureData.data
+                    );
                 }
 
                 texturesUploaded++;
@@ -261,7 +271,7 @@ export class TextureUtils {
                     if (automaticMipmaps) {
                         let w = face.width;
                         let h = face.height;
-                        let isPot = (((w !== 0) && (w & (w - 1))) === 0) && (((h !== 0) && (h & (h - 1))) === 0);
+                        let isPot = (w !== 0 && w & (w - 1)) === 0 && (h !== 0 && h & (h - 1)) === 0;
                         if (isPot) {
                             gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
                         }
@@ -271,7 +281,7 @@ export class TextureUtils {
                     if (environment && !scene.getEngine().getCaps().textureLOD && !singleLod) {
                         const mipSlices = 3;
                         for (let i = 0; i < mipSlices; i++) {
-                            let lodKey = TextureUtils.BabylonTextureKeyPrefix + 'lod' + i;
+                            let lodKey = TextureUtils.BabylonTextureKeyPrefix + "lod" + i;
                             let lod: CubeTexture = (<any>textureCube)[lodKey];
 
                             //initialize lod texture if it doesn't already exist
@@ -283,20 +293,24 @@ export class TextureUtils {
                                 let alphaG = roughness * roughness + kMinimumVariance;
                                 let microsurfaceAverageSlopeTexels = alphaG * textureCube.Width;
 
-                                let environmentSpecularLOD = TextureUtils.EnvironmentLODScale * (Scalar.Log2(microsurfaceAverageSlopeTexels)) + TextureUtils.EnvironmentLODOffset;
+                                let environmentSpecularLOD = TextureUtils.EnvironmentLODScale * Scalar.Log2(microsurfaceAverageSlopeTexels) + TextureUtils.EnvironmentLODOffset;
 
                                 let maxLODIndex = textureCube.source.length - 1;
                                 let mipmapIndex = Math.min(Math.max(Math.round(environmentSpecularLOD), 0), maxLODIndex);
 
-                                lod = TextureUtils.GetBabylonCubeTexture(scene, new TextureCube(PixelFormat.RGBA, PixelType.UNSIGNED_BYTE, [textureCube.source[mipmapIndex]]), false, true, true);
+                                lod = TextureUtils.GetBabylonCubeTexture(
+                                    scene,
+                                    new TextureCube(PixelFormat.RGBA, PixelType.UNSIGNED_BYTE, [textureCube.source[mipmapIndex]]),
+                                    false,
+                                    true,
+                                    true
+                                );
 
                                 if (i === 0) {
                                     internalTexture._lodTextureLow = lod;
-                                }
-                                else if (i === 1) {
+                                } else if (i === 1) {
                                     internalTexture._lodTextureMid = lod;
-                                }
-                                else {
+                                } else {
                                     internalTexture._lodTextureHigh = lod;
                                 }
 
@@ -317,9 +331,13 @@ export class TextureUtils {
                 for (let j = 0; j < faces.length; j++) {
                     let face = faces[j];
                     if (face instanceof HTMLImageElement && !face.complete) {
-                        face.addEventListener('load', () => {
-                            uploadFace(j, i, face);
-                        }, false);
+                        face.addEventListener(
+                            "load",
+                            () => {
+                                uploadFace(j, i, face);
+                            },
+                            false
+                        );
                     } else {
                         uploadFace(j, i, face);
                     }
@@ -345,38 +363,64 @@ export class TextureUtils {
      */
     public static ApplySamplingParameters(babylonTexture: BaseTexture, parameters: SamplingParameters) {
         let scene = babylonTexture.getScene();
-        if (!scene) { return; }
-        let gl = (<any>(scene.getEngine()))._gl;
+        if (!scene) {
+            return;
+        }
+        let gl = (<any>scene.getEngine())._gl;
 
         let target = babylonTexture.isCube ? gl.TEXTURE_CUBE_MAP : gl.TEXTURE_2D;
 
         let internalTexture = babylonTexture._texture;
-        if (!internalTexture) { return; }
+        if (!internalTexture) {
+            return;
+        }
         let glTexture = internalTexture._hardwareTexture?.underlyingResource;
         gl.bindTexture(target, glTexture);
 
-        if (parameters.magFilter != null) { gl.texParameteri(target, gl.TEXTURE_MAG_FILTER, parameters.magFilter); }
-        if (parameters.minFilter != null) { gl.texParameteri(target, gl.TEXTURE_MIN_FILTER, parameters.minFilter); }
-        if (parameters.wrapS != null) { gl.texParameteri(target, gl.TEXTURE_WRAP_S, parameters.wrapS); }
-        if (parameters.wrapT != null) { gl.texParameteri(target, gl.TEXTURE_WRAP_T, parameters.wrapT); }
+        if (parameters.magFilter != null) {
+            gl.texParameteri(target, gl.TEXTURE_MAG_FILTER, parameters.magFilter);
+        }
+        if (parameters.minFilter != null) {
+            gl.texParameteri(target, gl.TEXTURE_MIN_FILTER, parameters.minFilter);
+        }
+        if (parameters.wrapS != null) {
+            gl.texParameteri(target, gl.TEXTURE_WRAP_S, parameters.wrapS);
+        }
+        if (parameters.wrapT != null) {
+            gl.texParameteri(target, gl.TEXTURE_WRAP_T, parameters.wrapT);
+        }
 
         //set babylon wrap modes from sampling parameter
         switch (parameters.wrapS) {
-            case TextureWrapMode.REPEAT: babylonTexture.wrapU = Texture.WRAP_ADDRESSMODE; break;
-            case TextureWrapMode.CLAMP_TO_EDGE: babylonTexture.wrapU = Texture.CLAMP_ADDRESSMODE; break;
-            case TextureWrapMode.MIRRORED_REPEAT: babylonTexture.wrapU = Texture.MIRROR_ADDRESSMODE; break;
-            default: babylonTexture.wrapU = Texture.CLAMP_ADDRESSMODE;
+            case TextureWrapMode.REPEAT:
+                babylonTexture.wrapU = Texture.WRAP_ADDRESSMODE;
+                break;
+            case TextureWrapMode.CLAMP_TO_EDGE:
+                babylonTexture.wrapU = Texture.CLAMP_ADDRESSMODE;
+                break;
+            case TextureWrapMode.MIRRORED_REPEAT:
+                babylonTexture.wrapU = Texture.MIRROR_ADDRESSMODE;
+                break;
+            default:
+                babylonTexture.wrapU = Texture.CLAMP_ADDRESSMODE;
         }
 
         switch (parameters.wrapT) {
-            case TextureWrapMode.REPEAT: babylonTexture.wrapV = Texture.WRAP_ADDRESSMODE; break;
-            case TextureWrapMode.CLAMP_TO_EDGE: babylonTexture.wrapV = Texture.CLAMP_ADDRESSMODE; break;
-            case TextureWrapMode.MIRRORED_REPEAT: babylonTexture.wrapV = Texture.MIRROR_ADDRESSMODE; break;
-            default: babylonTexture.wrapV = Texture.CLAMP_ADDRESSMODE;
+            case TextureWrapMode.REPEAT:
+                babylonTexture.wrapV = Texture.WRAP_ADDRESSMODE;
+                break;
+            case TextureWrapMode.CLAMP_TO_EDGE:
+                babylonTexture.wrapV = Texture.CLAMP_ADDRESSMODE;
+                break;
+            case TextureWrapMode.MIRRORED_REPEAT:
+                babylonTexture.wrapV = Texture.MIRROR_ADDRESSMODE;
+                break;
+            default:
+                babylonTexture.wrapV = Texture.CLAMP_ADDRESSMODE;
         }
 
         if (parameters.maxAnisotropy != null && parameters.maxAnisotropy > 1) {
-            let anisotropicExt = gl.getExtension('EXT_texture_filter_anisotropic');
+            let anisotropicExt = gl.getExtension("EXT_texture_filter_anisotropic");
             if (anisotropicExt) {
                 let maxAnisotropicSamples = gl.getParameter(anisotropicExt.MAX_TEXTURE_MAX_ANISOTROPY_EXT);
                 let maxAnisotropy = Math.min(parameters.maxAnisotropy, maxAnisotropicSamples);
@@ -394,7 +438,7 @@ export class TextureUtils {
         minFilter: TextureMinFilter.LINEAR_MIPMAP_LINEAR,
         wrapS: TextureWrapMode.CLAMP_TO_EDGE,
         wrapT: TextureWrapMode.CLAMP_TO_EDGE,
-        maxAnisotropy: 1
+        maxAnisotropy: 1,
     };
 
     private static _EnvironmentSingleMipSampling: SamplingParameters = {
@@ -402,7 +446,7 @@ export class TextureUtils {
         minFilter: TextureMinFilter.LINEAR,
         wrapS: TextureWrapMode.CLAMP_TO_EDGE,
         wrapT: TextureWrapMode.CLAMP_TO_EDGE,
-        maxAnisotropy: 1
+        maxAnisotropy: 1,
     };
 
     //from "/Internal/Lighting.EnvironmentFilterScale" in Engine/*/Configuration.cpp

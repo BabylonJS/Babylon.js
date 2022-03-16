@@ -6,18 +6,20 @@ export interface IModelConfiguration {
     root?: string; //optional
     file?: string | File; // is a file being loaded? root and url ignored
     loader?: string; // obj, gltf?
-    position?: { x: number, y: number, z: number };
-    rotation?: { x: number, y: number, z: number, w?: number };
-    scaling?: { x: number, y: number, z: number };
+    position?: { x: number; y: number; z: number };
+    rotation?: { x: number; y: number; z: number; w?: number };
+    scaling?: { x: number; y: number; z: number };
     parentObjectIndex?: number; // the index of the parent object of the model in the loaded meshes array.
 
     castShadow?: boolean;
     receiveShadows?: boolean;
-    normalize?: boolean | {
-        center?: boolean;
-        unitSize?: boolean;
-        parentIndex?: number;
-    }; // should the model be scaled to unit-size
+    normalize?:
+        | boolean
+        | {
+              center?: boolean;
+              unitSize?: boolean;
+              parentIndex?: number;
+          }; // should the model be scaled to unit-size
 
     title?: string;
     subtitle?: string;

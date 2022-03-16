@@ -136,8 +136,8 @@ declare namespace Handlebars {
 }
 
 /**
-* Implement this interface on your MVW/MVVM/MVC views such as Backbone.View
-**/
+ * Implement this interface on your MVW/MVVM/MVC views such as Backbone.View
+ **/
 interface HandlebarsTemplatable {
     template: HandlebarsTemplateDelegate;
 }
@@ -149,9 +149,7 @@ interface HandlebarsTemplates {
     [index: string]: HandlebarsTemplateDelegate;
 }
 
-interface TemplateSpecification {
-
-}
+interface TemplateSpecification {}
 
 // for backward compatibility of this typing
 type RuntimeOptions = Handlebars.RuntimeOptions;
@@ -225,7 +223,7 @@ declare namespace hbs {
             blockParams: string[];
         }
 
-        interface Statement extends Node { }
+        interface Statement extends Node {}
 
         interface MustacheStatement extends Statement {
             path: PathExpression | Literal;
@@ -235,7 +233,7 @@ declare namespace hbs {
             strip: StripFlags;
         }
 
-        interface Decorator extends MustacheStatement { }
+        interface Decorator extends MustacheStatement {}
 
         interface BlockStatement extends Statement {
             path: PathExpression;
@@ -248,7 +246,7 @@ declare namespace hbs {
             closeStrip: StripFlags;
         }
 
-        interface DecoratorBlock extends BlockStatement { }
+        interface DecoratorBlock extends BlockStatement {}
 
         interface PartialStatement extends Statement {
             name: PathExpression | SubExpression;
@@ -277,7 +275,7 @@ declare namespace hbs {
             strip: StripFlags;
         }
 
-        interface Expression extends Node { }
+        interface Expression extends Node {}
 
         interface SubExpression extends Expression {
             path: PathExpression;
@@ -292,7 +290,7 @@ declare namespace hbs {
             original: string;
         }
 
-        interface Literal extends Expression { }
+        interface Literal extends Expression {}
         interface StringLiteral extends Literal {
             value: string;
             original: string;
@@ -308,9 +306,9 @@ declare namespace hbs {
             original: number;
         }
 
-        interface UndefinedLiteral extends Literal { }
+        interface UndefinedLiteral extends Literal {}
 
-        interface NullLiteral extends Literal { }
+        interface NullLiteral extends Literal {}
 
         interface Hash extends Node {
             pairs: HashPair[];

@@ -6,9 +6,7 @@ import { camelToKebab, kebabToCamel, isUrl, extendClassWithConfig } from "../../
 export let name = "viewer helper tests";
 
 describe("viewer helper", () => {
-
     it("should convert camelCase to kebab-case and back", (done) => {
-
         let camelString = "oneTestTwoTestThreeTest";
 
         let kebab = camelToKebab(camelString);
@@ -21,7 +19,6 @@ describe("viewer helper", () => {
     });
 
     it("should find absolute and relative http urls", (done) => {
-
         let url = "http://test.url/?param=123";
         let https = "https://https.url.to.check/";
         let relativeUrl = "/url/to/find";
@@ -38,18 +35,15 @@ describe("viewer helper", () => {
     });
 
     it("should extend objects correctly", (done) => {
-
         let finalKey = Math.random();
 
         let toAugoment: any = {
             definedKey: Math.random(),
             color: {
                 r: 0,
-                g: 0
+                g: 0,
             },
-            test: function () {
-
-            }
+            test: function () {},
         };
 
         let augmentation: any = {
@@ -57,10 +51,10 @@ describe("viewer helper", () => {
             color: {
                 r: finalKey,
                 g: finalKey,
-                b: finalKey
+                b: finalKey,
             },
             undefinedKey: "shouldNotBeAugmented",
-            test: "should be ignored"
+            test: "should be ignored",
         };
 
         assert.notEqual(toAugoment.definedKey, augmentation.definedKey);

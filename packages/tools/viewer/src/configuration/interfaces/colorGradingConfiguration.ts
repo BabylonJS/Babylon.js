@@ -2,7 +2,6 @@
  * The Color Grading Configuration groups the different settings used to define the color grading used in the viewer.
  */
 export interface IColorGradingConfiguration {
-
     /**
      * Transform data string, encoded as determined by transformDataFormat.
      */
@@ -97,5 +96,4 @@ export interface IColorGradingConfiguration {
      * Color curve exposureHighlights value
      */
     exposureHighlights: number;
-
 }

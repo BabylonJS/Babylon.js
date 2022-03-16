@@ -1,14 +1,13 @@
-import { ISceneLoaderPlugin, ISceneLoaderPluginAsync } from 'core/Loading/sceneLoader';
-import { IGLTFLoaderExtension } from 'loaders/glTF/2.0/glTFLoaderExtension';
-import { GLTF2 } from 'loaders/glTF/index';
-import { ViewerModel } from '../../model/viewerModel';
-import { ILoaderPlugin } from './loaderPlugin';
+import { ISceneLoaderPlugin, ISceneLoaderPluginAsync } from "core/Loading/sceneLoader";
+import { IGLTFLoaderExtension } from "loaders/glTF/2.0/glTFLoaderExtension";
+import { GLTF2 } from "loaders/glTF/index";
+import { ViewerModel } from "../../model/viewerModel";
+import { ILoaderPlugin } from "./loaderPlugin";
 
 /**
  * A loder plugin to use MSFT_lod extension correctly (glTF)
  */
 export class MSFTLodLoaderPlugin implements ILoaderPlugin {
-
     private _model: ViewerModel;
 
     public onInit(loader: ISceneLoaderPlugin | ISceneLoaderPluginAsync, model: ViewerModel) {

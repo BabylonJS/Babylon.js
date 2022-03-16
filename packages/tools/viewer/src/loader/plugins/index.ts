@@ -1,8 +1,8 @@
 import { TelemetryLoaderPlugin } from "./telemetryLoaderPlugin";
 import { ILoaderPlugin } from "./loaderPlugin";
-import { MSFTLodLoaderPlugin } from './msftLodLoaderPlugin';
-import { ApplyMaterialConfigPlugin } from './applyMaterialConfig';
-import { ExtendedMaterialLoaderPlugin } from './extendedMaterialLoaderPlugin';
+import { MSFTLodLoaderPlugin } from "./msftLodLoaderPlugin";
+import { ApplyMaterialConfigPlugin } from "./applyMaterialConfig";
+import { ExtendedMaterialLoaderPlugin } from "./extendedMaterialLoaderPlugin";
 import { Tools } from "core/Misc/tools";
 
 const pluginCache: { [key: string]: ILoaderPlugin } = {};
@@ -18,16 +18,16 @@ export { TelemetryLoaderPlugin, ILoaderPlugin, MSFTLodLoaderPlugin, ApplyMateria
 export function getLoaderPluginByName(name: string) {
     if (!pluginCache[name]) {
         switch (name) {
-            case 'telemetry':
+            case "telemetry":
                 pluginCache[name] = new TelemetryLoaderPlugin();
                 break;
-            case 'msftLod':
+            case "msftLod":
                 pluginCache[name] = new MSFTLodLoaderPlugin();
                 break;
-            case 'applyMaterialConfig':
+            case "applyMaterialConfig":
                 pluginCache[name] = new ApplyMaterialConfigPlugin();
                 break;
-            case 'extendedMaterial':
+            case "extendedMaterial":
                 pluginCache[name] = new ExtendedMaterialLoaderPlugin();
                 break;
         }

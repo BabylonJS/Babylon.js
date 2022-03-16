@@ -159,23 +159,23 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                 break;
             case "Enter":
             case "ArrowRight":
-                this.props.globalState.selectedControls.forEach(node => {
+                this.props.globalState.selectedControls.forEach((node) => {
                     var reservedDataStore = (node as any).reservedDataStore;
                     if (reservedDataStore && reservedDataStore.setExpandedState) {
                         reservedDataStore.setExpandedState(true);
                     }
-                })
+                });
                 keyEvent.preventDefault();
                 this.forceUpdate();
                 return;
             case "ArrowLeft":
-                this.props.globalState.selectedControls.forEach(node => {
+                this.props.globalState.selectedControls.forEach((node) => {
                     var reservedDataStore = (node as any).reservedDataStore;
-                    console.log(reservedDataStore)
+                    console.log(reservedDataStore);
                     if (reservedDataStore && reservedDataStore.setExpandedState) {
                         reservedDataStore.setExpandedState(false);
                     }
-                })
+                });
                 keyEvent.preventDefault();
                 this.forceUpdate();
                 return;
@@ -183,12 +183,12 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
             case "Backspace":
                 if (this.state.selectedEntity !== this.props.globalState.guiTexture.getChildren()[0]) {
                     this.state.selectedEntity.dispose();
-                    this.props.globalState.selectedControls.forEach(node => {
+                    this.props.globalState.selectedControls.forEach((node) => {
                         if (node !== this.props.globalState.guiTexture.getChildren()[0]) {
                             node.dispose();
                         }
                         this.forceUpdate();
-                    })
+                    });
                 }
                 break;
         }
@@ -199,7 +199,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
 
         keyEvent.preventDefault();
         if (scene) {
-            const selectedEntity = this.props.globalState.selectedControls[this.props.globalState.selectedControls.length-1];
+            const selectedEntity = this.props.globalState.selectedControls[this.props.globalState.selectedControls.length - 1];
             const data = {};
             if (!this.findSiblings(null, scene.rootNodes, selectedEntity, goNext, data)) {
                 if (!this.findSiblings(null, scene.materials, selectedEntity, goNext, data)) {
@@ -235,7 +235,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                         this.props.globalState.selectionLock = false;
                     }
                 }}
-                onContextMenu={ev => ev.preventDefault()}
+                onContextMenu={(ev) => ev.preventDefault()}
             >
                 {guiElements && guiElements.length > 0 && (
                     <TreeItemComponent

@@ -1,11 +1,10 @@
-import { transcodeTarget, sourceTextureFormat, Transcoder } from './transcoder';
-import { WASMMemoryManager } from './wasmMemoryManager';
+import { transcodeTarget, sourceTextureFormat, Transcoder } from "./transcoder";
+import { WASMMemoryManager } from "./wasmMemoryManager";
 
 /**
  * @hidden
  */
 export class TranscoderManager {
-
     public static _Transcoders: Array<typeof Transcoder> = [];
 
     public static RegisterTranscoder(transcoder: typeof Transcoder) {

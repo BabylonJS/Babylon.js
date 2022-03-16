@@ -1,12 +1,11 @@
-import { Transcoder, sourceTextureFormat, transcodeTarget } from '../transcoder';
-import { WASMMemoryManager } from '../wasmMemoryManager';
-import { KTX2FileReader, IKTX2_ImageDesc } from '../ktx2FileReader';
+import { Transcoder, sourceTextureFormat, transcodeTarget } from "../transcoder";
+import { WASMMemoryManager } from "../wasmMemoryManager";
+import { KTX2FileReader, IKTX2_ImageDesc } from "../ktx2FileReader";
 
 /**
  * @hidden
  */
 export class LiteTranscoder extends Transcoder {
-
     private _modulePath: string;
     private _modulePromise: Promise<{ module: any }>;
     private _memoryManager: WASMMemoryManager;
@@ -48,7 +47,17 @@ export class LiteTranscoder extends Transcoder {
         this._memoryManager = memoryMgr;
     }
 
-    public transcode(src: sourceTextureFormat, dst: transcodeTarget, level: number, width: number, height: number, uncompressedByteLength: number, ktx2Reader: KTX2FileReader, imageDesc: IKTX2_ImageDesc | null, encodedData: Uint8Array): Promise<Uint8Array | null> {
+    public transcode(
+        src: sourceTextureFormat,
+        dst: transcodeTarget,
+        level: number,
+        width: number,
+        height: number,
+        uncompressedByteLength: number,
+        ktx2Reader: KTX2FileReader,
+        imageDesc: IKTX2_ImageDesc | null,
+        encodedData: Uint8Array
+    ): Promise<Uint8Array | null> {
         return this._loadModule().then((moduleWrapper: any) => {
             const transcoder: any = moduleWrapper.module;
             const [textureView, uncompressedTextureView, nBlocks] = this._prepareTranscoding(width, height, uncompressedByteLength, encodedData);
@@ -57,7 +66,13 @@ export class LiteTranscoder extends Transcoder {
         });
     }
 
-    protected _prepareTranscoding(width: number, height: number, uncompressedByteLength: number, encodedData: Uint8Array, forceRGBA = false): [Uint8Array, Uint8Array | null, number] {
+    protected _prepareTranscoding(
+        width: number,
+        height: number,
+        uncompressedByteLength: number,
+        encodedData: Uint8Array,
+        forceRGBA = false
+    ): [Uint8Array, Uint8Array | null, number] {
         const nBlocks = ((width + 3) >> 2) * ((height + 3) >> 2);
 
         if (forceRGBA) {
@@ -68,10 +83,12 @@ export class LiteTranscoder extends Transcoder {
 
         const textureView = this.memoryManager.getMemoryView(texMemoryPages, 65536, nBlocks * 16);
 
-        const uncompressedTextureView = this._transcodeInPlace ? null : new Uint8Array(this._memoryManager.wasmMemory.buffer, 65536 + nBlocks * 16, forceRGBA ? width * height * 4 : uncompressedByteLength);
+        const uncompressedTextureView = this._transcodeInPlace
+            ? null
+            : new Uint8Array(this._memoryManager.wasmMemory.buffer, 65536 + nBlocks * 16, forceRGBA ? width * height * 4 : uncompressedByteLength);
 
         textureView.set(encodedData);
 
-        return [textureView, uncompressedTextureView, nBlocks]
+        return [textureView, uncompressedTextureView, nBlocks];
     }
 }

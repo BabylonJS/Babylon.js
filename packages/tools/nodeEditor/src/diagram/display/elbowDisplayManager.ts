@@ -1,7 +1,7 @@
-import { IDisplayManager } from './displayManager';
-import { NodeMaterialBlock } from 'core/Materials/Node/nodeMaterialBlock';
-import { ElbowBlock } from 'core/Materials/Node/Blocks/elbowBlock';
-import { BlockTools } from '../../blockTools';
+import { IDisplayManager } from "./displayManager";
+import { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
+import { ElbowBlock } from "core/Materials/Node/Blocks/elbowBlock";
+import { BlockTools } from "../../blockTools";
 
 export class ElbowDisplayManager implements IDisplayManager {
     public getHeaderClass(block: NodeMaterialBlock) {
@@ -19,7 +19,7 @@ export class ElbowDisplayManager implements IDisplayManager {
     public getBackgroundColor(block: NodeMaterialBlock): string {
         let elbowBlock = block as ElbowBlock;
 
-        return BlockTools.GetColorFromConnectionNodeType(elbowBlock.input.type);;
+        return BlockTools.GetColorFromConnectionNodeType(elbowBlock.input.type);
     }
 
     public updatePreviewContent(block: NodeMaterialBlock, contentArea: HTMLDivElement): void {

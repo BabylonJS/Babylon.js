@@ -6,7 +6,21 @@ import { Skeleton } from "core/Bones/skeleton";
 import { Observable } from "core/Misc/observable";
 import { ISceneLoaderProgressEvent } from "core/Loading/sceneLoader";
 import { AnimationGroup } from "core/Animations/animationGroup";
-import { Animation, Animatable, CircleEase, BackEase, BounceEase, CubicEase, ElasticEase, ExponentialEase, PowerEase, QuadraticEase, QuarticEase, QuinticEase, SineEase } from "core/Animations/index";
+import {
+    Animation,
+    Animatable,
+    CircleEase,
+    BackEase,
+    BounceEase,
+    CubicEase,
+    ElasticEase,
+    ExponentialEase,
+    PowerEase,
+    QuadraticEase,
+    QuarticEase,
+    QuinticEase,
+    SineEase,
+} from "core/Animations/index";
 import { Nullable } from "core/types";
 import { Quaternion, Vector3 } from "core/Maths/math.vector";
 import { Tags } from "core/Misc/tags";
@@ -19,7 +33,7 @@ import { IAsset } from "babylonjs-gltf2interface";
 import { IModelConfiguration } from "../configuration/interfaces/modelConfiguration";
 import { IModelAnimationConfiguration } from "../configuration/interfaces/modelAnimationConfiguration";
 import { IModelAnimation, GroupModelAnimation, AnimationPlayMode, ModelAnimationConfiguration, EasingFunction, AnimationState } from "./modelAnimation";
-import { deepmerge, extendClassWithConfig } from '../helper/index';
+import { deepmerge, extendClassWithConfig } from "../helper/index";
 import { ObservablesManager } from "../managers/observablesManager";
 import { ConfigurationContainer } from "../configuration/configurationContainer";
 
@@ -34,7 +48,7 @@ export enum ModelState {
     ENTRYDONE,
     COMPLETE,
     CANCELED,
-    ERROR
+    ERROR,
 }
 
 /**
@@ -142,7 +156,9 @@ export class ViewerModel implements IDisposable {
         //create a copy of the configuration to make sure it doesn't change even after it is changed in the viewer
         this._modelConfiguration = deepmerge((this._configurationContainer && this._configurationContainer.configuration.model) || {}, modelConfiguration);
 
-        if (this._observablesManager) { this._observablesManager.onModelAddedObservable.notifyObservers(this); }
+        if (this._observablesManager) {
+            this._observablesManager.onModelAddedObservable.notifyObservers(this);
+        }
 
         if (this._modelConfiguration.entryAnimation) {
             this.rootMesh.setEnabled(false);
@@ -150,7 +166,9 @@ export class ViewerModel implements IDisposable {
 
         this.onLoadedObservable.add(() => {
             this.updateConfiguration(this._modelConfiguration);
-            if (this._observablesManager) { this._observablesManager.onModelLoadedObservable.notifyObservers(this); }
+            if (this._observablesManager) {
+                this._observablesManager.onModelLoadedObservable.notifyObservers(this);
+            }
             this._initAnimations();
         });
 
@@ -195,7 +213,7 @@ export class ViewerModel implements IDisposable {
     }
 
     private _checkCompleteState() {
-        if (this._loaderDone && (this.state === ModelState.ENTRYDONE)) {
+        if (this._loaderDone && this.state === ModelState.ENTRYDONE) {
             this._modelComplete();
         }
     }
@@ -274,9 +292,7 @@ export class ViewerModel implements IDisposable {
             });
         }
 
-        let completeCallback = () => {
-
-        };
+        let completeCallback = () => {};
 
         if (this._modelConfiguration.animation) {
             if (this._modelConfiguration.animation.playOnce) {
@@ -285,8 +301,7 @@ export class ViewerModel implements IDisposable {
                 });
             }
             if (this._modelConfiguration.animation.autoStart && this._animations.length) {
-                let animationName = this._modelConfiguration.animation.autoStart === true ?
-                    this._animations[0].name : this._modelConfiguration.animation.autoStart;
+                let animationName = this._modelConfiguration.animation.autoStart === true ? this._animations[0].name : this._modelConfiguration.animation.autoStart;
 
                 completeCallback = () => {
                     this.playAnimation(animationName);
@@ -308,7 +323,9 @@ export class ViewerModel implements IDisposable {
             this.state = ModelState.ENTRYDONE;
             scene.animationPropertiesOverride!.enableBlending = previousValue;
             this._checkCompleteState();
-            if (completeCallback) { completeCallback(); }
+            if (completeCallback) {
+                completeCallback();
+            }
         };
         if (!this._entryAnimation) {
             callback();
@@ -336,9 +353,11 @@ export class ViewerModel implements IDisposable {
     private _modelComplete() {
         //reapply material defines to be sure:
         let meshes = this._pivotMesh.getChildMeshes(false);
-        meshes.filter((m) => m.material).forEach((mesh) => {
-            this._applyModelMaterialConfiguration(mesh.material!);
-        });
+        meshes
+            .filter((m) => m.material)
+            .forEach((mesh) => {
+                this._applyModelMaterialConfiguration(mesh.material!);
+            });
         this.state = ModelState.COMPLETE;
         this.onCompleteObservable.notifyObservers(this);
     }
@@ -418,18 +437,18 @@ export class ViewerModel implements IDisposable {
                 }
             });
         };
-        let updateXYZ = (variable: string, configValues: { x: number, y: number, z: number, w?: number }) => {
+        let updateXYZ = (variable: string, configValues: { x: number; y: number; z: number; w?: number }) => {
             if (configValues.x !== undefined) {
-                updateMeshesWithNoParent(variable, configValues.x, 'x');
+                updateMeshesWithNoParent(variable, configValues.x, "x");
             }
             if (configValues.y !== undefined) {
-                updateMeshesWithNoParent(variable, configValues.y, 'y');
+                updateMeshesWithNoParent(variable, configValues.y, "y");
             }
             if (configValues.z !== undefined) {
-                updateMeshesWithNoParent(variable, configValues.z, 'z');
+                updateMeshesWithNoParent(variable, configValues.z, "z");
             }
             if (configValues.w !== undefined) {
-                updateMeshesWithNoParent(variable, configValues.w, 'w');
+                updateMeshesWithNoParent(variable, configValues.w, "w");
             }
         };
 
@@ -479,7 +498,7 @@ export class ViewerModel implements IDisposable {
 
         // position?
         if (this._modelConfiguration.position) {
-            updateXYZ('position', this._modelConfiguration.position);
+            updateXYZ("position", this._modelConfiguration.position);
         }
         if (this._modelConfiguration.rotation) {
             //quaternion?
@@ -489,37 +508,42 @@ export class ViewerModel implements IDisposable {
                         mesh.rotationQuaternion = new Quaternion();
                     }
                 });
-                updateXYZ('rotationQuaternion', this._modelConfiguration.rotation);
+                updateXYZ("rotationQuaternion", this._modelConfiguration.rotation);
             } else {
-                updateXYZ('rotation', this._modelConfiguration.rotation);
+                updateXYZ("rotation", this._modelConfiguration.rotation);
             }
         }
 
         if (this._modelConfiguration.rotationOffsetAxis) {
-            let rotationAxis = new Vector3(this._modelConfiguration.rotationOffsetAxis.x, this._modelConfiguration.rotationOffsetAxis.y, this._modelConfiguration.rotationOffsetAxis.z);
+            let rotationAxis = new Vector3(
+                this._modelConfiguration.rotationOffsetAxis.x,
+                this._modelConfiguration.rotationOffsetAxis.y,
+                this._modelConfiguration.rotationOffsetAxis.z
+            );
 
             meshesWithNoParent.forEach((m) => {
                 if (this._modelConfiguration.rotationOffsetAngle) {
                     m.rotate(rotationAxis, this._modelConfiguration.rotationOffsetAngle);
                 }
             });
-
         }
 
         if (this._modelConfiguration.scaling) {
-            updateXYZ('scaling', this._modelConfiguration.scaling);
+            updateXYZ("scaling", this._modelConfiguration.scaling);
         }
 
         if (this._modelConfiguration.castShadow) {
             this._meshes.forEach((mesh) => {
-                Tags.AddTagsTo(mesh, 'castShadow');
+                Tags.AddTagsTo(mesh, "castShadow");
             });
         }
 
         let meshes = this._pivotMesh.getChildMeshes(false);
-        meshes.filter((m) => m.material).forEach((mesh) => {
-            this._applyModelMaterialConfiguration(mesh.material!);
-        });
+        meshes
+            .filter((m) => m.material)
+            .forEach((mesh) => {
+                this._applyModelMaterialConfiguration(mesh.material!);
+            });
 
         if (this._modelConfiguration.entryAnimation) {
             this._entryAnimation = this._modelAnimationConfigurationToObject(this._modelConfiguration.entryAnimation);
@@ -534,7 +558,7 @@ export class ViewerModel implements IDisposable {
 
     private _modelAnimationConfigurationToObject(animConfig: IModelAnimationConfiguration): ModelAnimationConfiguration {
         let anim: ModelAnimationConfiguration = {
-            time: 0.5
+            time: 0.5,
         };
         if (animConfig.scaling) {
             anim.scaling = Vector3.Zero();
@@ -555,7 +579,9 @@ export class ViewerModel implements IDisposable {
      * @hidden
      */
     public _applyModelMaterialConfiguration(material: Material) {
-        if (!this._modelConfiguration.material) { return; }
+        if (!this._modelConfiguration.material) {
+            return;
+        }
 
         extendClassWithConfig(material, this._modelConfiguration.material);
 
@@ -578,8 +604,7 @@ export class ViewerModel implements IDisposable {
             if (this._configurationContainer && this._configurationContainer.reflectionColor) {
                 material.reflectionColor = this._configurationContainer.reflectionColor.clone();
             }
-        }
-        else if (material instanceof MultiMaterial) {
+        } else if (material instanceof MultiMaterial) {
             for (let i = 0; i < material.subMaterials.length; i++) {
                 const subMaterial = material.subMaterials[i];
                 if (subMaterial) {
@@ -600,47 +625,39 @@ export class ViewerModel implements IDisposable {
 
         //scale
         if (animationConfiguration.scaling) {
-
             let scaleStart: Vector3 = isEntry ? animationConfiguration.scaling : new Vector3(1, 1, 1);
             let scaleEnd: Vector3 = isEntry ? new Vector3(1, 1, 1) : animationConfiguration.scaling;
 
             if (!scaleStart.equals(scaleEnd)) {
                 this.rootMesh.scaling = scaleStart;
-                this._setLinearKeys(
-                    this._scaleTransition,
-                    this.rootMesh.scaling,
-                    scaleEnd,
-                    animationConfiguration.time
-                );
+                this._setLinearKeys(this._scaleTransition, this.rootMesh.scaling, scaleEnd, animationConfiguration.time);
                 animations.push(this._scaleTransition);
             }
         }
 
         //Start the animation(s)
-        this.transitionTo(
-            animations,
-            animationConfiguration.time,
-            this._createEasingFunction(animationConfiguration.easingFunction),
-            animationConfiguration.easingMode,
-            () => { if (completeCallback) { completeCallback(); } }
-        );
+        this.transitionTo(animations, animationConfiguration.time, this._createEasingFunction(animationConfiguration.easingFunction), animationConfiguration.easingMode, () => {
+            if (completeCallback) {
+                completeCallback();
+            }
+        });
     }
 
     /**
-    * Begin @animations with the specified @easingFunction
-    * @param animations The BABYLON Animations to begin
-    * @param duration of transition, in seconds
-    * @param easingFunction An easing function to apply
-    * @param easingMode A easing mode to apply to the easingFunction
-    * @param onAnimationEnd Call back trigger at the end of the animation.
-    */
+     * Begin @animations with the specified @easingFunction
+     * @param animations The BABYLON Animations to begin
+     * @param duration of transition, in seconds
+     * @param easingFunction An easing function to apply
+     * @param easingMode A easing mode to apply to the easingFunction
+     * @param onAnimationEnd Call back trigger at the end of the animation.
+     */
     public transitionTo(
         animations: Animation[],
         duration: number,
         easingFunction: any,
         easingMode: number = 2, // BABYLON.EasingFunction.EASINGMODE_EASEINOUT,
-        onAnimationEnd: () => void): void {
-
+        onAnimationEnd: () => void
+    ): void {
         if (easingFunction) {
             for (let animation of animations) {
                 easingFunction.setEasingMode(easingMode);
@@ -674,12 +691,12 @@ export class ViewerModel implements IDisposable {
         animation.setKeys([
             {
                 frame: 0,
-                value: startValue
+                value: startValue,
             },
             {
                 frame: this._frameRate * duration,
-                value: endValue
-            }
+                value: endValue,
+            },
         ]);
     }
 
@@ -758,7 +775,9 @@ export class ViewerModel implements IDisposable {
 
         // hide it
         this.rootMesh.isVisible = false;
-        if (this._observablesManager) { this._observablesManager.onModelRemovedObservable.notifyObservers(this); }
+        if (this._observablesManager) {
+            this._observablesManager.onModelRemovedObservable.notifyObservers(this);
+        }
     }
 
     /**

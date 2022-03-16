@@ -1,8 +1,8 @@
-import { IDisplayManager } from './displayManager';
-import { NodeMaterialBlock } from 'core/Materials/Node/nodeMaterialBlock';
-import { InputBlock } from 'core/Materials/Node/Blocks/Input/inputBlock';
-import { RemapBlock } from 'core/Materials/Node/Blocks/remapBlock';
-import { NodeMaterialConnectionPoint } from 'core/Materials/Node/nodeMaterialBlockConnectionPoint';
+import { IDisplayManager } from "./displayManager";
+import { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
+import { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
+import { RemapBlock } from "core/Materials/Node/Blocks/remapBlock";
+import { NodeMaterialConnectionPoint } from "core/Materials/Node/nodeMaterialBlockConnectionPoint";
 
 export class RemapDisplayManager implements IDisplayManager {
     public getHeaderClass(block: NodeMaterialBlock) {

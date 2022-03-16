@@ -73,7 +73,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     private _trueRootContainer: Container;
     public set trueRootContainer(value: Container) {
         if (value === this._trueRootContainer) return;
-        this._visibleRegionContainer.children.forEach(child => this._visibleRegionContainer.removeControl(child));
+        this._visibleRegionContainer.children.forEach((child) => this._visibleRegionContainer.removeControl(child));
         this._visibleRegionContainer.addControl(value);
         this._trueRootContainer = value;
         this._trueRootContainer.isPointerBlocker = false;
@@ -186,7 +186,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             }
         });
 
-
         globalState.onSelectionButtonObservable.add(() => {
             this._forceSelecting = !this._forceSelecting;
             this._forcePanning = false;
@@ -240,9 +239,9 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             this._engine.resize();
         });
 
-        globalState.onCopyObservable.add(copyFn => this.copyToClipboard(copyFn));
-        globalState.onCutObservable.add(copyFn => this.cutToClipboard(copyFn));
-        globalState.onPasteObservable.add(content => this.pasteFromClipboard(content));
+        globalState.onCopyObservable.add((copyFn) => this.copyToClipboard(copyFn));
+        globalState.onCutObservable.add((copyFn) => this.cutToClipboard(copyFn));
+        globalState.onPasteObservable.add((content) => this.pasteFromClipboard(content));
 
         globalState.workbench = this;
         globalState.onResizeObservable.notifyObservers(this._guiSize);
@@ -253,12 +252,11 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             // if we're still on the same main selection, got down the tree.
             if (selection === this.props.globalState.selectedControls[0]) {
                 selection = this._getParentWithDepth(selection);
-
-            } else { // get the start of our tree by getting our max parent and storing our main selected control
+            } else {
+                // get the start of our tree by getting our max parent and storing our main selected control
                 if (this._isMainSelectionParent(selection) && this._mainSelection) {
                     selection = this._getParentWithDepth(selection);
-                }
-                else {
+                } else {
                     selection = this._getMaxParent(selection, this.trueRootContainer);
                 }
                 this._mainSelection = selection;
@@ -300,21 +298,23 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             this.props.globalState.guiTexture.removeControl(control);
             this.props.globalState.liveGuiTexture?.removeControl(control);
             control.dispose();
-        };
+        }
         this.props.globalState.setSelection([]);
     }
 
     public copyToClipboard(copyFn: (content: string) => void) {
         const controlList: any[] = [];
         for (const control of this.selectedGuiNodes) {
-            const obj = {}
+            const obj = {};
             control.serialize(obj);
             controlList.push(obj);
         }
-        copyFn(JSON.stringify({
-            GUIClipboard: true,
-            controls: controlList
-        }));
+        copyFn(
+            JSON.stringify({
+                GUIClipboard: true,
+                controls: controlList,
+            })
+        );
     }
 
     public cutToClipboard(copyFn: (content: string) => void) {
@@ -333,8 +333,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 this.props.globalState.setSelection(newSelection);
                 return true;
             }
-        }
-        catch {
+        } catch {
             // don't need an error message
         }
         Logger.Warn("Paste attempted, but clipboard content was invalid.");
@@ -392,7 +391,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         if (this.props.globalState.liveGuiTexture) {
             this.props.globalState.liveGuiTexture.onEndRenderObservable.remove(this._liveRenderObserver);
             this.props.globalState.guiTexture.onBeginRenderObservable.remove(this._guiRenderObserver);
-            this.props.globalState.guiTexture.getDescendants(false).forEach(control => {
+            this.props.globalState.guiTexture.getDescendants(false).forEach((control) => {
                 if (!control.metadata || !control.metadata.guiEditor) {
                     return;
                 }
@@ -404,8 +403,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 control.highlightLineWidth = control.metadata.highlightLineWidth;
                 control.isHighlighted = control.metadata.isHighlighted;
                 control.metadata = control.metadata.metadata;
-            })
-
+            });
         }
         this._engine.dispose();
     }
@@ -478,7 +476,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         do {
             if (this._mainSelection === control) {
                 return true;
-            };
+            }
             control = control?.parent || null;
         } while (control);
         return false;
@@ -499,8 +497,8 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                     window.setTimeout(() => {
                         this._doubleClick = null;
                     }, Scene.DoubleClickDelay);
-                }
-                else { //function will either select our new main control or contrue down the tree.
+                } else {
+                    //function will either select our new main control or contrue down the tree.
                     this.determineMouseSelection(guiControl);
                     this._doubleClick = null;
                 }
@@ -540,8 +538,8 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             onPointerDown,
             onPointerEnter,
             onPointerOut,
-            onDispose
-        }
+            onDispose,
+        };
         guiControl.highlightLineWidth = 5;
         guiControl.isHighlighted = false;
         guiControl.isReadOnly = true;
@@ -672,7 +670,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             newX = 0;
         }
         const referenceAxis = new Vector2(newX, newY);
-        
+
         if (guiControl.typeName === "Line") {
             let line = guiControl as Line;
             const x1 = (line.x1 as string).substr(0, (line.x1 as string).length - 2); //removing the 'px'
@@ -687,20 +685,20 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         }
 
         let totalRotation = 0;
-        let currentControl : Nullable<Control> = guiControl;
+        let currentControl: Nullable<Control> = guiControl;
         while (currentControl) {
             totalRotation += currentControl.rotation;
 
             currentControl = currentControl.parent;
         }
-        const rotatedReferenceAxis = new Vector2(0,0);
+        const rotatedReferenceAxis = new Vector2(0, 0);
 
         // Rotate the reference axis by the total rotation of the control
         const sinR = Math.sin(-totalRotation);
         const cosR = Math.cos(-totalRotation);
         rotatedReferenceAxis.x = cosR * referenceAxis.x - sinR * referenceAxis.y;
         rotatedReferenceAxis.y = sinR * referenceAxis.x + cosR * referenceAxis.y;
-        
+
         // Apply the amount of change
         guiControl.leftInPixels += rotatedReferenceAxis.x;
         guiControl.topInPixels += rotatedReferenceAxis.y;
@@ -793,10 +791,10 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this._panAndZoomContainer.addControl(this._visibleRegionContainer);
 
         const adt =
-            this.globalState.guiTexture =
+            (this.globalState.guiTexture =
             this._visibleRegionContainer._host =
             this._panAndZoomContainer._host =
-            AdvancedDynamicTexture.CreateFullscreenUI("guiTexture", true, this._scene, Texture.NEAREST_NEAREST_MIPNEAREST, false);
+                AdvancedDynamicTexture.CreateFullscreenUI("guiTexture", true, this._scene, Texture.NEAREST_NEAREST_MIPNEAREST, false));
 
         adt.useInvalidateRectOptimization = false;
         this.trueRootContainer = adt.rootContainer;
@@ -819,12 +817,12 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
         this.globalState.guiTexture.onBeginRenderObservable.add(() => {
             this.applyEditorTransformation();
-        })
+        });
 
         this.globalState.onPropertyChangedObservable.add((ev) => {
             (ev.object as Control).markAsDirty(false);
             this.globalState.onArtBoardUpdateRequiredObservable.notifyObservers();
-        })
+        });
 
         // Every time the original ADT re-renders, we must also re-render, so that layout information is computed correctly
         // also, every time *we* re-render (due to a change in the GUI), we must re-render the original ADT
@@ -846,7 +844,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                     this._nextLiveGuiRender = -1;
                     this.globalState.liveGuiTexture?.markAsDirty();
                 }
-            })
+            });
         }
 
         this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers(
@@ -863,21 +861,20 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     // removes all controls from both GUIs, and re-adds the controls from the original to the GUI editor
     synchronizeLiveGUI() {
         if (this.globalState.liveGuiTexture) {
-            this._trueRootContainer.getDescendants().forEach(desc => desc.dispose());
-            this.globalState.liveGuiTexture.rootContainer.getDescendants(true).forEach(desc => {
+            this._trueRootContainer.getDescendants().forEach((desc) => desc.dispose());
+            this.globalState.liveGuiTexture.rootContainer.getDescendants(true).forEach((desc) => {
                 this.globalState.liveGuiTexture?.removeControl(desc);
                 this.appendBlock(desc);
-            })
+            });
             this.globalState.guiTexture.snippetId = this.globalState.liveGuiTexture.snippetId;
         }
     }
 
     //Add zoom and pan controls
     addControls(scene: Scene) {
-
         const zoomFnScrollWheel = (e: WheelEvent) => {
             const delta = this.zoomWheel(e);
-            this.zooming(1 + (delta / 1000));
+            this.zooming(1 + delta / 1000);
         };
 
         const panningFn = () => this.panning();
@@ -886,23 +883,22 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             this._scene.onPointerObservable.add(panningFn, PointerEventTypes.POINTERMOVE);
             this._panning = true;
             this._initialPanningOffset = this.getScaledPointerPosition();
-            this._panAndZoomContainer.getDescendants().forEach(desc => {
-
+            this._panAndZoomContainer.getDescendants().forEach((desc) => {
                 if (!desc.metadata) desc.metadata = {};
                 desc.metadata.isPointerBlocker = desc.isPointerBlocker;
                 desc.isPointerBlocker = false;
-            })
-        }
+            });
+        };
 
         const endPanning = () => {
             this._panning = false;
-            this._panAndZoomContainer.getDescendants().forEach(desc => {
+            this._panAndZoomContainer.getDescendants().forEach((desc) => {
                 if (desc.metadata && desc.metadata.isPointerBlocker !== undefined) {
                     desc.isPointerBlocker = desc.metadata.isPointerBlocker;
                     delete desc.metadata.isPointerBlocker;
                 }
-            })
-        }
+            });
+        };
 
         const removeObservers = () => {
             scene.onPointerObservable.removeCallback(panningFn);
@@ -924,7 +920,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                         this.props.globalState.setSelection([]);
                     }
                     this._anyControlClicked = false;
-
                 });
             }
         });
@@ -932,7 +927,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             this._panning = false;
             removeObservers();
             this.props.globalState.onPointerUpObservable.notifyObservers(event);
-        })
+        });
 
         scene.onKeyboardObservable.add((k: KeyboardInfo, e: KeyboardEventTypes) => {
             switch (k.event.key) {
@@ -987,7 +982,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 this.globalState.onArtBoardUpdateRequiredObservable.notifyObservers();
                 this.globalState.onGizmoUpdateRequireObservable.notifyObservers();
             }
-        })
+        });
 
         // stop context menu showing on canvas right click
         scene
@@ -1007,28 +1002,30 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this.props.globalState.onGizmoUpdateRequireObservable.notifyObservers();
     }
 
-    // Move the selected controls. Can be either on horizontal (leftInPixels) or 
+    // Move the selected controls. Can be either on horizontal (leftInPixels) or
     // vertical (topInPixels) direction
     moveControls(moveHorizontal: boolean, amount: number) {
         for (let selectedControl of this.props.globalState.workbench.selectedGuiNodes) {
-            if (moveHorizontal) { // move horizontal
+            if (moveHorizontal) {
+                // move horizontal
                 const prevValue = selectedControl.leftInPixels;
                 selectedControl.leftInPixels += amount;
                 this.props.globalState.onPropertyChangedObservable.notifyObservers({
                     object: selectedControl,
                     property: "leftInPixels",
                     value: selectedControl.leftInPixels,
-                    initialValue: prevValue
+                    initialValue: prevValue,
                 });
                 this.props.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
-            } else { // move vertical
+            } else {
+                // move vertical
                 const prevValue = selectedControl.topInPixels;
                 selectedControl.topInPixels += amount;
                 this.props.globalState.onPropertyChangedObservable.notifyObservers({
                     object: selectedControl,
                     property: "topInPixels",
                     value: selectedControl.topInPixels,
-                    initialValue: prevValue
+                    initialValue: prevValue,
                 });
                 this.props.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
             }
@@ -1037,7 +1034,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
     //Get the wheel delta
     zoomWheel(event: WheelEvent) {
-
         event.preventDefault();
         let delta = 0;
         if (event.deltaY) {
@@ -1068,22 +1064,21 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
     render() {
         return (
-
-            <canvas id="workbench-canvas" onPointerMove={
-                (evt) => {
+            <canvas
+                id="workbench-canvas"
+                onPointerMove={(evt) => {
                     if (this.props.globalState.guiTexture) {
                         this.onMove(evt);
                     }
                     this.props.globalState.onPointerMoveObservable.notifyObservers(evt);
-                }} onPointerDown={(evt) => this.onDown(evt)}
+                }}
+                onPointerDown={(evt) => this.onDown(evt)}
                 onPointerUp={(evt) => {
                     this.onUp(evt);
                     this.props.globalState.onPointerUpObservable.notifyObservers(evt);
                 }}
-                ref={this._rootContainer}>
-
-            </canvas>
-
+                ref={this._rootContainer}
+            ></canvas>
         );
     }
 }

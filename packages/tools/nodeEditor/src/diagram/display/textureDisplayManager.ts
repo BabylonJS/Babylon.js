@@ -1,12 +1,12 @@
-import { IDisplayManager } from './displayManager';
-import { NodeMaterialBlock } from 'core/Materials/Node/nodeMaterialBlock';
-import { TextureBlock } from 'core/Materials/Node/Blocks/Dual/textureBlock';
-import { RefractionBlock } from 'core/Materials/Node/Blocks/PBR/refractionBlock';
-import { ReflectionTextureBlock } from 'core/Materials/Node/Blocks/Dual/reflectionTextureBlock';
-import { ReflectionBlock } from 'core/Materials/Node/Blocks/PBR/reflectionBlock';
-import { TextureLineComponent } from '../../sharedComponents/textureLineComponent';
-import { CurrentScreenBlock } from 'core/Materials/Node/Blocks/Dual/currentScreenBlock';
-import { ParticleTextureBlock } from 'core/Materials/Node/Blocks/Particle/particleTextureBlock';
+import { IDisplayManager } from "./displayManager";
+import { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
+import { TextureBlock } from "core/Materials/Node/Blocks/Dual/textureBlock";
+import { RefractionBlock } from "core/Materials/Node/Blocks/PBR/refractionBlock";
+import { ReflectionTextureBlock } from "core/Materials/Node/Blocks/Dual/reflectionTextureBlock";
+import { ReflectionBlock } from "core/Materials/Node/Blocks/PBR/reflectionBlock";
+import { TextureLineComponent } from "../../sharedComponents/textureLineComponent";
+import { CurrentScreenBlock } from "core/Materials/Node/Blocks/Dual/currentScreenBlock";
+import { ParticleTextureBlock } from "core/Materials/Node/Blocks/Particle/particleTextureBlock";
 
 export class TextureDisplayManager implements IDisplayManager {
     private _previewCanvas: HTMLCanvasElement;
@@ -50,16 +50,22 @@ export class TextureDisplayManager implements IDisplayManager {
         }
 
         if (textureBlock.texture) {
-            TextureLineComponent.UpdatePreview(this._previewCanvas, textureBlock.texture, 140, {
-                face: 0,
-                displayRed: true,
-                displayAlpha: true,
-                displayBlue: true,
-                displayGreen: true
-            }, () => {
-                this._previewImage.src = this._previewCanvas.toDataURL("image/png");
-                this._previewImage.classList.remove("empty");
-            });
+            TextureLineComponent.UpdatePreview(
+                this._previewCanvas,
+                textureBlock.texture,
+                140,
+                {
+                    face: 0,
+                    displayRed: true,
+                    displayAlpha: true,
+                    displayBlue: true,
+                    displayGreen: true,
+                },
+                () => {
+                    this._previewImage.src = this._previewCanvas.toDataURL("image/png");
+                    this._previewImage.classList.remove("empty");
+                }
+            );
         } else {
             this._previewImage.classList.add("empty");
         }

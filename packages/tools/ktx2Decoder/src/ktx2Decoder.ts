@@ -8,15 +8,15 @@
  *  - KTX-Software: https://github.com/KhronosGroup/KTX-Software
  */
 
-import { KTX2FileReader, SupercompressionScheme, IKTX2_ImageDesc } from './ktx2FileReader';
-import { TranscoderManager } from './transcoderManager';
-import { LiteTranscoder_UASTC_ASTC } from './Transcoders/liteTranscoder_UASTC_ASTC';
-import { LiteTranscoder_UASTC_BC7 } from './Transcoders/liteTranscoder_UASTC_BC7';
-import { LiteTranscoder_UASTC_RGBA_UNORM } from './Transcoders/liteTranscoder_UASTC_RGBA_UNORM';
-import { LiteTranscoder_UASTC_RGBA_SRGB } from './Transcoders/liteTranscoder_UASTC_RGBA_SRGB';
-import { MSCTranscoder } from './Transcoders/mscTranscoder';
-import { transcodeTarget, sourceTextureFormat } from './transcoder';
-import { ZSTDDecoder } from './zstddec';
+import { KTX2FileReader, SupercompressionScheme, IKTX2_ImageDesc } from "./ktx2FileReader";
+import { TranscoderManager } from "./transcoderManager";
+import { LiteTranscoder_UASTC_ASTC } from "./Transcoders/liteTranscoder_UASTC_ASTC";
+import { LiteTranscoder_UASTC_BC7 } from "./Transcoders/liteTranscoder_UASTC_BC7";
+import { LiteTranscoder_UASTC_RGBA_UNORM } from "./Transcoders/liteTranscoder_UASTC_RGBA_UNORM";
+import { LiteTranscoder_UASTC_RGBA_SRGB } from "./Transcoders/liteTranscoder_UASTC_RGBA_SRGB";
+import { MSCTranscoder } from "./Transcoders/mscTranscoder";
+import { transcodeTarget, sourceTextureFormat } from "./transcoder";
+import { ZSTDDecoder } from "./zstddec";
 import { TranscodeDecisionTree } from "./transcodeDecisionTree";
 
 export interface IDecodedData {
@@ -59,7 +59,7 @@ export interface IKTX2DecoderOptions {
      *      UniversalTranscoder_UASTC_RGBA_UNORM
      *      UniversalTranscoder_UASTC_RGBA_SRGB
      *      MSCTranscoder
-    */
+     */
     bypassTranscoders?: string[];
 }
 
@@ -72,7 +72,6 @@ const isPowerOfTwo = (value: number) => {
  *
  */
 export class KTX2Decoder {
-
     private _transcoderMgr: TranscoderManager;
     private _zstdDecoder: ZSTDDecoder;
 
@@ -123,7 +122,15 @@ export class KTX2Decoder {
 
         const mipmaps: Array<IMipmap> = [];
         const dataPromises: Array<Promise<Uint8Array | null>> = [];
-        const decodedData: IDecodedData = { width: 0, height: 0, transcodedFormat: engineFormat, mipmaps, isInGammaSpace: kfr.isInGammaSpace, hasAlpha: kfr.hasAlpha, transcoderName: transcoder.getName() };
+        const decodedData: IDecodedData = {
+            width: 0,
+            height: 0,
+            transcodedFormat: engineFormat,
+            mipmaps,
+            isInGammaSpace: kfr.isInGammaSpace,
+            hasAlpha: kfr.hasAlpha,
+            transcoderName: transcoder.getName(),
+        };
 
         let firstImageDescIndex = 0;
 
@@ -175,7 +182,8 @@ export class KTX2Decoder {
                     height: levelHeight,
                 };
 
-                const transcodedData = transcoder.transcode(srcTexFormat, transcodeFormat, level, levelWidth, levelHeight, levelUncompressedByteLength, kfr, imageDesc, encodedData)
+                const transcodedData = transcoder
+                    .transcode(srcTexFormat, transcodeFormat, level, levelWidth, levelHeight, levelUncompressedByteLength, kfr, imageDesc, encodedData)
                     .then((data) => {
                         mipmap.data = data;
                         return data;

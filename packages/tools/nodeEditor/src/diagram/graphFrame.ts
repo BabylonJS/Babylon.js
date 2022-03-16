@@ -1,15 +1,15 @@
-import { GraphNode } from './graphNode';
-import { GraphCanvasComponent } from './graphCanvas';
-import { Nullable } from 'core/types';
-import { Observer, Observable } from 'core/Misc/observable';
-import { NodeLink } from './nodeLink';
-import { IFrameData } from '../nodeLocationInfo';
-import { Color3 } from 'core/Maths/math.color';
-import { NodePort } from './nodePort';
-import { SerializationTools } from '../serializationTools';
-import { StringTools } from 'shared-ui-components/stringTools';
-import { FrameNodePort } from './frameNodePort';
-import { ISelectionChangedOptions } from '../globalState';
+import { GraphNode } from "./graphNode";
+import { GraphCanvasComponent } from "./graphCanvas";
+import { Nullable } from "core/types";
+import { Observer, Observable } from "core/Misc/observable";
+import { NodeLink } from "./nodeLink";
+import { IFrameData } from "../nodeLocationInfo";
+import { Color3 } from "core/Maths/math.color";
+import { NodePort } from "./nodePort";
+import { SerializationTools } from "../serializationTools";
+import { StringTools } from "shared-ui-components/stringTools";
+import { FrameNodePort } from "./frameNodePort";
+import { ISelectionChangedOptions } from "../globalState";
 
 enum ResizingDirection {
     Right,
@@ -19,12 +19,14 @@ enum ResizingDirection {
     TopRight,
     TopLeft,
     BottomRight,
-    BottomLeft
+    BottomLeft,
 }
 
 export enum FramePortPosition {
-    Top, Middle, Bottom
-};
+    Top,
+    Middle,
+    Bottom,
+}
 
 export class GraphFrame {
     private readonly CollapsedWidth = 200;
@@ -85,13 +87,22 @@ export class GraphFrame {
     }
 
     private _createInputPort(port: NodePort, node: GraphNode) {
-        let localPort = FrameNodePort.CreateFrameNodePortElement(port.connectionPoint, node, this._inputPortContainer, null, this._ownerCanvas.globalState, true, GraphFrame._FramePortCounter++, this.id);
+        let localPort = FrameNodePort.CreateFrameNodePortElement(
+            port.connectionPoint,
+            node,
+            this._inputPortContainer,
+            null,
+            this._ownerCanvas.globalState,
+            true,
+            GraphFrame._FramePortCounter++,
+            this.id
+        );
         this._frameInPorts.push(localPort);
 
         port.delegatedPort = localPort;
         this._controlledPorts.push(port);
 
-        port.exposedPortPosition = this._exposedInPorts.findIndex(nodePort => nodePort === port);
+        port.exposedPortPosition = this._exposedInPorts.findIndex((nodePort) => nodePort === port);
         if (port.exposedPortPosition < 0) {
             this._exposedInPorts.push(port);
             port.exposedPortPosition = this._exposedInPorts.length - 1;
@@ -100,7 +111,7 @@ export class GraphFrame {
 
     // Mark ports with FramePortPosition for re-arrangement support
     private _markFramePortPositions() {
-        // mark FrameInPorts 
+        // mark FrameInPorts
         if (this._frameInPorts.length == 2) {
             this._frameInPorts[0].framePortPosition = FramePortPosition.Top;
             this._frameInPorts[1].framePortPosition = FramePortPosition.Bottom;
@@ -125,29 +136,27 @@ export class GraphFrame {
             for (let i = 0; i < this._frameOutPorts.length; i++) {
                 const port = this._frameOutPorts[i];
                 if (i === 0) {
-                    port.framePortPosition = FramePortPosition.Top
+                    port.framePortPosition = FramePortPosition.Top;
                 } else if (i === this._frameInPorts.length - 1) {
-                    port.framePortPosition = FramePortPosition.Bottom
+                    port.framePortPosition = FramePortPosition.Bottom;
                 } else {
-                    port.framePortPosition = FramePortPosition.Middle
+                    port.framePortPosition = FramePortPosition.Middle;
                 }
             }
         }
     }
 
     private _createFramePorts() {
-
         for (var node of this._nodes) {
             node.isVisible = false;
         }
 
-        for (var i = 0; i < this._exposedOutPorts.length;) { // Output
+        for (var i = 0; i < this._exposedOutPorts.length; ) {
+            // Output
             var port = this._exposedOutPorts[i];
             if (port.node === null || port.node.enclosingFrameId != this.id) {
-                if (this.removePortFromExposedWithNode(port, this._exposedOutPorts))
-                    continue;
-            }
-            else {
+                if (this.removePortFromExposedWithNode(port, this._exposedOutPorts)) continue;
+            } else {
                 if (!this.createOutputPorts(port, port.node) && this.removePortFromExposedWithNode(port, this._exposedOutPorts)) {
                     continue;
                 }
@@ -155,14 +164,14 @@ export class GraphFrame {
             ++i;
         }
 
-        for (var i = 0; i < this._exposedInPorts.length;) { // Input
+        for (var i = 0; i < this._exposedInPorts.length; ) {
+            // Input
             var port = this._exposedInPorts[i];
             if (!port || port.node === null || port.node.enclosingFrameId != this.id) {
                 if (this.removePortFromExposedWithNode(port, this._exposedInPorts)) {
                     continue;
                 }
-            }
-            else {
+            } else {
                 if (!this.createInputPorts(port, port.node) && this.removePortFromExposedWithNode(port, this._exposedInPorts)) {
                     continue;
                 }
@@ -171,8 +180,9 @@ export class GraphFrame {
         }
 
         for (var node of this._nodes) {
-            for (let port of node.outputPorts) { // Output
-                port.exposedPortPosition = this._exposedOutPorts.findIndex(nodePort => nodePort === port);
+            for (let port of node.outputPorts) {
+                // Output
+                port.exposedPortPosition = this._exposedOutPorts.findIndex((nodePort) => nodePort === port);
                 if (port.exposedPortPosition < 0) {
                     if (this.createOutputPorts(port, node)) {
                         port.node.enclosingFrameId = this.id;
@@ -181,8 +191,9 @@ export class GraphFrame {
                     }
                 }
             }
-            for (var port of node.inputPorts) { // Input
-                port.exposedPortPosition = this._exposedInPorts.findIndex(nodePort => nodePort === port);
+            for (var port of node.inputPorts) {
+                // Input
+                port.exposedPortPosition = this._exposedInPorts.findIndex((nodePort) => nodePort === port);
                 if (port.exposedPortPosition < 0) {
                     this.createInputPorts(port, node);
                 }
@@ -191,9 +202,9 @@ export class GraphFrame {
     }
 
     private removePortFromExposedWithNode(port: NodePort, exposedPorts: NodePort[]) {
-        let index = exposedPorts.findIndex(nodePort => nodePort === port);
+        let index = exposedPorts.findIndex((nodePort) => nodePort === port);
         if (index >= 0) {
-            exposedPorts.splice(index, 1)
+            exposedPorts.splice(index, 1);
             if (port) {
                 port.exposedPortPosition = -1;
             }
@@ -203,8 +214,8 @@ export class GraphFrame {
     }
 
     private removePortFromExposedWithLink(nodeLink: NodeLink, exposedPorts: NodePort[]) {
-        let aPort = exposedPorts.findIndex(nodePort => nodePort === nodeLink.portA);
-        let bPort = exposedPorts.findIndex(nodePort => nodePort === nodeLink.portB);
+        let aPort = exposedPorts.findIndex((nodePort) => nodePort === nodeLink.portA);
+        let bPort = exposedPorts.findIndex((nodePort) => nodePort === nodeLink.portB);
         if (aPort >= 0) {
             if (!nodeLink.portA.exposedOnFrame) {
                 exposedPorts.splice(aPort, 1);
@@ -214,7 +225,7 @@ export class GraphFrame {
         } else if (bPort >= 0) {
             if (nodeLink.portB && !nodeLink.portB.exposedOnFrame) {
                 exposedPorts.splice(bPort, 1);
-                nodeLink.portB.exposedPortPosition = -1
+                nodeLink.portB.exposedPortPosition = -1;
                 return true;
             }
         }
@@ -238,8 +249,7 @@ export class GraphFrame {
                 }
             }
             if (portAdded) return true;
-        }
-        else if (port.exposedOnFrame) {
+        } else if (port.exposedOnFrame) {
             this._createInputPort(port, node);
             return true;
         }
@@ -255,7 +265,16 @@ export class GraphFrame {
 
                     if (!portAdded) {
                         portAdded = true;
-                        localPort = FrameNodePort.CreateFrameNodePortElement(port.connectionPoint, link.nodeA!, this._outputPortContainer, null, this._ownerCanvas.globalState, false, GraphFrame._FramePortCounter++, this.id);
+                        localPort = FrameNodePort.CreateFrameNodePortElement(
+                            port.connectionPoint,
+                            link.nodeA!,
+                            this._outputPortContainer,
+                            null,
+                            this._ownerCanvas.globalState,
+                            false,
+                            GraphFrame._FramePortCounter++,
+                            this.id
+                        );
                         this._frameOutPorts.push(localPort);
 
                         link.isVisible = true;
@@ -267,18 +286,25 @@ export class GraphFrame {
                         });
 
                         this._onNodeLinkDisposedObservers.push(onLinkDisposedObserver);
-
                     } else if (this.nodes.indexOf(link.nodeB!) === -1) {
                         link.isVisible = true;
-                        localPort = this.ports.filter(p => p.connectionPoint === port.connectionPoint)[0];
+                        localPort = this.ports.filter((p) => p.connectionPoint === port.connectionPoint)[0];
                     } else {
-                        localPort = this.ports.filter(p => p.connectionPoint === port.connectionPoint)[0];
+                        localPort = this.ports.filter((p) => p.connectionPoint === port.connectionPoint)[0];
                     }
                     port.delegatedPort = localPort;
                     this._controlledPorts.push(port);
-                }
-                else if (port.exposedPortPosition >= 0 && !portAdded) {
-                    let localPort = FrameNodePort.CreateFrameNodePortElement(port.connectionPoint, node, this._outputPortContainer, null, this._ownerCanvas.globalState, false, GraphFrame._FramePortCounter++, this.id);
+                } else if (port.exposedPortPosition >= 0 && !portAdded) {
+                    let localPort = FrameNodePort.CreateFrameNodePortElement(
+                        port.connectionPoint,
+                        node,
+                        this._outputPortContainer,
+                        null,
+                        this._ownerCanvas.globalState,
+                        false,
+                        GraphFrame._FramePortCounter++,
+                        this.id
+                    );
                     this._frameOutPorts.push(localPort);
                     port.delegatedPort = localPort;
                     this._controlledPorts.push(port);
@@ -286,9 +312,17 @@ export class GraphFrame {
                 }
             }
             if (portAdded) return true;
-        }
-        else if (port.exposedOnFrame) {
-            let localPort = FrameNodePort.CreateFrameNodePortElement(port.connectionPoint, node, this._outputPortContainer, null, this._ownerCanvas.globalState, false, GraphFrame._FramePortCounter++, this.id);
+        } else if (port.exposedOnFrame) {
+            let localPort = FrameNodePort.CreateFrameNodePortElement(
+                port.connectionPoint,
+                node,
+                this._outputPortContainer,
+                null,
+                this._ownerCanvas.globalState,
+                false,
+                GraphFrame._FramePortCounter++,
+                this.id
+            );
             this._frameOutPorts.push(localPort);
             port.delegatedPort = localPort;
             this._controlledPorts.push(port);
@@ -309,10 +343,10 @@ export class GraphFrame {
             framePort.dispose();
         });
 
-        this._controlledPorts.forEach(port => {
+        this._controlledPorts.forEach((port) => {
             port.delegatedPort = null;
             port.refresh();
-        })
+        });
 
         this._frameInPorts = [];
         this._frameOutPorts = [];
@@ -337,27 +371,26 @@ export class GraphFrame {
 
             this._moveFrame((this.width - this.CollapsedWidth) / 2, 0);
 
-            this._createFramePorts()
+            this._createFramePorts();
 
-            this._markFramePortPositions()
-
+            this._markFramePortPositions();
         } else {
             this.element.classList.remove("collapsed");
             this._outputPortContainer.innerHTML = "";
             this._inputPortContainer.innerHTML = "";
 
-            this._frameInPorts.forEach(p => {
+            this._frameInPorts.forEach((p) => {
                 p.dispose();
             });
 
-            this._frameOutPorts.forEach(p => {
+            this._frameOutPorts.forEach((p) => {
                 p.dispose();
             });
 
-            this._controlledPorts.forEach(port => {
+            this._controlledPorts.forEach((port) => {
                 port.delegatedPort = null;
                 port.refresh();
-            })
+            });
 
             this._frameInPorts = [];
             this._frameOutPorts = [];
@@ -374,7 +407,7 @@ export class GraphFrame {
         this.cleanAccumulation();
         this._ownerCanvas._frameIsMoving = false;
 
-        // UI        
+        // UI
         if (this._isCollapsed) {
             this._headerCollapseElement.innerHTML = this.ExpandSVG;
             this._headerCollapseElement.title = "Expand";
@@ -488,7 +521,7 @@ export class GraphFrame {
             this.element.style.gridTemplateRows = "40px calc(100% - 40px)";
             this._borderElement.style.gridRow = "1 / span 2";
             this._portContainer.style.gridRow = "2";
-            this._commentsElement.classList.remove('has-comments');
+            this._commentsElement.classList.remove("has-comments");
         }
 
         if (comments === "" || (comments && comments.length >= 0)) {
@@ -624,9 +657,9 @@ export class GraphFrame {
             this.cleanAccumulation();
         }
 
-        this._headerTextElement.addEventListener("pointerdown", evt => this._onDown(evt));
-        this._headerTextElement.addEventListener("pointerup", evt => this._onUp(evt));
-        this._headerTextElement.addEventListener("pointermove", evt => this._onMove(evt));
+        this._headerTextElement.addEventListener("pointerdown", (evt) => this._onDown(evt));
+        this._headerTextElement.addEventListener("pointerup", (evt) => this._onUp(evt));
+        this._headerTextElement.addEventListener("pointermove", (evt) => this._onMove(evt));
 
         this._onSelectionChangedObserver = canvas.globalState.onSelectionChangedObservable.add((options) => {
             if (this._ownerCanvas.selectedFrames.indexOf(this) !== -1) {
@@ -638,12 +671,9 @@ export class GraphFrame {
 
         canvas.globalState.onSelectionBoxMoved.add((rect1) => {
             const rect2 = this.element.getBoundingClientRect();
-            var overlap = !(rect1.right < rect2.left ||
-                rect1.left > rect2.right ||
-                rect1.bottom < rect2.top ||
-                rect1.top > rect2.bottom);
+            var overlap = !(rect1.right < rect2.left || rect1.left > rect2.right || rect1.bottom < rect2.top || rect1.top > rect2.bottom);
             if (overlap) {
-                canvas.globalState.onSelectionChangedObservable.notifyObservers({selection: this, forceKeepSelection: true});
+                canvas.globalState.onSelectionChangedObservable.notifyObservers({ selection: this, forceKeepSelection: true });
             }
         });
 
@@ -665,13 +695,13 @@ export class GraphFrame {
             this.redrawFramePorts();
         });
 
-        this._commentsElement = document.createElement('div');
-        this._commentsElement.className = 'frame-comments';
-        this._commentsElement.style.color = 'white';
-        this._commentsElement.style.fontSize = '16px';
-        let commentSpan = document.createElement('span');
-        commentSpan.className = "frame-comment-span"
-        this._commentsElement.appendChild(commentSpan)
+        this._commentsElement = document.createElement("div");
+        this._commentsElement.className = "frame-comments";
+        this._commentsElement.style.color = "white";
+        this._commentsElement.style.fontSize = "16px";
+        let commentSpan = document.createElement("span");
+        commentSpan.className = "frame-comment-span";
+        this._commentsElement.appendChild(commentSpan);
 
         this.element.appendChild(this._commentsElement);
 
@@ -724,18 +754,17 @@ export class GraphFrame {
     }
 
     private _onDown(evt: PointerEvent) {
-        
         this._headerTextElement.setPointerCapture(evt.pointerId);
 
         const indexInSelection = this._ownerCanvas.selectedFrames.indexOf(this);
         if (indexInSelection === -1) {
-            this._ownerCanvas.globalState.onSelectionChangedObservable.notifyObservers({selection: this});
+            this._ownerCanvas.globalState.onSelectionChangedObservable.notifyObservers({ selection: this });
         } else if (evt.ctrlKey) {
             this._ownerCanvas.selectedFrames.splice(indexInSelection, 1);
             this.element.classList.remove("selected");
         }
         this._ownerCanvas._frameIsMoving = true;
-        
+
         this._mouseStartPointX = evt.clientX;
         this._mouseStartPointY = evt.clientY;
 
@@ -808,17 +837,22 @@ export class GraphFrame {
                 return;
             }
             elementsArray = Array.from(this._inputPortContainer.childNodes);
-            const indexInContainer = this._frameInPorts.findIndex(framePort => framePort === nodePort);
-            [this._exposedInPorts[indexInContainer - 1], this._exposedInPorts[indexInContainer]] = [this._exposedInPorts[indexInContainer], this._exposedInPorts[indexInContainer - 1]]; // swap idicies
+            const indexInContainer = this._frameInPorts.findIndex((framePort) => framePort === nodePort);
+            [this._exposedInPorts[indexInContainer - 1], this._exposedInPorts[indexInContainer]] = [
+                this._exposedInPorts[indexInContainer],
+                this._exposedInPorts[indexInContainer - 1],
+            ]; // swap idicies
             this._movePortUp(elementsArray, nodePort, this._frameInPorts);
-
         } else {
             if (this._outputPortContainer.children.length < 2) {
                 return;
             }
             elementsArray = Array.from(this._outputPortContainer.childNodes);
-            const indexInContainer = this._frameOutPorts.findIndex(framePort => framePort === nodePort);
-            [this._exposedOutPorts[indexInContainer - 1], this._exposedOutPorts[indexInContainer]] = [this._exposedOutPorts[indexInContainer], this._exposedOutPorts[indexInContainer - 1]]; // swap idicies
+            const indexInContainer = this._frameOutPorts.findIndex((framePort) => framePort === nodePort);
+            [this._exposedOutPorts[indexInContainer - 1], this._exposedOutPorts[indexInContainer]] = [
+                this._exposedOutPorts[indexInContainer],
+                this._exposedOutPorts[indexInContainer - 1],
+            ]; // swap idicies
             this._movePortUp(elementsArray, nodePort, this._frameOutPorts);
         }
         this.ports.forEach((framePort: FrameNodePort) => framePort.node._refreshLinks());
@@ -826,7 +860,7 @@ export class GraphFrame {
 
     private _movePortUp(elementsArray: ChildNode[], nodePort: FrameNodePort, framePortList: FrameNodePort[]) {
         // update UI
-        const indexInElementArray = (elementsArray as HTMLElement[]).findIndex(elem => elem.dataset.framePortId === `${nodePort.framePortId}`)
+        const indexInElementArray = (elementsArray as HTMLElement[]).findIndex((elem) => elem.dataset.framePortId === `${nodePort.framePortId}`);
         if (indexInElementArray === 0) {
             return;
         }
@@ -835,7 +869,7 @@ export class GraphFrame {
         firstPortElement.parentElement?.insertBefore(secondPortElement, firstPortElement);
 
         // update Frame Port Container
-        const indexInContainer = framePortList.findIndex(framePort => framePort === nodePort);
+        const indexInContainer = framePortList.findIndex((framePort) => framePort === nodePort);
         [framePortList[indexInContainer - 1], framePortList[indexInContainer]] = [framePortList[indexInContainer], framePortList[indexInContainer - 1]]; // swap idicies
 
         //special case framePortList.length == 2
@@ -863,17 +897,22 @@ export class GraphFrame {
                 return;
             }
             elementsArray = Array.from(this._inputPortContainer.childNodes);
-            const indexInContainer = this._frameInPorts.findIndex(framePort => framePort === nodePort);
-            [this._exposedInPorts[indexInContainer], this._exposedInPorts[indexInContainer + 1]] = [this._exposedInPorts[indexInContainer + 1], this._exposedInPorts[indexInContainer]]; // swap idicies
+            const indexInContainer = this._frameInPorts.findIndex((framePort) => framePort === nodePort);
+            [this._exposedInPorts[indexInContainer], this._exposedInPorts[indexInContainer + 1]] = [
+                this._exposedInPorts[indexInContainer + 1],
+                this._exposedInPorts[indexInContainer],
+            ]; // swap idicies
             this._movePortDown(elementsArray, nodePort, this._frameInPorts);
-
         } else {
             if (this._outputPortContainer.children.length < 2) {
                 return;
             }
             elementsArray = Array.from(this._outputPortContainer.childNodes);
-            const indexInContainer = this._frameOutPorts.findIndex(framePort => framePort === nodePort);
-            [this._exposedOutPorts[indexInContainer], this._exposedOutPorts[indexInContainer + 1]] = [this._exposedOutPorts[indexInContainer + 1], this._exposedOutPorts[indexInContainer]]; // swap idicies
+            const indexInContainer = this._frameOutPorts.findIndex((framePort) => framePort === nodePort);
+            [this._exposedOutPorts[indexInContainer], this._exposedOutPorts[indexInContainer + 1]] = [
+                this._exposedOutPorts[indexInContainer + 1],
+                this._exposedOutPorts[indexInContainer],
+            ]; // swap idicies
             this._movePortDown(elementsArray, nodePort, this._frameOutPorts);
         }
 
@@ -882,7 +921,7 @@ export class GraphFrame {
 
     private _movePortDown(elementsArray: ChildNode[], nodePort: FrameNodePort, framePortList: FrameNodePort[]) {
         // update UI
-        const indexInElementArray = (elementsArray as HTMLElement[]).findIndex(elem => elem.dataset.framePortId === `${nodePort.framePortId}`)
+        const indexInElementArray = (elementsArray as HTMLElement[]).findIndex((elem) => elem.dataset.framePortId === `${nodePort.framePortId}`);
         if (indexInElementArray === elementsArray.length - 1) {
             return;
         }
@@ -891,7 +930,7 @@ export class GraphFrame {
         firstPort.parentElement?.insertBefore(secondPort, firstPort);
 
         // update Frame Port Container
-        const indexInContainer = framePortList.findIndex(framePort => framePort === nodePort);
+        const indexInContainer = framePortList.findIndex((framePort) => framePort === nodePort);
         [framePortList[indexInContainer], framePortList[indexInContainer + 1]] = [framePortList[indexInContainer + 1], framePortList[indexInContainer]]; // swap idicies
 
         // notify nodePort if it is now at bottom (indexInContainer === elementsArray.length-2)
@@ -916,7 +955,7 @@ export class GraphFrame {
         this._mouseStartPointX = evt.clientX;
         this._mouseStartPointY = evt.clientY;
         this._frameIsResizing = true;
-    }
+    };
 
     private cleanUpResizing = (evt: PointerEvent) => {
         evt.stopPropagation();
@@ -926,29 +965,39 @@ export class GraphFrame {
         this._mouseStartPointY = null;
         this.mouseXLimit = null;
         this.refresh();
-    }
+    };
 
     private updateMinHeightWithComments = () => {
         if (this.comments && this.comments.length > 0) {
             const minFrameHeightWithComments = this._commentsElement.offsetHeight + 40;
             this._minFrameHeight = minFrameHeightWithComments;
         }
-    }
+    };
 
     private _isResizingTop() {
         return this._resizingDirection === ResizingDirection.Top || this._resizingDirection === ResizingDirection.TopRight || this._resizingDirection === ResizingDirection.TopLeft;
     }
 
     private _isResizingRight() {
-        return this._resizingDirection === ResizingDirection.Right || this._resizingDirection === ResizingDirection.TopRight || this._resizingDirection === ResizingDirection.BottomRight;
+        return (
+            this._resizingDirection === ResizingDirection.Right ||
+            this._resizingDirection === ResizingDirection.TopRight ||
+            this._resizingDirection === ResizingDirection.BottomRight
+        );
     }
 
     private _isResizingBottom() {
-        return this._resizingDirection === ResizingDirection.Bottom || this._resizingDirection === ResizingDirection.BottomLeft || this._resizingDirection === ResizingDirection.BottomRight;
+        return (
+            this._resizingDirection === ResizingDirection.Bottom ||
+            this._resizingDirection === ResizingDirection.BottomLeft ||
+            this._resizingDirection === ResizingDirection.BottomRight
+        );
     }
 
     private _isResizingLeft() {
-        return this._resizingDirection === ResizingDirection.Left || this._resizingDirection === ResizingDirection.TopLeft || this._resizingDirection === ResizingDirection.BottomLeft;
+        return (
+            this._resizingDirection === ResizingDirection.Left || this._resizingDirection === ResizingDirection.TopLeft || this._resizingDirection === ResizingDirection.BottomLeft
+        );
     }
 
     private _onRightHandlePointerDown = (evt: PointerEvent) => {
@@ -962,13 +1011,13 @@ export class GraphFrame {
         _this.mouseXLimit = evt.clientX - (_this.width - _this._minFrameWidth);
         _this._ownerCanvas.hostCanvas.addEventListener("pointerup", _this._onRightHandlePointerUp);
         _this._ownerCanvas.hostCanvas.addEventListener("pointermove", _this._onRightHandlePointerMove);
-    }
+    };
 
     private _onRightHandlePointerMove = (evt: PointerEvent) => {
         const slack = (this.element.offsetWidth - this._minFrameWidth) * this._ownerCanvas.zoom;
         const xLimit = (this._mouseStartPointX as number) - slack;
         this._moveRightHandle(evt, xLimit);
-    }
+    };
 
     private _moveRightHandle = (evt: PointerEvent, xLimit: number) => {
         // tslint:disable-next-line: no-this-assignment
@@ -984,7 +1033,7 @@ export class GraphFrame {
                 _this._mouseStartPointX = evt.clientX;
             }
         }
-    }
+    };
 
     private _onRightHandlePointerUp = (evt: PointerEvent) => {
         // tslint:disable-next-line: no-this-assignment
@@ -995,7 +1044,7 @@ export class GraphFrame {
             _this._ownerCanvas.hostCanvas.removeEventListener("pointermove", _this._onRightHandlePointerMove);
             _this.cleanUpResizing(evt);
         }
-    }
+    };
 
     private _onBottomHandlePointerDown = (evt: PointerEvent) => {
         // tslint:disable-next-line: no-this-assignment
@@ -1007,13 +1056,13 @@ export class GraphFrame {
         _this._resizingDirection = ResizingDirection.Bottom;
         _this._ownerCanvas.hostCanvas.addEventListener("pointermove", _this._onBottomHandlePointerMove);
         _this._ownerCanvas.hostCanvas.addEventListener("pointerup", _this._onBottomHandlePointerUp);
-    }
+    };
 
     private _onBottomHandlePointerMove = (evt: PointerEvent) => {
         const slack = (this.element.offsetHeight - this._minFrameHeight) * this._ownerCanvas.zoom;
         const yLimit = (this._mouseStartPointY as number) - slack;
         this._moveBottomHandle(evt, yLimit);
-    }
+    };
 
     private _moveBottomHandle = (evt: PointerEvent, yLimit: number) => {
         // tslint:disable-next-line: no-this-assignment
@@ -1027,7 +1076,7 @@ export class GraphFrame {
             _this._expandBottom(distanceMouseMoved);
             _this._mouseStartPointY = evt.clientY;
         }
-    }
+    };
 
     private _onBottomHandlePointerUp = (evt: PointerEvent) => {
         // tslint:disable-next-line: no-this-assignment
@@ -1038,7 +1087,7 @@ export class GraphFrame {
             _this._ownerCanvas.hostCanvas.removeEventListener("pointerup", _this._onBottomHandlePointerUp);
             _this.cleanUpResizing(evt);
         }
-    }
+    };
 
     private _onLeftHandlePointerDown = (evt: PointerEvent) => {
         // tslint:disable-next-line: no-this-assignment
@@ -1051,13 +1100,13 @@ export class GraphFrame {
         _this.mouseXLimit = evt.clientX + _this.width - _this._minFrameWidth;
         _this._ownerCanvas.hostCanvas.addEventListener("pointerup", _this._onLeftHandlePointerUp);
         _this._ownerCanvas.hostCanvas.addEventListener("pointermove", _this._onLeftHandlePointerMove);
-    }
+    };
 
     private _onLeftHandlePointerMove = (evt: PointerEvent) => {
         const slack = (this.element.offsetWidth - this._minFrameWidth) * this._ownerCanvas.zoom;
         const xLimit = (this._mouseStartPointX as number) + slack;
         this._moveLeftHandle(evt, xLimit);
-    }
+    };
 
     private _moveLeftHandle = (evt: PointerEvent, xLimit: number) => {
         // tslint:disable-next-line: no-this-assignment
@@ -1073,7 +1122,7 @@ export class GraphFrame {
                 _this._mouseStartPointX = evt.clientX;
             }
         }
-    }
+    };
 
     private _onLeftHandlePointerUp = (evt: PointerEvent) => {
         // tslint:disable-next-line: no-this-assignment
@@ -1085,7 +1134,7 @@ export class GraphFrame {
             _this._ownerCanvas.hostCanvas.removeEventListener("pointermove", _this._onLeftHandlePointerMove);
             _this.cleanUpResizing(evt);
         }
-    }
+    };
 
     private _onTopHandlePointerDown = (evt: PointerEvent) => {
         // tslint:disable-next-line: no-this-assignment
@@ -1097,13 +1146,13 @@ export class GraphFrame {
         _this._resizingDirection = ResizingDirection.Top;
         _this._ownerCanvas.hostCanvas.addEventListener("pointerup", _this._onTopHandlePointerUp);
         _this._ownerCanvas.hostCanvas.addEventListener("pointermove", _this._onTopHandlePointerMove);
-    }
+    };
 
     private _onTopHandlePointerMove = (evt: PointerEvent) => {
         const slack = (this.element.offsetHeight - this._minFrameHeight) * this._ownerCanvas.zoom;
         const yLimit = (this._mouseStartPointY as number) + slack;
         this._moveTopHandle(evt, yLimit);
-    }
+    };
 
     private _moveTopHandle = (evt: PointerEvent, yLimit: number) => {
         // tslint:disable-next-line: no-this-assignment
@@ -1117,7 +1166,7 @@ export class GraphFrame {
             _this._expandTop(distanceMouseMoved);
             _this._mouseStartPointY = evt.clientY;
         }
-    }
+    };
 
     private _onTopHandlePointerUp = (evt: PointerEvent) => {
         // tslint:disable-next-line: no-this-assignment
@@ -1129,7 +1178,7 @@ export class GraphFrame {
             _this._ownerCanvas.hostCanvas.removeEventListener("pointermove", _this._onTopHandlePointerMove);
             _this.cleanUpResizing(evt);
         }
-    }
+    };
 
     private _onTopRightHandlePointerDown = (evt: PointerEvent) => {
         // tslint:disable-next-line: no-this-assignment
@@ -1141,7 +1190,7 @@ export class GraphFrame {
         _this._resizingDirection = ResizingDirection.TopRight;
         _this._ownerCanvas.hostCanvas.addEventListener("pointerup", _this._onTopRightHandlePointerUp);
         _this._ownerCanvas.hostCanvas.addEventListener("pointermove", _this._onTopRightHandlePointerMove);
-    }
+    };
 
     private _onTopRightHandlePointerMove = (evt: PointerEvent) => {
         const topSlack = (this.element.offsetHeight - this._minFrameHeight) * this._ownerCanvas.zoom;
@@ -1149,7 +1198,7 @@ export class GraphFrame {
         const rightSlack = (this.element.offsetWidth - this._minFrameWidth) * this._ownerCanvas.zoom;
         const xLimit = (this._mouseStartPointX as number) - rightSlack;
         this._moveTopRightHandle(evt, xLimit, yLimit);
-    }
+    };
 
     private _moveTopRightHandle = (evt: PointerEvent, xLimit: number, yLimit: number) => {
         // tslint:disable-next-line: no-this-assignment
@@ -1159,24 +1208,27 @@ export class GraphFrame {
         }
         if (_this._isResizingRight() && _this._isResizingTop()) {
             evt.stopPropagation();
-            if (evt.clientY < yLimit && evt.clientX > xLimit) { // able to move in X and Y
+            if (evt.clientY < yLimit && evt.clientX > xLimit) {
+                // able to move in X and Y
                 const distanceMouseMovedX = (evt.clientX - _this._mouseStartPointX) / _this._ownerCanvas.zoom;
                 _this._expandRight(distanceMouseMovedX, evt.clientX);
                 _this._mouseStartPointX = evt.clientX;
                 const distanceMouseMovedY = (evt.clientY - _this._mouseStartPointY) / _this._ownerCanvas.zoom;
                 _this._expandTop(distanceMouseMovedY);
                 _this._mouseStartPointY = evt.clientY;
-            } else if (evt.clientY > yLimit && evt.clientX > xLimit) { // able to move in X but not Y
+            } else if (evt.clientY > yLimit && evt.clientX > xLimit) {
+                // able to move in X but not Y
                 const distanceMouseMovedX = (evt.clientX - _this._mouseStartPointX) / _this._ownerCanvas.zoom;
                 _this._expandRight(distanceMouseMovedX, evt.clientX);
                 _this._mouseStartPointX = evt.clientX;
-            } else if (evt.clientY < yLimit && evt.clientX < xLimit) { // able to move in Y but not X
+            } else if (evt.clientY < yLimit && evt.clientX < xLimit) {
+                // able to move in Y but not X
                 const distanceMouseMovedY = (evt.clientY - _this._mouseStartPointY) / _this._ownerCanvas.zoom;
                 _this._expandTop(distanceMouseMovedY);
                 _this._mouseStartPointY = evt.clientY;
             }
         }
-    }
+    };
 
     private _onTopRightHandlePointerUp = (evt: PointerEvent) => {
         evt.stopPropagation();
@@ -1190,7 +1242,7 @@ export class GraphFrame {
             _this._ownerCanvas.hostCanvas.removeEventListener("pointermove", _this._onTopRightHandlePointerMove);
             _this.cleanUpResizing(evt);
         }
-    }
+    };
 
     private _onBottomRightHandlePointerDown = (evt: PointerEvent) => {
         // tslint:disable-next-line: no-this-assignment
@@ -1202,7 +1254,7 @@ export class GraphFrame {
         _this._resizingDirection = ResizingDirection.BottomRight;
         _this._ownerCanvas.hostCanvas.addEventListener("pointerup", _this._onBottomRightHandlePointerUp);
         _this._ownerCanvas.hostCanvas.addEventListener("pointermove", _this._onBottomRightHandlePointerMove);
-    }
+    };
 
     private _onBottomRightHandlePointerMove = (evt: PointerEvent) => {
         const bottomSlack = (this.element.offsetHeight - this._minFrameHeight) * this._ownerCanvas.zoom;
@@ -1210,7 +1262,7 @@ export class GraphFrame {
         const rightSlack = (this.element.offsetWidth - this._minFrameWidth) * this._ownerCanvas.zoom;
         const xLimit = (this._mouseStartPointX as number) - rightSlack;
         this._moveBottomRightHandle(evt, xLimit, yLimit);
-    }
+    };
 
     private _moveBottomRightHandle = (evt: PointerEvent, xLimit: number, yLimit: number) => {
         // tslint:disable-next-line: no-this-assignment
@@ -1220,24 +1272,27 @@ export class GraphFrame {
         }
         if (_this._isResizingRight() && _this._isResizingBottom()) {
             evt.stopPropagation();
-            if (evt.clientY > yLimit && evt.clientX > xLimit) { // able to move in X and Y
+            if (evt.clientY > yLimit && evt.clientX > xLimit) {
+                // able to move in X and Y
                 const distanceMouseMovedX = (evt.clientX - _this._mouseStartPointX) / _this._ownerCanvas.zoom;
                 _this._expandRight(distanceMouseMovedX, evt.clientX);
                 _this._mouseStartPointX = evt.clientX;
                 const distanceMouseMovedY = (evt.clientY - _this._mouseStartPointY) / _this._ownerCanvas.zoom;
                 _this._expandBottom(distanceMouseMovedY);
                 _this._mouseStartPointY = evt.clientY;
-            } else if (evt.clientY < yLimit && evt.clientX > xLimit) { // able to move in X but not Y
+            } else if (evt.clientY < yLimit && evt.clientX > xLimit) {
+                // able to move in X but not Y
                 const distanceMouseMovedX = (evt.clientX - _this._mouseStartPointX) / _this._ownerCanvas.zoom;
                 _this._expandRight(distanceMouseMovedX, evt.clientX);
                 _this._mouseStartPointX = evt.clientX;
-            } else if (evt.clientY > yLimit && evt.clientX < xLimit) { // able to move in Y but not X
+            } else if (evt.clientY > yLimit && evt.clientX < xLimit) {
+                // able to move in Y but not X
                 const distanceMouseMovedY = (evt.clientY - _this._mouseStartPointY) / _this._ownerCanvas.zoom;
                 _this._expandBottom(distanceMouseMovedY);
                 _this._mouseStartPointY = evt.clientY;
             }
         }
-    }
+    };
 
     private _onBottomRightHandlePointerUp = (evt: PointerEvent) => {
         evt.stopPropagation();
@@ -1250,7 +1305,7 @@ export class GraphFrame {
             _this._ownerCanvas.hostCanvas.removeEventListener("pointermove", _this._onBottomRightHandlePointerMove);
             _this.cleanUpResizing(evt);
         }
-    }
+    };
 
     private _onBottomLeftHandlePointerDown = (evt: PointerEvent) => {
         // tslint:disable-next-line: no-this-assignment
@@ -1263,7 +1318,7 @@ export class GraphFrame {
         _this.mouseXLimit = evt.clientX + _this.width - _this._minFrameWidth;
         _this._ownerCanvas.hostCanvas.addEventListener("pointerup", _this._onBottomLeftHandlePointerUp);
         _this._ownerCanvas.hostCanvas.addEventListener("pointermove", _this._onBottomLeftHandlePointerMove);
-    }
+    };
 
     private _onBottomLeftHandlePointerMove = (evt: PointerEvent) => {
         const bottomSlack = (this.element.offsetHeight - this._minFrameHeight) * this._ownerCanvas.zoom;
@@ -1271,7 +1326,7 @@ export class GraphFrame {
         const leftSlack = (this.element.offsetWidth - this._minFrameWidth) * this._ownerCanvas.zoom;
         const xLimit = (this._mouseStartPointX as number) + leftSlack;
         this._moveBottomLeftHandle(evt, xLimit, yLimit);
-    }
+    };
 
     private _moveBottomLeftHandle = (evt: PointerEvent, xLimit: number, yLimit: number) => {
         // tslint:disable-next-line: no-this-assignment
@@ -1281,24 +1336,27 @@ export class GraphFrame {
         }
         if (_this._isResizingLeft() && _this._isResizingBottom()) {
             evt.stopPropagation();
-            if (evt.clientY > yLimit && evt.clientX < xLimit) { // able to move in X and Y
+            if (evt.clientY > yLimit && evt.clientX < xLimit) {
+                // able to move in X and Y
                 const distanceMouseMovedX = (evt.clientX - _this._mouseStartPointX) / _this._ownerCanvas.zoom;
                 _this._expandLeft(distanceMouseMovedX);
                 _this._mouseStartPointX = evt.clientX;
                 const distanceMouseMovedY = (evt.clientY - _this._mouseStartPointY) / _this._ownerCanvas.zoom;
                 _this._expandBottom(distanceMouseMovedY);
                 _this._mouseStartPointY = evt.clientY;
-            } else if (evt.clientY < yLimit && evt.clientX < xLimit) { // able to move in X but not Y
+            } else if (evt.clientY < yLimit && evt.clientX < xLimit) {
+                // able to move in X but not Y
                 const distanceMouseMovedX = (evt.clientX - _this._mouseStartPointX) / _this._ownerCanvas.zoom;
                 _this._expandLeft(distanceMouseMovedX);
                 _this._mouseStartPointX = evt.clientX;
-            } else if (evt.clientY > yLimit && evt.clientX > xLimit) { // able to move in Y but not X
+            } else if (evt.clientY > yLimit && evt.clientX > xLimit) {
+                // able to move in Y but not X
                 const distanceMouseMovedY = (evt.clientY - _this._mouseStartPointY) / _this._ownerCanvas.zoom;
                 _this._expandBottom(distanceMouseMovedY);
                 _this._mouseStartPointY = evt.clientY;
             }
         }
-    }
+    };
 
     private _onBottomLeftHandlePointerUp = (evt: PointerEvent) => {
         evt.stopPropagation();
@@ -1312,7 +1370,7 @@ export class GraphFrame {
             _this._ownerCanvas.hostCanvas.removeEventListener("pointermove", _this._onBottomLeftHandlePointerMove);
             _this.cleanUpResizing(evt);
         }
-    }
+    };
 
     private _onTopLeftHandlePointerDown = (evt: PointerEvent) => {
         // tslint:disable-next-line: no-this-assignment
@@ -1325,7 +1383,7 @@ export class GraphFrame {
         _this.mouseXLimit = evt.clientX + _this.width - _this._minFrameWidth;
         _this._ownerCanvas.hostCanvas.addEventListener("pointerup", _this._onTopLeftHandlePointerUp);
         _this._ownerCanvas.hostCanvas.addEventListener("pointermove", _this._onTopLeftHandlePointerMove);
-    }
+    };
 
     private _onTopLeftHandlePointerMove = (evt: PointerEvent) => {
         const topSlack = (this.element.offsetHeight - this._minFrameHeight) * this._ownerCanvas.zoom;
@@ -1333,7 +1391,7 @@ export class GraphFrame {
         const leftSlack = (this.element.offsetWidth - this._minFrameWidth) * this._ownerCanvas.zoom;
         const xLimit = (this._mouseStartPointX as number) + leftSlack;
         this._moveTopLeftHandle(evt, xLimit, yLimit);
-    }
+    };
 
     private _moveTopLeftHandle = (evt: PointerEvent, xLimit: number, yLimit: number) => {
         // tslint:disable-next-line: no-this-assignment
@@ -1343,24 +1401,27 @@ export class GraphFrame {
         }
         if (_this._isResizingLeft() && _this._isResizingTop()) {
             evt.stopPropagation();
-            if (evt.clientY < yLimit && evt.clientX < xLimit) { // able to move in X and Y
+            if (evt.clientY < yLimit && evt.clientX < xLimit) {
+                // able to move in X and Y
                 const distanceMouseMovedX = (evt.clientX - _this._mouseStartPointX) / _this._ownerCanvas.zoom;
                 _this._expandLeft(distanceMouseMovedX);
                 _this._mouseStartPointX = evt.clientX;
                 const distanceMouseMovedY = (evt.clientY - _this._mouseStartPointY) / _this._ownerCanvas.zoom;
                 _this._expandTop(distanceMouseMovedY);
                 _this._mouseStartPointY = evt.clientY;
-            } else if (evt.clientY > yLimit && evt.clientX < xLimit) { // able to move in X but not Y
+            } else if (evt.clientY > yLimit && evt.clientX < xLimit) {
+                // able to move in X but not Y
                 const distanceMouseMovedX = (evt.clientX - _this._mouseStartPointX) / _this._ownerCanvas.zoom;
                 _this._expandLeft(distanceMouseMovedX);
                 _this._mouseStartPointX = evt.clientX;
-            } else if (evt.clientY < yLimit && evt.clientX > xLimit) { // able to move in Y but not X
+            } else if (evt.clientY < yLimit && evt.clientX > xLimit) {
+                // able to move in Y but not X
                 const distanceMouseMovedY = (evt.clientY - _this._mouseStartPointY) / _this._ownerCanvas.zoom;
                 _this._expandTop(distanceMouseMovedY);
                 _this._mouseStartPointY = evt.clientY;
             }
         }
-    }
+    };
 
     private _onTopLeftHandlePointerUp = (evt: PointerEvent) => {
         evt.stopPropagation();
@@ -1375,7 +1436,7 @@ export class GraphFrame {
             _this._ownerCanvas.hostCanvas.removeEventListener("pointermove", _this._onTopLeftHandlePointerMove);
             _this.cleanUpResizing(evt);
         }
-    }
+    };
 
     private _expandLeft(widthModification: number) {
         const frameElementWidth = parseFloat(this.element.style.width.replace("px", ""));
@@ -1394,7 +1455,7 @@ export class GraphFrame {
 
     private _expandRight(widthModification: number, x: number) {
         const frameElementWidth = parseFloat(this.element.style.width.replace("px", ""));
-        if ((frameElementWidth + widthModification) > 20) {
+        if (frameElementWidth + widthModification > 20) {
             this._mouseStartPointX = x;
             this.element.style.width = `${frameElementWidth + widthModification}px`;
         }
@@ -1409,15 +1470,15 @@ export class GraphFrame {
     public dispose() {
         if (this._onSelectionChangedObserver) {
             this._ownerCanvas.globalState.onSelectionChangedObservable.remove(this._onSelectionChangedObserver);
-        };
+        }
 
         if (this._onGraphNodeRemovalObserver) {
             this._ownerCanvas.globalState.onGraphNodeRemovalObservable.remove(this._onGraphNodeRemovalObserver);
-        };
+        }
 
         if (this._onExposePortOnFrameObserver) {
             this._ownerCanvas.globalState.onExposePortOnFrameObservable.remove(this._onExposePortOnFrameObserver);
-        };
+        }
 
         this.element.parentElement?.removeChild(this.element);
 
@@ -1447,9 +1508,9 @@ export class GraphFrame {
             color: this._color.asArray(),
             name: this.name,
             isCollapsed: saveCollapsedState ? this.isCollapsed : true, //keeping closed for stand along exporting.
-            blocks: this.nodes.map(n => n.block.uniqueId),
-            comments: this._comments
-        }
+            blocks: this.nodes.map((n) => n.block.uniqueId),
+            comments: this._comments,
+        };
     }
 
     public export() {
@@ -1460,7 +1521,8 @@ export class GraphFrame {
 
     public adjustPorts() {
         for (let node of this.nodes) {
-            for (let port of node.outputPorts) { // Output
+            for (let port of node.outputPorts) {
+                // Output
                 if (port.exposedOnFrame) {
                     if (port.exposedPortPosition !== -1) {
                         this._exposedOutPorts[port.exposedPortPosition] = port;
@@ -1468,7 +1530,8 @@ export class GraphFrame {
                 }
             }
 
-            for (let port of node.inputPorts) { // Imports
+            for (let port of node.inputPorts) {
+                // Imports
                 if (port.exposedOnFrame) {
                     if (port.exposedPortPosition !== -1) {
                         this._exposedInPorts[port.exposedPortPosition] = port;
@@ -1493,7 +1556,7 @@ export class GraphFrame {
         if (serializationData.blocks && map) {
             for (var blockId of serializationData.blocks) {
                 let actualId = map[blockId];
-                let node = canvas.nodes.filter(n => n.block.uniqueId === actualId);
+                let node = canvas.nodes.filter((n) => n.block.uniqueId === actualId);
 
                 if (node.length) {
                     newFrame.nodes.push(node[0]);

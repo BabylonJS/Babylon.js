@@ -1,5 +1,5 @@
-import { ViewerConfiguration } from './../configuration';
-import { defaultTemplate, fillContainer, loadingScreen, defaultViewer, overlay, error, loading, close } from 'babylonjs-viewer-assets';
+import { ViewerConfiguration } from "./../configuration";
+import { defaultTemplate, fillContainer, loadingScreen, defaultViewer, overlay, error, loading, close } from "babylonjs-viewer-assets";
 
 /**
  * The minimal configuration needed to make the viewer work.
@@ -9,20 +9,20 @@ export let minimalConfiguration: ViewerConfiguration = {
     version: "0.1",
     templates: {
         main: {
-            html: defaultTemplate
+            html: defaultTemplate,
         },
         fillContainer: {
             html: fillContainer,
             params: {
-                disable: false
-            }
+                disable: false,
+            },
         },
         loadingScreen: {
             html: loadingScreen,
             params: {
                 backgroundColor: "#000000",
-                loadingImage: loading
-            }
+                loadingImage: loading,
+            },
         },
         viewer: {
             html: defaultViewer,
@@ -31,15 +31,14 @@ export let minimalConfiguration: ViewerConfiguration = {
             html: overlay,
             params: {
                 closeImage: close,
-                closeText: 'Close'
-            }
+                closeText: "Close",
+            },
         },
         error: {
-            html: error
-        }
-
+            html: error,
+        },
     },
     engine: {
-        antialiasing: true
-    }
+        antialiasing: true,
+    },
 };

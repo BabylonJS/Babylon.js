@@ -19,7 +19,7 @@ export interface IColor4LineComponentProps {
     globalState: GlobalState;
 }
 
-export class Color4LineComponent extends React.Component<IColor4LineComponentProps, { isExpanded: boolean; }> {
+export class Color4LineComponent extends React.Component<IColor4LineComponentProps, { isExpanded: boolean }> {
     constructor(props: IColor4LineComponentProps) {
         super(props);
 
@@ -112,10 +112,10 @@ export class Color4LineComponent extends React.Component<IColor4LineComponentPro
                 </div>
                 {this.state.isExpanded && (
                     <div className="secondLine">
-                        <NumericInputComponent globalState={this.props.globalState} label="r" value={color.r} onChange={(value) => this.modifyColor((col) => col.r = value)} />
-                        <NumericInputComponent globalState={this.props.globalState} label="g" value={color.g} onChange={(value) => this.modifyColor((col) => col.g = value)} />
-                        <NumericInputComponent globalState={this.props.globalState} label="b" value={color.b} onChange={(value) => this.modifyColor((col) => col.b = value)} />
-                        <NumericInputComponent globalState={this.props.globalState} label="a" value={color.a} onChange={(value) => this.modifyColor((col) => col.a = value)} />
+                        <NumericInputComponent globalState={this.props.globalState} label="r" value={color.r} onChange={(value) => this.modifyColor((col) => (col.r = value))} />
+                        <NumericInputComponent globalState={this.props.globalState} label="g" value={color.g} onChange={(value) => this.modifyColor((col) => (col.g = value))} />
+                        <NumericInputComponent globalState={this.props.globalState} label="b" value={color.b} onChange={(value) => this.modifyColor((col) => (col.b = value))} />
+                        <NumericInputComponent globalState={this.props.globalState} label="a" value={color.a} onChange={(value) => this.modifyColor((col) => (col.a = value))} />
                     </div>
                 )}
             </div>

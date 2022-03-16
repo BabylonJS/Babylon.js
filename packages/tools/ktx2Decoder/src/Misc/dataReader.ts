@@ -20,7 +20,11 @@ export class DataReader {
      */
     constructor(buffer: ArrayBuffer | ArrayBufferView, byteOffset?: number, byteLength?: number) {
         if ((buffer as ArrayBufferView).buffer) {
-            this._dataView = new DataView((buffer as ArrayBufferView).buffer, (buffer as ArrayBufferView).byteOffset + (byteOffset ?? 0), byteLength ?? (buffer as ArrayBufferView).byteLength);
+            this._dataView = new DataView(
+                (buffer as ArrayBufferView).buffer,
+                (buffer as ArrayBufferView).byteOffset + (byteOffset ?? 0),
+                byteLength ?? (buffer as ArrayBufferView).byteLength
+            );
         } else {
             this._dataView = new DataView(buffer as ArrayBuffer, byteOffset ?? 0, byteLength ?? (buffer as ArrayBuffer).byteLength);
         }
@@ -98,7 +102,7 @@ export class DataReader {
         const right = this._dataView.getUint32(this._dataByteOffset + 4, true);
 
         // combine the two 32-bit values
-        const combined = true ? left + (2 ** 32 * right) : (2 ** 32 * left) + right;
+        const combined = true ? left + 2 ** 32 * right : 2 ** 32 * left + right;
 
         /*if (!Number.isSafeInteger(combined)) {
             console.warn('DataReader: ' + combined + ' exceeds MAX_SAFE_INTEGER. Precision may be lost.');

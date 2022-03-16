@@ -200,7 +200,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                 ];
                 systemValuesOptions = [
                     { label: "Delta time", value: NodeMaterialSystemValues.DeltaTime },
-                    { label: "Material alpha", value: NodeMaterialSystemValues.MaterialAlpha }
+                    { label: "Material alpha", value: NodeMaterialSystemValues.MaterialAlpha },
                 ];
                 break;
             case NodeMaterialBlockConnectionPointTypes.Matrix:

@@ -1,21 +1,21 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import { GlobalState } from './globalState';
-import { GraphEditor } from './graphEditor';
+import { GlobalState } from "./globalState";
+import { GraphEditor } from "./graphEditor";
 import { NodeMaterial } from "core/Materials/Node/nodeMaterial";
 import { Popup } from "./sharedComponents/popup";
-import { SerializationTools } from './serializationTools';
-import { Observable } from 'core/Misc/observable';
-import { PreviewType } from './components/preview/previewType';
-import { DataStorage } from 'core/Misc/dataStorage';
-import { NodeMaterialModes } from 'core/Materials/Node/Enums/nodeMaterialModes';
+import { SerializationTools } from "./serializationTools";
+import { Observable } from "core/Misc/observable";
+import { PreviewType } from "./components/preview/previewType";
+import { DataStorage } from "core/Misc/dataStorage";
+import { NodeMaterialModes } from "core/Materials/Node/Enums/nodeMaterialModes";
 /**
  * Interface used to specify creation options for the node editor
  */
 export interface INodeEditorOptions {
     nodeMaterial: NodeMaterial;
     hostElement?: HTMLElement;
-    customSave?: { label: string, action: (data: string) => Promise<void> };
+    customSave?: { label: string; action: (data: string) => Promise<void> };
     customLoadObservable?: Observable<any>;
 }
 
@@ -52,7 +52,7 @@ export class NodeEditor {
         globalState.hostWindow = hostElement.ownerDocument!.defaultView!;
 
         const graphEditor = React.createElement(GraphEditor, {
-            globalState: globalState
+            globalState: globalState,
         });
 
         ReactDOM.render(graphEditor, hostElement);
@@ -68,7 +68,7 @@ export class NodeEditor {
 
         this._CurrentState = globalState;
 
-        globalState.hostWindow.addEventListener('beforeunload', () => {
+        globalState.hostWindow.addEventListener("beforeunload", () => {
             globalState.onPopupClosedObservable.notifyObservers();
         });
 
@@ -85,10 +85,9 @@ export class NodeEditor {
                 if (popupWindow) {
                     popupWindow.close();
                 }
-
             };
         }
-        window.addEventListener('beforeunload', () => {
+        window.addEventListener("beforeunload", () => {
             if (DataStorage.ReadNumber("PreviewType", PreviewType.Box) === PreviewType.Custom) {
                 DataStorage.WriteNumber("PreviewType", globalState.mode === NodeMaterialModes.Material ? PreviewType.Box : PreviewType.Bubbles);
             }

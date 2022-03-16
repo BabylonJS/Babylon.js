@@ -1,4 +1,4 @@
-import { NodeMaterialBlock } from 'core/Materials/Node/nodeMaterialBlock';
+import { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
 
 export interface IDisplayManager {
     getHeaderClass(block: NodeMaterialBlock): string;

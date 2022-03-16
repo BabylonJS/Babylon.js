@@ -6,7 +6,7 @@ export interface ISkyboxConfiguration {
         gammaSpace?: boolean;
         url?: string | Array<string>;
     };
-    color?: { r: number, g: number, b: number };
+    color?: { r: number; g: number; b: number };
     /** @deprecated */ pbr?: boolean;
     scale?: number;
     /** @deprecated */ blur?: number;
@@ -15,5 +15,4 @@ export interface ISkyboxConfiguration {
         [propName: string]: any;
     };
     infiniteDistance?: boolean;
-
 }

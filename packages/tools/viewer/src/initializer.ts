@@ -1,6 +1,6 @@
-import { DefaultViewer } from './viewer/defaultViewer';
-import { mapperManager } from './configuration/mappers';
-import { viewerGlobals } from './configuration/globals';
+import { DefaultViewer } from "./viewer/defaultViewer";
+import { mapperManager } from "./configuration/mappers";
+import { viewerGlobals } from "./configuration/globals";
 
 /**
  * Will attach an init function the the DOMContentLoaded event.
@@ -10,7 +10,9 @@ export function initListeners() {
     document.addEventListener("DOMContentLoaded", init);
     function init(event) {
         document.removeEventListener("DOMContentLoaded", init);
-        if (viewerGlobals.disableInit) { return; }
+        if (viewerGlobals.disableInit) {
+            return;
+        }
         InitTags();
     }
 }
@@ -20,13 +22,13 @@ export function initListeners() {
  *
  * @param selector the selector to initialize the viewer on (default is 'babylon')
  */
-export function InitTags(selector: string = 'babylon') {
+export function InitTags(selector: string = "babylon") {
     let elements = document.querySelectorAll(selector);
     for (let i = 0; i < elements.length; ++i) {
         let element = elements.item(i);
 
         // get the html configuration
-        let configMapper = mapperManager.getMapper('dom');
+        let configMapper = mapperManager.getMapper("dom");
         let config = configMapper.map(element);
 
         let viewer = new DefaultViewer(element, config);

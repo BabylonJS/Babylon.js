@@ -1,21 +1,20 @@
-
-import { Template, EventCallback } from '../templating/templateManager';
-import { FilesInput } from 'core/Misc/filesInput';
-import { SpotLight } from 'core/Lights/spotLight';
-import { Vector3 } from 'core/Maths/math';
-import { TemplateManager } from '../templating/templateManager';
-import { AbstractViewerWithTemplate } from './viewerWithTemplate';
-import { StandardMaterial } from 'core/Materials/standardMaterial';
-import { PBRMaterial } from 'core/Materials/PBR/pbrMaterial';
-import { extendClassWithConfig } from '../helper/index';
-import { ViewerModel } from '../model/viewerModel';
-import { IModelAnimation, AnimationState } from '../model/modelAnimation';
-import { IViewerTemplatePlugin } from '../templating/viewerTemplatePlugin';
-import { HDButtonPlugin } from '../templating/plugins/hdButtonPlugin';
-import { PrintButtonPlugin } from '../templating/plugins/printButton';
-import { ViewerConfiguration } from '../configuration/configuration';
-import { ISceneConfiguration } from '../configuration/interfaces/sceneConfiguration';
-import { IModelConfiguration } from '../configuration/interfaces/modelConfiguration';
+import { Template, EventCallback } from "../templating/templateManager";
+import { FilesInput } from "core/Misc/filesInput";
+import { SpotLight } from "core/Lights/spotLight";
+import { Vector3 } from "core/Maths/math";
+import { TemplateManager } from "../templating/templateManager";
+import { AbstractViewerWithTemplate } from "./viewerWithTemplate";
+import { StandardMaterial } from "core/Materials/standardMaterial";
+import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
+import { extendClassWithConfig } from "../helper/index";
+import { ViewerModel } from "../model/viewerModel";
+import { IModelAnimation, AnimationState } from "../model/modelAnimation";
+import { IViewerTemplatePlugin } from "../templating/viewerTemplatePlugin";
+import { HDButtonPlugin } from "../templating/plugins/hdButtonPlugin";
+import { PrintButtonPlugin } from "../templating/plugins/printButton";
+import { ViewerConfiguration } from "../configuration/configuration";
+import { ISceneConfiguration } from "../configuration/interfaces/sceneConfiguration";
+import { IModelConfiguration } from "../configuration/interfaces/modelConfiguration";
 
 /**
  * The Default viewer is the default implementation of the AbstractViewer.
@@ -34,7 +33,7 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
      * @param containerElement the element in which the templates will be rendered
      * @param initialConfiguration the initial configuration. Defaults to extending the default configuration
      */
-    constructor(public containerElement: Element, initialConfiguration: ViewerConfiguration = { extends: 'default' }) {
+    constructor(public containerElement: Element, initialConfiguration: ViewerConfiguration = { extends: "default" }) {
         super(containerElement, initialConfiguration);
 
         this.onModelLoadedObservable.add(this._onModelLoaded);
@@ -54,17 +53,19 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
                 if (!conf) {
                     return;
                 }
-                if ((conf.materialType === 'standard' && this.scene.defaultMaterial.getClassName() !== 'StandardMaterial') ||
-                    (conf.materialType === 'pbr' && this.scene.defaultMaterial.getClassName() !== 'PBRMaterial')) {
+                if (
+                    (conf.materialType === "standard" && this.scene.defaultMaterial.getClassName() !== "StandardMaterial") ||
+                    (conf.materialType === "pbr" && this.scene.defaultMaterial.getClassName() !== "PBRMaterial")
+                ) {
                     this.scene.defaultMaterial.dispose();
-                    if (conf.materialType === 'standard') {
+                    if (conf.materialType === "standard") {
                         this.scene.defaultMaterial = new StandardMaterial("defaultMaterial", this.scene);
                     } else {
                         this.scene.defaultMaterial = new PBRMaterial("defaultMaterial", this.scene);
                     }
                 }
                 extendClassWithConfig(this.scene.defaultMaterial, conf);
-            }
+            };
             if (!this.sceneManager.models.length) {
                 this.hideLoadingScreen();
             }
@@ -92,11 +93,16 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
 
         if (plugin.eventsToAttach) {
             plugin.eventsToAttach.forEach((eventName) => {
-                plugin.onEvent && this.templateManager.eventManager.registerCallback(plugin.templateName, (event) => {
-                    if (plugin.onEvent && plugin.interactionPredicate(event)) {
-                        plugin.onEvent(event);
-                    }
-                }, eventName);
+                plugin.onEvent &&
+                    this.templateManager.eventManager.registerCallback(
+                        plugin.templateName,
+                        (event) => {
+                            if (plugin.onEvent && plugin.interactionPredicate(event)) {
+                                plugin.onEvent(event);
+                            }
+                        },
+                        eventName
+                    );
             });
         }
     }
@@ -111,12 +117,11 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
         this._initNavbar();
 
         // close overlay button
-        let template = this.templateManager.getTemplate('overlay');
+        let template = this.templateManager.getTemplate("overlay");
         if (template) {
-
-            let closeButton = template.parent.querySelector('.close-button');
+            let closeButton = template.parent.querySelector(".close-button");
             if (closeButton) {
-                closeButton.addEventListener('pointerdown', () => {
+                closeButton.addEventListener("pointerdown", () => {
                     this.hideOverlayScreen();
                 });
             }
@@ -125,15 +130,19 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
         if (this.configuration.templates && this.configuration.templates.viewer) {
             if (this.configuration.templates.viewer.params && this.configuration.templates.viewer.params.enableDragAndDrop) {
                 this.onSceneInitObservable.addOnce(() => {
-                    let filesInput = new FilesInput(this.engine, this.sceneManager.scene, () => {
-                    }, () => {
-                    }, () => {
-                    }, () => {
-                    }, function () {
-                    }, (file: File) => {
-                        this.loadModel(file);
-                    }, () => {
-                    });
+                    let filesInput = new FilesInput(
+                        this.engine,
+                        this.sceneManager.scene,
+                        () => {},
+                        () => {},
+                        () => {},
+                        () => {},
+                        function () {},
+                        (file: File) => {
+                            this.loadModel(file);
+                        },
+                        () => {}
+                    );
                     filesInput.monitorElementForDragNDrop(this.templateManager.getCanvas()!);
                 });
             }
@@ -143,34 +152,52 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
     }
 
     private _initNavbar() {
-        let navbar = this.templateManager.getTemplate('navBar');
+        let navbar = this.templateManager.getTemplate("navBar");
         if (navbar) {
             this.onFrameRenderedObservable.add(this._updateProgressBar);
-            this.templateManager.eventManager.registerCallback('navBar', this._handlePointerClick, 'click');
+            this.templateManager.eventManager.registerCallback("navBar", this._handlePointerClick, "click");
             // an example how to trigger the help button. publiclly available
-            this.templateManager.eventManager.registerCallback("navBar", () => {
-                // do your thing
-            }, "pointerdown", ".help-button");
+            this.templateManager.eventManager.registerCallback(
+                "navBar",
+                () => {
+                    // do your thing
+                },
+                "pointerdown",
+                ".help-button"
+            );
 
-            this.templateManager.eventManager.registerCallback("navBar", (event: EventCallback) => {
-                const evt = event.event;
-                const element = <HTMLInputElement>(evt.target);
-                if (!this._currentAnimation) { return; }
-                const gotoFrame = +element.value / 100 * this._currentAnimation.frames;
-                if (isNaN(gotoFrame)) { return; }
-                this._currentAnimation.goToFrame(gotoFrame);
-            }, "input");
+            this.templateManager.eventManager.registerCallback(
+                "navBar",
+                (event: EventCallback) => {
+                    const evt = event.event;
+                    const element = <HTMLInputElement>evt.target;
+                    if (!this._currentAnimation) {
+                        return;
+                    }
+                    const gotoFrame = (+element.value / 100) * this._currentAnimation.frames;
+                    if (isNaN(gotoFrame)) {
+                        return;
+                    }
+                    this._currentAnimation.goToFrame(gotoFrame);
+                },
+                "input"
+            );
 
-            this.templateManager.eventManager.registerCallback("navBar", () => {
-                if (this._resumePlay) {
-                    this._togglePlayPause(true);
-                }
-                this._resumePlay = false;
-            }, "pointerup", ".progress-wrapper");
+            this.templateManager.eventManager.registerCallback(
+                "navBar",
+                () => {
+                    if (this._resumePlay) {
+                        this._togglePlayPause(true);
+                    }
+                    this._resumePlay = false;
+                },
+                "pointerup",
+                ".progress-wrapper"
+            );
 
             if (window.devicePixelRatio === 1 && navbar.configuration.params && !navbar.configuration.params.hideHdButton) {
                 navbar.updateParams({
-                    hideHdButton: true
+                    hideHdButton: true,
                 });
             }
 
@@ -185,10 +212,11 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
     private _resumePlay: boolean;
 
     private _handlePointerClick = (event: EventCallback) => {
-
         let pointerDown = <PointerEvent>event.event;
-        if (pointerDown.button !== 0) { return; }
-        var element = (<HTMLElement>event.event.target);
+        if (pointerDown.button !== 0) {
+            return;
+        }
+        var element = <HTMLElement>event.event.target;
 
         if (!element) {
             return;
@@ -251,7 +279,7 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
             default:
                 return;
         }
-    }
+    };
 
     /**
      * Plays or Pauses animation
@@ -268,15 +296,19 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
 
         this._isAnimationPaused = !this._isAnimationPaused;
 
-        if (noUiUpdate) { return; }
+        if (noUiUpdate) {
+            return;
+        }
 
-        let navbar = this.templateManager.getTemplate('navBar');
-        if (!navbar) { return; }
+        let navbar = this.templateManager.getTemplate("navBar");
+        if (!navbar) {
+            return;
+        }
 
         navbar.updateParams({
             paused: this._isAnimationPaused,
         });
-    }
+    };
 
     private _oldIdleRotationValue: number;
 
@@ -284,14 +316,17 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
      * Control progress bar position based on animation current frame
      */
     private _updateProgressBar = () => {
-        let navbar = this.templateManager.getTemplate('navBar');
-        if (!navbar) { return; }
+        let navbar = this.templateManager.getTemplate("navBar");
+        if (!navbar) {
+            return;
+        }
         var progressSlider = <HTMLInputElement>navbar.parent.querySelector("input.progress-wrapper");
         if (progressSlider && this._currentAnimation) {
-            const progress = this._currentAnimation.currentFrame / this._currentAnimation.frames * 100;
+            const progress = (this._currentAnimation.currentFrame / this._currentAnimation.frames) * 100;
             var currentValue = progressSlider.valueAsNumber;
-            if (Math.abs(currentValue - progress) > 0.5) { // Only move if greater than a 1% change
-                progressSlider.value = '' + progress;
+            if (Math.abs(currentValue - progress) > 0.5) {
+                // Only move if greater than a 1% change
+                progressSlider.value = "" + progress;
             }
 
             if (this._currentAnimation.state === AnimationState.PLAYING) {
@@ -306,14 +341,16 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
                 }
             }
         }
-    }
+    };
 
     /**
      * Update Current Animation Speed
      */
     private _updateAnimationSpeed = (speed: string, paramsObject?: any) => {
-        let navbar = this.templateManager.getTemplate('navBar');
-        if (!navbar) { return; }
+        let navbar = this.templateManager.getTemplate("navBar");
+        if (!navbar) {
+            return;
+        }
 
         if (speed && this._currentAnimation) {
             this._currentAnimation.speedRatio = parseFloat(speed);
@@ -329,35 +366,37 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
                 });
             }
         }
-    }
+    };
 
     /**
      * Update Current Animation Type
      */
-    private _updateAnimationType = (data: { label: string, value: string }, paramsObject?: any) => {
-        let navbar = this.templateManager.getTemplate('navBar');
-        if (!navbar) { return; }
+    private _updateAnimationType = (data: { label: string; value: string }, paramsObject?: any) => {
+        let navbar = this.templateManager.getTemplate("navBar");
+        if (!navbar) {
+            return;
+        }
 
         if (data) {
             this._currentAnimation = this.sceneManager.models[0].setCurrentAnimationByName(data.value);
         }
 
         if (paramsObject) {
-            paramsObject.selectedAnimation = (this._animationList.indexOf(data.value) + 1);
+            paramsObject.selectedAnimation = this._animationList.indexOf(data.value) + 1;
             paramsObject.selectedAnimationName = data.label;
         } else {
             navbar.updateParams({
-                selectedAnimation: (this._animationList.indexOf(data.value) + 1),
-                selectedAnimationName: data.label
+                selectedAnimation: this._animationList.indexOf(data.value) + 1,
+                selectedAnimationName: data.label,
             });
         }
 
         this._updateAnimationSpeed("1.0", paramsObject);
-    }
+    };
 
     protected _initVR() {
         this.engine.onVRDisplayChangedObservable.add(() => {
-            let viewerTemplate = this.templateManager.getTemplate('viewer');
+            let viewerTemplate = this.templateManager.getTemplate("viewer");
             let viewerElement = viewerTemplate && viewerTemplate.parent;
 
             if (viewerElement) {
@@ -371,7 +410,7 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
         if (this.sceneManager.vrHelper) {
             // due to the way the experience helper is exisintg VR, this must be added.
             this.sceneManager.vrHelper.onExitingVR.add(() => {
-                let viewerTemplate = this.templateManager.getTemplate('viewer');
+                let viewerTemplate = this.templateManager.getTemplate("viewer");
                 let viewerElement = viewerTemplate && viewerTemplate.parent;
 
                 if (viewerElement) {
@@ -386,14 +425,19 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
      * Toggle fullscreen of the entire viewer
      */
     public toggleFullscreen = () => {
-        let viewerTemplate = this.templateManager.getTemplate('viewer');
+        let viewerTemplate = this.templateManager.getTemplate("viewer");
         let viewerElement = viewerTemplate && viewerTemplate.parent;
         let fullscreenElement = this.fullscreenElement || viewerElement;
 
         if (fullscreenElement) {
-            let currentElement = (<any>document).fullscreenElement || (<any>document).webkitFullscreenElement || (<any>document).mozFullScreenElement || (<any>document).msFullscreenElement;
+            let currentElement =
+                (<any>document).fullscreenElement || (<any>document).webkitFullscreenElement || (<any>document).mozFullScreenElement || (<any>document).msFullscreenElement;
             if (!currentElement) {
-                let requestFullScreen = fullscreenElement.requestFullscreen || (<any>fullscreenElement).webkitRequestFullscreen || (<any>fullscreenElement).msRequestFullscreen || (<any>fullscreenElement).mozRequestFullScreen;
+                let requestFullScreen =
+                    fullscreenElement.requestFullscreen ||
+                    (<any>fullscreenElement).webkitRequestFullscreen ||
+                    (<any>fullscreenElement).msRequestFullscreen ||
+                    (<any>fullscreenElement).mozRequestFullScreen;
                 requestFullScreen.call(fullscreenElement);
                 if (viewerElement) {
                     viewerElement.classList.add("in-fullscreen");
@@ -406,7 +450,7 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
                 }
             }
         }
-    }
+    };
 
     /**
      * Preparing the container element to present the viewer
@@ -414,9 +458,9 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
     protected _prepareContainerElement() {
         const htmlElement = this.containerElement as HTMLElement;
         if (htmlElement.style) {
-            htmlElement.style.position = 'relative';
-            htmlElement.style.height = '100%';
-            htmlElement.style.display = 'flex';
+            htmlElement.style.position = "relative";
+            htmlElement.style.height = "100%";
+            htmlElement.style.display = "flex";
         }
     }
 
@@ -426,23 +470,26 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
      * @param model the model to be used to configure the templates by
      */
     protected _configureTemplate(model?: ViewerModel) {
-        let navbar = this.templateManager.getTemplate('navBar');
-        if (!navbar) { return; }
+        let navbar = this.templateManager.getTemplate("navBar");
+        if (!navbar) {
+            return;
+        }
 
         let newParams: any = navbar.configuration.params || {};
 
         if (!model) {
             newParams.animations = null;
         } else {
-
             let animationNames = model.getAnimationNames();
-            newParams.animations = animationNames.map((a) => { return { label: a, value: a }; });
+            newParams.animations = animationNames.map((a) => {
+                return { label: a, value: a };
+            });
             if (animationNames.length) {
                 this._isAnimationPaused = (model.configuration.animation && !model.configuration.animation.autoStart) || !model.configuration.animation;
                 this._animationList = animationNames;
                 newParams.paused = this._isAnimationPaused;
                 let animationIndex = 0;
-                if (model.configuration.animation && typeof model.configuration.animation.autoStart === 'string') {
+                if (model.configuration.animation && typeof model.configuration.animation.autoStart === "string") {
                     animationIndex = animationNames.indexOf(model.configuration.animation.autoStart);
                     if (animationIndex === -1) {
                         animationIndex = 0;
@@ -474,7 +521,7 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
         return super.loadModel(model!, true).catch((error) => {
             console.log(error);
             this.hideLoadingScreen();
-            this.showOverlayScreen('error');
+            this.showOverlayScreen("error");
             return Promise.reject(error);
         });
     }
@@ -493,7 +540,7 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
         }, hideLoadingDelay);
 
         return;
-    }
+    };
 
     /**
      * Show the overlay and the defined sub-screen.
@@ -501,53 +548,56 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
      * @param subScreen the name of the subScreen. Those can be defined in the configuration object
      */
     public showOverlayScreen(subScreen: string) {
-        let template = this.templateManager.getTemplate('overlay');
-        if (!template) { return Promise.resolve('Overlay template not found'); }
+        let template = this.templateManager.getTemplate("overlay");
+        if (!template) {
+            return Promise.resolve("Overlay template not found");
+        }
 
-        return template.show(((template) => {
-
+        return template.show((template) => {
             var canvasRect = this.containerElement.getBoundingClientRect();
 
-            template.parent.style.display = 'flex';
+            template.parent.style.display = "flex";
             template.parent.style.width = canvasRect.width + "px";
             template.parent.style.height = canvasRect.height + "px";
             template.parent.style.opacity = "1";
 
             let subTemplate = this.templateManager.getTemplate(subScreen);
             if (!subTemplate) {
-                return Promise.reject(subScreen + ' template not found');
+                return Promise.reject(subScreen + " template not found");
             }
-            return subTemplate.show(((template) => {
-                template.parent.style.display = 'flex';
+            return subTemplate.show((template) => {
+                template.parent.style.display = "flex";
                 return Promise.resolve(template);
-            }));
-        }));
+            });
+        });
     }
 
     /**
      * Hide the overlay screen.
      */
     public hideOverlayScreen() {
-        let template = this.templateManager.getTemplate('overlay');
-        if (!template) { return Promise.resolve('Overlay template not found'); }
+        let template = this.templateManager.getTemplate("overlay");
+        if (!template) {
+            return Promise.resolve("Overlay template not found");
+        }
 
-        return template.hide(((template) => {
+        return template.hide((template) => {
             template.parent.style.opacity = "0";
             let onTransitionEnd = () => {
                 template.parent.removeEventListener("transitionend", onTransitionEnd);
-                template.parent.style.display = 'none';
+                template.parent.style.display = "none";
             };
             template.parent.addEventListener("transitionend", onTransitionEnd);
 
-            let overlays = template.parent.querySelectorAll('.overlay');
+            let overlays = template.parent.querySelectorAll(".overlay");
             if (overlays) {
                 for (let i = 0; i < overlays.length; ++i) {
                     let htmlElement = <HTMLElement>overlays.item(i);
-                    htmlElement.style.display = 'none';
+                    htmlElement.style.display = "none";
                 }
             }
             return Promise.resolve(template);
-        }));
+        });
     }
 
     /**
@@ -555,10 +605,12 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
      *
      * @param visibilityFunction an optional function to execute in order to show the container
      */
-    public show(visibilityFunction?: ((template: Template) => Promise<Template>)): Promise<Template> {
-        let template = this.templateManager.getTemplate('main');
+    public show(visibilityFunction?: (template: Template) => Promise<Template>): Promise<Template> {
+        let template = this.templateManager.getTemplate("main");
         //not possible, but yet:
-        if (!template) { return Promise.reject('Main template not found'); }
+        if (!template) {
+            return Promise.reject("Main template not found");
+        }
         return template.show(visibilityFunction);
     }
 
@@ -567,10 +619,12 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
      *
      * @param visibilityFunction an optional function to execute in order to hide the container
      */
-    public hide(visibilityFunction?: ((template: Template) => Promise<Template>)) {
-        let template = this.templateManager.getTemplate('main');
+    public hide(visibilityFunction?: (template: Template) => Promise<Template>) {
+        let template = this.templateManager.getTemplate("main");
         //not possible, but yet:
-        if (!template) { return Promise.reject('Main template not found'); }
+        if (!template) {
+            return Promise.reject("Main template not found");
+        }
         return template.hide(visibilityFunction);
     }
 
@@ -579,45 +633,47 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
      * The loading screen can be configured using the configuration object
      */
     public showLoadingScreen() {
-        let template = this.templateManager.getTemplate('loadingScreen');
-        if (!template) { return Promise.resolve('Loading Screen template not found'); }
+        let template = this.templateManager.getTemplate("loadingScreen");
+        if (!template) {
+            return Promise.resolve("Loading Screen template not found");
+        }
 
-        return template.show(((template) => {
-
+        return template.show((template) => {
             var canvasRect = this.containerElement.getBoundingClientRect();
             // var canvasPositioning = window.getComputedStyle(this.containerElement).position;
 
-            template.parent.style.display = 'flex';
+            template.parent.style.display = "flex";
             template.parent.style.width = canvasRect.width + "px";
             template.parent.style.height = canvasRect.height + "px";
             template.parent.style.opacity = "1";
             // from the configuration!!!
             let color = "black";
             if (this.configuration.templates && this.configuration.templates.loadingScreen) {
-                color = (this.configuration.templates.loadingScreen.params &&
-                    <string>this.configuration.templates.loadingScreen.params.backgroundColor) || color;
+                color = (this.configuration.templates.loadingScreen.params && <string>this.configuration.templates.loadingScreen.params.backgroundColor) || color;
             }
             template.parent.style.backgroundColor = color;
             return Promise.resolve(template);
-        }));
+        });
     }
 
     /**
      * Hide the loading screen
      */
     public hideLoadingScreen() {
-        let template = this.templateManager.getTemplate('loadingScreen');
-        if (!template) { return Promise.resolve('Loading Screen template not found'); }
+        let template = this.templateManager.getTemplate("loadingScreen");
+        if (!template) {
+            return Promise.resolve("Loading Screen template not found");
+        }
 
-        return template.hide(((template) => {
+        return template.hide((template) => {
             template.parent.style.opacity = "0";
             let onTransitionEnd = () => {
                 template.parent.removeEventListener("transitionend", onTransitionEnd);
-                template.parent.style.display = 'none';
+                template.parent.style.display = "none";
             };
             template.parent.addEventListener("transitionend", onTransitionEnd);
             return Promise.resolve(template);
-        }));
+        });
     }
 
     public dispose() {
@@ -626,7 +682,6 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
     }
 
     protected _onConfigurationLoaded(configuration: ViewerConfiguration) {
-
         super._onConfigurationLoaded(configuration);
 
         this.templateManager = new TemplateManager(this.containerElement);
@@ -660,8 +715,7 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
                 exponent = this.configuration.lab.flashlight.exponent || exponent;
                 angle = this.configuration.lab.flashlight.angle || angle;
             }
-            var flashlight = new SpotLight("flashlight", Vector3.Zero(),
-                Vector3.Zero(), exponent, angle, this.sceneManager.scene);
+            var flashlight = new SpotLight("flashlight", Vector3.Zero(), Vector3.Zero(), exponent, angle, this.sceneManager.scene);
             if (typeof this.configuration.lab.flashlight === "object") {
                 flashlight.intensity = this.configuration.lab.flashlight.intensity || flashlight.intensity;
                 if (this.configuration.lab.flashlight.diffuse) {
@@ -674,12 +728,11 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
                     flashlight.specular.g = this.configuration.lab.flashlight.specular.g;
                     flashlight.specular.b = this.configuration.lab.flashlight.specular.b;
                 }
-
             }
             this.sceneManager.scene.constantlyUpdateMeshUnderPointer = true;
             this.sceneManager.scene.onPointerObservable.add((eventData) => {
                 if (eventData.type === 4 && eventData.pickInfo) {
-                    lightTarget = (eventData.pickInfo.pickedPoint);
+                    lightTarget = eventData.pickInfo.pickedPoint;
                 } else {
                     lightTarget = undefined;
                 }

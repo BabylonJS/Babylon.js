@@ -58,8 +58,7 @@ interface ICommonControlPropertyGridComponentProps {
 type ControlProperty = keyof Control | "_paddingLeft" | "_paddingRight" | "_paddingTop" | "_paddingBottom" | "_fontSize";
 
 export class CommonControlPropertyGridComponent extends React.Component<ICommonControlPropertyGridComponentProps> {
-
-    private _onPropertyChangedObserver : Nullable<Observer<PropertyChangedEvent>> | undefined;
+    private _onPropertyChangedObserver: Nullable<Observer<PropertyChangedEvent>> | undefined;
 
     constructor(props: ICommonControlPropertyGridComponentProps) {
         super(props);
@@ -93,7 +92,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
         });
     }
 
-    private _getTransformedReferenceCoordinate(control : Control) {
+    private _getTransformedReferenceCoordinate(control: Control) {
         const nodeMatrix = CoordinateHelper.getNodeMatrix(control);
         const transformed = new Vector2(1, 1);
         nodeMatrix.transformCoordinates(1, 1, transformed);
@@ -112,12 +111,11 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
     }
 
     private _checkAndUpdateValues(propertyName: string, value: string) {
-
         for (const control of this.props.controls) {
             // checking the previous value unit to see what it was.
-            const vau = (control as any)["_" +propertyName];
+            const vau = (control as any)["_" + propertyName];
             let percentage = (vau as ValueAndUnit).isPercentage;
-            
+
             // now checking if the new string contains either a px or a % sign in case we need to change the unit.
             let negative = value.charAt(0) === "-";
             if (value.charAt(value.length - 1) === "%") {
@@ -143,11 +141,11 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
     }
 
     private _markChildrenAsDirty() {
-        for(const control of this.props.controls) {
+        for (const control of this.props.controls) {
             if (control instanceof Container)
-                (control as Container)._children.forEach(child => {
+                (control as Container)._children.forEach((child) => {
                     child._markAsDirty();
-            });
+                });
         }
     }
 
@@ -170,16 +168,16 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                 verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
             }
         }
-        if (controls.every(control => control.typeName === "TextBlock" && (control as TextBlock).resizeToFit === false)) {
+        if (controls.every((control) => control.typeName === "TextBlock" && (control as TextBlock).resizeToFit === false)) {
             horizontalAlignment = (firstControl as TextBlock).textHorizontalAlignment;
             verticalAlignment = (firstControl as TextBlock).textVerticalAlignment;
         }
 
-        const showTextProperties = (firstControl instanceof Container || firstControl.typeName === "TextBlock");
+        const showTextProperties = firstControl instanceof Container || firstControl.typeName === "TextBlock";
 
         const proxy = makeTargetsProxy(controls, this.props.onPropertyChangedObservable);
         const getValue = (propertyName: ControlProperty) => {
-            const values = (controls.map(control => control[propertyName]._value));
+            const values = controls.map((control) => control[propertyName]._value);
             const firstValue = values[0];
             if (values.every((value: any) => value === firstValue)) {
                 const units = getUnitString(propertyName);
@@ -195,7 +193,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
             }
         };
         const getUnitString = (propertyName: ControlProperty) => {
-            const units = (controls.map(control => control[propertyName]._unit));
+            const units = controls.map((control) => control[propertyName]._unit);
             const firstUnit = units[0];
             if (units.every((unit: any) => unit === firstUnit)) {
                 if (firstUnit === ValueAndUnit.UNITMODE_PIXEL) {
@@ -208,9 +206,9 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
             }
         };
         const increment = (propertyName: DimensionProperties, amount: number, minimum?: number, maximum?: number) => {
-            for(const control of controls) {
+            for (const control of controls) {
                 const initialValue = control[propertyName];
-                const initialUnit = (control as any)["_" + propertyName]._unit ;
+                const initialUnit = (control as any)["_" + propertyName]._unit;
                 let newValue: number = (control as any)[`${propertyName}InPixels`] + amount;
                 if (minimum !== undefined && newValue < minimum) newValue = minimum;
                 if (maximum !== undefined && newValue > maximum) newValue = maximum;
@@ -222,12 +220,12 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                     object: control,
                     property: propertyName,
                     initialValue: initialValue,
-                    value: control[propertyName]
+                    value: control[propertyName],
                 });
             }
-        }
+        };
         const convertUnits = (unit: string, property: DimensionProperties) => {
-            for(const control of controls) {
+            for (const control of controls) {
                 if (unit === "PX") {
                     CoordinateHelper.convertToPercentage(control, [property], this.props.onPropertyChangedObservable);
                 } else {
@@ -235,12 +233,12 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                 }
                 this.forceUpdate();
             }
-        }
+        };
 
         const fontStyleOptions = [
-            {label: "regular", value: 0},
-            {label: "italic", value: 1},
-            {label: "oblique", value: 2}
+            { label: "regular", value: 0 },
+            { label: "italic", value: 1 },
+            { label: "oblique", value: 2 },
         ];
 
         return (
@@ -302,10 +300,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                     />
                 </div>
                 <div className="ge-divider">
-                    <IconComponent
-                        icon={positionIcon}
-                        label={"Position"}
-                    />
+                    <IconComponent icon={positionIcon} label={"Position"} />
                     <TextInputLineComponent
                         numbersOnly={true}
                         lockObject={this.props.lockObject}
@@ -314,9 +309,9 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         value={getValue("_left")}
                         onChange={(newValue) => this._checkAndUpdateValues("left", newValue)}
                         unit={getUnitString("_left")}
-                        onUnitClicked={unit => convertUnits(unit, "left")}
+                        onUnitClicked={(unit) => convertUnits(unit, "left")}
                         arrows={true}
-                        arrowsIncrement={amount => increment("left", amount)}
+                        arrowsIncrement={(amount) => increment("left", amount)}
                     />
                     <TextInputLineComponent
                         numbersOnly={true}
@@ -327,16 +322,13 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         onChange={(newValue) => this._checkAndUpdateValues("top", newValue)}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         unit={getUnitString("_top")}
-                        onUnitClicked={unit => convertUnits(unit, "top")}
+                        onUnitClicked={(unit) => convertUnits(unit, "top")}
                         arrows={true}
-                        arrowsIncrement={amount => increment("top", amount)}
+                        arrowsIncrement={(amount) => increment("top", amount)}
                     />
                 </div>
                 <div className="ge-divider">
-                    <IconComponent
-                        icon={sizeIcon}
-                        label={"Size"}
-                    />
+                    <IconComponent icon={sizeIcon} label={"Size"} />
                     <TextInputLineComponent
                         numbersOnly={true}
                         lockObject={this.props.lockObject}
@@ -345,14 +337,12 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         value={getValue("_width")}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         onChange={(newValue) => {
-                            for(const control of controls) {
+                            for (const control of controls) {
                                 if (control.typeName === "Image") {
                                     (control as Image).autoScale = false;
-                                }
-                                else if (control instanceof Container) {
+                                } else if (control instanceof Container) {
                                     (control as Container).adaptWidthToChildren = false;
-                                }
-                                else if (control.typeName === "ColorPicker") {
+                                } else if (control.typeName === "ColorPicker") {
                                     if (newValue === "0" || newValue === "-") {
                                         newValue = "1";
                                     }
@@ -361,9 +351,9 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                             this._checkAndUpdateValues("width", newValue);
                         }}
                         unit={getUnitString("_width")}
-                        onUnitClicked={unit => convertUnits(unit, "width")}
+                        onUnitClicked={(unit) => convertUnits(unit, "width")}
                         arrows={true}
-                        arrowsIncrement={amount => increment("width", amount)}
+                        arrowsIncrement={(amount) => increment("width", amount)}
                     />
                     <TextInputLineComponent
                         numbersOnly={true}
@@ -373,14 +363,12 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         value={getValue("_height")}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         onChange={(newValue) => {
-                            for(const control of controls) {
+                            for (const control of controls) {
                                 if (control.typeName === "Image") {
                                     (control as Image).autoScale = false;
-                                }
-                                else if (control instanceof Container) {
+                                } else if (control instanceof Container) {
                                     (control as Container).adaptHeightToChildren = false;
-                                }
-                                else if (control.typeName === "ColorPicker") {
+                                } else if (control.typeName === "ColorPicker") {
                                     if (newValue === "0" || newValue === "-") {
                                         newValue = "1";
                                     }
@@ -389,16 +377,13 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                             this._checkAndUpdateValues("height", newValue);
                         }}
                         unit={getUnitString("_height")}
-                        onUnitClicked={unit => convertUnits(unit, "height")}
+                        onUnitClicked={(unit) => convertUnits(unit, "height")}
                         arrows={true}
-                        arrowsIncrement={amount => increment("height", amount)}
+                        arrowsIncrement={(amount) => increment("height", amount)}
                     />
                 </div>
                 <div className="ge-divider">
-                    <IconComponent
-                        icon={verticalMarginIcon}
-                        label={"Vertical Padding"}
-                    />
+                    <IconComponent icon={verticalMarginIcon} label={"Vertical Padding"} />
                     <TextInputLineComponent
                         numbersOnly={true}
                         lockObject={this.props.lockObject}
@@ -411,9 +396,9 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         }}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         unit={getUnitString("_paddingTop")}
-                        onUnitClicked={unit => convertUnits(unit, "paddingTop")}
+                        onUnitClicked={(unit) => convertUnits(unit, "paddingTop")}
                         arrows={true}
-                        arrowsIncrement={amount => increment("paddingTop", amount, 0)}
+                        arrowsIncrement={(amount) => increment("paddingTop", amount, 0)}
                     />
                     <TextInputLineComponent
                         numbersOnly={true}
@@ -427,16 +412,13 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         }}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         unit={getUnitString("_paddingBottom")}
-                        onUnitClicked={unit => convertUnits(unit, "paddingBottom")}
+                        onUnitClicked={(unit) => convertUnits(unit, "paddingBottom")}
                         arrows={true}
-                        arrowsIncrement={amount => increment("paddingBottom", amount, 0)}
+                        arrowsIncrement={(amount) => increment("paddingBottom", amount, 0)}
                     />
                 </div>
                 <div className="ge-divider">
-                    <IconComponent
-                        icon={horizontalMarginIcon}
-                        label={"Horizontal Padding"}
-                    />
+                    <IconComponent icon={horizontalMarginIcon} label={"Horizontal Padding"} />
                     <TextInputLineComponent
                         numbersOnly={true}
                         lockObject={this.props.lockObject}
@@ -449,9 +431,9 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         }}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         unit={getUnitString("_paddingLeft")}
-                        onUnitClicked={unit => convertUnits(unit, "paddingLeft")}
+                        onUnitClicked={(unit) => convertUnits(unit, "paddingLeft")}
                         arrows={true}
-                        arrowsIncrement={amount => increment("paddingLeft", amount)}
+                        arrowsIncrement={(amount) => increment("paddingLeft", amount)}
                     />
                     <TextInputLineComponent
                         numbersOnly={true}
@@ -465,29 +447,19 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         }}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         unit={getUnitString("_paddingRight")}
-                        onUnitClicked={unit => convertUnits(unit, "paddingRight")}
+                        onUnitClicked={(unit) => convertUnits(unit, "paddingRight")}
                         arrows={true}
-                        arrowsIncrement={amount => increment("paddingRight", amount)}
+                        arrowsIncrement={(amount) => increment("paddingRight", amount)}
                     />
                 </div>
                 <div className="ge-divider">
-                    <IconComponent
-                        icon={descendantsOnlyPaddingIcon}
-                        label={"Makes padding affect only the descendants of this control"}
-                    />
-                    <CheckBoxLineComponent
-                        label="ONLY PAD DESCENDANTS"
-                        target={proxy}
-                        propertyName="descendentsOnlyPadding"
-                    />
+                    <IconComponent icon={descendantsOnlyPaddingIcon} label={"Makes padding affect only the descendants of this control"} />
+                    <CheckBoxLineComponent label="ONLY PAD DESCENDANTS" target={proxy} propertyName="descendentsOnlyPadding" />
                 </div>
                 <hr className="ge" />
                 <TextLineComponent tooltip="" label="TRANSFORMATION" value=" " color="grey"></TextLineComponent>
                 <div className="ge-divider">
-                    <IconComponent
-                        icon={scaleIcon}
-                        label={"Scale"}
-                    />
+                    <IconComponent icon={scaleIcon} label={"Scale"} />
                     <TextInputLineComponent
                         lockObject={this.props.lockObject}
                         label="X"
@@ -510,10 +482,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                     />
                 </div>
                 <div className="ge-divider">
-                    <IconComponent
-                        icon={pivotIcon}
-                        label={"Transform Center"}
-                    />
+                    <IconComponent icon={pivotIcon} label={"Transform Center"} />
                     <TextInputLineComponent
                         lockObject={this.props.lockObject}
                         label="X"
@@ -536,10 +505,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                     />
                 </div>
                 <div className="ge-divider">
-                    <IconComponent
-                            icon={rotationIcon}
-                            label={"Rotation"}
-                    />
+                    <IconComponent icon={rotationIcon} label={"Rotation"} />
                     <SliderLineComponent
                         iconLabel={"Rotation"}
                         lockObject={this.props.lockObject}
@@ -554,39 +520,23 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                     />
                 </div>
                 <hr className="ge" />
-                <TextLineComponent tooltip="" label="APPEARANCE" value=" " color="grey"/>
-                {controls.every(control => control.color !== undefined && control.typeName !== "Image" && control.typeName !== "ImageBasedSlider" && control.typeName !== "ColorPicker") && (
-                <div className="ge-divider">
-                    <IconComponent
-                        icon={colorIcon}
-                        label={"Outline Color"}
-                    />
-                    <ColorLineComponent
-                        lockObject={this.props.lockObject}
-                        label="Outline Color"
-                        target={proxy}
-                        propertyName="color"
-                    />
-                </div>
+                <TextLineComponent tooltip="" label="APPEARANCE" value=" " color="grey" />
+                {controls.every(
+                    (control) => control.color !== undefined && control.typeName !== "Image" && control.typeName !== "ImageBasedSlider" && control.typeName !== "ColorPicker"
+                ) && (
+                    <div className="ge-divider">
+                        <IconComponent icon={colorIcon} label={"Outline Color"} />
+                        <ColorLineComponent lockObject={this.props.lockObject} label="Outline Color" target={proxy} propertyName="color" />
+                    </div>
                 )}
-                {controls.every(control => (control as any).background !== undefined) && 
+                {controls.every((control) => (control as any).background !== undefined) && (
+                    <div className="ge-divider">
+                        <IconComponent icon={fillColorIcon} label={"Background Color"} />
+                        <ColorLineComponent lockObject={this.props.lockObject} label="Background Color" target={proxy} propertyName="background" />
+                    </div>
+                )}
                 <div className="ge-divider">
-                    <IconComponent
-                        icon={fillColorIcon}
-                        label={"Background Color"}
-                    />
-                    <ColorLineComponent
-                        lockObject={this.props.lockObject}
-                        label="Background Color"
-                        target={proxy}
-                        propertyName="background"
-                    />
-                </div>}
-                <div className="ge-divider">
-                    <IconComponent
-                        icon={alphaIcon}
-                        label={"Alpha"}
-                    />
+                    <IconComponent icon={alphaIcon} label={"Alpha"} />
                     <SliderLineComponent
                         lockObject={this.props.lockObject}
                         label="A"
@@ -599,10 +549,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                     />
                 </div>
                 <div className="ge-divider">
-                    <IconComponent
-                        icon={shadowColorIcon}
-                        label={"Shadow Color"}
-                    />
+                    <IconComponent icon={shadowColorIcon} label={"Shadow Color"} />
                     <ColorLineComponent
                         lockObject={this.props.lockObject}
                         label=""
@@ -613,10 +560,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                     />
                 </div>
                 <div className="ge-divider">
-                    <IconComponent
-                        icon={shadowOffsetXIcon}
-                        label={"Shadow Offset X"}
-                    />
+                    <IconComponent icon={shadowOffsetXIcon} label={"Shadow Offset X"} />
                     <FloatLineComponent
                         lockObject={this.props.lockObject}
                         label="X"
@@ -626,10 +570,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         unit="PX"
                         unitLocked={true}
                     />
-                    <IconComponent
-                        icon={shadowOffsetYIcon}
-                        label={"Shadow Offset Y"}
-                    />
+                    <IconComponent icon={shadowOffsetYIcon} label={"Shadow Offset Y"} />
                     <FloatLineComponent
                         lockObject={this.props.lockObject}
                         label="Y"
@@ -641,10 +582,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                     />
                 </div>
                 <div className="ge-divider">
-                    <IconComponent
-                        icon={shadowBlurIcon}
-                        label={"Shadow Blur"}
-                    />
+                    <IconComponent icon={shadowBlurIcon} label={"Shadow Blur"} />
                     <FloatLineComponent
                         lockObject={this.props.lockObject}
                         label=" "
@@ -653,79 +591,69 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                 </div>
-                {showTextProperties && <>
-                    <hr className="ge" />
-                    <TextLineComponent tooltip="" label="FONT STYLE" value=" " color="grey"></TextLineComponent>
-                    <div className="ge-divider">
-                        <IconComponent
-                            icon={fontFamilyIcon}
-                            label={"Font Family"}
-                        />
-                        <TextInputLineComponent
-                            lockObject={this.props.lockObject}
-                            label=""
-                            target={proxy}
-                            propertyName="fontFamily"
-                            onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                        />
-                    </div>
-                    <div className="ge-divider">
-                        <IconComponent
-                            icon={fontWeightIcon}
-                            label={"Font Weight"}
-                        />
-                        <TextInputLineComponent
-                            lockObject={this.props.lockObject}
-                            label=""
-                            target={proxy}
-                            propertyName="fontWeight"
-                            onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                        />
-                    </div>
-                    <div className="ge-divider">
-                        <IconComponent
-                            icon={fontStyleIcon}
-                            label={"Font Style"}
-                        />
-                        <OptionsLineComponent
-                            label=""
-                            target={proxy}
-                            propertyName="fontStyle"
-                            options={fontStyleOptions}
-                            onSelect={(newValue) => {
-                                proxy.fontStyle=["", "italic", "oblique"][newValue];
-                            }}
-                            extractValue={() => {
-                                switch (proxy.fontStyle) {
-                                    case "italic":
-                                        return 1;
-                                    case "oblique":
-                                        return 2;
-                                    default:
-                                        return 0;
-                                }
-                            }}
-                        />
-                    </div>
-                    <div className="ge-divider">
-                        <IconComponent
-                            icon={fontSizeIcon}
-                            label={"Font Size"}
-                        />
-                        <TextInputLineComponent
-                            lockObject={this.props.lockObject}
-                            label=""
-                            numbersOnly={true}
-                            value={getValue("_fontSize")}
-                            onChange={(newValue) => this._checkAndUpdateValues("fontSize", newValue)}
-                            onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                            unit={getUnitString("_fontSize")}
-                            onUnitClicked={unit => convertUnits(unit, "fontSize")}
-                            arrows={true}
-                            arrowsIncrement={amount => increment("fontSize", amount, 0)}    
-                        />
-                    </div>
-                </>}
+                {showTextProperties && (
+                    <>
+                        <hr className="ge" />
+                        <TextLineComponent tooltip="" label="FONT STYLE" value=" " color="grey"></TextLineComponent>
+                        <div className="ge-divider">
+                            <IconComponent icon={fontFamilyIcon} label={"Font Family"} />
+                            <TextInputLineComponent
+                                lockObject={this.props.lockObject}
+                                label=""
+                                target={proxy}
+                                propertyName="fontFamily"
+                                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                            />
+                        </div>
+                        <div className="ge-divider">
+                            <IconComponent icon={fontWeightIcon} label={"Font Weight"} />
+                            <TextInputLineComponent
+                                lockObject={this.props.lockObject}
+                                label=""
+                                target={proxy}
+                                propertyName="fontWeight"
+                                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                            />
+                        </div>
+                        <div className="ge-divider">
+                            <IconComponent icon={fontStyleIcon} label={"Font Style"} />
+                            <OptionsLineComponent
+                                label=""
+                                target={proxy}
+                                propertyName="fontStyle"
+                                options={fontStyleOptions}
+                                onSelect={(newValue) => {
+                                    proxy.fontStyle = ["", "italic", "oblique"][newValue];
+                                }}
+                                extractValue={() => {
+                                    switch (proxy.fontStyle) {
+                                        case "italic":
+                                            return 1;
+                                        case "oblique":
+                                            return 2;
+                                        default:
+                                            return 0;
+                                    }
+                                }}
+                            />
+                        </div>
+                        <div className="ge-divider">
+                            <IconComponent icon={fontSizeIcon} label={"Font Size"} />
+                            <TextInputLineComponent
+                                lockObject={this.props.lockObject}
+                                label=""
+                                numbersOnly={true}
+                                value={getValue("_fontSize")}
+                                onChange={(newValue) => this._checkAndUpdateValues("fontSize", newValue)}
+                                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                                unit={getUnitString("_fontSize")}
+                                onUnitClicked={(unit) => convertUnits(unit, "fontSize")}
+                                arrows={true}
+                                arrowsIncrement={(amount) => increment("fontSize", amount, 0)}
+                            />
+                        </div>
+                    </>
+                )}
             </div>
         );
     }

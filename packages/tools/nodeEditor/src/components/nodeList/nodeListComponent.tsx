@@ -368,7 +368,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "Rotate2dBlock",
                 "TransformBlock",
                 "ScreenSpaceBlock",
-                "TwirlBlock"
+                "TwirlBlock",
             ],
             Matrices: [
                 "Matrix",
@@ -380,9 +380,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "ProjectionMatrixBlock",
                 "MatrixBuilderBlock",
             ],
-            Misc: [
-                "ElbowBlock",
-            ],
+            Misc: ["ElbowBlock"],
             Mesh: [
                 "InstancesBlock",
                 "PositionBlock",

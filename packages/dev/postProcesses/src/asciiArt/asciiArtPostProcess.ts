@@ -16,7 +16,6 @@ import "./asciiart.fragment";
  * This is used later on in the postprocess.
  */
 export class AsciiArtFontTexture extends BaseTexture {
-
     @serialize("font")
     private _font: string;
 
@@ -98,8 +97,8 @@ export class AsciiArtFontTexture extends BaseTexture {
      */
     private getFontWidth(font: string): number {
         var fontDraw = document.createElement("canvas");
-        var ctx = <CanvasRenderingContext2D>fontDraw.getContext('2d');
-        ctx.fillStyle = 'white';
+        var ctx = <CanvasRenderingContext2D>fontDraw.getContext("2d");
+        ctx.fillStyle = "white";
         ctx.font = font;
 
         return ctx.measureText("W").width;
@@ -111,14 +110,14 @@ export class AsciiArtFontTexture extends BaseTexture {
      * @param font the font to use, use the W3C CSS notation
      * @return the max char height
      */
-    private getFontHeight(font: string): { height: number, offset: number } {
+    private getFontHeight(font: string): { height: number; offset: number } {
         var fontDraw = document.createElement("canvas");
-        var ctx = <CanvasRenderingContext2D>fontDraw.getContext('2d');
+        var ctx = <CanvasRenderingContext2D>fontDraw.getContext("2d");
         ctx.fillRect(0, 0, fontDraw.width, fontDraw.height);
-        ctx.textBaseline = 'top';
-        ctx.fillStyle = 'white';
+        ctx.textBaseline = "top";
+        ctx.fillStyle = "white";
         ctx.font = font;
-        ctx.fillText('jH|', 0, 0);
+        ctx.fillText("jH|", 0, 0);
         var pixels = ctx.getImageData(0, 0, fontDraw.width, fontDraw.height).data;
         var start = -1;
         var end = -1;
@@ -132,8 +131,7 @@ export class AsciiArtFontTexture extends BaseTexture {
                         break;
                     }
                     continue;
-                }
-                else {
+                } else {
                     if (start === -1) {
                         start = row;
                     }
@@ -141,7 +139,7 @@ export class AsciiArtFontTexture extends BaseTexture {
                 }
             }
         }
-        return { height: (end - start) + 1, offset: start - 1 };
+        return { height: end - start + 1, offset: start - 1 };
     }
 
     /**
@@ -159,8 +157,7 @@ export class AsciiArtFontTexture extends BaseTexture {
      * @return the parsed texture
      */
     public static Parse(source: any, scene: Scene): AsciiArtFontTexture {
-        var texture = SerializationHelper.Parse(() => new AsciiArtFontTexture(source.name, source.font, source.text, scene),
-            source, scene, null);
+        var texture = SerializationHelper.Parse(() => new AsciiArtFontTexture(source.name, source.font, source.text, scene), source, scene, null);
 
         return texture;
     }
@@ -170,7 +167,6 @@ export class AsciiArtFontTexture extends BaseTexture {
  * Option available in the Ascii Art Post Process.
  */
 export interface IAsciiArtPostProcessOptions {
-
     /**
      * The font to use following the w3c font definition.
      */
@@ -201,7 +197,6 @@ export interface IAsciiArtPostProcessOptions {
  * Example usage: var pp = new AsciiArtPostProcess("myAscii", "20px Monospace", camera);
  */
 export class AsciiArtPostProcess extends PostProcess {
-
     /**
      * The font texture used to render the char in the post process.
      */
@@ -226,18 +221,20 @@ export class AsciiArtPostProcess extends PostProcess {
      * @param options can either be the font name or an option object following the IAsciiArtPostProcessOptions format
      */
     constructor(name: string, camera: Camera, options?: string | IAsciiArtPostProcessOptions) {
-        super(name,
-            'asciiart',
-            ['asciiArtFontInfos', 'asciiArtOptions'],
-            ['asciiArtFont'],
+        super(
+            name,
+            "asciiart",
+            ["asciiArtFontInfos", "asciiArtOptions"],
+            ["asciiArtFont"],
             {
                 width: camera.getEngine().getRenderWidth(),
-                height: camera.getEngine().getRenderHeight()
+                height: camera.getEngine().getRenderHeight(),
             },
             camera,
             Texture.TRILINEAR_SAMPLINGMODE,
             camera.getEngine(),
-            true);
+            true
+        );
 
         // Default values.
         var font = "40px Monospace";
@@ -245,10 +242,9 @@ export class AsciiArtPostProcess extends PostProcess {
 
         // Use options.
         if (options) {
-            if (typeof (options) === "string") {
+            if (typeof options === "string") {
                 font = <string>options;
-            }
-            else {
+            } else {
                 font = (<IAsciiArtPostProcessOptions>options).font || font;
                 characterSet = (<IAsciiArtPostProcessOptions>options).characterSet || characterSet;
                 this.mixToTile = (<IAsciiArtPostProcessOptions>options).mixToTile || this.mixToTile;
@@ -262,17 +258,9 @@ export class AsciiArtPostProcess extends PostProcess {
         this.onApply = (effect: Effect) => {
             effect.setTexture("asciiArtFont", this._asciiArtFontTexture);
 
-            effect.setFloat4("asciiArtFontInfos",
-                this._asciiArtFontTexture.charSize,
-                characterSet.length,
-                textureSize.width,
-                textureSize.height);
+            effect.setFloat4("asciiArtFontInfos", this._asciiArtFontTexture.charSize, characterSet.length, textureSize.width, textureSize.height);
 
-            effect.setFloat4("asciiArtOptions",
-                this.width,
-                this.height,
-                this.mixToNormal,
-                this.mixToTile);
+            effect.setFloat4("asciiArtOptions", this.width, this.height, this.mixToNormal, this.mixToTile);
         };
     }
 }

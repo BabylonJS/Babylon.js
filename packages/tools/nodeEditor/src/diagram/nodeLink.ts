@@ -1,11 +1,11 @@
-import { GraphCanvasComponent } from './graphCanvas';
-import { GraphNode } from './graphNode';
-import { NodePort } from './nodePort';
-import { Nullable } from 'core/types';
-import { Observer, Observable } from 'core/Misc/observable';
-import { FrameNodePort } from './frameNodePort';
-import { ISelectionChangedOptions } from '../globalState';
-import { ElbowBlock } from 'core/Materials/Node/Blocks/elbowBlock';
+import { GraphCanvasComponent } from "./graphCanvas";
+import { GraphNode } from "./graphNode";
+import { NodePort } from "./nodePort";
+import { Nullable } from "core/types";
+import { Observer, Observable } from "core/Misc/observable";
+import { FrameNodePort } from "./frameNodePort";
+import { ISelectionChangedOptions } from "../globalState";
+import { ElbowBlock } from "core/Materials/Node/Blocks/elbowBlock";
 
 export class NodeLink {
     private _graphCanvas: GraphCanvasComponent;
@@ -95,13 +95,13 @@ export class NodeLink {
         var svg = graphCanvas.svgCanvas;
 
         // Create path
-        this._path = document.createElementNS('http://www.w3.org/2000/svg', "path");
+        this._path = document.createElementNS("http://www.w3.org/2000/svg", "path");
         this._path.setAttribute("fill", "none");
         this._path.classList.add("link");
 
         svg.appendChild(this._path);
 
-        this._selectionPath = document.createElementNS('http://www.w3.org/2000/svg', "path");
+        this._selectionPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
         this._selectionPath.setAttribute("fill", "none");
         this._selectionPath.classList.add("selection-link");
 
@@ -115,7 +115,7 @@ export class NodeLink {
         }
 
         this._onSelectionChangedObserver = this._graphCanvas.globalState.onSelectionChangedObservable.add((options) => {
-            const {selection} = options || {};
+            const { selection } = options || {};
             if (selection === this) {
                 this._path.classList.add("selected");
                 this._selectionPath.classList.add("selected");
@@ -150,12 +150,12 @@ export class NodeLink {
                 type: "ElbowBlock",
                 targetX: evt.clientX,
                 targetY: evt.clientY,
-                needRepositioning: true
+                needRepositioning: true,
             });
             return;
         }
 
-        this._graphCanvas.globalState.onSelectionChangedObservable.notifyObservers({selection: this});
+        this._graphCanvas.globalState.onSelectionChangedObservable.notifyObservers({ selection: this });
     }
 
     public dispose(notify = true) {

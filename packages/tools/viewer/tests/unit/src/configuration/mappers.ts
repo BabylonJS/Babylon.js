@@ -6,7 +6,6 @@ import { IMapper } from "../../../../src/configuration/mappers";
 export let name = "configuration mappers";
 
 describe("Configuration mappers", () => {
-
     it("should have html, json and dom mappers", (done) => {
         assert.isDefined(mapperManager);
         assert.isDefined(mapperManager.getMapper("html"));
@@ -22,13 +21,13 @@ describe("Configuration mappers", () => {
         let randomString = "test-" + Math.random();
         let htmlString = `<test-element model.rotation-offset-angle="${randomNumber}" model.cast-shadow="true" model.id="${randomString}"></test-element>`;
 
-        var d = document.createElement('div');
+        var d = document.createElement("div");
         d.innerHTML = htmlString;
         let htmlElement = d.firstChild;
 
         let config = htmlMappers.map(htmlElement);
 
-        if (config.model && typeof config.model === 'object') {
+        if (config.model && typeof config.model === "object") {
             assert.equal(config.model.rotationOffsetAngle, randomNumber);
             assert.isTrue(config.model.castShadow);
             assert.equal(config.model.id, randomString);
@@ -48,13 +47,13 @@ describe("Configuration mappers", () => {
     </model>
 </test-element>`;
 
-        var d = document.createElement('div');
+        var d = document.createElement("div");
         d.innerHTML = htmlString;
         let htmlElement = d.firstChild;
 
         let config = domMappers.map(htmlElement);
 
-        if (config.model && typeof config.model === 'object') {
+        if (config.model && typeof config.model === "object") {
             assert.equal(config.model.rotationOffsetAngle, randomNumber);
             assert.isTrue(config.model.castShadow);
             assert.equal(config.model.id, randomString);
@@ -65,16 +64,15 @@ describe("Configuration mappers", () => {
     });
 
     it("should register a new mapper and allow to use it", (done) => {
-
         let randomVersion = "version" + Math.random();
         let randomName = "test" + Math.random();
         randomName = randomName.replace(".", "");
         let newMapper: IMapper = {
             map: (rawSource) => {
                 return {
-                    version: randomVersion
+                    version: randomVersion,
                 };
-            }
+            },
         };
 
         console.log("Next error log is expected");
@@ -91,7 +89,5 @@ describe("Configuration mappers", () => {
 
         assert.equal(config.version, randomVersion);
         done();
-
     });
-
 });

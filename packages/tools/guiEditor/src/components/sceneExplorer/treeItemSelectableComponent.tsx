@@ -30,10 +30,7 @@ export interface ITreeItemSelectableComponentState {
     dragOverLocation: DragOverLocation;
 }
 
-export class TreeItemSelectableComponent extends React.Component<
-    ITreeItemSelectableComponentProps,
-    ITreeItemSelectableComponentState
-> {
+export class TreeItemSelectableComponent extends React.Component<ITreeItemSelectableComponentProps, ITreeItemSelectableComponentState> {
     private _onSelectionChangedObservable: Nullable<Observer<any>>;
     private _onDraggingEndObservable: Nullable<Observer<any>>;
     private _onDraggingStartObservable: Nullable<Observer<any>>;
@@ -144,7 +141,7 @@ export class TreeItemSelectableComponent extends React.Component<
         if (!entity.reservedDataStore) {
             entity.reservedDataStore = {
                 isExpanded: true,
-                setExpandedState: (expanded: boolean) => entity.reservedDataStore.isExpanded = expanded
+                setExpandedState: (expanded: boolean) => (entity.reservedDataStore.isExpanded = expanded),
             };
         }
         let isExpanded = entity.reservedDataStore.isExpanded || Tools.LookForItems(this.props.entity, this.props.selectedEntities);
@@ -178,10 +175,8 @@ export class TreeItemSelectableComponent extends React.Component<
         className += this.state.isHovered && this.props.globalState.draggedControl === null ? " hover" : "";
         className += this.state.dragOver && this.state.dragOverLocation == DragOverLocation.CENTER && entity instanceof Container ? " parent" : "";
         className += this.props.globalState.draggedControl === this.props.entity ? " dragged" : "";
-        className +=
-            this.state.dragOver && this.state.dragOverLocation == DragOverLocation.ABOVE && entity.parent ? " seAbove" : "";
-        className +=
-            this.state.dragOver && this.state.dragOverLocation == DragOverLocation.BELOW && entity.parent ? " seBelow" : "";
+        className += this.state.dragOver && this.state.dragOverLocation == DragOverLocation.ABOVE && entity.parent ? " seAbove" : "";
+        className += this.state.dragOver && this.state.dragOverLocation == DragOverLocation.BELOW && entity.parent ? " seBelow" : "";
 
         return (
             <div>
@@ -200,22 +195,22 @@ export class TreeItemSelectableComponent extends React.Component<
                     onDragEnd={() => {
                         this.props.globalState.onDraggingEndObservable.notifyObservers();
                     }}
-                    draggable={entity.parent ? true: false}        
-                    onDrop={event => {
+                    draggable={entity.parent ? true : false}
+                    onDrop={(event) => {
                         this.drop();
                         event.preventDefault();
                     }}
-                    onDragEnter={event => {
+                    onDragEnter={(event) => {
                         event.preventDefault();
                         this.dragOver(event);
                     }}
-                    onDragOver={event => this.updateDragOverLocation(event)}
+                    onDragOver={(event) => this.updateDragOverLocation(event)}
                     onDragLeave={() => {
                         // don't immediately set dragOver to false
                         if (this._secondDragEnter) {
                             this._secondDragEnter = false;
                         } else {
-                            this.setState({dragOver: false});
+                            this.setState({ dragOver: false });
                         }
                     }}
                 >

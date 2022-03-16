@@ -29,7 +29,7 @@ export interface IImageProcessingConfiguration {
     vignetteCentreX?: number;
     vignetteCentreY?: number;
     vignetteWeight?: number;
-    vignetteColor?: { r: number, g: number, b: number, a?: number };
+    vignetteColor?: { r: number; g: number; b: number; a?: number };
     vignetteCameraFov?: number;
     vignetteBlendMode?: number;
     vignetteM?: boolean;

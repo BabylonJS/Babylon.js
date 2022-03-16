@@ -1,7 +1,7 @@
-import { IDisplayManager } from './displayManager';
-import { NodeMaterialBlock } from 'core/Materials/Node/nodeMaterialBlock';
-import { ImageSourceBlock } from 'core/Materials/Node/Blocks/Dual/imageSourceBlock';
-import { TextureLineComponent } from '../../sharedComponents/textureLineComponent';
+import { IDisplayManager } from "./displayManager";
+import { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
+import { ImageSourceBlock } from "core/Materials/Node/Blocks/Dual/imageSourceBlock";
+import { TextureLineComponent } from "../../sharedComponents/textureLineComponent";
 
 export class imageSourceDisplayManager implements IDisplayManager {
     private _previewCanvas: HTMLCanvasElement;
@@ -37,16 +37,22 @@ export class imageSourceDisplayManager implements IDisplayManager {
         }
 
         if (imageSourceBlock.texture) {
-            TextureLineComponent.UpdatePreview(this._previewCanvas, imageSourceBlock.texture, 140, {
-                face: 0,
-                displayRed: true,
-                displayAlpha: true,
-                displayBlue: true,
-                displayGreen: true
-            }, () => {
-                this._previewImage.src = this._previewCanvas.toDataURL("image/png");
-                this._previewImage.classList.remove("empty");
-            });
+            TextureLineComponent.UpdatePreview(
+                this._previewCanvas,
+                imageSourceBlock.texture,
+                140,
+                {
+                    face: 0,
+                    displayRed: true,
+                    displayAlpha: true,
+                    displayBlue: true,
+                    displayGreen: true,
+                },
+                () => {
+                    this._previewImage.src = this._previewCanvas.toDataURL("image/png");
+                    this._previewImage.classList.remove("empty");
+                }
+            );
         } else {
             this._previewImage.classList.add("empty");
         }

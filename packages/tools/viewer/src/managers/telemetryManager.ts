@@ -1,7 +1,6 @@
 import { Observable } from "core/Misc/observable";
 import { Engine } from "core/Engines/engine";
 
-
 /**
  * The data structure of a telemetry event.
  */
@@ -18,7 +17,6 @@ export interface TelemetryData {
  * Receives Telemetry events and raises events to the API
  */
 export class TelemetryManager {
-
     public onEventBroadcastedObservable: Observable<TelemetryData> = new Observable();
 
     private _currentSessionId: string;
@@ -85,7 +83,7 @@ export class TelemetryManager {
             session: this.session,
             date: new Date(),
             now: window.performance ? window.performance.now() : Date.now(),
-            detail: null
+            detail: null,
         };
 
         if (typeof details === "object") {

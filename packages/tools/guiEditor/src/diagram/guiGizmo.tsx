@@ -4,7 +4,7 @@ import * as React from "react";
 import { GlobalState } from "../globalState";
 import { Image } from "gui/2D/controls/image";
 import { TextBlock } from "gui/2D/controls/textBlock";
-import { CoordinateHelper, DimensionProperties, Rect } from './coordinateHelper';
+import { CoordinateHelper, DimensionProperties, Rect } from "./coordinateHelper";
 import { Observer } from "core/Misc/observable";
 import { Nullable } from "core/types";
 import { ValueAndUnit } from "gui/2D/valueAndUnit";
@@ -88,22 +88,17 @@ for (let idx = 0; idx < 8; idx++) {
     rotateCursors.push(cursor_rotate0, cursor_rotate1, cursor_rotate2, cursor_rotate3, cursor_rotate4, cursor_rotate5, cursor_rotate6, cursor_rotate7);
 }
 // used to calculate which cursor icon we should display for the scalepoints
-const defaultScalePointRotations = [
-    315, 0, 45,
-    270, 0, 90,
-    225, 180, 135,
-]
+const defaultScalePointRotations = [315, 0, 45, 270, 0, 90, 225, 180, 135];
 
 export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmoState> {
-
     // used for scaling computations
     private _storedValues: Rect;
     private _localBounds: Rect;
 
     private _rotation: {
-        pivot: Vector2
-        initialAngleToPivot: number,
-    }
+        pivot: Vector2;
+        initialAngleToPivot: number;
+    };
 
     private _gizmoUpdateObserver: Nullable<Observer<void>>;
     private _pointerUpObserver: Nullable<Observer<Nullable<React.PointerEvent<HTMLCanvasElement> | PointerEvent>>>;
@@ -126,14 +121,14 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
             canvasBounds: new Rect(0, 0, 0, 0),
             scalePoints,
             scalePointDragging: -1,
-            isRotating: false
+            isRotating: false,
         };
 
         this._gizmoUpdateObserver = this.props.globalState.onGizmoUpdateRequireObservable.add(() => {
             this.updateGizmo(true);
         });
 
-        this._pointerUpObserver = this.props.globalState.onPointerUpObservable.add(evt => this._onUp(evt));
+        this._pointerUpObserver = this.props.globalState.onPointerUpObservable.add((evt) => this._onUp(evt));
         this._pointerMoveObserver = this.props.globalState.onPointerMoveObservable.add(() => this._onMove());
 
         this.updateGizmo(true);
@@ -213,7 +208,7 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
 
     private _onUp = (evt?: React.PointerEvent | PointerEvent | null) => {
         // if left is still pressed, don't release
-        if (evt && (evt.buttons & 1)) {
+        if (evt && evt.buttons & 1) {
             return;
         }
         // cleanup on pointer up
@@ -232,15 +227,15 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
         }
         if (this.state.isRotating) {
             const angle = Math.atan2(scene.pointerY - this._rotation.pivot.y, scene.pointerX - this._rotation.pivot.x);
-            for(const control of this.props.globalState.selectedControls) {
+            for (const control of this.props.globalState.selectedControls) {
                 const oldRotation = control.rotation;
-                control.rotation += (angle - this._rotation.initialAngleToPivot);
+                control.rotation += angle - this._rotation.initialAngleToPivot;
                 this.props.globalState.onPropertyChangedObservable.notifyObservers({
                     object: control,
-                    property: 'rotation',
+                    property: "rotation",
                     value: control.rotation,
-                    initialValue: oldRotation
-                })
+                    initialValue: oldRotation,
+                });
             }
             this._rotation.initialAngleToPivot = angle;
             this.props.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
@@ -273,17 +268,17 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
         if (scalePoint.verticalPosition === ScalePointPosition.Bottom) {
             newBounds.bottom = Math.max(this._localBounds.top + 1, toPosition.y);
         }
-        // apply bounds changes to all controls 
+        // apply bounds changes to all controls
         const edges: ["left", "top", "right", "bottom"] = ["left", "top", "right", "bottom"];
         for (const node of this.props.globalState.selectedControls) {
-            const initialBounds = (node.metadata.localBounds as Rect);
+            const initialBounds = node.metadata.localBounds as Rect;
             const nb = initialBounds.clone();
             // account for rotation: if other control is rotated 90 degrees
             // relative to primary control, we should modify top instead of left
-            const rotationModifier = this._modulo((this.props.control.rotation - node.rotation), Math.PI * 2) / Math.PI * 2;
+            const rotationModifier = (this._modulo(this.props.control.rotation - node.rotation, Math.PI * 2) / Math.PI) * 2;
             edges.forEach((edge, index) => {
                 const modifiedIndex = Math.round(index + rotationModifier) % 4;
-                const flipSign = ((index < 2) === (modifiedIndex < 2)) ? 1 : -1;
+                const flipSign = index < 2 === modifiedIndex < 2 ? 1 : -1;
                 nb[edges[modifiedIndex]] += (newBounds[edge] - this._localBounds[edge]) * flipSign;
             });
             nb.left = Math.min(initialBounds.right - 1, nb.left);
@@ -299,7 +294,7 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
         const scalePoint = this.state.scalePoints[this.state.scalePointDragging];
         const left = scalePoint.horizontalPosition === ScalePointPosition.Left;
         const top = scalePoint.verticalPosition === ScalePointPosition.Top;
-        for(const selectedControl of this.props.globalState.selectedControls) {
+        for (const selectedControl of this.props.globalState.selectedControls) {
             const width = selectedControl.metadata.localBounds.width;
             const height = selectedControl.metadata.localBounds.height;
             // calculate the center point
@@ -313,7 +308,7 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
             const sinRotation = Math.sin(localRotation);
             const cosRotation180 = Math.cos(localRotation + Math.PI);
             const sinRotation180 = Math.sin(localRotation + Math.PI);
-            
+
             const widthDelta = (selectedControl.metadata.storedValues.width - width) * 0.5;
             const heightDelta = (selectedControl.metadata.storedValues.height - height) * 0.5;
             // alignment compensation
@@ -341,10 +336,10 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
 
             // rotate the center around 0,0
             const rotatedCenter = this._rotate(center.x, center.y, 0, 0, localRotation);
-            const properties: (DimensionProperties)[] = ["left", "top", "width", "height"];
-            for(const property of properties) {
+            const properties: DimensionProperties[] = ["left", "top", "width", "height"];
+            for (const property of properties) {
                 let newPixels = 0;
-                switch(property) {
+                switch (property) {
                     case "left":
                         newPixels = round(selectedControl.metadata.storedValues.left + rotatedCenter.x);
                         break;
@@ -366,7 +361,7 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
                     object: selectedControl,
                     property: `${property}InPixels`,
                     value: newPixels,
-                    initialValue: oldPixels
+                    initialValue: oldPixels,
                 });
                 if (initialUnit === ValueAndUnit.UNITMODE_PERCENTAGE) {
                     CoordinateHelper.convertToPercentage(selectedControl, [property]);
@@ -404,9 +399,9 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
         this._rotation = {
             pivot,
             initialAngleToPivot,
-        }
-        this.setState({isRotating: true});
-    }
+        };
+        this.setState({ isRotating: true });
+    };
 
     render() {
         // don't render if we don't have anything selected, or if we're currently dragging
@@ -443,7 +438,7 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
                         return <img className="pivot-point" src={gizmoPivotIcon} style={style} key={index} />;
                     }
                     // compute which cursor icon to use on hover
-                    const angleOfCursor = (defaultScalePointRotations[index] + scalePoint.rotation);
+                    const angleOfCursor = defaultScalePointRotations[index] + scalePoint.rotation;
                     const angleAdjusted = this._modulo(angleOfCursor, 360);
                     const increment = 45;
                     let cursorIndex = Math.round(angleAdjusted / increment) % 8;
@@ -454,37 +449,31 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
                     const rotateClickAreaStyle = {
                         top: (scalePointContainerSize - rotateClickAreaSize) / 2 + rotateClickAreaOffset * scalePoint.verticalPosition,
                         left: (scalePointContainerSize - rotateClickAreaSize) / 2 + rotateClickAreaOffset * scalePoint.horizontalPosition,
-                        cursor: rotateCursors[cursorIndex]
-                    }
+                        cursor: rotateCursors[cursorIndex],
+                    };
                     const scaleClickAreaSize = 20; // .scale-click-area width/height
                     const scaleClickAreaOffset = 5; // how much to offset the invisible scale click area from the center
                     const scaleClickAreaStyle = {
                         top: (scalePointContainerSize - scaleClickAreaSize) / 2 - scaleClickAreaOffset * scalePoint.verticalPosition,
                         left: (scalePointContainerSize - scaleClickAreaSize) / 2 - scaleClickAreaOffset * scalePoint.horizontalPosition,
-                        cursor
-                    }
+                        cursor,
+                    };
                     return (
                         <div key={index} style={style} className="scale-point-container">
+                            <div className="rotate-click-area" onPointerDown={() => this._beginRotate()} style={rotateClickAreaStyle}></div>
                             <div
-                                className="rotate-click-area"
-                                onPointerDown={() => this._beginRotate()}
-                                style={rotateClickAreaStyle}
-                            >
-                            </div>
-                            <div
-                            className="scale-click-area"
-                            draggable={true}
-                            onDragStart={(evt) => evt.preventDefault()}
-                            onPointerDown={(event) => {
-                                // if left mouse button down
-                                if (event.buttons & 1) {
-                                    this._beginDraggingScalePoint(index);
-                                }
-                            }}
-                            onPointerUp={this._onUp}
-                            style={scaleClickAreaStyle}
-                            >
-                            </div>
+                                className="scale-click-area"
+                                draggable={true}
+                                onDragStart={(evt) => evt.preventDefault()}
+                                onPointerDown={(event) => {
+                                    // if left mouse button down
+                                    if (event.buttons & 1) {
+                                        this._beginDraggingScalePoint(index);
+                                    }
+                                }}
+                                onPointerUp={this._onUp}
+                                style={scaleClickAreaStyle}
+                            ></div>
                             <div
                                 className="scale-point"
                                 draggable={true}
@@ -495,9 +484,8 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
                                     }
                                 }}
                                 onPointerUp={this._onUp}
-                                style={{cursor}}
-                            >
-                            </div>
+                                style={{ cursor }}
+                            ></div>
                         </div>
                     );
                 })}

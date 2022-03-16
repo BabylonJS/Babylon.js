@@ -19,7 +19,6 @@ import { QRCodeComponent } from "./components/qrCodeComponent";
 import "./scss/main.scss";
 import * as Split from "split.js";
 
-
 interface IPlaygroundProps {
     runtimeMode: RuntimeMode;
 }

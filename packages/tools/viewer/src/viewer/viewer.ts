@@ -1,26 +1,26 @@
-import { Engine } from 'core/Engines/engine';
-import { ISceneLoaderPlugin, ISceneLoaderPluginAsync, ISceneLoaderProgressEvent, SceneLoader } from 'core/Loading/sceneLoader';
-import { Observable } from 'core/Misc/observable';
-import { Scene } from 'core/scene';
-import { RenderingManager } from 'core/Rendering/renderingManager';
-import { TargetCamera } from 'core/Cameras/targetCamera';
-import { Tools } from 'core/Misc/tools';
-import { Effect } from 'core/Materials/effect';
-import { processConfigurationCompatibility } from '../configuration/configurationCompatibility';
-import { ConfigurationContainer } from '../configuration/configurationContainer';
-import { viewerGlobals } from '../configuration/globals';
-import { RenderOnlyConfigurationLoader } from '../configuration/renderOnlyLoader';
-import { deepmerge } from '../helper/index';
-import { ModelLoader } from '../loader/modelLoader';
-import { ObservablesManager } from '../managers/observablesManager';
-import { SceneManager } from '../managers/sceneManager';
-import { telemetryManager } from '../managers/telemetryManager';
-import { ViewerModel } from '../model/viewerModel';
-import { viewerManager } from './viewerManager';
-import { ViewerConfiguration } from '../configuration/configuration';
-import { IObserversConfiguration } from '../configuration/interfaces/observersConfiguration';
-import { IModelConfiguration } from '../configuration/interfaces/modelConfiguration';
-import { GLTFFileLoader } from 'loaders/glTF/glTFFileLoader';
+import { Engine } from "core/Engines/engine";
+import { ISceneLoaderPlugin, ISceneLoaderPluginAsync, ISceneLoaderProgressEvent, SceneLoader } from "core/Loading/sceneLoader";
+import { Observable } from "core/Misc/observable";
+import { Scene } from "core/scene";
+import { RenderingManager } from "core/Rendering/renderingManager";
+import { TargetCamera } from "core/Cameras/targetCamera";
+import { Tools } from "core/Misc/tools";
+import { Effect } from "core/Materials/effect";
+import { processConfigurationCompatibility } from "../configuration/configurationCompatibility";
+import { ConfigurationContainer } from "../configuration/configurationContainer";
+import { viewerGlobals } from "../configuration/globals";
+import { RenderOnlyConfigurationLoader } from "../configuration/renderOnlyLoader";
+import { deepmerge } from "../helper/index";
+import { ModelLoader } from "../loader/modelLoader";
+import { ObservablesManager } from "../managers/observablesManager";
+import { SceneManager } from "../managers/sceneManager";
+import { telemetryManager } from "../managers/telemetryManager";
+import { ViewerModel } from "../model/viewerModel";
+import { viewerManager } from "./viewerManager";
+import { ViewerConfiguration } from "../configuration/configuration";
+import { IObserversConfiguration } from "../configuration/interfaces/observersConfiguration";
+import { IModelConfiguration } from "../configuration/interfaces/modelConfiguration";
+import { GLTFFileLoader } from "loaders/glTF/glTFFileLoader";
 
 /**
  * The AbstractViewer is the center of Babylon's viewer.
@@ -184,7 +184,7 @@ export abstract class AbstractViewer {
         if (containerElement.id) {
             this.baseId = containerElement.id;
         } else {
-            this.baseId = containerElement.id = 'bjs' + Math.random().toString(32).substr(2, 8);
+            this.baseId = containerElement.id = "bjs" + Math.random().toString(32).substr(2, 8);
         }
 
         this._registeredOnBeforeRenderFunctions = [];
@@ -216,7 +216,6 @@ export abstract class AbstractViewer {
 
         // add this viewer to the viewer manager
         viewerManager.addViewer(this);
-
     }
 
     /**
@@ -287,7 +286,6 @@ export abstract class AbstractViewer {
         }
 
         if (this.sceneManager.vrHelper && !this.sceneManager.vrHelper.isInVRMode) {
-
             // make sure the floor is set
             if (this.sceneManager.environmentHelper && this.sceneManager.environmentHelper.ground) {
                 this.sceneManager.vrHelper.addFloorMesh(this.sceneManager.environmentHelper.ground);
@@ -299,14 +297,19 @@ export abstract class AbstractViewer {
             // position the vr camera to be in front of the object or wherever the user has configured it to be
             if (this.sceneManager.vrHelper.currentVRCamera && this.sceneManager.vrHelper.currentVRCamera !== this.sceneManager.camera) {
                 if (this.configuration.vr && this.configuration.vr.cameraPosition !== undefined) {
-                    this.sceneManager.vrHelper.currentVRCamera.position.copyFromFloats(this.configuration.vr.cameraPosition.x, this.configuration.vr.cameraPosition.y, this.configuration.vr.cameraPosition.z);
+                    this.sceneManager.vrHelper.currentVRCamera.position.copyFromFloats(
+                        this.configuration.vr.cameraPosition.x,
+                        this.configuration.vr.cameraPosition.y,
+                        this.configuration.vr.cameraPosition.z
+                    );
                 } else {
                     this.sceneManager.vrHelper.currentVRCamera.position.copyFromFloats(0, this.sceneManager.vrHelper.currentVRCamera.position.y, -1);
                 }
-                (<TargetCamera>this.sceneManager.vrHelper.currentVRCamera).rotationQuaternion && (<TargetCamera>this.sceneManager.vrHelper.currentVRCamera).rotationQuaternion.copyFromFloats(0, 0, 0, 1);
+                (<TargetCamera>this.sceneManager.vrHelper.currentVRCamera).rotationQuaternion &&
+                    (<TargetCamera>this.sceneManager.vrHelper.currentVRCamera).rotationQuaternion.copyFromFloats(0, 0, 0, 1);
                 // set the height of the model to be what the user has configured, or floating by default
                 if (this.configuration.vr && this.configuration.vr.modelHeightCorrection !== undefined) {
-                    if (typeof this.configuration.vr.modelHeightCorrection === 'number') {
+                    if (typeof this.configuration.vr.modelHeightCorrection === "number") {
                         this._vrModelRepositioning = this.configuration.vr.modelHeightCorrection;
                     } else if (this.configuration.vr.modelHeightCorrection) {
                         this._vrModelRepositioning = this.sceneManager.vrHelper.currentVRCamera.position.y / 2;
@@ -320,7 +323,7 @@ export abstract class AbstractViewer {
                     let boundingVectors = this.sceneManager.models[0].rootMesh.getHierarchyBoundingVectors();
                     let sizeVec = boundingVectors.max.subtract(boundingVectors.min);
                     let maxDimension = Math.max(sizeVec.x, sizeVec.y, sizeVec.z);
-                    this._vrScale = (1 / maxDimension);
+                    this._vrScale = 1 / maxDimension;
                     if (this.configuration.vr && this.configuration.vr.objectScaleFactor) {
                         this._vrScale *= this.configuration.vr.objectScaleFactor;
                     }
@@ -354,7 +357,6 @@ export abstract class AbstractViewer {
     }
 
     protected _initVR() {
-
         if (this.sceneManager.vrHelper) {
             this.observablesManager.onExitingVRObservable.add(() => {
                 if (this._vrToggled) {
@@ -407,7 +409,7 @@ export abstract class AbstractViewer {
         }
 
         this.engine.resize();
-    }
+    };
 
     protected _onConfigurationLoaded(configuration: ViewerConfiguration) {
         this._configurationContainer.configuration = deepmerge(this.configuration || {}, configuration);
@@ -416,11 +418,11 @@ export abstract class AbstractViewer {
         }
         // TODO remove this after testing, as this is done in the updateConfiguration as well.
         if (this.configuration.loaderPlugins) {
-            Object.keys(this.configuration.loaderPlugins).forEach(((name) => {
+            Object.keys(this.configuration.loaderPlugins).forEach((name) => {
                 if (this.configuration.loaderPlugins && this.configuration.loaderPlugins[name]) {
                     this.modelLoader.addPlugin(name);
                 }
-            }));
+            });
         }
 
         this.observablesManager.onViewerInitStartedObservable.notifyObservers(this);
@@ -449,7 +451,7 @@ export abstract class AbstractViewer {
                 this.sceneManager.scene.activeCamera && this.sceneManager.scene.activeCamera.update();
             }
         }
-    }
+    };
 
     /**
      * Takes a screenshot of the scene and returns it as a base64 encoded png.
@@ -475,7 +477,6 @@ export abstract class AbstractViewer {
                 reject(e);
             }
         });
-
     }
 
     /**
@@ -488,17 +489,23 @@ export abstract class AbstractViewer {
      */
     public updateConfiguration(newConfiguration: Partial<ViewerConfiguration> | string = this.configuration) {
         if (typeof newConfiguration === "string") {
-            Tools.LoadFile(newConfiguration, (data) => {
-                try {
-                    const newData = JSON.parse(data.toString()) as ViewerConfiguration;
-                    return this.updateConfiguration(newData);
-                } catch (e) {
-                    console.log("Error parsing file " + newConfiguration);
+            Tools.LoadFile(
+                newConfiguration,
+                (data) => {
+                    try {
+                        const newData = JSON.parse(data.toString()) as ViewerConfiguration;
+                        return this.updateConfiguration(newData);
+                    } catch (e) {
+                        console.log("Error parsing file " + newConfiguration);
+                    }
+                },
+                undefined,
+                undefined,
+                undefined,
+                (error) => {
+                    console.log("Error parsing file " + newConfiguration, error);
                 }
-
-            }, undefined, undefined, undefined, (error) => {
-                console.log("Error parsing file " + newConfiguration, error);
-            });
+            );
         } else {
             //backcompat
             processConfigurationCompatibility(newConfiguration);
@@ -513,11 +520,11 @@ export abstract class AbstractViewer {
             }
 
             if (newConfiguration.loaderPlugins) {
-                Object.keys(newConfiguration.loaderPlugins).forEach(((name) => {
+                Object.keys(newConfiguration.loaderPlugins).forEach((name) => {
                     if (newConfiguration.loaderPlugins && newConfiguration.loaderPlugins[name]) {
                         this.modelLoader.addPlugin(name);
                     }
-                }));
+                });
             }
         }
     }
@@ -531,21 +538,21 @@ export abstract class AbstractViewer {
         if (observersConfiguration.onEngineInit) {
             this.onEngineInitObservable.add(window[observersConfiguration.onEngineInit]);
         } else {
-            if (observersConfiguration.onEngineInit === '' && this.configuration.observers && this.configuration.observers!.onEngineInit) {
+            if (observersConfiguration.onEngineInit === "" && this.configuration.observers && this.configuration.observers!.onEngineInit) {
                 this.onEngineInitObservable.removeCallback(window[this.configuration.observers!.onEngineInit!]);
             }
         }
         if (observersConfiguration.onSceneInit) {
             this.onSceneInitObservable.add(window[observersConfiguration.onSceneInit]);
         } else {
-            if (observersConfiguration.onSceneInit === '' && this.configuration.observers && this.configuration.observers!.onSceneInit) {
+            if (observersConfiguration.onSceneInit === "" && this.configuration.observers && this.configuration.observers!.onSceneInit) {
                 this.onSceneInitObservable.removeCallback(window[this.configuration.observers!.onSceneInit!]);
             }
         }
         if (observersConfiguration.onModelLoaded) {
             this.onModelLoadedObservable.add(window[observersConfiguration.onModelLoaded]);
         } else {
-            if (observersConfiguration.onModelLoaded === '' && this.configuration.observers && this.configuration.observers!.onModelLoaded) {
+            if (observersConfiguration.onModelLoaded === "" && this.configuration.observers && this.configuration.observers!.onModelLoaded) {
                 this.onModelLoadedObservable.removeCallback(window[this.configuration.observers!.onModelLoaded!]);
             }
         }
@@ -558,7 +565,7 @@ export abstract class AbstractViewer {
         if (this._isDisposed) {
             return;
         }
-        window.removeEventListener('resize', this._resize);
+        window.removeEventListener("resize", this._resize);
 
         if (this.sceneManager) {
             if (this.sceneManager.scene && this.sceneManager.scene.activeCamera) {
@@ -607,22 +614,30 @@ export abstract class AbstractViewer {
             return Promise.reject("viewer was disposed");
         }
         return this._onTemplatesLoaded().then(() => {
-            let autoLoad = typeof this.configuration.model === 'string' || (this.configuration.model && this.configuration.model.url);
-            return this._initEngine().then((engine) => {
-                return this.onEngineInitObservable.notifyObserversWithPromise(engine);
-            }).then(() => {
-                this._initTelemetryEvents();
-                if (autoLoad) {
-                    return this.loadModel(this.configuration.model!).catch(() => { }).then(() => { return this.sceneManager.scene; });
-                } else {
-                    return this.sceneManager.scene || this.sceneManager.initScene(this.configuration.scene);
-                }
-            }).then(() => {
-                return this.onInitDoneObservable.notifyObserversWithPromise(this);
-            }).catch((e) => {
-                Tools.Warn(e.toString());
-                return this;
-            });
+            let autoLoad = typeof this.configuration.model === "string" || (this.configuration.model && this.configuration.model.url);
+            return this._initEngine()
+                .then((engine) => {
+                    return this.onEngineInitObservable.notifyObserversWithPromise(engine);
+                })
+                .then(() => {
+                    this._initTelemetryEvents();
+                    if (autoLoad) {
+                        return this.loadModel(this.configuration.model!)
+                            .catch(() => {})
+                            .then(() => {
+                                return this.sceneManager.scene;
+                            });
+                    } else {
+                        return this.sceneManager.scene || this.sceneManager.initScene(this.configuration.scene);
+                    }
+                })
+                .then(() => {
+                    return this.onInitDoneObservable.notifyObserversWithPromise(this);
+                })
+                .catch((e) => {
+                    Tools.Warn(e.toString());
+                    return this;
+                });
         });
     }
 
@@ -634,13 +649,12 @@ export abstract class AbstractViewer {
      * @memberof Viewer
      */
     protected _initEngine(): Promise<Engine> {
-
         // init custom shaders
         this._injectCustomShaders();
 
         //let canvasElement = this.templateManager.getCanvas();
         if (!this.canvas) {
-            return Promise.reject('Canvas element not found!');
+            return Promise.reject("Canvas element not found!");
         }
         let config = this.configuration.engine || {};
         // TDO enable further configuration
@@ -651,11 +665,11 @@ export abstract class AbstractViewer {
             config.engineOptions.disableWebGL2Support = true;
         }
 
-        if(this.configuration["3dCommerceCertified"]) {
+        if (this.configuration["3dCommerceCertified"]) {
             config.engineOptions = config.engineOptions || {};
             config.engineOptions.forceSRGBBufferSupportState = true;
             const loader = SceneLoader.GetPluginForExtension(".gltf");
-            if(loader) {
+            if (loader) {
                 (loader as GLTFFileLoader).transparencyAsCoverage = true;
             }
             SceneLoader.OnPluginActivatedObservable.add((plugin) => {
@@ -669,7 +683,7 @@ export abstract class AbstractViewer {
         this.engine = new Engine(this.canvas, !!config.antialiasing, config.engineOptions);
 
         if (!config.disableResize) {
-            window.addEventListener('resize', this._resize);
+            window.addEventListener("resize", this._resize);
         }
 
         if (this.configuration.engine) {
@@ -700,14 +714,14 @@ export abstract class AbstractViewer {
      */
     public initModel(modelConfig: string | File | IModelConfiguration, clearScene: boolean = true): ViewerModel {
         let configuration: IModelConfiguration;
-        if (typeof modelConfig === 'string') {
+        if (typeof modelConfig === "string") {
             configuration = {
-                url: modelConfig
+                url: modelConfig,
             };
         } else if (modelConfig instanceof File) {
             configuration = {
                 file: modelConfig,
-                root: "file:"
+                root: "file:",
             };
         } else {
             configuration = modelConfig;
@@ -722,7 +736,7 @@ export abstract class AbstractViewer {
         }
 
         //merge the configuration for future models:
-        if (this.configuration.model && typeof this.configuration.model === 'object') {
+        if (this.configuration.model && typeof this.configuration.model === "object") {
             let globalConfig = deepmerge({}, this.configuration.model);
             configuration = deepmerge(globalConfig, configuration);
             if (modelConfig instanceof File) {
@@ -767,21 +781,25 @@ export abstract class AbstractViewer {
             return Promise.reject("another model is curently being loaded.");
         }
 
-        return Promise.resolve(this.sceneManager.scene).then((scene) => {
-            if (!scene) { return this.sceneManager.initScene(this.configuration.scene, this.configuration.optimizer); }
-            return scene;
-        }).then(() => {
-            let model = this.initModel(modelConfig, clearScene);
-            return new Promise<ViewerModel>((resolve, reject) => {
-                // at this point, configuration.model is an object, not a string
-                model.onLoadedObservable.add(() => {
-                    resolve(model);
-                });
-                model.onLoadErrorObservable.add((error) => {
-                    reject(error);
+        return Promise.resolve(this.sceneManager.scene)
+            .then((scene) => {
+                if (!scene) {
+                    return this.sceneManager.initScene(this.configuration.scene, this.configuration.optimizer);
+                }
+                return scene;
+            })
+            .then(() => {
+                let model = this.initModel(modelConfig, clearScene);
+                return new Promise<ViewerModel>((resolve, reject) => {
+                    // at this point, configuration.model is an object, not a string
+                    model.onLoadedObservable.add(() => {
+                        resolve(model);
+                    });
+                    model.onLoadErrorObservable.add((error) => {
+                        reject(error);
+                    });
                 });
             });
-        });
     }
 
     private _fpsTimeoutInterval: number;
@@ -790,7 +808,7 @@ export abstract class AbstractViewer {
         telemetryManager.broadcast("Engine Capabilities", this.baseId, this.engine.getCaps());
         telemetryManager.broadcast("Platform Details", this.baseId, {
             userAgent: navigator.userAgent,
-            platform: navigator.platform
+            platform: navigator.platform,
         });
 
         telemetryManager.flushWebGLErrors(this.engine, this.baseId);

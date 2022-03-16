@@ -1,1 +1,1 @@
-export const babylonFont = require('../../assets/babylon.woff');
+export const babylonFont = require("../../assets/babylon.woff");

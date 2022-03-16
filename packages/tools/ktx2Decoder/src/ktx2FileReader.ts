@@ -1,37 +1,36 @@
-import { DataReader } from './Misc/dataReader';
-import { sourceTextureFormat } from './transcoder';
+import { DataReader } from "./Misc/dataReader";
+import { sourceTextureFormat } from "./transcoder";
 
 /** @hidden */
 export enum SupercompressionScheme {
     None = 0,
     BasisLZ = 1,
     ZStandard = 2,
-    ZLib = 3
+    ZLib = 3,
 }
 
 const enum DFDModel {
     ETC1S = 163,
-    UASTC = 166
+    UASTC = 166,
 }
 
 const enum DFDChannel_ETC1S {
     RGB = 0,
     RRR = 3,
     GGG = 4,
-    AAA = 15
-
+    AAA = 15,
 }
 
 const enum DFDChannel_UASTC {
     RGB = 0,
     RGBA = 3,
     RRR = 4,
-    RRRG = 5
+    RRRG = 5,
 }
 
 const enum DFDTransferFunction {
     linear = 1,
-    sRGB = 2
+    sRGB = 2,
 }
 
 /** @hidden */
@@ -116,7 +115,6 @@ export interface IKTX2_SupercompressionGlobalData {
 }
 
 export class KTX2FileReader {
-
     private _data: Uint8Array;
     private _header: IKTX2_Header;
     private _levels: Array<IKTX2_Level>;
@@ -162,7 +160,7 @@ export class KTX2FileReader {
          */
         const hdrReader = new DataReader(this._data, offsetInFile, 17 * 4);
 
-        const header = this._header = {
+        const header = (this._header = {
             vkFormat: hdrReader.readUint32(),
             typeSize: hdrReader.readUint32(),
             pixelWidth: hdrReader.readUint32(),
@@ -179,7 +177,7 @@ export class KTX2FileReader {
             kvdByteLength: hdrReader.readUint32(),
             sgdByteOffset: hdrReader.readUint64(),
             sgdByteLength: hdrReader.readUint64(),
-        };
+        });
 
         if (header.pixelDepth > 0) {
             throw new Error(`Failed to parse KTX2 file - Only 2D textures are currently supported.`);
@@ -202,7 +200,7 @@ export class KTX2FileReader {
 
         const levelReader = new DataReader(this._data, offsetInFile, levelCount * 3 * (2 * 4));
 
-        const levels: Array<IKTX2_Level> = this._levels = [];
+        const levels: Array<IKTX2_Level> = (this._levels = []);
 
         while (levelCount--) {
             levels.push({
@@ -219,7 +217,7 @@ export class KTX2FileReader {
          */
         const dfdReader = new DataReader(this._data, header.dfdByteOffset, header.dfdByteLength);
 
-        const dfdBlock = this._dfdBlock = {
+        const dfdBlock = (this._dfdBlock = {
             vendorId: dfdReader.skipBytes(4 /* skip totalSize */).readUint16(),
             descriptorType: dfdReader.readUint16(),
             versionNumber: dfdReader.readUint16(),
@@ -235,18 +233,18 @@ export class KTX2FileReader {
                 w: dfdReader.readUint8() + 1,
             },
             bytesPlane: [
-                dfdReader.readUint8(), /* bytesPlane0 */
-                dfdReader.readUint8(), /* bytesPlane1 */
-                dfdReader.readUint8(), /* bytesPlane2 */
-                dfdReader.readUint8(), /* bytesPlane3 */
-                dfdReader.readUint8(), /* bytesPlane4 */
-                dfdReader.readUint8(), /* bytesPlane5 */
-                dfdReader.readUint8(), /* bytesPlane6 */
-                dfdReader.readUint8(), /* bytesPlane7 */
+                dfdReader.readUint8() /* bytesPlane0 */,
+                dfdReader.readUint8() /* bytesPlane1 */,
+                dfdReader.readUint8() /* bytesPlane2 */,
+                dfdReader.readUint8() /* bytesPlane3 */,
+                dfdReader.readUint8() /* bytesPlane4 */,
+                dfdReader.readUint8() /* bytesPlane5 */,
+                dfdReader.readUint8() /* bytesPlane6 */,
+                dfdReader.readUint8() /* bytesPlane7 */,
             ],
             numSamples: 0,
             samples: new Array<IKTX2_Sample>(),
-        };
+        });
 
         dfdBlock.numSamples = (dfdBlock.descriptorBlockSize - 24) / 16;
 
@@ -257,17 +255,17 @@ export class KTX2FileReader {
                 channelType: dfdReader.readUint8(),
                 channelFlags: 0,
                 samplePosition: [
-                    dfdReader.readUint8(), /* samplePosition0 */
-                    dfdReader.readUint8(), /* samplePosition1 */
-                    dfdReader.readUint8(), /* samplePosition2 */
-                    dfdReader.readUint8(), /* samplePosition3 */
+                    dfdReader.readUint8() /* samplePosition0 */,
+                    dfdReader.readUint8() /* samplePosition1 */,
+                    dfdReader.readUint8() /* samplePosition2 */,
+                    dfdReader.readUint8() /* samplePosition3 */,
                 ],
                 sampleLower: dfdReader.readUint32(),
                 sampleUpper: dfdReader.readUint32(),
             };
 
-            sample.channelFlags = (sample.channelType & 0xF0) >> 4;
-            sample.channelType = sample.channelType & 0x0F;
+            sample.channelFlags = (sample.channelType & 0xf0) >> 4;
+            sample.channelType = sample.channelType & 0x0f;
 
             dfdBlock.samples.push(sample);
         }
@@ -275,7 +273,7 @@ export class KTX2FileReader {
         /**
          * Get the Supercompression Global Data (sgd)
          */
-        const sgd: IKTX2_SupercompressionGlobalData = this._supercompressionGlobalData = {};
+        const sgd: IKTX2_SupercompressionGlobalData = (this._supercompressionGlobalData = {});
 
         if (header.sgdByteLength > 0) {
             const sgdReader = new DataReader(this._data, header.sgdByteOffset, header.sgdByteLength);
@@ -310,7 +308,6 @@ export class KTX2FileReader {
             sgd.tablesData = new Uint8Array(this._data.buffer, this._data.byteOffset + tablesByteOffset, sgd.tablesByteLength);
             sgd.extendedData = new Uint8Array(this._data.buffer, this._data.byteOffset + extendedByteOffset, sgd.extendedByteLength);
         }
-
     }
 
     private _getImageCount(): number {
@@ -331,7 +328,10 @@ export class KTX2FileReader {
 
         switch (tformat) {
             case sourceTextureFormat.ETC1S:
-                return this._dfdBlock.numSamples === 2 && (this._dfdBlock.samples[0].channelType === DFDChannel_ETC1S.AAA || this._dfdBlock.samples[1].channelType === DFDChannel_ETC1S.AAA);
+                return (
+                    this._dfdBlock.numSamples === 2 &&
+                    (this._dfdBlock.samples[0].channelType === DFDChannel_ETC1S.AAA || this._dfdBlock.samples[1].channelType === DFDChannel_ETC1S.AAA)
+                );
 
             case sourceTextureFormat.UASTC4x4:
                 return this._dfdBlock.samples[0].channelType === DFDChannel_UASTC.RGBA;
@@ -352,8 +352,20 @@ export class KTX2FileReader {
         if (data.byteLength >= 12) {
             // '«', 'K', 'T', 'X', ' ', '2', '0', '»', '\r', '\n', '\x1A', '\n'
             const identifier = new Uint8Array(data.buffer, data.byteOffset, 12);
-            if (identifier[0] === 0xAB && identifier[1] === 0x4B && identifier[2] === 0x54 && identifier[3] === 0x58 && identifier[4] === 0x20 && identifier[5] === 0x32 &&
-                identifier[6] === 0x30 && identifier[7] === 0xBB && identifier[8] === 0x0D && identifier[9] === 0x0A && identifier[10] === 0x1A && identifier[11] === 0x0A) {
+            if (
+                identifier[0] === 0xab &&
+                identifier[1] === 0x4b &&
+                identifier[2] === 0x54 &&
+                identifier[3] === 0x58 &&
+                identifier[4] === 0x20 &&
+                identifier[5] === 0x32 &&
+                identifier[6] === 0x30 &&
+                identifier[7] === 0xbb &&
+                identifier[8] === 0x0d &&
+                identifier[9] === 0x0a &&
+                identifier[10] === 0x1a &&
+                identifier[11] === 0x0a
+            ) {
                 return true;
             }
         }

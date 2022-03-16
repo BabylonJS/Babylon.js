@@ -12,8 +12,7 @@ import { Axis } from "core/Maths/math.axis";
  * Once stable, lab features will be moved to the publis API and configuration object.
  */
 export class ViewerLabs {
-
-    constructor(private _scene: Scene) { }
+    constructor(private _scene: Scene) {}
 
     public assetsRootURL: string;
     public environment: PBREnvironment = {
@@ -27,20 +26,25 @@ export class ViewerLabs {
             zz: new Vector3(0, 0, 0),
             yz: new Vector3(0, 0, 0),
             zx: new Vector3(0, 0, 0),
-            xy: new Vector3(0, 0, 0)
+            xy: new Vector3(0, 0, 0),
         },
 
-        textureIntensityScale: 1.0
+        textureIntensityScale: 1.0,
     };
 
     /**
-         * Loads an environment map from a given URL
-         * @param url URL of environment map
-         * @param onSuccess Callback fired after environment successfully applied to the scene
-         * @param onProgress Callback fired at progress events while loading the environment map
-         * @param onError Callback fired when the load fails
-         */
-    public loadEnvironment(url: string, onSuccess?: (env: PBREnvironment) => void, onProgress?: (bytesLoaded: number, bytesTotal: number) => void, onError?: (e: any) => void): void;
+     * Loads an environment map from a given URL
+     * @param url URL of environment map
+     * @param onSuccess Callback fired after environment successfully applied to the scene
+     * @param onProgress Callback fired at progress events while loading the environment map
+     * @param onError Callback fired when the load fails
+     */
+    public loadEnvironment(
+        url: string,
+        onSuccess?: (env: PBREnvironment) => void,
+        onProgress?: (bytesLoaded: number, bytesTotal: number) => void,
+        onError?: (e: any) => void
+    ): void;
     /**
      * Loads an environment map from a given URL
      * @param buffer ArrayBuffer containing environment map
@@ -48,7 +52,12 @@ export class ViewerLabs {
      * @param onProgress Callback fired at progress events while loading the environment map
      * @param onError Callback fired when the load fails
      */
-    public loadEnvironment(buffer: ArrayBuffer, onSuccess?: (env: PBREnvironment) => void, onProgress?: (bytesLoaded: number, bytesTotal: number) => void, onError?: (e: any) => void): void;
+    public loadEnvironment(
+        buffer: ArrayBuffer,
+        onSuccess?: (env: PBREnvironment) => void,
+        onProgress?: (bytesLoaded: number, bytesTotal: number) => void,
+        onError?: (e: any) => void
+    ): void;
     /**
      * Sets the environment to an already loaded environment
      * @param env PBREnvironment instance
@@ -56,21 +65,39 @@ export class ViewerLabs {
      * @param onProgress Callback fired at progress events while loading the environment map
      * @param onError Callback fired when the load fails
      */
-    public loadEnvironment(env: PBREnvironment, onSuccess?: (env: PBREnvironment) => void, onProgress?: (bytesLoaded: number, bytesTotal: number) => void, onError?: (e: any) => void): void;
-    public loadEnvironment(data: string | ArrayBuffer | PBREnvironment, onSuccess?: (env: PBREnvironment) => void, onProgress?: (bytesLoaded: number, bytesTotal: number) => void, onError?: (e: any) => void): void {
+    public loadEnvironment(
+        env: PBREnvironment,
+        onSuccess?: (env: PBREnvironment) => void,
+        onProgress?: (bytesLoaded: number, bytesTotal: number) => void,
+        onError?: (e: any) => void
+    ): void;
+    public loadEnvironment(
+        data: string | ArrayBuffer | PBREnvironment,
+        onSuccess?: (env: PBREnvironment) => void,
+        onProgress?: (bytesLoaded: number, bytesTotal: number) => void,
+        onError?: (e: any) => void
+    ): void {
         //@! todo: should loadEnvironment cancel any currently loading environments?
         if (data instanceof ArrayBuffer) {
             this.environment = EnvironmentDeserializer.Parse(data);
-            if (onSuccess) { onSuccess(this.environment); }
-        } else if (typeof data === 'string') {
+            if (onSuccess) {
+                onSuccess(this.environment);
+            }
+        } else if (typeof data === "string") {
             let url = this.getAssetUrl(data);
             this._scene._loadFile(
                 url,
                 (arrayBuffer: ArrayBuffer) => {
                     this.environment = EnvironmentDeserializer.Parse(arrayBuffer);
-                    if (onSuccess) { onSuccess(this.environment); }
+                    if (onSuccess) {
+                        onSuccess(this.environment);
+                    }
                 },
-                (progressEvent) => { if (onProgress) { onProgress(progressEvent.loaded, progressEvent.total); } },
+                (progressEvent) => {
+                    if (onProgress) {
+                        onProgress(progressEvent.loaded, progressEvent.total);
+                    }
+                },
                 false,
                 true,
                 (r, e) => {
@@ -82,7 +109,9 @@ export class ViewerLabs {
         } else {
             //data assumed to be PBREnvironment object
             this.environment = data;
-            if (onSuccess) { onSuccess(data); }
+            if (onSuccess) {
+                onSuccess(data);
+            }
         }
     }
 
@@ -91,7 +120,9 @@ export class ViewerLabs {
      * @param environmentMapConfiguration Environment map configuration to apply
      */
     public applyEnvironmentMapConfiguration(rotationY?: number) {
-        if (!this.environment) { return; }
+        if (!this.environment) {
+            return;
+        }
 
         //set orientation
         let rotatquatRotationionY = Quaternion.RotationAxis(Axis.Y, rotationY || 0);
@@ -159,5 +190,4 @@ export class ViewerLabs {
 
         shadowLight.setDirectionToTarget(target);
     }
-
 }

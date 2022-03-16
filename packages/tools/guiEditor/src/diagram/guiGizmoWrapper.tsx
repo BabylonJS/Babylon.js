@@ -20,9 +20,12 @@ export class GizmoWrapper extends React.Component<IGizmoWrapperProps> {
 
     render() {
         const controls = this.props.globalState.selectedControls;
-        return <>
-            {controls.map(control =>
-                <GuiGizmoComponent globalState={this.props.globalState} control={control} key={control.uniqueId}/>)}
-        </>;
+        return (
+            <>
+                {controls.map((control) => (
+                    <GuiGizmoComponent globalState={this.props.globalState} control={control} key={control.uniqueId} />
+                ))}
+            </>
+        );
     }
 }

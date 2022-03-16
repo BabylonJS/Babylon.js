@@ -1,12 +1,12 @@
-import { mapperManager } from './mappers';
-import { ViewerConfiguration } from './configuration';
-import { processConfigurationCompatibility } from './configurationCompatibility';
+import { mapperManager } from "./mappers";
+import { ViewerConfiguration } from "./configuration";
+import { processConfigurationCompatibility } from "./configurationCompatibility";
 
-import { deepmerge } from '../helper/index';
-import { Tools } from 'core/Misc/tools';
-import { extendedConfiguration } from './types/extended';
-import { renderOnlyDefaultConfiguration } from './types/renderOnlyDefault';
-import { IFileRequest } from 'core/Misc/fileRequest';
+import { deepmerge } from "../helper/index";
+import { Tools } from "core/Misc/tools";
+import { extendedConfiguration } from "./types/extended";
+import { renderOnlyDefaultConfiguration } from "./types/renderOnlyDefault";
+import { IFileRequest } from "core/Misc/fileRequest";
 
 /**
  * The configuration loader will load the configuration object from any source and will use the defined mapper to
@@ -14,7 +14,6 @@ import { IFileRequest } from 'core/Misc/fileRequest';
  * It is a private member of the scene.
  */
 export class RenderOnlyConfigurationLoader {
-
     private _configurationCache: { [url: string]: any };
 
     private _loadRequests: Array<IFileRequest>;
@@ -29,12 +28,12 @@ export class RenderOnlyConfigurationLoader {
         let typesSeparated = types.split(",");
         typesSeparated.forEach((type) => {
             switch (type.trim()) {
-                case 'default':
+                case "default":
                     config = deepmerge(config, renderOnlyDefaultConfiguration);
                     break;
-                case 'none':
+                case "none":
                     break;
-                case 'extended':
+                case "extended":
                 default:
                     config = deepmerge(config, extendedConfiguration);
                     break;
@@ -44,7 +43,7 @@ export class RenderOnlyConfigurationLoader {
             }
         });
         return config;
-    };
+    }
 
     protected getExtendedConfig(type: string | undefined) {
         return this._getConfigurationTypeExcludeTemplate(type || "extended");
@@ -59,56 +58,59 @@ export class RenderOnlyConfigurationLoader {
      * @returns A promise that delivers the extended viewer configuration, when done.
      */
     public loadConfiguration(initConfig: ViewerConfiguration = {}, callback?: (config: ViewerConfiguration) => void): Promise<ViewerConfiguration> {
-
         let loadedConfig: ViewerConfiguration = deepmerge({}, initConfig);
         this._processInitialConfiguration(loadedConfig);
 
         let extendedConfiguration = this.getExtendedConfig(loadedConfig.extends);
 
         if (loadedConfig.configuration) {
-
             let mapperType = "json";
-            return Promise.resolve().then(() => {
-                if (typeof loadedConfig.configuration === "string" || (loadedConfig.configuration && loadedConfig.configuration.url)) {
-                    // a file to load
+            return Promise.resolve()
+                .then(() => {
+                    if (typeof loadedConfig.configuration === "string" || (loadedConfig.configuration && loadedConfig.configuration.url)) {
+                        // a file to load
 
-                    let url: string = '';
-                    if (typeof loadedConfig.configuration === "string") {
-                        url = loadedConfig.configuration;
-                    }
-
-                    // if configuration is an object
-                    if (typeof loadedConfig.configuration === "object" && loadedConfig.configuration.url) {
-                        url = loadedConfig.configuration.url;
-                        let type = loadedConfig.configuration.mapper;
-                        // empty string?
-                        if (!type) {
-                            // load mapper type from filename / url
-                            type = loadedConfig.configuration.url.split('.').pop();
+                        let url: string = "";
+                        if (typeof loadedConfig.configuration === "string") {
+                            url = loadedConfig.configuration;
                         }
-                        mapperType = type || mapperType;
-                    }
-                    return this._loadFile(url);
-                } else {
-                    if (typeof loadedConfig.configuration === "object") {
-                        mapperType = loadedConfig.configuration.mapper || mapperType;
-                        return loadedConfig.configuration.payload || {};
-                    }
-                    return {};
 
-                }
-            }).then((data: any) => {
-                let mapper = mapperManager.getMapper(mapperType);
-                let parsed = deepmerge(mapper.map(data), loadedConfig);
-                let merged = deepmerge(extendedConfiguration, parsed);
-                processConfigurationCompatibility(merged);
-                if (callback) { callback(merged); }
-                return merged;
-            });
+                        // if configuration is an object
+                        if (typeof loadedConfig.configuration === "object" && loadedConfig.configuration.url) {
+                            url = loadedConfig.configuration.url;
+                            let type = loadedConfig.configuration.mapper;
+                            // empty string?
+                            if (!type) {
+                                // load mapper type from filename / url
+                                type = loadedConfig.configuration.url.split(".").pop();
+                            }
+                            mapperType = type || mapperType;
+                        }
+                        return this._loadFile(url);
+                    } else {
+                        if (typeof loadedConfig.configuration === "object") {
+                            mapperType = loadedConfig.configuration.mapper || mapperType;
+                            return loadedConfig.configuration.payload || {};
+                        }
+                        return {};
+                    }
+                })
+                .then((data: any) => {
+                    let mapper = mapperManager.getMapper(mapperType);
+                    let parsed = deepmerge(mapper.map(data), loadedConfig);
+                    let merged = deepmerge(extendedConfiguration, parsed);
+                    processConfigurationCompatibility(merged);
+                    if (callback) {
+                        callback(merged);
+                    }
+                    return merged;
+                });
         } else {
             loadedConfig = deepmerge(extendedConfiguration, loadedConfig);
             processConfigurationCompatibility(loadedConfig);
-            if (callback) { callback(loadedConfig); }
+            if (callback) {
+                callback(loadedConfig);
+            }
             return Promise.resolve(loadedConfig);
         }
     }
@@ -131,7 +133,7 @@ export class RenderOnlyConfigurationLoader {
         if (config.model) {
             if (typeof config.model === "string") {
                 config.model = {
-                    url: config.model
+                    url: config.model,
                 };
             }
         }
@@ -144,22 +146,30 @@ export class RenderOnlyConfigurationLoader {
         }
 
         return new Promise((resolve, reject) => {
-            let fileRequest = Tools.LoadFile(url, (result) => {
-                let idx = this._loadRequests.indexOf(fileRequest);
-                if (idx !== -1) {
-                    this._loadRequests.splice(idx, 1);
+            let fileRequest = Tools.LoadFile(
+                url,
+                (result) => {
+                    let idx = this._loadRequests.indexOf(fileRequest);
+                    if (idx !== -1) {
+                        this._loadRequests.splice(idx, 1);
+                    }
+                    if (this._enableCache) {
+                        cacheReference[url] = result;
+                    }
+                    resolve(result);
+                },
+                undefined,
+                undefined,
+                false,
+                (request, error: any) => {
+                    let idx = this._loadRequests.indexOf(fileRequest);
+                    if (idx !== -1) {
+                        this._loadRequests.splice(idx, 1);
+                    }
+                    reject(error);
                 }
-                if (this._enableCache) { cacheReference[url] = result; }
-                resolve(result);
-            }, undefined, undefined, false, (request, error: any) => {
-                let idx = this._loadRequests.indexOf(fileRequest);
-                if (idx !== -1) {
-                    this._loadRequests.splice(idx, 1);
-                }
-                reject(error);
-            });
+            );
             this._loadRequests.push(fileRequest);
         });
     }
-
 }
