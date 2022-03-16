@@ -1,0 +1,511 @@
+<style>
+    nav-bar {
+        position: absolute;
+        height: 48px;
+        width: 100%;
+        bottom: 10px;
+        display: flex;
+        justify-content: center;
+    }
+
+    nav-bar .nav-container {
+        display: flex;
+        flex-direction: row;
+        margin: 0 10px;
+        height: 100%;
+        width: 100%;
+        justify-content: center;
+    }
+
+    nav-bar .animation-control {
+        background-color: rgba(91, 93, 107, .75);
+        display: flex;
+        flex-direction: row;
+        height: 100%;
+        width: 100%;
+        max-width: 1280px;
+        justify-content: center;
+    }
+
+    nav-bar .flex-container {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        height: 100%;
+        width: 100%;
+    }
+
+    nav-bar button {
+        background: none;
+        border: none;
+        color: white;
+        margin: 0;
+        padding: 0;
+
+        height: 100%;
+        min-width: 48px;
+        cursor: pointer;
+    }
+
+    nav-bar button:hover,
+    nav-bar button:active,
+    nav-bar button:focus {
+        background: none;
+        border: none;
+        outline: none;
+    }
+
+    nav-bar button:hover {
+        background-color: rgba(22, 24, 26, .20);
+    }
+
+    nav-bar .control-text {
+        font-family: "Segoe UI";
+        font-size: 12px;
+        font-weight: 400;
+        pointer-events: none;
+    }
+
+    nav-bar img,
+    nav-bar .icon {
+        pointer-events: none;
+    }
+
+    .logo-button {
+        display: flex;
+        align-items: center;
+        flex-direction: row;
+        justify-content: center;
+        background-color: rgba(91, 93, 107, .75);
+        height: 48px;
+        min-width: 48px;
+        margin-right: 4px;
+    }
+
+    .logo-button img {
+        height: 20px;
+        width: 20px;
+        padding-top: 5px;
+    }
+
+    .types {
+        display: flex;
+        flex-direction: column;
+        width: 48px;
+    }
+
+    .types .flex-container,
+    .speed .flex-container {
+        align-items: center;
+    }
+
+    .menu-options {
+        position: absolute;
+        bottom: 48px;
+        width: 48px;
+        background-color: rgba(22, 24, 26, .90);
+    }
+
+    .logo-button,
+    .animation-label,
+    .types-icon,
+    .help,
+    .speed {
+        display: none;
+    }
+
+    .types-icon:after {
+        font-size: 16px;
+        content: "\F6BE";
+    }
+
+    .up-icon:after {
+        line-height: 16px;
+        font-size: 12px;
+        content: "\E70E";
+    }
+
+    .play-icon:after {
+        font-size: 16px;
+        content: "\E768";
+    }
+
+    .pause-icon:after {
+        font-size: 16px;
+        content: "\E769";
+    }
+
+    .fullscreen-icon:after {
+        font-size: 16px;
+        content: "\E740";
+    }
+
+    /*
+    A few browsers dont support combining the next rule to one. Redudant.
+    */
+
+    viewer.in-fullscreen .fullscreen-icon:after {
+        content: "\E73F";
+    }
+
+    .help-icon:after {
+        font-size: 16px;
+        content: "\EF4E";
+    }
+
+    viewer.in-vr .vr-icon:after {
+        font-size: 16px;
+        content: "\E7F4";
+    }
+
+    .vr-icon:after {
+        font-size: 16px;
+        content: "\F119";
+    }
+
+    .progress-control {
+        display: flex;
+        flex: 1;
+        position: relative;
+        overflow: hidden;
+        cursor: pointer;
+        align-items: center;
+    }
+
+    .animation-number {
+        margin: 0 6px;
+    }
+
+    .speed-text {
+        margin-right: 6px;
+    }
+
+    .progress-circle {
+        width: 12px;
+        height: 12px;
+        border: 2px solid rgb(255, 255, 255);
+        border-radius: 50%;
+        background-color: rgb(91, 93, 107);
+        cursor: pointer;
+        position: relative;
+        bottom: 10px;
+        pointer-events: none;
+    }
+
+    .default-control {
+        display: flex;
+        flex-direction: row;
+        height: 100%;
+        background-color: rgba(91, 93, 107, .75);
+    }
+
+    .menu-options button {
+        width: 100%;
+        height: 48px;
+        color: rgb(142, 147, 155);
+    }
+
+    .menu-options button {
+        width: 100%;
+        height: 48px;
+        color: rgb(142, 147, 155);
+    }
+
+    .menu-options button:hover {
+        background-color: transparent;
+        color: rgb(255, 255, 255);
+    }
+
+    .menu-options .animation-number {
+        margin: 0 18px 0 6px;
+    }
+
+    .menu-options .speed-text {
+        margin-right: 18px;
+    }
+
+    .menu-options {
+        visibility: hidden;
+    }
+
+    .open .menu-options {
+        visibility: visible;
+    }
+
+    .types .menu-options {
+        width: 144px;
+    }
+
+    .types .menu-options button {
+        padding: 0 8px;
+        justify-content: left;
+    }
+
+    .types .menu-options button>* {
+        display: flex;
+        margin: 8px;
+    }
+
+    .types .menu-options button span.animation-number {
+        display: none;
+    }
+
+    /* Disable fullscreen button for small screens */
+
+    .fullscreen {
+        display: none;
+    }
+
+    @media screen and (min-width: 540px) {
+        .help,
+        .types-icon,
+        .speed {
+            display: inline-block;
+        }
+
+        .logo-button {
+            display: flex;
+        }
+
+        .types {
+            width: 84px;
+        }
+
+        .progress-bar-container {
+            margin: 0 12px;
+        }
+
+        .speed {
+            width: 64px;
+        }
+
+        .speed .menu-options {
+            width: 64px;
+        }
+
+        .fullscreen {
+            display: block;
+        }
+    }
+
+    @media screen and (min-width: 1024px) {
+        .animation-label {
+            display: block;
+            margin-left: 6px;
+            text-overflow: ellipsis;
+            overflow: hidden;
+        }
+
+        nav-bar button.animation-buttons {
+            padding: 0 8px;
+            justify-content: left;
+        }
+
+        .icon.up-icon {
+            margin-left: 8px;
+        }
+
+        nav-bar button.animation-buttons>div {
+            display: flex;
+            pointer-events: none;
+        }
+
+        .animation-number {
+            display: none;
+        }
+
+        .progress-bar-container {
+            margin: 0 12px;
+        }
+
+        .types {
+            width: 144px;
+        }
+    }
+
+
+    .progress-wrapper {
+        -webkit-appearance: none;
+        cursor: pointer;
+        width: 100%;
+        outline: none;
+        margin: 0 12px;
+        height: 30px;
+        background-color: transparent;
+    }
+
+    /*Chrome -webkit */
+
+    .progress-wrapper::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 20px;
+        height: 20px;
+        border: 2px solid white;
+        border-radius: 50%;
+        background: rgba(91, 93, 107, 1);
+        margin-top: -10px;
+    }
+
+    .progress-wrapper::-webkit-slider-runnable-track {
+        height: 2px;
+        -webkit-appearance: none;
+        background-color: white;
+    }
+
+
+    /** FireFox -moz */
+
+    .progress-wrapper::-moz-range-progress {
+        background-color: white;
+        height: 2px;
+    }
+
+    .progress-wrapper::-moz-range-thumb {
+        width: 20px;
+        height: 20px;
+        border: 2px solid white;
+        border-radius: 50%;
+        background: rgba(91, 93, 107, 1);
+    }
+
+    .progress-wrapper::-moz-range-track {
+        background: white;
+        height: 2px;
+    }
+
+    /** IE -ms */
+
+    .progress-wrapper::-ms-track {
+        height: 2px;
+
+        /*remove bg colour from the track, we'll use ms-fill-lower and ms-fill-upper instead */
+        background: transparent;
+
+        /*leave room for the larger thumb to overflow with a transparent border */
+        border-color: transparent;
+        border-width: 10px 0;
+
+        /*remove default tick marks*/
+        color: transparent;
+    }
+
+    .progress-wrapper::-ms-fill-lower {
+        background: white;
+        border-radius: 5px;
+    }
+
+    .progress-wrapper::-ms-fill-upper {
+        background: white;
+        border-radius: 5px;
+    }
+
+    .progress-wrapper::-ms-thumb {
+        width: 16px;
+        height: 16px;
+        border: 2px solid white;
+        border-radius: 50%;
+        background: rgba(91, 93, 107, 1);
+        margin-top: 0px;
+    }
+
+    span {
+        display: inline-block;
+    }
+</style>
+
+{{#if (or (not animations) hideAnimations)}} {{#if hideLogo}}
+<style>
+    nav-bar .nav-container {
+        justify-content: flex-end;
+    }
+</style>
+{{else}}
+<style>
+    nav-bar .nav-container {
+        justify-content: space-between;
+    }
+</style>
+{{/if}} {{/if}} {{#if disableOnFullscreen}}
+<style>
+    viewer.in-fullscreen nav-bar {
+        display: none;
+    }
+</style>
+{{/if}}
+
+<div class="nav-container navbar-control">
+    {{#unless hideLogo}}
+    <div class="logo-button" title="{{logoText}}">
+        {{#if logoLink}}
+        <a href="{{logoLink}}" target="_blank">
+            <img src="{{logoImage}}">
+        </a>
+        {{else}}
+        <img src="{{logoImage}}"> {{/if}}
+    </div>
+    {{/unless}}{{#unless (or (not animations) hideAnimations)}}
+    <div class="animation-control">
+        <div class="types">
+            <button class="flex-container types-button animation-buttons">
+                <!-- <div> -->
+                <span class="icon types-icon"></span>
+                <span class="control-text animation-label">{{selectedAnimationName}}</span>
+                <span class="control-text animation-number">{{selectedAnimation}}</span>
+                <!-- </div> -->
+                {{#if (gt (count animations) 1)}}
+                <span class="icon up-icon"></span>
+                {{/if}}
+            </button>
+            <div class="menu-options">
+                {{#each animations}} {{#unless (eq ../selectedAnimation (add @index 1))}}
+                <button class="flex-container label-option-button animation-buttons" data-value="{{this.value}} ">
+                    <!-- <div> -->
+                    <span class="icon types-icon"></span>
+                    <span class="control-text animation-label">{{this.label}}</span>
+                    <span class="control-text animation-number">{{add @index 1}}</span>
+                    <!-- </div> -->
+                </button>
+                {{/unless}} {{/each}}
+            </div>
+        </div>
+        <div class="progress-control">
+            <button class="play-pause play-pause-button">
+                {{#if paused}}
+                <span class="icon play-icon"></span>
+                {{else}}
+                <span class="icon pause-icon"></span>
+                {{/if}}
+            </button>
+            <input class="progress-wrapper" type="range" min="0" max="100" step="0.01">
+        </div>
+        <div class="speed">
+            <button class="flex-container speed-button">
+                <span class="control-text speed-text">{{selectedSpeed}}</span>
+                <span class="icon up-icon"></span>
+            </button>
+            <div class="menu-options">
+                {{#eachInMap speedList}} {{#unless (eq ../selectedSpeed id)}}
+                <button class="flex-container speed-option-button" data-value="{{value}}">
+                    <span class="control-text speed-text">{{id}}</span>
+                </button>
+                {{/unless}} {{/eachInMap}}
+            </div>
+        </div>
+    </div>
+    {{/unless}}
+    <div class="default-control">
+        {{#unless hideVr}}
+        <button class="vr vr-button" title="{{text.vrButton}} ">
+            <span class="icon vr-icon"></span>
+        </button>
+        {{/unless}}{{#unless hideHelp}}
+        <button class="help help-button" title="{{text.helpButton}} ">
+            <span class="icon help-icon"></span>
+        </button>
+        {{/unless}} {{#unless hideFullscreen}}
+        <button class="fullscreen fullscreen-button" title="{{text.fullscreenButton}} " name="fullscreenToggle">
+            <span class="icon fullscreen-icon"></span>
+        </button>
+        {{/unless}}
+    </div>
+</div>

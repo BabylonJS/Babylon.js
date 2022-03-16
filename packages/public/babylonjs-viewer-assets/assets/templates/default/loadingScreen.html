@@ -1,0 +1,43 @@
+<style>
+    /* Loading Screen element */
+
+    loading-screen {
+        position: absolute;
+        left: 0;
+        z-index: 100;
+        opacity: 1;
+        pointer-events: none;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        -webkit-transition: opacity 1s ease;
+        -moz-transition: opacity 1s ease;
+        transition: opacity 1s ease;
+    }
+
+    img.loading-image {
+        -webkit-animation: spin 0.75s linear infinite;
+        animation: spin 0.75s linear infinite;
+    }
+
+    @-webkit-keyframes spin {
+        0% {
+            -webkit-transform: rotate(0deg);
+        }
+        100% {
+            -webkit-transform: rotate(360deg);
+        }
+    }
+
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+</style>
+
+<img class="loading-image" style="position:absolute" src="{{loadingImage}}">
+<img class="static-loading-image" style="position:absolute" src="{{staticLoadingImage}}">
