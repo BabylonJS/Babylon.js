@@ -7,7 +7,7 @@ import { Engine, WebGPUEngine, UnregisterAllMaterialPlugins } from "@dev/core";
 declare type Nullable<T> = import("@dev/core").Nullable<T>;
 declare type Scene = import("@dev/core").Scene;
 
-require("../scss/rendering.scss");
+import "../scss/rendering.scss";
 
 interface IRenderingComponentProps {
     globalState: GlobalState;

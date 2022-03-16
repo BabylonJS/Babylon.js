@@ -1,7 +1,7 @@
 import * as React from "react";
 import { GlobalState } from "../globalState";
 
-require("../scss/examples.scss");
+import "../scss/examples.scss";
 
 interface IExamplesComponentProps {
     globalState: GlobalState;

@@ -7,7 +7,7 @@ import { CommandDropdownComponent } from "./commandDropdownComponent";
 import { Utilities } from "../tools/utilities";
 import { WebGPUEngine } from "@dev/core";
 
-require("../scss/hamburgerMenu.scss");
+import "../scss/hamburgerMenu.scss";
 
 declare var Versions: any;
 

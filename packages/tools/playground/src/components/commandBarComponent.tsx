@@ -5,7 +5,7 @@ import { CommandDropdownComponent } from "./commandDropdownComponent";
 import { Utilities } from "../tools/utilities";
 import { WebGPUEngine } from "@dev/core";
 
-require("../scss/commandBar.scss");
+import "../scss/commandBar.scss";
 
 declare var Versions: any;
 

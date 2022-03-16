@@ -16,8 +16,9 @@ import { ErrorDisplayComponent } from "./components/errorDisplayComponent";
 import { ExamplesComponent } from "./components/examplesComponent";
 import { QRCodeComponent } from "./components/qrCodeComponent";
 
-require("./scss/main.scss");
-const Split = require("split.js").default;
+import "./scss/main.scss";
+import * as Split from "split.js";
+
 
 interface IPlaygroundProps {
     runtimeMode: RuntimeMode;
@@ -102,7 +103,7 @@ export class Playground extends React.Component<IPlaygroundProps, { errorMessage
                 }
                 this.renderingRef.current!.classList.remove("hidden");
                 this.monacoRef.current!.classList.remove("hidden");
-                this._splitInstance = Split([this.monacoRef.current, this.renderingRef.current], {
+                this._splitInstance = (Split as any).default([this.monacoRef.current, this.renderingRef.current], {
                     direction: "horizontal",
                     minSize: [200, 200],
                     gutterSize: 4,
