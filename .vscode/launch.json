@@ -10,6 +10,30 @@
             */
             "type": "pwa-chrome",
             "request": "launch",
+            "name": "Run and Watch Dev Server (Dev)",
+            "url": "http://localhost:1337",
+            "outFiles": ["!**/node_modules/**"],
+            "webRoot": "${workspaceFolder}",
+            "preLaunchTask": "CDN Serve and watch (Dev)"
+        },
+        {
+            /*
+            Launch the playground to be use to test changes in dev packages
+            */
+            "type": "pwa-chrome",
+            "request": "launch",
+            "name": "Run and Watch Dev Server - SSL (Dev)",
+            "url": "https://localhost:1337",
+            "outFiles": ["!**/node_modules/**"],
+            "webRoot": "${workspaceFolder}",
+            "preLaunchTask": "CDN Serve and watch (Dev)"
+        },
+        {
+            /*
+            Launch the playground to be use to test changes in dev packages
+            */
+            "type": "pwa-chrome",
+            "request": "launch",
             "name": "Dev Host development (chrome)",
             "url": "http://localhost:1338",
             "webRoot": "${workspaceFolder}",
@@ -136,30 +160,6 @@
             "outFiles": ["!**/node_modules/**"],
             "webRoot": "${workspaceFolder}",
             "preLaunchTask": "Run and Watch Dev host (Dev)"
-        },
-        {
-            /*
-            Launch the playground to be use to test changes in dev packages
-            */
-            "type": "pwa-chrome",
-            "request": "launch",
-            "name": "Run and Watch Babylon Server (Dev)",
-            "url": "http://localhost:1337",
-            "outFiles": ["!**/node_modules/**"],
-            "webRoot": "${workspaceFolder}",
-            "preLaunchTask": "CDN Serve and watch (Dev)"
-        },
-        {
-            /*
-            Launch the playground to be use to test changes in dev packages
-            */
-            "type": "pwa-chrome",
-            "request": "launch",
-            "name": "Run and Watch Babylon Server - SSL (Dev)",
-            "url": "https://localhost:1337",
-            "outFiles": ["!**/node_modules/**"],
-            "webRoot": "${workspaceFolder}",
-            "preLaunchTask": "CDN Serve and watch (Dev)"
         },
         {
             /*
