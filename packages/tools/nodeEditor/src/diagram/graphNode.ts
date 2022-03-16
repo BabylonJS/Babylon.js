@@ -1,17 +1,17 @@
-import { NodeMaterialBlock } from 'core/Materials/Node/nodeMaterialBlock';
-import { GlobalState, ISelectionChangedOptions } from '../globalState';
-import { Nullable } from 'core/types';
-import { Observer } from 'core/Misc/observable';
-import { NodeMaterialConnectionPoint } from 'core/Materials/Node/nodeMaterialBlockConnectionPoint';
-import { GraphCanvasComponent } from './graphCanvas';
-import { PropertyLedger } from './propertyLedger';
-import * as React from 'react';
-import { GenericPropertyComponent } from './properties/genericNodePropertyComponent';
-import { DisplayLedger } from './displayLedger';
-import { IDisplayManager } from './display/displayManager';
-import { NodeLink } from './nodeLink';
-import { NodePort } from './nodePort';
-import { GraphFrame } from './graphFrame';
+import { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
+import { GlobalState, ISelectionChangedOptions } from "../globalState";
+import { Nullable } from "core/types";
+import { Observer } from "core/Misc/observable";
+import { NodeMaterialConnectionPoint } from "core/Materials/Node/nodeMaterialBlockConnectionPoint";
+import { GraphCanvasComponent } from "./graphCanvas";
+import { PropertyLedger } from "./propertyLedger";
+import * as React from "react";
+import { GenericPropertyComponent } from "./properties/genericNodePropertyComponent";
+import { DisplayLedger } from "./displayLedger";
+import { IDisplayManager } from "./display/displayManager";
+import { NodeLink } from "./nodeLink";
+import { NodePort } from "./nodePort";
+import { GraphFrame } from "./graphFrame";
 
 import triangle from "../imgs/triangle.svg";
 
@@ -172,7 +172,7 @@ export class GraphNode {
                 this._ownerCanvas.selectedNodes.splice(indexInSelection, 1);
             }
         } else {
-            this._globalState.onSelectionChangedObservable.notifyObservers({selection: this});
+            this._globalState.onSelectionChangedObservable.notifyObservers({ selection: this });
         }
     }
 
@@ -180,7 +180,7 @@ export class GraphNode {
         this._globalState = globalState;
 
         this._onSelectionChangedObserver = this._globalState.onSelectionChangedObservable.add((options) => {
-            const {selection: node} = options || {};
+            const { selection: node } = options || {};
             if (node === this) {
                 this._visual.classList.add("selected");
             } else {
@@ -201,10 +201,7 @@ export class GraphNode {
 
         this._onSelectionBoxMovedObserver = this._globalState.onSelectionBoxMoved.add((rect1) => {
             const rect2 = this._visual.getBoundingClientRect();
-            var overlap = !(rect1.right < rect2.left ||
-                rect1.left > rect2.right ||
-                rect1.bottom < rect2.top ||
-                rect1.top > rect2.bottom);
+            var overlap = !(rect1.right < rect2.left || rect1.left > rect2.right || rect1.bottom < rect2.top || rect1.top > rect2.bottom);
 
             this.isSelected = overlap;
         });
@@ -228,10 +225,7 @@ export class GraphNode {
         rect1.width -= 5;
         rect1.height -= 5;
 
-        const isOverlappingFrame = !(rect1.right < rect2.left ||
-            rect1.left > rect2.right ||
-            rect1.bottom < rect2.top ||
-            rect1.top > rect2.bottom);
+        const isOverlappingFrame = !(rect1.right < rect2.left || rect1.left > rect2.right || rect1.bottom < rect2.top || rect1.top > rect2.bottom);
 
         if (isOverlappingFrame) {
             this.enclosingFrameId = frame.id;
@@ -330,7 +324,7 @@ export class GraphNode {
 
         const indexInSelection = this._ownerCanvas.selectedNodes.indexOf(this);
         if (indexInSelection === -1) {
-            this._globalState.onSelectionChangedObservable.notifyObservers({selection: this});
+            this._globalState.onSelectionChangedObservable.notifyObservers({ selection: this });
         } else if (evt.ctrlKey) {
             this.isSelected = false;
         }
@@ -395,7 +389,7 @@ export class GraphNode {
 
         return React.createElement(control, {
             globalState: this._globalState,
-            block: this.block
+            block: this.block,
         });
     }
 
@@ -427,7 +421,8 @@ export class GraphNode {
 
         this._promotionWarning = root.ownerDocument!.createElement("div");
         this._promotionWarning.classList.add("promotion-warning");
-        this._promotionWarning.title = "For optimization reasons, this block will be promoted to the vertex shader. You can force it to render in the fragment shader by setting its target to Fragment";
+        this._promotionWarning.title =
+            "For optimization reasons, this block will be promoted to the vertex shader. You can force it to render in the fragment shader by setting its target to Fragment";
         const img = root.ownerDocument!.createElement("img");
         img.src = triangle;
         this._promotionWarning.appendChild(img);

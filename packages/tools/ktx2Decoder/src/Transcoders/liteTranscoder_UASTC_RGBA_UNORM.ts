@@ -1,6 +1,6 @@
-import { sourceTextureFormat, transcodeTarget } from '../transcoder';
-import { LiteTranscoder } from './liteTranscoder';
-import { KTX2FileReader, IKTX2_ImageDesc } from '../ktx2FileReader';
+import { sourceTextureFormat, transcodeTarget } from "../transcoder";
+import { LiteTranscoder } from "./liteTranscoder";
+import { KTX2FileReader, IKTX2_ImageDesc } from "../ktx2FileReader";
 
 /**
  * @hidden
@@ -27,10 +27,20 @@ export class LiteTranscoder_UASTC_RGBA_UNORM extends LiteTranscoder {
         this.setModulePath(LiteTranscoder_UASTC_RGBA_UNORM.WasmModuleURL);
     }
 
-    public transcode(src: sourceTextureFormat, dst: transcodeTarget, level: number, width: number, height: number, uncompressedByteLength: number, ktx2Reader: KTX2FileReader, imageDesc: IKTX2_ImageDesc | null, encodedData: Uint8Array): Promise<Uint8Array | null> {
+    public transcode(
+        src: sourceTextureFormat,
+        dst: transcodeTarget,
+        level: number,
+        width: number,
+        height: number,
+        uncompressedByteLength: number,
+        ktx2Reader: KTX2FileReader,
+        imageDesc: IKTX2_ImageDesc | null,
+        encodedData: Uint8Array
+    ): Promise<Uint8Array | null> {
         return this._loadModule().then((moduleWrapper: any) => {
             const transcoder: any = moduleWrapper.module;
-            const [, uncompressedTextureView,] = this._prepareTranscoding(width, height, uncompressedByteLength, encodedData, true);
+            const [, uncompressedTextureView] = this._prepareTranscoding(width, height, uncompressedByteLength, encodedData, true);
 
             return transcoder.decodeRGBA32(width, height) === 0 ? uncompressedTextureView!.slice() : null;
         });

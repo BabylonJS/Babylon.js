@@ -1,7 +1,7 @@
-import { Tools } from 'core/Misc/tools';
-import { ViewerConfiguration } from './configuration';
+import { Tools } from "core/Misc/tools";
+import { ViewerConfiguration } from "./configuration";
 
-import { kebabToCamel } from '../helper/index';
+import { kebabToCamel } from "../helper/index";
 
 /**
  * This is the mapper's interface. Implement this function to create your own mapper and register it at the mapper manager
@@ -28,13 +28,11 @@ export interface IMapper {
  *  }
  */
 class HTMLMapper implements IMapper {
-
     /**
      * Map a specific element and get configuration from it
      * @param element the HTML element to analyze.
      */
     map(element: HTMLElement): ViewerConfiguration {
-
         let config = {};
         for (let attrIdx = 0; attrIdx < element.attributes.length; ++attrIdx) {
             let attr = element.attributes.item(attrIdx);
@@ -42,7 +40,7 @@ class HTMLMapper implements IMapper {
                 continue;
             }
             // map "object.property" to the right configuration place.
-            let split = attr.nodeName.split('.');
+            let split = attr.nodeName.split(".");
             split.reduce((currentConfig, key, idx) => {
                 //convert html-style to json-style
                 let camelKey = kebabToCamel(key);
@@ -92,7 +90,6 @@ class JSONMapper implements IMapper {
  * DOM elements and attributes.
  */
 class DOMMapper implements IMapper {
-
     /**
      * The mapping function that will convert HTML data to a viewer configuration object
      * @param baseElement the baseElement from which to start traversing
@@ -110,14 +107,14 @@ class DOMMapper implements IMapper {
                     // use the HTML Mapper to read configuration from a single element
                     let configMapped = htmlMapper.map(item);
                     let key = kebabToCamel(item.nodeName.toLowerCase());
-                    if (item.attributes.getNamedItem('array') && item.attributes.getNamedItem('array')!.nodeValue === 'true') {
+                    if (item.attributes.getNamedItem("array") && item.attributes.getNamedItem("array")!.nodeValue === "true") {
                         partConfig[key] = [];
                     } else {
-                        if (element.attributes.getNamedItem('array') && element.attributes.getNamedItem('array')!.nodeValue === 'true') {
+                        if (element.attributes.getNamedItem("array") && element.attributes.getNamedItem("array")!.nodeValue === "true") {
                             partConfig.push(configMapped);
                         } else if (partConfig[key]) {
                             //exists already! probably an array
-                            element.setAttribute('array', 'true');
+                            element.setAttribute("array", "true");
                             let oldItem = partConfig[key];
                             partConfig = [oldItem, configMapped];
                         } else {
@@ -134,7 +131,6 @@ class DOMMapper implements IMapper {
 
         return config;
     }
-
 }
 
 /**
@@ -142,18 +138,17 @@ class DOMMapper implements IMapper {
  * It allows the user to register new mappers as well and use them to parse their own configuration data
  */
 export class MapperManager {
-
     private _mappers: { [key: string]: IMapper };
     /**
      * The default mapper is the JSON mapper.
      */
-    public static DefaultMapper = 'json';
+    public static DefaultMapper = "json";
 
     constructor() {
         this._mappers = {
-            "html": new HTMLMapper(),
-            "json": new JSONMapper(),
-            "dom": new DOMMapper()
+            html: new HTMLMapper(),
+            json: new JSONMapper(),
+            dom: new DOMMapper(),
         };
     }
 
@@ -185,7 +180,6 @@ export class MapperManager {
     public dispose() {
         this._mappers = {};
     }
-
 }
 
 /**

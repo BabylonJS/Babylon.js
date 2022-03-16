@@ -1,42 +1,52 @@
-import { ILightConfiguration, ISceneConfiguration, ISceneOptimizerConfiguration, ICameraConfiguration, ISkyboxConfiguration, IGroundConfiguration, IModelConfiguration, IDefaultRenderingPipelineConfiguration, IVRConfiguration } from '../configuration/interfaces/index';
-import { getConfigurationKey, ViewerConfiguration } from '../configuration/configuration';
-import { ViewerModel, ModelState } from '../model/viewerModel';
-import { extendClassWithConfig, deepmerge } from '../helper/index';
-import { CameraBehavior } from '../interfaces';
-import { ViewerLabs } from '../labs/viewerLabs';
-import { getCustomOptimizerByName } from '../optimizer/custom/index';
-import { ObservablesManager } from '../managers/observablesManager';
-import { ConfigurationContainer } from '../configuration/configurationContainer';
-import { IEnvironmentMapConfiguration } from '../configuration/interfaces/environmentMapConfiguration';
-import { Observable } from 'core/Misc/observable';
-import { SceneOptimizer, SceneOptimizerOptions } from 'core/Misc/sceneOptimizer';
-import { ArcRotateCamera } from 'core/Cameras/arcRotateCamera';
-import { Light } from 'core/Lights/light';
-import { EnvironmentHelper, IEnvironmentHelperOptions } from 'core/Helpers/environmentHelper';
-import { VRExperienceHelper, VRExperienceHelperOptions } from 'core/Cameras/VR/vrExperienceHelper';
-import { Color3, Quaternion, Vector3, Axis, Matrix } from 'core/Maths/math';
-import { Nullable } from 'core/types';
-import { DefaultRenderingPipeline } from 'core/PostProcesses/RenderPipeline/Pipelines/defaultRenderingPipeline';
-import { Engine } from 'core/Engines/engine';
-import { Animation } from 'core/Animations/index';
-import { AnimationPropertiesOverride } from 'core/Animations/animationPropertiesOverride';
-import { RenderTargetTexture } from 'core/Materials/Textures/renderTargetTexture';
-import { PBRMaterial } from 'core/Materials/PBR/pbrMaterial';
-import { ShadowLight, IShadowLight } from 'core/Lights/shadowLight';
-import { CubeTexture } from 'core/Materials/Textures/cubeTexture';
-import { DirectionalLight } from 'core/Lights/directionalLight';
-import { HemisphericLight } from 'core/Lights/hemisphericLight';
-import { Scalar } from 'core/Maths/math.scalar';
-import { SpotLight } from 'core/Lights/spotLight';
-import { PointLight } from 'core/Lights/pointLight';
-import { AbstractMesh } from 'core/Meshes/abstractMesh';
+import {
+    ILightConfiguration,
+    ISceneConfiguration,
+    ISceneOptimizerConfiguration,
+    ICameraConfiguration,
+    ISkyboxConfiguration,
+    IGroundConfiguration,
+    IModelConfiguration,
+    IDefaultRenderingPipelineConfiguration,
+    IVRConfiguration,
+} from "../configuration/interfaces/index";
+import { getConfigurationKey, ViewerConfiguration } from "../configuration/configuration";
+import { ViewerModel, ModelState } from "../model/viewerModel";
+import { extendClassWithConfig, deepmerge } from "../helper/index";
+import { CameraBehavior } from "../interfaces";
+import { ViewerLabs } from "../labs/viewerLabs";
+import { getCustomOptimizerByName } from "../optimizer/custom/index";
+import { ObservablesManager } from "../managers/observablesManager";
+import { ConfigurationContainer } from "../configuration/configurationContainer";
+import { IEnvironmentMapConfiguration } from "../configuration/interfaces/environmentMapConfiguration";
+import { Observable } from "core/Misc/observable";
+import { SceneOptimizer, SceneOptimizerOptions } from "core/Misc/sceneOptimizer";
+import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
+import { Light } from "core/Lights/light";
+import { EnvironmentHelper, IEnvironmentHelperOptions } from "core/Helpers/environmentHelper";
+import { VRExperienceHelper, VRExperienceHelperOptions } from "core/Cameras/VR/vrExperienceHelper";
+import { Color3, Quaternion, Vector3, Axis, Matrix } from "core/Maths/math";
+import { Nullable } from "core/types";
+import { DefaultRenderingPipeline } from "core/PostProcesses/RenderPipeline/Pipelines/defaultRenderingPipeline";
+import { Engine } from "core/Engines/engine";
+import { Animation } from "core/Animations/index";
+import { AnimationPropertiesOverride } from "core/Animations/animationPropertiesOverride";
+import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
+import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
+import { ShadowLight, IShadowLight } from "core/Lights/shadowLight";
+import { CubeTexture } from "core/Materials/Textures/cubeTexture";
+import { DirectionalLight } from "core/Lights/directionalLight";
+import { HemisphericLight } from "core/Lights/hemisphericLight";
+import { Scalar } from "core/Maths/math.scalar";
+import { SpotLight } from "core/Lights/spotLight";
+import { PointLight } from "core/Lights/pointLight";
+import { AbstractMesh } from "core/Meshes/abstractMesh";
 import { CreatePlane } from "core/Meshes/Builders/planeBuilder";
-import { Tags } from 'core/Misc/tags';
-import { Behavior } from 'core/Behaviors/behavior';
-import { FramingBehavior } from 'core/Behaviors/Cameras/framingBehavior';
-import { Scene } from 'core/scene';
-import { ShadowGenerator } from 'core/Lights/Shadows/shadowGenerator';
-import { Constants } from 'core/Engines/constants';
+import { Tags } from "core/Misc/tags";
+import { Behavior } from "core/Behaviors/behavior";
+import { FramingBehavior } from "core/Behaviors/Cameras/framingBehavior";
+import { Scene } from "core/scene";
+import { ShadowGenerator } from "core/Lights/Shadows/shadowGenerator";
+import { Constants } from "core/Engines/constants";
 
 /**
  * This interface describes the structure of the variable sent with the configuration observables of the scene manager.
@@ -51,7 +61,6 @@ export interface IPostConfigurationCallback<OBJ, CONF> {
 }
 
 export class SceneManager {
-
     //Observers
     /**
      * Will notify when the scene was initialized
@@ -80,7 +89,9 @@ export class SceneManager {
     /**
      * Will notify after the envirnoment was configured. Can be used to further configure the environment
      */
-    onEnvironmentConfiguredObservable: Observable<IPostConfigurationCallback<EnvironmentHelper, { skybox?: ISkyboxConfiguration | boolean, ground?: IGroundConfiguration | boolean }>>;
+    onEnvironmentConfiguredObservable: Observable<
+        IPostConfigurationCallback<EnvironmentHelper, { skybox?: ISkyboxConfiguration | boolean; ground?: IGroundConfiguration | boolean }>
+    >;
 
     /**
      * Will notify after the model(s) were configured. Can be used to further configure models
@@ -186,13 +197,15 @@ export class SceneManager {
                     // make sure all models are loaded
                     updateShadows();
                     this._forceShadowUpdate = false;
-                } else if (!(this.models.every((model) => {
-                    if (!model.shadowsRenderedAfterLoad) {
-                        model.shadowsRenderedAfterLoad = true;
-                        return false;
-                    }
-                    return model.state === ModelState.COMPLETE && !model.currentAnimation;
-                }))) {
+                } else if (
+                    !this.models.every((model) => {
+                        if (!model.shadowsRenderedAfterLoad) {
+                            model.shadowsRenderedAfterLoad = true;
+                            return false;
+                        }
+                        return model.state === ModelState.COMPLETE && !model.currentAnimation;
+                    })
+                ) {
                     updateShadows();
                 }
             });
@@ -219,9 +232,7 @@ export class SceneManager {
             this._observablesManager.onModelRemovedObservable.add((model) => {
                 this.models.splice(this.models.indexOf(model), 1);
             });
-
         }
-
     }
 
     /**
@@ -271,7 +282,6 @@ export class SceneManager {
      * @param process if true shadows will be updated once every frame. if false they will stop being updated.
      */
     public set processShadows(process: boolean) {
-
         let refreshType = process ? RenderTargetTexture.REFRESHRATE_RENDER_ONEVERYFRAME : RenderTargetTexture.REFRESHRATE_RENDER_ONCE;
 
         for (let light of this.scene.lights) {
@@ -295,7 +305,9 @@ export class SceneManager {
     }
 
     public set groundEnabled(newValue: boolean) {
-        if (newValue === this._groundEnabled) { return; }
+        if (newValue === this._groundEnabled) {
+            return;
+        }
 
         this._groundEnabled = newValue;
 
@@ -372,7 +384,6 @@ export class SceneManager {
      * initialize the scene. Calling this function again will dispose the old scene, if exists.
      */
     public initScene(sceneConfiguration: ISceneConfiguration = {}, optimizerConfiguration?: boolean | ISceneOptimizerConfiguration): Promise<Scene> {
-
         // if the scen exists, dispose it.
         if (this.scene) {
             this.scene.dispose();
@@ -385,7 +396,7 @@ export class SceneManager {
 
         // set a default PBR material
         if (!sceneConfiguration.defaultMaterial) {
-            var defaultMaterial = new PBRMaterial('defaultMaterial', this.scene);
+            var defaultMaterial = new PBRMaterial("defaultMaterial", this.scene);
             defaultMaterial.reflectivityColor = new Color3(0.1, 0.1, 0.1);
             defaultMaterial.microSurface = 0.6;
 
@@ -431,7 +442,6 @@ export class SceneManager {
      * @param globalConfiguration The global configuration object, after the new configuration was merged into it
      */
     public updateConfiguration(newConfiguration: Partial<ViewerConfiguration>) {
-
         if (this._configurationContainer) {
             this._globalConfiguration = this._configurationContainer.configuration;
         } else {
@@ -473,11 +483,10 @@ export class SceneManager {
         }
 
         if (newConfiguration.lab) {
-
             // rendering piplines
             if (newConfiguration.lab.defaultRenderingPipelines) {
                 let pipelineConfig = newConfiguration.lab.defaultRenderingPipelines;
-                if (typeof pipelineConfig === 'boolean') {
+                if (typeof pipelineConfig === "boolean") {
                     this.defaultRenderingPipelineEnabled = pipelineConfig;
                 } else {
                     this.defaultRenderingPipelineEnabled = true;
@@ -491,10 +500,12 @@ export class SceneManager {
 
             if (newConfiguration.lab.globalLightRotation !== undefined) {
                 // rotate all lights that are shadow lights
-                this.scene.lights.filter((light) => light instanceof ShadowLight).forEach((light) => {
-                    // casting and '!' are safe, due to the constraints tested before
-                    this.labs.rotateShadowLight(<ShadowLight>light, newConfiguration.lab!.globalLightRotation!);
-                });
+                this.scene.lights
+                    .filter((light) => light instanceof ShadowLight)
+                    .forEach((light) => {
+                        // casting and '!' are safe, due to the constraints tested before
+                        this.labs.rotateShadowLight(<ShadowLight>light, newConfiguration.lab!.globalLightRotation!);
+                    });
                 this._forceShadowUpdate = true;
             }
         }
@@ -526,7 +537,6 @@ export class SceneManager {
 
         let pipelineConfig = configuration || (this._globalConfiguration.lab && this._globalConfiguration.lab.defaultRenderingPipelines);
         if (pipelineConfig) {
-
             if (!this._defaultRenderingPipeline) {
                 // Create pipeline in manual mode to avoid triggering multiple shader compilations
                 this._defaultRenderingPipeline = new DefaultRenderingPipeline("default rendering pipeline", this._hdrSupport, this.scene, [this.camera], false);
@@ -537,19 +547,18 @@ export class SceneManager {
 
             let bloomEnabled = this._bloomEnabled;
 
-            if (typeof pipelineConfig !== 'boolean') {
+            if (typeof pipelineConfig !== "boolean") {
                 extendClassWithConfig(this._defaultRenderingPipeline, pipelineConfig);
                 this._bloomEnabled = !!pipelineConfig.bloomEnabled;
                 this._fxaaEnabled = !!pipelineConfig.fxaaEnabled;
                 bloomEnabled = this._bloomEnabled && pipelineConfig.bloomWeight !== undefined && pipelineConfig.bloomWeight > 0;
 
-                this._defaultRenderingPipeline.bloomWeight = (pipelineConfig.bloomWeight !== undefined && pipelineConfig.bloomWeight) || (this._defaultRenderingPipeline.bloomWeight);
+                this._defaultRenderingPipeline.bloomWeight = (pipelineConfig.bloomWeight !== undefined && pipelineConfig.bloomWeight) || this._defaultRenderingPipeline.bloomWeight;
             }
 
             this._defaultRenderingPipeline.bloomEnabled = bloomEnabled;
             this._defaultRenderingPipeline.fxaaEnabled = this.fxaaEnabled;
         }
-
     }
 
     // default from rendering pipeline
@@ -594,9 +603,7 @@ export class SceneManager {
         }
     }
 
-    public setDefaultMaterial(sceneConfig: ISceneConfiguration) {
-
-    }
+    public setDefaultMaterial(sceneConfig: ISceneConfiguration) {}
 
     /**
      * internally configure the scene using the provided configuration.
@@ -685,7 +692,7 @@ export class SceneManager {
         this.onSceneConfiguredObservable.notifyObservers({
             sceneManager: this,
             object: this.scene,
-            newConfiguration: sceneConfig
+            newConfiguration: sceneConfig,
         });
     }
 
@@ -695,7 +702,7 @@ export class SceneManager {
      * @param optimizerConfig the (new) optimizer configuration
      */
     protected _configureOptimizer(optimizerConfig: ISceneOptimizerConfiguration | boolean) {
-        if (typeof optimizerConfig === 'boolean') {
+        if (typeof optimizerConfig === "boolean") {
             if (this.sceneOptimizer) {
                 this.sceneOptimizer.stop();
                 this.sceneOptimizer.dispose();
@@ -728,11 +735,14 @@ export class SceneManager {
             if (optimizerConfig.custom) {
                 let customOptimizer = getCustomOptimizerByName(optimizerConfig.custom, optimizerConfig.improvementMode);
                 if (customOptimizer) {
-                    optimizerOptions.addCustomOptimization(() => {
-                        return customOptimizer(this);
-                    }, () => {
-                        return `Babylon Viewer ${optimizerConfig.custom} custom optimization`;
-                    });
+                    optimizerOptions.addCustomOptimization(
+                        () => {
+                            return customOptimizer(this);
+                        },
+                        () => {
+                            return `Babylon Viewer ${optimizerConfig.custom} custom optimization`;
+                        }
+                    );
                 }
             }
             this.sceneOptimizer = new SceneOptimizer(this.scene, optimizerOptions, optimizerConfig.autoGeneratePriorities, optimizerConfig.improvementMode);
@@ -742,7 +752,7 @@ export class SceneManager {
         this.onSceneOptimizerConfiguredObservable.notifyObservers({
             sceneManager: this,
             object: this.sceneOptimizer!,
-            newConfiguration: optimizerConfig
+            newConfiguration: optimizerConfig,
         });
     }
 
@@ -773,11 +783,14 @@ export class SceneManager {
             }
             return;
         }
-        let vrOptions: VRExperienceHelperOptions = deepmerge({
-            useCustomVRButton: true,
-            createDeviceOrientationCamera: false,
-            trackPosition: true
-        }, vrConfig.vrOptions || {});
+        let vrOptions: VRExperienceHelperOptions = deepmerge(
+            {
+                useCustomVRButton: true,
+                createDeviceOrientationCamera: false,
+                trackPosition: true,
+            },
+            vrConfig.vrOptions || {}
+        );
 
         this._vrHelper = this.scene.createDefaultVRExperience(vrOptions);
         if (!vrConfig.disableInteractions) {
@@ -786,7 +799,7 @@ export class SceneManager {
         if (!vrConfig.disableTeleportation) {
             let floorMeshName = vrConfig.overrideFloorMeshName || "BackgroundPlane";
             this._vrHelper.enableTeleportation({
-                floorMeshName
+                floorMeshName,
             });
         }
         if (vrConfig.rotateUsingControllers) {
@@ -811,7 +824,6 @@ export class SceneManager {
                         } else {
                             this.models[0].rootMesh.rotationQuaternion = null;
                         }
-
                     }
                 });
             });
@@ -829,7 +841,7 @@ export class SceneManager {
         this.onVRConfiguredObservable.notifyObservers({
             sceneManager: this,
             object: this._vrHelper,
-            newConfiguration: vrConfig
+            newConfiguration: vrConfig,
         });
     }
 
@@ -981,7 +993,7 @@ export class SceneManager {
         this.onCameraConfiguredObservable.notifyObservers({
             sceneManager: this,
             object: this.camera,
-            newConfiguration: cameraConfig
+            newConfiguration: cameraConfig,
         });
     }
 
@@ -1007,7 +1019,7 @@ export class SceneManager {
             // casting ais safe, due to the constraints tested before
             (<ShadowLight>light).setDirectionToTarget(center);
         });*/
-    }
+    };
 
     protected _configureEnvironment(skyboxConifguration?: ISkyboxConfiguration | boolean, groundConfiguration?: IGroundConfiguration | boolean) {
         if (!skyboxConifguration && !groundConfiguration) {
@@ -1016,7 +1028,6 @@ export class SceneManager {
                 this.environmentHelper = undefined;
             }
         } else {
-
             const options: Partial<IEnvironmentHelperOptions> = {
                 createGround: !!groundConfiguration && this._groundEnabled,
                 createSkybox: !!skyboxConifguration,
@@ -1033,9 +1044,9 @@ export class SceneManager {
             }*/
 
             if (groundConfiguration) {
-                let groundConfig = (typeof groundConfiguration === 'boolean') ? {} : groundConfiguration;
+                let groundConfig = typeof groundConfiguration === "boolean" ? {} : groundConfiguration;
 
-                let groundSize = groundConfig.size || (typeof skyboxConifguration === 'object' && skyboxConifguration.scale);
+                let groundSize = groundConfig.size || (typeof skyboxConifguration === "object" && skyboxConifguration.scale);
                 if (groundSize) {
                     options.groundSize = groundSize;
                 }
@@ -1144,7 +1155,7 @@ export class SceneManager {
                 this.environmentHelper.rootMesh.rotation.y = this._globalConfiguration.scene.environmentRotationY;
             }
 
-            let groundConfig = (typeof groundConfiguration === 'boolean') ? {} : groundConfiguration;
+            let groundConfig = typeof groundConfiguration === "boolean" ? {} : groundConfiguration;
             if (this.environmentHelper.groundMaterial && groundConfig) {
                 this.environmentHelper.groundMaterial._perceptualColor = this.mainColor;
                 if (groundConfig.material) {
@@ -1173,25 +1184,25 @@ export class SceneManager {
                 skyboxMaterial._perceptualColor = this.mainColor;
 
                 if (postInitSkyboxMaterial) {
-                    if (typeof skyboxConifguration === 'object' && skyboxConifguration.material) {
+                    if (typeof skyboxConifguration === "object" && skyboxConifguration.material) {
                         extendClassWithConfig(skyboxMaterial, skyboxConifguration.material);
                     }
                 }
             }
-
         }
 
-        this._observablesManager && this._observablesManager.onModelLoadedObservable.add((model) => {
-            this._updateGroundMirrorRenderList(model);
-        });
+        this._observablesManager &&
+            this._observablesManager.onModelLoadedObservable.add((model) => {
+                this._updateGroundMirrorRenderList(model);
+            });
 
         this.onEnvironmentConfiguredObservable.notifyObservers({
             sceneManager: this,
             object: this.environmentHelper!,
             newConfiguration: {
                 skybox: skyboxConifguration,
-                ground: groundConfiguration
-            }
+                ground: groundConfiguration,
+            },
         });
     }
 
@@ -1202,16 +1213,14 @@ export class SceneManager {
      * @param model optionally use the model to configure the camera.
      */
     protected _configureLights(lightsConfiguration: { [name: string]: ILightConfiguration | boolean | number } = {}) {
-
         // sanity check!
-        let lightKeys = Object.keys(lightsConfiguration).filter((name) => name !== 'globalRotation');
+        let lightKeys = Object.keys(lightsConfiguration).filter((name) => name !== "globalRotation");
 
         if (!lightKeys.length) {
             if (!this.scene.lights.length) {
                 new HemisphericLight("default light", Vector3.Up(), this.scene);
             }
         } else {
-
             let lightsAvailable: Array<string> = this.scene.lights.map((light) => light.name);
             // compare to the global (!) configuration object and dispose unneeded:
             let lightsToConfigure = Object.keys(this._globalConfiguration.lights || []);
@@ -1225,10 +1234,10 @@ export class SceneManager {
 
             lightKeys.forEach((name, idx) => {
                 let lightConfig: ILightConfiguration = { type: 0 };
-                if (typeof lightsConfiguration[name] === 'object') {
+                if (typeof lightsConfiguration[name] === "object") {
                     lightConfig = <ILightConfiguration>lightsConfiguration[name];
                 }
-                if (typeof lightsConfiguration[name] === 'number') {
+                if (typeof lightsConfiguration[name] === "number") {
                     lightConfig.type = <number>lightsConfiguration[name];
                 }
 
@@ -1238,19 +1247,23 @@ export class SceneManager {
                 // light is not already available
                 if (lightsAvailable.indexOf(name) === -1) {
                     let constructor = Light.GetConstructorFromName(lightConfig.type, lightConfig.name, this.scene);
-                    if (!constructor) { return; }
+                    if (!constructor) {
+                        return;
+                    }
                     light = constructor();
                 } else {
                     // available? get it from the scene
                     light = <Light>this.scene.getLightByName(name);
-                    if (typeof lightsConfiguration[name] === 'boolean') {
+                    if (typeof lightsConfiguration[name] === "boolean") {
                         lightConfig.type = light.getTypeID();
                     }
                     lightsAvailable = lightsAvailable.filter((ln) => ln !== name);
                     if (lightConfig.type !== undefined && light.getTypeID() !== lightConfig.type) {
                         light.dispose();
                         let constructor = Light.GetConstructorFromName(lightConfig.type, lightConfig.name, this.scene);
-                        if (!constructor) { return; }
+                        if (!constructor) {
+                            return;
+                        }
                         light = constructor();
                     }
                 }
@@ -1287,20 +1300,18 @@ export class SceneManager {
                     if (light.getTypeID() === Light.LIGHTTYPEID_DIRECTIONALLIGHT) {
                         (<DirectionalLight>light).shadowFrustumSize = lightConfig.shadowFrustumSize || 2;
                         isShadowEnabled = true;
-                    }
-                    else if (light.getTypeID() === Light.LIGHTTYPEID_SPOTLIGHT) {
+                    } else if (light.getTypeID() === Light.LIGHTTYPEID_SPOTLIGHT) {
                         let spotLight: SpotLight = <SpotLight>light;
                         if (lightConfig.spotAngle !== undefined) {
-                            spotLight.angle = lightConfig.spotAngle * Math.PI / 180;
+                            spotLight.angle = (lightConfig.spotAngle * Math.PI) / 180;
                         }
                         if (spotLight.angle && lightConfig.shadowFieldOfView) {
                             spotLight.shadowAngleScale = lightConfig.shadowFieldOfView / spotLight.angle;
                         }
                         isShadowEnabled = true;
-                    }
-                    else if (light.getTypeID() === Light.LIGHTTYPEID_POINTLIGHT) {
+                    } else if (light.getTypeID() === Light.LIGHTTYPEID_POINTLIGHT) {
                         if (lightConfig.shadowFieldOfView) {
-                            (<PointLight>light).shadowAngle = lightConfig.shadowFieldOfView * Math.PI / 180;
+                            (<PointLight>light).shadowAngle = (lightConfig.shadowFieldOfView * Math.PI) / 180;
                         }
                         isShadowEnabled = true;
                     }
@@ -1320,9 +1331,10 @@ export class SceneManager {
                         extendClassWithConfig(shadowGenerator, lightConfig.shadowConfig || {});
 
                         // add the focues meshes to the shadow list
-                        this._observablesManager && this._observablesManager.onModelLoadedObservable.add((model) => {
-                            this._updateShadowRenderList(shadowGenerator, model);
-                        });
+                        this._observablesManager &&
+                            this._observablesManager.onModelLoadedObservable.add((model) => {
+                                this._updateShadowRenderList(shadowGenerator, model);
+                            });
 
                         //if (model) {
                         this._updateShadowRenderList(shadowGenerator);
@@ -1335,19 +1347,23 @@ export class SceneManager {
 
             // render priority
             let globalLightsConfiguration = this._globalConfiguration.lights || {};
-            Object.keys(globalLightsConfiguration).sort().forEach((name, idx) => {
-                let configuration = globalLightsConfiguration[name];
-                let light = this.scene.getLightByName(name);
-                // sanity check
-                if (!light) { return; }
-                light.renderPriority = -idx;
-            });
+            Object.keys(globalLightsConfiguration)
+                .sort()
+                .forEach((name, idx) => {
+                    let configuration = globalLightsConfiguration[name];
+                    let light = this.scene.getLightByName(name);
+                    // sanity check
+                    if (!light) {
+                        return;
+                    }
+                    light.renderPriority = -idx;
+                });
         }
 
         this.onLightsConfiguredObservable.notifyObservers({
             sceneManager: this,
             object: this.scene.lights,
-            newConfiguration: lightsConfiguration
+            newConfiguration: lightsConfiguration,
         });
     }
 
@@ -1357,7 +1373,9 @@ export class SceneManager {
         let focusMeshes = model ? model.meshes : this.scene.meshes;
         // add the focues meshes to the shadow list
         let shadownMap = shadowGenerator.getShadowMap();
-        if (!shadownMap) { return; }
+        if (!shadownMap) {
+            return;
+        }
         if (resetList && shadownMap.renderList) {
             shadownMap.renderList.length = 0;
         } else {
@@ -1365,7 +1383,7 @@ export class SceneManager {
         }
         for (var index = 0; index < focusMeshes.length; index++) {
             let mesh = focusMeshes[index];
-            if (Tags.MatchesQuery(mesh, 'castShadow') && shadownMap.renderList.indexOf(mesh) === -1) {
+            if (Tags.MatchesQuery(mesh, "castShadow") && shadownMap.renderList.indexOf(mesh) === -1) {
                 shadownMap.renderList.push(mesh);
             }
         }
@@ -1375,7 +1393,7 @@ export class SceneManager {
                 let shadowGroundPlane = CreatePlane("shadowGroundPlane", { size: 100 }, this.scene);
                 shadowGroundPlane.useVertexColors = false;
                 //material isn't ever used in rendering, just used to set back face culling
-                shadowGroundPlane.material = new PBRMaterial('shadowGroundPlaneMaterial', this.scene);
+                shadowGroundPlane.material = new PBRMaterial("shadowGroundPlaneMaterial", this.scene);
                 shadowGroundPlane.material.backFaceCulling = false;
                 shadowGroundPlane.rotation.x = Math.PI * 0.5;
                 shadowGroundPlane.freezeWorldMatrix();
@@ -1420,11 +1438,9 @@ export class SceneManager {
         var normalizedBlurKernel = 0.05; // TODO Should come from the config.
         if (light.getTypeID() === Light.LIGHTTYPEID_DIRECTIONALLIGHT) {
             normalizedBlurKernel = normalizedBlurKernel / (<DirectionalLight>light).shadowFrustumSize;
-        }
-        else if (light.getTypeID() === Light.LIGHTTYPEID_POINTLIGHT) {
+        } else if (light.getTypeID() === Light.LIGHTTYPEID_POINTLIGHT) {
             normalizedBlurKernel = normalizedBlurKernel / (<PointLight>light).shadowAngle;
-        }
-        else if (light.getTypeID() === Light.LIGHTTYPEID_SPOTLIGHT) {
+        } else if (light.getTypeID() === Light.LIGHTTYPEID_SPOTLIGHT) {
             normalizedBlurKernel = normalizedBlurKernel / ((<SpotLight>light).angle * (<SpotLight>light).shadowAngleScale);
         }
 
@@ -1444,7 +1460,7 @@ export class SceneManager {
         let maxFragmentSamplers = this._engine.getCaps().maxTexturesImageUnits;
 
         //shadows are disabled if there's not enough varyings for a single shadow
-        if ((maxVaryingRows < 8) || (maxFragmentSamplers < 8)) {
+        if (maxVaryingRows < 8 || maxFragmentSamplers < 8) {
             this._maxShadows = 0;
         } else {
             this._maxShadows = 3;
@@ -1475,7 +1491,6 @@ export class SceneManager {
      * Dispoe the entire viewer including the scene and the engine
      */
     public dispose() {
-
         // this.onCameraConfiguredObservable.clear();
         this.onEnvironmentConfiguredObservable.clear();
         this.onLightsConfiguredObservable.clear();
@@ -1530,27 +1545,35 @@ export class SceneManager {
 
     private _cameraBehaviorMapping: { [name: string]: number } = {};
 
-    private _setCameraBehavior(name: string, behaviorConfig: boolean | number | {
-        type: number;
-        [propName: string]: any;
-    }, payload?: any) {
-
+    private _setCameraBehavior(
+        name: string,
+        behaviorConfig:
+            | boolean
+            | number
+            | {
+                  type: number;
+                  [propName: string]: any;
+              },
+        payload?: any
+    ) {
         let behavior: Behavior<ArcRotateCamera> | null;
         let type: number;
-        if (typeof behaviorConfig === 'object') {
+        if (typeof behaviorConfig === "object") {
             type = behaviorConfig.type;
-        } else if (typeof behaviorConfig === 'number') {
+        } else if (typeof behaviorConfig === "number") {
             type = behaviorConfig;
         } else {
             type = this._cameraBehaviorMapping[name];
         }
 
-        if (type === undefined) { return; }
+        if (type === undefined) {
+            return;
+        }
 
-        let config: { [propName: string]: any } = (typeof behaviorConfig === "object") ? behaviorConfig : {};
+        let config: { [propName: string]: any } = typeof behaviorConfig === "object" ? behaviorConfig : {};
 
         let enabled = true;
-        if (typeof behaviorConfig === 'boolean') {
+        if (typeof behaviorConfig === "boolean") {
             enabled = behaviorConfig;
         }
 
@@ -1588,11 +1611,12 @@ export class SceneManager {
             case CameraBehavior.BOUNCING:
                 break;
             case CameraBehavior.FRAMING:
-                this._observablesManager && this._observablesManager.onModelLoadedObservable.add((model) => {
-                    if (config.zoomOnBoundingInfo) {
-                        (<FramingBehavior>behavior).zoomOnMeshHierarchy(model.rootMesh);
-                    }
-                });
+                this._observablesManager &&
+                    this._observablesManager.onModelLoadedObservable.add((model) => {
+                        if (config.zoomOnBoundingInfo) {
+                            (<FramingBehavior>behavior).zoomOnMeshHierarchy(model.rootMesh);
+                        }
+                    });
                 break;
         }
     }

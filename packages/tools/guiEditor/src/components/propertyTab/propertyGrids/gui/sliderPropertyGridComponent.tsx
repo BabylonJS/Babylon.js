@@ -40,15 +40,17 @@ export class SliderPropertyGridComponent extends React.Component<ISliderProperty
             <div className="pane">
                 <hr />
                 <TextLineComponent label="SLIDER" value=" " color="grey"></TextLineComponent>
-                {sliders.every(slider => slider.typeName === "Slider") && <ColorLineComponent
-                    iconLabel={"Border color"}
-                    icon={colorIcon}
-                    lockObject={this.props.lockObject}
-                    label=""
-                    target={makeTargetsProxy(sliders, this.props.onPropertyChangedObservable)}
-                    propertyName="borderColor"
-                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                />}
+                {sliders.every((slider) => slider.typeName === "Slider") && (
+                    <ColorLineComponent
+                        iconLabel={"Border color"}
+                        icon={colorIcon}
+                        lockObject={this.props.lockObject}
+                        label=""
+                        target={makeTargetsProxy(sliders, this.props.onPropertyChangedObservable)}
+                        propertyName="borderColor"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                )}
                 <CheckBoxLineComponent
                     iconLabel={"Display thumb"}
                     icon={showThumbIcon}
@@ -82,55 +84,55 @@ export class SliderPropertyGridComponent extends React.Component<ISliderProperty
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
                 <div className="ge-divider">
-                <TextInputLineComponent
-                    iconLabel={"Thumb width"}
-                    icon={thumbWidthIcon}
-                    lockObject={this.props.lockObject}
-                    label=""
-                    target={makeTargetsProxy(sliders, this.props.onPropertyChangedObservable)}
-                    propertyName="thumbWidth"
-                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                />
-                <TextInputLineComponent
-                    iconLabel={"Bar offset"}
-                    icon={barOffsetIcon}
-                    lockObject={this.props.lockObject}
-                    label=""
-                    target={makeTargetsProxy(sliders, this.props.onPropertyChangedObservable)}
-                    propertyName="barOffset"
-                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                />
+                    <TextInputLineComponent
+                        iconLabel={"Thumb width"}
+                        icon={thumbWidthIcon}
+                        lockObject={this.props.lockObject}
+                        label=""
+                        target={makeTargetsProxy(sliders, this.props.onPropertyChangedObservable)}
+                        propertyName="thumbWidth"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    <TextInputLineComponent
+                        iconLabel={"Bar offset"}
+                        icon={barOffsetIcon}
+                        lockObject={this.props.lockObject}
+                        label=""
+                        target={makeTargetsProxy(sliders, this.props.onPropertyChangedObservable)}
+                        propertyName="barOffset"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
                 </div>
                 <div className="ge-divider">
-                <FloatLineComponent
-                    iconLabel={"Minimum"}
-                    icon={sliderValueMinimumIcon}
-                    lockObject={this.props.lockObject}
-                    label=""
-                    target={makeTargetsProxy(sliders, this.props.onPropertyChangedObservable)}
-                    propertyName="minimum"
-                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                />
-                <FloatLineComponent
-                    iconLabel={"Maximum"}
-                    icon={sliderValueMaximumIcon}
-                    lockObject={this.props.lockObject}
-                    label=""
-                    target={makeTargetsProxy(sliders, this.props.onPropertyChangedObservable)}
-                    propertyName="maximum"
-                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                />
+                    <FloatLineComponent
+                        iconLabel={"Minimum"}
+                        icon={sliderValueMinimumIcon}
+                        lockObject={this.props.lockObject}
+                        label=""
+                        target={makeTargetsProxy(sliders, this.props.onPropertyChangedObservable)}
+                        propertyName="minimum"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    <FloatLineComponent
+                        iconLabel={"Maximum"}
+                        icon={sliderValueMaximumIcon}
+                        lockObject={this.props.lockObject}
+                        label=""
+                        target={makeTargetsProxy(sliders, this.props.onPropertyChangedObservable)}
+                        propertyName="maximum"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
                 </div>
                 <div className="ge-divider-short">
-                <FloatLineComponent
-                    iconLabel={"Value"}
-                    icon={sliderValueIcon}
-                    lockObject={this.props.lockObject}
-                    label=""
-                    target={makeTargetsProxy(sliders, this.props.onPropertyChangedObservable)}
-                    propertyName="value"
-                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                />
+                    <FloatLineComponent
+                        iconLabel={"Value"}
+                        icon={sliderValueIcon}
+                        lockObject={this.props.lockObject}
+                        label=""
+                        target={makeTargetsProxy(sliders, this.props.onPropertyChangedObservable)}
+                        propertyName="value"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
                 </div>
             </div>
         );

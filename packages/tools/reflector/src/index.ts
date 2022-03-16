@@ -15,11 +15,12 @@ class Server {
     public start(port: number, ssl?: boolean): void {
         console.log(`Starting reflector on port ${port}, ssl: ${ssl}`);
         const server =
-            ssl &&
-            createServer({
-                cert: readFileSync(resolve("./cert/cert.pem")),
-                key: readFileSync(resolve("./cert/key.pem")),
-            }).listen(1234) || undefined;
+            (ssl &&
+                createServer({
+                    cert: readFileSync(resolve("./cert/cert.pem")),
+                    key: readFileSync(resolve("./cert/key.pem")),
+                }).listen(1234)) ||
+            undefined;
 
         this._server = ssl ? new WebSocketServer({ server }) : new WebSocketServer({ port });
 

@@ -3,7 +3,6 @@ import { DefaultViewer } from "../../viewer/defaultViewer";
 import { EventCallback, Template } from "../templateManager";
 
 export class HDButtonPlugin extends AbstractViewerNavbarButton {
-
     constructor(private _viewer: DefaultViewer) {
         super("hd", "hd-button", HDButtonPlugin.HtmlTemplate);
     }

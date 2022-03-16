@@ -5,12 +5,10 @@ import { SceneOptimizer, SceneOptimizerOptions } from "babylonjs";
 export let name = "configuration update";
 
 describe(name + " scene", () => {
-
     it("should be used as a template for the following tests", (done) => {
         let viewer = Helper.getNewViewerInstance(undefined, { extends: "none" });
 
         viewer.onInitDoneObservable.add(() => {
-
             viewer.dispose();
             done();
         });
@@ -20,7 +18,6 @@ describe(name + " scene", () => {
         let viewer = Helper.getNewViewerInstance(undefined, { extends: "none" });
 
         viewer.onInitDoneObservable.add(() => {
-
             // check babylon defaults
             assert.isFalse(viewer.sceneManager.scene.imageProcessingConfiguration.applyByPostProcess);
             assert.equal(viewer.sceneManager.scene.imageProcessingConfiguration.exposure, 1);
@@ -46,11 +43,10 @@ describe(name + " scene", () => {
                         colorCurves: {
                             globalDensity: 1,
                             globalHue: 0.2,
-                            globalSaturation: 0.5
-                        }
-
-                    }
-                }
+                            globalSaturation: 0.5,
+                        },
+                    },
+                },
             });
 
             assert.isTrue(viewer.sceneManager.scene.imageProcessingConfiguration.applyByPostProcess, "apply by post process should be true");
@@ -75,11 +71,10 @@ describe(name + " scene", () => {
                         colorCurves: {
                             highlightsDensity: randoms[2],
                             highlightsHue: randoms[3],
-                            highlightsSaturation: randoms[4]
-                        }
-
-                    }
-                }
+                            highlightsSaturation: randoms[4],
+                        },
+                    },
+                },
             });
 
             assert.isTrue(viewer.sceneManager.scene.imageProcessingConfiguration.applyByPostProcess, "apply by post process should be true");
@@ -103,7 +98,6 @@ describe(name + " scene", () => {
         let viewer = Helper.getNewViewerInstance(undefined, { extends: "none" });
 
         viewer.onInitDoneObservable.add(() => {
-
             assert.equal(viewer.sceneManager.mainColor.r, 1);
             assert.equal(viewer.sceneManager.mainColor.g, 1);
             assert.equal(viewer.sceneManager.mainColor.b, 1);
@@ -120,9 +114,9 @@ describe(name + " scene", () => {
                     mainColor: {
                         r: 0.5,
                         g: 0.5,
-                        b: 0.5
-                    }
-                }
+                        b: 0.5,
+                    },
+                },
             });
 
             assert.equal(viewer.sceneManager.mainColor.r, 0.5);
@@ -135,9 +129,9 @@ describe(name + " scene", () => {
                     mainColor: {
                         r: 0,
                         g: 0,
-                        b: 0
-                    }
-                }
+                        b: 0,
+                    },
+                },
             });
 
             assert.equal(viewer.sceneManager.mainColor.r, 0);
@@ -154,9 +148,9 @@ describe(name + " scene", () => {
             viewer.updateConfiguration({
                 scene: {
                     mainColor: {
-                        r: randomColor
-                    }
-                }
+                        r: randomColor,
+                    },
+                },
             });
 
             assert.equal(viewer.sceneManager.mainColor.r, randomColor);
@@ -172,13 +166,12 @@ describe(name + " scene", () => {
         let viewer = Helper.getNewViewerInstance(undefined, { extends: "none" });
 
         viewer.onInitDoneObservable.add(() => {
-
             viewer.updateConfiguration({
                 scene: {
                     flags: {
-                        audioEnabled: false
-                    }
-                }
+                        audioEnabled: false,
+                    },
+                },
             });
 
             assert.isFalse(viewer.sceneManager.scene.audioEnabled);
@@ -187,9 +180,9 @@ describe(name + " scene", () => {
                 scene: {
                     flags: {
                         audioEnabled: true,
-                        lightsEnabled: false
-                    }
-                }
+                        lightsEnabled: false,
+                    },
+                },
             });
 
             assert.isTrue(viewer.sceneManager.scene.audioEnabled);
@@ -199,9 +192,9 @@ describe(name + " scene", () => {
                 scene: {
                     flags: {
                         lightsEnabled: true,
-                        shadowsEnabled: false
-                    }
-                }
+                        shadowsEnabled: false,
+                    },
+                },
             });
 
             assert.isTrue(viewer.sceneManager.scene.audioEnabled);
@@ -215,7 +208,6 @@ describe(name + " scene", () => {
 });
 
 describe(name + " scene optimizer", () => {
-
     it("should be enabled and disabled with booleans", (done) => {
         let viewer = Helper.getNewViewerInstance(undefined, { extends: "none" });
 
@@ -232,22 +224,20 @@ describe(name + " scene optimizer", () => {
             started = false;
         };
 
-        SceneOptimizer.prototype.dispose = function () {
-        };
+        SceneOptimizer.prototype.dispose = function () {};
 
         viewer.onInitDoneObservable.add(() => {
-
             assert.isUndefined(viewer.sceneManager.sceneOptimizer);
 
             viewer.updateConfiguration({
-                optimizer: true
+                optimizer: true,
             });
 
             assert.isDefined(viewer.sceneManager.sceneOptimizer);
             assert.isTrue(started);
 
             viewer.updateConfiguration({
-                optimizer: false
+                optimizer: false,
             });
 
             assert.isUndefined(viewer.sceneManager.sceneOptimizer);
@@ -262,7 +252,6 @@ describe(name + " scene optimizer", () => {
 });
 
 describe(name + " camera", () => {
-
     it("should enable and disable camera behaviors", (done) => {
         let viewer = Helper.getNewViewerInstance(undefined, { extends: "none" });
 
@@ -272,18 +261,18 @@ describe(name + " camera", () => {
                 camera: {
                     behaviors: {
                         autoRotate: {
-                            type: 0
-                        }
-                    }
-                }
+                            type: 0,
+                        },
+                    },
+                },
             });
             assert.isTrue(viewer.sceneManager.camera.useAutoRotationBehavior);
             viewer.updateConfiguration({
                 camera: {
                     behaviors: {
-                        autoRotate: false
-                    }
-                }
+                        autoRotate: false,
+                    },
+                },
             });
             assert.isFalse(viewer.sceneManager.camera.useAutoRotationBehavior);
             viewer.dispose();

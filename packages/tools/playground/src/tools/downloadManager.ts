@@ -7,9 +7,7 @@ declare var JSZip: any;
 declare var saveAs: any;
 
 export class DownloadManager {
-
-    public constructor(public globalState: GlobalState) {
-    }
+    public constructor(public globalState: GlobalState) {}
 
     private _addContentToZipAsync(zip: typeof JSZip, name: string, url: string, replace: Nullable<string>, buffer = false): Promise<void> {
         return new Promise((resolve, reject) => {
@@ -20,7 +18,7 @@ export class DownloadManager {
 
             var xhr = new XMLHttpRequest();
 
-            xhr.open('GET', url, true);
+            xhr.open("GET", url, true);
 
             if (buffer) {
                 xhr.responseType = "arraybuffer";
@@ -56,7 +54,6 @@ export class DownloadManager {
     }
 
     private _addTexturesToZipAsync(zip: typeof JSZip, index: number, textures: any[], folder: Nullable<string>): Promise<void> {
-
         if (index === textures.length || !textures[index].name) {
             return Promise.resolve();
         }
@@ -76,8 +73,7 @@ export class DownloadManager {
                         textures.push({ name: textures[index]._files[i] });
                     }
                 }
-            }
-            else {
+            } else {
                 textures.push({ name: textures[index].name });
             }
             return this._addTexturesToZipAsync(zip, index + 1, textures, folder);
@@ -98,15 +94,10 @@ export class DownloadManager {
         // var name = url.substr(url.lastIndexOf("/") + 1);
 
         if (url != null) {
-            return this._addContentToZipAsync(folder,
-                name,
-                url,
-                null,
-                true).then(() => {
-                    return this._addTexturesToZipAsync(zip, index + 1, textures, folder);
-                });
-        }
-        else {
+            return this._addContentToZipAsync(folder, name, url, null, true).then(() => {
+                return this._addTexturesToZipAsync(zip, index + 1, textures, folder);
+            });
+        } else {
             return this._addTexturesToZipAsync(zip, index + 1, textures, folder);
         }
     }
@@ -123,13 +114,9 @@ export class DownloadManager {
 
         var name = url.substr(url.lastIndexOf("/") + 1);
 
-        return this._addContentToZipAsync(folder,
-            name,
-            url,
-            null,
-            true).then(() => {
-                return this._addImportedFilesToZipAsync(zip, index + 1, importedFiles, folder);
-            });
+        return this._addContentToZipAsync(folder, name, url, null, true).then(() => {
+            return this._addImportedFilesToZipAsync(zip, index + 1, importedFiles, folder);
+        });
     }
 
     public download(engine: Engine) {
@@ -155,20 +142,14 @@ export class DownloadManager {
             textures.push({ name: match[1] });
         } while (true);
 
-        this._addContentToZipAsync(zip,
-            "index.html",
-            "/zipContent/index.html",
-            zipCode).then(() => {
-                return this._addTexturesToZipAsync(zip,
-                    0,
-                    textures,
-                    null);
-            }).then(() => {
-                return this._addImportedFilesToZipAsync(zip,
-                    0,
-                    importedFiles,
-                    null);
-            }).then(() => {
+        this._addContentToZipAsync(zip, "index.html", "/zipContent/index.html", zipCode)
+            .then(() => {
+                return this._addTexturesToZipAsync(zip, 0, textures, null);
+            })
+            .then(() => {
+                return this._addImportedFilesToZipAsync(zip, 0, importedFiles, null);
+            })
+            .then(() => {
                 var blob = zip.generate({ type: "blob" });
                 saveAs(blob, "sample.zip");
                 this.globalState.onDisplayWaitRingObservable.notifyObservers(false);

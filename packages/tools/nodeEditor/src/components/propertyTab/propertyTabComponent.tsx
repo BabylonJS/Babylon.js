@@ -65,7 +65,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
 
     componentDidMount() {
         this.props.globalState.onSelectionChangedObservable.add((options) => {
-            const {selection} = options || {};
+            const { selection } = options || {};
             if (selection instanceof GraphNode) {
                 this.setState({ currentNode: selection, currentFrame: null, currentFrameNodePort: null, currentNodePort: null });
             } else if (selection instanceof GraphFrame) {
@@ -571,15 +571,15 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         <CheckBoxLineComponent
                             label="Force alpha blending"
                             target={this.props.globalState.nodeMaterial}
-                            propertyName="forceAlphaBlending" 
+                            propertyName="forceAlphaBlending"
                             onValueChanged={() => this.props.globalState.onUpdateRequiredObservable.notifyObservers(null)}
                         />
                         <OptionsLineComponent
                             label="Alpha mode"
                             options={alphaModeOptions}
                             target={this.props.globalState.nodeMaterial}
-                            propertyName="alphaMode"                                 
-                            onSelect={() => this.props.globalState.onUpdateRequiredObservable.notifyObservers(null)}                       
+                            propertyName="alphaMode"
+                            onSelect={() => this.props.globalState.onUpdateRequiredObservable.notifyObservers(null)}
                         />
                     </LineContainerComponent>
                     <InputsPropertyTabComponent globalState={this.props.globalState} inputs={this.props.globalState.nodeMaterial.getInputBlocks()}></InputsPropertyTabComponent>

@@ -1,5 +1,5 @@
-import { sourceTextureFormat, transcodeTarget } from '../transcoder';
-import { LiteTranscoder } from './liteTranscoder';
+import { sourceTextureFormat, transcodeTarget } from "../transcoder";
+import { LiteTranscoder } from "./liteTranscoder";
 
 /**
  * @hidden

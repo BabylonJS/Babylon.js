@@ -27,7 +27,7 @@ export class FrameNodePortPropertyTabComponent extends React.Component<IFrameNod
 
         const _this = this;
         this._onSelectionChangedObserver = this.props.globalState.onSelectionChangedObservable.add((options) => {
-            const {selection} = options || {};
+            const { selection } = options || {};
             if (isFramePortData(selection)) {
                 selection.port.onFramePortPositionChangedObservable.clear();
                 _this._onFramePortPositionChangedObserver = selection.port.onFramePortPositionChangedObservable.add((port: FrameNodePort) => {

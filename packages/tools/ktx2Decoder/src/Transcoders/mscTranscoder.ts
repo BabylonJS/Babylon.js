@@ -1,6 +1,6 @@
-import { Transcoder, sourceTextureFormat, transcodeTarget } from '../transcoder';
-import { KTX2FileReader, IKTX2_ImageDesc } from '../ktx2FileReader';
-import { WASMMemoryManager } from '../wasmMemoryManager';
+import { Transcoder, sourceTextureFormat, transcodeTarget } from "../transcoder";
+import { KTX2FileReader, IKTX2_ImageDesc } from "../ktx2FileReader";
+import { WASMMemoryManager } from "../wasmMemoryManager";
 
 declare var MSC_TRANSCODER: any;
 
@@ -40,7 +40,7 @@ export class MSCTranscoder extends Transcoder {
                 importScripts(MSCTranscoder.JSModuleURL);
             }
             // Worker Number = 0 and MSC_TRANSCODER has not been loaded yet.
-            else if (typeof(MSC_TRANSCODER) === "undefined") {
+            else if (typeof MSC_TRANSCODER === "undefined") {
                 return new Promise((resolve, reject) => {
                     const head = document.getElementsByTagName("head")[0];
                     const script = document.createElement("script");
@@ -79,7 +79,17 @@ export class MSCTranscoder extends Transcoder {
         return true;
     }
 
-    public transcode(src: sourceTextureFormat, dst: transcodeTarget, level: number, width: number, height: number, uncompressedByteLength: number, ktx2Reader: KTX2FileReader, imageDesc: IKTX2_ImageDesc | null, encodedData: Uint8Array): Promise<Uint8Array | null> {
+    public transcode(
+        src: sourceTextureFormat,
+        dst: transcodeTarget,
+        level: number,
+        width: number,
+        height: number,
+        uncompressedByteLength: number,
+        ktx2Reader: KTX2FileReader,
+        imageDesc: IKTX2_ImageDesc | null,
+        encodedData: Uint8Array
+    ): Promise<Uint8Array | null> {
         const isVideo = false;
 
         return this._getMSCBasisTranscoder().then(() => {
@@ -124,8 +134,7 @@ export class MSCTranscoder extends Transcoder {
 
                     result = transcoder.transcodeImage(targetFormat, encodedData, imageInfo, 0, ktx2Reader.hasAlpha, isVideo);
                 }
-            }
-            finally {
+            } finally {
                 if (transcoder) {
                     transcoder.delete();
                 }

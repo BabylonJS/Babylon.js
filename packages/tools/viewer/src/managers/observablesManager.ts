@@ -1,12 +1,11 @@
-import { Observable } from 'core/Misc/observable';
-import { Scene } from 'core/scene';
-import { Engine } from 'core/Engines/engine';
-import { ISceneLoaderProgressEvent, ISceneLoaderPlugin, ISceneLoaderPluginAsync } from 'core/Loading/sceneLoader';
+import { Observable } from "core/Misc/observable";
+import { Scene } from "core/scene";
+import { Engine } from "core/Engines/engine";
+import { ISceneLoaderProgressEvent, ISceneLoaderPlugin, ISceneLoaderPluginAsync } from "core/Loading/sceneLoader";
 
-import { ViewerModel } from '../model/viewerModel';
+import { ViewerModel } from "../model/viewerModel";
 
 export class ObservablesManager {
-
     /**
      * Will notify when the scene was initialized
      */
@@ -96,5 +95,4 @@ export class ObservablesManager {
         this.onEnteringVRObservable.clear();
         this.onExitingVRObservable.clear();
     }
-
 }

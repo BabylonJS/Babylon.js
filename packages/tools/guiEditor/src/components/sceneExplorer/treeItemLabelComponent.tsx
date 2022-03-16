@@ -17,8 +17,8 @@ export class TreeItemLabelComponent extends React.Component<ITreeItemLabelCompon
     constructor(props: ITreeItemLabelComponentProps) {
         super(props);
         this.state = {
-            value: ""
-        }
+            value: "",
+        };
     }
 
     onClick() {
@@ -35,35 +35,35 @@ export class TreeItemLabelComponent extends React.Component<ITreeItemLabelCompon
 
     render() {
         // if editing, overwrite string with local value
-        const label = this.props.renaming ? this.state.value : (this.props.label || "No Name");
+        const label = this.props.renaming ? this.state.value : this.props.label || "No Name";
         return (
             <div className="title" onClick={() => this.onClick()}>
-                {
-                this.props.renaming ?
+                {this.props.renaming ? (
                     <input
                         type="text"
                         onBlur={() => this.onBlur()}
                         autoFocus={true}
                         value={label}
-                        onChange={ev => {
+                        onChange={(ev) => {
                             this.props.onChange(ev.target.value);
-                            this.setState({value: ev.target.value})
+                            this.setState({ value: ev.target.value });
                         }}
                         onKeyDown={(ev) => {
                             if (ev.key === "Enter") this.onBlur();
                         }}
                         className="titleText"
                     />
-                :
+                ) : (
                     <div
                         className="titleText"
                         onDoubleClick={() => {
                             this.props.setRenaming(true);
-                            this.setState({value: label});                    
+                            this.setState({ value: label });
                         }}
-                    >{label}
+                    >
+                        {label}
                     </div>
-                }
+                )}
             </div>
         );
     }

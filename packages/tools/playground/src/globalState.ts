@@ -1,5 +1,5 @@
-import { Utilities } from './tools/utilities';
-import { CompilationError } from './components/errorDisplayComponent';
+import { Utilities } from "./tools/utilities";
+import { CompilationError } from "./components/errorDisplayComponent";
 import { Observable } from "@dev/core";
 
 declare type Nullable<T> = import("@dev/core").Nullable<T>;
@@ -7,13 +7,13 @@ declare type Nullable<T> = import("@dev/core").Nullable<T>;
 export enum EditionMode {
     Desktop,
     CodeOnly,
-    RenderingOnly
+    RenderingOnly,
 }
 
 export enum RuntimeMode {
     Editor = 0,
     Full = 1,
-    Frame = 2
+    Frame = 2,
 }
 
 export class GlobalState {
@@ -23,7 +23,7 @@ export class GlobalState {
     public currentCode: string;
     public getCompiledCode: () => Promise<string> = () => {
         return Promise.resolve(this.currentCode);
-    }
+    };
     public language = Utilities.ReadStringFromStore("language", "JS");
     public fpsElement: HTMLDivElement;
     public mobileDefaultMode = EditionMode.RenderingOnly;
@@ -61,7 +61,7 @@ export class GlobalState {
     public onThemeChangedObservable = new Observable<void>();
     public onFontSizeChangedObservable = new Observable<void>();
     public onLanguageChangedObservable = new Observable<void>();
-    public onNavigateRequiredObservable = new Observable<{ lineNumber: number, column: number }>();
+    public onNavigateRequiredObservable = new Observable<{ lineNumber: number; column: number }>();
     public onExamplesDisplayChangedObservable = new Observable<void>();
     public onQRCodeRequiredObservable = new Observable<boolean>();
     public OnNewDropdownButtonClicked = new Observable<any>();

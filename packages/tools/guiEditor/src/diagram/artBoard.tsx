@@ -3,7 +3,7 @@ import { GlobalState } from "../globalState";
 import { CoordinateHelper, Rect } from "./coordinateHelper";
 
 interface IArtBoardProps {
-    globalState: GlobalState
+    globalState: GlobalState;
 }
 
 interface IArtBoardState {
@@ -14,8 +14,8 @@ export class ArtBoardComponent extends React.Component<IArtBoardProps, IArtBoard
     constructor(props: IArtBoardProps) {
         super(props);
         this.state = {
-            bounds: new Rect(0,0,0,0)
-        }
+            bounds: new Rect(0, 0, 0, 0),
+        };
         this.props.globalState.onArtBoardUpdateRequiredObservable.add(() => this.update());
     }
 
@@ -28,21 +28,22 @@ export class ArtBoardComponent extends React.Component<IArtBoardProps, IArtBoard
         const bottomRightRTT = CoordinateHelper.nodeToRTTSpace(visibleRegion, localBounds.right, localBounds.bottom, undefined);
         const bottomRightCanvas = CoordinateHelper.rttToCanvasSpace(bottomRightRTT.x, bottomRightRTT.y);
         this.setState({
-            bounds: new Rect(topLeftCanvas.x, topLeftCanvas.y, bottomRightCanvas.x, bottomRightCanvas.y)
-        })
+            bounds: new Rect(topLeftCanvas.x, topLeftCanvas.y, bottomRightCanvas.x, bottomRightCanvas.y),
+        });
     }
-
 
     render() {
         const style = {
             top: `${this.state.bounds.top}px`,
             left: `${this.state.bounds.left}px`,
             width: `${this.state.bounds.width}px`,
-            height: `${this.state.bounds.height}px`
+            height: `${this.state.bounds.height}px`,
         };
-        return <>
-            <div className="artboard-stroke" style={style}></div>
-            <div className="artboard-background" style={style}></div>
-        </>;
+        return (
+            <>
+                <div className="artboard-stroke" style={style}></div>
+                <div className="artboard-background" style={style}></div>
+            </>
+        );
     }
 }

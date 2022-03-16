@@ -7,7 +7,6 @@ import { ConfigurationLoader } from "../../../../src/configuration/loader";
 export let name = "configuration loader";
 
 describe("Configuration loader", () => {
-
     it("should call callback when configuration is loaded", (done) => {
         let configurationLoader = new ConfigurationLoader();
 
@@ -29,7 +28,7 @@ describe("Configuration loader", () => {
 
         let config: ViewerConfiguration = {
             version: "" + Math.random(),
-            extends: "none"
+            extends: "none",
         };
         configurationLoader.loadConfiguration(config, (newConfig) => {
             assert.deepEqual(config, newConfig);
@@ -41,7 +40,7 @@ describe("Configuration loader", () => {
         let configurationLoader = new ConfigurationLoader();
 
         let config: ViewerConfiguration = {
-            version: "" + Math.random()
+            version: "" + Math.random(),
         };
         configurationLoader.loadConfiguration(config, (newConfig) => {
             assert.equal(config.version, newConfig.version);

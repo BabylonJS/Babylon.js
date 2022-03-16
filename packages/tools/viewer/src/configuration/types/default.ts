@@ -1,8 +1,8 @@
-import { ViewerConfiguration } from '../configuration';
-import { babylonFont, defaultTemplate, fillContainer, loadingScreen, defaultViewer, navbar, overlay, help, share, error } from 'babylonjs-viewer-assets';
-import * as images from 'babylonjs-viewer-assets';
-import { renderOnlyDefaultConfiguration } from './renderOnlyDefault';
-import { deepmerge } from '../../helper/index';
+import { ViewerConfiguration } from "../configuration";
+import { babylonFont, defaultTemplate, fillContainer, loadingScreen, defaultViewer, navbar, overlay, help, share, error } from "babylonjs-viewer-assets";
+import * as images from "babylonjs-viewer-assets";
+import { renderOnlyDefaultConfiguration } from "./renderOnlyDefault";
+import { deepmerge } from "../../helper/index";
 
 /**
  * The default configuration of the viewer, including templates (canvas, overly, loading screen)
@@ -15,28 +15,28 @@ export let defaultConfiguration: ViewerConfiguration = deepmerge(renderOnlyDefau
             html: defaultTemplate,
             params: {
                 babylonFont: babylonFont,
-                noEscape: true
-            }
+                noEscape: true,
+            },
         },
         fillContainer: {
             html: fillContainer,
             params: {
-                disable: false
-            }
+                disable: false,
+            },
         },
         loadingScreen: {
             html: loadingScreen,
             params: {
                 backgroundColor: "#000000",
                 loadingImage: images.loading,
-                staticLoadingImage: images.staticLoading
-            }
+                staticLoadingImage: images.staticLoading,
+            },
         },
         viewer: {
             html: defaultViewer,
             params: {
-                enableDragAndDrop: false
-            }
+                enableDragAndDrop: false,
+            },
         },
         navBar: {
             html: navbar,
@@ -48,8 +48,8 @@ export let defaultConfiguration: ViewerConfiguration = deepmerge(renderOnlyDefau
                     "2.0x": "2.0",
                 },
                 logoImage: images.babylonLogo,
-                logoText: 'BabylonJS',
-                logoLink: 'https://babylonjs.com',
+                logoText: "BabylonJS",
+                logoLink: "https://babylonjs.com",
                 hideHelp: true,
                 hideHd: true,
                 hideVr: true,
@@ -60,65 +60,62 @@ export let defaultConfiguration: ViewerConfiguration = deepmerge(renderOnlyDefau
                     fullscreenButton: "Toggle Fullscreen",
                     helpButton: "Help",
                     vrButton: "Toggle VR",
-                    printButton: "3D Print Object"
-                }
+                    printButton: "3D Print Object",
+                },
             },
             events: {
                 click: {
-                    '.navbar-control': true
+                    ".navbar-control": true,
                 },
                 pointerdown: {
-                    '.help-button': true
+                    ".help-button": true,
                 },
                 input: {
-                    '.progress-wrapper': true
+                    ".progress-wrapper": true,
                 },
                 pointerup: {
-                    '.progress-wrapper': true
-                }
-            }
+                    ".progress-wrapper": true,
+                },
+            },
         },
         overlay: {
             html: overlay,
             params: {
                 closeImage: images.close,
-                closeText: 'Close'
-            }
+                closeText: "Close",
+            },
         },
         help: {
-            html: help
+            html: help,
         },
         share: {
-            html: share
+            html: share,
         },
         error: {
-            html: error
-        }
-
+            html: error,
+        },
     },
     camera: {
         behaviors: {
             autoRotate: {
-                type: 0
+                type: 0,
             },
             framing: {
                 type: 2,
                 zoomOnBoundingInfo: true,
-                zoomStopsAnimation: false
+                zoomStopsAnimation: false,
             },
             bouncing: {
-                type: 1
-            }
-        }
+                type: 1,
+            },
+        },
     },
-    skybox: {
-    },
+    skybox: {},
     ground: {
-        receiveShadows: true
+        receiveShadows: true,
     },
     engine: {
-        antialiasing: true
+        antialiasing: true,
     },
-    scene: {
-    }
+    scene: {},
 });

@@ -24,7 +24,7 @@ export class RectanglePropertyGridComponent extends React.Component<IRectanglePr
     }
 
     render() {
-        const {rectangles, lockObject, onPropertyChangedObservable} = this.props;
+        const { rectangles, lockObject, onPropertyChangedObservable } = this.props;
 
         return (
             <div className="pane">
@@ -57,7 +57,7 @@ export class RectanglePropertyGridComponent extends React.Component<IRectanglePr
                         unitLocked={true}
                     />
                 </div>
-                <ContainerPropertyGridComponent containers={rectangles} onPropertyChangedObservable={onPropertyChangedObservable}/>
+                <ContainerPropertyGridComponent containers={rectangles} onPropertyChangedObservable={onPropertyChangedObservable} />
             </div>
         );
     }

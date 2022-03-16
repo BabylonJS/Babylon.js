@@ -31,7 +31,7 @@ export class ImagePropertyGridComponent extends React.Component<IImagePropertyGr
     }
 
     toggleAnimations(on: boolean) {
-        for(const image of this.props.images) {
+        for (const image of this.props.images) {
             if (on) {
                 image.cellId = 0;
                 image.cellWidth = image.imageWidth;
@@ -44,11 +44,11 @@ export class ImagePropertyGridComponent extends React.Component<IImagePropertyGr
 
     getMaxCells() {
         let maxCells = Number.MAX_SAFE_INTEGER;
-        for(const image of this.props.images) {
+        for (const image of this.props.images) {
             if (image.cellWidth === 0 || image.cellHeight === 0) continue;
             const cols = Math.ceil(image.imageWidth / image.cellWidth);
             const rows = Math.ceil(image.imageHeight / image.cellHeight);
-            const max = (cols * rows) - 1;
+            const max = cols * rows - 1;
             if (max < maxCells) maxCells = max;
         }
         return maxCells;
@@ -56,7 +56,7 @@ export class ImagePropertyGridComponent extends React.Component<IImagePropertyGr
 
     updateCellSize() {
         const maxCells = this.getMaxCells();
-        for(const image of this.props.images) {
+        for (const image of this.props.images) {
             if (image.cellId > maxCells) {
                 image.cellId = maxCells;
             }
@@ -78,10 +78,10 @@ export class ImagePropertyGridComponent extends React.Component<IImagePropertyGr
             { label: "NinePatch", value: Image.STRETCH_NINE_PATCH },
         ];
 
-        const animationSheet = images.every(image => image.cellId !== -1);
+        const animationSheet = images.every((image) => image.cellId !== -1);
         const maxCells = this.getMaxCells();
-        const maxCellWidth = Math.max(...images.map(image => image.imageWidth));
-        const maxCellHeight = Math.max(...images.map(image => image.imageHeight));
+        const maxCellWidth = Math.max(...images.map((image) => image.imageWidth));
+        const maxCellHeight = Math.max(...images.map((image) => image.imageHeight));
 
         return (
             <div className="pane">
@@ -151,107 +151,128 @@ export class ImagePropertyGridComponent extends React.Component<IImagePropertyGr
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     onSelect={(value) => this.setState({ mode: value })}
                 />
-                {images.length === 1 && image.stretch === Image.STRETCH_NINE_PATCH && <>
-                    <div className="ge-divider">
-                    <FloatLineComponent
-                        iconLabel={"Slice"}
-                        icon={cropIcon}
-                        lockObject={this.props.lockObject}
-                        label="L"
-                        target={image}
-                        propertyName="sliceLeft"
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                        onChange={() => {image.populateNinePatchSlicesFromImage = false; this.forceUpdate()} }
-                    />
-                    <FloatLineComponent
-                        lockObject={this.props.lockObject}
-                        label="R"
-                        target={image}
-                        propertyName="sliceRight"
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                        onChange={() => {image.populateNinePatchSlicesFromImage = false; this.forceUpdate()} }
-                    />
-                </div>
-                <div className="ge-divider">
-                    <FloatLineComponent
-                        lockObject={this.props.lockObject}
-                        label="T"
-                        target={image}
-                        icon={cropIcon}
-                        iconLabel={"Slice"}
-                        propertyName="sliceTop"
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                        onChange={() => {image.populateNinePatchSlicesFromImage = false; this.forceUpdate()} }
-                    />
-                    <FloatLineComponent
-                        lockObject={this.props.lockObject}
-                        label="B"
-                        target={image}
-                        propertyName="sliceBottom"
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                        onChange={() => {image.populateNinePatchSlicesFromImage = false; this.forceUpdate()} }
-                    />
-                </div>
-                <CheckBoxLineComponent
-                    iconLabel={"populateNinePatchSlicesFromImage"}
-                    icon={autoResizeIcon}
-                    label="SLICE FROM IMAGE"
-                    target={image}
-                    propertyName="populateNinePatchSlicesFromImage"
-                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    onValueChanged={() =>{ this.forceUpdate(); image._markAsDirty();} }
-                />
-                </>
-                }
+                {images.length === 1 && image.stretch === Image.STRETCH_NINE_PATCH && (
+                    <>
+                        <div className="ge-divider">
+                            <FloatLineComponent
+                                iconLabel={"Slice"}
+                                icon={cropIcon}
+                                lockObject={this.props.lockObject}
+                                label="L"
+                                target={image}
+                                propertyName="sliceLeft"
+                                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                                onChange={() => {
+                                    image.populateNinePatchSlicesFromImage = false;
+                                    this.forceUpdate();
+                                }}
+                            />
+                            <FloatLineComponent
+                                lockObject={this.props.lockObject}
+                                label="R"
+                                target={image}
+                                propertyName="sliceRight"
+                                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                                onChange={() => {
+                                    image.populateNinePatchSlicesFromImage = false;
+                                    this.forceUpdate();
+                                }}
+                            />
+                        </div>
+                        <div className="ge-divider">
+                            <FloatLineComponent
+                                lockObject={this.props.lockObject}
+                                label="T"
+                                target={image}
+                                icon={cropIcon}
+                                iconLabel={"Slice"}
+                                propertyName="sliceTop"
+                                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                                onChange={() => {
+                                    image.populateNinePatchSlicesFromImage = false;
+                                    this.forceUpdate();
+                                }}
+                            />
+                            <FloatLineComponent
+                                lockObject={this.props.lockObject}
+                                label="B"
+                                target={image}
+                                propertyName="sliceBottom"
+                                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                                onChange={() => {
+                                    image.populateNinePatchSlicesFromImage = false;
+                                    this.forceUpdate();
+                                }}
+                            />
+                        </div>
+                        <CheckBoxLineComponent
+                            iconLabel={"populateNinePatchSlicesFromImage"}
+                            icon={autoResizeIcon}
+                            label="SLICE FROM IMAGE"
+                            target={image}
+                            propertyName="populateNinePatchSlicesFromImage"
+                            onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                            onValueChanged={() => {
+                                this.forceUpdate();
+                                image._markAsDirty();
+                            }}
+                        />
+                    </>
+                )}
                 <hr />
                 <CheckBoxLineComponent
                     iconLabel={"animationSheet"}
                     icon={animationSheetIcon}
                     label="ANIMATION SHEET"
                     target={makeTargetsProxy(images, this.props.onPropertyChangedObservable, (target: Image) => target.cellId !== -1)}
-                    onValueChanged={() => {this.toggleAnimations(!animationSheet); this.forceUpdate();}}
+                    onValueChanged={() => {
+                        this.toggleAnimations(!animationSheet);
+                        this.forceUpdate();
+                    }}
                 />
-                {animationSheet && <>
-                <div className="ge-divider-short">
-                <FloatLineComponent
-                    iconLabel={"Cell Id"}
-                    icon={cellIDIcon}
-                    lockObject={this.props.lockObject}
-                    label=""
-                    isInteger={true}
-                    target={proxy}
-                    propertyName="cellId"
-                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    min={0}
-                    max={maxCells}
-                />
-                </div>
-                <div className="ge-divider">
-                    <FloatLineComponent
-                        icon={sizeIcon}
-                        lockObject={this.props.lockObject}
-                        label="W"
-                        target={proxy}
-                        propertyName="cellWidth"
-                        isInteger={true}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                        onChange={() => this.updateCellSize()}
-                        min={1}
-                        max={maxCellWidth}
-                    />
-                    <FloatLineComponent
-                        lockObject={this.props.lockObject}
-                        label="H"
-                        target={proxy}
-                        propertyName="cellHeight"
-                        isInteger={true}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                        onChange={() => this.updateCellSize()}
-                        min={1}
-                        max={maxCellHeight}
-                    />
-                </div>
-                </>}
+                {animationSheet && (
+                    <>
+                        <div className="ge-divider-short">
+                            <FloatLineComponent
+                                iconLabel={"Cell Id"}
+                                icon={cellIDIcon}
+                                lockObject={this.props.lockObject}
+                                label=""
+                                isInteger={true}
+                                target={proxy}
+                                propertyName="cellId"
+                                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                                min={0}
+                                max={maxCells}
+                            />
+                        </div>
+                        <div className="ge-divider">
+                            <FloatLineComponent
+                                icon={sizeIcon}
+                                lockObject={this.props.lockObject}
+                                label="W"
+                                target={proxy}
+                                propertyName="cellWidth"
+                                isInteger={true}
+                                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                                onChange={() => this.updateCellSize()}
+                                min={1}
+                                max={maxCellWidth}
+                            />
+                            <FloatLineComponent
+                                lockObject={this.props.lockObject}
+                                label="H"
+                                target={proxy}
+                                propertyName="cellHeight"
+                                isInteger={true}
+                                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                                onChange={() => this.updateCellSize()}
+                                min={1}
+                                max={maxCellHeight}
+                            />
+                        </div>
+                    </>
+                )}
             </div>
         );
     }

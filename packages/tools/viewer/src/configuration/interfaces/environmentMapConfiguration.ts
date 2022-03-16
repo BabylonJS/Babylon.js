@@ -17,5 +17,5 @@ export interface IEnvironmentMapConfiguration {
     /**
      * The environment's main color.
      */
-    mainColor?: { r?: number, g?: number, b?: number };
+    mainColor?: { r?: number; g?: number; b?: number };
 }

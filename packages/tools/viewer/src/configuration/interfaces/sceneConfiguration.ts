@@ -4,9 +4,9 @@ import { IGlowLayerOptions } from "babylonjs";
 
 export interface ISceneConfiguration {
     debug?: boolean;
-    clearColor?: { r: number, g: number, b: number, a: number };
+    clearColor?: { r: number; g: number; b: number; a: number };
     /** @deprecated Please use environmentMap.mainColor instead. */
-    mainColor?: { r?: number, g?: number, b?: number };
+    mainColor?: { r?: number; g?: number; b?: number };
     imageProcessingConfiguration?: IImageProcessingConfiguration;
     environmentTexture?: string;
     colorGrading?: IColorGradingConfiguration;

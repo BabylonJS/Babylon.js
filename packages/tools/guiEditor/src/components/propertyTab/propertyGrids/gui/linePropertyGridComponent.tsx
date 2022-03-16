@@ -43,7 +43,7 @@ export class LinePropertyGridComponent extends React.Component<ILinePropertyGrid
     render() {
         const lines = this.props.lines;
         let dashes = lines[0].dash;
-        for(const line of lines) {
+        for (const line of lines) {
             if (dashes.length === 0) break;
             if (line.dash.length !== dashes.length) {
                 dashes = [];
@@ -52,9 +52,9 @@ export class LinePropertyGridComponent extends React.Component<ILinePropertyGrid
                 if (line.dash[index] !== dash) {
                     dashes = [];
                 }
-            })
+            });
         }
-        const dashString = dashes.join(",")
+        const dashString = dashes.join(",");
 
         return (
             <div className="pane">

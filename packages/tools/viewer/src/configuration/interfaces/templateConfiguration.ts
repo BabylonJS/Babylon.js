@@ -26,20 +26,20 @@ export interface ITemplateConfiguration {
      */
     events?: {
         // pointer events
-        pointerdown?: boolean | { [id: string]: boolean; };
-        pointerup?: boolean | { [id: string]: boolean; };
-        pointermove?: boolean | { [id: string]: boolean; };
-        pointerover?: boolean | { [id: string]: boolean; };
-        pointerout?: boolean | { [id: string]: boolean; };
-        pointerenter?: boolean | { [id: string]: boolean; };
-        pointerleave?: boolean | { [id: string]: boolean; };
-        pointercancel?: boolean | { [id: string]: boolean; };
+        pointerdown?: boolean | { [id: string]: boolean };
+        pointerup?: boolean | { [id: string]: boolean };
+        pointermove?: boolean | { [id: string]: boolean };
+        pointerover?: boolean | { [id: string]: boolean };
+        pointerout?: boolean | { [id: string]: boolean };
+        pointerenter?: boolean | { [id: string]: boolean };
+        pointerleave?: boolean | { [id: string]: boolean };
+        pointercancel?: boolean | { [id: string]: boolean };
         //click, just in case
-        click?: boolean | { [id: string]: boolean; };
+        click?: boolean | { [id: string]: boolean };
         // drag and drop
-        dragstart?: boolean | { [id: string]: boolean; };
-        drop?: boolean | { [id: string]: boolean; };
+        dragstart?: boolean | { [id: string]: boolean };
+        drop?: boolean | { [id: string]: boolean };
 
-        [key: string]: boolean | { [id: string]: boolean; } | undefined;
+        [key: string]: boolean | { [id: string]: boolean } | undefined;
     };
 }

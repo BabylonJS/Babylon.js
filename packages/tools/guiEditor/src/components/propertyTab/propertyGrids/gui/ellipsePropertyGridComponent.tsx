@@ -23,7 +23,7 @@ export class EllipsePropertyGridComponent extends React.Component<IEllipseProper
     }
 
     render() {
-        const {ellipses, onPropertyChangedObservable, lockObject} = this.props;
+        const { ellipses, onPropertyChangedObservable, lockObject } = this.props;
 
         return (
             <div className="pane">
@@ -31,19 +31,19 @@ export class EllipsePropertyGridComponent extends React.Component<IEllipseProper
                 <hr />
                 <TextLineComponent label="ELLIPSE" value=" " color="grey"></TextLineComponent>
                 <div className="ge-divider">
-                <FloatLineComponent
-                    iconLabel="Stroke Weight"
-                    icon={strokeWeightIcon}
-                    lockObject={lockObject}
-                    label=""
-                    target={makeTargetsProxy(ellipses, onPropertyChangedObservable)}
-                    propertyName="thickness"
-                    onPropertyChangedObservable={onPropertyChangedObservable}
-                    unit={"PX"}
-                    unitLocked={true}
-                />
+                    <FloatLineComponent
+                        iconLabel="Stroke Weight"
+                        icon={strokeWeightIcon}
+                        lockObject={lockObject}
+                        label=""
+                        target={makeTargetsProxy(ellipses, onPropertyChangedObservable)}
+                        propertyName="thickness"
+                        onPropertyChangedObservable={onPropertyChangedObservable}
+                        unit={"PX"}
+                        unitLocked={true}
+                    />
                 </div>
-                <ContainerPropertyGridComponent containers={ellipses} onPropertyChangedObservable={onPropertyChangedObservable}/>
+                <ContainerPropertyGridComponent containers={ellipses} onPropertyChangedObservable={onPropertyChangedObservable} />
             </div>
         );
     }

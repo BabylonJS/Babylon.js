@@ -7,26 +7,24 @@ export let renderOnlyDefaultConfiguration = {
     camera: {
         behaviors: {
             autoRotate: {
-                type: 0
+                type: 0,
             },
             framing: {
                 type: 2,
                 zoomOnBoundingInfo: true,
-                zoomStopsAnimation: false
+                zoomStopsAnimation: false,
             },
             bouncing: {
-                type: 1
-            }
-        }
+                type: 1,
+            },
+        },
     },
-    skybox: {
-    },
+    skybox: {},
     ground: {
-        receiveShadows: true
+        receiveShadows: true,
     },
     engine: {
-        antialiasing: true
+        antialiasing: true,
     },
-    scene: {
-    }
+    scene: {},
 };

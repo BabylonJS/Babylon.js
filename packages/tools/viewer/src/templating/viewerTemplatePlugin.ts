@@ -1,8 +1,7 @@
 import { EventCallback, Template } from "./templateManager";
-import * as Handlebars from 'handlebars/dist/handlebars';
+import * as Handlebars from "handlebars/dist/handlebars";
 
 export interface IViewerTemplatePlugin {
-
     readonly templateName: string;
     readonly eventsToAttach?: Array<string>;
 
@@ -12,9 +11,8 @@ export interface IViewerTemplatePlugin {
 }
 
 export abstract class AbstractViewerNavbarButton implements IViewerTemplatePlugin {
-
     public readonly templateName: string = "navBar";
-    public readonly eventsToAttach: Array<string> = ['pointerdown'];
+    public readonly eventsToAttach: Array<string> = ["pointerdown"];
     protected _prepend: boolean = true;
     protected _buttonName: string;
     protected _buttonClass: string;
@@ -25,10 +23,11 @@ export abstract class AbstractViewerNavbarButton implements IViewerTemplatePlugi
         if (buttonClass) {
             this._buttonClass = buttonClass;
         } else {
-            this._buttonClass = buttonName + '-button';
+            this._buttonClass = buttonName + "-button";
         }
-        if (htmlTemplate) { this._htmlTemplate = htmlTemplate; }
-        else {
+        if (htmlTemplate) {
+            this._htmlTemplate = htmlTemplate;
+        } else {
             this._htmlTemplate = `
 <button class="${this._buttonClass}">
     <span class="icon ${this._buttonName}-icon"></span>
@@ -39,8 +38,10 @@ export abstract class AbstractViewerNavbarButton implements IViewerTemplatePlugi
 
     interactionPredicate(event: EventCallback): boolean {
         let pointerDown = <PointerEvent>event.event;
-        if (pointerDown.button !== 0) { return false; }
-        var element = (<HTMLElement>event.event.target);
+        if (pointerDown.button !== 0) {
+            return false;
+        }
+        var element = <HTMLElement>event.event.target;
 
         if (!element) {
             return false;
@@ -72,7 +73,7 @@ export abstract class AbstractViewerNavbarButton implements IViewerTemplatePlugi
     }
 
     protected _generateHTMLElement(template: Template): Element | DocumentFragment {
-        let compiledTemplate = Handlebars.compile(this._htmlTemplate, { noEscape: (template.configuration.params && !!template.configuration.params.noEscape) });
+        let compiledTemplate = Handlebars.compile(this._htmlTemplate, { noEscape: template.configuration.params && !!template.configuration.params.noEscape });
         let config = template.configuration.params || {};
         let rawHtml = compiledTemplate(config);
         let fragment: Element | DocumentFragment;

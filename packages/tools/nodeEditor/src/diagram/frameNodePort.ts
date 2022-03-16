@@ -1,17 +1,17 @@
 import { NodePort } from "./nodePort";
-import { GraphNode } from './graphNode';
-import { FramePortPosition } from './graphFrame';
-import { GlobalState } from '../globalState';
-import { IDisplayManager } from './display/displayManager';
-import { Observable } from 'core/Misc/observable';
-import { Nullable } from 'core/types';
-import { NodeMaterialConnectionPoint } from 'core/Materials/Node/nodeMaterialBlockConnectionPoint';
-import { FramePortData, isFramePortData } from './graphCanvas';
+import { GraphNode } from "./graphNode";
+import { FramePortPosition } from "./graphFrame";
+import { GlobalState } from "../globalState";
+import { IDisplayManager } from "./display/displayManager";
+import { Observable } from "core/Misc/observable";
+import { Nullable } from "core/types";
+import { NodeMaterialConnectionPoint } from "core/Materials/Node/nodeMaterialBlockConnectionPoint";
+import { FramePortData, isFramePortData } from "./graphCanvas";
 
 export class FrameNodePort extends NodePort {
     private _parentFrameId: number;
     private _isInput: boolean;
-    private _framePortPosition: FramePortPosition
+    private _framePortPosition: FramePortPosition;
     private _framePortId: number;
     private _onFramePortPositionChangedObservable = new Observable<FrameNodePort>();
 
@@ -40,7 +40,15 @@ export class FrameNodePort extends NodePort {
         this.onFramePortPositionChangedObservable.notifyObservers(this);
     }
 
-    public constructor(portContainer: HTMLElement, public connectionPoint: NodeMaterialConnectionPoint, public node: GraphNode, globalState: GlobalState, isInput: boolean, framePortId: number, parentFrameId: number) {
+    public constructor(
+        portContainer: HTMLElement,
+        public connectionPoint: NodeMaterialConnectionPoint,
+        public node: GraphNode,
+        globalState: GlobalState,
+        isInput: boolean,
+        framePortId: number,
+        parentFrameId: number
+    ) {
         super(portContainer, connectionPoint, node, globalState);
 
         this._parentFrameId = parentFrameId;
@@ -48,7 +56,7 @@ export class FrameNodePort extends NodePort {
         this._framePortId = framePortId;
 
         this._onSelectionChangedObserver = this._globalState.onSelectionChangedObservable.add((options) => {
-            const {selection} = options || {};
+            const { selection } = options || {};
             if (isFramePortData(selection) && (selection as FramePortData).port === this) {
                 this._img.classList.add("selected");
             } else {
@@ -59,8 +67,16 @@ export class FrameNodePort extends NodePort {
         this.refresh();
     }
 
-    public static CreateFrameNodePortElement(connectionPoint: NodeMaterialConnectionPoint, node: GraphNode, root: HTMLElement,
-        displayManager: Nullable<IDisplayManager>, globalState: GlobalState, isInput: boolean, framePortId: number, parentFrameId: number) {
+    public static CreateFrameNodePortElement(
+        connectionPoint: NodeMaterialConnectionPoint,
+        node: GraphNode,
+        root: HTMLElement,
+        displayManager: Nullable<IDisplayManager>,
+        globalState: GlobalState,
+        isInput: boolean,
+        framePortId: number,
+        parentFrameId: number
+    ) {
         let portContainer = root.ownerDocument!.createElement("div");
         let block = connectionPoint.ownerBlock;
 
@@ -83,6 +99,4 @@ export class FrameNodePort extends NodePort {
 
         return new FrameNodePort(portContainer, connectionPoint, node, globalState, isInput, framePortId, parentFrameId);
     }
-
 }
-

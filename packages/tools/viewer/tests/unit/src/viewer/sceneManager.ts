@@ -6,7 +6,6 @@ import { PBRMaterial } from "babylonjs";
 export let name = "scene manager";
 
 describe(name, function () {
-
     it("should be initialized when an engine is created", (done) => {
         let viewer = Helper.getNewViewerInstance();
 
@@ -81,14 +80,13 @@ describe(name, function () {
             viewer.sceneManager.onEnvironmentConfiguredObservable.add(update.bind(null, "env"));
             viewer.sceneManager.onSceneConfiguredObservable.add(update.bind(null, "scene"));
             viewer.sceneManager.onSceneOptimizerConfiguredObservable.add(update.bind(null, "optimizer"));
-
         });
 
         viewer.onInitDoneObservable.add(() => {
             viewer.updateConfiguration({
                 scene: {},
                 optimizer: false,
-                skybox: false
+                skybox: false,
             });
             assert.isTrue(sceneInitCalled);
             assert.lengthOf(s, 5);
@@ -101,16 +99,15 @@ describe(name, function () {
         let viewer = Helper.getNewViewerInstance(undefined, {
             scene: {
                 imageProcessingConfiguration: {
-                    isEnabled: true
-                }
+                    isEnabled: true,
+                },
             },
             lab: {
-                defaultRenderingPipelines: true
-            }
+                defaultRenderingPipelines: true,
+            },
         });
 
         viewer.onEngineInitObservable.add(() => {
-
             viewer.runRenderLoop = false;
             viewer.sceneManager.onSceneInitObservable.clear();
             viewer.sceneManager.onSceneInitObservable.add((scene) => {
@@ -141,7 +138,7 @@ describe(name, function () {
 
     it("should allow disabling and enabling ground", (done) => {
         let viewer = Helper.getNewViewerInstance(undefined, {
-            ground: true
+            ground: true,
         });
 
         viewer.onInitDoneObservable.add(() => {
@@ -163,7 +160,7 @@ describe(name, function () {
             assert.isTrue(viewer.sceneManager.environmentHelper.ground!.isEnabled());
 
             viewer.updateConfiguration({
-                ground: false
+                ground: false,
             });
 
             assert.isUndefined(viewer.sceneManager.environmentHelper);
@@ -177,8 +174,8 @@ describe(name, function () {
     it("should allow disabling and enabling ground texture", (done) => {
         let viewer = Helper.getNewViewerInstance(undefined, {
             ground: {
-                mirror: true
-            }
+                mirror: true,
+            },
         });
 
         viewer.onInitDoneObservable.add(() => {
@@ -204,8 +201,8 @@ describe(name, function () {
 
             viewer.updateConfiguration({
                 ground: {
-                    mirror: false
-                }
+                    mirror: false,
+                },
             });
 
             assert.isDefined(viewer.sceneManager.environmentHelper.groundMaterial);

@@ -2,11 +2,11 @@ export interface ILightConfiguration {
     type: number;
     name?: string;
     disabled?: boolean;
-    position?: { x: number, y: number, z: number };
-    target?: { x: number, y: number, z: number };
-    direction?: { x: number, y: number, z: number };
-    diffuse?: { r: number, g: number, b: number };
-    specular?: { r: number, g: number, b: number };
+    position?: { x: number; y: number; z: number };
+    target?: { x: number; y: number; z: number };
+    direction?: { x: number; y: number; z: number };
+    diffuse?: { r: number; g: number; b: number };
+    specular?: { r: number; g: number; b: number };
     intensity?: number;
     intensityMode?: number;
     radius?: number;
@@ -34,9 +34,11 @@ export interface ILightConfiguration {
 
     // no behaviors for light at the moment, but allowing configuration for future reference.
     behaviors?: {
-        [name: string]: number | {
-            type: number;
-            [propName: string]: any;
-        };
+        [name: string]:
+            | number
+            | {
+                  type: number;
+                  [propName: string]: any;
+              };
     };
 }

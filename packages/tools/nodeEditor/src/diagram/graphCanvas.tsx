@@ -179,7 +179,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         super(props);
 
         props.globalState.onSelectionChangedObservable.add((options) => {
-            const {selection, forceKeepSelection} = options || {};
+            const { selection, forceKeepSelection } = options || {};
             if (!selection) {
                 this._selectedNodes = [];
                 this._selectedLink = null;
@@ -695,10 +695,10 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                             frame,
                             port,
                         };
-                        this.props.globalState.onSelectionChangedObservable.notifyObservers({selection: data});
+                        this.props.globalState.onSelectionChangedObservable.notifyObservers({ selection: data });
                     }
                 } else if (this._candidateLink.portA instanceof NodePort) {
-                    this.props.globalState.onSelectionChangedObservable.notifyObservers({selection: this._candidateLink.portA});
+                    this.props.globalState.onSelectionChangedObservable.notifyObservers({ selection: this._candidateLink.portA });
                 }
             }
             this._candidateLink.dispose();
@@ -718,7 +718,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             this._frameCandidate.parentElement!.removeChild(this._frameCandidate);
             this._frameCandidate = null;
 
-            this.props.globalState.onSelectionChangedObservable.notifyObservers({selection: newFrame});
+            this.props.globalState.onSelectionChangedObservable.notifyObservers({ selection: newFrame });
         }
     }
 
@@ -992,7 +992,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     addFrame(frameData: IFrameData) {
         const frame = GraphFrame.Parse(frameData, this, this.props.globalState.nodeMaterial.editorData.map);
         this._frames.push(frame);
-        this.globalState.onSelectionChangedObservable.notifyObservers({selection: frame});
+        this.globalState.onSelectionChangedObservable.notifyObservers({ selection: frame });
     }
 
     render() {

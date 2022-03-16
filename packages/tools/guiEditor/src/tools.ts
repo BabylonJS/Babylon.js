@@ -3,11 +3,11 @@ import { Grid } from "gui/2D/controls/grid";
 import { Vector2 } from "core/Maths/math";
 
 export class Tools {
-    public static LookForItems(item: any, selectedEntities: any[], firstIteration : boolean = true): boolean {
+    public static LookForItems(item: any, selectedEntities: any[], firstIteration: boolean = true): boolean {
         if (selectedEntities.length == 0) {
             return false;
         }
-        
+
         if (!firstIteration && selectedEntities.includes(item)) {
             return true;
         }
@@ -52,8 +52,7 @@ export class Tools {
         return finalArray.reverse();
     }
 
-    public static getCellInfo(grid: Grid, control: Control)
-    {
+    public static getCellInfo(grid: Grid, control: Control) {
         const cellInfo = grid.getChildCellInfo(control);
         let rowNumber = parseInt(cellInfo.substring(0, cellInfo.search(":")));
         if (isNaN(rowNumber)) {
@@ -63,11 +62,10 @@ export class Tools {
         if (isNaN(columnNumber)) {
             columnNumber = 0;
         }
-        return new Vector2(rowNumber,columnNumber);
+        return new Vector2(rowNumber, columnNumber);
     }
 
-    public static reorderGrid(grid: Grid, index: number, control : Control, cell : Vector2)
-    {
+    public static reorderGrid(grid: Grid, index: number, control: Control, cell: Vector2) {
         let tags: Vector2[] = [];
         let controls: Control[] = [];
         const length = grid.children.length;

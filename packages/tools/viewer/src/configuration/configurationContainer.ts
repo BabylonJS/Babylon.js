@@ -1,9 +1,8 @@
-import { ViewerConfiguration } from './configuration';
-import { Color3 } from 'core/Maths/math';
-import { Scene } from 'core/scene';
+import { ViewerConfiguration } from "./configuration";
+import { Color3 } from "core/Maths/math";
+import { Scene } from "core/scene";
 
 export class ConfigurationContainer {
-
     public configuration: ViewerConfiguration;
 
     public viewerId: string;

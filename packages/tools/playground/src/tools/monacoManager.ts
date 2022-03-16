@@ -145,7 +145,8 @@ var createScene = function() {
     return scene;
 };`);
         } else {
-            this._editor?.setValue(`// You have to create a class called Playground. This class must provide a static function named CreateScene(engine, canvas) which must return a Scene object
+            this._editor
+                ?.setValue(`// You have to create a class called Playground. This class must provide a static function named CreateScene(engine, canvas) which must return a Scene object
 // You must at least define a camera inside the CreateScene function
 
 class Playground {

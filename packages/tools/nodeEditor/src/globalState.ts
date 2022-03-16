@@ -1,19 +1,19 @@
 import { NodeMaterial } from "core/Materials/Node/nodeMaterial";
 import { Nullable } from "core/types";
-import { Observable } from 'core/Misc/observable';
-import { LogEntry } from './components/log/logComponent';
-import { NodeMaterialBlock } from 'core/Materials/Node/nodeMaterialBlock';
-import { PreviewType } from './components/preview/previewType';
-import { DataStorage } from 'core/Misc/dataStorage';
-import { Color4 } from 'core/Maths/math.color';
-import { GraphNode } from './diagram/graphNode';
-import { Vector2 } from 'core/Maths/math.vector';
-import { NodePort } from './diagram/nodePort';
-import { NodeLink } from './diagram/nodeLink';
-import { GraphFrame } from './diagram/graphFrame';
-import { FrameNodePort } from './diagram/frameNodePort';
-import { FramePortData } from './diagram/graphCanvas';
-import { NodeMaterialModes } from 'core/Materials/Node/Enums/nodeMaterialModes';
+import { Observable } from "core/Misc/observable";
+import { LogEntry } from "./components/log/logComponent";
+import { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
+import { PreviewType } from "./components/preview/previewType";
+import { DataStorage } from "core/Misc/dataStorage";
+import { Color4 } from "core/Maths/math.color";
+import { GraphNode } from "./diagram/graphNode";
+import { Vector2 } from "core/Maths/math.vector";
+import { NodePort } from "./diagram/nodePort";
+import { NodeLink } from "./diagram/nodeLink";
+import { GraphFrame } from "./diagram/graphFrame";
+import { FrameNodePort } from "./diagram/frameNodePort";
+import { FramePortData } from "./diagram/graphCanvas";
+import { NodeMaterialModes } from "core/Materials/Node/Enums/nodeMaterialModes";
 import { ParticleSystem } from "core/Particles/particleSystem";
 
 export class ISelectionChangedOptions {
@@ -50,7 +50,7 @@ export class GlobalState {
     onImportFrameObservable = new Observable<any>();
     onGraphNodeRemovalObservable = new Observable<GraphNode>();
     onPopupClosedObservable = new Observable<void>();
-    onNewBlockRequiredObservable = new Observable<{type: string, targetX: number, targetY: number, needRepositioning?: boolean}>();
+    onNewBlockRequiredObservable = new Observable<{ type: string; targetX: number; targetY: number; needRepositioning?: boolean }>();
     onGetNodeFromBlock: (block: NodeMaterialBlock) => GraphNode;
     onGridSizeChanged = new Observable<void>();
     onExposePortOnFrameObservable = new Observable<GraphNode>();
@@ -82,7 +82,7 @@ export class GlobalState {
         this.onPreviewCommandActivated.notifyObservers(true);
     }
 
-    customSave?: { label: string, action: (data: string) => Promise<void> };
+    customSave?: { label: string; action: (data: string) => Promise<void> };
 
     public constructor() {
         this.previewType = DataStorage.ReadNumber("PreviewType", PreviewType.Box);

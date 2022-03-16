@@ -1,5 +1,5 @@
-import { IDisplayManager } from './displayManager';
-import { NodeMaterialBlock } from 'core/Materials/Node/nodeMaterialBlock';
+import { IDisplayManager } from "./displayManager";
+import { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
 
 export class PBRDisplayManager implements IDisplayManager {
     public getHeaderClass(block: NodeMaterialBlock) {

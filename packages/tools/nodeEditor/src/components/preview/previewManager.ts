@@ -297,9 +297,17 @@ export class PreviewManager {
                         this._meshes.push(CreateSphere("dummy-sphere", { segments: 32, diameter: 2 }, this._scene));
                         break;
                     case PreviewType.Torus:
-                        this._meshes.push(CreateTorus("dummy-torus", {
-                            diameter: 2, thickness: 0.5, tessellation: 32
-                        }, this._scene));
+                        this._meshes.push(
+                            CreateTorus(
+                                "dummy-torus",
+                                {
+                                    diameter: 2,
+                                    thickness: 0.5,
+                                    tessellation: 32,
+                                },
+                                this._scene
+                            )
+                        );
                         break;
                     case PreviewType.Cylinder:
                         SceneLoader.AppendAsync("https://models.babylonjs.com/", "roundedCylinder.glb", this._scene).then(() => {

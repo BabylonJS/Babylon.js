@@ -1,6 +1,6 @@
-import { Vector3 } from 'core/Maths/math';
-import { Tools } from 'core/Misc/tools';
-import { TextureCube, PixelFormat, PixelType } from './texture';
+import { Vector3 } from "core/Maths/math";
+import { Tools } from "core/Misc/tools";
+import { TextureCube, PixelFormat, PixelType } from "./texture";
 
 /**
  * Spherical polynomial coefficients (counter part to spherical harmonic coefficients used in shader irradiance calculation)
@@ -22,7 +22,6 @@ export interface SphericalPolynomalCoefficients {
  * Wraps data and maps required for environments with physically based rendering
  */
 export interface PBREnvironment {
-
     /**
      * Spherical Polynomial Coefficients representing an irradiance map
      */
@@ -39,16 +38,14 @@ export interface PBREnvironment {
 }
 
 /**
-         * Environment map representations: layouts, projections and approximations
-         */
-export type MapType =
-    'irradiance_sh_coefficients_9' |
-    'cubemap_faces';
+ * Environment map representations: layouts, projections and approximations
+ */
+export type MapType = "irradiance_sh_coefficients_9" | "cubemap_faces";
 
 /**
  * Image type used for environment map
  */
-export type ImageType = 'png';
+export type ImageType = "png";
 
 //Payload Descriptor
 
@@ -118,7 +115,6 @@ export type EquirectangularMipmapAtlas = ImageSet<ByteRange>;
  * A static class proving methods to aid parsing Spectre environment files
  */
 export class EnvironmentDeserializer {
-
     /**
      * Parses an arraybuffer into a new PBREnvironment object
      * @param arrayBuffer The arraybuffer of the Spectre environment file
@@ -136,7 +132,7 @@ export class EnvironmentDeserializer {
                 zz: new Vector3(0, 0, 0),
                 yz: new Vector3(0, 0, 0),
                 zx: new Vector3(0, 0, 0),
-                xy: new Vector3(0, 0, 0)
+                xy: new Vector3(0, 0, 0),
             },
 
             //specular
@@ -153,18 +149,19 @@ export class EnvironmentDeserializer {
 
         for (let i = 0; i < magicBytes.length; i++) {
             if (dataView.getUint8(pos++) !== magicBytes[i]) {
-                Tools.Error('Not a Spectre environment map');
+                Tools.Error("Not a Spectre environment map");
             }
         }
 
-        let version = dataView.getUint16(pos, littleEndian); pos += 2;
+        let version = dataView.getUint16(pos, littleEndian);
+        pos += 2;
 
         if (version !== 1) {
             Tools.Warn('Unsupported Spectre environment map version "' + version + '"');
         }
 
         //read json descriptor - collect characters up to null terminator
-        let descriptorString = '';
+        let descriptorString = "";
         let charCode = 0x00;
         while ((charCode = dataView.getUint8(pos++))) {
             descriptorString += String.fromCharCode(charCode);
@@ -176,7 +173,7 @@ export class EnvironmentDeserializer {
 
         //irradiance
         switch (descriptor.irradiance.type) {
-            case 'irradiance_sh_coefficients_9':
+            case "irradiance_sh_coefficients_9":
                 //irradiance
                 let harmonics = <IrradianceSHCoefficients9>descriptor.irradiance;
 
@@ -186,16 +183,15 @@ export class EnvironmentDeserializer {
                 EnvironmentDeserializer._ConvertSHToSP(harmonics, environment.irradiancePolynomialCoefficients);
                 break;
             default:
-                Tools.Error('Unhandled MapType descriptor.irradiance.type (' + descriptor.irradiance.type + ')');
+                Tools.Error("Unhandled MapType descriptor.irradiance.type (" + descriptor.irradiance.type + ")");
         }
 
         //specular
         switch (descriptor.specular.type) {
-            case 'cubemap_faces':
-
+            case "cubemap_faces":
                 var specularDescriptor = <CubemapFaces>descriptor.specular;
 
-                let specularTexture = environment.specularTexture = new TextureCube(PixelFormat.RGBA, PixelType.UNSIGNED_BYTE);
+                let specularTexture = (environment.specularTexture = new TextureCube(PixelFormat.RGBA, PixelType.UNSIGNED_BYTE));
                 environment.textureIntensityScale = specularDescriptor.multiplier != null ? specularDescriptor.multiplier : 1.0;
 
                 let mipmaps = specularDescriptor.mipmaps;
@@ -207,29 +203,27 @@ export class EnvironmentDeserializer {
                     specularTexture.source[l] = [];
 
                     for (let i = 0; i < 6; i++) {
-
                         let range = faceRanges[i];
                         let bytes = new Uint8Array(arrayBuffer, payloadPos + range.pos, range.length);
 
                         switch (imageType) {
-                            case 'png':
-
+                            case "png":
                                 //construct image element from bytes
                                 let image = new Image();
-                                let src = URL.createObjectURL(new Blob([bytes], { type: 'image/png' }));
+                                let src = URL.createObjectURL(new Blob([bytes], { type: "image/png" }));
                                 image.src = src;
                                 specularTexture.source[l][i] = image;
 
                                 break;
                             default:
-                                Tools.Error('Unhandled ImageType descriptor.specular.imageType (' + imageType + ')');
+                                Tools.Error("Unhandled ImageType descriptor.specular.imageType (" + imageType + ")");
                         }
                     }
                 }
 
                 break;
             default:
-                Tools.Error('Unhandled MapType descriptor.specular.type (' + descriptor.specular.type + ')');
+                Tools.Error("Unhandled MapType descriptor.specular.type (" + descriptor.specular.type + ")");
         }
 
         return environment;

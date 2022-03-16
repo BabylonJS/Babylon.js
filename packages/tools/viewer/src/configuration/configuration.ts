@@ -1,22 +1,23 @@
-import { IEnvironmentMapConfiguration } from './interfaces/environmentMapConfiguration';
-import { EngineOptions } from 'core/Engines/thinEngine';
-import { IObserversConfiguration } from './interfaces/observersConfiguration';
-import { IModelConfiguration } from './interfaces/modelConfiguration';
-import { ISceneConfiguration } from './interfaces/sceneConfiguration';
-import { ISceneOptimizerConfiguration } from './interfaces/sceneOptimizerConfiguration';
-import { ICameraConfiguration } from './interfaces/cameraConfiguration';
-import { ISkyboxConfiguration } from './interfaces/skyboxConfiguration';
-import { IGroundConfiguration } from './interfaces/groundConfiguration';
-import { ILightConfiguration } from './interfaces/lightConfiguration';
-import { ITemplateConfiguration } from './interfaces/templateConfiguration';
-import { IVRConfiguration } from './interfaces/vrConfiguration';
-import { IDefaultRenderingPipelineConfiguration } from './interfaces/defaultRenderingPipelineConfiguration';
+import { IEnvironmentMapConfiguration } from "./interfaces/environmentMapConfiguration";
+import { EngineOptions } from "core/Engines/thinEngine";
+import { IObserversConfiguration } from "./interfaces/observersConfiguration";
+import { IModelConfiguration } from "./interfaces/modelConfiguration";
+import { ISceneConfiguration } from "./interfaces/sceneConfiguration";
+import { ISceneOptimizerConfiguration } from "./interfaces/sceneOptimizerConfiguration";
+import { ICameraConfiguration } from "./interfaces/cameraConfiguration";
+import { ISkyboxConfiguration } from "./interfaces/skyboxConfiguration";
+import { IGroundConfiguration } from "./interfaces/groundConfiguration";
+import { ILightConfiguration } from "./interfaces/lightConfiguration";
+import { ITemplateConfiguration } from "./interfaces/templateConfiguration";
+import { IVRConfiguration } from "./interfaces/vrConfiguration";
+import { IDefaultRenderingPipelineConfiguration } from "./interfaces/defaultRenderingPipelineConfiguration";
 
 export function getConfigurationKey(key: string, configObject: any) {
-    let splits = key.split('.');
+    let splits = key.split(".");
 
-    if (splits.length === 0 || !configObject) { return; }
-    else if (splits.length === 1) {
+    if (splits.length === 0 || !configObject) {
+        return;
+    } else if (splits.length === 1) {
         if (configObject[key] !== undefined) {
             return configObject[key];
         }
@@ -27,18 +28,19 @@ export function getConfigurationKey(key: string, configObject: any) {
 }
 
 export interface ViewerConfiguration {
-
     // configuration version
     version?: string;
     extends?: string; // is this configuration extending an existing configuration?
 
     pageUrl?: string; // will be used for sharing and other fun stuff. This is the page showing the model (not the model's url!)
 
-    configuration?: string | {
-        url?: string;
-        payload?: any;
-        mapper?: string; // json (default), html, yaml, xml, etc'. if not provided, file extension will be used.
-    };
+    configuration?:
+        | string
+        | {
+              url?: string;
+              payload?: any;
+              mapper?: string; // json (default), html, yaml, xml, etc'. if not provided, file extension will be used.
+          };
 
     // names of functions in the window context.
     observers?: IObserversConfiguration;
@@ -56,7 +58,7 @@ export interface ViewerConfiguration {
     ground?: boolean | IGroundConfiguration;
     lights?: {
         //globalRotation: number,
-        [name: string]: number | boolean | ILightConfiguration
+        [name: string]: number | boolean | ILightConfiguration;
     };
     // engine configuration. optional!
     engine?: {
@@ -69,8 +71,8 @@ export interface ViewerConfiguration {
     };
     //templateStructure?: ITemplateStructure,
     templates?: {
-        main: ITemplateConfiguration,
-        [key: string]: ITemplateConfiguration
+        main: ITemplateConfiguration;
+        [key: string]: ITemplateConfiguration;
     };
 
     customShaders?: {
@@ -79,7 +81,7 @@ export interface ViewerConfiguration {
         };
         includes?: {
             [key: string]: string;
-        }
+        };
     };
 
     loaderPlugins?: {
@@ -100,17 +102,19 @@ export interface ViewerConfiguration {
     // those features' syntax will change and move out!
     // Don't use in production (or be ready to make the changes :) )
     lab?: {
-        flashlight?: boolean | {
-            exponent?: number;
-            angle?: number;
-            intensity?: number;
-            diffuse?: { r: number, g: number, b: number };
-            specular?: { r: number, g: number, b: number };
-        }
+        flashlight?:
+            | boolean
+            | {
+                  exponent?: number;
+                  angle?: number;
+                  intensity?: number;
+                  diffuse?: { r: number; g: number; b: number };
+                  specular?: { r: number; g: number; b: number };
+              };
         hideLoadingDelay?: number;
         /** @deprecated */
         assetsRootURL?: string;
-        environmentMainColor?: { r: number, g: number, b: number };
+        environmentMainColor?: { r: number; g: number; b: number };
         /** @deprecated */
         environmentMap?: {
             /**
@@ -127,7 +131,7 @@ export interface ViewerConfiguration {
              * Tint level of the main color on the environment map.
              */
             tintLevel: number;
-        }
+        };
         defaultRenderingPipelines?: boolean | IDefaultRenderingPipelineConfiguration;
         globalLightRotation?: number;
     };

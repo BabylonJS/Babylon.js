@@ -6,7 +6,7 @@ import { AnimationGroup, Animatable } from "core/Animations/index";
  */
 export enum AnimationPlayMode {
     ONCE,
-    LOOP
+    LOOP,
 }
 
 /**
@@ -17,7 +17,7 @@ export enum AnimationState {
     PLAYING,
     PAUSED,
     STOPPED,
-    ENDED
+    ENDED,
 }
 
 /**
@@ -35,7 +35,7 @@ export enum EasingFunction {
     QuadraticEase = 8,
     QuarticEase = 9,
     QuinticEase = 10,
-    SineEase = 11
+    SineEase = 11,
 }
 
 /**
@@ -140,7 +140,6 @@ export interface IModelAnimation {
  * native GroupAnimation class.
  */
 export class GroupModelAnimation implements IModelAnimation {
-
     private _playMode: AnimationPlayMode;
     private _state: AnimationState;
 
@@ -269,8 +268,7 @@ export class GroupModelAnimation implements IModelAnimation {
     restart() {
         if (this.state === AnimationState.PAUSED) {
             this._animationGroup.restart();
-        }
-        else {
+        } else {
             this.start();
         }
     }

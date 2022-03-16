@@ -4,7 +4,6 @@ import { EventCallback } from "../templateManager";
 import { Tools } from "core/Misc/tools";
 
 export class PrintButtonPlugin extends AbstractViewerNavbarButton {
-
     private _currentModelUrl: string;
 
     constructor(private _viewer: DefaultViewer) {

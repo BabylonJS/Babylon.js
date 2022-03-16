@@ -15,32 +15,25 @@ let instance: { exports: DecoderExports };
 let heap: Uint8Array;
 
 const IMPORT_OBJECT = {
-
     env: {
-
         emscripten_notify_memory_growth: function (index: number): void {
-
             heap = new Uint8Array(instance.exports.memory.buffer);
-
-        }
-
-    }
-
+        },
+    },
 };
 
 /**
  * ZSTD (Zstandard) decoder.
  */
 export class ZSTDDecoder {
-
     public static WasmModuleURL = "https://preview.babylonjs.com/zstddec.wasm";
 
     init(): Promise<void> {
+        if (init) {
+            return init;
+        }
 
-        if (init) { return init; }
-
-        if (typeof fetch !== 'undefined') {
-
+        if (typeof fetch !== "undefined") {
             // Web.
 
             init = fetch(ZSTDDecoder.WasmModuleURL)
@@ -52,32 +45,25 @@ export class ZSTDDecoder {
                 })
                 .then((arrayBuffer) => WebAssembly.instantiate(arrayBuffer, IMPORT_OBJECT))
                 .then(this._init);
-
         } else {
-
             // Node.js.
 
-            init = WebAssembly
-                .instantiateStreaming(fetch(ZSTDDecoder.WasmModuleURL), IMPORT_OBJECT)
-                .then(this._init);
-
+            init = WebAssembly.instantiateStreaming(fetch(ZSTDDecoder.WasmModuleURL), IMPORT_OBJECT).then(this._init);
         }
 
         return init;
-
     }
 
     _init(result: WebAssembly.WebAssemblyInstantiatedSource): void {
-
         instance = result.instance as unknown as { exports: DecoderExports };
 
         IMPORT_OBJECT.env.emscripten_notify_memory_growth(0); // initialize heap.
-
     }
 
     decode(array: Uint8Array, uncompressedSize = 0): Uint8Array {
-
-        if (!instance) { throw new Error(`ZSTDDecoder: Await .init() before decoding.`); }
+        if (!instance) {
+            throw new Error(`ZSTDDecoder: Await .init() before decoding.`);
+        }
 
         // Write compressed data into WASM memory.
         const compressedSize = array.byteLength;
@@ -95,9 +81,7 @@ export class ZSTDDecoder {
         instance.exports.free(uncompressedPtr);
 
         return dec;
-
     }
-
 }
 
 /**

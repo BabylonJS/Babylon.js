@@ -1,4 +1,4 @@
-import { ViewerConfiguration } from './../configuration';
+import { ViewerConfiguration } from "./../configuration";
 
 /**
  * Defines a default directional shadow light for normalized objects (!)
@@ -6,10 +6,10 @@ import { ViewerConfiguration } from './../configuration';
 export const shadowDirectionalLightConfiguration: ViewerConfiguration = {
     model: {
         receiveShadows: true,
-        castShadow: true
+        castShadow: true,
     },
     ground: {
-        receiveShadows: true
+        receiveShadows: true,
     },
     lights: {
         shadowDirectionalLight: {
@@ -27,10 +27,10 @@ export const shadowDirectionalLightConfiguration: ViewerConfiguration = {
             shadowMaxZ: 10.0,
             shadowConfig: {
                 blurKernel: 32,
-                useBlurCloseExponentialShadowMap: true
-            }
-        }
-    }
+                useBlurCloseExponentialShadowMap: true,
+            },
+        },
+    },
 };
 
 /**
@@ -39,10 +39,10 @@ export const shadowDirectionalLightConfiguration: ViewerConfiguration = {
 export const shadowSpotlLightConfiguration: ViewerConfiguration = {
     model: {
         receiveShadows: true,
-        castShadow: true
+        castShadow: true,
     },
     ground: {
-        receiveShadows: true
+        receiveShadows: true,
     },
     lights: {
         shadowSpotLight: {
@@ -59,8 +59,8 @@ export const shadowSpotlLightConfiguration: ViewerConfiguration = {
             shadowConfig: {
                 frustumEdgeFalloff: 0.5,
                 blurKernel: 32,
-                useBlurExponentialShadowMap: true
-            }
-        }
-    }
+                useBlurExponentialShadowMap: true,
+            },
+        },
+    },
 };

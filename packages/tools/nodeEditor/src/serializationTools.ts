@@ -1,20 +1,19 @@
-import { NodeMaterial } from 'core/Materials/Node/nodeMaterial';
-import { GlobalState } from './globalState';
-import { Texture } from 'core/Materials/Textures/texture';
-import { DataStorage } from 'core/Misc/dataStorage';
-import { NodeMaterialBlock } from 'core/Materials/Node/nodeMaterialBlock';
-import { Nullable } from 'core/types';
-import { GraphFrame } from './diagram/graphFrame';
+import { NodeMaterial } from "core/Materials/Node/nodeMaterial";
+import { GlobalState } from "./globalState";
+import { Texture } from "core/Materials/Textures/texture";
+import { DataStorage } from "core/Misc/dataStorage";
+import { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
+import { Nullable } from "core/types";
+import { GraphFrame } from "./diagram/graphFrame";
 
 export class SerializationTools {
-
     public static UpdateLocations(material: NodeMaterial, globalState: GlobalState, frame?: Nullable<GraphFrame>) {
         material.editorData = {
-            locations: []
+            locations: [],
         };
 
         // Store node locations
-        const blocks: NodeMaterialBlock[] = frame ? frame.nodes.map(n => n.block) : material.attachedBlocks;
+        const blocks: NodeMaterialBlock[] = frame ? frame.nodes.map((n) => n.block) : material.attachedBlocks;
 
         for (var block of blocks) {
             let node = globalState.onGetNodeFromBlock(block);
@@ -22,7 +21,7 @@ export class SerializationTools {
             material.editorData.locations.push({
                 blockId: block.uniqueId,
                 x: node ? node.x : 0,
-                y: node ? node.y : 0
+                y: node ? node.y : 0,
             });
         }
 
@@ -35,7 +34,7 @@ export class SerializationTools {
 
         this.UpdateLocations(material, globalState, frame);
 
-        const selectedBlocks = frame ? frame.nodes.map(n => n.block) : undefined;
+        const selectedBlocks = frame ? frame.nodes.map((n) => n.block) : undefined;
 
         let serializationObject = material.serialize(selectedBlocks);
 

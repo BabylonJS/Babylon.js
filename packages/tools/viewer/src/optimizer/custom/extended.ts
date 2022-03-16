@@ -1,6 +1,6 @@
-import { DefaultRenderingPipeline } from 'core/PostProcesses/RenderPipeline/Pipelines/defaultRenderingPipeline';
-import { Scalar } from 'core/Maths/math.scalar';
-import { SceneManager } from '../../managers/sceneManager';
+import { DefaultRenderingPipeline } from "core/PostProcesses/RenderPipeline/Pipelines/defaultRenderingPipeline";
+import { Scalar } from "core/Maths/math.scalar";
+import { SceneManager } from "../../managers/sceneManager";
 
 /**
  * A custom upgrade-oriented function configuration for the scene optimizer.

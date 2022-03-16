@@ -17,7 +17,6 @@ import "./digitalrain.fragment";
  * This is used later on in the postprocess.
  */
 export class DigitalRainFontTexture extends BaseTexture {
-
     @serialize("font")
     private _font: string;
 
@@ -97,8 +96,8 @@ export class DigitalRainFontTexture extends BaseTexture {
      */
     private getFontWidth(font: string): number {
         var fontDraw = document.createElement("canvas");
-        var ctx = <CanvasRenderingContext2D>fontDraw.getContext('2d');
-        ctx.fillStyle = 'white';
+        var ctx = <CanvasRenderingContext2D>fontDraw.getContext("2d");
+        ctx.fillStyle = "white";
         ctx.font = font;
 
         return ctx.measureText("W").width;
@@ -110,14 +109,14 @@ export class DigitalRainFontTexture extends BaseTexture {
      * @param font the font to use, use the W3C CSS notation
      * @return the max char height
      */
-    private getFontHeight(font: string): { height: number, offset: number } {
+    private getFontHeight(font: string): { height: number; offset: number } {
         var fontDraw = document.createElement("canvas");
-        var ctx = <CanvasRenderingContext2D>fontDraw.getContext('2d');
+        var ctx = <CanvasRenderingContext2D>fontDraw.getContext("2d");
         ctx.fillRect(0, 0, fontDraw.width, fontDraw.height);
-        ctx.textBaseline = 'top';
-        ctx.fillStyle = 'white';
+        ctx.textBaseline = "top";
+        ctx.fillStyle = "white";
         ctx.font = font;
-        ctx.fillText('jH|', 0, 0);
+        ctx.fillText("jH|", 0, 0);
         var pixels = ctx.getImageData(0, 0, fontDraw.width, fontDraw.height).data;
         var start = -1;
         var end = -1;
@@ -131,8 +130,7 @@ export class DigitalRainFontTexture extends BaseTexture {
                         break;
                     }
                     continue;
-                }
-                else {
+                } else {
                     if (start === -1) {
                         start = row;
                     }
@@ -140,7 +138,7 @@ export class DigitalRainFontTexture extends BaseTexture {
                 }
             }
         }
-        return { height: (end - start) + 1, offset: start - 1 };
+        return { height: end - start + 1, offset: start - 1 };
     }
 
     /**
@@ -158,8 +156,7 @@ export class DigitalRainFontTexture extends BaseTexture {
      * @return the parsed texture
      */
     public static Parse(source: any, scene: Scene): DigitalRainFontTexture {
-        var texture = SerializationHelper.Parse(() => new DigitalRainFontTexture(source.name, source.font, source.text, scene),
-            source, scene, null);
+        var texture = SerializationHelper.Parse(() => new DigitalRainFontTexture(source.name, source.font, source.text, scene), source, scene, null);
 
         return texture;
     }
@@ -169,7 +166,6 @@ export class DigitalRainFontTexture extends BaseTexture {
  * Option available in the Digital Rain Post Process.
  */
 export interface IDigitalRainPostProcessOptions {
-
     /**
      * The font to use following the w3c font definition.
      */
@@ -195,7 +191,6 @@ export interface IDigitalRainPostProcessOptions {
  * Example usage: var pp = new DigitalRainPostProcess("digitalRain", "20px Monospace", camera);
  */
 export class DigitalRainPostProcess extends PostProcess {
-
     /**
      * The font texture used to render the char in the post process.
      */
@@ -225,29 +220,31 @@ export class DigitalRainPostProcess extends PostProcess {
      * @param options can either be the font name or an option object following the IDigitalRainPostProcessOptions format
      */
     constructor(name: string, camera: Camera, options?: string | IDigitalRainPostProcessOptions) {
-        super(name,
-            'digitalrain',
-            ['digitalRainFontInfos', 'digitalRainOptions', 'cosTimeZeroOne', 'matrixSpeed'],
-            ['digitalRainFont'],
+        super(
+            name,
+            "digitalrain",
+            ["digitalRainFontInfos", "digitalRainOptions", "cosTimeZeroOne", "matrixSpeed"],
+            ["digitalRainFont"],
             {
                 width: camera.getEngine().getRenderWidth(),
-                height: camera.getEngine().getRenderHeight()
+                height: camera.getEngine().getRenderHeight(),
             },
             camera,
             Texture.TRILINEAR_SAMPLINGMODE,
             camera.getEngine(),
-            true);
+            true
+        );
 
         // Default values.
         var font = "15px Monospace";
-        var characterSet = "古池や蛙飛び込む水の音ふるいけやかわずとびこむみずのおと初しぐれ猿も小蓑をほしげ也はつしぐれさるもこみのをほしげなり江戸の雨何石呑んだ時鳥えどのあめなんごくのんだほととぎす";
+        var characterSet =
+            "古池や蛙飛び込む水の音ふるいけやかわずとびこむみずのおと初しぐれ猿も小蓑をほしげ也はつしぐれさるもこみのをほしげなり江戸の雨何石呑んだ時鳥えどのあめなんごくのんだほととぎす";
 
         // Use options.
         if (options) {
-            if (typeof (options) === "string") {
+            if (typeof options === "string") {
                 font = <string>options;
-            }
-            else {
+            } else {
                 font = (<IDigitalRainPostProcessOptions>options).font || font;
                 this.mixToTile = (<IDigitalRainPostProcessOptions>options).mixToTile || this.mixToTile;
                 this.mixToNormal = (<IDigitalRainPostProcessOptions>options).mixToNormal || this.mixToNormal;
@@ -260,33 +257,36 @@ export class DigitalRainPostProcess extends PostProcess {
         var alpha = 0.0;
         var cosTimeZeroOne = 0.0;
         var matrix = Matrix.FromValues(
-            Math.random(), Math.random(), Math.random(), Math.random(),
-            Math.random(), Math.random(), Math.random(), Math.random(),
-            Math.random(), Math.random(), Math.random(), Math.random(),
-            Math.random(), Math.random(), Math.random(), Math.random()
+            Math.random(),
+            Math.random(),
+            Math.random(),
+            Math.random(),
+            Math.random(),
+            Math.random(),
+            Math.random(),
+            Math.random(),
+            Math.random(),
+            Math.random(),
+            Math.random(),
+            Math.random(),
+            Math.random(),
+            Math.random(),
+            Math.random(),
+            Math.random()
         );
 
         this.onApply = (effect: Effect) => {
             effect.setTexture("digitalRainFont", this._digitalRainFontTexture);
 
-            effect.setFloat4("digitalRainFontInfos",
-                this._digitalRainFontTexture.charSize,
-                characterSet.length,
-                textureSize.width,
-                textureSize.height);
+            effect.setFloat4("digitalRainFontInfos", this._digitalRainFontTexture.charSize, characterSet.length, textureSize.width, textureSize.height);
 
-            effect.setFloat4("digitalRainOptions",
-                this.width,
-                this.height,
-                this.mixToNormal,
-                this.mixToTile);
+            effect.setFloat4("digitalRainOptions", this.width, this.height, this.mixToNormal, this.mixToTile);
 
-            effect.setMatrix("matrixSpeed",
-                matrix);
+            effect.setMatrix("matrixSpeed", matrix);
 
             alpha += this.speed;
             cosTimeZeroOne = alpha;
-            effect.setFloat('cosTimeZeroOne', cosTimeZeroOne);
+            effect.setFloat("cosTimeZeroOne", cosTimeZeroOne);
         };
     }
 }

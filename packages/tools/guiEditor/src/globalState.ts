@@ -16,7 +16,7 @@ export enum DragOverLocation {
     ABOVE = 0,
     BELOW = 1,
     CENTER = 2,
-    NONE = 3
+    NONE = 3,
 }
 
 export class GlobalState {
@@ -97,14 +97,14 @@ export class GlobalState {
         this.hostDocument.addEventListener("copy", (event) => {
             const target = event.target as HTMLElement;
             if (!target.isContentEditable && target.tagName !== "input" && target.tagName !== "textarea") {
-                this.onCopyObservable.notifyObservers(content => event.clipboardData?.setData("text/plain", content));
+                this.onCopyObservable.notifyObservers((content) => event.clipboardData?.setData("text/plain", content));
                 event.preventDefault();
             }
         });
         this.hostDocument.addEventListener("cut", (event) => {
             const target = event.target as HTMLElement;
             if (!target.isContentEditable && target.tagName !== "input" && target.tagName !== "textarea") {
-                this.onCutObservable.notifyObservers(content => event.clipboardData?.setData("text/plain", content));
+                this.onCutObservable.notifyObservers((content) => event.clipboardData?.setData("text/plain", content));
                 event.preventDefault();
             }
         });
@@ -115,9 +115,9 @@ export class GlobalState {
                 event.preventDefault();
             }
         });
-        this.hostDocument.addEventListener("keydown", evt => this._updateKeys(evt));
-        this.hostDocument.addEventListener("keyup", evt => this._updateKeys(evt));
-        this.hostDocument.addEventListener("keypress", evt => this._updateKeys(evt));
+        this.hostDocument.addEventListener("keydown", (evt) => this._updateKeys(evt));
+        this.hostDocument.addEventListener("keyup", (evt) => this._updateKeys(evt));
+        this.hostDocument.addEventListener("keypress", (evt) => this._updateKeys(evt));
     }
 
     private _updateKeys(event: KeyboardEvent) {
@@ -149,9 +149,9 @@ export class GlobalState {
         if (this.isMultiSelecting && this.isMultiSelectable(control)) {
             let index = this.selectedControls.indexOf(control);
             if (index === -1) {
-                this.setSelection([...this.selectedControls, control])
+                this.setSelection([...this.selectedControls, control]);
             } else {
-                this.setSelection(this.selectedControls.filter(node => node !== control));
+                this.setSelection(this.selectedControls.filter((node) => node !== control));
             }
         } else {
             this.setSelection([control]);
@@ -163,7 +163,7 @@ export class GlobalState {
         this.onSelectionChangedObservable.notifyObservers();
     }
 
-    public isMultiSelectable(control: Control) : boolean {
+    public isMultiSelectable(control: Control): boolean {
         if (this.selectedControls.length === 0) return true;
         if (this.selectedControls[0].parent === control.parent) return true;
         return false;

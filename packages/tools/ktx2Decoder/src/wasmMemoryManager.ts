@@ -4,7 +4,6 @@ declare function postMessage(message: any, transfer?: any[]): void;
  * @hidden
  */
 export class WASMMemoryManager {
-
     public static LoadBinariesFromCurrentThread = true;
     public static InitialMemoryPages = (1 * 1024 * 1024) >> 16; // 1 Mbytes
 

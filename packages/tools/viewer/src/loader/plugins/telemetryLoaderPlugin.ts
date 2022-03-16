@@ -5,7 +5,6 @@ import { ISceneLoaderPlugin, ISceneLoaderPluginAsync } from "core/Loading/sceneL
 import { PrecisionDate } from "core/Misc/precisionDate";
 
 export class TelemetryLoaderPlugin implements ILoaderPlugin {
-
     private _model: ViewerModel;
 
     private _loadStart: number;
@@ -19,7 +18,7 @@ export class TelemetryLoaderPlugin implements ILoaderPlugin {
     public onLoaded(model: ViewerModel) {
         telemetryManager.broadcast("Model Loaded", model.getViewerId(), {
             model: model,
-            loadTime: PrecisionDate.Now - this._loadStart
+            loadTime: PrecisionDate.Now - this._loadStart,
         });
         telemetryManager.flushWebGLErrors(model.rootMesh.getEngine(), model.getViewerId());
     }
@@ -28,7 +27,7 @@ export class TelemetryLoaderPlugin implements ILoaderPlugin {
         this._loadEnd = PrecisionDate.Now;
         telemetryManager.broadcast("Load Error", this._model.getViewerId(), {
             model: this._model,
-            loadTime: this._loadEnd - this._loadStart
+            loadTime: this._loadEnd - this._loadStart,
         });
 
         telemetryManager.flushWebGLErrors(this._model.rootMesh.getEngine(), this._model.getViewerId());
@@ -38,7 +37,7 @@ export class TelemetryLoaderPlugin implements ILoaderPlugin {
         this._loadEnd = PrecisionDate.Now;
         telemetryManager.broadcast("Load Complete", this._model.getViewerId(), {
             model: this._model,
-            loadTime: this._loadEnd - this._loadStart
+            loadTime: this._loadEnd - this._loadStart,
         });
 
         telemetryManager.flushWebGLErrors(this._model.rootMesh.getEngine(), this._model.getViewerId());

@@ -11,7 +11,7 @@ import { SceneExplorerComponent } from "./components/sceneExplorer/sceneExplorer
 import { CommandBarComponent } from "./components/commandBarComponent";
 import { GizmoWrapper } from "./diagram/guiGizmoWrapper";
 import { Nullable } from "core/types";
-import { ArtBoardComponent } from './diagram/artBoard';
+import { ArtBoardComponent } from "./diagram/artBoard";
 import { Control } from "gui/2D/controls/control";
 import { ControlTypes } from "./controlTypes";
 
@@ -76,7 +76,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                 this.props.globalState.draggedControl = this.onCreate(this._draggedItem);
             }
             this._draggedItem = null;
-        })
+        });
     }
 
     showWaitScreen() {
@@ -110,7 +110,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
             this._leftWidth = Math.max(150, Math.min(maxWidth - this._rightWidth, evt.clientX - this._rootRef.current!.clientLeft));
             DataStorage.WriteNumber("LeftWidth", this._leftWidth);
         } else {
-            this._rightWidth = Math.max(250, Math.min(maxWidth - this._leftWidth, (this._rootRef.current!.clientLeft + this._rootRef.current!.clientWidth) - evt.clientX));
+            this._rightWidth = Math.max(250, Math.min(maxWidth - this._leftWidth, this._rootRef.current!.clientLeft + this._rootRef.current!.clientWidth - evt.clientX));
             DataStorage.WriteNumber("RightWidth", this._rightWidth);
         }
 
@@ -242,7 +242,8 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                     <SceneExplorerComponent globalState={this.props.globalState} noExpand={true}></SceneExplorerComponent>
                     {this.createToolbar()}
                     {/* The gui workbench diagram */}
-                    <div className="diagram-container"
+                    <div
+                        className="diagram-container"
                         onDrop={(event) => {
                             event.preventDefault();
                             this.props.globalState.onDropObservable.notifyObservers();
@@ -251,9 +252,10 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                             event.preventDefault();
                         }}
                         style={{
-                            backgroundColor: this.props.globalState.backgroundColor.toHexString()
-                        }}>
-                        <ArtBoardComponent globalState={this.props.globalState}/>
+                            backgroundColor: this.props.globalState.backgroundColor.toHexString(),
+                        }}
+                    >
+                        <ArtBoardComponent globalState={this.props.globalState} />
                         <WorkbenchComponent ref={"workbenchCanvas"} globalState={this.props.globalState} />
                         <GizmoWrapper globalState={this.props.globalState} />
                     </div>
@@ -298,17 +300,19 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                                     <div
                                         className={"toolbar-label"}
                                         key={type.className}
-                                        onDragStart={(evt) => { this._draggedItem = type.className }}
+                                        onDragStart={(evt) => {
+                                            this._draggedItem = type.className;
+                                        }}
                                         onClick={() => {
                                             this.onCreate(type.className);
                                         }}
                                         title={type.className}
                                     >
-                                    {type.icon && (
-                                        <div className="toolbar-icon" draggable={true}>
-                                            <img src={type.icon} alt={type.className} width="40px" height={"40px"} />
-                                        </div>
-                                    )}
+                                        {type.icon && (
+                                            <div className="toolbar-icon" draggable={true}>
+                                                <img src={type.icon} alt={type.className} width="40px" height={"40px"} />
+                                            </div>
+                                        )}
                                     </div>
                                 );
                             })}

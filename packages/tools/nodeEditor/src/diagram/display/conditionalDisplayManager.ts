@@ -1,6 +1,6 @@
-import { IDisplayManager } from './displayManager';
-import { NodeMaterialBlock } from 'core/Materials/Node/nodeMaterialBlock';
-import { ConditionalBlockConditions, ConditionalBlock } from 'core/Materials/Node/Blocks/conditionalBlock';
+import { IDisplayManager } from "./displayManager";
+import { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
+import { ConditionalBlockConditions, ConditionalBlock } from "core/Materials/Node/Blocks/conditionalBlock";
 
 export class ConditionalDisplayManager implements IDisplayManager {
     public getHeaderClass(block: NodeMaterialBlock) {
@@ -45,13 +45,12 @@ export class ConditionalDisplayManager implements IDisplayManager {
                 break;
         }
 
-        return block.name + " (" + desc + ")"
+        return block.name + " (" + desc + ")";
     }
 
     public getBackgroundColor(block: NodeMaterialBlock): string {
         return "#00A080";
     }
 
-    public updatePreviewContent(block: NodeMaterialBlock, contentArea: HTMLDivElement): void {
-    }
+    public updatePreviewContent(block: NodeMaterialBlock, contentArea: HTMLDivElement): void {}
 }

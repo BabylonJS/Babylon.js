@@ -1,15 +1,15 @@
-import { InputDisplayManager } from './display/inputDisplayManager';
-import { OutputDisplayManager } from './display/outputDisplayManager';
-import { ClampDisplayManager } from './display/clampDisplayManager';
-import { GradientDisplayManager } from './display/gradientDisplayManager';
-import { RemapDisplayManager } from './display/remapDisplayManager';
-import { TrigonometryDisplayManager } from './display/trigonometryDisplayManager';
-import { TextureDisplayManager } from './display/textureDisplayManager';
-import { DiscardDisplayManager } from './display/discardDisplayManager';
-import { PBRDisplayManager } from './display/pbrDisplayManager';
-import { ConditionalDisplayManager } from './display/conditionalDisplayManager';
-import { imageSourceDisplayManager } from './display/imageSourceDisplayManager';
-import { ElbowDisplayManager } from './display/elbowDisplayManager';
+import { InputDisplayManager } from "./display/inputDisplayManager";
+import { OutputDisplayManager } from "./display/outputDisplayManager";
+import { ClampDisplayManager } from "./display/clampDisplayManager";
+import { GradientDisplayManager } from "./display/gradientDisplayManager";
+import { RemapDisplayManager } from "./display/remapDisplayManager";
+import { TrigonometryDisplayManager } from "./display/trigonometryDisplayManager";
+import { TextureDisplayManager } from "./display/textureDisplayManager";
+import { DiscardDisplayManager } from "./display/discardDisplayManager";
+import { PBRDisplayManager } from "./display/pbrDisplayManager";
+import { ConditionalDisplayManager } from "./display/conditionalDisplayManager";
+import { imageSourceDisplayManager } from "./display/imageSourceDisplayManager";
+import { ElbowDisplayManager } from "./display/elbowDisplayManager";
 
 export class DisplayLedger {
     public static RegisteredControls: { [key: string]: any } = {};

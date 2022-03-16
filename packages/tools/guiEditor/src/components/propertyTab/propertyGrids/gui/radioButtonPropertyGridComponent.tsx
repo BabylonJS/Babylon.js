@@ -30,7 +30,11 @@ export class RadioButtonPropertyGridComponent extends React.Component<IRadioButt
 
         return (
             <div className="pane">
-                <CommonControlPropertyGridComponent lockObject={this.props.lockObject} controls={radioButtons} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <CommonControlPropertyGridComponent
+                    lockObject={this.props.lockObject}
+                    controls={radioButtons}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                />
                 <hr />
                 <TextLineComponent label="RADIO BUTTON" value=" " color="grey"></TextLineComponent>
                 <div className="ge-divider">
