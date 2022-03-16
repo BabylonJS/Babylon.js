@@ -1,21 +1,21 @@
-import { Nullable } from "babylonjs/types";
-import { serializeAsVector3, serialize, SerializationHelper } from "babylonjs/Misc/decorators";
-import { Vector3, Matrix, Quaternion } from "babylonjs/Maths/math.vector";
-import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
-import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
-import { MaterialDefines } from "babylonjs/Materials/materialDefines";
-import { MaterialHelper } from "babylonjs/Materials/materialHelper";
-import { PushMaterial } from "babylonjs/Materials/pushMaterial";
-import { VertexBuffer } from "babylonjs/Buffers/buffer";
-import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
-import { SubMesh } from "babylonjs/Meshes/subMesh";
-import { Mesh } from "babylonjs/Meshes/mesh";
-import { Scene } from "babylonjs/scene";
-import { RegisterClass } from 'babylonjs/Misc/typeStore';
+import { Nullable } from "core/types";
+import { serializeAsVector3, serialize, SerializationHelper } from "core/Misc/decorators";
+import { Vector3, Matrix, Quaternion } from "core/Maths/math.vector";
+import { IAnimatable } from "core/Animations/animatable.interface";
+import { BaseTexture } from "core/Materials/Textures/baseTexture";
+import { MaterialDefines } from "core/Materials/materialDefines";
+import { MaterialHelper } from "core/Materials/materialHelper";
+import { PushMaterial } from "core/Materials/pushMaterial";
+import { VertexBuffer } from "core/Buffers/buffer";
+import { AbstractMesh } from "core/Meshes/abstractMesh";
+import { SubMesh } from "core/Meshes/subMesh";
+import { Mesh } from "core/Meshes/mesh";
+import { Scene } from "core/scene";
+import { RegisterClass } from "core/Misc/typeStore";
 
 import "./sky.fragment";
 import "./sky.vertex";
-import { EffectFallbacks } from 'babylonjs/Materials/effectFallbacks';
+import { EffectFallbacks } from "core/Materials/effectFallbacks";
 
 /** @hidden */
 class SkyMaterialDefines extends MaterialDefines {
@@ -50,8 +50,8 @@ export class SkyMaterial extends PushMaterial {
     public luminance: number = 1.0;
 
     /**
-    * Defines the amount (scattering) of haze as opposed to molecules in atmosphere.
-    */
+     * Defines the amount (scattering) of haze as opposed to molecules in atmosphere.
+     */
     @serialize()
     public turbidity: number = 10.0;
 
@@ -141,7 +141,7 @@ export class SkyMaterial extends PushMaterial {
      * @returns a boolean specifying if alpha blending is needed
      */
     public needAlphaBlending(): boolean {
-        return (this.alpha < 1.0);
+        return this.alpha < 1.0;
     }
 
     /**
@@ -219,15 +219,44 @@ export class SkyMaterial extends PushMaterial {
             var shaderName = "sky";
 
             var join = defines.toString();
-            subMesh.setEffect(scene.getEngine().createEffect(shaderName,
-                attribs,
-                ["world", "viewProjection", "view",
-                    "vFogInfos", "vFogColor", "pointSize", "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "vClipPlane5", "vClipPlane6",
-                    "luminance", "turbidity", "rayleigh", "mieCoefficient", "mieDirectionalG", "sunPosition",
-                    "cameraPosition", "cameraOffset", "up"
-                ],
-                [],
-                join, fallbacks, this.onCompiled, this.onError), defines, this._materialContext);
+            subMesh.setEffect(
+                scene
+                    .getEngine()
+                    .createEffect(
+                        shaderName,
+                        attribs,
+                        [
+                            "world",
+                            "viewProjection",
+                            "view",
+                            "vFogInfos",
+                            "vFogColor",
+                            "pointSize",
+                            "vClipPlane",
+                            "vClipPlane2",
+                            "vClipPlane3",
+                            "vClipPlane4",
+                            "vClipPlane5",
+                            "vClipPlane6",
+                            "luminance",
+                            "turbidity",
+                            "rayleigh",
+                            "mieCoefficient",
+                            "mieDirectionalG",
+                            "sunPosition",
+                            "cameraPosition",
+                            "cameraOffset",
+                            "up",
+                        ],
+                        [],
+                        join,
+                        fallbacks,
+                        this.onCompiled,
+                        this.onError
+                    ),
+                defines,
+                this._materialContext
+            );
         }
 
         if (!subMesh.effect || !subMesh.effect.isReady()) {
@@ -265,7 +294,6 @@ export class SkyMaterial extends PushMaterial {
         this._activeEffect.setMatrix("viewProjection", scene.getTransformMatrix());
 
         if (this._mustRebind(scene, effect)) {
-
             MaterialHelper.BindClipPlane(this._activeEffect, scene);
 
             // Point size

@@ -1,32 +1,32 @@
-import { Nullable } from "babylonjs/types";
-import { serializeAsVector2, serializeAsTexture, serialize, expandToProperty, serializeAsColor3, SerializationHelper } from "babylonjs/Misc/decorators";
-import { Matrix, Vector2, Vector3 } from "babylonjs/Maths/math.vector";
-import { Color3 } from "babylonjs/Maths/math.color";
-import { Plane } from 'babylonjs/Maths/math.plane';
-import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
-import { Constants } from "babylonjs/Engines/constants";
-import { SmartArray } from "babylonjs/Misc/smartArray";
-import { Observer } from 'babylonjs/Misc/observable';
-import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
-import { RenderTargetTexture } from "babylonjs/Materials/Textures/renderTargetTexture";
-import { IEffectCreationOptions } from "babylonjs/Materials/effect";
-import { MaterialDefines } from "babylonjs/Materials/materialDefines";
-import { IImageProcessingConfigurationDefines, ImageProcessingConfiguration } from "babylonjs/Materials/imageProcessingConfiguration";
-import { MaterialHelper } from "babylonjs/Materials/materialHelper";
-import { PushMaterial } from "babylonjs/Materials/pushMaterial";
-import { MaterialFlags } from "babylonjs/Materials/materialFlags";
-import { VertexBuffer } from "babylonjs/Buffers/buffer";
-import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
-import { SubMesh } from "babylonjs/Meshes/subMesh";
-import { Mesh } from "babylonjs/Meshes/mesh";
-import { Camera } from "babylonjs/Cameras/camera";
-import { Scene } from "babylonjs/scene";
-import { RegisterClass } from 'babylonjs/Misc/typeStore';
+import { Nullable } from "core/types";
+import { serializeAsVector2, serializeAsTexture, serialize, expandToProperty, serializeAsColor3, SerializationHelper } from "core/Misc/decorators";
+import { Matrix, Vector2, Vector3 } from "core/Maths/math.vector";
+import { Color3 } from "core/Maths/math.color";
+import { Plane } from "core/Maths/math.plane";
+import { IAnimatable } from "core/Animations/animatable.interface";
+import { Constants } from "core/Engines/constants";
+import { SmartArray } from "core/Misc/smartArray";
+import { Observer } from "core/Misc/observable";
+import { BaseTexture } from "core/Materials/Textures/baseTexture";
+import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
+import { IEffectCreationOptions } from "core/Materials/effect";
+import { MaterialDefines } from "core/Materials/materialDefines";
+import { IImageProcessingConfigurationDefines, ImageProcessingConfiguration } from "core/Materials/imageProcessingConfiguration";
+import { MaterialHelper } from "core/Materials/materialHelper";
+import { PushMaterial } from "core/Materials/pushMaterial";
+import { MaterialFlags } from "core/Materials/materialFlags";
+import { VertexBuffer } from "core/Buffers/buffer";
+import { AbstractMesh } from "core/Meshes/abstractMesh";
+import { SubMesh } from "core/Meshes/subMesh";
+import { Mesh } from "core/Meshes/mesh";
+import { Camera } from "core/Cameras/camera";
+import { Scene } from "core/scene";
+import { RegisterClass } from "core/Misc/typeStore";
 
 import "./water.fragment";
 import "./water.vertex";
-import { EffectFallbacks } from 'babylonjs/Materials/effectFallbacks';
-import { CreateGround } from "babylonjs/Meshes/Builders/groundBuilder";
+import { EffectFallbacks } from "core/Materials/effectFallbacks";
+import { CreateGround } from "core/Meshes/Builders/groundBuilder";
 
 class WaterMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {
     public BUMP = false;
@@ -81,8 +81,8 @@ class WaterMaterialDefines extends MaterialDefines implements IImageProcessingCo
 
 export class WaterMaterial extends PushMaterial {
     /*
-    * Public members
-    */
+     * Public members
+     */
     @serializeAsTexture("bumpTexture")
     private _bumpTexture: BaseTexture;
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
@@ -198,8 +198,8 @@ export class WaterMaterial extends PushMaterial {
     protected _renderTargets = new SmartArray<RenderTargetTexture>(16);
 
     /*
-    * Private members
-    */
+     * Private members
+     */
     private _mesh: Nullable<AbstractMesh> = null;
 
     private _refractionRTT: Nullable<RenderTargetTexture>;
@@ -224,8 +224,8 @@ export class WaterMaterial extends PushMaterial {
     }
 
     /**
-    * Constructor
-    */
+     * Constructor
+     */
     constructor(name: string, scene?: Scene, public renderTargetSize: Vector2 = new Vector2(512, 512)) {
         super(name, scene);
 
@@ -299,7 +299,7 @@ export class WaterMaterial extends PushMaterial {
     }
 
     public needAlphaBlending(): boolean {
-        return (this.alpha < 1.0);
+        return this.alpha < 1.0;
     }
 
     public needAlphaTesting(): boolean {
@@ -378,8 +378,8 @@ export class WaterMaterial extends PushMaterial {
 
             this._imageProcessingConfiguration.prepareDefines(defines);
 
-            defines.IS_REFLECTION_LINEAR = (this.reflectionTexture != null && !this.reflectionTexture.gammaSpace);
-            defines.IS_REFRACTION_LINEAR = (this.refractionTexture != null && !this.refractionTexture.gammaSpace);
+            defines.IS_REFLECTION_LINEAR = this.reflectionTexture != null && !this.reflectionTexture.gammaSpace;
+            defines.IS_REFRACTION_LINEAR = this.refractionTexture != null && !this.refractionTexture.gammaSpace;
         }
 
         // Attribs
@@ -442,21 +442,49 @@ export class WaterMaterial extends PushMaterial {
             // Legacy browser patch
             var shaderName = "water";
             var join = defines.toString();
-            var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vDiffuseColor", "vSpecularColor",
-                "vFogInfos", "vFogColor", "pointSize",
+            var uniforms = [
+                "world",
+                "view",
+                "viewProjection",
+                "vEyePosition",
+                "vLightsType",
+                "vDiffuseColor",
+                "vSpecularColor",
+                "vFogInfos",
+                "vFogColor",
+                "pointSize",
                 "vNormalInfos",
                 "mBones",
-                "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "vClipPlane5", "vClipPlane6", "normalMatrix",
+                "vClipPlane",
+                "vClipPlane2",
+                "vClipPlane3",
+                "vClipPlane4",
+                "vClipPlane5",
+                "vClipPlane6",
+                "normalMatrix",
                 "logarithmicDepthConstant",
 
                 // Water
-                "worldReflectionViewProjection", "windDirection", "waveLength", "time", "windForce",
-                "cameraPosition", "bumpHeight", "waveHeight", "waterColor", "waterColor2", "colorBlendFactor", "colorBlendFactor2", "waveSpeed",
-                "waveCount"
+                "worldReflectionViewProjection",
+                "windDirection",
+                "waveLength",
+                "time",
+                "windForce",
+                "cameraPosition",
+                "bumpHeight",
+                "waveHeight",
+                "waterColor",
+                "waterColor2",
+                "colorBlendFactor",
+                "colorBlendFactor2",
+                "waveSpeed",
+                "waveCount",
             ];
-            var samplers = ["normalSampler",
+            var samplers = [
+                "normalSampler",
                 // Water
-                "refractionSampler", "reflectionSampler"
+                "refractionSampler",
+                "reflectionSampler",
             ];
             var uniformBuffers = new Array<string>();
 
@@ -470,21 +498,27 @@ export class WaterMaterial extends PushMaterial {
                 uniformBuffersNames: uniformBuffers,
                 samplers: samplers,
                 defines: defines,
-                maxSimultaneousLights: this.maxSimultaneousLights
+                maxSimultaneousLights: this.maxSimultaneousLights,
             });
-            subMesh.setEffect(scene.getEngine().createEffect(shaderName,
-                <IEffectCreationOptions>{
-                    attributes: attribs,
-                    uniformsNames: uniforms,
-                    uniformBuffersNames: uniformBuffers,
-                    samplers: samplers,
-                    defines: join,
-                    fallbacks: fallbacks,
-                    onCompiled: this.onCompiled,
-                    onError: this.onError,
-                    indexParameters: { maxSimultaneousLights: this._maxSimultaneousLights }
-                }, engine), defines, this._materialContext);
-
+            subMesh.setEffect(
+                scene.getEngine().createEffect(
+                    shaderName,
+                    <IEffectCreationOptions>{
+                        attributes: attribs,
+                        uniformsNames: uniforms,
+                        uniformBuffersNames: uniformBuffers,
+                        samplers: samplers,
+                        defines: join,
+                        fallbacks: fallbacks,
+                        onCompiled: this.onCompiled,
+                        onError: this.onError,
+                        indexParameters: { maxSimultaneousLights: this._maxSimultaneousLights },
+                    },
+                    engine
+                ),
+                defines,
+                this._materialContext
+            );
         }
         if (!subMesh.effect || !subMesh.effect.isReady()) {
             return false;

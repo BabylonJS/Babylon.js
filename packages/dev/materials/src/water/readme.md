@@ -4,10 +4,10 @@
 
 ## Water material by demo
 
-- [Calm lake](http://www.babylonjs-playground.com/#1SLLOJ#15)
-- [Ocean, play with waves](http://www.babylonjs-playground.com/#1SLLOJ#17)
-- [Deep water, play with water color](http://www.babylonjs-playground.com/#1SLLOJ#18)
-- [Beach](http://www.babylonjs-playground.com/#1SLLOJ#19)
+-   [Calm lake](http://www.babylonjs-playground.com/#1SLLOJ#15)
+-   [Ocean, play with waves](http://www.babylonjs-playground.com/#1SLLOJ#17)
+-   [Deep water, play with water color](http://www.babylonjs-playground.com/#1SLLOJ#18)
+-   [Beach](http://www.babylonjs-playground.com/#1SLLOJ#19)
 
 ## Using the water material
 

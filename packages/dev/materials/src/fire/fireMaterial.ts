@@ -1,25 +1,25 @@
-import { Nullable } from "babylonjs/types";
-import { serializeAsTexture, serialize, expandToProperty, serializeAsColor3, SerializationHelper } from "babylonjs/Misc/decorators";
-import { Matrix } from "babylonjs/Maths/math.vector";
-import { Color3 } from "babylonjs/Maths/math.color";
-import { Tags } from "babylonjs/Misc/tags";
-import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
-import { Texture } from "babylonjs/Materials/Textures/texture";
-import { MaterialDefines } from "babylonjs/Materials/materialDefines";
-import { MaterialHelper } from "babylonjs/Materials/materialHelper";
-import { PushMaterial } from "babylonjs/Materials/pushMaterial";
-import { MaterialFlags } from "babylonjs/Materials/materialFlags";
-import { VertexBuffer } from "babylonjs/Buffers/buffer";
-import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
-import { SubMesh } from "babylonjs/Meshes/subMesh";
-import { Mesh } from "babylonjs/Meshes/mesh";
-import { Scene } from "babylonjs/scene";
-import { RegisterClass } from 'babylonjs/Misc/typeStore';
-import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
+import { Nullable } from "core/types";
+import { serializeAsTexture, serialize, expandToProperty, serializeAsColor3, SerializationHelper } from "core/Misc/decorators";
+import { Matrix } from "core/Maths/math.vector";
+import { Color3 } from "core/Maths/math.color";
+import { Tags } from "core/Misc/tags";
+import { BaseTexture } from "core/Materials/Textures/baseTexture";
+import { Texture } from "core/Materials/Textures/texture";
+import { MaterialDefines } from "core/Materials/materialDefines";
+import { MaterialHelper } from "core/Materials/materialHelper";
+import { PushMaterial } from "core/Materials/pushMaterial";
+import { MaterialFlags } from "core/Materials/materialFlags";
+import { VertexBuffer } from "core/Buffers/buffer";
+import { AbstractMesh } from "core/Meshes/abstractMesh";
+import { SubMesh } from "core/Meshes/subMesh";
+import { Mesh } from "core/Meshes/mesh";
+import { Scene } from "core/scene";
+import { RegisterClass } from "core/Misc/typeStore";
+import { IAnimatable } from "core/Animations/animatable.interface";
 
 import "./fire.fragment";
 import "./fire.vertex";
-import { EffectFallbacks } from 'babylonjs/Materials/effectFallbacks';
+import { EffectFallbacks } from "core/Materials/effectFallbacks";
 
 class FireMaterialDefines extends MaterialDefines {
     public DIFFUSE = false;
@@ -128,8 +128,8 @@ export class FireMaterial extends PushMaterial {
 
         // Misc.
         if (defines._areMiscDirty) {
-            defines.POINTSIZE = (this.pointsCloud || scene.forcePointsCloud);
-            defines.FOG = (scene.fogEnabled && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE && this.fogEnabled);
+            defines.POINTSIZE = this.pointsCloud || scene.forcePointsCloud;
+            defines.FOG = scene.fogEnabled && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE && this.fogEnabled;
         }
 
         // Values that need to be evaluated on every frame
@@ -174,30 +174,52 @@ export class FireMaterial extends PushMaterial {
             var shaderName = "fire";
 
             var join = defines.toString();
-            subMesh.setEffect(scene.getEngine().createEffect(shaderName,
-                {
-                    attributes: attribs,
-                    uniformsNames: ["world", "view", "viewProjection", "vEyePosition",
-                        "vFogInfos", "vFogColor", "pointSize",
-                        "vDiffuseInfos",
-                        "mBones",
-                        "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "vClipPlane5", "vClipPlane6", "diffuseMatrix",
-                        // Fire
-                        "time", "speed"
-                    ],
-                    uniformBuffersNames: [],
-                    samplers: ["diffuseSampler",
-                        // Fire
-                        "distortionSampler", "opacitySampler"
-                    ],
-                    defines: join,
-                    fallbacks: fallbacks,
-                    onCompiled: this.onCompiled,
-                    onError: this.onError,
-                    indexParameters: null,
-                    maxSimultaneousLights: 4,
-                    transformFeedbackVaryings: null
-                }, engine), defines, this._materialContext);
+            subMesh.setEffect(
+                scene.getEngine().createEffect(
+                    shaderName,
+                    {
+                        attributes: attribs,
+                        uniformsNames: [
+                            "world",
+                            "view",
+                            "viewProjection",
+                            "vEyePosition",
+                            "vFogInfos",
+                            "vFogColor",
+                            "pointSize",
+                            "vDiffuseInfos",
+                            "mBones",
+                            "vClipPlane",
+                            "vClipPlane2",
+                            "vClipPlane3",
+                            "vClipPlane4",
+                            "vClipPlane5",
+                            "vClipPlane6",
+                            "diffuseMatrix",
+                            // Fire
+                            "time",
+                            "speed",
+                        ],
+                        uniformBuffersNames: [],
+                        samplers: [
+                            "diffuseSampler",
+                            // Fire
+                            "distortionSampler",
+                            "opacitySampler",
+                        ],
+                        defines: join,
+                        fallbacks: fallbacks,
+                        onCompiled: this.onCompiled,
+                        onError: this.onError,
+                        indexParameters: null,
+                        maxSimultaneousLights: 4,
+                        transformFeedbackVaryings: null,
+                    },
+                    engine
+                ),
+                defines,
+                this._materialContext
+            );
         }
 
         if (!subMesh.effect || !subMesh.effect.isReady()) {
@@ -348,7 +370,6 @@ export class FireMaterial extends PushMaterial {
     }
 
     public serialize(): any {
-
         var serializationObject = super.serialize();
         serializationObject.customType = "BABYLON.FireMaterial";
         serializationObject.diffuseColor = this.diffuseColor.asArray();
