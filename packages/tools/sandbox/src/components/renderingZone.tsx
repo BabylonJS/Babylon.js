@@ -15,6 +15,8 @@ import { FilesInput } from "core/Misc/filesInput";
 import { Animation } from "core/Animations/animation";
 import { CreatePlane } from "core/Meshes/Builders/planeBuilder";
 
+import "core/Helpers/sceneHelpers";
+
 import "../scss/renderingZone.scss";
 import { PBRBaseMaterial } from "core/Materials/PBR/pbrBaseMaterial";
 import { Texture } from "core/Materials/Textures/texture";
