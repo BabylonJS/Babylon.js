@@ -1,9 +1,9 @@
-import { ShaderMaterial } from "babylonjs/Materials/shaderMaterial";
-import { Scene } from "babylonjs/scene";
-import { Nullable } from "babylonjs/types";
-import { Observer } from "babylonjs/Misc/observable";
-import { Color3, TmpColors } from "babylonjs/Maths/math.color";
-import { Vector3 } from "babylonjs/Maths/math.vector";
+import { ShaderMaterial } from "core/Materials/shaderMaterial";
+import { Scene } from "core/scene";
+import { Nullable } from "core/types";
+import { Observer } from "core/Misc/observable";
+import { Color3, TmpColors } from "core/Maths/math.color";
+import { Vector3 } from "core/Maths/math.vector";
 
 import "./shaders/handle.vertex";
 import "./shaders/handle.fragment";

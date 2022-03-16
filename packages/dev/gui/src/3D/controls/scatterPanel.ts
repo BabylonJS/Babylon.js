@@ -1,6 +1,6 @@
-import { Tools } from "babylonjs/Misc/tools";
-import { TmpVectors, Vector3 } from "babylonjs/Maths/math.vector";
-import { float } from "babylonjs/types";
+import { Tools } from "core/Misc/tools";
+import { TmpVectors, Vector3 } from "core/Maths/math.vector";
+import { float } from "core/types";
 
 import { VolumeBasedPanel } from "./volumeBasedPanel";
 import { Control3D } from "./control3D";
@@ -102,7 +102,7 @@ export class ScatterPanel extends VolumeBasedPanel {
                         let minSeparation = Math.min(distance, radiusPaddingSquared);
                         distance -= minSeparation;
 
-                        if (distance < (Math.pow(combinedRadius, 2.0))) {
+                        if (distance < Math.pow(combinedRadius, 2.0)) {
                             difference2D.normalize();
                             difference.scaleInPlace((combinedRadius - Math.sqrt(distance)) * 0.5);
                             meshes[j].position.addInPlace(difference);

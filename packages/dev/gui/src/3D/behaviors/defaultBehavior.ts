@@ -1,14 +1,14 @@
-import { Behavior } from "babylonjs/Behaviors/behavior";
-import { FollowBehavior } from "babylonjs/Behaviors/Meshes/followBehavior";
-import { SixDofDragBehavior } from "babylonjs/Behaviors/Meshes/sixDofDragBehavior";
-import { Scene } from "babylonjs/scene";
-import { Mesh } from "babylonjs/Meshes/mesh";
-import { Observer } from "babylonjs/Misc/observable";
-import { Nullable } from "babylonjs/types";
-import { SurfaceMagnetismBehavior } from "babylonjs/Behaviors/Meshes/surfaceMagnetismBehavior";
-import { Vector3 } from "babylonjs/Maths/math.vector";
-import { PickingInfo } from "babylonjs/Collisions/pickingInfo";
-import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
+import { Behavior } from "core/Behaviors/behavior";
+import { FollowBehavior } from "core/Behaviors/Meshes/followBehavior";
+import { SixDofDragBehavior } from "core/Behaviors/Meshes/sixDofDragBehavior";
+import { Scene } from "core/scene";
+import { Mesh } from "core/Meshes/mesh";
+import { Observer } from "core/Misc/observable";
+import { Nullable } from "core/types";
+import { SurfaceMagnetismBehavior } from "core/Behaviors/Meshes/surfaceMagnetismBehavior";
+import { Vector3 } from "core/Maths/math.vector";
+import { PickingInfo } from "core/Collisions/pickingInfo";
+import { AbstractMesh } from "core/Meshes/abstractMesh";
 
 /**
  * Default behavior for 3D UI elements.
@@ -83,7 +83,7 @@ export class DefaultBehavior implements Behavior<Mesh> {
     /**
      *  Initializes the behavior
      */
-    public init() { }
+    public init() {}
 
     /**
      * Attaches the default behavior

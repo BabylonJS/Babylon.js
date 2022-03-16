@@ -1,5 +1,5 @@
-import { Observable } from "babylonjs/Misc/observable";
-import { IDisposable } from "babylonjs/scene";
+import { Observable } from "core/Misc/observable";
+import { IDisposable } from "core/scene";
 import { AdvancedDynamicTexture } from "./advancedDynamicTexture";
 import { ValueAndUnit } from "./valueAndUnit";
 

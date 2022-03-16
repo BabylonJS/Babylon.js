@@ -1,22 +1,22 @@
-import { Nullable } from "babylonjs/types";
-import { SerializationHelper, serialize } from "babylonjs/Misc/decorators";
-import { Matrix, Vector4 } from "babylonjs/Maths/math.vector";
-import { IAnimatable } from "babylonjs/Animations/animatable.interface";
-import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
-import { Texture } from "babylonjs/Materials/Textures/texture";
-import { MaterialDefines } from "babylonjs/Materials/materialDefines";
-import { MaterialHelper } from "babylonjs/Materials/materialHelper";
-import { IEffectCreationOptions } from "babylonjs/Materials/effect";
-import { PushMaterial } from "babylonjs/Materials/pushMaterial";
-import { VertexBuffer } from "babylonjs/Buffers/buffer";
-import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
-import { SubMesh } from "babylonjs/Meshes/subMesh";
-import { Mesh } from "babylonjs/Meshes/mesh";
-import { Scene } from "babylonjs/scene";
-import { RegisterClass } from "babylonjs/Misc/typeStore";
-import { Color4 } from "babylonjs/Maths/math.color";
-import { EffectFallbacks } from "babylonjs/Materials/effectFallbacks";
-import { Constants } from "babylonjs/Engines/constants";
+import { Nullable } from "core/types";
+import { SerializationHelper, serialize } from "core/Misc/decorators";
+import { Matrix, Vector4 } from "core/Maths/math.vector";
+import { IAnimatable } from "core/Animations/animatable.interface";
+import { BaseTexture } from "core/Materials/Textures/baseTexture";
+import { Texture } from "core/Materials/Textures/texture";
+import { MaterialDefines } from "core/Materials/materialDefines";
+import { MaterialHelper } from "core/Materials/materialHelper";
+import { IEffectCreationOptions } from "core/Materials/effect";
+import { PushMaterial } from "core/Materials/pushMaterial";
+import { VertexBuffer } from "core/Buffers/buffer";
+import { AbstractMesh } from "core/Meshes/abstractMesh";
+import { SubMesh } from "core/Meshes/subMesh";
+import { Mesh } from "core/Meshes/mesh";
+import { Scene } from "core/scene";
+import { RegisterClass } from "core/Misc/typeStore";
+import { Color4 } from "core/Maths/math.color";
+import { EffectFallbacks } from "core/Materials/effectFallbacks";
+import { Constants } from "core/Engines/constants";
 
 import "./shaders/mrdlBackplate.fragment";
 import "./shaders/mrdlBackplate.vertex";
@@ -47,8 +47,8 @@ export class MRDLBackplateMaterial extends PushMaterial {
     private _iridescentMapTexture: Texture;
 
     /**
-    * Gets or sets the corner radius on the backplate. If this value is changed, update the lineWidth to match.
-    */
+     * Gets or sets the corner radius on the backplate. If this value is changed, update the lineWidth to match.
+     */
     @serialize()
     public radius = 0.3;
 
@@ -89,10 +89,10 @@ export class MRDLBackplateMaterial extends PushMaterial {
     /**
      * Gets or sets the top left Radii Multiplier.
      */
-     @serialize()
-     public radiusTopRight = 1.0;
+    @serialize()
+    public radiusTopRight = 1.0;
 
-     /**
+    /**
      * Gets or sets the top left Radii Multiplier.
      */
     @serialize()
@@ -101,8 +101,8 @@ export class MRDLBackplateMaterial extends PushMaterial {
     /**
      * Gets or sets the top left Radii Multiplier.
      */
-     @serialize()
-     public radiusBottomRight = 1.0;
+    @serialize()
+    public radiusBottomRight = 1.0;
 
     /** @hidden */
     public _rate = 0;
@@ -299,14 +299,41 @@ export class MRDLBackplateMaterial extends PushMaterial {
             const join = defines.toString();
 
             const uniforms = [
-                "world", "viewProjection", "cameraPosition"
-                , "_Radius_", "_Line_Width_", "_Absolute_Sizes_", "_Filter_Width_", "_Base_Color_", "_Line_Color_"
-                , "_Radius_Top_Left_", "_Radius_Top_Right_", "_Radius_Bottom_Left_", "_Radius_Bottom_Right_"
-                , "_Rate_", "_Highlight_Color_", "_Highlight_Width_", "_Highlight_Transform_", "_Highlight_"
-                , "_Iridescence_Intensity_", "_Iridescence_Edge_Intensity_", "_Iridescence_Tint_", "_Iridescent_Map_"
-                , "_Angle_", "_Reflected_", "_Frequency_", "_Vertical_Offset_", "_Gradient_Color_", "_Top_Left_"
-                , "_Top_Right_", "_Bottom_Left_", "_Bottom_Right_", "_Edge_Width_", "_Edge_Power_", "_Line_Gradient_Blend_"
-                , "_Fade_Out_"
+                "world",
+                "viewProjection",
+                "cameraPosition",
+                "_Radius_",
+                "_Line_Width_",
+                "_Absolute_Sizes_",
+                "_Filter_Width_",
+                "_Base_Color_",
+                "_Line_Color_",
+                "_Radius_Top_Left_",
+                "_Radius_Top_Right_",
+                "_Radius_Bottom_Left_",
+                "_Radius_Bottom_Right_",
+                "_Rate_",
+                "_Highlight_Color_",
+                "_Highlight_Width_",
+                "_Highlight_Transform_",
+                "_Highlight_",
+                "_Iridescence_Intensity_",
+                "_Iridescence_Edge_Intensity_",
+                "_Iridescence_Tint_",
+                "_Iridescent_Map_",
+                "_Angle_",
+                "_Reflected_",
+                "_Frequency_",
+                "_Vertical_Offset_",
+                "_Gradient_Color_",
+                "_Top_Left_",
+                "_Top_Right_",
+                "_Bottom_Left_",
+                "_Bottom_Right_",
+                "_Edge_Width_",
+                "_Edge_Power_",
+                "_Line_Gradient_Blend_",
+                "_Fade_Out_",
             ];
             const samplers: string[] = [];
             const uniformBuffers = new Array<string>();
@@ -316,21 +343,27 @@ export class MRDLBackplateMaterial extends PushMaterial {
                 uniformBuffersNames: uniformBuffers,
                 samplers: samplers,
                 defines: defines,
-                maxSimultaneousLights: 4
+                maxSimultaneousLights: 4,
             });
 
-            subMesh.setEffect(scene.getEngine().createEffect(shaderName,
-                <IEffectCreationOptions>{
-                    attributes: attribs,
-                    uniformsNames: uniforms,
-                    uniformBuffersNames: uniformBuffers,
-                    samplers: samplers,
-                    defines: join,
-                    fallbacks: fallbacks,
-                    onCompiled: this.onCompiled,
-                    onError: this.onError,
-                    indexParameters: { maxSimultaneousLights: 4 }
-                }, engine), defines);
+            subMesh.setEffect(
+                scene.getEngine().createEffect(
+                    shaderName,
+                    <IEffectCreationOptions>{
+                        attributes: attribs,
+                        uniformsNames: uniforms,
+                        uniformBuffersNames: uniformBuffers,
+                        samplers: samplers,
+                        defines: join,
+                        fallbacks: fallbacks,
+                        onCompiled: this.onCompiled,
+                        onError: this.onError,
+                        indexParameters: { maxSimultaneousLights: 4 },
+                    },
+                    engine
+                ),
+                defines
+            );
         }
         if (!subMesh.effect || !subMesh.effect.isReady()) {
             return false;

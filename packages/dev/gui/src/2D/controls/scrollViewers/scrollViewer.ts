@@ -1,6 +1,6 @@
-import { Nullable } from "babylonjs/types";
-import { Observer } from "babylonjs/Misc/observable";
-import { Vector2 } from "babylonjs/Maths/math";
+import { Nullable } from "core/types";
+import { Observer } from "core/Misc/observable";
+import { Vector2 } from "core/Maths/math";
 import { Rectangle } from "../rectangle";
 import { Grid } from "../grid";
 import { Image } from "../image";
@@ -11,12 +11,12 @@ import { AdvancedDynamicTexture } from "../../advancedDynamicTexture";
 import { _ScrollViewerWindow } from "./scrollViewerWindow";
 import { ScrollBar } from "../sliders/scrollBar";
 import { ImageScrollBar } from "../sliders/imageScrollBar";
-import { RegisterClass } from 'babylonjs/Misc/typeStore';
-import { ICanvasRenderingContext } from "babylonjs/Engines/ICanvas";
+import { RegisterClass } from "core/Misc/typeStore";
+import { ICanvasRenderingContext } from "core/Engines/ICanvas";
 
 /**
  * Class used to hold a viewer window and sliders in a grid
-*/
+ */
 export class ScrollViewer extends Rectangle {
     private _grid: Grid;
     private _horizontalBarSpace: Rectangle;
@@ -166,9 +166,9 @@ export class ScrollViewer extends Rectangle {
     }
 
     /**
-    * Creates a new ScrollViewer
-    * @param name of ScrollViewer
-    */
+     * Creates a new ScrollViewer
+     * @param name of ScrollViewer
+     */
     constructor(name?: string, isImageBased?: boolean) {
         super(name);
 
@@ -192,8 +192,7 @@ export class ScrollViewer extends Rectangle {
         if (this._useImageBar) {
             this._horizontalBar = new ImageScrollBar();
             this._verticalBar = new ImageScrollBar();
-        }
-        else {
+        } else {
             this._horizontalBar = new ScrollBar();
             this._verticalBar = new ScrollBar();
         }
@@ -605,8 +604,7 @@ export class ScrollViewer extends Rectangle {
             this._horizontalBar.isVisible = false;
             this._horizontalBar.value = 0;
             this._rebuildLayout = true;
-        }
-        else if (!this._horizontalBar.isVisible && (windowContentsWidth > this._clientWidth || this.forceHorizontalBar)) {
+        } else if (!this._horizontalBar.isVisible && (windowContentsWidth > this._clientWidth || this.forceHorizontalBar)) {
             this._grid.setRowDefinition(1, this._barSize, true);
             this._horizontalBar.isVisible = true;
             this._rebuildLayout = true;
@@ -617,8 +615,7 @@ export class ScrollViewer extends Rectangle {
             this._verticalBar.isVisible = false;
             this._verticalBar.value = 0;
             this._rebuildLayout = true;
-        }
-        else if (!this._verticalBar.isVisible && (windowContentsHeight > this._clientHeight || this.forceVerticalBar)) {
+        } else if (!this._verticalBar.isVisible && (windowContentsHeight > this._clientHeight || this.forceVerticalBar)) {
             this._grid.setColumnDefinition(1, this._barSize, true);
             this._verticalBar.isVisible = true;
             this._rebuildLayout = true;

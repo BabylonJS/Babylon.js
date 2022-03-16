@@ -1,11 +1,11 @@
-import { Nullable } from "babylonjs/types";
-import { Observable } from "babylonjs/Misc/observable";
-import { Vector3 } from "babylonjs/Maths/math.vector";
-import { PointerEventTypes } from "babylonjs/Events/pointerEvents";
-import { TransformNode } from "babylonjs/Meshes/transformNode";
-import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
-import { IBehaviorAware, Behavior } from "babylonjs/Behaviors/behavior";
-import { IDisposable, Scene } from "babylonjs/scene";
+import { Nullable } from "core/types";
+import { Observable } from "core/Misc/observable";
+import { Vector3 } from "core/Maths/math.vector";
+import { PointerEventTypes } from "core/Events/pointerEvents";
+import { TransformNode } from "core/Meshes/transformNode";
+import { AbstractMesh } from "core/Meshes/abstractMesh";
+import { IBehaviorAware, Behavior } from "core/Behaviors/behavior";
+import { IDisposable, Scene } from "core/scene";
 
 import { GUI3DManager } from "../gui3DManager";
 import { Vector3WithInfo } from "../vector3WithInfo";
@@ -205,7 +205,7 @@ export class Control3D implements IDisposable, IBehaviorAware<Control3D> {
     constructor(
         /** Defines the control name */
         public name?: string
-    ) { }
+    ) {}
 
     /**
      * Gets a string representing the class name

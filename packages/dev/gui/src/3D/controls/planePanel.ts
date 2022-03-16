@@ -1,4 +1,4 @@
-import { TmpVectors, Vector3 } from "babylonjs/Maths/math.vector";
+import { TmpVectors, Vector3 } from "core/Maths/math.vector";
 
 import { Container3D } from "./container3D";
 import { Control3D } from "./control3D";
@@ -32,6 +32,5 @@ export class PlanePanel extends VolumeBasedPanel {
                 mesh.lookAt(target);
                 break;
         }
-
     }
 }

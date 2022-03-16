@@ -1,13 +1,13 @@
-import { Nullable } from "babylonjs/types";
-import { Observable } from "babylonjs/Misc/observable";
-import { Vector3 } from "babylonjs/Maths/math.vector";
-import { TransformNode } from "babylonjs/Meshes/transformNode";
-import { Scene } from "babylonjs/scene";
+import { Nullable } from "core/types";
+import { Observable } from "core/Misc/observable";
+import { Vector3 } from "core/Maths/math.vector";
+import { TransformNode } from "core/Meshes/transformNode";
+import { Scene } from "core/scene";
 import { Control3D } from "./control3D";
-import { CreateBox } from "babylonjs/Meshes/Builders/boxBuilder";
-import { PointerDragBehavior } from "babylonjs/Behaviors/Meshes/pointerDragBehavior";
-import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
-import { SceneLoader } from "babylonjs/Loading/sceneLoader";
+import { CreateBox } from "core/Meshes/Builders/boxBuilder";
+import { PointerDragBehavior } from "core/Behaviors/Meshes/pointerDragBehavior";
+import { AbstractMesh } from "core/Meshes/abstractMesh";
+import { SceneLoader } from "core/Loading/sceneLoader";
 import { MRDLSliderBarMaterial } from "../materials/mrdl/mrdlSliderBarMaterial";
 import { MRDLSliderThumbMaterial } from "../materials/mrdl/mrdlSliderThumbMaterial";
 import { MRDLBackplateMaterial } from "../materials/mrdl/mrdlBackplateMaterial";
@@ -31,7 +31,7 @@ export class Slider3D extends Control3D {
     /**
      * File name for the 8x4 model.
      */
-    public static MODEL_FILENAME: string = 'mrtk-fluent-backplate.glb';
+    public static MODEL_FILENAME: string = "mrtk-fluent-backplate.glb";
 
     private _sliderBackplate: AbstractMesh;
     private _sliderBackplateMaterial: MRDLBackplateMaterial;
@@ -174,63 +174,62 @@ export class Slider3D extends Control3D {
 
     // Mesh association
     protected _createNode(scene: Scene): TransformNode {
-        const sliderBackplate = CreateBox(`${this.name}_sliderbackplate`, {
-            width: 1.0,
-            height: 1.0,
-            depth: 1.0,
-        }, scene);
+        const sliderBackplate = CreateBox(
+            `${this.name}_sliderbackplate`,
+            {
+                width: 1.0,
+                height: 1.0,
+                depth: 1.0,
+            },
+            scene
+        );
         sliderBackplate.isPickable = false;
         sliderBackplate.visibility = 0;
         sliderBackplate.scaling = new Vector3(1, 0.5, 0.8);
 
-        SceneLoader.ImportMeshAsync(
-            undefined,
-            Slider3D.MODEL_BASE_URL,
-            Slider3D.MODEL_FILENAME,
-            scene)
-            .then((result) => {
-                const sliderBackplateModel = result.meshes[1];
-                const sliderBarModel = result.meshes[1].clone(`${this.name}_sliderbar`, sliderBackplate);
-                const sliderThumbModel = result.meshes[1].clone(`${this.name}_sliderthumb`, sliderBackplate);
-                sliderBackplateModel.visibility = 0;
+        SceneLoader.ImportMeshAsync(undefined, Slider3D.MODEL_BASE_URL, Slider3D.MODEL_FILENAME, scene).then((result) => {
+            const sliderBackplateModel = result.meshes[1];
+            const sliderBarModel = result.meshes[1].clone(`${this.name}_sliderbar`, sliderBackplate);
+            const sliderThumbModel = result.meshes[1].clone(`${this.name}_sliderthumb`, sliderBackplate);
+            sliderBackplateModel.visibility = 0;
 
-                if (this._sliderBackplateVisible) {
-                    sliderBackplateModel.visibility = 1;
-                    sliderBackplateModel.name = `${this.name}_sliderbackplate`;
-                    sliderBackplateModel.isPickable = false;
-                    sliderBackplateModel.scaling.x = 1;
-                    sliderBackplateModel.scaling.z = 0.2;
-                    sliderBackplateModel.parent = sliderBackplate;
-                    if (!!this._sliderBackplateMaterial) {
-                        sliderBackplateModel.material = this._sliderBackplateMaterial;
-                    }
-                    this._sliderBackplate = sliderBackplateModel;
+            if (this._sliderBackplateVisible) {
+                sliderBackplateModel.visibility = 1;
+                sliderBackplateModel.name = `${this.name}_sliderbackplate`;
+                sliderBackplateModel.isPickable = false;
+                sliderBackplateModel.scaling.x = 1;
+                sliderBackplateModel.scaling.z = 0.2;
+                sliderBackplateModel.parent = sliderBackplate;
+                if (!!this._sliderBackplateMaterial) {
+                    sliderBackplateModel.material = this._sliderBackplateMaterial;
                 }
+                this._sliderBackplate = sliderBackplateModel;
+            }
 
-                if (!!sliderBarModel) {
-                    sliderBarModel.parent = sliderBackplate;
-                    sliderBarModel.position.z = -0.1;
-                    sliderBarModel.scaling = new Vector3(SLIDER_SCALING - SLIDER_MARGIN, 0.04, 0.3);
-                    sliderBarModel.isPickable = false;
-                    if (!!this._sliderBarMaterial) {
-                        sliderBarModel.material = this._sliderBarMaterial;
-                    }
-                    this._sliderBar = sliderBarModel;
+            if (!!sliderBarModel) {
+                sliderBarModel.parent = sliderBackplate;
+                sliderBarModel.position.z = -0.1;
+                sliderBarModel.scaling = new Vector3(SLIDER_SCALING - SLIDER_MARGIN, 0.04, 0.3);
+                sliderBarModel.isPickable = false;
+                if (!!this._sliderBarMaterial) {
+                    sliderBarModel.material = this._sliderBarMaterial;
                 }
+                this._sliderBar = sliderBarModel;
+            }
 
-                if (!!sliderThumbModel) {
-                    sliderThumbModel.parent = sliderBackplate;
-                    sliderThumbModel.isPickable = true;
-                    sliderThumbModel.position.z = -0.115;
-                    sliderThumbModel.scaling = new Vector3(0.025, 0.3, 0.6);
-                    sliderThumbModel.position.x = this._convertToPosition(this.value);
-                    sliderThumbModel.addBehavior(this._createBehavior());
-                    if (!!this._sliderThumbMaterial) {
-                        sliderThumbModel.material = this._sliderThumbMaterial;
-                    }
-                    this._sliderThumb = sliderThumbModel;
+            if (!!sliderThumbModel) {
+                sliderThumbModel.parent = sliderBackplate;
+                sliderThumbModel.isPickable = true;
+                sliderThumbModel.position.z = -0.115;
+                sliderThumbModel.scaling = new Vector3(0.025, 0.3, 0.6);
+                sliderThumbModel.position.x = this._convertToPosition(this.value);
+                sliderThumbModel.addBehavior(this._createBehavior());
+                if (!!this._sliderThumbMaterial) {
+                    sliderThumbModel.material = this._sliderThumbMaterial;
                 }
-            });
+                this._sliderThumb = sliderThumbModel;
+            }
+        });
 
         this._affectMaterial(sliderBackplate);
         return sliderBackplate;

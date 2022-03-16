@@ -1,4 +1,4 @@
-import { Observable } from "babylonjs/Misc/observable";
+import { Observable } from "core/Misc/observable";
 import { AdvancedDynamicTexture } from "./advancedDynamicTexture";
 
 /**
@@ -26,11 +26,13 @@ export class ValueAndUnit {
      * @param unit defines the unit to store - defaults to ValueAndUnit.UNITMODE_PIXEL
      * @param negativeValueAllowed defines a boolean indicating if the value can be negative
      */
-    public constructor(value: number,
+    public constructor(
+        value: number,
         /** defines the unit to store */
         unit = ValueAndUnit.UNITMODE_PIXEL,
         /** defines a boolean indicating if the value can be negative */
-        public negativeValueAllowed = true) {
+        public negativeValueAllowed = true
+    ) {
         this._value = value;
         this._unit = unit;
         this._originalUnit = unit;
@@ -133,11 +135,13 @@ export class ValueAndUnit {
                 return window.innerWidth < window.innerHeight ? width : height;
             }
 
-            if (host.idealWidth) { // horizontal
+            if (host.idealWidth) {
+                // horizontal
                 return width;
             }
 
-            if (host.idealHeight) { // vertical
+            if (host.idealHeight) {
+                // vertical
                 return height;
             }
         }

@@ -1,6 +1,6 @@
 import { InputText } from "./inputText";
-import { RegisterClass } from 'babylonjs/Misc/typeStore';
-import { TextWrapper } from './textWrapper';
+import { RegisterClass } from "core/Misc/typeStore";
+import { TextWrapper } from "./textWrapper";
 
 /**
  * Class used to create a password control

@@ -1,6 +1,6 @@
-import { Tools } from "babylonjs/Misc/tools";
-import { Matrix, Vector3, TmpVectors } from "babylonjs/Maths/math.vector";
-import { int } from "babylonjs/types";
+import { Tools } from "core/Misc/tools";
+import { Matrix, Vector3, TmpVectors } from "core/Maths/math.vector";
+import { int } from "core/types";
 
 import { Container3D } from "./container3D";
 import { Control3D } from "./control3D";
@@ -25,13 +25,13 @@ export abstract class VolumeBasedPanel extends Container3D {
 
     /**
      * Gets or sets the orientation to apply to all controls (BABYLON.Container3D.FaceOriginReversedOrientation by default)
-    * | Value | Type                                | Description |
-    * | ----- | ----------------------------------- | ----------- |
-    * | 0     | UNSET_ORIENTATION                   |  Control rotation will remain unchanged |
-    * | 1     | FACEORIGIN_ORIENTATION              |  Control will rotate to make it look at sphere central axis |
-    * | 2     | FACEORIGINREVERSED_ORIENTATION      |  Control will rotate to make it look back at sphere central axis |
-    * | 3     | FACEFORWARD_ORIENTATION             |  Control will rotate to look at z axis (0, 0, 1) |
-    * | 4     | FACEFORWARDREVERSED_ORIENTATION     |  Control will rotate to look at negative z axis (0, 0, -1) |
+     * | Value | Type                                | Description |
+     * | ----- | ----------------------------------- | ----------- |
+     * | 0     | UNSET_ORIENTATION                   |  Control rotation will remain unchanged |
+     * | 1     | FACEORIGIN_ORIENTATION              |  Control will rotate to make it look at sphere central axis |
+     * | 2     | FACEORIGINREVERSED_ORIENTATION      |  Control will rotate to make it look back at sphere central axis |
+     * | 3     | FACEFORWARD_ORIENTATION             |  Control will rotate to look at z axis (0, 0, 1) |
+     * | 4     | FACEFORWARDREVERSED_ORIENTATION     |  Control will rotate to look at negative z axis (0, 0, -1) |
      */
     public get orientation(): number {
         return this._orientation;
@@ -143,15 +143,15 @@ export abstract class VolumeBasedPanel extends Container3D {
             columns = Math.ceil(controlCount / this._rows);
         }
 
-        let startOffsetX = (columns * 0.5) * this._cellWidth;
-        let startOffsetY = (rows * 0.5) * this._cellHeight;
+        let startOffsetX = columns * 0.5 * this._cellWidth;
+        let startOffsetY = rows * 0.5 * this._cellHeight;
         let nodeGrid = [];
         let cellCounter = 0;
 
         if (this._rowThenColum) {
             for (var r = 0; r < rows; r++) {
                 for (var c = 0; c < columns; c++) {
-                    nodeGrid.push(new Vector3((c * this._cellWidth) - startOffsetX + this._cellWidth / 2, (r * this._cellHeight) - startOffsetY + this._cellHeight / 2, 0));
+                    nodeGrid.push(new Vector3(c * this._cellWidth - startOffsetX + this._cellWidth / 2, r * this._cellHeight - startOffsetY + this._cellHeight / 2, 0));
                     cellCounter++;
                     if (cellCounter > controlCount) {
                         break;
@@ -161,7 +161,7 @@ export abstract class VolumeBasedPanel extends Container3D {
         } else {
             for (var c = 0; c < columns; c++) {
                 for (var r = 0; r < rows; r++) {
-                    nodeGrid.push(new Vector3((c * this._cellWidth) - startOffsetX + this._cellWidth / 2, (r * this._cellHeight) - startOffsetY + this._cellHeight / 2, 0));
+                    nodeGrid.push(new Vector3(c * this._cellWidth - startOffsetX + this._cellWidth / 2, r * this._cellHeight - startOffsetY + this._cellHeight / 2, 0));
                     cellCounter++;
                     if (cellCounter > controlCount) {
                         break;
@@ -188,7 +188,5 @@ export abstract class VolumeBasedPanel extends Container3D {
     protected abstract _mapGridNode(control: Control3D, nodePosition: Vector3): void;
 
     /** Child classes can implement this function to provide additional processing */
-    protected _finalProcessing() {
-
-    }
+    protected _finalProcessing() {}
 }

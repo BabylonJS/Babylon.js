@@ -1,13 +1,13 @@
-import { Nullable } from "babylonjs/types";
-import { Observable } from "babylonjs/Misc/observable";
-import { Tools } from "babylonjs/Misc/tools";
+import { Nullable } from "core/types";
+import { Observable } from "core/Misc/observable";
+import { Tools } from "core/Misc/tools";
 
 import { Control } from "./control";
 import { Measure } from "../measure";
-import { RegisterClass } from "babylonjs/Misc/typeStore";
-import { serialize } from "babylonjs/Misc/decorators";
-import { ICanvas, ICanvasRenderingContext, IImage } from "babylonjs/Engines/ICanvas";
-import { EngineStore } from "babylonjs/Engines/engineStore";
+import { RegisterClass } from "core/Misc/typeStore";
+import { serialize } from "core/Misc/decorators";
+import { ICanvas, ICanvasRenderingContext, IImage } from "core/Engines/ICanvas";
+import { EngineStore } from "core/Engines/engineStore";
 
 /**
  * Class used to create 2D images
@@ -241,8 +241,8 @@ export class Image extends Control {
     }
 
     /**
-    * Gets or sets a boolean indicating if nine patch slices (left, top, right, bottom) should be read from image data
-    */
+     * Gets or sets a boolean indicating if nine patch slices (left, top, right, bottom) should be read from image data
+     */
     @serialize()
     public get populateNinePatchSlicesFromImage(): boolean {
         return this._populateNinePatchSlicesFromImage;
@@ -858,8 +858,8 @@ export class Image extends Control {
         const rightWidth = this._imageWidth - this._sliceRight;
         const centerWidth = this._sliceRight - this._sliceLeft;
         const centerHeight = this._sliceBottom - this._sliceTop;
-        const targetCenterWidth = (this._currentMeasure.width - rightWidth - leftWidth) + 2;
-        const targetCenterHeight = (this._currentMeasure.height - bottomHeight - topHeight) + 2;
+        const targetCenterWidth = this._currentMeasure.width - rightWidth - leftWidth + 2;
+        const targetCenterHeight = this._currentMeasure.height - bottomHeight - topHeight + 2;
         const centerLeftOffset = this._currentMeasure.left + leftWidth - 1;
         const centerTopOffset = this._currentMeasure.top + topHeight - 1;
         const rightOffset = this._currentMeasure.left + this._currentMeasure.width - rightWidth;

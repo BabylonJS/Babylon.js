@@ -1,12 +1,12 @@
 // Assumptions: absolute position of button mesh is inside the mesh
 
-import { Vector3 } from "babylonjs/Maths/math.vector";
-import { Mesh } from "babylonjs/Meshes/mesh";
-import { PointerEventTypes } from "babylonjs/Events/pointerEvents";
-import { TransformNode } from "babylonjs/Meshes/transformNode";
-import { Scene } from "babylonjs/scene";
-import { TmpVectors } from "babylonjs/Maths/math.vector";
-import { Observable } from "babylonjs/Misc/observable";
+import { Vector3 } from "core/Maths/math.vector";
+import { Mesh } from "core/Meshes/mesh";
+import { PointerEventTypes } from "core/Events/pointerEvents";
+import { TransformNode } from "core/Meshes/transformNode";
+import { Scene } from "core/scene";
+import { TmpVectors } from "core/Maths/math.vector";
+import { Observable } from "core/Misc/observable";
 
 import { Button3D } from "./button3D";
 
@@ -23,7 +23,9 @@ export class TouchButton3D extends Button3D {
 
     private _isToggleButton = false;
     private _toggleState = false;
-    private _toggleButtonCallback = () => { this._onToggle(!this._toggleState); };
+    private _toggleButtonCallback = () => {
+        this._onToggle(!this._toggleState);
+    };
 
     /**
      * An event triggered when the button is toggled. Only fired if 'isToggleButton' is true
@@ -128,8 +130,7 @@ export class TouchButton3D extends Button3D {
 
         if (value) {
             this.onPointerUpObservable.add(this._toggleButtonCallback);
-        }
-        else {
+        } else {
             this.onPointerUpObservable.removeCallback(this._toggleButtonCallback);
 
             // Safety check, reset the button if it's toggled on but no longer a toggle button
@@ -197,8 +198,7 @@ export class TouchButton3D extends Button3D {
             if (!this._isInteractionInFrontOfButton(nearMeshPosition)) {
                 // Near interaction mesh is behind the button, don't send a pointer down
                 return PointerEventTypes.POINTERMOVE;
-            }
-            else {
+            } else {
                 this._isNearPressed = true;
                 this._interactionSurfaceHeight = this._getInteractionHeight(nearMeshPosition, this._collisionMesh.getAbsolutePosition());
             }
@@ -207,8 +207,7 @@ export class TouchButton3D extends Button3D {
             if (activeInteractionCount == 0) {
                 // We get the release for the down we swallowed earlier, swallow as well
                 return PointerEventTypes.POINTERMOVE;
-            }
-            else {
+            } else {
                 this._isNearPressed = false;
             }
         }

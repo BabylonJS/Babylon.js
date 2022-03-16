@@ -1,12 +1,12 @@
-import { Observable } from "babylonjs/Misc/observable";
+import { Observable } from "core/Misc/observable";
 import { Measure } from "../measure";
 import { ValueAndUnit } from "../valueAndUnit";
 import { Control } from "./control";
-import { RegisterClass } from "babylonjs/Misc/typeStore";
-import { Nullable } from "babylonjs/types";
-import { serialize } from 'babylonjs/Misc/decorators';
-import { ICanvasRenderingContext } from 'babylonjs/Engines/ICanvas';
-import { EngineStore } from "babylonjs/Engines/engineStore";
+import { RegisterClass } from "core/Misc/typeStore";
+import { Nullable } from "core/types";
+import { serialize } from "core/Misc/decorators";
+import { ICanvasRenderingContext } from "core/Engines/ICanvas";
+import { EngineStore } from "core/Engines/engineStore";
 
 /**
  * Enum that determines the text-wrapping mode to use.
@@ -30,7 +30,7 @@ export enum TextWrapping {
     /**
      * Wrap the text word-wise and clip the text when the text's height is larger than the Control.height, and shrink the last line with trailing … .
      */
-    WordWrapEllipsis
+    WordWrapEllipsis,
 }
 
 /**
@@ -216,7 +216,6 @@ export class TextBlock extends Control {
      * Gets or sets a boolean indicating that text must have underline
      */
     @serialize()
-
     public get underline(): boolean {
         return this._underline;
     }
@@ -402,7 +401,7 @@ export class TextBlock extends Control {
         if (this.outlineWidth) {
             context.lineWidth = this.outlineWidth;
             context.strokeStyle = this.outlineColor;
-            context.lineJoin = 'miter';
+            context.lineJoin = "miter";
             context.miterLimit = 2;
         }
     }
@@ -439,7 +438,7 @@ export class TextBlock extends Control {
     }
 
     //Calculate how many characters approximately we need to remove
-    private _getCharsToRemove(lineWidth : number, width : number, lineLength : number) {
+    private _getCharsToRemove(lineWidth: number, width: number, lineLength: number) {
         let diff = lineWidth > width ? lineWidth - width : 0;
         // This isn't exact unless the font is monospaced
         let charWidth = lineWidth / lineLength;
@@ -511,8 +510,8 @@ export class TextBlock extends Control {
         for (var n = 1; n <= lines.length; n++) {
             const currentHeight = this._computeHeightForLinesOf(n);
             if (currentHeight > height && n > 1) {
-                var lastLine = lines[n - 2] as {text: string; width: number};
-                var currentLine = lines[n - 1] as {text: string; width: number};
+                var lastLine = lines[n - 2] as { text: string; width: number };
+                var currentLine = lines[n - 1] as { text: string; width: number };
                 lines[n - 2] = this._parseLineEllipsis(`${lastLine.text + currentLine.text}`, width, context);
                 var linesToRemove = lines.length - n + 1;
                 for (var i = 0; i < linesToRemove; i++) {
@@ -588,7 +587,13 @@ export class TextBlock extends Control {
                 if (!this._fontOffset) {
                     this._fontOffset = Control._GetFontOffset(context.font);
                 }
-                const lines = this._lines ? this._lines : this._breakLines(this.widthInPixels - this._paddingLeftInPixels - this._paddingRightInPixels, this.heightInPixels - this._paddingTopInPixels - this._paddingBottomInPixels, context);
+                const lines = this._lines
+                    ? this._lines
+                    : this._breakLines(
+                          this.widthInPixels - this._paddingLeftInPixels - this._paddingRightInPixels,
+                          this.heightInPixels - this._paddingTopInPixels - this._paddingBottomInPixels,
+                          context
+                      );
                 return this._computeHeightForLinesOf(lines.length);
             }
         }

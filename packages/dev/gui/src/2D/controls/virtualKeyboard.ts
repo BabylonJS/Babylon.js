@@ -1,12 +1,12 @@
-import { Nullable } from "babylonjs/types";
-import { Observable, Observer } from "babylonjs/Misc/observable";
+import { Nullable } from "core/types";
+import { Observable, Observer } from "core/Misc/observable";
 
 import { StackPanel } from "./stackPanel";
 import { Button } from "./button";
 import { Container } from "./container";
 import { TextBlock } from "./textBlock";
 import { InputText } from "./inputText";
-import { RegisterClass } from 'babylonjs/Misc/typeStore';
+import { RegisterClass } from "core/Misc/typeStore";
 
 /**
  * Class used to store key control properties
@@ -31,9 +31,9 @@ export class KeyPropertySet {
 }
 
 type ConnectedInputText = {
-    input: InputText,
-    onFocusObserver: Nullable<Observer<InputText>>,
-    onBlurObserver: Nullable<Observer<InputText>>
+    input: InputText;
+    onFocusObserver: Nullable<Observer<InputText>>;
+    onBlurObserver: Nullable<Observer<InputText>>;
 };
 
 /**
@@ -158,11 +158,11 @@ export class VirtualKeyboard extends StackPanel {
                 let button_tblock = button.children[0] as TextBlock;
 
                 if (button_tblock.text === "\u21E7") {
-                    button.color = (shiftState ? this.shiftButtonColor : this.defaultButtonColor);
-                    button.thickness = (shiftState > 1 ? this.selectedShiftThickness : 0);
+                    button.color = shiftState ? this.shiftButtonColor : this.defaultButtonColor;
+                    button.thickness = shiftState > 1 ? this.selectedShiftThickness : 0;
                 }
 
-                button_tblock.text = (shiftState > 0 ? button_tblock.text.toUpperCase() : button_tblock.text.toLowerCase());
+                button_tblock.text = shiftState > 0 ? button_tblock.text.toUpperCase() : button_tblock.text.toLowerCase();
             }
         }
     }
@@ -210,7 +210,7 @@ export class VirtualKeyboard extends StackPanel {
                         this._currentlyConnectedInputText.processKey(13);
                         return;
                 }
-                this._currentlyConnectedInputText.processKey(-1, (this.shiftState ? key.toUpperCase() : key));
+                this._currentlyConnectedInputText.processKey(-1, this.shiftState ? key.toUpperCase() : key);
 
                 if (this.shiftState === 1) {
                     this.shiftState = 0;
@@ -239,7 +239,7 @@ export class VirtualKeyboard extends StackPanel {
         this._connectedInputTexts.push({
             input,
             onBlurObserver,
-            onFocusObserver
+            onFocusObserver,
         });
     }
 

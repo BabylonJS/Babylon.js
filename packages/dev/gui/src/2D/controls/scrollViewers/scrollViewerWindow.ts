@@ -2,12 +2,12 @@ import { Measure } from "../../measure";
 import { Container } from "../container";
 import { ValueAndUnit } from "../../valueAndUnit";
 import { Control } from "../control";
-import { ICanvasRenderingContext } from 'babylonjs/Engines/ICanvas';
+import { ICanvasRenderingContext } from "core/Engines/ICanvas";
 
 /**
  * Class used to hold a the container for ScrollViewer
  * @hidden
-*/
+ */
 export class _ScrollViewerWindow extends Container {
     public parentClientWidth: number;
     public parentClientHeight: number;
@@ -171,9 +171,9 @@ export class _ScrollViewerWindow extends Container {
     }
 
     /**
-    * Creates a new ScrollViewerWindow
-    * @param name of ScrollViewerWindow
-    */
+     * Creates a new ScrollViewerWindow
+     * @param name of ScrollViewerWindow
+     */
     constructor(name?: string) {
         super(name);
     }
@@ -322,5 +322,4 @@ export class _ScrollViewerWindow extends Container {
 
         super._postMeasure();
     }
-
 }

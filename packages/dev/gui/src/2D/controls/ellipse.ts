@@ -1,9 +1,9 @@
 import { Container } from "./container";
 import { Control } from "./control";
 import { Measure } from "../measure";
-import { RegisterClass } from 'babylonjs/Misc/typeStore';
-import { serialize } from 'babylonjs/Misc/decorators';
-import { ICanvasRenderingContext } from "babylonjs/Engines/ICanvas";
+import { RegisterClass } from "core/Misc/typeStore";
+import { serialize } from "core/Misc/decorators";
+import { ICanvasRenderingContext } from "core/Engines/ICanvas";
 
 /** Class used to create 2D ellipse containers */
 export class Ellipse extends Container {
@@ -46,8 +46,13 @@ export class Ellipse extends Container {
             context.shadowOffsetY = this.shadowOffsetY;
         }
 
-        Control.drawEllipse(this._currentMeasure.left + this._currentMeasure.width / 2, this._currentMeasure.top + this._currentMeasure.height / 2,
-            this._currentMeasure.width / 2 - this._thickness / 2, this._currentMeasure.height / 2 - this._thickness / 2, context);
+        Control.drawEllipse(
+            this._currentMeasure.left + this._currentMeasure.width / 2,
+            this._currentMeasure.top + this._currentMeasure.height / 2,
+            this._currentMeasure.width / 2 - this._thickness / 2,
+            this._currentMeasure.height / 2 - this._thickness / 2,
+            context
+        );
 
         if (this._background) {
             context.fillStyle = this._background;
@@ -83,14 +88,25 @@ export class Ellipse extends Container {
     }
 
     protected _clipForChildren(context: ICanvasRenderingContext) {
-
-        Control.drawEllipse(this._currentMeasure.left + this._currentMeasure.width / 2, this._currentMeasure.top + this._currentMeasure.height / 2, this._currentMeasure.width / 2, this._currentMeasure.height / 2, context);
+        Control.drawEllipse(
+            this._currentMeasure.left + this._currentMeasure.width / 2,
+            this._currentMeasure.top + this._currentMeasure.height / 2,
+            this._currentMeasure.width / 2,
+            this._currentMeasure.height / 2,
+            context
+        );
 
         context.clip();
     }
 
     public _renderHighlightSpecific(context: ICanvasRenderingContext): void {
-        Control.drawEllipse(this._currentMeasure.left + this._currentMeasure.width / 2, this._currentMeasure.top + this._currentMeasure.height / 2, this._currentMeasure.width / 2 - this._highlightLineWidth / 2, this._currentMeasure.height / 2 - this._highlightLineWidth / 2, context);
+        Control.drawEllipse(
+            this._currentMeasure.left + this._currentMeasure.width / 2,
+            this._currentMeasure.top + this._currentMeasure.height / 2,
+            this._currentMeasure.width / 2 - this._highlightLineWidth / 2,
+            this._currentMeasure.height / 2 - this._highlightLineWidth / 2,
+            context
+        );
         context.stroke();
     }
 }

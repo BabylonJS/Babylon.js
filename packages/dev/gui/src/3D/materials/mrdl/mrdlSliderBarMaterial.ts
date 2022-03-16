@@ -1,22 +1,22 @@
-import { Nullable } from "babylonjs/types";
-import { SerializationHelper, serialize } from "babylonjs/Misc/decorators";
-import { Matrix, Vector2, Vector3, Vector4 } from "babylonjs/Maths/math.vector";
-import { IAnimatable } from "babylonjs/Animations/animatable.interface";
-import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
-import { Texture } from "babylonjs/Materials/Textures/texture";
-import { MaterialDefines } from "babylonjs/Materials/materialDefines";
-import { MaterialHelper } from "babylonjs/Materials/materialHelper";
-import { IEffectCreationOptions } from "babylonjs/Materials/effect";
-import { PushMaterial } from "babylonjs/Materials/pushMaterial";
-import { VertexBuffer } from "babylonjs/Buffers/buffer";
-import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
-import { SubMesh } from "babylonjs/Meshes/subMesh";
-import { Mesh } from "babylonjs/Meshes/mesh";
-import { Scene } from "babylonjs/scene";
-import { RegisterClass } from "babylonjs/Misc/typeStore";
-import { Color4 } from "babylonjs/Maths/math.color";
-import { EffectFallbacks } from "babylonjs/Materials/effectFallbacks";
-import { Constants } from "babylonjs/Engines/constants";
+import { Nullable } from "core/types";
+import { SerializationHelper, serialize } from "core/Misc/decorators";
+import { Matrix, Vector2, Vector3, Vector4 } from "core/Maths/math.vector";
+import { IAnimatable } from "core/Animations/animatable.interface";
+import { BaseTexture } from "core/Materials/Textures/baseTexture";
+import { Texture } from "core/Materials/Textures/texture";
+import { MaterialDefines } from "core/Materials/materialDefines";
+import { MaterialHelper } from "core/Materials/materialHelper";
+import { IEffectCreationOptions } from "core/Materials/effect";
+import { PushMaterial } from "core/Materials/pushMaterial";
+import { VertexBuffer } from "core/Buffers/buffer";
+import { AbstractMesh } from "core/Meshes/abstractMesh";
+import { SubMesh } from "core/Meshes/subMesh";
+import { Mesh } from "core/Meshes/mesh";
+import { Scene } from "core/scene";
+import { RegisterClass } from "core/Misc/typeStore";
+import { Color4 } from "core/Maths/math.color";
+import { EffectFallbacks } from "core/Materials/effectFallbacks";
+import { Constants } from "core/Engines/constants";
 
 import "./shaders/mrdlSliderBar.fragment";
 import "./shaders/mrdlSliderBar.vertex";
@@ -91,8 +91,8 @@ export class MRDLSliderBarMaterial extends PushMaterial {
     public radiusTopRight = 1.0;
 
     /**
-    * Gets or sets the top left Radii Multiplier.
-    */
+     * Gets or sets the top left Radii Multiplier.
+     */
     @serialize()
     public radiusBottomLeft = 1.0;
 
@@ -294,7 +294,7 @@ export class MRDLSliderBarMaterial extends PushMaterial {
      */
     @serialize()
     public blobNearSize = 0.01;
-     /**
+    /**
      * Gets or sets the far size of the hover glow effect.
      */
     @serialize()
@@ -333,8 +333,8 @@ export class MRDLSliderBarMaterial extends PushMaterial {
     /**
      * Gets or sets the position of the hover glow effect.
      */
-     @serialize()
-     public blobPosition2 = new Vector3(0.2, 0, 0.1);
+    @serialize()
+    public blobPosition2 = new Vector3(0.2, 0, 0.1);
 
     /**
      * Gets or sets the size of the hover glow effect when the right pointer is considered "near" to the mesh (see blobNearDistance).
@@ -450,32 +450,32 @@ export class MRDLSliderBarMaterial extends PushMaterial {
     /**
      * @hidden
      */
-    public globalLeftIndexTipPosition =  new Vector4(0.5, 0.0, -0.55, 1.0);
+    public globalLeftIndexTipPosition = new Vector4(0.5, 0.0, -0.55, 1.0);
 
     /**
      * @hidden
      */
-    public globaRightIndexTipPosition =  new Vector4(0.0, 0.0, 0.0, 1.0);
+    public globaRightIndexTipPosition = new Vector4(0.0, 0.0, 0.0, 1.0);
 
     /**
      * @hidden
      */
-    public globalLeftThumbTipPosition =  new Vector4(0.5, 0.0, -0.55, 1.0);
+    public globalLeftThumbTipPosition = new Vector4(0.5, 0.0, -0.55, 1.0);
 
     /**
      * @hidden
      */
-    public globalRightThumbTipPosition =  new Vector4(0.0, 0.0, 0.0, 1.0);
+    public globalRightThumbTipPosition = new Vector4(0.0, 0.0, 0.0, 1.0);
 
     /**
      * @hidden
      */
-    public globalLeftIndexMiddlePosition =  new Vector4(0.5, 0.0, -0.55, 1.0);
+    public globalLeftIndexMiddlePosition = new Vector4(0.5, 0.0, -0.55, 1.0);
 
     /**
      * @hidden
      */
-    public globalRightIndexMiddlePosition =  new Vector4(0.0, 0.0, 0.0, 1.0);
+    public globalRightIndexMiddlePosition = new Vector4(0.0, 0.0, 0.0, 1.0);
 
     constructor(name: string, scene?: Scene) {
         super(name, scene);
@@ -566,22 +566,87 @@ export class MRDLSliderBarMaterial extends PushMaterial {
             const join = defines.toString();
 
             const uniforms = [
-                "world", "viewProjection", "cameraPosition"
-                , "_Radius_", "_Bevel_Front_", "_Bevel_Front_Stretch_", "_Bevel_Back_", "_Bevel_Back_Stretch_"
-                , "_Radius_Top_Left_", "_Radius_Top_Right_", "_Radius_Bottom_Left_", "_Radius_Bottom_Right_"
-                , "_Bulge_Enabled_", "_Bulge_Height_", "_Bulge_Radius_", "_Sun_Intensity_", "_Sun_Theta_", "_Sun_Phi_"
-                , "_Indirect_Diffuse_", "_Albedo_", "_Specular_", "_Shininess_", "_Sharpness_", "_Subsurface_"
-                , "_Left_Color_", "_Right_Color_", "_Reflection_", "_Front_Reflect_", "_Edge_Reflect_", "_Power_"
-                , "_Sky_Color_", "_Horizon_Color_", "_Ground_Color_", "_Horizon_Power_", "_Reflection_Map_"
-                , "_Indirect_Environment_", "_Width_", "_Fuzz_", "_Min_Fuzz_", "_Clip_Fade_", "_Hue_Shift_", "_Saturation_Shift_"
-                , "_Value_Shift_", "_Blob_Position_", "_Blob_Intensity_", "_Blob_Near_Size_", "_Blob_Far_Size_"
-                , "_Blob_Near_Distance_", "_Blob_Far_Distance_", "_Blob_Fade_Length_", "_Blob_Pulse_", "_Blob_Fade_"
-                , "_Blob_Texture_", "_Blob_Position_2_", "_Blob_Near_Size_2_", "_Blob_Pulse_2_", "_Blob_Fade_2_"
-                , "_Left_Index_Pos_", "_Right_Index_Pos_", "_Left_Index_Middle_Pos_", "_Right_Index_Middle_Pos_"
-                , "_Decal_", "_Decal_Scale_XY_", "_Decal_Front_Only_", "_Rim_Intensity_", "_Rim_Texture_", "_Rim_Hue_Shift_"
-                , "_Rim_Saturation_Shift_", "_Rim_Value_Shift_", "_Iridescence_Intensity_", "_Iridescence_Texture_"
-                , "Use_Global_Left_Index", "Use_Global_Right_Index", "Global_Left_Index_Tip_Position", "Global_Right_Index_Tip_Position"
-                , "Global_Left_Thumb_Tip_Position", "Global_Right_Thumb_Tip_Position", "Global_Left_Index_Middle_Position;", "Global_Right_Index_Middle_Position", "Global_Left_Index_Tip_Proximity", "Global_Right_Index_Tip_Proximity"
+                "world",
+                "viewProjection",
+                "cameraPosition",
+                "_Radius_",
+                "_Bevel_Front_",
+                "_Bevel_Front_Stretch_",
+                "_Bevel_Back_",
+                "_Bevel_Back_Stretch_",
+                "_Radius_Top_Left_",
+                "_Radius_Top_Right_",
+                "_Radius_Bottom_Left_",
+                "_Radius_Bottom_Right_",
+                "_Bulge_Enabled_",
+                "_Bulge_Height_",
+                "_Bulge_Radius_",
+                "_Sun_Intensity_",
+                "_Sun_Theta_",
+                "_Sun_Phi_",
+                "_Indirect_Diffuse_",
+                "_Albedo_",
+                "_Specular_",
+                "_Shininess_",
+                "_Sharpness_",
+                "_Subsurface_",
+                "_Left_Color_",
+                "_Right_Color_",
+                "_Reflection_",
+                "_Front_Reflect_",
+                "_Edge_Reflect_",
+                "_Power_",
+                "_Sky_Color_",
+                "_Horizon_Color_",
+                "_Ground_Color_",
+                "_Horizon_Power_",
+                "_Reflection_Map_",
+                "_Indirect_Environment_",
+                "_Width_",
+                "_Fuzz_",
+                "_Min_Fuzz_",
+                "_Clip_Fade_",
+                "_Hue_Shift_",
+                "_Saturation_Shift_",
+                "_Value_Shift_",
+                "_Blob_Position_",
+                "_Blob_Intensity_",
+                "_Blob_Near_Size_",
+                "_Blob_Far_Size_",
+                "_Blob_Near_Distance_",
+                "_Blob_Far_Distance_",
+                "_Blob_Fade_Length_",
+                "_Blob_Pulse_",
+                "_Blob_Fade_",
+                "_Blob_Texture_",
+                "_Blob_Position_2_",
+                "_Blob_Near_Size_2_",
+                "_Blob_Pulse_2_",
+                "_Blob_Fade_2_",
+                "_Left_Index_Pos_",
+                "_Right_Index_Pos_",
+                "_Left_Index_Middle_Pos_",
+                "_Right_Index_Middle_Pos_",
+                "_Decal_",
+                "_Decal_Scale_XY_",
+                "_Decal_Front_Only_",
+                "_Rim_Intensity_",
+                "_Rim_Texture_",
+                "_Rim_Hue_Shift_",
+                "_Rim_Saturation_Shift_",
+                "_Rim_Value_Shift_",
+                "_Iridescence_Intensity_",
+                "_Iridescence_Texture_",
+                "Use_Global_Left_Index",
+                "Use_Global_Right_Index",
+                "Global_Left_Index_Tip_Position",
+                "Global_Right_Index_Tip_Position",
+                "Global_Left_Thumb_Tip_Position",
+                "Global_Right_Thumb_Tip_Position",
+                "Global_Left_Index_Middle_Position;",
+                "Global_Right_Index_Middle_Position",
+                "Global_Left_Index_Tip_Proximity",
+                "Global_Right_Index_Tip_Proximity",
             ];
             const samplers: string[] = ["_Rim_Texture_", "_Iridescence_Texture_"];
             const uniformBuffers = new Array<string>();
@@ -591,21 +656,28 @@ export class MRDLSliderBarMaterial extends PushMaterial {
                 uniformBuffersNames: uniformBuffers,
                 samplers: samplers,
                 defines: defines,
-                maxSimultaneousLights: 4
+                maxSimultaneousLights: 4,
             });
 
-            subMesh.setEffect(scene.getEngine().createEffect(shaderName,
-                <IEffectCreationOptions>{
-                    attributes: attribs,
-                    uniformsNames: uniforms,
-                    uniformBuffersNames: uniformBuffers,
-                    samplers: samplers,
-                    defines: join,
-                    fallbacks: fallbacks,
-                    onCompiled: this.onCompiled,
-                    onError: this.onError,
-                    indexParameters: { maxSimultaneousLights: 4 }
-                }, engine), defines, this._materialContext);
+            subMesh.setEffect(
+                scene.getEngine().createEffect(
+                    shaderName,
+                    <IEffectCreationOptions>{
+                        attributes: attribs,
+                        uniformsNames: uniforms,
+                        uniformBuffersNames: uniformBuffers,
+                        samplers: samplers,
+                        defines: join,
+                        fallbacks: fallbacks,
+                        onCompiled: this.onCompiled,
+                        onError: this.onError,
+                        indexParameters: { maxSimultaneousLights: 4 },
+                    },
+                    engine
+                ),
+                defines,
+                this._materialContext
+            );
         }
         if (!subMesh.effect || !subMesh.effect.isReady()) {
             return false;

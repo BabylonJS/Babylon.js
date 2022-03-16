@@ -1,15 +1,15 @@
-import { Nullable } from "babylonjs/types";
-import { Observer } from "babylonjs/Misc/observable";
-import { Vector3, Matrix } from "babylonjs/Maths/math.vector";
-import { Tools } from "babylonjs/Misc/tools";
-import { Scene } from "babylonjs/scene";
+import { Nullable } from "core/types";
+import { Observer } from "core/Misc/observable";
+import { Vector3, Matrix } from "core/Maths/math.vector";
+import { Tools } from "core/Misc/tools";
+import { Scene } from "core/scene";
 
 import { Control } from "./control";
 import { ValueAndUnit } from "../valueAndUnit";
 import { Measure } from "../measure";
-import { RegisterClass } from 'babylonjs/Misc/typeStore';
-import { serialize } from 'babylonjs/Misc/decorators';
-import { ICanvasRenderingContext } from "babylonjs/Engines/ICanvas";
+import { RegisterClass } from "core/Misc/typeStore";
+import { serialize } from "core/Misc/decorators";
+import { ICanvasRenderingContext } from "core/Engines/ICanvas";
 
 /** Class used to render 2D lines */
 export class Line extends Control {
@@ -240,8 +240,8 @@ export class Line extends Control {
      * @param end (opt) Set to true to assign x2 and y2 coordinates of the line. Default assign to x1 and y1.
      */
     public _moveToProjectedPosition(projectedPosition: Vector3, end: boolean = false): void {
-        let x: string = (projectedPosition.x + this._linkOffsetX.getValue(this._host)) + "px";
-        let y: string = (projectedPosition.y + this._linkOffsetY.getValue(this._host)) + "px";
+        let x: string = projectedPosition.x + this._linkOffsetX.getValue(this._host) + "px";
+        let y: string = projectedPosition.y + this._linkOffsetY.getValue(this._host) + "px";
 
         if (end) {
             this.x2 = x;

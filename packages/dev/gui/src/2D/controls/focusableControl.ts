@@ -1,10 +1,10 @@
-import { IKeyboardEvent } from "babylonjs/Events/deviceInputEvents";
-import { Nullable } from "babylonjs/types";
+import { IKeyboardEvent } from "core/Events/deviceInputEvents";
+import { Nullable } from "core/types";
 import { Control } from "./control";
 
 /**
-* Interface used to define a control that can receive focus
-*/
+ * Interface used to define a control that can receive focus
+ */
 export interface IFocusableControl {
     /**
      * Function called when the control receives the focus
@@ -20,16 +20,16 @@ export interface IFocusableControl {
      */
     processKeyboard(evt: IKeyboardEvent): void;
     /**
-    * Function called to get the list of controls that should not steal the focus from this control
-    * @returns an array of controls
-    */
+     * Function called to get the list of controls that should not steal the focus from this control
+     * @returns an array of controls
+     */
     keepsFocusWith(): Nullable<Control[]>;
     /**
-    * Function to focus the control programmatically
-    */
+     * Function to focus the control programmatically
+     */
     focus(): void;
     /**
-    * Function to unfocus the control programmatically
-    */
+     * Function to unfocus the control programmatically
+     */
     blur(): void;
 }

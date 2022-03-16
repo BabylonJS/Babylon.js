@@ -1,17 +1,17 @@
-import { Nullable } from "babylonjs/types";
-import { Observable, Observer } from "babylonjs/Misc/observable";
-import { Vector3 } from "babylonjs/Maths/math.vector";
-import { PointerInfo, PointerEventTypes } from "babylonjs/Events/pointerEvents";
-import { Material } from "babylonjs/Materials/material";
-import { HemisphericLight } from "babylonjs/Lights/hemisphericLight";
-import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
-import { UtilityLayerRenderer } from "babylonjs/Rendering/utilityLayerRenderer";
-import { EngineStore } from "babylonjs/Engines/engineStore";
-import { IDisposable, Scene } from "babylonjs/scene";
+import { Nullable } from "core/types";
+import { Observable, Observer } from "core/Misc/observable";
+import { Vector3 } from "core/Maths/math.vector";
+import { PointerInfo, PointerEventTypes } from "core/Events/pointerEvents";
+import { Material } from "core/Materials/material";
+import { HemisphericLight } from "core/Lights/hemisphericLight";
+import { AbstractMesh } from "core/Meshes/abstractMesh";
+import { UtilityLayerRenderer } from "core/Rendering/utilityLayerRenderer";
+import { EngineStore } from "core/Engines/engineStore";
+import { IDisposable, Scene } from "core/scene";
 
 import { Container3D } from "./controls/container3D";
 import { Control3D } from "./controls/control3D";
-import { IPointerEvent } from "babylonjs/Events/deviceInputEvents";
+import { IPointerEvent } from "core/Events/deviceInputEvents";
 
 /**
  * Class used to manage 3D user interface

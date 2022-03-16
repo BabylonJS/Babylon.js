@@ -1,22 +1,22 @@
-import { Nullable } from "babylonjs/types";
-import { SerializationHelper, serialize, serializeAsVector3 } from "babylonjs/Misc/decorators";
-import { Matrix, Vector3, Vector4 } from "babylonjs/Maths/math.vector";
-import { IAnimatable } from "babylonjs/Animations/animatable.interface";
-import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
-import { Texture } from "babylonjs/Materials/Textures/texture";
-import { MaterialDefines } from "babylonjs/Materials/materialDefines";
-import { MaterialHelper } from "babylonjs/Materials/materialHelper";
-import { IEffectCreationOptions } from "babylonjs/Materials/effect";
-import { PushMaterial } from "babylonjs/Materials/pushMaterial";
-import { VertexBuffer } from "babylonjs/Buffers/buffer";
-import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
-import { SubMesh } from "babylonjs/Meshes/subMesh";
-import { Mesh } from "babylonjs/Meshes/mesh";
-import { Scene } from "babylonjs/scene";
-import { RegisterClass } from "babylonjs/Misc/typeStore";
-import { Color4 } from "babylonjs/Maths/math.color";
-import { EffectFallbacks } from "babylonjs/Materials/effectFallbacks";
-import { Constants } from "babylonjs/Engines/constants";
+import { Nullable } from "core/types";
+import { SerializationHelper, serialize, serializeAsVector3 } from "core/Misc/decorators";
+import { Matrix, Vector3, Vector4 } from "core/Maths/math.vector";
+import { IAnimatable } from "core/Animations/animatable.interface";
+import { BaseTexture } from "core/Materials/Textures/baseTexture";
+import { Texture } from "core/Materials/Textures/texture";
+import { MaterialDefines } from "core/Materials/materialDefines";
+import { MaterialHelper } from "core/Materials/materialHelper";
+import { IEffectCreationOptions } from "core/Materials/effect";
+import { PushMaterial } from "core/Materials/pushMaterial";
+import { VertexBuffer } from "core/Buffers/buffer";
+import { AbstractMesh } from "core/Meshes/abstractMesh";
+import { SubMesh } from "core/Meshes/subMesh";
+import { Mesh } from "core/Meshes/mesh";
+import { Scene } from "core/scene";
+import { RegisterClass } from "core/Misc/typeStore";
+import { Color4 } from "core/Maths/math.color";
+import { EffectFallbacks } from "core/Materials/effectFallbacks";
+import { Constants } from "core/Engines/constants";
 
 import "./shaders/fluentBackplate.fragment";
 import "./shaders/fluentBackplate.vertex";
@@ -307,15 +307,50 @@ export class FluentBackplateMaterial extends PushMaterial {
             const join = defines.toString();
 
             const uniforms = [
-                "world", "viewProjection", "cameraPosition"
-                , "_Radius_", "_Line_Width_", "_Absolute_Sizes_", "_Filter_Width_", "_Base_Color_", "_Line_Color_"
-                , "_Radius_Top_Left_", "_Radius_Top_Right_", "_Radius_Bottom_Left_", "_Radius_Bottom_Right_"
-                , "_Blob_Position_", "_Blob_Intensity_", "_Blob_Near_Size_", "_Blob_Far_Size_", "_Blob_Near_Distance_"
-                , "_Blob_Far_Distance_", "_Blob_Fade_Length_", "_Blob_Pulse_", "_Blob_Fade_", "_Blob_Texture_"
-                , "_Blob_Position_2_", "_Blob_Near_Size_2_", "_Blob_Pulse_2_", "_Blob_Fade_2_", "_Rate_", "_Highlight_Color_"
-                , "_Highlight_Width_", "_Highlight_Transform_", "_Highlight_", "_Iridescence_Intensity_", "_Iridescence_Edge_Intensity_"
-                , "_Angle_", "_Fade_Out_", "_Reflected_", "_Frequency_", "_Vertical_Offset_", "_Iridescent_Map_"
-                , "_Use_Global_Left_Index_", "_Use_Global_Right_Index_", "Global_Left_Index_Tip_Position", "Global_Right_Index_Tip_Position"
+                "world",
+                "viewProjection",
+                "cameraPosition",
+                "_Radius_",
+                "_Line_Width_",
+                "_Absolute_Sizes_",
+                "_Filter_Width_",
+                "_Base_Color_",
+                "_Line_Color_",
+                "_Radius_Top_Left_",
+                "_Radius_Top_Right_",
+                "_Radius_Bottom_Left_",
+                "_Radius_Bottom_Right_",
+                "_Blob_Position_",
+                "_Blob_Intensity_",
+                "_Blob_Near_Size_",
+                "_Blob_Far_Size_",
+                "_Blob_Near_Distance_",
+                "_Blob_Far_Distance_",
+                "_Blob_Fade_Length_",
+                "_Blob_Pulse_",
+                "_Blob_Fade_",
+                "_Blob_Texture_",
+                "_Blob_Position_2_",
+                "_Blob_Near_Size_2_",
+                "_Blob_Pulse_2_",
+                "_Blob_Fade_2_",
+                "_Rate_",
+                "_Highlight_Color_",
+                "_Highlight_Width_",
+                "_Highlight_Transform_",
+                "_Highlight_",
+                "_Iridescence_Intensity_",
+                "_Iridescence_Edge_Intensity_",
+                "_Angle_",
+                "_Fade_Out_",
+                "_Reflected_",
+                "_Frequency_",
+                "_Vertical_Offset_",
+                "_Iridescent_Map_",
+                "_Use_Global_Left_Index_",
+                "_Use_Global_Right_Index_",
+                "Global_Left_Index_Tip_Position",
+                "Global_Right_Index_Tip_Position",
             ];
             const samplers: string[] = ["_Blob_Texture_", "_Iridescent_Map_"];
             const uniformBuffers = new Array<string>();
@@ -325,21 +360,28 @@ export class FluentBackplateMaterial extends PushMaterial {
                 uniformBuffersNames: uniformBuffers,
                 samplers: samplers,
                 defines: defines,
-                maxSimultaneousLights: 4
+                maxSimultaneousLights: 4,
             });
 
-            subMesh.setEffect(scene.getEngine().createEffect(shaderName,
-                <IEffectCreationOptions>{
-                    attributes: attribs,
-                    uniformsNames: uniforms,
-                    uniformBuffersNames: uniformBuffers,
-                    samplers: samplers,
-                    defines: join,
-                    fallbacks: fallbacks,
-                    onCompiled: this.onCompiled,
-                    onError: this.onError,
-                    indexParameters: { maxSimultaneousLights: 4 }
-                }, engine), defines, this._materialContext);
+            subMesh.setEffect(
+                scene.getEngine().createEffect(
+                    shaderName,
+                    <IEffectCreationOptions>{
+                        attributes: attribs,
+                        uniformsNames: uniforms,
+                        uniformBuffersNames: uniformBuffers,
+                        samplers: samplers,
+                        defines: join,
+                        fallbacks: fallbacks,
+                        onCompiled: this.onCompiled,
+                        onError: this.onError,
+                        indexParameters: { maxSimultaneousLights: 4 },
+                    },
+                    engine
+                ),
+                defines,
+                this._materialContext
+            );
         }
         if (!subMesh.effect || !subMesh.effect.isReady()) {
             return false;
@@ -436,18 +478,10 @@ export class FluentBackplateMaterial extends PushMaterial {
         this._activeEffect.setFloat("_Use_Global_Left_Index_", 1.0);
         this._activeEffect.setFloat("_Use_Global_Right_Index_", 1.0);
 
-        this._globalLeftIndexTipPosition4.set(
-            this.globalLeftIndexTipPosition.x,
-            this.globalLeftIndexTipPosition.y,
-            this.globalLeftIndexTipPosition.z,
-            1.0);
+        this._globalLeftIndexTipPosition4.set(this.globalLeftIndexTipPosition.x, this.globalLeftIndexTipPosition.y, this.globalLeftIndexTipPosition.z, 1.0);
         this._activeEffect.setVector4("Global_Left_Index_Tip_Position", this._globalLeftIndexTipPosition4);
 
-        this._globalRightIndexTipPosition4.set(
-            this.globalRightIndexTipPosition.x,
-            this.globalRightIndexTipPosition.y,
-            this.globalRightIndexTipPosition.z,
-            1.0);
+        this._globalRightIndexTipPosition4.set(this.globalRightIndexTipPosition.x, this.globalRightIndexTipPosition.y, this.globalRightIndexTipPosition.z, 1.0);
         this._activeEffect.setVector4("Global_Right_Index_Tip_Position", this._globalRightIndexTipPosition4);
 
         this._afterBind(mesh, this._activeEffect);

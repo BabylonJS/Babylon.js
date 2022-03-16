@@ -1,8 +1,7 @@
-
-import { Nullable } from "babylonjs/types";
-import { Observer } from "babylonjs/Misc/observable";
-import { PerfCounter } from "babylonjs/Misc/perfCounter";
-import { IDisposable } from "babylonjs/scene";
+import { Nullable } from "core/types";
+import { Observer } from "core/Misc/observable";
+import { PerfCounter } from "core/Misc/perfCounter";
+import { IDisposable } from "core/scene";
 
 import { AdvancedDynamicTexture } from "./advancedDynamicTexture";
 
@@ -106,8 +105,8 @@ export class AdvancedDynamicTextureInstrumentation implements IDisposable {
         /**
          * Define the instrumented AdvancedDynamicTexture.
          */
-        public texture: AdvancedDynamicTexture) {
-    }
+        public texture: AdvancedDynamicTexture
+    ) {}
 
     /**
      * Dispose and release associated resources.

@@ -1,6 +1,6 @@
-import { Nullable } from "babylonjs/types";
-import { Vector2 } from "babylonjs/Maths/math.vector";
-import { Epsilon } from 'babylonjs/Maths/math.constants';
+import { Nullable } from "core/types";
+import { Vector2 } from "core/Maths/math.vector";
+import { Epsilon } from "core/Maths/math.constants";
 
 /**
  * Class used to transport Vector2 information for pointer events
@@ -11,9 +11,11 @@ export class Vector2WithInfo extends Vector2 {
      * @param source defines the vector2 data to transport
      * @param buttonIndex defines the current mouse button index
      */
-    public constructor(source: Vector2,
+    public constructor(
+        source: Vector2,
         /** defines the current mouse button index */
-        public buttonIndex: number = 0) {
+        public buttonIndex: number = 0
+    ) {
         super(source.x, source.y);
     }
 }
@@ -47,9 +49,12 @@ export class Matrix2D {
      * @returns the current modified matrix
      */
     public fromValues(m00: number, m01: number, m10: number, m11: number, m20: number, m21: number): Matrix2D {
-        this.m[0] = m00; this.m[1] = m01;
-        this.m[2] = m10; this.m[3] = m11;
-        this.m[4] = m20; this.m[5] = m21;
+        this.m[0] = m00;
+        this.m[1] = m01;
+        this.m[2] = m10;
+        this.m[3] = m11;
+        this.m[4] = m20;
+        this.m[5] = m21;
         return this;
     }
 
@@ -67,15 +72,21 @@ export class Matrix2D {
      * @returns the current matrix
      */
     public invertToRef(result: Matrix2D): Matrix2D {
-        let l0 = this.m[0]; let l1 = this.m[1];
-        let l2 = this.m[2]; let l3 = this.m[3];
-        let l4 = this.m[4]; let l5 = this.m[5];
+        let l0 = this.m[0];
+        let l1 = this.m[1];
+        let l2 = this.m[2];
+        let l3 = this.m[3];
+        let l4 = this.m[4];
+        let l5 = this.m[5];
 
         let det = this.determinant();
-        if (det < (Epsilon * Epsilon)) {
-            result.m[0] = 0; result.m[1] = 0;
-            result.m[2] = 0; result.m[3] = 0;
-            result.m[4] = 0; result.m[5] = 0;
+        if (det < Epsilon * Epsilon) {
+            result.m[0] = 0;
+            result.m[1] = 0;
+            result.m[2] = 0;
+            result.m[3] = 0;
+            result.m[4] = 0;
+            result.m[5] = 0;
             return this;
         }
 
@@ -84,9 +95,12 @@ export class Matrix2D {
         let det4 = l2 * l5 - l3 * l4;
         let det5 = l1 * l4 - l0 * l5;
 
-        result.m[0] = l3 * detDiv; result.m[1] = -l1 * detDiv;
-        result.m[2] = -l2 * detDiv; result.m[3] = l0 * detDiv;
-        result.m[4] = det4 * detDiv; result.m[5] = det5 * detDiv;
+        result.m[0] = l3 * detDiv;
+        result.m[1] = -l1 * detDiv;
+        result.m[2] = -l2 * detDiv;
+        result.m[3] = l0 * detDiv;
+        result.m[4] = det4 * detDiv;
+        result.m[5] = det5 * detDiv;
 
         return this;
     }
@@ -98,17 +112,26 @@ export class Matrix2D {
      * @returns the current matrix
      */
     public multiplyToRef(other: Matrix2D, result: Matrix2D): Matrix2D {
-        let l0 = this.m[0]; let l1 = this.m[1];
-        let l2 = this.m[2]; let l3 = this.m[3];
-        let l4 = this.m[4]; let l5 = this.m[5];
+        let l0 = this.m[0];
+        let l1 = this.m[1];
+        let l2 = this.m[2];
+        let l3 = this.m[3];
+        let l4 = this.m[4];
+        let l5 = this.m[5];
 
-        let r0 = other.m[0]; let r1 = other.m[1];
-        let r2 = other.m[2]; let r3 = other.m[3];
-        let r4 = other.m[4]; let r5 = other.m[5];
+        let r0 = other.m[0];
+        let r1 = other.m[1];
+        let r2 = other.m[2];
+        let r3 = other.m[3];
+        let r4 = other.m[4];
+        let r5 = other.m[5];
 
-        result.m[0] = l0 * r0 + l1 * r2; result.m[1] = l0 * r1 + l1 * r3;
-        result.m[2] = l2 * r0 + l3 * r2; result.m[3] = l2 * r1 + l3 * r3;
-        result.m[4] = l4 * r0 + l5 * r2 + r4; result.m[5] = l4 * r1 + l5 * r3 + r5;
+        result.m[0] = l0 * r0 + l1 * r2;
+        result.m[1] = l0 * r1 + l1 * r3;
+        result.m[2] = l2 * r0 + l3 * r2;
+        result.m[3] = l2 * r1 + l3 * r3;
+        result.m[4] = l4 * r0 + l5 * r2 + r4;
+        result.m[5] = l4 * r1 + l5 * r3 + r5;
 
         return this;
     }

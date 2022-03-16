@@ -1,13 +1,13 @@
-import { Gizmo } from "babylonjs/Gizmos/gizmo";
-import { Epsilon } from "babylonjs/Maths/math.constants";
-import { Matrix, Quaternion, TmpVectors, Vector3 } from "babylonjs/Maths/math.vector";
-import { Scene } from "babylonjs/scene";
-import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
-import { TransformNode } from "babylonjs/Meshes/transformNode";
-import { Observer } from "babylonjs/Misc/observable";
-import { PivotTools } from "babylonjs/Misc/pivotTools";
-import { UtilityLayerRenderer } from "babylonjs/Rendering/utilityLayerRenderer";
-import { Nullable } from "babylonjs/types";
+import { Gizmo } from "core/Gizmos/gizmo";
+import { Epsilon } from "core/Maths/math.constants";
+import { Matrix, Quaternion, TmpVectors, Vector3 } from "core/Maths/math.vector";
+import { Scene } from "core/scene";
+import { AbstractMesh } from "core/Meshes/abstractMesh";
+import { TransformNode } from "core/Meshes/transformNode";
+import { Observer } from "core/Misc/observable";
+import { PivotTools } from "core/Misc/pivotTools";
+import { UtilityLayerRenderer } from "core/Rendering/utilityLayerRenderer";
+import { Nullable } from "core/types";
 
 import { HolographicSlate } from "../controls/holographicSlate";
 import { CornerHandle, GizmoHandle, SideHandle } from "./gizmoHandle";

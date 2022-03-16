@@ -1,14 +1,14 @@
-import { Vector4 } from "babylonjs/Maths/math.vector";
-import { TransformNode } from "babylonjs/Meshes/transformNode";
-import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
-import { CreateBox } from "babylonjs/Meshes/Builders/boxBuilder";
-import { Material } from "babylonjs/Materials/material";
-import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
-import { Scene } from "babylonjs/scene";
+import { Vector4 } from "core/Maths/math.vector";
+import { TransformNode } from "core/Meshes/transformNode";
+import { AbstractMesh } from "core/Meshes/abstractMesh";
+import { CreateBox } from "core/Meshes/Builders/boxBuilder";
+import { Material } from "core/Materials/material";
+import { StandardMaterial } from "core/Materials/standardMaterial";
+import { Scene } from "core/scene";
 
 import { AbstractButton3D } from "./abstractButton3D";
 import { AdvancedDynamicTexture } from "../../2D/advancedDynamicTexture";
-import { Color3 } from "babylonjs/Maths/math.color";
+import { Color3 } from "core/Maths/math.color";
 
 /**
  * Class used to create a button in 3D

@@ -1,9 +1,9 @@
-import { Nullable } from "babylonjs/types";
-import { Observer } from "babylonjs/Misc/observable";
-import { Vector3 } from "babylonjs/Maths/math.vector";
-import { Epsilon } from 'babylonjs/Maths/math.constants';
-import { Camera } from "babylonjs/Cameras/camera";
-import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
+import { Nullable } from "core/types";
+import { Observer } from "core/Misc/observable";
+import { Vector3 } from "core/Maths/math.vector";
+import { Epsilon } from "core/Maths/math.constants";
+import { Camera } from "core/Cameras/camera";
+import { AbstractMesh } from "core/Meshes/abstractMesh";
 
 import { MultiLine } from "./controls/multiLine";
 import { ValueAndUnit } from "./valueAndUnit";
@@ -14,7 +14,6 @@ import { Control } from "./controls/control";
  * The point can be pure 2D coordinates, a mesh or a control
  */
 export class MultiLinePoint {
-
     private _multiLine: MultiLine;
 
     private _x: ValueAndUnit;
@@ -138,17 +137,15 @@ export class MultiLinePoint {
     private _translatePoint(): Vector3 {
         if (this._mesh != null) {
             return this._multiLine._host.getProjectedPositionWithZ(this._mesh.getBoundingInfo().boundingSphere.center, this._mesh.getWorldMatrix());
-        }
-        else if (this._control != null) {
-            return new Vector3(this._control.centerX, this._control.centerY, 1. - Epsilon);
-        }
-        else {
+        } else if (this._control != null) {
+            return new Vector3(this._control.centerX, this._control.centerY, 1 - Epsilon);
+        } else {
             var host: any = this._multiLine._host as any;
 
             var xValue: number = this._x.getValueInPixel(host, Number(host._canvas.width));
             var yValue: number = this._y.getValueInPixel(host, Number(host._canvas.height));
 
-            return new Vector3(xValue, yValue, 1. - Epsilon);
+            return new Vector3(xValue, yValue, 1 - Epsilon);
         }
     }
 
@@ -156,5 +153,4 @@ export class MultiLinePoint {
     public dispose(): void {
         this.resetLinks();
     }
-
 }
