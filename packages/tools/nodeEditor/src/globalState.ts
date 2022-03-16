@@ -94,9 +94,9 @@ export class GlobalState {
         this.controlCamera = DataStorage.ReadBoolean("ControlCamera", true);
         this._mode = DataStorage.ReadNumber("Mode", NodeMaterialModes.Material);
 
-        let r = DataStorage.ReadNumber("BackgroundColorR", 0.12549019607843137);
-        let g = DataStorage.ReadNumber("BackgroundColorG", 0.09803921568627451);
-        let b = DataStorage.ReadNumber("BackgroundColorB", 0.25098039215686274);
+        const r = DataStorage.ReadNumber("BackgroundColorR", 0.12549019607843137);
+        const g = DataStorage.ReadNumber("BackgroundColorG", 0.09803921568627451);
+        const b = DataStorage.ReadNumber("BackgroundColorB", 0.25098039215686274);
         this.backgroundColor = new Color4(r, g, b, 1.0);
     }
 }

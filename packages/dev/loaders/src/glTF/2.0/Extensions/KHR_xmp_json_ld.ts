@@ -26,7 +26,10 @@ export class KHR_xmp_json_ld implements IGLTFLoaderExtension {
 
     private _loader: GLTFLoader;
 
-    /** @hidden */
+    /**
+     * @param loader
+     * @hidden
+     */
     constructor(loader: GLTFLoader) {
         this._loader = loader;
         this.enabled = this._loader.isExtensionUsed(NAME);

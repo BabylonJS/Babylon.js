@@ -9,7 +9,7 @@ import { Constants } from "core/Engines/constants";
  */
 export class ExtendedMaterialLoaderPlugin implements ILoaderPlugin {
     public onMaterialLoaded(baseMaterial: Material) {
-        var material = baseMaterial as PBRMaterial;
+        const material = baseMaterial as PBRMaterial;
         material.alphaMode = Constants.ALPHA_PREMULTIPLIED_PORTERDUFF;
     }
 }

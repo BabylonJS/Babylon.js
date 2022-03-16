@@ -50,12 +50,12 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
 
     async updatePreview() {
         const previewCanvas = this.canvasRef.current!;
-        var texture = this.props.texture;
-        var size = texture.getSize();
-        var ratio = size.width / size.height;
-        var width = this.props.width;
-        var height = (width / ratio) | 1;
-        var engine = this.props.texture.getScene()?.getEngine();
+        const texture = this.props.texture;
+        const size = texture.getSize();
+        const ratio = size.width / size.height;
+        let width = this.props.width;
+        let height = (width / ratio) | 1;
+        const engine = this.props.texture.getScene()?.getEngine();
 
         if (engine && height > engine.getCaps().maxTextureSize) {
             // the texture.width/texture.height ratio is too small, so use the real width/height dimensions of the texture instead of the canvas width/computed height
@@ -68,12 +68,12 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
 
             previewCanvas.width = width;
             previewCanvas.height = height;
-            var context = previewCanvas.getContext("2d");
+            const context = previewCanvas.getContext("2d");
 
             if (context) {
                 // Copy the pixels to the preview canvas
-                var imageData = context.createImageData(width, height);
-                var castData = imageData.data;
+                const imageData = context.createImageData(width, height);
+                const castData = imageData.data;
                 castData.set(data);
                 context.putImageData(imageData, 0, 0);
             }
@@ -86,7 +86,7 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
     }
 
     render() {
-        var texture = this.props.texture;
+        const texture = this.props.texture;
 
         return (
             <>

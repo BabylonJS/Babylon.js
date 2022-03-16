@@ -12,7 +12,7 @@ export class LineContainerComponent extends React.Component<ILineContainerCompon
     constructor(props: ILineContainerComponentProps) {
         super(props);
 
-        let initialState = DataStorage.ReadBoolean(this.props.title, !this.props.closed);
+        const initialState = DataStorage.ReadBoolean(this.props.title, !this.props.closed);
 
         this.state = { isExpanded: initialState };
     }

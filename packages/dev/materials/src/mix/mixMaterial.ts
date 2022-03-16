@@ -163,14 +163,14 @@ export class MixMaterial extends PushMaterial {
             subMesh.materialDefines = new MixMaterialDefines();
         }
 
-        var defines = <MixMaterialDefines>subMesh.materialDefines;
-        var scene = this.getScene();
+        const defines = <MixMaterialDefines>subMesh.materialDefines;
+        const scene = this.getScene();
 
         if (this._isReadyForSubMesh(subMesh)) {
             return true;
         }
 
-        var engine = scene.getEngine();
+        const engine = scene.getEngine();
 
         // Textures
         if (scene.texturesEnabled) {
@@ -238,7 +238,7 @@ export class MixMaterial extends PushMaterial {
             scene.resetCachedMaterial();
 
             // Fallbacks
-            var fallbacks = new EffectFallbacks();
+            const fallbacks = new EffectFallbacks();
             if (defines.FOG) {
                 fallbacks.addFallback(1, "FOG");
             }
@@ -252,7 +252,7 @@ export class MixMaterial extends PushMaterial {
             defines.IMAGEPROCESSINGPOSTPROCESS = scene.imageProcessingConfiguration.applyByPostProcess;
 
             //Attributes
-            var attribs = [VertexBuffer.PositionKind];
+            const attribs = [VertexBuffer.PositionKind];
 
             if (defines.NORMAL) {
                 attribs.push(VertexBuffer.NormalKind);
@@ -274,9 +274,9 @@ export class MixMaterial extends PushMaterial {
             MaterialHelper.PrepareAttributesForInstances(attribs, defines);
 
             // Legacy browser patch
-            var shaderName = "mix";
-            var join = defines.toString();
-            var uniforms = [
+            const shaderName = "mix";
+            const join = defines.toString();
+            const uniforms = [
                 "world",
                 "view",
                 "viewProjection",
@@ -305,7 +305,7 @@ export class MixMaterial extends PushMaterial {
                 "diffuse7Infos",
                 "diffuse8Infos",
             ];
-            var samplers = [
+            const samplers = [
                 "mixMap1Sampler",
                 "mixMap2Sampler",
                 "diffuse1Sampler",
@@ -318,7 +318,7 @@ export class MixMaterial extends PushMaterial {
                 "diffuse8Sampler",
             ];
 
-            var uniformBuffers = new Array<string>();
+            const uniformBuffers = new Array<string>();
 
             MaterialHelper.PrepareUniformsAndSamplersList(<IEffectCreationOptions>{
                 uniformsNames: uniforms,
@@ -359,14 +359,14 @@ export class MixMaterial extends PushMaterial {
     }
 
     public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
-        var scene = this.getScene();
+        const scene = this.getScene();
 
-        var defines = <MixMaterialDefines>subMesh.materialDefines;
+        const defines = <MixMaterialDefines>subMesh.materialDefines;
         if (!defines) {
             return;
         }
 
-        var effect = subMesh.effect;
+        const effect = subMesh.effect;
         if (!effect) {
             return;
         }
@@ -462,7 +462,7 @@ export class MixMaterial extends PushMaterial {
     }
 
     public getAnimatables(): IAnimatable[] {
-        var results = [];
+        const results = [];
 
         if (this._mixTexture1 && this._mixTexture1.animations && this._mixTexture1.animations.length > 0) {
             results.push(this._mixTexture1);
@@ -476,7 +476,7 @@ export class MixMaterial extends PushMaterial {
     }
 
     public getActiveTextures(): BaseTexture[] {
-        var activeTextures = super.getActiveTextures();
+        const activeTextures = super.getActiveTextures();
 
         // Mix map 1
         if (this._mixTexture1) {
@@ -586,7 +586,7 @@ export class MixMaterial extends PushMaterial {
     }
 
     public serialize(): any {
-        var serializationObject = super.serialize();
+        const serializationObject = super.serialize();
         serializationObject.customType = "BABYLON.MixMaterial";
         return serializationObject;
     }

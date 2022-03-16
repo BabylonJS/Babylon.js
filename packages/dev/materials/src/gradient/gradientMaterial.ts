@@ -112,14 +112,14 @@ export class GradientMaterial extends PushMaterial {
             subMesh.materialDefines = new GradientMaterialDefines();
         }
 
-        var defines = <GradientMaterialDefines>subMesh.materialDefines;
-        var scene = this.getScene();
+        const defines = <GradientMaterialDefines>subMesh.materialDefines;
+        const scene = this.getScene();
 
         if (this._isReadyForSubMesh(subMesh)) {
             return true;
         }
 
-        var engine = scene.getEngine();
+        const engine = scene.getEngine();
 
         MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false);
 
@@ -139,7 +139,7 @@ export class GradientMaterial extends PushMaterial {
             scene.resetCachedMaterial();
 
             // Fallbacks
-            var fallbacks = new EffectFallbacks();
+            const fallbacks = new EffectFallbacks();
             if (defines.FOG) {
                 fallbacks.addFallback(1, "FOG");
             }
@@ -153,7 +153,7 @@ export class GradientMaterial extends PushMaterial {
             defines.IMAGEPROCESSINGPOSTPROCESS = scene.imageProcessingConfiguration.applyByPostProcess;
 
             //Attributes
-            var attribs = [VertexBuffer.PositionKind];
+            const attribs = [VertexBuffer.PositionKind];
 
             if (defines.NORMAL) {
                 attribs.push(VertexBuffer.NormalKind);
@@ -175,10 +175,10 @@ export class GradientMaterial extends PushMaterial {
             MaterialHelper.PrepareAttributesForInstances(attribs, defines);
 
             // Legacy browser patch
-            var shaderName = "gradient";
-            var join = defines.toString();
+            const shaderName = "gradient";
+            const join = defines.toString();
 
-            var uniforms = [
+            const uniforms = [
                 "world",
                 "view",
                 "viewProjection",
@@ -200,8 +200,8 @@ export class GradientMaterial extends PushMaterial {
                 "smoothness",
                 "scale",
             ];
-            var samplers: string[] = [];
-            var uniformBuffers = new Array<string>();
+            const samplers: string[] = [];
+            const uniformBuffers = new Array<string>();
 
             MaterialHelper.PrepareUniformsAndSamplersList(<IEffectCreationOptions>{
                 uniformsNames: uniforms,
@@ -242,14 +242,14 @@ export class GradientMaterial extends PushMaterial {
     }
 
     public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
-        var scene = this.getScene();
+        const scene = this.getScene();
 
-        var defines = <GradientMaterialDefines>subMesh.materialDefines;
+        const defines = <GradientMaterialDefines>subMesh.materialDefines;
         if (!defines) {
             return;
         }
 
-        var effect = subMesh.effect;
+        const effect = subMesh.effect;
         if (!effect) {
             return;
         }
@@ -309,7 +309,7 @@ export class GradientMaterial extends PushMaterial {
     }
 
     public serialize(): any {
-        var serializationObject = super.serialize();
+        const serializationObject = super.serialize();
         serializationObject.customType = "BABYLON.GradientMaterial";
         return serializationObject;
     }

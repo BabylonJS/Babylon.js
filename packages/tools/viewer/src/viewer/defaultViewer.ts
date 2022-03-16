@@ -1,8 +1,8 @@
-import { Template, EventCallback } from "../templating/templateManager";
+import { Template, EventCallback , TemplateManager } from "../templating/templateManager";
 import { FilesInput } from "core/Misc/filesInput";
 import { SpotLight } from "core/Lights/spotLight";
 import { Vector3 } from "core/Maths/math";
-import { TemplateManager } from "../templating/templateManager";
+
 import { AbstractViewerWithTemplate } from "./viewerWithTemplate";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
@@ -49,7 +49,7 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
 
         this.onInitDoneObservable.add(() => {
             this.sceneManager.setDefaultMaterial = function (sceneConfig: ISceneConfiguration) {
-                let conf = sceneConfig.defaultMaterial;
+                const conf = sceneConfig.defaultMaterial;
                 if (!conf) {
                     return;
                 }
@@ -80,7 +80,7 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
             throw new Error("No template name provided");
         }
         this._registeredPlugins.push(plugin);
-        let template = this.templateManager.getTemplate(plugin.templateName);
+        const template = this.templateManager.getTemplate(plugin.templateName);
         if (!template) {
             throw new Error(`Template ${plugin.templateName} not found`);
         }
@@ -117,9 +117,9 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
         this._initNavbar();
 
         // close overlay button
-        let template = this.templateManager.getTemplate("overlay");
+        const template = this.templateManager.getTemplate("overlay");
         if (template) {
-            let closeButton = template.parent.querySelector(".close-button");
+            const closeButton = template.parent.querySelector(".close-button");
             if (closeButton) {
                 closeButton.addEventListener("pointerdown", () => {
                     this.hideOverlayScreen();
@@ -130,7 +130,7 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
         if (this.configuration.templates && this.configuration.templates.viewer) {
             if (this.configuration.templates.viewer.params && this.configuration.templates.viewer.params.enableDragAndDrop) {
                 this.onSceneInitObservable.addOnce(() => {
-                    let filesInput = new FilesInput(
+                    const filesInput = new FilesInput(
                         this.engine,
                         this.sceneManager.scene,
                         () => {},
@@ -152,7 +152,7 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
     }
 
     private _initNavbar() {
-        let navbar = this.templateManager.getTemplate("navBar");
+        const navbar = this.templateManager.getTemplate("navBar");
         if (navbar) {
             this.onFrameRenderedObservable.add(this._updateProgressBar);
             this.templateManager.eventManager.registerCallback("navBar", this._handlePointerClick, "click");
@@ -212,24 +212,24 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
     private _resumePlay: boolean;
 
     private _handlePointerClick = (event: EventCallback) => {
-        let pointerDown = <PointerEvent>event.event;
+        const pointerDown = <PointerEvent>event.event;
         if (pointerDown.button !== 0) {
             return;
         }
-        var element = <HTMLElement>event.event.target;
+        const element = <HTMLElement>event.event.target;
 
         if (!element) {
             return;
         }
 
-        let parentClasses = element.parentElement!.classList;
+        const parentClasses = element.parentElement!.classList;
 
-        let elementClasses = element.classList;
+        const elementClasses = element.classList;
 
         let elementName = "";
 
         for (let i = 0; i < elementClasses.length; ++i) {
-            let className = elementClasses[i];
+            const className = elementClasses[i];
             if (className.indexOf("-button") !== -1 || className.indexOf("-wrapper") !== -1) {
                 elementName = className;
                 break;
@@ -283,6 +283,7 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
 
     /**
      * Plays or Pauses animation
+     * @param noUiUpdate
      */
     private _togglePlayPause = (noUiUpdate?: boolean) => {
         if (!this._currentAnimation) {
@@ -300,7 +301,7 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
             return;
         }
 
-        let navbar = this.templateManager.getTemplate("navBar");
+        const navbar = this.templateManager.getTemplate("navBar");
         if (!navbar) {
             return;
         }
@@ -316,14 +317,14 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
      * Control progress bar position based on animation current frame
      */
     private _updateProgressBar = () => {
-        let navbar = this.templateManager.getTemplate("navBar");
+        const navbar = this.templateManager.getTemplate("navBar");
         if (!navbar) {
             return;
         }
-        var progressSlider = <HTMLInputElement>navbar.parent.querySelector("input.progress-wrapper");
+        const progressSlider = <HTMLInputElement>navbar.parent.querySelector("input.progress-wrapper");
         if (progressSlider && this._currentAnimation) {
             const progress = (this._currentAnimation.currentFrame / this._currentAnimation.frames) * 100;
-            var currentValue = progressSlider.valueAsNumber;
+            const currentValue = progressSlider.valueAsNumber;
             if (Math.abs(currentValue - progress) > 0.5) {
                 // Only move if greater than a 1% change
                 progressSlider.value = "" + progress;
@@ -345,9 +346,11 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
 
     /**
      * Update Current Animation Speed
+     * @param speed
+     * @param paramsObject
      */
     private _updateAnimationSpeed = (speed: string, paramsObject?: any) => {
-        let navbar = this.templateManager.getTemplate("navBar");
+        const navbar = this.templateManager.getTemplate("navBar");
         if (!navbar) {
             return;
         }
@@ -370,9 +373,13 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
 
     /**
      * Update Current Animation Type
+     * @param data
+     * @param data.label
+     * @param data.value
+     * @param paramsObject
      */
     private _updateAnimationType = (data: { label: string; value: string }, paramsObject?: any) => {
-        let navbar = this.templateManager.getTemplate("navBar");
+        const navbar = this.templateManager.getTemplate("navBar");
         if (!navbar) {
             return;
         }
@@ -396,8 +403,8 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
 
     protected _initVR() {
         this.engine.onVRDisplayChangedObservable.add(() => {
-            let viewerTemplate = this.templateManager.getTemplate("viewer");
-            let viewerElement = viewerTemplate && viewerTemplate.parent;
+            const viewerTemplate = this.templateManager.getTemplate("viewer");
+            const viewerElement = viewerTemplate && viewerTemplate.parent;
 
             if (viewerElement) {
                 if (this.sceneManager.vrHelper!.isInVRMode) {
@@ -410,8 +417,8 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
         if (this.sceneManager.vrHelper) {
             // due to the way the experience helper is exisintg VR, this must be added.
             this.sceneManager.vrHelper.onExitingVR.add(() => {
-                let viewerTemplate = this.templateManager.getTemplate("viewer");
-                let viewerElement = viewerTemplate && viewerTemplate.parent;
+                const viewerTemplate = this.templateManager.getTemplate("viewer");
+                const viewerElement = viewerTemplate && viewerTemplate.parent;
 
                 if (viewerElement) {
                     viewerElement.classList.remove("in-vr");
@@ -425,15 +432,15 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
      * Toggle fullscreen of the entire viewer
      */
     public toggleFullscreen = () => {
-        let viewerTemplate = this.templateManager.getTemplate("viewer");
-        let viewerElement = viewerTemplate && viewerTemplate.parent;
-        let fullscreenElement = this.fullscreenElement || viewerElement;
+        const viewerTemplate = this.templateManager.getTemplate("viewer");
+        const viewerElement = viewerTemplate && viewerTemplate.parent;
+        const fullscreenElement = this.fullscreenElement || viewerElement;
 
         if (fullscreenElement) {
-            let currentElement =
+            const currentElement =
                 (<any>document).fullscreenElement || (<any>document).webkitFullscreenElement || (<any>document).mozFullScreenElement || (<any>document).msFullscreenElement;
             if (!currentElement) {
-                let requestFullScreen =
+                const requestFullScreen =
                     fullscreenElement.requestFullscreen ||
                     (<any>fullscreenElement).webkitRequestFullscreen ||
                     (<any>fullscreenElement).msRequestFullscreen ||
@@ -443,7 +450,7 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
                     viewerElement.classList.add("in-fullscreen");
                 }
             } else {
-                let exitFullscreen = document.exitFullscreen || (<any>document).webkitExitFullscreen || (<any>document).msExitFullscreen || (<any>document).mozCancelFullScreen;
+                const exitFullscreen = document.exitFullscreen || (<any>document).webkitExitFullscreen || (<any>document).msExitFullscreen || (<any>document).mozCancelFullScreen;
                 exitFullscreen.call(document);
                 if (viewerElement) {
                     viewerElement.classList.remove("in-fullscreen");
@@ -470,17 +477,17 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
      * @param model the model to be used to configure the templates by
      */
     protected _configureTemplate(model?: ViewerModel) {
-        let navbar = this.templateManager.getTemplate("navBar");
+        const navbar = this.templateManager.getTemplate("navBar");
         if (!navbar) {
             return;
         }
 
-        let newParams: any = navbar.configuration.params || {};
+        const newParams: any = navbar.configuration.params || {};
 
         if (!model) {
             newParams.animations = null;
         } else {
-            let animationNames = model.getAnimationNames();
+            const animationNames = model.getAnimationNames();
             newParams.animations = animationNames.map((a) => {
                 return { label: a, value: a };
             });
@@ -548,20 +555,20 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
      * @param subScreen the name of the subScreen. Those can be defined in the configuration object
      */
     public showOverlayScreen(subScreen: string) {
-        let template = this.templateManager.getTemplate("overlay");
+        const template = this.templateManager.getTemplate("overlay");
         if (!template) {
             return Promise.resolve("Overlay template not found");
         }
 
         return template.show((template) => {
-            var canvasRect = this.containerElement.getBoundingClientRect();
+            const canvasRect = this.containerElement.getBoundingClientRect();
 
             template.parent.style.display = "flex";
             template.parent.style.width = canvasRect.width + "px";
             template.parent.style.height = canvasRect.height + "px";
             template.parent.style.opacity = "1";
 
-            let subTemplate = this.templateManager.getTemplate(subScreen);
+            const subTemplate = this.templateManager.getTemplate(subScreen);
             if (!subTemplate) {
                 return Promise.reject(subScreen + " template not found");
             }
@@ -576,23 +583,23 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
      * Hide the overlay screen.
      */
     public hideOverlayScreen() {
-        let template = this.templateManager.getTemplate("overlay");
+        const template = this.templateManager.getTemplate("overlay");
         if (!template) {
             return Promise.resolve("Overlay template not found");
         }
 
         return template.hide((template) => {
             template.parent.style.opacity = "0";
-            let onTransitionEnd = () => {
+            const onTransitionEnd = () => {
                 template.parent.removeEventListener("transitionend", onTransitionEnd);
                 template.parent.style.display = "none";
             };
             template.parent.addEventListener("transitionend", onTransitionEnd);
 
-            let overlays = template.parent.querySelectorAll(".overlay");
+            const overlays = template.parent.querySelectorAll(".overlay");
             if (overlays) {
                 for (let i = 0; i < overlays.length; ++i) {
-                    let htmlElement = <HTMLElement>overlays.item(i);
+                    const htmlElement = <HTMLElement>overlays.item(i);
                     htmlElement.style.display = "none";
                 }
             }
@@ -606,7 +613,7 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
      * @param visibilityFunction an optional function to execute in order to show the container
      */
     public show(visibilityFunction?: (template: Template) => Promise<Template>): Promise<Template> {
-        let template = this.templateManager.getTemplate("main");
+        const template = this.templateManager.getTemplate("main");
         //not possible, but yet:
         if (!template) {
             return Promise.reject("Main template not found");
@@ -620,7 +627,7 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
      * @param visibilityFunction an optional function to execute in order to hide the container
      */
     public hide(visibilityFunction?: (template: Template) => Promise<Template>) {
-        let template = this.templateManager.getTemplate("main");
+        const template = this.templateManager.getTemplate("main");
         //not possible, but yet:
         if (!template) {
             return Promise.reject("Main template not found");
@@ -633,13 +640,13 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
      * The loading screen can be configured using the configuration object
      */
     public showLoadingScreen() {
-        let template = this.templateManager.getTemplate("loadingScreen");
+        const template = this.templateManager.getTemplate("loadingScreen");
         if (!template) {
             return Promise.resolve("Loading Screen template not found");
         }
 
         return template.show((template) => {
-            var canvasRect = this.containerElement.getBoundingClientRect();
+            const canvasRect = this.containerElement.getBoundingClientRect();
             // var canvasPositioning = window.getComputedStyle(this.containerElement).position;
 
             template.parent.style.display = "flex";
@@ -660,14 +667,14 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
      * Hide the loading screen
      */
     public hideLoadingScreen() {
-        let template = this.templateManager.getTemplate("loadingScreen");
+        const template = this.templateManager.getTemplate("loadingScreen");
         if (!template) {
             return Promise.resolve("Loading Screen template not found");
         }
 
         return template.hide((template) => {
             template.parent.style.opacity = "0";
-            let onTransitionEnd = () => {
+            const onTransitionEnd = () => {
                 template.parent.removeEventListener("transitionend", onTransitionEnd);
                 template.parent.style.display = "none";
             };
@@ -687,12 +694,12 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
         this.templateManager = new TemplateManager(this.containerElement);
 
         // initialize the templates
-        let templateConfiguration = this.configuration.templates || {};
+        const templateConfiguration = this.configuration.templates || {};
 
         this.templateManager.initTemplate(templateConfiguration);
         // when done, execute onTemplatesLoaded()
         this.templateManager.onAllLoaded.add(() => {
-            let canvas = this.templateManager.getCanvas();
+            const canvas = this.templateManager.getCanvas();
             if (canvas) {
                 this._canvas = canvas;
             }
@@ -715,7 +722,7 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
                 exponent = this.configuration.lab.flashlight.exponent || exponent;
                 angle = this.configuration.lab.flashlight.angle || angle;
             }
-            var flashlight = new SpotLight("flashlight", Vector3.Zero(), Vector3.Zero(), exponent, angle, this.sceneManager.scene);
+            const flashlight = new SpotLight("flashlight", Vector3.Zero(), Vector3.Zero(), exponent, angle, this.sceneManager.scene);
             if (typeof this.configuration.lab.flashlight === "object") {
                 flashlight.intensity = this.configuration.lab.flashlight.intensity || flashlight.intensity;
                 if (this.configuration.lab.flashlight.diffuse) {
@@ -737,7 +744,7 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
                     lightTarget = undefined;
                 }
             });
-            let updateFlashlightFunction = () => {
+            const updateFlashlightFunction = () => {
                 if (this.sceneManager.camera && flashlight) {
                     flashlight.position.copyFrom(this.sceneManager.camera.position);
                     if (lightTarget) {

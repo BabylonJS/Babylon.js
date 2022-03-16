@@ -86,8 +86,8 @@ export class ColorPicker extends React.Component<IColorPickerProps, IColorPicker
     }
 
     private _evaluateSaturation(evt: React.PointerEvent<HTMLDivElement>) {
-        let left = evt.nativeEvent.offsetX;
-        let top = evt.nativeEvent.offsetY;
+        const left = evt.nativeEvent.offsetX;
+        const top = evt.nativeEvent.offsetY;
 
         const saturation = Math.min(1, Math.max(0.0001, left / this._saturationRef.current!.clientWidth));
         const value = Math.min(1, Math.max(0.0001, 1 - top / this._saturationRef.current!.clientHeight));
@@ -97,7 +97,7 @@ export class ColorPicker extends React.Component<IColorPickerProps, IColorPicker
             console.log("Value: " + value);
         }
 
-        let hsv = this.state.color.toHSV();
+        const hsv = this.state.color.toHSV();
         Color3.HSVtoRGBToRef(hsv.r, saturation, value, this.state.color);
         if (this.state.alpha === 0) {
             this.setState({ alpha: 1 });
@@ -106,7 +106,7 @@ export class ColorPicker extends React.Component<IColorPickerProps, IColorPicker
     }
 
     private _evaluateHue(evt: React.PointerEvent<HTMLDivElement>) {
-        let left = evt.nativeEvent.offsetX;
+        const left = evt.nativeEvent.offsetX;
 
         const hue = 360 * Math.min(0.9999, Math.max(0.0001, left / this._hueRef.current!.clientWidth));
 
@@ -114,7 +114,7 @@ export class ColorPicker extends React.Component<IColorPickerProps, IColorPicker
             console.log("Hue: " + hue);
         }
 
-        let hsv = this.state.color.toHSV();
+        const hsv = this.state.color.toHSV();
         Color3.HSVtoRGBToRef(hue, Math.max(hsv.g, 0.01), Math.max(hsv.b, 0.01), this.state.color);
         this.setState({ color: this.state.color });
     }
@@ -129,7 +129,7 @@ export class ColorPicker extends React.Component<IColorPickerProps, IColorPicker
         }
 
         if (this.props.color instanceof Color4) {
-            let newColor4 = Color4.FromColor3(this.state.color, this.state.alpha);
+            const newColor4 = Color4.FromColor3(this.state.color, this.state.alpha);
 
             this.props.onColorChanged(newColor4);
 
@@ -140,12 +140,12 @@ export class ColorPicker extends React.Component<IColorPickerProps, IColorPicker
     }
 
     public render() {
-        let colorHex = this.state.color.toHexString();
-        let hsv = this.state.color.toHSV();
-        let colorRef = new Color3();
+        const colorHex = this.state.color.toHexString();
+        const hsv = this.state.color.toHSV();
+        const colorRef = new Color3();
         Color3.HSVtoRGBToRef(hsv.r, 1, 1, colorRef);
-        let colorHexRef = colorRef.toHexString();
-        let hasAlpha = this.props.color instanceof Color4;
+        const colorHexRef = colorRef.toHexString();
+        const hasAlpha = this.props.color instanceof Color4;
 
         return (
             <div className={"color-picker-container" + (this.props.linearhint ? " with-hints" : "")}>

@@ -48,10 +48,10 @@ export class SkeletonPropertyGridComponent extends React.Component<ISkeletonProp
         const scene = this.props.skeleton.getScene();
 
         if (this._skeletonViewersEnabled) {
-            for (var mesh of scene.meshes) {
+            for (const mesh of scene.meshes) {
                 if (mesh.skeleton === this.props.skeleton) {
-                    var found = false;
-                    for (var sIndex = 0; sIndex < this._skeletonViewers.length; sIndex++) {
+                    let found = false;
+                    for (let sIndex = 0; sIndex < this._skeletonViewers.length; sIndex++) {
                         if (this._skeletonViewers[sIndex].skeleton === mesh.skeleton) {
                             found = true;
                             break;
@@ -61,7 +61,7 @@ export class SkeletonPropertyGridComponent extends React.Component<ISkeletonProp
                         continue;
                     }
 
-                    var viewer = new SkeletonViewer(mesh.skeleton, mesh, scene, false, 3, {
+                    const viewer = new SkeletonViewer(mesh.skeleton, mesh, scene, false, 3, {
                         displayMode: this._skeletonViewerDisplayOptions.displayMode,
                         displayOptions: {
                             sphereBaseSize: this._skeletonViewerDisplayOptions.sphereBaseSize,
@@ -81,7 +81,7 @@ export class SkeletonPropertyGridComponent extends React.Component<ISkeletonProp
                 }
             }
         } else {
-            for (var index = 0; index < this._skeletonViewers.length; index++) {
+            for (let index = 0; index < this._skeletonViewers.length; index++) {
                 this._skeletonViewers[index].mesh.reservedDataStore.skeletonViewer = null;
                 this._skeletonViewers[index].dispose();
             }
@@ -97,15 +97,15 @@ export class SkeletonPropertyGridComponent extends React.Component<ISkeletonProp
             return;
         }
 
-        var needInit = true;
-        for (var mesh of scene.meshes) {
+        let needInit = true;
+        for (const mesh of scene.meshes) {
             if (mesh.skeleton === props.skeleton && mesh.reservedDataStore && mesh.reservedDataStore.skeletonViewer) {
                 this._skeletonViewers.push(mesh.reservedDataStore.skeletonViewer);
 
                 if (needInit) {
                     needInit = false;
                     this._skeletonViewerDisplayOptions.displayMode = this._skeletonViewers[0].displayMode;
-                    for (var key in this._skeletonViewers[0].options.displayOptions) {
+                    for (const key in this._skeletonViewers[0].options.displayOptions) {
                         if (!key) {
                             continue;
                         }
@@ -120,7 +120,7 @@ export class SkeletonPropertyGridComponent extends React.Component<ISkeletonProp
 
     changeDisplayMode() {
         if (this._skeletonViewersEnabled) {
-            for (var index = 0; index < this._skeletonViewers.length; index++) {
+            for (let index = 0; index < this._skeletonViewers.length; index++) {
                 this._skeletonViewers[index].changeDisplayMode(this._skeletonViewerDisplayOptions.displayMode || 0);
             }
         }
@@ -128,7 +128,7 @@ export class SkeletonPropertyGridComponent extends React.Component<ISkeletonProp
 
     changeDisplayOptions(option: string, value: number) {
         if (this._skeletonViewersEnabled) {
-            for (var index = 0; index < this._skeletonViewers.length; index++) {
+            for (let index = 0; index < this._skeletonViewers.length; index++) {
                 this._skeletonViewers[index].changeDisplayOptions(option, value);
             }
             if ((this._skeletonViewerDisplayOptions as any)[option] !== undefined) {

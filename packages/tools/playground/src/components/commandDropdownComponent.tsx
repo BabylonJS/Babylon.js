@@ -43,7 +43,7 @@ export class CommandDropdownComponent extends React.Component<ICommandDropdownCo
     }
 
     public render() {
-        var engineVersion = Engine.Version.split("-")[0];
+        const engineVersion = Engine.Version.split("-")[0];
 
         return (
             <>
@@ -61,8 +61,8 @@ export class CommandDropdownComponent extends React.Component<ICommandDropdownCo
                         title={this.props.tooltip}
                         onClick={() => {
                             this.props.globalState.OnNewDropdownButtonClicked.notifyObservers(this);
-                            let newState = !this.state.isExpanded;
-                            let pgHost = document.getElementById("embed-host");
+                            const newState = !this.state.isExpanded;
+                            const pgHost = document.getElementById("embed-host");
 
                             if (pgHost) {
                                 pgHost.style.zIndex = newState ? "0" : "10";
@@ -89,7 +89,7 @@ export class CommandDropdownComponent extends React.Component<ICommandDropdownCo
                                         key={m.label}
                                         onClick={() => {
                                             if (!m.onClick) {
-                                                let newValue = !Utilities.ReadBoolFromStore(m.storeKey!, (m.defaultValue as boolean) || false);
+                                                const newValue = !Utilities.ReadBoolFromStore(m.storeKey!, (m.defaultValue as boolean) || false);
                                                 Utilities.StoreBoolToStore(m.storeKey!, newValue);
                                                 this.forceUpdate();
                                                 m.onCheck!(newValue);

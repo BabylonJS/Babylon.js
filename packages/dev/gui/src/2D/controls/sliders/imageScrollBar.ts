@@ -83,7 +83,7 @@ export class ImageScrollBar extends BaseSlider {
         if (this.isVertical && this.num90RotationInVerticalMode !== 0) {
             if (!value.isLoaded) {
                 value.onImageLoadedObservable.addOnce(() => {
-                    var rotatedValue = value._rotate90(-this.num90RotationInVerticalMode, true);
+                    const rotatedValue = value._rotate90(-this.num90RotationInVerticalMode, true);
                     this._thumbImage = rotatedValue;
                     if (!rotatedValue.isLoaded) {
                         rotatedValue.onImageLoadedObservable.addOnce(() => {
@@ -172,7 +172,7 @@ export class ImageScrollBar extends BaseSlider {
     }
 
     protected _getThumbThickness(): number {
-        var thumbThickness = 0;
+        let thumbThickness = 0;
         if (this._thumbWidth.isPixel) {
             thumbThickness = this._thumbWidth.getValue(this._host);
         } else {
@@ -188,10 +188,10 @@ export class ImageScrollBar extends BaseSlider {
 
         this._prepareRenderingData("rectangle");
         const thumbPosition = this._getThumbPosition();
-        var left = this._renderLeft;
-        var top = this._renderTop;
-        var width = this._renderWidth;
-        var height = this._renderHeight;
+        const left = this._renderLeft;
+        const top = this._renderTop;
+        const width = this._renderWidth;
+        const height = this._renderHeight;
 
         // Background
         if (this._backgroundImage) {
@@ -237,7 +237,11 @@ export class ImageScrollBar extends BaseSlider {
     private _originX: number;
     private _originY: number;
 
-    /** @hidden */
+    /**
+     * @param x
+     * @param y
+     * @hidden
+     */
     protected _updateValueFromPointer(x: number, y: number): void {
         if (this.rotation != 0) {
             this._invertTransformMatrix.transformCoordinates(x, y, this._transformedPosition);

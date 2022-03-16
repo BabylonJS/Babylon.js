@@ -56,7 +56,7 @@ export class TextureLinkLineComponent extends React.Component<ITextureLinkLineCo
 
     debugTexture() {
         if (this.props.customDebugAction) {
-            let newState = !this.state.isDebugSelected;
+            const newState = !this.state.isDebugSelected;
             this.props.customDebugAction(newState);
             this.setState({ isDebugSelected: newState });
 
@@ -99,7 +99,7 @@ export class TextureLinkLineComponent extends React.Component<ITextureLinkLineCo
             needToDisposeCheckMaterial = true;
         }
 
-        var debugMaterial = new StandardMaterial("debugMaterial", scene);
+        const debugMaterial = new StandardMaterial("debugMaterial", scene);
         debugMaterial.disableLighting = true;
         debugMaterial.sideOrientation = material.sideOrientation;
         debugMaterial.emissiveTexture = texture;
@@ -142,14 +142,14 @@ export class TextureLinkLineComponent extends React.Component<ITextureLinkLineCo
     }
 
     updateTexture(file: File) {
-        let material = this.props.material!;
+        const material = this.props.material!;
         Tools.ReadFile(
             file,
             (data) => {
-                var blob = new Blob([data], { type: "octet/stream" });
-                var url = URL.createObjectURL(blob);
+                const blob = new Blob([data], { type: "octet/stream" });
+                const url = URL.createObjectURL(blob);
 
-                let texture = new Texture(url, material.getScene(), false, false);
+                const texture = new Texture(url, material.getScene(), false, false);
 
                 if (this.props.propertyName) {
                     (material as any)[this.props.propertyName!] = texture;
@@ -165,7 +165,7 @@ export class TextureLinkLineComponent extends React.Component<ITextureLinkLineCo
     }
 
     removeTexture() {
-        let material = this.props.material!;
+        const material = this.props.material!;
         if (this.props.propertyName) {
             (material as any)[this.props.propertyName!] = null;
         } else if (this.props.onTextureRemoved) {

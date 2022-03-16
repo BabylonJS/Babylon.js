@@ -11,9 +11,9 @@ export class TrigonometryPropertyTabComponent extends React.Component<IPropertyC
     }
 
     render() {
-        let trigonometryBlock = this.props.block as TrigonometryBlock;
+        const trigonometryBlock = this.props.block as TrigonometryBlock;
 
-        var operationOptions: { label: string; value: TrigonometryBlockOperations }[] = [
+        const operationOptions: { label: string; value: TrigonometryBlockOperations }[] = [
             { label: "Cos", value: TrigonometryBlockOperations.Cos },
             { label: "Sin", value: TrigonometryBlockOperations.Sin },
             { label: "Abs", value: TrigonometryBlockOperations.Abs },

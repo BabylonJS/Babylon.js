@@ -94,19 +94,19 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
             }
 
             for (const currentAnimation of this.props.context.activeAnimations) {
-                let keys = currentAnimation.getKeys();
-                let newKeys = keys.slice(0);
+                const keys = currentAnimation.getKeys();
+                const newKeys = keys.slice(0);
                 let deletedFrame: Nullable<number> = null;
 
-                for (var keyPoint of this.props.context.activeKeyPoints) {
+                for (const keyPoint of this.props.context.activeKeyPoints) {
                     // Cannot delete 0 and last
                     if (keyPoint.props.keyId === 0 || keyPoint.props.keyId === keys.length - 1) {
                         continue;
                     }
 
-                    let key = keys[keyPoint.props.keyId];
+                    const key = keys[keyPoint.props.keyId];
 
-                    let keyIndex = newKeys.indexOf(key);
+                    const keyIndex = newKeys.indexOf(key);
                     if (keyIndex > -1) {
                         newKeys.splice(keyIndex, 1);
 
@@ -140,12 +140,12 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
                 if (currentAnimation.dataType === Animation.ANIMATIONTYPE_QUATERNION) {
                     continue;
                 }
-                let keys = currentAnimation.getKeys();
+                const keys = currentAnimation.getKeys();
 
                 const currentFrame = this.props.context.activeFrame;
 
                 let indexToAdd = -1;
-                for (var key of keys) {
+                for (const key of keys) {
                     if (key.frame < currentFrame) {
                         indexToAdd++;
                     } else {
@@ -157,7 +157,7 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
 
                 if (this.props.context.target) {
                     value = this.props.context.target as any;
-                    for (let path of currentAnimation.targetPropertyPath) {
+                    for (const path of currentAnimation.targetPropertyPath) {
                         value = value[path];
                     }
 
@@ -180,7 +180,7 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
                 } else {
                     // Key doesn't exist, create it (same operations) as
                     // the new key listener
-                    let newKey: IAnimationKey = {
+                    const newKey: IAnimationKey = {
                         frame: currentFrame,
                         value: value,
                         lockedTangent: true,
@@ -279,13 +279,13 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
     }
 
     private _setDefaultInTangent(keyId: number) {
-        for (var curve of this._curves) {
+        for (const curve of this._curves) {
             curve.storeDefaultInTangent(keyId);
         }
     }
 
     private _setDefaultOutTangent(keyId: number) {
-        for (var curve of this._curves) {
+        for (const curve of this._curves) {
             curve.storeDefaultOutTangent!(keyId);
         }
     }
@@ -299,7 +299,7 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
         this._curves = [];
 
         for (const animation of this.props.context.activeAnimations) {
-            let keys = animation.getKeys();
+            const keys = animation.getKeys();
 
             const curves = [];
             switch (animation.dataType) {
@@ -478,7 +478,7 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
                     break;
             }
 
-            let values = this._extractValuesFromKeys(keys, animation.dataType, curves);
+            const values = this._extractValuesFromKeys(keys, animation.dataType, curves);
 
             this._curves.push(...curves);
 
@@ -500,7 +500,7 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
         let minValue = Number.MAX_VALUE;
         let maxValue = -Number.MAX_VALUE;
 
-        for (var key of keys) {
+        for (const key of keys) {
             let lockedTangent = true;
             if (key.lockedTangent !== undefined) {
                 lockedTangent = key.lockedTangent;
@@ -797,28 +797,28 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
             return null;
         }
 
-        let maxFrame = this.props.context.referenceMaxFrame;
+        const maxFrame = this.props.context.referenceMaxFrame;
 
-        let range = maxFrame;
+        const range = maxFrame;
         let offset = this.props.context.activeAnimations[0].framePerSecond;
-        let convertRatio = range / this._GraphAbsoluteWidth;
+        const convertRatio = range / this._GraphAbsoluteWidth;
 
-        let steps = [];
+        const steps = [];
 
         if (offset === 0) {
             offset = 1;
         }
 
-        let startPosition = this._offsetX * convertRatio;
-        let start = -((startPosition / offset) | 0) * offset;
-        let end = start + (this._viewWidth - 40) * this._viewScale * convertRatio;
+        const startPosition = this._offsetX * convertRatio;
+        const start = -((startPosition / offset) | 0) * offset;
+        const end = start + (this._viewWidth - 40) * this._viewScale * convertRatio;
 
-        for (var step = start - offset; step <= end + offset; step += offset) {
+        for (let step = start - offset; step <= end + offset; step += offset) {
             steps.push(step);
         }
 
         return steps.map((s, i) => {
-            let x = s / convertRatio;
+            const x = s / convertRatio;
             return (
                 <g key={"axis" + s}>
                     <line
@@ -842,15 +842,15 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
             return null;
         }
 
-        let stepCounts = 10;
-        let range = this._maxValue !== this._minValue ? this._maxValue - this._minValue : 1;
+        const stepCounts = 10;
+        const range = this._maxValue !== this._minValue ? this._maxValue - this._minValue : 1;
         let offset = (range / stepCounts) * this._viewScale;
-        let convertRatio = range / this._GraphAbsoluteHeight;
-        let steps = [];
+        const convertRatio = range / this._GraphAbsoluteHeight;
+        const steps = [];
 
         // Get precision
-        let a = 0;
-        let b = offset;
+        const a = 0;
+        const b = offset;
         let precision = 2;
 
         while (a.toFixed(precision) === b.toFixed(precision)) {
@@ -867,16 +867,16 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
         offset /= pow;
 
         // Evaluate limits
-        let startPosition = (this._viewHeight * this._viewScale - this._GraphAbsoluteHeight - this._offsetY) * convertRatio;
-        let start = Math.ceil((this._minValue - ((startPosition / offset) | 0) * offset) / offset) * offset;
-        let end = Math.round((start + this._viewHeight * this._viewScale * convertRatio) / offset) * offset;
+        const startPosition = (this._viewHeight * this._viewScale - this._GraphAbsoluteHeight - this._offsetY) * convertRatio;
+        const start = Math.ceil((this._minValue - ((startPosition / offset) | 0) * offset) / offset) * offset;
+        const end = Math.round((start + this._viewHeight * this._viewScale * convertRatio) / offset) * offset;
 
-        for (var step = start - offset; step <= end + offset; step += offset) {
+        for (let step = start - offset; step <= end + offset; step += offset) {
             steps.push(step);
         }
 
         return steps.map((s, i) => {
-            let y = this._GraphAbsoluteHeight - (s - this._minValue) / convertRatio;
+            const y = this._GraphAbsoluteHeight - (s - this._minValue) / convertRatio;
             let text = s.toFixed(precision);
 
             text = parseFloat(text).toFixed(precision); // Avoid -0.00 (negative zero)
@@ -946,7 +946,7 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
             let keys = animation.getKeys();
             // Only keep selected keys, the previous sibling to the first key, and the next sibling of the last key
             if (this.props.context.activeKeyPoints && this.props.context.activeKeyPoints.length > 0) {
-                let newKeys = [];
+                const newKeys = [];
 
                 for (let i = 0; i < this.props.context.activeKeyPoints.length; i++) {
                     const keyPoint = this.props.context.activeKeyPoints[i];
@@ -968,7 +968,7 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
                 continue;
             }
 
-            let values = this._extractValuesFromKeys(keys, animation.dataType, undefined, propertyFilter);
+            const values = this._extractValuesFromKeys(keys, animation.dataType, undefined, propertyFilter);
 
             minValue = Math.min(minValue, values.min);
             maxValue = Math.max(maxValue, values.max);
@@ -995,8 +995,8 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
         const frameConvert = Math.abs(this._convertX(this._maxFrame) - this._convertX(this._minFrame)) + this._offsetX * 2;
         const valueConvert = this._minValue !== this._maxValue ? Math.abs(this._convertY(this._minValue) - this._convertY(this._maxValue)) + this._offsetY * 2 : 1;
 
-        let scaleWidth = frameConvert / this._viewCurveWidth;
-        let scaleHeight = valueConvert / this._viewHeight;
+        const scaleWidth = frameConvert / this._viewCurveWidth;
+        const scaleHeight = valueConvert / this._viewHeight;
 
         this._viewScale = scaleWidth * this._viewHeight < valueConvert ? scaleHeight : scaleWidth;
 
@@ -1006,8 +1006,8 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
 
     private _dropKeyFrames(curve: Curve) {
         return curve.keys.map((key, i) => {
-            let x = this._convertX(key.frame);
-            let y = this._convertY(key.value);
+            const x = this._convertX(key.frame);
+            const y = this._convertY(key.value);
 
             return (
                 <KeyPointComponent
@@ -1065,7 +1065,7 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
         }
 
         if (this._inSelectionMode) {
-            let style = this._selectionRectangle.current!.style;
+            const style = this._selectionRectangle.current!.style;
             style.visibility = "visible";
 
             const localX = evt.nativeEvent.offsetX;
@@ -1120,7 +1120,7 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
     }
 
     private _onWheel(evt: React.WheelEvent) {
-        let delta = evt.deltaY < 0 ? -0.05 : 0.05;
+        const delta = evt.deltaY < 0 ? -0.05 : 0.05;
 
         const oldScale = this._viewScale;
         this._viewScale = Math.min(Math.max(this._MinScale, this._viewScale + delta * this._viewScale), this._MaxScale);
@@ -1151,8 +1151,8 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
         let activeBoxLeft = 0;
         let activeBoxRight = 0;
         if (this.props.context.activeAnimations.length !== 0) {
-            let minFrame = this.props.context.referenceMinFrame;
-            let maxFrame = this.props.context.referenceMaxFrame;
+            const minFrame = this.props.context.referenceMinFrame;
+            const maxFrame = this.props.context.referenceMaxFrame;
 
             activeBoxLeft = (((this.props.context.fromKey - minFrame) / (maxFrame - minFrame)) * this._GraphAbsoluteWidth + this._offsetX) / this._viewScale;
             activeBoxRight = (((this.props.context.toKey - minFrame) / (maxFrame - minFrame)) * this._GraphAbsoluteWidth + this._offsetX) / this._viewScale;

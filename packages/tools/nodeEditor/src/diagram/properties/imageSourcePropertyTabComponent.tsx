@@ -22,14 +22,14 @@ export class ImageSourcePropertyTabComponent extends React.Component<IPropertyCo
     constructor(props: IPropertyComponentProps) {
         super(props);
 
-        let texture = this.imageSourceBlock.texture as BaseTexture;
+        const texture = this.imageSourceBlock.texture as BaseTexture;
 
         this.state = { isEmbedded: !texture || texture.name.substring(0, 4) === "data" };
     }
 
     UNSAFE_componentWillUpdate(nextProps: IPropertyComponentProps, nextState: { isEmbedded: boolean; loadAsCubeTexture: boolean }) {
         if (nextProps.block !== this.props.block) {
-            let texture = (nextProps.block as ImageSourceBlock).texture as BaseTexture;
+            const texture = (nextProps.block as ImageSourceBlock).texture as BaseTexture;
 
             nextState.isEmbedded = !texture || texture.name.substring(0, 4) === "data";
             nextState.loadAsCubeTexture = texture && texture.isCube;
@@ -38,7 +38,7 @@ export class ImageSourcePropertyTabComponent extends React.Component<IPropertyCo
 
     private _generateRandomForCache() {
         return "xxxxxxxxxxxxxxxxxxxx".replace(/[x]/g, (c) => {
-            var r = (Math.random() * 10) | 0;
+            const r = (Math.random() * 10) | 0;
             return r.toString();
         });
     }
@@ -83,16 +83,16 @@ export class ImageSourcePropertyTabComponent extends React.Component<IPropertyCo
     replaceTexture(file: File) {
         this._prepareTexture();
 
-        let texture = this.imageSourceBlock.texture as BaseTexture;
+        const texture = this.imageSourceBlock.texture as BaseTexture;
         Tools.ReadFile(
             file,
             (data) => {
-                var blob = new Blob([data], { type: "octet/stream" });
+                const blob = new Blob([data], { type: "octet/stream" });
 
-                var reader = new FileReader();
+                const reader = new FileReader();
                 reader.readAsDataURL(blob);
                 reader.onloadend = () => {
-                    let base64data = reader.result as string;
+                    const base64data = reader.result as string;
 
                     let extension: string | undefined = undefined;
                     if (file.name.toLowerCase().indexOf(".dds") > 0) {
@@ -111,21 +111,21 @@ export class ImageSourcePropertyTabComponent extends React.Component<IPropertyCo
     replaceTextureWithUrl(url: string) {
         this._prepareTexture();
 
-        let texture = this.imageSourceBlock.texture as BaseTexture;
+        const texture = this.imageSourceBlock.texture as BaseTexture;
         (texture as Texture).updateURL(url, null, () => this.updateAfterTextureLoad());
     }
 
     render() {
         let url = "";
 
-        let texture = this.imageSourceBlock.texture as BaseTexture;
+        const texture = this.imageSourceBlock.texture as BaseTexture;
         if (texture && texture.name && texture.name.substring(0, 4) !== "data") {
             url = texture.name;
         }
 
         url = url.replace(/\?nocache=\d+/, "");
 
-        var samplingMode = [
+        const samplingMode = [
             { label: "Nearest", value: Texture.NEAREST_NEAREST }, // 1
             { label: "Linear", value: Texture.LINEAR_LINEAR }, // 2
 

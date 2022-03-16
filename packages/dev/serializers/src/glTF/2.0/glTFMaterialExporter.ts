@@ -11,7 +11,7 @@ import {
     TextureWrapMode,
     ITexture,
     IImage,
-} from "babylonjs-gltf2interface";
+ IMaterialExtension } from "babylonjs-gltf2interface";
 
 import { Nullable } from "core/types";
 import { Vector2 } from "core/Maths/math.vector";
@@ -22,7 +22,7 @@ import { TextureTools } from "core/Misc/textureTools";
 import { BaseTexture } from "core/Materials/Textures/baseTexture";
 import { Texture } from "core/Materials/Textures/texture";
 import { RawTexture } from "core/Materials/Textures/rawTexture";
-import { IMaterialExtension } from "babylonjs-gltf2interface";
+
 import { Scene } from "core/scene";
 
 import { _Exporter } from "./glTFExporter";
@@ -130,6 +130,7 @@ export class _GLTFMaterialExporter {
     /**
      * Gets the materials from a Babylon scene and converts them to glTF materials
      * @param scene babylonjs scene
+     * @param exportMaterials
      * @param mimeType texture mime type
      * @param images array of images
      * @param textures array of textures
@@ -138,7 +139,7 @@ export class _GLTFMaterialExporter {
      * @param hasTextureCoords specifies if texture coordinates are present on the material
      */
     public _convertMaterialsToGLTFAsync(exportMaterials: Set<Material>, mimeType: ImageMimeType, hasTextureCoords: boolean) {
-        let promises: Promise<IMaterial>[] = [];
+        const promises: Promise<IMaterial>[] = [];
         exportMaterials.forEach((material) => {
             if (material.getClassName() === "StandardMaterial") {
                 promises.push(this._convertStandardMaterialAsync(material as StandardMaterial, mimeType, hasTextureCoords));
@@ -160,7 +161,7 @@ export class _GLTFMaterialExporter {
      * @returns glTF material without texture parameters
      */
     public _stripTexturesFromMaterial(originalMaterial: IMaterial): IMaterial {
-        let newMaterial: IMaterial = {};
+        const newMaterial: IMaterial = {};
         if (originalMaterial) {
             newMaterial.name = originalMaterial.name;
             newMaterial.doubleSided = originalMaterial.doubleSided;
@@ -195,8 +196,8 @@ export class _GLTFMaterialExporter {
         }
 
         if (material.extensions) {
-            for (let extension in material.extensions) {
-                let extensionObject = material.extensions[extension];
+            for (const extension in material.extensions) {
+                const extensionObject = material.extensions[extension];
                 if (extensionObject as IMaterialExtension) {
                     return extensionObject.hasTextures?.();
                 }
@@ -248,13 +249,13 @@ export class _GLTFMaterialExporter {
          * @returns Number representing the roughness value
          */
         function _solveForRoughness(specularPower: number): number {
-            var t = Math.pow(specularPower / P3.x, 0.333333);
+            const t = Math.pow(specularPower / P3.x, 0.333333);
             return _cubicBezierCurve(t, P0.y, P1.y, P2.y, P3.y);
         }
 
-        let diffuse = babylonStandardMaterial.diffuseColor.toLinearSpace().scale(0.5);
-        let opacity = babylonStandardMaterial.alpha;
-        let specularPower = Scalar.Clamp(babylonStandardMaterial.specularPower, 0, _GLTFMaterialExporter._MaxSpecularPower);
+        const diffuse = babylonStandardMaterial.diffuseColor.toLinearSpace().scale(0.5);
+        const opacity = babylonStandardMaterial.alpha;
+        const specularPower = Scalar.Clamp(babylonStandardMaterial.specularPower, 0, _GLTFMaterialExporter._MaxSpecularPower);
 
         const roughness = _solveForRoughness(specularPower);
 
@@ -397,7 +398,7 @@ export class _GLTFMaterialExporter {
             const textures = this._exporter._extensionsPostExportMaterialAdditionalTextures("exportMaterial", glTFMaterial, babylonMaterial);
             let tasks: Nullable<Promise<Nullable<ITextureInfo>>[]> = null;
 
-            for (var texture of textures) {
+            for (const texture of textures) {
                 if (!tasks) {
                     tasks = [];
                 }
@@ -409,7 +410,7 @@ export class _GLTFMaterialExporter {
             }
 
             return Promise.all(tasks).then(() => {
-                let extensionWork = this._exporter._extensionsPostExportMaterialAsync("exportMaterial", glTFMaterial, babylonMaterial);
+                const extensionWork = this._exporter._extensionsPostExportMaterialAsync("exportMaterial", glTFMaterial, babylonMaterial);
                 if (!extensionWork) {
                     return glTFMaterial;
                 }
@@ -435,7 +436,7 @@ export class _GLTFMaterialExporter {
     ): Promise<IMaterial> {
         const materialMap = this._exporter._materialMap;
         const materials = this._exporter._materials;
-        let promises: Promise<void>[] = [];
+        const promises: Promise<void>[] = [];
         const glTFPbrMetallicRoughness: IMaterialPbrMetallicRoughness = {};
 
         if (babylonPBRMetalRoughMaterial.baseColor) {
@@ -573,8 +574,8 @@ export class _GLTFMaterialExporter {
      * @returns resized textures or null
      */
     private _resizeTexturesToSameDimensions(texture1: Nullable<BaseTexture>, texture2: Nullable<BaseTexture>, scene: Scene): { texture1: BaseTexture; texture2: BaseTexture } {
-        let texture1Size = texture1 ? texture1.getSize() : { width: 0, height: 0 };
-        let texture2Size = texture2 ? texture2.getSize() : { width: 0, height: 0 };
+        const texture1Size = texture1 ? texture1.getSize() : { width: 0, height: 0 };
+        const texture2Size = texture2 ? texture2.getSize() : { width: 0, height: 0 };
         let resizedTexture1: BaseTexture;
         let resizedTexture2: BaseTexture;
 
@@ -640,7 +641,7 @@ export class _GLTFMaterialExporter {
         factors: _IPBRSpecularGlossiness,
         mimeType: ImageMimeType
     ): Promise<_IPBRMetallicRoughness> {
-        let promises = [];
+        const promises = [];
         if (!(diffuseTexture || specularGlossinessTexture)) {
             return Promise.reject("_ConvertSpecularGlosinessTexturesToMetallicRoughness: diffuse and specular glossiness textures are not defined!");
         }
@@ -649,7 +650,7 @@ export class _GLTFMaterialExporter {
         if (scene) {
             const resizedTextures = this._resizeTexturesToSameDimensions(diffuseTexture, specularGlossinessTexture, scene);
 
-            let diffuseSize = resizedTextures.texture1?.getSize();
+            const diffuseSize = resizedTextures.texture1?.getSize();
 
             let diffuseBuffer: Float32Array;
             let specularGlossinessBuffer: Float32Array;
@@ -657,8 +658,8 @@ export class _GLTFMaterialExporter {
             const width = diffuseSize.width;
             const height = diffuseSize.height;
 
-            let diffusePixels = await resizedTextures.texture1.readPixels();
-            let specularPixels = await resizedTextures.texture2.readPixels();
+            const diffusePixels = await resizedTextures.texture1.readPixels();
+            const specularPixels = await resizedTextures.texture2.readPixels();
 
             if (diffusePixels) {
                 diffuseBuffer = this._convertPixelArrayToFloat32(diffusePixels);
@@ -761,13 +762,13 @@ export class _GLTFMaterialExporter {
             }
 
             if (writeOutMetallicRoughnessTexture) {
-                let promise = this._createBase64FromCanvasAsync(metallicRoughnessBuffer, width, height, mimeType).then((metallicRoughnessBase64) => {
+                const promise = this._createBase64FromCanvasAsync(metallicRoughnessBuffer, width, height, mimeType).then((metallicRoughnessBase64) => {
                     metallicRoughnessFactors.metallicRoughnessTextureBase64 = metallicRoughnessBase64;
                 });
                 promises.push(promise);
             }
             if (writeOutBaseColorTexture) {
-                let promise = this._createBase64FromCanvasAsync(baseColorBuffer, width, height, mimeType).then((baseColorBase64) => {
+                const promise = this._createBase64FromCanvasAsync(baseColorBuffer, width, height, mimeType).then((baseColorBase64) => {
                     metallicRoughnessFactors.baseColorTextureBase64 = baseColorBase64;
                 });
                 promises.push(promise);
@@ -890,7 +891,7 @@ export class _GLTFMaterialExporter {
     private _getGLTFTextureSampler(texture: BaseTexture): ISampler {
         const sampler = this._getGLTFTextureWrapModesSampler(texture);
 
-        let samplingMode = texture instanceof Texture ? texture.samplingMode : null;
+        const samplingMode = texture instanceof Texture ? texture.samplingMode : null;
         if (samplingMode != null) {
             switch (samplingMode) {
                 case Texture.LINEAR_LINEAR: {
@@ -977,8 +978,8 @@ export class _GLTFMaterialExporter {
     }
 
     private _getGLTFTextureWrapModesSampler(texture: BaseTexture): ISampler {
-        let wrapS = this._getGLTFTextureWrapMode(texture instanceof Texture ? texture.wrapU : Texture.WRAP_ADDRESSMODE);
-        let wrapT = this._getGLTFTextureWrapMode(texture instanceof Texture ? texture.wrapV : Texture.WRAP_ADDRESSMODE);
+        const wrapS = this._getGLTFTextureWrapMode(texture instanceof Texture ? texture.wrapU : Texture.WRAP_ADDRESSMODE);
+        const wrapT = this._getGLTFTextureWrapMode(texture instanceof Texture ? texture.wrapV : Texture.WRAP_ADDRESSMODE);
 
         if (wrapS === TextureWrapMode.REPEAT && wrapT === TextureWrapMode.REPEAT) {
             // default wrapping mode in glTF, so omitting
@@ -1109,7 +1110,7 @@ export class _GLTFMaterialExporter {
     ): Promise<IMaterial> {
         const materialMap = this._exporter._materialMap;
         const materials = this._exporter._materials;
-        let promises = [];
+        const promises = [];
         if (metallicRoughness) {
             _GLTFMaterialExporter._SetAlphaMode(glTFMaterial, babylonPBRMaterial as PBRMaterial);
             if (
@@ -1138,7 +1139,7 @@ export class _GLTFMaterialExporter {
             if (hasTextureCoords) {
                 const bumpTexture = babylonPBRMaterial._bumpTexture;
                 if (bumpTexture) {
-                    let promise = this._exportTextureAsync(bumpTexture, mimeType).then((glTFTexture) => {
+                    const promise = this._exportTextureAsync(bumpTexture, mimeType).then((glTFTexture) => {
                         if (glTFTexture) {
                             glTFMaterial.normalTexture = glTFTexture;
                             if (bumpTexture.level !== 1) {
@@ -1150,9 +1151,9 @@ export class _GLTFMaterialExporter {
                 }
                 const ambientTexture = babylonPBRMaterial._ambientTexture;
                 if (ambientTexture) {
-                    let promise = this._exportTextureAsync(ambientTexture, mimeType).then((glTFTexture) => {
+                    const promise = this._exportTextureAsync(ambientTexture, mimeType).then((glTFTexture) => {
                         if (glTFTexture) {
-                            let occlusionTexture: IMaterialOcclusionTextureInfo = {
+                            const occlusionTexture: IMaterialOcclusionTextureInfo = {
                                 index: glTFTexture.index,
                                 texCoord: glTFTexture.texCoord,
                             };
@@ -1168,7 +1169,7 @@ export class _GLTFMaterialExporter {
                 }
                 const emissiveTexture = babylonPBRMaterial._emissiveTexture;
                 if (emissiveTexture) {
-                    let promise = this._exportTextureAsync(emissiveTexture, mimeType).then((glTFTexture) => {
+                    const promise = this._exportTextureAsync(emissiveTexture, mimeType).then((glTFTexture) => {
                         if (glTFTexture) {
                             glTFMaterial.emissiveTexture = glTFTexture;
                         }
@@ -1235,7 +1236,7 @@ export class _GLTFMaterialExporter {
                 //  if a pre-existing sampler with identical parameters exists, then reuse the previous sampler
                 let foundSamplerIndex: Nullable<number> = null;
                 for (let i = 0; i < samplers.length; ++i) {
-                    let s = samplers[i];
+                    const s = samplers[i];
                     if (s.minFilter === sampler.minFilter && s.magFilter === sampler.magFilter && s.wrapS === sampler.wrapS && s.wrapT === sampler.wrapT) {
                         foundSamplerIndex = i;
                         break;
@@ -1289,6 +1290,8 @@ export class _GLTFMaterialExporter {
      * @param images array of images
      * @param textures array of textures
      * @param imageData map of image data
+     * @param texCoordIndex
+     * @param samplerIndex
      * @returns glTF texture info, or null if the texture format is not supported
      */
     private _getTextureInfoFromBase64(
@@ -1312,16 +1315,16 @@ export class _GLTFMaterialExporter {
         }
 
         const binStr = atob(base64Texture.split(",")[1]);
-        let arrBuff = new ArrayBuffer(binStr.length);
+        const arrBuff = new ArrayBuffer(binStr.length);
         const arr = new Uint8Array(arrBuff);
         for (let i = 0, length = binStr.length; i < length; ++i) {
             arr[i] = binStr.charCodeAt(i);
         }
         const imageValues = { data: arr, mimeType: mimeType };
 
-        let extension = mimeType === ImageMimeType.JPEG ? ".jpeg" : ".png";
+        const extension = mimeType === ImageMimeType.JPEG ? ".jpeg" : ".png";
         let textureName = baseTextureName + extension;
-        let originalTextureName = textureName;
+        const originalTextureName = textureName;
         if (textureName in imageData) {
             textureName = `${baseTextureName}_${Tools.RandomId()}${extension}`;
         }

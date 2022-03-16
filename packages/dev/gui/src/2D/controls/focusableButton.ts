@@ -86,7 +86,14 @@ export class FocusableButton extends Button implements IFocusableControl {
         this.onKeyboardEventProcessedObservable.notifyObservers(evt, -1, this);
     }
 
-    /** @hidden */
+    /**
+     * @param target
+     * @param coordinates
+     * @param pointerId
+     * @param buttonIndex
+     * @param pi
+     * @hidden
+     */
     public _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, pi: PointerInfoBase): boolean {
         if (!this.isReadOnly) {
             // Clicking on button should focus

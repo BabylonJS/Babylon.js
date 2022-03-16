@@ -83,13 +83,13 @@ export class RangeFrameBarComponent extends React.Component<IRangeFrameBarCompon
     private _dropKeyFrames(animation: Animation) {
         const from = this.props.context.fromKey;
         const to = this.props.context.toKey;
-        let range = to - from;
-        let convertRatio = range / this._viewWidth;
+        const range = to - from;
+        const convertRatio = range / this._viewWidth;
 
         const keys = animation.getKeys();
 
         return keys.map((k, i) => {
-            let x = (k.frame - from) / convertRatio;
+            const x = (k.frame - from) / convertRatio;
             return (
                 <line
                     key={"frame-line" + k.frame + i}
@@ -114,17 +114,17 @@ export class RangeFrameBarComponent extends React.Component<IRangeFrameBarCompon
         const from = this.props.context.fromKey;
         const to = this.props.context.toKey;
 
-        let range = to - from;
-        let convertRatio = range / this._viewWidth;
+        const range = to - from;
+        const convertRatio = range / this._viewWidth;
         const dist = tickDistance;
         const offset = Math.max(Math.floor(dist * convertRatio), 1);
 
-        let steps = [];
+        const steps = [];
 
-        let start = from;
-        let end = start + range;
+        const start = from;
+        const end = start + range;
 
-        for (var step = start; step <= end; step += offset) {
+        for (let step = start; step <= end; step += offset) {
             steps.push(step);
         }
 
@@ -133,7 +133,7 @@ export class RangeFrameBarComponent extends React.Component<IRangeFrameBarCompon
         }
 
         return steps.map((s, i) => {
-            let x = (s - from) / convertRatio;
+            const x = (s - from) / convertRatio;
             return (
                 <g key={"axis" + s + i}>
                     <line

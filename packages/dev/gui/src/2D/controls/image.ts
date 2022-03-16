@@ -307,7 +307,11 @@ export class Image extends Control {
         this._markAsDirty();
     }
 
-    /** @hidden */
+    /**
+     * @param n
+     * @param preserveProperties
+     * @hidden
+     */
     public _rotate90(n: number, preserveProperties: boolean = false): Image {
         const width = this._domImage.width;
         const height = this._domImage.height;
@@ -317,7 +321,7 @@ export class Image extends Control {
         if (!engine) {
             throw new Error("Invalid engine. Unable to create a canvas.");
         }
-        let canvas = engine.createCanvas(height, width);
+        const canvas = engine.createCanvas(height, width);
 
         const context = canvas.getContext("2d")!;
 
@@ -372,7 +376,7 @@ export class Image extends Control {
             dstHeight = srcImage.sourceHeight;
 
         if (n != 0) {
-            let mult = n < 0 ? -1 : 1;
+            const mult = n < 0 ? -1 : 1;
             n = n % 4;
             for (let i = 0; i < Math.abs(n); ++i) {
                 dstLeft = -(srcTop - srcHeight / 2) * mult + srcHeight / 2;
@@ -415,7 +419,7 @@ export class Image extends Control {
         // Left and right
         this._sliceLeft = -1;
         this._sliceRight = -1;
-        for (var x = 0; x < width; x++) {
+        for (let x = 0; x < width; x++) {
             const alpha = imageData.data[x * 4 + 3];
 
             if (alpha > 127 && this._sliceLeft === -1) {
@@ -432,7 +436,7 @@ export class Image extends Control {
         // top and bottom
         this._sliceTop = -1;
         this._sliceBottom = -1;
-        for (var y = 0; y < height; y++) {
+        for (let y = 0; y < height; y++) {
             const alpha = imageData.data[y * width * 4 + 3];
 
             if (alpha > 127 && this._sliceTop === -1) {
@@ -529,22 +533,23 @@ export class Image extends Control {
 
     /**
      * Checks for svg document with icon id present
+     * @param value
      */
     private _svgCheck(value: string): string {
         if (window.SVGSVGElement && value.search(/.svg#/gi) !== -1 && value.indexOf("#") === value.lastIndexOf("#")) {
             this._isSVG = true;
-            var svgsrc = value.split("#")[0];
-            var elemid = value.split("#")[1];
+            const svgsrc = value.split("#")[0];
+            const elemid = value.split("#")[1];
             // check if object alr exist in document
-            var svgExist = <HTMLObjectElement>document.body.querySelector('object[data="' + svgsrc + '"]');
+            const svgExist = <HTMLObjectElement>document.body.querySelector('object[data="' + svgsrc + '"]');
             if (svgExist) {
-                var svgDoc = svgExist.contentDocument;
+                const svgDoc = svgExist.contentDocument;
                 // get viewbox width and height, get svg document width and height in px
                 if (svgDoc && svgDoc.documentElement) {
-                    var vb = svgDoc.documentElement.getAttribute("viewBox");
-                    var docwidth = Number(svgDoc.documentElement.getAttribute("width"));
-                    var docheight = Number(svgDoc.documentElement.getAttribute("height"));
-                    var elem = <SVGGraphicsElement>(<unknown>svgDoc.getElementById(elemid));
+                    const vb = svgDoc.documentElement.getAttribute("viewBox");
+                    const docwidth = Number(svgDoc.documentElement.getAttribute("width"));
+                    const docheight = Number(svgDoc.documentElement.getAttribute("height"));
+                    const elem = <SVGGraphicsElement>(<unknown>svgDoc.getElementById(elemid));
                     if (elem && vb && docwidth && docheight) {
                         this._getSVGAttribs(svgExist, elemid);
                         return value;
@@ -557,7 +562,7 @@ export class Image extends Control {
                 });
             } else {
                 // create document object
-                var svgImage = document.createElement("object");
+                const svgImage = document.createElement("object");
                 svgImage.data = svgsrc;
                 svgImage.type = "image/svg+xml";
                 svgImage.width = "0%";
@@ -565,7 +570,7 @@ export class Image extends Control {
                 document.body.appendChild(svgImage);
                 // when the object has loaded, get the element attribs
                 svgImage.onload = () => {
-                    var svgobj = <HTMLObjectElement>document.body.querySelector('object[data="' + svgsrc + '"]');
+                    const svgobj = <HTMLObjectElement>document.body.querySelector('object[data="' + svgsrc + '"]');
                     if (svgobj) {
                         this._getSVGAttribs(svgobj, elemid);
                     }
@@ -580,24 +585,26 @@ export class Image extends Control {
     /**
      * Sets sourceLeft, sourceTop, sourceWidth, sourceHeight automatically
      * given external svg file and icon id
+     * @param svgsrc
+     * @param elemid
      */
     private _getSVGAttribs(svgsrc: HTMLObjectElement, elemid: string) {
-        var svgDoc = svgsrc.contentDocument;
+        const svgDoc = svgsrc.contentDocument;
         // get viewbox width and height, get svg document width and height in px
         if (svgDoc && svgDoc.documentElement) {
-            var vb = svgDoc.documentElement.getAttribute("viewBox");
-            var docwidth = Number(svgDoc.documentElement.getAttribute("width"));
-            var docheight = Number(svgDoc.documentElement.getAttribute("height"));
+            const vb = svgDoc.documentElement.getAttribute("viewBox");
+            const docwidth = Number(svgDoc.documentElement.getAttribute("width"));
+            const docheight = Number(svgDoc.documentElement.getAttribute("height"));
             // get element bbox and matrix transform
-            var elem = svgDoc.getElementById(elemid) as Nullable<SVGGraphicsElement>;
+            const elem = svgDoc.getElementById(elemid) as Nullable<SVGGraphicsElement>;
             if (vb && docwidth && docheight && elem) {
-                var vb_width = Number(vb.split(" ")[2]);
-                var vb_height = Number(vb.split(" ")[3]);
-                var elem_bbox = elem.getBBox();
-                var elem_matrix_a = 1;
-                var elem_matrix_d = 1;
-                var elem_matrix_e = 0;
-                var elem_matrix_f = 0;
+                const vb_width = Number(vb.split(" ")[2]);
+                const vb_height = Number(vb.split(" ")[3]);
+                const elem_bbox = elem.getBBox();
+                let elem_matrix_a = 1;
+                let elem_matrix_d = 1;
+                let elem_matrix_e = 0;
+                let elem_matrix_f = 0;
                 const mainMatrix = elem.transform.baseVal.consolidate()!.matrix;
                 if (elem.transform && elem.transform.baseVal.consolidate()) {
                     elem_matrix_a = mainMatrix.a;
@@ -809,9 +816,9 @@ export class Image extends Control {
             width = this._sourceWidth ? this._sourceWidth : this._imageWidth;
             height = this._sourceHeight ? this._sourceHeight : this._imageHeight;
         } else {
-            let rowCount = this._domImage.naturalWidth / this.cellWidth;
-            let column = (this.cellId / rowCount) >> 0;
-            let row = this.cellId % rowCount;
+            const rowCount = this._domImage.naturalWidth / this.cellWidth;
+            const column = (this.cellId / rowCount) >> 0;
+            const row = this.cellId % rowCount;
 
             x = this.cellWidth * row;
             y = this.cellHeight * column;

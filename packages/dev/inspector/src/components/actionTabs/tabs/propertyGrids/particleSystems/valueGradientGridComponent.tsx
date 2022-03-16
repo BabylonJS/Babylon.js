@@ -35,9 +35,9 @@ export class ValueGradientGridComponent extends React.Component<IValueGradientGr
     }
 
     deleteStep(step: IValueGradient) {
-        let gradients = this.props.gradients as Array<IValueGradient>;
+        const gradients = this.props.gradients as Array<IValueGradient>;
 
-        let index = gradients.indexOf(step);
+        const index = gradients.indexOf(step);
 
         if (index > -1) {
             gradients.splice(index, 1);
@@ -46,19 +46,19 @@ export class ValueGradientGridComponent extends React.Component<IValueGradientGr
     }
 
     addNewStep() {
-        let gradients = this.props.gradients as Array<IValueGradient>;
+        const gradients = this.props.gradients as Array<IValueGradient>;
 
         switch (this.props.mode) {
             case GradientGridMode.Factor:
-                let newStep = new FactorGradient(1, 1, 1);
+                const newStep = new FactorGradient(1, 1, 1);
                 gradients.push(newStep);
                 break;
             case GradientGridMode.Color4:
-                let newStepColor = new ColorGradient(1, new Color4(1, 1, 1, 1), new Color4(1, 1, 1, 1));
+                const newStepColor = new ColorGradient(1, new Color4(1, 1, 1, 1), new Color4(1, 1, 1, 1));
                 gradients.push(newStepColor);
                 break;
             case GradientGridMode.Color3:
-                let newStepColor3 = new Color3Gradient(1, Color3.White());
+                const newStepColor3 = new Color3Gradient(1, Color3.White());
                 gradients.push(newStepColor3);
                 break;
         }
@@ -69,7 +69,7 @@ export class ValueGradientGridComponent extends React.Component<IValueGradientGr
     }
 
     checkForReOrder() {
-        let gradients = this.props.gradients as Array<IValueGradient>;
+        const gradients = this.props.gradients as Array<IValueGradient>;
         gradients.sort((a, b) => {
             if (a.gradient === b.gradient) {
                 return 0;
@@ -92,7 +92,7 @@ export class ValueGradientGridComponent extends React.Component<IValueGradientGr
     }
 
     render() {
-        let gradients = this.props.gradients as Nullable<Array<IValueGradient>>;
+        const gradients = this.props.gradients as Nullable<Array<IValueGradient>>;
 
         return (
             <div>
@@ -110,7 +110,7 @@ export class ValueGradientGridComponent extends React.Component<IValueGradientGr
                             onClick={() => this.addNewStep()}
                         />
                         {gradients.map((g, i) => {
-                            let codeRecorderPropertyName = this.props.codeRecorderPropertyName + `[${i}]`;
+                            const codeRecorderPropertyName = this.props.codeRecorderPropertyName + `[${i}]`;
                             switch (this.props.mode) {
                                 case GradientGridMode.Factor:
                                     return (

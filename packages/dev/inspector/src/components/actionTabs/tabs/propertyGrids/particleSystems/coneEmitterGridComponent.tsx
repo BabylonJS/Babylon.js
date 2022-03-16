@@ -20,7 +20,7 @@ export class ConeEmitterGridComponent extends React.Component<IConeEmitterGridCo
     }
 
     render() {
-        let emitter = this.props.emitter;
+        const emitter = this.props.emitter;
         return (
             <>
                 <SliderLineComponent

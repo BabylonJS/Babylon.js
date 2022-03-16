@@ -466,7 +466,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         if (this.globalState.liveGuiTexture) {
             this.globalState.liveGuiTexture.addControl(guiElement);
         }
-        var newGuiNode = this.createNewGuiNode(guiElement);
+        const newGuiNode = this.createNewGuiNode(guiElement);
         this.trueRootContainer.addControl(guiElement);
         return newGuiNode;
     }
@@ -672,7 +672,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         const referenceAxis = new Vector2(newX, newY);
 
         if (guiControl.typeName === "Line") {
-            let line = guiControl as Line;
+            const line = guiControl as Line;
             const x1 = (line.x1 as string).substr(0, (line.x1 as string).length - 2); //removing the 'px'
             const x2 = (line.x2 as string).substr(0, (line.x2 as string).length - 2);
             const y1 = (line.y1 as string).substr(0, (line.y1 as string).length - 2);
@@ -712,11 +712,11 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     }
 
     onMove(evt: React.PointerEvent) {
-        var pos = this.getScaledPointerPosition();
+        const pos = this.getScaledPointerPosition();
         // Move or guiNodes
         if (this._mouseStartPointX != null && this._mouseStartPointY != null && !this._panning) {
-            var x = this._mouseStartPointX;
-            var y = this._mouseStartPointY;
+            const x = this._mouseStartPointX;
+            const y = this._mouseStartPointY;
             let selected = false;
             this.selectedGuiNodes.forEach((element) => {
                 if (pos) {
@@ -747,7 +747,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             return;
         }
 
-        var pos = this.getScaledPointerPosition();
+        const pos = this.getScaledPointerPosition();
         if (this._forceSelecting) {
             this._mouseStartPointX = pos ? pos.x : this._mouseStartPointX;
             this._mouseStartPointY = pos ? pos.y : this._mouseStartPointY;
@@ -1005,7 +1005,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     // Move the selected controls. Can be either on horizontal (leftInPixels) or
     // vertical (topInPixels) direction
     moveControls(moveHorizontal: boolean, amount: number) {
-        for (let selectedControl of this.props.globalState.workbench.selectedGuiNodes) {
+        for (const selectedControl of this.props.globalState.workbench.selectedGuiNodes) {
             if (moveHorizontal) {
                 // move horizontal
                 const prevValue = selectedControl.leftInPixels;

@@ -144,7 +144,7 @@ export class TouchHolographicMenu extends VolumeBasedPanel {
      */
     public addButton(button: TouchHolographicButton): TouchHolographicMenu {
         // Block updating the layout until the button is resized (which has to happen after node creation)
-        let wasLayoutBlocked = this.blockLayout;
+        const wasLayoutBlocked = this.blockLayout;
         if (!wasLayoutBlocked) {
             this.blockLayout = true;
         }

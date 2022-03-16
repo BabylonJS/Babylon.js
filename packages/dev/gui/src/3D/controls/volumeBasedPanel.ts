@@ -93,6 +93,7 @@ export abstract class VolumeBasedPanel extends Container3D {
 
     /**
      * Creates new VolumeBasedPanel
+     * @param name
      */
     public constructor(name?: string) {
         super(name);
@@ -105,7 +106,7 @@ export abstract class VolumeBasedPanel extends Container3D {
         let columns = 0;
         let controlCount = 0;
 
-        let currentInverseWorld = Matrix.Invert(this.node!.computeWorldMatrix(true));
+        const currentInverseWorld = Matrix.Invert(this.node!.computeWorldMatrix(true));
 
         // Measure
         for (var child of this._children) {
@@ -117,9 +118,9 @@ export abstract class VolumeBasedPanel extends Container3D {
             child.mesh.computeWorldMatrix(true);
             //   child.mesh.getWorldMatrix().multiplyToRef(currentInverseWorld, Tmp.Matrix[0]);
 
-            let boundingBox = child.mesh.getHierarchyBoundingVectors();
-            let extendSize = TmpVectors.Vector3[0];
-            let diff = TmpVectors.Vector3[1];
+            const boundingBox = child.mesh.getHierarchyBoundingVectors();
+            const extendSize = TmpVectors.Vector3[0];
+            const diff = TmpVectors.Vector3[1];
 
             boundingBox.max.subtractToRef(boundingBox.min, diff);
 
@@ -143,9 +144,9 @@ export abstract class VolumeBasedPanel extends Container3D {
             columns = Math.ceil(controlCount / this._rows);
         }
 
-        let startOffsetX = columns * 0.5 * this._cellWidth;
-        let startOffsetY = rows * 0.5 * this._cellHeight;
-        let nodeGrid = [];
+        const startOffsetX = columns * 0.5 * this._cellWidth;
+        const startOffsetY = rows * 0.5 * this._cellHeight;
+        const nodeGrid = [];
         let cellCounter = 0;
 
         if (this._rowThenColum) {

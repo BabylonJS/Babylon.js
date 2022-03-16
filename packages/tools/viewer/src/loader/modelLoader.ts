@@ -1,7 +1,7 @@
 import { GLTFFileLoader, GLTFLoaderAnimationStartMode } from "loaders/glTF/glTFFileLoader";
-import { ISceneLoaderPlugin, ISceneLoaderPluginAsync } from "core/Loading/sceneLoader";
+import { ISceneLoaderPlugin, ISceneLoaderPluginAsync , SceneLoader } from "core/Loading/sceneLoader";
 import { Tools } from "core/Misc/tools";
-import { SceneLoader } from "core/Loading/sceneLoader";
+
 import { Tags } from "core/Misc/tags";
 
 import { ConfigurationContainer } from "../configuration/configurationContainer";
@@ -33,6 +33,8 @@ export class ModelLoader {
     /**
      * Create a new Model loader
      * @param _viewer the viewer using this model loader
+     * @param _observablesManager
+     * @param _configurationContainer
      */
     constructor(private _observablesManager: ObservablesManager, private _configurationContainer?: ConfigurationContainer) {
         this._loaders = [];
@@ -48,7 +50,7 @@ export class ModelLoader {
     public addPlugin(plugin: ILoaderPlugin | string) {
         let actualPlugin: ILoaderPlugin = {};
         if (typeof plugin === "string") {
-            let loadedPlugin = getLoaderPluginByName(plugin);
+            const loadedPlugin = getLoaderPluginByName(plugin);
             if (loadedPlugin) {
                 actualPlugin = loadedPlugin;
             }
@@ -84,9 +86,9 @@ export class ModelLoader {
             return model;
         }
 
-        let plugin = modelConfiguration.loader;
+        const plugin = modelConfiguration.loader;
 
-        let scene = model.rootMesh.getScene();
+        const scene = model.rootMesh.getScene();
 
         model.loader = SceneLoader.ImportMesh(
             undefined,
@@ -124,7 +126,7 @@ export class ModelLoader {
         )!;
 
         if (model.loader.name === "gltf") {
-            let gltfLoader = <GLTFFileLoader>model.loader;
+            const gltfLoader = <GLTFFileLoader>model.loader;
             gltfLoader.animationStartMode = GLTFLoaderAnimationStartMode.NONE;
             gltfLoader.compileMaterials = true;
 
@@ -175,7 +177,7 @@ export class ModelLoader {
         const loader = model.loader || this._loaders[model.loadId];
         // ATM only available in the GLTF Loader
         if (loader && loader.name === "gltf") {
-            let gltfLoader = <GLTFFileLoader>loader;
+            const gltfLoader = <GLTFFileLoader>loader;
             gltfLoader.dispose();
             model.state = ModelState.CANCELED;
         } else {

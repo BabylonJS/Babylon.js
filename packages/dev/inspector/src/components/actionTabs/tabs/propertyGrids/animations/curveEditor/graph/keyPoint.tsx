@@ -167,13 +167,13 @@ export class KeyPointComponent extends React.Component<IKeyPointComponentProps, 
                 return;
             }
             const rect2 = this._keyPointSVG.current.getBoundingClientRect();
-            var overlap = !(rect1.right < rect2.left || rect1.left > rect2.right || rect1.bottom < rect2.top || rect1.top > rect2.bottom);
+            const overlap = !(rect1.right < rect2.left || rect1.left > rect2.right || rect1.bottom < rect2.top || rect1.top > rect2.bottom);
 
             if (!this.props.context.activeKeyPoints) {
                 this.props.context.activeKeyPoints = [];
             }
 
-            let index = this.props.context.activeKeyPoints.indexOf(this);
+            const index = this.props.context.activeKeyPoints.indexOf(this);
             if (overlap) {
                 if (index === -1) {
                     this.props.context.activeKeyPoints.push(this);
@@ -197,20 +197,20 @@ export class KeyPointComponent extends React.Component<IKeyPointComponentProps, 
         });
 
         this._onMainKeyPointMovedObserver = this.props.context.onMainKeyPointMoved.add(() => {
-            let mainKeyPoint = this.props.context.mainKeyPoint;
+            const mainKeyPoint = this.props.context.mainKeyPoint;
             if (mainKeyPoint === this || !mainKeyPoint) {
                 return;
             }
             if (this.state.selectedState !== SelectionState.None && this.props.keyId !== 0) {
                 // Move frame for every selected or siblins
-                let newFrameValue = mainKeyPoint.state.x + this._offsetXToMain;
+                const newFrameValue = mainKeyPoint.state.x + this._offsetXToMain;
                 this.setState({ x: newFrameValue });
                 this.props.onFrameValueChanged(this.props.invertX(newFrameValue));
             }
 
             if (this.state.selectedState === SelectionState.Selected) {
                 // Move value only for selected
-                let newY = mainKeyPoint.state.y + this._offsetYToMain;
+                const newY = mainKeyPoint.state.y + this._offsetYToMain;
                 this.setState({ y: newY });
                 this.props.onKeyValueChanged(this.props.invertY(newY));
             }
@@ -220,10 +220,10 @@ export class KeyPointComponent extends React.Component<IKeyPointComponentProps, 
             const isSelected = this.props.context.activeKeyPoints?.indexOf(this) !== -1;
 
             if (!isSelected && this.props.context.activeKeyPoints) {
-                let curve = this.props.curve;
+                const curve = this.props.curve;
                 let state = SelectionState.None;
 
-                for (let activeKeyPoint of this.props.context.activeKeyPoints) {
+                for (const activeKeyPoint of this.props.context.activeKeyPoints) {
                     if (activeKeyPoint.props.keyId === this.props.keyId && curve !== activeKeyPoint.props.curve && curve.animation === activeKeyPoint.props.curve.animation) {
                         state = SelectionState.Siblings;
                         break;
@@ -259,8 +259,8 @@ export class KeyPointComponent extends React.Component<IKeyPointComponentProps, 
             let newX = this.props.convertX(newValue);
 
             // Checks
-            let previousX = this.props.getPreviousX();
-            let nextX = this.props.getNextX();
+            const previousX = this.props.getPreviousX();
+            const nextX = this.props.getNextX();
             if (previousX !== null) {
                 newX = Math.max(previousX, newX);
             }
@@ -279,7 +279,7 @@ export class KeyPointComponent extends React.Component<IKeyPointComponentProps, 
                 return;
             }
 
-            let newY = this.props.convertY(newValue);
+            const newY = this.props.convertY(newValue);
             this.setState({ y: newY });
             this.props.onKeyValueChanged(newValue);
         });
@@ -407,7 +407,7 @@ export class KeyPointComponent extends React.Component<IKeyPointComponentProps, 
             return;
         }
 
-        let index = this.props.context.activeKeyPoints.indexOf(this);
+        const index = this.props.context.activeKeyPoints.indexOf(this);
         if (index === -1) {
             if (!allowMultipleSelection) {
                 this.props.context.activeKeyPoints = [];
@@ -483,7 +483,7 @@ export class KeyPointComponent extends React.Component<IKeyPointComponentProps, 
             vec.x = 0.01;
         }
 
-        let currentPosition = vec.clone();
+        const currentPosition = vec.clone();
 
         currentPosition.normalize();
         currentPosition.scaleInPlace(storedLength);
@@ -534,8 +534,8 @@ export class KeyPointComponent extends React.Component<IKeyPointComponentProps, 
 
             let newX = this.state.x + (this._lockX ? 0 : diffX * this.props.scale);
             let newY = this.state.y + (this._lockY ? 0 : diffY * this.props.scale);
-            let previousX = this.props.getPreviousX();
-            let nextX = this.props.getNextX();
+            const previousX = this.props.getPreviousX();
+            const nextX = this.props.getNextX();
             const epsilon = 0.01;
             if (previousX !== null) {
                 newX = Math.max(previousX + epsilon, newX);
@@ -545,7 +545,7 @@ export class KeyPointComponent extends React.Component<IKeyPointComponentProps, 
                 newX = Math.min(nextX - epsilon, newX);
             }
             if (this.props.keyId !== 0 && !(this.props.context.lockLastFrameFrame && this.props.keyId === this.props.curve.keys.length - 1)) {
-                let frame = this.props.invertX(newX);
+                const frame = this.props.invertX(newX);
                 this.props.onFrameValueChanged(frame);
                 this.props.context.onFrameSet.notifyObservers(frame);
 
@@ -558,7 +558,7 @@ export class KeyPointComponent extends React.Component<IKeyPointComponentProps, 
             if (this.props.context.lockLastFrameValue && this.props.keyId === this.props.curve.keys.length - 1) {
                 newY = this.state.y;
             }
-            let value = this.props.invertY(newY);
+            const value = this.props.invertY(newY);
             this.props.onKeyValueChanged(value);
             this.props.context.onValueSet.notifyObservers(value);
 
@@ -576,7 +576,7 @@ export class KeyPointComponent extends React.Component<IKeyPointComponentProps, 
             const isLockedTangent = keys[this.props.keyId].lockedTangent && this.props.keyId !== 0 && this.props.keyId !== keys.length - 1;
 
             let angleDiff = 0;
-            let tmpVector = TmpVectors.Vector2[0];
+            const tmpVector = TmpVectors.Vector2[0];
 
             if (isLockedTangent) {
                 const va = TmpVectors.Vector2[1];

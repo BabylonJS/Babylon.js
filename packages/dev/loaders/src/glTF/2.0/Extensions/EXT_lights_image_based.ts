@@ -37,7 +37,10 @@ export class EXT_lights_image_based implements IGLTFLoaderExtension {
     private _loader: GLTFLoader;
     private _lights?: IEXTLightsImageBased_LightImageBased[];
 
-    /** @hidden */
+    /**
+     * @param loader
+     * @hidden
+     */
     constructor(loader: GLTFLoader) {
         this._loader = loader;
         this.enabled = this._loader.isExtensionUsed(NAME);
@@ -58,7 +61,11 @@ export class EXT_lights_image_based implements IGLTFLoaderExtension {
         }
     }
 
-    /** @hidden */
+    /**
+     * @param context
+     * @param scene
+     * @hidden
+     */
     public loadSceneAsync(context: string, scene: IScene): Nullable<Promise<void>> {
         return GLTFLoader.LoadExtensionAsync<IEXTLightsImageBased_LightReferenceImageBased>(context, scene, this.name, (extensionContext, extension) => {
             const promises = new Array<Promise<any>>();

@@ -57,7 +57,7 @@ export class ControlTreeItemComponent extends React.Component<IControlTreeItemCo
         if (control.parent?.typeName === "Grid") {
             bracket = (control.parent as Grid).getChildCellInfo(this.props.control);
         }
-        let draggingSelf = this.props.globalState.draggedControl === control;
+        const draggingSelf = this.props.globalState.draggedControl === control;
         const controlType = ControlTypes.find((type) => type.className === control.getClassName());
         return (
             <div className="controlTools">

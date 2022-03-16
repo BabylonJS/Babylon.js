@@ -30,7 +30,7 @@ export class TextInputComponent extends React.Component<ITextInputComponentProps
 
     private _onChange(value: string) {
         if (this.props.isNumber) {
-            let valueAsNumber = parseFloat(value);
+            const valueAsNumber = parseFloat(value);
 
             if (!isNaN(valueAsNumber)) {
                 if (this.props.onValueAsNumberChanged) {
@@ -50,7 +50,7 @@ export class TextInputComponent extends React.Component<ITextInputComponentProps
         this.props.context.focusedInput = false;
 
         if (this.props.isNumber) {
-            let valueAsNumber = parseFloat(this.state.value);
+            const valueAsNumber = parseFloat(this.state.value);
 
             if (!isNaN(valueAsNumber)) {
                 if (this.props.onValueAsNumberChanged) {
@@ -81,7 +81,7 @@ export class TextInputComponent extends React.Component<ITextInputComponentProps
 
     private _onKeyPress(evt: React.KeyboardEvent<HTMLInputElement>) {
         if (evt.key === "Enter") {
-            let valueAsNumber = parseFloat(this.state.value);
+            const valueAsNumber = parseFloat(this.state.value);
 
             if (!isNaN(valueAsNumber)) {
                 if (this.props.onValueAsNumberChanged) {

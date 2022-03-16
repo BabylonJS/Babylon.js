@@ -39,7 +39,7 @@ export class ColorPickerLineComponent extends React.Component<IColorPickerCompon
         }
 
         let top = host.getBoundingClientRect().top;
-        let height = div.getBoundingClientRect().height;
+        const height = div.getBoundingClientRect().height;
 
         if (top + height + 10 > window.innerHeight) {
             top = window.innerHeight - height - 10;
@@ -54,7 +54,7 @@ export class ColorPickerLineComponent extends React.Component<IColorPickerCompon
     }
 
     shouldComponentUpdate(nextProps: IColorPickerComponentProps, nextState: IColorPickerComponentState) {
-        let diffProps = this.getHexString(nextProps) !== this.getHexString();
+        const diffProps = this.getHexString(nextProps) !== this.getHexString();
 
         if (diffProps) {
             nextState.color = nextProps.value;

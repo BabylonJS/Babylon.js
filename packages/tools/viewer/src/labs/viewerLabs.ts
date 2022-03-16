@@ -84,7 +84,7 @@ export class ViewerLabs {
                 onSuccess(this.environment);
             }
         } else if (typeof data === "string") {
-            let url = this.getAssetUrl(data);
+            const url = this.getAssetUrl(data);
             this._scene._loadFile(
                 url,
                 (arrayBuffer: ArrayBuffer) => {
@@ -118,6 +118,7 @@ export class ViewerLabs {
     /**
      * Applies an `EnvironmentMapConfiguration` to the scene
      * @param environmentMapConfiguration Environment map configuration to apply
+     * @param rotationY
      */
     public applyEnvironmentMapConfiguration(rotationY?: number) {
         if (!this.environment) {
@@ -125,7 +126,7 @@ export class ViewerLabs {
         }
 
         //set orientation
-        let rotatquatRotationionY = Quaternion.RotationAxis(Axis.Y, rotationY || 0);
+        const rotatquatRotationionY = Quaternion.RotationAxis(Axis.Y, rotationY || 0);
 
         // Add env texture to the scene.
         if (this.environment.specularTexture) {
@@ -138,7 +139,7 @@ export class ViewerLabs {
                 this._scene.environmentTexture.invertZ = true;
                 this._scene.environmentTexture.lodLevelInAlpha = true;
 
-                var poly = this._scene.environmentTexture.sphericalPolynomial || new SphericalPolynomial();
+                const poly = this._scene.environmentTexture.sphericalPolynomial || new SphericalPolynomial();
                 poly.x = this.environment.irradiancePolynomialCoefficients.x;
                 poly.y = this.environment.irradiancePolynomialCoefficients.y;
                 poly.z = this.environment.irradiancePolynomialCoefficients.z;

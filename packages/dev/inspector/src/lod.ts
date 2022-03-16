@@ -1,7 +1,7 @@
 import { Effect } from "core/Materials/effect";
 
-let name = "lodPixelShader";
-let shader = `
+const name = "lodPixelShader";
+const shader = `
 #extension GL_EXT_shader_texture_lod : enable
 
 precision highp float;

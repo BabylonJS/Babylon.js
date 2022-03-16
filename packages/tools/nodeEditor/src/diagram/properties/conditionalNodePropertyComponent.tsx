@@ -11,9 +11,9 @@ export class ConditionalPropertyTabComponent extends React.Component<IPropertyCo
     }
 
     render() {
-        let conditionBlock = this.props.block as ConditionalBlock;
+        const conditionBlock = this.props.block as ConditionalBlock;
 
-        var conditionOptions: { label: string; value: ConditionalBlockConditions }[] = [
+        const conditionOptions: { label: string; value: ConditionalBlockConditions }[] = [
             { label: "Equal", value: ConditionalBlockConditions.Equal },
             { label: "NotEqual", value: ConditionalBlockConditions.NotEqual },
             { label: "LessThan", value: ConditionalBlockConditions.LessThan },

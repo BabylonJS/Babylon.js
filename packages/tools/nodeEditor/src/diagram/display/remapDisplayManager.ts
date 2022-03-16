@@ -22,10 +22,10 @@ export class RemapDisplayManager implements IDisplayManager {
     }
 
     private _extractInputValue(connectionPoint: NodeMaterialConnectionPoint) {
-        let connectedBlock = connectionPoint.connectedPoint!.ownerBlock;
+        const connectedBlock = connectionPoint.connectedPoint!.ownerBlock;
 
         if (connectedBlock.isInput) {
-            let inputBlock = connectedBlock as InputBlock;
+            const inputBlock = connectedBlock as InputBlock;
 
             if (inputBlock.isUniform && !inputBlock.isSystemValue) {
                 return inputBlock.value;
@@ -38,10 +38,10 @@ export class RemapDisplayManager implements IDisplayManager {
     public updatePreviewContent(block: NodeMaterialBlock, contentArea: HTMLDivElement): void {
         const remapBlock = block as RemapBlock;
 
-        let sourceRangeX = remapBlock.sourceMin.isConnected ? this._extractInputValue(remapBlock.sourceMin) : remapBlock.sourceRange.x;
-        let sourceRangeY = remapBlock.sourceMax.isConnected ? this._extractInputValue(remapBlock.sourceMax) : remapBlock.sourceRange.y;
-        let targetRangeX = remapBlock.targetMin.isConnected ? this._extractInputValue(remapBlock.targetMin) : remapBlock.targetRange.x;
-        let targetRangeY = remapBlock.targetMax.isConnected ? this._extractInputValue(remapBlock.targetMax) : remapBlock.targetRange.y;
+        const sourceRangeX = remapBlock.sourceMin.isConnected ? this._extractInputValue(remapBlock.sourceMin) : remapBlock.sourceRange.x;
+        const sourceRangeY = remapBlock.sourceMax.isConnected ? this._extractInputValue(remapBlock.sourceMax) : remapBlock.sourceRange.y;
+        const targetRangeX = remapBlock.targetMin.isConnected ? this._extractInputValue(remapBlock.targetMin) : remapBlock.targetRange.x;
+        const targetRangeY = remapBlock.targetMax.isConnected ? this._extractInputValue(remapBlock.targetMax) : remapBlock.targetRange.y;
 
         contentArea.classList.add("remap-block");
         contentArea.innerHTML = `[${sourceRangeX}, ${sourceRangeY}] -> [${targetRangeX}, ${targetRangeY}]`;

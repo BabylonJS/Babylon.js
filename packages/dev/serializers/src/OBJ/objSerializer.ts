@@ -46,7 +46,7 @@ export class OBJExport {
             //TODO: submeshes (groups)
             //TODO: smoothing groups (s 1, s off);
             if (materials) {
-                let mat = mesh[j].material;
+                const mat = mesh[j].material;
 
                 if (mat) {
                     output.push("usemtl " + mat.id);
@@ -142,8 +142,8 @@ export class OBJExport {
      */
     //TODO: Export the materials of mesh array
     public static MTL(mesh: Mesh): string {
-        var output = [];
-        var m = <StandardMaterial>mesh.material;
+        const output = [];
+        const m = <StandardMaterial>mesh.material;
         output.push("newmtl mat1");
         output.push("  Ns " + m.specularPower.toFixed(4));
         output.push("  Ni 1.5000");
@@ -158,7 +158,7 @@ export class OBJExport {
 
         //TODO: uv scale, offset, wrap
         //TODO: UV mirrored in Blender? second UV channel? lightMap? reflection textures?
-        var uvscale = "";
+        const uvscale = "";
 
         if (m.ambientTexture) {
             output.push("  map_Ka " + uvscale + m.ambientTexture.name);
@@ -192,7 +192,7 @@ export class OBJExport {
             output.push("  map_d " + uvscale + m.opacityTexture.name);
         }
 
-        var text = output.join("\n");
+        const text = output.join("\n");
         return text;
     }
 }

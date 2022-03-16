@@ -317,7 +317,10 @@ export class KHR_materials_transmission implements IGLTFLoaderExtension {
 
     private _loader: GLTFLoader;
 
-    /** @hidden */
+    /**
+     * @param loader
+     * @hidden
+     */
     constructor(loader: GLTFLoader) {
         this._loader = loader;
         this.enabled = this._loader.isExtensionUsed(NAME);
@@ -331,7 +334,12 @@ export class KHR_materials_transmission implements IGLTFLoaderExtension {
         (this._loader as any) = null;
     }
 
-    /** @hidden */
+    /**
+     * @param context
+     * @param material
+     * @param babylonMaterial
+     * @hidden
+     */
     public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
         return GLTFLoader.LoadExtensionAsync<IKHRMaterialsTransmission>(context, material, this.name, (extensionContext, extension) => {
             const promises = new Array<Promise<any>>();
@@ -346,7 +354,7 @@ export class KHR_materials_transmission implements IGLTFLoaderExtension {
         if (!(babylonMaterial instanceof PBRMaterial)) {
             throw new Error(`${context}: Material type not supported`);
         }
-        let pbrMaterial = babylonMaterial as PBRMaterial;
+        const pbrMaterial = babylonMaterial as PBRMaterial;
 
         // Enables "refraction" texture which represents transmitted light.
         pbrMaterial.subSurface.isRefractionEnabled = true;

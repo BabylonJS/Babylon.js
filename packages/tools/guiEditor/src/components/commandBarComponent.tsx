@@ -19,7 +19,7 @@ import betaFlag from "../imgs/betaFlag.svg";
 
 import "../scss/commandBar.scss";
 
-declare var Versions: any;
+declare let Versions: any;
 
 interface ICommandBarComponentProps {
     globalState: GlobalState;

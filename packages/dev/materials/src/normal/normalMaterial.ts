@@ -140,14 +140,14 @@ export class NormalMaterial extends PushMaterial {
             subMesh.materialDefines = new NormalMaterialDefines();
         }
 
-        var defines = <NormalMaterialDefines>subMesh.materialDefines;
-        var scene = this.getScene();
+        const defines = <NormalMaterialDefines>subMesh.materialDefines;
+        const scene = this.getScene();
 
         if (this._isReadyForSubMesh(subMesh)) {
             return true;
         }
 
-        var engine = scene.getEngine();
+        const engine = scene.getEngine();
 
         // Textures
         if (defines._areTexturesDirty) {
@@ -186,7 +186,7 @@ export class NormalMaterial extends PushMaterial {
             scene.resetCachedMaterial();
 
             // Fallbacks
-            var fallbacks = new EffectFallbacks();
+            const fallbacks = new EffectFallbacks();
             if (defines.FOG) {
                 fallbacks.addFallback(1, "FOG");
             }
@@ -200,7 +200,7 @@ export class NormalMaterial extends PushMaterial {
             defines.IMAGEPROCESSINGPOSTPROCESS = scene.imageProcessingConfiguration.applyByPostProcess;
 
             //Attributes
-            var attribs = [VertexBuffer.PositionKind];
+            const attribs = [VertexBuffer.PositionKind];
 
             if (defines.NORMAL) {
                 attribs.push(VertexBuffer.NormalKind);
@@ -217,10 +217,10 @@ export class NormalMaterial extends PushMaterial {
             MaterialHelper.PrepareAttributesForBones(attribs, mesh, defines, fallbacks);
             MaterialHelper.PrepareAttributesForInstances(attribs, defines);
 
-            var shaderName = "normal";
-            var join = defines.toString();
+            const shaderName = "normal";
+            const join = defines.toString();
 
-            var uniforms = [
+            const uniforms = [
                 "world",
                 "view",
                 "viewProjection",
@@ -240,8 +240,8 @@ export class NormalMaterial extends PushMaterial {
                 "vClipPlane6",
                 "diffuseMatrix",
             ];
-            var samplers = ["diffuseSampler"];
-            var uniformBuffers = new Array<string>();
+            const samplers = ["diffuseSampler"];
+            const uniformBuffers = new Array<string>();
 
             MaterialHelper.PrepareUniformsAndSamplersList(<IEffectCreationOptions>{
                 uniformsNames: uniforms,
@@ -282,14 +282,14 @@ export class NormalMaterial extends PushMaterial {
     }
 
     public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
-        var scene = this.getScene();
+        const scene = this.getScene();
 
-        var defines = <NormalMaterialDefines>subMesh.materialDefines;
+        const defines = <NormalMaterialDefines>subMesh.materialDefines;
         if (!defines) {
             return;
         }
 
-        var effect = subMesh.effect;
+        const effect = subMesh.effect;
         if (!effect) {
             return;
         }
@@ -340,7 +340,7 @@ export class NormalMaterial extends PushMaterial {
     }
 
     public getAnimatables(): IAnimatable[] {
-        var results = [];
+        const results = [];
 
         if (this.diffuseTexture && this.diffuseTexture.animations && this.diffuseTexture.animations.length > 0) {
             results.push(this.diffuseTexture);
@@ -350,7 +350,7 @@ export class NormalMaterial extends PushMaterial {
     }
 
     public getActiveTextures(): BaseTexture[] {
-        var activeTextures = super.getActiveTextures();
+        const activeTextures = super.getActiveTextures();
 
         if (this._diffuseTexture) {
             activeTextures.push(this._diffuseTexture);
@@ -384,7 +384,7 @@ export class NormalMaterial extends PushMaterial {
     }
 
     public serialize(): any {
-        var serializationObject = super.serialize();
+        const serializationObject = super.serialize();
         serializationObject.customType = "BABYLON.NormalMaterial";
         return serializationObject;
     }

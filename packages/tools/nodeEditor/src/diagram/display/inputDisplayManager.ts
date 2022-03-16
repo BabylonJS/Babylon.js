@@ -26,7 +26,7 @@ const inputNameToAttributeName: { [name: string]: string } = {
 
 export class InputDisplayManager implements IDisplayManager {
     public getHeaderClass(block: NodeMaterialBlock) {
-        let inputBlock = block as InputBlock;
+        const inputBlock = block as InputBlock;
 
         if (inputBlock.isConstant) {
             return "constant";
@@ -44,7 +44,7 @@ export class InputDisplayManager implements IDisplayManager {
     }
 
     public getHeaderText(block: NodeMaterialBlock): string {
-        let inputBlock = block as InputBlock;
+        const inputBlock = block as InputBlock;
         let name = `${inputBlock.name} (${InputDisplayManager.GetBaseType(inputBlock.output.type)})`;
 
         if (inputBlock.isAttribute) {
@@ -60,7 +60,7 @@ export class InputDisplayManager implements IDisplayManager {
 
     public getBackgroundColor(block: NodeMaterialBlock): string {
         let color = "";
-        let inputBlock = block as InputBlock;
+        const inputBlock = block as InputBlock;
 
         switch (inputBlock.type) {
             case NodeMaterialBlockConnectionPointTypes.Color3:
@@ -80,7 +80,7 @@ export class InputDisplayManager implements IDisplayManager {
 
     public updatePreviewContent(block: NodeMaterialBlock, contentArea: HTMLDivElement): void {
         let value = "";
-        let inputBlock = block as InputBlock;
+        const inputBlock = block as InputBlock;
 
         if (inputBlock.isAttribute) {
             const attrVal = inputNameToAttributeValue[inputBlock.name] ?? inputBlock.name;
@@ -132,15 +132,15 @@ export class InputDisplayManager implements IDisplayManager {
                     }
                     break;
                 case NodeMaterialBlockConnectionPointTypes.Vector2:
-                    let vec2Value = inputBlock.value as Vector2;
+                    const vec2Value = inputBlock.value as Vector2;
                     value = `(${vec2Value.x.toFixed(2)}, ${vec2Value.y.toFixed(2)})`;
                     break;
                 case NodeMaterialBlockConnectionPointTypes.Vector3:
-                    let vec3Value = inputBlock.value as Vector3;
+                    const vec3Value = inputBlock.value as Vector3;
                     value = `(${vec3Value.x.toFixed(2)}, ${vec3Value.y.toFixed(2)}, ${vec3Value.z.toFixed(2)})`;
                     break;
                 case NodeMaterialBlockConnectionPointTypes.Vector4:
-                    let vec4Value = inputBlock.value as Vector4;
+                    const vec4Value = inputBlock.value as Vector4;
                     value = `(${vec4Value.x.toFixed(2)}, ${vec4Value.y.toFixed(2)}, ${vec4Value.z.toFixed(2)}, ${vec4Value.w.toFixed(2)})`;
                     break;
             }

@@ -23,7 +23,7 @@ export class LogComponent extends React.Component<ILogComponentProps, { logs: Lo
 
     componentDidMount() {
         this.props.globalState.onLogRequiredObservable.add((log) => {
-            let currentLogs = this.state.logs;
+            const currentLogs = this.state.logs;
             currentLogs.push(log);
 
             this.setState({ logs: currentLogs });

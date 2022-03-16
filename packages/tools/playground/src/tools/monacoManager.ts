@@ -34,7 +34,7 @@ export class MonacoManager {
     public constructor(public globalState: GlobalState) {
         window.addEventListener("beforeunload", (evt) => {
             if (this._isDirty && Utilities.ReadBoolFromStore("safe-mode", false)) {
-                var message = "Are you sure you want to leave. You have unsaved work.";
+                const message = "Are you sure you want to leave. You have unsaved work.";
                 evt.preventDefault();
                 evt.returnValue = message;
             }
@@ -106,7 +106,7 @@ export class MonacoManager {
         });
 
         // Register a global observable for inspector to request code changes
-        let pgConnect = {
+        const pgConnect = {
             onRequestCodeChangeObservable: new Observable(),
         };
 
@@ -204,7 +204,7 @@ class Playground {
 
         const analyzeCodeDebounced = debounce(() => this._analyzeCodeAsync(), 500);
         this._editor.onDidChangeModelContent(() => {
-            let newCode = this._editor.getValue();
+            const newCode = this._editor.getValue();
             if (this.globalState.currentCode !== newCode) {
                 this.globalState.currentCode = newCode;
                 this._isDirty = true;
@@ -229,7 +229,6 @@ class Playground {
         const declarations = [
             "https://preview.babylonjs.com/babylon.d.ts",
             "https://preview.babylonjs.com/gui/babylon.gui.d.ts",
-            "https://preview.babylonjs.com/glTF2Interface/babylon.glTF2Interface.d.ts",
             "https://preview.babylonjs.com/loaders/babylonjs.loaders.d.ts",
             "https://preview.babylonjs.com/materialsLibrary/babylonjs.materials.d.ts",
             "https://preview.babylonjs.com/nodeEditor/babylon.nodeEditor.d.ts",
@@ -245,6 +244,7 @@ class Playground {
                 declarations[index] = declarations[index].replace("https://preview.babylonjs.com/", "//localhost:1337/");
             }
         }
+        declarations.push("https://preview.babylonjs.com/glTF2Interface/babylon.glTF2Interface.d.ts");
         declarations.push("https://assets.babylonjs.com/generated/Assets.d.ts");
 
         // Check for Unity Toolkit
@@ -418,7 +418,7 @@ class Playground {
 
     // Setup both JS and TS compilation pipelines to work with our scripts.
     protected _setupMonacoCompilationPipeline(libContent: string) {
-        var typescript = monaco.languages.typescript;
+        const typescript = monaco.languages.typescript;
 
         if (this.globalState.language === "JS") {
             typescript.javascriptDefaults.setCompilerOptions({
@@ -617,7 +617,7 @@ class Playground {
 
             // add our own templates when invoked without context
             if (context.triggerKind == monaco.languages.CompletionTriggerKind.Invoke) {
-                let language = owner.globalState.language === "JS" ? "javascript" : "typescript";
+                const language = owner.globalState.language === "JS" ? "javascript" : "typescript";
                 for (const template of owner._templates) {
                     if (template.language && language !== template.language) {
                         continue;

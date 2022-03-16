@@ -126,7 +126,7 @@ export class TextureEditorComponent extends React.Component<ITextureEditorCompon
 
     constructor(props: ITextureEditorComponentProps) {
         super(props);
-        let channels: IChannel[] = [
+        const channels: IChannel[] = [
             { name: "Red", visible: true, editable: true, id: "R", icon: require("./assets/channelR.svg") },
             { name: "Green", visible: true, editable: true, id: "G", icon: require("./assets/channelG.svg") },
             { name: "Blue", visible: true, editable: true, id: "B", icon: require("./assets/channelB.svg") },
@@ -185,7 +185,7 @@ export class TextureEditorComponent extends React.Component<ITextureEditorCompon
     }
 
     componentDidUpdate() {
-        let channelsClone: IChannel[] = [];
+        const channelsClone: IChannel[] = [];
         this.state.channels.forEach((channel) => channelsClone.push({ ...channel }));
         this._textureCanvasManager.channels = channelsClone;
         this._textureCanvasManager.face = this.state.face;

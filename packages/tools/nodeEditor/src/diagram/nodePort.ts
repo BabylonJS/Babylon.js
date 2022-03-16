@@ -191,15 +191,15 @@ export class NodePort {
         displayManager: Nullable<IDisplayManager>,
         globalState: GlobalState
     ) {
-        let portContainer = root.ownerDocument!.createElement("div");
-        let block = connectionPoint.ownerBlock;
+        const portContainer = root.ownerDocument!.createElement("div");
+        const block = connectionPoint.ownerBlock;
 
         portContainer.classList.add("portLine");
 
         root.appendChild(portContainer);
 
         if (!displayManager || displayManager.shouldDisplayPortLabels(block)) {
-            let portLabel = root.ownerDocument!.createElement("div");
+            const portLabel = root.ownerDocument!.createElement("div");
             portLabel.classList.add("port-label");
             portLabel.innerHTML = connectionPoint.displayName || connectionPoint.name;
             portContainer.appendChild(portLabel);

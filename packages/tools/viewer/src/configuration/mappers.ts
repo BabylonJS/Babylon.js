@@ -33,17 +33,17 @@ class HTMLMapper implements IMapper {
      * @param element the HTML element to analyze.
      */
     map(element: HTMLElement): ViewerConfiguration {
-        let config = {};
+        const config = {};
         for (let attrIdx = 0; attrIdx < element.attributes.length; ++attrIdx) {
-            let attr = element.attributes.item(attrIdx);
+            const attr = element.attributes.item(attrIdx);
             if (!attr) {
                 continue;
             }
             // map "object.property" to the right configuration place.
-            let split = attr.nodeName.split(".");
+            const split = attr.nodeName.split(".");
             split.reduce((currentConfig, key, idx) => {
                 //convert html-style to json-style
-                let camelKey = kebabToCamel(key);
+                const camelKey = kebabToCamel(key);
                 if (idx === split.length - 1) {
                     let val: any = attr!.nodeValue; // firefox warns nodeValue is deprecated, but I found no sign of it anywhere.
                     if (val === "true") {
@@ -55,9 +55,9 @@ class HTMLMapper implements IMapper {
                     } else if (val === "null") {
                         val = null;
                     } else {
-                        var isnum = !isNaN(parseFloat(val)) && isFinite(val); ///^\d+$/.test(val);
+                        const isnum = !isNaN(parseFloat(val)) && isFinite(val); ///^\d+$/.test(val);
                         if (isnum) {
-                            let number = parseFloat(val);
+                            const number = parseFloat(val);
                             if (!isNaN(number)) {
                                 val = number;
                             }
@@ -96,17 +96,17 @@ class DOMMapper implements IMapper {
      * @returns a ViewerCOnfiguration object from the provided HTML Element
      */
     map(baseElement: HTMLElement): ViewerConfiguration {
-        let htmlMapper = new HTMLMapper();
-        let config = htmlMapper.map(baseElement);
+        const htmlMapper = new HTMLMapper();
+        const config = htmlMapper.map(baseElement);
 
-        let traverseChildren = function (element: HTMLElement, partConfig) {
-            let children = element.children;
+        const traverseChildren = function (element: HTMLElement, partConfig) {
+            const children = element.children;
             if (children.length) {
                 for (let i = 0; i < children.length; ++i) {
-                    let item = <HTMLElement>children.item(i);
+                    const item = <HTMLElement>children.item(i);
                     // use the HTML Mapper to read configuration from a single element
-                    let configMapped = htmlMapper.map(item);
-                    let key = kebabToCamel(item.nodeName.toLowerCase());
+                    const configMapped = htmlMapper.map(item);
+                    const key = kebabToCamel(item.nodeName.toLowerCase());
                     if (item.attributes.getNamedItem("array") && item.attributes.getNamedItem("array")!.nodeValue === "true") {
                         partConfig[key] = [];
                     } else {
@@ -115,7 +115,7 @@ class DOMMapper implements IMapper {
                         } else if (partConfig[key]) {
                             //exists already! probably an array
                             element.setAttribute("array", "true");
-                            let oldItem = partConfig[key];
+                            const oldItem = partConfig[key];
                             partConfig = [oldItem, configMapped];
                         } else {
                             partConfig[key] = configMapped;
@@ -187,4 +187,4 @@ export class MapperManager {
  * The mapperManager can be disposed directly with calling mapperManager.dispose()
  * or indirectly with using BabylonViewer.disposeAll()
  */
-export let mapperManager = new MapperManager();
+export const mapperManager = new MapperManager();

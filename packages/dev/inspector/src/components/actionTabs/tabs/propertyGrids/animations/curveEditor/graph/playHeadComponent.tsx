@@ -40,12 +40,12 @@ export class PlayHeadComponent extends React.Component<IPlayHeadComponentProps, 
                 return;
             }
 
-            let animation = this.props.context.activeAnimations[0];
+            const animation = this.props.context.activeAnimations[0];
 
             if (!animation) {
                 return;
             }
-            let runtimeAnimation = animation.runtimeAnimations[0];
+            const runtimeAnimation = animation.runtimeAnimations[0];
 
             if (runtimeAnimation) {
                 this._moveHead(runtimeAnimation.currentFrame);
@@ -86,17 +86,17 @@ export class PlayHeadComponent extends React.Component<IPlayHeadComponentProps, 
     }
 
     private _frameToPixel(frame: number) {
-        let minFrame = this.props.context.referenceMinFrame;
-        let maxFrame = this.props.context.referenceMaxFrame;
+        const minFrame = this.props.context.referenceMinFrame;
+        const maxFrame = this.props.context.referenceMaxFrame;
 
         return (((frame - minFrame) / (maxFrame - minFrame)) * this._GraphAbsoluteWidth + this._offsetX) * this._viewScale;
     }
 
     private _pixelToFrame(pixel: number) {
-        let animation = this.props.context.activeAnimations[0];
-        let keys = animation.getKeys();
-        let minFrame = this.props.context.referenceMinFrame;
-        let maxFrame = this.props.context.referenceMaxFrame;
+        const animation = this.props.context.activeAnimations[0];
+        const keys = animation.getKeys();
+        const minFrame = this.props.context.referenceMinFrame;
+        const maxFrame = this.props.context.referenceMaxFrame;
 
         return Math.max(((pixel / this._viewScale - this._offsetX) / this._GraphAbsoluteWidth) * (maxFrame - minFrame) + minFrame, keys[0].frame);
     }

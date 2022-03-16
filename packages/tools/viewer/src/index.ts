@@ -30,7 +30,7 @@ BABYLON.PromisePolyfill.Apply();
 initListeners();
 
 //deprectaed, here for backwards compatibility
-let disableInit: boolean = viewerGlobals.disableInit;
+const disableInit: boolean = viewerGlobals.disableInit;
 
 /**
  * Dispose all viewers currently registered

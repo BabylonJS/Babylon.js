@@ -69,7 +69,7 @@ export class GUI3DManager implements IDisposable {
     /** Sets the scaling adjustment for all UI elements owned by this manager */
     public set controlScaling(newScale: number) {
         if (this._customControlScaling !== newScale && newScale > 0) {
-            let scaleRatio = newScale / this._customControlScaling;
+            const scaleRatio = newScale / this._customControlScaling;
             this._customControlScaling = newScale;
 
             this._rootContainer.children.forEach((control: Control3D) => {
@@ -114,7 +114,7 @@ export class GUI3DManager implements IDisposable {
         // Root
         this._rootContainer = new Container3D("RootContainer");
         this._rootContainer._host = this;
-        let utilityLayerScene = this._utilityLayer.utilityLayerScene;
+        const utilityLayerScene = this._utilityLayer.utilityLayerScene;
 
         // Events
         this._pointerOutObserver = this._utilityLayer.onPointerOutObservable.add((pointerId) => {
@@ -132,7 +132,7 @@ export class GUI3DManager implements IDisposable {
     }
 
     private _handlePointerOut(pointerId: number, isPointerUp: boolean) {
-        var previousControlOver = this._lastControlOver[pointerId];
+        const previousControlOver = this._lastControlOver[pointerId];
         if (previousControlOver) {
             previousControlOver._onPointerOut(previousControlOver);
             delete this._lastControlOver[pointerId];
@@ -153,12 +153,12 @@ export class GUI3DManager implements IDisposable {
             return false;
         }
 
-        let pointerEvent = <IPointerEvent>pi.event;
+        const pointerEvent = <IPointerEvent>pi.event;
 
-        let pointerId = pointerEvent.pointerId || 0;
-        let buttonIndex = pointerEvent.button;
+        const pointerId = pointerEvent.pointerId || 0;
+        const buttonIndex = pointerEvent.button;
 
-        let pickingInfo = pi.pickInfo;
+        const pickingInfo = pi.pickInfo;
         if (pickingInfo) {
             this.onPickingObservable.notifyObservers(pickingInfo.pickedMesh);
         }
@@ -275,7 +275,7 @@ export class GUI3DManager implements IDisposable {
         this.onPickedPointChangedObservable.clear();
         this.onPickingObservable.clear();
 
-        let utilityLayerScene = this._utilityLayer ? this._utilityLayer.utilityLayerScene : null;
+        const utilityLayerScene = this._utilityLayer ? this._utilityLayer.utilityLayerScene : null;
 
         if (utilityLayerScene) {
             if (this._pointerObserver) {

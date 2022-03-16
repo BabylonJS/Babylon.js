@@ -38,7 +38,7 @@ export class SpriteManagerPropertyGridComponent extends React.Component<ISpriteM
 
     addNewSprite() {
         const spriteManager = this.props.spriteManager;
-        var newSprite = new Sprite("new sprite", spriteManager);
+        const newSprite = new Sprite("new sprite", spriteManager);
 
         this.props.onSelectionChangedObservable?.notifyObservers(newSprite);
     }
@@ -52,7 +52,7 @@ export class SpriteManagerPropertyGridComponent extends React.Component<ISpriteM
 
     saveToFile() {
         const spriteManager = this.props.spriteManager;
-        let content = JSON.stringify(spriteManager.serialize(true));
+        const content = JSON.stringify(spriteManager.serialize(true));
 
         Tools.Download(new Blob([content]), "spriteManager.json");
     }
@@ -64,13 +64,13 @@ export class SpriteManagerPropertyGridComponent extends React.Component<ISpriteM
         Tools.ReadFile(
             file,
             (data) => {
-                let decoder = new TextDecoder("utf-8");
-                let jsonObject = JSON.parse(decoder.decode(data));
+                const decoder = new TextDecoder("utf-8");
+                const jsonObject = JSON.parse(decoder.decode(data));
 
                 spriteManager.dispose();
                 this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
 
-                let newManager = SpriteManager.Parse(jsonObject, scene, "");
+                const newManager = SpriteManager.Parse(jsonObject, scene, "");
                 this.props.globalState.onSelectionChangedObservable.notifyObservers(newManager);
             },
             undefined,
@@ -82,7 +82,7 @@ export class SpriteManagerPropertyGridComponent extends React.Component<ISpriteM
         const spriteManager = this.props.spriteManager;
         const scene = spriteManager.scene;
 
-        let snippedId = window.prompt("Please enter the snippet ID to use");
+        const snippedId = window.prompt("Please enter the snippet ID to use");
 
         if (!snippedId) {
             return;
@@ -102,13 +102,13 @@ export class SpriteManagerPropertyGridComponent extends React.Component<ISpriteM
 
     saveToSnippet() {
         const spriteManager = this.props.spriteManager;
-        let content = JSON.stringify(spriteManager.serialize(true));
+        const content = JSON.stringify(spriteManager.serialize(true));
 
-        var xmlHttp = new XMLHttpRequest();
+        const xmlHttp = new XMLHttpRequest();
         xmlHttp.onreadystatechange = () => {
             if (xmlHttp.readyState == 4) {
                 if (xmlHttp.status == 200) {
-                    var snippet = JSON.parse(xmlHttp.responseText);
+                    const snippet = JSON.parse(xmlHttp.responseText);
                     const oldId = spriteManager.snippetId || "_BLANK";
                     spriteManager.snippetId = snippet.id;
                     if (snippet.version && snippet.version != "0") {
@@ -119,7 +119,7 @@ export class SpriteManagerPropertyGridComponent extends React.Component<ISpriteM
                         navigator.clipboard.writeText(spriteManager.snippetId);
                     }
 
-                    let windowAsAny = window as any;
+                    const windowAsAny = window as any;
 
                     if (windowAsAny.Playground && oldId) {
                         windowAsAny.Playground.onRequestCodeChangeObservable.notifyObservers({
@@ -138,7 +138,7 @@ export class SpriteManagerPropertyGridComponent extends React.Component<ISpriteM
         xmlHttp.open("POST", this._snippetUrl + (spriteManager.snippetId ? "/" + spriteManager.snippetId : ""), true);
         xmlHttp.setRequestHeader("Content-Type", "application/json");
 
-        var dataToSend = {
+        const dataToSend = {
             payload: JSON.stringify({
                 spriteManager: content,
             }),
@@ -153,7 +153,7 @@ export class SpriteManagerPropertyGridComponent extends React.Component<ISpriteM
     render() {
         const spriteManager = this.props.spriteManager;
 
-        var alphaModeOptions = [
+        const alphaModeOptions = [
             { label: "Combine", value: Constants.ALPHA_COMBINE },
             { label: "One one", value: Constants.ALPHA_ONEONE },
             { label: "Add", value: Constants.ALPHA_ADD },

@@ -19,7 +19,7 @@ export class FileMultipleButtonLineComponent extends React.Component<IFileMultip
     }
 
     onChange(evt: any) {
-        var files: File[] = evt.target.files;
+        const files: File[] = evt.target.files;
         if (files && files.length) {
             this.props.onClick(evt);
         }

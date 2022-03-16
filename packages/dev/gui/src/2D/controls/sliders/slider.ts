@@ -107,12 +107,12 @@ export class Slider extends BaseSlider {
 
         this._applyStates(context);
         this._prepareRenderingData(this.isThumbCircle ? "circle" : "rectangle");
-        var left = this._renderLeft;
-        var top = this._renderTop;
-        var width = this._renderWidth;
-        var height = this._renderHeight;
+        let left = this._renderLeft;
+        let top = this._renderTop;
+        const width = this._renderWidth;
+        const height = this._renderHeight;
 
-        var radius = 0;
+        let radius = 0;
 
         if (this.isThumbClamped && this.isThumbCircle) {
             if (this.isVertical) {

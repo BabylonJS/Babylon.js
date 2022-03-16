@@ -312,7 +312,7 @@ export class TextBlock extends Control {
 
         if (this._resizeToFit) {
             if (this._textWrapping === TextWrapping.Clip) {
-                let newWidth = (this._paddingLeftInPixels + this._paddingRightInPixels + maxLineWidth) | 0;
+                const newWidth = (this._paddingLeftInPixels + this._paddingRightInPixels + maxLineWidth) | 0;
                 if (newWidth !== this._width.internalValue) {
                     this._width.updateInPlace(newWidth, ValueAndUnit.UNITMODE_PIXEL);
                     this._rebuildLayout = true;
@@ -339,8 +339,8 @@ export class TextBlock extends Control {
     }
 
     private _drawText(text: string, textWidth: number, y: number, context: ICanvasRenderingContext): void {
-        var width = this._currentMeasure.width;
-        var x = 0;
+        const width = this._currentMeasure.width;
+        let x = 0;
         switch (this._textHorizontalAlignment) {
             case Control.HORIZONTAL_ALIGNMENT_LEFT:
                 x = 0;
@@ -384,7 +384,11 @@ export class TextBlock extends Control {
         }
     }
 
-    /** @hidden */
+    /**
+     * @param context
+     * @param invalidatedRectangle
+     * @hidden
+     */
     public _draw(context: ICanvasRenderingContext, invalidatedRectangle?: Nullable<Measure>): void {
         context.save();
 
@@ -407,8 +411,8 @@ export class TextBlock extends Control {
     }
 
     protected _breakLines(refWidth: number, refHeight: number, context: ICanvasRenderingContext): object[] {
-        var lines = [];
-        var _lines = this.text.split("\n");
+        const lines = [];
+        const _lines = this.text.split("\n");
 
         if (this._textWrapping === TextWrapping.Ellipsis) {
             for (var _line of _lines) {
@@ -432,23 +436,23 @@ export class TextBlock extends Control {
     }
 
     protected _parseLine(line: string = "", context: ICanvasRenderingContext): object {
-        var textMetrics = context.measureText(line);
-        var lineWidth = Math.abs(textMetrics.actualBoundingBoxLeft) + Math.abs(textMetrics.actualBoundingBoxRight);
+        const textMetrics = context.measureText(line);
+        const lineWidth = Math.abs(textMetrics.actualBoundingBoxLeft) + Math.abs(textMetrics.actualBoundingBoxRight);
         return { text: line, width: lineWidth };
     }
 
     //Calculate how many characters approximately we need to remove
     private _getCharsToRemove(lineWidth: number, width: number, lineLength: number) {
-        let diff = lineWidth > width ? lineWidth - width : 0;
+        const diff = lineWidth > width ? lineWidth - width : 0;
         // This isn't exact unless the font is monospaced
-        let charWidth = lineWidth / lineLength;
-        let removeChars = Math.max(Math.floor(diff / charWidth), 1);
+        const charWidth = lineWidth / lineLength;
+        const removeChars = Math.max(Math.floor(diff / charWidth), 1);
         return removeChars;
     }
 
     protected _parseLineEllipsis(line: string = "", width: number, context: ICanvasRenderingContext): object {
-        var textMetrics = context.measureText(line);
-        var lineWidth = Math.abs(textMetrics.actualBoundingBoxLeft) + Math.abs(textMetrics.actualBoundingBoxRight);
+        let textMetrics = context.measureText(line);
+        let lineWidth = Math.abs(textMetrics.actualBoundingBoxLeft) + Math.abs(textMetrics.actualBoundingBoxRight);
 
         let removeChars = this._getCharsToRemove(lineWidth, width, line.length);
 
@@ -481,15 +485,15 @@ export class TextBlock extends Control {
     }
 
     protected _parseLineWordWrap(line: string = "", width: number, context: ICanvasRenderingContext): object[] {
-        var lines = [];
-        var words = this.wordSplittingFunction ? this.wordSplittingFunction(line) : line.split(" ");
-        var textMetrics = context.measureText(line);
-        var lineWidth = Math.abs(textMetrics.actualBoundingBoxLeft) + Math.abs(textMetrics.actualBoundingBoxRight);
+        const lines = [];
+        const words = this.wordSplittingFunction ? this.wordSplittingFunction(line) : line.split(" ");
+        let textMetrics = context.measureText(line);
+        let lineWidth = Math.abs(textMetrics.actualBoundingBoxLeft) + Math.abs(textMetrics.actualBoundingBoxRight);
 
-        for (var n = 0; n < words.length; n++) {
-            var testLine = n > 0 ? line + " " + words[n] : words[0];
-            var metrics = context.measureText(testLine);
-            var testWidth = Math.abs(metrics.actualBoundingBoxLeft) + Math.abs(metrics.actualBoundingBoxRight);
+        for (let n = 0; n < words.length; n++) {
+            const testLine = n > 0 ? line + " " + words[n] : words[0];
+            const metrics = context.measureText(testLine);
+            const testWidth = Math.abs(metrics.actualBoundingBoxLeft) + Math.abs(metrics.actualBoundingBoxRight);
             if (testWidth > width && n > 0) {
                 lines.push({ text: line, width: lineWidth });
                 line = words[n];
@@ -506,15 +510,15 @@ export class TextBlock extends Control {
     }
 
     protected _parseLineWordWrapEllipsis(line: string = "", width: number, height: number, context: ICanvasRenderingContext): object[] {
-        var lines = this._parseLineWordWrap(line, width, context);
-        for (var n = 1; n <= lines.length; n++) {
+        const lines = this._parseLineWordWrap(line, width, context);
+        for (let n = 1; n <= lines.length; n++) {
             const currentHeight = this._computeHeightForLinesOf(n);
             if (currentHeight > height && n > 1) {
-                var lastLine = lines[n - 2] as { text: string; width: number };
-                var currentLine = lines[n - 1] as { text: string; width: number };
+                const lastLine = lines[n - 2] as { text: string; width: number };
+                const currentLine = lines[n - 1] as { text: string; width: number };
                 lines[n - 2] = this._parseLineEllipsis(`${lastLine.text + currentLine.text}`, width, context);
-                var linesToRemove = lines.length - n + 1;
-                for (var i = 0; i < linesToRemove; i++) {
+                const linesToRemove = lines.length - n + 1;
+                for (let i = 0; i < linesToRemove; i++) {
                     lines.pop();
                 }
                 return lines;
@@ -525,8 +529,8 @@ export class TextBlock extends Control {
     }
 
     protected _renderLines(context: ICanvasRenderingContext): void {
-        var height = this._currentMeasure.height;
-        var rootY = 0;
+        const height = this._currentMeasure.height;
+        let rootY = 0;
         switch (this._textVerticalAlignment) {
             case Control.VERTICAL_ALIGNMENT_TOP:
                 rootY = this._fontOffset.ascent;

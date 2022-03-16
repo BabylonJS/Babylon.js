@@ -171,8 +171,8 @@ export class DisplayGrid extends Control {
                 context.fillRect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
             }
 
-            let cellCountX = this._currentMeasure.width / this._cellWidth;
-            let cellCountY = this._currentMeasure.height / this._cellHeight;
+            const cellCountX = this._currentMeasure.width / this._cellWidth;
+            const cellCountY = this._currentMeasure.height / this._cellHeight;
 
             // Minor lines
             const left = this._currentMeasure.left + this._currentMeasure.width / 2;
@@ -208,7 +208,7 @@ export class DisplayGrid extends Control {
                 context.lineWidth = this._majorLineTickness;
 
                 for (var x = -cellCountX / 2 + this._majorLineFrequency; x < cellCountX / 2; x += this._majorLineFrequency) {
-                    let cellX = left + x * this.cellWidth;
+                    const cellX = left + x * this.cellWidth;
 
                     context.beginPath();
                     context.moveTo(cellX, this._currentMeasure.top);
@@ -217,7 +217,7 @@ export class DisplayGrid extends Control {
                 }
 
                 for (var y = -cellCountY / 2 + this._majorLineFrequency; y < cellCountY / 2; y += this._majorLineFrequency) {
-                    let cellY = top + y * this.cellHeight;
+                    const cellY = top + y * this.cellHeight;
                     context.moveTo(this._currentMeasure.left, cellY);
                     context.lineTo(this._currentMeasure.left + this._currentMeasure.width, cellY);
                     context.closePath();

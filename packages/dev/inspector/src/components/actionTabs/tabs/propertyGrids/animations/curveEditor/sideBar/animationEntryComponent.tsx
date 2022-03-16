@@ -136,7 +136,7 @@ export class AnimationEntryComponent extends React.Component<IAnimationEntryComp
     }
 
     public render() {
-        let isActive = this.props.context.activeAnimations.indexOf(this.props.animation) !== -1;
+        const isActive = this.props.context.activeAnimations.indexOf(this.props.animation) !== -1;
 
         return (
             <>

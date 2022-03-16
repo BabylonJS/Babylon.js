@@ -90,7 +90,17 @@ export class Button extends Rectangle {
     }
 
     // While being a container, the button behaves like a control.
-    /** @hidden */
+    /**
+     * @param x
+     * @param y
+     * @param pi
+     * @param type
+     * @param pointerId
+     * @param buttonIndex
+     * @param deltaX
+     * @param deltaY
+     * @hidden
+     */
     public _processPicking(x: number, y: number, pi: PointerInfoBase, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean {
         if (!this._isEnabled || !this.isHitTestVisible || !this.isVisible || this.notRenderable) {
             return false;
@@ -102,8 +112,8 @@ export class Button extends Rectangle {
 
         if (this.delegatePickingToChildren) {
             let contains = false;
-            for (var index = this._children.length - 1; index >= 0; index--) {
-                var child = this._children[index];
+            for (let index = this._children.length - 1; index >= 0; index--) {
+                const child = this._children[index];
                 if (child.isEnabled && child.isHitTestVisible && child.isVisible && !child.notRenderable && child.contains(x, y)) {
                     contains = true;
                     break;
@@ -120,7 +130,11 @@ export class Button extends Rectangle {
         return true;
     }
 
-    /** @hidden */
+    /**
+     * @param target
+     * @param pi
+     * @hidden
+     */
     public _onPointerEnter(target: Control, pi: PointerInfoBase): boolean {
         if (!super._onPointerEnter(target, pi)) {
             return false;
@@ -133,7 +147,12 @@ export class Button extends Rectangle {
         return true;
     }
 
-    /** @hidden */
+    /**
+     * @param target
+     * @param pi
+     * @param force
+     * @hidden
+     */
     public _onPointerOut(target: Control, pi: PointerInfoBase, force = false): void {
         if (!this.isReadOnly && this.pointerOutAnimation) {
             this.pointerOutAnimation();
@@ -142,7 +161,14 @@ export class Button extends Rectangle {
         super._onPointerOut(target, pi, force);
     }
 
-    /** @hidden */
+    /**
+     * @param target
+     * @param coordinates
+     * @param pointerId
+     * @param buttonIndex
+     * @param pi
+     * @hidden
+     */
     public _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, pi: PointerInfoBase): boolean {
         if (!super._onPointerDown(target, coordinates, pointerId, buttonIndex, pi)) {
             return false;
@@ -155,7 +181,15 @@ export class Button extends Rectangle {
         return true;
     }
 
-    /** @hidden */
+    /**
+     * @param target
+     * @param coordinates
+     * @param pointerId
+     * @param buttonIndex
+     * @param notifyClick
+     * @param pi
+     * @hidden
+     */
     public _onPointerUp(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean, pi: PointerInfoBase): void {
         if (!this.isReadOnly && this.pointerUpAnimation) {
             this.pointerUpAnimation();
@@ -179,7 +213,11 @@ export class Button extends Rectangle {
         }
     }
 
-    /** @hidden */
+    /**
+     * @param serializedObject
+     * @param host
+     * @hidden
+     */
     public _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture) {
         super._parseFromContent(serializedObject, host);
 
@@ -201,17 +239,17 @@ export class Button extends Rectangle {
      * @returns a new Button
      */
     public static CreateImageButton(name: string, text: string, imageUrl: string): Button {
-        var result = new this(name);
+        const result = new this(name);
 
         // Adding text
-        var textBlock = new TextBlock(name + "_button", text);
+        const textBlock = new TextBlock(name + "_button", text);
         textBlock.textWrapping = true;
         textBlock.textHorizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
         textBlock.paddingLeft = "20%";
         result.addControl(textBlock);
 
         // Adding image
-        var iconImage = new Image(name + "_icon", imageUrl);
+        const iconImage = new Image(name + "_icon", imageUrl);
         iconImage.width = "20%";
         iconImage.stretch = Image.STRETCH_UNIFORM;
         iconImage.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
@@ -231,10 +269,10 @@ export class Button extends Rectangle {
      * @returns a new Button
      */
     public static CreateImageOnlyButton(name: string, imageUrl: string): Button {
-        var result = new this(name);
+        const result = new this(name);
 
         // Adding image
-        var iconImage = new Image(name + "_icon", imageUrl);
+        const iconImage = new Image(name + "_icon", imageUrl);
         iconImage.stretch = Image.STRETCH_FILL;
         iconImage.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
         result.addControl(iconImage);
@@ -252,10 +290,10 @@ export class Button extends Rectangle {
      * @returns a new Button
      */
     public static CreateSimpleButton(name: string, text: string): Button {
-        var result = new this(name);
+        const result = new this(name);
 
         // Adding text
-        var textBlock = new TextBlock(name + "_button", text);
+        const textBlock = new TextBlock(name + "_button", text);
         textBlock.textWrapping = true;
         textBlock.textHorizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
         result.addControl(textBlock);
@@ -274,15 +312,15 @@ export class Button extends Rectangle {
      * @returns a new Button
      */
     public static CreateImageWithCenterTextButton(name: string, text: string, imageUrl: string): Button {
-        var result = new this(name);
+        const result = new this(name);
 
         // Adding image
-        var iconImage = new Image(name + "_icon", imageUrl);
+        const iconImage = new Image(name + "_icon", imageUrl);
         iconImage.stretch = Image.STRETCH_FILL;
         result.addControl(iconImage);
 
         // Adding text
-        var textBlock = new TextBlock(name + "_button", text);
+        const textBlock = new TextBlock(name + "_button", text);
         textBlock.textWrapping = true;
         textBlock.textHorizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
         result.addControl(textBlock);

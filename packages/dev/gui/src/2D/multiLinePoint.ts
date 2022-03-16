@@ -140,10 +140,10 @@ export class MultiLinePoint {
         } else if (this._control != null) {
             return new Vector3(this._control.centerX, this._control.centerY, 1 - Epsilon);
         } else {
-            var host: any = this._multiLine._host as any;
+            const host: any = this._multiLine._host as any;
 
-            var xValue: number = this._x.getValueInPixel(host, Number(host._canvas.width));
-            var yValue: number = this._y.getValueInPixel(host, Number(host._canvas.height));
+            const xValue: number = this._x.getValueInPixel(host, Number(host._canvas.width));
+            const yValue: number = this._y.getValueInPixel(host, Number(host._canvas.height));
 
             return new Vector3(xValue, yValue, 1 - Epsilon);
         }

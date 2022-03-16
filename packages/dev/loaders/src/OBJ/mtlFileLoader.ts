@@ -36,17 +36,17 @@ export class MTLFileLoader {
         }
 
         //Split the lines from the file
-        var lines = data.split("\n");
+        const lines = data.split("\n");
         // whitespace char ie: [ \t\r\n\f]
-        var delimiter_pattern = /\s+/;
+        const delimiter_pattern = /\s+/;
         //Array with RGB colors
-        var color: number[];
+        let color: number[];
         //New material
-        var material: Nullable<StandardMaterial> = null;
+        let material: Nullable<StandardMaterial> = null;
 
         //Look at each line
-        for (var i = 0; i < lines.length; i++) {
-            var line = lines[i].trim();
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i].trim();
 
             // Blank line or comment
             if (line.length === 0 || line.charAt(0) === "#") {
@@ -54,12 +54,12 @@ export class MTLFileLoader {
             }
 
             //Get the first parameter (keyword)
-            var pos = line.indexOf(" ");
-            var key = pos >= 0 ? line.substring(0, pos) : line;
+            const pos = line.indexOf(" ");
+            let key = pos >= 0 ? line.substring(0, pos) : line;
             key = key.toLowerCase();
 
             //Get the data following the key
-            var value: string = pos >= 0 ? line.substring(pos + 1).trim() : "";
+            const value: string = pos >= 0 ? line.substring(pos + 1).trim() : "";
 
             //This mtl keyword will create the new material
             if (key === "newmtl") {
@@ -195,6 +195,7 @@ export class MTLFileLoader {
      *
      * @param rootUrl The root url to load from
      * @param value The value stored in the mtl
+     * @param scene
      * @return The Texture
      */
     private static _getTexture(rootUrl: string, value: string, scene: Scene): Nullable<Texture> {
@@ -202,10 +203,10 @@ export class MTLFileLoader {
             return null;
         }
 
-        var url = rootUrl;
+        let url = rootUrl;
         // Load from input file.
         if (rootUrl === "file:") {
-            var lastDelimiter = value.lastIndexOf("\\");
+            let lastDelimiter = value.lastIndexOf("\\");
             if (lastDelimiter === -1) {
                 lastDelimiter = value.lastIndexOf("/");
             }

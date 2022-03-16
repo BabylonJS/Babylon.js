@@ -23,14 +23,14 @@ export function initListeners() {
  * @param selector the selector to initialize the viewer on (default is 'babylon')
  */
 export function InitTags(selector: string = "babylon") {
-    let elements = document.querySelectorAll(selector);
+    const elements = document.querySelectorAll(selector);
     for (let i = 0; i < elements.length; ++i) {
-        let element = elements.item(i);
+        const element = elements.item(i);
 
         // get the html configuration
-        let configMapper = mapperManager.getMapper("dom");
-        let config = configMapper.map(element);
+        const configMapper = mapperManager.getMapper("dom");
+        const config = configMapper.map(element);
 
-        let viewer = new DefaultViewer(element, config);
+        const viewer = new DefaultViewer(element, config);
     }
 }

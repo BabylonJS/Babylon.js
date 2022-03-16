@@ -104,7 +104,7 @@ export class TreeItemComponent extends React.Component<ITreeItemComponentProps, 
 
         if (items && items.length) {
             if (nextProps.selectedEntity) {
-                for (var item of items) {
+                for (const item of items) {
                     if (Tools.LookForItem(item, nextProps.selectedEntity)) {
                         nextState.isExpanded = true;
                         return true;

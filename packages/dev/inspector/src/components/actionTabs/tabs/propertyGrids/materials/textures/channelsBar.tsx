@@ -28,7 +28,7 @@ export class ChannelsBar extends React.PureComponent<IChannelsBarProps> {
                             <img
                                 className={channel.visible ? "icon channel-visibility visible" : "icon channel-visibility"}
                                 onClick={() => {
-                                    let newChannels = this.props.channels;
+                                    const newChannels = this.props.channels;
                                     newChannels[index].visible = !newChannels[index].visible;
                                     this.props.setChannels(newChannels);
                                 }}
@@ -38,7 +38,7 @@ export class ChannelsBar extends React.PureComponent<IChannelsBarProps> {
                             <img
                                 className="icon channel-name"
                                 onClick={() => {
-                                    let newChannels = this.props.channels;
+                                    const newChannels = this.props.channels;
                                     newChannels[index].editable = !newChannels[index].editable;
                                     this.props.setChannels(newChannels);
                                 }}

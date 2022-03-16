@@ -34,7 +34,7 @@ export class GeneralPropertyTabComponent extends React.Component<IPropertyCompon
     }
 
     render() {
-        var targetOptions = [
+        const targetOptions = [
             { label: "Neutral", value: NodeMaterialBlockTargets.Neutral },
             { label: "Vertex", value: NodeMaterialBlockTargets.Vertex },
             { label: "Fragment", value: NodeMaterialBlockTargets.Fragment },
@@ -142,7 +142,7 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
                     break;
                 }
                 case PropertyTypeForEdition.Float: {
-                    let cantDisplaySlider = isNaN(options.min as number) || isNaN(options.max as number) || options.min === options.max;
+                    const cantDisplaySlider = isNaN(options.min as number) || isNaN(options.max as number) || options.min === options.max;
                     if (cantDisplaySlider) {
                         components.push(
                             <FloatLineComponent

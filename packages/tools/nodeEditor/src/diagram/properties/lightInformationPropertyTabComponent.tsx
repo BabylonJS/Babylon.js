@@ -7,12 +7,12 @@ import { GeneralPropertyTabComponent } from "./genericNodePropertyComponent";
 
 export class LightInformationPropertyTabComponent extends React.Component<IPropertyComponentProps> {
     render() {
-        let scene = this.props.globalState.nodeMaterial!.getScene();
-        var lightOptions = scene.lights.map((l) => {
+        const scene = this.props.globalState.nodeMaterial!.getScene();
+        const lightOptions = scene.lights.map((l) => {
             return { label: l.name, value: l.name };
         });
 
-        let lightInformationBlock = this.props.block as LightInformationBlock;
+        const lightInformationBlock = this.props.block as LightInformationBlock;
 
         return (
             <div>

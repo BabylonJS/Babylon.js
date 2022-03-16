@@ -83,7 +83,7 @@ export class Sandbox extends React.Component<ISandboxProps, { isFooterVisible: b
         });
 
         this._globalState.onRequestClickInterceptor.add(() => {
-            let div = this._clickInterceptorRef.current!;
+            const div = this._clickInterceptorRef.current!;
 
             if (div.classList.contains("hidden")) {
                 div.classList.remove("hidden");

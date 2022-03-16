@@ -269,7 +269,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                 editorData.x = this.x;
                 editorData.y = this.y;
                 editorData.zoom = this.zoom;
-                for (var frame of this._frames) {
+                for (const frame of this._frames) {
                     editorData.frames.push(frame.serialize(true));
                 }
             }
@@ -313,7 +313,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     };
 
     public getGridPosition(position: number, useCeil = false) {
-        let gridSize = this.gridSize;
+        const gridSize = this.gridSize;
         if (gridSize === 0) {
             return position;
         }
@@ -324,7 +324,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     }
 
     public getGridPositionCeil(position: number) {
-        let gridSize = this.gridSize;
+        const gridSize = this.gridSize;
         if (gridSize === 0) {
             return position;
         }
@@ -353,12 +353,12 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     }
 
     reset() {
-        for (var node of this._nodes) {
+        for (const node of this._nodes) {
             node.dispose();
         }
 
         const frames = this._frames.splice(0);
-        for (var frame of frames) {
+        for (const frame of frames) {
             frame.dispose();
         }
         this._nodes = [];
@@ -369,23 +369,23 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     }
 
     connectPorts(pointA: NodeMaterialConnectionPoint, pointB: NodeMaterialConnectionPoint) {
-        var blockA = pointA.ownerBlock;
-        var blockB = pointB.ownerBlock;
-        var nodeA = this.findNodeFromBlock(blockA);
-        var nodeB = this.findNodeFromBlock(blockB);
+        const blockA = pointA.ownerBlock;
+        const blockB = pointB.ownerBlock;
+        const nodeA = this.findNodeFromBlock(blockA);
+        const nodeB = this.findNodeFromBlock(blockB);
 
         if (!nodeA || !nodeB) {
             return;
         }
 
-        var portA = nodeA.getPortForConnectionPoint(pointA);
-        var portB = nodeB.getPortForConnectionPoint(pointB);
+        const portA = nodeA.getPortForConnectionPoint(pointA);
+        const portB = nodeB.getPortForConnectionPoint(pointB);
 
         if (!portA || !portB) {
             return;
         }
 
-        for (var currentLink of this._links) {
+        for (const currentLink of this._links) {
             if (currentLink.portA === portA && currentLink.portB === portB) {
                 return;
             }
@@ -402,7 +402,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     }
 
     removeLink(link: NodeLink) {
-        let index = this._links.indexOf(link);
+        const index = this._links.indexOf(link);
 
         if (index > -1) {
             this._links.splice(index, 1);
@@ -412,7 +412,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     }
 
     appendBlock(block: NodeMaterialBlock) {
-        let newNode = new GraphNode(block, this.props.globalState);
+        const newNode = new GraphNode(block, this.props.globalState);
 
         newNode.appendVisual(this._graphCanvas, this);
 
@@ -426,7 +426,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         this.y = 0;
         this.zoom = 1;
 
-        let graph = new dagre.graphlib.Graph();
+        const graph = new dagre.graphlib.Graph();
         graph.setGraph({});
         graph.setDefaultEdgeLabel(() => ({}));
         graph.graph().rankdir = "LR";
@@ -461,11 +461,11 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                 }
 
                 output.endpoints.forEach((endpoint) => {
-                    let sourceFrames = this._frames.filter((f) => f.nodes.indexOf(node) !== -1);
-                    let targetFrames = this._frames.filter((f) => f.nodes.some((n) => n.block === endpoint.ownerBlock));
+                    const sourceFrames = this._frames.filter((f) => f.nodes.indexOf(node) !== -1);
+                    const targetFrames = this._frames.filter((f) => f.nodes.some((n) => n.block === endpoint.ownerBlock));
 
-                    let sourceId = sourceFrames.length > 0 ? sourceFrames[0].id : node.id;
-                    let targetId = targetFrames.length > 0 ? targetFrames[0].id : endpoint.ownerBlock.uniqueId;
+                    const sourceId = sourceFrames.length > 0 ? sourceFrames[0].id : node.id;
+                    const targetId = targetFrames.length > 0 ? targetFrames[0].id : endpoint.ownerBlock.uniqueId;
 
                     graph.setEdge(sourceId.toString(), targetId.toString());
                 });
@@ -476,13 +476,13 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         dagre.layout(graph);
 
         // Update graph
-        let dagreNodes = graph.nodes().map((node) => graph.node(node));
+        const dagreNodes = graph.nodes().map((node) => graph.node(node));
         dagreNodes.forEach((dagreNode: any) => {
             if (!dagreNode) {
                 return;
             }
             if (dagreNode.type === "node") {
-                for (var node of this._nodes) {
+                for (const node of this._nodes) {
                     if (node.id === dagreNode.id) {
                         node.x = dagreNode.x - dagreNode.width / 2;
                         node.y = dagreNode.y - dagreNode.height / 2;
@@ -493,7 +493,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                 return;
             }
 
-            for (var frame of this._frames) {
+            for (const frame of this._frames) {
                 if (frame.id === dagreNode.id) {
                     this._frameIsMoving = true;
                     frame.move(dagreNode.x - dagreNode.width / 2, dagreNode.y - dagreNode.height / 2, false);
@@ -592,7 +592,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                 this._oldY = evt.pageY;
             }
 
-            let zoomDelta = (evt.pageY - this._oldY) / 10;
+            const zoomDelta = (evt.pageY - this._oldY) / 10;
             if (Math.abs(zoomDelta) > 5) {
                 const oldZoom = this.zoom;
                 this.zoom = Math.max(Math.min(this.MaxZoom, this.zoom + zoomDelta / 100), this.MinZoom);
@@ -662,7 +662,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         // Port dragging
         if (evt.nativeEvent.srcElement && (evt.nativeEvent.srcElement as HTMLElement).nodeName === "IMG") {
             if (!this._candidateLink) {
-                let portElement = ((evt.nativeEvent.srcElement as HTMLElement).parentElement as any).port as NodePort;
+                const portElement = ((evt.nativeEvent.srcElement as HTMLElement).parentElement as any).port as NodePort;
                 this._candidateLink = new NodeLink(this, portElement, portElement.node);
                 this._candidateLinkedHasMoved = false;
             }
@@ -712,7 +712,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         }
 
         if (this._frameCandidate) {
-            let newFrame = new GraphFrame(this._frameCandidate, this);
+            const newFrame = new GraphFrame(this._frameCandidate, this);
             this._frames.push(newFrame);
 
             this._frameCandidate.parentElement!.removeChild(this._frameCandidate);
@@ -723,9 +723,9 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     }
 
     onWheel(evt: React.WheelEvent) {
-        let delta = evt.deltaY < 0 ? 0.1 : -0.1;
+        const delta = evt.deltaY < 0 ? 0.1 : -0.1;
 
-        let oldZoom = this.zoom;
+        const oldZoom = this.zoom;
         this.zoom = Math.min(Math.max(this.MinZoom, this.zoom + delta * this.zoom), this.MaxZoom);
 
         const boundingRect = evt.currentTarget.getBoundingClientRect();
@@ -811,7 +811,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             // No destination so let's spin a new input block
             let pointName = "output",
                 emittedBlock;
-            let customInputBlock = this._candidateLink!.portA.connectionPoint.createCustomInputBlock();
+            const customInputBlock = this._candidateLink!.portA.connectionPoint.createCustomInputBlock();
             if (!customInputBlock) {
                 emittedBlock = new InputBlock(
                     NodeMaterialBlockConnectionPointTypes[this._candidateLink!.portA.connectionPoint.type],
@@ -832,15 +832,15 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             nodeA.x = this._dropPointX - 200;
             nodeA.y = this._dropPointY - 50;
 
-            let x = nodeA.x - 250;
+            const x = nodeA.x - 250;
             let y = nodeA.y;
 
             emittedBlock.inputs.forEach((connection) => {
                 if (connection.connectedPoint) {
-                    var existingNodes = this.nodes.filter((n) => {
+                    const existingNodes = this.nodes.filter((n) => {
                         return n.block === (connection as any).connectedPoint.ownerBlock;
                     });
-                    let connectedNode = existingNodes[0];
+                    const connectedNode = existingNodes[0];
 
                     if (connectedNode.x === 0 && connectedNode.y === 0) {
                         connectedNode.x = x;
@@ -853,11 +853,11 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         }
 
         if (pointA.direction === NodeMaterialConnectionPointDirection.Input) {
-            let temp = pointB;
+            const temp = pointB;
             pointB = pointA;
             pointA = temp;
 
-            let tempNode = nodeA;
+            const tempNode = nodeA;
             nodeA = nodeB;
             nodeB = tempNode;
         }
@@ -879,7 +879,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         }
 
         // Check compatibility
-        let isFragmentOutput = pointB.ownerBlock.getClassName() === "FragmentOutputBlock";
+        const isFragmentOutput = pointB.ownerBlock.getClassName() === "FragmentOutputBlock";
         let compatibilityState = pointA.checkCompatibilityState(pointB);
         if (
             (pointA.needDualDirectionValidation || pointB.needDualDirectionValidation) &&
@@ -890,7 +890,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         }
         if (compatibilityState === NodeMaterialConnectionPointCompatibilityStates.Compatible) {
             if (isFragmentOutput) {
-                let fragmentBlock = pointB.ownerBlock as FragmentOutputBlock;
+                const fragmentBlock = pointB.ownerBlock as FragmentOutputBlock;
 
                 if (pointB.name === "rgb" && fragmentBlock.rgba.isConnected) {
                     nodeB.getLinksForConnectionPoint(fragmentBlock.rgba)[0].dispose();
@@ -920,7 +920,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         let linksToNotifyForDispose: Nullable<NodeLink[]> = null;
 
         if (pointB.isConnected) {
-            let links = nodeB.getLinksForConnectionPoint(pointB);
+            const links = nodeB.getLinksForConnectionPoint(pointB);
 
             linksToNotifyForDispose = links.slice();
 
@@ -932,7 +932,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         if (pointB.ownerBlock.inputsAreExclusive) {
             // Disconnect all inputs if block has exclusive inputs
             pointB.ownerBlock.inputs.forEach((i) => {
-                let links = nodeB.getLinksForConnectionPoint(i);
+                const links = nodeB.getLinksForConnectionPoint(i);
 
                 if (!linksToNotifyForDispose) {
                     linksToNotifyForDispose = links.slice();
@@ -982,7 +982,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
 
         // Frames
         if (editorData.frames) {
-            for (var frameData of editorData.frames) {
+            for (const frameData of editorData.frames) {
                 var frame = GraphFrame.Parse(frameData, this, editorData.map);
                 this._frames.push(frame);
             }

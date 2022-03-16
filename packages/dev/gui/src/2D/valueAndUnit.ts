@@ -120,8 +120,8 @@ export class ValueAndUnit {
      */
     public getValue(host: AdvancedDynamicTexture): number {
         if (host && !this.ignoreAdaptiveScaling && this.unit !== ValueAndUnit.UNITMODE_PERCENTAGE) {
-            var width: number = 0;
-            var height: number = 0;
+            let width: number = 0;
+            let height: number = 0;
 
             if (host.idealWidth) {
                 width = (this._value * host.getSize().width) / host.idealWidth;
@@ -157,10 +157,10 @@ export class ValueAndUnit {
     public toString(host: AdvancedDynamicTexture, decimals?: number): string {
         switch (this._unit) {
             case ValueAndUnit.UNITMODE_PERCENTAGE:
-                let percentage = this.getValue(host) * 100;
+                const percentage = this.getValue(host) * 100;
                 return (decimals ? percentage.toFixed(decimals) : percentage) + "%";
             case ValueAndUnit.UNITMODE_PIXEL:
-                let pixels = this.getValue(host);
+                const pixels = this.getValue(host);
                 return (decimals ? pixels.toFixed(decimals) : pixels) + "px";
         }
 
@@ -173,14 +173,14 @@ export class ValueAndUnit {
      * @returns true if the value was successfully parsed and updated
      */
     public fromString(source: string | number): boolean {
-        var match = ValueAndUnit._Regex.exec(source.toString());
+        const match = ValueAndUnit._Regex.exec(source.toString());
 
         if (!match || match.length === 0) {
             return false;
         }
 
-        var sourceValue = parseFloat(match[1]);
-        var sourceUnit = this._originalUnit;
+        let sourceValue = parseFloat(match[1]);
+        let sourceUnit = this._originalUnit;
 
         if (!this.negativeValueAllowed) {
             if (sourceValue < 0) {

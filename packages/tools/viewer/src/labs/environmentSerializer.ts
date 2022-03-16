@@ -121,7 +121,7 @@ export class EnvironmentDeserializer {
      * @return a PBREnvironment object
      */
     public static Parse(arrayBuffer: ArrayBuffer): PBREnvironment {
-        var environment: PBREnvironment = {
+        const environment: PBREnvironment = {
             //irradiance
             irradiancePolynomialCoefficients: {
                 x: new Vector3(0, 0, 0),
@@ -140,11 +140,11 @@ export class EnvironmentDeserializer {
         };
 
         //read .env
-        let littleEndian = false;
+        const littleEndian = false;
 
-        let magicBytes = [0x86, 0x16, 0x87, 0x96, 0xf6, 0xd6, 0x96, 0x36];
+        const magicBytes = [0x86, 0x16, 0x87, 0x96, 0xf6, 0xd6, 0x96, 0x36];
 
-        let dataView = new DataView(arrayBuffer);
+        const dataView = new DataView(arrayBuffer);
         let pos = 0;
 
         for (let i = 0; i < magicBytes.length; i++) {
@@ -153,7 +153,7 @@ export class EnvironmentDeserializer {
             }
         }
 
-        let version = dataView.getUint16(pos, littleEndian);
+        const version = dataView.getUint16(pos, littleEndian);
         pos += 2;
 
         if (version !== 1) {
@@ -167,15 +167,15 @@ export class EnvironmentDeserializer {
             descriptorString += String.fromCharCode(charCode);
         }
 
-        let descriptor: EnvJsonDescriptor = JSON.parse(descriptorString);
+        const descriptor: EnvJsonDescriptor = JSON.parse(descriptorString);
 
-        let payloadPos = pos;
+        const payloadPos = pos;
 
         //irradiance
         switch (descriptor.irradiance.type) {
             case "irradiance_sh_coefficients_9":
                 //irradiance
-                let harmonics = <IrradianceSHCoefficients9>descriptor.irradiance;
+                const harmonics = <IrradianceSHCoefficients9>descriptor.irradiance;
 
                 EnvironmentDeserializer._ConvertSHIrradianceToLambertianRadiance(harmonics);
 
@@ -191,26 +191,26 @@ export class EnvironmentDeserializer {
             case "cubemap_faces":
                 var specularDescriptor = <CubemapFaces>descriptor.specular;
 
-                let specularTexture = (environment.specularTexture = new TextureCube(PixelFormat.RGBA, PixelType.UNSIGNED_BYTE));
+                const specularTexture = (environment.specularTexture = new TextureCube(PixelFormat.RGBA, PixelType.UNSIGNED_BYTE));
                 environment.textureIntensityScale = specularDescriptor.multiplier != null ? specularDescriptor.multiplier : 1.0;
 
-                let mipmaps = specularDescriptor.mipmaps;
-                let imageType = specularDescriptor.imageType;
+                const mipmaps = specularDescriptor.mipmaps;
+                const imageType = specularDescriptor.imageType;
 
                 for (let l = 0; l < mipmaps.length; l++) {
-                    let faceRanges = mipmaps[l];
+                    const faceRanges = mipmaps[l];
 
                     specularTexture.source[l] = [];
 
                     for (let i = 0; i < 6; i++) {
-                        let range = faceRanges[i];
-                        let bytes = new Uint8Array(arrayBuffer, payloadPos + range.pos, range.length);
+                        const range = faceRanges[i];
+                        const bytes = new Uint8Array(arrayBuffer, payloadPos + range.pos, range.length);
 
                         switch (imageType) {
                             case "png":
                                 //construct image element from bytes
-                                let image = new Image();
-                                let src = URL.createObjectURL(new Blob([bytes], { type: "image/png" }));
+                                const image = new Image();
+                                const src = URL.createObjectURL(new Blob([bytes], { type: "image/png" }));
                                 image.src = src;
                                 specularTexture.source[l][i] = image;
 

@@ -67,7 +67,7 @@ export class PreviewManager {
         this._globalState = globalState;
 
         this._onBuildObserver = this._nodeMaterial.onBuildObservable.add((nodeMaterial) => {
-            let serializationObject = nodeMaterial.serialize();
+            const serializationObject = nodeMaterial.serialize();
             this._updatePreview(serializationObject);
         });
 
@@ -84,7 +84,7 @@ export class PreviewManager {
         });
 
         this._onUpdateRequiredObserver = globalState.onUpdateRequiredObservable.add(() => {
-            let serializationObject = this._nodeMaterial.serialize();
+            const serializationObject = this._nodeMaterial.serialize();
             this._updatePreview(serializationObject);
         });
 
@@ -146,7 +146,7 @@ export class PreviewManager {
                 lastOffsetX = evt.event.offsetX;
             }
 
-            var rotateLighting = (lastOffsetX - evt.event.offsetX) * lightRotationSpeed;
+            const rotateLighting = (lastOffsetX - evt.event.offsetX) * lightRotationSpeed;
             this._lightParent.rotation.y += rotateLighting;
             lastOffsetX = evt.event.offsetX;
         });
@@ -156,8 +156,8 @@ export class PreviewManager {
         this._scene.stopAllAnimations();
 
         if (this._globalState.rotatePreview) {
-            for (var root of this._scene.rootNodes) {
-                let transformNode = root as TransformNode;
+            for (const root of this._scene.rootNodes) {
+                const transformNode = root as TransformNode;
 
                 if (transformNode.getClassName() === "TransformNode" || transformNode.getClassName() === "Mesh" || transformNode.getClassName() === "GroundMesh") {
                     if (transformNode.rotationQuaternion) {
@@ -172,9 +172,9 @@ export class PreviewManager {
 
     private _prepareLights() {
         // Remove current lights
-        let currentLights = this._scene.lights.slice(0);
+        const currentLights = this._scene.lights.slice(0);
 
-        for (var light of currentLights) {
+        for (const light of currentLights) {
             light.dispose();
         }
 
@@ -184,7 +184,7 @@ export class PreviewManager {
         }
 
         if (this._globalState.directionalLight0) {
-            let dir0 = new DirectionalLight("Directional light #0", new Vector3(0.841626576496605, -0.2193391004130599, -0.49351298337996535), this._scene);
+            const dir0 = new DirectionalLight("Directional light #0", new Vector3(0.841626576496605, -0.2193391004130599, -0.49351298337996535), this._scene);
             dir0.intensity = 0.9;
             dir0.diffuse = new Color3(0.9294117647058824, 0.9725490196078431, 0.996078431372549);
             dir0.specular = new Color3(0.9294117647058824, 0.9725490196078431, 0.996078431372549);
@@ -192,7 +192,7 @@ export class PreviewManager {
         }
 
         if (this._globalState.directionalLight1) {
-            let dir1 = new DirectionalLight("Directional light #1", new Vector3(-0.9519937437504213, -0.24389315636999764, -0.1849974057546125), this._scene);
+            const dir1 = new DirectionalLight("Directional light #1", new Vector3(-0.9519937437504213, -0.24389315636999764, -0.1849974057546125), this._scene);
             dir1.intensity = 1.2;
             dir1.specular = new Color3(0.9803921568627451, 0.9529411764705882, 0.7725490196078432);
             dir1.diffuse = new Color3(0.9803921568627451, 0.9529411764705882, 0.7725490196078432);
@@ -207,7 +207,7 @@ export class PreviewManager {
             case NodeMaterialModes.Material: {
                 this._prepareLights();
 
-                var framingBehavior = this._camera.getBehaviorByName("Framing") as FramingBehavior;
+                const framingBehavior = this._camera.getBehaviorByName("Framing") as FramingBehavior;
 
                 setTimeout(() => {
                     // Let the behavior activate first
@@ -215,7 +215,7 @@ export class PreviewManager {
                     framingBehavior.elevationReturnTime = -1;
 
                     if (this._scene.meshes.length) {
-                        var worldExtends = this._scene.getWorldExtends();
+                        const worldExtends = this._scene.getWorldExtends();
                         this._camera.lowerRadiusLimit = null;
                         this._camera.upperRadiusLimit = null;
                         framingBehavior.zoomOnBoundingInfo(worldExtends.min, worldExtends.max);
@@ -247,7 +247,7 @@ export class PreviewManager {
         }
 
         // Material
-        let serializationObject = this._nodeMaterial.serialize();
+        const serializationObject = this._nodeMaterial.serialize();
         this._updatePreview(serializationObject);
     }
 
@@ -255,7 +255,7 @@ export class PreviewManager {
         if (this._currentType !== this._globalState.previewType || this._currentType === PreviewType.Custom) {
             this._currentType = this._globalState.previewType;
             if (this._meshes && this._meshes.length) {
-                for (var mesh of this._meshes) {
+                for (const mesh of this._meshes) {
                     mesh.dispose();
                 }
             }
@@ -266,8 +266,8 @@ export class PreviewManager {
                 this._layer = null;
             }
 
-            let lights = this._scene.lights.slice(0);
-            for (var light of lights) {
+            const lights = this._scene.lights.slice(0);
+            for (const light of lights) {
                 light.dispose();
             }
 
@@ -316,7 +316,7 @@ export class PreviewManager {
                         });
                         return;
                     case PreviewType.Plane:
-                        let plane = CreateGround("dummy-plane", { width: 2, height: 2, subdivisions: 128 }, this._scene);
+                        const plane = CreateGround("dummy-plane", { width: 2, height: 2, subdivisions: 128 }, this._scene);
                         plane.scaling.y = -1;
                         plane.rotation.x = Math.PI;
                         this._meshes.push(plane);
@@ -424,7 +424,7 @@ export class PreviewManager {
             if (prepareScene) {
                 this._prepareScene();
             } else {
-                let serializationObject = this._nodeMaterial.serialize();
+                const serializationObject = this._nodeMaterial.serialize();
                 this._updatePreview(serializationObject);
             }
         });
@@ -436,9 +436,9 @@ export class PreviewManager {
 
     private _updatePreview(serializationObject: any) {
         try {
-            let store = NodeMaterial.IgnoreTexturesAtLoadTime;
+            const store = NodeMaterial.IgnoreTexturesAtLoadTime;
             NodeMaterial.IgnoreTexturesAtLoadTime = false;
-            let tempMaterial = NodeMaterial.Parse(serializationObject, this._scene);
+            const tempMaterial = NodeMaterial.Parse(serializationObject, this._scene);
             NodeMaterial.IgnoreTexturesAtLoadTime = store;
 
             tempMaterial.backFaceCulling = this._globalState.backFaceCulling;
@@ -514,11 +514,11 @@ export class PreviewManager {
 
                 default: {
                     if (this._meshes.length) {
-                        let tasks = this._meshes.map((m) => this._forceCompilationAsync(tempMaterial, m));
+                        const tasks = this._meshes.map((m) => this._forceCompilationAsync(tempMaterial, m));
 
                         Promise.all(tasks)
                             .then(() => {
-                                for (var mesh of this._meshes) {
+                                for (const mesh of this._meshes) {
                                     mesh.material = tempMaterial;
                                 }
 
@@ -560,7 +560,7 @@ export class PreviewManager {
         }
 
         this._camera.dispose();
-        for (var mesh of this._meshes) {
+        for (const mesh of this._meshes) {
             mesh.dispose();
         }
 

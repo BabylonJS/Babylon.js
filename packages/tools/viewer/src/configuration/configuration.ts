@@ -13,7 +13,7 @@ import { IVRConfiguration } from "./interfaces/vrConfiguration";
 import { IDefaultRenderingPipelineConfiguration } from "./interfaces/defaultRenderingPipelineConfiguration";
 
 export function getConfigurationKey(key: string, configObject: any) {
-    let splits = key.split(".");
+    const splits = key.split(".");
 
     if (splits.length === 0 || !configObject) {
         return;
@@ -22,7 +22,7 @@ export function getConfigurationKey(key: string, configObject: any) {
             return configObject[key];
         }
     } else {
-        let firstKey = splits.shift();
+        const firstKey = splits.shift();
         return getConfigurationKey(splits.join("."), configObject[firstKey!]);
     }
 }

@@ -25,19 +25,19 @@ export class TextBlockPropertyGridComponent extends React.Component<ITextBlockPr
     render() {
         const textBlock = this.props.textBlock;
 
-        var horizontalOptions = [
+        const horizontalOptions = [
             { label: "Left", value: Control.HORIZONTAL_ALIGNMENT_LEFT },
             { label: "Right", value: Control.HORIZONTAL_ALIGNMENT_RIGHT },
             { label: "Center", value: Control.HORIZONTAL_ALIGNMENT_CENTER },
         ];
 
-        var verticalOptions = [
+        const verticalOptions = [
             { label: "Top", value: Control.VERTICAL_ALIGNMENT_TOP },
             { label: "Bottom", value: Control.VERTICAL_ALIGNMENT_BOTTOM },
             { label: "Center", value: Control.VERTICAL_ALIGNMENT_CENTER },
         ];
 
-        var wrappingOptions = [
+        const wrappingOptions = [
             { label: "Clip", value: TextWrapping.Clip },
             { label: "Ellipsis", value: TextWrapping.Ellipsis },
             { label: "Word wrap", value: TextWrapping.WordWrap },

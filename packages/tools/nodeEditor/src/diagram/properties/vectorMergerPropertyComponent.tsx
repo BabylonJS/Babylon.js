@@ -11,9 +11,9 @@ export class VectorMergerPropertyTabComponent extends React.Component<IPropertyC
     }
 
     render() {
-        let vectorMergerBlock = this.props.block as VectorMergerBlock;
+        const vectorMergerBlock = this.props.block as VectorMergerBlock;
 
-        var targetOptions: { label: string; value: string }[] = [
+        const targetOptions: { label: string; value: string }[] = [
             { label: "X", value: "x" },
             { label: "Y", value: "y" },
             { label: "Z", value: "z" },

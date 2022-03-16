@@ -174,12 +174,12 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
 
         this.state = { filter: "" };
 
-        let frameJson = localStorage.getItem("Custom-Frame-List");
+        const frameJson = localStorage.getItem("Custom-Frame-List");
         if (frameJson) {
             this._customFrameList = JSON.parse(frameJson);
         }
 
-        let blockJson = localStorage.getItem("Custom-Block-List");
+        const blockJson = localStorage.getItem("Custom-Block-List");
         if (blockJson) {
             this._customBlockList = JSON.parse(blockJson);
         }
@@ -202,10 +202,10 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
             file,
             async (data) => {
                 // get Frame Data from file
-                let decoder = new TextDecoder("utf-8");
+                const decoder = new TextDecoder("utf-8");
                 const frameData = JSON.parse(decoder.decode(data));
-                let frameName = frameData.editorData.frames[0].name + "Custom";
-                let frameToolTip = frameData.editorData.frames[0].comments || "";
+                const frameName = frameData.editorData.frames[0].name + "Custom";
+                const frameToolTip = frameData.editorData.frames[0].comments || "";
 
                 try {
                     localStorage.setItem(frameName, JSON.stringify(frameData));
@@ -214,7 +214,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                     return;
                 }
 
-                let frameJson = localStorage.getItem("Custom-Frame-List");
+                const frameJson = localStorage.getItem("Custom-Frame-List");
                 let frameList: { [key: string]: string } = {};
                 if (frameJson) {
                     frameList = JSON.parse(frameJson);
@@ -230,9 +230,9 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
     }
 
     removeItem(value: string): void {
-        let frameJson = localStorage.getItem("Custom-Frame-List");
+        const frameJson = localStorage.getItem("Custom-Frame-List");
         if (frameJson) {
-            let frameList = JSON.parse(frameJson);
+            const frameList = JSON.parse(frameJson);
             delete frameList[value];
             localStorage.removeItem(value);
             localStorage.setItem("Custom-Frame-List", JSON.stringify(frameList));
@@ -246,10 +246,10 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
             file,
             async (data) => {
                 // get Block Data from file
-                let decoder = new TextDecoder("utf-8");
+                const decoder = new TextDecoder("utf-8");
                 const blockData = JSON.parse(decoder.decode(data));
-                let blockName = (blockData.name || "") + "CustomBlock";
-                let blockToolTip = blockData.comments || "";
+                const blockName = (blockData.name || "") + "CustomBlock";
+                const blockToolTip = blockData.comments || "";
 
                 try {
                     localStorage.setItem(blockName, JSON.stringify(blockData));
@@ -258,7 +258,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                     return;
                 }
 
-                let blockJson = localStorage.getItem("Custom-Block-List");
+                const blockJson = localStorage.getItem("Custom-Block-List");
                 let blockList: { [key: string]: string } = {};
                 if (blockJson) {
                     blockList = JSON.parse(blockJson);
@@ -274,9 +274,9 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
     }
 
     removeCustomBlock(value: string): void {
-        let blockJson = localStorage.getItem("Custom-Block-List");
+        const blockJson = localStorage.getItem("Custom-Block-List");
         if (blockJson) {
-            let blockList = JSON.parse(blockJson);
+            const blockList = JSON.parse(blockJson);
             delete blockList[value];
             localStorage.removeItem(value);
             localStorage.setItem("Custom-Block-List", JSON.stringify(blockList));
@@ -286,13 +286,13 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
     }
 
     render() {
-        let customFrameNames: string[] = [];
-        for (let frame in this._customFrameList) {
+        const customFrameNames: string[] = [];
+        for (const frame in this._customFrameList) {
             customFrameNames.push(frame);
         }
 
-        let customBlockNames: string[] = [];
-        for (let block in this._customBlockList) {
+        const customBlockNames: string[] = [];
+        for (const block in this._customBlockList) {
             customBlockNames.push(block);
         }
 
@@ -459,9 +459,9 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         }
 
         // Create node menu
-        var blockMenu = [];
+        const blockMenu = [];
         for (var key in allBlocks) {
-            var blockList = (allBlocks as any)[key]
+            const blockList = (allBlocks as any)[key]
                 .filter((b: string) => !this.state.filter || b.toLowerCase().indexOf(this.state.filter.toLowerCase()) !== -1)
                 .sort((a: string, b: string) => a.localeCompare(b))
                 .map((block: any, i: number) => {
@@ -493,7 +493,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 });
 
             if (key === "Custom_Frames") {
-                let line = (
+                const line = (
                     <LineWithFileButtonComponent
                         key="add..."
                         title={"Add Custom Frame"}
@@ -509,7 +509,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 );
                 blockList.push(line);
             } else if (key === "Custom_Blocks") {
-                let line = (
+                const line = (
                     <LineWithFileButtonComponent
                         key="add..."
                         title={"Add Custom Block"}

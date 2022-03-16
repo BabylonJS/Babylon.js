@@ -77,8 +77,8 @@ export class FrameNodePort extends NodePort {
         framePortId: number,
         parentFrameId: number
     ) {
-        let portContainer = root.ownerDocument!.createElement("div");
-        let block = connectionPoint.ownerBlock;
+        const portContainer = root.ownerDocument!.createElement("div");
+        const block = connectionPoint.ownerBlock;
 
         portContainer.classList.add("portLine");
         if (framePortId !== null) {
@@ -87,7 +87,7 @@ export class FrameNodePort extends NodePort {
         root.appendChild(portContainer);
 
         if (!displayManager || displayManager.shouldDisplayPortLabels(block)) {
-            let portLabel = root.ownerDocument!.createElement("div");
+            const portLabel = root.ownerDocument!.createElement("div");
             portLabel.classList.add("port-label");
             let portName = connectionPoint.displayName || connectionPoint.name;
             if (connectionPoint.ownerBlock.isInput) {

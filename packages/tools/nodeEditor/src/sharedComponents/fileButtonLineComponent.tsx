@@ -17,7 +17,7 @@ export class FileButtonLineComponent extends React.Component<IFileButtonLineComp
     }
 
     onChange(evt: any) {
-        var files: File[] = evt.target.files;
+        const files: File[] = evt.target.files;
         if (files && files.length) {
             this.props.onClick(files[0]);
         }

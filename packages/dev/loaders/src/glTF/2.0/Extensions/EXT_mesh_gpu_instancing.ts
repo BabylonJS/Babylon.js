@@ -1,11 +1,11 @@
-import { Vector3, Quaternion, Matrix } from "core/Maths/math.vector";
+import { Vector3, Quaternion, Matrix , TmpVectors } from "core/Maths/math.vector";
 import { Mesh } from "core/Meshes/mesh";
 import { TransformNode } from "core/Meshes/transformNode";
 import { Nullable } from "core/types";
 import { GLTFLoader, ArrayItem } from "../glTFLoader";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { INode } from "../glTFLoaderInterfaces";
-import { TmpVectors } from "core/Maths/math.vector";
+
 import { IEXTMeshGpuInstancing } from "babylonjs-gltf2interface";
 
 import "core/Meshes/thinInstanceMesh";
@@ -30,7 +30,10 @@ export class EXT_mesh_gpu_instancing implements IGLTFLoaderExtension {
 
     private _loader: GLTFLoader;
 
-    /** @hidden */
+    /**
+     * @param loader
+     * @hidden
+     */
     constructor(loader: GLTFLoader) {
         this._loader = loader;
         this.enabled = this._loader.isExtensionUsed(NAME);
@@ -41,7 +44,12 @@ export class EXT_mesh_gpu_instancing implements IGLTFLoaderExtension {
         (this._loader as any) = null;
     }
 
-    /** @hidden */
+    /**
+     * @param context
+     * @param node
+     * @param assign
+     * @hidden
+     */
     public loadNodeAsync(context: string, node: INode, assign: (babylonTransformNode: TransformNode) => void): Nullable<Promise<TransformNode>> {
         return GLTFLoader.LoadExtensionAsync<IEXTMeshGpuInstancing, TransformNode>(context, node, this.name, (extensionContext, extension) => {
             this._loader._disableInstancedMesh++;

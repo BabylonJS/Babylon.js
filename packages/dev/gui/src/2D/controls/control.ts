@@ -698,7 +698,7 @@ export class Control {
 
     /** Gets or sets font size in pixels */
     public get fontSizeInPixels(): number {
-        let fontSizeToUse = this._style ? this._style._fontSize : this._fontSize;
+        const fontSizeToUse = this._style ? this._style._fontSize : this._fontSize;
 
         if (fontSizeToUse.isPixel) {
             return fontSizeToUse.getValue(this._host);
@@ -1259,7 +1259,7 @@ export class Control {
      * @returns the new coordinates in local space
      */
     public getLocalCoordinates(globalCoordinates: Vector2): Vector2 {
-        var result = Vector2.Zero();
+        const result = Vector2.Zero();
 
         this.getLocalCoordinatesToRef(globalCoordinates, result);
 
@@ -1284,7 +1284,7 @@ export class Control {
      * @returns the new coordinates in parent local space
      */
     public getParentLocalCoordinates(globalCoordinates: Vector2): Vector2 {
-        var result = Vector2.Zero();
+        const result = Vector2.Zero();
 
         result.x = globalCoordinates.x - this._cachedParentMeasure.left;
         result.y = globalCoordinates.y - this._cachedParentMeasure.top;
@@ -1306,8 +1306,8 @@ export class Control {
         this.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
         this.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
 
-        var globalViewport = this._host._getGlobalViewport();
-        var projectedPosition = Vector3.Project(position, Matrix.Identity(), scene.getTransformMatrix(), globalViewport);
+        const globalViewport = this._host._getGlobalViewport();
+        const projectedPosition = Vector3.Project(position, Matrix.Identity(), scene.getTransformMatrix(), globalViewport);
 
         this._moveToProjectedPosition(projectedPosition);
 
@@ -1335,7 +1335,7 @@ export class Control {
      * @return all child controls
      */
     public getDescendants(directDescendantsOnly?: boolean, predicate?: (control: Control) => boolean): Control[] {
-        var results = new Array<Control>();
+        const results = new Array<Control>();
 
         this.getDescendantsToRef(results, directDescendantsOnly, predicate);
 
@@ -1355,7 +1355,7 @@ export class Control {
             return;
         }
 
-        var index = this._host._linkedControls.indexOf(this);
+        const index = this._host._linkedControls.indexOf(this);
         if (index !== -1) {
             this._linkedMesh = mesh;
             if (!mesh) {
@@ -1412,18 +1412,21 @@ export class Control {
         this.paddingLeftInPixels = left;
     }
 
-    /** @hidden */
+    /**
+     * @param projectedPosition
+     * @hidden
+     */
     public _moveToProjectedPosition(projectedPosition: Vector3): void {
-        let oldLeft = this._left.getValue(this._host);
-        let oldTop = this._top.getValue(this._host);
+        const oldLeft = this._left.getValue(this._host);
+        const oldTop = this._top.getValue(this._host);
 
-        let parentMeasure = this.parent?._currentMeasure;
+        const parentMeasure = this.parent?._currentMeasure;
         if (parentMeasure) {
             this._processMeasures(parentMeasure, this._host.getContext());
         }
 
-        var newLeft = projectedPosition.x + this._linkOffsetX.getValue(this._host) - this._currentMeasure.width / 2;
-        var newTop = projectedPosition.y + this._linkOffsetY.getValue(this._host) - this._currentMeasure.height / 2;
+        let newLeft = projectedPosition.x + this._linkOffsetX.getValue(this._host) - this._currentMeasure.width / 2;
+        let newTop = projectedPosition.y + this._linkOffsetY.getValue(this._host) - this._currentMeasure.height / 2;
 
         if (this._left.ignoreAdaptiveScaling && this._top.ignoreAdaptiveScaling) {
             if (Math.abs(newLeft - oldLeft) < 0.5) {
@@ -1443,13 +1446,19 @@ export class Control {
         this._markAsDirty();
     }
 
-    /** @hidden */
+    /**
+     * @param offset
+     * @hidden
+     */
     public _offsetLeft(offset: number) {
         this._isDirty = true;
         this._currentMeasure.left += offset;
     }
 
-    /** @hidden */
+    /**
+     * @param offset
+     * @hidden
+     */
     public _offsetTop(offset: number) {
         this._isDirty = true;
         this._currentMeasure.top += offset;
@@ -1466,7 +1475,11 @@ export class Control {
         // No child
     }
 
-    /** @hidden */
+    /**
+     * @param rect
+     * @param context
+     * @hidden
+     */
     public _intersectsRect(rect: Measure, context?: ICanvasRenderingContext) {
         // make sure we are transformed correctly before checking intersections. no-op if nothing is dirty.
         this._transform(context);
@@ -1510,14 +1523,14 @@ export class Control {
             Measure.CombineToRef(this._tmpMeasureA, this._prevCurrentMeasureTransformedIntoGlobalSpace, this._tmpMeasureA);
 
             // Expand rect based on shadows
-            var shadowOffsetX = this.shadowOffsetX;
-            var shadowOffsetY = this.shadowOffsetY;
-            var shadowBlur = Math.max(this._previousShadowBlur, this.shadowBlur);
+            const shadowOffsetX = this.shadowOffsetX;
+            const shadowOffsetY = this.shadowOffsetY;
+            const shadowBlur = Math.max(this._previousShadowBlur, this.shadowBlur);
 
-            var leftShadowOffset = Math.min(Math.min(shadowOffsetX, 0) - shadowBlur * 2, 0);
-            var rightShadowOffset = Math.max(Math.max(shadowOffsetX, 0) + shadowBlur * 2, 0);
-            var topShadowOffset = Math.min(Math.min(shadowOffsetY, 0) - shadowBlur * 2, 0);
-            var bottomShadowOffset = Math.max(Math.max(shadowOffsetY, 0) + shadowBlur * 2, 0);
+            const leftShadowOffset = Math.min(Math.min(shadowOffsetX, 0) - shadowBlur * 2, 0);
+            const rightShadowOffset = Math.max(Math.max(shadowOffsetX, 0) + shadowBlur * 2, 0);
+            const topShadowOffset = Math.min(Math.min(shadowOffsetY, 0) - shadowBlur * 2, 0);
+            const bottomShadowOffset = Math.max(Math.max(shadowOffsetY, 0) + shadowBlur * 2, 0);
 
             const offsetX = this._computeAdditionnalOffsetX();
             const offsetY = this._computeAdditionnalOffsetY();
@@ -1531,7 +1544,10 @@ export class Control {
         }
     }
 
-    /** @hidden */
+    /**
+     * @param force
+     * @hidden
+     */
     public _markAsDirty(force = false): void {
         if (!this._isVisible && !force) {
             return;
@@ -1555,7 +1571,10 @@ export class Control {
         }
     }
 
-    /** @hidden */
+    /**
+     * @param host
+     * @hidden
+     */
     public _link(host: AdvancedDynamicTexture): void {
         this._host = host;
         if (this._host) {
@@ -1563,15 +1582,18 @@ export class Control {
         }
     }
 
-    /** @hidden */
+    /**
+     * @param context
+     * @hidden
+     */
     protected _transform(context?: ICanvasRenderingContext): void {
         if (!this._isMatrixDirty && this._scaleX === 1 && this._scaleY === 1 && this._rotation === 0) {
             return;
         }
 
         // postTranslate
-        var offsetX = this._currentMeasure.width * this._transformCenterX + this._currentMeasure.left;
-        var offsetY = this._currentMeasure.height * this._transformCenterY + this._currentMeasure.top;
+        const offsetX = this._currentMeasure.width * this._transformCenterX + this._currentMeasure.left;
+        const offsetY = this._currentMeasure.height * this._transformCenterY + this._currentMeasure.top;
         if (context) {
             context.translate(offsetX, offsetY);
 
@@ -1598,7 +1620,10 @@ export class Control {
         }
     }
 
-    /** @hidden */
+    /**
+     * @param context
+     * @hidden
+     */
     public _renderHighlight(context: ICanvasRenderingContext): void {
         if (!this.isHighlighted) {
             return;
@@ -1612,12 +1637,18 @@ export class Control {
         context.restore();
     }
 
-    /** @hidden */
+    /**
+     * @param context
+     * @hidden
+     */
     public _renderHighlightSpecific(context: ICanvasRenderingContext): void {
         context.strokeRect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
     }
 
-    /** @hidden */
+    /**
+     * @param context
+     * @hidden
+     */
     protected _applyStates(context: ICanvasRenderingContext): void {
         if (this._isFontSizeInPercentage) {
             this._fontSet = true;
@@ -1647,7 +1678,11 @@ export class Control {
         }
     }
 
-    /** @hidden */
+    /**
+     * @param parentMeasure
+     * @param context
+     * @hidden
+     */
     public _layout(parentMeasure: Measure, context: ICanvasRenderingContext): boolean {
         if (!this.isDirty && (!this.isVisible || this.notRenderable)) {
             return false;
@@ -1691,7 +1726,11 @@ export class Control {
         return true;
     }
 
-    /** @hidden */
+    /**
+     * @param parentMeasure
+     * @param context
+     * @hidden
+     */
     protected _processMeasures(parentMeasure: Measure, context: ICanvasRenderingContext): void {
         this._tempPaddingMeasure.copyFrom(parentMeasure);
 
@@ -1781,17 +1820,21 @@ export class Control {
         }
     }
 
-    /** @hidden */
+    /**
+     * @param parentMeasure
+     * @param context
+     * @hidden
+     */
     protected _computeAlignment(parentMeasure: Measure, context: ICanvasRenderingContext): void {
-        var width = this._currentMeasure.width;
-        var height = this._currentMeasure.height;
+        const width = this._currentMeasure.width;
+        const height = this._currentMeasure.height;
 
-        var parentWidth = parentMeasure.width;
-        var parentHeight = parentMeasure.height;
+        const parentWidth = parentMeasure.width;
+        const parentHeight = parentMeasure.height;
 
         // Left / top
-        var x = 0;
-        var y = 0;
+        let x = 0;
+        let y = 0;
 
         switch (this.horizontalAlignment) {
             case Control.HORIZONTAL_ALIGNMENT_LEFT:
@@ -1863,17 +1906,28 @@ export class Control {
         this._currentMeasure.top += y;
     }
 
-    /** @hidden */
+    /**
+     * @param parentMeasure
+     * @param context
+     * @hidden
+     */
     protected _preMeasure(parentMeasure: Measure, context: ICanvasRenderingContext): void {
         // Do nothing
     }
 
-    /** @hidden */
+    /**
+     * @param parentMeasure
+     * @param context
+     * @hidden
+     */
     protected _additionalProcessing(parentMeasure: Measure, context: ICanvasRenderingContext): void {
         // Do nothing
     }
 
-    /** @hidden */
+    /**
+     * @param context
+     * @hidden
+     */
     protected _clipForChildren(context: ICanvasRenderingContext): void {
         // DO nothing
     }
@@ -1888,7 +1942,7 @@ export class Control {
             invalidatedRectangle.transformToRef(this._invertTransformMatrix, this._tmpMeasureA);
 
             // Get the intersection of the rect in context space and the current context
-            var intersection = new Measure(0, 0, 0, 0);
+            const intersection = new Measure(0, 0, 0, 0);
             intersection.left = Math.max(this._tmpMeasureA.left, this._currentMeasure.left);
             intersection.top = Math.max(this._tmpMeasureA.top, this._currentMeasure.top);
             intersection.width = Math.min(this._tmpMeasureA.left + this._tmpMeasureA.width, this._currentMeasure.left + this._currentMeasure.width) - intersection.left;
@@ -1897,14 +1951,14 @@ export class Control {
         }
 
         if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
-            var shadowOffsetX = this.shadowOffsetX;
-            var shadowOffsetY = this.shadowOffsetY;
-            var shadowBlur = this.shadowBlur;
+            const shadowOffsetX = this.shadowOffsetX;
+            const shadowOffsetY = this.shadowOffsetY;
+            const shadowBlur = this.shadowBlur;
 
-            var leftShadowOffset = Math.min(Math.min(shadowOffsetX, 0) - shadowBlur * 2, 0);
-            var rightShadowOffset = Math.max(Math.max(shadowOffsetX, 0) + shadowBlur * 2, 0);
-            var topShadowOffset = Math.min(Math.min(shadowOffsetY, 0) - shadowBlur * 2, 0);
-            var bottomShadowOffset = Math.max(Math.max(shadowOffsetY, 0) + shadowBlur * 2, 0);
+            const leftShadowOffset = Math.min(Math.min(shadowOffsetX, 0) - shadowBlur * 2, 0);
+            const rightShadowOffset = Math.max(Math.max(shadowOffsetX, 0) + shadowBlur * 2, 0);
+            const topShadowOffset = Math.min(Math.min(shadowOffsetY, 0) - shadowBlur * 2, 0);
+            const bottomShadowOffset = Math.max(Math.max(shadowOffsetY, 0) + shadowBlur * 2, 0);
 
             context.rect(
                 Control._ClipMeasure.left + leftShadowOffset,
@@ -1919,7 +1973,11 @@ export class Control {
         context.clip();
     }
 
-    /** @hidden */
+    /**
+     * @param context
+     * @param invalidatedRectangle
+     * @hidden
+     */
     public _render(context: ICanvasRenderingContext, invalidatedRectangle?: Nullable<Measure>): boolean {
         if (!this.isVisible || this.notRenderable || this._isClipped) {
             this._isDirty = false;
@@ -1965,7 +2023,11 @@ export class Control {
         return true;
     }
 
-    /** @hidden */
+    /**
+     * @param context
+     * @param invalidatedRectangle
+     * @hidden
+     */
     public _draw(context: ICanvasRenderingContext, invalidatedRectangle?: Nullable<Measure>): void {
         // Do nothing
     }
@@ -2006,7 +2068,17 @@ export class Control {
         return true;
     }
 
-    /** @hidden */
+    /**
+     * @param x
+     * @param y
+     * @param pi
+     * @param type
+     * @param pointerId
+     * @param buttonIndex
+     * @param deltaX
+     * @param deltaY
+     * @hidden
+     */
     public _processPicking(x: number, y: number, pi: Nullable<PointerInfoBase>, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean {
         if (!this._isEnabled) {
             return false;
@@ -2024,16 +2096,26 @@ export class Control {
         return true;
     }
 
-    /** @hidden */
+    /**
+     * @param target
+     * @param coordinates
+     * @param pointerId
+     * @param pi
+     * @hidden
+     */
     public _onPointerMove(target: Control, coordinates: Vector2, pointerId: number, pi: Nullable<PointerInfoBase>): void {
-        var canNotify: boolean = this.onPointerMoveObservable.notifyObservers(coordinates, -1, target, this, pi);
+        const canNotify: boolean = this.onPointerMoveObservable.notifyObservers(coordinates, -1, target, this, pi);
 
         if (canNotify && this.parent != null) {
             this.parent._onPointerMove(target, coordinates, pointerId, pi);
         }
     }
 
-    /** @hidden */
+    /**
+     * @param target
+     * @param pi
+     * @hidden
+     */
     public _onPointerEnter(target: Control, pi: Nullable<PointerInfoBase>): boolean {
         if (!this._isEnabled) {
             return false;
@@ -2048,7 +2130,7 @@ export class Control {
         }
         this._enterCount++;
 
-        var canNotify: boolean = this.onPointerEnterObservable.notifyObservers(this, -1, target, this, pi);
+        const canNotify: boolean = this.onPointerEnterObservable.notifyObservers(this, -1, target, this, pi);
 
         if (canNotify && this.parent != null) {
             this.parent._onPointerEnter(target, pi);
@@ -2057,14 +2139,19 @@ export class Control {
         return true;
     }
 
-    /** @hidden */
+    /**
+     * @param target
+     * @param pi
+     * @param force
+     * @hidden
+     */
     public _onPointerOut(target: Control, pi: Nullable<PointerInfoBase>, force = false): void {
         if (!force && (!this._isEnabled || target === this)) {
             return;
         }
         this._enterCount = 0;
 
-        var canNotify: boolean = true;
+        let canNotify: boolean = true;
 
         if (!target.isAscendant(this)) {
             canNotify = this.onPointerOutObservable.notifyObservers(this, -1, target, this, pi);
@@ -2075,7 +2162,14 @@ export class Control {
         }
     }
 
-    /** @hidden */
+    /**
+     * @param target
+     * @param coordinates
+     * @param pointerId
+     * @param buttonIndex
+     * @param pi
+     * @hidden
+     */
     public _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, pi: Nullable<PointerInfoBase>): boolean {
         // Prevent pointerout to lose control context.
         // Event redundancy is checked inside the function.
@@ -2089,7 +2183,7 @@ export class Control {
 
         this._downPointerIds[pointerId] = true;
 
-        var canNotify: boolean = this.onPointerDownObservable.notifyObservers(new Vector2WithInfo(coordinates, buttonIndex), -1, target, this, pi);
+        const canNotify: boolean = this.onPointerDownObservable.notifyObservers(new Vector2WithInfo(coordinates, buttonIndex), -1, target, this, pi);
 
         if (canNotify && this.parent != null) {
             this.parent._onPointerDown(target, coordinates, pointerId, buttonIndex, pi);
@@ -2098,7 +2192,15 @@ export class Control {
         return true;
     }
 
-    /** @hidden */
+    /**
+     * @param target
+     * @param coordinates
+     * @param pointerId
+     * @param buttonIndex
+     * @param notifyClick
+     * @param pi
+     * @hidden
+     */
     public _onPointerUp(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean, pi?: Nullable<PointerInfoBase>): void {
         if (!this._isEnabled) {
             return;
@@ -2107,34 +2209,41 @@ export class Control {
 
         delete this._downPointerIds[pointerId];
 
-        var canNotifyClick: boolean = notifyClick;
+        let canNotifyClick: boolean = notifyClick;
         if (notifyClick && (this._enterCount > 0 || this._enterCount === -1)) {
             canNotifyClick = this.onPointerClickObservable.notifyObservers(new Vector2WithInfo(coordinates, buttonIndex), -1, target, this, pi);
         }
-        var canNotify: boolean = this.onPointerUpObservable.notifyObservers(new Vector2WithInfo(coordinates, buttonIndex), -1, target, this, pi);
+        const canNotify: boolean = this.onPointerUpObservable.notifyObservers(new Vector2WithInfo(coordinates, buttonIndex), -1, target, this, pi);
 
         if (canNotify && this.parent != null) {
             this.parent._onPointerUp(target, coordinates, pointerId, buttonIndex, canNotifyClick, pi);
         }
     }
 
-    /** @hidden */
+    /**
+     * @param pointerId
+     * @hidden
+     */
     public _forcePointerUp(pointerId: Nullable<number> = null) {
         if (pointerId !== null) {
             this._onPointerUp(this, Vector2.Zero(), pointerId, 0, true);
         } else {
-            for (var key in this._downPointerIds) {
+            for (const key in this._downPointerIds) {
                 this._onPointerUp(this, Vector2.Zero(), +key as number, 0, true);
             }
         }
     }
 
-    /** @hidden */
+    /**
+     * @param deltaX
+     * @param deltaY
+     * @hidden
+     */
     public _onWheelScroll(deltaX?: number, deltaY?: number): void {
         if (!this._isEnabled) {
             return;
         }
-        var canNotify: boolean = this.onWheelObservable.notifyObservers(new Vector2(deltaX, deltaY));
+        const canNotify: boolean = this.onWheelObservable.notifyObservers(new Vector2(deltaX, deltaY));
 
         if (canNotify && this.parent != null) {
             this.parent._onWheelScroll(deltaX, deltaY);
@@ -2144,7 +2253,17 @@ export class Control {
     /** @hidden */
     public _onCanvasBlur(): void {}
 
-    /** @hidden */
+    /**
+     * @param type
+     * @param x
+     * @param y
+     * @param pi
+     * @param pointerId
+     * @param buttonIndex
+     * @param deltaX
+     * @param deltaY
+     * @hidden
+     */
     public _processObservables(
         type: number,
         x: number,
@@ -2162,7 +2281,7 @@ export class Control {
         if (type === PointerEventTypes.POINTERMOVE) {
             this._onPointerMove(this, this._dummyVector2, pointerId, pi);
 
-            var previousControlOver = this._host._lastControlOver[pointerId];
+            const previousControlOver = this._host._lastControlOver[pointerId];
             if (previousControlOver && previousControlOver !== this) {
                 previousControlOver._onPointerOut(this, pi);
             }
@@ -2234,7 +2353,11 @@ export class Control {
         }
     }
 
-    /** @hidden */
+    /**
+     * @param serializedObject
+     * @param host
+     * @hidden
+     */
     public _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture) {
         if (serializedObject.fontFamily) {
             this.fontFamily = serializedObject.fontFamily;
@@ -2277,7 +2400,7 @@ export class Control {
         }
 
         if (this._host) {
-            var index = this._host._linkedControls.indexOf(this);
+            const index = this._host._linkedControls.indexOf(this);
             if (index > -1) {
                 this.linkWithMesh(null);
             }
@@ -2329,7 +2452,10 @@ export class Control {
 
     private static _FontHeightSizes: { [key: string]: { ascent: number; height: number; descent: number } } = {};
 
-    /** @hidden */
+    /**
+     * @param font
+     * @hidden
+     */
     public static _GetFontOffset(font: string): { ascent: number; height: number; descent: number } {
         if (Control._FontHeightSizes[font]) {
             return Control._FontHeightSizes[font];
@@ -2340,7 +2466,7 @@ export class Control {
             throw new Error("Invalid engine. Unable to create a canvas.");
         }
 
-        var result = engine.getFontOffset(font);
+        const result = engine.getFontOffset(font);
         Control._FontHeightSizes[font] = result;
 
         return result;
@@ -2353,8 +2479,8 @@ export class Control {
      * @returns a new Control
      */
     public static Parse(serializedObject: any, host: AdvancedDynamicTexture): Control {
-        let controlType = Tools.Instantiate("BABYLON.GUI." + serializedObject.className);
-        let control = SerializationHelper.Parse(() => new controlType(), serializedObject, null);
+        const controlType = Tools.Instantiate("BABYLON.GUI." + serializedObject.className);
+        const control = SerializationHelper.Parse(() => new controlType(), serializedObject, null);
 
         control.name = serializedObject.name;
 
@@ -2375,7 +2501,14 @@ export class Control {
      */
     public static AddHeader: (control: Control, text: string, size: string | number, options: { isHorizontal: boolean; controlFirst: boolean }) => any = () => {};
 
-    /** @hidden */
+    /**
+     * @param x
+     * @param y
+     * @param width
+     * @param height
+     * @param context
+     * @hidden
+     */
     protected static drawEllipse(x: number, y: number, width: number, height: number, context: ICanvasRenderingContext): void {
         context.translate(x, y);
         context.scale(width, height);

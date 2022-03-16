@@ -47,7 +47,7 @@ export const PerformanceViewerSidebarComponent = (props: IPerformanceViewerSideb
 
             metadata.forEach((value: IPerfMetadata, id: string) => {
                 const currentCategory = value.category ?? "";
-                let currentIds: string[] = newCategoryIdMap.get(currentCategory) ?? [];
+                const currentIds: string[] = newCategoryIdMap.get(currentCategory) ?? [];
                 let currentChecked: number = newCategoryCheckedMap.get(currentCategory) ?? 0;
 
                 currentIds.push(id);

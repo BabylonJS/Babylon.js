@@ -2,7 +2,7 @@ import { Helper } from "../../../commons/helper";
 import { assert, expect, should } from "../viewerReference";
 import { DefaultViewer, AbstractViewer, Version, viewerManager } from "../../../../src";
 
-export let name = "viewer manager tests";
+export const name = "viewer manager tests";
 
 describe("Viewer Manager", function () {
     it("should be defined when the library is loaded", (done) => {
@@ -11,13 +11,13 @@ describe("Viewer Manager", function () {
     });
 
     it("should add and remove a viewer when viewer constructed and disposed", (done) => {
-        let element = document.createElement("div");
-        let randomString = "" + Math.random();
+        const element = document.createElement("div");
+        const randomString = "" + Math.random();
         element.id = randomString;
 
         assert.isUndefined(viewerManager.getViewerByHTMLElement(element));
         assert.isUndefined(viewerManager.getViewerById(randomString));
-        let viewer = Helper.getNewViewerInstance(element);
+        const viewer = Helper.getNewViewerInstance(element);
         assert.isDefined(viewerManager.getViewerByHTMLElement(element));
         assert.isDefined(viewerManager.getViewerById(randomString));
         viewer.dispose();
@@ -27,11 +27,11 @@ describe("Viewer Manager", function () {
     });
 
     it("should trigger the promsie when viewer was added", (done) => {
-        let element = document.createElement("div");
-        let randomString = "" + Math.random();
+        const element = document.createElement("div");
+        const randomString = "" + Math.random();
         element.id = randomString;
 
-        let viewer = Helper.getNewViewerInstance(element);
+        const viewer = Helper.getNewViewerInstance(element);
         viewerManager.getViewerPromiseById(randomString).then(
             () => {
                 viewer.dispose();
@@ -44,8 +44,8 @@ describe("Viewer Manager", function () {
     });
 
     it("should trigger observers when viewer constructed and disposed", (done) => {
-        let element = document.createElement("div");
-        let randomString = "" + Math.random();
+        const element = document.createElement("div");
+        const randomString = "" + Math.random();
         element.id = randomString;
 
         let addedFlag = false;
@@ -65,18 +65,18 @@ describe("Viewer Manager", function () {
             }
         });
 
-        let viewer = Helper.getNewViewerInstance(element);
+        const viewer = Helper.getNewViewerInstance(element);
         viewer.dispose();
     });
 
     it("should dispose viewer(s) when disposed", (done) => {
-        let element = document.createElement("div");
-        let randomString = "" + Math.random();
+        const element = document.createElement("div");
+        const randomString = "" + Math.random();
         element.id = randomString;
 
-        let viewer = Helper.getNewViewerInstance(element);
+        const viewer = Helper.getNewViewerInstance(element);
 
-        let dispose = viewer.dispose;
+        const dispose = viewer.dispose;
 
         viewer.dispose = () => {
             dispose.call(viewer);

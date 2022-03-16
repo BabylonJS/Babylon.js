@@ -1,11 +1,11 @@
 // Assumptions: absolute position of button mesh is inside the mesh
 
-import { Vector3 } from "core/Maths/math.vector";
+import { Vector3 , TmpVectors } from "core/Maths/math.vector";
 import { Mesh } from "core/Meshes/mesh";
 import { PointerEventTypes } from "core/Events/pointerEvents";
 import { TransformNode } from "core/Meshes/transformNode";
 import { Scene } from "core/scene";
-import { TmpVectors } from "core/Maths/math.vector";
+
 import { Observable } from "core/Misc/observable";
 
 import { Button3D } from "./button3D";
@@ -175,7 +175,7 @@ export class TouchButton3D extends Button3D {
         if (!this._isNearPressed) {
             return 0;
         }
-        var interactionHeight = this._getInteractionHeight(touchPoint, this._collisionMesh.getAbsolutePosition());
+        const interactionHeight = this._getInteractionHeight(touchPoint, this._collisionMesh.getAbsolutePosition());
         return this._interactionSurfaceHeight - interactionHeight;
     }
 
@@ -192,7 +192,12 @@ export class TouchButton3D extends Button3D {
         return abc - d;
     }
 
-    /** @hidden */
+    /**
+     * @param providedType
+     * @param nearMeshPosition
+     * @param activeInteractionCount
+     * @hidden
+     */
     public _generatePointerEventType(providedType: number, nearMeshPosition: Vector3, activeInteractionCount: number): number {
         if (providedType === PointerEventTypes.POINTERDOWN) {
             if (!this._isInteractionInFrontOfButton(nearMeshPosition)) {

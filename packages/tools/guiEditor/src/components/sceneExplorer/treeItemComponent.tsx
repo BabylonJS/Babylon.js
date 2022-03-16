@@ -105,7 +105,7 @@ export class TreeItemComponent extends React.Component<ITreeItemComponentProps, 
         const items = nextProps.items;
 
         if (items && items.length) {
-            for (var item of items) {
+            for (const item of items) {
                 if (Tools.LookForItems(item, nextProps.selectedEntities)) {
                     nextState.isExpanded = true;
                     return true;
@@ -185,7 +185,7 @@ export class TreeItemComponent extends React.Component<ITreeItemComponentProps, 
             );
         }
 
-        let sortedItems = Tools.SortAndFilter(null, items)[0].getChildren();
+        const sortedItems = Tools.SortAndFilter(null, items)[0].getChildren();
         return (
             <div>
                 {sortedItems.map((item: { uniqueId: React.Key | null | undefined; name: React.Key | null | undefined }) => {

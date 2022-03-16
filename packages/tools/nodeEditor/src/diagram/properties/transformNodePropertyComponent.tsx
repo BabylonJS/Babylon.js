@@ -18,7 +18,7 @@ export class TransformPropertyTabComponent extends React.Component<IPropertyComp
                     <CheckBoxLineComponent
                         label="Transform as direction"
                         onSelect={(value) => {
-                            let transformBlock = this.props.block as TransformBlock;
+                            const transformBlock = this.props.block as TransformBlock;
                             if (value) {
                                 transformBlock.complementW = 0;
                             } else {

@@ -1,10 +1,10 @@
 import { IDisposable } from "core/scene";
-import { ISceneLoaderPlugin, ISceneLoaderPluginAsync } from "core/Loading/sceneLoader";
+import { ISceneLoaderPlugin, ISceneLoaderPluginAsync , ISceneLoaderProgressEvent } from "core/Loading/sceneLoader";
 import { AbstractMesh } from "core/Meshes/abstractMesh";
 import { IParticleSystem } from "core/Particles/IParticleSystem";
 import { Skeleton } from "core/Bones/skeleton";
 import { Observable } from "core/Misc/observable";
-import { ISceneLoaderProgressEvent } from "core/Loading/sceneLoader";
+
 import { AnimationGroup } from "core/Animations/animationGroup";
 import {
     Animation,
@@ -142,7 +142,7 @@ export class ViewerModel implements IDisposable {
 
         this.state = ModelState.INIT;
 
-        let scene = this._configurationContainer && this._configurationContainer.scene;
+        const scene = this._configurationContainer && this._configurationContainer.scene;
 
         this.rootMesh = new AbstractMesh("modelRootMesh", scene);
         this._pivotMesh = new AbstractMesh("pivotMesh", scene);
@@ -278,7 +278,7 @@ export class ViewerModel implements IDisposable {
         // check if this is not a gltf loader and init the animations
         if (this.skeletons.length) {
             this.skeletons.forEach((skeleton, idx) => {
-                let ag = new AnimationGroup("animation-" + idx, this._configurationContainer && this._configurationContainer.scene);
+                const ag = new AnimationGroup("animation-" + idx, this._configurationContainer && this._configurationContainer.scene);
                 let add = false;
                 skeleton.getAnimatables().forEach((a) => {
                     if (a.animations && a.animations[0]) {
@@ -301,7 +301,7 @@ export class ViewerModel implements IDisposable {
                 });
             }
             if (this._modelConfiguration.animation.autoStart && this._animations.length) {
-                let animationName = this._modelConfiguration.animation.autoStart === true ? this._animations[0].name : this._modelConfiguration.animation.autoStart;
+                const animationName = this._modelConfiguration.animation.autoStart === true ? this._animations[0].name : this._modelConfiguration.animation.autoStart;
 
                 completeCallback = () => {
                     this.playAnimation(animationName);
@@ -318,8 +318,8 @@ export class ViewerModel implements IDisposable {
      */
     private _enterScene(completeCallback?: () => void): void {
         const scene = this.rootMesh.getScene();
-        let previousValue = scene.animationPropertiesOverride!.enableBlending;
-        let callback = () => {
+        const previousValue = scene.animationPropertiesOverride!.enableBlending;
+        const callback = () => {
             this.state = ModelState.ENTRYDONE;
             scene.animationPropertiesOverride!.enableBlending = previousValue;
             this._checkCompleteState();
@@ -352,7 +352,7 @@ export class ViewerModel implements IDisposable {
 
     private _modelComplete() {
         //reapply material defines to be sure:
-        let meshes = this._pivotMesh.getChildMeshes(false);
+        const meshes = this._pivotMesh.getChildMeshes(false);
         meshes
             .filter((m) => m.material)
             .forEach((mesh) => {
@@ -390,7 +390,7 @@ export class ViewerModel implements IDisposable {
      */
     protected _getAnimationByName(name: string): Nullable<IModelAnimation> {
         // can't use .find, noe available on IE
-        let filtered = this._animations.filter((a) => a.name === name.trim());
+        const filtered = this._animations.filter((a) => a.name === name.trim());
         // what the next line means - if two animations have the same name, they will not be returned!
         if (filtered.length === 1) {
             return filtered[0];
@@ -405,7 +405,7 @@ export class ViewerModel implements IDisposable {
      * @returns The model aniamtion to be played.
      */
     public playAnimation(name: string): IModelAnimation {
-        let animation = this.setCurrentAnimationByName(name);
+        const animation = this.setCurrentAnimationByName(name);
         if (animation) {
             animation.start();
         }
@@ -413,7 +413,7 @@ export class ViewerModel implements IDisposable {
     }
 
     public setCurrentAnimationByName(name: string) {
-        let animation = this._getAnimationByName(name.trim());
+        const animation = this._getAnimationByName(name.trim());
         if (animation) {
             if (this.currentAnimation && this.currentAnimation.state !== AnimationState.STOPPED) {
                 this.currentAnimation.stop();
@@ -427,8 +427,8 @@ export class ViewerModel implements IDisposable {
 
     private _configureModel() {
         // this can be changed to the meshes that have rootMesh a parent without breaking anything.
-        let meshesWithNoParent: Array<AbstractMesh> = [this.rootMesh]; //this._meshes.filter(m => m.parent === this.rootMesh);
-        let updateMeshesWithNoParent = (variable: string, value: any, param?: string) => {
+        const meshesWithNoParent: Array<AbstractMesh> = [this.rootMesh]; //this._meshes.filter(m => m.parent === this.rootMesh);
+        const updateMeshesWithNoParent = (variable: string, value: any, param?: string) => {
             meshesWithNoParent.forEach((mesh) => {
                 if (param) {
                     mesh[variable][param] = value;
@@ -437,7 +437,7 @@ export class ViewerModel implements IDisposable {
                 }
             });
         };
-        let updateXYZ = (variable: string, configValues: { x: number; y: number; z: number; w?: number }) => {
+        const updateXYZ = (variable: string, configValues: { x: number; y: number; z: number; w?: number }) => {
             if (configValues.x !== undefined) {
                 updateMeshesWithNoParent(variable, configValues.x, "x");
             }
@@ -515,7 +515,7 @@ export class ViewerModel implements IDisposable {
         }
 
         if (this._modelConfiguration.rotationOffsetAxis) {
-            let rotationAxis = new Vector3(
+            const rotationAxis = new Vector3(
                 this._modelConfiguration.rotationOffsetAxis.x,
                 this._modelConfiguration.rotationOffsetAxis.y,
                 this._modelConfiguration.rotationOffsetAxis.z
@@ -538,7 +538,7 @@ export class ViewerModel implements IDisposable {
             });
         }
 
-        let meshes = this._pivotMesh.getChildMeshes(false);
+        const meshes = this._pivotMesh.getChildMeshes(false);
         meshes
             .filter((m) => m.material)
             .forEach((mesh) => {
@@ -557,7 +557,7 @@ export class ViewerModel implements IDisposable {
     }
 
     private _modelAnimationConfigurationToObject(animConfig: IModelAnimationConfiguration): ModelAnimationConfiguration {
-        let anim: ModelAnimationConfiguration = {
+        const anim: ModelAnimationConfiguration = {
             time: 0.5,
         };
         if (animConfig.scaling) {
@@ -621,12 +621,12 @@ export class ViewerModel implements IDisposable {
      * @param completeCallback Callback to execute when the animation completes
      */
     private _applyAnimation(animationConfiguration: ModelAnimationConfiguration, isEntry: boolean, completeCallback?: () => void) {
-        let animations: Animation[] = [];
+        const animations: Animation[] = [];
 
         //scale
         if (animationConfiguration.scaling) {
-            let scaleStart: Vector3 = isEntry ? animationConfiguration.scaling : new Vector3(1, 1, 1);
-            let scaleEnd: Vector3 = isEntry ? new Vector3(1, 1, 1) : animationConfiguration.scaling;
+            const scaleStart: Vector3 = isEntry ? animationConfiguration.scaling : new Vector3(1, 1, 1);
+            const scaleEnd: Vector3 = isEntry ? new Vector3(1, 1, 1) : animationConfiguration.scaling;
 
             if (!scaleStart.equals(scaleEnd)) {
                 this.rootMesh.scaling = scaleStart;
@@ -659,7 +659,7 @@ export class ViewerModel implements IDisposable {
         onAnimationEnd: () => void
     ): void {
         if (easingFunction) {
-            for (let animation of animations) {
+            for (const animation of animations) {
                 easingFunction.setEasingMode(easingMode);
                 animation.setEasingFunction(easingFunction);
             }
@@ -671,7 +671,7 @@ export class ViewerModel implements IDisposable {
         this.rootMesh.animations = animations;
 
         if (this.rootMesh.getScene().beginAnimation !== undefined) {
-            let animatable: Animatable = this.rootMesh.getScene().beginAnimation(this.rootMesh, 0, this._frameRate * duration, false, 1, () => {
+            const animatable: Animatable = this.rootMesh.getScene().beginAnimation(this.rootMesh, 0, this._frameRate * duration, false, 1, () => {
                 if (onAnimationEnd) {
                     onAnimationEnd();
                 }

@@ -8,7 +8,7 @@ export class HDButtonPlugin extends AbstractViewerNavbarButton {
     }
 
     onEvent(event: EventCallback): void {
-        let button = event.template.parent.querySelector(".hd-button");
+        const button = event.template.parent.querySelector(".hd-button");
         if (button) {
             button.classList.contains("hd-toggled") ? button.classList.remove("hd-toggled") : button.classList.add("hd-toggled");
         }

@@ -15,8 +15,8 @@ export class SerializationTools {
         // Store node locations
         const blocks: NodeMaterialBlock[] = frame ? frame.nodes.map((n) => n.block) : material.attachedBlocks;
 
-        for (var block of blocks) {
-            let node = globalState.onGetNodeFromBlock(block);
+        for (const block of blocks) {
+            const node = globalState.onGetNodeFromBlock(block);
 
             material.editorData.locations.push({
                 blockId: block.uniqueId,
@@ -29,14 +29,14 @@ export class SerializationTools {
     }
 
     public static Serialize(material: NodeMaterial, globalState: GlobalState, frame?: Nullable<GraphFrame>) {
-        let bufferSerializationState = Texture.SerializeBuffers;
+        const bufferSerializationState = Texture.SerializeBuffers;
         Texture.SerializeBuffers = DataStorage.ReadBoolean("EmbedTextures", true);
 
         this.UpdateLocations(material, globalState, frame);
 
         const selectedBlocks = frame ? frame.nodes.map((n) => n.block) : undefined;
 
-        let serializationObject = material.serialize(selectedBlocks);
+        const serializationObject = material.serialize(selectedBlocks);
 
         Texture.SerializeBuffers = bufferSerializationState;
 

@@ -132,8 +132,8 @@ export class GridMaterial extends PushMaterial {
             subMesh.materialDefines = new GridMaterialDefines();
         }
 
-        var defines = <GridMaterialDefines>subMesh.materialDefines;
-        var scene = this.getScene();
+        const defines = <GridMaterialDefines>subMesh.materialDefines;
+        const scene = this.getScene();
 
         if (this._isReadyForSubMesh(subMesh)) {
             return true;
@@ -181,7 +181,7 @@ export class GridMaterial extends PushMaterial {
 
             // Attributes
             MaterialHelper.PrepareDefinesForAttributes(mesh, defines, false, false);
-            var attribs = [VertexBuffer.PositionKind, VertexBuffer.NormalKind];
+            const attribs = [VertexBuffer.PositionKind, VertexBuffer.NormalKind];
 
             if (defines.UV1) {
                 attribs.push(VertexBuffer.UVKind);
@@ -195,7 +195,7 @@ export class GridMaterial extends PushMaterial {
             MaterialHelper.PrepareAttributesForInstances(attribs, defines);
 
             // Defines
-            var join = defines.toString();
+            const join = defines.toString();
             subMesh.setEffect(
                 scene
                     .getEngine()
@@ -238,14 +238,14 @@ export class GridMaterial extends PushMaterial {
     }
 
     public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
-        var scene = this.getScene();
+        const scene = this.getScene();
 
-        var defines = <GridMaterialDefines>subMesh.materialDefines;
+        const defines = <GridMaterialDefines>subMesh.materialDefines;
         if (!defines) {
             return;
         }
 
-        var effect = subMesh.effect;
+        const effect = subMesh.effect;
         if (!effect) {
             return;
         }
@@ -298,7 +298,7 @@ export class GridMaterial extends PushMaterial {
     }
 
     public serialize(): any {
-        var serializationObject = SerializationHelper.Serialize(this);
+        const serializationObject = SerializationHelper.Serialize(this);
         serializationObject.customType = "BABYLON.GridMaterial";
         return serializationObject;
     }

@@ -87,6 +87,7 @@ export class CoordinateHelper {
      *
      * @param node the node to calculate the matrix for
      * @param useStoredValues should the stored (cached) values be used to calculate the matrix
+     * @param storedValues
      * @returns a new matrix for the control
      */
     public static getNodeMatrix(node: Control, storedValues?: Rect): Matrix2D {
@@ -159,6 +160,7 @@ export class CoordinateHelper {
      * Using the node's tree, calculate its world matrix and return it
      * @param node the node to calculate the matrix for
      * @param useStoredValuesIfPossible used stored valued (cached when pointer down is clicked)
+     * @param storedValues
      * @returns the world matrix for this node
      */
     public static nodeToRTTWorldMatrix(node: Control, storedValues?: Rect): Matrix2D {
@@ -226,6 +228,9 @@ export class CoordinateHelper {
 
     /**
      * converts a node's dimensions to percentage, properties can be specified as a list, or can convert all
+     * @param guiControl
+     * @param properties
+     * @param onPropertyChangedObservable
      */
     public static convertToPercentage(
         guiControl: Control,

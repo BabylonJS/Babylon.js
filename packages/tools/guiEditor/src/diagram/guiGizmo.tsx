@@ -151,7 +151,7 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
         const canvasBounds = new Rect(Number.MAX_VALUE, Number.MAX_VALUE, 0, 0);
         const localBounds = CoordinateHelper.computeLocalBounds(node);
         this.state.scalePoints.forEach((scalePoint) => {
-            let nodeSpace = new Vector2();
+            const nodeSpace = new Vector2();
             switch (scalePoint.horizontalPosition) {
                 case ScalePointPosition.Left:
                     nodeSpace.x = localBounds.left;
@@ -441,7 +441,7 @@ export class GuiGizmoComponent extends React.Component<IGuiGizmoProps, IGuiGizmo
                     const angleOfCursor = defaultScalePointRotations[index] + scalePoint.rotation;
                     const angleAdjusted = this._modulo(angleOfCursor, 360);
                     const increment = 45;
-                    let cursorIndex = Math.round(angleAdjusted / increment) % 8;
+                    const cursorIndex = Math.round(angleAdjusted / increment) % 8;
                     const cursor = scalePointCursors[cursorIndex];
                     const scalePointContainerSize = 30; // .scale-point-container width/height in px
                     const rotateClickAreaSize = 20; // .rotate-click-area width/height

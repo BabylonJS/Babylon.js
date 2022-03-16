@@ -18,7 +18,7 @@ export class BoxEmitterGridComponent extends React.Component<IBoxEmitterGridComp
     }
 
     render() {
-        let emitter = this.props.emitter;
+        const emitter = this.props.emitter;
         return (
             <>
                 <Vector3LineComponent label="Direction 1" target={emitter} propertyName="direction1" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />

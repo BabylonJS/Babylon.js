@@ -26,12 +26,12 @@ export class PerlinNoiseProceduralTexture extends ProceduralTexture {
     public updateShaderUniforms() {
         this.setFloat("size", this.getRenderSize() as number);
 
-        let scene = this.getScene();
+        const scene = this.getScene();
 
         if (!scene) {
             return;
         }
-        var deltaTime = scene.getEngine().getDeltaTime();
+        const deltaTime = scene.getEngine().getDeltaTime();
 
         this.time += deltaTime;
         this.setFloat("time", (this.time * this.timeScale) / 1000);
@@ -54,7 +54,7 @@ export class PerlinNoiseProceduralTexture extends ProceduralTexture {
      * @returns a serialized perlin noise procedural texture object
      */
     public serialize(): any {
-        var serializationObject = SerializationHelper.Serialize(this, super.serialize());
+        const serializationObject = SerializationHelper.Serialize(this, super.serialize());
         serializationObject.customType = "BABYLON.PerlinNoiseProceduralTexture";
 
         return serializationObject;
@@ -68,7 +68,7 @@ export class PerlinNoiseProceduralTexture extends ProceduralTexture {
      * @returns a parsed Perlin Noise Procedural Texture
      */
     public static Parse(parsedTexture: any, scene: Scene, rootUrl: string): PerlinNoiseProceduralTexture {
-        var texture = SerializationHelper.Parse(
+        const texture = SerializationHelper.Parse(
             () => new PerlinNoiseProceduralTexture(parsedTexture.name, parsedTexture._size, scene, undefined, parsedTexture._generateMipMaps),
             parsedTexture,
             scene,

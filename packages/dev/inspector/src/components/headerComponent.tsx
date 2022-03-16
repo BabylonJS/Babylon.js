@@ -46,7 +46,7 @@ export class HeaderComponent extends React.Component<IHeaderComponentProps, { is
 
     goBack() {
         this._backStack.pop(); // remove current
-        var entity = this._backStack[this._backStack.length - 1];
+        const entity = this._backStack[this._backStack.length - 1];
 
         if (this.props.onSelectionChangedObservable) {
             this.props.onSelectionChangedObservable.notifyObservers(entity);

@@ -46,7 +46,7 @@ export class WoodProceduralTexture extends ProceduralTexture {
      * @returns a serialized wood procedural texture object
      */
     public serialize(): any {
-        var serializationObject = SerializationHelper.Serialize(this, super.serialize());
+        const serializationObject = SerializationHelper.Serialize(this, super.serialize());
         serializationObject.customType = "BABYLON.WoodProceduralTexture";
 
         return serializationObject;
@@ -60,7 +60,7 @@ export class WoodProceduralTexture extends ProceduralTexture {
      * @returns a parsed Wood Procedural Texture
      */
     public static Parse(parsedTexture: any, scene: Scene, rootUrl: string): WoodProceduralTexture {
-        var texture = SerializationHelper.Parse(
+        const texture = SerializationHelper.Parse(
             () => new WoodProceduralTexture(parsedTexture.name, parsedTexture._size, scene, undefined, parsedTexture._generateMipMaps),
             parsedTexture,
             scene,

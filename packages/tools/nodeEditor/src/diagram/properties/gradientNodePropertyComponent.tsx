@@ -18,7 +18,7 @@ export class GradientPropertyTabComponent extends React.Component<IPropertyCompo
     }
 
     componentDidMount() {
-        let gradientBlock = this.props.block as GradientBlock;
+        const gradientBlock = this.props.block as GradientBlock;
         this.onValueChangedObserver = gradientBlock.onValueChangedObservable.add(() => {
             this.forceUpdate();
             this.props.globalState.onUpdateRequiredObservable.notifyObservers(this.props.block);
@@ -26,7 +26,7 @@ export class GradientPropertyTabComponent extends React.Component<IPropertyCompo
     }
 
     componentWillUnmount() {
-        let gradientBlock = this.props.block as GradientBlock;
+        const gradientBlock = this.props.block as GradientBlock;
         if (this.onValueChangedObserver) {
             gradientBlock.onValueChangedObservable.remove(this.onValueChangedObserver);
             this.onValueChangedObserver = null;
@@ -39,9 +39,9 @@ export class GradientPropertyTabComponent extends React.Component<IPropertyCompo
     }
 
     deleteStep(step: GradientBlockColorStep) {
-        let gradientBlock = this.props.block as GradientBlock;
+        const gradientBlock = this.props.block as GradientBlock;
 
-        let index = gradientBlock.colorSteps.indexOf(step);
+        const index = gradientBlock.colorSteps.indexOf(step);
 
         if (index > -1) {
             gradientBlock.colorSteps.splice(index, 1);
@@ -52,9 +52,9 @@ export class GradientPropertyTabComponent extends React.Component<IPropertyCompo
     }
 
     copyStep(step: GradientBlockColorStep) {
-        let gradientBlock = this.props.block as GradientBlock;
+        const gradientBlock = this.props.block as GradientBlock;
 
-        let newStep = new GradientBlockColorStep(1.0, step.color);
+        const newStep = new GradientBlockColorStep(1.0, step.color);
         gradientBlock.colorSteps.push(newStep);
         gradientBlock.colorStepsUpdated();
         this.forceRebuild();
@@ -62,9 +62,9 @@ export class GradientPropertyTabComponent extends React.Component<IPropertyCompo
     }
 
     addNewStep() {
-        let gradientBlock = this.props.block as GradientBlock;
+        const gradientBlock = this.props.block as GradientBlock;
 
-        let newStep = new GradientBlockColorStep(1.0, Color3.White());
+        const newStep = new GradientBlockColorStep(1.0, Color3.White());
         gradientBlock.colorSteps.push(newStep);
         gradientBlock.colorStepsUpdated();
 
@@ -73,7 +73,7 @@ export class GradientPropertyTabComponent extends React.Component<IPropertyCompo
     }
 
     checkForReOrder() {
-        let gradientBlock = this.props.block as GradientBlock;
+        const gradientBlock = this.props.block as GradientBlock;
         gradientBlock.colorSteps.sort((a, b) => {
             if (a.step === b.step) {
                 return 0;
@@ -92,9 +92,9 @@ export class GradientPropertyTabComponent extends React.Component<IPropertyCompo
     }
 
     render() {
-        let gradientBlock = this.props.block as GradientBlock;
+        const gradientBlock = this.props.block as GradientBlock;
 
-        var typeOptions = [
+        const typeOptions = [
             { label: "None", value: 0 },
             { label: "Visible in the inspector", value: 1 },
         ];

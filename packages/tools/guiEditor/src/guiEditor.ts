@@ -50,7 +50,7 @@ export class GUIEditor {
             hostElement = Popup.CreatePopup("BABYLON.JS GUI EDITOR", "gui-editor", 1200, 800)!;
         }
 
-        let globalState = new GlobalState();
+        const globalState = new GlobalState();
         if (options.liveGuiTexture) {
             globalState.liveGuiTexture = options.liveGuiTexture;
         }
@@ -91,7 +91,7 @@ export class GUIEditor {
         var popupWindow = (Popup as any)["gui-editor"];
         if (popupWindow) {
             window.onbeforeunload = () => {
-                var popupWindow = (Popup as any)["gui-editor"];
+                const popupWindow = (Popup as any)["gui-editor"];
                 if (popupWindow) {
                     popupWindow.close();
                 }

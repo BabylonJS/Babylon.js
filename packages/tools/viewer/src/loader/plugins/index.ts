@@ -37,7 +37,8 @@ export function getLoaderPluginByName(name: string) {
 }
 
 /**
- *
+ * @param name
+ * @param plugin
  */
 export function addLoaderPlugin(name: string, plugin: ILoaderPlugin) {
     if (pluginCache[name]) {

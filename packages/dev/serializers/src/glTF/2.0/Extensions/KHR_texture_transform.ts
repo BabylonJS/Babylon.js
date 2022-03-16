@@ -1,4 +1,4 @@
-import { ImageMimeType, ITextureInfo } from "babylonjs-gltf2interface";
+import { ImageMimeType, ITextureInfo , IKHRTextureTransform } from "babylonjs-gltf2interface";
 import { Tools } from "core/Misc/tools";
 import { Texture } from "core/Materials/Textures/texture";
 import { ProceduralTexture } from "core/Materials/Textures/Procedurals/proceduralTexture";
@@ -6,7 +6,7 @@ import { Scene } from "core/scene";
 
 import { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
 import { _Exporter } from "../glTFExporter";
-import { IKHRTextureTransform } from "babylonjs-gltf2interface";
+
 
 const NAME = "KHR_texture_transform";
 
@@ -33,7 +33,7 @@ export class KHR_texture_transform implements IGLTFExporterExtensionV2 {
     constructor(exporter: _Exporter) {}
 
     public dispose() {
-        for (var texture of this._recordedTextures) {
+        for (const texture of this._recordedTextures) {
             texture.dispose();
         }
     }
@@ -50,7 +50,7 @@ export class KHR_texture_transform implements IGLTFExporterExtensionV2 {
                 (babylonTexture.uRotationCenter === 0 && babylonTexture.vRotationCenter === 0));
 
         if (canUseExtension) {
-            let textureTransform: IKHRTextureTransform = {};
+            const textureTransform: IKHRTextureTransform = {};
             let transformIsRequired = false;
 
             if (babylonTexture.uOffset !== 0 || babylonTexture.vOffset !== 0) {

@@ -1,6 +1,6 @@
 import { IndicesArray, Nullable } from "core/types";
 import { Deferred } from "core/Misc/deferred";
-import { Quaternion, Vector3, Matrix } from "core/Maths/math.vector";
+import { Quaternion, Vector3, Matrix , TmpVectors } from "core/Maths/math.vector";
 import { Color3 } from "core/Maths/math.color";
 import { Tools } from "core/Misc/tools";
 import { Camera } from "core/Cameras/camera";
@@ -68,7 +68,7 @@ import { IDataBuffer } from "core/Misc/dataReader";
 import { DecodeBase64UrlToBinary, IsBase64DataUrl, LoadFileError } from "core/Misc/fileTools";
 import { Logger } from "core/Misc/logger";
 import { Light } from "core/Lights/light";
-import { TmpVectors } from "core/Maths/math.vector";
+
 import { BoundingInfo } from "core/Culling/boundingInfo";
 import { StringTools } from "core/Misc/stringTools";
 import { AssetContainer } from "core/assetContainer";
@@ -233,7 +233,10 @@ export class GLTFLoader implements IGLTFLoader {
         return this._rootBabylonMesh;
     }
 
-    /** @hidden */
+    /**
+     * @param parent
+     * @hidden
+     */
     constructor(parent: GLTFFileLoader) {
         this._parent = parent;
     }
@@ -261,7 +264,16 @@ export class GLTFLoader implements IGLTFLoader {
         this._parent.dispose();
     }
 
-    /** @hidden */
+    /**
+     * @param meshesNames
+     * @param scene
+     * @param container
+     * @param data
+     * @param rootUrl
+     * @param onProgress
+     * @param fileName
+     * @hidden
+     */
     public importMeshAsync(
         meshesNames: any,
         scene: Scene,
@@ -313,7 +325,14 @@ export class GLTFLoader implements IGLTFLoader {
         });
     }
 
-    /** @hidden */
+    /**
+     * @param scene
+     * @param data
+     * @param rootUrl
+     * @param onProgress
+     * @param fileName
+     * @hidden
+     */
     public loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName = ""): Promise<void> {
         return Promise.resolve().then(() => {
             this._babylonScene = scene;
@@ -560,7 +579,7 @@ export class GLTFLoader implements IGLTFLoader {
         this.logOpen(`${context} ${scene.name || ""}`);
 
         if (scene.nodes) {
-            for (let index of scene.nodes) {
+            for (const index of scene.nodes) {
                 const node = ArrayItem.Get(`${context}/nodes/${index}`, this._gltf.nodes, index);
                 promises.push(
                     this.loadNodeAsync(`/nodes/${node.index}`, node, (babylonMesh) => {
@@ -1347,7 +1366,7 @@ export class GLTFLoader implements IGLTFLoader {
 
     private _updateBoneMatrices(babylonSkeleton: Skeleton, inverseBindMatricesData: Nullable<Float32Array>): void {
         for (const babylonBone of babylonSkeleton.bones) {
-            let baseMatrix = Matrix.Identity();
+            const baseMatrix = Matrix.Identity();
             const boneIndex = babylonBone._index!;
             if (inverseBindMatricesData && boneIndex !== -1) {
                 Matrix.FromArrayToRef(inverseBindMatricesData, boneIndex * 16, baseMatrix);
@@ -1841,7 +1860,11 @@ export class GLTFLoader implements IGLTFLoader {
         return accessor._data;
     }
 
-    /** @hidden */
+    /**
+     * @param context
+     * @param accessor
+     * @hidden
+     */
     public _loadFloatAccessorAsync(context: string, accessor: IAccessor): Promise<Float32Array> {
         return this._loadAccessorAsync(context, accessor, Float32Array) as Promise<Float32Array>;
     }
@@ -1979,7 +2002,14 @@ export class GLTFLoader implements IGLTFLoader {
         return Promise.all(promises).then(() => {});
     }
 
-    /** @hidden */
+    /**
+     * @param context
+     * @param material
+     * @param babylonMesh
+     * @param babylonDrawMode
+     * @param assign
+     * @hidden
+     */
     public _loadMaterialAsync(
         context: string,
         material: IMaterial,
@@ -2231,7 +2261,12 @@ export class GLTFLoader implements IGLTFLoader {
         return promise;
     }
 
-    /** @hidden */
+    /**
+     * @param context
+     * @param texture
+     * @param assign
+     * @hidden
+     */
     public _loadTextureAsync(context: string, texture: ITexture, assign: (babylonTexture: BaseTexture) => void = () => {}): Promise<BaseTexture> {
         const extensionPromise = this._extensionsLoadTextureAsync(context, texture, assign);
         if (extensionPromise) {
@@ -2249,7 +2284,15 @@ export class GLTFLoader implements IGLTFLoader {
         return promise;
     }
 
-    /** @hidden */
+    /**
+     * @param context
+     * @param sampler
+     * @param image
+     * @param assign
+     * @param textureLoaderOptions
+     * @param useSRGBBuffer
+     * @hidden
+     */
     public _createTextureAsync(
         context: string,
         sampler: ISampler,
@@ -2388,6 +2431,7 @@ export class GLTFLoader implements IGLTFLoader {
     /**
      * Adds a JSON pointer to the metadata of the Babylon object at `<object>.metadata.gltf.pointers`.
      * @param babylonObject the Babylon object with metadata
+     * @param babylonObject.metadata
      * @param pointer the JSON pointer
      */
     public static AddPointerMetadata(babylonObject: { metadata: any }, pointer: string): void {
@@ -2528,7 +2572,11 @@ export class GLTFLoader implements IGLTFLoader {
         return Tools.IsBase64(uri) || uri.indexOf("..") === -1;
     }
 
-    /** @hidden */
+    /**
+     * @param context
+     * @param mode
+     * @hidden
+     */
     public static _GetDrawMode(context: string, mode: number | undefined): number {
         if (mode == undefined) {
             mode = MeshPrimitiveMode.TRIANGLES;
@@ -2592,8 +2640,8 @@ export class GLTFLoader implements IGLTFLoader {
         const promises = new Array<Promise<any>>();
 
         const lights = this._babylonScene.lights;
-        for (let light of lights) {
-            let generator = light.getShadowGenerator();
+        for (const light of lights) {
+            const generator = light.getShadowGenerator();
             if (generator) {
                 promises.push(generator.forceCompilationAsync());
             }

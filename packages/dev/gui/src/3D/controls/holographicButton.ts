@@ -86,8 +86,8 @@ export class HolographicButton extends Button3D {
             const rightHandedScene = this._backPlate._scene.useRightHandedSystem;
             // Create tooltip with mesh and text
             this._tooltipMesh = CreatePlane("", { size: 1 }, this._backPlate._scene);
-            var tooltipBackground = CreatePlane("", { size: 1, sideOrientation: Mesh.DOUBLESIDE }, this._backPlate._scene);
-            var mat = new StandardMaterial("", this._backPlate._scene);
+            const tooltipBackground = CreatePlane("", { size: 1, sideOrientation: Mesh.DOUBLESIDE }, this._backPlate._scene);
+            const mat = new StandardMaterial("", this._backPlate._scene);
             mat.diffuseColor = Color3.FromHexString("#212121");
             tooltipBackground.material = mat;
             tooltipBackground.isPickable = false;
@@ -196,6 +196,7 @@ export class HolographicButton extends Button3D {
     /**
      * Creates a new button
      * @param name defines the control name
+     * @param shareMaterials
      */
     constructor(name?: string, shareMaterials = true) {
         super(name);
@@ -225,12 +226,12 @@ export class HolographicButton extends Button3D {
     private _rebuildContent(): void {
         this._disposeFacadeTexture();
 
-        let panel = new StackPanel();
+        const panel = new StackPanel();
         panel.isVertical = true;
 
         if (DomManagement.IsDocumentAvailable() && !!document.createElement) {
             if (this._imageUrl) {
-                let image = new Image();
+                const image = new Image();
                 image.source = this._imageUrl;
                 image.paddingTop = "40px";
                 image.height = "180px";
@@ -241,7 +242,7 @@ export class HolographicButton extends Button3D {
         }
 
         if (this._text) {
-            let text = new TextBlock();
+            const text = new TextBlock();
             text.text = this._text;
             text.color = "white";
             text.height = "30px";

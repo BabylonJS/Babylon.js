@@ -61,8 +61,8 @@ export class NodeLink {
         const xOffset = rootRect.left;
         const yOffset = rootRect.top;
 
-        var startX = (rectA.left - xOffset + 0.5 * rectA.width) / zoom;
-        var startY = (rectA.top - yOffset + 0.5 * rectA.height) / zoom;
+        const startX = (rectA.left - xOffset + 0.5 * rectA.width) / zoom;
+        const startY = (rectA.top - yOffset + 0.5 * rectA.height) / zoom;
 
         if (this._portB) {
             const rectB = this._portB.element.getBoundingClientRect();
@@ -91,8 +91,8 @@ export class NodeLink {
         this._nodeB = nodeB;
         this._graphCanvas = graphCanvas;
 
-        var document = portA.element.ownerDocument!;
-        var svg = graphCanvas.svgCanvas;
+        const document = portA.element.ownerDocument!;
+        const svg = graphCanvas.svgCanvas;
 
         // Create path
         this._path = document.createElementNS("http://www.w3.org/2000/svg", "path");

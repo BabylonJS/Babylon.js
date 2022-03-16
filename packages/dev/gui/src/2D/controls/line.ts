@@ -222,8 +222,8 @@ export class Line extends Control {
             return;
         }
 
-        var globalViewport = this._host._getGlobalViewport();
-        var projectedPosition = Vector3.Project(position, Matrix.Identity(), scene.getTransformMatrix(), globalViewport);
+        const globalViewport = this._host._getGlobalViewport();
+        const projectedPosition = Vector3.Project(position, Matrix.Identity(), scene.getTransformMatrix(), globalViewport);
 
         this._moveToProjectedPosition(projectedPosition, end);
 
@@ -240,8 +240,8 @@ export class Line extends Control {
      * @param end (opt) Set to true to assign x2 and y2 coordinates of the line. Default assign to x1 and y1.
      */
     public _moveToProjectedPosition(projectedPosition: Vector3, end: boolean = false): void {
-        let x: string = projectedPosition.x + this._linkOffsetX.getValue(this._host) + "px";
-        let y: string = projectedPosition.y + this._linkOffsetY.getValue(this._host) + "px";
+        const x: string = projectedPosition.x + this._linkOffsetX.getValue(this._host) + "px";
+        const y: string = projectedPosition.y + this._linkOffsetY.getValue(this._host) + "px";
 
         if (end) {
             this.x2 = x;

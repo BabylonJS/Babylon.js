@@ -35,6 +35,7 @@ export class TelemetryManager {
     /**
      * Log a Telemetry event for errors raised on the WebGL context.
      * @param engine The Babylon engine with the WebGL context.
+     * @param viewerId
      */
     public flushWebGLErrors(engine: Engine, viewerId?: string) {
         if (!engine) {
@@ -43,7 +44,7 @@ export class TelemetryManager {
         let logErrors = true;
 
         while (logErrors) {
-            let error = engine.getError();
+            const error = engine.getError();
             if (error === 0) {
                 logErrors = false;
             } else {
@@ -74,10 +75,11 @@ export class TelemetryManager {
     /**
      * Called on event when enabled
      * @param event - The name of the Telemetry event
+     * @param viewerId
      * @param details An additional value, or an object containing a list of property/value pairs
      */
     private _eventEnabled(event: string, viewerId?: string, details?: any): void {
-        let telemetryData: TelemetryData = {
+        const telemetryData: TelemetryData = {
             viewerId,
             event: event,
             session: this.session,
@@ -87,7 +89,7 @@ export class TelemetryManager {
         };
 
         if (typeof details === "object") {
-            for (var attr in details) {
+            for (const attr in details) {
                 if (details.hasOwnProperty(attr)) {
                     telemetryData[attr] = details[attr];
                 }

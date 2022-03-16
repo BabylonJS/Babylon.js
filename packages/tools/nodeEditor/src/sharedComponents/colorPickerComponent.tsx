@@ -37,7 +37,7 @@ export class ColorPickerLineComponent extends React.Component<IColorPickerCompon
         }
 
         let top = host.getBoundingClientRect().top;
-        let height = div.getBoundingClientRect().height;
+        const height = div.getBoundingClientRect().height;
 
         if (top + height + 10 > window.innerHeight) {
             top = window.innerHeight - height - 10;
@@ -68,7 +68,7 @@ export class ColorPickerLineComponent extends React.Component<IColorPickerCompon
     }
 
     render() {
-        var color = this.state.color;
+        const color = this.state.color;
 
         this.props.globalState.blockKeyboardEvents = this.state.pickerEnabled;
 

@@ -63,13 +63,13 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
         }
         const control = controls[0];
 
-        var horizontalOptions = [
+        const horizontalOptions = [
             { label: "Left", value: Control.HORIZONTAL_ALIGNMENT_LEFT },
             { label: "Right", value: Control.HORIZONTAL_ALIGNMENT_RIGHT },
             { label: "Center", value: Control.HORIZONTAL_ALIGNMENT_CENTER },
         ];
 
-        var verticalOptions = [
+        const verticalOptions = [
             { label: "Top", value: Control.VERTICAL_ALIGNMENT_TOP },
             { label: "Bottom", value: Control.VERTICAL_ALIGNMENT_BOTTOM },
             { label: "Center", value: Control.VERTICAL_ALIGNMENT_CENTER },

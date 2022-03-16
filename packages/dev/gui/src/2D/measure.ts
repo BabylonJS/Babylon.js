@@ -1,12 +1,12 @@
 import { Matrix2D } from "./math2D";
 import { Vector2 } from "core/Maths/math.vector";
 
-let tmpRect = [new Vector2(0, 0), new Vector2(0, 0), new Vector2(0, 0), new Vector2(0, 0)];
+const tmpRect = [new Vector2(0, 0), new Vector2(0, 0), new Vector2(0, 0), new Vector2(0, 0)];
 
-let tmpRect2 = [new Vector2(0, 0), new Vector2(0, 0), new Vector2(0, 0), new Vector2(0, 0)];
+const tmpRect2 = [new Vector2(0, 0), new Vector2(0, 0), new Vector2(0, 0), new Vector2(0, 0)];
 
-let tmpV1 = new Vector2(0, 0);
-let tmpV2 = new Vector2(0, 0);
+const tmpV1 = new Vector2(0, 0);
+const tmpV2 = new Vector2(0, 0);
 
 /**
  * Class used to store 2D control sizes
@@ -62,10 +62,10 @@ export class Measure {
      * @param result the resulting bounding measure
      */
     public static CombineToRef(a: Measure, b: Measure, result: Measure) {
-        var left = Math.min(a.left, b.left);
-        var top = Math.min(a.top, b.top);
-        var right = Math.max(a.left + a.width, b.left + b.width);
-        var bottom = Math.max(a.top + a.height, b.top + b.height);
+        const left = Math.min(a.left, b.left);
+        const top = Math.min(a.top, b.top);
+        const right = Math.max(a.left + a.width, b.left + b.width);
+        const bottom = Math.max(a.top + a.height, b.top + b.height);
         result.left = left;
         result.top = top;
         result.width = right - left;
@@ -94,7 +94,7 @@ export class Measure {
 
         tmpV1.copyFromFloats(Number.MAX_VALUE, Number.MAX_VALUE);
         tmpV2.copyFromFloats(0, 0);
-        for (var i = 0; i < 4; i++) {
+        for (let i = 0; i < 4; i++) {
             transform.transformCoordinates(tmpRect[i].x, tmpRect[i].y, tmpRect2[i]);
             tmpV1.x = Math.floor(Math.min(tmpV1.x, tmpRect2[i].x));
             tmpV1.y = Math.floor(Math.min(tmpV1.y, tmpRect2[i].y));

@@ -57,7 +57,7 @@ export class ScrollBar extends BaseSlider {
     }
 
     protected _getThumbThickness(): number {
-        var thumbThickness = 0;
+        let thumbThickness = 0;
         if (this._thumbWidth.isPixel) {
             thumbThickness = this._thumbWidth.getValue(this._host);
         } else {
@@ -71,7 +71,7 @@ export class ScrollBar extends BaseSlider {
 
         this._applyStates(context);
         this._prepareRenderingData("rectangle");
-        var left = this._renderLeft;
+        const left = this._renderLeft;
 
         const thumbPosition = this._getThumbPosition();
         context.fillStyle = this._background;
@@ -103,7 +103,11 @@ export class ScrollBar extends BaseSlider {
     private _originX: number;
     private _originY: number;
 
-    /** @hidden */
+    /**
+     * @param x
+     * @param y
+     * @hidden
+     */
     protected _updateValueFromPointer(x: number, y: number): void {
         if (this.rotation != 0) {
             this._invertTransformMatrix.transformCoordinates(x, y, this._transformedPosition);

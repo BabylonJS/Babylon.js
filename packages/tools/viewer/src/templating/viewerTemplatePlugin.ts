@@ -37,20 +37,20 @@ export abstract class AbstractViewerNavbarButton implements IViewerTemplatePlugi
     }
 
     interactionPredicate(event: EventCallback): boolean {
-        let pointerDown = <PointerEvent>event.event;
+        const pointerDown = <PointerEvent>event.event;
         if (pointerDown.button !== 0) {
             return false;
         }
-        var element = <HTMLElement>event.event.target;
+        const element = <HTMLElement>event.event.target;
 
         if (!element) {
             return false;
         }
 
-        let elementClasses = element.classList;
+        const elementClasses = element.classList;
 
         for (let i = 0; i < elementClasses.length; ++i) {
-            let className = elementClasses[i];
+            const className = elementClasses[i];
             if (className.indexOf(this._buttonClass) !== -1) {
                 return true;
             }
@@ -61,8 +61,8 @@ export abstract class AbstractViewerNavbarButton implements IViewerTemplatePlugi
     abstract onEvent(event: EventCallback): void;
 
     public addHTMLTemplate(template: Template): void {
-        let element = this._generateHTMLElement(template);
-        let container = template.parent.querySelector("div.default-control");
+        const element = this._generateHTMLElement(template);
+        const container = template.parent.querySelector("div.default-control");
         if (container) {
             if (this._prepend) {
                 container.insertBefore(element, container.firstChild);
@@ -73,14 +73,14 @@ export abstract class AbstractViewerNavbarButton implements IViewerTemplatePlugi
     }
 
     protected _generateHTMLElement(template: Template): Element | DocumentFragment {
-        let compiledTemplate = Handlebars.compile(this._htmlTemplate, { noEscape: template.configuration.params && !!template.configuration.params.noEscape });
-        let config = template.configuration.params || {};
-        let rawHtml = compiledTemplate(config);
+        const compiledTemplate = Handlebars.compile(this._htmlTemplate, { noEscape: template.configuration.params && !!template.configuration.params.noEscape });
+        const config = template.configuration.params || {};
+        const rawHtml = compiledTemplate(config);
         let fragment: Element | DocumentFragment;
         try {
             fragment = document.createRange().createContextualFragment(rawHtml);
         } catch (e) {
-            let test = document.createElement(this._buttonClass);
+            const test = document.createElement(this._buttonClass);
             test.innerHTML = rawHtml;
             fragment = test;
         }

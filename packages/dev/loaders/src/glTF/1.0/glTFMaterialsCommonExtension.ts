@@ -1,5 +1,5 @@
-import { GLTFLoaderExtension } from "./glTFLoader";
-import { GLTFLoaderBase } from "./glTFLoader";
+import { GLTFLoaderExtension , GLTFLoaderBase , GLTFLoader } from "./glTFLoader";
+
 
 import { IGLTFRuntime, IGLTFMaterial } from "./glTFLoaderInterfaces";
 
@@ -13,7 +13,7 @@ import { DirectionalLight } from "core/Lights/directionalLight";
 import { PointLight } from "core/Lights/pointLight";
 import { SpotLight } from "core/Lights/spotLight";
 
-import { GLTFLoader } from "./glTFLoader";
+
 
 interface IGLTFMaterialsCommonExtensionValues {
     ambient?: number[] | string;
@@ -80,16 +80,16 @@ export class GLTFMaterialsCommonExtension extends GLTFLoaderExtension {
             return false;
         }
 
-        var extension: IGLTFRuntimeCommonExtension = gltfRuntime.extensions[this.name];
+        const extension: IGLTFRuntimeCommonExtension = gltfRuntime.extensions[this.name];
         if (!extension) {
             return false;
         }
 
         // Create lights
-        var lights = extension.lights;
+        const lights = extension.lights;
         if (lights) {
-            for (var thing in lights) {
-                var light: IGLTFLightCommonExtension = lights[thing];
+            for (const thing in lights) {
+                const light: IGLTFLightCommonExtension = lights[thing];
 
                 switch (light.type) {
                     case "ambient":
@@ -116,7 +116,7 @@ export class GLTFMaterialsCommonExtension extends GLTFLoaderExtension {
                     case "spot":
                         var spot = light.spot;
                         if (spot) {
-                            var spotLight = new SpotLight(
+                            const spotLight = new SpotLight(
                                 light.name,
                                 new Vector3(0, 10, 0),
                                 new Vector3(0, -1, 0),
@@ -138,17 +138,17 @@ export class GLTFMaterialsCommonExtension extends GLTFLoaderExtension {
     }
 
     public loadMaterialAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (material: Material) => void, onError: (message: string) => void): boolean {
-        var material: IGLTFMaterial = gltfRuntime.materials[id];
+        const material: IGLTFMaterial = gltfRuntime.materials[id];
         if (!material || !material.extensions) {
             return false;
         }
 
-        var extension: IGLTFMaterialsCommonExtension = material.extensions[this.name];
+        const extension: IGLTFMaterialsCommonExtension = material.extensions[this.name];
         if (!extension) {
             return false;
         }
 
-        var standardMaterial = new StandardMaterial(id, gltfRuntime.scene);
+        const standardMaterial = new StandardMaterial(id, gltfRuntime.scene);
         standardMaterial.sideOrientation = Material.CounterClockWiseSideOrientation;
 
         if (extension.technique === "CONSTANT") {

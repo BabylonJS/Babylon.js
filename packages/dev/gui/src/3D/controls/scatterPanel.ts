@@ -32,8 +32,8 @@ export class ScatterPanel extends VolumeBasedPanel {
     }
 
     protected _mapGridNode(control: Control3D, nodePosition: Vector3) {
-        let mesh = control.mesh;
-        let newPos = this._scatterMapping(nodePosition);
+        const mesh = control.mesh;
+        const newPos = this._scatterMapping(nodePosition);
 
         if (!mesh) {
             return;
@@ -61,8 +61,8 @@ export class ScatterPanel extends VolumeBasedPanel {
     }
 
     protected _finalProcessing() {
-        var meshes = [];
-        for (var child of this._children) {
+        const meshes = [];
+        for (const child of this._children) {
             if (!child.mesh) {
                 continue;
             }
@@ -70,10 +70,10 @@ export class ScatterPanel extends VolumeBasedPanel {
             meshes.push(child.mesh);
         }
 
-        for (var count = 0; count < this._iteration; count++) {
+        for (let count = 0; count < this._iteration; count++) {
             meshes.sort((a, b) => {
-                let distance1 = a.position.lengthSquared();
-                let distance2 = b.position.lengthSquared();
+                const distance1 = a.position.lengthSquared();
+                const distance2 = b.position.lengthSquared();
 
                 if (distance1 < distance2) {
                     return 1;
@@ -84,10 +84,10 @@ export class ScatterPanel extends VolumeBasedPanel {
                 return 0;
             });
 
-            let radiusPaddingSquared = Math.pow(this.margin, 2.0);
-            let cellSize = Math.max(this._cellWidth, this._cellHeight);
-            let difference2D = TmpVectors.Vector2[0];
-            let difference = TmpVectors.Vector3[0];
+            const radiusPaddingSquared = Math.pow(this.margin, 2.0);
+            const cellSize = Math.max(this._cellWidth, this._cellHeight);
+            const difference2D = TmpVectors.Vector2[0];
+            const difference = TmpVectors.Vector3[0];
 
             for (let i = 0; i < meshes.length - 1; i++) {
                 for (let j = i + 1; j < meshes.length; j++) {
@@ -97,9 +97,9 @@ export class ScatterPanel extends VolumeBasedPanel {
                         // Ignore Z axis
                         difference2D.x = difference.x;
                         difference2D.y = difference.y;
-                        let combinedRadius = cellSize;
+                        const combinedRadius = cellSize;
                         let distance = difference2D.lengthSquared() - radiusPaddingSquared;
-                        let minSeparation = Math.min(distance, radiusPaddingSquared);
+                        const minSeparation = Math.min(distance, radiusPaddingSquared);
                         distance -= minSeparation;
 
                         if (distance < Math.pow(combinedRadius, 2.0)) {

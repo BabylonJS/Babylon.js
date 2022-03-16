@@ -38,7 +38,7 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
     constructor(props: IFloatLineComponentProps) {
         super(props);
 
-        let currentValue = this.props.target[this.props.propertyName];
+        const currentValue = this.props.target[this.props.propertyName];
         this.state = { value: this.getValueString(currentValue) };
         this._store = currentValue;
     }
@@ -156,7 +156,7 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
             valueAsNumber = parseFloat(this.state.value);
         }
 
-        let className = this.props.smallUI ? "short" : "value";
+        const className = this.props.smallUI ? "short" : "value";
 
         const value = this.state.value === conflictingValuesPlaceholder ? "" : this.state.value;
         const placeholder = this.state.value === conflictingValuesPlaceholder ? conflictingValuesPlaceholder : "";

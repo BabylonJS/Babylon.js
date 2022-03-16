@@ -83,7 +83,7 @@ export class MeshPropertyGridComponent extends React.Component<
             return;
         }
 
-        var wireframeOver = mesh.clone(mesh.name + "_wireframeover", null, true)!;
+        const wireframeOver = mesh.clone(mesh.name + "_wireframeover", null, true)!;
         wireframeOver.reservedDataStore = { hidden: true };
 
         // Sets up the mesh to be attached to the parent.
@@ -94,7 +94,7 @@ export class MeshPropertyGridComponent extends React.Component<
         wireframeOver.rotation = Vector3.Zero();
         wireframeOver.rotationQuaternion = null;
 
-        var material = new StandardMaterial("wireframeOver", scene);
+        const material = new StandardMaterial("wireframeOver", scene);
         material.reservedDataStore = { hidden: true };
         wireframeOver.material = material;
         material.zOffset = 1;
@@ -125,22 +125,22 @@ export class MeshPropertyGridComponent extends React.Component<
             return;
         }
 
-        var normals = mesh.getVerticesData(VertexBuffer.NormalKind);
-        var positions = mesh.getVerticesData(VertexBuffer.PositionKind);
+        const normals = mesh.getVerticesData(VertexBuffer.NormalKind);
+        const positions = mesh.getVerticesData(VertexBuffer.PositionKind);
 
         const color = Color3.White();
         const bbox = mesh.getBoundingInfo();
         const diag = bbox.maximum.subtractToRef(bbox.minimum, TmpVectors.Vector3[0]);
         const size = diag.length() * 0.05;
 
-        var lines = [];
-        for (var i = 0; i < normals!.length; i += 3) {
-            var v1 = Vector3.FromArray(positions!, i);
-            var v2 = v1.add(Vector3.FromArray(normals!, i).scaleInPlace(size));
+        const lines = [];
+        for (let i = 0; i < normals!.length; i += 3) {
+            const v1 = Vector3.FromArray(positions!, i);
+            const v2 = v1.add(Vector3.FromArray(normals!, i).scaleInPlace(size));
             lines.push([v1, v2]);
         }
 
-        var normalLines = CreateLineSystem("normalLines", { lines: lines }, scene);
+        const normalLines = CreateLineSystem("normalLines", { lines: lines }, scene);
         normalLines.color = color;
         normalLines.parent = mesh;
         normalLines.reservedDataStore = { hidden: true };
@@ -277,7 +277,7 @@ export class MeshPropertyGridComponent extends React.Component<
     }
 
     onBoneDisplayIndexChange(value: number): void {
-        let mesh = this.props.mesh;
+        const mesh = this.props.mesh;
         mesh.reservedDataStore.displayBoneIndex = value;
         this.setState({ displayBoneIndex: value });
         if (mesh.material && mesh.material.getClassName() === "BoneWeightShader") {
@@ -353,26 +353,26 @@ export class MeshPropertyGridComponent extends React.Component<
         const displayBoneWeights = mesh.material != null && mesh.material.getClassName() === "BoneWeightShader";
         const displaySkeletonMap = mesh.material != null && mesh.material.getClassName() === "SkeletonMapShader";
 
-        var morphTargets: MorphTarget[] = [];
+        const morphTargets: MorphTarget[] = [];
 
         if (mesh.morphTargetManager) {
-            for (var index = 0; index < mesh.morphTargetManager.numTargets; index++) {
+            for (let index = 0; index < mesh.morphTargetManager.numTargets; index++) {
                 morphTargets.push(mesh.morphTargetManager.getTarget(index));
             }
         }
 
-        var algorithmOptions = [
+        const algorithmOptions = [
             { label: "Accurate", value: AbstractMesh.OCCLUSION_ALGORITHM_TYPE_ACCURATE },
             { label: "Conservative", value: AbstractMesh.OCCLUSION_ALGORITHM_TYPE_CONSERVATIVE },
         ];
 
-        var occlusionTypeOptions = [
+        const occlusionTypeOptions = [
             { label: "None", value: AbstractMesh.OCCLUSION_TYPE_NONE },
             { label: "Optimistic", value: AbstractMesh.OCCLUSION_TYPE_OPTIMISTIC },
             { label: "Strict", value: AbstractMesh.OCCLUSION_TYPE_STRICT },
         ];
 
-        let sortedMaterials = scene.materials.slice(0).sort((a, b) => (a.name || "no name").localeCompare(b.name || "no name"));
+        const sortedMaterials = scene.materials.slice(0).sort((a, b) => (a.name || "no name").localeCompare(b.name || "no name"));
 
         const materialOptions = sortedMaterials.map((m, i) => {
             return {

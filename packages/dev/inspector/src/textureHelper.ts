@@ -27,8 +27,8 @@ export class TextureHelper {
         resolve: (result: Uint8Array) => void,
         reject: () => void
     ) {
-        var scene = texture.getScene()!;
-        var engine = scene.getEngine();
+        const scene = texture.getScene()!;
+        const engine = scene.getEngine();
 
         let lodPostProcess: PostProcess;
 
@@ -54,7 +54,7 @@ export class TextureHelper {
             globalState.blockMutationUpdates = true;
         }
 
-        let rtt = new RenderTargetTexture("temp", { width: width, height: height }, scene, false);
+        const rtt = new RenderTargetTexture("temp", { width: width, height: height }, scene, false);
 
         lodPostProcess.onApply = function (effect) {
             effect.setTexture("textureSampler", texture);
@@ -71,8 +71,8 @@ export class TextureHelper {
             texture.updateSamplingMode(samplingMode);
 
             // Read the contents of the framebuffer
-            var numberOfChannelsByLine = width * 4;
-            var halfHeight = height / 2;
+            const numberOfChannelsByLine = width * 4;
+            const halfHeight = height / 2;
 
             //Reading datas from WebGL
             const bufferView = await engine.readPixels(0, 0, width, height);
@@ -134,12 +134,12 @@ export class TextureHelper {
             //To flip image on Y axis.
             if ((texture as Texture).invertY || texture.isCube) {
                 for (var i = 0; i < halfHeight; i++) {
-                    for (var j = 0; j < numberOfChannelsByLine; j++) {
-                        var currentCell = j + i * numberOfChannelsByLine;
-                        var targetLine = height - i - 1;
-                        var targetCell = j + targetLine * numberOfChannelsByLine;
+                    for (let j = 0; j < numberOfChannelsByLine; j++) {
+                        const currentCell = j + i * numberOfChannelsByLine;
+                        const targetLine = height - i - 1;
+                        const targetCell = j + targetLine * numberOfChannelsByLine;
 
-                        var temp = data[currentCell];
+                        const temp = data[currentCell];
                         data[currentCell] = data[targetCell];
                         data[targetCell] = temp;
                     }

@@ -30,12 +30,12 @@ export class GLTFData {
             return str.indexOf(suffix, str.length - suffix.length) !== -1;
         }
 
-        for (let key in this.glTFFiles) {
-            let link = document.createElement("a");
+        for (const key in this.glTFFiles) {
+            const link = document.createElement("a");
             document.body.appendChild(link);
             link.setAttribute("type", "hidden");
             link.download = key;
-            let blob = this.glTFFiles[key];
+            const blob = this.glTFFiles[key];
             let mimeType;
 
             if (endsWith(key, ".glb")) {

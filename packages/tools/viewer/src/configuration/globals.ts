@@ -9,4 +9,4 @@ export class ViewerGlobals {
     }
 }
 
-export let viewerGlobals: ViewerGlobals = new ViewerGlobals();
+export const viewerGlobals: ViewerGlobals = new ViewerGlobals();

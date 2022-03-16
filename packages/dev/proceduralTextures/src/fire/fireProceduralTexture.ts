@@ -35,7 +35,7 @@ export class FireProceduralTexture extends ProceduralTexture {
     }
 
     public render(useCameraPostProcess?: boolean) {
-        let scene = this.getScene();
+        const scene = this.getScene();
         if (this._autoGenerateTime && scene) {
             this._time += scene.getAnimationRatio() * 0.03;
             this.updateShaderUniforms();
@@ -112,11 +112,11 @@ export class FireProceduralTexture extends ProceduralTexture {
      * @returns a serialized fire procedural texture object
      */
     public serialize(): any {
-        var serializationObject = SerializationHelper.Serialize(this, super.serialize());
+        const serializationObject = SerializationHelper.Serialize(this, super.serialize());
         serializationObject.customType = "BABYLON.FireProceduralTexture";
 
         serializationObject.fireColors = [];
-        for (var i = 0; i < this._fireColors.length; i++) {
+        for (let i = 0; i < this._fireColors.length; i++) {
             serializationObject.fireColors.push(this._fireColors[i].asArray());
         }
 
@@ -131,15 +131,15 @@ export class FireProceduralTexture extends ProceduralTexture {
      * @returns a parsed Fire Procedural Texture
      */
     public static Parse(parsedTexture: any, scene: Scene, rootUrl: string): FireProceduralTexture {
-        var texture = SerializationHelper.Parse(
+        const texture = SerializationHelper.Parse(
             () => new FireProceduralTexture(parsedTexture.name, parsedTexture._size, scene, undefined, parsedTexture._generateMipMaps),
             parsedTexture,
             scene,
             rootUrl
         );
 
-        var colors: Color3[] = [];
-        for (var i = 0; i < parsedTexture.fireColors.length; i++) {
+        const colors: Color3[] = [];
+        for (let i = 0; i < parsedTexture.fireColors.length; i++) {
             colors.push(Color3.FromArray(parsedTexture.fireColors[i]));
         }
 

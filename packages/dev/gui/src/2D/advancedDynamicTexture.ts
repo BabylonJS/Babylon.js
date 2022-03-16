@@ -224,8 +224,8 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      * @see https://doc.babylonjs.com/how_to/gui#adaptive-scaling
      * */
     public get idealRatio(): number {
-        var rwidth: number = 0;
-        var rheight: number = 0;
+        let rwidth: number = 0;
+        let rheight: number = 0;
 
         if (this._idealWidth) {
             rwidth = this.getSize().width / this._idealWidth;
@@ -410,7 +410,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             container = this._rootContainer;
         }
         func(container);
-        for (var child of container.children) {
+        for (const child of container.children) {
             if ((<any>child).children) {
                 this.executeOnAllControls(func, <Container>child);
                 continue;
@@ -449,8 +449,8 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             this._invalidatedRectangle = new Measure(invalidMinX, invalidMinY, invalidMaxX - invalidMinX + 1, invalidMaxY - invalidMinY + 1);
         } else {
             // Compute intersection
-            var maxX = Math.ceil(Math.max(this._invalidatedRectangle.left + this._invalidatedRectangle.width - 1, invalidMaxX));
-            var maxY = Math.ceil(Math.max(this._invalidatedRectangle.top + this._invalidatedRectangle.height - 1, invalidMaxY));
+            const maxX = Math.ceil(Math.max(this._invalidatedRectangle.left + this._invalidatedRectangle.width - 1, invalidMaxX));
+            const maxY = Math.ceil(Math.max(this._invalidatedRectangle.top + this._invalidatedRectangle.height - 1, invalidMaxY));
             this._invalidatedRectangle.left = Math.floor(Math.min(this._invalidatedRectangle.left, invalidMinX));
             this._invalidatedRectangle.top = Math.floor(Math.min(this._invalidatedRectangle.top, invalidMinY));
             this._invalidatedRectangle.width = maxX - this._invalidatedRectangle.left + 1;
@@ -536,7 +536,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      * Release all resources
      */
     public dispose(): void {
-        let scene = this.getScene();
+        const scene = this.getScene();
         if (!scene) {
             return;
         }
@@ -578,15 +578,15 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         super.dispose();
     }
     private _onResize(): void {
-        let scene = this.getScene();
+        const scene = this.getScene();
         if (!scene) {
             return;
         }
         // Check size
-        var engine = scene.getEngine();
-        var textureSize = this.getSize();
-        var renderWidth = engine.getRenderWidth() * this._renderScale;
-        var renderHeight = engine.getRenderHeight() * this._renderScale;
+        const engine = scene.getEngine();
+        const textureSize = this.getSize();
+        let renderWidth = engine.getRenderWidth() * this._renderScale;
+        let renderHeight = engine.getRenderHeight() * this._renderScale;
 
         if (this._renderAtIdealSize) {
             if (this._idealWidth) {
@@ -608,7 +608,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     }
     /** @hidden */
     public _getGlobalViewport(): Viewport {
-        var size = this.getSize();
+        const size = this.getSize();
         const globalViewPort = this._fullscreenViewport.toGlobal(size.width, size.height);
 
         const targetX = Math.round(globalViewPort.width * (1 / this.rootContainer.scaleX));
@@ -640,12 +640,12 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      * @returns the projected position with Z
      */
     public getProjectedPositionWithZ(position: Vector3, worldMatrix: Matrix): Vector3 {
-        var scene = this.getScene();
+        const scene = this.getScene();
         if (!scene) {
             return Vector3.Zero();
         }
-        var globalViewport = this._getGlobalViewport();
-        var projectedPosition = Vector3.Project(position, worldMatrix, scene.getTransformMatrix(), globalViewport);
+        const globalViewport = this._getGlobalViewport();
+        const projectedPosition = Vector3.Project(position, worldMatrix, scene.getTransformMatrix(), globalViewport);
         return new Vector3(projectedPosition.x, projectedPosition.y, projectedPosition.z);
     }
 
@@ -656,24 +656,24 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             }
         }
         if (this._isFullscreen && this._linkedControls.length) {
-            var scene = this.getScene();
+            const scene = this.getScene();
             if (!scene) {
                 return;
             }
-            var globalViewport = this._getGlobalViewport();
-            for (let control of this._linkedControls) {
+            const globalViewport = this._getGlobalViewport();
+            for (const control of this._linkedControls) {
                 if (!control.isVisible) {
                     continue;
                 }
-                let mesh = control._linkedMesh as AbstractMesh;
+                const mesh = control._linkedMesh as AbstractMesh;
                 if (!mesh || mesh.isDisposed()) {
                     Tools.SetImmediate(() => {
                         control.linkWithMesh(null);
                     });
                     continue;
                 }
-                let position = mesh.getBoundingInfo ? mesh.getBoundingInfo().boundingSphere.center : (Vector3.ZeroReadOnly as Vector3);
-                let projectedPosition = Vector3.Project(position, mesh.getWorldMatrix(), scene.getTransformMatrix(), globalViewport);
+                const position = mesh.getBoundingInfo ? mesh.getBoundingInfo().boundingSphere.center : (Vector3.ZeroReadOnly as Vector3);
+                const projectedPosition = Vector3.Project(position, mesh.getWorldMatrix(), scene.getTransformMatrix(), globalViewport);
                 if (projectedPosition.z < 0 || projectedPosition.z > 1) {
                     control.notRenderable = true;
                     continue;
@@ -694,17 +694,17 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     private _clearMeasure = new Measure(0, 0, 0, 0);
 
     private _render(): void {
-        var textureSize = this.getSize();
-        var renderWidth = textureSize.width;
-        var renderHeight = textureSize.height;
+        const textureSize = this.getSize();
+        const renderWidth = textureSize.width;
+        const renderHeight = textureSize.height;
 
-        var context = this.getContext();
+        const context = this.getContext();
         context.font = "18px Arial";
         context.strokeStyle = "white";
 
         // Layout
         this.onBeginLayoutObservable.notifyObservers(this);
-        var measure = new Measure(0, 0, renderWidth, renderHeight);
+        const measure = new Measure(0, 0, renderWidth, renderHeight);
         this._numLayoutCalls = 0;
         this._rootContainer._layout(measure, context);
         this.onEndLayoutObservable.notifyObservers(this);
@@ -731,31 +731,38 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         this.onEndRenderObservable.notifyObservers(this);
         this._invalidatedRectangle = null;
     }
-    /** @hidden */
+    /**
+     * @param cursor
+     * @hidden
+     */
     public _changeCursor(cursor: string) {
         if (this._rootElement) {
             this._rootElement.style.cursor = cursor;
             this._cursorChanged = true;
         }
     }
-    /** @hidden */
+    /**
+     * @param control
+     * @param pointerId
+     * @hidden
+     */
     public _registerLastControlDown(control: Control, pointerId: number) {
         this._lastControlDown[pointerId] = control;
         this.onControlPickedObservable.notifyObservers(control);
     }
     private _doPicking(x: number, y: number, pi: Nullable<PointerInfoBase>, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): void {
-        var scene = this.getScene();
+        const scene = this.getScene();
         if (!scene) {
             return;
         }
-        var engine = scene.getEngine();
-        var textureSize = this.getSize();
+        const engine = scene.getEngine();
+        const textureSize = this.getSize();
         if (this._isFullscreen) {
-            let camera = scene.cameraToUseForPointers || scene.activeCamera;
+            const camera = scene.cameraToUseForPointers || scene.activeCamera;
             if (!camera) {
                 return;
             }
-            let viewport = camera.viewport;
+            const viewport = camera.viewport;
             x = x * (textureSize.width / (engine.getRenderWidth() * viewport.width));
             y = y * (textureSize.height / (engine.getRenderHeight() * viewport.height));
         }
@@ -782,19 +789,25 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         }
         this._manageFocus();
     }
-    /** @hidden */
+    /**
+     * @param control
+     * @hidden
+     */
     public _cleanControlAfterRemovalFromList(list: { [pointerId: number]: Control }, control: Control) {
-        for (var pointerId in list) {
+        for (const pointerId in list) {
             if (!list.hasOwnProperty(pointerId)) {
                 continue;
             }
-            var lastControlOver = list[pointerId];
+            const lastControlOver = list[pointerId];
             if (lastControlOver === control) {
                 delete list[pointerId];
             }
         }
     }
-    /** @hidden */
+    /**
+     * @param control
+     * @hidden
+     */
     public _cleanControlAfterRemoval(control: Control) {
         this._cleanControlAfterRemovalFromList(this._lastControlDown, control);
         this._cleanControlAfterRemovalFromList(this._lastControlOver, control);
@@ -813,12 +826,12 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         } else {
             if (camera.rigCameras.length) {
                 // rig camera - we need to find the camera to use for this event
-                let rigViewport = new Viewport(0, 0, 1, 1);
+                const rigViewport = new Viewport(0, 0, 1, 1);
                 camera.rigCameras.forEach((rigCamera) => {
                     // generate the viewport of this camera
                     rigCamera.viewport.toGlobalToRef(engine.getRenderWidth(), engine.getRenderHeight(), rigViewport);
-                    let x = scene.pointerX / engine.getHardwareScalingLevel() - rigViewport.x;
-                    let y = scene.pointerY / engine.getHardwareScalingLevel() - (engine.getRenderHeight() - rigViewport.y - rigViewport.height);
+                    const x = scene.pointerX / engine.getHardwareScalingLevel() - rigViewport.x;
+                    const y = scene.pointerY / engine.getHardwareScalingLevel() - (engine.getRenderHeight() - rigViewport.y - rigViewport.height);
                     // check if the pointer is in the camera's viewport
                     if (x < 0 || y < 0 || x > rigViewport.width || y > rigViewport.height) {
                         // out of viewport - don't use this camera
@@ -837,12 +850,12 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             }
         }
 
-        let x = scene.pointerX / engine.getHardwareScalingLevel() - tempViewport.x;
-        let y = scene.pointerY / engine.getHardwareScalingLevel() - (engine.getRenderHeight() - tempViewport.y - tempViewport.height);
+        const x = scene.pointerX / engine.getHardwareScalingLevel() - tempViewport.x;
+        const y = scene.pointerY / engine.getHardwareScalingLevel() - (engine.getRenderHeight() - tempViewport.y - tempViewport.height);
         this._shouldBlockPointer = false;
         // Do picking modifies _shouldBlockPointer
         if (pi) {
-            let pointerId = (pi.event as IPointerEvent).pointerId || this._defaultMousePointerId;
+            const pointerId = (pi.event as IPointerEvent).pointerId || this._defaultMousePointerId;
             this._doPicking(x, y, pi, pi.type, pointerId, pi.event.button, (<IWheelEvent>pi.event).deltaX, (<IWheelEvent>pi.event).deltaY);
             // Avoid overwriting a true skipOnPointerObservable to false
             if (this._shouldBlockPointer) {
@@ -862,7 +875,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             return;
         }
 
-        let tempViewport = new Viewport(0, 0, 0, 0);
+        const tempViewport = new Viewport(0, 0, 0, 0);
 
         this._pointerMoveObserver = scene.onPrePointerObservable.add((pi, state) => {
             if (scene.isPointerCaptured((<IPointerEvent>pi.event).pointerId)) {
@@ -888,24 +901,33 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         this._attachToOnBlur(scene);
     }
 
-    /** @hidden */
+    /**
+     * @param rawEvt
+     * @hidden
+     */
     private onClipboardCopy = (rawEvt: Event) => {
         const evt = rawEvt as ClipboardEvent;
-        let ev = new ClipboardInfo(ClipboardEventTypes.COPY, evt);
+        const ev = new ClipboardInfo(ClipboardEventTypes.COPY, evt);
         this.onClipboardObservable.notifyObservers(ev);
         evt.preventDefault();
     };
-    /** @hidden */
+    /**
+     * @param rawEvt
+     * @hidden
+     */
     private onClipboardCut = (rawEvt: Event) => {
         const evt = rawEvt as ClipboardEvent;
-        let ev = new ClipboardInfo(ClipboardEventTypes.CUT, evt);
+        const ev = new ClipboardInfo(ClipboardEventTypes.CUT, evt);
         this.onClipboardObservable.notifyObservers(ev);
         evt.preventDefault();
     };
-    /** @hidden */
+    /**
+     * @param rawEvt
+     * @hidden
+     */
     private onClipboardPaste = (rawEvt: Event) => {
         const evt = rawEvt as ClipboardEvent;
-        let ev = new ClipboardInfo(ClipboardEventTypes.PASTE, evt);
+        const ev = new ClipboardInfo(ClipboardEventTypes.PASTE, evt);
         this.onClipboardObservable.notifyObservers(ev);
         evt.preventDefault();
     };
@@ -931,7 +953,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      * @param supportPointerMove defines a boolean indicating if pointer move events must be catched as well
      */
     public attachToMesh(mesh: AbstractMesh, supportPointerMove = true): void {
-        var scene = this.getScene();
+        const scene = this.getScene();
         if (!scene) {
             return;
         }
@@ -949,11 +971,11 @@ export class AdvancedDynamicTexture extends DynamicTexture {
                 this._defaultMousePointerId = (pi.event as IPointerEvent).pointerId; // This is required to make sure we have the correct pointer ID for wheel
             }
 
-            var pointerId = (pi.event as IPointerEvent).pointerId || this._defaultMousePointerId;
+            const pointerId = (pi.event as IPointerEvent).pointerId || this._defaultMousePointerId;
             if (pi.pickInfo && pi.pickInfo.hit && pi.pickInfo.pickedMesh === mesh) {
-                var uv = pi.pickInfo.getTextureCoordinates();
+                const uv = pi.pickInfo.getTextureCoordinates();
                 if (uv) {
-                    let size = this.getSize();
+                    const size = this.getSize();
                     this._doPicking(
                         uv.x * size.width,
                         (this.applyYInversionOnUpdate ? 1.0 - uv.y : uv.y) * size.height,
@@ -974,7 +996,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
                     const friendlyControls = this.focusedControl.keepsFocusWith();
                     let canMoveFocus = true;
                     if (friendlyControls) {
-                        for (var control of friendlyControls) {
+                        for (const control of friendlyControls) {
                             // Same host, no need to keep the focus
                             if (this === control._host) {
                                 continue;
@@ -1005,9 +1027,9 @@ export class AdvancedDynamicTexture extends DynamicTexture {
                 const pointerId = this._defaultMousePointerId;
                 const pick = scene?.pick(scene.pointerX, scene.pointerY);
                 if (pick && pick.hit && pick.pickedMesh === mesh) {
-                    var uv = pick.getTextureCoordinates();
+                    const uv = pick.getTextureCoordinates();
                     if (uv) {
-                        let size = this.getSize();
+                        const size = this.getSize();
                         this._doPicking(uv.x * size.width, (this.applyYInversionOnUpdate ? 1.0 - uv.y : uv.y) * size.height, null, PointerEventTypes.POINTERMOVE, pointerId, 0);
                     }
                 } else {
@@ -1085,7 +1107,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      */
     public serializeContent(): any {
         const size = this.getSize();
-        let serializationObject = {
+        const serializationObject = {
             root: {},
             width: size.width,
             height: size.height,
@@ -1127,12 +1149,12 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         }
 
         return new Promise((resolve, reject) => {
-            var request = new WebRequest();
+            const request = new WebRequest();
             request.addEventListener("readystatechange", () => {
                 if (request.readyState == 4) {
                     if (request.status == 200) {
-                        var snippet = JSON.parse(JSON.parse(request.responseText).jsonPayload);
-                        let serializationObject = JSON.parse(snippet.gui);
+                        const snippet = JSON.parse(JSON.parse(request.responseText).jsonPayload);
+                        const serializationObject = JSON.parse(snippet.gui);
 
                         this.parseContent(serializationObject, scaleToSize);
                         this.snippetId = snippetId;
@@ -1161,12 +1183,12 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         }
 
         return new Promise((resolve, reject) => {
-            var request = new WebRequest();
+            const request = new WebRequest();
             request.addEventListener("readystatechange", () => {
                 if (request.readyState == 4) {
                     if (request.status == 200) {
-                        var gui = request.responseText;
-                        let serializationObject = JSON.parse(gui);
+                        const gui = request.responseText;
+                        const serializationObject = JSON.parse(gui);
                         this.parseContent(serializationObject, scaleToSize);
 
                         resolve();
@@ -1265,7 +1287,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      * @returns a new AdvancedDynamicTexture
      */
     public static CreateForMeshTexture(mesh: AbstractMesh, width = 1024, height = 1024, supportPointerMove = true, invertY?: boolean): AdvancedDynamicTexture {
-        var result = new AdvancedDynamicTexture(mesh.name + " AdvancedDynamicTexture", width, height, mesh.getScene(), true, Texture.TRILINEAR_SAMPLINGMODE, invertY);
+        const result = new AdvancedDynamicTexture(mesh.name + " AdvancedDynamicTexture", width, height, mesh.getScene(), true, Texture.TRILINEAR_SAMPLINGMODE, invertY);
         result.attachToMesh(mesh, supportPointerMove);
         return result;
     }
@@ -1289,10 +1311,10 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         sampling = Texture.BILINEAR_SAMPLINGMODE,
         adaptiveScaling: boolean = false
     ): AdvancedDynamicTexture {
-        var result = new AdvancedDynamicTexture(name, 0, 0, scene, false, sampling);
+        const result = new AdvancedDynamicTexture(name, 0, 0, scene, false, sampling);
         // Display
         const resultScene = result.getScene();
-        var layer = new Layer(name + "_layer", null, resultScene, !foreground);
+        const layer = new Layer(name + "_layer", null, resultScene, !foreground);
         layer.texture = result;
         result._layerToDispose = layer;
         result._isFullscreen = true;

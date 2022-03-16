@@ -301,14 +301,14 @@ export class FluentButtonMaterial extends PushMaterial {
             subMesh.materialDefines = new FluentButtonMaterialDefines();
         }
 
-        var defines = <FluentButtonMaterialDefines>subMesh.materialDefines;
-        var scene = this.getScene();
+        const defines = <FluentButtonMaterialDefines>subMesh.materialDefines;
+        const scene = this.getScene();
 
         if (this._isReadyForSubMesh(subMesh)) {
             return true;
         }
 
-        var engine = scene.getEngine();
+        const engine = scene.getEngine();
 
         // Attribs
         MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, false);
@@ -320,7 +320,7 @@ export class FluentButtonMaterial extends PushMaterial {
             scene.resetCachedMaterial();
 
             // Fallbacks
-            var fallbacks = new EffectFallbacks();
+            const fallbacks = new EffectFallbacks();
             if (defines.FOG) {
                 fallbacks.addFallback(1, "FOG");
             }
@@ -330,7 +330,7 @@ export class FluentButtonMaterial extends PushMaterial {
             defines.IMAGEPROCESSINGPOSTPROCESS = scene.imageProcessingConfiguration.applyByPostProcess;
 
             //Attributes
-            var attribs = [VertexBuffer.PositionKind];
+            const attribs = [VertexBuffer.PositionKind];
 
             if (defines.NORMAL) {
                 attribs.push(VertexBuffer.NormalKind);
@@ -355,10 +355,10 @@ export class FluentButtonMaterial extends PushMaterial {
             MaterialHelper.PrepareAttributesForInstances(attribs, defines);
 
             // Legacy browser patch
-            var shaderName = "fluentButton";
-            var join = defines.toString();
+            const shaderName = "fluentButton";
+            const join = defines.toString();
 
-            var uniforms = [
+            const uniforms = [
                 "world",
                 "viewProjection",
                 "cameraPosition",
@@ -411,8 +411,8 @@ export class FluentButtonMaterial extends PushMaterial {
                 "Global_Left_Index_Tip_Proximity",
                 "Global_Right_Index_Tip_Proximity",
             ];
-            var samplers: string[] = ["_Blob_Texture_"];
-            var uniformBuffers = new Array<string>();
+            const samplers: string[] = ["_Blob_Texture_"];
+            const uniformBuffers = new Array<string>();
 
             MaterialHelper.PrepareUniformsAndSamplersList(<IEffectCreationOptions>{
                 uniformsNames: uniforms,
@@ -453,14 +453,14 @@ export class FluentButtonMaterial extends PushMaterial {
     }
 
     public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
-        var scene = this.getScene();
+        const scene = this.getScene();
 
-        var defines = <FluentButtonMaterialDefines>subMesh.materialDefines;
+        const defines = <FluentButtonMaterialDefines>subMesh.materialDefines;
         if (!defines) {
             return;
         }
 
-        var effect = subMesh.effect;
+        const effect = subMesh.effect;
         if (!effect) {
             return;
         }
@@ -559,7 +559,7 @@ export class FluentButtonMaterial extends PushMaterial {
     }
 
     public serialize(): any {
-        var serializationObject = super.serialize();
+        const serializationObject = super.serialize();
         serializationObject.customType = "BABYLON.FluentButtonMaterial";
         return serializationObject;
     }

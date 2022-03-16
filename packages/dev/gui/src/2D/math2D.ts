@@ -72,14 +72,14 @@ export class Matrix2D {
      * @returns the current matrix
      */
     public invertToRef(result: Matrix2D): Matrix2D {
-        let l0 = this.m[0];
-        let l1 = this.m[1];
-        let l2 = this.m[2];
-        let l3 = this.m[3];
-        let l4 = this.m[4];
-        let l5 = this.m[5];
+        const l0 = this.m[0];
+        const l1 = this.m[1];
+        const l2 = this.m[2];
+        const l3 = this.m[3];
+        const l4 = this.m[4];
+        const l5 = this.m[5];
 
-        let det = this.determinant();
+        const det = this.determinant();
         if (det < Epsilon * Epsilon) {
             result.m[0] = 0;
             result.m[1] = 0;
@@ -90,10 +90,10 @@ export class Matrix2D {
             return this;
         }
 
-        let detDiv = 1 / det;
+        const detDiv = 1 / det;
 
-        let det4 = l2 * l5 - l3 * l4;
-        let det5 = l1 * l4 - l0 * l5;
+        const det4 = l2 * l5 - l3 * l4;
+        const det5 = l1 * l4 - l0 * l5;
 
         result.m[0] = l3 * detDiv;
         result.m[1] = -l1 * detDiv;
@@ -112,19 +112,19 @@ export class Matrix2D {
      * @returns the current matrix
      */
     public multiplyToRef(other: Matrix2D, result: Matrix2D): Matrix2D {
-        let l0 = this.m[0];
-        let l1 = this.m[1];
-        let l2 = this.m[2];
-        let l3 = this.m[3];
-        let l4 = this.m[4];
-        let l5 = this.m[5];
+        const l0 = this.m[0];
+        const l1 = this.m[1];
+        const l2 = this.m[2];
+        const l3 = this.m[3];
+        const l4 = this.m[4];
+        const l5 = this.m[5];
 
-        let r0 = other.m[0];
-        let r1 = other.m[1];
-        let r2 = other.m[2];
-        let r3 = other.m[3];
-        let r4 = other.m[4];
-        let r5 = other.m[5];
+        const r0 = other.m[0];
+        const r1 = other.m[1];
+        const r2 = other.m[2];
+        const r3 = other.m[3];
+        const r4 = other.m[4];
+        const r5 = other.m[5];
 
         result.m[0] = l0 * r0 + l1 * r2;
         result.m[1] = l0 * r1 + l1 * r3;
@@ -198,8 +198,8 @@ export class Matrix2D {
      * @param result defines the target matrix
      */
     public static RotationToRef(angle: number, result: Matrix2D): void {
-        var s = Math.sin(angle);
-        var c = Math.cos(angle);
+        const s = Math.sin(angle);
+        const c = Math.cos(angle);
 
         result.fromValues(c, s, -s, c, 0, 0);
     }

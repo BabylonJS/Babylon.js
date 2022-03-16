@@ -269,7 +269,7 @@ export abstract class AbstractViewer {
     public toggleHD() {
         this._hdToggled = !this._hdToggled;
 
-        var scale = this._hdToggled ? Math.max(0.5, 1 / (window.devicePixelRatio || 2)) : 1;
+        const scale = this._hdToggled ? Math.max(0.5, 1 / (window.devicePixelRatio || 2)) : 1;
 
         this.engine.setHardwareScalingLevel(scale);
     }
@@ -320,9 +320,9 @@ export abstract class AbstractViewer {
 
                 // scale the model
                 if (this.sceneManager.models.length) {
-                    let boundingVectors = this.sceneManager.models[0].rootMesh.getHierarchyBoundingVectors();
-                    let sizeVec = boundingVectors.max.subtract(boundingVectors.min);
-                    let maxDimension = Math.max(sizeVec.x, sizeVec.y, sizeVec.z);
+                    const boundingVectors = this.sceneManager.models[0].rootMesh.getHierarchyBoundingVectors();
+                    const sizeVec = boundingVectors.max.subtract(boundingVectors.min);
+                    const maxDimension = Math.max(sizeVec.x, sizeVec.y, sizeVec.z);
                     this._vrScale = 1 / maxDimension;
                     if (this.configuration.vr && this.configuration.vr.objectScaleFactor) {
                         this._vrScale *= this.configuration.vr.objectScaleFactor;
@@ -437,6 +437,7 @@ export abstract class AbstractViewer {
 
     /**
      * render loop that will be executed by the engine
+     * @param force
      */
     protected _render = (force: boolean = false): void => {
         if (force || (this.sceneManager.scene && this.sceneManager.scene.activeCamera)) {
@@ -614,7 +615,7 @@ export abstract class AbstractViewer {
             return Promise.reject("viewer was disposed");
         }
         return this._onTemplatesLoaded().then(() => {
-            let autoLoad = typeof this.configuration.model === "string" || (this.configuration.model && this.configuration.model.url);
+            const autoLoad = typeof this.configuration.model === "string" || (this.configuration.model && this.configuration.model.url);
             return this._initEngine()
                 .then((engine) => {
                     return this.onEngineInitObservable.notifyObserversWithPromise(engine);
@@ -656,7 +657,7 @@ export abstract class AbstractViewer {
         if (!this.canvas) {
             return Promise.reject("Canvas element not found!");
         }
-        let config = this.configuration.engine || {};
+        const config = this.configuration.engine || {};
         // TDO enable further configuration
 
         // check for webgl2 support, force-disable if needed.
@@ -688,7 +689,7 @@ export abstract class AbstractViewer {
 
         if (this.configuration.engine) {
             if (this.configuration.engine.adaptiveQuality) {
-                var scale = Math.max(0.5, 1 / (window.devicePixelRatio || 2));
+                const scale = Math.max(0.5, 1 / (window.devicePixelRatio || 2));
                 this.engine.setHardwareScalingLevel(scale);
             }
             if (this.configuration.engine.hdEnabled) {
@@ -737,7 +738,7 @@ export abstract class AbstractViewer {
 
         //merge the configuration for future models:
         if (this.configuration.model && typeof this.configuration.model === "object") {
-            let globalConfig = deepmerge({}, this.configuration.model);
+            const globalConfig = deepmerge({}, this.configuration.model);
             configuration = deepmerge(globalConfig, configuration);
             if (modelConfig instanceof File) {
                 configuration.file = modelConfig;
@@ -748,7 +749,7 @@ export abstract class AbstractViewer {
 
         this._isLoading = true;
 
-        let model = this.modelLoader.load(configuration);
+        const model = this.modelLoader.load(configuration);
 
         this.lastUsedLoader = model.loader;
         model.onLoadErrorObservable.add((errorObject) => {
@@ -789,7 +790,7 @@ export abstract class AbstractViewer {
                 return scene;
             })
             .then(() => {
-                let model = this.initModel(modelConfig, clearScene);
+                const model = this.initModel(modelConfig, clearScene);
                 return new Promise<ViewerModel>((resolve, reject) => {
                     // at this point, configuration.model is an object, not a string
                     model.onLoadedObservable.add(() => {
@@ -813,7 +814,7 @@ export abstract class AbstractViewer {
 
         telemetryManager.flushWebGLErrors(this.engine, this.baseId);
 
-        let trackFPS: Function = () => {
+        const trackFPS: Function = () => {
             telemetryManager.broadcast("Current FPS", this.baseId, { fps: this.engine.getFps() });
         };
 
@@ -826,7 +827,7 @@ export abstract class AbstractViewer {
      * Injects all the spectre shader in the babylon shader store
      */
     protected _injectCustomShaders(): void {
-        let customShaders = this.configuration.customShaders;
+        const customShaders = this.configuration.customShaders;
         // Inject all the spectre shader in the babylon shader store.
         if (!customShaders) {
             return;

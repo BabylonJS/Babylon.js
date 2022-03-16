@@ -110,9 +110,9 @@ export class KTX2Decoder {
 
         const decisionTree = new TranscodeDecisionTree(srcTexFormat, kfr.hasAlpha, isPowerOfTwo(width) && isPowerOfTwo(height), caps, options);
 
-        let transcodeFormat = decisionTree.transcodeFormat;
-        let engineFormat = decisionTree.engineFormat;
-        let roundToMultiple4 = decisionTree.roundToMultiple4;
+        const transcodeFormat = decisionTree.transcodeFormat;
+        const engineFormat = decisionTree.engineFormat;
+        const roundToMultiple4 = decisionTree.roundToMultiple4;
 
         const transcoder = this._transcoderMgr.findTranscoder(srcTexFormat, transcodeFormat, kfr.isInGammaSpace, options?.bypassTranscoders);
 

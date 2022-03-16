@@ -141,8 +141,8 @@ export class FurMaterial extends PushMaterial {
     }
 
     public updateFur(): void {
-        for (var i = 1; i < this._meshes.length; i++) {
-            var offsetFur = <FurMaterial>this._meshes[i].material;
+        for (let i = 1; i < this._meshes.length; i++) {
+            const offsetFur = <FurMaterial>this._meshes[i].material;
 
             offsetFur.furLength = this.furLength;
             offsetFur.furAngle = this.furAngle;
@@ -170,14 +170,14 @@ export class FurMaterial extends PushMaterial {
             subMesh.materialDefines = new FurMaterialDefines();
         }
 
-        var defines = <FurMaterialDefines>subMesh.materialDefines;
-        var scene = this.getScene();
+        const defines = <FurMaterialDefines>subMesh.materialDefines;
+        const scene = this.getScene();
 
         if (this._isReadyForSubMesh(subMesh)) {
             return true;
         }
 
-        var engine = scene.getEngine();
+        const engine = scene.getEngine();
 
         // Textures
         if (defines._areTexturesDirty) {
@@ -226,7 +226,7 @@ export class FurMaterial extends PushMaterial {
             scene.resetCachedMaterial();
 
             // Fallbacks
-            var fallbacks = new EffectFallbacks();
+            const fallbacks = new EffectFallbacks();
             if (defines.FOG) {
                 fallbacks.addFallback(1, "FOG");
             }
@@ -240,7 +240,7 @@ export class FurMaterial extends PushMaterial {
             defines.IMAGEPROCESSINGPOSTPROCESS = scene.imageProcessingConfiguration.applyByPostProcess;
 
             //Attributes
-            var attribs = [VertexBuffer.PositionKind];
+            const attribs = [VertexBuffer.PositionKind];
 
             if (defines.NORMAL) {
                 attribs.push(VertexBuffer.NormalKind);
@@ -262,9 +262,9 @@ export class FurMaterial extends PushMaterial {
             MaterialHelper.PrepareAttributesForInstances(attribs, defines);
 
             // Legacy browser patch
-            var shaderName = "fur";
-            var join = defines.toString();
-            var uniforms = [
+            const shaderName = "fur";
+            const join = defines.toString();
+            const uniforms = [
                 "world",
                 "view",
                 "viewProjection",
@@ -293,9 +293,9 @@ export class FurMaterial extends PushMaterial {
                 "furDensity",
                 "furOcclusion",
             ];
-            var samplers = ["diffuseSampler", "heightTexture", "furTexture"];
+            const samplers = ["diffuseSampler", "heightTexture", "furTexture"];
 
-            var uniformBuffers = new Array<string>();
+            const uniformBuffers = new Array<string>();
 
             MaterialHelper.PrepareUniformsAndSamplersList(<IEffectCreationOptions>{
                 uniformsNames: uniforms,
@@ -336,14 +336,14 @@ export class FurMaterial extends PushMaterial {
     }
 
     public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
-        var scene = this.getScene();
+        const scene = this.getScene();
 
-        var defines = <FurMaterialDefines>subMesh.materialDefines;
+        const defines = <FurMaterialDefines>subMesh.materialDefines;
         if (!defines) {
             return;
         }
 
-        var effect = subMesh.effect;
+        const effect = subMesh.effect;
         if (!effect) {
             return;
         }
@@ -415,7 +415,7 @@ export class FurMaterial extends PushMaterial {
     }
 
     public getAnimatables(): IAnimatable[] {
-        var results = [];
+        const results = [];
 
         if (this.diffuseTexture && this.diffuseTexture.animations && this.diffuseTexture.animations.length > 0) {
             results.push(this.diffuseTexture);
@@ -429,7 +429,7 @@ export class FurMaterial extends PushMaterial {
     }
 
     public getActiveTextures(): BaseTexture[] {
-        var activeTextures = super.getActiveTextures();
+        const activeTextures = super.getActiveTextures();
 
         if (this._diffuseTexture) {
             activeTextures.push(this._diffuseTexture);
@@ -464,8 +464,8 @@ export class FurMaterial extends PushMaterial {
         }
 
         if (this._meshes) {
-            for (var i = 1; i < this._meshes.length; i++) {
-                let mat = this._meshes[i].material;
+            for (let i = 1; i < this._meshes.length; i++) {
+                const mat = this._meshes[i].material;
 
                 if (mat) {
                     mat.dispose(forceDisposeEffect);
@@ -482,7 +482,7 @@ export class FurMaterial extends PushMaterial {
     }
 
     public serialize(): any {
-        var serializationObject = super.serialize();
+        const serializationObject = super.serialize();
         serializationObject.customType = "BABYLON.FurMaterial";
 
         if (this._meshes) {
@@ -499,13 +499,13 @@ export class FurMaterial extends PushMaterial {
 
     // Statics
     public static Parse(source: any, scene: Scene, rootUrl: string): FurMaterial {
-        var material = SerializationHelper.Parse(() => new FurMaterial(source.name, scene), source, scene, rootUrl);
+        const material = SerializationHelper.Parse(() => new FurMaterial(source.name, scene), source, scene, rootUrl);
 
         if (source.sourceMeshName && material.highLevelFur) {
             scene.executeWhenReady(() => {
-                var sourceMesh = <Mesh>scene.getMeshByName(source.sourceMeshName);
+                const sourceMesh = <Mesh>scene.getMeshByName(source.sourceMeshName);
                 if (sourceMesh) {
-                    var furTexture = FurMaterial.GenerateTexture("Fur Texture", scene);
+                    const furTexture = FurMaterial.GenerateTexture("Fur Texture", scene);
                     material.furTexture = furTexture;
                     FurMaterial.FurifyMesh(sourceMesh, source.quality);
                 }
@@ -517,10 +517,10 @@ export class FurMaterial extends PushMaterial {
 
     public static GenerateTexture(name: string, scene: Scene): DynamicTexture {
         // Generate fur textures
-        var texture = new DynamicTexture("FurTexture " + name, 256, scene, true);
-        var context = texture.getContext();
+        const texture = new DynamicTexture("FurTexture " + name, 256, scene, true);
+        const context = texture.getContext();
 
-        for (var i = 0; i < 20000; ++i) {
+        for (let i = 0; i < 20000; ++i) {
             context.fillStyle = "rgba(255, " + Math.floor(Math.random() * 255) + ", " + Math.floor(Math.random() * 255) + ", 1)";
             context.fillRect(Math.random() * texture.getSize().width, Math.random() * texture.getSize().height, 2, 2);
         }
@@ -536,16 +536,16 @@ export class FurMaterial extends PushMaterial {
     // that can be disposed later in your code
     // The quality is in interval [0, 100]
     public static FurifyMesh(sourceMesh: Mesh, quality: number): Mesh[] {
-        var meshes = [sourceMesh];
-        var mat: FurMaterial = <FurMaterial>sourceMesh.material;
-        var i;
+        const meshes = [sourceMesh];
+        const mat: FurMaterial = <FurMaterial>sourceMesh.material;
+        let i;
 
         if (!(mat instanceof FurMaterial)) {
             throw "The material of the source mesh must be a Fur Material";
         }
 
         for (i = 1; i < quality; i++) {
-            var offsetFur = new FurMaterial(mat.name + i, sourceMesh.getScene());
+            const offsetFur = new FurMaterial(mat.name + i, sourceMesh.getScene());
             sourceMesh.getScene().materials.pop();
             Tags.EnableFor(offsetFur);
             Tags.AddTagsTo(offsetFur, "furShellMaterial");
@@ -563,7 +563,7 @@ export class FurMaterial extends PushMaterial {
             offsetFur.furTime = mat.furTime;
             offsetFur.furDensity = mat.furDensity;
 
-            var offsetMesh = sourceMesh.clone(sourceMesh.name + i) as Mesh;
+            const offsetMesh = sourceMesh.clone(sourceMesh.name + i) as Mesh;
 
             offsetMesh.material = offsetFur;
             offsetMesh.skeleton = sourceMesh.skeleton;

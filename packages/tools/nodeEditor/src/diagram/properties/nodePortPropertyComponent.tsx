@@ -30,7 +30,7 @@ export class NodePortPropertyTabComponent extends React.Component<IFrameNodePort
     }
 
     render() {
-        let info = this.props.nodePort.hasLabel() ? (
+        const info = this.props.nodePort.hasLabel() ? (
             <>
                 {this.props.nodePort.hasLabel() && (
                     <TextInputLineComponent globalState={this.props.globalState} label="Port Label" propertyName="portName" target={this.props.nodePort} />

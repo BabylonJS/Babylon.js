@@ -141,7 +141,7 @@ export class Container extends Control {
     }
 
     public _flagDescendantsAsMatrixDirty(): void {
-        for (var child of this.children) {
+        for (const child of this.children) {
             child._markMatrixAsDirty();
         }
     }
@@ -152,7 +152,7 @@ export class Container extends Control {
      * @returns the child control if found
      */
     public getChildByName(name: string): Nullable<Control> {
-        for (var child of this.children) {
+        for (const child of this.children) {
             if (child.name === name) {
                 return child;
             }
@@ -168,7 +168,7 @@ export class Container extends Control {
      * @returns the child control if found
      */
     public getChildByType(name: string, type: string): Nullable<Control> {
-        for (var child of this.children) {
+        for (const child of this.children) {
             if (child.typeName === type) {
                 return child;
             }
@@ -196,7 +196,7 @@ export class Container extends Control {
             return this;
         }
 
-        var index = this._children.indexOf(control);
+        const index = this._children.indexOf(control);
 
         if (index !== -1) {
             return this;
@@ -216,9 +216,9 @@ export class Container extends Control {
      * @returns the current container
      */
     public clearControls(): Container {
-        let children = this.children.slice();
+        const children = this.children.slice();
 
-        for (var child of children) {
+        for (const child of children) {
             this.removeControl(child);
         }
 
@@ -231,7 +231,7 @@ export class Container extends Control {
      * @returns the current container
      */
     public removeControl(control: Control): Container {
-        var index = this._children.indexOf(control);
+        const index = this._children.indexOf(control);
 
         if (index !== -1) {
             this._children.splice(index, 1);
@@ -249,12 +249,15 @@ export class Container extends Control {
         return this;
     }
 
-    /** @hidden */
+    /**
+     * @param control
+     * @hidden
+     */
     public _reOrderControl(control: Control): void {
         this.removeControl(control);
 
         let wasAdded = false;
-        for (var index = 0; index < this._children.length; index++) {
+        for (let index = 0; index < this._children.length; index++) {
             if (this._children[index].zIndex > control.zIndex) {
                 this._children.splice(index, 0, control);
                 wasAdded = true;
@@ -271,20 +274,26 @@ export class Container extends Control {
         this._markAsDirty();
     }
 
-    /** @hidden */
+    /**
+     * @param offset
+     * @hidden
+     */
     public _offsetLeft(offset: number) {
         super._offsetLeft(offset);
 
-        for (var child of this._children) {
+        for (const child of this._children) {
             child._offsetLeft(offset);
         }
     }
 
-    /** @hidden */
+    /**
+     * @param offset
+     * @hidden
+     */
     public _offsetTop(offset: number) {
         super._offsetTop(offset);
 
-        for (var child of this._children) {
+        for (const child of this._children) {
             child._offsetTop(offset);
         }
     }
@@ -293,12 +302,15 @@ export class Container extends Control {
     public _markAllAsDirty(): void {
         super._markAllAsDirty();
 
-        for (var index = 0; index < this._children.length; index++) {
+        for (let index = 0; index < this._children.length; index++) {
             this._children[index]._markAllAsDirty();
         }
     }
 
-    /** @hidden */
+    /**
+     * @param context
+     * @hidden
+     */
     protected _localDraw(context: ICanvasRenderingContext): void {
         if (this._background) {
             context.save();
@@ -315,11 +327,14 @@ export class Container extends Control {
         }
     }
 
-    /** @hidden */
+    /**
+     * @param host
+     * @hidden
+     */
     public _link(host: AdvancedDynamicTexture): void {
         super._link(host);
 
-        for (var child of this._children) {
+        for (const child of this._children) {
             child._link(host);
         }
     }
@@ -329,7 +344,11 @@ export class Container extends Control {
         // Do nothing
     }
 
-    /** @hidden */
+    /**
+     * @param parentMeasure
+     * @param context
+     * @hidden
+     */
     protected _processMeasures(parentMeasure: Measure, context: ICanvasRenderingContext): void {
         if (this._isDirty || !this._cachedParentMeasure.isEqualsTo(parentMeasure)) {
             super._processMeasures(parentMeasure, context);
@@ -357,7 +376,11 @@ export class Container extends Control {
         }
     }
 
-    /** @hidden */
+    /**
+     * @param parentMeasure
+     * @param context
+     * @hidden
+     */
     public _layout(parentMeasure: Measure, context: ICanvasRenderingContext): boolean {
         if (!this.isDirty && (!this.isVisible || this.notRenderable)) {
             return false;
@@ -384,7 +407,7 @@ export class Container extends Control {
             this._processMeasures(parentMeasure, context);
 
             if (!this._isClipped) {
-                for (var child of this._children) {
+                for (const child of this._children) {
                     child._tempParentMeasure.copyFrom(this._measureForChildren);
 
                     if (child._layout(this._measureForChildren, context)) {
@@ -438,7 +461,11 @@ export class Container extends Control {
         // Do nothing by default
     }
 
-    /** @hidden */
+    /**
+     * @param context
+     * @param invalidatedRectangle
+     * @hidden
+     */
     public _draw(context: ICanvasRenderingContext, invalidatedRectangle?: Measure): void {
         const renderToIntermediateTextureThisDraw = this._renderToIntermediateTexture && this._intermediateTexture;
         const contextToDrawTo = renderToIntermediateTextureThisDraw ? (<DynamicTexture>this._intermediateTexture).getContext() : context;
@@ -461,7 +488,7 @@ export class Container extends Control {
             this._clipForChildren(contextToDrawTo);
         }
 
-        for (var child of this._children) {
+        for (const child of this._children) {
             // Only redraw parts of the screen that are invalidated
             if (invalidatedRectangle) {
                 if (!child._intersectsRect(invalidatedRectangle)) {
@@ -487,8 +514,8 @@ export class Container extends Control {
             return;
         }
 
-        for (var index = 0; index < this.children.length; index++) {
-            var item = this.children[index];
+        for (let index = 0; index < this.children.length; index++) {
+            const item = this.children[index];
 
             if (!predicate || predicate(item)) {
                 results.push(item);
@@ -500,7 +527,17 @@ export class Container extends Control {
         }
     }
 
-    /** @hidden */
+    /**
+     * @param x
+     * @param y
+     * @param pi
+     * @param type
+     * @param pointerId
+     * @param buttonIndex
+     * @param deltaX
+     * @param deltaY
+     * @hidden
+     */
     public _processPicking(x: number, y: number, pi: Nullable<PointerInfoBase>, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean {
         if (!this._isEnabled || !this.isVisible || this.notRenderable) {
             return false;
@@ -515,8 +552,8 @@ export class Container extends Control {
         }
 
         // Checking backwards to pick closest first
-        for (var index = this._children.length - 1; index >= 0; index--) {
-            var child = this._children[index];
+        for (let index = this._children.length - 1; index >= 0; index--) {
+            const child = this._children[index];
             if (child._processPicking(x, y, pi, type, pointerId, buttonIndex, deltaX, deltaY)) {
                 if (child.hoverCursor) {
                     this._host._changeCursor(child.hoverCursor);
@@ -536,7 +573,11 @@ export class Container extends Control {
         return this._processObservables(type, x, y, pi, pointerId, buttonIndex, deltaX, deltaY);
     }
 
-    /** @hidden */
+    /**
+     * @param parentMeasure
+     * @param context
+     * @hidden
+     */
     protected _additionalProcessing(parentMeasure: Measure, context: ICanvasRenderingContext): void {
         super._additionalProcessing(parentMeasure, context);
 
@@ -555,8 +596,8 @@ export class Container extends Control {
 
         serializationObject.children = [];
 
-        for (var child of this.children) {
-            let childSerializationObject = {};
+        for (const child of this.children) {
+            const childSerializationObject = {};
             child.serialize(childSerializationObject);
             serializationObject.children.push(childSerializationObject);
         }
@@ -566,13 +607,17 @@ export class Container extends Control {
     public dispose() {
         super.dispose();
 
-        for (var index = this.children.length - 1; index >= 0; index--) {
+        for (let index = this.children.length - 1; index >= 0; index--) {
             this.children[index].dispose();
         }
         this._intermediateTexture?.dispose();
     }
 
-    /** @hidden */
+    /**
+     * @param serializedObject
+     * @param host
+     * @hidden
+     */
     public _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture) {
         super._parseFromContent(serializedObject, host);
         this._link(host);
@@ -581,7 +626,7 @@ export class Container extends Control {
             return;
         }
 
-        for (var childData of serializedObject.children) {
+        for (const childData of serializedObject.children) {
             this.addControl(Control.Parse(childData, host));
         }
     }

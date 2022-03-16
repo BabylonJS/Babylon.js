@@ -30,7 +30,10 @@ export class KHR_materials_emissive_strength implements IGLTFLoaderExtension {
 
     private _loader: GLTFLoader;
 
-    /** @hidden */
+    /**
+     * @param loader
+     * @hidden
+     */
     constructor(loader: GLTFLoader) {
         this._loader = loader;
         this.enabled = this._loader.isExtensionUsed(NAME);
@@ -41,7 +44,12 @@ export class KHR_materials_emissive_strength implements IGLTFLoaderExtension {
         (this._loader as any) = null;
     }
 
-    /** @hidden */
+    /**
+     * @param context
+     * @param material
+     * @param babylonMaterial
+     * @hidden
+     */
     public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
         return GLTFLoader.LoadExtensionAsync<IKHRMaterialsEmissiveStrength>(context, material, this.name, (extensionContext, extension) => {
             return this._loader.loadMaterialPropertiesAsync(context, material, babylonMaterial).then(() => {

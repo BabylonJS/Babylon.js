@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Observable } from "core/Misc/observable";
-import { TargetedAnimation } from "core/Animations/animationGroup";
+import { TargetedAnimation , AnimationGroup } from "core/Animations/animationGroup";
 import { Scene } from "core/scene";
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
@@ -9,7 +9,7 @@ import { TextLineComponent } from "shared-ui-components/lines/textLineComponent"
 import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { GlobalState } from "../../../../globalState";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
-import { AnimationGroup } from "core/Animations/animationGroup";
+
 import { AnimationCurveEditorComponent } from "./curveEditor/animationCurveEditorComponent";
 import { Context } from "./curveEditor/context";
 
@@ -29,7 +29,7 @@ export class TargetedAnimationGridComponent extends React.Component<ITargetedAni
     constructor(props: ITargetedAnimationGridComponentProps) {
         super(props);
         this._animationGroup = this.props.scene.animationGroups.find((ag) => {
-            let ta = ag.targetedAnimations.find((ta) => ta === this.props.targetedAnimation);
+            const ta = ag.targetedAnimations.find((ta) => ta === this.props.targetedAnimation);
             return ta !== undefined;
         });
     }
@@ -47,7 +47,7 @@ export class TargetedAnimationGridComponent extends React.Component<ITargetedAni
 
     deleteAnimation = () => {
         if (this._animationGroup) {
-            let index = this._animationGroup.targetedAnimations.indexOf(this.props.targetedAnimation);
+            const index = this._animationGroup.targetedAnimations.indexOf(this.props.targetedAnimation);
 
             if (index > -1) {
                 this._animationGroup.targetedAnimations.splice(index, 1);

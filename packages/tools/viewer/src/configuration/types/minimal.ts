@@ -5,7 +5,7 @@ import { defaultTemplate, fillContainer, loadingScreen, defaultViewer, overlay, 
  * The minimal configuration needed to make the viewer work.
  * Some functionalities might not work correctly (like fill-screen)
  */
-export let minimalConfiguration: ViewerConfiguration = {
+export const minimalConfiguration: ViewerConfiguration = {
     version: "0.1",
     templates: {
         main: {

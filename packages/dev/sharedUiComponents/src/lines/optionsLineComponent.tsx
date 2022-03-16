@@ -42,7 +42,7 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
             return true;
         }
 
-        let newValue = this.remapValueIn(nextProps.extractValue ? nextProps.extractValue() : nextProps.target[nextProps.propertyName]);
+        const newValue = this.remapValueIn(nextProps.extractValue ? nextProps.extractValue() : nextProps.target[nextProps.propertyName]);
         if (newValue != null && newValue !== nextState.value) {
             nextState.value = newValue;
             return true;

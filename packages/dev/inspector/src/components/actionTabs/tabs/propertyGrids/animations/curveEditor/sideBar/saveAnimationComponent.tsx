@@ -25,7 +25,7 @@ export class SaveAnimationComponent extends React.Component<ISaveAnimationCompon
 
         if (this.props.context.animations) {
             if (this.props.context.useTargetAnimations) {
-                for (var targetedAnimation of this.props.context.animations as TargetedAnimation[]) {
+                for (const targetedAnimation of this.props.context.animations as TargetedAnimation[]) {
                     this._selectedAnimations.push(targetedAnimation.animation);
                 }
             } else {
@@ -35,11 +35,11 @@ export class SaveAnimationComponent extends React.Component<ISaveAnimationCompon
     }
 
     private _getJson() {
-        let json: { animations: any[] } = {
+        const json: { animations: any[] } = {
             animations: [],
         };
 
-        for (var animation of this._selectedAnimations) {
+        for (const animation of this._selectedAnimations) {
             json.animations.push(animation.serialize());
         }
 
@@ -50,12 +50,12 @@ export class SaveAnimationComponent extends React.Component<ISaveAnimationCompon
         const xmlHttp = new XMLHttpRequest();
         const hostDocument = this._root.current!.ownerDocument;
 
-        let json = this._getJson();
+        const json = this._getJson();
 
         xmlHttp.onreadystatechange = () => {
             if (xmlHttp.readyState == 4) {
                 if (xmlHttp.status == 200) {
-                    var snippet = JSON.parse(xmlHttp.responseText);
+                    const snippet = JSON.parse(xmlHttp.responseText);
                     const oldId = this.props.context.snippetId;
                     this.props.context.snippetId = snippet.id;
                     if (snippet.version && snippet.version != "0") {
@@ -64,7 +64,7 @@ export class SaveAnimationComponent extends React.Component<ISaveAnimationCompon
 
                     this.forceUpdate();
 
-                    let windowAsAny = window as any;
+                    const windowAsAny = window as any;
 
                     if (windowAsAny.Playground && oldId) {
                         windowAsAny.Playground.onRequestCodeChangeObservable.notifyObservers({
@@ -108,7 +108,7 @@ export class SaveAnimationComponent extends React.Component<ISaveAnimationCompon
             <div id="save-animation-pane" ref={this._root}>
                 <div id="save-animation-list">
                     {this.props.context.animations?.map((a: Animation | TargetedAnimation, i: number) => {
-                        let animation = this.props.context.useTargetAnimations ? (a as TargetedAnimation).animation : (a as Animation);
+                        const animation = this.props.context.useTargetAnimations ? (a as TargetedAnimation).animation : (a as Animation);
 
                         return (
                             <div className="save-animation-list-entry" key={i}>
@@ -120,7 +120,7 @@ export class SaveAnimationComponent extends React.Component<ISaveAnimationCompon
                                         if (evt.currentTarget.checked) {
                                             this._selectedAnimations.push(animation);
                                         } else {
-                                            let index = this._selectedAnimations.indexOf(animation);
+                                            const index = this._selectedAnimations.indexOf(animation);
 
                                             if (index > -1) {
                                                 this._selectedAnimations.splice(index, 1);

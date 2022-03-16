@@ -45,7 +45,7 @@ export class PopupComponent extends React.Component<IPopupComponentProps, { isCo
     openPopup() {
         const { title, size, onClose, onOpen } = this.props;
 
-        let windowVariableName = `window_${title}`;
+        const windowVariableName = `window_${title}`;
 
         this._container = Inspector._CreatePopup(title, windowVariableName, size.width, size.height, true);
 

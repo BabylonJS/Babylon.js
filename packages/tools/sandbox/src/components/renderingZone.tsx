@@ -19,7 +19,7 @@ import { CreatePlane } from "core/Meshes/Builders/planeBuilder";
 import "../scss/renderingZone.scss";
 
 function isTextureAsset(name: string): boolean {
-    var queryStringIndex = name.indexOf("?");
+    const queryStringIndex = name.indexOf("?");
     if (queryStringIndex !== -1) {
         name = name.substring(0, queryStringIndex);
     }
@@ -52,7 +52,7 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
     }
 
     async initEngine() {
-        let useWebGPU = location.href.indexOf("webgpu") !== -1 && !!navigator.gpu;
+        const useWebGPU = location.href.indexOf("webgpu") !== -1 && !!navigator.gpu;
         const antialias = this.props.globalState.commerceMode ? false : undefined;
 
         this._canvas = document.getElementById("renderCanvas") as HTMLCanvasElement;
@@ -92,7 +92,7 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
         this.loadAsset();
 
         // File inputs
-        let filesInput = new FilesInput(
+        const filesInput = new FilesInput(
             this._engine,
             null,
             (sceneFile: File, scene: Scene) => {
@@ -186,14 +186,14 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
             // Enable camera's behaviors
             camera.useFramingBehavior = true;
 
-            var framingBehavior = camera.getBehaviorByName("Framing") as FramingBehavior;
+            const framingBehavior = camera.getBehaviorByName("Framing") as FramingBehavior;
             framingBehavior.framingTime = 0;
             framingBehavior.elevationReturnTime = -1;
 
             if (this._scene.meshes.length) {
                 camera.lowerRadiusLimit = null;
 
-                var worldExtends = this._scene.getWorldExtends(function (mesh) {
+                const worldExtends = this._scene.getWorldExtends(function (mesh) {
                     return mesh.isVisible && mesh.isEnabled();
                 });
                 framingBehavior.zoomOnBoundingInfo(worldExtends.min, worldExtends.max);
@@ -227,7 +227,7 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
                 this.props.globalState.onError.notifyObservers({ scene: this._scene, message: "Scene loaded but several errors were found" });
             }
             //    this._canvas.style.opacity = "1";
-            let camera = this._scene.activeCamera! as ArcRotateCamera;
+            const camera = this._scene.activeCamera! as ArcRotateCamera;
             if (camera.keysUp) {
                 camera.keysUp.push(90); // Z
                 camera.keysUp.push(87); // W
@@ -250,7 +250,7 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
                 this._scene.createDefaultSkybox(this._scene.environmentTexture, true, (this._scene.activeCamera!.maxZ - this._scene.activeCamera!.minZ) / 2, 0.3, false);
             }
         } else {
-            var pbrPresent = false;
+            let pbrPresent = false;
             for (const material of this._scene.materials) {
                 if (material instanceof PBRBaseMaterial) {
                     pbrPresent = true;
@@ -377,7 +377,7 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
         SceneLoader.OnPluginActivatedObservable.add((plugin) => {
             this._currentPluginName = plugin.name;
             if (this._currentPluginName === "gltf") {
-                let loader = plugin as GLTFFileLoader;
+                const loader = plugin as GLTFFileLoader;
                 loader.transparencyAsCoverage = this.props.globalState.commerceMode;
                 loader.validate = true;
 

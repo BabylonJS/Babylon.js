@@ -24,7 +24,7 @@ export class ImagePropertyGridComponent extends React.Component<IImagePropertyGr
     render() {
         const image = this.props.image;
 
-        var stretchOptions = [
+        const stretchOptions = [
             { label: "None", value: Image.STRETCH_NONE },
             { label: "Fill", value: Image.STRETCH_FILL },
             { label: "Uniform", value: Image.STRETCH_UNIFORM },

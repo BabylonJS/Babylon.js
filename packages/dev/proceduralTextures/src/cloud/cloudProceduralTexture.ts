@@ -71,7 +71,7 @@ export class CloudProceduralTexture extends ProceduralTexture {
      * @returns a serialized cloud procedural texture object
      */
     public serialize(): any {
-        var serializationObject = SerializationHelper.Serialize(this, super.serialize());
+        const serializationObject = SerializationHelper.Serialize(this, super.serialize());
         serializationObject.customType = "BABYLON.CloudProceduralTexture";
 
         return serializationObject;
@@ -85,7 +85,7 @@ export class CloudProceduralTexture extends ProceduralTexture {
      * @returns a parsed Cloud Procedural Texture
      */
     public static Parse(parsedTexture: any, scene: Scene, rootUrl: string): CloudProceduralTexture {
-        var texture = SerializationHelper.Parse(
+        const texture = SerializationHelper.Parse(
             () => new CloudProceduralTexture(parsedTexture.name, parsedTexture._size, scene, undefined, parsedTexture._generateMipMaps),
             parsedTexture,
             scene,

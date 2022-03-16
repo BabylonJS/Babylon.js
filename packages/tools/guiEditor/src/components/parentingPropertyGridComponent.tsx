@@ -36,7 +36,7 @@ export class ParentingPropertyGridComponent extends React.Component<IParentingPr
     }
 
     private _changeCell(grid: Grid, draggedControl: Control, newCell: Vector2) {
-        let index = grid.children.indexOf(draggedControl);
+        const index = grid.children.indexOf(draggedControl);
         grid.removeControl(draggedControl);
         Tools.reorderGrid(grid, index, draggedControl, newCell);
     }

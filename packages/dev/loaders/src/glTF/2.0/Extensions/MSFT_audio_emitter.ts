@@ -61,7 +61,10 @@ export class MSFT_audio_emitter implements IGLTFLoaderExtension {
     private _clips: Array<ILoaderClip>;
     private _emitters: Array<ILoaderEmitter>;
 
-    /** @hidden */
+    /**
+     * @param loader
+     * @hidden
+     */
     constructor(loader: GLTFLoader) {
         this._loader = loader;
         this.enabled = this._loader.isExtensionUsed(NAME);
@@ -88,7 +91,11 @@ export class MSFT_audio_emitter implements IGLTFLoaderExtension {
         }
     }
 
-    /** @hidden */
+    /**
+     * @param context
+     * @param scene
+     * @hidden
+     */
     public loadSceneAsync(context: string, scene: IScene): Nullable<Promise<void>> {
         return GLTFLoader.LoadExtensionAsync<IMSFTAudioEmitter_EmittersReference>(context, scene, this.name, (extensionContext, extension) => {
             const promises = new Array<Promise<any>>();
@@ -115,7 +122,12 @@ export class MSFT_audio_emitter implements IGLTFLoaderExtension {
         });
     }
 
-    /** @hidden */
+    /**
+     * @param context
+     * @param node
+     * @param assign
+     * @hidden
+     */
     public loadNodeAsync(context: string, node: INode, assign: (babylonTransformNode: TransformNode) => void): Nullable<Promise<TransformNode>> {
         return GLTFLoader.LoadExtensionAsync<IMSFTAudioEmitter_EmittersReference, TransformNode>(context, node, this.name, (extensionContext, extension) => {
             const promises = new Array<Promise<any>>();
@@ -151,7 +163,11 @@ export class MSFT_audio_emitter implements IGLTFLoaderExtension {
         });
     }
 
-    /** @hidden */
+    /**
+     * @param context
+     * @param animation
+     * @hidden
+     */
     public loadAnimationAsync(context: string, animation: IAnimation): Nullable<Promise<AnimationGroup>> {
         return GLTFLoader.LoadExtensionAsync<ILoaderAnimationEvents, AnimationGroup>(context, animation, this.name, (extensionContext, extension) => {
             return this._loader.loadAnimationAsync(context, animation).then((babylonAnimationGroup) => {
@@ -285,7 +301,7 @@ export class MSFT_audio_emitter implements IGLTFLoaderExtension {
         return this._loadEmitterAsync(context, emitter).then(() => {
             const sound = emitter._babylonData!.sound;
             if (sound) {
-                var babylonAnimationEvent = new AnimationEvent(event.time, this._getEventAction(context, sound, event.action, event.time, event.startOffset));
+                const babylonAnimationEvent = new AnimationEvent(event.time, this._getEventAction(context, sound, event.action, event.time, event.startOffset));
                 babylonAnimation.animation.addEvent(babylonAnimationEvent);
                 // Make sure all started audio stops when this animation is terminated.
                 babylonAnimationGroup.onAnimationGroupEndObservable.add(() => {

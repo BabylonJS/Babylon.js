@@ -144,7 +144,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
         const system = this.props.system;
 
         if (system instanceof GPUParticleSystem) {
-            let isStarted = system.isStarted() && !system.isStopped();
+            const isStarted = system.isStarted() && !system.isStopped();
             return (
                 <ButtonLineComponent
                     label={isStarted ? "Stop" : "Start"}
@@ -161,7 +161,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
             );
         }
 
-        let isStarted = system.isStarted();
+        const isStarted = system.isStarted();
         return (
             <>
                 {!system.isStopping() && (
@@ -184,7 +184,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
 
     saveToFile() {
         const system = this.props.system;
-        let content = JSON.stringify(system.serialize(true));
+        const content = JSON.stringify(system.serialize(true));
 
         Tools.Download(new Blob([content]), "particleSystem.json");
     }
@@ -200,14 +200,14 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
         Tools.ReadFile(
             file,
             (data) => {
-                let decoder = new TextDecoder("utf-8");
-                let jsonObject = JSON.parse(decoder.decode(data));
-                let isGpu = system instanceof GPUParticleSystem;
+                const decoder = new TextDecoder("utf-8");
+                const jsonObject = JSON.parse(decoder.decode(data));
+                const isGpu = system instanceof GPUParticleSystem;
 
                 system.dispose();
                 this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
 
-                let newSystem = isGpu ? GPUParticleSystem.Parse(jsonObject, scene!, "") : ParticleSystem.Parse(jsonObject, scene!, "");
+                const newSystem = isGpu ? GPUParticleSystem.Parse(jsonObject, scene!, "") : ParticleSystem.Parse(jsonObject, scene!, "");
                 this.props.globalState.onSelectionChangedObservable.notifyObservers(newSystem);
             },
             undefined,
@@ -218,9 +218,9 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
     loadFromSnippet() {
         const system = this.props.system;
         const scene = system.getScene()!;
-        let isGpu = system instanceof GPUParticleSystem;
+        const isGpu = system instanceof GPUParticleSystem;
 
-        let snippedId = window.prompt("Please enter the snippet ID to use");
+        const snippedId = window.prompt("Please enter the snippet ID to use");
 
         if (!snippedId || !scene) {
             return;
@@ -240,13 +240,13 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
 
     saveToSnippet() {
         const system = this.props.system;
-        let content = JSON.stringify(system.serialize(true));
+        const content = JSON.stringify(system.serialize(true));
 
-        var xmlHttp = new XMLHttpRequest();
+        const xmlHttp = new XMLHttpRequest();
         xmlHttp.onreadystatechange = () => {
             if (xmlHttp.readyState == 4) {
                 if (xmlHttp.status == 200) {
-                    var snippet = JSON.parse(xmlHttp.responseText);
+                    const snippet = JSON.parse(xmlHttp.responseText);
                     const oldId = system.snippetId || "_BLANK";
                     system.snippetId = snippet.id;
                     if (snippet.version && snippet.version != "0") {
@@ -257,7 +257,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                         navigator.clipboard.writeText(system.snippetId);
                     }
 
-                    let windowAsAny = window as any;
+                    const windowAsAny = window as any;
 
                     if (windowAsAny.Playground && oldId) {
                         windowAsAny.Playground.onRequestCodeChangeObservable.notifyObservers({
@@ -276,7 +276,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
         xmlHttp.open("POST", this._snippetUrl + (system.snippetId ? "/" + system.snippetId : ""), true);
         xmlHttp.setRequestHeader("Content-Type", "application/json");
 
-        var dataToSend = {
+        const dataToSend = {
             payload: JSON.stringify({
                 particleSystem: content,
             }),
@@ -291,7 +291,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
     render() {
         const system = this.props.system;
 
-        var blendModeOptions = [
+        const blendModeOptions = [
             { label: "Add", value: ParticleSystem.BLENDMODE_ADD },
             { label: "Multiply", value: ParticleSystem.BLENDMODE_MULTIPLY },
             { label: "Multiply Add", value: ParticleSystem.BLENDMODE_MULTIPLYADD },
@@ -299,7 +299,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
             { label: "Standard", value: ParticleSystem.BLENDMODE_STANDARD },
         ];
 
-        var particleEmitterTypeOptions = [
+        const particleEmitterTypeOptions = [
             { label: "Box", value: 0 },
             { label: "Cone", value: 1 },
             { label: "Cylinder", value: 2 },
@@ -309,9 +309,9 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
             { label: "Sphere", value: 6 },
         ];
 
-        var meshEmitters = this.props.system.getScene()!.meshes.filter((m) => !!m.name);
+        const meshEmitters = this.props.system.getScene()!.meshes.filter((m) => !!m.name);
 
-        var emitterOptions = [
+        const emitterOptions = [
             { label: "None", value: -1 },
             { label: "Vector3", value: 0 },
         ];
@@ -429,7 +429,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                                 return 0;
                             }
 
-                            let meshIndex = meshEmitters.indexOf(system.emitter as AbstractMesh);
+                            const meshIndex = meshEmitters.indexOf(system.emitter as AbstractMesh);
 
                             if (meshIndex > -1) {
                                 return meshIndex + 1;

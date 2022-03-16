@@ -14,7 +14,7 @@ export class Tools {
 
         const children = item.getChildren ? item.getChildren() : item.children;
         if (children) {
-            for (var child of children) {
+            for (const child of children) {
                 if (Tools.LookForItems(child, selectedEntities, false)) {
                     return true;
                 }
@@ -25,8 +25,8 @@ export class Tools {
     }
 
     private static _RecursiveRemoveHiddenMeshesAndHoistChildren(items: Array<any>) {
-        let result: Array<any> = [];
-        for (let i of items) {
+        const result: Array<any> = [];
+        for (const i of items) {
             // If the mesh is hidden, add it's children that are not hidden, this will handle the case of bounding box parenting for bounding box gizmo
             if (i.reservedDataStore && i.reservedDataStore.hidden && i.getChildMeshes) {
                 Tools._RecursiveRemoveHiddenMeshesAndHoistChildren(i.getChildMeshes()).forEach((m) => {
@@ -66,8 +66,8 @@ export class Tools {
     }
 
     public static reorderGrid(grid: Grid, index: number, control: Control, cell: Vector2) {
-        let tags: Vector2[] = [];
-        let controls: Control[] = [];
+        const tags: Vector2[] = [];
+        const controls: Control[] = [];
         const length = grid.children.length;
         for (let i = index; i < length; ++i) {
             const control = grid.children[index];

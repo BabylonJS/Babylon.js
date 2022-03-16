@@ -61,10 +61,10 @@ export class ExamplesComponent extends React.Component<IExamplesComponentProps, 
             return;
         }
 
-        let list = await response.json();
+        const list = await response.json();
 
         for (var value of list.value) {
-            let newSample = {
+            const newSample = {
                 title: value.title,
                 doc: this._documentationRoot + value.documentationPage,
                 icon: this._documentationRoot + value.imageUrl,
@@ -72,7 +72,7 @@ export class ExamplesComponent extends React.Component<IExamplesComponentProps, 
                 description: value.description,
             };
 
-            let filter = this._scripts.filter((s) => s.title === value.category);
+            const filter = this._scripts.filter((s) => s.title === value.category);
             let script: IScript;
 
             if (filter && filter.length) {
@@ -148,7 +148,7 @@ export class ExamplesComponent extends React.Component<IExamplesComponentProps, 
                 </div>
                 <div id="examples-list">
                     {this._scripts.map((s) => {
-                        let active = s.samples.filter((ss) => {
+                        const active = s.samples.filter((ss) => {
                             return (
                                 !this.state.filter ||
                                 ss.title.toLowerCase().indexOf(this.state.filter.toLowerCase()) !== -1 ||

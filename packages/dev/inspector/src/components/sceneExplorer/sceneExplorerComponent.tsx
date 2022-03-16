@@ -172,7 +172,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
             return false;
         }
 
-        for (var item of sortedItems) {
+        for (const item of sortedItems) {
             if (item === target) {
                 // found the current selection!
                 data.found = true;
@@ -243,7 +243,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
 
         keyEvent.preventDefault();
 
-        let data = {};
+        const data = {};
         if (!this.findSiblings(null, scene.rootNodes, this.state.selectedEntity, goNext, data)) {
             if (!this.findSiblings(null, scene.materials, this.state.selectedEntity, goNext, data)) {
                 this.findSiblings(null, scene.textures, this.state.selectedEntity, goNext, data);
@@ -278,20 +278,20 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
             scene.onTextureRemovedObservable.add(this.sceneMutationFunc);
         }
 
-        let guiElements = scene.textures.filter((t) => t.getClassName() === "AdvancedDynamicTexture");
-        let textures = scene.textures.filter((t) => t.getClassName() !== "AdvancedDynamicTexture");
-        let postProcessses = scene.postProcesses;
-        let pipelines = scene.postProcessRenderPipelineManager.supportedPipelines;
+        const guiElements = scene.textures.filter((t) => t.getClassName() === "AdvancedDynamicTexture");
+        const textures = scene.textures.filter((t) => t.getClassName() !== "AdvancedDynamicTexture");
+        const postProcessses = scene.postProcesses;
+        const pipelines = scene.postProcessRenderPipelineManager.supportedPipelines;
 
         // Context menus
-        let pipelineContextMenus: { label: string; action: () => void }[] = [];
+        const pipelineContextMenus: { label: string; action: () => void }[] = [];
 
         if (scene.activeCamera) {
             if (!pipelines.some((p) => p.getClassName() === "DefaultRenderingPipeline")) {
                 pipelineContextMenus.push({
                     label: "Add new Default Rendering Pipeline",
                     action: () => {
-                        let newPipeline = new DefaultRenderingPipeline("Default rendering pipeline", true, scene, scene.cameras);
+                        const newPipeline = new DefaultRenderingPipeline("Default rendering pipeline", true, scene, scene.cameras);
                         this.props.globalState.onSelectionChangedObservable.notifyObservers(newPipeline);
                     },
                 });
@@ -301,7 +301,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                 pipelineContextMenus.push({
                     label: "Add new SSAO Rendering Pipeline",
                     action: () => {
-                        let newPipeline = new SSAORenderingPipeline("SSAO rendering pipeline", scene, 1, scene.cameras);
+                        const newPipeline = new SSAORenderingPipeline("SSAO rendering pipeline", scene, 1, scene.cameras);
                         this.props.globalState.onSelectionChangedObservable.notifyObservers(newPipeline);
                     },
                 });
@@ -311,32 +311,32 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                 pipelineContextMenus.push({
                     label: "Add new SSAO2 Rendering Pipeline",
                     action: () => {
-                        let newPipeline = new SSAO2RenderingPipeline("SSAO2 rendering pipeline", scene, 1, scene.cameras);
+                        const newPipeline = new SSAO2RenderingPipeline("SSAO2 rendering pipeline", scene, 1, scene.cameras);
                         this.props.globalState.onSelectionChangedObservable.notifyObservers(newPipeline);
                     },
                 });
             }
         }
 
-        let nodeContextMenus: { label: string; action: () => void }[] = [];
+        const nodeContextMenus: { label: string; action: () => void }[] = [];
         nodeContextMenus.push({
             label: "Add new point light",
             action: () => {
-                let newPointLight = new PointLight("point light", Vector3.Zero(), scene);
+                const newPointLight = new PointLight("point light", Vector3.Zero(), scene);
                 this.props.globalState.onSelectionChangedObservable.notifyObservers(newPointLight);
             },
         });
         nodeContextMenus.push({
             label: "Add new directional light",
             action: () => {
-                let newDirectionalLight = new DirectionalLight("directional light", new Vector3(-1, -1, -0.5), scene);
+                const newDirectionalLight = new DirectionalLight("directional light", new Vector3(-1, -1, -0.5), scene);
                 this.props.globalState.onSelectionChangedObservable.notifyObservers(newDirectionalLight);
             },
         });
         nodeContextMenus.push({
             label: "Add new free camera",
             action: () => {
-                let newFreeCamera = new FreeCamera("free camera", scene.activeCamera ? scene.activeCamera.globalPosition : new Vector3(0, 0, -5), scene);
+                const newFreeCamera = new FreeCamera("free camera", scene.activeCamera ? scene.activeCamera.globalPosition : new Vector3(0, 0, -5), scene);
 
                 if (scene.activeCamera) {
                     newFreeCamera.minZ = scene.activeCamera.minZ;
@@ -359,32 +359,32 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
         };
 
         // Materials
-        let materialsContextMenus: { label: string; action: () => void }[] = [];
+        const materialsContextMenus: { label: string; action: () => void }[] = [];
         materialsContextMenus.push({
             label: "Add new standard material",
             action: () => {
-                let newStdMaterial = new StandardMaterial(getUniqueName("Standard material"), scene);
+                const newStdMaterial = new StandardMaterial(getUniqueName("Standard material"), scene);
                 this.props.globalState.onSelectionChangedObservable.notifyObservers(newStdMaterial);
             },
         });
         materialsContextMenus.push({
             label: "Add new PBR material",
             action: () => {
-                let newPBRMaterial = new PBRMaterial(getUniqueName("PBR material"), scene);
+                const newPBRMaterial = new PBRMaterial(getUniqueName("PBR material"), scene);
                 this.props.globalState.onSelectionChangedObservable.notifyObservers(newPBRMaterial);
             },
         });
         materialsContextMenus.push({
             label: "Add new node material",
             action: () => {
-                let newNodeMaterial = new NodeMaterial(getUniqueName("node material"), scene);
+                const newNodeMaterial = new NodeMaterial(getUniqueName("node material"), scene);
                 newNodeMaterial.setToDefault();
                 newNodeMaterial.build();
                 this.props.globalState.onSelectionChangedObservable.notifyObservers(newNodeMaterial);
             },
         });
 
-        let materials = [];
+        const materials = [];
 
         materials.push(...scene.materials);
 
@@ -393,21 +393,21 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
         }
 
         // Sprite Managers
-        let spriteManagersContextMenus: { label: string; action: () => void }[] = [];
+        const spriteManagersContextMenus: { label: string; action: () => void }[] = [];
         spriteManagersContextMenus.push({
             label: "Add new sprite manager",
             action: () => {
-                let newSpriteManager = new SpriteManager("Default sprite manager", "//playground.babylonjs.com/textures/player.png", 500, 64, scene);
+                const newSpriteManager = new SpriteManager("Default sprite manager", "//playground.babylonjs.com/textures/player.png", 500, 64, scene);
                 this.props.globalState.onSelectionChangedObservable.notifyObservers(newSpriteManager);
             },
         });
 
         // Particle systems
-        let particleSystemsContextMenus: { label: string; action: () => void }[] = [];
+        const particleSystemsContextMenus: { label: string; action: () => void }[] = [];
         particleSystemsContextMenus.push({
             label: "Add new CPU particle system",
             action: () => {
-                let newSystem = ParticleHelper.CreateDefault(Vector3.Zero(), 10000, scene);
+                const newSystem = ParticleHelper.CreateDefault(Vector3.Zero(), 10000, scene);
                 newSystem.name = "CPU particle system";
                 newSystem.start();
                 this.props.globalState.onSelectionChangedObservable.notifyObservers(newSystem);
@@ -418,7 +418,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
             particleSystemsContextMenus.push({
                 label: "Add new GPU particle system",
                 action: () => {
-                    let newSystem = ParticleHelper.CreateDefault(Vector3.Zero(), 10000, scene, true);
+                    const newSystem = ParticleHelper.CreateDefault(Vector3.Zero(), 10000, scene, true);
                     newSystem.name = "GPU particle system";
                     newSystem.start();
                     this.props.globalState.onSelectionChangedObservable.notifyObservers(newSystem);

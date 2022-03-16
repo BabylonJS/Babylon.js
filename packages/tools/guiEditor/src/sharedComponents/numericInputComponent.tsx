@@ -35,13 +35,13 @@ export class NumericInputComponent extends React.Component<INumericInputComponen
     }
 
     updateValue(evt: any) {
-        let value = evt.target.value;
+        const value = evt.target.value;
 
         if (/[^0-9\.\-]/g.test(value)) {
             return;
         }
 
-        let valueAsNumber = parseFloat(value);
+        const valueAsNumber = parseFloat(value);
 
         this._localChange = true;
         this.setState({ value: value });

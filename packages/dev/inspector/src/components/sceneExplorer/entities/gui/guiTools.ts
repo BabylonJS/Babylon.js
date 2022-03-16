@@ -2,8 +2,8 @@ import { AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
 import { Engine } from "core/Engines/engine";
 import { Tools } from "core/Misc/tools";
 
-declare var GUIEDITOR: any;
-declare var BABYLON: any;
+declare let GUIEDITOR: any;
+declare let BABYLON: any;
 
 let editorUrl = `https://unpkg.com/babylonjs-gui-editor@${Engine.Version}/babylon.guiEditor.js`;
 let guiEditor: any = null;
@@ -22,12 +22,18 @@ function _getGlobalGUIEditor(): any {
     return undefined;
 }
 
-/** Used to pass in the gui-editor package. */
+/**
+ * Used to pass in the gui-editor package.
+ * @param guiEditorPackage
+ */
 export function InjectGUIEditor(guiEditorPackage: any) {
     guiEditor = guiEditorPackage;
 }
 
-/** Change the URL that the GUI editor loads from */
+/**
+ * Change the URL that the GUI editor loads from
+ * @param guiEditorURL
+ */
 export function SetGUIEditorURL(guiEditorURL: string) {
     editorUrl = guiEditorURL;
 }
@@ -36,6 +42,7 @@ export function SetGUIEditorURL(guiEditorURL: string) {
  * Opens an ADT in the GUI editor
  * if you are in an ES6 environment, you must first call InjectGUIEditor to provide the gui-editor package
  * If you are in a UMD environment, it will load the package from a URL
+ * @param adt
  */
 export async function EditAdvancedDynamicTexture(adt: AdvancedDynamicTexture) {
     if (!guiEditor) {

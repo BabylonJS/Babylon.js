@@ -111,7 +111,7 @@ export class Grid extends Container {
             return this;
         }
 
-        let current = this._rowDefinitions[index];
+        const current = this._rowDefinitions[index];
         if (current && current.isPixel === isPixel && current.value === height) {
             return this;
         }
@@ -137,7 +137,7 @@ export class Grid extends Container {
             return this;
         }
 
-        let current = this._columnDefinitions[index];
+        const current = this._columnDefinitions[index];
         if (current && current.isPixel === isPixel && current.value === width) {
             return this;
         }
@@ -183,8 +183,8 @@ export class Grid extends Container {
 
         super.removeControl(cell);
 
-        for (var control of cell.children) {
-            let childIndex = this._childControls.indexOf(control);
+        for (const control of cell.children) {
+            const childIndex = this._childControls.indexOf(control);
 
             if (childIndex !== -1) {
                 this._childControls.splice(childIndex, 1);
@@ -201,7 +201,7 @@ export class Grid extends Container {
 
         this._cells[previousKey] = this._cells[key];
 
-        for (var control of this._cells[previousKey].children) {
+        for (const control of this._cells[previousKey].children) {
             control._tag = previousKey;
         }
 
@@ -219,16 +219,16 @@ export class Grid extends Container {
         }
 
         for (var x = 0; x < this._rowDefinitions.length; x++) {
-            let key = `${x}:${index}`;
-            let cell = this._cells[key];
+            const key = `${x}:${index}`;
+            const cell = this._cells[key];
 
             this._removeCell(cell, key);
         }
 
         for (var x = 0; x < this._rowDefinitions.length; x++) {
-            for (var y = index + 1; y < this._columnDefinitions.length; y++) {
-                let previousKey = `${x}:${y - 1}`;
-                let key = `${x}:${y}`;
+            for (let y = index + 1; y < this._columnDefinitions.length; y++) {
+                const previousKey = `${x}:${y - 1}`;
+                const key = `${x}:${y}`;
 
                 this._offsetCell(previousKey, key);
             }
@@ -254,16 +254,16 @@ export class Grid extends Container {
         }
 
         for (var y = 0; y < this._columnDefinitions.length; y++) {
-            let key = `${index}:${y}`;
-            let cell = this._cells[key];
+            const key = `${index}:${y}`;
+            const cell = this._cells[key];
 
             this._removeCell(cell, key);
         }
 
         for (var y = 0; y < this._columnDefinitions.length; y++) {
-            for (var x = index + 1; x < this._rowDefinitions.length; x++) {
-                let previousKey = `${x - 1}:${y}`;
-                let key = `${x}:${y}`;
+            for (let x = index + 1; x < this._rowDefinitions.length; x++) {
+                const previousKey = `${x - 1}:${y}`;
+                const key = `${x}:${y}`;
 
                 this._offsetCell(previousKey, key);
             }
@@ -301,9 +301,9 @@ export class Grid extends Container {
             return this;
         }
 
-        let x = Math.min(row, this._rowDefinitions.length - 1);
-        let y = Math.min(column, this._columnDefinitions.length - 1);
-        let key = `${x}:${y}`;
+        const x = Math.min(row, this._rowDefinitions.length - 1);
+        const y = Math.min(column, this._columnDefinitions.length - 1);
+        const key = `${x}:${y}`;
         let goodContainer = this._cells[key];
 
         if (!goodContainer) {
@@ -330,13 +330,13 @@ export class Grid extends Container {
      * @returns the current container
      */
     public removeControl(control: Control): Container {
-        var index = this._childControls.indexOf(control);
+        const index = this._childControls.indexOf(control);
 
         if (index !== -1) {
             this._childControls.splice(index, 1);
         }
 
-        let cell = this._cells[control._tag];
+        const cell = this._cells[control._tag];
 
         if (cell) {
             cell.removeControl(control);
@@ -360,10 +360,10 @@ export class Grid extends Container {
     }
 
     protected _getGridDefinitions(definitionCallback: (lefts: number[], tops: number[], widths: number[], heights: number[]) => void) {
-        let widths = [];
-        let heights = [];
-        let lefts = [];
-        let tops = [];
+        const widths = [];
+        const heights = [];
+        const lefts = [];
+        const tops = [];
 
         let availableWidth = this._currentMeasure.width;
         let globalWidthPercentage = 0;
@@ -374,7 +374,7 @@ export class Grid extends Container {
         let index = 0;
         for (var rowDefinition of this._rowDefinitions) {
             if (rowDefinition.isPixel) {
-                let height = rowDefinition.getValue(this._host);
+                const height = rowDefinition.getValue(this._host);
                 availableHeight -= height;
                 heights[index] = height;
             } else {
@@ -389,7 +389,7 @@ export class Grid extends Container {
             tops.push(top);
 
             if (!rowDefinition.isPixel) {
-                let height = (rowDefinition.value / globalHeightPercentage) * availableHeight;
+                const height = (rowDefinition.value / globalHeightPercentage) * availableHeight;
                 top += height;
                 heights[index] = height;
             } else {
@@ -402,7 +402,7 @@ export class Grid extends Container {
         index = 0;
         for (var columnDefinition of this._columnDefinitions) {
             if (columnDefinition.isPixel) {
-                let width = columnDefinition.getValue(this._host);
+                const width = columnDefinition.getValue(this._host);
                 availableWidth -= width;
                 widths[index] = width;
             } else {
@@ -416,7 +416,7 @@ export class Grid extends Container {
         for (var columnDefinition of this._columnDefinitions) {
             lefts.push(left);
             if (!columnDefinition.isPixel) {
-                let width = (columnDefinition.value / globalWidthPercentage) * availableWidth;
+                const width = (columnDefinition.value / globalWidthPercentage) * availableWidth;
                 left += width;
                 widths[index] = width;
             } else {
@@ -431,14 +431,14 @@ export class Grid extends Container {
     protected _additionalProcessing(parentMeasure: Measure, context: ICanvasRenderingContext): void {
         this._getGridDefinitions((lefts: number[], tops: number[], widths: number[], heights: number[]) => {
             // Setting child sizes
-            for (var key in this._cells) {
+            for (const key in this._cells) {
                 if (!this._cells.hasOwnProperty(key)) {
                     continue;
                 }
-                let split = key.split(":");
-                let x = parseInt(split[0]);
-                let y = parseInt(split[1]);
-                let cell = this._cells[key];
+                const split = key.split(":");
+                const x = parseInt(split[0]);
+                const y = parseInt(split[1]);
+                const cell = this._cells[key];
 
                 cell.left = lefts[y] + "px";
                 cell.top = tops[x] + "px";
@@ -455,12 +455,12 @@ export class Grid extends Container {
     }
 
     public _flagDescendantsAsMatrixDirty(): void {
-        for (var key in this._cells) {
+        for (const key in this._cells) {
             if (!this._cells.hasOwnProperty(key)) {
                 continue;
             }
 
-            let child = this._cells[key];
+            const child = this._cells[key];
             child._markMatrixAsDirty();
         }
     }
@@ -495,7 +495,7 @@ export class Grid extends Container {
     public dispose() {
         super.dispose();
 
-        for (var control of this._childControls) {
+        for (const control of this._childControls) {
             control.dispose();
         }
         for (var index = 0; index < this._rowDefinitions.length; index++) {
@@ -524,13 +524,13 @@ export class Grid extends Container {
         serializationObject.rows = [];
         serializationObject.tags = [];
         for (let i = 0; i < this.columnCount; ++i) {
-            let cd = this.getColumnDefinition(i);
-            let childSerializationObject = { value: cd?.getValue(this.host), unit: cd?.unit };
+            const cd = this.getColumnDefinition(i);
+            const childSerializationObject = { value: cd?.getValue(this.host), unit: cd?.unit };
             serializationObject.columns.push(childSerializationObject);
         }
         for (let i = 0; i < this.rowCount; ++i) {
-            let rd = this.getRowDefinition(i);
-            let childSerializationObject = { value: rd?.getValue(this.host), unit: rd?.unit };
+            const rd = this.getRowDefinition(i);
+            const childSerializationObject = { value: rd?.getValue(this.host), unit: rd?.unit };
             serializationObject.rows.push(childSerializationObject);
         }
         this.children.forEach((child) => {
@@ -538,10 +538,14 @@ export class Grid extends Container {
         });
     }
 
-    /** @hidden */
+    /**
+     * @param serializedObject
+     * @param host
+     * @hidden
+     */
     public _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture) {
         super._parseFromContent(serializedObject, host);
-        let children: Control[] = [];
+        const children: Control[] = [];
         this.children.forEach((child) => {
             children.push(child);
         });

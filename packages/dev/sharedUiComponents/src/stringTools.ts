@@ -11,7 +11,7 @@ export class StringTools {
     private static _SaveAs(blob: Blob, name: string, document: HTMLDocument) {
         if ("download" in HTMLAnchorElement.prototype) {
             var URL = window.URL || window.webkitURL;
-            var a = document.createElement("a");
+            const a = document.createElement("a");
 
             a.download = name;
             a.rel = "noopener"; // tabnabbing
@@ -28,20 +28,20 @@ export class StringTools {
 
         // Open a popup immediately do go around popup blocker
         // Mostly only available on user interaction and the fileReader is async so...
-        var popup = open("", "_blank");
+        let popup = open("", "_blank");
         if (popup) {
             popup.document.title = popup.document.body.innerText = "downloading...";
         }
 
-        var force = blob.type === "application/octet-stream";
-        var isSafari = /constructor/i.test((window as any).HTMLElement) || (window as any).safari;
-        var isChromeIOS = /CriOS\/[\d]+/.test(navigator.userAgent);
+        const force = blob.type === "application/octet-stream";
+        const isSafari = /constructor/i.test((window as any).HTMLElement) || (window as any).safari;
+        const isChromeIOS = /CriOS\/[\d]+/.test(navigator.userAgent);
 
         if ((isChromeIOS || (force && isSafari)) && typeof FileReader !== "undefined") {
             // Safari doesn't allow downloading of blob URLs
-            var reader = new FileReader();
+            const reader = new FileReader();
             reader.onloadend = () => {
-                var url: any = reader.result;
+                let url: any = reader.result;
                 url = isChromeIOS ? url : url.replace(/^data:[^;]*;/, "data:attachment/file;");
                 if (popup) {
                     popup.location.href = url;
@@ -53,7 +53,7 @@ export class StringTools {
             reader.readAsDataURL(blob);
         } else {
             var URL = window.URL || window.webkitURL;
-            var url = URL.createObjectURL(blob);
+            const url = URL.createObjectURL(blob);
             if (popup) {
                 popup.location.href = url;
             } else {
@@ -70,7 +70,7 @@ export class StringTools {
         try {
             node.dispatchEvent(new MouseEvent("click"));
         } catch (e) {
-            var evt = document.createEvent("MouseEvents");
+            const evt = document.createEvent("MouseEvents");
             evt.initMouseEvent("click", true, true, window, 0, 0, 0, 80, 20, false, false, false, false, 0, null);
             node.dispatchEvent(evt);
         }
@@ -78,10 +78,12 @@ export class StringTools {
 
     /**
      * Download a string into a file that will be saved locally by the browser
+     * @param document
      * @param content defines the string to download locally as a file
+     * @param filename
      */
     public static DownloadAsFile(document: HTMLDocument, content: string, filename: string) {
-        let blob = new Blob([content], {
+        const blob = new Blob([content], {
             type: "application/octet-stream",
         });
 

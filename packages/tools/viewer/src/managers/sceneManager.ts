@@ -180,12 +180,12 @@ export class SceneManager {
 
             this.labs = new ViewerLabs(scene);
 
-            let updateShadows = () => {
-                for (let light of this.scene.lights) {
-                    let generator = light.getShadowGenerator();
+            const updateShadows = () => {
+                for (const light of this.scene.lights) {
+                    const generator = light.getShadowGenerator();
                     if (generator) {
                         // Processing shadows if animates
-                        let shadowMap = generator.getShadowMap();
+                        const shadowMap = generator.getShadowMap();
                         if (shadowMap) {
                             shadowMap.refreshRate = RenderTargetTexture.REFRESHRATE_RENDER_ONCE;
                         }
@@ -213,11 +213,11 @@ export class SceneManager {
         });
         if (this._observablesManager) {
             this._observablesManager.onModelLoadedObservable.add((model) => {
-                for (let light of this.scene.lights) {
-                    let generator = light.getShadowGenerator();
+                for (const light of this.scene.lights) {
+                    const generator = light.getShadowGenerator();
                     if (generator) {
                         // Processing shadows if animates
-                        let shadowMap = generator.getShadowMap();
+                        const shadowMap = generator.getShadowMap();
                         if (shadowMap) {
                             shadowMap.refreshRate = RenderTargetTexture.REFRESHRATE_RENDER_ONCE;
                         }
@@ -282,13 +282,13 @@ export class SceneManager {
      * @param process if true shadows will be updated once every frame. if false they will stop being updated.
      */
     public set processShadows(process: boolean) {
-        let refreshType = process ? RenderTargetTexture.REFRESHRATE_RENDER_ONEVERYFRAME : RenderTargetTexture.REFRESHRATE_RENDER_ONCE;
+        const refreshType = process ? RenderTargetTexture.REFRESHRATE_RENDER_ONEVERYFRAME : RenderTargetTexture.REFRESHRATE_RENDER_ONCE;
 
-        for (let light of this.scene.lights) {
-            let generator = light.getShadowGenerator();
+        for (const light of this.scene.lights) {
+            const generator = light.getShadowGenerator();
 
             if (generator) {
-                let shadowMap = generator.getShadowMap();
+                const shadowMap = generator.getShadowMap();
                 if (shadowMap) {
                     shadowMap.refreshRate = refreshType;
                 }
@@ -382,6 +382,8 @@ export class SceneManager {
 
     /**
      * initialize the scene. Calling this function again will dispose the old scene, if exists.
+     * @param sceneConfiguration
+     * @param optimizerConfiguration
      */
     public initScene(sceneConfiguration: ISceneConfiguration = {}, optimizerConfiguration?: boolean | ISceneOptimizerConfiguration): Promise<Scene> {
         // if the scen exists, dispose it.
@@ -396,7 +398,7 @@ export class SceneManager {
 
         // set a default PBR material
         if (!sceneConfiguration.defaultMaterial) {
-            var defaultMaterial = new PBRMaterial("defaultMaterial", this.scene);
+            const defaultMaterial = new PBRMaterial("defaultMaterial", this.scene);
             defaultMaterial.reflectivityColor = new Color3(0.1, 0.1, 0.1);
             defaultMaterial.microSurface = 0.6;
 
@@ -485,7 +487,7 @@ export class SceneManager {
         if (newConfiguration.lab) {
             // rendering piplines
             if (newConfiguration.lab.defaultRenderingPipelines) {
-                let pipelineConfig = newConfiguration.lab.defaultRenderingPipelines;
+                const pipelineConfig = newConfiguration.lab.defaultRenderingPipelines;
                 if (typeof pipelineConfig === "boolean") {
                     this.defaultRenderingPipelineEnabled = pipelineConfig;
                 } else {
@@ -494,7 +496,7 @@ export class SceneManager {
             }
 
             if (this.environmentHelper && newConfiguration.lab.environmentMainColor) {
-                let mainColor = new Color3(newConfiguration.lab.environmentMainColor.r, newConfiguration.lab.environmentMainColor.g, newConfiguration.lab.environmentMainColor.b);
+                const mainColor = new Color3(newConfiguration.lab.environmentMainColor.r, newConfiguration.lab.environmentMainColor.g, newConfiguration.lab.environmentMainColor.b);
                 this.environmentHelper.setMainColor(mainColor);
             }
 
@@ -535,7 +537,7 @@ export class SceneManager {
             return;
         }
 
-        let pipelineConfig = configuration || (this._globalConfiguration.lab && this._globalConfiguration.lab.defaultRenderingPipelines);
+        const pipelineConfig = configuration || (this._globalConfiguration.lab && this._globalConfiguration.lab.defaultRenderingPipelines);
         if (pipelineConfig) {
             if (!this._defaultRenderingPipeline) {
                 // Create pipeline in manual mode to avoid triggering multiple shader compilations
@@ -616,8 +618,8 @@ export class SceneManager {
             return;
         }
 
-        let cc = sceneConfig.clearColor;
-        let oldcc = this.scene.clearColor;
+        const cc = sceneConfig.clearColor;
+        const oldcc = this.scene.clearColor;
         if (cc) {
             if (cc.r !== undefined) {
                 oldcc.r = cc.r;
@@ -673,7 +675,7 @@ export class SceneManager {
             this._engine.renderEvenInBackground = !!sceneConfig.renderInBackground;
         }
 
-        let canvas = this._engine.getInputElement();
+        const canvas = this._engine.getInputElement();
 
         if (canvas) {
             if (this.camera && sceneConfig.disableCameraControl) {
@@ -733,7 +735,7 @@ export class SceneManager {
                 this.sceneOptimizer.dispose();
             }
             if (optimizerConfig.custom) {
-                let customOptimizer = getCustomOptimizerByName(optimizerConfig.custom, optimizerConfig.improvementMode);
+                const customOptimizer = getCustomOptimizerByName(optimizerConfig.custom, optimizerConfig.improvementMode);
                 if (customOptimizer) {
                     optimizerOptions.addCustomOptimization(
                         () => {
@@ -783,7 +785,7 @@ export class SceneManager {
             }
             return;
         }
-        let vrOptions: VRExperienceHelperOptions = deepmerge(
+        const vrOptions: VRExperienceHelperOptions = deepmerge(
             {
                 useCustomVRButton: true,
                 createDeviceOrientationCamera: false,
@@ -797,7 +799,7 @@ export class SceneManager {
             this._vrHelper.enableInteractions();
         }
         if (!vrConfig.disableTeleportation) {
-            let floorMeshName = vrConfig.overrideFloorMeshName || "BackgroundPlane";
+            const floorMeshName = vrConfig.overrideFloorMeshName || "BackgroundPlane";
             this._vrHelper.enableTeleportation({
                 floorMeshName,
             });
@@ -852,14 +854,14 @@ export class SceneManager {
 
         //sanity check
         if (this.scene.environmentTexture) {
-            let rotatquatRotationionY = Quaternion.RotationAxis(Axis.Y, environmentMapConfiguration.rotationY || 0);
+            const rotatquatRotationionY = Quaternion.RotationAxis(Axis.Y, environmentMapConfiguration.rotationY || 0);
             Matrix.FromQuaternionToRef(rotatquatRotationionY, this.scene.environmentTexture.getReflectionTextureMatrix());
         }
 
         // process mainColor changes:
         if (environmentMapConfiguration.mainColor) {
             this._configurationContainer.mainColor = this.mainColor || Color3.White();
-            let mc = environmentMapConfiguration.mainColor;
+            const mc = environmentMapConfiguration.mainColor;
             if (mc.r !== undefined) {
                 this.mainColor.r = mc.r;
             }
@@ -872,12 +874,12 @@ export class SceneManager {
 
             this.reflectionColor.copyFrom(this.mainColor);
 
-            let environmentTint = getConfigurationKey("environmentMap.tintLevel", this._globalConfiguration) || 0;
+            const environmentTint = getConfigurationKey("environmentMap.tintLevel", this._globalConfiguration) || 0;
 
             // reflection color
             this.reflectionColor.toLinearSpaceToRef(this.reflectionColor);
             this.reflectionColor.scaleToRef(1 / this.scene.imageProcessingConfiguration.exposure, this.reflectionColor);
-            let tmpColor3 = Color3.Lerp(this._white, this.reflectionColor, environmentTint);
+            const tmpColor3 = Color3.Lerp(this._white, this.reflectionColor, environmentTint);
             this.reflectionColor.copyFrom(tmpColor3);
 
             //update the environment, if exists
@@ -913,19 +915,19 @@ export class SceneManager {
             }
             // Camera
             if (!this.scene.activeCamera) {
-                var worldExtends = this.scene.getWorldExtends();
-                var worldSize = worldExtends.max.subtract(worldExtends.min);
-                var worldCenter = worldExtends.min.add(worldSize.scale(0.5));
+                const worldExtends = this.scene.getWorldExtends();
+                const worldSize = worldExtends.max.subtract(worldExtends.min);
+                const worldCenter = worldExtends.min.add(worldSize.scale(0.5));
 
-                var camera: ArcRotateCamera;
-                var radius = worldSize.length() * 1.5;
+                let camera: ArcRotateCamera;
+                let radius = worldSize.length() * 1.5;
                 // empty scene scenario!
                 if (!isFinite(radius)) {
                     radius = 1;
                     worldCenter.copyFromFloats(0, 0, 0);
                 }
 
-                var arcRotateCamera = new ArcRotateCamera("default camera", -(Math.PI / 2), Math.PI / 2, radius, worldCenter, this.scene);
+                const arcRotateCamera = new ArcRotateCamera("default camera", -(Math.PI / 2), Math.PI / 2, radius, worldCenter, this.scene);
                 arcRotateCamera.lowerRadiusLimit = radius * 0.01;
                 arcRotateCamera.wheelPrecision = 100 / radius;
                 camera = arcRotateCamera;
@@ -935,7 +937,7 @@ export class SceneManager {
                 camera.speed = radius * 0.2;
                 this.scene.activeCamera = camera;
             }
-            let canvas = this.scene.getEngine().getInputElement();
+            const canvas = this.scene.getEngine().getInputElement();
             if (canvas) {
                 this.scene.activeCamera.attachControl();
             }
@@ -947,13 +949,13 @@ export class SceneManager {
             this.camera = <ArcRotateCamera>this.scene.activeCamera!;
         }
         if (cameraConfig.position) {
-            let newPosition = this.camera.position.clone();
+            const newPosition = this.camera.position.clone();
             extendClassWithConfig(newPosition, cameraConfig.position);
             this.camera.setPosition(newPosition);
         }
 
         if (cameraConfig.target) {
-            let newTarget = this.camera.target.clone();
+            const newTarget = this.camera.target.clone();
             extendClassWithConfig(newTarget, cameraConfig.target);
             this.camera.setTarget(newTarget);
         } /*else if (this.models.length && !cameraConfig.disableAutoFocus) {
@@ -965,7 +967,7 @@ export class SceneManager {
         }
 
         if (cameraConfig.behaviors) {
-            for (let name in cameraConfig.behaviors) {
+            for (const name in cameraConfig.behaviors) {
                 if (cameraConfig.behaviors[name] !== undefined) {
                     this._setCameraBehavior(name, cameraConfig.behaviors[name]);
                 }
@@ -1044,9 +1046,9 @@ export class SceneManager {
             }*/
 
             if (groundConfiguration) {
-                let groundConfig = typeof groundConfiguration === "boolean" ? {} : groundConfiguration;
+                const groundConfig = typeof groundConfiguration === "boolean" ? {} : groundConfiguration;
 
-                let groundSize = groundConfig.size || (typeof skyboxConifguration === "object" && skyboxConifguration.scale);
+                const groundSize = groundConfig.size || (typeof skyboxConifguration === "object" && skyboxConifguration.scale);
                 if (groundSize) {
                     options.groundSize = groundSize;
                 }
@@ -1095,11 +1097,11 @@ export class SceneManager {
 
             let postInitSkyboxMaterial = false;
             if (skyboxConifguration) {
-                let conf = skyboxConifguration === true ? {} : skyboxConifguration;
+                const conf = skyboxConifguration === true ? {} : skyboxConifguration;
                 if (conf.material && conf.material.imageProcessingConfiguration) {
                     options.setupImageProcessing = false; // will be configured later manually.
                 }
-                let skyboxSize = conf.scale;
+                const skyboxSize = conf.scale;
                 if (skyboxSize) {
                     options.skyboxSize = skyboxSize;
                 }
@@ -1129,7 +1131,7 @@ export class SceneManager {
                 // unlikely, but there might be a new scene! we need to dispose.
 
                 // get the scene used by the envHelper
-                let scene: Scene = this.environmentHelper.rootMesh.getScene();
+                const scene: Scene = this.environmentHelper.rootMesh.getScene();
                 // is it a different scene? Oh no!
                 if (scene !== this.scene) {
                     this.environmentHelper.dispose();
@@ -1155,7 +1157,7 @@ export class SceneManager {
                 this.environmentHelper.rootMesh.rotation.y = this._globalConfiguration.scene.environmentRotationY;
             }
 
-            let groundConfig = typeof groundConfiguration === "boolean" ? {} : groundConfiguration;
+            const groundConfig = typeof groundConfiguration === "boolean" ? {} : groundConfiguration;
             if (this.environmentHelper.groundMaterial && groundConfig) {
                 this.environmentHelper.groundMaterial._perceptualColor = this.mainColor;
                 if (groundConfig.material) {
@@ -1165,7 +1167,7 @@ export class SceneManager {
                 if (this.environmentHelper.groundMirror) {
                     const mirrorClearColor = this.environmentHelper.groundMaterial._perceptualColor.toLinearSpace();
                     // TODO user camera exposure value to set the mirror clear color
-                    let exposure = Math.pow(2.0, -this.scene.imageProcessingConfiguration.exposure) * Math.PI;
+                    const exposure = Math.pow(2.0, -this.scene.imageProcessingConfiguration.exposure) * Math.PI;
                     mirrorClearColor.scaleToRef(1 / exposure, mirrorClearColor);
 
                     this.environmentHelper.groundMirror.clearColor.r = Scalar.Clamp(mirrorClearColor.r);
@@ -1179,7 +1181,7 @@ export class SceneManager {
                 }
             }
 
-            let skyboxMaterial = this.environmentHelper.skyboxMaterial;
+            const skyboxMaterial = this.environmentHelper.skyboxMaterial;
             if (skyboxMaterial) {
                 skyboxMaterial._perceptualColor = this.mainColor;
 
@@ -1214,7 +1216,7 @@ export class SceneManager {
      */
     protected _configureLights(lightsConfiguration: { [name: string]: ILightConfiguration | boolean | number } = {}) {
         // sanity check!
-        let lightKeys = Object.keys(lightsConfiguration).filter((name) => name !== "globalRotation");
+        const lightKeys = Object.keys(lightsConfiguration).filter((name) => name !== "globalRotation");
 
         if (!lightKeys.length) {
             if (!this.scene.lights.length) {
@@ -1223,7 +1225,7 @@ export class SceneManager {
         } else {
             let lightsAvailable: Array<string> = this.scene.lights.map((light) => light.name);
             // compare to the global (!) configuration object and dispose unneeded:
-            let lightsToConfigure = Object.keys(this._globalConfiguration.lights || []);
+            const lightsToConfigure = Object.keys(this._globalConfiguration.lights || []);
             if (Object.keys(lightsToConfigure).length !== lightsAvailable.length) {
                 lightsAvailable.forEach((lName) => {
                     if (lightsToConfigure.indexOf(lName) === -1) {
@@ -1246,7 +1248,7 @@ export class SceneManager {
                 let light: Light;
                 // light is not already available
                 if (lightsAvailable.indexOf(name) === -1) {
-                    let constructor = Light.GetConstructorFromName(lightConfig.type, lightConfig.name, this.scene);
+                    const constructor = Light.GetConstructorFromName(lightConfig.type, lightConfig.name, this.scene);
                     if (!constructor) {
                         return;
                     }
@@ -1260,7 +1262,7 @@ export class SceneManager {
                     lightsAvailable = lightsAvailable.filter((ln) => ln !== name);
                     if (lightConfig.type !== undefined && light.getTypeID() !== lightConfig.type) {
                         light.dispose();
-                        let constructor = Light.GetConstructorFromName(lightConfig.type, lightConfig.name, this.scene);
+                        const constructor = Light.GetConstructorFromName(lightConfig.type, lightConfig.name, this.scene);
                         if (!constructor) {
                             return;
                         }
@@ -1275,7 +1277,7 @@ export class SceneManager {
                 }
 
                 //enabled
-                var enabled = lightConfig.enabled !== undefined ? lightConfig.enabled : !lightConfig.disabled;
+                const enabled = lightConfig.enabled !== undefined ? lightConfig.enabled : !lightConfig.disabled;
                 light.setEnabled(enabled);
 
                 extendClassWithConfig(light, lightConfig);
@@ -1288,11 +1290,11 @@ export class SceneManager {
 
                     if (lightConfig.target) {
                         if (light.setDirectionToTarget) {
-                            let target = Vector3.Zero().copyFromFloats(lightConfig.target.x, lightConfig.target.y, lightConfig.target.z);
+                            const target = Vector3.Zero().copyFromFloats(lightConfig.target.x, lightConfig.target.y, lightConfig.target.z);
                             light.setDirectionToTarget(target);
                         }
                     } else if (lightConfig.direction) {
-                        let direction = Vector3.Zero().copyFromFloats(lightConfig.direction.x, lightConfig.direction.y, lightConfig.direction.z);
+                        const direction = Vector3.Zero().copyFromFloats(lightConfig.direction.x, lightConfig.direction.y, lightConfig.direction.z);
                         light.direction = direction;
                     }
 
@@ -1301,7 +1303,7 @@ export class SceneManager {
                         (<DirectionalLight>light).shadowFrustumSize = lightConfig.shadowFrustumSize || 2;
                         isShadowEnabled = true;
                     } else if (light.getTypeID() === Light.LIGHTTYPEID_SPOTLIGHT) {
-                        let spotLight: SpotLight = <SpotLight>light;
+                        const spotLight: SpotLight = <SpotLight>light;
                         if (lightConfig.spotAngle !== undefined) {
                             spotLight.angle = (lightConfig.spotAngle * Math.PI) / 180;
                         }
@@ -1318,13 +1320,13 @@ export class SceneManager {
 
                     let shadowGenerator = <ShadowGenerator>light.getShadowGenerator();
                     if (isShadowEnabled && lightConfig.shadowEnabled && this._maxShadows) {
-                        let bufferSize = lightConfig.shadowBufferSize || 256;
+                        const bufferSize = lightConfig.shadowBufferSize || 256;
 
                         if (!shadowGenerator) {
                             shadowGenerator = new ShadowGenerator(bufferSize, light);
                         }
 
-                        var blurKernel = this.getBlurKernel(light, bufferSize);
+                        const blurKernel = this.getBlurKernel(light, bufferSize);
                         shadowGenerator.bias = this._shadowGeneratorBias;
                         shadowGenerator.blurKernel = blurKernel;
                         //override defaults
@@ -1346,12 +1348,12 @@ export class SceneManager {
             });
 
             // render priority
-            let globalLightsConfiguration = this._globalConfiguration.lights || {};
+            const globalLightsConfiguration = this._globalConfiguration.lights || {};
             Object.keys(globalLightsConfiguration)
                 .sort()
                 .forEach((name, idx) => {
-                    let configuration = globalLightsConfiguration[name];
-                    let light = this.scene.getLightByName(name);
+                    const configuration = globalLightsConfiguration[name];
+                    const light = this.scene.getLightByName(name);
                     // sanity check
                     if (!light) {
                         return;
@@ -1370,9 +1372,9 @@ export class SceneManager {
     private _shadowGroundPlane: Nullable<AbstractMesh>;
 
     private _updateShadowRenderList(shadowGenerator: ShadowGenerator, model?: ViewerModel, resetList?: boolean) {
-        let focusMeshes = model ? model.meshes : this.scene.meshes;
+        const focusMeshes = model ? model.meshes : this.scene.meshes;
         // add the focues meshes to the shadow list
-        let shadownMap = shadowGenerator.getShadowMap();
+        const shadownMap = shadowGenerator.getShadowMap();
         if (!shadownMap) {
             return;
         }
@@ -1381,8 +1383,8 @@ export class SceneManager {
         } else {
             shadownMap.renderList = shadownMap.renderList || [];
         }
-        for (var index = 0; index < focusMeshes.length; index++) {
-            let mesh = focusMeshes[index];
+        for (let index = 0; index < focusMeshes.length; index++) {
+            const mesh = focusMeshes[index];
             if (Tags.MatchesQuery(mesh, "castShadow") && shadownMap.renderList.indexOf(mesh) === -1) {
                 shadownMap.renderList.push(mesh);
             }
@@ -1390,7 +1392,7 @@ export class SceneManager {
 
         if (!this._shadowGroundPlane) {
             if (shadowGenerator.useBlurCloseExponentialShadowMap) {
-                let shadowGroundPlane = CreatePlane("shadowGroundPlane", { size: 100 }, this.scene);
+                const shadowGroundPlane = CreatePlane("shadowGroundPlane", { size: 100 }, this.scene);
                 shadowGroundPlane.useVertexColors = false;
                 //material isn't ever used in rendering, just used to set back face culling
                 shadowGroundPlane.material = new PBRMaterial("shadowGroundPlaneMaterial", this.scene);
@@ -1414,13 +1416,13 @@ export class SceneManager {
 
     private _updateGroundMirrorRenderList(model?: ViewerModel, resetList?: boolean) {
         if (this.environmentHelper && this.environmentHelper.groundMirror && this.environmentHelper.groundMirror.renderList) {
-            let focusMeshes = model ? model.meshes : this.scene.meshes;
-            let renderList = this.environmentHelper.groundMirror.renderList;
+            const focusMeshes = model ? model.meshes : this.scene.meshes;
+            const renderList = this.environmentHelper.groundMirror.renderList;
             if (resetList) {
                 renderList.length = 0;
             }
-            for (var index = 0; index < focusMeshes.length; index++) {
-                let mesh = focusMeshes[index];
+            for (let index = 0; index < focusMeshes.length; index++) {
+                const mesh = focusMeshes[index];
                 if (renderList.indexOf(mesh) === -1) {
                     renderList.push(mesh);
                 }
@@ -1435,7 +1437,7 @@ export class SceneManager {
      * @return the kernel blur size
      */
     public getBlurKernel(light: IShadowLight, bufferSize: number): number {
-        var normalizedBlurKernel = 0.05; // TODO Should come from the config.
+        let normalizedBlurKernel = 0.05; // TODO Should come from the config.
         if (light.getTypeID() === Light.LIGHTTYPEID_DIRECTIONALLIGHT) {
             normalizedBlurKernel = normalizedBlurKernel / (<DirectionalLight>light).shadowFrustumSize;
         } else if (light.getTypeID() === Light.LIGHTTYPEID_POINTLIGHT) {
@@ -1444,9 +1446,9 @@ export class SceneManager {
             normalizedBlurKernel = normalizedBlurKernel / ((<SpotLight>light).angle * (<SpotLight>light).shadowAngleScale);
         }
 
-        let minimumBlurKernel = 5 / (bufferSize / 256); //magic number that aims to keep away sawtooth shadows
+        const minimumBlurKernel = 5 / (bufferSize / 256); //magic number that aims to keep away sawtooth shadows
 
-        var blurKernel = Math.max(bufferSize * normalizedBlurKernel, minimumBlurKernel);
+        const blurKernel = Math.max(bufferSize * normalizedBlurKernel, minimumBlurKernel);
         return blurKernel;
     }
 
@@ -1456,8 +1458,8 @@ export class SceneManager {
      */
     protected _handleHardwareLimitations(enableHDR = true) {
         //flip rendering settings switches based on hardware support
-        let maxVaryingRows = this._engine.getCaps().maxVaryingVectors;
-        let maxFragmentSamplers = this._engine.getCaps().maxTexturesImageUnits;
+        const maxVaryingRows = this._engine.getCaps().maxVaryingVectors;
+        const maxFragmentSamplers = this._engine.getCaps().maxTexturesImageUnits;
 
         //shadows are disabled if there's not enough varyings for a single shadow
         if (maxVaryingRows < 8 || maxFragmentSamplers < 8) {
@@ -1467,9 +1469,9 @@ export class SceneManager {
         }
 
         //can we render to any >= 16-bit targets (required for HDR)
-        let caps = this._engine.getCaps();
-        let linearHalfFloatTargets = caps.textureHalfFloatRender && caps.textureHalfFloatLinearFiltering;
-        let linearFloatTargets = caps.textureFloatRender && caps.textureFloatLinearFiltering;
+        const caps = this._engine.getCaps();
+        const linearHalfFloatTargets = caps.textureHalfFloatRender && caps.textureHalfFloatLinearFiltering;
+        const linearFloatTargets = caps.textureFloatRender && caps.textureFloatLinearFiltering;
 
         this._hdrSupport = enableHDR && !!(linearFloatTargets || linearHalfFloatTargets);
 
@@ -1570,7 +1572,7 @@ export class SceneManager {
             return;
         }
 
-        let config: { [propName: string]: any } = typeof behaviorConfig === "object" ? behaviorConfig : {};
+        const config: { [propName: string]: any } = typeof behaviorConfig === "object" ? behaviorConfig : {};
 
         let enabled = true;
         if (typeof behaviorConfig === "boolean") {

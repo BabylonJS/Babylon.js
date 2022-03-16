@@ -21,7 +21,7 @@ export class LogComponent extends React.Component<ILogComponentProps, { logs: Lo
 
     componentDidMount() {
         this.props.globalState.onLogRequiredObservable.add((log) => {
-            let newLogArray = this.state.logs.map((number) => number);
+            const newLogArray = this.state.logs.map((number) => number);
             newLogArray.push(log);
             this.setState({ logs: newLogArray });
         });
@@ -37,10 +37,10 @@ export class LogComponent extends React.Component<ILogComponentProps, { logs: Lo
     }
 
     render() {
-        var today = new Date();
-        var h = today.getHours();
-        var m = today.getMinutes();
-        var s = today.getSeconds();
+        const today = new Date();
+        const h = today.getHours();
+        const m = today.getMinutes();
+        const s = today.getSeconds();
 
         return (
             <div id="log-console" ref={"log-console"}>

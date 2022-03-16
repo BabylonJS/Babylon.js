@@ -90,7 +90,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
 
     private async _loadScriptAsync(url: string): Promise<void> {
         return new Promise((resolve, reject) => {
-            let script = document.createElement("script");
+            const script = document.createElement("script");
             script.src = url;
             script.onload = () => {
                 resolve();
@@ -138,17 +138,17 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
         try {
             // Set up the global object ("window" and "this" for user code).
             // Delete (or rewrite) previous-run globals to avoid confusion.
-            let globalObject = window as any;
+            const globalObject = window as any;
             delete globalObject.engine;
             delete globalObject.scene;
             delete globalObject.initFunction;
 
-            let canvas = this._canvasRef.current!;
+            const canvas = this._canvasRef.current!;
             globalObject.canvas = canvas;
 
             if (useWebGPU) {
                 globalObject.createDefaultEngine = async function () {
-                    var engine = new WebGPUEngine(canvas, {
+                    const engine = new WebGPUEngine(canvas, {
                         deviceDescriptor: {
                             requiredFeatures: [
                                 "depth-clip-control",
@@ -175,7 +175,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                 };
             }
 
-            let zipVariables = "var engine = null;\r\nvar scene = null;\r\nvar sceneToRender = null;\r\n";
+            const zipVariables = "var engine = null;\r\nvar scene = null;\r\nvar sceneToRender = null;\r\n";
             let defaultEngineZip = `var createDefaultEngine = function() { return new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true,  disableWebGL2Support: ${forceWebGL1}}); }`;
 
             if (useWebGPU) {
@@ -289,7 +289,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                 if (this.props.globalState.language === "JS") {
                     code += "\r\n" + "window.scene = " + createSceneFunction + "();";
                 } else {
-                    var startCar = code.search("var " + createSceneFunction);
+                    const startCar = code.search("var " + createSceneFunction);
                     code = code.substr(0, startCar) + code.substr(startCar + 4);
                     code += "\n" + "window.scene = " + createSceneFunction + "();";
                 }
@@ -332,7 +332,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                     sceneToRenderCode = "scene.then(returnedScene => { sceneToRender = returnedScene; });\r\n";
                 }
 
-                let createEngineZip = createEngineFunction === "createEngine" ? zipVariables : zipVariables + defaultEngineZip;
+                const createEngineZip = createEngineFunction === "createEngine" ? zipVariables : zipVariables + defaultEngineZip;
 
                 this.props.globalState.zipCode = createEngineZip + ";\r\n" + code + ";\r\ninitFunction().then(() => {" + sceneToRenderCode;
             }

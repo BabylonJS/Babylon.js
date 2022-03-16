@@ -102,14 +102,14 @@ export class FireMaterial extends PushMaterial {
             subMesh.materialDefines = new FireMaterialDefines();
         }
 
-        var defines = <FireMaterialDefines>subMesh.materialDefines;
-        var scene = this.getScene();
+        const defines = <FireMaterialDefines>subMesh.materialDefines;
+        const scene = this.getScene();
 
         if (this._isReadyForSubMesh(subMesh)) {
             return true;
         }
 
-        var engine = scene.getEngine();
+        const engine = scene.getEngine();
 
         // Textures
         if (defines._areTexturesDirty) {
@@ -145,7 +145,7 @@ export class FireMaterial extends PushMaterial {
             scene.resetCachedMaterial();
 
             // Fallbacks
-            var fallbacks = new EffectFallbacks();
+            const fallbacks = new EffectFallbacks();
             if (defines.FOG) {
                 fallbacks.addFallback(1, "FOG");
             }
@@ -157,7 +157,7 @@ export class FireMaterial extends PushMaterial {
             defines.IMAGEPROCESSINGPOSTPROCESS = scene.imageProcessingConfiguration.applyByPostProcess;
 
             //Attributes
-            var attribs = [VertexBuffer.PositionKind];
+            const attribs = [VertexBuffer.PositionKind];
 
             if (defines.UV1) {
                 attribs.push(VertexBuffer.UVKind);
@@ -171,9 +171,9 @@ export class FireMaterial extends PushMaterial {
             MaterialHelper.PrepareAttributesForInstances(attribs, defines);
 
             // Legacy browser patch
-            var shaderName = "fire";
+            const shaderName = "fire";
 
-            var join = defines.toString();
+            const join = defines.toString();
             subMesh.setEffect(
                 scene.getEngine().createEffect(
                     shaderName,
@@ -233,14 +233,14 @@ export class FireMaterial extends PushMaterial {
     }
 
     public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
-        var scene = this.getScene();
+        const scene = this.getScene();
 
-        var defines = <FireMaterialDefines>subMesh.materialDefines;
+        const defines = <FireMaterialDefines>subMesh.materialDefines;
         if (!defines) {
             return;
         }
 
-        var effect = subMesh.effect;
+        const effect = subMesh.effect;
         if (!effect) {
             return;
         }
@@ -297,7 +297,7 @@ export class FireMaterial extends PushMaterial {
     }
 
     public getAnimatables(): IAnimatable[] {
-        var results = [];
+        const results = [];
 
         if (this._diffuseTexture && this._diffuseTexture.animations && this._diffuseTexture.animations.length > 0) {
             results.push(this._diffuseTexture);
@@ -313,7 +313,7 @@ export class FireMaterial extends PushMaterial {
     }
 
     public getActiveTextures(): BaseTexture[] {
-        var activeTextures = super.getActiveTextures();
+        const activeTextures = super.getActiveTextures();
 
         if (this._diffuseTexture) {
             activeTextures.push(this._diffuseTexture);
@@ -370,7 +370,7 @@ export class FireMaterial extends PushMaterial {
     }
 
     public serialize(): any {
-        var serializationObject = super.serialize();
+        const serializationObject = super.serialize();
         serializationObject.customType = "BABYLON.FireMaterial";
         serializationObject.diffuseColor = this.diffuseColor.asArray();
         serializationObject.speed = this.speed;
@@ -391,7 +391,7 @@ export class FireMaterial extends PushMaterial {
     }
 
     public static Parse(source: any, scene: Scene, rootUrl: string): FireMaterial {
-        var material = new FireMaterial(source.name, scene);
+        const material = new FireMaterial(source.name, scene);
 
         material.diffuseColor = Color3.FromArray(source.diffuseColor);
         material.speed = source.speed;

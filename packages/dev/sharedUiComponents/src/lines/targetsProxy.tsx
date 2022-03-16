@@ -9,6 +9,8 @@ export const conflictingValuesPlaceholder = "—";
  * @param targets a list of selected targets
  * @param defaultValue the value that should be returned when two targets have conflicting values
  * @param setter an optional setter function to override the default setter behavior
+ * @param onPropertyChangedObservable
+ * @param getProperty
  * @returns a proxy object that can be passed as a target into the input
  */
 export function makeTargetsProxy<Type>(

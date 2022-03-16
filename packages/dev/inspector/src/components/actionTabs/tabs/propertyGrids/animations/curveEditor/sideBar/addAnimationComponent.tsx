@@ -64,8 +64,8 @@ export class AddAnimationComponent extends React.Component<IAddAnimationComponen
         let minFrame = this.props.context.referenceMinFrame;
         let maxFrame = this.props.context.referenceMaxFrame;
         if (this.props.context.animations) {
-            for (let anim of this.props.context.animations) {
-                let innerAnim = this.props.context.useTargetAnimations ? (anim as TargetedAnimation).animation : (anim as Animation);
+            for (const anim of this.props.context.animations) {
+                const innerAnim = this.props.context.useTargetAnimations ? (anim as TargetedAnimation).animation : (anim as Animation);
                 minFrame = Math.min(minFrame, innerAnim.getKeys()[0].frame);
                 maxFrame = Math.max(maxFrame, innerAnim.getKeys()[innerAnim.getKeys().length - 1].frame);
             }
@@ -158,8 +158,8 @@ export class AddAnimationComponent extends React.Component<IAddAnimationComponen
             }
         }
 
-        let animation = new Animation(displayName, property, fps, dataType, loopMode);
-        let keys: IAnimationKey[] = [];
+        const animation = new Animation(displayName, property, fps, dataType, loopMode);
+        const keys: IAnimationKey[] = [];
         keys.push({
             frame: minFrame,
             value: defaultValue0,
@@ -221,7 +221,7 @@ export class AddAnimationComponent extends React.Component<IAddAnimationComponen
 
             while (target !== null) {
                 const descriptors = Object.getOwnPropertyDescriptors(target);
-                for (var property in descriptors) {
+                for (const property in descriptors) {
                     const descriptor = descriptors[property];
                     if (property[0] === "_" || source[property] === null || source[property] === undefined) {
                         continue;
@@ -249,7 +249,7 @@ export class AddAnimationComponent extends React.Component<IAddAnimationComponen
             // Extract position, rotation, scaling
             const main = ["scaling", "rotation", "position"];
 
-            for (var mainProperty of main) {
+            for (const mainProperty of main) {
                 const index = properties.indexOf(mainProperty);
                 if (index === -1) {
                     continue;

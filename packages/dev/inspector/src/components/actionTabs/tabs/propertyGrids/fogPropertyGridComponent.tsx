@@ -25,7 +25,7 @@ export class FogPropertyGridComponent extends React.Component<IFogPropertyGridCo
     render() {
         const scene = this.props.scene;
 
-        var fogModeOptions = [
+        const fogModeOptions = [
             { label: "None", value: Scene.FOGMODE_NONE },
             { label: "Linear", value: Scene.FOGMODE_LINEAR },
             { label: "Exp", value: Scene.FOGMODE_EXP },

@@ -67,19 +67,19 @@ export class TemplateManager {
      * @param templates the templates to be used to initialize the main template
      */
     public initTemplate(templates: { [key: string]: ITemplateConfiguration }) {
-        let internalInit = (dependencyMap, name: string, parentTemplate?: Template) => {
+        const internalInit = (dependencyMap, name: string, parentTemplate?: Template) => {
             //init template
-            let template = this.templates[name];
+            const template = this.templates[name];
 
-            let childrenTemplates = Object.keys(dependencyMap).map((childName) => {
+            const childrenTemplates = Object.keys(dependencyMap).map((childName) => {
                 return internalInit(dependencyMap[childName], childName, template);
             });
 
             // register the observers
             //template.onLoaded.add(() => {
-            let addToParent = () => {
-                let lastElements = parentTemplate && parentTemplate.parent.querySelectorAll(camelToKebab(name));
-                let containingElement = (lastElements && lastElements.length && lastElements.item(lastElements.length - 1)) || this.containerElement;
+            const addToParent = () => {
+                const lastElements = parentTemplate && parentTemplate.parent.querySelectorAll(camelToKebab(name));
+                const containingElement = (lastElements && lastElements.length && lastElements.item(lastElements.length - 1)) || this.containerElement;
                 template.appendTo(<HTMLElement>containingElement);
                 this._checkLoadedState();
             };
@@ -116,13 +116,13 @@ export class TemplateManager {
      * @param templates
      */
     private _buildHTMLTree(templates: { [key: string]: ITemplateConfiguration }): Promise<object> {
-        let promises: Array<Promise<Template | boolean>> = Object.keys(templates).map((name) => {
+        const promises: Array<Promise<Template | boolean>> = Object.keys(templates).map((name) => {
             // if the template was overridden
             if (!templates[name]) {
                 return Promise.resolve(false);
             }
             // else - we have a template, let's do our job!
-            let template = new Template(name, templates[name]);
+            const template = new Template(name, templates[name]);
             template.onLoaded.add(() => {
                 this.onTemplateLoaded.notifyObservers(template);
             });
@@ -137,11 +137,11 @@ export class TemplateManager {
         });
 
         return Promise.all(promises).then(() => {
-            let templateStructure = {};
+            const templateStructure = {};
             // now iterate through all templates and check for children:
-            let buildTree = (parentObject, name) => {
+            const buildTree = (parentObject, name) => {
                 this.templates[name].isInHtmlTree = true;
-                let childNodes = this.templates[name].getChildElements().filter((n) => !!this.templates[n]);
+                const childNodes = this.templates[name].getChildElements().filter((n) => !!this.templates[n]);
                 childNodes.forEach((element) => {
                     parentObject[element] = {};
                     buildTree(parentObject[element], element);
@@ -171,7 +171,7 @@ export class TemplateManager {
     }
 
     private _checkLoadedState() {
-        let done =
+        const done =
             Object.keys(this.templates).length === 0 ||
             Object.keys(this.templates).every((key) => {
                 return (this.templates[key].isLoaded && !!this.templates[key].parent) || !this.templates[key].isInHtmlTree;
@@ -203,9 +203,9 @@ export class TemplateManager {
 
 // register a new helper. modified https://stackoverflow.com/questions/9838925/is-there-any-method-to-iterate-a-map-with-handlebars-js
 Handlebars.registerHelper("eachInMap", function (map, block) {
-    var out = "";
+    let out = "";
     Object.keys(map).map(function (prop) {
-        let data = map[prop];
+        const data = map[prop];
         if (typeof data === "object") {
             data.id = data.id || prop;
             out += block.fn(data);
@@ -217,22 +217,22 @@ Handlebars.registerHelper("eachInMap", function (map, block) {
 });
 
 Handlebars.registerHelper("add", function (a, b) {
-    var out = a + b;
+    const out = a + b;
     return out;
 });
 
 Handlebars.registerHelper("eq", function (a, b) {
-    var out = a == b;
+    const out = a == b;
     return out;
 });
 
 Handlebars.registerHelper("or", function (a, b) {
-    var out = a || b;
+    const out = a || b;
     return out;
 });
 
 Handlebars.registerHelper("not", function (a) {
-    var out = !a;
+    const out = !a;
     return out;
 });
 
@@ -241,7 +241,7 @@ Handlebars.registerHelper("count", function (map) {
 });
 
 Handlebars.registerHelper("gt", function (a, b) {
-    var out = a > b;
+    const out = a > b;
     return out;
 });
 
@@ -322,18 +322,18 @@ export class Template {
         this.isShown = false;
         this.isInHtmlTree = false;
 
-        let htmlContentPromise = this._getTemplateAsHtml(_configuration);
+        const htmlContentPromise = this._getTemplateAsHtml(_configuration);
 
         this.initPromise = htmlContentPromise.then((htmlTemplate) => {
             if (htmlTemplate) {
                 this._htmlTemplate = htmlTemplate;
-                let compiledTemplate = Handlebars.compile(htmlTemplate, { noEscape: this._configuration.params && !!this._configuration.params.noEscape });
-                let config = this._configuration.params || {};
+                const compiledTemplate = Handlebars.compile(htmlTemplate, { noEscape: this._configuration.params && !!this._configuration.params.noEscape });
+                const config = this._configuration.params || {};
                 this._rawHtml = compiledTemplate(config);
                 try {
                     this._fragment = document.createRange().createContextualFragment(this._rawHtml);
                 } catch (e) {
-                    let test = document.createElement(this.name);
+                    const test = document.createElement(this.name);
                     test.innerHTML = this._rawHtml;
                     this._fragment = test;
                 }
@@ -353,6 +353,7 @@ export class Template {
      * Note that when updating parameters the events will be registered again (after being cleared).
      *
      * @param params the new template parameters
+     * @param append
      */
     public updateParams(params: { [key: string]: string | number | boolean | object }, append: boolean = true) {
         if (append) {
@@ -364,13 +365,13 @@ export class Template {
         if (this.isLoaded) {
             // this.dispose();
         }
-        let compiledTemplate = Handlebars.compile(this._htmlTemplate);
-        let config = this._configuration.params || {};
+        const compiledTemplate = Handlebars.compile(this._htmlTemplate);
+        const config = this._configuration.params || {};
         this._rawHtml = compiledTemplate(config);
         try {
             this._fragment = document.createRange().createContextualFragment(this._rawHtml);
         } catch (e) {
-            let test = document.createElement(this.name);
+            const test = document.createElement(this.name);
             test.innerHTML = this._rawHtml;
             this._fragment = test;
         }
@@ -395,11 +396,11 @@ export class Template {
      * This function will deliver all child HTML elements of this template.
      */
     public getChildElements(): Array<string> {
-        let childrenArray: string[] = [];
+        const childrenArray: string[] = [];
         //Edge and IE don't support frage,ent.children
         let children: HTMLCollection | NodeListOf<Element> = this._fragment && this._fragment.children;
         if (!this._fragment) {
-            let fragment = this.parent.querySelector(this.name);
+            const fragment = this.parent.querySelector(this.name);
             if (fragment) {
                 children = fragment.querySelectorAll("*");
             }
@@ -558,7 +559,7 @@ export class Template {
             let location = this._getTemplateLocation(templateConfig);
             if (isUrl(location)) {
                 return new Promise((resolve, reject) => {
-                    let fileRequest = Tools.LoadFile(
+                    const fileRequest = Tools.LoadFile(
                         location,
                         (data: string) => {
                             resolve(data);
@@ -574,7 +575,7 @@ export class Template {
                 });
             } else {
                 location = location.replace("#", "");
-                let element = document.getElementById(location);
+                const element = document.getElementById(location);
                 if (element) {
                     return Promise.resolve(element.innerHTML);
                 } else {
@@ -595,9 +596,9 @@ export class Template {
             });
         }
         if (this._configuration.events) {
-            for (let eventName in this._configuration.events) {
+            for (const eventName in this._configuration.events) {
                 if (this._configuration.events && this._configuration.events[eventName]) {
-                    let functionToFire = (selector, event) => {
+                    const functionToFire = (selector, event) => {
                         this.onEventTriggered.notifyObservers({ event: event, template: this, selector: selector });
                     };
 
@@ -609,7 +610,7 @@ export class Template {
                         } else {
                             selector = this.parent.tagName;
                         }
-                        let binding = functionToFire.bind(this, selector);
+                        const binding = functionToFire.bind(this, selector);
                         this.parent.addEventListener(eventName, binding, false);
                         this._registeredEvents.push({
                             htmlElement: this.parent,
@@ -617,9 +618,9 @@ export class Template {
                             function: binding,
                         });
                     } else if (typeof this._configuration.events[eventName] === "object") {
-                        let selectorsArray: Array<string> = Object.keys((this._configuration.events[eventName] as object) || {});
+                        const selectorsArray: Array<string> = Object.keys((this._configuration.events[eventName] as object) || {});
                         // strict null checl is working incorrectly, must override:
-                        let event = this._configuration.events[eventName] || {};
+                        const event = this._configuration.events[eventName] || {};
                         selectorsArray
                             .filter((selector) => event[selector])
                             .forEach((selector) => {
@@ -634,7 +635,7 @@ export class Template {
                                     } catch (e) {}
                                 }
                                 if (htmlElement) {
-                                    let binding = functionToFire.bind(this, selector);
+                                    const binding = functionToFire.bind(this, selector);
                                     htmlElement.addEventListener(eventName, binding, false);
                                     this._registeredEvents.push({
                                         htmlElement: htmlElement,

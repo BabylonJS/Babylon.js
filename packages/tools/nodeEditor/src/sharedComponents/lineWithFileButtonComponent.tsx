@@ -16,13 +16,13 @@ export class LineWithFileButtonComponent extends React.Component<ILineWithFileBu
     constructor(props: ILineWithFileButtonComponentProps) {
         super(props);
 
-        let initialState = DataStorage.ReadBoolean(this.props.title, !this.props.closed);
+        const initialState = DataStorage.ReadBoolean(this.props.title, !this.props.closed);
         this.state = { isExpanded: initialState };
         this.uploadRef = React.createRef();
     }
 
     onChange(evt: any) {
-        var files: File[] = evt.target.files;
+        const files: File[] = evt.target.files;
         if (files && files.length) {
             this.props.onIconClick(files[0]);
         }

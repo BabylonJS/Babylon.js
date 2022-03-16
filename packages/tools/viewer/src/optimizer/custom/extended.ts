@@ -6,9 +6,10 @@ import { SceneManager } from "../../managers/sceneManager";
  * A custom upgrade-oriented function configuration for the scene optimizer.
  *
  * @param viewer the viewer to optimize
+ * @param sceneManager
  */
 export function extendedUpgrade(sceneManager: SceneManager): boolean {
-    let defaultPipeline = <DefaultRenderingPipeline>sceneManager.defaultRenderingPipeline;
+    const defaultPipeline = <DefaultRenderingPipeline>sceneManager.defaultRenderingPipeline;
     // if (!this.Scene.BackgroundHelper) {
     // 	this.Scene.EngineScene.autoClear = false;
     // this.Scene.BackgroundHelper = true;
@@ -16,7 +17,7 @@ export function extendedUpgrade(sceneManager: SceneManager): boolean {
     // return false;
     // }
     if (sceneManager.scene.getEngine().getHardwareScalingLevel() > 1) {
-        let scaling = Scalar.Clamp(sceneManager.scene.getEngine().getHardwareScalingLevel() - 0.25, 0, 1);
+        const scaling = Scalar.Clamp(sceneManager.scene.getEngine().getHardwareScalingLevel() - 0.25, 0, 1);
         sceneManager.scene.getEngine().setHardwareScalingLevel(scaling);
         return false;
     }
@@ -32,9 +33,9 @@ export function extendedUpgrade(sceneManager: SceneManager): boolean {
         sceneManager.fxaaEnabled = true;
         return false;
     }
-    var hardwareScalingLevel = Math.max(1 / 2, 1 / (window.devicePixelRatio || 2));
+    const hardwareScalingLevel = Math.max(1 / 2, 1 / (window.devicePixelRatio || 2));
     if (sceneManager.scene.getEngine().getHardwareScalingLevel() > hardwareScalingLevel) {
-        let scaling = Scalar.Clamp(sceneManager.scene.getEngine().getHardwareScalingLevel() - 0.25, 0, hardwareScalingLevel);
+        const scaling = Scalar.Clamp(sceneManager.scene.getEngine().getHardwareScalingLevel() - 0.25, 0, hardwareScalingLevel);
         sceneManager.scene.getEngine().setHardwareScalingLevel(scaling);
         return false;
     }
@@ -57,9 +58,10 @@ export function extendedUpgrade(sceneManager: SceneManager): boolean {
  * A custom degrade-oriented function configuration for the scene optimizer.
  *
  * @param viewer the viewer to optimize
+ * @param sceneManager
  */
 export function extendedDegrade(sceneManager: SceneManager): boolean {
-    let defaultPipeline = <DefaultRenderingPipeline>sceneManager.defaultRenderingPipeline;
+    const defaultPipeline = <DefaultRenderingPipeline>sceneManager.defaultRenderingPipeline;
 
     if (sceneManager.groundMirrorEnabled) {
         sceneManager.groundMirrorEnabled = false;
@@ -74,7 +76,7 @@ export function extendedDegrade(sceneManager: SceneManager): boolean {
         return false;
     }
     if (sceneManager.scene.getEngine().getHardwareScalingLevel() < 1) {
-        let scaling = Scalar.Clamp(sceneManager.scene.getEngine().getHardwareScalingLevel() + 0.25, 0, 1);
+        const scaling = Scalar.Clamp(sceneManager.scene.getEngine().getHardwareScalingLevel() + 0.25, 0, 1);
         sceneManager.scene.getEngine().setHardwareScalingLevel(scaling);
         return false;
     }
@@ -91,7 +93,7 @@ export function extendedDegrade(sceneManager: SceneManager): boolean {
         return false;
     }
     if (sceneManager.scene.getEngine().getHardwareScalingLevel() < 1.25) {
-        let scaling = Scalar.Clamp(sceneManager.scene.getEngine().getHardwareScalingLevel() + 0.25, 0, 1.25);
+        const scaling = Scalar.Clamp(sceneManager.scene.getEngine().getHardwareScalingLevel() + 0.25, 0, 1.25);
         sceneManager.scene.getEngine().setHardwareScalingLevel(scaling);
         return false;
     }

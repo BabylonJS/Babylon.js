@@ -129,7 +129,7 @@ export class RangeSelectorComponent extends React.Component<IRangeSelectorCompon
         let minFrame = Number.MAX_VALUE;
         let maxFrame = -Number.MAX_VALUE;
 
-        for (var animation of this.props.context.animations) {
+        for (const animation of this.props.context.animations) {
             const keys = this.props.context.useTargetAnimations ? (animation as TargetedAnimation).animation.getKeys() : (animation as Animation).getKeys();
 
             minFrame = Math.min(minFrame, keys[0].frame);

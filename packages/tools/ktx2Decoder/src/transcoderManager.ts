@@ -45,7 +45,7 @@ export class TranscoderManager {
     }
 
     private _getExistingTranscoder(key: string, transcoderName: string): Transcoder | null {
-        let transcoders = TranscoderManager._transcoderInstances[key];
+        const transcoders = TranscoderManager._transcoderInstances[key];
 
         if (transcoders) {
             for (let t = 0; t < transcoders.length; ++t) {

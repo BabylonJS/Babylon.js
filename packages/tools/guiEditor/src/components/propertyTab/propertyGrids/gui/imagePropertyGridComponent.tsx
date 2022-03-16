@@ -70,7 +70,7 @@ export class ImagePropertyGridComponent extends React.Component<IImagePropertyGr
 
         const proxy = makeTargetsProxy(images, this.props.onPropertyChangedObservable);
 
-        var stretchOptions = [
+        const stretchOptions = [
             { label: "None", value: Image.STRETCH_NONE },
             { label: "Fill", value: Image.STRETCH_FILL },
             { label: "Uniform", value: Image.STRETCH_UNIFORM },
