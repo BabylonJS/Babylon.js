@@ -1,0 +1,15 @@
+{
+    "connector": "local",
+    "extends": [
+        "accessibility",
+        "progressive-web-apps"
+    ],
+    "formatters": [
+        "html",
+        "summary"
+    ],
+    "hints": {
+        "typescript-config/strict": "off"
+    },
+    "hintsTimeout": 10000
+}

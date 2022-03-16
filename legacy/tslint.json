@@ -1,0 +1,28 @@
+{
+    "rules": {
+        "no-this-assignment": true,
+        "no-eval": true,
+        "align": true,
+        "arrow-parens": true,
+        "no-trailing-whitespace": true,
+        "new-parens": true,
+        "no-consecutive-blank-lines": true,
+        "no-irregular-whitespace": true,
+        "semicolon": [true, "always", "ignore-bound-class-methods"],
+        "space-before-function-paren": [false, "never"],
+        "space-within-parens": true,
+        "curly": true,
+        "whitespace": [true, 
+            "check-branch",
+            "check-decl",
+            "check-operator",
+            "check-module",
+            "check-separator",
+            "check-rest-spread",
+            "check-type",
+            "check-type-operator",
+            "check-preblock"
+        ],
+        "indent": [true, "spaces", 4]
+    }
+}

@@ -1,0 +1,248 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            /*
+            Launch the playground to be use to test changes in dev packages
+            */
+            "type": "pwa-chrome",
+            "request": "launch",
+            "name": "Dev Host development (chrome)",
+            "url": "http://localhost:1338",
+            "webRoot": "${workspaceFolder}",
+            "preLaunchTask": "Run Dev host (Dev)"
+        },
+        {
+            /*
+            Launch the playground to be use to test changes in dev packages
+            */
+            "type": "pwa-chrome",
+            "request": "launch",
+            "name": "Dev Host development - SSL (chrome)",
+            "url": "https://localhost:1338",
+            "webRoot": "${workspaceFolder}",
+            "preLaunchTask": "Run Dev host (Dev)",
+            "env": {
+                "ENABLE_HTTPS": "true"
+            }
+        },
+        {
+            /*
+            Playground development - meant for development of the playground
+            It doesn't set any source code watchers!
+            */
+            "type": "pwa-chrome",
+            "request": "launch",
+            "name": "Playground development (chrome)",
+            "url": "http://localhost:1338",
+            "webRoot": "${workspaceFolder}",
+            "preLaunchTask": "Playground Serve (Dev)"
+        },
+        {
+            /*
+            Launch the playground to be use to test changes in dev packages
+            */
+            "type": "pwa-chrome",
+            "request": "launch",
+            "name": "Launch Playground (chrome)",
+            "url": "http://localhost:1338",
+            "webRoot": "${workspaceFolder}",
+            "preLaunchTask": "Playground Serve for core (Dev)"
+        },
+        {
+            /*
+            Playground development - meant for development of the playground
+            It doesn't set any source code watchers!
+            */
+            "type": "pwa-chrome",
+            "request": "launch",
+            "name": "Sandbox development (chrome)",
+            "url": "http://localhost:1338",
+            "webRoot": "${workspaceFolder}",
+            "preLaunchTask": "Sandbox Serve (Dev)"
+        },
+        {
+            /*
+            Launch the playground to be use to test changes in dev packages
+            */
+            "type": "pwa-chrome",
+            "request": "launch",
+            "name": "Launch Sandbox (chrome)",
+            "url": "http://localhost:1338",
+            "webRoot": "${workspaceFolder}",
+            "preLaunchTask": "Sandbox Serve for core (Dev)"
+        },
+        {
+            "type": "pwa-chrome",
+            "request": "launch",
+            "name": "GUI Editor development (chrome)",
+            "url": "http://localhost:1338",
+            "webRoot": "${workspaceFolder}",
+            "preLaunchTask": "GUI Editor Serve (Dev)"
+        },
+        {
+            /*
+            Launch the playground to be use to test changes in dev packages
+            */
+            "type": "pwa-chrome",
+            "request": "launch",
+            "name": "Launch GUI Editor (chrome)",
+            "url": "http://localhost:1338",
+            "webRoot": "${workspaceFolder}",
+            "preLaunchTask": "GUI Editor Serve for core (Dev)"
+        },
+        {
+            "type": "pwa-chrome",
+            "request": "launch",
+            "name": "Node Editor development (chrome)",
+            "url": "http://localhost:1338",
+            "webRoot": "${workspaceFolder}",
+            "preLaunchTask": "Node Editor Serve (Dev)"
+        },
+        {
+            /*
+            Launch the playground to be use to test changes in dev packages
+            */
+            "type": "pwa-chrome",
+            "request": "launch",
+            "name": "Launch Node Editor (chrome)",
+            "url": "http://localhost:1338",
+            "webRoot": "${workspaceFolder}",
+            "preLaunchTask": "Node Editor Serve for core (Dev)"
+        },
+        {
+            /*
+            Launch the playground to be use to test changes in dev packages
+            */
+            "type": "pwa-chrome",
+            "request": "launch",
+            "name": "Run and Watch Dev host (Dev)",
+            "url": "http://localhost:1338",
+            "outFiles": ["!**/node_modules/**"],
+            "webRoot": "${workspaceFolder}",
+            "preLaunchTask": "Run and Watch Dev host (Dev)"
+        },
+        {
+            /*
+            Launch the playground to be use to test changes in dev packages
+            */
+            "type": "pwa-chrome",
+            "request": "launch",
+            "name": "Run and Watch Dev host - SSL (Dev)",
+            "url": "https://localhost:1338",
+            "outFiles": ["!**/node_modules/**"],
+            "webRoot": "${workspaceFolder}",
+            "preLaunchTask": "Run and Watch Dev host (Dev)"
+        },
+        {
+            /*
+            Launch the playground to be use to test changes in dev packages
+            */
+            "type": "pwa-chrome",
+            "request": "launch",
+            "name": "Run and Watch Babylon Server (Dev)",
+            "url": "http://localhost:1337",
+            "outFiles": ["!**/node_modules/**"],
+            "webRoot": "${workspaceFolder}",
+            "preLaunchTask": "CDN Serve and watch (Dev)"
+        },
+        {
+            /*
+            Launch the playground to be use to test changes in dev packages
+            */
+            "type": "pwa-chrome",
+            "request": "launch",
+            "name": "Run and Watch Babylon Server - SSL (Dev)",
+            "url": "https://localhost:1337",
+            "outFiles": ["!**/node_modules/**"],
+            "webRoot": "${workspaceFolder}",
+            "preLaunchTask": "CDN Serve and watch (Dev)"
+        },
+        {
+            /*
+            Launch tests
+            https://jestjs.io/docs/troubleshooting#debugging-in-vs-code
+            */
+            "type": "node",
+            "request": "launch",
+            "name": "Run and Debug unit tests (Dev)",
+            "runtimeArgs": ["--inspect-brk", "${workspaceRoot}/node_modules/jest/bin/jest.js", "--runInBand", "--selectProjects", "unit"],
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",
+            "port": 9229,
+            // "outFiles": ["${workspaceRoot}/**/dist/**/*"], // debugging sources
+            // "envFile": "${workspaceRoot}/.env",
+            "preLaunchTask": "Build (Dev)"
+        },
+        {
+            /*
+            Launch tests
+            https://jestjs.io/docs/troubleshooting#debugging-in-vs-code
+            */
+            "type": "node",
+            "request": "launch",
+            "name": "Run validation tests - WebGL2 (Dev)",
+            "runtimeArgs": ["--inspect-brk", "${workspaceRoot}/node_modules/jest/bin/jest.js", "--runInBand", "--selectProjects", "visualization", "-i", "webgl2"],
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",
+            "port": 9229,
+            // "outFiles": ["${workspaceRoot}/**/dist/**/*"], // debugging sources
+            // "envFile": "${workspaceRoot}/.env",
+            "preLaunchTask": "CDN Serve (Dev)"
+        },
+        {
+            /*
+            Launch tests
+            https://jestjs.io/docs/troubleshooting#debugging-in-vs-code
+            */
+            "type": "node",
+            "request": "launch",
+            "name": "Run validation tests - WebGL1 (Dev)",
+            "runtimeArgs": ["--inspect-brk", "${workspaceRoot}/node_modules/jest/bin/jest.js", "--runInBand", "--selectProjects", "visualization", "-i", "webgl1"],
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",
+            "port": 9229,
+            // "outFiles": ["${workspaceRoot}/**/dist/**/*"], // debugging sources
+            // "envFile": "${workspaceRoot}/.env",
+            "preLaunchTask": "CDN Serve (Dev)"
+        },
+        {
+            /*
+            Launch tests
+            https://jestjs.io/docs/troubleshooting#debugging-in-vs-code
+            */
+            "type": "node",
+            "request": "launch",
+            "name": "Run validation tests - WebGPU (Dev)",
+            "runtimeArgs": ["--inspect-brk", "${workspaceRoot}/node_modules/jest/bin/jest.js", "--runInBand", "--selectProjects", "visualization", "-i", "webgpu"],
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",
+            "port": 9229,
+            "env": {
+                "TEST_ENGINE": "webgpu"
+            },
+            // "outFiles": ["${workspaceRoot}/**/dist/**/*"], // debugging sources
+            // "envFile": "${workspaceRoot}/.env",
+            "preLaunchTask": "CDN Serve (Dev)"
+        },
+        {
+            /*
+            Launch tests
+            https://jestjs.io/docs/troubleshooting#debugging-in-vs-code
+            */
+            "type": "node",
+            "request": "launch",
+            "name": "Run and Debug integration tests (Dev)",
+            "runtimeArgs": ["--inspect-brk", "${workspaceRoot}/node_modules/jest/bin/jest.js", "--runInBand", "--selectProjects", "integration"],
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",
+            "port": 9229,
+            // "outFiles": ["${workspaceRoot}/**/dist/**/*"], // debugging sources
+            // "envFile": "${workspaceRoot}/.env",
+            "preLaunchTask": "CDN Serve Prod (Dev)"
+        }
+    ]
+}
