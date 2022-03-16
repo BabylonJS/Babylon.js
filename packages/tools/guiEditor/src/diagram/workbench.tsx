@@ -659,7 +659,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     }
 
     processSelection() {
-        console.log(this._controlsHit.map((control) => control.name));
+        // if hit nothing, deselect all
         if (this._controlsHit.length === 0) {
             this.props.globalState.setSelection([]);
             return;
@@ -678,19 +678,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 }
             }
         }
-        /* possible implementation if we decide to go with "up one level" approach
-        let parent = selectedControls.length > 0 ? seletcedControls[0].parent : this._trueRootContainer;
-        while(parent != null) {
-            for(const control of this._controlsHit) {
-                if (control.parent === parent) {
-                    select(control);
-                    return;
-                }
-            }
-            parent = parent.parent;
-        }
-        DONE
-        */
+
         // if control or sibling of control already selected -> select
         for (const control of this._controlsHit) {
             for (const selected of this.props.globalState.selectedControls) {
