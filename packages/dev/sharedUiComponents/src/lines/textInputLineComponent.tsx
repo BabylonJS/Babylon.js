@@ -7,7 +7,7 @@ import { InputArrowsComponent } from "./inputArrowsComponent";
 
 interface ITextInputLineComponentProps {
     label?: string;
-    lockObject: LockObject;
+    lockObject?: LockObject;
     target?: any;
     propertyName?: string;
     value?: string;
@@ -24,6 +24,11 @@ interface ITextInputLineComponentProps {
     arrows?: boolean;
     arrowsIncrement?: (amount: number) => void;
     step?: number;
+    numeric?: boolean
+    roundValues?: boolean
+    min?: number;
+    max?: number;
+    placeholder?: string;
 }
 
 export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, { value: string; dragging: boolean }> {
@@ -39,7 +44,9 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
     }
 
     componentWillUnmount() {
-        this.props.lockObject.lock = false;
+        if (this.props.lockObject) {
+            this.props.lockObject.lock = false;
+        }
     }
 
     shouldComponentUpdate(nextProps: ITextInputLineComponentProps, nextState: { value: string; dragging: boolean }) {
@@ -79,7 +86,7 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
 
     updateValue(value: string) {
         if (this.props.numbersOnly) {
-            if (/[^0-9\.\p\x\%\-]/g.test(value)) {
+            if (/[^0-9.px%-]/g.test(value)) {
                 return;
             }
             if (!value) {
@@ -87,9 +94,23 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
             }
 
             //Removing starting zero if there is a number of a minus after it.
-            if (value.search(/0+[0-9\-]/g) === 0) {
+            if (value.search(/0+[0-9-]/g) === 0) {
                 value = value.substr(1);
             }
+        }
+
+        if (this.props.numeric) {
+            let numericValue = parseFloat(value);
+            if (this.props.roundValues) {
+                numericValue = Math.round(numericValue);
+            }
+            if (this.props.min) {
+                numericValue = Math.max(this.props.min, numericValue);
+            }
+            if (this.props.max) {
+                numericValue = Math.min(this.props.max, numericValue);
+            }
+            value = numericValue.toString();
         }
 
         this._localChange = true;
@@ -111,7 +132,10 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
             this.props.arrowsIncrement(amount);
             return;
         }
-        const currentValue = parseFloat(this.state.value);
+        let currentValue = parseFloat(this.state.value);
+        if (isNaN(currentValue)) {
+            currentValue = 0;
+        }
         this.updateValue((currentValue + amount).toFixed(2));
     }
 
@@ -130,7 +154,8 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
 
     render() {
         const value = this.state.value === conflictingValuesPlaceholder ? "" : this.state.value;
-        const placeholder = this.state.value === conflictingValuesPlaceholder ? conflictingValuesPlaceholder : "";
+        const placeholder = this.state.value === conflictingValuesPlaceholder ? conflictingValuesPlaceholder : (this.props.placeholder || "");
+        const step = this.props.step || (this.props.roundValues ? 1 : 0.01);
         return (
             <div className={this.props.unit !== undefined ? "textInputLine withUnits" : "textInputLine"}>
                 {this.props.icon && <img src={this.props.icon} title={this.props.iconLabel} alt={this.props.iconLabel} color="black" className="icon" />}
@@ -143,13 +168,21 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
                     <input
                         value={value}
                         onBlur={() => {
-                            this.props.lockObject.lock = false;
+                            if (this.props.lockObject) {
+                                this.props.lockObject.lock = false;
+                            }
                             this.updateValue((this.props.value !== undefined ? this.props.value : this.props.target[this.props.propertyName!]) || "");
                         }}
-                        onFocus={() => (this.props.lockObject.lock = true)}
+                        onFocus={() => {
+                            if (this.props.lockObject) {
+                                this.props.lockObject.lock = true;
+                            }
+                        }}
                         onChange={(evt) => this.updateValue(evt.target.value)}
                         onKeyDown={(evt) => this.onKeyDown(evt)}
                         placeholder={placeholder}
+                        type={this.props.numeric ? "number" : "text"}
+                        step={step}
                     />
                     {this.props.arrows && <InputArrowsComponent incrementValue={(amount) => this.incrementValue(amount)} setDragging={(dragging) => this.setState({ dragging })} />}
                 </div>

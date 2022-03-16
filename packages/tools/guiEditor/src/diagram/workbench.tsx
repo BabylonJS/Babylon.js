@@ -435,7 +435,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this.guiSize = this.globalState.guiTexture.getSize();
         this.loadToEditor();
         if (this.props.globalState.customLoad) {
-            this.props.globalState.customLoad.action(this.globalState.guiTexture.snippetId).catch((err) => {
+            this.props.globalState.customLoad.action(this.globalState.guiTexture.snippetId).catch(() => {
                 alert("Unable to load your GUI");
             });
         }
@@ -483,7 +483,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     }
 
     createNewGuiNode(guiControl: Control) {
-        const onPointerUp = guiControl.onPointerUpObservable.add((evt) => {
+        const onPointerUp = guiControl.onPointerUpObservable.add(() => {
             this.clicked = false;
         });
 
@@ -506,20 +506,20 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             }
         });
 
-        const onPointerEnter = guiControl.onPointerEnterObservable.add((evt) => {
+        const onPointerEnter = guiControl.onPointerEnterObservable.add(() => {
             if (this._isOverGUINode.indexOf(guiControl) === -1) {
                 this._isOverGUINode.push(guiControl);
             }
         });
 
-        const onPointerOut = guiControl.onPointerOutObservable.add((evt) => {
+        const onPointerOut = guiControl.onPointerOutObservable.add(() => {
             const index = this._isOverGUINode.indexOf(guiControl);
             if (index !== -1) {
                 this._isOverGUINode.splice(index, 1);
             }
         });
 
-        const onDispose = guiControl.onDisposeObservable.add((evt) => {
+        const onDispose = guiControl.onDisposeObservable.add(() => {
             const index = this._isOverGUINode.indexOf(guiControl);
             if (index !== -1) {
                 this._isOverGUINode.splice(index, 1);
@@ -568,7 +568,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                         (dropLocationControl as Container).addControl(draggedControl);
                         const stackPanel = dropLocationControl.typeName === "StackPanel" || dropLocationControl.typeName === "VirtualKeyboard";
                         if (stackPanel) {
-                            this._convertToPixels(draggedControl, dropLocationControl as Container);
+                            this._convertToPixels(draggedControl);
                         }
                     } else if (dropLocationControl.parent) {
                         //dropping inside the controls parent container
@@ -582,7 +582,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                             dropLocationControl.parent.children.splice(index, 0, draggedControl);
                             draggedControl.parent = dropLocationControl.parent;
                             if (reversed) {
-                                this._convertToPixels(draggedControl, draggedControl.parent);
+                                this._convertToPixels(draggedControl);
                             }
                         } else if (dropLocationControl.parent === draggedControlParent) {
                             //special case for grid
@@ -608,7 +608,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
     }
 
-    private _convertToPixels(draggedControl: Control, parent: Container) {
+    private _convertToPixels(draggedControl: Control) {
         const width = draggedControl.widthInPixels + "px";
         const height = draggedControl.heightInPixels + "px";
         if (draggedControl.width !== width || draggedControl.height !== height) {
@@ -655,7 +655,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
     public clicked: boolean;
 
-    public _onMove(guiControl: Control, evt: Vector2, startPos: Vector2, ignorClick: boolean = false) {
+    public _onMove(guiControl: Control, evt: Vector2, startPos: Vector2) {
         let newX = evt.x - startPos.x;
         let newY = evt.y - startPos.y;
 
@@ -711,7 +711,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         return true;
     }
 
-    onMove(evt: React.PointerEvent) {
+    onMove() {
         const pos = this.getScaledPointerPosition();
         // Move or guiNodes
         if (this._mouseStartPointX != null && this._mouseStartPointY != null && !this._panning) {
@@ -720,7 +720,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             let selected = false;
             this.selectedGuiNodes.forEach((element) => {
                 if (pos) {
-                    selected = this._onMove(element, new Vector2(pos.x, pos.y), new Vector2(x, y), false) || selected;
+                    selected = this._onMove(element, new Vector2(pos.x, pos.y), new Vector2(x, y)) || selected;
                 }
             });
 
@@ -929,7 +929,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             this.props.globalState.onPointerUpObservable.notifyObservers(event);
         });
 
-        scene.onKeyboardObservable.add((k: KeyboardInfo, e: KeyboardEventTypes) => {
+        scene.onKeyboardObservable.add((k: KeyboardInfo) => {
             switch (k.event.key) {
                 case "s": //select
                 case "S":
@@ -962,7 +962,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                     break;
                 case "ArrowRight": // move right
                     this.moveControls(true, k.event.shiftKey ? ARROW_KEY_MOVEMENT_LARGE : ARROW_KEY_MOVEMENT_SMALL);
-                default:
                     break;
             }
         }, KeyboardEventTypes.KEYDOWN);
@@ -1068,7 +1067,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 id="workbench-canvas"
                 onPointerMove={(evt) => {
                     if (this.props.globalState.guiTexture) {
-                        this.onMove(evt);
+                        this.onMove();
                     }
                     this.props.globalState.onPointerMoveObservable.notifyObservers(evt);
                 }}
