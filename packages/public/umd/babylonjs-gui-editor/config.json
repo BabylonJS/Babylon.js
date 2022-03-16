@@ -1,0 +1,5 @@
+{
+    "declarationLibs": ["@tools/gui-editor"],
+    "devPackageName": "guiEditor",
+    "filename": "babylon.guiEditor.module.d.ts"
+}
