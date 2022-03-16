@@ -1,4 +1,4 @@
-import { GLTFLoaderExtension , GLTFLoader, GLTFLoaderBase } from "./glTFLoader";
+import { GLTFLoaderExtension, GLTFLoader, GLTFLoaderBase } from "./glTFLoader";
 import { GLTFUtils } from "./glTFLoaderUtils";
 import { Scene } from "core/scene";
 import { IGLTFLoaderData } from "../glTFFileLoader";

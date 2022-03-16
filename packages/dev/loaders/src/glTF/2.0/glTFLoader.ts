@@ -1,6 +1,6 @@
 import { IndicesArray, Nullable } from "core/types";
 import { Deferred } from "core/Misc/deferred";
-import { Quaternion, Vector3, Matrix , TmpVectors } from "core/Maths/math.vector";
+import { Quaternion, Vector3, Matrix, TmpVectors } from "core/Maths/math.vector";
 import { Color3 } from "core/Maths/math.color";
 import { Tools } from "core/Misc/tools";
 import { Camera } from "core/Cameras/camera";
