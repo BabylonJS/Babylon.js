@@ -1,0 +1,16 @@
+{
+    "extends": "../../../../tsconfig.build.json",
+
+    "compilerOptions": {
+        "outDir": "./dist",
+        "rootDir": "../../../lts/gui/generated",
+        "declaration": true,
+        "target": "es5",
+        "importHelpers": true,
+        "plugins": [
+            { "transform": "../../../dev/buildTools/src/pathTransform.ts", "buildType": "es6", "basePackage": "@babylonjs/gui", "appendJS": true },
+        ]
+    },
+
+    "include": ["../../../lts/gui/generated/**/*"]
+}

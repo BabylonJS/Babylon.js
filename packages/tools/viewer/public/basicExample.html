@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="ie=edge">
+        <title>BabylonJS Viewer - Basic usage</title>
+        <style>
+            babylon {
+                width: 300px;
+                height: 200px;
+            }
+        </style>
+    </head>
+
+    <body>
+        <babylon id="babylon-viewer" model="https://models.babylonjs.com/boombox.glb">
+            <!-- Setting the vr object (or vr="true" in the <babylon tag) is enough to enable VR.
+                 The object-scale-factor is optional an can be used to scale the model in VR mode.
+                 If setting "2", the model will be twice the size of its normalized size.
+            -->
+            <vr object-scale-factor="2">
+            </vr>
+            <!-- This is needed in order to show the VR button. It is also possible to toggleVR() using javascript -->
+            <templates>
+                <nav-bar>
+                    <params hide-vr="false"></params>
+                </nav-bar>
+            </templates>
+        </babylon>
+        <script src="viewer.js"></script>
+        <script>
+
+        </script>
+    </body>
+
+</html>

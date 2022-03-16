@@ -1,0 +1,67 @@
+// Place your settings in this file to overwrite default and user settings.
+{
+    // Configure glob patterns for excluding files and folders.
+    "files.exclude": {
+        "**/.git": true,
+        "**/.svn": true,
+        "**/.hg": true,
+        "**/.DS_Store": true,
+        "**/.vs": true,
+        "**/.tempChromeProfileForDebug": true,
+        "**/node_modules": true,
+        "**/temp": true,
+        "**/.temp": true,
+        "gui/**/*.d.ts": true,
+        "inspector/**/*.d.ts": true,
+        "loaders/**/*.d.ts": true,
+        "materialsLibrary/**/*.d.ts": true,
+        "postProcessesLibrary/**/*.d.ts": true,
+        "proceduralTexturesLibrary/**/*.d.ts": true,
+        "serializers/**/*.d.ts": true,
+        "Viewer/**/*.d.ts": true,
+        "src/**/*.js.map": true,
+        "gui/**/*.js.map": true,
+        "inspector/**/*.js.map": true,
+        "loaders/**/*.js.map": true,
+        "materialsLibrary/**/*.js.map": true,
+        "postProcessesLibrary/**/*.js.map": true,
+        "proceduralTexturesLibrary/**/*.js.map": true,
+        "serielazers/**/*.js.map": true,
+        "**/*.js.fx": true,
+        "**/*.js.wgsl": true,
+        "**/*.js": {
+            "when": "$(basename).ts"
+        },
+        "**/*.fragment.ts": true,
+        "**/*.vertex.ts": true,
+        "**/*.compute.ts": true,
+        "**/ShadersInclude/**/*.ts": true
+    },
+    "files.associations": {
+        "*.fx": "glsl"
+    },
+    "search.exclude": {
+        "**/node_modules": true,
+        "**/bower_components": true,
+        "**/.vs": true,
+        "**/.tempChromeProfileForDebug": true,
+        "**/.temp": true,
+        "**/dist": true,
+        "**/*.map": true,
+        "**/*.js": {
+            "when": "$(basename).ts"
+        },
+        "dist/**/*.d.ts": true,
+        "**/*.fragment.ts": true,
+        "**/*.vertex.ts": true,
+        "**/*.compute.ts": true,
+        "**/ShadersInclude/**/*.ts": true,
+        "assets": true,
+        "**/babylonWeb**": true,
+    },
+    "editor.tabSize": 4,
+    "typescript.tsdk": "node_modules\\typescript\\lib",
+    "typescript.preferences.importModuleSpecifier": "relative",
+    "ponicode.testSettings.testLocation.locationType": "Custom",
+    "ponicode.testSettings.testLocation.path": "{rootDir}/tests/ponicode/babylon/{filePathWithoutSrc}/{fileName}.test.{ext}"
+}

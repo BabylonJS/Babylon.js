@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="ie=edge">
+        <title>BabylonJS Viewer - Sphere</title>
+        <style>
+            babylon,
+            #viewport {
+                max-width: 800px;
+                max-height: 500px;
+                width: 100%;
+                height: 600px;
+            }
+        </style>
+    </head>
+
+    <body>
+        <babylon id="babylon-viewer" scene.environment-texture="/environment.dds" extends="extended, shadowDirectionalLight" lab.environmentMap.texture=""></babylon>
+        <div id="viewport" touch-action="none"></div>
+        <script src="viewer.js"></script>
+        <script>
+            BabylonViewer.viewerManager.onViewerAdded = function (viewer) {
+                console.log('Using viewerManager.onViewerAdded: ', 'viewer - ' + viewer.getBaseId());
+
+                let specular = 0.6;
+                let ms = 0.6;
+                viewer.onInitDoneObservable.add(() => {
+                    let meshModel = new BabylonViewer.ViewerModel(viewer, {
+                        material: {
+                            albedoColor: {
+                                r: 0,
+                                g: 0,
+                                b: 1
+                            },
+                            reflectivityColor: {
+                                r: specular,
+                                g: specular,
+                                b: specular,
+                            },
+                            microSurface: ms
+                        }
+                    });
+
+                    let sphereMesh = BABYLON.Mesh.CreateSphere('sphere-', 20, 1.0, viewer.sceneManager.scene);
+                    let material = new BABYLON.PBRMaterial("sphereMat", viewer.sceneManager.scene);
+                    material.environmentBRDFTexture = null;
+                    material.useAlphaFresnel = material.needAlphaBlending();
+                    material.backFaceCulling = material.forceDepthWrite;
+                    material.twoSidedLighting = true;
+                    material.useSpecularOverAlpha = false;
+                    material.useRadianceOverAlpha = false;
+                    material.usePhysicalLightFalloff = true;
+                    material.forceNormalForward = true;
+                    sphereMesh.material = material;
+                    meshModel.addMesh(sphereMesh, true);
+                })
+
+            }
+
+        </script>
+    </body>
+
+</html>

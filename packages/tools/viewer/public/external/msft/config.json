@@ -1,0 +1,32 @@
+{
+    "ground": {
+        "material": {
+            "primaryColorHighlightLevel": 0.05
+        }
+    },
+    "skybox": {
+        "cubeTexture": {
+            "url": "Skybox_3.0-256.dds"
+        },
+        "material": {
+            "primaryColorShadowLevel": 0.1
+        }
+    },
+    "scene": {
+        "imageProcessingConfiguration": {
+            "vignetteWeight": 0
+        },
+        "mainColor": {
+            "r": 0.9607843137254902,
+            "g": 0.9607843137254902,
+            "b": 0.9607843137254902
+        }
+    },
+    "templates": {
+        "navBar": {
+            "params": {
+                "hideHdButton": false
+            }
+        }
+    }
+}

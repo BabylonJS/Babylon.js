@@ -1,0 +1,21 @@
+{
+    "extends": "../../../tsconfig.build.json",
+
+    "compilerOptions": {
+        "composite": true,
+        "outDir": "./dist",
+        "rootDir": "./generated",
+        "paths": {
+            "core/*": ["lts/core/dist/*"],
+            "serializers/*": ["lts/serializers/generated/*"],
+        }
+    },
+
+    "references": [
+        {
+            "path": "../core/tsconfig.build.json"
+        }
+    ],
+
+    "include": ["./generated/**/*"]
+}
