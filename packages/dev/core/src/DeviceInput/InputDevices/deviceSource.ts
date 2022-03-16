@@ -1,16 +1,17 @@
-import { DeviceType, PointerInput } from './deviceEnums';
-import { Observable } from '../../Misc/observable';
-import { DeviceInput } from './deviceTypes';
-import { IDeviceInputSystem } from './inputInterfaces';
-import { IUIEvent } from '../../Events/deviceInputEvents';
+import { DeviceType, PointerInput } from "./deviceEnums";
+import { Observable } from "../../Misc/observable";
+import { DeviceInput } from "./deviceTypes";
+import { IDeviceInputSystem } from "./inputInterfaces";
+import { IUIEvent } from "../../Events/deviceInputEvents";
 
 /**
  * Subset of DeviceInput that only handles pointers and keyboard
  */
-type DeviceEventInput<T extends DeviceType> =
-    T extends DeviceType.Keyboard | DeviceType.Generic ? number :
-    T extends DeviceType.Mouse | DeviceType.Touch ? Exclude<PointerInput, PointerInput.Horizontal | PointerInput.Vertical> :
-    never;
+type DeviceEventInput<T extends DeviceType> = T extends DeviceType.Keyboard | DeviceType.Generic
+    ? number
+    : T extends DeviceType.Mouse | DeviceType.Touch
+    ? Exclude<PointerInput, PointerInput.Horizontal | PointerInput.Vertical>
+    : never;
 
 /**
  * Class that handles all input for a specific device
@@ -31,11 +32,13 @@ export class DeviceSource<T extends DeviceType> {
      * @param deviceType Type of device
      * @param deviceSlot "Slot" or index that device is referenced in
      */
-    constructor(deviceInputSystem: IDeviceInputSystem,
+    constructor(
+        deviceInputSystem: IDeviceInputSystem,
         /** Type of device */
         public readonly deviceType: DeviceType,
         /** "Slot" or index that device is referenced in */
-        public readonly deviceSlot: number = 0) {
+        public readonly deviceSlot: number = 0
+    ) {
         this._deviceInputSystem = deviceInputSystem;
     }
 

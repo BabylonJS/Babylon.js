@@ -17,8 +17,8 @@ export enum InternalTextureSource {
      */
     Unknown,
     /**
-    * Texture data comes from an URL
-    */
+     * Texture data comes from an URL
+     */
     Url,
     /**
      * Texture data is only used for temporary storage
@@ -79,7 +79,6 @@ export enum InternalTextureSource {
  * This class should not be used directly
  */
 export class InternalTexture extends TextureSampler {
-
     /**
      * Defines if the texture is ready
      */
@@ -139,15 +138,17 @@ export class InternalTexture extends TextureSampler {
     /**
      * Observable called when the texture load is raising an error
      */
-     public onErrorObservable = new Observable<Partial<{ message: string, exception: any }>>();
+    public onErrorObservable = new Observable<Partial<{ message: string; exception: any }>>();
     /**
      * If this callback is defined it will be called instead of the default _rebuild function
      */
-    public onRebuildCallback: Nullable<(internalTexture: InternalTexture) => {
-        proxy: Nullable<InternalTexture | Promise<InternalTexture>>;
-        isReady: boolean;
-        isAsync: boolean;
-    }> = null;
+    public onRebuildCallback: Nullable<
+        (internalTexture: InternalTexture) => {
+            proxy: Nullable<InternalTexture | Promise<InternalTexture>>;
+            isReady: boolean;
+            isAsync: boolean;
+        }
+    > = null;
     /**
      * Gets the width of the texture
      */
@@ -338,7 +339,7 @@ export class InternalTexture extends TextureSampler {
             if (data.isAsync) {
                 (data.proxy as Promise<InternalTexture>).then(swapAndSetIsReady);
             } else {
-                swapAndSetIsReady((data.proxy as InternalTexture));
+                swapAndSetIsReady(data.proxy as InternalTexture);
             }
             return;
         }
@@ -349,31 +350,76 @@ export class InternalTexture extends TextureSampler {
                 break;
 
             case InternalTextureSource.Url:
-                proxy = this._engine.createTexture(this._originalUrl ?? this.url, !this.generateMipMaps, this.invertY, null, this.samplingMode, () => {
-                    proxy._swapAndDie(this, false);
-                    this.isReady = true;
-                }, null, this._buffer, undefined, this.format, this._extension, undefined, undefined, undefined, this._useSRGBBuffer);
+                proxy = this._engine.createTexture(
+                    this._originalUrl ?? this.url,
+                    !this.generateMipMaps,
+                    this.invertY,
+                    null,
+                    this.samplingMode,
+                    () => {
+                        proxy._swapAndDie(this, false);
+                        this.isReady = true;
+                    },
+                    null,
+                    this._buffer,
+                    undefined,
+                    this.format,
+                    this._extension,
+                    undefined,
+                    undefined,
+                    undefined,
+                    this._useSRGBBuffer
+                );
                 return;
 
             case InternalTextureSource.Raw:
-                proxy = this._engine.createRawTexture(this._bufferView, this.baseWidth, this.baseHeight, this.format, this.generateMipMaps,
-                    this.invertY, this.samplingMode, this._compression, this.type);
+                proxy = this._engine.createRawTexture(
+                    this._bufferView,
+                    this.baseWidth,
+                    this.baseHeight,
+                    this.format,
+                    this.generateMipMaps,
+                    this.invertY,
+                    this.samplingMode,
+                    this._compression,
+                    this.type
+                );
                 proxy._swapAndDie(this, false);
 
                 this.isReady = true;
                 break;
 
             case InternalTextureSource.Raw3D:
-                proxy = this._engine.createRawTexture3D(this._bufferView, this.baseWidth, this.baseHeight, this.baseDepth, this.format, this.generateMipMaps,
-                    this.invertY, this.samplingMode, this._compression, this.type);
+                proxy = this._engine.createRawTexture3D(
+                    this._bufferView,
+                    this.baseWidth,
+                    this.baseHeight,
+                    this.baseDepth,
+                    this.format,
+                    this.generateMipMaps,
+                    this.invertY,
+                    this.samplingMode,
+                    this._compression,
+                    this.type
+                );
                 proxy._swapAndDie(this, false);
 
                 this.isReady = true;
                 break;
 
             case InternalTextureSource.Raw2DArray:
-                proxy = this._engine.createRawTexture2DArray(this._bufferView, this.baseWidth, this.baseHeight, this.baseDepth, this.format, this.generateMipMaps,
-                    this.invertY, this.samplingMode, this._compression, this.type);
+                proxy = this._engine.createRawTexture2DArray(
+                    this._bufferView,
+                    this.baseWidth,
+                    this.baseHeight,
+                    this.baseDepth,
+                    this.format,
+                    this.generateMipMaps,
+                    this.invertY,
+                    this.samplingMode,
+                    this._compression,
+                    this.type
+                );
                 proxy._swapAndDie(this, false);
 
                 this.isReady = true;
@@ -388,14 +434,38 @@ export class InternalTexture extends TextureSampler {
                 break;
 
             case InternalTextureSource.Cube:
-                proxy = this._engine.createCubeTexture(this.url, null, this._files, !this.generateMipMaps, () => {
-                    proxy._swapAndDie(this, false);
-                    this.isReady = true;
-                }, null, this.format, this._extension, false, 0, 0, null, undefined, this._useSRGBBuffer);
+                proxy = this._engine.createCubeTexture(
+                    this.url,
+                    null,
+                    this._files,
+                    !this.generateMipMaps,
+                    () => {
+                        proxy._swapAndDie(this, false);
+                        this.isReady = true;
+                    },
+                    null,
+                    this.format,
+                    this._extension,
+                    false,
+                    0,
+                    0,
+                    null,
+                    undefined,
+                    this._useSRGBBuffer
+                );
                 return;
 
             case InternalTextureSource.CubeRaw:
-                proxy = this._engine.createRawCubeTexture(this._bufferViewArray!, this.width, this.format, this.type, this.generateMipMaps, this.invertY, this.samplingMode, this._compression);
+                proxy = this._engine.createRawCubeTexture(
+                    this._bufferViewArray!,
+                    this.width,
+                    this.format,
+                    this.type,
+                    this.generateMipMaps,
+                    this.invertY,
+                    this.samplingMode,
+                    this._compression
+                );
                 proxy._swapAndDie(this, false);
                 this.isReady = true;
                 break;
@@ -406,18 +476,31 @@ export class InternalTexture extends TextureSampler {
                 return;
 
             case InternalTextureSource.CubePrefiltered:
-                proxy = this._engine.createPrefilteredCubeTexture(this.url, null, this._lodGenerationScale, this._lodGenerationOffset, (proxy) => {
-                    if (proxy) {
-                        proxy._swapAndDie(this, false);
-                    }
-                    this.isReady = true;
-                }, null, this.format, this._extension);
+                proxy = this._engine.createPrefilteredCubeTexture(
+                    this.url,
+                    null,
+                    this._lodGenerationScale,
+                    this._lodGenerationOffset,
+                    (proxy) => {
+                        if (proxy) {
+                            proxy._swapAndDie(this, false);
+                        }
+                        this.isReady = true;
+                    },
+                    null,
+                    this.format,
+                    this._extension
+                );
                 proxy._sphericalPolynomial = this._sphericalPolynomial;
                 return;
         }
     }
 
-    /** @hidden */
+    /**
+     * @param target
+     * @param swapAll
+     * @hidden
+     */
     public _swapAndDie(target: InternalTexture, swapAll = true): void {
         // TODO what about refcount on target?
 
@@ -456,7 +539,7 @@ export class InternalTexture extends TextureSampler {
             target._irradianceTexture = this._irradianceTexture;
         }
 
-        let cache = this._engine.getLoadedTexturesCache();
+        const cache = this._engine.getLoadedTexturesCache();
         var index = cache.indexOf(this);
         if (index !== -1) {
             cache.splice(index, 1);

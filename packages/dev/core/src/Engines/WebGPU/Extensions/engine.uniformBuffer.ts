@@ -3,14 +3,13 @@ import { WebGPUDataBuffer } from "../../../Meshes/WebGPU/webgpuDataBuffer";
 import { FloatArray } from "../../../types";
 import { IPipelineContext } from "../../IPipelineContext";
 import { WebGPUEngine } from "../../webgpuEngine";
-import * as WebGPUConstants from '../webgpuConstants';
+import * as WebGPUConstants from "../webgpuConstants";
 
 WebGPUEngine.prototype.createUniformBuffer = function (elements: FloatArray): DataBuffer {
     let view: Float32Array;
     if (elements instanceof Array) {
         view = new Float32Array(elements);
-    }
-    else {
+    } else {
         view = elements;
     }
 
@@ -51,5 +50,4 @@ WebGPUEngine.prototype.bindUniformBufferBase = function (buffer: DataBuffer, loc
     this._currentDrawContext.setBuffer(name, buffer as WebGPUDataBuffer);
 };
 
-WebGPUEngine.prototype.bindUniformBlock = function (pipelineContext: IPipelineContext, blockName: string, index: number): void {
-};
+WebGPUEngine.prototype.bindUniformBlock = function (pipelineContext: IPipelineContext, blockName: string, index: number): void {};

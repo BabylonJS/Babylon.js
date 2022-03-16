@@ -3,7 +3,7 @@ import { Vector3 } from "../Maths/math.vector";
 import { Action } from "./action";
 import { Condition } from "./condition";
 import { Constants } from "../Engines/constants";
-import { RegisterClass } from '../Misc/typeStore';
+import { RegisterClass } from "../Misc/typeStore";
 
 declare type ActionEvent = import("./actionEvent").ActionEvent;
 
@@ -53,13 +53,13 @@ export class SwitchBooleanAction extends Action {
      * @returns the serialized object
      */
     public serialize(parent: any): any {
-        return super._serialize({
-            name: "SwitchBooleanAction",
-            properties: [
-                Action._GetTargetProperty(this._target),
-                { name: "propertyPath", value: this.propertyPath }
-            ]
-        }, parent);
+        return super._serialize(
+            {
+                name: "SwitchBooleanAction",
+                properties: [Action._GetTargetProperty(this._target), { name: "propertyPath", value: this.propertyPath }],
+            },
+            parent
+        );
     }
 }
 
@@ -102,13 +102,13 @@ export class SetStateAction extends Action {
      * @returns the serialized object
      */
     public serialize(parent: any): any {
-        return super._serialize({
-            name: "SetStateAction",
-            properties: [
-                Action._GetTargetProperty(this._target),
-                { name: "value", value: this.value }
-            ]
-        }, parent);
+        return super._serialize(
+            {
+                name: "SetStateAction",
+                properties: [Action._GetTargetProperty(this._target), { name: "value", value: this.value }],
+            },
+            parent
+        );
     }
 }
 
@@ -170,14 +170,17 @@ export class SetValueAction extends Action {
      * @returns the serialized object
      */
     public serialize(parent: any): any {
-        return super._serialize({
-            name: "SetValueAction",
-            properties: [
-                Action._GetTargetProperty(this._target),
-                { name: "propertyPath", value: this.propertyPath },
-                { name: "value", value: Action._SerializeValueAsString(this.value) }
-            ]
-        }, parent);
+        return super._serialize(
+            {
+                name: "SetValueAction",
+                properties: [
+                    Action._GetTargetProperty(this._target),
+                    { name: "propertyPath", value: this.propertyPath },
+                    { name: "value", value: Action._SerializeValueAsString(this.value) },
+                ],
+            },
+            parent
+        );
     }
 }
 
@@ -243,14 +246,17 @@ export class IncrementValueAction extends Action {
      * @returns the serialized object
      */
     public serialize(parent: any): any {
-        return super._serialize({
-            name: "IncrementValueAction",
-            properties: [
-                Action._GetTargetProperty(this._target),
-                { name: "propertyPath", value: this.propertyPath },
-                { name: "value", value: Action._SerializeValueAsString(this.value) }
-            ]
-        }, parent);
+        return super._serialize(
+            {
+                name: "IncrementValueAction",
+                properties: [
+                    Action._GetTargetProperty(this._target),
+                    { name: "propertyPath", value: this.propertyPath },
+                    { name: "value", value: Action._SerializeValueAsString(this.value) },
+                ],
+            },
+            parent
+        );
     }
 }
 
@@ -294,14 +300,13 @@ export class PlayAnimationAction extends Action {
     }
 
     /** @hidden */
-    public _prepare(): void {
-    }
+    public _prepare(): void {}
 
     /**
      * Execute the action and play the animation.
      */
     public execute(): void {
-        var scene = this._actionManager.getScene();
+        const scene = this._actionManager.getScene();
         scene.beginAnimation(this._target, this.from, this.to, this.loop);
     }
 
@@ -311,15 +316,18 @@ export class PlayAnimationAction extends Action {
      * @returns the serialized object
      */
     public serialize(parent: any): any {
-        return super._serialize({
-            name: "PlayAnimationAction",
-            properties: [
-                Action._GetTargetProperty(this._target),
-                { name: "from", value: String(this.from) },
-                { name: "to", value: String(this.to) },
-                { name: "loop", value: Action._SerializeValueAsString(this.loop) || false }
-            ]
-        }, parent);
+        return super._serialize(
+            {
+                name: "PlayAnimationAction",
+                properties: [
+                    Action._GetTargetProperty(this._target),
+                    { name: "from", value: String(this.from) },
+                    { name: "to", value: String(this.to) },
+                    { name: "loop", value: Action._SerializeValueAsString(this.loop) || false },
+                ],
+            },
+            parent
+        );
     }
 }
 
@@ -342,14 +350,13 @@ export class StopAnimationAction extends Action {
     }
 
     /** @hidden */
-    public _prepare(): void {
-    }
+    public _prepare(): void {}
 
     /**
      * Execute the action and stop the animation.
      */
     public execute(): void {
-        var scene = this._actionManager.getScene();
+        const scene = this._actionManager.getScene();
         scene.stopAnimation(this._target);
     }
 
@@ -359,10 +366,13 @@ export class StopAnimationAction extends Action {
      * @returns the serialized object
      */
     public serialize(parent: any): any {
-        return super._serialize({
-            name: "StopAnimationAction",
-            properties: [Action._GetTargetProperty(this._target)]
-        }, parent);
+        return super._serialize(
+            {
+                name: "StopAnimationAction",
+                properties: [Action._GetTargetProperty(this._target)],
+            },
+            parent
+        );
     }
 }
 
@@ -383,8 +393,7 @@ export class DoNothingAction extends Action {
     /**
      * Execute the action and do nothing.
      */
-    public execute(): void {
-    }
+    public execute(): void {}
 
     /**
      * Serializes the actions and its related information.
@@ -392,10 +401,13 @@ export class DoNothingAction extends Action {
      * @returns the serialized object
      */
     public serialize(parent: any): any {
-        return super._serialize({
-            name: "DoNothingAction",
-            properties: []
-        }, parent);
+        return super._serialize(
+            {
+                name: "DoNothingAction",
+                properties: [],
+            },
+            parent
+        );
     }
 }
 
@@ -429,7 +441,7 @@ export class CombineAction extends Action {
 
     /** @hidden */
     public _prepare(): void {
-        for (var index = 0; index < this.children.length; index++) {
+        for (let index = 0; index < this.children.length; index++) {
             this.children[index]._actionManager = this._actionManager;
             this.children[index]._prepare();
         }
@@ -437,6 +449,7 @@ export class CombineAction extends Action {
 
     /**
      * Execute the action and executes all the aggregated actions.
+     * @param evt
      */
     public execute(evt: ActionEvent): void {
         for (const action of this.children) {
@@ -452,13 +465,16 @@ export class CombineAction extends Action {
      * @returns the serialized object
      */
     public serialize(parent: any): any {
-        var serializationObject = super._serialize({
-            name: "CombineAction",
-            properties: [],
-            combine: []
-        }, parent);
+        const serializationObject = super._serialize(
+            {
+                name: "CombineAction",
+                properties: [],
+                combine: [],
+            },
+            parent
+        );
 
-        for (var i = 0; i < this.children.length; i++) {
+        for (let i = 0; i < this.children.length; i++) {
             serializationObject.combine.push(this.children[i].serialize(null));
         }
 
@@ -489,6 +505,7 @@ export class ExecuteCodeAction extends Action {
 
     /**
      * Execute the action and run the attached code.
+     * @param evt
      */
     public execute(evt: ActionEvent): void {
         this.func(evt);
@@ -517,8 +534,7 @@ export class SetParentAction extends Action {
     }
 
     /** @hidden */
-    public _prepare(): void {
-    }
+    public _prepare(): void {}
 
     /**
      * Execute the action and set the parent property.
@@ -528,7 +544,7 @@ export class SetParentAction extends Action {
             return;
         }
 
-        var invertParentWorldMatrix = this._parent.getWorldMatrix().clone();
+        const invertParentWorldMatrix = this._parent.getWorldMatrix().clone();
         invertParentWorldMatrix.invert();
 
         this._target.position = Vector3.TransformCoordinates(this._target.position, invertParentWorldMatrix);
@@ -542,13 +558,13 @@ export class SetParentAction extends Action {
      * @returns the serialized object
      */
     public serialize(parent: any): any {
-        return super._serialize({
-            name: "SetParentAction",
-            properties: [
-                Action._GetTargetProperty(this._target),
-                Action._GetTargetProperty(this._parent),
-            ]
-        }, parent);
+        return super._serialize(
+            {
+                name: "SetParentAction",
+                properties: [Action._GetTargetProperty(this._target), Action._GetTargetProperty(this._parent)],
+            },
+            parent
+        );
     }
 }
 

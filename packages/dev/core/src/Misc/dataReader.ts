@@ -1,4 +1,4 @@
-import { Decode } from './stringTools';
+import { Decode } from "./stringTools";
 
 /**
  * Interface for a data buffer

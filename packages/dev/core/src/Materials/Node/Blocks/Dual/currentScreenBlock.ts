@@ -1,16 +1,16 @@
-import { NodeMaterialBlock } from '../../nodeMaterialBlock';
-import { NodeMaterialBlockConnectionPointTypes } from '../../Enums/nodeMaterialBlockConnectionPointTypes';
-import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
-import { NodeMaterialBlockTargets } from '../../Enums/nodeMaterialBlockTargets';
-import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPoint';
-import { AbstractMesh } from '../../../../Meshes/abstractMesh';
-import { NodeMaterialDefines } from '../../nodeMaterial';
-import { BaseTexture } from '../../../Textures/baseTexture';
-import { Nullable } from '../../../../types';
-import { RegisterClass } from '../../../../Misc/typeStore';
-import { Texture } from '../../../Textures/texture';
-import { Scene } from '../../../../scene';
-import { InputBlock } from '../Input/inputBlock';
+import { NodeMaterialBlock } from "../../nodeMaterialBlock";
+import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
+import { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
+import { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
+import { AbstractMesh } from "../../../../Meshes/abstractMesh";
+import { NodeMaterialDefines } from "../../nodeMaterial";
+import { BaseTexture } from "../../../Textures/baseTexture";
+import { Nullable } from "../../../../types";
+import { RegisterClass } from "../../../../Misc/typeStore";
+import { Texture } from "../../../Textures/texture";
+import { Scene } from "../../../../scene";
+import { InputBlock } from "../Input/inputBlock";
 
 declare type NodeMaterial = import("../../nodeMaterial").NodeMaterial;
 
@@ -18,7 +18,6 @@ declare type NodeMaterial = import("../../nodeMaterial").NodeMaterial;
  * Base block used as input for post process
  */
 export class CurrentScreenBlock extends NodeMaterialBlock {
-
     private _samplerName = "textureSampler";
     private _linearDefineName: string;
     private _gammaDefineName: string;
@@ -155,10 +154,10 @@ export class CurrentScreenBlock extends NodeMaterialBlock {
     }
 
     private _injectVertexCode(state: NodeMaterialBuildState) {
-        let uvInput = this.uv;
+        const uvInput = this.uv;
 
         if (uvInput.connectedPoint!.ownerBlock.isInput) {
-            let uvInputOwnerBlock = uvInput.connectedPoint!.ownerBlock as InputBlock;
+            const uvInputOwnerBlock = uvInput.connectedPoint!.ownerBlock as InputBlock;
 
             if (!uvInputOwnerBlock.isAttribute) {
                 state._emitUniformFromString(uvInput.associatedVariableName, "vec2");
@@ -177,7 +176,7 @@ export class CurrentScreenBlock extends NodeMaterialBlock {
 
         this._writeTextureRead(state, true);
 
-        for (var output of this._outputs) {
+        for (const output of this._outputs) {
             if (output.hasEndpoints) {
                 this._writeOutput(state, output, output.name, true);
             }
@@ -185,7 +184,7 @@ export class CurrentScreenBlock extends NodeMaterialBlock {
     }
 
     private _writeTextureRead(state: NodeMaterialBuildState, vertexMode = false) {
-        let uvInput = this.uv;
+        const uvInput = this.uv;
 
         if (vertexMode) {
             if (state.target === NodeMaterialBlockTargets.Fragment) {
@@ -263,12 +262,12 @@ export class CurrentScreenBlock extends NodeMaterialBlock {
         this._linearDefineName = state._getFreeDefineName("ISLINEAR");
         this._gammaDefineName = state._getFreeDefineName("ISGAMMA");
 
-        let comments = `//${this.name}`;
+        const comments = `//${this.name}`;
         state._emitFunctionFromInclude("helperFunctions", comments);
 
         this._writeTextureRead(state);
 
-        for (var output of this._outputs) {
+        for (const output of this._outputs) {
             if (output.hasEndpoints) {
                 this._writeOutput(state, output, output.name);
             }
@@ -278,7 +277,7 @@ export class CurrentScreenBlock extends NodeMaterialBlock {
     }
 
     public serialize(): any {
-        let serializationObject = super.serialize();
+        const serializationObject = super.serialize();
 
         serializationObject.convertToGammaSpace = this.convertToGammaSpace;
         serializationObject.convertToLinearSpace = this.convertToLinearSpace;

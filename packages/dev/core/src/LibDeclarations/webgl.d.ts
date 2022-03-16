@@ -60,10 +60,10 @@ interface WebGLRenderingContext {
     drawBuffers(buffers: number[]): void;
     readBuffer(src: number): void;
 
-    readonly COLOR_ATTACHMENT0: number;                             // 0x8CE1
-    readonly COLOR_ATTACHMENT1: number;                             // 0x8CE2
-    readonly COLOR_ATTACHMENT2: number;                             // 0x8CE3
-    readonly COLOR_ATTACHMENT3: number;                             // 0x8CE4
+    readonly COLOR_ATTACHMENT0: number; // 0x8CE1
+    readonly COLOR_ATTACHMENT1: number; // 0x8CE2
+    readonly COLOR_ATTACHMENT2: number; // 0x8CE3
+    readonly COLOR_ATTACHMENT3: number; // 0x8CE4
 
     // Occlusion Query
     ANY_SAMPLES_PASSED_CONSERVATIVE: number;
@@ -73,7 +73,9 @@ interface WebGLRenderingContext {
 }
 
 interface WebGLProgram {
-    __SPECTOR_rebuildProgram?: ((vertexSourceCode: string, fragmentSourceCode: string, onCompiled: (program: WebGLProgram) => void, onError: (message: string) => void) => void) | null;
+    __SPECTOR_rebuildProgram?:
+        | ((vertexSourceCode: string, fragmentSourceCode: string, onCompiled: (program: WebGLProgram) => void, onError: (message: string) => void) => void)
+        | null;
 }
 
 interface EXT_disjoint_timer_query {

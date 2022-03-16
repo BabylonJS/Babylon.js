@@ -4,7 +4,7 @@ import { Color3 } from "../Maths/math.color";
 import { SubSurfaceScatteringPostProcess } from "../PostProcesses/subSurfaceScatteringPostProcess";
 import { SceneComponentConstants } from "../sceneComponent";
 import { PrePassEffectConfiguration } from "./prePassEffectConfiguration";
-import { _WarnImport } from '../Misc/devTools';
+import { _WarnImport } from "../Misc/devTools";
 import { Constants } from "../Engines/constants";
 
 /**
@@ -12,10 +12,13 @@ import { Constants } from "../Engines/constants";
  * screen space subsurface scattering
  */
 export class SubSurfaceConfiguration implements PrePassEffectConfiguration {
-    /** @hidden */
+    /**
+     * @param _
+     * @hidden
+     */
     public static _SceneComponentInitialization: (scene: Scene) => void = (_) => {
         throw _WarnImport("SubSurfaceSceneComponent");
-    }
+    };
 
     private _ssDiffusionS: number[] = [];
     private _ssFilterRadii: number[] = [];
@@ -115,9 +118,7 @@ export class SubSurfaceConfiguration implements PrePassEffectConfiguration {
 
         // Do not add doubles
         for (let i = 0; i < this._ssDiffusionS.length / 3; i++) {
-            if (this._ssDiffusionS[i * 3] === color.r &&
-                this._ssDiffusionS[i * 3 + 1] === color.g &&
-                this._ssDiffusionS[i * 3 + 2] === color.b) {
+            if (this._ssDiffusionS[i * 3] === color.r && this._ssDiffusionS[i * 3 + 1] === color.g && this._ssDiffusionS[i * 3 + 2] === color.b) {
                 return i;
             }
         }
@@ -163,6 +164,7 @@ export class SubSurfaceConfiguration implements PrePassEffectConfiguration {
     }
 
     /**
+     * @param color
      * @hidden
      * https://zero-radiance.github.io/post/sampling-diffusion/
      *
@@ -186,15 +188,17 @@ export class SubSurfaceConfiguration implements PrePassEffectConfiguration {
      * 'u' is the random number (the value of the CDF): [0, 1).
      * rcp(s) = 1 / ShapeParam = ScatteringDistance.
      * Returns the sampled radial distance, s.t. (u = 0 -> r = 0) and (u = 1 -> r = Inf).
+     * @param u
+     * @param rcpS
      */
     private _sampleBurleyDiffusionProfile(u: number, rcpS: number) {
         u = 1 - u; // Convert CDF to CCDF
 
-        let g = 1 + (4 * u) * (2 * u + Math.sqrt(1 + (4 * u) * u));
-        let n = Math.pow(g, -1.0 / 3.0);                      // g^(-1/3)
-        let p = (g * n) * n;                                   // g^(+1/3)
-        let c = 1 + p + n;                                     // 1 + g^(+1/3) + g^(-1/3)
-        let x = 3 * Math.log(c / (4 * u));
+        const g = 1 + 4 * u * (2 * u + Math.sqrt(1 + 4 * u * u));
+        const n = Math.pow(g, -1.0 / 3.0); // g^(-1/3)
+        const p = g * n * n; // g^(+1/3)
+        const c = 1 + p + n; // 1 + g^(+1/3) + g^(-1/3)
+        const x = 3 * Math.log(c / (4 * u));
 
         return x * rcpS;
     }

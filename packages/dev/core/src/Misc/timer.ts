@@ -1,6 +1,6 @@
-import { Observable, Observer } from '../Misc/observable';
-import { Nullable } from '../types';
-import { IDisposable } from '../scene';
+import { Observable, Observer } from "../Misc/observable";
+import { Nullable } from "../types";
+import { IDisposable } from "../scene";
 
 /**
  * Construction options for a timer
@@ -84,7 +84,7 @@ export enum TimerState {
     /**
      * Timer ended (whether aborted or time reached)
      */
-    ENDED
+    ENDED,
 }
 
 /**
@@ -96,26 +96,31 @@ export function setAndStartTimer(options: ITimerOptions<any>): Nullable<Observer
     let timer = 0;
     const startTime = Date.now();
     options.observableParameters = options.observableParameters ?? {};
-    const observer = options.contextObservable.add((payload: any) => {
-        const now = Date.now();
-        timer = now - startTime;
-        const data: ITimerData<any> = {
-            startTime,
-            currentTime: now,
-            deltaTime: timer,
-            completeRate: timer / options.timeout,
-            payload
-        };
-        options.onTick && options.onTick(data);
-        if (options.breakCondition && options.breakCondition()) {
-            options.contextObservable.remove(observer);
-            options.onAborted && options.onAborted(data);
-        }
-        if (timer >= options.timeout) {
-            options.contextObservable.remove(observer);
-            options.onEnded && options.onEnded(data);
-        }
-    }, options.observableParameters.mask, options.observableParameters.insertFirst, options.observableParameters.scope);
+    const observer = options.contextObservable.add(
+        (payload: any) => {
+            const now = Date.now();
+            timer = now - startTime;
+            const data: ITimerData<any> = {
+                startTime,
+                currentTime: now,
+                deltaTime: timer,
+                completeRate: timer / options.timeout,
+                payload,
+            };
+            options.onTick && options.onTick(data);
+            if (options.breakCondition && options.breakCondition()) {
+                options.contextObservable.remove(observer);
+                options.onAborted && options.onAborted(data);
+            }
+            if (timer >= options.timeout) {
+                options.contextObservable.remove(observer);
+                options.onEnded && options.onEnded(data);
+            }
+        },
+        options.observableParameters.mask,
+        options.observableParameters.insertFirst,
+        options.observableParameters.scope
+    );
     return observer;
 }
 
@@ -123,7 +128,6 @@ export function setAndStartTimer(options: ITimerOptions<any>): Nullable<Observer
  * An advanced implementation of a timer class
  */
 export class AdvancedTimer<T = any> implements IDisposable {
-
     /**
      * Will notify each time the timer calculates the remaining time
      */
@@ -201,7 +205,7 @@ export class AdvancedTimer<T = any> implements IDisposable {
      */
     public start(timeToEnd: number = this._timeToEnd) {
         if (this._state === TimerState.STARTED) {
-            throw new Error('Timer already started. Please stop it before starting again');
+            throw new Error("Timer already started. Please stop it before starting again");
         }
         this._timeToEnd = timeToEnd;
         this._startTime = Date.now();
@@ -243,7 +247,7 @@ export class AdvancedTimer<T = any> implements IDisposable {
             currentTime: now,
             deltaTime: this._timer,
             completeRate: this._timer / this._timeToEnd,
-            payload
+            payload,
         };
         const shouldBreak = this._breakOnNextTick || this._breakCondition(data);
         if (shouldBreak || this._timer >= this._timeToEnd) {
@@ -251,7 +255,7 @@ export class AdvancedTimer<T = any> implements IDisposable {
         } else {
             this.onEachCountObservable.notifyObservers(data);
         }
-    }
+    };
 
     private _stop(data: ITimerData<T>, aborted: boolean = false) {
         this._contextObservable.remove(this._observer);

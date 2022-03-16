@@ -1,9 +1,9 @@
-import { NodeMaterialBlock } from '../nodeMaterialBlock';
-import { NodeMaterialBlockConnectionPointTypes } from '../Enums/nodeMaterialBlockConnectionPointTypes';
-import { NodeMaterialBuildState } from '../nodeMaterialBuildState';
-import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint';
-import { NodeMaterialBlockTargets } from '../Enums/nodeMaterialBlockTargets';
-import { RegisterClass } from '../../../Misc/typeStore';
+import { NodeMaterialBlock } from "../nodeMaterialBlock";
+import { NodeMaterialBlockConnectionPointTypes } from "../Enums/nodeMaterialBlockConnectionPointTypes";
+import { NodeMaterialBuildState } from "../nodeMaterialBuildState";
+import { NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
+import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
+import { RegisterClass } from "../../../Misc/typeStore";
 /**
  * Block used to blend normals
  */
@@ -60,11 +60,11 @@ export class NormalBlendBlock extends NodeMaterialBlock {
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
-        let output = this._outputs[0];
-        let input0 = this._inputs[0];
-        let input1 = this._inputs[1];
-        let stepR = state._getFreeVariableName("stepR");
-        let stepG = state._getFreeVariableName("stepG");
+        const output = this._outputs[0];
+        const input0 = this._inputs[0];
+        const input1 = this._inputs[1];
+        const stepR = state._getFreeVariableName("stepR");
+        const stepG = state._getFreeVariableName("stepG");
 
         state.compilationString += `float ${stepR} = step(0.5, ${input0.associatedVariableName}.r);\r\n`;
         state.compilationString += `float ${stepG} = step(0.5, ${input0.associatedVariableName}.g);\r\n`;

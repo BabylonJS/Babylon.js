@@ -1,14 +1,14 @@
-import { NodeMaterialBlock } from '../nodeMaterialBlock';
-import { NodeMaterialBlockConnectionPointTypes } from '../Enums/nodeMaterialBlockConnectionPointTypes';
-import { NodeMaterialBuildState } from '../nodeMaterialBuildState';
-import { NodeMaterialBlockTargets } from '../Enums/nodeMaterialBlockTargets';
-import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint';
-import { RegisterClass } from '../../../Misc/typeStore';
-import { Scene } from '../../../scene';
-import { InputBlock } from './Input/inputBlock';
-import { AbstractMesh } from '../../../Meshes/abstractMesh';
-import { NodeMaterial, NodeMaterialDefines } from '../nodeMaterial';
-import { SubMesh } from '../../../Meshes/subMesh';
+import { NodeMaterialBlock } from "../nodeMaterialBlock";
+import { NodeMaterialBlockConnectionPointTypes } from "../Enums/nodeMaterialBlockConnectionPointTypes";
+import { NodeMaterialBuildState } from "../nodeMaterialBuildState";
+import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
+import { NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
+import { RegisterClass } from "../../../Misc/typeStore";
+import { Scene } from "../../../scene";
+import { InputBlock } from "./Input/inputBlock";
+import { AbstractMesh } from "../../../Meshes/abstractMesh";
+import { NodeMaterial, NodeMaterialDefines } from "../nodeMaterial";
+import { SubMesh } from "../../../Meshes/subMesh";
 
 /**
  * Block used to transform a vector (2, 3 or 4) with a matrix. It will generate a Vector4
@@ -40,7 +40,7 @@ export class TransformBlock extends NodeMaterialBlock {
 
         this._inputs[0].onConnectionObservable.add((other) => {
             if (other.ownerBlock.isInput) {
-                let otherAsInput = other.ownerBlock as InputBlock;
+                const otherAsInput = other.ownerBlock as InputBlock;
 
                 if (otherAsInput.name === "normal" || otherAsInput.name === "tangent") {
                     this.complementW = 0;
@@ -88,14 +88,13 @@ export class TransformBlock extends NodeMaterialBlock {
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
-        let vector = this.vector;
-        let transform = this.transform;
+        const vector = this.vector;
+        const transform = this.transform;
 
         if (vector.connectedPoint) {
-
             // None uniform scaling case.
             if (this.complementW === 0) {
-                let comments = `//${this.name}`;
+                const comments = `//${this.name}`;
                 state._emitFunctionFromInclude("helperFunctions", comments);
                 state.sharedData.blocksWithDefines.push(this);
 
@@ -106,26 +105,33 @@ export class TransformBlock extends NodeMaterialBlock {
                 state.compilationString += `#endif\r\n`;
                 switch (vector.connectedPoint.type) {
                     case NodeMaterialBlockConnectionPointTypes.Vector2:
-                        state.compilationString += this._declareOutput(this.output, state) + ` = vec4(${transformName} * vec3(${vector.associatedVariableName}, ${this._writeFloat(this.complementZ)}), ${this._writeFloat(this.complementW)});\r\n`;
+                        state.compilationString +=
+                            this._declareOutput(this.output, state) +
+                            ` = vec4(${transformName} * vec3(${vector.associatedVariableName}, ${this._writeFloat(this.complementZ)}), ${this._writeFloat(this.complementW)});\r\n`;
                         break;
                     case NodeMaterialBlockConnectionPointTypes.Vector3:
                     case NodeMaterialBlockConnectionPointTypes.Color3:
-                        state.compilationString += this._declareOutput(this.output, state) + ` = vec4(${transformName} * ${vector.associatedVariableName}, ${this._writeFloat(this.complementW)});\r\n`;
+                        state.compilationString +=
+                            this._declareOutput(this.output, state) + ` = vec4(${transformName} * ${vector.associatedVariableName}, ${this._writeFloat(this.complementW)});\r\n`;
                         break;
                     default:
-                        state.compilationString += this._declareOutput(this.output, state) + ` = vec4(${transformName} * ${vector.associatedVariableName}.xyz, ${this._writeFloat(this.complementW)});\r\n`;
+                        state.compilationString +=
+                            this._declareOutput(this.output, state) +
+                            ` = vec4(${transformName} * ${vector.associatedVariableName}.xyz, ${this._writeFloat(this.complementW)});\r\n`;
                         break;
                 }
-            }
-            else {
+            } else {
                 const transformName = transform.associatedVariableName;
                 switch (vector.connectedPoint.type) {
                     case NodeMaterialBlockConnectionPointTypes.Vector2:
-                        state.compilationString += this._declareOutput(this.output, state) + ` = ${transformName} * vec4(${vector.associatedVariableName}, ${this._writeFloat(this.complementZ)}, ${this._writeFloat(this.complementW)});\r\n`;
+                        state.compilationString +=
+                            this._declareOutput(this.output, state) +
+                            ` = ${transformName} * vec4(${vector.associatedVariableName}, ${this._writeFloat(this.complementZ)}, ${this._writeFloat(this.complementW)});\r\n`;
                         break;
                     case NodeMaterialBlockConnectionPointTypes.Vector3:
                     case NodeMaterialBlockConnectionPointTypes.Color3:
-                        state.compilationString += this._declareOutput(this.output, state) + ` = ${transformName} * vec4(${vector.associatedVariableName}, ${this._writeFloat(this.complementW)});\r\n`;
+                        state.compilationString +=
+                            this._declareOutput(this.output, state) + ` = ${transformName} * vec4(${vector.associatedVariableName}, ${this._writeFloat(this.complementW)});\r\n`;
                         break;
                     default:
                         state.compilationString += this._declareOutput(this.output, state) + ` = ${transformName} * ${vector.associatedVariableName};\r\n`;
@@ -157,7 +163,7 @@ export class TransformBlock extends NodeMaterialBlock {
     }
 
     public serialize(): any {
-        let serializationObject = super.serialize();
+        const serializationObject = super.serialize();
 
         serializationObject.complementZ = this.complementZ;
         serializationObject.complementW = this.complementW;
@@ -173,7 +179,7 @@ export class TransformBlock extends NodeMaterialBlock {
     }
 
     protected _dumpPropertiesCode() {
-        var codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.complementZ = ${this.complementZ};\r\n`;
+        let codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.complementZ = ${this.complementZ};\r\n`;
 
         codeString += `${this._codeVariableName}.complementW = ${this.complementW};\r\n`;
 

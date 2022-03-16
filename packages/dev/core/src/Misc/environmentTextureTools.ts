@@ -9,8 +9,8 @@ import { Constants } from "../Engines/constants";
 import { Scene } from "../scene";
 import { PostProcess } from "../PostProcesses/postProcess";
 import { Logger } from "../Misc/logger";
-import { Engine } from '../Engines/engine';
-import { RGBDTextureTools } from './rgbdTextureTools';
+import { Engine } from "../Engines/engine";
+import { RGBDTextureTools } from "./rgbdTextureTools";
 import { RenderTargetWrapper } from "../Engines/renderTargetWrapper";
 
 import "../Engines/Extensions/engine.renderTargetCube";
@@ -20,7 +20,7 @@ import "../Materials/Textures/baseTexture.polynomial";
 import "../Shaders/rgbdEncode.fragment";
 import "../Shaders/rgbdDecode.fragment";
 
-const defaultEnvironmentTextureImageType = 'image/png';
+const defaultEnvironmentTextureImageType = "image/png";
 const currentVersion = 2;
 
 /**
@@ -160,18 +160,18 @@ const _MagicBytes = [0x86, 0x16, 0x87, 0x96, 0xf6, 0xd6, 0x96, 0x36];
  * @returns the environment file info (the json header) if successfully parsed, normalized to the latest supported version.
  */
 export function GetEnvInfo(data: ArrayBufferView): Nullable<EnvironmentTextureInfoV2> {
-    let dataView = new DataView(data.buffer, data.byteOffset, data.byteLength);
+    const dataView = new DataView(data.buffer, data.byteOffset, data.byteLength);
     let pos = 0;
 
     for (let i = 0; i < _MagicBytes.length; i++) {
         if (dataView.getUint8(pos++) !== _MagicBytes[i]) {
-            Logger.Error('Not a babylon environment map');
+            Logger.Error("Not a babylon environment map");
             return null;
         }
     }
 
     // Read json manifest - collect characters up to null terminator
-    let manifestString = '';
+    let manifestString = "";
     let charCode = 0x00;
     while ((charCode = dataView.getUint8(pos++))) {
         manifestString += String.fromCharCode(charCode);
@@ -219,21 +219,23 @@ export function normalizeEnvInfo(info: EnvironmentTextureInfo): EnvironmentTextu
  * @return a promise containing the environment data if successful.
  */
 export async function CreateEnvTextureAsync(texture: BaseTexture, options: CreateEnvTextureOptions = {}): Promise<ArrayBuffer> {
-    let internalTexture = texture.getInternalTexture();
+    const internalTexture = texture.getInternalTexture();
     if (!internalTexture) {
         return Promise.reject("The cube texture is invalid.");
     }
 
     const imageType = options.imageType ?? defaultEnvironmentTextureImageType;
 
-    let engine = internalTexture.getEngine() as Engine;
+    const engine = internalTexture.getEngine() as Engine;
 
-    if (texture.textureType !== Constants.TEXTURETYPE_HALF_FLOAT &&
+    if (
+        texture.textureType !== Constants.TEXTURETYPE_HALF_FLOAT &&
         texture.textureType !== Constants.TEXTURETYPE_FLOAT &&
         texture.textureType !== Constants.TEXTURETYPE_UNSIGNED_BYTE &&
         texture.textureType !== Constants.TEXTURETYPE_UNSIGNED_INT &&
         texture.textureType !== Constants.TEXTURETYPE_UNSIGNED_INTEGER &&
-        texture.textureType !== -1) {
+        texture.textureType !== -1
+    ) {
         return Promise.reject("The cube texture should allow HDR (Full Float or Half Float).");
     }
 
@@ -245,17 +247,17 @@ export async function CreateEnvTextureAsync(texture: BaseTexture, options: Creat
         }
     }
 
-    let cubeWidth = internalTexture.width;
-    let hostingScene = new Scene(engine);
-    let specularTextures: { [key: number]: ArrayBuffer } = {};
+    const cubeWidth = internalTexture.width;
+    const hostingScene = new Scene(engine);
+    const specularTextures: { [key: number]: ArrayBuffer } = {};
 
     // As we are going to readPixels the faces of the cube, make sure the drawing/update commands for the cube texture are fully sent to the GPU in case it is drawn for the first time in this very frame!
     engine.flushFramebuffer();
 
     // Read and collect all mipmaps data from the cube.
-    let mipmapsCount = Scalar.ILog2(internalTexture.width);
+    const mipmapsCount = Scalar.ILog2(internalTexture.width);
     for (let i = 0; i <= mipmapsCount; i++) {
-        let faceWidth = Math.pow(2, mipmapsCount - i);
+        const faceWidth = Math.pow(2, mipmapsCount - i);
 
         // All faces of the cube.
         for (let face = 0; face < 6; face++) {
@@ -270,7 +272,17 @@ export async function CreateEnvTextureAsync(texture: BaseTexture, options: Creat
                 faceData = faceDataFloat;
             }
 
-            let tempTexture = engine.createRawTexture(faceData, faceWidth, faceWidth, Constants.TEXTUREFORMAT_RGBA, false, true, Constants.TEXTURE_NEAREST_SAMPLINGMODE, null, textureType);
+            const tempTexture = engine.createRawTexture(
+                faceData,
+                faceWidth,
+                faceWidth,
+                Constants.TEXTUREFORMAT_RGBA,
+                false,
+                true,
+                Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+                null,
+                textureType
+            );
 
             await RGBDTextureTools.EncodeTextureToRGBD(tempTexture, hostingScene, textureType);
 
@@ -288,34 +300,34 @@ export async function CreateEnvTextureAsync(texture: BaseTexture, options: Creat
     hostingScene.dispose();
 
     // Creates the json header for the env texture
-    let info: EnvironmentTextureInfo = {
+    const info: EnvironmentTextureInfo = {
         version: currentVersion,
         width: cubeWidth,
         imageType,
         irradiance: _CreateEnvTextureIrradiance(texture),
         specular: {
             mipmaps: [],
-            lodGenerationScale: texture.lodGenerationScale
-        }
+            lodGenerationScale: texture.lodGenerationScale,
+        },
     };
 
     // Sets the specular image data information
     let position = 0;
     for (let i = 0; i <= mipmapsCount; i++) {
         for (let face = 0; face < 6; face++) {
-            let byteLength = specularTextures[i * 6 + face].byteLength;
+            const byteLength = specularTextures[i * 6 + face].byteLength;
             info.specular.mipmaps.push({
                 length: byteLength,
-                position: position
+                position: position,
             });
             position += byteLength;
         }
     }
 
     // Encode the JSON as an array buffer
-    let infoString = JSON.stringify(info);
-    let infoBuffer = new ArrayBuffer(infoString.length + 1);
-    let infoView = new Uint8Array(infoBuffer); // Limited to ascii subset matching unicode.
+    const infoString = JSON.stringify(info);
+    const infoBuffer = new ArrayBuffer(infoString.length + 1);
+    const infoView = new Uint8Array(infoBuffer); // Limited to ascii subset matching unicode.
     for (let i = 0, strLen = infoString.length; i < strLen; i++) {
         infoView[i] = infoString.charCodeAt(i);
     }
@@ -323,10 +335,10 @@ export async function CreateEnvTextureAsync(texture: BaseTexture, options: Creat
     infoView[infoString.length] = 0x00;
 
     // Computes the final required size and creates the storage
-    let totalSize = _MagicBytes.length + position + infoBuffer.byteLength;
-    let finalBuffer = new ArrayBuffer(totalSize);
-    let finalBufferView = new Uint8Array(finalBuffer);
-    let dataView = new DataView(finalBuffer);
+    const totalSize = _MagicBytes.length + position + infoBuffer.byteLength;
+    const finalBuffer = new ArrayBuffer(totalSize);
+    const finalBufferView = new Uint8Array(finalBuffer);
+    const dataView = new DataView(finalBuffer);
 
     // Copy the magic bytes identifying the file in
     let pos = 0;
@@ -341,7 +353,7 @@ export async function CreateEnvTextureAsync(texture: BaseTexture, options: Creat
     // Finally inserts the texture data
     for (let i = 0; i <= mipmapsCount; i++) {
         for (let face = 0; face < 6; face++) {
-            let dataBuffer = specularTextures[i * 6 + face];
+            const dataBuffer = specularTextures[i * 6 + face];
             finalBufferView.set(new Uint8Array(dataBuffer), pos);
             pos += dataBuffer.byteLength;
         }
@@ -357,7 +369,7 @@ export async function CreateEnvTextureAsync(texture: BaseTexture, options: Creat
  * @return the JSON representation of the spherical info
  */
 function _CreateEnvTextureIrradiance(texture: BaseTexture): Nullable<EnvironmentTextureIrradianceInfoV1> {
-    let polynmials = texture.sphericalPolynomial;
+    const polynmials = texture.sphericalPolynomial;
     if (polynmials == null) {
         return null;
     }
@@ -373,7 +385,7 @@ function _CreateEnvTextureIrradiance(texture: BaseTexture): Nullable<Environment
 
         yz: [polynmials.yz.x, polynmials.yz.y, polynmials.yz.z],
         zx: [polynmials.zx.x, polynmials.zx.y, polynmials.zx.z],
-        xy: [polynmials.xy.x, polynmials.xy.y, polynmials.xy.z]
+        xy: [polynmials.xy.x, polynmials.xy.y, polynmials.xy.z],
     } as any;
 }
 
@@ -430,24 +442,40 @@ export function UploadEnvLevelsAsync(texture: InternalTexture, data: ArrayBuffer
     return UploadLevelsAsync(texture, imageData, info.imageType);
 }
 
-function _OnImageReadyAsync(image: HTMLImageElement | ImageBitmap, engine: Engine, expandTexture: boolean,
-    rgbdPostProcess: Nullable<PostProcess>, url: string, face: number, i: number, generateNonLODTextures: boolean,
-    lodTextures: Nullable<{ [lod: number]: BaseTexture }>, cubeRtt: Nullable<RenderTargetWrapper>, texture: InternalTexture
+function _OnImageReadyAsync(
+    image: HTMLImageElement | ImageBitmap,
+    engine: Engine,
+    expandTexture: boolean,
+    rgbdPostProcess: Nullable<PostProcess>,
+    url: string,
+    face: number,
+    i: number,
+    generateNonLODTextures: boolean,
+    lodTextures: Nullable<{ [lod: number]: BaseTexture }>,
+    cubeRtt: Nullable<RenderTargetWrapper>,
+    texture: InternalTexture
 ): Promise<void> {
     return new Promise((resolve, reject) => {
         if (expandTexture) {
-            let tempTexture = engine.createTexture(null, true, true, null, Constants.TEXTURE_NEAREST_SAMPLINGMODE, null,
+            const tempTexture = engine.createTexture(
+                null,
+                true,
+                true,
+                null,
+                Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+                null,
                 (message) => {
                     reject(message);
                 },
-                image);
+                image
+            );
 
             rgbdPostProcess!.getEffect().executeWhenCompiled(() => {
                 // Uncompress the data to a RTT
                 rgbdPostProcess!.externalTextureSamplerBinding = true;
                 rgbdPostProcess!.onApply = (effect) => {
                     effect._bindTexture("textureSampler", tempTexture);
-                    effect.setFloat2("scale", 1, engine._features.needsInvertingBitmap && (image instanceof ImageBitmap) ? -1 : 1);
+                    effect.setFloat2("scale", 1, engine._features.needsInvertingBitmap && image instanceof ImageBitmap ? -1 : 1);
                 };
 
                 if (!engine.scenes.length) {
@@ -462,21 +490,19 @@ function _OnImageReadyAsync(image: HTMLImageElement | ImageBitmap, engine: Engin
                 URL.revokeObjectURL(url);
                 resolve();
             });
-        }
-        else {
+        } else {
             engine._uploadImageToTexture(texture, image, face, i);
 
             // Upload the face to the non lod texture support
             if (generateNonLODTextures) {
-                let lodTexture = lodTextures![i];
+                const lodTexture = lodTextures![i];
                 if (lodTexture) {
                     engine._uploadImageToTexture(lodTexture._texture!, image, face, 0);
                 }
             }
             resolve();
         }
-    }
-    );
+    });
 }
 
 /**
@@ -494,13 +520,13 @@ export function UploadLevelsAsync(texture: InternalTexture, imageData: ArrayBuff
     const mipmapsCount = Scalar.ILog2(texture.width) + 1;
 
     // Gets everything ready.
-    let engine = texture.getEngine() as Engine;
+    const engine = texture.getEngine() as Engine;
     let expandTexture = false;
     let generateNonLODTextures = false;
     let rgbdPostProcess: Nullable<PostProcess> = null;
     let cubeRtt: Nullable<RenderTargetWrapper> = null;
     let lodTextures: Nullable<{ [lod: number]: BaseTexture }> = null;
-    let caps = engine.getCaps();
+    const caps = engine.getCaps();
 
     texture.format = Constants.TEXTUREFORMAT_RGBA;
     texture.type = Constants.TEXTURETYPE_UNSIGNED_INT;
@@ -532,7 +558,22 @@ export function UploadLevelsAsync(texture: InternalTexture, imageData: ArrayBuff
     // Expand the texture if possible
     if (expandTexture) {
         // Simply run through the decode PP
-        rgbdPostProcess = new PostProcess("rgbdDecode", "rgbdDecode", null, null, 1, null, Constants.TEXTURE_TRILINEAR_SAMPLINGMODE, engine, false, undefined, texture.type, undefined, null, false);
+        rgbdPostProcess = new PostProcess(
+            "rgbdDecode",
+            "rgbdDecode",
+            null,
+            null,
+            1,
+            null,
+            Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
+            engine,
+            false,
+            undefined,
+            texture.type,
+            undefined,
+            null,
+            false
+        );
 
         texture._isRGBD = false;
         texture.invertY = false;
@@ -542,38 +583,37 @@ export function UploadLevelsAsync(texture: InternalTexture, imageData: ArrayBuff
             generateStencilBuffer: false,
             samplingMode: Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
             type: texture.type,
-            format: Constants.TEXTUREFORMAT_RGBA
+            format: Constants.TEXTUREFORMAT_RGBA,
         });
-    }
-    else {
+    } else {
         texture._isRGBD = true;
         texture.invertY = true;
 
         // In case of missing support, applies the same patch than DDS files.
         if (generateNonLODTextures) {
-            let mipSlices = 3;
-            let scale = texture._lodGenerationScale;
-            let offset = texture._lodGenerationOffset;
+            const mipSlices = 3;
+            const scale = texture._lodGenerationScale;
+            const offset = texture._lodGenerationOffset;
 
             for (let i = 0; i < mipSlices; i++) {
                 //compute LOD from even spacing in smoothness (matching shader calculation)
-                let smoothness = i / (mipSlices - 1);
-                let roughness = 1 - smoothness;
+                const smoothness = i / (mipSlices - 1);
+                const roughness = 1 - smoothness;
 
-                let minLODIndex = offset; // roughness = 0
-                let maxLODIndex = (mipmapsCount - 1) * scale + offset; // roughness = 1 (mipmaps start from 0)
+                const minLODIndex = offset; // roughness = 0
+                const maxLODIndex = (mipmapsCount - 1) * scale + offset; // roughness = 1 (mipmaps start from 0)
 
-                let lodIndex = minLODIndex + (maxLODIndex - minLODIndex) * roughness;
-                let mipmapIndex = Math.round(Math.min(Math.max(lodIndex, 0), maxLODIndex));
+                const lodIndex = minLODIndex + (maxLODIndex - minLODIndex) * roughness;
+                const mipmapIndex = Math.round(Math.min(Math.max(lodIndex, 0), maxLODIndex));
 
-                let glTextureFromLod = new InternalTexture(engine, InternalTextureSource.Temp);
+                const glTextureFromLod = new InternalTexture(engine, InternalTextureSource.Temp);
                 glTextureFromLod.isCube = true;
                 glTextureFromLod.invertY = true;
                 glTextureFromLod.generateMipMaps = false;
                 engine.updateTextureSamplingMode(Constants.TEXTURE_LINEAR_LINEAR, glTextureFromLod);
 
                 // Wrap in a base texture for easy binding.
-                let lodTexture = new BaseTexture(null);
+                const lodTexture = new BaseTexture(null);
                 lodTexture.isCube = true;
                 lodTexture._texture = glTextureFromLod;
                 lodTextures![mipmapIndex] = lodTexture;
@@ -593,15 +633,15 @@ export function UploadLevelsAsync(texture: InternalTexture, imageData: ArrayBuff
         }
     }
 
-    let promises: Promise<void>[] = [];
+    const promises: Promise<void>[] = [];
     // All mipmaps up to provided number of images
     for (let i = 0; i < imageData.length; i++) {
         // All faces
         for (let face = 0; face < 6; face++) {
             // Constructs an image element from image data
-            let bytes = imageData[i][face];
-            let blob = new Blob([bytes], { type: imageType });
-            let url = URL.createObjectURL(blob);
+            const bytes = imageData[i][face];
+            const blob = new Blob([bytes], { type: imageType });
+            const url = URL.createObjectURL(blob);
             let promise: Promise<void>;
 
             if (typeof Image === "undefined" || engine._features.forceBitmapOverHTMLImageElement) {
@@ -609,7 +649,7 @@ export function UploadLevelsAsync(texture: InternalTexture, imageData: ArrayBuff
                     return _OnImageReadyAsync(img, engine, expandTexture, rgbdPostProcess, url, face, i, generateNonLODTextures, lodTextures, cubeRtt, texture);
                 });
             } else {
-                let image = new Image();
+                const image = new Image();
                 image.src = url;
 
                 // Enqueue promise to upload to the texture.
@@ -690,7 +730,7 @@ export function UploadLevelsAsync(texture: InternalTexture, imageData: ArrayBuff
 export function UploadEnvSpherical(texture: InternalTexture, info: EnvironmentTextureInfo): void {
     info = normalizeEnvInfo(info);
 
-    let irradianceInfo = info.irradiance as EnvironmentTextureIrradianceInfoV1;
+    const irradianceInfo = info.irradiance as EnvironmentTextureIrradianceInfoV1;
     if (!irradianceInfo) {
         return;
     }
@@ -708,16 +748,39 @@ export function UploadEnvSpherical(texture: InternalTexture, info: EnvironmentTe
     texture._sphericalPolynomial = sp;
 }
 
-/** @hidden */
-export function _UpdateRGBDAsync(internalTexture: InternalTexture, data: ArrayBufferView[][], sphericalPolynomial: Nullable<SphericalPolynomial>, lodScale: number, lodOffset: number): Promise<InternalTexture> {
-    const proxy = internalTexture.getEngine().createRawCubeTexture(null, internalTexture.width, internalTexture.format, internalTexture.type,
-        internalTexture.generateMipMaps, internalTexture.invertY, internalTexture.samplingMode, internalTexture._compression);
-    const proxyPromise = UploadLevelsAsync(proxy, data).then(() =>  internalTexture);
+/**
+ * @param internalTexture
+ * @param data
+ * @param sphericalPolynomial
+ * @param lodScale
+ * @param lodOffset
+ * @hidden
+ */
+export function _UpdateRGBDAsync(
+    internalTexture: InternalTexture,
+    data: ArrayBufferView[][],
+    sphericalPolynomial: Nullable<SphericalPolynomial>,
+    lodScale: number,
+    lodOffset: number
+): Promise<InternalTexture> {
+    const proxy = internalTexture
+        .getEngine()
+        .createRawCubeTexture(
+            null,
+            internalTexture.width,
+            internalTexture.format,
+            internalTexture.type,
+            internalTexture.generateMipMaps,
+            internalTexture.invertY,
+            internalTexture.samplingMode,
+            internalTexture._compression
+        );
+    const proxyPromise = UploadLevelsAsync(proxy, data).then(() => internalTexture);
     internalTexture.onRebuildCallback = (_internalTexture) => {
         return {
             proxy: proxyPromise,
             isReady: true,
-            isAsync: true
+            isAsync: true,
         };
     };
     internalTexture._source = InternalTextureSource.CubeRawRGBD;
@@ -738,7 +801,6 @@ export function _UpdateRGBDAsync(internalTexture: InternalTexture, data: ArrayBu
  * Those files are usually stored as .env files.
  */
 export const EnvironmentTextureTools = {
-
     /**
      * Gets the environment info from an env file.
      * @param data The array buffer containing the .env bytes.

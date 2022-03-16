@@ -48,10 +48,10 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
      */
     public attachControl(noPreventDefault?: boolean): void {
         noPreventDefault = Tools.BackCompatCameraNoPreventDefault(arguments);
-        var engine = this.camera.getEngine();
+        const engine = this.camera.getEngine();
         const element = engine.getInputElement();
-        var previousPinchSquaredDistance = 0;
-        var previousMultiTouchPanPosition: Nullable<PointerTouch> = null;
+        let previousPinchSquaredDistance = 0;
+        let previousMultiTouchPanPosition: Nullable<PointerTouch> = null;
 
         this.pointA = null;
         this.pointB = null;
@@ -63,19 +63,18 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
         this._buttonsPressed = 0;
 
         this._pointerInput = (p, s) => {
-            var evt = <IPointerEvent>p.event;
-            let isTouch = evt.pointerType === "touch";
+            const evt = <IPointerEvent>p.event;
+            const isTouch = evt.pointerType === "touch";
 
             if (engine.isInVRExclusivePointerMode) {
                 return;
             }
 
-            if (p.type !== PointerEventTypes.POINTERMOVE &&
-                this.buttons.indexOf(evt.button) === -1) {
+            if (p.type !== PointerEventTypes.POINTERMOVE && this.buttons.indexOf(evt.button) === -1) {
                 return;
             }
 
-            let srcElement = <HTMLElement>(evt.srcElement || evt.target);
+            const srcElement = <HTMLElement>(evt.srcElement || evt.target);
 
             this._altKey = evt.altKey;
             this._ctrlKey = evt.ctrlKey;
@@ -84,16 +83,8 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
             this._buttonsPressed = evt.buttons;
 
             if (engine.isPointerLock) {
-                const offsetX = evt.movementX ||
-                    evt.mozMovementX ||
-                    evt.webkitMovementX ||
-                    evt.msMovementX ||
-                    0;
-                const offsetY = evt.movementY ||
-                    evt.mozMovementY ||
-                    evt.webkitMovementY ||
-                    evt.msMovementY ||
-                    0;
+                const offsetX = evt.movementX || evt.mozMovementX || evt.webkitMovementX || evt.msMovementX || 0;
+                const offsetY = evt.movementY || evt.mozMovementY || evt.webkitMovementY || evt.msMovementY || 0;
 
                 this.onTouch(null, offsetX, offsetY);
                 this.pointA = null;
@@ -110,14 +101,14 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
                         x: evt.clientX,
                         y: evt.clientY,
                         pointerId: evt.pointerId,
-                        type: evt.pointerType
+                        type: evt.pointerType,
                     };
                 } else if (this.pointB === null) {
                     this.pointB = {
                         x: evt.clientX,
                         y: evt.clientY,
                         pointerId: evt.pointerId,
-                        type: evt.pointerType
+                        type: evt.pointerType,
                     };
                 }
 
@@ -156,8 +147,7 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
                     if (this.pointB && this.pointA && this.pointA.pointerId == evt.pointerId) {
                         this.pointA = this.pointB;
                         this.pointB = null;
-                    } else if (this.pointA && this.pointB &&
-                        this.pointB.pointerId == evt.pointerId) {
+                    } else if (this.pointA && this.pointB && this.pointB.pointerId == evt.pointerId) {
                         this.pointB = null;
                     } else {
                         this.pointA = this.pointB = null;
@@ -171,9 +161,9 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
                         this.pointA,
                         this.pointB,
                         previousPinchSquaredDistance,
-                        0,  // pinchSquaredDistance
+                        0, // pinchSquaredDistance
                         previousMultiTouchPanPosition,
-                        null  // multiTouchPanPosition
+                        null // multiTouchPanPosition
                     );
                     previousPinchSquaredDistance = 0;
                     previousMultiTouchPanPosition = null;
@@ -201,27 +191,20 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
                 }
                 // Two buttons down: pinch
                 else if (this.pointA && this.pointB) {
-                    var ed = (this.pointA.pointerId === evt.pointerId) ?
-                        this.pointA : this.pointB;
+                    const ed = this.pointA.pointerId === evt.pointerId ? this.pointA : this.pointB;
                     ed.x = evt.clientX;
                     ed.y = evt.clientY;
-                    var distX = this.pointA.x - this.pointB.x;
-                    var distY = this.pointA.y - this.pointB.y;
-                    var pinchSquaredDistance = (distX * distX) + (distY * distY);
-                    var multiTouchPanPosition = {
+                    const distX = this.pointA.x - this.pointB.x;
+                    const distY = this.pointA.y - this.pointB.y;
+                    const pinchSquaredDistance = distX * distX + distY * distY;
+                    const multiTouchPanPosition = {
                         x: (this.pointA.x + this.pointB.x) / 2,
                         y: (this.pointA.y + this.pointB.y) / 2,
                         pointerId: evt.pointerId,
-                        type: p.type
+                        type: p.type,
                     };
 
-                    this.onMultiTouch(
-                        this.pointA,
-                        this.pointB,
-                        previousPinchSquaredDistance,
-                        pinchSquaredDistance,
-                        previousMultiTouchPanPosition,
-                        multiTouchPanPosition);
+                    this.onMultiTouch(this.pointA, this.pointB, previousPinchSquaredDistance, pinchSquaredDistance, previousMultiTouchPanPosition, multiTouchPanPosition);
 
                     previousMultiTouchPanPosition = multiTouchPanPosition;
                     previousPinchSquaredDistance = pinchSquaredDistance;
@@ -229,10 +212,12 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
             }
         };
 
-        this._observer = this.camera.getScene().onPointerObservable.add(
-            this._pointerInput,
-            PointerEventTypes.POINTERDOWN | PointerEventTypes.POINTERUP |
-            PointerEventTypes.POINTERMOVE | PointerEventTypes.POINTERDOUBLETAP);
+        this._observer = this.camera
+            .getScene()
+            .onPointerObservable.add(
+                this._pointerInput,
+                PointerEventTypes.POINTERDOWN | PointerEventTypes.POINTERUP | PointerEventTypes.POINTERMOVE | PointerEventTypes.POINTERDOUBLETAP
+            );
 
         this._onLostFocus = () => {
             this.pointA = this.pointB = null;
@@ -245,12 +230,10 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
 
         element && element.addEventListener("contextmenu", this._contextMenuBind, false);
 
-        let hostWindow = this.camera.getScene().getEngine().getHostWindow();
+        const hostWindow = this.camera.getScene().getEngine().getHostWindow();
 
         if (hostWindow) {
-            Tools.RegisterTopRootEvents(hostWindow, [
-                { name: "blur", handler: this._onLostFocus }
-            ]);
+            Tools.RegisterTopRootEvents(hostWindow, [{ name: "blur", handler: this._onLostFocus }]);
         }
     }
 
@@ -265,11 +248,9 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
      */
     public detachControl(ignored?: any): void {
         if (this._onLostFocus) {
-            let hostWindow = this.camera.getScene().getEngine().getHostWindow();
+            const hostWindow = this.camera.getScene().getEngine().getHostWindow();
             if (hostWindow) {
-                Tools.UnregisterTopRootEvents(hostWindow, [
-                    { name: "blur", handler: this._onLostFocus }
-                ]);
+                Tools.UnregisterTopRootEvents(hostWindow, [{ name: "blur", handler: this._onLostFocus }]);
             }
         }
 
@@ -311,34 +292,42 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
     /**
      * Called on pointer POINTERDOUBLETAP event.
      * Override this method to provide functionality on POINTERDOUBLETAP event.
+     * @param type
      */
-    protected onDoubleTap(type: string) {
-    }
+    protected onDoubleTap(type: string) {}
 
     /**
      * Called on pointer POINTERMOVE event if only a single touch is active.
      * Override this method to provide functionality.
+     * @param point
+     * @param offsetX
+     * @param offsetY
      */
-    protected onTouch(point: Nullable<PointerTouch>,
-        offsetX: number,
-        offsetY: number): void {
-    }
+    protected onTouch(point: Nullable<PointerTouch>, offsetX: number, offsetY: number): void {}
 
     /**
      * Called on pointer POINTERMOVE event if multiple touches are active.
      * Override this method to provide functionality.
+     * @param pointA
+     * @param pointB
+     * @param previousPinchSquaredDistance
+     * @param pinchSquaredDistance
+     * @param previousMultiTouchPanPosition
+     * @param multiTouchPanPosition
      */
-    protected onMultiTouch(pointA: Nullable<PointerTouch>,
+    protected onMultiTouch(
+        pointA: Nullable<PointerTouch>,
         pointB: Nullable<PointerTouch>,
         previousPinchSquaredDistance: number,
         pinchSquaredDistance: number,
         previousMultiTouchPanPosition: Nullable<PointerTouch>,
-        multiTouchPanPosition: Nullable<PointerTouch>): void {
-    }
+        multiTouchPanPosition: Nullable<PointerTouch>
+    ): void {}
 
     /**
      * Called on JS contextmenu event.
      * Override this method to provide functionality.
+     * @param evt
      */
     protected onContextMenu(evt: PointerEvent): void {
         evt.preventDefault();
@@ -348,24 +337,23 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
      * Called each time a new POINTERDOWN event occurs. Ie, for each button
      * press.
      * Override this method to provide functionality.
+     * @param evt
      */
-    protected onButtonDown(evt: IPointerEvent): void {
-    }
+    protected onButtonDown(evt: IPointerEvent): void {}
 
     /**
      * Called each time a new POINTERUP event occurs. Ie, for each button
      * release.
      * Override this method to provide functionality.
+     * @param evt
      */
-    protected onButtonUp(evt: IPointerEvent): void {
-    }
+    protected onButtonUp(evt: IPointerEvent): void {}
 
     /**
      * Called when window becomes inactive.
      * Override this method to provide functionality.
      */
-    protected onLostFocus(): void {
-    }
+    protected onLostFocus(): void {}
 
     private _pointerInput: (p: PointerInfo, s: EventState) => void;
     private _observer: Nullable<Observer<PointerInfo>>;

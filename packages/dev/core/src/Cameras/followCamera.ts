@@ -6,7 +6,7 @@ import { Scene } from "../scene";
 import { TmpVectors, Vector3 } from "../Maths/math.vector";
 import { Node } from "../node";
 import { AbstractMesh } from "../Meshes/abstractMesh";
-import { FollowCameraInputsManager } from './followCameraInputsManager';
+import { FollowCameraInputsManager } from "./followCameraInputsManager";
 Node.AddNodeConstructor("FollowCamera", (name, scene) => {
     return () => new FollowCamera(name, Vector3.Zero(), scene);
 });
@@ -130,21 +130,21 @@ export class FollowCamera extends TargetCamera {
             return;
         }
 
-        var rotMatrix = TmpVectors.Matrix[0];
+        const rotMatrix = TmpVectors.Matrix[0];
         cameraTarget.absoluteRotationQuaternion.toRotationMatrix(rotMatrix);
-        var yRotation = Math.atan2(rotMatrix.m[8], rotMatrix.m[10]);
+        const yRotation = Math.atan2(rotMatrix.m[8], rotMatrix.m[10]);
 
-        var radians = Tools.ToRadians(this.rotationOffset) + yRotation;
-        var targetPosition = cameraTarget.getAbsolutePosition();
-        var targetX: number = targetPosition.x + Math.sin(radians) * this.radius;
+        const radians = Tools.ToRadians(this.rotationOffset) + yRotation;
+        const targetPosition = cameraTarget.getAbsolutePosition();
+        const targetX: number = targetPosition.x + Math.sin(radians) * this.radius;
 
-        var targetZ: number = targetPosition.z + Math.cos(radians) * this.radius;
-        var dx: number = targetX - this.position.x;
-        var dy: number = (targetPosition.y + this.heightOffset) - this.position.y;
-        var dz: number = (targetZ) - this.position.z;
-        var vx: number = dx * this.cameraAcceleration * 2; //this is set to .05
-        var vy: number = dy * this.cameraAcceleration;
-        var vz: number = dz * this.cameraAcceleration * 2;
+        const targetZ: number = targetPosition.z + Math.cos(radians) * this.radius;
+        const dx: number = targetX - this.position.x;
+        const dy: number = targetPosition.y + this.heightOffset - this.position.y;
+        const dz: number = targetZ - this.position.z;
+        let vx: number = dx * this.cameraAcceleration * 2; //this is set to .05
+        let vy: number = dy * this.cameraAcceleration;
+        let vz: number = dz * this.cameraAcceleration * 2;
 
         if (vx > this.maxCameraSpeed || vx < -this.maxCameraSpeed) {
             vx = vx < 1 ? -this.maxCameraSpeed : this.maxCameraSpeed;
@@ -176,8 +176,7 @@ export class FollowCamera extends TargetCamera {
         noPreventDefault = Tools.BackCompatCameraNoPreventDefault(arguments);
         this.inputs.attachElement(noPreventDefault);
 
-        this._reset = () => {
-        };
+        this._reset = () => {};
     }
 
     /**
@@ -215,21 +214,17 @@ export class FollowCamera extends TargetCamera {
             this.radius = this.upperRadiusLimit;
         }
 
-        if (this.lowerHeightOffsetLimit !== null &&
-            this.heightOffset < this.lowerHeightOffsetLimit) {
+        if (this.lowerHeightOffsetLimit !== null && this.heightOffset < this.lowerHeightOffsetLimit) {
             this.heightOffset = this.lowerHeightOffsetLimit;
         }
-        if (this.upperHeightOffsetLimit !== null &&
-            this.heightOffset > this.upperHeightOffsetLimit) {
+        if (this.upperHeightOffsetLimit !== null && this.heightOffset > this.upperHeightOffsetLimit) {
             this.heightOffset = this.upperHeightOffsetLimit;
         }
 
-        if (this.lowerRotationOffsetLimit !== null &&
-            this.rotationOffset < this.lowerRotationOffsetLimit) {
+        if (this.lowerRotationOffsetLimit !== null && this.rotationOffset < this.lowerRotationOffsetLimit) {
             this.rotationOffset = this.lowerRotationOffsetLimit;
         }
-        if (this.upperRotationOffsetLimit !== null &&
-            this.rotationOffset > this.upperRotationOffsetLimit) {
+        if (this.upperRotationOffsetLimit !== null && this.rotationOffset > this.upperRotationOffsetLimit) {
             this.rotationOffset = this.upperRotationOffsetLimit;
         }
     }
@@ -249,7 +244,6 @@ export class FollowCamera extends TargetCamera {
  * @see https://doc.babylonjs.com/features/cameras#follow-camera
  */
 export class ArcFollowCamera extends TargetCamera {
-
     private _cartesianCoordinates: Vector3 = Vector3.Zero();
 
     /** Define the camera target (the mesh it should follow) */
@@ -265,7 +259,8 @@ export class ArcFollowCamera extends TargetCamera {
      * @param target Define the target of the camera
      * @param scene Define the scene the camera belongs to
      */
-    constructor(name: string,
+    constructor(
+        name: string,
         /** The longitudinal angle of the camera */
         public alpha: number,
         /** The latitudinal angle of the camera */
@@ -274,7 +269,8 @@ export class ArcFollowCamera extends TargetCamera {
         public radius: number,
         /** Define the camera target (the mesh it should follow) */
         target: Nullable<AbstractMesh>,
-        scene: Scene) {
+        scene: Scene
+    ) {
         super(name, Vector3.Zero(), scene);
         this.setMeshTarget(target);
     }
@@ -296,7 +292,7 @@ export class ArcFollowCamera extends TargetCamera {
         this._cartesianCoordinates.y = this.radius * Math.sin(this.beta);
         this._cartesianCoordinates.z = this.radius * Math.sin(this.alpha) * Math.cos(this.beta);
 
-        var targetPosition = this._meshTarget.getAbsolutePosition();
+        const targetPosition = this._meshTarget.getAbsolutePosition();
         this.position = targetPosition.add(this._cartesianCoordinates);
         this.setTarget(targetPosition);
     }

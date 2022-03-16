@@ -1,4 +1,3 @@
-
 /**
  * Interface used to define the mechanism to get data from the network
  */

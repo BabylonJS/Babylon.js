@@ -536,7 +536,10 @@ declare module "core/Meshes/mesh" {
     }
 }
 
-/** @hidden */
+/**
+ * @param id
+ * @hidden
+ */
 Mesh.prototype.setMaterialByID = function (id: string): Mesh {
     return this.setMaterialById(id);
 };

@@ -11,11 +11,11 @@ import { UniformBuffer } from "../../Materials/uniformBuffer";
  */
 export class HemisphericParticleEmitter implements IParticleEmitterType {
     /**
-    * Creates a new instance HemisphericParticleEmitter
-    * @param radius the radius of the emission hemisphere (1 by default)
-    * @param radiusRange the range of the emission hemisphere [0-1] 0 Surface only, 1 Entire Radius (1 by default)
-    * @param directionRandomizer defines how much to randomize the particle direction [0-1]
-    */
+     * Creates a new instance HemisphericParticleEmitter
+     * @param radius the radius of the emission hemisphere (1 by default)
+     * @param radiusRange the range of the emission hemisphere [0-1] 0 Surface only, 1 Entire Radius (1 by default)
+     * @param directionRandomizer defines how much to randomize the particle direction [0-1]
+     */
     constructor(
         /**
          * The radius of the emission hemisphere.
@@ -28,8 +28,8 @@ export class HemisphericParticleEmitter implements IParticleEmitterType {
         /**
          * How much to randomize the particle direction [0-1].
          */
-        public directionRandomizer = 0) {
-    }
+        public directionRandomizer = 0
+    ) {}
 
     /**
      * Called by the particle System when the direction is computed for the created particle.
@@ -39,10 +39,10 @@ export class HemisphericParticleEmitter implements IParticleEmitterType {
      * @param isLocal defines if the direction should be set in local space
      */
     public startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle, isLocal: boolean): void {
-        var direction = particle.position.subtract(worldMatrix.getTranslation()).normalize();
-        var randX = Scalar.RandomRange(0, this.directionRandomizer);
-        var randY = Scalar.RandomRange(0, this.directionRandomizer);
-        var randZ = Scalar.RandomRange(0, this.directionRandomizer);
+        const direction = particle.position.subtract(worldMatrix.getTranslation()).normalize();
+        const randX = Scalar.RandomRange(0, this.directionRandomizer);
+        const randY = Scalar.RandomRange(0, this.directionRandomizer);
+        const randZ = Scalar.RandomRange(0, this.directionRandomizer);
         direction.x += randX;
         direction.y += randY;
         direction.z += randZ;
@@ -64,13 +64,13 @@ export class HemisphericParticleEmitter implements IParticleEmitterType {
      * @param isLocal defines if the position should be set in local space
      */
     public startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle, isLocal: boolean): void {
-        var randRadius = this.radius - Scalar.RandomRange(0, this.radius * this.radiusRange);
-        var v = Scalar.RandomRange(0, 1.0);
-        var phi = Scalar.RandomRange(0, 2 * Math.PI);
-        var theta = Math.acos(2 * v - 1);
-        var randX = randRadius * Math.cos(phi) * Math.sin(theta);
-        var randY = randRadius * Math.cos(theta);
-        var randZ = randRadius * Math.sin(phi) * Math.sin(theta);
+        const randRadius = this.radius - Scalar.RandomRange(0, this.radius * this.radiusRange);
+        const v = Scalar.RandomRange(0, 1.0);
+        const phi = Scalar.RandomRange(0, 2 * Math.PI);
+        const theta = Math.acos(2 * v - 1);
+        const randX = randRadius * Math.cos(phi) * Math.sin(theta);
+        const randY = randRadius * Math.cos(theta);
+        const randZ = randRadius * Math.sin(phi) * Math.sin(theta);
 
         if (isLocal) {
             positionToUpdate.copyFromFloats(randX, Math.abs(randY), randZ);
@@ -85,7 +85,7 @@ export class HemisphericParticleEmitter implements IParticleEmitterType {
      * @returns the new emitter
      */
     public clone(): HemisphericParticleEmitter {
-        let newOne = new HemisphericParticleEmitter(this.radius, this.directionRandomizer);
+        const newOne = new HemisphericParticleEmitter(this.radius, this.directionRandomizer);
 
         DeepCopier.DeepCopy(this, newOne);
 
@@ -133,7 +133,7 @@ export class HemisphericParticleEmitter implements IParticleEmitterType {
      * @returns the JSON object
      */
     public serialize(): any {
-        var serializationObject: any = {};
+        const serializationObject: any = {};
         serializationObject.type = this.getClassName();
         serializationObject.radius = this.radius;
         serializationObject.radiusRange = this.radiusRange;

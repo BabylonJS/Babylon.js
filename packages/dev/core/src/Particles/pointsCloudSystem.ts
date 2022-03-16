@@ -24,7 +24,7 @@ export enum PointColor {
     /** random value */
     Random = 0,
     /** stated value */
-    Stated = 3
+    Stated = 3,
 }
 
 /**
@@ -75,14 +75,14 @@ export class PointsCloudSystem implements IDisposable {
     private _normals: number[] = new Array<number>();
     private _colors: number[] = new Array<number>();
     private _uvs: number[] = new Array<number>();
-    private _indices32: IndicesArray;           // used as depth sorted array if depth sort enabled, else used as typed indices
-    private _positions32: Float32Array;         // updated positions for the VBO
+    private _indices32: IndicesArray; // used as depth sorted array if depth sort enabled, else used as typed indices
+    private _positions32: Float32Array; // updated positions for the VBO
     private _colors32: Float32Array;
     private _uvs32: Float32Array;
     private _updatable: boolean = true;
     private _isVisibilityBoxLocked = false;
     private _alwaysVisible: boolean = false;
-    private _groups: number[] = new Array<number>();  //start indices for each group of particles
+    private _groups: number[] = new Array<number>(); //start indices for each group of particles
     private _groupCounter: number = 0;
     private _computeParticleColor: boolean = true;
     private _computeParticleTexture: boolean = true;
@@ -97,6 +97,7 @@ export class PointsCloudSystem implements IDisposable {
      * @param scene (Scene) is the scene in which the PCS is added
      * @param options defines the options of the PCS e.g.
      * * updatable (optional boolean, default true) : if the PCS must be updatable or immutable
+     * @param options.updatable
      */
     constructor(name: string, pointSize: number, scene: Scene, options?: { updatable?: boolean }) {
         this.name = name;
@@ -123,6 +124,7 @@ export class PointsCloudSystem implements IDisposable {
     }
 
     /**
+     * @param material
      * @hidden
      */
     private _buildMesh(material?: Material): Promise<Mesh> {
@@ -134,18 +136,18 @@ export class PointsCloudSystem implements IDisposable {
         this._uvs32 = new Float32Array(this._uvs);
         this._colors32 = new Float32Array(this._colors);
 
-        var vertexData = new VertexData();
+        const vertexData = new VertexData();
         vertexData.set(this._positions32, VertexBuffer.PositionKind);
 
         if (this._uvs32.length > 0) {
             vertexData.set(this._uvs32, VertexBuffer.UVKind);
         }
-        var ec = 0; //emissive color value 0 for UVs, 1 for color
+        let ec = 0; //emissive color value 0 for UVs, 1 for color
         if (this._colors32.length > 0) {
             ec = 1;
             vertexData.set(this._colors32, VertexBuffer.ColorKind);
         }
-        var mesh = new Mesh(this.name, this._scene);
+        const mesh = new Mesh(this.name, this._scene);
         vertexData.applyToMesh(mesh, this._updatable);
         this.mesh = mesh;
 
@@ -174,7 +176,7 @@ export class PointsCloudSystem implements IDisposable {
 
     // adds a new particle object in the particles array
     private _addParticle(idx: number, group: PointsGroup, groupId: number, idxInGroup: number): CloudPoint {
-        var cp = new CloudPoint(idx, group, groupId, idxInGroup, this);
+        const cp = new CloudPoint(idx, group, groupId, idxInGroup, this);
         this.particles.push(cp);
         return cp;
     }
@@ -185,17 +187,17 @@ export class PointsCloudSystem implements IDisposable {
     }
 
     private _getColorIndicesForCoord(pointsGroup: PointsGroup, x: number, y: number, width: number): Color4 {
-        var imageData = <Uint8Array>pointsGroup._groupImageData;
-        var color = y * (width * 4) + x * 4;
-        var colorIndices = [color, color + 1, color + 2, color + 3];
-        var redIndex = colorIndices[0];
-        var greenIndex = colorIndices[1];
-        var blueIndex = colorIndices[2];
-        var alphaIndex = colorIndices[3];
-        var redForCoord = imageData[redIndex];
-        var greenForCoord = imageData[greenIndex];
-        var blueForCoord = imageData[blueIndex];
-        var alphaForCoord = imageData[alphaIndex];
+        const imageData = <Uint8Array>pointsGroup._groupImageData;
+        const color = y * (width * 4) + x * 4;
+        const colorIndices = [color, color + 1, color + 2, color + 3];
+        const redIndex = colorIndices[0];
+        const greenIndex = colorIndices[1];
+        const blueIndex = colorIndices[2];
+        const alphaIndex = colorIndices[3];
+        const redForCoord = imageData[redIndex];
+        const greenForCoord = imageData[greenIndex];
+        const blueForCoord = imageData[blueIndex];
+        const alphaForCoord = imageData[alphaIndex];
         return new Color4(redForCoord / 255, greenForCoord / 255, blueForCoord / 255, alphaForCoord);
     }
 
@@ -204,20 +206,20 @@ export class PointsCloudSystem implements IDisposable {
             mesh.updateFacetData();
         }
 
-        var boundInfo = mesh.getBoundingInfo();
-        var diameter = 2 * boundInfo.boundingSphere.radius;
+        const boundInfo = mesh.getBoundingInfo();
+        const diameter = 2 * boundInfo.boundingSphere.radius;
 
-        var meshPos = <FloatArray>mesh.getVerticesData(VertexBuffer.PositionKind);
-        var meshInd = <IndicesArray>mesh.getIndices();
-        var meshUV = <FloatArray>mesh.getVerticesData(VertexBuffer.UVKind);
-        var meshCol = <FloatArray>mesh.getVerticesData(VertexBuffer.ColorKind);
+        let meshPos = <FloatArray>mesh.getVerticesData(VertexBuffer.PositionKind);
+        const meshInd = <IndicesArray>mesh.getIndices();
+        const meshUV = <FloatArray>mesh.getVerticesData(VertexBuffer.UVKind);
+        const meshCol = <FloatArray>mesh.getVerticesData(VertexBuffer.ColorKind);
 
-        var place = Vector3.Zero();
+        const place = Vector3.Zero();
         mesh.computeWorldMatrix();
-        var meshMatrix: Matrix = mesh.getWorldMatrix();
+        const meshMatrix: Matrix = mesh.getWorldMatrix();
         if (!meshMatrix.isIdentity()) {
             meshPos = meshPos.slice(0);
-            for (var p = 0; p < meshPos.length / 3; p++) {
+            for (let p = 0; p < meshPos.length / 3; p++) {
                 Vector3.TransformCoordinatesFromFloatsToRef(meshPos[3 * p], meshPos[3 * p + 1], meshPos[3 * p + 2], meshMatrix, place);
                 meshPos[3 * p] = place.x;
                 meshPos[3 * p + 1] = place.y;
@@ -225,76 +227,76 @@ export class PointsCloudSystem implements IDisposable {
             }
         }
 
-        var idxPoints: number = 0;
+        let idxPoints: number = 0;
 
         var index: number = 0;
-        var id0: number = 0;
-        var id1: number = 0;
-        var id2: number = 0;
-        var v0X: number = 0;
-        var v0Y: number = 0;
-        var v0Z: number = 0;
-        var v1X: number = 0;
-        var v1Y: number = 0;
-        var v1Z: number = 0;
-        var v2X: number = 0;
-        var v2Y: number = 0;
-        var v2Z: number = 0;
-        var vertex0 = Vector3.Zero();
-        var vertex1 = Vector3.Zero();
-        var vertex2 = Vector3.Zero();
-        var vec0 = Vector3.Zero();
-        var vec1 = Vector3.Zero();
+        let id0: number = 0;
+        let id1: number = 0;
+        let id2: number = 0;
+        let v0X: number = 0;
+        let v0Y: number = 0;
+        let v0Z: number = 0;
+        let v1X: number = 0;
+        let v1Y: number = 0;
+        let v1Z: number = 0;
+        let v2X: number = 0;
+        let v2Y: number = 0;
+        let v2Z: number = 0;
+        const vertex0 = Vector3.Zero();
+        const vertex1 = Vector3.Zero();
+        const vertex2 = Vector3.Zero();
+        const vec0 = Vector3.Zero();
+        const vec1 = Vector3.Zero();
 
-        var uv0X: number = 0;
-        var uv0Y: number = 0;
-        var uv1X: number = 0;
-        var uv1Y: number = 0;
-        var uv2X: number = 0;
-        var uv2Y: number = 0;
-        var uv0 = Vector2.Zero();
-        var uv1 = Vector2.Zero();
-        var uv2 = Vector2.Zero();
-        var uvec0 = Vector2.Zero();
-        var uvec1 = Vector2.Zero();
+        let uv0X: number = 0;
+        let uv0Y: number = 0;
+        let uv1X: number = 0;
+        let uv1Y: number = 0;
+        let uv2X: number = 0;
+        let uv2Y: number = 0;
+        const uv0 = Vector2.Zero();
+        const uv1 = Vector2.Zero();
+        const uv2 = Vector2.Zero();
+        const uvec0 = Vector2.Zero();
+        const uvec1 = Vector2.Zero();
 
-        var col0X: number = 0;
-        var col0Y: number = 0;
-        var col0Z: number = 0;
-        var col0A: number = 0;
-        var col1X: number = 0;
-        var col1Y: number = 0;
-        var col1Z: number = 0;
-        var col1A: number = 0;
-        var col2X: number = 0;
-        var col2Y: number = 0;
-        var col2Z: number = 0;
-        var col2A: number = 0;
-        var col0 = Vector4.Zero();
-        var col1 = Vector4.Zero();
-        var col2 = Vector4.Zero();
-        var colvec0 = Vector4.Zero();
-        var colvec1 = Vector4.Zero();
+        let col0X: number = 0;
+        let col0Y: number = 0;
+        let col0Z: number = 0;
+        let col0A: number = 0;
+        let col1X: number = 0;
+        let col1Y: number = 0;
+        let col1Z: number = 0;
+        let col1A: number = 0;
+        let col2X: number = 0;
+        let col2Y: number = 0;
+        let col2Z: number = 0;
+        let col2A: number = 0;
+        const col0 = Vector4.Zero();
+        const col1 = Vector4.Zero();
+        const col2 = Vector4.Zero();
+        const colvec0 = Vector4.Zero();
+        const colvec1 = Vector4.Zero();
 
-        var lamda: number = 0;
-        var mu: number = 0;
+        let lamda: number = 0;
+        let mu: number = 0;
         range = range ? range : 0;
 
-        var facetPoint: Vector3;
-        var uvPoint: Vector2;
-        var colPoint: Vector4 = new Vector4(0, 0, 0, 0);
+        let facetPoint: Vector3;
+        let uvPoint: Vector2;
+        let colPoint: Vector4 = new Vector4(0, 0, 0, 0);
 
-        var norm = Vector3.Zero();
-        var tang = Vector3.Zero();
-        var biNorm = Vector3.Zero();
-        var angle = 0;
-        var facetPlaneVec = Vector3.Zero();
+        let norm = Vector3.Zero();
+        let tang = Vector3.Zero();
+        let biNorm = Vector3.Zero();
+        let angle = 0;
+        let facetPlaneVec = Vector3.Zero();
 
-        var gap = 0;
-        var distance = 0;
-        var ray = new Ray(Vector3.Zero(), new Vector3(1, 0, 0));
-        var pickInfo: PickingInfo;
-        var direction = Vector3.Zero();
+        let gap = 0;
+        let distance = 0;
+        const ray = new Ray(Vector3.Zero(), new Vector3(1, 0, 0));
+        let pickInfo: PickingInfo;
+        let direction = Vector3.Zero();
 
         for (var index = 0; index < meshInd.length / 3; index++) {
             id0 = meshInd[3 * index];
@@ -357,12 +359,12 @@ export class PointsCloudSystem implements IDisposable {
             var s: number;
             var v: number;
             var hsvCol: Color3;
-            var statedColor: Color3 = new Color3(0, 0, 0);
-            var colPoint3: Color3 = new Color3(0, 0, 0);
+            const statedColor: Color3 = new Color3(0, 0, 0);
+            const colPoint3: Color3 = new Color3(0, 0, 0);
             var pointColors: Color4;
             var particle: CloudPoint;
 
-            for (var i = 0; i < pointsGroup._groupDensity[index]; i++) {
+            for (let i = 0; i < pointsGroup._groupDensity[index]; i++) {
                 idxPoints = this.particles.length;
                 this._addParticle(idxPoints, pointsGroup, this._groupCounter, index + i);
                 particle = this.particles[idxPoints];
@@ -394,34 +396,33 @@ export class PointsCloudSystem implements IDisposable {
                 if (colorFromTexture !== undefined) {
                     if (meshUV) {
                         uvPoint = uv0.add(uvec0.scale(lamda)).add(uvec1.scale(lamda * mu));
-                        if (colorFromTexture) { //Set particle color to texture color
+                        if (colorFromTexture) {
+                            //Set particle color to texture color
                             if (hasTexture && pointsGroup._groupImageData !== null) {
                                 width = pointsGroup._groupImgWidth;
                                 height = pointsGroup._groupImgHeight;
                                 pointColors = this._getColorIndicesForCoord(pointsGroup, Math.round(uvPoint.x * width), Math.round(uvPoint.y * height), width);
                                 particle.color = pointColors;
                                 this._colors.push(pointColors.r, pointColors.g, pointColors.b, pointColors.a);
-                            }
-                            else {
-                                if (meshCol) { //failure in texture and colors available
+                            } else {
+                                if (meshCol) {
+                                    //failure in texture and colors available
                                     colPoint = col0.add(colvec0.scale(lamda)).add(colvec1.scale(lamda * mu));
                                     particle.color = new Color4(colPoint.x, colPoint.y, colPoint.z, colPoint.w);
                                     this._colors.push(colPoint.x, colPoint.y, colPoint.z, colPoint.w);
-                                }
-                                else {
+                                } else {
                                     colPoint = col0.set(Math.random(), Math.random(), Math.random(), 1);
                                     particle.color = new Color4(colPoint.x, colPoint.y, colPoint.z, colPoint.w);
                                     this._colors.push(colPoint.x, colPoint.y, colPoint.z, colPoint.w);
                                 }
                             }
-                        }
-                        else { //Set particle uv based on a mesh uv
+                        } else {
+                            //Set particle uv based on a mesh uv
                             particle.uv = uvPoint.clone();
                             this._uvs.push(particle.uv.x, particle.uv.y);
                         }
                     }
-                }
-                else {
+                } else {
                     if (color) {
                         statedColor.set(color.r, color.g, color.b);
                         deltaS = Scalar.RandomRange(-range, range);
@@ -444,8 +445,7 @@ export class PointsCloudSystem implements IDisposable {
                         }
                         Color3.HSVtoRGBToRef(h, s, v, colPoint3);
                         colPoint.set(colPoint3.r, colPoint3.g, colPoint3.b, 1);
-                    }
-                    else {
+                    } else {
                         colPoint = col0.set(Math.random(), Math.random(), Math.random(), 1);
                     }
                     particle.color = new Color4(colPoint.x, colPoint.y, colPoint.z, colPoint.w);
@@ -465,8 +465,8 @@ export class PointsCloudSystem implements IDisposable {
             return;
         }
 
-        var mat = mesh.material;
-        let textureList: BaseTexture[] = mat.getActiveTextures();
+        const mat = mesh.material;
+        const textureList: BaseTexture[] = mat.getActiveTextures();
         if (textureList.length === 0) {
             Logger.Warn(mesh.name + "has no usable texture.");
             pointsGroup._groupImageData = null;
@@ -474,70 +474,72 @@ export class PointsCloudSystem implements IDisposable {
             return;
         }
 
-        var clone = <Mesh>mesh.clone();
+        const clone = <Mesh>mesh.clone();
         clone.setEnabled(false);
-        this._promises.push(new Promise((resolve: (_: void) => void) => {
-            BaseTexture.WhenAllReady(textureList, () => {
-                let n = pointsGroup._textureNb;
-                if (n < 0) {
-                    n = 0;
-                }
-                if (n > textureList.length - 1) {
-                    n = textureList.length - 1;
-                }
-                const finalize = () => {
-                    pointsGroup._groupImgWidth = textureList[n].getSize().width;
-                    pointsGroup._groupImgHeight = textureList[n].getSize().height;
-                    this._setPointsColorOrUV(clone, pointsGroup, isVolume, true, true);
-                    clone.dispose();
-                    resolve();
-                };
-                pointsGroup._groupImageData = null;
-                const dataPromise = textureList[n].readPixels();
-                if (!dataPromise) {
-                    finalize();
-                } else {
-                    dataPromise.then((data) => {
-                        pointsGroup._groupImageData = data;
+        this._promises.push(
+            new Promise((resolve: (_: void) => void) => {
+                BaseTexture.WhenAllReady(textureList, () => {
+                    let n = pointsGroup._textureNb;
+                    if (n < 0) {
+                        n = 0;
+                    }
+                    if (n > textureList.length - 1) {
+                        n = textureList.length - 1;
+                    }
+                    const finalize = () => {
+                        pointsGroup._groupImgWidth = textureList[n].getSize().width;
+                        pointsGroup._groupImgHeight = textureList[n].getSize().height;
+                        this._setPointsColorOrUV(clone, pointsGroup, isVolume, true, true);
+                        clone.dispose();
+                        resolve();
+                    };
+                    pointsGroup._groupImageData = null;
+                    const dataPromise = textureList[n].readPixels();
+                    if (!dataPromise) {
                         finalize();
-                    });
-                }
-            });
-        }));
+                    } else {
+                        dataPromise.then((data) => {
+                            pointsGroup._groupImageData = data;
+                            finalize();
+                        });
+                    }
+                });
+            })
+        );
     }
 
     // calculates the point density per facet of a mesh for surface points
     private _calculateDensity(nbPoints: number, positions: FloatArray, indices: IndicesArray): number[] {
-        var density: number[] = new Array<number>();
+        let density: number[] = new Array<number>();
         var index: number;
-        var id0: number;
-        var id1: number;
-        var id2: number;
-        var v0X: number;
-        var v0Y: number;
-        var v0Z: number;
-        var v1X: number;
-        var v1Y: number;
-        var v1Z: number;
-        var v2X: number;
-        var v2Y: number;
-        var v2Z: number;
-        var vertex0 = Vector3.Zero();
-        var vertex1 = Vector3.Zero();
-        var vertex2 = Vector3.Zero();
-        var vec0 = Vector3.Zero();
-        var vec1 = Vector3.Zero();
-        var vec2 = Vector3.Zero();
+        let id0: number;
+        let id1: number;
+        let id2: number;
+        let v0X: number;
+        let v0Y: number;
+        let v0Z: number;
+        let v1X: number;
+        let v1Y: number;
+        let v1Z: number;
+        let v2X: number;
+        let v2Y: number;
+        let v2Z: number;
+        const vertex0 = Vector3.Zero();
+        const vertex1 = Vector3.Zero();
+        const vertex2 = Vector3.Zero();
+        const vec0 = Vector3.Zero();
+        const vec1 = Vector3.Zero();
+        const vec2 = Vector3.Zero();
 
-        var a: number; //length of side of triangle
-        var b: number; //length of side of triangle
-        var c: number; //length of side of triangle
-        var p: number; //perimeter of triangle
-        var area: number;
-        var areas: number[] = new Array<number>();
-        var surfaceArea: number = 0;
+        let a: number; //length of side of triangle
+        let b: number; //length of side of triangle
+        let c: number; //length of side of triangle
+        let p: number; //perimeter of triangle
+        let area: number;
+        const areas: number[] = new Array<number>();
+        let surfaceArea: number = 0;
 
-        var nbFacets = indices.length / 3;
+        const nbFacets = indices.length / 3;
 
         //surface area
         for (var index = 0; index < nbFacets; index++) {
@@ -567,15 +569,15 @@ export class PointsCloudSystem implements IDisposable {
             surfaceArea += area;
             areas[index] = area;
         }
-        var pointCount: number = 0;
+        let pointCount: number = 0;
         for (var index = 0; index < nbFacets; index++) {
-            density[index] = Math.floor(nbPoints * areas[index] / surfaceArea);
+            density[index] = Math.floor((nbPoints * areas[index]) / surfaceArea);
             pointCount += density[index];
         }
 
-        var diff: number = nbPoints - pointCount;
-        var pointsPerFacet: number = Math.floor(diff / nbFacets);
-        var extraPoints: number = diff % nbFacets;
+        const diff: number = nbPoints - pointCount;
+        const pointsPerFacet: number = Math.floor(diff / nbFacets);
+        const extraPoints: number = diff % nbFacets;
 
         if (pointsPerFacet > 0) {
             density = density.map((x) => x + pointsPerFacet);
@@ -595,12 +597,12 @@ export class PointsCloudSystem implements IDisposable {
      * @returns the number of groups in the system
      */
     public addPoints(nb: number, pointFunction: any = this._randomUnitVector): number {
-        var pointsGroup = new PointsGroup(this._groupCounter, pointFunction);
-        var cp: CloudPoint;
+        const pointsGroup = new PointsGroup(this._groupCounter, pointFunction);
+        let cp: CloudPoint;
 
         // particles
-        var idx = this.nbParticles;
-        for (var i = 0; i < nb; i++) {
+        let idx = this.nbParticles;
+        for (let i = 0; i < nb; i++) {
             cp = this._addParticle(idx, pointsGroup, this._groupCounter, i);
             if (pointsGroup && pointsGroup._positionFunction) {
                 pointsGroup._positionFunction(cp, idx, i);
@@ -629,22 +631,21 @@ export class PointsCloudSystem implements IDisposable {
      * @returns the number of groups in the system
      */
     public addSurfacePoints(mesh: Mesh, nb: number, colorWith?: number, color?: Color4 | number, range?: number): number {
-        var colored = colorWith ? colorWith : PointColor.Random;
+        let colored = colorWith ? colorWith : PointColor.Random;
         if (isNaN(colored) || colored < 0 || colored > 3) {
             colored = PointColor.Random;
         }
 
-        var meshPos = <FloatArray>mesh.getVerticesData(VertexBuffer.PositionKind);
-        var meshInd = <IndicesArray>mesh.getIndices();
+        const meshPos = <FloatArray>mesh.getVerticesData(VertexBuffer.PositionKind);
+        const meshInd = <IndicesArray>mesh.getIndices();
 
         this._groups.push(this._groupCounter);
-        var pointsGroup = new PointsGroup(this._groupCounter, null);
+        const pointsGroup = new PointsGroup(this._groupCounter, null);
 
         pointsGroup._groupDensity = this._calculateDensity(nb, meshPos, meshInd);
         if (colored === PointColor.Color) {
             pointsGroup._textureNb = <number>color ? <number>color : 0;
-        }
-        else {
+        } else {
             color = <Color4>color ? <Color4>color : new Color4(1, 1, 1, 1);
         }
         switch (colored) {
@@ -676,22 +677,21 @@ export class PointsCloudSystem implements IDisposable {
      * @returns the number of groups in the system
      */
     public addVolumePoints(mesh: Mesh, nb: number, colorWith?: number, color?: Color4 | number, range?: number): number {
-        var colored = colorWith ? colorWith : PointColor.Random;
+        let colored = colorWith ? colorWith : PointColor.Random;
         if (isNaN(colored) || colored < 0 || colored > 3) {
             colored = PointColor.Random;
         }
 
-        var meshPos = <FloatArray>mesh.getVerticesData(VertexBuffer.PositionKind);
-        var meshInd = <IndicesArray>mesh.getIndices();
+        const meshPos = <FloatArray>mesh.getVerticesData(VertexBuffer.PositionKind);
+        const meshInd = <IndicesArray>mesh.getIndices();
 
         this._groups.push(this._groupCounter);
-        var pointsGroup = new PointsGroup(this._groupCounter, null);
+        const pointsGroup = new PointsGroup(this._groupCounter, null);
 
         pointsGroup._groupDensity = this._calculateDensity(nb, meshPos, meshInd);
         if (colored === PointColor.Color) {
             pointsGroup._textureNb = <number>color ? <number>color : 0;
-        }
-        else {
+        } else {
             color = <Color4>color ? <Color4>color : new Color4(1, 1, 1, 1);
         }
         switch (colored) {
@@ -744,15 +744,16 @@ export class PointsCloudSystem implements IDisposable {
         const maximum = tempVectors[9].setAll(-Number.MAX_VALUE);
 
         Matrix.IdentityToRef(rotMatrix);
-        var idx = 0;            // current index of the particle
+        var idx = 0; // current index of the particle
 
         if (this.mesh.isFacetDataEnabled) {
             this._computeBoundingBox = true;
         }
 
-        end = (end >= this.nbParticles) ? this.nbParticles - 1 : end;
+        end = end >= this.nbParticles ? this.nbParticles - 1 : end;
         if (this._computeBoundingBox) {
-            if (start != 0 || end != this.nbParticles - 1) { // only some particles are updated, then use the current existing BBox basis. Note : it can only increase.
+            if (start != 0 || end != this.nbParticles - 1) {
+                // only some particles are updated, then use the current existing BBox basis. Note : it can only increase.
                 const boundingInfo = this.mesh.getBoundingInfo();
                 if (boundingInfo) {
                     minimum.copyFrom(boundingInfo.minimum);
@@ -762,12 +763,12 @@ export class PointsCloudSystem implements IDisposable {
         }
 
         var idx = 0; // particle index
-        var pindex = 0; //index in positions array
-        var cindex = 0; //index in color array
-        var uindex = 0; //index in uv array
+        let pindex = 0; //index in positions array
+        let cindex = 0; //index in color array
+        let uindex = 0; //index in uv array
 
         // particle loop
-        for (var p = start; p <= end; p++) {
+        for (let p = start; p <= end; p++) {
             const particle = this.particles[p];
             idx = particle.idx;
             pindex = 3 * idx;
@@ -785,7 +786,7 @@ export class PointsCloudSystem implements IDisposable {
                 particle.getRotationMatrix(rotMatrix);
             }
 
-            const particleHasParent = (particle.parentId !== null);
+            const particleHasParent = particle.parentId !== null;
             if (particleHasParent) {
                 const parent = this.particles[particle.parentId!];
                 const parentRotationMatrix = parent._rotationMatrix;
@@ -801,18 +802,26 @@ export class PointsCloudSystem implements IDisposable {
 
                 if (this._computeParticleRotation) {
                     const rotMatrixValues = rotMatrix.m;
-                    particleRotationMatrix[0] = rotMatrixValues[0] * parentRotationMatrix[0] + rotMatrixValues[1] * parentRotationMatrix[3] + rotMatrixValues[2] * parentRotationMatrix[6];
-                    particleRotationMatrix[1] = rotMatrixValues[0] * parentRotationMatrix[1] + rotMatrixValues[1] * parentRotationMatrix[4] + rotMatrixValues[2] * parentRotationMatrix[7];
-                    particleRotationMatrix[2] = rotMatrixValues[0] * parentRotationMatrix[2] + rotMatrixValues[1] * parentRotationMatrix[5] + rotMatrixValues[2] * parentRotationMatrix[8];
-                    particleRotationMatrix[3] = rotMatrixValues[4] * parentRotationMatrix[0] + rotMatrixValues[5] * parentRotationMatrix[3] + rotMatrixValues[6] * parentRotationMatrix[6];
-                    particleRotationMatrix[4] = rotMatrixValues[4] * parentRotationMatrix[1] + rotMatrixValues[5] * parentRotationMatrix[4] + rotMatrixValues[6] * parentRotationMatrix[7];
-                    particleRotationMatrix[5] = rotMatrixValues[4] * parentRotationMatrix[2] + rotMatrixValues[5] * parentRotationMatrix[5] + rotMatrixValues[6] * parentRotationMatrix[8];
-                    particleRotationMatrix[6] = rotMatrixValues[8] * parentRotationMatrix[0] + rotMatrixValues[9] * parentRotationMatrix[3] + rotMatrixValues[10] * parentRotationMatrix[6];
-                    particleRotationMatrix[7] = rotMatrixValues[8] * parentRotationMatrix[1] + rotMatrixValues[9] * parentRotationMatrix[4] + rotMatrixValues[10] * parentRotationMatrix[7];
-                    particleRotationMatrix[8] = rotMatrixValues[8] * parentRotationMatrix[2] + rotMatrixValues[9] * parentRotationMatrix[5] + rotMatrixValues[10] * parentRotationMatrix[8];
+                    particleRotationMatrix[0] =
+                        rotMatrixValues[0] * parentRotationMatrix[0] + rotMatrixValues[1] * parentRotationMatrix[3] + rotMatrixValues[2] * parentRotationMatrix[6];
+                    particleRotationMatrix[1] =
+                        rotMatrixValues[0] * parentRotationMatrix[1] + rotMatrixValues[1] * parentRotationMatrix[4] + rotMatrixValues[2] * parentRotationMatrix[7];
+                    particleRotationMatrix[2] =
+                        rotMatrixValues[0] * parentRotationMatrix[2] + rotMatrixValues[1] * parentRotationMatrix[5] + rotMatrixValues[2] * parentRotationMatrix[8];
+                    particleRotationMatrix[3] =
+                        rotMatrixValues[4] * parentRotationMatrix[0] + rotMatrixValues[5] * parentRotationMatrix[3] + rotMatrixValues[6] * parentRotationMatrix[6];
+                    particleRotationMatrix[4] =
+                        rotMatrixValues[4] * parentRotationMatrix[1] + rotMatrixValues[5] * parentRotationMatrix[4] + rotMatrixValues[6] * parentRotationMatrix[7];
+                    particleRotationMatrix[5] =
+                        rotMatrixValues[4] * parentRotationMatrix[2] + rotMatrixValues[5] * parentRotationMatrix[5] + rotMatrixValues[6] * parentRotationMatrix[8];
+                    particleRotationMatrix[6] =
+                        rotMatrixValues[8] * parentRotationMatrix[0] + rotMatrixValues[9] * parentRotationMatrix[3] + rotMatrixValues[10] * parentRotationMatrix[6];
+                    particleRotationMatrix[7] =
+                        rotMatrixValues[8] * parentRotationMatrix[1] + rotMatrixValues[9] * parentRotationMatrix[4] + rotMatrixValues[10] * parentRotationMatrix[7];
+                    particleRotationMatrix[8] =
+                        rotMatrixValues[8] * parentRotationMatrix[2] + rotMatrixValues[9] * parentRotationMatrix[5] + rotMatrixValues[10] * parentRotationMatrix[8];
                 }
-            }
-            else {
+            } else {
                 particleGlobalPosition.x = 0;
                 particleGlobalPosition.y = 0;
                 particleGlobalPosition.z = 0;
@@ -834,8 +843,7 @@ export class PointsCloudSystem implements IDisposable {
             const pivotBackTranslation = tempVectors[11];
             if (particle.translateFromPivot) {
                 pivotBackTranslation.setAll(0.0);
-            }
-            else {
+            } else {
                 pivotBackTranslation.copyFrom(particle.pivot);
             }
 
@@ -854,9 +862,9 @@ export class PointsCloudSystem implements IDisposable {
             rotatedY += pivotBackTranslation.y;
             rotatedZ += pivotBackTranslation.z;
 
-            const px = positions32[pindex] = particleGlobalPosition.x + camAxisX.x * rotatedX + camAxisY.x * rotatedY + camAxisZ.x * rotatedZ;
-            const py = positions32[pindex + 1] = particleGlobalPosition.y + camAxisX.y * rotatedX + camAxisY.y * rotatedY + camAxisZ.y * rotatedZ;
-            const pz = positions32[pindex + 2] = particleGlobalPosition.z + camAxisX.z * rotatedX + camAxisY.z * rotatedY + camAxisZ.z * rotatedZ;
+            const px = (positions32[pindex] = particleGlobalPosition.x + camAxisX.x * rotatedX + camAxisY.x * rotatedY + camAxisZ.x * rotatedZ);
+            const py = (positions32[pindex + 1] = particleGlobalPosition.y + camAxisX.y * rotatedX + camAxisY.y * rotatedY + camAxisZ.y * rotatedZ);
+            const pz = (positions32[pindex + 2] = particleGlobalPosition.z + camAxisX.z * rotatedX + camAxisY.z * rotatedY + camAxisZ.z * rotatedZ);
 
             if (this._computeBoundingBox) {
                 minimum.minimizeInPlaceFromFloats(px, py, pz);
@@ -877,7 +885,6 @@ export class PointsCloudSystem implements IDisposable {
                 uvs32[uindex] = uv.x;
                 uvs32[uindex + 1] = uv.y;
             }
-
         }
 
         // if the VBO must be updated
@@ -894,8 +901,7 @@ export class PointsCloudSystem implements IDisposable {
         if (this._computeBoundingBox) {
             if (mesh.hasBoundingInfo) {
                 mesh.getBoundingInfo().reConstruct(minimum, maximum, mesh._worldMatrix);
-            }
-            else {
+            } else {
                 mesh.buildBoundingInfo(minimum, maximum, mesh._worldMatrix);
             }
         }
@@ -904,8 +910,8 @@ export class PointsCloudSystem implements IDisposable {
     }
 
     /**
-    * Disposes the PCS.
-    */
+     * Disposes the PCS.
+     */
     public dispose(): void {
         this.mesh.dispose();
         this.vars = null;
@@ -940,7 +946,7 @@ export class PointsCloudSystem implements IDisposable {
      * doc :
      */
     public setVisibilityBox(size: number): void {
-        var vis = size / 2;
+        const vis = size / 2;
         this.mesh.buildBoundingInfo(new Vector3(-vis, -vis, -vis), new Vector3(vis, vis, vis));
     }
 
@@ -1021,8 +1027,7 @@ export class PointsCloudSystem implements IDisposable {
      * The PCS doesn't call this function, you may have to call it by your own.
      * doc :
      */
-    public initParticles(): void {
-    }
+    public initParticles(): void {}
 
     /**
      * This function does nothing. It may be overwritten to recycle a particle
@@ -1054,8 +1059,7 @@ export class PointsCloudSystem implements IDisposable {
      * @param stop the particle index in the particle array where to stop to iterate, same than the value passed to setParticle()
      * @param update the boolean update value actually passed to setParticles()
      */
-    public beforeUpdateParticles(start?: number, stop?: number, update?: boolean): void {
-    }
+    public beforeUpdateParticles(start?: number, stop?: number, update?: boolean): void {}
     /**
      * This will be called  by `setParticles()` after all the other treatments and just before the actual mesh update.
      * This will be passed three parameters.
@@ -1064,6 +1068,5 @@ export class PointsCloudSystem implements IDisposable {
      * @param stop the particle index in the particle array where to stop to iterate, same than the value passed to setParticle()
      * @param update the boolean update value actually passed to setParticles()
      */
-    public afterUpdateParticles(start?: number, stop?: number, update?: boolean): void {
-    }
+    public afterUpdateParticles(start?: number, stop?: number, update?: boolean): void {}
 }

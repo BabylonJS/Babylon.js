@@ -1,9 +1,9 @@
 import { Scene } from "../../scene";
 import { Vector3 } from "../../Maths/math.vector";
-import { Color4 } from '../../Maths/math.color';
+import { Color4 } from "../../Maths/math.color";
 import { Mesh } from "../../Meshes/mesh";
 import { VertexData } from "../mesh.vertexData";
-import { Nullable } from '../../types';
+import { Nullable } from "../../types";
 import { Logger } from "../../Misc/logger";
 import { _PrimaryIsoTriangle, GeodesicData, PolyhedronData } from "../geodesicMesh";
 import { GoldbergMesh } from "../goldbergMesh";
@@ -16,19 +16,19 @@ export type GoldbergVertexDataOption = {
     /**
      * the size of the Goldberg, optional default 1
      */
-    size?: number,
+    size?: number;
     /**
      * allows stretching in the x direction, optional, default size
      */
-    sizeX?: number,
+    sizeX?: number;
     /**
      * allows stretching in the y direction, optional, default size
      */
-    sizeY?: number,
+    sizeY?: number;
     /**
      * allows stretching in the z direction, optional, default size
      */
-    sizeZ?: number,
+    sizeZ?: number;
     /**
      * optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
      */
@@ -58,6 +58,7 @@ export type GoldbergCreationOption = {
  * @param name defines the name of the mesh
  * @param options an object used to set the following optional parameters for the polyhedron, required but can be empty
  * @param goldBergData polyhedronData defining the Goldberg polyhedron
+ * @param goldbergData
  * @returns GoldbergSphere mesh
  */
 export function CreateGoldbergVertexData(options: GoldbergVertexDataOption, goldbergData: PolyhedronData): VertexData {
@@ -65,7 +66,7 @@ export function CreateGoldbergVertexData(options: GoldbergVertexDataOption, gold
     const sizeX: number = options.sizeX || size || 1;
     const sizeY: number = options.sizeY || size || 1;
     const sizeZ: number = options.sizeZ || size || 1;
-    const sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || VertexData.DEFAULTSIDE;
+    const sideOrientation = options.sideOrientation === 0 ? 0 : options.sideOrientation || VertexData.DEFAULTSIDE;
 
     const positions = new Array<number>();
     const indices = new Array<number>();

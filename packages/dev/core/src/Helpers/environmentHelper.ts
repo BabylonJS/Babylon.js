@@ -3,7 +3,7 @@ import { Nullable } from "../types";
 import { ArcRotateCamera } from "../Cameras/arcRotateCamera";
 import { Scene } from "../scene";
 import { Vector3 } from "../Maths/math.vector";
-import { Color3, Color4 } from '../Maths/math.color';
+import { Color3, Color4 } from "../Maths/math.color";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
@@ -13,11 +13,11 @@ import { CubeTexture } from "../Materials/Textures/cubeTexture";
 import { BackgroundMaterial } from "../Materials/Background/backgroundMaterial";
 import { Constants } from "../Engines/constants";
 
-import "../Meshes/Builders/planeBuilder";
-import "../Meshes/Builders/boxBuilder";
-import { Plane } from '../Maths/math.plane';
 import { CreatePlane } from "../Meshes/Builders/planeBuilder";
 import { CreateBox } from "../Meshes/Builders/boxBuilder";
+import { Plane } from "../Maths/math.plane";
+
+
 
 /**
  * Represents the different options available during the creation of
@@ -192,7 +192,6 @@ interface ISceneSize {
  * It also helps with the default setup of your imageProcessing configuration.
  */
 export class EnvironmentHelper {
-
     /**
      * Default ground texture URL.
      */
@@ -333,7 +332,7 @@ export class EnvironmentHelper {
      * This observable will be notified with any error during the creation of the environment,
      * mainly texture creation errors.
      */
-    public onErrorObservable: Observable<{ message?: string, exception?: any }>;
+    public onErrorObservable: Observable<{ message?: string; exception?: any }>;
 
     /**
      * constructor
@@ -343,7 +342,7 @@ export class EnvironmentHelper {
     constructor(options: Partial<IEnvironmentHelperOptions>, scene: Scene) {
         this._options = {
             ...EnvironmentHelper._getDefaultOptions(),
-            ...options
+            ...options,
         };
         this._scene = scene;
         this.onErrorObservable = new Observable();
@@ -359,7 +358,7 @@ export class EnvironmentHelper {
     public updateOptions(options: Partial<IEnvironmentHelperOptions>) {
         const newOptions = {
             ...this._options,
-            ...options
+            ...options,
         };
 
         if (this._ground && !newOptions.createGround) {
@@ -499,18 +498,18 @@ export class EnvironmentHelper {
         let groundSize = this._options.groundSize;
         let skyboxSize = this._options.skyboxSize;
         let rootPosition = this._options.rootPosition;
-        if (!this._scene.meshes || this._scene.meshes.length === 1) { // 1 only means the root of the helper.
+        if (!this._scene.meshes || this._scene.meshes.length === 1) {
+            // 1 only means the root of the helper.
             return { groundSize, skyboxSize, rootPosition };
         }
 
         const sceneExtends = this._scene.getWorldExtends((mesh) => {
-            return (mesh !== this._ground && mesh !== this._rootMesh && mesh !== this._skybox);
+            return mesh !== this._ground && mesh !== this._rootMesh && mesh !== this._skybox;
         });
         const sceneDiagonal = sceneExtends.max.subtract(sceneExtends.min);
 
         if (this._options.sizeAuto) {
-            if (this._scene.activeCamera instanceof ArcRotateCamera &&
-                this._scene.activeCamera.upperRadiusLimit) {
+            if (this._scene.activeCamera instanceof ArcRotateCamera && this._scene.activeCamera.upperRadiusLimit) {
                 groundSize = this._scene.activeCamera.upperRadiusLimit * 2;
                 skyboxSize = groundSize;
             }
@@ -533,13 +532,16 @@ export class EnvironmentHelper {
 
     /**
      * Setup the ground according to the specified options.
+     * @param sceneSize
      */
     private _setupGround(sceneSize: ISceneSize): void {
         if (!this._ground || this._ground.isDisposed()) {
             this._ground = CreatePlane("BackgroundPlane", { size: sceneSize.groundSize }, this._scene);
             this._ground.rotation.x = Math.PI / 2; // Face up by default.
             this._ground.parent = this._rootMesh;
-            this._ground.onDisposeObservable.add(() => { this._ground = null; });
+            this._ground.onDisposeObservable.add(() => {
+                this._ground = null;
+            });
         }
 
         this._ground.receiveShadows = this._options.enableGroundShadow;
@@ -589,17 +591,20 @@ export class EnvironmentHelper {
 
     /**
      * Setup the ground mirror texture according to the specified options.
+     * @param sceneSize
      */
     private _setupGroundMirrorTexture(sceneSize: ISceneSize): void {
-        let wrapping = Texture.CLAMP_ADDRESSMODE;
+        const wrapping = Texture.CLAMP_ADDRESSMODE;
         if (!this._groundMirror) {
-            this._groundMirror = new MirrorTexture("BackgroundPlaneMirrorTexture",
+            this._groundMirror = new MirrorTexture(
+                "BackgroundPlaneMirrorTexture",
                 { ratio: this._options.groundMirrorSizeRatio },
                 this._scene,
                 false,
                 this._options.groundMirrorTextureType,
                 Texture.BILINEAR_SAMPLINGMODE,
-                true);
+                true
+            );
             this._groundMirror.mirrorPlane = new Plane(0, -1, 0, sceneSize.rootPosition.y);
             this._groundMirror.anisotropicFilteringLevel = 1;
             this._groundMirror.wrapU = wrapping;
@@ -608,9 +613,7 @@ export class EnvironmentHelper {
             if (this._groundMirror.renderList) {
                 for (let i = 0; i < this._scene.meshes.length; i++) {
                     const mesh = this._scene.meshes[i];
-                    if (mesh !== this._ground &&
-                        mesh !== this._skybox &&
-                        mesh !== this._rootMesh) {
+                    if (mesh !== this._ground && mesh !== this._skybox && mesh !== this._rootMesh) {
                         this._groundMirror.renderList.push(mesh);
                     }
                 }
@@ -618,11 +621,7 @@ export class EnvironmentHelper {
         }
 
         const gammaGround = this._options.groundColor.toGammaSpace();
-        this._groundMirror.clearColor = new Color4(
-            gammaGround.r,
-            gammaGround.g,
-            gammaGround.b,
-        1);
+        this._groundMirror.clearColor = new Color4(gammaGround.r, gammaGround.g, gammaGround.b, 1);
         this._groundMirror.adaptiveBlurKernel = this._options.groundMirrorBlurKernel;
     }
 
@@ -641,11 +640,14 @@ export class EnvironmentHelper {
 
     /**
      * Setup the skybox according to the specified options.
+     * @param sceneSize
      */
     private _setupSkybox(sceneSize: ISceneSize): void {
         if (!this._skybox || this._skybox.isDisposed()) {
             this._skybox = CreateBox("BackgroundSkybox", { size: sceneSize.skyboxSize, sideOrientation: Mesh.BACKSIDE }, this._scene);
-            this._skybox.onDisposeObservable.add(() => { this._skybox = null; });
+            this._skybox.onDisposeObservable.add(() => {
+                this._skybox = null;
+            });
         }
         this._skybox.parent = this._rootMesh;
     }
@@ -693,7 +695,7 @@ export class EnvironmentHelper {
 
     private _errorHandler = (message?: string, exception?: any) => {
         this.onErrorObservable.notifyObservers({ message: message, exception: exception });
-    }
+    };
 
     /**
      * Dispose all the elements created by the Helper.

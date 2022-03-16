@@ -3,13 +3,13 @@ import { Logger } from "../../Misc/logger";
 import { VertexData } from "../../Meshes/mesh.vertexData";
 import { Mesh } from "../../Meshes/mesh";
 import { Scene } from "../../scene";
-import { Epsilon, Vector3, Matrix } from '../../Maths/math';
+import { Epsilon, Vector3, Matrix } from "../../Maths/math";
 import { TransformNode } from "../../Meshes/transformNode";
 import { Observer, Observable } from "../../Misc/observable";
 import { Nullable } from "../../types";
 import { VertexBuffer } from "../../Buffers/buffer";
 
-declare var Recast: any;
+declare let Recast: any;
 
 /**
  * RecastJS navigation plugin
@@ -124,16 +124,16 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
 
         this.navMesh = new this.bjsRECAST.NavMesh();
 
-        var index: number;
-        var tri: number;
-        var pt: number;
+        let index: number;
+        let tri: number;
+        let pt: number;
 
-        var indices = [];
-        var positions = [];
-        var offset = 0;
+        const indices = [];
+        const positions = [];
+        let offset = 0;
         for (index = 0; index < meshes.length; index++) {
             if (meshes[index]) {
-                var mesh = meshes[index];
+                const mesh = meshes[index];
 
                 const meshIndices = mesh.getIndices();
                 if (!meshIndices) {
@@ -144,14 +144,14 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
                     continue;
                 }
 
-                var worldMatrices = [];
+                const worldMatrices = [];
                 const worldMatrix = mesh.computeWorldMatrix(true);
 
                 if (mesh.hasThinInstances) {
-                    let thinMatrices = (mesh as Mesh).thinInstanceGetWorldMatrices();
+                    const thinMatrices = (mesh as Mesh).thinInstanceGetWorldMatrices();
                     for (let instanceIndex = 0; instanceIndex < thinMatrices.length; instanceIndex++) {
                         const tmpMatrix = new Matrix();
-                        let thinMatrix = thinMatrices[instanceIndex];
+                        const thinMatrix = thinMatrices[instanceIndex];
                         thinMatrix.multiplyToRef(worldMatrix, tmpMatrix);
                         worldMatrices.push(tmpMatrix);
                     }
@@ -165,8 +165,8 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
                         indices.push(meshIndices[tri] + offset);
                     }
 
-                    var transformed = Vector3.Zero();
-                    var position = Vector3.Zero();
+                    const transformed = Vector3.Zero();
+                    const position = Vector3.Zero();
                     for (pt = 0; pt < meshPositions.length; pt += 3) {
                         Vector3.FromArrayToRef(meshPositions, pt, position);
                         Vector3.TransformCoordinatesToRef(position, wm, transformed);
@@ -213,25 +213,25 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
      * @returns debug display mesh
      */
     createDebugNavMesh(scene: Scene): Mesh {
-        var tri: number;
-        var pt: number;
-        var debugNavMesh = this.navMesh.getDebugNavMesh();
-        let triangleCount = debugNavMesh.getTriangleCount();
+        let tri: number;
+        let pt: number;
+        const debugNavMesh = this.navMesh.getDebugNavMesh();
+        const triangleCount = debugNavMesh.getTriangleCount();
 
-        var indices = [];
-        var positions = [];
+        const indices = [];
+        const positions = [];
         for (tri = 0; tri < triangleCount * 3; tri++) {
             indices.push(tri);
         }
         for (tri = 0; tri < triangleCount; tri++) {
             for (pt = 0; pt < 3; pt++) {
-                let point = debugNavMesh.getTriangle(tri).getPoint(pt);
+                const point = debugNavMesh.getTriangle(tri).getPoint(pt);
                 positions.push(point.x, point.y, point.z);
             }
         }
 
-        var mesh = new Mesh("NavMeshDebug", scene);
-        var vertexData = new VertexData();
+        const mesh = new Mesh("NavMeshDebug", scene);
+        const vertexData = new VertexData();
 
         vertexData.indices = indices;
         vertexData.positions = positions;
@@ -248,8 +248,8 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
         this._tempVec1.x = position.x;
         this._tempVec1.y = position.y;
         this._tempVec1.z = position.z;
-        var ret = this.navMesh.getClosestPoint(this._tempVec1);
-        var pr = new Vector3(ret.x, ret.y, ret.z);
+        const ret = this.navMesh.getClosestPoint(this._tempVec1);
+        const pr = new Vector3(ret.x, ret.y, ret.z);
         return pr;
     }
 
@@ -262,7 +262,7 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
         this._tempVec1.x = position.x;
         this._tempVec1.y = position.y;
         this._tempVec1.z = position.z;
-        var ret = this.navMesh.getClosestPoint(this._tempVec1);
+        const ret = this.navMesh.getClosestPoint(this._tempVec1);
         result.set(ret.x, ret.y, ret.z);
     }
 
@@ -276,8 +276,8 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
         this._tempVec1.x = position.x;
         this._tempVec1.y = position.y;
         this._tempVec1.z = position.z;
-        var ret = this.navMesh.getRandomPointAround(this._tempVec1, maxRadius);
-        var pr = new Vector3(ret.x, ret.y, ret.z);
+        const ret = this.navMesh.getRandomPointAround(this._tempVec1, maxRadius);
+        const pr = new Vector3(ret.x, ret.y, ret.z);
         return pr;
     }
 
@@ -291,7 +291,7 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
         this._tempVec1.x = position.x;
         this._tempVec1.y = position.y;
         this._tempVec1.z = position.z;
-        var ret = this.navMesh.getRandomPointAround(this._tempVec1, maxRadius);
+        const ret = this.navMesh.getRandomPointAround(this._tempVec1, maxRadius);
         result.set(ret.x, ret.y, ret.z);
     }
 
@@ -308,8 +308,8 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
         this._tempVec2.x = destination.x;
         this._tempVec2.y = destination.y;
         this._tempVec2.z = destination.z;
-        var ret = this.navMesh.moveAlong(this._tempVec1, this._tempVec2);
-        var pr = new Vector3(ret.x, ret.y, ret.z);
+        const ret = this.navMesh.moveAlong(this._tempVec1, this._tempVec2);
+        const pr = new Vector3(ret.x, ret.y, ret.z);
         return pr;
     }
 
@@ -326,7 +326,7 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
         this._tempVec2.x = destination.x;
         this._tempVec2.y = destination.y;
         this._tempVec2.z = destination.z;
-        var ret = this.navMesh.moveAlong(this._tempVec1, this._tempVec2);
+        const ret = this.navMesh.moveAlong(this._tempVec1, this._tempVec2);
         result.set(ret.x, ret.y, ret.z);
     }
 
@@ -337,18 +337,18 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
      * @returns array containing world position composing the path
      */
     computePath(start: Vector3, end: Vector3): Vector3[] {
-        var pt: number;
+        let pt: number;
         this._tempVec1.x = start.x;
         this._tempVec1.y = start.y;
         this._tempVec1.z = start.z;
         this._tempVec2.x = end.x;
         this._tempVec2.y = end.y;
         this._tempVec2.z = end.z;
-        let navPath = this.navMesh.computePath(this._tempVec1, this._tempVec2);
-        let pointCount = navPath.getPointCount();
-        var positions = [];
+        const navPath = this.navMesh.computePath(this._tempVec1, this._tempVec2);
+        const pointCount = navPath.getPointCount();
+        const positions = [];
         for (pt = 0; pt < pointCount; pt++) {
-            let p = navPath.getPoint(pt);
+            const p = navPath.getPoint(pt);
             positions.push(new Vector3(p.x, p.y, p.z));
         }
         return positions;
@@ -362,7 +362,7 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
      * @returns the crowd you can add agents to
      */
     createCrowd(maxAgents: number, maxAgentRadius: number, scene: Scene): ICrowd {
-        var crowd = new RecastJSCrowd(this, maxAgents, maxAgentRadius, scene);
+        const crowd = new RecastJSCrowd(this, maxAgents, maxAgentRadius, scene);
         return crowd;
     }
 
@@ -384,7 +384,7 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
      * @returns the box extent values
      */
     getDefaultQueryExtent(): Vector3 {
-        let p = this.navMesh.getDefaultQueryExtent();
+        const p = this.navMesh.getDefaultQueryExtent();
         return new Vector3(p.x, p.y, p.z);
     }
 
@@ -393,13 +393,13 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
      * @param data the Uint8Array returned by getNavmeshData
      */
     buildFromNavmeshData(data: Uint8Array): void {
-        var nDataBytes = data.length * data.BYTES_PER_ELEMENT;
-        var dataPtr = this.bjsRECAST._malloc(nDataBytes);
+        const nDataBytes = data.length * data.BYTES_PER_ELEMENT;
+        const dataPtr = this.bjsRECAST._malloc(nDataBytes);
 
-        var dataHeap = new Uint8Array(this.bjsRECAST.HEAPU8.buffer, dataPtr, nDataBytes);
+        const dataHeap = new Uint8Array(this.bjsRECAST.HEAPU8.buffer, dataPtr, nDataBytes);
         dataHeap.set(data);
 
-        let buf = new this.bjsRECAST.NavmeshData();
+        const buf = new this.bjsRECAST.NavmeshData();
         buf.dataPointer = dataHeap.byteOffset;
         buf.size = data.length;
         this.navMesh = new this.bjsRECAST.NavMesh();
@@ -414,9 +414,9 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
      * @returns data the Uint8Array that can be saved and reused
      */
     getNavmeshData(): Uint8Array {
-        let navmeshData = this.navMesh.getNavmeshData();
-        var arrView = new Uint8Array(this.bjsRECAST.HEAPU8.buffer, navmeshData.dataPointer, navmeshData.size);
-        var ret = new Uint8Array(navmeshData.size);
+        const navmeshData = this.navMesh.getNavmeshData();
+        const arrView = new Uint8Array(this.bjsRECAST.HEAPU8.buffer, navmeshData.dataPointer, navmeshData.size);
+        const ret = new Uint8Array(navmeshData.size);
         ret.set(arrView);
         this.navMesh.freeNavmeshData(navmeshData);
         return ret;
@@ -427,16 +427,14 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
      * @param result output the box extent values
      */
     getDefaultQueryExtentToRef(result: Vector3): void {
-        let p = this.navMesh.getDefaultQueryExtent();
+        const p = this.navMesh.getDefaultQueryExtent();
         result.set(p.x, p.y, p.z);
     }
 
     /**
      * Disposes
      */
-    public dispose() {
-
-    }
+    public dispose() {}
 
     /**
      * Creates a cylinder obstacle and add it to the navigation
@@ -531,7 +529,7 @@ export class RecastJSCrowd implements ICrowd {
     /**
      * Fires each time an agent is in reach radius of its destination
      */
-    public onReachTargetObservable = new Observable<{agentIndex: number, destination: Vector3}>();
+    public onReachTargetObservable = new Observable<{ agentIndex: number; destination: Vector3 }>();
 
     /**
      * Constructor
@@ -560,7 +558,7 @@ export class RecastJSCrowd implements ICrowd {
      * @returns agent index
      */
     addAgent(pos: Vector3, parameters: IAgentParameters, transform: TransformNode): number {
-        var agentParams = new this.bjsRECASTPlugin.bjsRECAST.dtCrowdAgentParams();
+        const agentParams = new this.bjsRECASTPlugin.bjsRECAST.dtCrowdAgentParams();
         agentParams.radius = parameters.radius;
         agentParams.height = parameters.height;
         agentParams.maxAcceleration = parameters.maxAcceleration;
@@ -573,7 +571,7 @@ export class RecastJSCrowd implements ICrowd {
         agentParams.queryFilterType = 0;
         agentParams.userData = 0;
 
-        var agentIndex = this.recastCrowd.addAgent(new this.bjsRECASTPlugin.bjsRECAST.Vec3(pos.x, pos.y, pos.z), agentParams);
+        const agentIndex = this.recastCrowd.addAgent(new this.bjsRECASTPlugin.bjsRECAST.Vec3(pos.x, pos.y, pos.z), agentParams);
         this.transforms.push(transform);
         this.agents.push(agentIndex);
         this.reachRadii.push(parameters.reachRadius ? parameters.reachRadius : parameters.radius);
@@ -588,7 +586,7 @@ export class RecastJSCrowd implements ICrowd {
      * @returns world space position
      */
     getAgentPosition(index: number): Vector3 {
-        var agentPos = this.recastCrowd.getAgentPosition(index);
+        const agentPos = this.recastCrowd.getAgentPosition(index);
         return new Vector3(agentPos.x, agentPos.y, agentPos.z);
     }
 
@@ -598,7 +596,7 @@ export class RecastJSCrowd implements ICrowd {
      * @param result output world space position
      */
     getAgentPositionToRef(index: number, result: Vector3): void {
-        var agentPos = this.recastCrowd.getAgentPosition(index);
+        const agentPos = this.recastCrowd.getAgentPosition(index);
         result.set(agentPos.x, agentPos.y, agentPos.z);
     }
 
@@ -608,7 +606,7 @@ export class RecastJSCrowd implements ICrowd {
      * @returns world space velocity
      */
     getAgentVelocity(index: number): Vector3 {
-        var agentVel = this.recastCrowd.getAgentVelocity(index);
+        const agentVel = this.recastCrowd.getAgentVelocity(index);
         return new Vector3(agentVel.x, agentVel.y, agentVel.z);
     }
 
@@ -618,7 +616,7 @@ export class RecastJSCrowd implements ICrowd {
      * @param result output world space velocity
      */
     getAgentVelocityToRef(index: number, result: Vector3): void {
-        var agentVel = this.recastCrowd.getAgentVelocity(index);
+        const agentVel = this.recastCrowd.getAgentVelocity(index);
         result.set(agentVel.x, agentVel.y, agentVel.z);
     }
 
@@ -628,7 +626,7 @@ export class RecastJSCrowd implements ICrowd {
      * @returns world space position
      */
     getAgentNextTargetPath(index: number): Vector3 {
-        var pathTargetPos = this.recastCrowd.getAgentNextTargetPath(index);
+        const pathTargetPos = this.recastCrowd.getAgentNextTargetPath(index);
         return new Vector3(pathTargetPos.x, pathTargetPos.y, pathTargetPos.z);
     }
 
@@ -638,7 +636,7 @@ export class RecastJSCrowd implements ICrowd {
      * @param result output world space position
      */
     getAgentNextTargetPathToRef(index: number, result: Vector3): void {
-        var pathTargetPos = this.recastCrowd.getAgentNextTargetPath(index);
+        const pathTargetPos = this.recastCrowd.getAgentNextTargetPath(index);
         result.set(pathTargetPos.x, pathTargetPos.y, pathTargetPos.z);
     }
 
@@ -691,7 +689,7 @@ export class RecastJSCrowd implements ICrowd {
      * @param parameters agent parameters
      */
     updateAgentParameters(index: number, parameters: IAgentParameters): void {
-        var agentParams = this.recastCrowd.getAgentParameters(index);
+        const agentParams = this.recastCrowd.getAgentParameters(index);
 
         if (parameters.radius !== undefined) {
             agentParams.radius = parameters.radius;
@@ -725,7 +723,7 @@ export class RecastJSCrowd implements ICrowd {
     removeAgent(index: number): void {
         this.recastCrowd.removeAgent(index);
 
-        var item = this.agents.indexOf(index);
+        const item = this.agents.indexOf(index);
         if (item > -1) {
             this.agents.splice(item, 1);
             this.transforms.splice(item, 1);
@@ -751,12 +749,12 @@ export class RecastJSCrowd implements ICrowd {
         // update obstacles
         this.bjsRECASTPlugin.navMesh.update();
         // update crowd
-        var timeStep = this.bjsRECASTPlugin.getTimeStep();
-        var maxStepCount = this.bjsRECASTPlugin.getMaximumSubStepCount();
+        const timeStep = this.bjsRECASTPlugin.getTimeStep();
+        const maxStepCount = this.bjsRECASTPlugin.getMaximumSubStepCount();
         if (timeStep <= Epsilon) {
             this.recastCrowd.update(deltaTime);
         } else {
-            var iterationCount = Math.floor(deltaTime / timeStep);
+            let iterationCount = Math.floor(deltaTime / timeStep);
             if (maxStepCount && iterationCount > maxStepCount) {
                 iterationCount = maxStepCount;
             }
@@ -764,7 +762,7 @@ export class RecastJSCrowd implements ICrowd {
                 iterationCount = 1;
             }
 
-            var step = deltaTime / iterationCount;
+            const step = deltaTime / iterationCount;
             for (let i = 0; i < iterationCount; i++) {
                 this.recastCrowd.update(step);
             }
@@ -784,8 +782,8 @@ export class RecastJSCrowd implements ICrowd {
                 const groundY = this.agentDestination[index].y - this.reachRadii[index];
                 const ceilingY = this.agentDestination[index].y + this.reachRadii[index];
                 const distanceXZSquared = dx * dx + dz * dz;
-                if (agentPosition.y > groundY && agentPosition.y < ceilingY && distanceXZSquared < (radius * radius)) {
-                    this.onReachTargetObservable.notifyObservers({agentIndex: agentIndex, destination: this.agentDestination[index]});
+                if (agentPosition.y > groundY && agentPosition.y < ceilingY && distanceXZSquared < radius * radius) {
+                    this.onReachTargetObservable.notifyObservers({ agentIndex: agentIndex, destination: this.agentDestination[index] });
                     this.agentDestinationArmed[index] = false;
                 }
             }
@@ -799,7 +797,7 @@ export class RecastJSCrowd implements ICrowd {
      * @param extent x,y,z value that define the extent around the queries point of reference
      */
     setDefaultQueryExtent(extent: Vector3): void {
-        let ext = new this.bjsRECASTPlugin.bjsRECAST.Vec3(extent.x, extent.y, extent.z);
+        const ext = new this.bjsRECASTPlugin.bjsRECAST.Vec3(extent.x, extent.y, extent.z);
         this.recastCrowd.setDefaultQueryExtent(ext);
     }
 
@@ -808,7 +806,7 @@ export class RecastJSCrowd implements ICrowd {
      * @returns the box extent values
      */
     getDefaultQueryExtent(): Vector3 {
-        let p = this.recastCrowd.getDefaultQueryExtent();
+        const p = this.recastCrowd.getDefaultQueryExtent();
         return new Vector3(p.x, p.y, p.z);
     }
 
@@ -817,7 +815,7 @@ export class RecastJSCrowd implements ICrowd {
      * @param result output the box extent values
      */
     getDefaultQueryExtentToRef(result: Vector3): void {
-        let p = this.recastCrowd.getDefaultQueryExtent();
+        const p = this.recastCrowd.getDefaultQueryExtent();
         result.set(p.x, p.y, p.z);
     }
 
@@ -830,9 +828,9 @@ export class RecastJSCrowd implements ICrowd {
         let pt: number;
         const navPath = this.recastCrowd.getPath(index);
         const pointCount = navPath.getPointCount();
-        var positions = [];
+        const positions = [];
         for (pt = 0; pt < pointCount; pt++) {
-            let p = navPath.getPoint(pt);
+            const p = navPath.getPoint(pt);
             positions.push(new Vector3(p.x, p.y, p.z));
         }
         return positions;

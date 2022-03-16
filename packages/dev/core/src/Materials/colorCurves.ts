@@ -1,5 +1,5 @@
 import { SerializationHelper, serialize } from "../Misc/decorators";
-import { Color4 } from '../Maths/math.color';
+import { Color4 } from "../Maths/math.color";
 import { Effect } from "../Materials/effect";
 
 /**
@@ -9,7 +9,6 @@ import { Effect } from "../Materials/effect";
  * corresponding to low luminance, medium luminance, and high luminance areas respectively.
  */
 export class ColorCurves {
-
     private _dirty = true;
 
     private _tempColor = new Color4(0, 0, 0, 0);
@@ -332,7 +331,13 @@ export class ColorCurves {
      * @param neutralUniform The neutral uniform shader parameter
      * @param negativeUniform The negative uniform shader parameter
      */
-    public static Bind(colorCurves: ColorCurves, effect: Effect, positiveUniform = "vCameraColorCurvePositive", neutralUniform = "vCameraColorCurveNeutral", negativeUniform = "vCameraColorCurveNegative"): void {
+    public static Bind(
+        colorCurves: ColorCurves,
+        effect: Effect,
+        positiveUniform = "vCameraColorCurvePositive",
+        neutralUniform = "vCameraColorCurveNeutral",
+        negativeUniform = "vCameraColorCurveNegative"
+    ): void {
         if (colorCurves._dirty) {
             colorCurves._dirty = false;
 
@@ -342,7 +347,8 @@ export class ColorCurves {
                 colorCurves._globalDensity,
                 colorCurves._globalSaturation,
                 colorCurves._globalExposure,
-                colorCurves._globalCurve);
+                colorCurves._globalCurve
+            );
 
             // Compute highlights info.
             colorCurves.getColorGradingDataToRef(
@@ -350,7 +356,8 @@ export class ColorCurves {
                 colorCurves._highlightsDensity,
                 colorCurves._highlightsSaturation,
                 colorCurves._highlightsExposure,
-                colorCurves._tempColor);
+                colorCurves._tempColor
+            );
             colorCurves._tempColor.multiplyToRef(colorCurves._globalCurve, colorCurves._highlightsCurve);
 
             // Compute midtones info.
@@ -359,7 +366,8 @@ export class ColorCurves {
                 colorCurves._midtonesDensity,
                 colorCurves._midtonesSaturation,
                 colorCurves._midtonesExposure,
-                colorCurves._tempColor);
+                colorCurves._tempColor
+            );
             colorCurves._tempColor.multiplyToRef(colorCurves._globalCurve, colorCurves._midtonesCurve);
 
             // Compute shadows info.
@@ -368,7 +376,8 @@ export class ColorCurves {
                 colorCurves._shadowsDensity,
                 colorCurves._shadowsSaturation,
                 colorCurves._shadowsExposure,
-                colorCurves._tempColor);
+                colorCurves._tempColor
+            );
             colorCurves._tempColor.multiplyToRef(colorCurves._globalCurve, colorCurves._shadowsCurve);
 
             // Compute deltas (neutral is midtones).
@@ -377,21 +386,9 @@ export class ColorCurves {
         }
 
         if (effect) {
-            effect.setFloat4(positiveUniform,
-                colorCurves._positiveCurve.r,
-                colorCurves._positiveCurve.g,
-                colorCurves._positiveCurve.b,
-                colorCurves._positiveCurve.a);
-            effect.setFloat4(neutralUniform,
-                colorCurves._midtonesCurve.r,
-                colorCurves._midtonesCurve.g,
-                colorCurves._midtonesCurve.b,
-                colorCurves._midtonesCurve.a);
-            effect.setFloat4(negativeUniform,
-                colorCurves._negativeCurve.r,
-                colorCurves._negativeCurve.g,
-                colorCurves._negativeCurve.b,
-                colorCurves._negativeCurve.a);
+            effect.setFloat4(positiveUniform, colorCurves._positiveCurve.r, colorCurves._positiveCurve.g, colorCurves._positiveCurve.b, colorCurves._positiveCurve.a);
+            effect.setFloat4(neutralUniform, colorCurves._midtonesCurve.r, colorCurves._midtonesCurve.g, colorCurves._midtonesCurve.b, colorCurves._midtonesCurve.a);
+            effect.setFloat4(negativeUniform, colorCurves._negativeCurve.r, colorCurves._negativeCurve.g, colorCurves._negativeCurve.b, colorCurves._negativeCurve.a);
         }
     }
 
@@ -400,17 +397,15 @@ export class ColorCurves {
      * @param uniformsList The list of uniforms used in the effect
      */
     public static PrepareUniforms(uniformsList: string[]): void {
-        uniformsList.push(
-            "vCameraColorCurveNeutral",
-            "vCameraColorCurvePositive",
-            "vCameraColorCurveNegative"
-        );
+        uniformsList.push("vCameraColorCurveNeutral", "vCameraColorCurvePositive", "vCameraColorCurveNegative");
     }
 
     /**
      * Returns color grading data based on a hue, density, saturation and exposure value.
      * @param filterHue The hue of the color filter.
      * @param filterDensity The density of the color filter.
+     * @param hue
+     * @param density
      * @param saturation The saturation.
      * @param exposure The exposure.
      * @param result The result data container.
@@ -451,7 +446,7 @@ export class ColorCurves {
     private static applyColorGradingSliderNonlinear(value: number): number {
         value /= 100;
 
-        var x: number = Math.abs(value);
+        let x: number = Math.abs(value);
         x = Math.pow(x, 2);
 
         if (value < 0) {
@@ -468,12 +463,13 @@ export class ColorCurves {
      * @param hue The hue (H) input.
      * @param saturation The saturation (S) input.
      * @param brightness The brightness (B) input.
+     * @param result
      * @result An RGBA color represented as Vector4.
      */
     private static fromHSBToRef(hue: number, saturation: number, brightness: number, result: Color4): void {
-        var h: number = ColorCurves.clamp(hue, 0, 360);
-        var s: number = ColorCurves.clamp(saturation / 100, 0, 1);
-        var v: number = ColorCurves.clamp(brightness / 100, 0, 1);
+        let h: number = ColorCurves.clamp(hue, 0, 360);
+        const s: number = ColorCurves.clamp(saturation / 100, 0, 1);
+        const v: number = ColorCurves.clamp(brightness / 100, 0, 1);
 
         if (s === 0) {
             result.r = v;
@@ -482,13 +478,13 @@ export class ColorCurves {
         } else {
             // sector 0 to 5
             h /= 60;
-            var i = Math.floor(h);
+            const i = Math.floor(h);
 
             // fractional part of h
-            var f = h - i;
-            var p = v * (1 - s);
-            var q = v * (1 - s * f);
-            var t = v * (1 - s * (1 - f));
+            const f = h - i;
+            const p = v * (1 - s);
+            const q = v * (1 - s * f);
+            const t = v * (1 - s * (1 - f));
 
             switch (i) {
                 case 0:
@@ -516,7 +512,8 @@ export class ColorCurves {
                     result.g = p;
                     result.b = v;
                     break;
-                default:       // case 5:
+                default:
+                    // case 5:
                     result.r = v;
                     result.g = p;
                     result.b = q;

@@ -12,8 +12,8 @@ import { WebVRFreeCamera, PoseControlled, DevicePose } from "../../Cameras/VR/we
 import { TargetCamera } from "../../Cameras/targetCamera";
 
 /**
-* Defines the types of pose enabled controllers that are supported
-*/
+ * Defines the types of pose enabled controllers that are supported
+ */
 export enum PoseEnabledControllerType {
     /**
      * HTC Vive
@@ -38,7 +38,7 @@ export enum PoseEnabledControllerType {
     /**
      * Generic
      */
-    GENERIC
+    GENERIC,
 }
 
 /**
@@ -111,7 +111,7 @@ export class PoseEnabledControllerHelper {
      * @returns a vr controller of the type the gamepad identified as
      */
     public static InitiateController(vrGamepad: any) {
-        for (let factory of this._ControllerFactories) {
+        for (const factory of this._ControllerFactories) {
             if (factory.canCreate(vrGamepad)) {
                 return factory.create(vrGamepad);
             }
@@ -176,6 +176,7 @@ export class PoseEnabledController extends Gamepad implements PoseControlled {
     private _maxRotationDistFromHeadset = Math.PI / 5;
     private _draggedRoomRotation = 0;
     /**
+     * @param fixedPosition
      * @hidden
      */
     public _disableTrackPosition(fixedPosition: Vector3) {
@@ -241,10 +242,15 @@ export class PoseEnabledController extends Gamepad implements PoseControlled {
         if (this.isXR) {
             return;
         }
-        var pose: DevicePose = this.browserGamepad.pose;
+        const pose: DevicePose = this.browserGamepad.pose;
         this.updateFromDevice(pose);
 
-        if (!this._trackPosition && EngineStore.LastCreatedScene && EngineStore.LastCreatedScene.activeCamera && (<WebVRFreeCamera>EngineStore.LastCreatedScene.activeCamera).devicePosition) {
+        if (
+            !this._trackPosition &&
+            EngineStore.LastCreatedScene &&
+            EngineStore.LastCreatedScene.activeCamera &&
+            (<WebVRFreeCamera>EngineStore.LastCreatedScene.activeCamera).devicePosition
+        ) {
             var camera = <WebVRFreeCamera>EngineStore.LastCreatedScene.activeCamera;
             camera._computeDevicePosition();
 
@@ -254,15 +260,15 @@ export class PoseEnabledController extends Gamepad implements PoseControlled {
                 camera._deviceRoomRotationQuaternion.toEulerAnglesToRef(TmpVectors.Vector3[0]);
 
                 // Find the radian distance away that the headset is from the controllers rotation
-                var distanceAway = Math.atan2(Math.sin(TmpVectors.Vector3[0].y - this._draggedRoomRotation), Math.cos(TmpVectors.Vector3[0].y - this._draggedRoomRotation));
+                const distanceAway = Math.atan2(Math.sin(TmpVectors.Vector3[0].y - this._draggedRoomRotation), Math.cos(TmpVectors.Vector3[0].y - this._draggedRoomRotation));
                 if (Math.abs(distanceAway) > this._maxRotationDistFromHeadset) {
                     // Only rotate enouph to be within the _maxRotationDistFromHeadset
-                    var rotationAmount = distanceAway - (distanceAway < 0 ? -this._maxRotationDistFromHeadset : this._maxRotationDistFromHeadset);
+                    const rotationAmount = distanceAway - (distanceAway < 0 ? -this._maxRotationDistFromHeadset : this._maxRotationDistFromHeadset);
                     this._draggedRoomRotation += rotationAmount;
 
                     // Rotate controller around headset
-                    var sin = Math.sin(-rotationAmount);
-                    var cos = Math.cos(-rotationAmount);
+                    const sin = Math.sin(-rotationAmount);
+                    const cos = Math.cos(-rotationAmount);
                     this._calculatedPosition.x = this._calculatedPosition.x * cos - this._calculatedPosition.z * sin;
                     this._calculatedPosition.z = this._calculatedPosition.x * sin + this._calculatedPosition.z * cos;
                 }
@@ -303,7 +309,7 @@ export class PoseEnabledController extends Gamepad implements PoseControlled {
                 }
                 this._calculatedPosition.addInPlace(this.position);
             }
-            let pose = this.rawPose;
+            const pose = this.rawPose;
             if (poseData.orientation && pose.orientation && pose.orientation.length === 4) {
                 this._deviceRoomRotationQuaternion.copyFromFloats(pose.orientation[0], pose.orientation[1], -pose.orientation[2], -pose.orientation[3]);
                 if (this._mesh) {
@@ -346,13 +352,15 @@ export class PoseEnabledController extends Gamepad implements PoseControlled {
         if (!this.isXR) {
             this._updatePoseAndMesh();
             if (this._pointingPoseNode) {
-                var parents = [];
-                var obj: Node = this._pointingPoseNode;
+                const parents = [];
+                let obj: Node = this._pointingPoseNode;
                 while (obj.parent) {
                     parents.push(obj.parent);
                     obj = obj.parent;
                 }
-                parents.reverse().forEach((p) => { p.computeWorldMatrix(true); });
+                parents.reverse().forEach((p) => {
+                    p.computeWorldMatrix(true);
+                });
             }
         }
 
@@ -399,13 +407,13 @@ export class PoseEnabledController extends Gamepad implements PoseControlled {
             return new Ray(Vector3.Zero(), new Vector3(0, 0, 1), length);
         }
 
-        var m = this._pointingPoseNode ? this._pointingPoseNode.getWorldMatrix() : this.mesh.getWorldMatrix();
-        var origin = m.getTranslation();
+        const m = this._pointingPoseNode ? this._pointingPoseNode.getWorldMatrix() : this.mesh.getWorldMatrix();
+        const origin = m.getTranslation();
 
-        var forward = new Vector3(0, 0, -1);
-        var forwardWorld = Vector3.TransformNormal(forward, m);
+        const forward = new Vector3(0, 0, -1);
+        const forwardWorld = Vector3.TransformNormal(forward, m);
 
-        var direction = Vector3.Normalize(forwardWorld);
+        const direction = Vector3.Normalize(forwardWorld);
 
         return new Ray(origin, direction, length);
     }

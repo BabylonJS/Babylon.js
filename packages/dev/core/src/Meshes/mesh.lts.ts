@@ -10,13 +10,13 @@ import { GoldbergCreationOption } from "./Builders/goldbergBuilder";
 declare type GoldbergMesh = import("./goldbergMesh").GoldbergMesh;
 declare type LinesMesh = import("./linesMesh").LinesMesh;
 declare type GroundMesh = import("./groundMesh").GroundMesh;
-declare type Mesh = import('./mesh').Mesh;
+declare type Mesh = import("./mesh").Mesh;
 /**
  * @hidden
  */
-declare type TypeofMesh = typeof import('./mesh').Mesh;
+declare type TypeofMesh = typeof import("./mesh").Mesh;
 
-declare var earcut: any;
+declare let earcut: any;
 
 declare module "./mesh" {
     interface Mesh {
@@ -548,26 +548,93 @@ declare module "./mesh" {
     }
 }
 
-/** @hidden */
+/**
+ * @param Mesh
+ * @hidden
+ */
 export const _injectLTSMesh = (Mesh: TypeofMesh) => {
     Mesh.prototype.setMaterialByID = function (id: string): Mesh {
         return this.setMaterialById(id);
     };
 
-    Mesh.CreateDisc = Mesh.CreateDisc || (() => { throw _WarnImport("MeshBuilder"); });
-    Mesh.CreateBox = Mesh.CreateBox || (() => { throw _WarnImport("MeshBuilder"); });
-    Mesh.CreateSphere = Mesh.CreateSphere || (() => { throw _WarnImport("MeshBuilder"); });
-    Mesh.CreateCylinder = Mesh.CreateCylinder || (() => { throw _WarnImport("MeshBuilder"); });
-    Mesh.CreateTorusKnot = Mesh.CreateTorusKnot || (() => { throw _WarnImport("MeshBuilder"); });
-    Mesh.CreateTorus = Mesh.CreateTorus || (() => { throw _WarnImport("MeshBuilder"); });
-    Mesh.CreatePlane = Mesh.CreatePlane || (() => { throw _WarnImport("MeshBuilder"); });
-    Mesh.CreateGround = Mesh.CreateGround || (() => { throw _WarnImport("MeshBuilder"); });
-    Mesh.CreateTiledGround = Mesh.CreateTiledGround || (() => { throw _WarnImport("MeshBuilder"); });
-    Mesh.CreateGroundFromHeightMap = Mesh.CreateGroundFromHeightMap || (() => { throw _WarnImport("MeshBuilder"); });
-    Mesh.CreateTube = Mesh.CreateTube || (() => { throw _WarnImport("MeshBuilder"); });
-    Mesh.CreatePolyhedron = Mesh.CreatePolyhedron || (() => { throw _WarnImport("MeshBuilder"); });
-    Mesh.CreateIcoSphere = Mesh.CreateIcoSphere || (() => { throw _WarnImport("MeshBuilder"); });
-    Mesh.CreateDecal = Mesh.CreateDecal || (() => { throw _WarnImport("MeshBuilder"); });
-    Mesh.CreateCapsule = Mesh.CreateCapsule || (() => { throw _WarnImport("MeshBuilder"); });
-    Mesh.CreateGoldberg = Mesh.CreateGoldberg || (() => { throw _WarnImport("MeshBuilder"); });
+    Mesh.CreateDisc =
+        Mesh.CreateDisc ||
+        (() => {
+            throw _WarnImport("MeshBuilder");
+        });
+    Mesh.CreateBox =
+        Mesh.CreateBox ||
+        (() => {
+            throw _WarnImport("MeshBuilder");
+        });
+    Mesh.CreateSphere =
+        Mesh.CreateSphere ||
+        (() => {
+            throw _WarnImport("MeshBuilder");
+        });
+    Mesh.CreateCylinder =
+        Mesh.CreateCylinder ||
+        (() => {
+            throw _WarnImport("MeshBuilder");
+        });
+    Mesh.CreateTorusKnot =
+        Mesh.CreateTorusKnot ||
+        (() => {
+            throw _WarnImport("MeshBuilder");
+        });
+    Mesh.CreateTorus =
+        Mesh.CreateTorus ||
+        (() => {
+            throw _WarnImport("MeshBuilder");
+        });
+    Mesh.CreatePlane =
+        Mesh.CreatePlane ||
+        (() => {
+            throw _WarnImport("MeshBuilder");
+        });
+    Mesh.CreateGround =
+        Mesh.CreateGround ||
+        (() => {
+            throw _WarnImport("MeshBuilder");
+        });
+    Mesh.CreateTiledGround =
+        Mesh.CreateTiledGround ||
+        (() => {
+            throw _WarnImport("MeshBuilder");
+        });
+    Mesh.CreateGroundFromHeightMap =
+        Mesh.CreateGroundFromHeightMap ||
+        (() => {
+            throw _WarnImport("MeshBuilder");
+        });
+    Mesh.CreateTube =
+        Mesh.CreateTube ||
+        (() => {
+            throw _WarnImport("MeshBuilder");
+        });
+    Mesh.CreatePolyhedron =
+        Mesh.CreatePolyhedron ||
+        (() => {
+            throw _WarnImport("MeshBuilder");
+        });
+    Mesh.CreateIcoSphere =
+        Mesh.CreateIcoSphere ||
+        (() => {
+            throw _WarnImport("MeshBuilder");
+        });
+    Mesh.CreateDecal =
+        Mesh.CreateDecal ||
+        (() => {
+            throw _WarnImport("MeshBuilder");
+        });
+    Mesh.CreateCapsule =
+        Mesh.CreateCapsule ||
+        (() => {
+            throw _WarnImport("MeshBuilder");
+        });
+    Mesh.CreateGoldberg =
+        Mesh.CreateGoldberg ||
+        (() => {
+            throw _WarnImport("MeshBuilder");
+        });
 };

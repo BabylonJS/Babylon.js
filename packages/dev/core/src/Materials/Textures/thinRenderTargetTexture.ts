@@ -1,7 +1,7 @@
 import { Nullable } from "../../types";
 import { InternalTexture } from "../../Materials/Textures/internalTexture";
 
-import { ThinEngine } from '../../Engines/thinEngine';
+import { ThinEngine } from "../../Engines/thinEngine";
 import { IRenderTargetTexture, RenderTargetWrapper } from "../../Engines/renderTargetWrapper";
 import { ThinTexture } from "./thinTexture";
 import { TextureSize, RenderTargetCreationOptions } from "./textureCreationOptions";
@@ -75,6 +75,7 @@ export class ThinRenderTargetTexture extends ThinTexture implements IRenderTarge
 
     /**
      * Dispose the texture and release its associated resources.
+     * @param disposeOnlyFramebuffers
      */
     public dispose(disposeOnlyFramebuffers = false): void {
         this._renderTarget?.dispose(true);

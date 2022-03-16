@@ -12,7 +12,8 @@ class NodeState {
     }
 
     public count(): [number, number] {
-        let countNode = 0, countPipeline = this.pipeline ? 1 : 0;
+        let countNode = 0,
+            countPipeline = this.pipeline ? 1 : 0;
         for (const value in this.values) {
             const node = this.values[value];
             const [childCountNodes, childCoundPipeline] = node!.count();
@@ -26,12 +27,11 @@ class NodeState {
 
 /** @hidden */
 export class WebGPUCacheRenderPipelineTree extends WebGPUCacheRenderPipeline {
-
     private static _Cache: NodeState = new NodeState();
 
     private _nodeStack: NodeState[];
 
-    public static GetNodeCounts(): { nodeCount: number, pipelineCount: number } {
+    public static GetNodeCounts(): { nodeCount: number; pipelineCount: number } {
         const counts = WebGPUCacheRenderPipelineTree._Cache.count();
 
         return { nodeCount: counts[0], pipelineCount: counts[1] };
@@ -62,7 +62,7 @@ export class WebGPUCacheRenderPipelineTree extends WebGPUCacheRenderPipeline {
         this._nodeStack[0] = WebGPUCacheRenderPipelineTree._Cache;
     }
 
-    protected _getRenderPipeline(param: { token: any, pipeline: Nullable<GPURenderPipeline> }): void {
+    protected _getRenderPipeline(param: { token: any; pipeline: Nullable<GPURenderPipeline> }): void {
         let node = this._nodeStack[this._stateDirtyLowestIndex];
         for (let i = this._stateDirtyLowestIndex; i < this._statesLength; ++i) {
             let nn: NodeState | undefined = node!.values[this._states[i]];
@@ -78,7 +78,7 @@ export class WebGPUCacheRenderPipelineTree extends WebGPUCacheRenderPipeline {
         param.pipeline = node.pipeline;
     }
 
-    protected _setRenderPipeline(param: { token: NodeState, pipeline: Nullable<GPURenderPipeline> }): void {
+    protected _setRenderPipeline(param: { token: NodeState; pipeline: Nullable<GPURenderPipeline> }): void {
         param.token.pipeline = param.pipeline!;
     }
 }

@@ -21,9 +21,9 @@ export enum PropertyTypeForEdition {
  */
 export interface IEditablePropertyListOption {
     /** label of the option */
-    "label": string;
+    label: string;
     /** value of the option */
-    "value": number;
+    value: number;
 }
 
 /**
@@ -31,22 +31,22 @@ export interface IEditablePropertyListOption {
  */
 export interface IEditablePropertyOption {
     /** min value */
-    "min"?: number;
+    min?: number;
     /** max value */
-    "max"?: number;
+    max?: number;
     /** notifiers: indicates which actions to take when the property is changed */
-    "notifiers"?: {
+    notifiers?: {
         /** the material should be rebuilt */
-        "rebuild"?: boolean;
+        rebuild?: boolean;
         /** the preview should be updated */
-        "update"?: boolean;
+        update?: boolean;
         /** the onPreviewCommandActivated observer of the preview manager should be triggered */
-        "activatePreviewCommand"?: boolean;
+        activatePreviewCommand?: boolean;
         /** a callback to trigger */
-        "callback"?: (scene: Scene) => void;
+        callback?: (scene: Scene) => void;
     };
     /** list of the options for a variable of type list */
-    "options"?: IEditablePropertyListOption[];
+    options?: IEditablePropertyListOption[];
 }
 
 /**
@@ -54,21 +54,30 @@ export interface IEditablePropertyOption {
  */
 export interface IPropertyDescriptionForEdition {
     /** name of the property */
-    "propertyName": string;
+    propertyName: string;
     /** display name of the property */
-    "displayName": string;
+    displayName: string;
     /** type of the property */
-    "type": PropertyTypeForEdition;
+    type: PropertyTypeForEdition;
     /** group of the property - all properties with the same group value will be displayed in a specific section */
-    "groupName": string;
+    groupName: string;
     /** options for the property */
-    "options": IEditablePropertyOption;
+    options: IEditablePropertyOption;
 }
 
 /**
  * Decorator that flags a property in a node material block as being editable
+ * @param displayName
+ * @param propertyType
+ * @param groupName
+ * @param options
  */
-export function editableInPropertyPage(displayName: string, propertyType: PropertyTypeForEdition = PropertyTypeForEdition.Boolean, groupName: string = "PROPERTIES", options?: IEditablePropertyOption) {
+export function editableInPropertyPage(
+    displayName: string,
+    propertyType: PropertyTypeForEdition = PropertyTypeForEdition.Boolean,
+    groupName: string = "PROPERTIES",
+    options?: IEditablePropertyOption
+) {
     return (target: any, propertyKey: string) => {
         let propStore: IPropertyDescriptionForEdition[] = target._propStore;
         if (!propStore) {
@@ -76,11 +85,11 @@ export function editableInPropertyPage(displayName: string, propertyType: Proper
             target._propStore = propStore;
         }
         propStore.push({
-            "propertyName": propertyKey,
-            "displayName": displayName,
-            "type": propertyType,
-            "groupName": groupName,
-            "options": options ?? {}
+            propertyName: propertyKey,
+            displayName: displayName,
+            type: propertyType,
+            groupName: groupName,
+            options: options ?? {},
         });
     };
 }

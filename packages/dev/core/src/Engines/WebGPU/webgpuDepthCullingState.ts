@@ -6,11 +6,11 @@ import { DepthCullingState } from "../../States/depthCullingState";
  * @hidden
  **/
 export class WebGPUDepthCullingState extends DepthCullingState {
-
     private _cache: WebGPUCacheRenderPipeline;
 
     /**
      * Initializes the state.
+     * @param cache
      */
     public constructor(cache: WebGPUCacheRenderPipeline) {
         super(false);

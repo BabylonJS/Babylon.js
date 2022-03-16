@@ -1,13 +1,13 @@
-import { NodeMaterialBlock } from '../../nodeMaterialBlock';
-import { NodeMaterialBlockConnectionPointTypes } from '../../Enums/nodeMaterialBlockConnectionPointTypes';
-import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
-import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPoint';
-import { NodeMaterialBlockTargets } from '../../Enums/nodeMaterialBlockTargets';
-import { RegisterClass } from '../../../../Misc/typeStore';
-import { Effect } from '../../../effect';
-import { NodeMaterial } from '../../nodeMaterial';
-import { Mesh } from '../../../../Meshes/mesh';
-import { Scene } from '../../../../scene';
+import { NodeMaterialBlock } from "../../nodeMaterialBlock";
+import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
+import { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
+import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
+import { RegisterClass } from "../../../../Misc/typeStore";
+import { Effect } from "../../../effect";
+import { NodeMaterial } from "../../nodeMaterial";
+import { Mesh } from "../../../../Meshes/mesh";
+import { Scene } from "../../../../scene";
 
 /**
  * Block used to get the screen sizes
@@ -66,7 +66,7 @@ export class ScreenSizeBlock extends NodeMaterialBlock {
     protected writeOutputs(state: NodeMaterialBuildState, varName: string): string {
         let code = "";
 
-        for (var output of this._outputs) {
+        for (const output of this._outputs) {
             if (output.hasEndpoints) {
                 code += `${this._declareOutput(output, state)} = ${varName}.${output.name};\r\n`;
             }

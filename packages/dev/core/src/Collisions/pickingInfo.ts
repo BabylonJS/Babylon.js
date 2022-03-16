@@ -8,9 +8,9 @@ import { Sprite } from "../Sprites/sprite";
 declare type Ray = import("../Culling/ray").Ray;
 
 /**
-     * Information about the result of picking within a scene
-     * @see https://doc.babylonjs.com/divingDeeper/mesh/interactions/picking_collisions
-     */
+ * Information about the result of picking within a scene
+ * @see https://doc.babylonjs.com/divingDeeper/mesh/interactions/picking_collisions
+ */
 export class PickingInfo {
     /** @hidden */
     public _pickingUnavailable = false;
@@ -74,20 +74,20 @@ export class PickingInfo {
             return null;
         }
 
-        var indices = this.pickedMesh.getIndices();
+        const indices = this.pickedMesh.getIndices();
 
         if (!indices) {
             return null;
         }
 
-        var result: Vector3;
+        let result: Vector3;
 
         if (useVerticesNormals) {
-            var normals = (<FloatArray>this.pickedMesh.getVerticesData(VertexBuffer.NormalKind));
+            const normals = <FloatArray>this.pickedMesh.getVerticesData(VertexBuffer.NormalKind);
 
-            var normal0 = Vector3.FromArray(normals, indices[this.faceId * 3] * 3);
-            var normal1 = Vector3.FromArray(normals, indices[this.faceId * 3 + 1] * 3);
-            var normal2 = Vector3.FromArray(normals, indices[this.faceId * 3 + 2] * 3);
+            let normal0 = Vector3.FromArray(normals, indices[this.faceId * 3] * 3);
+            let normal1 = Vector3.FromArray(normals, indices[this.faceId * 3 + 1] * 3);
+            let normal2 = Vector3.FromArray(normals, indices[this.faceId * 3 + 2] * 3);
 
             normal0 = normal0.scale(this.bu);
             normal1 = normal1.scale(this.bv);
@@ -95,14 +95,14 @@ export class PickingInfo {
 
             result = new Vector3(normal0.x + normal1.x + normal2.x, normal0.y + normal1.y + normal2.y, normal0.z + normal1.z + normal2.z);
         } else {
-            var positions = (<FloatArray>this.pickedMesh.getVerticesData(VertexBuffer.PositionKind));
+            const positions = <FloatArray>this.pickedMesh.getVerticesData(VertexBuffer.PositionKind);
 
-            var vertex1 = Vector3.FromArray(positions, indices[this.faceId * 3] * 3);
-            var vertex2 = Vector3.FromArray(positions, indices[this.faceId * 3 + 1] * 3);
-            var vertex3 = Vector3.FromArray(positions, indices[this.faceId * 3 + 2] * 3);
+            const vertex1 = Vector3.FromArray(positions, indices[this.faceId * 3] * 3);
+            const vertex2 = Vector3.FromArray(positions, indices[this.faceId * 3 + 1] * 3);
+            const vertex3 = Vector3.FromArray(positions, indices[this.faceId * 3 + 2] * 3);
 
-            var p1p2 = vertex1.subtract(vertex2);
-            var p3p2 = vertex3.subtract(vertex2);
+            const p1p2 = vertex1.subtract(vertex2);
+            const p3p2 = vertex3.subtract(vertex2);
 
             result = Vector3.Cross(p1p2, p3p2);
         }
@@ -137,19 +137,19 @@ export class PickingInfo {
             return null;
         }
 
-        var indices = this.pickedMesh.getIndices();
+        const indices = this.pickedMesh.getIndices();
         if (!indices) {
             return null;
         }
 
-        var uvs = this.pickedMesh.getVerticesData(VertexBuffer.UVKind);
+        const uvs = this.pickedMesh.getVerticesData(VertexBuffer.UVKind);
         if (!uvs) {
             return null;
         }
 
-        var uv0 = Vector2.FromArray(uvs, indices[this.faceId * 3] * 2);
-        var uv1 = Vector2.FromArray(uvs, indices[this.faceId * 3 + 1] * 2);
-        var uv2 = Vector2.FromArray(uvs, indices[this.faceId * 3 + 2] * 2);
+        let uv0 = Vector2.FromArray(uvs, indices[this.faceId * 3] * 2);
+        let uv1 = Vector2.FromArray(uvs, indices[this.faceId * 3 + 1] * 2);
+        let uv2 = Vector2.FromArray(uvs, indices[this.faceId * 3 + 2] * 2);
 
         uv0 = uv0.scale(this.bu);
         uv1 = uv1.scale(this.bv);

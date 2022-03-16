@@ -1,14 +1,14 @@
-import { ShaderCodeNode } from './shaderCodeNode';
-import { ShaderCodeCursor } from './shaderCodeCursor';
-import { ShaderCodeConditionNode } from './shaderCodeConditionNode';
-import { ShaderCodeTestNode } from './shaderCodeTestNode';
-import { ShaderDefineIsDefinedOperator } from './Expressions/Operators/shaderDefineIsDefinedOperator';
-import { ShaderDefineOrOperator } from './Expressions/Operators/shaderDefineOrOperator';
-import { ShaderDefineAndOperator } from './Expressions/Operators/shaderDefineAndOperator';
-import { ShaderDefineExpression } from './Expressions/shaderDefineExpression';
-import { ShaderDefineArithmeticOperator } from './Expressions/Operators/shaderDefineArithmeticOperator';
-import { ProcessingOptions } from './shaderProcessingOptions';
-import { _WarnImport } from '../../Misc/devTools';
+import { ShaderCodeNode } from "./shaderCodeNode";
+import { ShaderCodeCursor } from "./shaderCodeCursor";
+import { ShaderCodeConditionNode } from "./shaderCodeConditionNode";
+import { ShaderCodeTestNode } from "./shaderCodeTestNode";
+import { ShaderDefineIsDefinedOperator } from "./Expressions/Operators/shaderDefineIsDefinedOperator";
+import { ShaderDefineOrOperator } from "./Expressions/Operators/shaderDefineOrOperator";
+import { ShaderDefineAndOperator } from "./Expressions/Operators/shaderDefineAndOperator";
+import { ShaderDefineExpression } from "./Expressions/shaderDefineExpression";
+import { ShaderDefineArithmeticOperator } from "./Expressions/Operators/shaderDefineArithmeticOperator";
+import { ProcessingOptions } from "./shaderProcessingOptions";
+import { _WarnImport } from "../../Misc/devTools";
 import { ShaderLanguage } from "../../Materials/shaderLanguage";
 
 declare type WebRequest = import("../../Misc/webRequest").WebRequest;
@@ -36,7 +36,7 @@ export class ShaderProcessor {
             if (options.processCodeAfterIncludes) {
                 codeWithIncludes = options.processCodeAfterIncludes(options.isFragment ? "fragment" : "vertex", codeWithIncludes);
             }
-            let migratedCode = this._ProcessShaderConversion(codeWithIncludes, options, engine);
+            const migratedCode = this._ProcessShaderConversion(codeWithIncludes, options, engine);
             callback(migratedCode);
         });
     }
@@ -49,12 +49,12 @@ export class ShaderProcessor {
             if (options.processCodeAfterIncludes) {
                 codeWithIncludes = options.processCodeAfterIncludes(options.isFragment ? "fragment" : "vertex", codeWithIncludes);
             }
-            let migratedCode = this._ApplyPreProcessing(codeWithIncludes, options, engine);
+            const migratedCode = this._ApplyPreProcessing(codeWithIncludes, options, engine);
             callback(migratedCode);
         });
     }
 
-    public static Finalize(vertexCode: string, fragmentCode: string, options: ProcessingOptions): { vertexCode: string, fragmentCode: string } {
+    public static Finalize(vertexCode: string, fragmentCode: string, options: ProcessingOptions): { vertexCode: string; fragmentCode: string } {
         if (!options.processor || !options.processor.finalizeShaders) {
             return { vertexCode, fragmentCode };
         }
@@ -76,7 +76,8 @@ export class ShaderProcessor {
                 source = "precision highp float;\n" + source;
             }
         } else {
-            if (!shouldUseHighPrecisionShader) { // Moving highp to mediump
+            if (!shouldUseHighPrecisionShader) {
+                // Moving highp to mediump
                 source = source.replace("precision highp float", "precision mediump float");
             }
         }
@@ -85,15 +86,15 @@ export class ShaderProcessor {
     }
 
     private static _ExtractOperation(expression: string) {
-        let regex = /defined\((.+)\)/;
+        const regex = /defined\((.+)\)/;
 
-        let match = regex.exec(expression);
+        const match = regex.exec(expression);
 
         if (match && match.length) {
             return new ShaderDefineIsDefinedOperator(match[1].trim(), expression[0] === "!");
         }
 
-        let operators = ["==", ">=", "<=", "<", ">"];
+        const operators = ["==", ">=", "<=", "<", ">"];
         let operator = "";
         let indexOperator = 0;
 
@@ -109,8 +110,8 @@ export class ShaderProcessor {
             return new ShaderDefineIsDefinedOperator(expression);
         }
 
-        let define = expression.substring(0, indexOperator).trim();
-        let value = expression.substring(indexOperator + operator.length).trim();
+        const define = expression.substring(0, indexOperator).trim();
+        const value = expression.substring(indexOperator + operator.length).trim();
 
         return new ShaderDefineArithmeticOperator(define, operator, value);
     }
@@ -122,8 +123,8 @@ export class ShaderProcessor {
 
         const stack: (string | ShaderDefineExpression)[] = [];
 
-        for (let c of postfix) {
-            if (c !== '||' && c !== '&&') {
+        for (const c of postfix) {
+            if (c !== "||" && c !== "&&") {
                 stack.push(c);
             } else if (stack.length >= 2) {
                 let v1 = stack[stack.length - 1],
@@ -131,18 +132,18 @@ export class ShaderProcessor {
 
                 stack.length -= 2;
 
-                let operator = c == '&&' ? new ShaderDefineAndOperator() : new ShaderDefineOrOperator();
+                const operator = c == "&&" ? new ShaderDefineAndOperator() : new ShaderDefineOrOperator();
 
-                if (typeof (v1) === 'string') {
+                if (typeof v1 === "string") {
                     v1 = v1.replace(regexSERevert, "defined($1)");
                 }
 
-                if (typeof (v2) === 'string') {
+                if (typeof v2 === "string") {
                     v2 = v2.replace(regexSERevert, "defined($1)");
                 }
 
-                operator.leftOperand = typeof (v2) === 'string' ? this._ExtractOperation(v2) : v2;
-                operator.rightOperand = typeof (v1) === 'string' ? this._ExtractOperation(v1) : v1;
+                operator.leftOperand = typeof v2 === "string" ? this._ExtractOperation(v2) : v2;
+                operator.rightOperand = typeof v1 === "string" ? this._ExtractOperation(v1) : v1;
 
                 stack.push(operator);
             }
@@ -150,21 +151,21 @@ export class ShaderProcessor {
 
         let result = stack[stack.length - 1];
 
-        if (typeof (result) === 'string') {
+        if (typeof result === "string") {
             result = result.replace(regexSERevert, "defined($1)");
         }
 
         // note: stack.length !== 1 if there was an error in the parsing
 
-        return typeof (result) === 'string' ? this._ExtractOperation(result) : result;
+        return typeof result === "string" ? this._ExtractOperation(result) : result;
     }
 
     private static _BuildExpression(line: string, start: number): ShaderCodeTestNode {
-        let node = new ShaderCodeTestNode();
-        let command = line.substring(0, start);
+        const node = new ShaderCodeTestNode();
+        const command = line.substring(0, start);
         let expression = line.substring(start);
 
-        expression = expression.substring(0, ((expression.indexOf("//") + 1) || (expression.length + 1)) - 1).trim();
+        expression = expression.substring(0, (expression.indexOf("//") + 1 || expression.length + 1) - 1).trim();
 
         if (command === "#ifdef") {
             node.testExpression = new ShaderDefineIsDefinedOperator(expression);
@@ -181,15 +182,15 @@ export class ShaderProcessor {
         let line = cursor.currentLine;
         while (this._MoveCursor(cursor, ifNode)) {
             line = cursor.currentLine;
-            let first5 = line.substring(0, 5).toLowerCase();
+            const first5 = line.substring(0, 5).toLowerCase();
 
             if (first5 === "#else") {
-                let elseNode = new ShaderCodeNode();
+                const elseNode = new ShaderCodeNode();
                 rootNode.children.push(elseNode);
                 this._MoveCursor(cursor, elseNode);
                 return;
             } else if (first5 === "#elif") {
-                let elifNode = this._BuildExpression(line, 5);
+                const elifNode = this._BuildExpression(line, 5);
 
                 rootNode.children.push(elifNode);
                 ifNode = elifNode;
@@ -200,19 +201,19 @@ export class ShaderProcessor {
     private static _MoveCursor(cursor: ShaderCodeCursor, rootNode: ShaderCodeNode): boolean {
         while (cursor.canRead) {
             cursor.lineIndex++;
-            let line = cursor.currentLine;
+            const line = cursor.currentLine;
             const keywords = /(#ifdef)|(#else)|(#elif)|(#endif)|(#ifndef)|(#if)/;
             const matches = keywords.exec(line);
 
             if (matches && matches.length) {
-                let keyword = matches[0];
+                const keyword = matches[0];
 
                 switch (keyword) {
                     case "#ifdef": {
-                        let newRootNode = new ShaderCodeConditionNode();
+                        const newRootNode = new ShaderCodeConditionNode();
                         rootNode.children.push(newRootNode);
 
-                        let ifNode = this._BuildExpression(line, 6);
+                        const ifNode = this._BuildExpression(line, 6);
                         newRootNode.children.push(ifNode);
                         this._MoveCursorWithinIf(cursor, newRootNode, ifNode);
                         break;
@@ -223,17 +224,17 @@ export class ShaderProcessor {
                     case "#endif":
                         return false;
                     case "#ifndef": {
-                        let newRootNode = new ShaderCodeConditionNode();
+                        const newRootNode = new ShaderCodeConditionNode();
                         rootNode.children.push(newRootNode);
 
-                        let ifNode = this._BuildExpression(line, 7);
+                        const ifNode = this._BuildExpression(line, 7);
                         newRootNode.children.push(ifNode);
                         this._MoveCursorWithinIf(cursor, newRootNode, ifNode);
                         break;
                     }
                     case "#if": {
-                        let newRootNode = new ShaderCodeConditionNode();
-                        let ifNode = this._BuildExpression(line, 3);
+                        const newRootNode = new ShaderCodeConditionNode();
+                        const ifNode = this._BuildExpression(line, 3);
                         rootNode.children.push(newRootNode);
 
                         newRootNode.children.push(ifNode);
@@ -241,15 +242,14 @@ export class ShaderProcessor {
                         break;
                     }
                 }
-            }
-            else {
-                let newNode = new ShaderCodeNode();
+            } else {
+                const newNode = new ShaderCodeNode();
                 newNode.line = line;
                 rootNode.children.push(newNode);
 
                 // Detect additional defines
                 if (line[0] === "#" && line[1] === "d") {
-                    let split = line.replace(";", "").split(" ");
+                    const split = line.replace(";", "").split(" ");
                     newNode.additionalDefineKey = split[1];
 
                     if (split.length === 3) {
@@ -263,7 +263,7 @@ export class ShaderProcessor {
 
     private static _EvaluatePreProcessors(sourceCode: string, preprocessors: { [key: string]: string }, options: ProcessingOptions): string {
         const rootNode = new ShaderCodeNode();
-        let cursor = new ShaderCodeCursor();
+        const cursor = new ShaderCodeCursor();
 
         cursor.lineIndex = -1;
         cursor.lines = sourceCode.split("\n");
@@ -276,12 +276,12 @@ export class ShaderProcessor {
     }
 
     private static _PreparePreProcessors(options: ProcessingOptions, engine: ThinEngine): { [key: string]: string } {
-        let defines = options.defines;
-        let preprocessors: { [key: string]: string } = {};
+        const defines = options.defines;
+        const preprocessors: { [key: string]: string } = {};
 
-        for (var define of defines) {
-            let keyValue = define.replace("#define", "").replace(";", "").trim();
-            let split = keyValue.split(" ");
+        for (const define of defines) {
+            const keyValue = define.replace("#define", "").replace(";", "").trim();
+            const split = keyValue.split(" ");
             preprocessors[split[0]] = split.length > 1 ? split[1] : "";
         }
 
@@ -297,8 +297,7 @@ export class ShaderProcessor {
     }
 
     private static _ProcessShaderConversion(sourceCode: string, options: ProcessingOptions, engine: ThinEngine): string {
-
-        var preparedSourceCode = this._ProcessPrecision(sourceCode, options);
+        let preparedSourceCode = this._ProcessPrecision(sourceCode, options);
 
         if (!options.processor) {
             return preparedSourceCode;
@@ -309,9 +308,9 @@ export class ShaderProcessor {
             return preparedSourceCode.replace("#version 300 es", "");
         }
 
-        let defines = options.defines;
+        const defines = options.defines;
 
-        let preprocessors = this._PreparePreProcessors(options, engine);
+        const preprocessors = this._PreparePreProcessors(options, engine);
 
         // General pre processing
         if (options.processor.preProcessor) {
@@ -338,7 +337,7 @@ export class ShaderProcessor {
 
         const defines = options.defines;
 
-        let preprocessors = this._PreparePreProcessors(options, engine);
+        const preprocessors = this._PreparePreProcessors(options, engine);
 
         // General pre processing
         if (options.processor?.preProcessor) {
@@ -362,10 +361,10 @@ export class ShaderProcessor {
 
     private static _ProcessIncludes(sourceCode: string, options: ProcessingOptions, callback: (data: any) => void): void {
         const regexShaderInclude = /#include\s?<(.+)>(\((.*)\))*(\[(.*)\])*/g;
-        var match = regexShaderInclude.exec(sourceCode);
+        let match = regexShaderInclude.exec(sourceCode);
 
-        var returnValue = new String(sourceCode);
-        var keepProcessing = false;
+        let returnValue = new String(sourceCode);
+        let keepProcessing = false;
 
         while (match != null) {
             var includeFile = match[1];
@@ -382,33 +381,33 @@ export class ShaderProcessor {
 
             if (options.includesShadersStore[includeFile]) {
                 // Substitution
-                var includeContent = options.includesShadersStore[includeFile];
+                let includeContent = options.includesShadersStore[includeFile];
                 if (match[2]) {
-                    var splits = match[3].split(",");
+                    const splits = match[3].split(",");
 
-                    for (var index = 0; index < splits.length; index += 2) {
-                        var source = new RegExp(splits[index], "g");
-                        var dest = splits[index + 1];
+                    for (let index = 0; index < splits.length; index += 2) {
+                        const source = new RegExp(splits[index], "g");
+                        const dest = splits[index + 1];
 
                         includeContent = includeContent.replace(source, dest);
                     }
                 }
 
                 if (match[4]) {
-                    var indexString = match[5];
+                    const indexString = match[5];
 
                     if (indexString.indexOf("..") !== -1) {
-                        var indexSplits = indexString.split("..");
-                        var minIndex = parseInt(indexSplits[0]);
-                        var maxIndex = parseInt(indexSplits[1]);
-                        var sourceIncludeContent = includeContent.slice(0);
+                        const indexSplits = indexString.split("..");
+                        const minIndex = parseInt(indexSplits[0]);
+                        let maxIndex = parseInt(indexSplits[1]);
+                        let sourceIncludeContent = includeContent.slice(0);
                         includeContent = "";
 
                         if (isNaN(maxIndex)) {
                             maxIndex = options.indexParameters[indexSplits[1]];
                         }
 
-                        for (var i = minIndex; i < maxIndex; i++) {
+                        for (let i = minIndex; i < maxIndex; i++) {
                             if (!options.supportsUniformBuffers) {
                                 // Ubo replacement
                                 sourceIncludeContent = sourceIncludeContent.replace(/light\{X\}.(\w*)/g, (str: string, p1: string) => {
@@ -431,12 +430,9 @@ export class ShaderProcessor {
                 // Replace
                 returnValue = returnValue.replace(match[0], includeContent);
 
-                keepProcessing =
-                    keepProcessing ||
-                    includeContent.indexOf("#include<") >= 0 ||
-                    includeContent.indexOf("#include <") >= 0;
+                keepProcessing = keepProcessing || includeContent.indexOf("#include<") >= 0 || includeContent.indexOf("#include <") >= 0;
             } else {
-                var includeShaderUrl = options.shadersRepository + "ShadersInclude/" + includeFile + ".fx";
+                const includeShaderUrl = options.shadersRepository + "ShadersInclude/" + includeFile + ".fx";
 
                 ShaderProcessor._FileToolsLoadFile(includeShaderUrl, (fileContent) => {
                     options.includesShadersStore[includeFile] = fileContent as string;
@@ -466,7 +462,14 @@ export class ShaderProcessor {
      * @returns a file request object
      * @hidden
      */
-    public static _FileToolsLoadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (ev: ProgressEvent) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: LoadFileError) => void): IFileRequest {
+    public static _FileToolsLoadFile(
+        url: string,
+        onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void,
+        onProgress?: (ev: ProgressEvent) => void,
+        offlineProvider?: IOfflineProvider,
+        useArrayBuffer?: boolean,
+        onError?: (request?: WebRequest, exception?: LoadFileError) => void
+    ): IFileRequest {
         throw _WarnImport("FileTools");
     }
 }

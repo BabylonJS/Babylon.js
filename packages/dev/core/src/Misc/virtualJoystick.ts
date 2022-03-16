@@ -15,7 +15,7 @@ export enum JoystickAxis {
     /** Y axis */
     Y,
     /** Z axis */
-    Z
+    Z,
 }
 
 /**
@@ -46,7 +46,7 @@ interface VirtualJoystickCustomizations {
     /**
      * Defines the unmoving position of the joystick container
      */
-    position?: { x: number, y: number };
+    position?: { x: number; y: number };
     /**
      * Defines whether or not the joystick container is always visible
      */
@@ -119,7 +119,7 @@ export class VirtualJoystick {
     private _joystickPointerStartPos: Vector2;
     private _deltaJoystickVector: Vector2;
     private _leftJoystick: boolean;
-    private _touches: StringDictionary<{ x: number, y: number, prevX: number, prevY: number } | PointerEvent>;
+    private _touches: StringDictionary<{ x: number; y: number; prevX: number; prevY: number } | PointerEvent>;
     private _joystickPosition: Nullable<Vector2>;
     private _alwaysVisible: boolean;
     private _puckImage: HTMLImageElement;
@@ -146,13 +146,12 @@ export class VirtualJoystick {
     constructor(leftJoystick?: boolean, customizations?: Partial<VirtualJoystickCustomizations>) {
         const options = {
             ...VirtualJoystick._GetDefaultOptions(),
-            ...customizations
+            ...customizations,
         };
 
         if (leftJoystick) {
             this._leftJoystick = true;
-        }
-        else {
+        } else {
             this._leftJoystick = false;
         }
 
@@ -167,7 +166,7 @@ export class VirtualJoystick {
         this.reverseUpDown = false;
 
         // collections of pointers
-        this._touches = new StringDictionary<{ x: number, y: number, prevX: number, prevY: number } | PointerEvent>();
+        this._touches = new StringDictionary<{ x: number; y: number; prevX: number; prevY: number } | PointerEvent>();
         this.deltaPosition = Vector3.Zero();
 
         this._joystickSensibility = 25;
@@ -199,10 +198,10 @@ export class VirtualJoystick {
             VirtualJoystick.Canvas.style.left = "0px";
             VirtualJoystick.Canvas.style.zIndex = "5";
             (VirtualJoystick.Canvas.style as any).msTouchAction = "none";
-            VirtualJoystick.Canvas.style.touchAction = "none";  // fix https://forum.babylonjs.com/t/virtualjoystick-needs-to-set-style-touch-action-none-explicitly/9562
+            VirtualJoystick.Canvas.style.touchAction = "none"; // fix https://forum.babylonjs.com/t/virtualjoystick-needs-to-set-style-touch-action-none-explicitly/9562
             // Support for jQuery PEP polyfill
             VirtualJoystick.Canvas.setAttribute("touch-action", "none");
-            let context = VirtualJoystick.Canvas.getContext('2d');
+            const context = VirtualJoystick.Canvas.getContext("2d");
 
             if (!context) {
                 throw new Error("Unable to create canvas for virtual joystick");
@@ -258,14 +257,20 @@ export class VirtualJoystick {
             this._onPointerUp(evt);
         };
 
-        VirtualJoystick.Canvas.addEventListener('pointerdown', this._onPointerDownHandlerRef, false);
-        VirtualJoystick.Canvas.addEventListener('pointermove', this._onPointerMoveHandlerRef, false);
-        VirtualJoystick.Canvas.addEventListener('pointerup', this._onPointerUpHandlerRef, false);
-        VirtualJoystick.Canvas.addEventListener('pointerout', this._onPointerUpHandlerRef, false);
-        VirtualJoystick.Canvas.addEventListener("contextmenu", (evt) => {
-            evt.preventDefault();    // Disables system menu
-        }, false);
-        requestAnimationFrame(() => { this._drawVirtualJoystick(); });
+        VirtualJoystick.Canvas.addEventListener("pointerdown", this._onPointerDownHandlerRef, false);
+        VirtualJoystick.Canvas.addEventListener("pointermove", this._onPointerMoveHandlerRef, false);
+        VirtualJoystick.Canvas.addEventListener("pointerup", this._onPointerUpHandlerRef, false);
+        VirtualJoystick.Canvas.addEventListener("pointerout", this._onPointerUpHandlerRef, false);
+        VirtualJoystick.Canvas.addEventListener(
+            "contextmenu",
+            (evt) => {
+                evt.preventDefault(); // Disables system menu
+            },
+            false
+        );
+        requestAnimationFrame(() => {
+            this._drawVirtualJoystick();
+        });
     }
 
     /**
@@ -278,15 +283,14 @@ export class VirtualJoystick {
     }
 
     private _onPointerDown(e: PointerEvent) {
-        var positionOnScreenCondition: boolean;
+        let positionOnScreenCondition: boolean;
 
         e.preventDefault();
 
         if (this._leftJoystick === true) {
-            positionOnScreenCondition = (e.clientX < VirtualJoystick.halfWidth);
-        }
-        else {
-            positionOnScreenCondition = (e.clientX > VirtualJoystick.halfWidth);
+            positionOnScreenCondition = e.clientX < VirtualJoystick.halfWidth;
+        } else {
+            positionOnScreenCondition = e.clientX > VirtualJoystick.halfWidth;
         }
 
         if (positionOnScreenCondition && this._joystickPointerId < 0) {
@@ -312,8 +316,7 @@ export class VirtualJoystick {
             this._deltaJoystickVector.y = 0;
             this.pressed = true;
             this._touches.add(e.pointerId.toString(), e);
-        }
-        else {
+        } else {
             // You can only trigger the action buttons with a joystick declared
             if (VirtualJoystick._globalJoystickIndex < 2 && this._action) {
                 this._action();
@@ -327,8 +330,8 @@ export class VirtualJoystick {
         if (this._joystickPointerId == e.pointerId) {
             // limit to container if need be
             if (this.limitToContainer) {
-                let vector = new Vector2(e.clientX - this._joystickPointerStartPos.x, e.clientY - this._joystickPointerStartPos.y);
-                let distance = vector.length();
+                const vector = new Vector2(e.clientX - this._joystickPointerStartPos.x, e.clientY - this._joystickPointerStartPos.y);
+                const distance = vector.length();
 
                 if (distance > this.containerSize) {
                     vector.scaleInPlace(this.containerSize / distance);
@@ -355,8 +358,8 @@ export class VirtualJoystick {
                 }
             }
 
-            var directionLeftRight = this.reverseLeftRight ? -1 : 1;
-            var deltaJoystickX = directionLeftRight * this._deltaJoystickVector.x / this._inversedSensibility;
+            const directionLeftRight = this.reverseLeftRight ? -1 : 1;
+            const deltaJoystickX = (directionLeftRight * this._deltaJoystickVector.x) / this._inversedSensibility;
             switch (this._axisTargetedByLeftAndRight) {
                 case JoystickAxis.X:
                     this.deltaPosition.x = Math.min(1, Math.max(-1, deltaJoystickX));
@@ -368,8 +371,8 @@ export class VirtualJoystick {
                     this.deltaPosition.z = Math.min(1, Math.max(-1, deltaJoystickX));
                     break;
             }
-            var directionUpDown = this.reverseUpDown ? 1 : -1;
-            var deltaJoystickY = directionUpDown * this._deltaJoystickVector.y / this._inversedSensibility;
+            const directionUpDown = this.reverseUpDown ? 1 : -1;
+            const deltaJoystickY = (directionUpDown * this._deltaJoystickVector.y) / this._inversedSensibility;
             switch (this._axisTargetedByUpAndDown) {
                 case JoystickAxis.X:
                     this.deltaPosition.x = Math.min(1, Math.max(-1, deltaJoystickY));
@@ -381,9 +384,8 @@ export class VirtualJoystick {
                     this.deltaPosition.z = Math.min(1, Math.max(-1, deltaJoystickY));
                     break;
             }
-        }
-        else {
-            let data = this._touches.get(e.pointerId.toString());
+        } else {
+            const data = this._touches.get(e.pointerId.toString());
             if (data) {
                 (data as any).x = e.clientX;
                 (data as any).y = e.clientY;
@@ -397,9 +399,8 @@ export class VirtualJoystick {
 
             this._joystickPointerId = -1;
             this.pressed = false;
-        }
-        else {
-            var touch = <{ x: number, y: number, prevX: number, prevY: number }>this._touches.get(e.pointerId.toString());
+        } else {
+            const touch = <{ x: number; y: number; prevX: number; prevY: number }>this._touches.get(e.pointerId.toString());
             if (touch) {
                 VirtualJoystick.vjCanvasContext.clearRect(touch.prevX - 44, touch.prevY - 44, 88, 88);
             }
@@ -474,10 +475,10 @@ export class VirtualJoystick {
     }
 
     /**
-    * Sets the constant position of the Joystick container
-    * @param x X axis coordinate
-    * @param y Y axis coordinate
-    */
+     * Sets the constant position of the Joystick container
+     * @param x X axis coordinate
+     * @param y Y axis coordinate
+     */
     public setPosition(x: number, y: number) {
         // just in case position is moved while the container is visible
         if (this._joystickPointerStartPos) {
@@ -533,15 +534,10 @@ export class VirtualJoystick {
      * Clears the canvas from the previous puck / container draw
      */
     private _clearPreviousDraw() {
-        var jp = this._joystickPosition || this._joystickPointerStartPos;
+        const jp = this._joystickPosition || this._joystickPointerStartPos;
 
         // clear container pixels
-        VirtualJoystick.vjCanvasContext.clearRect(
-            jp.x - this._clearContainerSizeOffset,
-            jp.y - this._clearContainerSizeOffset,
-            this._clearContainerSize,
-            this._clearContainerSize
-        );
+        VirtualJoystick.vjCanvasContext.clearRect(jp.x - this._clearContainerSizeOffset, jp.y - this._clearContainerSizeOffset, this._clearContainerSize, this._clearContainerSize);
 
         // clear puck pixels
         VirtualJoystick.vjCanvasContext.clearRect(
@@ -557,10 +553,10 @@ export class VirtualJoystick {
      * @param urlPath defines the urlPath of an image to use
      */
     public setContainerImage(urlPath: string) {
-        var image = new Image();
+        const image = new Image();
         image.src = urlPath;
 
-        image.onload = () => this._containerImage = image;
+        image.onload = () => (this._containerImage = image);
     }
 
     /**
@@ -568,28 +564,22 @@ export class VirtualJoystick {
      * @param urlPath defines the urlPath of an image to use
      */
     public setPuckImage(urlPath: string) {
-        var image = new Image();
+        const image = new Image();
         image.src = urlPath;
 
-        image.onload = () => this._puckImage = image;
+        image.onload = () => (this._puckImage = image);
     }
 
     /**
      * Draws the Virtual Joystick's container
      */
     private _drawContainer() {
-        var jp = this._joystickPosition || this._joystickPointerStartPos;
+        const jp = this._joystickPosition || this._joystickPointerStartPos;
 
         this._clearPreviousDraw();
 
         if (this._containerImage) {
-            VirtualJoystick.vjCanvasContext.drawImage(
-                this._containerImage,
-                jp.x - this.containerSize,
-                jp.y - this.containerSize,
-                this.containerSize * 2,
-                this.containerSize * 2
-            );
+            VirtualJoystick.vjCanvasContext.drawImage(this._containerImage, jp.x - this.containerSize, jp.y - this.containerSize, this.containerSize * 2, this.containerSize * 2);
         } else {
             // outer container
             VirtualJoystick.vjCanvasContext.beginPath();
@@ -647,8 +637,7 @@ export class VirtualJoystick {
 
                     // store current pointer for next clear
                     this._joystickPreviousPointerPos = this._joystickPointerPos.clone();
-                }
-                else {
+                } else {
                     VirtualJoystick.vjCanvasContext.clearRect((<any>touch).prevX - 44, (<any>touch).prevY - 44, 88, 88);
                     VirtualJoystick.vjCanvasContext.beginPath();
                     VirtualJoystick.vjCanvasContext.fillStyle = "white";
@@ -663,7 +652,9 @@ export class VirtualJoystick {
                 }
             });
         }
-        requestAnimationFrame(() => { this._drawVirtualJoystick(); });
+        requestAnimationFrame(() => {
+            this._drawVirtualJoystick();
+        });
     }
 
     /**
@@ -671,10 +662,10 @@ export class VirtualJoystick {
      */
     public releaseCanvas() {
         if (VirtualJoystick.Canvas) {
-            VirtualJoystick.Canvas.removeEventListener('pointerdown', this._onPointerDownHandlerRef);
-            VirtualJoystick.Canvas.removeEventListener('pointermove', this._onPointerMoveHandlerRef);
-            VirtualJoystick.Canvas.removeEventListener('pointerup', this._onPointerUpHandlerRef);
-            VirtualJoystick.Canvas.removeEventListener('pointerout', this._onPointerUpHandlerRef);
+            VirtualJoystick.Canvas.removeEventListener("pointerdown", this._onPointerDownHandlerRef);
+            VirtualJoystick.Canvas.removeEventListener("pointermove", this._onPointerMoveHandlerRef);
+            VirtualJoystick.Canvas.removeEventListener("pointerup", this._onPointerUpHandlerRef);
+            VirtualJoystick.Canvas.removeEventListener("pointerout", this._onPointerUpHandlerRef);
             window.removeEventListener("resize", this._onResize);
             document.body.removeChild(VirtualJoystick.Canvas);
             VirtualJoystick.Canvas = null;

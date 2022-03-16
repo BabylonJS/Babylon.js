@@ -11,7 +11,7 @@ import { CubeTexture } from "../Materials/Textures/cubeTexture";
 import { HDRCubeTexture } from "../Materials/Textures/hdrCubeTexture";
 import { EquiRectangularCubeTexture } from "../Materials/Textures/equiRectangularCubeTexture";
 import { Logger } from "../Misc/logger";
-import { AnimationGroup } from '../Animations/animationGroup';
+import { AnimationGroup } from "../Animations/animationGroup";
 import { AssetContainer } from "../assetContainer";
 import { EngineStore } from "../Engines/engineStore";
 
@@ -34,7 +34,7 @@ export enum AssetTaskState {
     /**
      * Error
      */
-    ERROR
+    ERROR,
 }
 
 /**
@@ -56,14 +56,14 @@ export abstract class AbstractAssetTask {
      * @param name defines the name of the task
      */
     constructor(
-            /**
-             * Task name
-             */public name: string) {
-    }
+        /**
+         * Task name
+         */ public name: string
+    ) {}
 
     private _isCompleted = false;
     private _taskState = AssetTaskState.INIT;
-    private _errorObject: { message?: string; exception?: any; };
+    private _errorObject: { message?: string; exception?: any };
 
     /**
      * Get if the task is completed
@@ -82,12 +82,14 @@ export abstract class AbstractAssetTask {
     /**
      * Gets the current error object (if task is in error)
      */
-    public get errorObject(): { message?: string; exception?: any; } {
+    public get errorObject(): { message?: string; exception?: any } {
         return this._errorObject;
     }
 
     /**
      * Internal only
+     * @param message
+     * @param exception
      * @hidden
      */
     public _setErrorObject(message?: string, exception?: any) {
@@ -97,7 +99,7 @@ export abstract class AbstractAssetTask {
 
         this._errorObject = {
             message: message,
-            exception: exception
+            exception: exception,
         };
     }
 
@@ -109,11 +111,15 @@ export abstract class AbstractAssetTask {
      */
     public run(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void) {
         this._taskState = AssetTaskState.RUNNING;
-        this.runTask(scene, () => {
-            this.onDoneCallback(onSuccess, onError);
-        }, (msg, exception) => {
-            this.onErrorCallback(onError, msg, exception);
-        });
+        this.runTask(
+            scene,
+            () => {
+                this.onDoneCallback(onSuccess, onError);
+            },
+            (msg, exception) => {
+                this.onErrorCallback(onError, msg, exception);
+            }
+        );
     }
 
     /**
@@ -139,7 +145,7 @@ export abstract class AbstractAssetTask {
 
         this._errorObject = {
             message: message,
-            exception: exception
+            exception: exception,
         };
 
         if (this.onError) {
@@ -163,7 +169,6 @@ export abstract class AbstractAssetTask {
             this.onErrorCallback(onError, "Task is done, error executing success callback(s)", e);
         }
     }
-
 }
 
 /**
@@ -272,7 +277,8 @@ export class ContainerAssetTask extends AbstractAssetTask {
         /**
          * Defines the filename or File of the scene to load from
          */
-        public sceneFilename: string | File) {
+        public sceneFilename: string | File
+    ) {
         super(name);
     }
 
@@ -283,7 +289,10 @@ export class ContainerAssetTask extends AbstractAssetTask {
      * @param onError is a callback called if an error occurs
      */
     public runTask(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void) {
-        SceneLoader.LoadAssetContainer(this.rootUrl, this.sceneFilename, scene,
+        SceneLoader.LoadAssetContainer(
+            this.rootUrl,
+            this.sceneFilename,
+            scene,
             (container: AssetContainer) => {
                 this.loadedContainer = container;
                 this.loadedMeshes = container.meshes;
@@ -291,7 +300,9 @@ export class ContainerAssetTask extends AbstractAssetTask {
                 this.loadedSkeletons = container.skeletons;
                 this.loadedAnimationGroups = container.animationGroups;
                 onSuccess();
-            }, null, (scene, message, exception) => {
+            },
+            null,
+            (scene, message, exception) => {
                 onError(message, exception);
             }
         );
@@ -352,7 +363,8 @@ export class MeshAssetTask extends AbstractAssetTask {
         /**
          * Defines the filename or File of the scene to load from
          */
-        public sceneFilename: string | File) {
+        public sceneFilename: string | File
+    ) {
         super(name);
     }
 
@@ -363,14 +375,20 @@ export class MeshAssetTask extends AbstractAssetTask {
      * @param onError is a callback called if an error occurs
      */
     public runTask(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void) {
-        SceneLoader.ImportMesh(this.meshesNames, this.rootUrl, this.sceneFilename, scene,
+        SceneLoader.ImportMesh(
+            this.meshesNames,
+            this.rootUrl,
+            this.sceneFilename,
+            scene,
             (meshes: AbstractMesh[], particleSystems: IParticleSystem[], skeletons: Skeleton[], animationGroups: AnimationGroup[]) => {
                 this.loadedMeshes = meshes;
                 this.loadedParticleSystems = particleSystems;
                 this.loadedSkeletons = skeletons;
                 this.loadedAnimationGroups = animationGroups;
                 onSuccess();
-            }, null, (scene, message, exception) => {
+            },
+            null,
+            (scene, message, exception) => {
                 onError(message, exception);
             }
         );
@@ -409,7 +427,8 @@ export class TextFileAssetTask extends AbstractAssetTask {
         /**
          * Defines the location of the file to load
          */
-        public url: string) {
+        public url: string
+    ) {
         super(name);
     }
 
@@ -420,14 +439,21 @@ export class TextFileAssetTask extends AbstractAssetTask {
      * @param onError is a callback called if an error occurs
      */
     public runTask(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void) {
-        scene._loadFile(this.url, (data) => {
-            this.text = data as string;
-            onSuccess();
-        }, undefined, false, false, (request, exception) => {
-            if (request) {
-                onError(request.status + " " + request.statusText, exception);
+        scene._loadFile(
+            this.url,
+            (data) => {
+                this.text = data as string;
+                onSuccess();
+            },
+            undefined,
+            false,
+            false,
+            (request, exception) => {
+                if (request) {
+                    onError(request.status + " " + request.statusText, exception);
+                }
             }
-        });
+        );
     }
 }
 
@@ -462,7 +488,8 @@ export class BinaryFileAssetTask extends AbstractAssetTask {
         /**
          * Defines the location of the file to load
          */
-        public url: string) {
+        public url: string
+    ) {
         super(name);
     }
 
@@ -473,14 +500,21 @@ export class BinaryFileAssetTask extends AbstractAssetTask {
      * @param onError is a callback called if an error occurs
      */
     public runTask(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void) {
-        scene._loadFile(this.url, (data) => {
-            this.data = data as ArrayBuffer;
-            onSuccess();
-        }, undefined, true, true, (request, exception) => {
-            if (request) {
-                onError(request.status + " " + request.statusText, exception);
+        scene._loadFile(
+            this.url,
+            (data) => {
+                this.data = data as ArrayBuffer;
+                onSuccess();
+            },
+            undefined,
+            true,
+            true,
+            (request, exception) => {
+                if (request) {
+                    onError(request.status + " " + request.statusText, exception);
+                }
             }
-        });
+        );
     }
 }
 
@@ -515,7 +549,8 @@ export class ImageAssetTask extends AbstractAssetTask {
         /**
          * Defines the location of the image to load
          */
-        public url: string) {
+        public url: string
+    ) {
         super(name);
     }
 
@@ -526,7 +561,7 @@ export class ImageAssetTask extends AbstractAssetTask {
      * @param onError is a callback called if an error occurs
      */
     public runTask(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void) {
-        var img = new Image();
+        const img = new Image();
 
         Tools.SetCorsBehavior(this.url, img);
 
@@ -599,7 +634,8 @@ export class TextureAssetTask extends AbstractAssetTask implements ITextureAsset
         /**
          * Defines the sampling mode to use (default is Texture.TRILINEAR_SAMPLINGMODE)
          */
-        public samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE) {
+        public samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE
+    ) {
         super(name);
     }
 
@@ -610,12 +646,11 @@ export class TextureAssetTask extends AbstractAssetTask implements ITextureAsset
      * @param onError is a callback called if an error occurs
      */
     public runTask(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void) {
-
-        var onload = () => {
+        const onload = () => {
             onSuccess();
         };
 
-        var onerror = (message?: string, exception?: any) => {
+        const onerror = (message?: string, exception?: any) => {
             onError(message, exception);
         };
 
@@ -648,6 +683,7 @@ export class CubeTextureAssetTask extends AbstractAssetTask implements ITextureA
      * @param extensions defines the extensions to use to load files (["_px", "_py", "_pz", "_nx", "_ny", "_nz"] by default)
      * @param noMipmap defines if mipmaps should not be generated (default is false)
      * @param files defines the explicit list of files (undefined by default)
+     * @param prefiltered
      */
     constructor(
         /**
@@ -673,7 +709,8 @@ export class CubeTextureAssetTask extends AbstractAssetTask implements ITextureA
         /**
          * Defines the prefiltered texture option (default is false)
          */
-        public prefiltered?: boolean) {
+        public prefiltered?: boolean
+    ) {
         super(name);
     }
 
@@ -684,12 +721,11 @@ export class CubeTextureAssetTask extends AbstractAssetTask implements ITextureA
      * @param onError is a callback called if an error occurs
      */
     public runTask(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void) {
-
-        var onload = () => {
+        const onload = () => {
             onSuccess();
         };
 
-        var onerror = (message?: string, exception?: any) => {
+        const onerror = (message?: string, exception?: any) => {
             onError(message, exception);
         };
 
@@ -753,7 +789,8 @@ export class HDRCubeTextureAssetTask extends AbstractAssetTask implements ITextu
         /**
          * Internal Use Only
          */
-        public reserved = false) {
+        public reserved = false
+    ) {
         super(name);
     }
 
@@ -764,12 +801,11 @@ export class HDRCubeTextureAssetTask extends AbstractAssetTask implements ITextu
      * @param onError is a callback called if an error occurs
      */
     public runTask(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void) {
-
-        var onload = () => {
+        const onload = () => {
             onSuccess();
         };
 
-        var onerror = (message?: string, exception?: any) => {
+        const onerror = (message?: string, exception?: any) => {
             onError(message, exception);
         };
 
@@ -827,7 +863,8 @@ export class EquiRectangularCubeTextureAssetTask extends AbstractAssetTask imple
          * Specifies if the texture will be use in gamma or linear space (the PBR material requires those texture in linear space,
          * but the standard material would require them in Gamma space) (default is true)
          */
-        public gammaSpace: boolean = true) {
+        public gammaSpace: boolean = true
+    ) {
         super(name);
     }
 
@@ -838,7 +875,6 @@ export class EquiRectangularCubeTextureAssetTask extends AbstractAssetTask imple
      * @param onError is a callback called if an error occurs
      */
     public runTask(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void): void {
-
         const onload = () => {
             onSuccess();
         };
@@ -933,7 +969,7 @@ export class AssetsManager {
      * @returns a new ContainerAssetTask object
      */
     public addContainerTask(taskName: string, meshesNames: any, rootUrl: string, sceneFilename: string | File): ContainerAssetTask {
-        var task = new ContainerAssetTask(taskName, meshesNames, rootUrl, sceneFilename);
+        const task = new ContainerAssetTask(taskName, meshesNames, rootUrl, sceneFilename);
         this._tasks.push(task);
 
         return task;
@@ -948,7 +984,7 @@ export class AssetsManager {
      * @returns a new MeshAssetTask object
      */
     public addMeshTask(taskName: string, meshesNames: any, rootUrl: string, sceneFilename: string | File): MeshAssetTask {
-        var task = new MeshAssetTask(taskName, meshesNames, rootUrl, sceneFilename);
+        const task = new MeshAssetTask(taskName, meshesNames, rootUrl, sceneFilename);
         this._tasks.push(task);
 
         return task;
@@ -961,7 +997,7 @@ export class AssetsManager {
      * @returns a new TextFileAssetTask object
      */
     public addTextFileTask(taskName: string, url: string): TextFileAssetTask {
-        var task = new TextFileAssetTask(taskName, url);
+        const task = new TextFileAssetTask(taskName, url);
         this._tasks.push(task);
 
         return task;
@@ -974,7 +1010,7 @@ export class AssetsManager {
      * @returns a new BinaryFileAssetTask object
      */
     public addBinaryFileTask(taskName: string, url: string): BinaryFileAssetTask {
-        var task = new BinaryFileAssetTask(taskName, url);
+        const task = new BinaryFileAssetTask(taskName, url);
         this._tasks.push(task);
 
         return task;
@@ -987,7 +1023,7 @@ export class AssetsManager {
      * @returns a new ImageAssetTask object
      */
     public addImageTask(taskName: string, url: string): ImageAssetTask {
-        var task = new ImageAssetTask(taskName, url);
+        const task = new ImageAssetTask(taskName, url);
         this._tasks.push(task);
 
         return task;
@@ -1003,7 +1039,7 @@ export class AssetsManager {
      * @returns a new TextureAssetTask object
      */
     public addTextureTask(taskName: string, url: string, noMipmap?: boolean, invertY?: boolean, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE): TextureAssetTask {
-        var task = new TextureAssetTask(taskName, url, noMipmap, invertY, samplingMode);
+        const task = new TextureAssetTask(taskName, url, noMipmap, invertY, samplingMode);
         this._tasks.push(task);
 
         return task;
@@ -1020,7 +1056,7 @@ export class AssetsManager {
      * @returns a new CubeTextureAssetTask object
      */
     public addCubeTextureTask(taskName: string, url: string, extensions?: string[], noMipmap?: boolean, files?: string[], prefiltered?: boolean): CubeTextureAssetTask {
-        var task = new CubeTextureAssetTask(taskName, url, extensions, noMipmap, files, prefiltered);
+        const task = new CubeTextureAssetTask(taskName, url, extensions, noMipmap, files, prefiltered);
         this._tasks.push(task);
 
         return task;
@@ -1038,8 +1074,16 @@ export class AssetsManager {
      * @param reserved Internal use only
      * @returns a new HDRCubeTextureAssetTask object
      */
-    public addHDRCubeTextureTask(taskName: string, url: string, size: number, noMipmap = false, generateHarmonics = true, gammaSpace = false, reserved = false): HDRCubeTextureAssetTask {
-        var task = new HDRCubeTextureAssetTask(taskName, url, size, noMipmap, generateHarmonics, gammaSpace, reserved);
+    public addHDRCubeTextureTask(
+        taskName: string,
+        url: string,
+        size: number,
+        noMipmap = false,
+        generateHarmonics = true,
+        gammaSpace = false,
+        reserved = false
+    ): HDRCubeTextureAssetTask {
+        const task = new HDRCubeTextureAssetTask(taskName, url, size, noMipmap, generateHarmonics, gammaSpace, reserved);
         this._tasks.push(task);
 
         return task;
@@ -1068,7 +1112,7 @@ export class AssetsManager {
      * @param task the task to remove
      */
     public removeTask(task: AbstractAssetTask) {
-        let index = this._tasks.indexOf(task);
+        const index = this._tasks.indexOf(task);
 
         if (index > -1) {
             this._tasks.splice(index, 1);
@@ -1080,20 +1124,10 @@ export class AssetsManager {
 
         try {
             if (this.onProgress) {
-                this.onProgress(
-                    this._waitingTasksCount,
-                    this._totalTasksCount,
-                    task
-                );
+                this.onProgress(this._waitingTasksCount, this._totalTasksCount, task);
             }
 
-            this.onProgressObservable.notifyObservers(
-                new AssetsProgressEvent(
-                    this._waitingTasksCount,
-                    this._totalTasksCount,
-                    task
-                )
-            );
+            this.onProgressObservable.notifyObservers(new AssetsProgressEvent(this._waitingTasksCount, this._totalTasksCount, task));
         } catch (e) {
             Logger.Error("Error running progress callbacks.");
             console.log(e);
@@ -1101,8 +1135,7 @@ export class AssetsManager {
 
         if (this._waitingTasksCount === 0) {
             try {
-
-                var currentTasks = this._tasks.slice();
+                const currentTasks = this._tasks.slice();
 
                 if (this.onFinish) {
                     // Calling onFinish with immutable array of tasks
@@ -1112,7 +1145,7 @@ export class AssetsManager {
                 // Let's remove successfull tasks
                 for (var task of currentTasks) {
                     if (task.taskState === AssetTaskState.DONE) {
-                        let index = this._tasks.indexOf(task);
+                        const index = this._tasks.indexOf(task);
 
                         if (index > -1) {
                             this._tasks.splice(index, 1);
@@ -1133,8 +1166,7 @@ export class AssetsManager {
     }
 
     private _runTask(task: AbstractAssetTask): void {
-
-        let done = () => {
+        const done = () => {
             try {
                 if (this.onTaskSuccess) {
                     this.onTaskSuccess(task);
@@ -1144,10 +1176,9 @@ export class AssetsManager {
             } catch (e) {
                 error("Error executing task success callbacks", e);
             }
-
         };
 
-        let error = (message?: string, exception?: any) => {
+        const error = (message?: string, exception?: any) => {
             task._setErrorObject(message, exception);
 
             if (this.onTaskError) {
@@ -1210,8 +1241,8 @@ export class AssetsManager {
             this._scene.getEngine().displayLoadingUI();
         }
 
-        for (var index = 0; index < this._tasks.length; index++) {
-            var task = this._tasks[index];
+        for (let index = 0; index < this._tasks.length; index++) {
+            const task = this._tasks[index];
             if (task.taskState === AssetTaskState.INIT) {
                 this._runTask(task);
             }

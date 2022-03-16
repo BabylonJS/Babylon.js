@@ -15,7 +15,7 @@ declare module "../../../Materials/effect" {
     }
 }
 
-Effect.prototype.setTextureSampler = function(name: string, sampler: Nullable<TextureSampler>): void {
+Effect.prototype.setTextureSampler = function (name: string, sampler: Nullable<TextureSampler>): void {
     this._engine.setTextureSampler(name, sampler);
 };
 

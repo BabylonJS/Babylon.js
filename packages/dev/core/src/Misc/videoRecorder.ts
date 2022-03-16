@@ -39,7 +39,7 @@ interface MediaRecorderConstructor {
      * @param stream Defines the stream to record.
      * @param options Defines the options for the recorder available in the type MediaRecorderOptions.
      */
-    new(stream: MediaStream, options?: MediaRecorderOptions): MediaRecorder;
+    new (stream: MediaStream, options?: MediaRecorderOptions): MediaRecorder;
 }
 
 /**
@@ -68,11 +68,10 @@ export interface VideoRecorderOptions {
  * @see https://doc.babylonjs.com/how_to/render_scene_on_a_video
  */
 export class VideoRecorder {
-
     private static readonly _defaultOptions = {
         mimeType: "video/webm",
         fps: 25,
-        recordChunckSize: 3000
+        recordChunckSize: 3000,
     };
 
     /**
@@ -82,7 +81,7 @@ export class VideoRecorder {
      */
     public static IsSupported(engine: Engine): boolean {
         const canvas = engine.getRenderingCanvas();
-        return (!!canvas && typeof (<any>canvas).captureStream === "function");
+        return !!canvas && typeof (<any>canvas).captureStream === "function";
     }
 
     private readonly _options: VideoRecorderOptions;
@@ -121,12 +120,12 @@ export class VideoRecorder {
 
         this._options = {
             ...VideoRecorder._defaultOptions,
-            ...options
+            ...options,
         };
 
         const stream = this._canvas.captureStream(this._options.fps);
         if (this._options.audioTracks) {
-            for (let track of this._options.audioTracks) {
+            for (const track of this._options.audioTracks) {
                 stream.addTrack(track);
             }
         }
@@ -214,8 +213,7 @@ export class VideoRecorder {
 
         if (this._reject) {
             this._reject(event.error);
-        }
-        else {
+        } else {
             throw new event.error();
         }
     }

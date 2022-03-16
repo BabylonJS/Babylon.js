@@ -1,12 +1,12 @@
-import { NodeMaterialBlock } from '../nodeMaterialBlock';
-import { NodeMaterialBlockConnectionPointTypes } from '../Enums/nodeMaterialBlockConnectionPointTypes';
-import { NodeMaterialBuildState } from '../nodeMaterialBuildState';
-import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint';
-import { NodeMaterialBlockTargets } from '../Enums/nodeMaterialBlockTargets';
-import { RegisterClass } from '../../../Misc/typeStore';
-import { Color3 } from '../../../Maths/math.color';
-import { Scene } from '../../../scene';
-import { Observable } from '../../../Misc/observable';
+import { NodeMaterialBlock } from "../nodeMaterialBlock";
+import { NodeMaterialBlockConnectionPointTypes } from "../Enums/nodeMaterialBlockConnectionPointTypes";
+import { NodeMaterialBuildState } from "../nodeMaterialBuildState";
+import { NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
+import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
+import { RegisterClass } from "../../../Misc/typeStore";
+import { Color3 } from "../../../Maths/math.color";
+import { Scene } from "../../../scene";
+import { Observable } from "../../../Misc/observable";
 
 /**
  * Class used to store a color step for the GradientBlock
@@ -22,7 +22,7 @@ export class GradientBlockColorStep {
 
     /**
      * Sets a value indicating which step this color is associated with (between 0 and 1)
-    */
+     */
     public set step(val: number) {
         this._step = val;
     }
@@ -58,14 +58,10 @@ export class GradientBlockColorStep {
  * Block used to return a color from a gradient based on an input value between 0 and 1
  */
 export class GradientBlock extends NodeMaterialBlock {
-
     /**
      * Gets or sets the list of color steps
      */
-    public colorSteps: GradientBlockColorStep[] = [
-        new GradientBlockColorStep(0, Color3.Black()),
-        new GradientBlockColorStep(1.0, Color3.White())
-    ];
+    public colorSteps: GradientBlockColorStep[] = [new GradientBlockColorStep(0, Color3.Black()), new GradientBlockColorStep(1.0, Color3.White())];
 
     /** Gets an observable raised when the value is changed */
     public onValueChangedObservable = new Observable<GradientBlock>();
@@ -114,22 +110,22 @@ export class GradientBlock extends NodeMaterialBlock {
     }
 
     private _writeColorConstant(index: number) {
-        let step = this.colorSteps[index];
+        const step = this.colorSteps[index];
         return `vec3(${step.color.r}, ${step.color.g}, ${step.color.b})`;
     }
 
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
-        let output = this._outputs[0];
+        const output = this._outputs[0];
 
         if (!this.colorSteps.length || !this.gradient.connectedPoint) {
             state.compilationString += this._declareOutput(output, state) + ` = vec3(0., 0., 0.);\r\n`;
             return;
         }
 
-        let tempColor = state._getFreeVariableName("gradientTempColor");
-        let tempPosition = state._getFreeVariableName("gradientTempPosition");
+        const tempColor = state._getFreeVariableName("gradientTempColor");
+        const tempPosition = state._getFreeVariableName("gradientTempPosition");
 
         state.compilationString += `vec3 ${tempColor} = ${this._writeColorConstant(0)};\r\n`;
         state.compilationString += `float ${tempPosition};\r\n`;
@@ -140,10 +136,12 @@ export class GradientBlock extends NodeMaterialBlock {
             gradientSource += ".x";
         }
 
-        for (var index = 1; index < this.colorSteps.length; index++) {
-            let step = this.colorSteps[index];
-            let previousStep = this.colorSteps[index - 1];
-            state.compilationString += `${tempPosition} = clamp((${gradientSource} - ${state._emitFloat(previousStep.step)}) / (${state._emitFloat(step.step)} -  ${state._emitFloat(previousStep.step)}), 0.0, 1.0) * step(${state._emitFloat(index)}, ${state._emitFloat(this.colorSteps.length - 1)});\r\n`;
+        for (let index = 1; index < this.colorSteps.length; index++) {
+            const step = this.colorSteps[index];
+            const previousStep = this.colorSteps[index - 1];
+            state.compilationString += `${tempPosition} = clamp((${gradientSource} - ${state._emitFloat(previousStep.step)}) / (${state._emitFloat(
+                step.step
+            )} -  ${state._emitFloat(previousStep.step)}), 0.0, 1.0) * step(${state._emitFloat(index)}, ${state._emitFloat(this.colorSteps.length - 1)});\r\n`;
             state.compilationString += `${tempColor} = mix(${tempColor}, ${this._writeColorConstant(index)}, ${tempPosition});\r\n`;
         }
         state.compilationString += this._declareOutput(output, state) + ` = ${tempColor};\r\n`;
@@ -152,18 +150,18 @@ export class GradientBlock extends NodeMaterialBlock {
     }
 
     public serialize(): any {
-        let serializationObject = super.serialize();
+        const serializationObject = super.serialize();
 
         serializationObject.colorSteps = [];
 
-        for (var step of this.colorSteps) {
+        for (const step of this.colorSteps) {
             serializationObject.colorSteps.push({
                 step: step.step,
                 color: {
                     r: step.color.r,
                     g: step.color.g,
-                    b: step.color.b
-                }
+                    b: step.color.b,
+                },
             });
         }
 
@@ -175,17 +173,17 @@ export class GradientBlock extends NodeMaterialBlock {
 
         this.colorSteps = [];
 
-        for (var step of serializationObject.colorSteps) {
+        for (const step of serializationObject.colorSteps) {
             this.colorSteps.push(new GradientBlockColorStep(step.step, new Color3(step.color.r, step.color.g, step.color.b)));
         }
     }
 
     protected _dumpPropertiesCode() {
-        var codeString = super._dumpPropertiesCode();
+        let codeString = super._dumpPropertiesCode();
 
         codeString += `${this._codeVariableName}.colorSteps = [];\r\n`;
 
-        for (var colorStep of this.colorSteps) {
+        for (const colorStep of this.colorSteps) {
             codeString += `${this._codeVariableName}.colorSteps.push(new BABYLON.GradientBlockColorStep(${colorStep.step}, new BABYLON.Color3(${colorStep.color.r}, ${colorStep.color.g}, ${colorStep.color.b})));\r\n`;
         }
 

@@ -1,7 +1,7 @@
 import { Nullable } from "../../types";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Constants } from "../../Engines/constants";
-import { Matrix } from '../../Maths/math.vector';
+import { Matrix } from "../../Maths/math.vector";
 
 import "../../Engines/Extensions/engine.dynamicTexture";
 import "../../Engines/Extensions/engine.videoTexture";
@@ -50,7 +50,7 @@ export class HtmlElementTexture extends BaseTexture {
         generateMipMaps: false,
         samplingMode: Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
         engine: null,
-        scene: null
+        scene: null,
     };
 
     private _textureMatrix: Matrix;
@@ -74,7 +74,7 @@ export class HtmlElementTexture extends BaseTexture {
 
         options = {
             ...HtmlElementTexture.DefaultOptions,
-            ...options
+            ...options,
         };
 
         this._generateMipMaps = options.generateMipMaps!;
@@ -83,7 +83,7 @@ export class HtmlElementTexture extends BaseTexture {
 
         this.name = name;
         this.element = element;
-        this._isVideo = (element instanceof HTMLVideoElement);
+        this._isVideo = element instanceof HTMLVideoElement;
 
         this.anisotropicFilteringLevel = 1;
 
@@ -96,20 +96,14 @@ export class HtmlElementTexture extends BaseTexture {
         if (this._isVideo) {
             width = (this.element as HTMLVideoElement).videoWidth;
             height = (this.element as HTMLVideoElement).videoHeight;
-        }
-        else {
+        } else {
             width = this.element.width;
             height = this.element.height;
         }
 
         const engine = this._getEngine();
         if (engine) {
-            this._texture = engine.createDynamicTexture(
-                width,
-                height,
-                this._generateMipMaps,
-                this._samplingMode
-            );
+            this._texture = engine.createDynamicTexture(width, height, this._generateMipMaps, this._samplingMode);
         }
 
         this.update();
@@ -138,16 +132,10 @@ export class HtmlElementTexture extends BaseTexture {
                 return;
             }
 
-            engine.updateVideoTexture(this._texture,
-                videoElement,
-                invertY === null ? true : invertY);
-        }
-        else {
+            engine.updateVideoTexture(this._texture, videoElement, invertY === null ? true : invertY);
+        } else {
             const canvasElement = this.element as HTMLCanvasElement;
-            engine.updateDynamicTexture(this._texture,
-                canvasElement,
-                invertY === null ? true : invertY,
-                false);
+            engine.updateDynamicTexture(this._texture, canvasElement, invertY === null ? true : invertY, false);
         }
     }
 }

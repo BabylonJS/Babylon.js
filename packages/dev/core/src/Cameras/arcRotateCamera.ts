@@ -244,7 +244,7 @@ export class ArcRotateCamera extends TargetCamera {
      * Gets or Set the pointer angular sensibility  along the X axis or how fast is the camera rotating.
      */
     public get angularSensibilityX(): number {
-        var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
+        const pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
         if (pointers) {
             return pointers.angularSensibilityX;
         }
@@ -253,7 +253,7 @@ export class ArcRotateCamera extends TargetCamera {
     }
 
     public set angularSensibilityX(value: number) {
-        var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
+        const pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
         if (pointers) {
             pointers.angularSensibilityX = value;
         }
@@ -263,7 +263,7 @@ export class ArcRotateCamera extends TargetCamera {
      * Gets or Set the pointer angular sensibility along the Y axis or how fast is the camera rotating.
      */
     public get angularSensibilityY(): number {
-        var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
+        const pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
         if (pointers) {
             return pointers.angularSensibilityY;
         }
@@ -272,7 +272,7 @@ export class ArcRotateCamera extends TargetCamera {
     }
 
     public set angularSensibilityY(value: number) {
-        var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
+        const pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
         if (pointers) {
             pointers.angularSensibilityY = value;
         }
@@ -282,7 +282,7 @@ export class ArcRotateCamera extends TargetCamera {
      * Gets or Set the pointer pinch precision or how fast is the camera zooming.
      */
     public get pinchPrecision(): number {
-        var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
+        const pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
         if (pointers) {
             return pointers.pinchPrecision;
         }
@@ -291,7 +291,7 @@ export class ArcRotateCamera extends TargetCamera {
     }
 
     public set pinchPrecision(value: number) {
-        var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
+        const pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
         if (pointers) {
             pointers.pinchPrecision = value;
         }
@@ -303,7 +303,7 @@ export class ArcRotateCamera extends TargetCamera {
      * It defines the percentage of current camera.radius to use as delta when pinch zoom is used.
      */
     public get pinchDeltaPercentage(): number {
-        var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
+        const pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
         if (pointers) {
             return pointers.pinchDeltaPercentage;
         }
@@ -312,7 +312,7 @@ export class ArcRotateCamera extends TargetCamera {
     }
 
     public set pinchDeltaPercentage(value: number) {
-        var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
+        const pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
         if (pointers) {
             pointers.pinchDeltaPercentage = value;
         }
@@ -326,7 +326,7 @@ export class ArcRotateCamera extends TargetCamera {
      * perfectly with finger motion.
      */
     public get useNaturalPinchZoom(): boolean {
-        var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
+        const pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
         if (pointers) {
             return pointers.useNaturalPinchZoom;
         }
@@ -335,7 +335,7 @@ export class ArcRotateCamera extends TargetCamera {
     }
 
     public set useNaturalPinchZoom(value: boolean) {
-        var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
+        const pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
         if (pointers) {
             pointers.useNaturalPinchZoom = value;
         }
@@ -345,7 +345,7 @@ export class ArcRotateCamera extends TargetCamera {
      * Gets or Set the pointer panning sensibility or how fast is the camera moving.
      */
     public get panningSensibility(): number {
-        var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
+        const pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
         if (pointers) {
             return pointers.panningSensibility;
         }
@@ -354,7 +354,7 @@ export class ArcRotateCamera extends TargetCamera {
     }
 
     public set panningSensibility(value: number) {
-        var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
+        const pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
         if (pointers) {
             pointers.panningSensibility = value;
         }
@@ -364,7 +364,7 @@ export class ArcRotateCamera extends TargetCamera {
      * Gets or Set the list of keyboard keys used to control beta angle in a positive direction.
      */
     public get keysUp(): number[] {
-        var keyboard = <ArcRotateCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
+        const keyboard = <ArcRotateCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
         if (keyboard) {
             return keyboard.keysUp;
         }
@@ -373,7 +373,7 @@ export class ArcRotateCamera extends TargetCamera {
     }
 
     public set keysUp(value: number[]) {
-        var keyboard = <ArcRotateCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
+        const keyboard = <ArcRotateCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
         if (keyboard) {
             keyboard.keysUp = value;
         }
@@ -383,7 +383,7 @@ export class ArcRotateCamera extends TargetCamera {
      * Gets or Set the list of keyboard keys used to control beta angle in a negative direction.
      */
     public get keysDown(): number[] {
-        var keyboard = <ArcRotateCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
+        const keyboard = <ArcRotateCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
         if (keyboard) {
             return keyboard.keysDown;
         }
@@ -392,7 +392,7 @@ export class ArcRotateCamera extends TargetCamera {
     }
 
     public set keysDown(value: number[]) {
-        var keyboard = <ArcRotateCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
+        const keyboard = <ArcRotateCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
         if (keyboard) {
             keyboard.keysDown = value;
         }
@@ -402,7 +402,7 @@ export class ArcRotateCamera extends TargetCamera {
      * Gets or Set the list of keyboard keys used to control alpha angle in a negative direction.
      */
     public get keysLeft(): number[] {
-        var keyboard = <ArcRotateCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
+        const keyboard = <ArcRotateCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
         if (keyboard) {
             return keyboard.keysLeft;
         }
@@ -411,7 +411,7 @@ export class ArcRotateCamera extends TargetCamera {
     }
 
     public set keysLeft(value: number[]) {
-        var keyboard = <ArcRotateCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
+        const keyboard = <ArcRotateCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
         if (keyboard) {
             keyboard.keysLeft = value;
         }
@@ -421,7 +421,7 @@ export class ArcRotateCamera extends TargetCamera {
      * Gets or Set the list of keyboard keys used to control alpha angle in a positive direction.
      */
     public get keysRight(): number[] {
-        var keyboard = <ArcRotateCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
+        const keyboard = <ArcRotateCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
         if (keyboard) {
             return keyboard.keysRight;
         }
@@ -430,7 +430,7 @@ export class ArcRotateCamera extends TargetCamera {
     }
 
     public set keysRight(value: number[]) {
-        var keyboard = <ArcRotateCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
+        const keyboard = <ArcRotateCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
         if (keyboard) {
             keyboard.keysRight = value;
         }
@@ -440,7 +440,7 @@ export class ArcRotateCamera extends TargetCamera {
      * Gets or Set the mouse wheel precision or how fast is the camera zooming.
      */
     public get wheelPrecision(): number {
-        var mousewheel = <ArcRotateCameraMouseWheelInput>this.inputs.attached["mousewheel"];
+        const mousewheel = <ArcRotateCameraMouseWheelInput>this.inputs.attached["mousewheel"];
         if (mousewheel) {
             return mousewheel.wheelPrecision;
         }
@@ -449,7 +449,7 @@ export class ArcRotateCamera extends TargetCamera {
     }
 
     public set wheelPrecision(value: number) {
-        var mousewheel = <ArcRotateCameraMouseWheelInput>this.inputs.attached["mousewheel"];
+        const mousewheel = <ArcRotateCameraMouseWheelInput>this.inputs.attached["mousewheel"];
         if (mousewheel) {
             mousewheel.wheelPrecision = value;
         }
@@ -461,7 +461,7 @@ export class ArcRotateCamera extends TargetCamera {
      */
     @serialize()
     public get zoomToMouseLocation(): boolean {
-        var mousewheel = <ArcRotateCameraMouseWheelInput>this.inputs.attached["mousewheel"];
+        const mousewheel = <ArcRotateCameraMouseWheelInput>this.inputs.attached["mousewheel"];
         if (mousewheel) {
             return mousewheel.zoomToMouseLocation;
         }
@@ -470,7 +470,7 @@ export class ArcRotateCamera extends TargetCamera {
     }
 
     public set zoomToMouseLocation(value: boolean) {
-        var mousewheel = <ArcRotateCameraMouseWheelInput>this.inputs.attached["mousewheel"];
+        const mousewheel = <ArcRotateCameraMouseWheelInput>this.inputs.attached["mousewheel"];
         if (mousewheel) {
             mousewheel.zoomToMouseLocation = value;
         }
@@ -482,7 +482,7 @@ export class ArcRotateCamera extends TargetCamera {
      * It defines the percentage of current camera.radius to use as delta when pinch zoom is used.
      */
     public get wheelDeltaPercentage(): number {
-        var mousewheel = <ArcRotateCameraMouseWheelInput>this.inputs.attached["mousewheel"];
+        const mousewheel = <ArcRotateCameraMouseWheelInput>this.inputs.attached["mousewheel"];
         if (mousewheel) {
             return mousewheel.wheelDeltaPercentage;
         }
@@ -491,7 +491,7 @@ export class ArcRotateCamera extends TargetCamera {
     }
 
     public set wheelDeltaPercentage(value: number) {
-        var mousewheel = <ArcRotateCameraMouseWheelInput>this.inputs.attached["mousewheel"];
+        const mousewheel = <ArcRotateCameraMouseWheelInput>this.inputs.attached["mousewheel"];
         if (mousewheel) {
             mousewheel.wheelDeltaPercentage = value;
         }
@@ -722,7 +722,10 @@ export class ArcRotateCamera extends TargetCamera {
         this._cache.targetScreenOffset = Vector2.Zero();
     }
 
-    /** @hidden */
+    /**
+     * @param ignoreParentClass
+     * @hidden
+     */
     public _updateCache(ignoreParentClass?: boolean): void {
         if (!ignoreParentClass) {
             super._updateCache();
@@ -737,7 +740,7 @@ export class ArcRotateCamera extends TargetCamera {
 
     protected _getTargetPosition(): Vector3 {
         if (this._targetHost && this._targetHost.getAbsolutePosition) {
-            var pos: Vector3 = this._targetHost.getAbsolutePosition();
+            const pos: Vector3 = this._targetHost.getAbsolutePosition();
             if (this._targetBoundingCenter) {
                 pos.addToRef(this._targetBoundingCenter, this._target);
             } else {
@@ -745,7 +748,7 @@ export class ArcRotateCamera extends TargetCamera {
             }
         }
 
-        var lockedTargetPosition = this._getLockedTargetPosition();
+        const lockedTargetPosition = this._getLockedTargetPosition();
 
         if (lockedTargetPosition) {
             return lockedTargetPosition;
@@ -805,7 +808,13 @@ export class ArcRotateCamera extends TargetCamera {
             return false;
         }
 
-        return this._cache._target.equals(this._getTargetPosition()) && this._cache.alpha === this.alpha && this._cache.beta === this.beta && this._cache.radius === this.radius && this._cache.targetScreenOffset.equals(this.targetScreenOffset);
+        return (
+            this._cache._target.equals(this._getTargetPosition()) &&
+            this._cache.alpha === this.alpha &&
+            this._cache.beta === this.beta &&
+            this._cache.radius === this.radius &&
+            this._cache.targetScreenOffset.equals(this.targetScreenOffset)
+        );
     }
 
     /**
@@ -933,7 +942,7 @@ export class ArcRotateCamera extends TargetCamera {
 
         // Panning inertia
         if (this.inertialPanningX !== 0 || this.inertialPanningY !== 0) {
-            let localDirection = new Vector3(this.inertialPanningX, this.inertialPanningY, this.inertialPanningY);
+            const localDirection = new Vector3(this.inertialPanningX, this.inertialPanningY, this.inertialPanningY);
 
             this._viewMatrix.invertToRef(this._cameraTransformMatrix);
             localDirection.multiplyInPlace(this.panningAxis);
@@ -946,7 +955,7 @@ export class ArcRotateCamera extends TargetCamera {
             if (!this._targetHost) {
                 if (this.panningDistanceLimit) {
                     this._transformedDirection.addInPlace(this._target);
-                    var distanceSquared = Vector3.DistanceSquared(this._transformedDirection, this.panningOriginTarget);
+                    const distanceSquared = Vector3.DistanceSquared(this._transformedDirection, this.panningOriginTarget);
                     if (distanceSquared <= this.panningDistanceLimit * this.panningDistanceLimit) {
                         this._target.copyFrom(this._transformedDirection);
                     }
@@ -1085,8 +1094,8 @@ export class ArcRotateCamera extends TargetCamera {
 
             this.onMeshTargetChangedObservable.notifyObservers(this._targetHost);
         } else {
-            var newTarget = <Vector3>target;
-            var currentTarget = this._getTargetPosition();
+            const newTarget = <Vector3>target;
+            const currentTarget = this._getTargetPosition();
             if (currentTarget && !allowSamePosition && currentTarget.equals(newTarget)) {
                 return;
             }
@@ -1104,10 +1113,10 @@ export class ArcRotateCamera extends TargetCamera {
     /** @hidden */
     public _getViewMatrix(): Matrix {
         // Compute
-        var cosa = Math.cos(this.alpha);
-        var sina = Math.sin(this.alpha);
-        var cosb = Math.cos(this.beta);
-        var sinb = Math.sin(this.beta);
+        const cosa = Math.cos(this.alpha);
+        const sina = Math.sin(this.alpha);
+        const cosb = Math.cos(this.beta);
+        let sinb = Math.sin(this.beta);
 
         if (sinb === 0) {
             sinb = 0.0001;
@@ -1117,7 +1126,7 @@ export class ArcRotateCamera extends TargetCamera {
             this.radius = 0.0001; // Just to avoid division by zero
         }
 
-        var target = this._getTargetPosition();
+        const target = this._getTargetPosition();
         this._computationVector.copyFromFloats(this.radius * cosa * sinb, this.radius * cosb, this.radius * sina * sinb);
 
         // Rotate according to up vector
@@ -1138,7 +1147,7 @@ export class ArcRotateCamera extends TargetCamera {
         } else {
             this._position.copyFrom(this._newPosition);
 
-            var up = this.upVector;
+            let up = this.upVector;
             if (this.allowUpsideDown && sinb < 0) {
                 up = up.negate();
             }
@@ -1164,21 +1173,21 @@ export class ArcRotateCamera extends TargetCamera {
         }
 
         // Recompute because of constraints
-        var cosa = Math.cos(this.alpha);
-        var sina = Math.sin(this.alpha);
-        var cosb = Math.cos(this.beta);
-        var sinb = Math.sin(this.beta);
+        const cosa = Math.cos(this.alpha);
+        const sina = Math.sin(this.alpha);
+        const cosb = Math.cos(this.beta);
+        let sinb = Math.sin(this.beta);
 
         if (sinb === 0) {
             sinb = 0.0001;
         }
 
-        var target = this._getTargetPosition();
+        const target = this._getTargetPosition();
         this._computationVector.copyFromFloats(this.radius * cosa * sinb, this.radius * cosb, this.radius * sina * sinb);
         target.addToRef(this._computationVector, this._newPosition);
         this._position.copyFrom(this._newPosition);
 
-        var up = this.upVector;
+        let up = this.upVector;
         if (this.allowUpsideDown && this.beta < 0) {
             up = up.clone();
             up = up.negate();
@@ -1199,8 +1208,8 @@ export class ArcRotateCamera extends TargetCamera {
     public zoomOn(meshes?: AbstractMesh[], doNotUpdateMaxZ = false): void {
         meshes = meshes || this.getScene().meshes;
 
-        var minMaxVector = Mesh.MinMax(meshes);
-        var distance = Vector3.Distance(minMaxVector.min, minMaxVector.max);
+        const minMaxVector = Mesh.MinMax(meshes);
+        const distance = Vector3.Distance(minMaxVector.min, minMaxVector.max);
 
         this.radius = distance * this.zoomOnFactor;
 
@@ -1214,17 +1223,17 @@ export class ArcRotateCamera extends TargetCamera {
      * @param doNotUpdateMaxZ Defines whether or not maxZ should be updated whilst zooming on the mesh (this can happen if the mesh is big and the maxradius pretty small for instance)
      */
     public focusOn(meshesOrMinMaxVectorAndDistance: AbstractMesh[] | { min: Vector3; max: Vector3; distance: number }, doNotUpdateMaxZ = false): void {
-        var meshesOrMinMaxVector: { min: Vector3; max: Vector3 };
-        var distance: number;
+        let meshesOrMinMaxVector: { min: Vector3; max: Vector3 };
+        let distance: number;
 
         if ((<any>meshesOrMinMaxVectorAndDistance).min === undefined) {
             // meshes
-            var meshes = <AbstractMesh[]>meshesOrMinMaxVectorAndDistance || this.getScene().meshes;
+            const meshes = <AbstractMesh[]>meshesOrMinMaxVectorAndDistance || this.getScene().meshes;
             meshesOrMinMaxVector = Mesh.MinMax(meshes);
             distance = Vector3.Distance(meshesOrMinMaxVector.min, meshesOrMinMaxVector.max);
         } else {
             //minMaxVector and distance
-            var minMaxVectorAndDistance = <any>meshesOrMinMaxVectorAndDistance;
+            const minMaxVectorAndDistance = <any>meshesOrMinMaxVectorAndDistance;
             meshesOrMinMaxVector = minMaxVectorAndDistance;
             distance = minMaxVectorAndDistance.distance;
         }
@@ -1241,7 +1250,7 @@ export class ArcRotateCamera extends TargetCamera {
      * Override Camera.createRigCamera
      */
     public createRigCamera(name: string, cameraIndex: number): Camera {
-        var alphaShift: number = 0;
+        let alphaShift: number = 0;
         switch (this.cameraRigMode) {
             case Camera.RIG_MODE_STEREOSCOPIC_ANAGLYPH:
             case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL:
@@ -1254,7 +1263,7 @@ export class ArcRotateCamera extends TargetCamera {
                 alphaShift = this._cameraRigParams.stereoHalfAngle * (cameraIndex === 0 ? -1 : 1);
                 break;
         }
-        var rigCam = new ArcRotateCamera(name, this.alpha + alphaShift, this.beta, this.radius, this._target, this.getScene());
+        const rigCam = new ArcRotateCamera(name, this.alpha + alphaShift, this.beta, this.radius, this._target, this.getScene());
         rigCam._cameraRigParams = {};
         rigCam.isRigCamera = true;
         rigCam.rigParent = this;
@@ -1268,8 +1277,8 @@ export class ArcRotateCamera extends TargetCamera {
      * Override Camera._updateRigCameras
      */
     public _updateRigCameras() {
-        var camLeft = <ArcRotateCamera>this._rigCameras[0];
-        var camRight = <ArcRotateCamera>this._rigCameras[1];
+        const camLeft = <ArcRotateCamera>this._rigCameras[0];
+        const camRight = <ArcRotateCamera>this._rigCameras[1];
 
         camLeft.beta = camRight.beta = this.beta;
 

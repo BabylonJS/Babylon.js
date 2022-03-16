@@ -4,7 +4,7 @@ import { Engine } from "../../../Engines/engine";
 import { InternalTexture } from "../../../Materials/Textures/internalTexture";
 import { IInternalTextureLoader } from "../../../Materials/Textures/internalTextureLoader";
 import { DDSTools, DDSInfo } from "../../../Misc/dds";
-import { EndsWith } from '../../../Misc/stringTools';
+import { EndsWith } from "../../../Misc/stringTools";
 /**
  * Implementation of the DDS Texture Loader.
  * @hidden
@@ -27,19 +27,26 @@ export class _DDSTextureLoader implements IInternalTextureLoader {
     /**
      * Uploads the cube texture data to the WebGL texture. It has already been bound.
      * @param data contains the texture data
+     * @param imgs
      * @param texture defines the BabylonJS internal texture
      * @param createPolynomials will be true if polynomials have been requested
      * @param onLoad defines the callback to trigger once the texture is ready
      * @param onError defines the callback to trigger in case of error
      */
-    public loadCubeData(imgs: ArrayBufferView | ArrayBufferView[], texture: InternalTexture, createPolynomials: boolean, onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>): void {
-        var engine = texture.getEngine() as Engine;
-        var info: DDSInfo | undefined;
-        var loadMipmap: boolean = false;
-        var maxLevel: number = 1000;
+    public loadCubeData(
+        imgs: ArrayBufferView | ArrayBufferView[],
+        texture: InternalTexture,
+        createPolynomials: boolean,
+        onLoad: Nullable<(data?: any) => void>,
+        onError: Nullable<(message?: string, exception?: any) => void>
+    ): void {
+        const engine = texture.getEngine() as Engine;
+        let info: DDSInfo | undefined;
+        let loadMipmap: boolean = false;
+        let maxLevel: number = 1000;
         if (Array.isArray(imgs)) {
             for (let index = 0; index < imgs.length; index++) {
-                let data = imgs[index];
+                const data = imgs[index];
                 info = DDSTools.GetDDSInfo(data);
 
                 texture.width = info.width;
@@ -53,15 +60,12 @@ export class _DDSTextureLoader implements IInternalTextureLoader {
 
                 if (!info.isFourCC && info.mipmapCount === 1) {
                     engine.generateMipMapsForCubemap(texture);
-                }
-                else
-                {
+                } else {
                     maxLevel = info.mipmapCount - 1;
                 }
             }
-        }
-        else {
-            var data = imgs;
+        } else {
+            const data = imgs;
             info = DDSTools.GetDDSInfo(data);
 
             texture.width = info.width;
@@ -79,9 +83,7 @@ export class _DDSTextureLoader implements IInternalTextureLoader {
             if (!info.isFourCC && info.mipmapCount === 1) {
                 // Do not unbind as we still need to set the parameters.
                 engine.generateMipMapsForCubemap(texture, false);
-            }
-            else
-            {
+            } else {
                 maxLevel = info.mipmapCount - 1;
             }
         }
@@ -101,11 +103,14 @@ export class _DDSTextureLoader implements IInternalTextureLoader {
      * @param texture defines the BabylonJS internal texture
      * @param callback defines the method to call once ready to upload
      */
-    public loadData(data: ArrayBufferView, texture: InternalTexture,
-        callback: (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void) => void): void {
-        var info = DDSTools.GetDDSInfo(data);
+    public loadData(
+        data: ArrayBufferView,
+        texture: InternalTexture,
+        callback: (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void) => void
+    ): void {
+        const info = DDSTools.GetDDSInfo(data);
 
-        var loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && texture.generateMipMaps && ((info.width >> (info.mipmapCount - 1)) === 1);
+        const loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && texture.generateMipMaps && info.width >> (info.mipmapCount - 1) === 1;
         callback(info.width, info.height, loadMipmap, info.isFourCC, () => {
             DDSTools.UploadDDSLevels(texture.getEngine(), texture, data, info, loadMipmap, 1);
         });

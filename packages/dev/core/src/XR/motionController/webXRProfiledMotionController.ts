@@ -30,12 +30,17 @@ export class WebXRProfiledMotionController extends WebXRAbstractMotionController
      */
     public profileId: string;
 
-    constructor(scene: Scene, xrInput: XRInputSource, _profile: IMotionControllerProfile, private _repositoryUrl: string,
+    constructor(
+        scene: Scene,
+        xrInput: XRInputSource,
+        _profile: IMotionControllerProfile,
+        private _repositoryUrl: string,
         private controllerCache?: Array<{
             filename: string;
             path: string;
-            meshes: AbstractMesh[]
-        }>) {
+            meshes: AbstractMesh[];
+        }>
+    ) {
         super(scene, _profile.layouts[xrInput.handedness || "none"], xrInput.gamepad as any, xrInput.handedness, undefined, controllerCache);
         this.profileId = _profile.profileId;
     }
@@ -81,7 +86,10 @@ export class WebXRProfiledMotionController extends WebXRAbstractMotionController
                     };
                 } else {
                     // visibility, usually for touchpads
-                    const nameOfMesh = componentInLayout.type === WebXRControllerComponent.TOUCHPAD_TYPE && componentInLayout.touchPointNodeName ? componentInLayout.touchPointNodeName : visResponse.valueNodeName!;
+                    const nameOfMesh =
+                        componentInLayout.type === WebXRControllerComponent.TOUCHPAD_TYPE && componentInLayout.touchPointNodeName
+                            ? componentInLayout.touchPointNodeName
+                            : visResponse.valueNodeName!;
                     this._buttonMeshMapping[type].states[visualResponseKey] = {
                         valueMesh: this._getChildByName(this.rootMesh!, nameOfMesh),
                     };
@@ -111,7 +119,7 @@ export class WebXRProfiledMotionController extends WebXRAbstractMotionController
         let rootMesh;
         // Find the root node in the loaded glTF scene, and attach it as a child of 'parentMesh'
         for (let i = 0; i < meshes.length; i++) {
-            let mesh = meshes[i];
+            const mesh = meshes[i];
 
             mesh.isPickable = false;
 

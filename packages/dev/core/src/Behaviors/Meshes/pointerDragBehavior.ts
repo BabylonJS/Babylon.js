@@ -7,10 +7,10 @@ import { Observer, Observable } from "../../Misc/observable";
 import { Vector3 } from "../../Maths/math.vector";
 import { PointerInfo, PointerEventTypes } from "../../Events/pointerEvents";
 import { Ray } from "../../Culling/ray";
-import { PivotTools } from '../../Misc/pivotTools';
-import { ArcRotateCamera } from '../../Cameras/arcRotateCamera';
-import "../../Meshes/Builders/planeBuilder";
+import { PivotTools } from "../../Misc/pivotTools";
+import { ArcRotateCamera } from "../../Cameras/arcRotateCamera";
 import { CreatePlane } from "../../Meshes/Builders/planeBuilder";
+
 import { IPointerEvent } from "../../Events/deviceInputEvents";
 
 /**
@@ -76,15 +76,15 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
      *  * dragPlaneNormal normal of the current drag plane used during the drag
      *  * dragPlanePoint in world space where the drag intersects the drag plane
      */
-    public onDragObservable = new Observable<{ delta: Vector3, dragPlanePoint: Vector3, dragPlaneNormal: Vector3, dragDistance: number, pointerId: number }>();
+    public onDragObservable = new Observable<{ delta: Vector3; dragPlanePoint: Vector3; dragPlaneNormal: Vector3; dragDistance: number; pointerId: number }>();
     /**
      *  Fires each time a drag begins (eg. mouse down on mesh)
      */
-    public onDragStartObservable = new Observable<{ dragPlanePoint: Vector3, pointerId: number }>();
+    public onDragStartObservable = new Observable<{ dragPlanePoint: Vector3; pointerId: number }>();
     /**
      *  Fires each time a drag ends (eg. mouse release after drag)
      */
-    public onDragEndObservable = new Observable<{ dragPlanePoint: Vector3, pointerId: number }>();
+    public onDragEndObservable = new Observable<{ dragPlanePoint: Vector3; pointerId: number }>();
     /**
      *  Fires each time behavior enabled state changes
      */
@@ -124,30 +124,32 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
      */
     public useObjectOrientationForDragging = true;
 
-    private _options: { dragAxis?: Vector3, dragPlaneNormal?: Vector3 };
+    private _options: { dragAxis?: Vector3; dragPlaneNormal?: Vector3 };
 
     /**
      * Gets the options used by the behavior
      */
-    public get options(): { dragAxis?: Vector3, dragPlaneNormal?: Vector3 } {
+    public get options(): { dragAxis?: Vector3; dragPlaneNormal?: Vector3 } {
         return this._options;
     }
 
     /**
      * Sets the options used by the behavior
      */
-    public set options(options: { dragAxis?: Vector3, dragPlaneNormal?: Vector3 }) {
+    public set options(options: { dragAxis?: Vector3; dragPlaneNormal?: Vector3 }) {
         this._options = options;
     }
 
     /**
      * Creates a pointer drag behavior that can be attached to a mesh
      * @param options The drag axis or normal of the plane that will be dragged across. If no options are specified the drag plane will always face the ray's origin (eg. camera)
+     * @param options.dragAxis
+     * @param options.dragPlaneNormal
      */
-    constructor(options?: { dragAxis?: Vector3, dragPlaneNormal?: Vector3 }) {
+    constructor(options?: { dragAxis?: Vector3; dragPlaneNormal?: Vector3 }) {
         this._options = options ? options : {};
 
-        var optionCount = 0;
+        let optionCount = 0;
         if (this._options.dragAxis) {
             optionCount++;
         }
@@ -161,8 +163,11 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
 
     /**
      * Predicate to determine if it is valid to move the object to a new position when it is moved
+     * @param targetPosition
      */
-    public validateDrag = (targetPosition: Vector3) => { return true; };
+    public validateDrag = (targetPosition: Vector3) => {
+        return true;
+    };
 
     /**
      *  The name of the behavior
@@ -174,7 +179,7 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
     /**
      *  Initializes the behavior
      */
-    public init() { }
+    public init() {}
 
     private _tmpVector = new Vector3(0, 0, 0);
     private _alternatePickedPoint = new Vector3(0, 0, 0);
@@ -204,14 +209,20 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
                 });
             }
         }
-        this._dragPlane = CreatePlane("pointerDragPlane", { size: this._debugMode ? 1 : 10000, updatable: false, sideOrientation: Mesh.DOUBLESIDE }, PointerDragBehavior._planeScene);
+        this._dragPlane = CreatePlane(
+            "pointerDragPlane",
+            { size: this._debugMode ? 1 : 10000, updatable: false, sideOrientation: Mesh.DOUBLESIDE },
+            PointerDragBehavior._planeScene
+        );
 
         // State of the drag
         this.lastDragPosition = new Vector3(0, 0, 0);
 
-        var pickPredicate = !!predicate ? predicate : (m: AbstractMesh) => {
-            return this.attachedNode == m || m.isDescendantOf(this.attachedNode);
-        };
+        const pickPredicate = predicate
+            ? predicate
+            : (m: AbstractMesh) => {
+                  return this.attachedNode == m || m.isDescendantOf(this.attachedNode);
+              };
 
         this._pointerObserver = this._scene.onPointerObservable.add((pointerInfo, eventState) => {
             if (!this.enabled) {
@@ -224,8 +235,16 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
             }
 
             if (pointerInfo.type == PointerEventTypes.POINTERDOWN) {
-
-                if (this.startAndReleaseDragOnPointerEvents && !this.dragging && pointerInfo.pickInfo && pointerInfo.pickInfo.hit && pointerInfo.pickInfo.pickedMesh && pointerInfo.pickInfo.pickedPoint && pointerInfo.pickInfo.ray && pickPredicate(pointerInfo.pickInfo.pickedMesh)) {
+                if (
+                    this.startAndReleaseDragOnPointerEvents &&
+                    !this.dragging &&
+                    pointerInfo.pickInfo &&
+                    pointerInfo.pickInfo.hit &&
+                    pointerInfo.pickInfo.pickedMesh &&
+                    pointerInfo.pickInfo.pickedPoint &&
+                    pointerInfo.pickInfo.ray &&
+                    pickPredicate(pointerInfo.pickInfo.pickedMesh)
+                ) {
                     this._startDrag((<IPointerEvent>pointerInfo.event).pointerId, pointerInfo.pickInfo.ray, pointerInfo.pickInfo.pickedPoint);
                 }
             } else if (pointerInfo.type == PointerEventTypes.POINTERUP) {
@@ -233,7 +252,7 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
                     this.releaseDrag();
                 }
             } else if (pointerInfo.type == PointerEventTypes.POINTERMOVE) {
-                var pointerId = (<IPointerEvent>pointerInfo.event).pointerId;
+                const pointerId = (<IPointerEvent>pointerInfo.event).pointerId;
 
                 // If drag was started with anyMouseID specified, set pointerID to the next mouse that moved
                 if (this.currentDraggingPointerId === PointerDragBehavior._AnyMouseId && pointerId !== PointerDragBehavior._AnyMouseId) {
@@ -268,16 +287,16 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
                 let needMatrixUpdate = false;
                 PivotTools._RemoveAndStorePivotPoint(this.attachedNode);
                 // Slowly move mesh to avoid jitter
-                this._targetPosition.subtractToRef((this.attachedNode).absolutePosition, this._tmpVector);
+                this._targetPosition.subtractToRef(this.attachedNode.absolutePosition, this._tmpVector);
                 this._tmpVector.scaleInPlace(this.dragDeltaRatio);
-                (this.attachedNode).getAbsolutePosition().addToRef(this._tmpVector, this._tmpVector);
+                this.attachedNode.getAbsolutePosition().addToRef(this._tmpVector, this._tmpVector);
                 if (this.validateDrag(this._tmpVector)) {
-                    (this.attachedNode).setAbsolutePosition(this._tmpVector);
+                    this.attachedNode.setAbsolutePosition(this._tmpVector);
                     needMatrixUpdate = true;
                 }
                 PivotTools._RestorePivotPoint(this.attachedNode);
                 if (needMatrixUpdate) {
-                    (this.attachedNode).computeWorldMatrix();
+                    this.attachedNode.computeWorldMatrix();
                 }
             }
         });
@@ -299,7 +318,11 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
         if (this.detachCameraControls && this._attachedToElement && this._scene.activeCamera && !this._scene.activeCamera.leftCamera) {
             if (this._scene.activeCamera.getClassName() === "ArcRotateCamera") {
                 const arcRotateCamera = this._scene.activeCamera as ArcRotateCamera;
-                arcRotateCamera.attachControl(arcRotateCamera.inputs ? arcRotateCamera.inputs.noPreventDefault : true, arcRotateCamera._useCtrlForPanning, arcRotateCamera._panningMouseButton);
+                arcRotateCamera.attachControl(
+                    arcRotateCamera.inputs ? arcRotateCamera.inputs.noPreventDefault : true,
+                    arcRotateCamera._useCtrlForPanning,
+                    arcRotateCamera._panningMouseButton
+                );
             } else {
                 this._scene.activeCamera.attachControl(this._scene.activeCamera.inputs ? this._scene.activeCamera.inputs.noPreventDefault : true);
             }
@@ -318,7 +341,7 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
     public startDrag(pointerId: number = PointerDragBehavior._AnyMouseId, fromRay?: Ray, startPickedPoint?: Vector3) {
         this._startDrag(pointerId, fromRay, startPickedPoint);
 
-        var lastRay = this._lastPointerRay[pointerId];
+        let lastRay = this._lastPointerRay[pointerId];
         if (pointerId === PointerDragBehavior._AnyMouseId) {
             lastRay = this._lastPointerRay[<any>Object.keys(this._lastPointerRay)[0]];
         }
@@ -347,13 +370,13 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
 
         this._updateDragPlanePosition(this._startDragRay, startPickedPoint ? startPickedPoint : this._tmpVector);
 
-        var pickedPoint = this._pickWithRayOnDragPlane(this._startDragRay);
+        const pickedPoint = this._pickWithRayOnDragPlane(this._startDragRay);
         if (pickedPoint) {
             this.dragging = true;
             this.currentDraggingPointerId = pointerId;
             this.lastDragPosition.copyFrom(pickedPoint);
             this.onDragStartObservable.notifyObservers({ dragPlanePoint: pickedPoint, pointerId: this.currentDraggingPointerId });
-            this._targetPosition.copyFrom((this.attachedNode).getAbsolutePosition());
+            this._targetPosition.copyFrom(this.attachedNode.getAbsolutePosition());
 
             // Detatch camera controls
             if (this.detachCameraControls && this._scene.activeCamera && this._scene.activeCamera.inputs && !this._scene.activeCamera.leftCamera) {
@@ -371,7 +394,7 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
     private _dragDelta = new Vector3();
     protected _moveDrag(ray: Ray) {
         this._moving = true;
-        var pickedPoint = this._pickWithRayOnDragPlane(ray);
+        const pickedPoint = this._pickWithRayOnDragPlane(ray);
 
         if (pickedPoint) {
             PivotTools._RemoveAndStorePivotPoint(this.attachedNode);
@@ -379,11 +402,13 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
             if (this.updateDragPlane) {
                 this._updateDragPlanePosition(ray, pickedPoint);
             }
-            var dragLength = 0;
+            let dragLength = 0;
             // depending on the drag mode option drag accordingly
             if (this._options.dragAxis) {
                 // Convert local drag axis to world if useObjectOrientationForDragging
-                this.useObjectOrientationForDragging ? Vector3.TransformCoordinatesToRef(this._options.dragAxis, this.attachedNode.getWorldMatrix().getRotationMatrix(), this._worldDragAxis) : this._worldDragAxis.copyFrom(this._options.dragAxis);
+                this.useObjectOrientationForDragging
+                    ? Vector3.TransformCoordinatesToRef(this._options.dragAxis, this.attachedNode.getWorldMatrix().getRotationMatrix(), this._worldDragAxis)
+                    : this._worldDragAxis.copyFrom(this._options.dragAxis);
 
                 // Project delta drag from the drag plane onto the drag axis
                 pickedPoint.subtractToRef(this.lastDragPosition, this._tmpVector);
@@ -394,7 +419,13 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
                 pickedPoint.subtractToRef(this.lastDragPosition, this._dragDelta);
             }
             this._targetPosition.addInPlace(this._dragDelta);
-            this.onDragObservable.notifyObservers({ dragDistance: dragLength, delta: this._dragDelta, dragPlanePoint: pickedPoint, dragPlaneNormal: this._dragPlane.forward, pointerId: this.currentDraggingPointerId });
+            this.onDragObservable.notifyObservers({
+                dragDistance: dragLength,
+                delta: this._dragDelta,
+                dragPlanePoint: pickedPoint,
+                dragPlaneNormal: this._dragPlane.forward,
+                pointerId: this.currentDraggingPointerId,
+            });
             this.lastDragPosition.copyFrom(pickedPoint);
 
             PivotTools._RestorePivotPoint(this.attachedNode);
@@ -407,7 +438,7 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
         }
 
         // Calculate angle between plane normal and ray
-        var angle = Math.acos(Vector3.Dot(this._dragPlane.forward, ray.direction));
+        let angle = Math.acos(Vector3.Dot(this._dragPlane.forward, ray.direction));
         // Correct if ray is casted from oposite side
         if (angle > Math.PI / 2) {
             angle = Math.PI - angle;
@@ -418,23 +449,25 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
             if (this._useAlternatePickedPointAboveMaxDragAngle) {
                 // Invert ray direction along the towards object axis
                 this._tmpVector.copyFrom(ray.direction);
-                (this.attachedNode).absolutePosition.subtractToRef(ray.origin, this._alternatePickedPoint);
+                this.attachedNode.absolutePosition.subtractToRef(ray.origin, this._alternatePickedPoint);
                 this._alternatePickedPoint.normalize();
                 this._alternatePickedPoint.scaleInPlace(this._useAlternatePickedPointAboveMaxDragAngleDragSpeed * Vector3.Dot(this._alternatePickedPoint, this._tmpVector));
                 this._tmpVector.addInPlace(this._alternatePickedPoint);
 
                 // Project resulting vector onto the drag plane and add it to the attached nodes absolute position to get a picked point
-                var dot = Vector3.Dot(this._dragPlane.forward, this._tmpVector);
+                const dot = Vector3.Dot(this._dragPlane.forward, this._tmpVector);
                 this._dragPlane.forward.scaleToRef(-dot, this._alternatePickedPoint);
                 this._alternatePickedPoint.addInPlace(this._tmpVector);
-                this._alternatePickedPoint.addInPlace((this.attachedNode).absolutePosition);
+                this._alternatePickedPoint.addInPlace(this.attachedNode.absolutePosition);
                 return this._alternatePickedPoint;
             } else {
                 return null;
             }
         }
 
-        var pickResult = PointerDragBehavior._planeScene.pickWithRay(ray, (m) => { return m == this._dragPlane; });
+        const pickResult = PointerDragBehavior._planeScene.pickWithRay(ray, (m) => {
+            return m == this._dragPlane;
+        });
         if (pickResult && pickResult.hit && pickResult.pickedMesh && pickResult.pickedPoint) {
             return pickResult.pickedPoint;
         } else {
@@ -451,7 +484,9 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
     private _updateDragPlanePosition(ray: Ray, dragPlanePosition: Vector3) {
         this._pointA.copyFrom(dragPlanePosition);
         if (this._options.dragAxis) {
-            this.useObjectOrientationForDragging ? Vector3.TransformCoordinatesToRef(this._options.dragAxis, this.attachedNode.getWorldMatrix().getRotationMatrix(), this._localAxis) : this._localAxis.copyFrom(this._options.dragAxis);
+            this.useObjectOrientationForDragging
+                ? Vector3.TransformCoordinatesToRef(this._options.dragAxis, this.attachedNode.getWorldMatrix().getRotationMatrix(), this._localAxis)
+                : this._localAxis.copyFrom(this._options.dragAxis);
 
             // Calculate plane normal that is the cross product of local axis and (eye-dragPlanePosition)
             ray.origin.subtractToRef(this._pointA, this._pointC);
@@ -475,7 +510,9 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
             this._pointA.addToRef(this._lookAt, this._lookAt);
             this._dragPlane.lookAt(this._lookAt);
         } else if (this._options.dragPlaneNormal) {
-            this.useObjectOrientationForDragging ? Vector3.TransformCoordinatesToRef(this._options.dragPlaneNormal, this.attachedNode.getWorldMatrix().getRotationMatrix(), this._localAxis) : this._localAxis.copyFrom(this._options.dragPlaneNormal);
+            this.useObjectOrientationForDragging
+                ? Vector3.TransformCoordinatesToRef(this._options.dragPlaneNormal, this.attachedNode.getWorldMatrix().getRotationMatrix(), this._localAxis)
+                : this._localAxis.copyFrom(this._options.dragPlaneNormal);
             this._dragPlane.position.copyFrom(this._pointA);
             this._pointA.addToRef(this._localAxis, this._lookAt);
             this._dragPlane.lookAt(this._lookAt);

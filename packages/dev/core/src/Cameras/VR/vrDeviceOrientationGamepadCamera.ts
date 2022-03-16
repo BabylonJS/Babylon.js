@@ -16,7 +16,6 @@ Node.AddNodeConstructor("VRDeviceOrientationGamepadCamera", (name, scene) => {
  * @see https://doc.babylonjs.com/babylon101/cameras#vr-device-orientation-cameras
  */
 export class VRDeviceOrientationGamepadCamera extends VRDeviceOrientationFreeCamera {
-
     /**
      * Creates a new VRDeviceOrientationGamepadCamera
      * @param name defines camera name

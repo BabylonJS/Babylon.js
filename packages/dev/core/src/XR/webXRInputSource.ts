@@ -106,7 +106,7 @@ export class WebXRInputSource {
         this._tmpVector.set(0, 0, this._scene.useRightHandedSystem ? -1.0 : 1.0);
 
         // for now only load motion controllers if gamepad object available
-        if (this.inputSource.gamepad && this.inputSource.targetRayMode === 'tracked-pointer') {
+        if (this.inputSource.gamepad && this.inputSource.targetRayMode === "tracked-pointer") {
             WebXRMotionControllerManager.GetMotionControllerWithXRInput(inputSource, _scene, this._options.forceControllerProfile).then(
                 (motionController) => {
                     this.motionController = motionController;
@@ -202,7 +202,7 @@ export class WebXRInputSource {
 
         // Update the grip mesh if it exists
         if (this.inputSource.gripSpace && this.grip) {
-            let pose = xrFrame.getPose(this.inputSource.gripSpace, referenceSpace);
+            const pose = xrFrame.getPose(this.inputSource.gripSpace, referenceSpace);
             if (pose) {
                 const pos = pose.transform.position;
                 const orientation = pose.transform.orientation;

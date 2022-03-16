@@ -47,8 +47,8 @@ export class ActionEvent implements IActionEvent {
         /** the original (browser) event that triggered the ActionEvent */
         public sourceEvent?: any,
         /** additional data for the event */
-        public additionalData?: any) {
-    }
+        public additionalData?: any
+    ) {}
 
     /**
      * Helper function to auto-create an ActionEvent from a source mesh.
@@ -58,7 +58,7 @@ export class ActionEvent implements IActionEvent {
      * @returns the new ActionEvent
      */
     public static CreateNew(source: AbstractMesh, evt?: any, additionalData?: any): ActionEvent {
-        var scene = source.getScene();
+        const scene = source.getScene();
         return new ActionEvent(source, scene.pointerX, scene.pointerY, scene.meshUnderPointer || source, evt, additionalData);
     }
 

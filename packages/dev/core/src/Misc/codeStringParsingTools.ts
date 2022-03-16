@@ -1,4 +1,3 @@
-
 /**
  * Extracts the characters between two markers (for eg, between "(" and ")"). The function handles nested markers as well as markers inside strings (delimited by ", ' or `) and comments
  * @param markerOpen opening marker
@@ -10,10 +9,10 @@
 export function ExtractBetweenMarkers(markerOpen: string, markerClose: string, block: string, startIndex: number): number {
     let currPos = startIndex,
         openMarkers = 0,
-        waitForChar = '';
+        waitForChar = "";
 
     while (currPos < block.length) {
-        let currChar = block.charAt(currPos);
+        const currChar = block.charAt(currPos);
 
         if (!waitForChar) {
             switch (currChar) {
@@ -28,13 +27,13 @@ export function ExtractBetweenMarkers(markerOpen: string, markerClose: string, b
                 case "`":
                     waitForChar = currChar;
                     break;
-                case '/':
+                case "/":
                     if (currPos + 1 < block.length) {
                         const nextChar = block.charAt(currPos + 1);
-                        if (nextChar === '/') {
-                            waitForChar = '\n';
-                        } else if (nextChar === '*') {
-                            waitForChar = '*/';
+                        if (nextChar === "/") {
+                            waitForChar = "\n";
+                        } else if (nextChar === "*") {
+                            waitForChar = "*/";
                         }
                     }
                     break;
@@ -42,13 +41,13 @@ export function ExtractBetweenMarkers(markerOpen: string, markerClose: string, b
         } else {
             if (currChar === waitForChar) {
                 if (waitForChar === '"' || waitForChar === "'") {
-                    block.charAt(currPos - 1) !== '\\' && (waitForChar = '');
+                    block.charAt(currPos - 1) !== "\\" && (waitForChar = "");
                 } else {
-                    waitForChar = '';
+                    waitForChar = "";
                 }
-            } else if (waitForChar === '*/' && currChar === '*' && currPos + 1 < block.length) {
-                block.charAt(currPos + 1) === '/' && (waitForChar = '');
-                if (waitForChar === '') {
+            } else if (waitForChar === "*/" && currChar === "*" && currPos + 1 < block.length) {
+                block.charAt(currPos + 1) === "/" && (waitForChar = "");
+                if (waitForChar === "") {
                     currPos++;
                 }
             }
@@ -72,7 +71,7 @@ export function ExtractBetweenMarkers(markerOpen: string, markerClose: string, b
 export function SkipWhitespaces(s: string, index: number): number {
     while (index < s.length) {
         const c = s[index];
-        if (c !== ' ' && c !== '\n' && c !== '\r' && c !== '\t' && c !== '\u000a' && c !== '\u00a0') {
+        if (c !== " " && c !== "\n" && c !== "\r" && c !== "\t" && c !== "\u000a" && c !== "\u00a0") {
             break;
         }
         index++;
@@ -88,10 +87,12 @@ export function SkipWhitespaces(s: string, index: number): number {
  */
 export function IsIdentifierChar(c: string): boolean {
     const v = c.charCodeAt(0);
-    return (v >= 48 && v <= 57) || // 0-9
+    return (
+        (v >= 48 && v <= 57) || // 0-9
         (v >= 65 && v <= 90) || // A-Z
         (v >= 97 && v <= 122) || // a-z
-        (v == 95); // _
+        v == 95
+    ); // _
 }
 
 /**
@@ -101,12 +102,12 @@ export function IsIdentifierChar(c: string): boolean {
  */
 export function RemoveComments(block: string): string {
     let currPos = 0,
-        waitForChar = '',
+        waitForChar = "",
         inComments = false,
         s = [];
 
     while (currPos < block.length) {
-        let currChar = block.charAt(currPos);
+        const currChar = block.charAt(currPos);
 
         if (!waitForChar) {
             switch (currChar) {
@@ -115,14 +116,14 @@ export function RemoveComments(block: string): string {
                 case "`":
                     waitForChar = currChar;
                     break;
-                case '/':
+                case "/":
                     if (currPos + 1 < block.length) {
                         const nextChar = block.charAt(currPos + 1);
-                        if (nextChar === '/') {
-                            waitForChar = '\n';
+                        if (nextChar === "/") {
+                            waitForChar = "\n";
                             inComments = true;
-                        } else if (nextChar === '*') {
-                            waitForChar = '*/';
+                        } else if (nextChar === "*") {
+                            waitForChar = "*/";
                             inComments = true;
                         }
                     }
@@ -134,15 +135,15 @@ export function RemoveComments(block: string): string {
         } else {
             if (currChar === waitForChar) {
                 if (waitForChar === '"' || waitForChar === "'") {
-                    block.charAt(currPos - 1) !== '\\' && (waitForChar = '');
+                    block.charAt(currPos - 1) !== "\\" && (waitForChar = "");
                     s.push(currChar);
                 } else {
-                    waitForChar = '';
+                    waitForChar = "";
                     inComments = false;
                 }
-            } else if (waitForChar === '*/' && currChar === '*' && currPos + 1 < block.length) {
-                block.charAt(currPos + 1) === '/' && (waitForChar = '');
-                if (waitForChar === '') {
+            } else if (waitForChar === "*/" && currChar === "*" && currPos + 1 < block.length) {
+                block.charAt(currPos + 1) === "/" && (waitForChar = "");
+                if (waitForChar === "") {
                     inComments = false;
                     currPos++;
                 }
@@ -156,7 +157,7 @@ export function RemoveComments(block: string): string {
         currPos++;
     }
 
-    return s.join('');
+    return s.join("");
 }
 
 /**
@@ -180,5 +181,5 @@ export function FindBackward(s: string, index: number, c: string): number {
  * @returns escaped string
  */
 export function EscapeRegExp(s: string): string {
-    return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }

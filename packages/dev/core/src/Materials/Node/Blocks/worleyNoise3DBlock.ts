@@ -1,10 +1,10 @@
-import { NodeMaterialBlock } from '../nodeMaterialBlock';
-import { NodeMaterialBlockConnectionPointTypes } from '../Enums/nodeMaterialBlockConnectionPointTypes';
-import { NodeMaterialBuildState } from '../nodeMaterialBuildState';
-import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint';
-import { NodeMaterialBlockTargets } from '../Enums/nodeMaterialBlockTargets';
-import { RegisterClass } from '../../../Misc/typeStore';
-import { Scene } from '../../../scene';
+import { NodeMaterialBlock } from "../nodeMaterialBlock";
+import { NodeMaterialBlockConnectionPointTypes } from "../Enums/nodeMaterialBlockConnectionPointTypes";
+import { NodeMaterialBuildState } from "../nodeMaterialBuildState";
+import { NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
+import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
+import { RegisterClass } from "../../../Misc/typeStore";
+import { Scene } from "../../../scene";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../nodeMaterialDecorator";
 
 /**
@@ -19,7 +19,7 @@ import { editableInPropertyPage, PropertyTypeForEdition } from "../nodeMaterialD
 
 export class WorleyNoise3DBlock extends NodeMaterialBlock {
     /** Gets or sets a boolean indicating that normal should be inverted on X axis */
-    @editableInPropertyPage("Use Manhattan Distance", PropertyTypeForEdition.Boolean, "PROPERTIES", { "notifiers": { "update": false } })
+    @editableInPropertyPage("Use Manhattan Distance", PropertyTypeForEdition.Boolean, "PROPERTIES", { notifiers: { update: false } })
     public manhattanDistance = false;
 
     /**
@@ -68,14 +68,14 @@ export class WorleyNoise3DBlock extends NodeMaterialBlock {
     /**
      * Gets the x component
      */
-     public get x(): NodeMaterialConnectionPoint {
+    public get x(): NodeMaterialConnectionPoint {
         return this._outputs[1];
     }
 
     /**
      * Gets the y component
      */
-     public get y(): NodeMaterialConnectionPoint {
+    public get y(): NodeMaterialConnectionPoint {
         return this._outputs[2];
     }
 
@@ -242,7 +242,7 @@ export class WorleyNoise3DBlock extends NodeMaterialBlock {
         functionString += `    return sqrt(d11.xy); // F1, F2\r\n`;
         functionString += `}\r\n\r\n`;
 
-        state._emitFunction('worley3D', functionString, '// Worley3D');
+        state._emitFunction("worley3D", functionString, "// Worley3D");
 
         const tempVariable = state._getFreeVariableName("worleyTemp");
 
@@ -265,7 +265,7 @@ export class WorleyNoise3DBlock extends NodeMaterialBlock {
      * Exposes the properties to the UI?
      */
     protected _dumpPropertiesCode() {
-        var codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.manhattanDistance = ${this.manhattanDistance};\r\n`;
+        const codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.manhattanDistance = ${this.manhattanDistance};\r\n`;
 
         return codeString;
     }
@@ -273,7 +273,7 @@ export class WorleyNoise3DBlock extends NodeMaterialBlock {
      * Exposes the properties to the Serialize?
      */
     public serialize(): any {
-        let serializationObject = super.serialize();
+        const serializationObject = super.serialize();
 
         serializationObject.manhattanDistance = this.manhattanDistance;
 
@@ -281,6 +281,9 @@ export class WorleyNoise3DBlock extends NodeMaterialBlock {
     }
     /**
      * Exposes the properties to the deserialize?
+     * @param serializationObject
+     * @param scene
+     * @param rootUrl
      */
     public _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
         super._deserialize(serializationObject, scene, rootUrl);

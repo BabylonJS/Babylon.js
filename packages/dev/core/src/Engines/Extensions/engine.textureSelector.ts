@@ -1,5 +1,5 @@
-import { Nullable } from '../../types';
-import { Engine } from '../engine';
+import { Nullable } from "../../types";
+import { Engine } from "../engine";
 
 declare module "../../Engines/engine" {
     export interface Engine {
@@ -53,17 +53,17 @@ declare module "../../Engines/engine" {
 
 function transformTextureUrl(this: Engine, url: string): string {
     const excludeFn = (entry: string) => {
-        const strRegExPattern: string = '\\b' + entry + '\\b';
-        return (url && (url === entry || url.match(new RegExp(strRegExPattern, 'g'))));
+        const strRegExPattern: string = "\\b" + entry + "\\b";
+        return url && (url === entry || url.match(new RegExp(strRegExPattern, "g")));
     };
 
     if (this._excludedCompressedTextures && this._excludedCompressedTextures.some(excludeFn)) {
         return url;
     }
 
-    const lastDot = url.lastIndexOf('.');
-    const lastQuestionMark = url.lastIndexOf('?');
-    const querystring = lastQuestionMark > -1 ? url.substring(lastQuestionMark, url.length) : '';
+    const lastDot = url.lastIndexOf(".");
+    const lastQuestionMark = url.lastIndexOf("?");
+    const querystring = lastQuestionMark > -1 ? url.substring(lastQuestionMark, url.length) : "";
     return (lastDot > -1 ? url.substring(0, lastDot) : url) + this._textureFormatInUse + querystring;
 }
 
@@ -75,15 +75,25 @@ Object.defineProperty(Engine.prototype, "texturesSupported", {
         // Likely no hardware which supports both PVR & DXT, so order matters little.
         // ETC2 is newer and handles ETC1 (no alpha capability), so check for first.
         const texturesSupported = new Array<string>();
-        if (this._caps.astc) { texturesSupported.push('-astc.ktx'); }
-        if (this._caps.s3tc) { texturesSupported.push('-dxt.ktx'); }
-        if (this._caps.pvrtc) { texturesSupported.push('-pvrtc.ktx'); }
-        if (this._caps.etc2) { texturesSupported.push('-etc2.ktx'); }
-        if (this._caps.etc1) { texturesSupported.push('-etc1.ktx'); }
+        if (this._caps.astc) {
+            texturesSupported.push("-astc.ktx");
+        }
+        if (this._caps.s3tc) {
+            texturesSupported.push("-dxt.ktx");
+        }
+        if (this._caps.pvrtc) {
+            texturesSupported.push("-pvrtc.ktx");
+        }
+        if (this._caps.etc2) {
+            texturesSupported.push("-etc2.ktx");
+        }
+        if (this._caps.etc1) {
+            texturesSupported.push("-etc1.ktx");
+        }
         return texturesSupported;
     },
     enumerable: true,
-    configurable: true
+    configurable: true,
 });
 
 Object.defineProperty(Engine.prototype, "textureFormatInUse", {
@@ -91,7 +101,7 @@ Object.defineProperty(Engine.prototype, "textureFormatInUse", {
         return this._textureFormatInUse || null;
     },
     enumerable: true,
-    configurable: true
+    configurable: true,
 });
 
 Engine.prototype.setCompressedTextureExclusions = function (skippedFiles: Array<string>): void {
@@ -104,7 +114,7 @@ Engine.prototype.setTextureFormatToUse = function (formatsAvailable: Array<strin
         for (let j = 0, len2 = formatsAvailable.length; j < len2; j++) {
             if (texturesSupported[i] === formatsAvailable[j].toLowerCase()) {
                 this._transformTextureUrl = transformTextureUrl.bind(this);
-                return this._textureFormatInUse = texturesSupported[i];
+                return (this._textureFormatInUse = texturesSupported[i]);
             }
         }
     }

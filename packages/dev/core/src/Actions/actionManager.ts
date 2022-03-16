@@ -12,7 +12,7 @@ import { IActionEvent } from "../Actions/actionEvent";
 import { Logger } from "../Misc/logger";
 import { DeepCopier } from "../Misc/deepCopier";
 import { GetClass } from "../Misc/typeStore";
-import { AbstractActionManager } from './abstractActionManager';
+import { AbstractActionManager } from "./abstractActionManager";
 import { Constants } from "../Engines/constants";
 
 /**
@@ -146,10 +146,10 @@ export class ActionManager extends AbstractActionManager {
      * Releases all associated resources
      */
     public dispose(): void {
-        var index = this._scene.actionManagers.indexOf(this);
+        const index = this._scene.actionManagers.indexOf(this);
 
-        for (var i = 0; i < this.actions.length; i++) {
-            var action = this.actions[i];
+        for (let i = 0; i < this.actions.length; i++) {
+            const action = this.actions[i];
             ActionManager.Triggers[action.trigger]--;
             if (ActionManager.Triggers[action.trigger] === 0) {
                 delete ActionManager.Triggers[action.trigger];
@@ -175,8 +175,8 @@ export class ActionManager extends AbstractActionManager {
      * @return a boolean indicating whether one (or more) of the triggers is handled
      */
     public hasSpecificTriggers(triggers: number[]): boolean {
-        for (var index = 0; index < this.actions.length; index++) {
-            var action = this.actions[index];
+        for (let index = 0; index < this.actions.length; index++) {
+            const action = this.actions[index];
 
             if (triggers.indexOf(action.trigger) > -1) {
                 return true;
@@ -194,8 +194,8 @@ export class ActionManager extends AbstractActionManager {
      * @return a boolean indicating whether one (or more) of the triggers is handled
      */
     public hasSpecificTriggers2(triggerA: number, triggerB: number): boolean {
-        for (var index = 0; index < this.actions.length; index++) {
-            var action = this.actions[index];
+        for (let index = 0; index < this.actions.length; index++) {
+            const action = this.actions[index];
 
             if (triggerA == action.trigger || triggerB == action.trigger) {
                 return true;
@@ -212,8 +212,8 @@ export class ActionManager extends AbstractActionManager {
      * @return whether the trigger is handled
      */
     public hasSpecificTrigger(trigger: number, parameterPredicate?: (parameter: any) => boolean): boolean {
-        for (var index = 0; index < this.actions.length; index++) {
-            var action = this.actions[index];
+        for (let index = 0; index < this.actions.length; index++) {
+            const action = this.actions[index];
 
             if (action.trigger === trigger) {
                 if (parameterPredicate) {
@@ -233,8 +233,8 @@ export class ActionManager extends AbstractActionManager {
      * Does this action manager has pointer triggers
      */
     public get hasPointerTriggers(): boolean {
-        for (var index = 0; index < this.actions.length; index++) {
-            var action = this.actions[index];
+        for (let index = 0; index < this.actions.length; index++) {
+            const action = this.actions[index];
 
             if (action.trigger >= ActionManager.OnPickTrigger && action.trigger <= ActionManager.OnPointerOutTrigger) {
                 return true;
@@ -248,8 +248,8 @@ export class ActionManager extends AbstractActionManager {
      * Does this action manager has pick triggers
      */
     public get hasPickTriggers(): boolean {
-        for (var index = 0; index < this.actions.length; index++) {
-            var action = this.actions[index];
+        for (let index = 0; index < this.actions.length; index++) {
+            const action = this.actions[index];
 
             if (action.trigger >= ActionManager.OnPickTrigger && action.trigger <= ActionManager.OnPickUpTrigger) {
                 return true;
@@ -276,8 +276,7 @@ export class ActionManager extends AbstractActionManager {
 
         if (ActionManager.Triggers[action.trigger]) {
             ActionManager.Triggers[action.trigger]++;
-        }
-        else {
+        } else {
             ActionManager.Triggers[action.trigger] = 1;
         }
 
@@ -293,7 +292,7 @@ export class ActionManager extends AbstractActionManager {
      * @return a boolean indicating whether the action has been unregistered
      */
     public unregisterAction(action: IAction): Boolean {
-        var index = this.actions.indexOf(action);
+        const index = this.actions.indexOf(action);
         if (index !== -1) {
             this.actions.splice(index, 1);
             ActionManager.Triggers[action.trigger] -= 1;
@@ -312,24 +311,23 @@ export class ActionManager extends AbstractActionManager {
      * @param evt defines the event details to be processed
      */
     public processTrigger(trigger: number, evt?: IActionEvent): void {
-        for (var index = 0; index < this.actions.length; index++) {
-            var action = this.actions[index];
+        for (let index = 0; index < this.actions.length; index++) {
+            const action = this.actions[index];
 
             if (action.trigger === trigger) {
                 if (evt) {
-                    if (trigger === ActionManager.OnKeyUpTrigger
-                        || trigger === ActionManager.OnKeyDownTrigger) {
-                        var parameter = action.getTriggerParameter();
+                    if (trigger === ActionManager.OnKeyUpTrigger || trigger === ActionManager.OnKeyDownTrigger) {
+                        const parameter = action.getTriggerParameter();
 
                         if (parameter && parameter !== evt.sourceEvent.keyCode) {
                             if (!parameter.toLowerCase) {
                                 continue;
                             }
-                            var lowerCase = parameter.toLowerCase();
+                            const lowerCase = parameter.toLowerCase();
 
                             if (lowerCase !== evt.sourceEvent.key) {
-                                var unicode = evt.sourceEvent.charCode ? evt.sourceEvent.charCode : evt.sourceEvent.keyCode;
-                                var actualkey = String.fromCharCode(unicode).toLowerCase();
+                                const unicode = evt.sourceEvent.charCode ? evt.sourceEvent.charCode : evt.sourceEvent.keyCode;
+                                const actualkey = String.fromCharCode(unicode).toLowerCase();
                                 if (actualkey !== lowerCase) {
                                     continue;
                                 }
@@ -343,20 +341,27 @@ export class ActionManager extends AbstractActionManager {
         }
     }
 
-    /** @hidden */
+    /**
+     * @param target
+     * @param propertyPath
+     * @hidden
+     */
     public _getEffectiveTarget(target: any, propertyPath: string): any {
-        var properties = propertyPath.split(".");
+        const properties = propertyPath.split(".");
 
-        for (var index = 0; index < properties.length - 1; index++) {
+        for (let index = 0; index < properties.length - 1; index++) {
             target = target[properties[index]];
         }
 
         return target;
     }
 
-    /** @hidden */
+    /**
+     * @param propertyPath
+     * @hidden
+     */
     public _getProperty(propertyPath: string): string {
-        var properties = propertyPath.split(".");
+        const properties = propertyPath.split(".");
 
         return properties[properties.length - 1];
     }
@@ -367,29 +372,28 @@ export class ActionManager extends AbstractActionManager {
      * @returns a JSON representation of this manager
      */
     public serialize(name: string): any {
-        var root = {
+        const root = {
             children: new Array(),
             name: name,
             type: 3, // Root node
-            properties: new Array() // Empty for root but required
+            properties: new Array(), // Empty for root but required
         };
 
-        for (var i = 0; i < this.actions.length; i++) {
-            var triggerObject = {
+        for (let i = 0; i < this.actions.length; i++) {
+            const triggerObject = {
                 type: 0, // Trigger
                 children: new Array(),
                 name: ActionManager.GetTriggerName(this.actions[i].trigger),
-                properties: new Array()
+                properties: new Array(),
             };
 
-            var triggerOptions = this.actions[i].triggerOptions;
+            const triggerOptions = this.actions[i].triggerOptions;
 
             if (triggerOptions && typeof triggerOptions !== "number") {
                 if (triggerOptions.parameter instanceof Node) {
                     triggerObject.properties.push(Action._GetTargetProperty(triggerOptions.parameter));
-                }
-                else {
-                    var parameter = <any>{};
+                } else {
+                    const parameter = <any>{};
                     DeepCopier.DeepCopy(triggerOptions.parameter, parameter, ["mesh"]);
 
                     if (triggerOptions.parameter && triggerOptions.parameter.mesh) {
@@ -417,39 +421,37 @@ export class ActionManager extends AbstractActionManager {
      * @param scene defines the hosting scene
      */
     public static Parse(parsedActions: any, object: Nullable<AbstractMesh>, scene: Scene): void {
-        var actionManager = new ActionManager(scene);
+        const actionManager = new ActionManager(scene);
         if (object === null) {
             scene.actionManager = actionManager;
-        }
-        else {
+        } else {
             object.actionManager = actionManager;
         }
 
         // instanciate a new object
-        var instanciate = (name: string, params: Array<any>): any => {
+        const instanciate = (name: string, params: Array<any>): any => {
             const internalClassType = GetClass("BABYLON." + name);
             if (internalClassType) {
-                var newInstance: Object = Object.create(internalClassType.prototype);
+                const newInstance: Object = Object.create(internalClassType.prototype);
                 newInstance.constructor.apply(newInstance, params);
                 return newInstance;
             }
         };
 
-        var parseParameter = (name: string, value: string, target: any, propertyPath: Nullable<string>): any => {
+        const parseParameter = (name: string, value: string, target: any, propertyPath: Nullable<string>): any => {
             if (propertyPath === null) {
                 // String, boolean or float
-                var floatValue = parseFloat(value);
+                const floatValue = parseFloat(value);
 
                 if (value === "true" || value === "false") {
                     return value === "true";
-                }
-                else {
+                } else {
                     return isNaN(floatValue) ? value : floatValue;
                 }
             }
 
-            var effectiveTarget = propertyPath.split(".");
-            var values = value.split(",");
+            const effectiveTarget = propertyPath.split(".");
+            const values = value.split(",");
 
             // Get effective Target
             for (var i = 0; i < effectiveTarget.length; i++) {
@@ -457,16 +459,16 @@ export class ActionManager extends AbstractActionManager {
             }
 
             // Return appropriate value with its type
-            if (typeof (target) === "boolean") {
+            if (typeof target === "boolean") {
                 return values[0] === "true";
             }
 
-            if (typeof (target) === "string") {
+            if (typeof target === "string") {
                 return values[0];
             }
 
             // Parameters with multiple values such as Vector3 etc.
-            var split = new Array<number>();
+            const split = new Array<number>();
             for (var i = 0; i < values.length; i++) {
                 split.push(parseFloat(values[i]));
             }
@@ -496,54 +498,47 @@ export class ActionManager extends AbstractActionManager {
                 return;
             }
 
-            var parameters = new Array<any>();
-            var target: any = null;
-            var propertyPath: Nullable<string> = null;
-            var combine = parsedAction.combine && parsedAction.combine.length > 0;
+            const parameters = new Array<any>();
+            let target: any = null;
+            let propertyPath: Nullable<string> = null;
+            const combine = parsedAction.combine && parsedAction.combine.length > 0;
 
             // Parameters
             if (parsedAction.type === 2) {
                 parameters.push(actionManager);
-            }
-            else {
+            } else {
                 parameters.push(trigger);
             }
 
             if (combine) {
-                var actions = new Array<Action>();
-                for (var j = 0; j < parsedAction.combine.length; j++) {
+                const actions = new Array<Action>();
+                for (let j = 0; j < parsedAction.combine.length; j++) {
                     traverse(parsedAction.combine[j], ActionManager.NothingTrigger, condition, action, actions);
                 }
                 parameters.push(actions);
-            }
-            else {
+            } else {
                 for (var i = 0; i < parsedAction.properties.length; i++) {
-                    var value = parsedAction.properties[i].value;
-                    var name = parsedAction.properties[i].name;
-                    var targetType = parsedAction.properties[i].targetType;
+                    let value = parsedAction.properties[i].value;
+                    const name = parsedAction.properties[i].name;
+                    const targetType = parsedAction.properties[i].targetType;
 
                     if (name === "target") {
                         if (targetType !== null && targetType === "SceneProperties") {
                             value = target = scene;
-                        }
-                        else {
+                        } else {
                             value = target = scene.getNodeByName(value);
                         }
-                    }
-                    else if (name === "parent") {
+                    } else if (name === "parent") {
                         value = scene.getNodeByName(value);
-                    }
-                    else if (name === "sound") {
+                    } else if (name === "sound") {
                         // Can not externalize to component, so only checks for the presence off the API.
                         if (scene.getSoundByName) {
                             value = scene.getSoundByName(value);
                         }
-                    }
-                    else if (name !== "propertyPath") {
+                    } else if (name !== "propertyPath") {
                         if (parsedAction.type === 2 && name === "operator") {
                             value = (<any>ValueCondition)[value];
-                        }
-                        else {
+                        } else {
                             value = parseParameter(name, value, target, name === "value" ? propertyPath : null);
                         }
                     } else {
@@ -556,28 +551,26 @@ export class ActionManager extends AbstractActionManager {
 
             if (combineArray === null) {
                 parameters.push(condition);
-            }
-            else {
+            } else {
                 parameters.push(null);
             }
 
             // If interpolate value action
             if (parsedAction.name === "InterpolateValueAction") {
-                var param = parameters[parameters.length - 2];
+                const param = parameters[parameters.length - 2];
                 parameters[parameters.length - 1] = param;
                 parameters[parameters.length - 2] = condition;
             }
 
             // Action or condition(s) and not CombineAction
-            var newAction = instanciate(parsedAction.name, parameters);
+            let newAction = instanciate(parsedAction.name, parameters);
 
             if (newAction instanceof Condition && condition !== null) {
-                var nothing = new DoNothingAction(trigger, condition);
+                const nothing = new DoNothingAction(trigger, condition);
 
                 if (action) {
                     action.then(nothing);
-                }
-                else {
+                } else {
                     actionManager.registerAction(nothing);
                 }
 
@@ -592,13 +585,11 @@ export class ActionManager extends AbstractActionManager {
                     condition = null;
                     if (action) {
                         action.then(newAction);
-                    }
-                    else {
+                    } else {
                         actionManager.registerAction(newAction);
                     }
                 }
-            }
-            else {
+            } else {
                 combineArray.push(newAction);
             }
 
@@ -608,25 +599,24 @@ export class ActionManager extends AbstractActionManager {
         };
 
         // triggers
-        for (var i = 0; i < parsedActions.children.length; i++) {
+        for (let i = 0; i < parsedActions.children.length; i++) {
             var triggerParams: any;
-            var trigger = parsedActions.children[i];
+            const trigger = parsedActions.children[i];
 
             if (trigger.properties.length > 0) {
-                var param = trigger.properties[0].value;
-                var value = trigger.properties[0].targetType === null ? param : scene.getMeshByName(param);
+                const param = trigger.properties[0].value;
+                const value = trigger.properties[0].targetType === null ? param : scene.getMeshByName(param);
 
                 if (value._meshId) {
                     value.mesh = scene.getMeshById(value._meshId);
                 }
 
                 triggerParams = { trigger: (<any>ActionManager)[trigger.name], parameter: value };
-            }
-            else {
+            } else {
                 triggerParams = (<any>ActionManager)[trigger.name];
             }
 
-            for (var j = 0; j < trigger.children.length; j++) {
+            for (let j = 0; j < trigger.children.length; j++) {
                 if (!trigger.detached) {
                     traverse(trigger.children[j], triggerParams, null, null);
                 }
@@ -641,23 +631,40 @@ export class ActionManager extends AbstractActionManager {
      */
     public static GetTriggerName(trigger: number): string {
         switch (trigger) {
-            case 0: return "NothingTrigger";
-            case 1: return "OnPickTrigger";
-            case 2: return "OnLeftPickTrigger";
-            case 3: return "OnRightPickTrigger";
-            case 4: return "OnCenterPickTrigger";
-            case 5: return "OnPickDownTrigger";
-            case 6: return "OnPickUpTrigger";
-            case 7: return "OnLongPressTrigger";
-            case 8: return "OnPointerOverTrigger";
-            case 9: return "OnPointerOutTrigger";
-            case 10: return "OnEveryFrameTrigger";
-            case 11: return "OnIntersectionEnterTrigger";
-            case 12: return "OnIntersectionExitTrigger";
-            case 13: return "OnKeyDownTrigger";
-            case 14: return "OnKeyUpTrigger";
-            case 15: return "OnPickOutTrigger";
-            default: return "";
+            case 0:
+                return "NothingTrigger";
+            case 1:
+                return "OnPickTrigger";
+            case 2:
+                return "OnLeftPickTrigger";
+            case 3:
+                return "OnRightPickTrigger";
+            case 4:
+                return "OnCenterPickTrigger";
+            case 5:
+                return "OnPickDownTrigger";
+            case 6:
+                return "OnPickUpTrigger";
+            case 7:
+                return "OnLongPressTrigger";
+            case 8:
+                return "OnPointerOverTrigger";
+            case 9:
+                return "OnPointerOutTrigger";
+            case 10:
+                return "OnEveryFrameTrigger";
+            case 11:
+                return "OnIntersectionEnterTrigger";
+            case 12:
+                return "OnIntersectionExitTrigger";
+            case 13:
+                return "OnKeyDownTrigger";
+            case 14:
+                return "OnKeyUpTrigger";
+            case 15:
+                return "OnPickOutTrigger";
+            default:
+                return "";
         }
     }
 }

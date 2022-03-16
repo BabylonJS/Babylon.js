@@ -18,7 +18,17 @@ export interface INativeEngine {
     updateDynamicIndexBuffer(buffer: NativeData, bytes: ArrayBuffer, byteOffset: number, byteLength: number, startIndex: number): void;
 
     createVertexBuffer(bytes: ArrayBuffer, byteOffset: number, byteLength: number, dynamic: boolean): NativeData;
-    recordVertexBuffer(vertexArray: NativeData, vertexBuffer: NativeData, location: number, byteOffset: number, byteStride: number, numElements: number, type: number, normalized: boolean, instanceDivisor: number): void;
+    recordVertexBuffer(
+        vertexArray: NativeData,
+        vertexBuffer: NativeData,
+        location: number,
+        byteOffset: number,
+        byteStride: number,
+        numElements: number,
+        type: number,
+        normalized: boolean,
+        instanceDivisor: number
+    ): void;
     updateDynamicVertexBuffer(vertexBuffer: NativeData, bytes: ArrayBuffer, byteOffset: number, byteLength: number): void;
 
     createProgram(vertexShader: string, fragmentShader: string): any;
@@ -28,7 +38,16 @@ export interface INativeEngine {
     createTexture(): WebGLTexture;
     loadTexture(texture: WebGLTexture, data: ArrayBufferView, generateMips: boolean, invertY: boolean, srgb: boolean, onSuccess: () => void, onError: () => void): void;
     loadRawTexture(texture: WebGLTexture, data: ArrayBufferView, width: number, height: number, format: number, generateMips: boolean, invertY: boolean): void;
-    loadRawTexture2DArray(texture: WebGLTexture, data: Nullable<ArrayBufferView>, width: number, height: number, depth: number, format: number, generateMipMaps: boolean, invertY: boolean): void;
+    loadRawTexture2DArray(
+        texture: WebGLTexture,
+        data: Nullable<ArrayBufferView>,
+        width: number,
+        height: number,
+        depth: number,
+        format: number,
+        generateMipMaps: boolean,
+        invertY: boolean
+    ): void;
     loadCubeTexture(texture: WebGLTexture, data: Array<ArrayBufferView>, generateMips: boolean, invertY: boolean, srgb: boolean, onSuccess: () => void, onError: () => void): void;
     loadCubeTextureWithMips(texture: WebGLTexture, data: Array<Array<ArrayBufferView>>, invertY: boolean, srgb: boolean, onSuccess: () => void, onError: () => void): void;
     getTextureWidth(texture: WebGLTexture): number;
@@ -39,7 +58,15 @@ export interface INativeEngine {
     createImageBitmap(data: ArrayBufferView | IImage): ImageBitmap;
     resizeImageBitmap(image: ImageBitmap, bufferWidth: number, bufferHeight: number): Uint8Array;
 
-    createFrameBuffer(texture: WebGLTexture, width: number, height: number, format: number, generateStencilBuffer: boolean, generateDepthBuffer: boolean, generateMips: boolean): WebGLFramebuffer;
+    createFrameBuffer(
+        texture: WebGLTexture,
+        width: number,
+        height: number,
+        format: number,
+        generateStencilBuffer: boolean,
+        generateDepthBuffer: boolean,
+        generateMips: boolean
+    ): WebGLFramebuffer;
 
     getRenderWidth(): number;
     getRenderHeight(): number;
@@ -55,7 +82,7 @@ export interface INativeEngine {
 /** @hidden */
 interface INativeEngineConstructor {
     prototype: INativeEngine;
-    new(): INativeEngine;
+    new (): INativeEngine;
 
     readonly PROTOCOL_VERSION: number;
 
@@ -197,13 +224,13 @@ export interface INativeCamera {
 /** @hidden */
 interface INativeCameraConstructor {
     prototype: INativeCamera;
-    new(): INativeCamera;
+    new (): INativeCamera;
 }
 
 /** @hidden */
 interface INativeCanvasConstructor {
     prototype: ICanvas;
-    new(): ICanvas;
+    new (): ICanvas;
 
     loadTTFAsync(fontName: string, buffer: ArrayBuffer): void;
 }
@@ -211,13 +238,17 @@ interface INativeCanvasConstructor {
 /** @hidden */
 interface INativeImageConstructor {
     prototype: IImage;
-    new(): IImage;
+    new (): IImage;
 }
 
 /** @hidden */
 interface IDeviceInputSystemConstructor {
     prototype: IDeviceInputSystem;
-    new(onDeviceConnected: (deviceType: DeviceType, deviceSlot: number) => void, onDeviceDisconnected: (deviceType: DeviceType, deviceSlot: number) => void, onInputChanged: (deviceType: DeviceType, deviceSlot: number, inputIndex: number, currentState: number) => void): IDeviceInputSystem;
+    new (
+        onDeviceConnected: (deviceType: DeviceType, deviceSlot: number) => void,
+        onDeviceDisconnected: (deviceType: DeviceType, deviceSlot: number) => void,
+        onInputChanged: (deviceType: DeviceType, deviceSlot: number, inputIndex: number, currentState: number) => void
+    ): IDeviceInputSystem;
 }
 
 /** @hidden */
@@ -228,7 +259,7 @@ export interface INativeDataStream {
 /** @hidden */
 interface INativeDataStreamConstructor {
     prototype: INativeDataStream;
-    new(requestFlushCallback: () => void): INativeDataStream;
+    new (requestFlushCallback: () => void): INativeDataStream;
 
     readonly VALIDATION_ENABLED: boolean;
     readonly VALIDATION_UINT_32: number;

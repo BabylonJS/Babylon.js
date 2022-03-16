@@ -1,6 +1,6 @@
-import { Nullable } from '../types';
-import { Effect } from '../Materials/effect';
-import { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, IColor4Like } from '../Maths/math.like';
+import { Nullable } from "../types";
+import { Effect } from "../Materials/effect";
+import { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, IColor4Like } from "../Maths/math.like";
 
 /**
  * Class used to store and describe the pipeline context associated with an effect
@@ -28,7 +28,16 @@ export interface IPipelineContext {
     _handlesSpectorRebuildCallback(onCompiled: (compiledObject: any) => void): void;
 
     /** @hidden */
-    _fillEffectInformation(effect: Effect, uniformBuffersNames: { [key: string]: number }, uniformsNames: string[], uniforms: { [key: string]: Nullable<WebGLUniformLocation> }, samplerList: string[], samplers: { [key: string]: number }, attributesNames: string[], attributes: number[]): void;
+    _fillEffectInformation(
+        effect: Effect,
+        uniformBuffersNames: { [key: string]: number },
+        uniformsNames: string[],
+        uniforms: { [key: string]: Nullable<WebGLUniformLocation> },
+        samplerList: string[],
+        samplers: { [key: string]: number },
+        attributesNames: string[],
+        attributes: number[]
+    ): void;
 
     /** Releases the resources associated with the pipeline. */
     dispose(): void;

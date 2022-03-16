@@ -52,8 +52,8 @@ declare module "../scene" {
         deleteCompoundImpostor(compound: any): void;
 
         /**
-        * An event triggered when physic simulation is about to be run
-        */
+         * An event triggered when physic simulation is about to be run
+         */
         onBeforePhysicsObservable: Observable<Scene>;
 
         /**
@@ -124,7 +124,7 @@ Scene.prototype.isPhysicsEnabled = function (): boolean {
  * @param compound defines the compound to delete
  */
 Scene.prototype.deleteCompoundImpostor = function (compound: any): void {
-    var mesh: AbstractMesh = compound.parts[0].mesh;
+    const mesh: AbstractMesh = compound.parts[0].mesh;
 
     if (mesh.physicsImpostor) {
         mesh.physicsImpostor.dispose(/*true*/);
@@ -132,10 +132,13 @@ Scene.prototype.deleteCompoundImpostor = function (compound: any): void {
     }
 };
 
-/** @hidden */
+/**
+ * @param step
+ * @hidden
+ */
 Scene.prototype._advancePhysicsEngineStep = function (step: number) {
     if (this._physicsEngine) {
-        let subTime = this._physicsEngine.getSubTimeStep();
+        const subTime = this._physicsEngine.getSubTimeStep();
         if (subTime > 0) {
             this._physicsTimeAccumulator += step;
             while (this._physicsTimeAccumulator > subTime) {
@@ -219,7 +222,7 @@ Object.defineProperty(AbstractMesh.prototype, "physicsImpostor", {
         }
     },
     enumerable: true,
-    configurable: true
+    configurable: true,
 });
 
 /**
@@ -262,7 +265,7 @@ AbstractMesh.prototype.setPhysicsLinkWith = function (otherMesh: Mesh, pivot1: V
     this.physicsImpostor.createJoint(otherMesh.physicsImpostor, PhysicsJoint.HingeJoint, {
         mainPivot: pivot1,
         connectedPivot: pivot2,
-        nativeParams: options
+        nativeParams: options,
     });
     return this;
 };
@@ -303,8 +306,7 @@ export class PhysicsEngineSceneComponent implements ISceneComponent {
     /**
      * Registers the component in a given scene
      */
-    public register(): void {
-    }
+    public register(): void {}
 
     /**
      * Rebuilds the elements related to this component in case of

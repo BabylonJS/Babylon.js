@@ -16,7 +16,6 @@ import { PhysicsImpostor } from "./physicsImpostor";
  * @see https://doc.babylonjs.com/how_to/using_the_physics_engine#further-functionality-of-the-impostor-class
  */
 export class PhysicsHelper {
-
     private _scene: Scene;
     private _physicsEngine: Nullable<IPhysicsEngine>;
 
@@ -29,7 +28,7 @@ export class PhysicsHelper {
         this._physicsEngine = this._scene.getPhysicsEngine();
 
         if (!this._physicsEngine) {
-            Logger.Warn('Physics engine not enabled. Please enable the physics before you can use the methods.');
+            Logger.Warn("Physics engine not enabled. Please enable the physics before you can use the methods.");
             return;
         }
     }
@@ -42,29 +41,34 @@ export class PhysicsHelper {
      * @param falloff possible options: Constant & Linear. Defaults to Constant
      * @returns A physics radial explosion event, or null
      */
-    public applyRadialExplosionImpulse(origin: Vector3, radiusOrEventOptions: number | PhysicsRadialExplosionEventOptions, strength?: number, falloff?: PhysicsRadialImpulseFalloff): Nullable<PhysicsRadialExplosionEvent> {
+    public applyRadialExplosionImpulse(
+        origin: Vector3,
+        radiusOrEventOptions: number | PhysicsRadialExplosionEventOptions,
+        strength?: number,
+        falloff?: PhysicsRadialImpulseFalloff
+    ): Nullable<PhysicsRadialExplosionEvent> {
         if (!this._physicsEngine) {
-            Logger.Warn('Physics engine not enabled. Please enable the physics before you call this method.');
+            Logger.Warn("Physics engine not enabled. Please enable the physics before you call this method.");
             return null;
         }
 
-        var impostors = this._physicsEngine.getImpostors();
+        const impostors = this._physicsEngine.getImpostors();
         if (impostors.length === 0) {
             return null;
         }
 
-        if (typeof radiusOrEventOptions === 'number') {
+        if (typeof radiusOrEventOptions === "number") {
             radiusOrEventOptions = new PhysicsRadialExplosionEventOptions();
-            radiusOrEventOptions.radius = <number><any>radiusOrEventOptions;
+            radiusOrEventOptions.radius = <number>(<any>radiusOrEventOptions);
             radiusOrEventOptions.strength = strength || radiusOrEventOptions.strength;
             radiusOrEventOptions.falloff = falloff || radiusOrEventOptions.falloff;
         }
 
-        var event = new PhysicsRadialExplosionEvent(this._scene, radiusOrEventOptions);
-        var affectedImpostorsWithData = Array<PhysicsAffectedImpostorWithData>();
+        const event = new PhysicsRadialExplosionEvent(this._scene, radiusOrEventOptions);
+        const affectedImpostorsWithData = Array<PhysicsAffectedImpostorWithData>();
 
         impostors.forEach((impostor) => {
-            var impostorHitData = event.getImpostorHitData(impostor, origin);
+            const impostorHitData = event.getImpostorHitData(impostor, origin);
             if (!impostorHitData) {
                 return;
             }
@@ -92,29 +96,34 @@ export class PhysicsHelper {
      * @param falloff possible options: Constant & Linear. Defaults to Constant
      * @returns A physics radial explosion event, or null
      */
-    public applyRadialExplosionForce(origin: Vector3, radiusOrEventOptions: number | PhysicsRadialExplosionEventOptions, strength?: number, falloff?: PhysicsRadialImpulseFalloff): Nullable<PhysicsRadialExplosionEvent> {
+    public applyRadialExplosionForce(
+        origin: Vector3,
+        radiusOrEventOptions: number | PhysicsRadialExplosionEventOptions,
+        strength?: number,
+        falloff?: PhysicsRadialImpulseFalloff
+    ): Nullable<PhysicsRadialExplosionEvent> {
         if (!this._physicsEngine) {
-            Logger.Warn('Physics engine not enabled. Please enable the physics before you call the PhysicsHelper.');
+            Logger.Warn("Physics engine not enabled. Please enable the physics before you call the PhysicsHelper.");
             return null;
         }
 
-        var impostors = this._physicsEngine.getImpostors();
+        const impostors = this._physicsEngine.getImpostors();
         if (impostors.length === 0) {
             return null;
         }
 
-        if (typeof radiusOrEventOptions === 'number') {
+        if (typeof radiusOrEventOptions === "number") {
             radiusOrEventOptions = new PhysicsRadialExplosionEventOptions();
-            radiusOrEventOptions.radius = <number><any>radiusOrEventOptions;
+            radiusOrEventOptions.radius = <number>(<any>radiusOrEventOptions);
             radiusOrEventOptions.strength = strength || radiusOrEventOptions.strength;
             radiusOrEventOptions.falloff = falloff || radiusOrEventOptions.falloff;
         }
 
-        var event = new PhysicsRadialExplosionEvent(this._scene, radiusOrEventOptions);
-        var affectedImpostorsWithData = Array<PhysicsAffectedImpostorWithData>();
+        const event = new PhysicsRadialExplosionEvent(this._scene, radiusOrEventOptions);
+        const affectedImpostorsWithData = Array<PhysicsAffectedImpostorWithData>();
 
         impostors.forEach((impostor) => {
-            var impostorHitData = event.getImpostorHitData(impostor, origin);
+            const impostorHitData = event.getImpostorHitData(impostor, origin);
             if (!impostorHitData) {
                 return;
             }
@@ -142,25 +151,30 @@ export class PhysicsHelper {
      * @param falloff possible options: Constant & Linear. Defaults to Constant
      * @returns A physics gravitational field event, or null
      */
-    public gravitationalField(origin: Vector3, radiusOrEventOptions: number | PhysicsRadialExplosionEventOptions, strength?: number, falloff?: PhysicsRadialImpulseFalloff): Nullable<PhysicsGravitationalFieldEvent> {
+    public gravitationalField(
+        origin: Vector3,
+        radiusOrEventOptions: number | PhysicsRadialExplosionEventOptions,
+        strength?: number,
+        falloff?: PhysicsRadialImpulseFalloff
+    ): Nullable<PhysicsGravitationalFieldEvent> {
         if (!this._physicsEngine) {
-            Logger.Warn('Physics engine not enabled. Please enable the physics before you call the PhysicsHelper.');
+            Logger.Warn("Physics engine not enabled. Please enable the physics before you call the PhysicsHelper.");
             return null;
         }
 
-        var impostors = this._physicsEngine.getImpostors();
+        const impostors = this._physicsEngine.getImpostors();
         if (impostors.length === 0) {
             return null;
         }
 
-        if (typeof radiusOrEventOptions === 'number') {
+        if (typeof radiusOrEventOptions === "number") {
             radiusOrEventOptions = new PhysicsRadialExplosionEventOptions();
-            radiusOrEventOptions.radius = <number><any>radiusOrEventOptions;
+            radiusOrEventOptions.radius = <number>(<any>radiusOrEventOptions);
             radiusOrEventOptions.strength = strength || radiusOrEventOptions.strength;
             radiusOrEventOptions.falloff = falloff || radiusOrEventOptions.falloff;
         }
 
-        var event = new PhysicsGravitationalFieldEvent(this, this._scene, origin, radiusOrEventOptions);
+        const event = new PhysicsGravitationalFieldEvent(this, this._scene, origin, radiusOrEventOptions);
 
         event.dispose(false);
 
@@ -176,9 +190,15 @@ export class PhysicsHelper {
      * @param updraftMode possible options: Center & Perpendicular. Defaults to Center
      * @returns A physics updraft event, or null
      */
-    public updraft(origin: Vector3, radiusOrEventOptions: number | PhysicsUpdraftEventOptions, strength?: number, height?: number, updraftMode?: PhysicsUpdraftMode): Nullable<PhysicsUpdraftEvent> {
+    public updraft(
+        origin: Vector3,
+        radiusOrEventOptions: number | PhysicsUpdraftEventOptions,
+        strength?: number,
+        height?: number,
+        updraftMode?: PhysicsUpdraftMode
+    ): Nullable<PhysicsUpdraftEvent> {
         if (!this._physicsEngine) {
-            Logger.Warn('Physics engine not enabled. Please enable the physics before you call the PhysicsHelper.');
+            Logger.Warn("Physics engine not enabled. Please enable the physics before you call the PhysicsHelper.");
             return null;
         }
 
@@ -186,15 +206,15 @@ export class PhysicsHelper {
             return null;
         }
 
-        if (typeof radiusOrEventOptions === 'number') {
+        if (typeof radiusOrEventOptions === "number") {
             radiusOrEventOptions = new PhysicsUpdraftEventOptions();
-            radiusOrEventOptions.radius = <number><any>radiusOrEventOptions;
+            radiusOrEventOptions.radius = <number>(<any>radiusOrEventOptions);
             radiusOrEventOptions.strength = strength || radiusOrEventOptions.strength;
             radiusOrEventOptions.height = height || radiusOrEventOptions.height;
             radiusOrEventOptions.updraftMode = updraftMode || radiusOrEventOptions.updraftMode;
         }
 
-        var event = new PhysicsUpdraftEvent(this._scene, origin, radiusOrEventOptions);
+        const event = new PhysicsUpdraftEvent(this._scene, origin, radiusOrEventOptions);
 
         event.dispose(false);
 
@@ -212,7 +232,7 @@ export class PhysicsHelper {
      */
     public vortex(origin: Vector3, radiusOrEventOptions: number | PhysicsVortexEventOptions, strength?: number, height?: number): Nullable<PhysicsVortexEvent> {
         if (!this._physicsEngine) {
-            Logger.Warn('Physics engine not enabled. Please enable the physics before you call the PhysicsHelper.');
+            Logger.Warn("Physics engine not enabled. Please enable the physics before you call the PhysicsHelper.");
             return null;
         }
 
@@ -220,14 +240,14 @@ export class PhysicsHelper {
             return null;
         }
 
-        if (typeof radiusOrEventOptions === 'number') {
+        if (typeof radiusOrEventOptions === "number") {
             radiusOrEventOptions = new PhysicsVortexEventOptions();
-            radiusOrEventOptions.radius = <number><any>radiusOrEventOptions;
+            radiusOrEventOptions.radius = <number>(<any>radiusOrEventOptions);
             radiusOrEventOptions.strength = strength || radiusOrEventOptions.strength;
             radiusOrEventOptions.height = height || radiusOrEventOptions.height;
         }
 
-        var event = new PhysicsVortexEvent(this._scene, origin, radiusOrEventOptions);
+        const event = new PhysicsVortexEvent(this._scene, origin, radiusOrEventOptions);
 
         event.dispose(false);
 
@@ -239,7 +259,6 @@ export class PhysicsHelper {
  * Represents a physics radial explosion event
  */
 class PhysicsRadialExplosionEvent {
-
     private _sphere: Mesh; // create a sphere, so we can get the intersecting meshes inside
     private _dataFetched: boolean = false; // check if the data has been fetched. If not, do cleanup
 
@@ -249,7 +268,7 @@ class PhysicsRadialExplosionEvent {
      * @param _options The options for the vortex event
      */
     constructor(private _scene: Scene, private _options: PhysicsRadialExplosionEventOptions) {
-        this._options = { ...(new PhysicsRadialExplosionEventOptions()), ...this._options };
+        this._options = { ...new PhysicsRadialExplosionEventOptions(), ...this._options };
     }
 
     /**
@@ -279,32 +298,31 @@ class PhysicsRadialExplosionEvent {
             return null;
         }
 
-        if (impostor.object.getClassName() !== 'Mesh' && impostor.object.getClassName() !== 'InstancedMesh') {
+        if (impostor.object.getClassName() !== "Mesh" && impostor.object.getClassName() !== "InstancedMesh") {
             return null;
         }
 
-        var impostorObjectCenter = impostor.getObjectCenter();
-        var direction = impostorObjectCenter.subtract(origin);
+        const impostorObjectCenter = impostor.getObjectCenter();
+        const direction = impostorObjectCenter.subtract(origin);
 
-        var ray = new Ray(origin, direction, this._options.radius);
-        var hit = ray.intersectsMesh(<AbstractMesh>impostor.object);
+        const ray = new Ray(origin, direction, this._options.radius);
+        const hit = ray.intersectsMesh(<AbstractMesh>impostor.object);
 
-        var contactPoint = hit.pickedPoint;
+        const contactPoint = hit.pickedPoint;
         if (!contactPoint) {
             return null;
         }
 
-        var distanceFromOrigin = Vector3.Distance(origin, contactPoint);
+        const distanceFromOrigin = Vector3.Distance(origin, contactPoint);
 
         if (distanceFromOrigin > this._options.radius) {
             return null;
         }
 
-        var multiplier = this._options.falloff === PhysicsRadialImpulseFalloff.Constant
-            ? this._options.strength
-            : this._options.strength * (1 - (distanceFromOrigin / this._options.radius));
+        const multiplier =
+            this._options.falloff === PhysicsRadialImpulseFalloff.Constant ? this._options.strength : this._options.strength * (1 - distanceFromOrigin / this._options.radius);
 
-        var force = direction.multiplyByFloats(multiplier, multiplier, multiplier);
+        const force = direction.multiplyByFloats(multiplier, multiplier, multiplier);
 
         return { force: force, contactPoint: contactPoint, distanceFromOrigin: distanceFromOrigin };
     }
@@ -345,7 +363,7 @@ class PhysicsRadialExplosionEvent {
     }
 
     private _intersectsWithSphere(impostor: PhysicsImpostor, origin: Vector3, radius: number): boolean {
-        var impostorObject = <AbstractMesh>impostor.object;
+        const impostorObject = <AbstractMesh>impostor.object;
 
         this._prepareSphere();
 
@@ -356,14 +374,12 @@ class PhysicsRadialExplosionEvent {
 
         return this._sphere.intersectsMesh(impostorObject, true);
     }
-
 }
 
 /**
  * Represents a gravitational field event
  */
 class PhysicsGravitationalFieldEvent {
-
     private _tickCallback: any;
     private _sphere: Mesh;
     private _dataFetched: boolean = false; // check if the has been fetched the data. If not, do cleanup
@@ -376,7 +392,7 @@ class PhysicsGravitationalFieldEvent {
      * @param _options The options for the vortex event
      */
     constructor(private _physicsHelper: PhysicsHelper, private _scene: Scene, private _origin: Vector3, private _options: PhysicsRadialExplosionEventOptions) {
-        this._options = { ...(new PhysicsRadialExplosionEventOptions()), ...this._options };
+        this._options = { ...new PhysicsRadialExplosionEventOptions(), ...this._options };
 
         this._tickCallback = this._tick.bind(this);
 
@@ -431,20 +447,18 @@ class PhysicsGravitationalFieldEvent {
         if (this._sphere) {
             this._physicsHelper.applyRadialExplosionForce(this._origin, this._options);
         } else {
-            var radialExplosionEvent = this._physicsHelper.applyRadialExplosionForce(this._origin, this._options);
+            const radialExplosionEvent = this._physicsHelper.applyRadialExplosionForce(this._origin, this._options);
             if (radialExplosionEvent) {
-                this._sphere = <Mesh>radialExplosionEvent.getData().sphere.clone('radialExplosionEventSphereClone');
+                this._sphere = <Mesh>radialExplosionEvent.getData().sphere.clone("radialExplosionEventSphereClone");
             }
         }
     }
-
 }
 
 /**
  * Represents a physics updraft event
  */
 class PhysicsUpdraftEvent {
-
     private _physicsEngine: PhysicsEngine;
     private _originTop: Vector3 = Vector3.Zero(); // the most upper part of the cylinder
     private _originDirection: Vector3 = Vector3.Zero(); // used if the updraftMode is perpendicular
@@ -461,7 +475,7 @@ class PhysicsUpdraftEvent {
      */
     constructor(private _scene: Scene, private _origin: Vector3, private _options: PhysicsUpdraftEventOptions) {
         this._physicsEngine = <PhysicsEngine>this._scene.getPhysicsEngine();
-        this._options = { ...(new PhysicsUpdraftEventOptions()), ...this._options };
+        this._options = { ...new PhysicsUpdraftEventOptions(), ...this._options };
 
         this._origin.addToRef(new Vector3(0, this._options.height / 2, 0), this._cylinderPosition);
         this._origin.addToRef(new Vector3(0, this._options.height, 0), this._originTop);
@@ -530,7 +544,7 @@ class PhysicsUpdraftEvent {
             return null;
         }
 
-        var impostorObjectCenter = impostor.getObjectCenter();
+        const impostorObjectCenter = impostor.getObjectCenter();
 
         if (this._options.updraftMode === PhysicsUpdraftMode.Perpendicular) {
             var direction = this._originDirection;
@@ -538,18 +552,18 @@ class PhysicsUpdraftEvent {
             var direction = impostorObjectCenter.subtract(this._originTop);
         }
 
-        var distanceFromOrigin = Vector3.Distance(this._origin, impostorObjectCenter);
+        const distanceFromOrigin = Vector3.Distance(this._origin, impostorObjectCenter);
 
-        var multiplier = this._options.strength * -1;
+        const multiplier = this._options.strength * -1;
 
-        var force = direction.multiplyByFloats(multiplier, multiplier, multiplier);
+        const force = direction.multiplyByFloats(multiplier, multiplier, multiplier);
 
         return { force: force, contactPoint: impostorObjectCenter, distanceFromOrigin: distanceFromOrigin };
     }
 
     private _tick() {
         this._physicsEngine.getImpostors().forEach((impostor) => {
-            var impostorHitData = this.getImpostorHitData(impostor);
+            const impostorHitData = this.getImpostorHitData(impostor);
             if (!impostorHitData) {
                 return;
             }
@@ -562,29 +576,31 @@ class PhysicsUpdraftEvent {
 
     private _prepareCylinder(): void {
         if (!this._cylinder) {
-            this._cylinder = CreateCylinder("updraftEventCylinder", {
-                height: this._options.height,
-                diameter: this._options.radius * 2,
-            }, this._scene);
+            this._cylinder = CreateCylinder(
+                "updraftEventCylinder",
+                {
+                    height: this._options.height,
+                    diameter: this._options.radius * 2,
+                },
+                this._scene
+            );
             this._cylinder.isVisible = false;
         }
     }
 
     private _intersectsWithCylinder(impostor: PhysicsImpostor): boolean {
-        var impostorObject = <AbstractMesh>impostor.object;
+        const impostorObject = <AbstractMesh>impostor.object;
 
         this._cylinder.position = this._cylinderPosition;
 
         return this._cylinder.intersectsMesh(impostorObject, true);
     }
-
 }
 
 /**
  * Represents a physics vortex event
  */
 class PhysicsVortexEvent {
-
     private _physicsEngine: PhysicsEngine;
     private _originTop: Vector3 = Vector3.Zero(); // the most upper part of the cylinder
     private _tickCallback: any;
@@ -600,7 +616,7 @@ class PhysicsVortexEvent {
      */
     constructor(private _scene: Scene, private _origin: Vector3, private _options: PhysicsVortexEventOptions) {
         this._physicsEngine = <PhysicsEngine>this._scene.getPhysicsEngine();
-        this._options = { ...(new PhysicsVortexEventOptions()), ...this._options };
+        this._options = { ...new PhysicsVortexEventOptions(), ...this._options };
 
         this._origin.addToRef(new Vector3(0, this._options.height / 2, 0), this._cylinderPosition);
         this._origin.addToRef(new Vector3(0, this._options.height, 0), this._originTop);
@@ -662,23 +678,23 @@ class PhysicsVortexEvent {
             return null;
         }
 
-        if (impostor.object.getClassName() !== 'Mesh' && impostor.object.getClassName() !== 'InstancedMesh') {
+        if (impostor.object.getClassName() !== "Mesh" && impostor.object.getClassName() !== "InstancedMesh") {
             return null;
         }
 
-        var impostorObjectCenter = impostor.getObjectCenter();
-        var originOnPlane = new Vector3(this._origin.x, impostorObjectCenter.y, this._origin.z); // the distance to the origin as if both objects were on a plane (Y-axis)
-        var originToImpostorDirection = impostorObjectCenter.subtract(originOnPlane);
+        const impostorObjectCenter = impostor.getObjectCenter();
+        const originOnPlane = new Vector3(this._origin.x, impostorObjectCenter.y, this._origin.z); // the distance to the origin as if both objects were on a plane (Y-axis)
+        const originToImpostorDirection = impostorObjectCenter.subtract(originOnPlane);
 
-        var ray = new Ray(originOnPlane, originToImpostorDirection, this._options.radius);
-        var hit = ray.intersectsMesh(<AbstractMesh>impostor.object);
-        var contactPoint = hit.pickedPoint;
+        const ray = new Ray(originOnPlane, originToImpostorDirection, this._options.radius);
+        const hit = ray.intersectsMesh(<AbstractMesh>impostor.object);
+        const contactPoint = hit.pickedPoint;
         if (!contactPoint) {
             return null;
         }
-        var absoluteDistanceFromOrigin = hit.distance / this._options.radius;
+        const absoluteDistanceFromOrigin = hit.distance / this._options.radius;
 
-        var directionToOrigin = contactPoint.normalize();
+        let directionToOrigin = contactPoint.normalize();
         if (absoluteDistanceFromOrigin > this._options.centripetalForceThreshold) {
             directionToOrigin = directionToOrigin.negate();
         }
@@ -688,14 +704,14 @@ class PhysicsVortexEvent {
             var forceY = directionToOrigin.y * this._options.updraftForceMultiplier;
             var forceZ = directionToOrigin.z * this._options.centripetalForceMultiplier;
         } else {
-            var perpendicularDirection = Vector3.Cross(originOnPlane, impostorObjectCenter).normalize();
+            const perpendicularDirection = Vector3.Cross(originOnPlane, impostorObjectCenter).normalize();
 
             var forceX = (perpendicularDirection.x + directionToOrigin.x) * this._options.centrifugalForceMultiplier;
             var forceY = this._originTop.y * this._options.updraftForceMultiplier;
             var forceZ = (perpendicularDirection.z + directionToOrigin.z) * this._options.centrifugalForceMultiplier;
         }
 
-        var force = new Vector3(forceX, forceY, forceZ);
+        let force = new Vector3(forceX, forceY, forceZ);
         force = force.multiplyByFloats(this._options.strength, this._options.strength, this._options.strength);
 
         return { force: force, contactPoint: impostorObjectCenter, distanceFromOrigin: absoluteDistanceFromOrigin };
@@ -703,7 +719,7 @@ class PhysicsVortexEvent {
 
     private _tick() {
         this._physicsEngine.getImpostors().forEach((impostor) => {
-            var impostorHitData = this.getImpostorHitData(impostor);
+            const impostorHitData = this.getImpostorHitData(impostor);
             if (!impostorHitData) {
                 return;
             }
@@ -716,22 +732,25 @@ class PhysicsVortexEvent {
 
     private _prepareCylinder(): void {
         if (!this._cylinder) {
-            this._cylinder = CreateCylinder("vortexEventCylinder", {
-                height: this._options.height,
-                diameter: this._options.radius * 2,
-            }, this._scene);
+            this._cylinder = CreateCylinder(
+                "vortexEventCylinder",
+                {
+                    height: this._options.height,
+                    diameter: this._options.radius * 2,
+                },
+                this._scene
+            );
             this._cylinder.isVisible = false;
         }
     }
 
     private _intersectsWithCylinder(impostor: PhysicsImpostor): boolean {
-        var impostorObject = <AbstractMesh>impostor.object;
+        const impostorObject = <AbstractMesh>impostor.object;
 
         this._cylinder.position = this._cylinderPosition;
 
         return this._cylinder.intersectsMesh(impostorObject, true);
     }
-
 }
 
 /**
@@ -757,7 +776,7 @@ export class PhysicsRadialExplosionEventOptions {
     /**
      * Sphere options for the radial explosion.
      */
-    sphere: { segments: number, diameter: number } = { segments: 32, diameter: 1 };
+    sphere: { segments: number; diameter: number } = { segments: 32, diameter: 1 };
 
     /**
      * Sphere options for the radial explosion.
@@ -833,14 +852,14 @@ export class PhysicsVortexEventOptions {
 }
 
 /**
-* The strength of the force in correspondence to the distance of the affected object
-* @see https://doc.babylonjs.com/how_to/using_the_physics_engine#further-functionality-of-the-impostor-class
-*/
+ * The strength of the force in correspondence to the distance of the affected object
+ * @see https://doc.babylonjs.com/how_to/using_the_physics_engine#further-functionality-of-the-impostor-class
+ */
 export enum PhysicsRadialImpulseFalloff {
     /** Defines that impulse is constant in strength across it's whole radius */
     Constant,
     /** Defines that impulse gets weaker if it's further from the origin */
-    Linear
+    Linear,
 }
 
 /**
@@ -851,7 +870,7 @@ export enum PhysicsUpdraftMode {
     /** Defines that the upstream forces will pull towards the top center of the cylinder */
     Center,
     /** Defines that once a impostor is inside the cylinder, it will shoot out perpendicular from the ground of the cylinder */
-    Perpendicular
+    Perpendicular,
 }
 
 /**

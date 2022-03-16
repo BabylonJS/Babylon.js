@@ -101,7 +101,7 @@ Scene.prototype._internalPickSprites = function (ray: Ray, predicate?: (sprite: 
         return null;
     }
 
-    var pickingInfo = null;
+    let pickingInfo = null;
 
     if (!camera) {
         if (!this.activeCamera) {
@@ -111,14 +111,14 @@ Scene.prototype._internalPickSprites = function (ray: Ray, predicate?: (sprite: 
     }
 
     if (this.spriteManagers.length > 0) {
-        for (var spriteIndex = 0; spriteIndex < this.spriteManagers.length; spriteIndex++) {
-            var spriteManager = this.spriteManagers[spriteIndex];
+        for (let spriteIndex = 0; spriteIndex < this.spriteManagers.length; spriteIndex++) {
+            const spriteManager = this.spriteManagers[spriteIndex];
 
             if (!spriteManager.isPickable) {
                 continue;
             }
 
-            var result = spriteManager.intersects(ray, camera, predicate, fastCheck);
+            const result = spriteManager.intersects(ray, camera, predicate, fastCheck);
             if (!result || !result.hit) {
                 continue;
             }
@@ -143,7 +143,7 @@ Scene.prototype._internalMultiPickSprites = function (ray: Ray, predicate?: (spr
         return null;
     }
 
-    var pickingInfos = new Array<PickingInfo>();
+    let pickingInfos = new Array<PickingInfo>();
 
     if (!camera) {
         if (!this.activeCamera) {
@@ -153,14 +153,14 @@ Scene.prototype._internalMultiPickSprites = function (ray: Ray, predicate?: (spr
     }
 
     if (this.spriteManagers.length > 0) {
-        for (var spriteIndex = 0; spriteIndex < this.spriteManagers.length; spriteIndex++) {
-            var spriteManager = this.spriteManagers[spriteIndex];
+        for (let spriteIndex = 0; spriteIndex < this.spriteManagers.length; spriteIndex++) {
+            const spriteManager = this.spriteManagers[spriteIndex];
 
             if (!spriteManager.isPickable) {
                 continue;
             }
 
-            var results = spriteManager.multiIntersects(ray, camera, predicate);
+            const results = spriteManager.multiIntersects(ray, camera, predicate);
 
             if (results !== null) {
                 pickingInfos = pickingInfos.concat(results);
@@ -310,22 +310,28 @@ export class SpriteSceneComponent implements ISceneComponent {
         this.scene.onBeforeSpritesRenderingObservable.clear();
         this.scene.onAfterSpritesRenderingObservable.clear();
 
-        let spriteManagers = this.scene.spriteManagers;
+        const spriteManagers = this.scene.spriteManagers;
         while (spriteManagers.length) {
             spriteManagers[0].dispose();
         }
     }
 
     private _pickSpriteButKeepRay(originalPointerInfo: Nullable<PickingInfo>, x: number, y: number, fastCheck?: boolean, camera?: Camera): Nullable<PickingInfo> {
-        var result = this.scene.pickSprite(x, y, this._spritePredicate, fastCheck, camera);
+        const result = this.scene.pickSprite(x, y, this._spritePredicate, fastCheck, camera);
         if (result) {
             result.ray = originalPointerInfo ? originalPointerInfo.ray : null;
         }
         return result;
     }
 
-    private _pointerMove(unTranslatedPointerX: number, unTranslatedPointerY: number, pickResult: Nullable<PickingInfo>, isMeshPicked: boolean, element: Nullable<HTMLElement>): Nullable<PickingInfo> {
-        var scene = this.scene;
+    private _pointerMove(
+        unTranslatedPointerX: number,
+        unTranslatedPointerY: number,
+        pickResult: Nullable<PickingInfo>,
+        isMeshPicked: boolean,
+        element: Nullable<HTMLElement>
+    ): Nullable<PickingInfo> {
+        const scene = this.scene;
         if (isMeshPicked) {
             scene.setPointerOverSprite(null);
         } else {
@@ -349,7 +355,7 @@ export class SpriteSceneComponent implements ISceneComponent {
     }
 
     private _pointerDown(unTranslatedPointerX: number, unTranslatedPointerY: number, pickResult: Nullable<PickingInfo>, evt: IPointerEvent): Nullable<PickingInfo> {
-        var scene = this.scene;
+        const scene = this.scene;
         scene._pickedDownSprite = null;
         if (scene.spriteManagers.length > 0) {
             pickResult = scene.pickSprite(unTranslatedPointerX, unTranslatedPointerY, this._spritePredicate, false, scene.cameraToUseForPointers || undefined);
@@ -359,17 +365,29 @@ export class SpriteSceneComponent implements ISceneComponent {
                     scene._pickedDownSprite = pickResult.pickedSprite;
                     switch (evt.button) {
                         case 0:
-                            pickResult.pickedSprite.actionManager.processTrigger(Constants.ACTION_OnLeftPickTrigger, ActionEvent.CreateNewFromSprite(pickResult.pickedSprite, scene, evt));
+                            pickResult.pickedSprite.actionManager.processTrigger(
+                                Constants.ACTION_OnLeftPickTrigger,
+                                ActionEvent.CreateNewFromSprite(pickResult.pickedSprite, scene, evt)
+                            );
                             break;
                         case 1:
-                            pickResult.pickedSprite.actionManager.processTrigger(Constants.ACTION_OnCenterPickTrigger, ActionEvent.CreateNewFromSprite(pickResult.pickedSprite, scene, evt));
+                            pickResult.pickedSprite.actionManager.processTrigger(
+                                Constants.ACTION_OnCenterPickTrigger,
+                                ActionEvent.CreateNewFromSprite(pickResult.pickedSprite, scene, evt)
+                            );
                             break;
                         case 2:
-                            pickResult.pickedSprite.actionManager.processTrigger(Constants.ACTION_OnRightPickTrigger, ActionEvent.CreateNewFromSprite(pickResult.pickedSprite, scene, evt));
+                            pickResult.pickedSprite.actionManager.processTrigger(
+                                Constants.ACTION_OnRightPickTrigger,
+                                ActionEvent.CreateNewFromSprite(pickResult.pickedSprite, scene, evt)
+                            );
                             break;
                     }
                     if (pickResult.pickedSprite.actionManager) {
-                        pickResult.pickedSprite.actionManager.processTrigger(Constants.ACTION_OnPickDownTrigger, ActionEvent.CreateNewFromSprite(pickResult.pickedSprite, scene, evt));
+                        pickResult.pickedSprite.actionManager.processTrigger(
+                            Constants.ACTION_OnPickDownTrigger,
+                            ActionEvent.CreateNewFromSprite(pickResult.pickedSprite, scene, evt)
+                        );
                     }
                 }
             }
@@ -379,17 +397,23 @@ export class SpriteSceneComponent implements ISceneComponent {
     }
 
     private _pointerUp(unTranslatedPointerX: number, unTranslatedPointerY: number, pickResult: Nullable<PickingInfo>, evt: IPointerEvent): Nullable<PickingInfo> {
-        var scene = this.scene;
+        const scene = this.scene;
         if (scene.spriteManagers.length > 0) {
-            let spritePickResult = scene.pickSprite(unTranslatedPointerX, unTranslatedPointerY, this._spritePredicate, false, scene.cameraToUseForPointers || undefined);
+            const spritePickResult = scene.pickSprite(unTranslatedPointerX, unTranslatedPointerY, this._spritePredicate, false, scene.cameraToUseForPointers || undefined);
 
             if (spritePickResult) {
                 if (spritePickResult.hit && spritePickResult.pickedSprite) {
                     if (spritePickResult.pickedSprite.actionManager) {
-                        spritePickResult.pickedSprite.actionManager.processTrigger(Constants.ACTION_OnPickUpTrigger, ActionEvent.CreateNewFromSprite(spritePickResult.pickedSprite, scene, evt));
+                        spritePickResult.pickedSprite.actionManager.processTrigger(
+                            Constants.ACTION_OnPickUpTrigger,
+                            ActionEvent.CreateNewFromSprite(spritePickResult.pickedSprite, scene, evt)
+                        );
                         if (spritePickResult.pickedSprite.actionManager) {
                             if (!this.scene._inputManager._isPointerSwiping()) {
-                                spritePickResult.pickedSprite.actionManager.processTrigger(Constants.ACTION_OnPickTrigger, ActionEvent.CreateNewFromSprite(spritePickResult.pickedSprite, scene, evt));
+                                spritePickResult.pickedSprite.actionManager.processTrigger(
+                                    Constants.ACTION_OnPickTrigger,
+                                    ActionEvent.CreateNewFromSprite(spritePickResult.pickedSprite, scene, evt)
+                                );
                             }
                         }
                     }

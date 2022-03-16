@@ -5,8 +5,8 @@ import { Scene } from "../scene";
 import { PoseEnabledControllerHelper } from "../Gamepads/Controllers/poseEnabledController";
 import { Xbox360Pad } from "./xboxGamepad";
 import { Gamepad, GenericPad } from "./gamepad";
-import { Engine } from '../Engines/engine';
-import { DualShockPad } from './dualShockGamepad';
+import { Engine } from "../Engines/engine";
+import { DualShockPad } from "./dualShockGamepad";
 import { Tools } from "../Misc/tools";
 /**
  * Manager for handling gamepads
@@ -41,15 +41,14 @@ export class GamepadManager {
         if (!IsWindowObjectExist()) {
             this._gamepadEventSupported = false;
         } else {
-            this._gamepadEventSupported = 'GamepadEvent' in window;
-            this._gamepadSupport = navigator && (navigator.getGamepads ||
-                navigator.webkitGetGamepads || navigator.msGetGamepads || navigator.webkitGamepads);
+            this._gamepadEventSupported = "GamepadEvent" in window;
+            this._gamepadSupport = navigator && (navigator.getGamepads || navigator.webkitGetGamepads || navigator.msGetGamepads || navigator.webkitGamepads);
         }
 
         this.onGamepadConnectedObservable = new Observable<Gamepad>((observer) => {
             // This will be used to raise the onGamepadConnected for all gamepads ALREADY connected
-            for (var i in this._babylonGamepads) {
-                let gamepad = this._babylonGamepads[i];
+            for (const i in this._babylonGamepads) {
+                const gamepad = this._babylonGamepads[i];
                 if (gamepad && gamepad._isConnected) {
                     this.onGamepadConnectedObservable.notifyObserver(observer, gamepad);
                 }
@@ -57,7 +56,7 @@ export class GamepadManager {
         });
 
         this._onGamepadConnectedEvent = (evt) => {
-            let gamepad = evt.gamepad;
+            const gamepad = evt.gamepad;
 
             if (gamepad.index in this._babylonGamepads) {
                 if (this._babylonGamepads[gamepad.index].isConnected) {
@@ -79,12 +78,12 @@ export class GamepadManager {
         };
 
         this._onGamepadDisconnectedEvent = (evt) => {
-            let gamepad = evt.gamepad;
+            const gamepad = evt.gamepad;
 
             // Remove the gamepad from the list of gamepads to monitor.
-            for (var i in this._babylonGamepads) {
+            for (const i in this._babylonGamepads) {
                 if (this._babylonGamepads[i].index === gamepad.index) {
-                    let disconnectedGamepad = this._babylonGamepads[i];
+                    const disconnectedGamepad = this._babylonGamepads[i];
                     disconnectedGamepad._isConnected = false;
 
                     this.onGamepadDisconnectedObservable.notifyObservers(disconnectedGamepad);
@@ -102,14 +101,13 @@ export class GamepadManager {
             }
             // Checking if the gamepad connected event is supported (like in Firefox)
             if (this._gamepadEventSupported) {
-                let hostWindow = this._scene ? this._scene.getEngine().getHostWindow() : window;
+                const hostWindow = this._scene ? this._scene.getEngine().getHostWindow() : window;
 
                 if (hostWindow) {
-                    hostWindow.addEventListener('gamepadconnected', this._onGamepadConnectedEvent, false);
-                    hostWindow.addEventListener('gamepaddisconnected', this._onGamepadDisconnectedEvent, false);
+                    hostWindow.addEventListener("gamepadconnected", this._onGamepadConnectedEvent, false);
+                    hostWindow.addEventListener("gamepaddisconnected", this._onGamepadDisconnectedEvent, false);
                 }
-            }
-            else {
+            } else {
                 this._startMonitoringGamepads();
             }
         }
@@ -128,7 +126,7 @@ export class GamepadManager {
      * @returns Nullable gamepad
      */
     public getGamepadByType(type: number = Gamepad.XBOX): Nullable<Gamepad> {
-        for (var gamepad of this._babylonGamepads) {
+        for (const gamepad of this._babylonGamepads) {
             if (gamepad && gamepad.type === type) {
                 return gamepad;
             }
@@ -143,11 +141,11 @@ export class GamepadManager {
     public dispose() {
         if (this._gamepadEventSupported) {
             if (this._onGamepadConnectedEvent) {
-                window.removeEventListener('gamepadconnected', this._onGamepadConnectedEvent);
+                window.removeEventListener("gamepadconnected", this._onGamepadConnectedEvent);
             }
 
             if (this._onGamepadDisconnectedEvent) {
-                window.removeEventListener('gamepaddisconnected', this._onGamepadDisconnectedEvent);
+                window.removeEventListener("gamepaddisconnected", this._onGamepadDisconnectedEvent);
             }
             this._onGamepadConnectedEvent = null;
             this._onGamepadDisconnectedEvent = null;
@@ -170,22 +168,24 @@ export class GamepadManager {
             this._oneGamepadConnected = true;
         }
 
-        var newGamepad;
-        var dualShock: boolean = ((<string>gamepad.id).search("054c") !== -1 && (<string>gamepad.id).search("0ce6") === -1);
-        var xboxOne: boolean = ((<string>gamepad.id).search("Xbox One") !== -1);
-        if (xboxOne || (<string>gamepad.id).search("Xbox 360") !== -1
-            || (<string>gamepad.id).search("xinput") !== -1
-            || ((<string>gamepad.id).search("045e") !== -1 && (<string>gamepad.id).search("Surface Dock") === -1)) { // make sure the Surface Dock Extender is not detected as an xbox controller
+        let newGamepad;
+        const dualShock: boolean = (<string>gamepad.id).search("054c") !== -1 && (<string>gamepad.id).search("0ce6") === -1;
+        const xboxOne: boolean = (<string>gamepad.id).search("Xbox One") !== -1;
+        if (
+            xboxOne ||
+            (<string>gamepad.id).search("Xbox 360") !== -1 ||
+            (<string>gamepad.id).search("xinput") !== -1 ||
+            ((<string>gamepad.id).search("045e") !== -1 && (<string>gamepad.id).search("Surface Dock") === -1)
+        ) {
+            // make sure the Surface Dock Extender is not detected as an xbox controller
             newGamepad = new Xbox360Pad(gamepad.id, gamepad.index, gamepad, xboxOne);
-        }
-        else if (dualShock) {
+        } else if (dualShock) {
             newGamepad = new DualShockPad(gamepad.id, gamepad.index, gamepad);
         }
         // if pose is supported, use the (WebVR) pose enabled controller
         else if (gamepad.pose) {
             newGamepad = PoseEnabledControllerHelper.InitiateController(gamepad);
-        }
-        else {
+        } else {
             newGamepad = new GenericPad(gamepad.id, gamepad.index, gamepad);
         }
         this._babylonGamepads[newGamepad.index] = newGamepad;
@@ -213,8 +213,8 @@ export class GamepadManager {
         // Hack to be compatible Chrome
         this._updateGamepadObjects();
 
-        for (var i in this._babylonGamepads) {
-            let gamepad = this._babylonGamepads[i];
+        for (const i in this._babylonGamepads) {
+            const gamepad = this._babylonGamepads[i];
             if (!gamepad || !gamepad.isConnected) {
                 continue;
             }
@@ -229,22 +229,23 @@ export class GamepadManager {
         }
 
         if (this._isMonitoring && !this._scene) {
-            Engine.QueueNewFrame(() => { this._checkGamepadsStatus(); });
+            Engine.QueueNewFrame(() => {
+                this._checkGamepadsStatus();
+            });
         }
     }
 
     // This function is called only on Chrome, which does not properly support
     // connection/disconnection events and forces you to recopy again the gamepad object
     private _updateGamepadObjects() {
-        var gamepads = navigator.getGamepads ? navigator.getGamepads() : (navigator.webkitGetGamepads ? navigator.webkitGetGamepads() : []);
-        for (var i = 0; i < gamepads.length; i++) {
-            let gamepad = gamepads[i];
+        const gamepads = navigator.getGamepads ? navigator.getGamepads() : navigator.webkitGetGamepads ? navigator.webkitGetGamepads() : [];
+        for (let i = 0; i < gamepads.length; i++) {
+            const gamepad = gamepads[i];
             if (gamepad) {
                 if (!this._babylonGamepads[gamepad.index]) {
-                    var newGamepad = this._addNewGamepad(gamepad);
+                    const newGamepad = this._addNewGamepad(gamepad);
                     this.onGamepadConnectedObservable.notifyObservers(newGamepad);
-                }
-                else {
+                } else {
                     // Forced to copy again this object for Chrome for unknown reason
                     this._babylonGamepads[i].browserGamepad = gamepad;
 

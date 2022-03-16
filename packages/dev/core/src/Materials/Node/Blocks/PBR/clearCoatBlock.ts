@@ -1,29 +1,28 @@
-import { NodeMaterialBlock } from '../../nodeMaterialBlock';
-import { NodeMaterialBlockConnectionPointTypes } from '../../Enums/nodeMaterialBlockConnectionPointTypes';
-import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
-import { NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection } from '../../nodeMaterialBlockConnectionPoint';
-import { NodeMaterialBlockTargets } from '../../Enums/nodeMaterialBlockTargets';
-import { RegisterClass } from '../../../../Misc/typeStore';
-import { InputBlock } from '../Input/inputBlock';
+import { NodeMaterialBlock } from "../../nodeMaterialBlock";
+import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
+import { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
+import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
+import { RegisterClass } from "../../../../Misc/typeStore";
+import { InputBlock } from "../Input/inputBlock";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
-import { NodeMaterial, NodeMaterialDefines } from '../../nodeMaterial';
-import { AbstractMesh } from '../../../../Meshes/abstractMesh';
-import { ReflectionBlock } from './reflectionBlock';
-import { Scene } from '../../../../scene';
-import { Nullable } from '../../../../types';
-import { Mesh } from '../../../../Meshes/mesh';
-import { SubMesh } from '../../../../Meshes/subMesh';
-import { Effect } from '../../../effect';
-import { PBRMetallicRoughnessBlock } from './pbrMetallicRoughnessBlock';
-import { PerturbNormalBlock } from '../Fragment/perturbNormalBlock';
-import { PBRClearCoatConfiguration } from '../../../PBR/pbrClearCoatConfiguration';
+import { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
+import { AbstractMesh } from "../../../../Meshes/abstractMesh";
+import { ReflectionBlock } from "./reflectionBlock";
+import { Scene } from "../../../../scene";
+import { Nullable } from "../../../../types";
+import { Mesh } from "../../../../Meshes/mesh";
+import { SubMesh } from "../../../../Meshes/subMesh";
+import { Effect } from "../../../effect";
+import { PBRMetallicRoughnessBlock } from "./pbrMetallicRoughnessBlock";
+import { PerturbNormalBlock } from "../Fragment/perturbNormalBlock";
+import { PBRClearCoatConfiguration } from "../../../PBR/pbrClearCoatConfiguration";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../nodeMaterialDecorator";
 
 /**
  * Block used to implement the clear coat module of the PBR material
  */
 export class ClearCoatBlock extends NodeMaterialBlock {
-
     private _scene: Scene;
 
     /**
@@ -45,8 +44,12 @@ export class ClearCoatBlock extends NodeMaterialBlock {
         this.registerInput("tintThickness", NodeMaterialBlockConnectionPointTypes.Float, true, NodeMaterialBlockTargets.Fragment);
         this.registerInput("worldTangent", NodeMaterialBlockConnectionPointTypes.Vector4, true);
 
-        this.registerOutput("clearcoat", NodeMaterialBlockConnectionPointTypes.Object, NodeMaterialBlockTargets.Fragment,
-            new NodeMaterialConnectionPointCustomObject("clearcoat", this, NodeMaterialConnectionPointDirection.Output, ClearCoatBlock, "ClearCoatBlock"));
+        this.registerOutput(
+            "clearcoat",
+            NodeMaterialBlockConnectionPointTypes.Object,
+            NodeMaterialBlockTargets.Fragment,
+            new NodeMaterialConnectionPointCustomObject("clearcoat", this, NodeMaterialConnectionPointDirection.Output, ClearCoatBlock, "ClearCoatBlock")
+        );
     }
 
     /**
@@ -147,7 +150,7 @@ export class ClearCoatBlock extends NodeMaterialBlock {
 
     public autoConfigure(material: NodeMaterial) {
         if (!this.intensity.isConnected) {
-            let intensityInput = new InputBlock("ClearCoat intensity", NodeMaterialBlockTargets.Fragment, NodeMaterialBlockConnectionPointTypes.Float);
+            const intensityInput = new InputBlock("ClearCoat intensity", NodeMaterialBlockTargets.Fragment, NodeMaterialBlockConnectionPointTypes.Float);
             intensityInput.value = 1;
             intensityInput.output.connectTo(this.intensity);
         }
@@ -161,7 +164,11 @@ export class ClearCoatBlock extends NodeMaterialBlock {
         defines.setValue("CLEARCOAT_USE_ROUGHNESS_FROM_MAINTEXTURE", true, true);
         defines.setValue("CLEARCOAT_TINT", this.tintColor.isConnected || this.tintThickness.isConnected || this.tintAtDistance.isConnected, true);
         defines.setValue("CLEARCOAT_BUMP", this.normalMapColor.isConnected, true);
-        defines.setValue("CLEARCOAT_DEFAULTIOR", this.indexOfRefraction.isConnected ? this.indexOfRefraction.connectInputBlock!.value === PBRClearCoatConfiguration._DefaultIndexOfRefraction : true, true);
+        defines.setValue(
+            "CLEARCOAT_DEFAULTIOR",
+            this.indexOfRefraction.isConnected ? this.indexOfRefraction.connectInputBlock!.value === PBRClearCoatConfiguration._DefaultIndexOfRefraction : true,
+            true
+        );
         defines.setValue("CLEARCOAT_REMAP_F0", this.remapF0OnInterfaceChange, true);
     }
 
@@ -173,14 +180,14 @@ export class ClearCoatBlock extends NodeMaterialBlock {
 
         const a = 1 - indexOfRefraction;
         const b = 1 + indexOfRefraction;
-        const f0 = Math.pow((-a / b), 2); // Schlicks approx: (ior1 - ior2) / (ior1 + ior2) where ior2 for air is close to vacuum = 1.
+        const f0 = Math.pow(-a / b, 2); // Schlicks approx: (ior1 - ior2) / (ior1 + ior2) where ior2 for air is close to vacuum = 1.
         const eta = 1 / indexOfRefraction;
 
         effect.setFloat4("vClearCoatRefractionParams", f0, eta, a, b);
 
         // Clear Coat tangent space params
-        const mainPBRBlock = this.clearcoat.hasEndpoints ? this.clearcoat.endpoints[0].ownerBlock as PBRMetallicRoughnessBlock : null;
-        const perturbedNormalBlock = mainPBRBlock?.perturbedNormal.isConnected ? mainPBRBlock.perturbedNormal.connectedPoint!.ownerBlock as PerturbNormalBlock : null;
+        const mainPBRBlock = this.clearcoat.hasEndpoints ? (this.clearcoat.endpoints[0].ownerBlock as PBRMetallicRoughnessBlock) : null;
+        const perturbedNormalBlock = mainPBRBlock?.perturbedNormal.isConnected ? (mainPBRBlock.perturbedNormal.connectedPoint!.ownerBlock as PerturbNormalBlock) : null;
 
         if (this._scene._mirroredCameraPosition) {
             effect.setFloat2("vClearCoatTangentSpaceParams", perturbedNormalBlock?.invertX ? 1.0 : -1.0, perturbedNormalBlock?.invertY ? 1.0 : -1.0);
@@ -192,12 +199,12 @@ export class ClearCoatBlock extends NodeMaterialBlock {
     private _generateTBNSpace(state: NodeMaterialBuildState, worldPositionVarName: string, worldNormalVarName: string) {
         let code = "";
 
-        let comments = `//${this.name}`;
-        let worldTangent = this.worldTangent;
+        const comments = `//${this.name}`;
+        const worldTangent = this.worldTangent;
 
         state._emitExtension("derivatives", "#extension GL_OES_standard_derivatives : enable");
 
-        let tangentReplaceString = { search: /defined\(TANGENT\)/g, replace: worldTangent.isConnected ? "defined(TANGENT)" : "defined(IGNORE)" };
+        const tangentReplaceString = { search: /defined\(TANGENT\)/g, replace: worldTangent.isConnected ? "defined(TANGENT)" : "defined(IGNORE)" };
 
         if (worldTangent.isConnected) {
             code += `vec3 tbnNormal = normalize(${worldNormalVarName}.xyz);\r\n`;
@@ -207,9 +214,7 @@ export class ClearCoatBlock extends NodeMaterialBlock {
         }
 
         state._emitFunctionFromInclude("bumpFragmentMainFunctions", comments, {
-            replaceStrings: [
-                tangentReplaceString,
-            ]
+            replaceStrings: [tangentReplaceString],
         });
 
         return code;
@@ -226,7 +231,15 @@ export class ClearCoatBlock extends NodeMaterialBlock {
      * @param worldNormalVarName name of the variable holding the world normal
      * @returns the shader code
      */
-    public static GetCode(state: NodeMaterialBuildState, ccBlock: Nullable<ClearCoatBlock>, reflectionBlock: Nullable<ReflectionBlock>, worldPosVarName: string, generateTBNSpace: boolean, vTBNAvailable: boolean, worldNormalVarName: string): string {
+    public static GetCode(
+        state: NodeMaterialBuildState,
+        ccBlock: Nullable<ClearCoatBlock>,
+        reflectionBlock: Nullable<ReflectionBlock>,
+        worldPosVarName: string,
+        generateTBNSpace: boolean,
+        vTBNAvailable: boolean,
+        worldNormalVarName: string
+    ): string {
         let code = "";
 
         const intensity = ccBlock?.intensity.isConnected ? ccBlock.intensity.associatedVariableName : "1.";
@@ -345,7 +358,7 @@ export class ClearCoatBlock extends NodeMaterialBlock {
     }
 
     public serialize(): any {
-        let serializationObject = super.serialize();
+        const serializationObject = super.serialize();
 
         serializationObject.remapF0OnInterfaceChange = this.remapF0OnInterfaceChange;
 

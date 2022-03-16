@@ -1,9 +1,9 @@
 import { ThinEngine } from "../../Engines/thinEngine";
-import { FloatArray, Nullable } from '../../types';
-import { DataBuffer } from '../../Buffers/dataBuffer';
-import { WebGLDataBuffer } from '../../Meshes/WebGL/webGLDataBuffer';
-import { IPipelineContext } from '../IPipelineContext';
-import { WebGLPipelineContext } from '../WebGL/webGLPipelineContext';
+import { FloatArray, Nullable } from "../../types";
+import { DataBuffer } from "../../Buffers/dataBuffer";
+import { WebGLDataBuffer } from "../../Meshes/WebGL/webGLDataBuffer";
+import { IPipelineContext } from "../IPipelineContext";
+import { WebGLPipelineContext } from "../WebGL/webGLPipelineContext";
 
 declare module "../../Engines/thinEngine" {
     export interface ThinEngine {
@@ -58,12 +58,12 @@ declare module "../../Engines/thinEngine" {
 }
 
 ThinEngine.prototype.createUniformBuffer = function (elements: FloatArray): DataBuffer {
-    var ubo = this._gl.createBuffer();
+    const ubo = this._gl.createBuffer();
 
     if (!ubo) {
         throw new Error("Unable to create uniform buffer");
     }
-    let result = new WebGLDataBuffer(ubo);
+    const result = new WebGLDataBuffer(ubo);
 
     this.bindUniformBuffer(result);
 
@@ -80,13 +80,13 @@ ThinEngine.prototype.createUniformBuffer = function (elements: FloatArray): Data
 };
 
 ThinEngine.prototype.createDynamicUniformBuffer = function (elements: FloatArray): DataBuffer {
-    var ubo = this._gl.createBuffer();
+    const ubo = this._gl.createBuffer();
 
     if (!ubo) {
         throw new Error("Unable to create dynamic uniform buffer");
     }
 
-    let result = new WebGLDataBuffer(ubo);
+    const result = new WebGLDataBuffer(ubo);
     this.bindUniformBuffer(result);
 
     if (elements instanceof Float32Array) {
@@ -134,9 +134,9 @@ ThinEngine.prototype.bindUniformBufferBase = function (buffer: DataBuffer, locat
 };
 
 ThinEngine.prototype.bindUniformBlock = function (pipelineContext: IPipelineContext, blockName: string, index: number): void {
-    let program = (pipelineContext as WebGLPipelineContext).program!;
+    const program = (pipelineContext as WebGLPipelineContext).program!;
 
-    var uniformLocation = this._gl.getUniformBlockIndex(program, blockName);
+    const uniformLocation = this._gl.getUniformBlockIndex(program, blockName);
 
     this._gl.uniformBlockBinding(program, uniformLocation, index);
 };

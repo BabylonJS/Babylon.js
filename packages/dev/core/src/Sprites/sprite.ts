@@ -2,10 +2,10 @@ import { Vector3 } from "../Maths/math.vector";
 import { Nullable } from "../types";
 import { ActionManager } from "../Actions/actionManager";
 import { ISpriteManager, SpriteManager } from "./spriteManager";
-import { Color4 } from '../Maths/math.color';
-import { Observable } from '../Misc/observable';
-import { IAnimatable } from '../Animations/animatable.interface';
-import { ThinSprite } from './thinSprite';
+import { Color4 } from "../Maths/math.color";
+import { Observable } from "../Misc/observable";
+import { IAnimatable } from "../Animations/animatable.interface";
+import { ThinSprite } from "./thinSprite";
 
 declare type Animation = import("../Animations/animation").Animation;
 
@@ -72,7 +72,8 @@ export class Sprite extends ThinSprite implements IAnimatable {
     constructor(
         /** defines the name */
         public name: string,
-        manager: ISpriteManager) {
+        manager: ISpriteManager
+    ) {
         super();
         this.color = new Color4(1.0, 1.0, 1.0, 1.0);
         this.position = Vector3.Zero();
@@ -147,7 +148,7 @@ export class Sprite extends ThinSprite implements IAnimatable {
 
     /** Release associated resources */
     public dispose(): void {
-        for (var i = 0; i < this._manager.sprites.length; i++) {
+        for (let i = 0; i < this._manager.sprites.length; i++) {
             if (this._manager.sprites[i] == this) {
                 this._manager.sprites.splice(i, 1);
             }
@@ -163,7 +164,7 @@ export class Sprite extends ThinSprite implements IAnimatable {
      * @returns the JSON object
      */
     public serialize(): any {
-        var serializationObject: any = {};
+        const serializationObject: any = {};
 
         serializationObject.name = this.name;
         serializationObject.position = this.position.asArray();
@@ -196,7 +197,7 @@ export class Sprite extends ThinSprite implements IAnimatable {
      * @returns the new sprite
      */
     public static Parse(parsedSprite: any, manager: SpriteManager): Sprite {
-        var sprite = new Sprite(parsedSprite.name, manager);
+        const sprite = new Sprite(parsedSprite.name, manager);
 
         sprite.position = Vector3.FromArray(parsedSprite.position);
         sprite.color = Color4.FromArray(parsedSprite.color);

@@ -1,5 +1,5 @@
 import { ThinEngine } from "../../Engines/thinEngine";
-import { DataBuffer } from '../../Buffers/dataBuffer';
+import { DataBuffer } from "../../Buffers/dataBuffer";
 import { IndicesArray, DataArray } from "../../types";
 
 declare module "../../Engines/thinEngine" {
@@ -27,7 +27,7 @@ ThinEngine.prototype.updateDynamicIndexBuffer = function (this: ThinEngine, inde
     // Force cache update
     this._currentBoundBuffer[this._gl.ELEMENT_ARRAY_BUFFER] = null;
     this.bindIndexBuffer(indexBuffer);
-    var arrayBuffer;
+    let arrayBuffer;
 
     if (indices instanceof Uint16Array || indices instanceof Uint32Array) {
         arrayBuffer = indices;
@@ -49,7 +49,7 @@ ThinEngine.prototype.updateDynamicVertexBuffer = function (this: ThinEngine, ver
 
     const dataLength = (data as number[]).length || (data as ArrayBuffer).byteLength;
 
-    if (byteLength === undefined || byteLength >= dataLength && byteOffset === 0) {
+    if (byteLength === undefined || (byteLength >= dataLength && byteOffset === 0)) {
         if (data instanceof Array) {
             this._gl.bufferSubData(this._gl.ARRAY_BUFFER, byteOffset, new Float32Array(data));
         } else {

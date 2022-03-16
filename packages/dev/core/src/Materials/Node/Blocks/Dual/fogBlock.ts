@@ -1,16 +1,16 @@
-import { NodeMaterialBlock } from '../../nodeMaterialBlock';
-import { NodeMaterialBlockConnectionPointTypes } from '../../Enums/nodeMaterialBlockConnectionPointTypes';
-import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
-import { NodeMaterialSystemValues } from '../../Enums/nodeMaterialSystemValues';
-import { NodeMaterialBlockTargets } from '../../Enums/nodeMaterialBlockTargets';
-import { Mesh } from '../../../../Meshes/mesh';
-import { Effect } from '../../../effect';
-import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPoint';
-import { AbstractMesh } from '../../../../Meshes/abstractMesh';
-import { MaterialHelper } from '../../../materialHelper';
-import { NodeMaterial, NodeMaterialDefines } from '../../nodeMaterial';
-import { InputBlock } from '../Input/inputBlock';
-import { RegisterClass } from '../../../../Misc/typeStore';
+import { NodeMaterialBlock } from "../../nodeMaterialBlock";
+import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
+import { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { NodeMaterialSystemValues } from "../../Enums/nodeMaterialSystemValues";
+import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
+import { Mesh } from "../../../../Meshes/mesh";
+import { Effect } from "../../../effect";
+import { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
+import { AbstractMesh } from "../../../../Meshes/abstractMesh";
+import { MaterialHelper } from "../../../materialHelper";
+import { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
+import { InputBlock } from "../Input/inputBlock";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 import "../../../../Shaders/ShadersInclude/fogFragmentDeclaration";
 
@@ -107,7 +107,7 @@ export class FogBlock extends NodeMaterialBlock {
     }
 
     public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
-        let scene = mesh.getScene();
+        const scene = mesh.getScene();
         defines.setValue("FOG", nodeMaterial.fogEnabled && MaterialHelper.GetFogState(mesh, scene));
     }
 
@@ -131,25 +131,27 @@ export class FogBlock extends NodeMaterialBlock {
                 removeUniforms: true,
                 removeVaryings: true,
                 removeIfDef: false,
-                replaceStrings: [{ search: /float CalcFogFactor\(\)/, replace: "float CalcFogFactor(vec3 vFogDistance, vec4 vFogInfos)" }]
+                replaceStrings: [{ search: /float CalcFogFactor\(\)/, replace: "float CalcFogFactor(vec3 vFogDistance, vec4 vFogInfos)" }],
             });
 
-            let tempFogVariablename = state._getFreeVariableName("fog");
-            let color = this.input;
-            let fogColor = this.fogColor;
+            const tempFogVariablename = state._getFreeVariableName("fog");
+            const color = this.input;
+            const fogColor = this.fogColor;
             this._fogParameters = state._getFreeVariableName("fogParameters");
-            let output = this._outputs[0];
+            const output = this._outputs[0];
 
             state._emitUniformFromString(this._fogParameters, "vec4");
 
             state.compilationString += `#ifdef FOG\r\n`;
             state.compilationString += `float ${tempFogVariablename} = CalcFogFactor(${this._fogDistanceName}, ${this._fogParameters});\r\n`;
-            state.compilationString += this._declareOutput(output, state) + ` = ${tempFogVariablename} * ${color.associatedVariableName}.rgb + (1.0 - ${tempFogVariablename}) * ${fogColor.associatedVariableName}.rgb;\r\n`;
+            state.compilationString +=
+                this._declareOutput(output, state) +
+                ` = ${tempFogVariablename} * ${color.associatedVariableName}.rgb + (1.0 - ${tempFogVariablename}) * ${fogColor.associatedVariableName}.rgb;\r\n`;
             state.compilationString += `#else\r\n${this._declareOutput(output, state)} =  ${color.associatedVariableName}.rgb;\r\n`;
             state.compilationString += `#endif\r\n`;
         } else {
-            let worldPos = this.worldPosition;
-            let view = this.view;
+            const worldPos = this.worldPosition;
+            const view = this.view;
             this._fogDistanceName = state._getFreeVariableName("vFogDistance");
             state._emitVaryingFromString(this._fogDistanceName, "vec3");
             state.compilationString += `${this._fogDistanceName} = (${view.associatedVariableName} * ${worldPos.associatedVariableName}).xyz;\r\n`;

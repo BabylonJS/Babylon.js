@@ -1,5 +1,5 @@
-import { Vector3, Matrix } from '../Maths/math.vector';
-import { TransformNode } from '../Meshes/transformNode';
+import { Vector3, Matrix } from "../Maths/math.vector";
+import { TransformNode } from "../Meshes/transformNode";
 
 /**
  * Class containing a set of static utilities functions for managing Pivots
@@ -13,7 +13,10 @@ export class PivotTools {
     private static _PivotTranslation = new Vector3();
     private static _PivotTmpVector = new Vector3();
     private static _PivotPostMultiplyPivotMatrix = false;
-    /** @hidden */
+    /**
+     * @param mesh
+     * @hidden
+     */
     public static _RemoveAndStorePivotPoint(mesh: TransformNode) {
         if (mesh && PivotTools._PivotCached === 0) {
             // Save old pivot and set pivot to 0,0,0
@@ -30,7 +33,10 @@ export class PivotTools {
         }
         PivotTools._PivotCached++;
     }
-    /** @hidden */
+    /**
+     * @param mesh
+     * @hidden
+     */
     public static _RestorePivotPoint(mesh: TransformNode) {
         if (mesh && !PivotTools._OldPivotPoint.equalsToFloats(0, 0, 0) && PivotTools._PivotCached === 1) {
             mesh.setPivotPoint(PivotTools._OldPivotPoint);

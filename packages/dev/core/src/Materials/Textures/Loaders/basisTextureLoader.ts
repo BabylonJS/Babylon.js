@@ -3,8 +3,8 @@ import { Engine } from "../../../Engines/engine";
 import { InternalTexture } from "../../../Materials/Textures/internalTexture";
 import { IInternalTextureLoader } from "../../../Materials/Textures/internalTextureLoader";
 import { LoadTextureFromTranscodeResult, TranscodeAsync } from "../../../Misc/basis";
-import { Tools } from '../../../Misc/tools';
-import { EndsWith } from '../../../Misc/stringTools';
+import { Tools } from "../../../Misc/tools";
+import { EndsWith } from "../../../Misc/stringTools";
 
 /**
  * Loader for .basis file format
@@ -32,37 +32,45 @@ export class _BasisTextureLoader implements IInternalTextureLoader {
      * @param onLoad defines the callback to trigger once the texture is ready
      * @param onError defines the callback to trigger in case of error
      */
-    public loadCubeData(data: ArrayBufferView | ArrayBufferView[], texture: InternalTexture, createPolynomials: boolean, onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>): void {
+    public loadCubeData(
+        data: ArrayBufferView | ArrayBufferView[],
+        texture: InternalTexture,
+        createPolynomials: boolean,
+        onLoad: Nullable<(data?: any) => void>,
+        onError: Nullable<(message?: string, exception?: any) => void>
+    ): void {
         if (Array.isArray(data)) {
             return;
         }
-        var caps = texture.getEngine().getCaps();
-        var transcodeConfig = {
+        const caps = texture.getEngine().getCaps();
+        const transcodeConfig = {
             supportedCompressionFormats: {
                 etc1: caps.etc1 ? true : false,
                 s3tc: caps.s3tc ? true : false,
                 pvrtc: caps.pvrtc ? true : false,
-                etc2: caps.etc2 ? true : false
-            }
+                etc2: caps.etc2 ? true : false,
+            },
         };
-        TranscodeAsync(data, transcodeConfig).then((result) => {
-            var hasMipmap = result.fileInfo.images[0].levels.length > 1 && texture.generateMipMaps;
-            LoadTextureFromTranscodeResult(texture, result);
-            (texture.getEngine() as Engine)._setCubeMapTextureParams(texture, hasMipmap);
-            texture.isReady = true;
-            texture.onLoadedObservable.notifyObservers(texture);
-            texture.onLoadedObservable.clear();
-            if (onLoad) {
-                onLoad();
-            }
-        }).catch((err) => {
-            const errorMessage = "Failed to transcode Basis file, transcoding may not be supported on this device";
-            Tools.Warn(errorMessage);
-            texture.isReady = true;
-            if (onError) {
-                onError(err);
-            }
-        });
+        TranscodeAsync(data, transcodeConfig)
+            .then((result) => {
+                const hasMipmap = result.fileInfo.images[0].levels.length > 1 && texture.generateMipMaps;
+                LoadTextureFromTranscodeResult(texture, result);
+                (texture.getEngine() as Engine)._setCubeMapTextureParams(texture, hasMipmap);
+                texture.isReady = true;
+                texture.onLoadedObservable.notifyObservers(texture);
+                texture.onLoadedObservable.clear();
+                if (onLoad) {
+                    onLoad();
+                }
+            })
+            .catch((err) => {
+                const errorMessage = "Failed to transcode Basis file, transcoding may not be supported on this device";
+                Tools.Warn(errorMessage);
+                texture.isReady = true;
+                if (onError) {
+                    onError(err);
+                }
+            });
     }
 
     /**
@@ -71,28 +79,32 @@ export class _BasisTextureLoader implements IInternalTextureLoader {
      * @param texture defines the BabylonJS internal texture
      * @param callback defines the method to call once ready to upload
      */
-    public loadData(data: ArrayBufferView, texture: InternalTexture,
-        callback: (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void, failedLoading?: boolean) => void): void {
-        var caps = texture.getEngine().getCaps();
-        var transcodeConfig = {
+    public loadData(
+        data: ArrayBufferView,
+        texture: InternalTexture,
+        callback: (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void, failedLoading?: boolean) => void
+    ): void {
+        const caps = texture.getEngine().getCaps();
+        const transcodeConfig = {
             supportedCompressionFormats: {
                 etc1: caps.etc1 ? true : false,
                 s3tc: caps.s3tc ? true : false,
                 pvrtc: caps.pvrtc ? true : false,
-                etc2: caps.etc2 ? true : false
-            }
+                etc2: caps.etc2 ? true : false,
+            },
         };
-        TranscodeAsync(data, transcodeConfig).then((result) => {
-            var rootImage = result.fileInfo.images[0].levels[0];
-            var hasMipmap = result.fileInfo.images[0].levels.length > 1 && texture.generateMipMaps;
-            callback(rootImage.width, rootImage.height, hasMipmap, result.format !== -1, () => {
-                LoadTextureFromTranscodeResult(texture, result);
+        TranscodeAsync(data, transcodeConfig)
+            .then((result) => {
+                const rootImage = result.fileInfo.images[0].levels[0];
+                const hasMipmap = result.fileInfo.images[0].levels.length > 1 && texture.generateMipMaps;
+                callback(rootImage.width, rootImage.height, hasMipmap, result.format !== -1, () => {
+                    LoadTextureFromTranscodeResult(texture, result);
+                });
+            })
+            .catch((err) => {
+                Tools.Warn("Failed to transcode Basis file, transcoding may not be supported on this device");
+                callback(0, 0, false, false, () => {}, true);
             });
-        }).catch((err) => {
-            Tools.Warn("Failed to transcode Basis file, transcoding may not be supported on this device");
-            callback(0, 0, false, false, () => {
-            }, true);
-        });
     }
 }
 

@@ -47,10 +47,10 @@ export class PostProcessRenderEffect {
      * Checks if all the post processes in the effect are supported.
      */
     public get isSupported(): boolean {
-        for (var index in this._postProcesses) {
+        for (const index in this._postProcesses) {
             if (this._postProcesses.hasOwnProperty(index)) {
-                let pps = this._postProcesses[index];
-                for (var ppIndex = 0; ppIndex < pps.length; ppIndex++) {
+                const pps = this._postProcesses[index];
+                for (let ppIndex = 0; ppIndex < pps.length; ppIndex++) {
                     if (!pps[ppIndex].isSupported) {
                         return false;
                     }
@@ -64,8 +64,7 @@ export class PostProcessRenderEffect {
      * Updates the current state of the effect
      * @hidden
      */
-    public _update(): void {
-    }
+    public _update(): void {}
 
     /**
      * Attaches the effect on cameras
@@ -85,15 +84,15 @@ export class PostProcessRenderEffect {
      * @hidden
      */
     public _attachCameras(cameras: any): void {
-        var cameraKey;
+        let cameraKey;
 
-        var cams = Tools.MakeArray(cameras || this._cameras);
+        const cams = Tools.MakeArray(cameras || this._cameras);
 
         if (!cams) {
             return;
         }
 
-        for (var i = 0; i < cams.length; i++) {
+        for (let i = 0; i < cams.length; i++) {
             var camera = cams[i];
             if (!camera) {
                 continue;
@@ -103,13 +102,12 @@ export class PostProcessRenderEffect {
 
             if (this._singleInstance) {
                 cameraKey = 0;
-            }
-            else {
+            } else {
                 cameraKey = cameraName;
             }
 
             if (!this._postProcesses[cameraKey]) {
-                var postProcess = this._getPostProcesses();
+                const postProcess = this._getPostProcesses();
                 if (postProcess) {
                     this._postProcesses[cameraKey] = Array.isArray(postProcess) ? postProcess : [postProcess];
                 }
@@ -120,7 +118,7 @@ export class PostProcessRenderEffect {
             }
 
             this._postProcesses[cameraKey].forEach((postProcess: PostProcess) => {
-                var index = camera.attachPostProcess(postProcess);
+                const index = camera.attachPostProcess(postProcess);
 
                 this._indicesForCamera[cameraName].push(index);
             });
@@ -128,7 +126,6 @@ export class PostProcessRenderEffect {
             if (!this._cameras[cameraName]) {
                 this._cameras[cameraName] = camera;
             }
-
         }
     }
 
@@ -150,15 +147,15 @@ export class PostProcessRenderEffect {
      * @hidden
      */
     public _detachCameras(cameras: any): void {
-        var cams = Tools.MakeArray(cameras || this._cameras);
+        const cams = Tools.MakeArray(cameras || this._cameras);
 
         if (!cams) {
             return;
         }
 
-        for (var i = 0; i < cams.length; i++) {
+        for (let i = 0; i < cams.length; i++) {
             var camera: Camera = cams[i];
-            var cameraName: string = camera.name;
+            const cameraName: string = camera.name;
             const postProcesses = this._postProcesses[this._singleInstance ? 0 : cameraName];
 
             if (postProcesses) {
@@ -191,14 +188,14 @@ export class PostProcessRenderEffect {
      * @hidden
      */
     public _enable(cameras: any): void {
-        var cams: Nullable<Array<Camera>> = Tools.MakeArray(cameras || this._cameras);
+        const cams: Nullable<Array<Camera>> = Tools.MakeArray(cameras || this._cameras);
 
         if (!cams) {
             return;
         }
 
         for (var i = 0; i < cams.length; i++) {
-            var camera = cams[i];
+            const camera = cams[i];
             var cameraName = camera.name;
 
             for (var j = 0; j < this._indicesForCamera[cameraName].length; j++) {
@@ -229,15 +226,15 @@ export class PostProcessRenderEffect {
      * @hidden
      */
     public _disable(cameras: any): void {
-        var cams: Nullable<Array<Camera>> = Tools.MakeArray(cameras || this._cameras);
+        const cams: Nullable<Array<Camera>> = Tools.MakeArray(cameras || this._cameras);
 
         if (!cams) {
             return;
         }
 
-        for (var i = 0; i < cams.length; i++) {
+        for (let i = 0; i < cams.length; i++) {
             var camera = cams[i];
-            var cameraName = camera.name;
+            const cameraName = camera.name;
             this._postProcesses[this._singleInstance ? 0 : cameraName].forEach((postProcess) => {
                 camera.detachPostProcess(postProcess);
             });
@@ -252,8 +249,7 @@ export class PostProcessRenderEffect {
     public getPostProcesses(camera?: Camera): Nullable<Array<PostProcess>> {
         if (this._singleInstance) {
             return this._postProcesses[0];
-        }
-        else {
+        } else {
             if (!camera) {
                 return null;
             }

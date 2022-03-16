@@ -11,15 +11,15 @@ declare type BaseTexture = import("../Materials/Textures/baseTexture").BaseTextu
  * @returns The base64 encoded string or null
  */
 export function GenerateBase64StringFromPixelData(pixels: ArrayBufferView, size: ISize, invertY = false): Nullable<string> {
-    var width = size.width;
-    var height = size.height;
+    const width = size.width;
+    const height = size.height;
 
     if (pixels instanceof Float32Array) {
-        var len = pixels.byteLength / pixels.BYTES_PER_ELEMENT;
-        var npixels = new Uint8Array(len);
+        let len = pixels.byteLength / pixels.BYTES_PER_ELEMENT;
+        const npixels = new Uint8Array(len);
 
         while (--len >= 0) {
-            var val = pixels[len];
+            let val = pixels[len];
             if (val < 0) {
                 val = 0;
             } else if (val > 1) {
@@ -31,26 +31,26 @@ export function GenerateBase64StringFromPixelData(pixels: ArrayBufferView, size:
         pixels = npixels;
     }
 
-    var canvas = document.createElement('canvas');
+    const canvas = document.createElement("canvas");
     canvas.width = width;
     canvas.height = height;
 
-    var ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext("2d");
     if (!ctx) {
         return null;
     }
 
-    var imageData = ctx.createImageData(width, height);
-    var castData = <any>imageData.data;
+    const imageData = ctx.createImageData(width, height);
+    const castData = <any>imageData.data;
     castData.set(pixels);
     ctx.putImageData(imageData, 0, 0);
 
     if (invertY) {
-        var canvas2 = document.createElement('canvas');
+        const canvas2 = document.createElement("canvas");
         canvas2.width = width;
         canvas2.height = height;
 
-        var ctx2 = canvas2.getContext('2d');
+        const ctx2 = canvas2.getContext("2d");
         if (!ctx2) {
             return null;
         }
@@ -59,10 +59,10 @@ export function GenerateBase64StringFromPixelData(pixels: ArrayBufferView, size:
         ctx2.scale(1, -1);
         ctx2.drawImage(canvas, 0, 0);
 
-        return canvas2.toDataURL('image/png');
+        return canvas2.toDataURL("image/png");
     }
 
-    return canvas.toDataURL('image/png');
+    return canvas.toDataURL("image/png");
 }
 
 /**
@@ -73,12 +73,12 @@ export function GenerateBase64StringFromPixelData(pixels: ArrayBufferView, size:
  * @returns The base64 encoded string or null
  */
 export function GenerateBase64StringFromTexture(texture: BaseTexture, faceIndex = 0, level = 0): Nullable<string> {
-    var internalTexture = texture.getInternalTexture();
+    const internalTexture = texture.getInternalTexture();
     if (!internalTexture) {
         return null;
     }
 
-    var pixels = texture._readPixelsSync(faceIndex, level);
+    const pixels = texture._readPixelsSync(faceIndex, level);
     if (!pixels) {
         return null;
     }
@@ -94,12 +94,12 @@ export function GenerateBase64StringFromTexture(texture: BaseTexture, faceIndex 
  * @returns The base64 encoded string or null wrapped in a promise
  */
 export async function GenerateBase64StringFromTextureAsync(texture: BaseTexture, faceIndex = 0, level = 0): Promise<Nullable<string>> {
-    var internalTexture = texture.getInternalTexture();
+    const internalTexture = texture.getInternalTexture();
     if (!internalTexture) {
         return null;
     }
 
-    var pixels = await texture.readPixels(faceIndex, level);
+    const pixels = await texture.readPixels(faceIndex, level);
     if (!pixels) {
         return null;
     }
@@ -137,5 +137,5 @@ export const CopyTools = {
      * @param level defines the LOD level of the texture to read (in case of Mip Maps)
      * @returns The base64 encoded string or null wrapped in a promise
      */
-    GenerateBase64StringFromTextureAsync
+    GenerateBase64StringFromTextureAsync,
 };

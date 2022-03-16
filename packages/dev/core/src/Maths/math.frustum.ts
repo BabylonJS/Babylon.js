@@ -1,6 +1,6 @@
-import { Matrix } from './math.vector';
-import { DeepImmutable } from '../types';
-import { Plane } from './math.plane';
+import { Matrix } from "./math.vector";
+import { DeepImmutable } from "../types";
+import { Plane } from "./math.plane";
 
 /**
  * Represents a camera frustum
@@ -12,8 +12,8 @@ export class Frustum {
      * @returns a new array of 6 Frustum planes computed by the given transformation matrix.
      */
     public static GetPlanes(transform: DeepImmutable<Matrix>): Plane[] {
-        var frustumPlanes = [];
-        for (var index = 0; index < 6; index++) {
+        const frustumPlanes = [];
+        for (let index = 0; index < 6; index++) {
             frustumPlanes.push(new Plane(0.0, 0.0, 0.0, 0.0));
         }
         Frustum.GetPlanesToRef(transform, frustumPlanes);

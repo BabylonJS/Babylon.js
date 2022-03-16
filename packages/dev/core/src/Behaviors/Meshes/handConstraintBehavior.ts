@@ -180,7 +180,7 @@ export class HandConstraintBehavior implements Behavior<TransformNode> {
             const wrist = hand.getJointMesh(XRHandJoint.WRIST);
 
             if (wrist && middleMetacarpal && pinkyMetacarpal) {
-                let handPose: HandPoseInfo = { position: middleMetacarpal.absolutePosition, quaternion: new Quaternion(), id: hand.xrController.uniqueId };
+                const handPose: HandPoseInfo = { position: middleMetacarpal.absolutePosition, quaternion: new Quaternion(), id: hand.xrController.uniqueId };
 
                 // palm forward
                 const up = TmpVectors.Vector3[0];
@@ -205,7 +205,7 @@ export class HandConstraintBehavior implements Behavior<TransformNode> {
     /**
      * Initializes the hand constraint behavior
      */
-    public init() { }
+    public init() {}
 
     /**
      * Attaches the hand constraint to a `TransformNode`
@@ -285,8 +285,7 @@ export class HandConstraintBehavior implements Behavior<TransformNode> {
         if (camera) {
             const cameraForward = camera.getForwardRay();
 
-            if (this.handConstraintVisibility === HandConstraintVisibility.GAZE_FOCUS ||
-                this.handConstraintVisibility === HandConstraintVisibility.PALM_AND_GAZE) {
+            if (this.handConstraintVisibility === HandConstraintVisibility.GAZE_FOCUS || this.handConstraintVisibility === HandConstraintVisibility.PALM_AND_GAZE) {
                 gazeVisible = false;
                 let gaze: Ray | undefined;
                 if (this._eyeTracking) {
@@ -298,8 +297,7 @@ export class HandConstraintBehavior implements Behavior<TransformNode> {
                 const gazeToBehavior = TmpVectors.Vector3[0];
                 if (pose) {
                     pose.position.subtractToRef(gaze.origin, gazeToBehavior);
-                }
-                else {
+                } else {
                     this._node.getAbsolutePosition().subtractToRef(gaze.origin, gazeToBehavior);
                 }
 
@@ -308,21 +306,20 @@ export class HandConstraintBehavior implements Behavior<TransformNode> {
 
                 if (projectedDistance > 0) {
                     const radiusSquared = gazeToBehavior.lengthSquared() - projectedSquared;
-                    if (radiusSquared < (this.gazeProximityRadius * this.gazeProximityRadius)) {
+                    if (radiusSquared < this.gazeProximityRadius * this.gazeProximityRadius) {
                         gazeVisible = true;
                     }
                 }
             }
 
-            if (this.handConstraintVisibility === HandConstraintVisibility.PALM_UP ||
-                this.handConstraintVisibility === HandConstraintVisibility.PALM_AND_GAZE) {
+            if (this.handConstraintVisibility === HandConstraintVisibility.PALM_UP || this.handConstraintVisibility === HandConstraintVisibility.PALM_AND_GAZE) {
                 palmVisible = false;
 
                 if (pose) {
                     const palmDirection = TmpVectors.Vector3[0];
                     Vector3.LeftHandedForwardReadOnly.rotateByQuaternionToRef(pose.quaternion, palmDirection);
 
-                    if (Vector3.Dot(palmDirection, cameraForward.direction) > ((this.palmUpStrictness * 2) - 1)) {
+                    if (Vector3.Dot(palmDirection, cameraForward.direction) > this.palmUpStrictness * 2 - 1) {
                         palmVisible = true;
                     }
                 }

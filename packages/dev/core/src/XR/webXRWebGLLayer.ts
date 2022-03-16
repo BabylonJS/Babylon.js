@@ -9,7 +9,7 @@ import { WebXRLayerRenderTargetTextureProvider } from "./webXRRenderTargetTextur
  * Wraps xr webgl layers.
  * @hidden
  */
- export class WebXRWebGLLayerWrapper extends WebXRLayerWrapper {
+export class WebXRWebGLLayerWrapper extends WebXRLayerWrapper {
     /**
      * @param layer is the layer to be wrapped.
      * @returns a new WebXRLayerWrapper wrapping the provided XRWebGLLayer.
@@ -19,8 +19,9 @@ import { WebXRLayerRenderTargetTextureProvider } from "./webXRRenderTargetTextur
             () => layer.framebufferWidth,
             () => layer.framebufferHeight,
             layer,
-            'XRWebGLLayer',
-            (sessionManager) => new WebXRWebGLLayerRenderTargetTextureProvider(sessionManager.scene, this));
+            "XRWebGLLayer",
+            (sessionManager) => new WebXRWebGLLayerRenderTargetTextureProvider(sessionManager.scene, this)
+        );
     }
 }
 
@@ -30,7 +31,7 @@ import { WebXRLayerRenderTargetTextureProvider } from "./webXRRenderTargetTextur
  */
 export class WebXRWebGLLayerRenderTargetTextureProvider extends WebXRLayerRenderTargetTextureProvider {
     // The dimensions will always be defined in this class.
-    protected _framebufferDimensions: { framebufferWidth: number, framebufferHeight: number };
+    protected _framebufferDimensions: { framebufferWidth: number; framebufferHeight: number };
     private _rtt: Nullable<RenderTargetTexture>;
     private _framebuffer: WebGLFramebuffer;
     private _layer: XRWebGLLayer;
@@ -40,7 +41,7 @@ export class WebXRWebGLLayerRenderTargetTextureProvider extends WebXRLayerRender
         this._layer = layerWrapper.layer;
         this._framebufferDimensions = {
             framebufferWidth: this._layer.framebufferWidth,
-            framebufferHeight: this._layer.framebufferHeight
+            framebufferHeight: this._layer.framebufferHeight,
         };
     }
 
@@ -60,10 +61,12 @@ export class WebXRWebGLLayerRenderTargetTextureProvider extends WebXRLayerRender
         const layerHeight = this._layer.framebufferHeight;
         const framebuffer = this._layer.framebuffer;
 
-        if (!this._rtt ||
+        if (
+            !this._rtt ||
             layerWidth !== this._framebufferDimensions.framebufferWidth ||
             layerHeight !== this._framebufferDimensions.framebufferHeight ||
-            framebuffer !== this._framebuffer) {
+            framebuffer !== this._framebuffer
+        ) {
             this._rtt = this._createRenderTargetTexture(layerWidth, layerHeight, framebuffer);
             this._framebufferDimensions.framebufferWidth = layerWidth;
             this._framebufferDimensions.framebufferHeight = layerHeight;

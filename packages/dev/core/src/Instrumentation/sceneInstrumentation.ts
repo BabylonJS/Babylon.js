@@ -3,7 +3,7 @@ import { Observer } from "../Misc/observable";
 import { Nullable } from "../types";
 import { Camera } from "../Cameras/camera";
 import { Scene, IDisposable } from "../scene";
-import { PerfCounter } from '../Misc/perfCounter';
+import { PerfCounter } from "../Misc/perfCounter";
 /**
  * This class can be used to get instrumentation data from a Babylon engine
  * @see https://doc.babylonjs.com/how_to/optimizing_your_scene#sceneinstrumentation
@@ -467,7 +467,8 @@ export class SceneInstrumentation implements IDisposable {
         /**
          * Defines the scene to instrument
          */
-        public scene: Scene) {
+        public scene: Scene
+    ) {
         // Before render
         this._onBeforeAnimationsObserver = scene.onBeforeAnimationsObservable.add(() => {
             if (this._captureActiveMeshesEvaluationTime) {

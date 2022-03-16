@@ -62,8 +62,8 @@ export class ProceduralTextureSceneComponent implements ISceneComponent {
     private _beforeClear(): void {
         if (this.scene.proceduralTexturesEnabled) {
             Tools.StartPerformanceCounter("Procedural textures", this.scene.proceduralTextures.length > 0);
-            for (var proceduralIndex = 0; proceduralIndex < this.scene.proceduralTextures.length; proceduralIndex++) {
-                var proceduralTexture = this.scene.proceduralTextures[proceduralIndex];
+            for (let proceduralIndex = 0; proceduralIndex < this.scene.proceduralTextures.length; proceduralIndex++) {
+                const proceduralTexture = this.scene.proceduralTextures[proceduralIndex];
                 if (proceduralTexture._shouldRender()) {
                     proceduralTexture.render();
                 }

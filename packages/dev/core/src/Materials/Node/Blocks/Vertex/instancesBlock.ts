@@ -1,14 +1,14 @@
-import { NodeMaterialBlock } from '../../nodeMaterialBlock';
-import { NodeMaterialBlockTargets } from '../../Enums/nodeMaterialBlockTargets';
-import { NodeMaterialBlockConnectionPointTypes } from '../../Enums/nodeMaterialBlockConnectionPointTypes';
-import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPoint';
-import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
-import { AbstractMesh } from '../../../../Meshes/abstractMesh';
-import { NodeMaterial, NodeMaterialDefines } from '../../nodeMaterial';
-import { NodeMaterialSystemValues } from '../../Enums/nodeMaterialSystemValues';
-import { InputBlock } from '../Input/inputBlock';
-import { RegisterClass } from '../../../../Misc/typeStore';
-import { SubMesh } from '../../../../Meshes/subMesh';
+import { NodeMaterialBlock } from "../../nodeMaterialBlock";
+import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
+import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
+import { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
+import { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { AbstractMesh } from "../../../../Meshes/abstractMesh";
+import { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
+import { NodeMaterialSystemValues } from "../../Enums/nodeMaterialSystemValues";
+import { InputBlock } from "../Input/inputBlock";
+import { RegisterClass } from "../../../../Misc/typeStore";
+import { SubMesh } from "../../../../Meshes/subMesh";
 
 /**
  * Block used to add support for instances
@@ -165,15 +165,17 @@ export class InstancesBlock extends NodeMaterialBlock {
         state.sharedData.blocksWithDefines.push(this);
 
         // Emit code
-        let output = this._outputs[0];
-        let instanceID = this._outputs[1];
-        let world0 = this.world0;
-        let world1 = this.world1;
-        let world2 = this.world2;
-        let world3 = this.world3;
+        const output = this._outputs[0];
+        const instanceID = this._outputs[1];
+        const world0 = this.world0;
+        const world1 = this.world1;
+        const world2 = this.world2;
+        const world3 = this.world3;
 
         state.compilationString += `#ifdef INSTANCES\r\n`;
-        state.compilationString += this._declareOutput(output, state) + ` = mat4(${world0.associatedVariableName}, ${world1.associatedVariableName}, ${world2.associatedVariableName}, ${world3.associatedVariableName});\r\n`;
+        state.compilationString +=
+            this._declareOutput(output, state) +
+            ` = mat4(${world0.associatedVariableName}, ${world1.associatedVariableName}, ${world2.associatedVariableName}, ${world3.associatedVariableName});\r\n`;
         state.compilationString += `#ifdef THIN_INSTANCES\r\n`;
         state.compilationString += `${output.associatedVariableName} = ${this.world.associatedVariableName} * ${output.associatedVariableName};\r\n`;
         state.compilationString += `#endif\r\n`;

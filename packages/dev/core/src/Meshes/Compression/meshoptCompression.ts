@@ -2,12 +2,12 @@ import { Tools } from "../../Misc/tools";
 import { IDisposable } from "../../scene";
 import { Nullable } from "../../types";
 
-declare var MeshoptDecoder: any;
+declare let MeshoptDecoder: any;
 
 /**
  * Configuration for meshoptimizer compression
  */
- export interface IMeshoptCompressionConfiguration {
+export interface IMeshoptCompressionConfiguration {
     /**
      * Configuration for the decoder.
      */
@@ -54,8 +54,8 @@ export class MeshoptCompression implements IDisposable {
      */
     public static Configuration: IMeshoptCompressionConfiguration = {
         decoder: {
-            url: "https://preview.babylonjs.com/meshopt_decoder.js"
-        }
+            url: "https://preview.babylonjs.com/meshopt_decoder.js",
+        },
     };
 
     private static _Default: Nullable<MeshoptCompression> = null;
@@ -91,15 +91,15 @@ export class MeshoptCompression implements IDisposable {
     }
 
     /**
-      * Decode meshopt data.
-      * @see https://github.com/zeux/meshoptimizer/tree/master/js#decoder
-      * @param source The input data.
-      * @param count The number of elements.
-      * @param stride The stride in bytes.
-      * @param mode The compression mode.
-      * @param filter The compression filter.
-      * @returns a Promise<Uint8Array> that resolves to the decoded data
-      */
+     * Decode meshopt data.
+     * @see https://github.com/zeux/meshoptimizer/tree/master/js#decoder
+     * @param source The input data.
+     * @param count The number of elements.
+     * @param stride The stride in bytes.
+     * @param mode The compression mode.
+     * @param filter The compression filter.
+     * @returns a Promise<Uint8Array> that resolves to the decoded data
+     */
     public decodeGltfBufferAsync(source: Uint8Array, count: number, stride: number, mode: "ATTRIBUTES" | "TRIANGLES" | "INDICES", filter?: string): Promise<Uint8Array> {
         return this._decoderModulePromise!.then(() => {
             const result = new Uint8Array(count * stride);

@@ -3,9 +3,9 @@ import { StorageBuffer } from "../Buffers/storageBuffer";
 import { ComputeShader } from "../Compute/computeShader";
 import { UniformBuffer } from "../Materials/uniformBuffer";
 import { IGPUParticleSystemPlatform } from "./IGPUParticleSystemPlatform";
-import { Buffer } from "../Buffers/buffer";
+import { Buffer , VertexBuffer } from "../Buffers/buffer";
 import { GPUParticleSystem } from "./gpuParticleSystem";
-import { VertexBuffer } from "../Buffers/buffer";
+
 import { DataArray } from "../types";
 import { DataBuffer } from "../Buffers/dataBuffer";
 import { Constants } from "../Engines/constants";
@@ -18,7 +18,6 @@ import "../ShadersWGSL/gpuUpdateParticles.compute";
 
 /** @hidden */
 export class ComputeShaderParticleSystem implements IGPUParticleSystemPlatform {
-
     private _parent: GPUParticleSystem;
     private _engine: ThinEngine;
     private _updateComputeShader: ComputeShader;
@@ -43,11 +42,11 @@ export class ComputeShaderParticleSystem implements IGPUParticleSystemPlatform {
 
     public createUpdateBuffer(defines: string): UniformBufferEffectCommonAccessor {
         const bindingsMapping: ComputeBindingMapping = {
-            "params": { group: 0, binding: 0 },
-            "particlesIn": { group: 0, binding: 1 },
-            "particlesOut": { group: 0, binding: 2 },
-            "randomTexture": { group: 0, binding: 3 },
-            "randomTexture2": { group: 0, binding: 4 },
+            params: { group: 0, binding: 0 },
+            particlesIn: { group: 0, binding: 1 },
+            particlesOut: { group: 0, binding: 2 },
+            randomTexture: { group: 0, binding: 3 },
+            randomTexture2: { group: 0, binding: 4 },
         };
         if (this._parent._sizeGradientsTexture) {
             bindingsMapping["sizeGradientTexture"] = { group: 1, binding: 1 };
@@ -125,8 +124,7 @@ export class ComputeShaderParticleSystem implements IGPUParticleSystemPlatform {
         this._engine.bindBuffers(this._renderVertexBuffers[index], null, effect);
     }
 
-    public preUpdateParticleBuffer(): void {
-    }
+    public preUpdateParticleBuffer(): void {}
 
     public updateParticleBuffer(index: number, targetBuffer: Buffer, currentActiveCount: number): void {
         this._simParamsComputeShader.update();

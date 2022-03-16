@@ -1,14 +1,14 @@
 import { Nullable } from "../types";
 import { Ray } from "../Culling/ray";
 import { Vector3 } from "../Maths/math.vector";
-import { Color3 } from '../Maths/math.color';
+import { Color3 } from "../Maths/math.color";
 import { Scene } from "../scene";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { LinesMesh } from "../Meshes/linesMesh";
 
-import "../Meshes/Builders/linesBuilder";
-import { Observer } from '../Misc/observable';
 import { CreateLines } from "../Meshes/Builders/linesBuilder";
+import { Observer } from "../Misc/observable";
+
 
 /**
  * As raycast might be hard to debug, the RayHelper can help rendering the different rays
@@ -16,7 +16,6 @@ import { CreateLines } from "../Meshes/Builders/linesBuilder";
  * @see https://doc.babylonjs.com/babylon101/raycasts#debugging
  */
 export class RayHelper {
-
     /**
      * Defines the ray we are currently tryin to visualize.
      */
@@ -41,7 +40,7 @@ export class RayHelper {
      * @returns The newly created ray helper.
      */
     public static CreateAndShow(ray: Ray, scene: Scene, color: Color3): RayHelper {
-        var helper = new RayHelper(ray);
+        const helper = new RayHelper(ray);
 
         helper.show(scene, color);
 
@@ -65,10 +64,8 @@ export class RayHelper {
      * @param color Defines the color the ray needs to be rendered in
      */
     public show(scene: Scene, color?: Color3): void {
-
         if (!this._renderFunction && this.ray) {
-
-            var ray = this.ray;
+            const ray = this.ray;
 
             this._renderFunction = this._render.bind(this);
             this._scene = scene;
@@ -84,14 +81,12 @@ export class RayHelper {
         if (color && this._renderLine) {
             this._renderLine.color.copyFrom(color);
         }
-
     }
 
     /**
      * Hides the ray we are debugging.
      */
     public hide(): void {
-
         if (this._renderFunction && this._scene) {
             this._scene.unregisterBeforeRender(this._renderFunction);
             this._scene = null;
@@ -103,19 +98,17 @@ export class RayHelper {
 
             this._renderPoints = [];
         }
-
     }
 
     private _render(): void {
-
-        var ray = this.ray;
+        const ray = this.ray;
 
         if (!ray) {
             return;
         }
 
-        var point = this._renderPoints[1];
-        var len = Math.min(ray.length, 1000000);
+        const point = this._renderPoints[1];
+        const len = Math.min(ray.length, 1000000);
 
         point.copyFrom(ray.direction);
         point.scaleInPlace(len);
@@ -136,10 +129,9 @@ export class RayHelper {
      * @param length Defines the length of the ray
      */
     public attachToMesh(mesh: AbstractMesh, meshSpaceDirection?: Vector3, meshSpaceOrigin?: Vector3, length?: number): void {
-
         this._attachedToMesh = mesh;
 
-        var ray = this.ray;
+        const ray = this.ray;
 
         if (!ray) {
             return;
@@ -206,7 +198,7 @@ export class RayHelper {
     }
 
     private _updateToMesh(): void {
-        var ray = this.ray;
+        const ray = this.ray;
 
         if (!this._attachedToMesh || !ray) {
             return;

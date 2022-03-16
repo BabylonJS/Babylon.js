@@ -1,19 +1,19 @@
 import { IEasingFunction, EasingFunction } from "./easing";
 import { Vector3, Quaternion, Vector2, Matrix, TmpVectors } from "../Maths/math.vector";
-import { Color3, Color4 } from '../Maths/math.color';
+import { Color3, Color4 } from "../Maths/math.color";
 import { Scalar } from "../Maths/math.scalar";
 
 import { Nullable } from "../types";
 import { Scene } from "../scene";
 import { SerializationHelper } from "../Misc/decorators";
-import { RegisterClass } from '../Misc/typeStore';
-import { IAnimationKey, AnimationKeyInterpolation } from './animationKey';
-import { AnimationRange } from './animationRange';
-import { AnimationEvent } from './animationEvent';
+import { RegisterClass } from "../Misc/typeStore";
+import { IAnimationKey, AnimationKeyInterpolation } from "./animationKey";
+import { AnimationRange } from "./animationRange";
+import { AnimationEvent } from "./animationEvent";
 import { Node } from "../node";
-import { IAnimatable } from './animatable.interface';
-import { Size } from '../Maths/math.size';
-import { WebRequest } from '../Misc/webRequest';
+import { IAnimatable } from "./animatable.interface";
+import { Size } from "../Maths/math.size";
+import { WebRequest } from "../Misc/webRequest";
 
 declare type Animatable = import("./animatable").Animatable;
 declare type RuntimeAnimation = import("./runtimeAnimation").RuntimeAnimation;
@@ -93,11 +93,27 @@ export class Animation {
     private _ranges: { [name: string]: Nullable<AnimationRange> } = {};
 
     /**
+     * @param name
+     * @param targetProperty
+     * @param framePerSecond
+     * @param totalFrame
+     * @param from
+     * @param to
+     * @param loopMode
+     * @param easingFunction
      * @hidden Internal use
      */
-    public static _PrepareAnimation(name: string, targetProperty: string, framePerSecond: number, totalFrame: number,
-        from: any, to: any, loopMode?: number, easingFunction?: EasingFunction): Nullable<Animation> {
-        var dataType = undefined;
+    public static _PrepareAnimation(
+        name: string,
+        targetProperty: string,
+        framePerSecond: number,
+        totalFrame: number,
+        from: any,
+        to: any,
+        loopMode?: number,
+        easingFunction?: EasingFunction
+    ): Nullable<Animation> {
+        let dataType = undefined;
 
         if (!isNaN(parseFloat(from)) && isFinite(from)) {
             dataType = Animation.ANIMATIONTYPE_FLOAT;
@@ -119,9 +135,12 @@ export class Animation {
             return null;
         }
 
-        var animation = new Animation(name, targetProperty, framePerSecond, dataType, loopMode);
+        const animation = new Animation(name, targetProperty, framePerSecond, dataType, loopMode);
 
-        var keys: Array<IAnimationKey> = [{ frame: 0, value: from }, { frame: totalFrame, value: to }];
+        const keys: Array<IAnimationKey> = [
+            { frame: 0, value: from },
+            { frame: totalFrame, value: to },
+        ];
         animation.setKeys(keys);
 
         if (easingFunction !== undefined) {
@@ -140,11 +159,7 @@ export class Animation {
      * @returns The created animation
      */
     public static CreateAnimation(property: string, animationType: number, framePerSecond: number, easingFunction: EasingFunction): Animation {
-        var animation: Animation = new Animation(property + "Animation",
-            property,
-            framePerSecond,
-            animationType,
-            Animation.ANIMATIONLOOPMODE_CONSTANT);
+        const animation: Animation = new Animation(property + "Animation", property, framePerSecond, animationType, Animation.ANIMATIONLOOPMODE_CONSTANT);
 
         animation.setEasingFunction(easingFunction);
 
@@ -166,11 +181,20 @@ export class Animation {
      * @param scene defines the hosting scene
      * @returns the animatable created for this animation
      */
-    public static CreateAndStartAnimation(name: string, target: any, targetProperty: string,
-        framePerSecond: number, totalFrame: number,
-        from: any, to: any, loopMode?: number, easingFunction?: EasingFunction, onAnimationEnd?: () => void, scene?: Scene): Nullable<Animatable> {
-
-        var animation = Animation._PrepareAnimation(name, targetProperty, framePerSecond, totalFrame, from, to, loopMode, easingFunction);
+    public static CreateAndStartAnimation(
+        name: string,
+        target: any,
+        targetProperty: string,
+        framePerSecond: number,
+        totalFrame: number,
+        from: any,
+        to: any,
+        loopMode?: number,
+        easingFunction?: EasingFunction,
+        onAnimationEnd?: () => void,
+        scene?: Scene
+    ): Nullable<Animatable> {
+        const animation = Animation._PrepareAnimation(name, targetProperty, framePerSecond, totalFrame, from, to, loopMode, easingFunction);
 
         if (!animation) {
             return null;
@@ -184,7 +208,7 @@ export class Animation {
             return null;
         }
 
-        return scene.beginDirectAnimation(target, [animation], 0, totalFrame, (animation.loopMode === 1), 1.0, onAnimationEnd);
+        return scene.beginDirectAnimation(target, [animation], 0, totalFrame, animation.loopMode === 1, 1.0, onAnimationEnd);
     }
 
     /**
@@ -203,18 +227,27 @@ export class Animation {
      * @returns the list of animatables created for all nodes
      * @example https://www.babylonjs-playground.com/#MH0VLI
      */
-    public static CreateAndStartHierarchyAnimation(name: string, node: Node, directDescendantsOnly: boolean, targetProperty: string,
-        framePerSecond: number, totalFrame: number,
-        from: any, to: any, loopMode?: number, easingFunction?: EasingFunction, onAnimationEnd?: () => void): Nullable<Animatable[]> {
-
-        var animation = Animation._PrepareAnimation(name, targetProperty, framePerSecond, totalFrame, from, to, loopMode, easingFunction);
+    public static CreateAndStartHierarchyAnimation(
+        name: string,
+        node: Node,
+        directDescendantsOnly: boolean,
+        targetProperty: string,
+        framePerSecond: number,
+        totalFrame: number,
+        from: any,
+        to: any,
+        loopMode?: number,
+        easingFunction?: EasingFunction,
+        onAnimationEnd?: () => void
+    ): Nullable<Animatable[]> {
+        const animation = Animation._PrepareAnimation(name, targetProperty, framePerSecond, totalFrame, from, to, loopMode, easingFunction);
 
         if (!animation) {
             return null;
         }
 
-        let scene = node.getScene();
-        return scene.beginDirectHierarchyAnimation(node, directDescendantsOnly, [animation], 0, totalFrame, (animation.loopMode === 1), 1.0, onAnimationEnd);
+        const scene = node.getScene();
+        return scene.beginDirectHierarchyAnimation(node, directDescendantsOnly, [animation], 0, totalFrame, animation.loopMode === 1, 1.0, onAnimationEnd);
     }
 
     /**
@@ -231,11 +264,19 @@ export class Animation {
      * @param onAnimationEnd Callback to run once the animation is complete
      * @returns Nullable animation
      */
-    public static CreateMergeAndStartAnimation(name: string, node: Node, targetProperty: string,
-        framePerSecond: number, totalFrame: number,
-        from: any, to: any, loopMode?: number, easingFunction?: EasingFunction, onAnimationEnd?: () => void): Nullable<Animatable> {
-
-        var animation = Animation._PrepareAnimation(name, targetProperty, framePerSecond, totalFrame, from, to, loopMode, easingFunction);
+    public static CreateMergeAndStartAnimation(
+        name: string,
+        node: Node,
+        targetProperty: string,
+        framePerSecond: number,
+        totalFrame: number,
+        from: any,
+        to: any,
+        loopMode?: number,
+        easingFunction?: EasingFunction,
+        onAnimationEnd?: () => void
+    ): Nullable<Animatable> {
+        const animation = Animation._PrepareAnimation(name, targetProperty, framePerSecond, totalFrame, from, to, loopMode, easingFunction);
 
         if (!animation) {
             return null;
@@ -243,7 +284,7 @@ export class Animation {
 
         node.animations.push(animation);
 
-        return node.getScene().beginAnimation(node, 0, totalFrame, (animation.loopMode === 1), 1.0, onAnimationEnd);
+        return node.getScene().beginAnimation(node, 0, totalFrame, animation.loopMode === 1, 1.0, onAnimationEnd);
     }
 
     /**
@@ -269,23 +310,23 @@ export class Animation {
 
         referenceFrame = referenceFrame >= 0 ? referenceFrame : 0;
         let startIndex = 0;
-        let firstKey = animation._keys[0];
+        const firstKey = animation._keys[0];
         let endIndex = animation._keys.length - 1;
-        let lastKey = animation._keys[endIndex];
-        let valueStore = {
+        const lastKey = animation._keys[endIndex];
+        const valueStore = {
             referenceValue: firstKey.value,
             referencePosition: TmpVectors.Vector3[0],
             referenceQuaternion: TmpVectors.Quaternion[0],
             referenceScaling: TmpVectors.Vector3[1],
             keyPosition: TmpVectors.Vector3[2],
             keyQuaternion: TmpVectors.Quaternion[1],
-            keyScaling: TmpVectors.Vector3[3]
+            keyScaling: TmpVectors.Vector3[3],
         };
         let referenceFound = false;
         let from = firstKey.frame;
         let to = lastKey.frame;
         if (range) {
-            let rangeValue = animation.getRange(range);
+            const rangeValue = animation.getRange(range);
 
             if (rangeValue) {
                 from = rangeValue.from;
@@ -297,30 +338,30 @@ export class Animation {
 
         // There's only one key, so use it
         if (animation._keys.length === 1) {
-            let value = animation._getKeyValue(animation._keys[0]);
+            const value = animation._getKeyValue(animation._keys[0]);
             valueStore.referenceValue = value.clone ? value.clone() : value;
             referenceFound = true;
         }
 
         // Reference frame is before the first frame, so just use the first frame
         else if (referenceFrame <= firstKey.frame) {
-            let value = animation._getKeyValue(firstKey.value);
+            const value = animation._getKeyValue(firstKey.value);
             valueStore.referenceValue = value.clone ? value.clone() : value;
             referenceFound = true;
         }
 
         // Reference frame is after the last frame, so just use the last frame
         else if (referenceFrame >= lastKey.frame) {
-            let value = animation._getKeyValue(lastKey.value);
+            const value = animation._getKeyValue(lastKey.value);
             valueStore.referenceValue = value.clone ? value.clone() : value;
             referenceFound = true;
         }
 
         // Find key bookends, create them if they don't exist
         var index = 0;
-        while (!referenceFound || !fromKeyFound || !toKeyFound && index < animation._keys.length - 1) {
-            let currentKey = animation._keys[index];
-            let nextKey = animation._keys[index + 1];
+        while (!referenceFound || !fromKeyFound || (!toKeyFound && index < animation._keys.length - 1)) {
+            const currentKey = animation._keys[index];
+            const nextKey = animation._keys[index + 1];
 
             // If reference frame wasn't found yet, check if we can interpolate to it
             if (!referenceFound && referenceFrame >= currentKey.frame && referenceFrame <= nextKey.frame) {
@@ -331,10 +372,10 @@ export class Animation {
                 } else if (referenceFrame === nextKey.frame) {
                     value = animation._getKeyValue(nextKey.value);
                 } else {
-                    let animationState = {
+                    const animationState = {
                         key: index,
                         repeatCount: 0,
-                        loopMode: this.ANIMATIONLOOPMODE_CONSTANT
+                        loopMode: this.ANIMATIONLOOPMODE_CONSTANT,
                     };
                     value = animation._interpolate(referenceFrame, animationState);
                 }
@@ -350,15 +391,15 @@ export class Animation {
                 } else if (from === nextKey.frame) {
                     startIndex = index + 1;
                 } else {
-                    let animationState = {
+                    const animationState = {
                         key: index,
                         repeatCount: 0,
-                        loopMode: this.ANIMATIONLOOPMODE_CONSTANT
+                        loopMode: this.ANIMATIONLOOPMODE_CONSTANT,
                     };
-                    let value = animation._interpolate(from, animationState);
-                    let key: IAnimationKey = {
+                    const value = animation._interpolate(from, animationState);
+                    const key: IAnimationKey = {
                         frame: from,
-                        value: value.clone ? value.clone() : value
+                        value: value.clone ? value.clone() : value,
                     };
                     animation._keys.splice(index + 1, 0, key);
                     startIndex = index + 1;
@@ -374,15 +415,15 @@ export class Animation {
                 } else if (to === nextKey.frame) {
                     endIndex = index + 1;
                 } else {
-                    let animationState = {
+                    const animationState = {
                         key: index,
                         repeatCount: 0,
-                        loopMode: this.ANIMATIONLOOPMODE_CONSTANT
+                        loopMode: this.ANIMATIONLOOPMODE_CONSTANT,
                     };
-                    let value = animation._interpolate(to, animationState);
-                    let key: IAnimationKey = {
+                    const value = animation._interpolate(to, animationState);
+                    const key: IAnimationKey = {
                         frame: to,
-                        value: value.clone ? value.clone() : value
+                        value: value.clone ? value.clone() : value,
                     };
                     animation._keys.splice(index + 1, 0, key);
                     endIndex = index + 1;
@@ -407,7 +448,7 @@ export class Animation {
 
         // Subtract the reference value from all of the key values
         for (var index = startIndex; index <= endIndex; index++) {
-            let key = animation._keys[index];
+            const key = animation._keys[index];
 
             // If this key was duplicated to create a frame 0 key, skip it because its value has already been updated
             if (index && animation.dataType !== Animation.ANIMATIONTYPE_FLOAT && key.value === firstKey.value) {
@@ -459,7 +500,16 @@ export class Animation {
      * @param onAnimationEnd Callback trigger at the end of the animation
      * @returns Nullable animation
      */
-    public static TransitionTo(property: string, targetValue: any, host: any, scene: Scene, frameRate: number, transition: Animation, duration: number, onAnimationEnd: Nullable<() => void> = null): Nullable<Animatable> {
+    public static TransitionTo(
+        property: string,
+        targetValue: any,
+        host: any,
+        scene: Scene,
+        frameRate: number,
+        transition: Animation,
+        duration: number,
+        onAnimationEnd: Nullable<() => void> = null
+    ): Nullable<Animatable> {
         if (duration <= 0) {
             host[property] = targetValue;
             if (onAnimationEnd) {
@@ -468,16 +518,18 @@ export class Animation {
             return null;
         }
 
-        var endFrame: number = frameRate * (duration / 1000);
+        const endFrame: number = frameRate * (duration / 1000);
 
-        transition.setKeys([{
-            frame: 0,
-            value: host[property].clone ? host[property].clone() : host[property]
-        },
-        {
-            frame: endFrame,
-            value: targetValue
-        }]);
+        transition.setKeys([
+            {
+                frame: 0,
+                value: host[property].clone ? host[property].clone() : host[property],
+            },
+            {
+                frame: endFrame,
+                value: targetValue,
+            },
+        ]);
 
         if (!host.animations) {
             host.animations = [];
@@ -485,7 +537,7 @@ export class Animation {
 
         host.animations.push(transition);
 
-        var animation: Animatable = scene.beginAnimation(host, 0, endFrame, false);
+        const animation: Animatable = scene.beginAnimation(host, 0, endFrame, false);
         animation.onAnimationEnd = onAnimationEnd;
         return animation;
     }
@@ -501,7 +553,7 @@ export class Animation {
      * Specifies if any of the runtime animations are currently running
      */
     public get hasRunningRuntimeAnimations(): boolean {
-        for (var runtimeAnimation of this._runtimeAnimations) {
+        for (const runtimeAnimation of this._runtimeAnimations) {
             if (!runtimeAnimation.isStopped()) {
                 return true;
             }
@@ -531,7 +583,8 @@ export class Animation {
         /**The loop mode of the animation */
         public loopMode?: number,
         /**Specifies if blending should be enabled */
-        public enableBlending?: boolean) {
+        public enableBlending?: boolean
+    ) {
         this.targetPropertyPath = targetProperty.split(".");
         this.dataType = dataType;
         this.loopMode = loopMode === undefined ? Animation.ANIMATIONLOOPMODE_CYCLE : loopMode;
@@ -545,14 +598,14 @@ export class Animation {
      * @returns String form of the animation
      */
     public toString(fullDetails?: boolean): string {
-        var ret = "Name: " + this.name + ", property: " + this.targetProperty;
-        ret += ", datatype: " + (["Float", "Vector3", "Quaternion", "Matrix", "Color3", "Vector2"])[this.dataType];
+        let ret = "Name: " + this.name + ", property: " + this.targetProperty;
+        ret += ", datatype: " + ["Float", "Vector3", "Quaternion", "Matrix", "Color3", "Vector2"][this.dataType];
         ret += ", nKeys: " + (this._keys ? this._keys.length : "none");
         ret += ", nRanges: " + (this._ranges ? Object.keys(this._ranges).length : "none");
         if (fullDetails) {
             ret += ", Ranges: {";
-            var first = true;
-            for (var name in this._ranges) {
+            let first = true;
+            for (const name in this._ranges) {
                 if (first) {
                     ret += ", ";
                     first = false;
@@ -578,7 +631,7 @@ export class Animation {
      * @param frame The frame to remove events from
      */
     public removeEvents(frame: number): void {
-        for (var index = 0; index < this._events.length; index++) {
+        for (let index = 0; index < this._events.length; index++) {
             if (this._events[index].frame === frame) {
                 this._events.splice(index, 1);
                 index--;
@@ -613,24 +666,22 @@ export class Animation {
      * @param deleteFrames Specifies if the key frames for the range should also be deleted (true) or not (false)
      */
     public deleteRange(name: string, deleteFrames = true): void {
-        let range = this._ranges[name];
+        const range = this._ranges[name];
         if (!range) {
             return;
-
         }
         if (deleteFrames) {
-            var from = range.from;
-            var to = range.to;
+            const from = range.from;
+            const to = range.to;
 
             // this loop MUST go high to low for multiple splices to work
-            for (var key = this._keys.length - 1; key >= 0; key--) {
+            for (let key = this._keys.length - 1; key >= 0; key--) {
                 if (this._keys[key].frame >= from && this._keys[key].frame <= to) {
                     this._keys.splice(key, 1);
                 }
             }
         }
         this._ranges[name] = null; // said much faster than 'delete this._range[name]'
-
     }
 
     /**
@@ -655,9 +706,9 @@ export class Animation {
      * @returns Highest frame rate of the animation
      */
     public getHighestFrame(): number {
-        var ret = 0;
+        let ret = 0;
 
-        for (var key = 0, nKeys = this._keys.length; key < nKeys; key++) {
+        for (let key = 0, nKeys = this._keys.length; key < nKeys; key++) {
             if (ret < this._keys[key].frame) {
                 ret = this._keys[key].frame;
             }
@@ -832,11 +883,12 @@ export class Animation {
      * @param gradient Scalar amount to interpolate
      * @returns interpolated value
      */
-     public color4InterpolateFunctionWithTangents(startValue: Color4, outTangent: Color4, endValue: Color4, inTangent: Color4, gradient: number): Color4 {
+    public color4InterpolateFunctionWithTangents(startValue: Color4, outTangent: Color4, endValue: Color4, inTangent: Color4, gradient: number): Color4 {
         return Color4.Hermite(startValue, outTangent, endValue, inTangent, gradient);
     }
 
     /**
+     * @param value
      * @hidden Internal use only
      */
     public _getKeyValue(value: any): any {
@@ -856,11 +908,13 @@ export class Animation {
         return this._interpolate(currentFrame, {
             key: 0,
             repeatCount: 0,
-            loopMode: Animation.ANIMATIONLOOPMODE_CONSTANT
+            loopMode: Animation.ANIMATIONLOOPMODE_CONSTANT,
         });
     }
 
     /**
+     * @param currentFrame
+     * @param state
      * @hidden Internal use only
      */
     public _interpolate(currentFrame: number, state: _IAnimationState): any {
@@ -873,7 +927,7 @@ export class Animation {
             return this._getKeyValue(keys[0].value);
         }
 
-        var startKeyIndex = state.key;
+        let startKeyIndex = state.key;
 
         if (keys[startKeyIndex].frame >= currentFrame) {
             while (startKeyIndex - 1 >= 0 && keys[startKeyIndex].frame >= currentFrame) {
@@ -881,14 +935,14 @@ export class Animation {
             }
         }
 
-        for (var key = startKeyIndex; key < keys.length - 1; key++) {
-            var endKey = keys[key + 1];
+        for (let key = startKeyIndex; key < keys.length - 1; key++) {
+            const endKey = keys[key + 1];
 
             if (endKey.frame >= currentFrame) {
                 state.key = key;
-                var startKey = keys[key];
-                var startValue = this._getKeyValue(startKey.value);
-                var endValue = this._getKeyValue(endKey.value);
+                const startKey = keys[key];
+                const startValue = this._getKeyValue(startKey.value);
+                const endValue = this._getKeyValue(endKey.value);
                 if (startKey.interpolation === AnimationKeyInterpolation.STEP) {
                     if (endKey.frame > currentFrame) {
                         return startValue;
@@ -897,14 +951,14 @@ export class Animation {
                     }
                 }
 
-                var useTangent = startKey.outTangent !== undefined && endKey.inTangent !== undefined;
-                var frameDelta = endKey.frame - startKey.frame;
+                const useTangent = startKey.outTangent !== undefined && endKey.inTangent !== undefined;
+                const frameDelta = endKey.frame - startKey.frame;
 
                 // gradient : percent of currentFrame between the frame inf and the frame sup
-                var gradient = (currentFrame - startKey.frame) / frameDelta;
+                let gradient = (currentFrame - startKey.frame) / frameDelta;
 
                 // check for easingFunction and correction of gradient
-                let easingFunction = this.getEasingFunction();
+                const easingFunction = this.getEasingFunction();
                 if (easingFunction !== null) {
                     gradient = easingFunction.ease(gradient);
                 }
@@ -912,7 +966,9 @@ export class Animation {
                 switch (this.dataType) {
                     // Float
                     case Animation.ANIMATIONTYPE_FLOAT:
-                        var floatValue = useTangent ? this.floatInterpolateFunctionWithTangents(startValue, startKey.outTangent * frameDelta, endValue, endKey.inTangent * frameDelta, gradient) : this.floatInterpolateFunction(startValue, endValue, gradient);
+                        var floatValue = useTangent
+                            ? this.floatInterpolateFunctionWithTangents(startValue, startKey.outTangent * frameDelta, endValue, endKey.inTangent * frameDelta, gradient)
+                            : this.floatInterpolateFunction(startValue, endValue, gradient);
                         switch (state.loopMode) {
                             case Animation.ANIMATIONLOOPMODE_CYCLE:
                             case Animation.ANIMATIONLOOPMODE_CONSTANT:
@@ -923,7 +979,15 @@ export class Animation {
                         break;
                     // Quaternion
                     case Animation.ANIMATIONTYPE_QUATERNION:
-                        var quatValue = useTangent ? this.quaternionInterpolateFunctionWithTangents(startValue, startKey.outTangent.scale(frameDelta), endValue, endKey.inTangent.scale(frameDelta), gradient) : this.quaternionInterpolateFunction(startValue, endValue, gradient);
+                        var quatValue = useTangent
+                            ? this.quaternionInterpolateFunctionWithTangents(
+                                  startValue,
+                                  startKey.outTangent.scale(frameDelta),
+                                  endValue,
+                                  endKey.inTangent.scale(frameDelta),
+                                  gradient
+                              )
+                            : this.quaternionInterpolateFunction(startValue, endValue, gradient);
                         switch (state.loopMode) {
                             case Animation.ANIMATIONLOOPMODE_CYCLE:
                             case Animation.ANIMATIONLOOPMODE_CONSTANT:
@@ -935,7 +999,9 @@ export class Animation {
                         return quatValue;
                     // Vector3
                     case Animation.ANIMATIONTYPE_VECTOR3:
-                        var vec3Value = useTangent ? this.vector3InterpolateFunctionWithTangents(startValue, startKey.outTangent.scale(frameDelta), endValue, endKey.inTangent.scale(frameDelta), gradient) : this.vector3InterpolateFunction(startValue, endValue, gradient);
+                        var vec3Value = useTangent
+                            ? this.vector3InterpolateFunctionWithTangents(startValue, startKey.outTangent.scale(frameDelta), endValue, endKey.inTangent.scale(frameDelta), gradient)
+                            : this.vector3InterpolateFunction(startValue, endValue, gradient);
                         switch (state.loopMode) {
                             case Animation.ANIMATIONLOOPMODE_CYCLE:
                             case Animation.ANIMATIONLOOPMODE_CONSTANT:
@@ -945,7 +1011,9 @@ export class Animation {
                         }
                     // Vector2
                     case Animation.ANIMATIONTYPE_VECTOR2:
-                        var vec2Value = useTangent ? this.vector2InterpolateFunctionWithTangents(startValue, startKey.outTangent.scale(frameDelta), endValue, endKey.inTangent.scale(frameDelta), gradient) : this.vector2InterpolateFunction(startValue, endValue, gradient);
+                        var vec2Value = useTangent
+                            ? this.vector2InterpolateFunctionWithTangents(startValue, startKey.outTangent.scale(frameDelta), endValue, endKey.inTangent.scale(frameDelta), gradient)
+                            : this.vector2InterpolateFunction(startValue, endValue, gradient);
                         switch (state.loopMode) {
                             case Animation.ANIMATIONLOOPMODE_CYCLE:
                             case Animation.ANIMATIONLOOPMODE_CONSTANT:
@@ -964,7 +1032,9 @@ export class Animation {
                         }
                     // Color3
                     case Animation.ANIMATIONTYPE_COLOR3:
-                        var color3Value = useTangent ? this.color3InterpolateFunctionWithTangents(startValue, startKey.outTangent.scale(frameDelta), endValue, endKey.inTangent.scale(frameDelta), gradient) : this.color3InterpolateFunction(startValue, endValue, gradient);
+                        var color3Value = useTangent
+                            ? this.color3InterpolateFunctionWithTangents(startValue, startKey.outTangent.scale(frameDelta), endValue, endKey.inTangent.scale(frameDelta), gradient)
+                            : this.color3InterpolateFunction(startValue, endValue, gradient);
                         switch (state.loopMode) {
                             case Animation.ANIMATIONLOOPMODE_CYCLE:
                             case Animation.ANIMATIONLOOPMODE_CONSTANT:
@@ -974,7 +1044,9 @@ export class Animation {
                         }
                     // Color4
                     case Animation.ANIMATIONTYPE_COLOR4:
-                        var color4Value = useTangent ? this.color4InterpolateFunctionWithTangents(startValue, startKey.outTangent.scale(frameDelta), endValue, endKey.inTangent.scale(frameDelta), gradient) : this.color4InterpolateFunction(startValue, endValue, gradient);
+                        var color4Value = useTangent
+                            ? this.color4InterpolateFunctionWithTangents(startValue, startKey.outTangent.scale(frameDelta), endValue, endKey.inTangent.scale(frameDelta), gradient)
+                            : this.color4InterpolateFunction(startValue, endValue, gradient);
                         switch (state.loopMode) {
                             case Animation.ANIMATIONLOOPMODE_CYCLE:
                             case Animation.ANIMATIONLOOPMODE_CONSTANT:
@@ -1032,7 +1104,7 @@ export class Animation {
      * @returns Cloned animation
      */
     public clone(): Animation {
-        var clone = new Animation(this.name, this.targetPropertyPath.join("."), this.framePerSecond, this.dataType, this.loopMode);
+        const clone = new Animation(this.name, this.targetPropertyPath.join("."), this.framePerSecond, this.dataType, this.loopMode);
 
         clone.enableBlending = this.enableBlending;
         clone.blendingSpeed = this.blendingSpeed;
@@ -1043,8 +1115,8 @@ export class Animation {
 
         if (this._ranges) {
             clone._ranges = {};
-            for (var name in this._ranges) {
-                let range = this._ranges[name];
+            for (const name in this._ranges) {
+                const range = this._ranges[name];
                 if (!range) {
                     continue;
                 }
@@ -1068,7 +1140,7 @@ export class Animation {
      * @returns Serialized object
      */
     public serialize(): any {
-        var serializationObject: any = {};
+        const serializationObject: any = {};
 
         serializationObject.name = this.name;
         serializationObject.property = this.targetProperty;
@@ -1078,13 +1150,13 @@ export class Animation {
         serializationObject.enableBlending = this.enableBlending;
         serializationObject.blendingSpeed = this.blendingSpeed;
 
-        var dataType = this.dataType;
+        const dataType = this.dataType;
         serializationObject.keys = [];
-        var keys = this.getKeys();
-        for (var index = 0; index < keys.length; index++) {
-            var animationKey = keys[index];
+        const keys = this.getKeys();
+        for (let index = 0; index < keys.length; index++) {
+            const animationKey = keys[index];
 
-            var key: any = {};
+            const key: any = {};
             key.frame = animationKey.frame;
 
             switch (dataType) {
@@ -1140,13 +1212,13 @@ export class Animation {
         }
 
         serializationObject.ranges = [];
-        for (var name in this._ranges) {
-            let source = this._ranges[name];
+        for (const name in this._ranges) {
+            const source = this._ranges[name];
 
             if (!source) {
                 continue;
             }
-            var range: any = {};
+            const range: any = {};
             range.name = name;
             range.from = source.from;
             range.to = source.to;
@@ -1202,16 +1274,25 @@ export class Animation {
      */
     public static readonly ANIMATIONLOOPMODE_CONSTANT = 2;
 
-    /** @hidden */
+    /**
+     * @param left
+     * @param right
+     * @param amount
+     * @hidden
+     */
     public static _UniversalLerp(left: any, right: any, amount: number): any {
-        let constructor = left.constructor;
-        if (constructor.Lerp) { // Lerp supported
+        const constructor = left.constructor;
+        if (constructor.Lerp) {
+            // Lerp supported
             return constructor.Lerp(left, right, amount);
-        } else if (constructor.Slerp) { // Slerp supported
+        } else if (constructor.Slerp) {
+            // Slerp supported
             return constructor.Slerp(left, right, amount);
-        } else if (left.toFixed) { // Number
+        } else if (left.toFixed) {
+            // Number
             return left * (1.0 - amount) + amount * right;
-        } else { // Blending not supported
+        } else {
+            // Blending not supported
             return right;
         }
     }
@@ -1222,12 +1303,12 @@ export class Animation {
      * @returns Animation object
      */
     public static Parse(parsedAnimation: any): Animation {
-        var animation = new Animation(parsedAnimation.name, parsedAnimation.property, parsedAnimation.framePerSecond, parsedAnimation.dataType, parsedAnimation.loopBehavior);
+        const animation = new Animation(parsedAnimation.name, parsedAnimation.property, parsedAnimation.framePerSecond, parsedAnimation.dataType, parsedAnimation.loopBehavior);
 
-        var dataType = parsedAnimation.dataType;
-        var keys: Array<IAnimationKey> = [];
-        var data;
-        var index: number;
+        const dataType = parsedAnimation.dataType;
+        const keys: Array<IAnimationKey> = [];
+        let data;
+        let index: number;
 
         if (parsedAnimation.enableBlending) {
             animation.enableBlending = parsedAnimation.enableBlending;
@@ -1238,7 +1319,7 @@ export class Animation {
         }
 
         for (index = 0; index < parsedAnimation.keys.length; index++) {
-            var key = parsedAnimation.keys[index];
+            const key = parsedAnimation.keys[index];
             let inTangent: any = undefined;
             let outTangent: any = undefined;
             let interpolation: any = undefined;
@@ -1259,13 +1340,13 @@ export class Animation {
                 case Animation.ANIMATIONTYPE_QUATERNION:
                     data = Quaternion.FromArray(key.values);
                     if (key.values.length >= 8) {
-                        var _inTangent = Quaternion.FromArray(key.values.slice(4, 8));
+                        const _inTangent = Quaternion.FromArray(key.values.slice(4, 8));
                         if (!_inTangent.equals(Quaternion.Zero())) {
                             inTangent = _inTangent;
                         }
                     }
                     if (key.values.length >= 12) {
-                        var _outTangent = Quaternion.FromArray(key.values.slice(8, 12));
+                        const _outTangent = Quaternion.FromArray(key.values.slice(8, 12));
                         if (!_outTangent.equals(Quaternion.Zero())) {
                             outTangent = _outTangent;
                         }
@@ -1319,7 +1400,7 @@ export class Animation {
                     break;
             }
 
-            var keyData: any = {};
+            const keyData: any = {};
             keyData.frame = key.frame;
             keyData.value = data;
 
@@ -1363,9 +1444,8 @@ export class Animation {
      * @returns a promise that will resolve to the new animation or an array of animations
      */
     public static ParseFromFileAsync(name: Nullable<string>, url: string): Promise<Animation | Array<Animation>> {
-
         return new Promise((resolve, reject) => {
-            var request = new WebRequest();
+            const request = new WebRequest();
             request.addEventListener("readystatechange", () => {
                 if (request.readyState == 4) {
                     if (request.status == 200) {
@@ -1375,14 +1455,14 @@ export class Animation {
                         }
 
                         if (serializationObject.length) {
-                            let output = new Array<Animation>();
-                            for (var serializedAnimation of serializationObject) {
+                            const output = new Array<Animation>();
+                            for (const serializedAnimation of serializationObject) {
                                 output.push(this.Parse(serializedAnimation));
                             }
 
                             resolve(output);
                         } else {
-                            let output = this.Parse(serializationObject);
+                            const output = this.Parse(serializationObject);
 
                             if (name) {
                                 output.name = name;
@@ -1408,25 +1488,25 @@ export class Animation {
      */
     public static CreateFromSnippetAsync(snippetId: string): Promise<Animation | Array<Animation>> {
         return new Promise((resolve, reject) => {
-            var request = new WebRequest();
+            const request = new WebRequest();
             request.addEventListener("readystatechange", () => {
                 if (request.readyState == 4) {
                     if (request.status == 200) {
-                        var snippet = JSON.parse(JSON.parse(request.responseText).jsonPayload);
+                        const snippet = JSON.parse(JSON.parse(request.responseText).jsonPayload);
 
                         if (snippet.animations) {
-                            let serializationObject = JSON.parse(snippet.animations);
-                            let outputs = new Array<Animation>();
-                            for (var serializedAnimation of serializationObject.animations) {
-                                let output = this.Parse(serializedAnimation);
+                            const serializationObject = JSON.parse(snippet.animations);
+                            const outputs = new Array<Animation>();
+                            for (const serializedAnimation of serializationObject.animations) {
+                                const output = this.Parse(serializedAnimation);
                                 output.snippetId = snippetId;
                                 outputs.push(output);
                             }
 
                             resolve(outputs);
                         } else {
-                            let serializationObject = JSON.parse(snippet.animation);
-                            let output = this.Parse(serializationObject);
+                            const serializationObject = JSON.parse(snippet.animation);
+                            const output = this.Parse(serializationObject);
 
                             output.snippetId = snippetId;
 

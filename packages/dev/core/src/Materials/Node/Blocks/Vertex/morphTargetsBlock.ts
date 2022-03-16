@@ -1,16 +1,16 @@
-import { NodeMaterialBlock } from '../../nodeMaterialBlock';
-import { NodeMaterialBlockConnectionPointTypes } from '../../Enums/nodeMaterialBlockConnectionPointTypes';
-import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
-import { NodeMaterialBlockTargets } from '../../Enums/nodeMaterialBlockTargets';
-import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPoint';
-import { AbstractMesh } from '../../../../Meshes/abstractMesh';
-import { NodeMaterial, NodeMaterialDefines } from '../../nodeMaterial';
-import { Effect } from '../../../effect';
-import { Mesh } from '../../../../Meshes/mesh';
-import { MaterialHelper } from '../../../materialHelper';
-import { VertexBuffer } from '../../../../Buffers/buffer';
-import { InputBlock } from '../Input/inputBlock';
-import { RegisterClass } from '../../../../Misc/typeStore';
+import { NodeMaterialBlock } from "../../nodeMaterialBlock";
+import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
+import { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
+import { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
+import { AbstractMesh } from "../../../../Meshes/abstractMesh";
+import { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
+import { Effect } from "../../../effect";
+import { Mesh } from "../../../../Meshes/mesh";
+import { MaterialHelper } from "../../../materialHelper";
+import { VertexBuffer } from "../../../../Buffers/buffer";
+import { InputBlock } from "../Input/inputBlock";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 import "../../../../Shaders/ShadersInclude/morphTargetsVertexDeclaration";
 import "../../../../Shaders/ShadersInclude/morphTargetsVertexGlobalDeclaration";
@@ -172,21 +172,21 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
     }
 
     public replaceRepeatableContent(vertexShaderState: NodeMaterialBuildState, fragmentShaderState: NodeMaterialBuildState, mesh: AbstractMesh, defines: NodeMaterialDefines) {
-        let position = this.position;
-        let normal = this.normal;
-        let tangent = this.tangent;
-        let uv = this.uv;
-        let positionOutput = this.positionOutput;
-        let normalOutput = this.normalOutput;
-        let tangentOutput = this.tangentOutput;
-        let uvOutput = this.uvOutput;
-        let state = vertexShaderState;
-        let repeatCount = defines.NUM_MORPH_INFLUENCERS as number;
+        const position = this.position;
+        const normal = this.normal;
+        const tangent = this.tangent;
+        const uv = this.uv;
+        const positionOutput = this.positionOutput;
+        const normalOutput = this.normalOutput;
+        const tangentOutput = this.tangentOutput;
+        const uvOutput = this.uvOutput;
+        const state = vertexShaderState;
+        const repeatCount = defines.NUM_MORPH_INFLUENCERS as number;
 
-        var manager = (<Mesh>mesh).morphTargetManager;
-        var hasNormals = manager && manager.supportsNormals && defines["NORMAL"];
-        var hasTangents = manager && manager.supportsTangents && defines["TANGENT"];
-        var hasUVs = manager && manager.supportsUVs && defines["UV1"];
+        const manager = (<Mesh>mesh).morphTargetManager;
+        const hasNormals = manager && manager.supportsNormals && defines["NORMAL"];
+        const hasTangents = manager && manager.supportsTangents && defines["TANGENT"];
+        const hasUVs = manager && manager.supportsUVs && defines["UV1"];
 
         let injectionCode = "";
 
@@ -273,15 +273,15 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
         state.sharedData.repeatableContentBlocks.push(this);
 
         // Emit code
-        let position = this.position;
-        let normal = this.normal;
-        let tangent = this.tangent;
-        let uv = this.uv;
-        let positionOutput = this.positionOutput;
-        let normalOutput = this.normalOutput;
-        let tangentOutput = this.tangentOutput;
-        let uvOutput = this.uvOutput;
-        let comments = `//${this.name}`;
+        const position = this.position;
+        const normal = this.normal;
+        const tangent = this.tangent;
+        const uv = this.uv;
+        const positionOutput = this.positionOutput;
+        const normalOutput = this.normalOutput;
+        const tangentOutput = this.tangentOutput;
+        const uvOutput = this.uvOutput;
+        const comments = `//${this.name}`;
 
         state.uniforms.push("morphTargetInfluences");
         state.uniforms.push("morphTargetTextureInfo");
@@ -290,7 +290,7 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
 
         state._emitFunctionFromInclude("morphTargetsVertexGlobalDeclaration", comments);
         state._emitFunctionFromInclude("morphTargetsVertexDeclaration", comments, {
-            repeatKey: "maxSimultaneousMorphTargets"
+            repeatKey: "maxSimultaneousMorphTargets",
         });
 
         state.compilationString += `${this._declareOutput(positionOutput, state)} = ${position.associatedVariableName};\r\n`;

@@ -34,7 +34,7 @@ export class SubMesh implements ICullable {
      * Gets material defines used by the effect associated to the sub mesh
      */
     public get materialDefines(): Nullable<MaterialDefines> {
-        return this._mainDrawWrapperOverride ? (this._mainDrawWrapperOverride.defines as MaterialDefines) : this._getDrawWrapper()?.defines as Nullable<MaterialDefines>;
+        return this._mainDrawWrapperOverride ? (this._mainDrawWrapperOverride.defines as MaterialDefines) : (this._getDrawWrapper()?.defines as Nullable<MaterialDefines>);
     }
 
     /**
@@ -45,7 +45,11 @@ export class SubMesh implements ICullable {
         drawWrapper.defines = defines;
     }
 
-    /** @hidden */
+    /**
+     * @param passId
+     * @param createIfNotExisting
+     * @hidden
+     */
     public _getDrawWrapper(passId?: number, createIfNotExisting = false): DrawWrapper | undefined {
         passId = passId ?? this._engine.currentRenderPassId;
         let drawWrapper = this._drawWrappers[passId];
@@ -55,7 +59,11 @@ export class SubMesh implements ICullable {
         return drawWrapper;
     }
 
-    /** @hidden */
+    /**
+     * @param passId
+     * @param disposeWrapper
+     * @hidden
+     */
     public _removeDrawWrapper(passId: number, disposeWrapper = true) {
         if (disposeWrapper) {
             this._drawWrappers[passId]?.dispose();
@@ -67,7 +75,7 @@ export class SubMesh implements ICullable {
      * Gets associated (main) effect (possibly the effect override if defined)
      */
     public get effect(): Nullable<Effect> {
-        return this._mainDrawWrapperOverride ? this._mainDrawWrapperOverride.effect : (this._getDrawWrapper()?.effect ?? null);
+        return this._mainDrawWrapperOverride ? this._mainDrawWrapperOverride.effect : this._getDrawWrapper()?.effect ?? null;
     }
 
     /** @hidden */
@@ -80,7 +88,10 @@ export class SubMesh implements ICullable {
         return this._mainDrawWrapperOverride;
     }
 
-    /** @hidden */
+    /**
+     * @param wrapper
+     * @hidden
+     */
     public _setMainDrawWrapperOverride(wrapper: Nullable<DrawWrapper>): void {
         this._mainDrawWrapperOverride = wrapper;
     }
@@ -286,12 +297,12 @@ export class SubMesh implements ICullable {
      * @returns null or the current material
      */
     public getMaterial(): Nullable<Material> {
-        var rootMaterial = this._renderingMesh.getMaterialForRenderPass(this._engine.currentRenderPassId) ?? this._renderingMesh.material;
+        const rootMaterial = this._renderingMesh.getMaterialForRenderPass(this._engine.currentRenderPassId) ?? this._renderingMesh.material;
 
         if (rootMaterial === null || rootMaterial === undefined) {
             return this._mesh.getScene().defaultMaterial;
         } else if (this._IsMultiMaterial(rootMaterial)) {
-            var effectiveMaterial = rootMaterial.getSubMaterial(this.materialIndex);
+            const effectiveMaterial = rootMaterial.getSubMaterial(this.materialIndex);
 
             if (this._currentMaterial !== effectiveMaterial) {
                 this._currentMaterial = effectiveMaterial;
@@ -331,12 +342,12 @@ export class SubMesh implements ICullable {
             return this;
         }
 
-        var indices = <IndicesArray>this._renderingMesh.getIndices();
-        var extend: { minimum: Vector3; maximum: Vector3 };
+        const indices = <IndicesArray>this._renderingMesh.getIndices();
+        let extend: { minimum: Vector3; maximum: Vector3 };
 
         //is this the only submesh?
         if (this.indexStart === 0 && this.indexCount === indices.length) {
-            let boundingInfo = this._renderingMesh.getBoundingInfo();
+            const boundingInfo = this._renderingMesh.getBoundingInfo();
 
             //the rendering mesh's bounding info can be used, it is the standard submesh for all indices.
             extend = { minimum: boundingInfo.minimum.clone(), maximum: boundingInfo.maximum.clone() };
@@ -352,9 +363,12 @@ export class SubMesh implements ICullable {
         return this;
     }
 
-    /** @hidden */
+    /**
+     * @param collider
+     * @hidden
+     */
     public _checkCollision(collider: Collider): boolean {
-        let boundingInfo = this.getBoundingInfo();
+        const boundingInfo = this.getBoundingInfo();
 
         return boundingInfo._checkCollision(collider);
     }
@@ -383,7 +397,7 @@ export class SubMesh implements ICullable {
      * @returns true if the submesh is intersecting with the frustum
      */
     public isInFrustum(frustumPlanes: Plane[]): boolean {
-        let boundingInfo = this.getBoundingInfo();
+        const boundingInfo = this.getBoundingInfo();
 
         if (!boundingInfo) {
             return false;
@@ -397,7 +411,7 @@ export class SubMesh implements ICullable {
      * @returns true if the submesh is inside the frustum
      */
     public isCompletelyInFrustum(frustumPlanes: Plane[]): boolean {
-        let boundingInfo = this.getBoundingInfo();
+        const boundingInfo = this.getBoundingInfo();
 
         if (!boundingInfo) {
             return false;
@@ -416,13 +430,15 @@ export class SubMesh implements ICullable {
     }
 
     /**
+     * @param indices
+     * @param engine
      * @hidden
      */
     public _getLinesIndexBuffer(indices: IndicesArray, engine: Engine): DataBuffer {
         if (!this._linesIndexBuffer) {
-            var linesIndices = [];
+            const linesIndices = [];
 
-            for (var index = this.indexStart; index < this.indexStart + this.indexCount; index += 3) {
+            for (let index = this.indexStart; index < this.indexStart + this.indexCount; index += 3) {
                 linesIndices.push(indices[index], indices[index + 1], indices[index + 1], indices[index + 2], indices[index + 2], indices[index]);
             }
 
@@ -438,7 +454,7 @@ export class SubMesh implements ICullable {
      * @returns true is the passed ray intersects the submesh bounding box
      */
     public canIntersects(ray: Ray): boolean {
-        let boundingInfo = this.getBoundingInfo();
+        const boundingInfo = this.getBoundingInfo();
 
         if (!boundingInfo) {
             return false;
@@ -494,16 +510,23 @@ export class SubMesh implements ICullable {
         }
     }
 
-    /** @hidden */
+    /**
+     * @param ray
+     * @param positions
+     * @param indices
+     * @param intersectionThreshold
+     * @param fastCheck
+     * @hidden
+     */
     private _intersectLines(ray: Ray, positions: Vector3[], indices: IndicesArray, intersectionThreshold: number, fastCheck?: boolean): Nullable<IntersectionInfo> {
-        var intersectInfo: Nullable<IntersectionInfo> = null;
+        let intersectInfo: Nullable<IntersectionInfo> = null;
 
         // Line test
-        for (var index = this.indexStart; index < this.indexStart + this.indexCount; index += 2) {
-            var p0 = positions[indices[index]];
-            var p1 = positions[indices[index + 1]];
+        for (let index = this.indexStart; index < this.indexStart + this.indexCount; index += 2) {
+            const p0 = positions[indices[index]];
+            const p1 = positions[indices[index + 1]];
 
-            var length = ray.intersectionSegment(p0, p1, intersectionThreshold);
+            const length = ray.intersectionSegment(p0, p1, intersectionThreshold);
             if (length < 0) {
                 continue;
             }
@@ -519,16 +542,23 @@ export class SubMesh implements ICullable {
         return intersectInfo;
     }
 
-    /** @hidden */
+    /**
+     * @param ray
+     * @param positions
+     * @param indices
+     * @param intersectionThreshold
+     * @param fastCheck
+     * @hidden
+     */
     private _intersectUnIndexedLines(ray: Ray, positions: Vector3[], indices: IndicesArray, intersectionThreshold: number, fastCheck?: boolean): Nullable<IntersectionInfo> {
-        var intersectInfo: Nullable<IntersectionInfo> = null;
+        let intersectInfo: Nullable<IntersectionInfo> = null;
 
         // Line test
-        for (var index = this.verticesStart; index < this.verticesStart + this.verticesCount; index += 2) {
-            var p0 = positions[index];
-            var p1 = positions[index + 1];
+        for (let index = this.verticesStart; index < this.verticesStart + this.verticesCount; index += 2) {
+            const p0 = positions[index];
+            const p1 = positions[index + 1];
 
-            var length = ray.intersectionSegment(p0, p1, intersectionThreshold);
+            const length = ray.intersectionSegment(p0, p1, intersectionThreshold);
             if (length < 0) {
                 continue;
             }
@@ -545,7 +575,16 @@ export class SubMesh implements ICullable {
         return intersectInfo;
     }
 
-    /** @hidden */
+    /**
+     * @param ray
+     * @param positions
+     * @param indices
+     * @param step
+     * @param checkStopper
+     * @param fastCheck
+     * @param trianglePredicate
+     * @hidden
+     */
     private _intersectTriangles(
         ray: Ray,
         positions: Vector3[],
@@ -555,11 +594,11 @@ export class SubMesh implements ICullable {
         fastCheck?: boolean,
         trianglePredicate?: TrianglePickingPredicate
     ): Nullable<IntersectionInfo> {
-        var intersectInfo: Nullable<IntersectionInfo> = null;
+        let intersectInfo: Nullable<IntersectionInfo> = null;
 
         // Triangles test
         let faceId = -1;
-        for (var index = this.indexStart; index < this.indexStart + this.indexCount - (3 - step); index += step) {
+        for (let index = this.indexStart; index < this.indexStart + this.indexCount - (3 - step); index += step) {
             faceId++;
             const indexA = indices[index];
             const indexB = indices[index + 1];
@@ -570,9 +609,9 @@ export class SubMesh implements ICullable {
                 continue;
             }
 
-            var p0 = positions[indexA];
-            var p1 = positions[indexB];
-            var p2 = positions[indexC];
+            const p0 = positions[indexA];
+            const p1 = positions[indexB];
+            const p2 = positions[indexC];
 
             // stay defensive and don't check against undefined positions.
             if (!p0 || !p1 || !p2) {
@@ -583,7 +622,7 @@ export class SubMesh implements ICullable {
                 continue;
             }
 
-            var currentIntersectInfo = ray.intersectsTriangle(p0, p1, p2);
+            const currentIntersectInfo = ray.intersectsTriangle(p0, p1, p2);
 
             if (currentIntersectInfo) {
                 if (currentIntersectInfo.distance < 0) {
@@ -603,7 +642,14 @@ export class SubMesh implements ICullable {
         return intersectInfo;
     }
 
-    /** @hidden */
+    /**
+     * @param ray
+     * @param positions
+     * @param indices
+     * @param fastCheck
+     * @param trianglePredicate
+     * @hidden
+     */
     private _intersectUnIndexedTriangles(
         ray: Ray,
         positions: Vector3[],
@@ -611,18 +657,18 @@ export class SubMesh implements ICullable {
         fastCheck?: boolean,
         trianglePredicate?: TrianglePickingPredicate
     ): Nullable<IntersectionInfo> {
-        var intersectInfo: Nullable<IntersectionInfo> = null;
+        let intersectInfo: Nullable<IntersectionInfo> = null;
         // Triangles test
-        for (var index = this.verticesStart; index < this.verticesStart + this.verticesCount; index += 3) {
-            var p0 = positions[index];
-            var p1 = positions[index + 1];
-            var p2 = positions[index + 2];
+        for (let index = this.verticesStart; index < this.verticesStart + this.verticesCount; index += 3) {
+            const p0 = positions[index];
+            const p1 = positions[index + 1];
+            const p2 = positions[index + 2];
 
             if (trianglePredicate && !trianglePredicate(p0, p1, p2, ray)) {
                 continue;
             }
 
-            var currentIntersectInfo = ray.intersectsTriangle(p0, p1, p2);
+            const currentIntersectInfo = ray.intersectsTriangle(p0, p1, p2);
 
             if (currentIntersectInfo) {
                 if (currentIntersectInfo.distance < 0) {
@@ -657,10 +703,10 @@ export class SubMesh implements ICullable {
      * @returns the new submesh
      */
     public clone(newMesh: AbstractMesh, newRenderingMesh?: Mesh): SubMesh {
-        var result = new SubMesh(this.materialIndex, this.verticesStart, this.verticesCount, this.indexStart, this.indexCount, newMesh, newRenderingMesh, false);
+        const result = new SubMesh(this.materialIndex, this.verticesStart, this.verticesCount, this.indexStart, this.indexCount, newMesh, newRenderingMesh, false);
 
         if (!this.IsGlobal) {
-            let boundingInfo = this.getBoundingInfo();
+            const boundingInfo = this.getBoundingInfo();
 
             if (!boundingInfo) {
                 return result;
@@ -684,7 +730,7 @@ export class SubMesh implements ICullable {
         }
 
         // Remove from mesh
-        var index = this._mesh.subMeshes.indexOf(this);
+        const index = this._mesh.subMeshes.indexOf(this);
         this._mesh.subMeshes.splice(index, 1);
 
         this.resetDrawCache();
@@ -709,15 +755,22 @@ export class SubMesh implements ICullable {
      * @param createBoundingBox defines if bounding box should be created for this submesh
      * @returns a new submesh
      */
-    public static CreateFromIndices(materialIndex: number, startIndex: number, indexCount: number, mesh: AbstractMesh, renderingMesh?: Mesh, createBoundingBox: boolean = true): SubMesh {
-        var minVertexIndex = Number.MAX_VALUE;
-        var maxVertexIndex = -Number.MAX_VALUE;
+    public static CreateFromIndices(
+        materialIndex: number,
+        startIndex: number,
+        indexCount: number,
+        mesh: AbstractMesh,
+        renderingMesh?: Mesh,
+        createBoundingBox: boolean = true
+    ): SubMesh {
+        let minVertexIndex = Number.MAX_VALUE;
+        let maxVertexIndex = -Number.MAX_VALUE;
 
         const whatWillRender = renderingMesh || mesh;
-        var indices = whatWillRender!.getIndices()!;
+        const indices = whatWillRender!.getIndices()!;
 
-        for (var index = startIndex; index < startIndex + indexCount; index++) {
-            var vertexIndex = indices[index];
+        for (let index = startIndex; index < startIndex + indexCount; index++) {
+            const vertexIndex = indices[index];
 
             if (vertexIndex < minVertexIndex) {
                 minVertexIndex = vertexIndex;

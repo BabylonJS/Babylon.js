@@ -1,7 +1,7 @@
 import { ShaderLanguage } from "../../Materials/shaderLanguage";
-import { Nullable } from '../../types';
-import { IShaderProcessor } from '../Processors/iShaderProcessor';
-import { ShaderProcessingContext } from '../Processors/shaderProcessingOptions';
+import { Nullable } from "../../types";
+import { IShaderProcessor } from "../Processors/iShaderProcessor";
+import { ShaderProcessingContext } from "../Processors/shaderProcessingOptions";
 
 declare type ThinEngine = import("../thinEngine").ThinEngine;
 
@@ -21,7 +21,7 @@ export class WebGL2ShaderProcessor implements IShaderProcessor {
         const hasDrawBuffersExtension = code.search(/#extension.+GL_EXT_draw_buffers.+require/) !== -1;
 
         // Remove extensions
-        var regex = /#extension.+(GL_OVR_multiview2|GL_OES_standard_derivatives|GL_EXT_shader_texture_lod|GL_EXT_frag_depth|GL_EXT_draw_buffers).+(enable|require)/g;
+        const regex = /#extension.+(GL_OVR_multiview2|GL_OES_standard_derivatives|GL_EXT_shader_texture_lod|GL_EXT_frag_depth|GL_EXT_draw_buffers).+(enable|require)/g;
         code = code.replace(regex, "");
 
         // Replace instructions
@@ -35,7 +35,7 @@ export class WebGL2ShaderProcessor implements IShaderProcessor {
             code = code.replace(/gl_FragData/g, "glFragData");
             code = code.replace(/void\s+?main\s*\(/g, (hasDrawBuffersExtension ? "" : "out vec4 glFragColor;\n") + "void main(");
         } else {
-            var hasMultiviewExtension = defines.indexOf("#define MULTIVIEW") !== -1;
+            const hasMultiviewExtension = defines.indexOf("#define MULTIVIEW") !== -1;
             if (hasMultiviewExtension) {
                 return "#extension GL_OVR_multiview2 : require\nlayout (num_views = 2) in;\n" + code;
             }

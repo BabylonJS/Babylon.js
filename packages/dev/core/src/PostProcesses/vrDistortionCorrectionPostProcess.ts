@@ -35,12 +35,7 @@ export class VRDistortionCorrectionPostProcess extends PostProcess {
      * @param vrMetrics All the required metrics for the VR camera
      */
     constructor(name: string, camera: Camera, isRightEye: boolean, vrMetrics: VRCameraMetrics) {
-        super(name, "vrDistortionCorrection", [
-            'LensCenter',
-            'Scale',
-            'ScaleIn',
-            'HmdWarpParam'
-        ], null, vrMetrics.postProcessScaleFactor, camera, Texture.BILINEAR_SAMPLINGMODE);
+        super(name, "vrDistortionCorrection", ["LensCenter", "Scale", "ScaleIn", "HmdWarpParam"], null, vrMetrics.postProcessScaleFactor, camera, Texture.BILINEAR_SAMPLINGMODE);
 
         this._isRightEye = isRightEye;
         this._distortionFactors = vrMetrics.distortionK;
@@ -50,7 +45,7 @@ export class VRDistortionCorrectionPostProcess extends PostProcess {
 
         this.onSizeChangedObservable.add(() => {
             this._scaleIn = new Vector2(2, 2 / this.aspectRatio);
-            this._scaleFactor = new Vector2(.5 * (1 / this._postProcessScaleFactor), .5 * (1 / this._postProcessScaleFactor) * this.aspectRatio);
+            this._scaleFactor = new Vector2(0.5 * (1 / this._postProcessScaleFactor), 0.5 * (1 / this._postProcessScaleFactor) * this.aspectRatio);
             this._lensCenter = new Vector2(this._isRightEye ? 0.5 - this._lensCenterOffset * 0.5 : 0.5 + this._lensCenterOffset * 0.5, 0.5);
         });
         this.onApplyObservable.add((effect: Effect) => {

@@ -4,8 +4,8 @@ import { Nullable } from "../../../types";
 import { Engine } from "../../../Engines/engine";
 import { InternalTexture } from "../../../Materials/Textures/internalTexture";
 import { IInternalTextureLoader } from "../../../Materials/Textures/internalTextureLoader";
-import { EndsWith } from '../../../Misc/stringTools';
-import { Logger } from '../../../Misc/logger';
+import { EndsWith } from "../../../Misc/stringTools";
+import { Logger } from "../../../Misc/logger";
 
 /**
  * Implementation of the KTX Texture Loader.
@@ -36,17 +36,23 @@ export class _KTXTextureLoader implements IInternalTextureLoader {
      * @param onLoad defines the callback to trigger once the texture is ready
      * @param onError defines the callback to trigger in case of error
      */
-    public loadCubeData(data: ArrayBufferView | ArrayBufferView[], texture: InternalTexture, createPolynomials: boolean, onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>): void {
+    public loadCubeData(
+        data: ArrayBufferView | ArrayBufferView[],
+        texture: InternalTexture,
+        createPolynomials: boolean,
+        onLoad: Nullable<(data?: any) => void>,
+        onError: Nullable<(message?: string, exception?: any) => void>
+    ): void {
         if (Array.isArray(data)) {
             return;
         }
 
         // Need to invert vScale as invertY via UNPACK_FLIP_Y_WEBGL is not supported by compressed texture
         texture._invertVScale = !texture.invertY;
-        var engine = texture.getEngine() as Engine;
-        var ktx = new KhronosTextureContainer(data, 6);
+        const engine = texture.getEngine() as Engine;
+        const ktx = new KhronosTextureContainer(data, 6);
 
-        var loadMipmap = ktx.numberOfMipmapLevels > 1 && texture.generateMipMaps;
+        const loadMipmap = ktx.numberOfMipmapLevels > 1 && texture.generateMipMaps;
 
         engine._unpackFlipY(true);
 
@@ -70,29 +76,42 @@ export class _KTXTextureLoader implements IInternalTextureLoader {
      * @param data contains the texture data
      * @param texture defines the BabylonJS internal texture
      * @param callback defines the method to call once ready to upload
+     * @param options
      */
-    public loadData(data: ArrayBufferView, texture: InternalTexture,
-        callback: (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void, loadFailed: boolean) => void, options?: any): void {
+    public loadData(
+        data: ArrayBufferView,
+        texture: InternalTexture,
+        callback: (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void, loadFailed: boolean) => void,
+        options?: any
+    ): void {
         if (KhronosTextureContainer.IsValid(data)) {
             // Need to invert vScale as invertY via UNPACK_FLIP_Y_WEBGL is not supported by compressed texture
             texture._invertVScale = !texture.invertY;
             const ktx = new KhronosTextureContainer(data, 1);
-            callback(ktx.pixelWidth, ktx.pixelHeight, texture.generateMipMaps, true, () => {
-                ktx.uploadLevels(texture, texture.generateMipMaps);
-            }, ktx.isInvalid);
-        }
-        else if (KhronosTextureContainer2.IsValid(data)) {
+            callback(
+                ktx.pixelWidth,
+                ktx.pixelHeight,
+                texture.generateMipMaps,
+                true,
+                () => {
+                    ktx.uploadLevels(texture, texture.generateMipMaps);
+                },
+                ktx.isInvalid
+            );
+        } else if (KhronosTextureContainer2.IsValid(data)) {
             const ktx2 = new KhronosTextureContainer2(texture.getEngine());
-            ktx2.uploadAsync(data, texture, options).then(() => {
-                callback(texture.width, texture.height, texture.generateMipMaps, true, () => { }, false);
-            }, (error) => {
-                Logger.Warn(`Failed to load KTX2 texture data: ${error.message}`);
-                callback(0, 0, false, false, () => { }, true);
-            });
-        }
-        else {
+            ktx2.uploadAsync(data, texture, options).then(
+                () => {
+                    callback(texture.width, texture.height, texture.generateMipMaps, true, () => {}, false);
+                },
+                (error) => {
+                    Logger.Warn(`Failed to load KTX2 texture data: ${error.message}`);
+                    callback(0, 0, false, false, () => {}, true);
+                }
+            );
+        } else {
             Logger.Error("texture missing KTX identifier");
-            callback(0, 0, false, false, () => { }, true);
+            callback(0, 0, false, false, () => {}, true);
         }
     }
 }

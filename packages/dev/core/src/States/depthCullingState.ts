@@ -23,6 +23,7 @@ export class DepthCullingState {
 
     /**
      * Initializes the state.
+     * @param reset
      */
     public constructor(reset = true) {
         if (reset) {
@@ -31,7 +32,15 @@ export class DepthCullingState {
     }
 
     public get isDirty(): boolean {
-        return this._isDepthFuncDirty || this._isDepthTestDirty || this._isDepthMaskDirty || this._isCullFaceDirty || this._isCullDirty || this._isZOffsetDirty || this._isFrontFaceDirty;
+        return (
+            this._isDepthFuncDirty ||
+            this._isDepthTestDirty ||
+            this._isDepthMaskDirty ||
+            this._isCullFaceDirty ||
+            this._isCullDirty ||
+            this._isZOffsetDirty ||
+            this._isFrontFaceDirty
+        );
     }
 
     public get zOffset(): number {
@@ -158,7 +167,6 @@ export class DepthCullingState {
     }
 
     public apply(gl: WebGLRenderingContext) {
-
         if (!this.isDirty) {
             return;
         }

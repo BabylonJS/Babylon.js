@@ -62,7 +62,10 @@ export class MaterialPluginManager {
         this._engine = this._scene.getEngine();
     }
 
-    /** @hidden */
+    /**
+     * @param plugin
+     * @hidden
+     */
     public _addPlugin(plugin: MaterialPluginBase): void {
         for (let i = 0; i < this._plugins.length; ++i) {
             if (this._plugins[i].name === plugin.name) {
@@ -95,7 +98,10 @@ export class MaterialPluginManager {
         }
     }
 
-    /** @hidden */
+    /**
+     * @param plugin
+     * @hidden
+     */
     public _activatePlugin(plugin: MaterialPluginBase): void {
         if (this._activePlugins.indexOf(plugin) === -1) {
             this._activePlugins.push(plugin);
@@ -341,7 +347,7 @@ export class MaterialPluginManager {
  */
 export type PluginMaterialFactory = (material: Material) => Nullable<MaterialPluginBase>;
 
-let _Plugins: Array<[string, PluginMaterialFactory]> = [];
+const _Plugins: Array<[string, PluginMaterialFactory]> = [];
 let _Inited = false;
 
 /**

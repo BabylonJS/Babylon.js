@@ -33,8 +33,8 @@ export class WebXRHTCViveMotionController extends WebXRAbstractMotionController 
     }
 
     protected _getFilenameAndPath(): { filename: string; path: string } {
-        let filename = WebXRHTCViveMotionController.MODEL_FILENAME;
-        let path = WebXRHTCViveMotionController.MODEL_BASE_URL;
+        const filename = WebXRHTCViveMotionController.MODEL_FILENAME;
+        const path = WebXRHTCViveMotionController.MODEL_BASE_URL;
 
         return {
             filename,

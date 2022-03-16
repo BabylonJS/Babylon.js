@@ -30,7 +30,7 @@ export class Logger {
     public static MessageLimitReached = "Too many %TYPE%s (%LIMIT%), no more %TYPE%s will be reported for this message.";
 
     private static _LogCache = "";
-    private static _LogLimitOutputs: { [message: string]: { limit: number, current: number } } = {};
+    private static _LogLimitOutputs: { [message: string]: { limit: number; current: number } } = {};
 
     /**
      * Gets a value indicating the number of loading errors
@@ -55,7 +55,7 @@ export class Logger {
     }
 
     private static _GenerateLimitMessage(message: string, messageType: number): void {
-        let entry = Logger._LogLimitOutputs[message];
+        const entry = Logger._LogLimitOutputs[message];
         if (!entry || !Logger.MessageLimitReached) {
             return;
         }
@@ -83,9 +83,9 @@ export class Logger {
     }
 
     private static _FormatMessage(message: string): string {
-        var padStr = (i: number) => (i < 10) ? "0" + i : "" + i;
+        const padStr = (i: number) => (i < 10 ? "0" + i : "" + i);
 
-        var date = new Date();
+        const date = new Date();
         return "[" + padStr(date.getHours()) + ":" + padStr(date.getMinutes()) + ":" + padStr(date.getSeconds()) + "]: " + message;
     }
 
@@ -97,10 +97,10 @@ export class Logger {
             return;
         }
 
-        var formattedMessage = Logger._FormatMessage(message);
+        const formattedMessage = Logger._FormatMessage(message);
         console.log("BJS - " + formattedMessage);
 
-        var entry = "<div style='color:white'>" + formattedMessage + "</div><br>";
+        const entry = "<div style='color:white'>" + formattedMessage + "</div><br>";
         Logger._AddLogEntry(entry);
 
         Logger._GenerateLimitMessage(message, 0);
@@ -114,14 +114,13 @@ export class Logger {
             return;
         }
 
-        var formattedMessage = Logger._FormatMessage(message);
+        const formattedMessage = Logger._FormatMessage(message);
         console.warn("BJS - " + formattedMessage);
 
-        var entry = "<div style='color:orange'>" + message + "</div><br>";
+        const entry = "<div style='color:orange'>" + message + "</div><br>";
         Logger._AddLogEntry(entry);
 
         Logger._GenerateLimitMessage(message, 1);
-
     }
 
     private static _ErrorDisabled(message: string, limit?: number): void {
@@ -132,11 +131,11 @@ export class Logger {
             return;
         }
 
-        var formattedMessage = Logger._FormatMessage(message);
+        const formattedMessage = Logger._FormatMessage(message);
         Logger.errorsCount++;
         console.error("BJS - " + formattedMessage);
 
-        var entry = "<div style='color:red'>" + formattedMessage + "</div><br>";
+        const entry = "<div style='color:red'>" + formattedMessage + "</div><br>";
         Logger._AddLogEntry(entry);
 
         Logger._GenerateLimitMessage(message, 2);
@@ -179,22 +178,19 @@ export class Logger {
     public static set LogLevels(level: number) {
         if ((level & Logger.MessageLogLevel) === Logger.MessageLogLevel) {
             Logger.Log = Logger._LogEnabled;
-        }
-        else {
+        } else {
             Logger.Log = Logger._LogDisabled;
         }
 
         if ((level & Logger.WarningLogLevel) === Logger.WarningLogLevel) {
             Logger.Warn = Logger._WarnEnabled;
-        }
-        else {
+        } else {
             Logger.Warn = Logger._WarnDisabled;
         }
 
         if ((level & Logger.ErrorLogLevel) === Logger.ErrorLogLevel) {
             Logger.Error = Logger._ErrorEnabled;
-        }
-        else {
+        } else {
             Logger.Error = Logger._ErrorDisabled;
         }
     }

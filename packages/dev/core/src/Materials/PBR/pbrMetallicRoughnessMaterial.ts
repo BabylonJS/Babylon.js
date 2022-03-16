@@ -3,7 +3,7 @@ import { Scene } from "../../scene";
 import { Color3 } from "../../Maths/math.color";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { PBRBaseSimpleMaterial } from "./pbrBaseSimpleMaterial";
-import { RegisterClass } from '../../Misc/typeStore';
+import { RegisterClass } from "../../Misc/typeStore";
 
 /**
  * The PBR material of BJS following the metal roughness convention.
@@ -12,7 +12,6 @@ import { RegisterClass } from '../../Misc/typeStore';
  * https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_pbrSpecularGlossiness
  */
 export class PBRMetallicRoughnessMaterial extends PBRBaseSimpleMaterial {
-
     /**
      * The base color has two different interpretations depending on the value of metalness.
      * When the material is a metal, the base color is the specific measured reflectance value
@@ -82,7 +81,7 @@ export class PBRMetallicRoughnessMaterial extends PBRBaseSimpleMaterial {
      * @param name - name to use for the new material.
      */
     public clone(name: string): PBRMetallicRoughnessMaterial {
-        var clone = SerializationHelper.Clone(() => new PBRMetallicRoughnessMaterial(name, this.getScene()), this);
+        const clone = SerializationHelper.Clone(() => new PBRMetallicRoughnessMaterial(name, this.getScene()), this);
 
         clone.id = name;
         clone.name = name;
@@ -100,7 +99,7 @@ export class PBRMetallicRoughnessMaterial extends PBRBaseSimpleMaterial {
      * Serialize the material to a parsable JSON object.
      */
     public serialize(): any {
-        var serializationObject = SerializationHelper.Serialize(this);
+        const serializationObject = SerializationHelper.Serialize(this);
         serializationObject.customType = "BABYLON.PBRMetallicRoughnessMaterial";
 
         serializationObject.clearCoat = this.clearCoat.serialize();
@@ -114,6 +113,9 @@ export class PBRMetallicRoughnessMaterial extends PBRBaseSimpleMaterial {
 
     /**
      * Parses a JSON object corresponding to the serialize function.
+     * @param source
+     * @param scene
+     * @param rootUrl
      */
     public static Parse(source: any, scene: Scene, rootUrl: string): PBRMetallicRoughnessMaterial {
         const material = SerializationHelper.Parse(() => new PBRMetallicRoughnessMaterial(source.name, scene), source, scene, rootUrl);

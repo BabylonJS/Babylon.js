@@ -11,8 +11,7 @@ export class AndOrNotEvaluator {
     public static Eval(query: string, evaluateCallback: (val: any) => boolean): boolean {
         if (!query.match(/\([^\(\)]*\)/g)) {
             query = AndOrNotEvaluator._HandleParenthesisContent(query, evaluateCallback);
-        }
-        else {
+        } else {
             query = query.replace(/\([^\(\)]*\)/g, (r) => {
                 // remove parenthesis
                 r = r.slice(1, r.length - 1);
@@ -32,40 +31,42 @@ export class AndOrNotEvaluator {
     }
 
     private static _HandleParenthesisContent(parenthesisContent: string, evaluateCallback: (val: string) => boolean): string {
-        evaluateCallback = evaluateCallback || ((r) => {
-            return r === "true" ? true : false;
-        });
+        evaluateCallback =
+            evaluateCallback ||
+            ((r) => {
+                return r === "true" ? true : false;
+            });
 
-        var result;
-        var or = parenthesisContent.split("||");
+        let result;
+        const or = parenthesisContent.split("||");
 
-        for (var i in or) {
+        for (const i in or) {
             if (or.hasOwnProperty(i)) {
-                var ori = AndOrNotEvaluator._SimplifyNegation(or[i].trim());
-                var and = ori.split("&&");
+                let ori = AndOrNotEvaluator._SimplifyNegation(or[i].trim());
+                const and = ori.split("&&");
 
                 if (and.length > 1) {
-                    for (var j = 0; j < and.length; ++j) {
-                        var andj = AndOrNotEvaluator._SimplifyNegation(and[j].trim());
+                    for (let j = 0; j < and.length; ++j) {
+                        const andj = AndOrNotEvaluator._SimplifyNegation(and[j].trim());
                         if (andj !== "true" && andj !== "false") {
                             if (andj[0] === "!") {
                                 result = !evaluateCallback(andj.substring(1));
-                            }
-                            else {
+                            } else {
                                 result = evaluateCallback(andj);
                             }
-                        }
-                        else {
+                        } else {
                             result = andj === "true" ? true : false;
                         }
-                        if (!result) { // no need to continue since 'false && ... && ...' will always return false
+                        if (!result) {
+                            // no need to continue since 'false && ... && ...' will always return false
                             ori = "false";
                             break;
                         }
                     }
                 }
 
-                if (result || ori === "true") { // no need to continue since 'true || ... || ...' will always return true
+                if (result || ori === "true") {
+                    // no need to continue since 'true || ... || ...' will always return true
                     result = true;
                     break;
                 }
@@ -75,12 +76,10 @@ export class AndOrNotEvaluator {
                 if (ori !== "true" && ori !== "false") {
                     if (ori[0] === "!") {
                         result = !evaluateCallback(ori.substring(1));
-                    }
-                    else {
+                    } else {
                         result = evaluateCallback(ori);
                     }
-                }
-                else {
+                } else {
                     result = ori === "true" ? true : false;
                 }
             }
@@ -101,8 +100,7 @@ export class AndOrNotEvaluator {
 
         if (booleanString === "!true") {
             booleanString = "false";
-        }
-        else if (booleanString === "!false") {
+        } else if (booleanString === "!false") {
             booleanString = "true";
         }
 

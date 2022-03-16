@@ -7,7 +7,7 @@ import { AbstractMesh } from "../Meshes/abstractMesh";
 import { SubMesh } from "../Meshes/subMesh";
 import { _InstancesBatch } from "../Meshes/mesh";
 import { Effect } from "../Materials/effect";
-import { Camera } from '../Cameras/camera';
+import { Camera } from "../Cameras/camera";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { PrePassRenderTarget } from "../Materials/Textures/prePassRenderTarget";
 
@@ -51,7 +51,7 @@ Object.defineProperty(Scene.prototype, "prePassRenderer", {
         }
     },
     enumerable: true,
-    configurable: true
+    configurable: true,
 });
 
 Scene.prototype.enablePrePassRenderer = function (): Nullable<PrePassRenderer> {
@@ -63,9 +63,7 @@ Scene.prototype.enablePrePassRenderer = function (): Nullable<PrePassRenderer> {
 
     if (!this._prePassRenderer.isSupported) {
         this._prePassRenderer = null;
-        Logger.Error("PrePassRenderer needs WebGL 2 support.\n" +
-            "Maybe you tried to use the following features that need the PrePassRenderer :\n" +
-            " + Subsurface Scattering");
+        Logger.Error("PrePassRenderer needs WebGL 2 support.\n" + "Maybe you tried to use the following features that need the PrePassRenderer :\n" + " + Subsurface Scattering");
     }
 
     return this._prePassRenderer;
@@ -200,7 +198,6 @@ export class PrePassRendererSceneComponent implements ISceneComponent {
     public dispose(): void {
         this.scene.disablePrePassRenderer();
     }
-
 }
 
 PrePassRenderer._SceneComponentInitialization = (scene: Scene) => {

@@ -55,7 +55,7 @@ export class BoundingSphere {
         this.minimum.copyFrom(min);
         this.maximum.copyFrom(max);
 
-        var distance = Vector3.Distance(min, max);
+        const distance = Vector3.Distance(min, max);
 
         max.addToRef(min, this.center).scaleInPlace(0.5);
         this.radius = distance * 0.5;
@@ -89,7 +89,10 @@ export class BoundingSphere {
     }
 
     // Methods
-    /** @hidden */
+    /**
+     * @param worldMatrix
+     * @hidden
+     */
     public _update(worldMatrix: DeepImmutable<Matrix>): void {
         if (!worldMatrix.isIdentity()) {
             Vector3.TransformCoordinatesToRef(this.center, worldMatrix, this.centerWorld);
@@ -108,8 +111,8 @@ export class BoundingSphere {
      * @returns true if there is an intersection
      */
     public isInFrustum(frustumPlanes: Array<DeepImmutable<Plane>>): boolean {
-        let center = this.centerWorld;
-        let radius = this.radiusWorld;
+        const center = this.centerWorld;
+        const radius = this.radiusWorld;
         for (let i = 0; i < 6; i++) {
             if (frustumPlanes[i].dotCoordinate(center) <= -radius) {
                 return false;
@@ -125,7 +128,7 @@ export class BoundingSphere {
      * @returns true if the sphere center is in between the frustum planes
      */
     public isCenterInFrustum(frustumPlanes: Array<DeepImmutable<Plane>>): boolean {
-        let center = this.centerWorld;
+        const center = this.centerWorld;
         for (let i = 0; i < 6; i++) {
             if (frustumPlanes[i].dotCoordinate(center) < 0) {
                 return false;

@@ -1,14 +1,13 @@
-import { DataBuffer } from '../../Buffers/dataBuffer';
-import { WebGPUDataBuffer } from '../../Meshes/WebGPU/webgpuDataBuffer';
+import { DataBuffer } from "../../Buffers/dataBuffer";
+import { WebGPUDataBuffer } from "../../Meshes/WebGPU/webgpuDataBuffer";
 import { FromHalfFloat } from "../../Misc/textureTools";
-import { Nullable } from '../../types';
+import { Nullable } from "../../types";
 import { Constants } from "../constants";
 import { allocateAndCopyTypedBuffer } from "../Extensions/engine.readTexture";
-import * as WebGPUConstants from './webgpuConstants';
+import * as WebGPUConstants from "./webgpuConstants";
 
 /** @hidden */
 export class WebGPUBufferManager {
-
     private _device: GPUDevice;
     private _deferredReleaseBuffers: Array<GPUBuffer> = [];
 
@@ -25,7 +24,7 @@ export class WebGPUBufferManager {
         const verticesBufferDescriptor = {
             mappedAtCreation,
             size: alignedLength,
-            usage: flags
+            usage: flags,
         };
 
         return this._device.createBuffer(verticesBufferDescriptor);
@@ -36,7 +35,7 @@ export class WebGPUBufferManager {
         const buffer = this.createRawBuffer(viewOrSize, flags);
         const dataBuffer = new WebGPUDataBuffer(buffer);
         dataBuffer.references = 1;
-        dataBuffer.capacity = isView ? (viewOrSize as ArrayBufferView).byteLength : viewOrSize as number;
+        dataBuffer.capacity = isView ? (viewOrSize as ArrayBufferView).byteLength : (viewOrSize as number);
 
         if (isView) {
             this.setSubData(dataBuffer, 0, viewOrSize as ArrayBufferView);
@@ -74,7 +73,7 @@ export class WebGPUBufferManager {
         // Chunk
         const maxChunk = 1024 * 1024 * 15;
         let offset = 0;
-        while ((chunkEnd - (chunkStart + offset)) > maxChunk) {
+        while (chunkEnd - (chunkStart + offset) > maxChunk) {
             this._device.queue.writeBuffer(buffer, dstByteOffset + offset, src.buffer, chunkStart + offset, maxChunk);
             offset += maxChunk;
         }
@@ -94,80 +93,94 @@ export class WebGPUBufferManager {
         return destArray;
     }
 
-    public readDataFromBuffer(gpuBuffer: GPUBuffer, size: number, width: number, height: number, bytesPerRow: number, bytesPerRowAligned: number, type = Constants.TEXTURETYPE_UNSIGNED_BYTE, offset = 0,
-        buffer: Nullable<ArrayBufferView> = null, destroyBuffer = true, noDataConversion = false): Promise<ArrayBufferView>
-    {
+    public readDataFromBuffer(
+        gpuBuffer: GPUBuffer,
+        size: number,
+        width: number,
+        height: number,
+        bytesPerRow: number,
+        bytesPerRowAligned: number,
+        type = Constants.TEXTURETYPE_UNSIGNED_BYTE,
+        offset = 0,
+        buffer: Nullable<ArrayBufferView> = null,
+        destroyBuffer = true,
+        noDataConversion = false
+    ): Promise<ArrayBufferView> {
         const floatFormat = type === Constants.TEXTURETYPE_FLOAT ? 2 : type === Constants.TEXTURETYPE_HALF_FLOAT ? 1 : 0;
         return new Promise((resolve, reject) => {
-            gpuBuffer.mapAsync(WebGPUConstants.MapMode.Read, offset, size).then(() => {
-                const copyArrayBuffer = gpuBuffer.getMappedRange(offset, size);
-                let data: Nullable<ArrayBufferView> | Uint8Array | Float32Array = buffer;
-                if (noDataConversion) {
-                    if (data === null) {
-                        data = allocateAndCopyTypedBuffer(type, size, true, copyArrayBuffer);
-                    } else {
-                        data = allocateAndCopyTypedBuffer(type, data.buffer, undefined, copyArrayBuffer);
-                    }
-                } else {
-                    if (data === null) {
-                        switch (floatFormat) {
-                            case 0: // byte format
-                                data = new Uint8Array(size);
-                                (data as Uint8Array).set(new Uint8Array(copyArrayBuffer));
-                                break;
-                            case 1: // half float
-                                // TODO WEBGPU use computer shaders (or render pass) to make the conversion?
-                                data = this._GetHalfFloatAsFloatRGBAArrayBuffer(size / 2, copyArrayBuffer);
-                                break;
-                            case 2: // float
-                                data = new Float32Array(size / 4);
-                                (data as Float32Array).set(new Float32Array(copyArrayBuffer));
-                                break;
+            gpuBuffer.mapAsync(WebGPUConstants.MapMode.Read, offset, size).then(
+                () => {
+                    const copyArrayBuffer = gpuBuffer.getMappedRange(offset, size);
+                    let data: Nullable<ArrayBufferView> | Uint8Array | Float32Array = buffer;
+                    if (noDataConversion) {
+                        if (data === null) {
+                            data = allocateAndCopyTypedBuffer(type, size, true, copyArrayBuffer);
+                        } else {
+                            data = allocateAndCopyTypedBuffer(type, data.buffer, undefined, copyArrayBuffer);
                         }
                     } else {
-                        switch (floatFormat) {
-                            case 0: // byte format
-                                data = new Uint8Array(data.buffer);
-                                (data as Uint8Array).set(new Uint8Array(copyArrayBuffer));
-                                break;
-                            case 1: // half float
-                                // TODO WEBGPU use computer shaders (or render pass) to make the conversion?
-                                data = this._GetHalfFloatAsFloatRGBAArrayBuffer(size / 2, copyArrayBuffer, buffer as Float32Array);
-                                break;
-                            case 2: // float
-                                data = new Float32Array(data.buffer);
-                                (data as Float32Array).set(new Float32Array(copyArrayBuffer));
-                                break;
+                        if (data === null) {
+                            switch (floatFormat) {
+                                case 0: // byte format
+                                    data = new Uint8Array(size);
+                                    (data as Uint8Array).set(new Uint8Array(copyArrayBuffer));
+                                    break;
+                                case 1: // half float
+                                    // TODO WEBGPU use computer shaders (or render pass) to make the conversion?
+                                    data = this._GetHalfFloatAsFloatRGBAArrayBuffer(size / 2, copyArrayBuffer);
+                                    break;
+                                case 2: // float
+                                    data = new Float32Array(size / 4);
+                                    (data as Float32Array).set(new Float32Array(copyArrayBuffer));
+                                    break;
+                            }
+                        } else {
+                            switch (floatFormat) {
+                                case 0: // byte format
+                                    data = new Uint8Array(data.buffer);
+                                    (data as Uint8Array).set(new Uint8Array(copyArrayBuffer));
+                                    break;
+                                case 1: // half float
+                                    // TODO WEBGPU use computer shaders (or render pass) to make the conversion?
+                                    data = this._GetHalfFloatAsFloatRGBAArrayBuffer(size / 2, copyArrayBuffer, buffer as Float32Array);
+                                    break;
+                                case 2: // float
+                                    data = new Float32Array(data.buffer);
+                                    (data as Float32Array).set(new Float32Array(copyArrayBuffer));
+                                    break;
+                            }
                         }
                     }
-                }
-                if (bytesPerRow !== bytesPerRowAligned) {
-                    // TODO WEBGPU use computer shaders (or render pass) to build the final buffer data?
-                    if (floatFormat === 1 && !noDataConversion) {
-                        // half float have been converted to float above
-                        bytesPerRow *= 2;
-                        bytesPerRowAligned *= 2;
-                    }
-                    const data2 = new Uint8Array(data!.buffer);
-                    let offset = bytesPerRow, offset2 = 0;
-                    for (let y = 1; y < height; ++y) {
-                        offset2 = y * bytesPerRowAligned;
-                        for (let x = 0; x < bytesPerRow; ++x) {
-                            data2[offset++] = data2[offset2++];
+                    if (bytesPerRow !== bytesPerRowAligned) {
+                        // TODO WEBGPU use computer shaders (or render pass) to build the final buffer data?
+                        if (floatFormat === 1 && !noDataConversion) {
+                            // half float have been converted to float above
+                            bytesPerRow *= 2;
+                            bytesPerRowAligned *= 2;
+                        }
+                        const data2 = new Uint8Array(data!.buffer);
+                        let offset = bytesPerRow,
+                            offset2 = 0;
+                        for (let y = 1; y < height; ++y) {
+                            offset2 = y * bytesPerRowAligned;
+                            for (let x = 0; x < bytesPerRow; ++x) {
+                                data2[offset++] = data2[offset2++];
+                            }
+                        }
+                        if (floatFormat !== 0 && !noDataConversion) {
+                            data = new Float32Array(data2.buffer, 0, offset / 4);
+                        } else {
+                            data = new Uint8Array(data2.buffer, 0, offset);
                         }
                     }
-                    if (floatFormat !== 0 && !noDataConversion) {
-                        data = new Float32Array(data2.buffer, 0, offset / 4);
-                    } else {
-                        data = new Uint8Array(data2.buffer, 0, offset);
+                    gpuBuffer.unmap();
+                    if (destroyBuffer) {
+                        this.releaseBuffer(gpuBuffer);
                     }
-                }
-                gpuBuffer.unmap();
-                if (destroyBuffer) {
-                    this.releaseBuffer(gpuBuffer);
-                }
-                resolve(data!);
-            }, (reason) => reject(reason));
+                    resolve(data!);
+                },
+                (reason) => reject(reason)
+            );
         });
     }
 

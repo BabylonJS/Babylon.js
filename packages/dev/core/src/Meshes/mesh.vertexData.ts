@@ -1,18 +1,18 @@
 import { Nullable, FloatArray, IndicesArray, DeepImmutable } from "../types";
 import { Matrix, Vector3, Vector2, Vector4, TmpVectors } from "../Maths/math.vector";
 import { VertexBuffer } from "../Buffers/buffer";
-import { _WarnImport } from '../Misc/devTools';
-import { Color4, Color3 } from '../Maths/math.color';
-import { Logger } from '../Misc/logger';
-import { nativeOverride } from '../Misc/decorators';
-import { Coroutine, makeSyncFunction, runCoroutineSync } from '../Misc/coroutine';
+import { _WarnImport } from "../Misc/devTools";
+import { Color4, Color3 } from "../Maths/math.color";
+import { Logger } from "../Misc/logger";
+import { nativeOverride } from "../Misc/decorators";
+import { Coroutine, makeSyncFunction, runCoroutineSync } from "../Misc/coroutine";
 import { ICreateCapsuleOptions } from "./Builders/capsuleBuilder";
 import { RuntimeError, ErrorCodes } from "../Misc/error";
 
 declare type Geometry = import("../Meshes/geometry").Geometry;
 declare type Mesh = import("../Meshes/mesh").Mesh;
 
-declare type PolyhedronData= import("./geodesicMesh").PolyhedronData;
+declare type PolyhedronData = import("./geodesicMesh").PolyhedronData;
 
 /**
  * Define an interface for all classes that will get and set the data on vertices
@@ -278,81 +278,116 @@ export class VertexData {
 
     private readonly _applyTo = makeSyncFunction(this._applyToCoroutine.bind(this));
 
-    /** @hidden */
+    /**
+     * @param meshOrGeometry
+     * @param updatable
+     * @param isAsync
+     * @hidden
+     */
     public *_applyToCoroutine(meshOrGeometry: IGetSetVerticesData, updatable: boolean = false, isAsync: boolean): Coroutine<VertexData> {
         if (this.positions) {
             meshOrGeometry.setVerticesData(VertexBuffer.PositionKind, this.positions, updatable);
-            if (isAsync) { yield; }
+            if (isAsync) {
+                yield;
+            }
         }
 
         if (this.normals) {
             meshOrGeometry.setVerticesData(VertexBuffer.NormalKind, this.normals, updatable);
-            if (isAsync) { yield; }
+            if (isAsync) {
+                yield;
+            }
         }
 
         if (this.tangents) {
             meshOrGeometry.setVerticesData(VertexBuffer.TangentKind, this.tangents, updatable);
-            if (isAsync) { yield; }
+            if (isAsync) {
+                yield;
+            }
         }
 
         if (this.uvs) {
             meshOrGeometry.setVerticesData(VertexBuffer.UVKind, this.uvs, updatable);
-            if (isAsync) { yield; }
+            if (isAsync) {
+                yield;
+            }
         }
 
         if (this.uvs2) {
             meshOrGeometry.setVerticesData(VertexBuffer.UV2Kind, this.uvs2, updatable);
-            if (isAsync) { yield; }
+            if (isAsync) {
+                yield;
+            }
         }
 
         if (this.uvs3) {
             meshOrGeometry.setVerticesData(VertexBuffer.UV3Kind, this.uvs3, updatable);
-            if (isAsync) { yield; }
+            if (isAsync) {
+                yield;
+            }
         }
 
         if (this.uvs4) {
             meshOrGeometry.setVerticesData(VertexBuffer.UV4Kind, this.uvs4, updatable);
-            if (isAsync) { yield; }
+            if (isAsync) {
+                yield;
+            }
         }
 
         if (this.uvs5) {
             meshOrGeometry.setVerticesData(VertexBuffer.UV5Kind, this.uvs5, updatable);
-            if (isAsync) { yield; }
+            if (isAsync) {
+                yield;
+            }
         }
 
         if (this.uvs6) {
             meshOrGeometry.setVerticesData(VertexBuffer.UV6Kind, this.uvs6, updatable);
-            if (isAsync) { yield; }
+            if (isAsync) {
+                yield;
+            }
         }
 
         if (this.colors) {
             meshOrGeometry.setVerticesData(VertexBuffer.ColorKind, this.colors, updatable);
-            if (isAsync) { yield; }
+            if (isAsync) {
+                yield;
+            }
         }
 
         if (this.matricesIndices) {
             meshOrGeometry.setVerticesData(VertexBuffer.MatricesIndicesKind, this.matricesIndices, updatable);
-            if (isAsync) { yield; }
+            if (isAsync) {
+                yield;
+            }
         }
 
         if (this.matricesWeights) {
             meshOrGeometry.setVerticesData(VertexBuffer.MatricesWeightsKind, this.matricesWeights, updatable);
-            if (isAsync) { yield; }
+            if (isAsync) {
+                yield;
+            }
         }
 
         if (this.matricesIndicesExtra) {
             meshOrGeometry.setVerticesData(VertexBuffer.MatricesIndicesExtraKind, this.matricesIndicesExtra, updatable);
-            if (isAsync) { yield; }
+            if (isAsync) {
+                yield;
+            }
         }
 
         if (this.matricesWeightsExtra) {
             meshOrGeometry.setVerticesData(VertexBuffer.MatricesWeightsExtraKind, this.matricesWeightsExtra, updatable);
-            if (isAsync) { yield; }
+            if (isAsync) {
+                yield;
+            }
         }
 
         if (this.indices) {
             meshOrGeometry.setIndices(this.indices, null, updatable);
-            if (isAsync) { yield; }
+            if (isAsync) {
+                yield;
+            }
         } else {
             meshOrGeometry.setIndices([], null);
         }
@@ -510,8 +545,21 @@ export class VertexData {
         return runCoroutineSync(this._mergeCoroutine(undefined, vertexDatas, use32BitsIndices, false, forceCloneIndices));
     }
 
-    /** @hidden */
-    public *_mergeCoroutine(transform: Matrix | undefined, vertexDatas: (readonly [vertexData: VertexData, transform?: Matrix])[], use32BitsIndices = false, isAsync: boolean, forceCloneIndices: boolean): Coroutine<VertexData> {
+    /**
+     * @param transform
+     * @param vertexDatas
+     * @param use32BitsIndices
+     * @param isAsync
+     * @param forceCloneIndices
+     * @hidden
+     */
+    public *_mergeCoroutine(
+        transform: Matrix | undefined,
+        vertexDatas: (readonly [vertexData: VertexData, transform?: Matrix])[],
+        use32BitsIndices = false,
+        isAsync: boolean,
+        forceCloneIndices: boolean
+    ): Coroutine<VertexData> {
         this._validate();
 
         const others = vertexDatas.map((vertexData) => vertexData[0]);
@@ -519,7 +567,8 @@ export class VertexData {
         for (const other of others) {
             other._validate();
 
-            if (!this.normals !== !other.normals ||
+            if (
+                !this.normals !== !other.normals ||
                 !this.tangents !== !other.tangents ||
                 !this.uvs !== !other.uvs ||
                 !this.uvs2 !== !other.uvs2 ||
@@ -531,7 +580,8 @@ export class VertexData {
                 !this.matricesIndices !== !other.matricesIndices ||
                 !this.matricesWeights !== !other.matricesWeights ||
                 !this.matricesIndicesExtra !== !other.matricesIndicesExtra ||
-                !this.matricesWeightsExtra !== !other.matricesWeightsExtra) {
+                !this.matricesWeightsExtra !== !other.matricesWeightsExtra
+            ) {
                 throw new Error("Cannot merge vertex data that do not have the same set of attributes");
             }
         }
@@ -540,7 +590,6 @@ export class VertexData {
         const sliceIndices = forceCloneIndices || others.some((vertexData) => vertexData.indices === this.indices);
         let indices = sliceIndices ? this.indices?.slice() : this.indices;
         if (totalIndices > 0) {
-
             let indicesOffset = indices?.length ?? 0;
 
             if (!indices) {
@@ -574,47 +623,150 @@ export class VertexData {
 
                     // The call to _validate already checked for positions
                     positionsOffset += other.positions!.length / 3;
-                    indicesOffset +=  other.indices.length;
+                    indicesOffset += other.indices.length;
 
-                    if (isAsync) { yield; }
+                    if (isAsync) {
+                        yield;
+                    }
                 }
             }
         }
 
         this.indices = indices!;
 
-        this.positions = VertexData._mergeElement(VertexBuffer.PositionKind, this.positions, transform, vertexDatas.map((other) => [other[0].positions, other[1]]));
-        if (isAsync) { yield; }
-        this.normals = VertexData._mergeElement(VertexBuffer.NormalKind, this.normals, transform, vertexDatas.map((other) => [other[0].normals, other[1]]));
-        if (isAsync) { yield; }
-        this.tangents = VertexData._mergeElement(VertexBuffer.TangentKind, this.tangents, transform, vertexDatas.map((other) => [other[0].tangents, other[1]]));
-        if (isAsync) { yield; }
-        this.uvs = VertexData._mergeElement(VertexBuffer.UVKind, this.uvs, transform, vertexDatas.map((other) => [other[0].uvs, other[1]]));
-        if (isAsync) { yield; }
-        this.uvs2 = VertexData._mergeElement(VertexBuffer.UV2Kind, this.uvs2, transform, vertexDatas.map((other) => [other[0].uvs2, other[1]]));
-        if (isAsync) { yield; }
-        this.uvs3 = VertexData._mergeElement(VertexBuffer.UV3Kind, this.uvs3, transform, vertexDatas.map((other) => [other[0].uvs3, other[1]]));
-        if (isAsync) { yield; }
-        this.uvs4 = VertexData._mergeElement(VertexBuffer.UV4Kind, this.uvs4, transform, vertexDatas.map((other) => [other[0].uvs4, other[1]]));
-        if (isAsync) { yield; }
-        this.uvs5 = VertexData._mergeElement(VertexBuffer.UV5Kind, this.uvs5, transform, vertexDatas.map((other) => [other[0].uvs5, other[1]]));
-        if (isAsync) { yield; }
-        this.uvs6 = VertexData._mergeElement(VertexBuffer.UV6Kind, this.uvs6, transform, vertexDatas.map((other) => [other[0].uvs6, other[1]]));
-        if (isAsync) { yield; }
-        this.colors = VertexData._mergeElement(VertexBuffer.ColorKind, this.colors, transform, vertexDatas.map((other) => [other[0].colors, other[1]]));
-        if (isAsync) { yield; }
-        this.matricesIndices = VertexData._mergeElement(VertexBuffer.MatricesIndicesKind, this.matricesIndices, transform, vertexDatas.map((other) => [other[0].matricesIndices, other[1]]));
-        if (isAsync) { yield; }
-        this.matricesWeights = VertexData._mergeElement(VertexBuffer.MatricesWeightsKind, this.matricesWeights, transform, vertexDatas.map((other) => [other[0].matricesWeights, other[1]]));
-        if (isAsync) { yield; }
-        this.matricesIndicesExtra = VertexData._mergeElement(VertexBuffer.MatricesIndicesExtraKind, this.matricesIndicesExtra, transform, vertexDatas.map((other) => [other[0].matricesIndicesExtra, other[1]]));
-        if (isAsync) { yield; }
-        this.matricesWeightsExtra = VertexData._mergeElement(VertexBuffer.MatricesWeightsExtraKind, this.matricesWeightsExtra, transform, vertexDatas.map((other) => [other[0].matricesWeightsExtra, other[1]]));
+        this.positions = VertexData._mergeElement(
+            VertexBuffer.PositionKind,
+            this.positions,
+            transform,
+            vertexDatas.map((other) => [other[0].positions, other[1]])
+        );
+        if (isAsync) {
+            yield;
+        }
+        this.normals = VertexData._mergeElement(
+            VertexBuffer.NormalKind,
+            this.normals,
+            transform,
+            vertexDatas.map((other) => [other[0].normals, other[1]])
+        );
+        if (isAsync) {
+            yield;
+        }
+        this.tangents = VertexData._mergeElement(
+            VertexBuffer.TangentKind,
+            this.tangents,
+            transform,
+            vertexDatas.map((other) => [other[0].tangents, other[1]])
+        );
+        if (isAsync) {
+            yield;
+        }
+        this.uvs = VertexData._mergeElement(
+            VertexBuffer.UVKind,
+            this.uvs,
+            transform,
+            vertexDatas.map((other) => [other[0].uvs, other[1]])
+        );
+        if (isAsync) {
+            yield;
+        }
+        this.uvs2 = VertexData._mergeElement(
+            VertexBuffer.UV2Kind,
+            this.uvs2,
+            transform,
+            vertexDatas.map((other) => [other[0].uvs2, other[1]])
+        );
+        if (isAsync) {
+            yield;
+        }
+        this.uvs3 = VertexData._mergeElement(
+            VertexBuffer.UV3Kind,
+            this.uvs3,
+            transform,
+            vertexDatas.map((other) => [other[0].uvs3, other[1]])
+        );
+        if (isAsync) {
+            yield;
+        }
+        this.uvs4 = VertexData._mergeElement(
+            VertexBuffer.UV4Kind,
+            this.uvs4,
+            transform,
+            vertexDatas.map((other) => [other[0].uvs4, other[1]])
+        );
+        if (isAsync) {
+            yield;
+        }
+        this.uvs5 = VertexData._mergeElement(
+            VertexBuffer.UV5Kind,
+            this.uvs5,
+            transform,
+            vertexDatas.map((other) => [other[0].uvs5, other[1]])
+        );
+        if (isAsync) {
+            yield;
+        }
+        this.uvs6 = VertexData._mergeElement(
+            VertexBuffer.UV6Kind,
+            this.uvs6,
+            transform,
+            vertexDatas.map((other) => [other[0].uvs6, other[1]])
+        );
+        if (isAsync) {
+            yield;
+        }
+        this.colors = VertexData._mergeElement(
+            VertexBuffer.ColorKind,
+            this.colors,
+            transform,
+            vertexDatas.map((other) => [other[0].colors, other[1]])
+        );
+        if (isAsync) {
+            yield;
+        }
+        this.matricesIndices = VertexData._mergeElement(
+            VertexBuffer.MatricesIndicesKind,
+            this.matricesIndices,
+            transform,
+            vertexDatas.map((other) => [other[0].matricesIndices, other[1]])
+        );
+        if (isAsync) {
+            yield;
+        }
+        this.matricesWeights = VertexData._mergeElement(
+            VertexBuffer.MatricesWeightsKind,
+            this.matricesWeights,
+            transform,
+            vertexDatas.map((other) => [other[0].matricesWeights, other[1]])
+        );
+        if (isAsync) {
+            yield;
+        }
+        this.matricesIndicesExtra = VertexData._mergeElement(
+            VertexBuffer.MatricesIndicesExtraKind,
+            this.matricesIndicesExtra,
+            transform,
+            vertexDatas.map((other) => [other[0].matricesIndicesExtra, other[1]])
+        );
+        if (isAsync) {
+            yield;
+        }
+        this.matricesWeightsExtra = VertexData._mergeElement(
+            VertexBuffer.MatricesWeightsExtraKind,
+            this.matricesWeightsExtra,
+            transform,
+            vertexDatas.map((other) => [other[0].matricesWeightsExtra, other[1]])
+        );
 
         return this;
     }
 
-    private static _mergeElement(kind: string, source: Nullable<FloatArray>, transform: Matrix | undefined, others: readonly (readonly [element: Nullable<FloatArray>, transform?: Matrix])[]): Nullable<FloatArray> {
+    private static _mergeElement(
+        kind: string,
+        source: Nullable<FloatArray>,
+        transform: Matrix | undefined,
+        others: readonly (readonly [element: Nullable<FloatArray>, transform?: Matrix])[]
+    ): Nullable<FloatArray> {
         const nonNullOthers = others.filter((other): other is [element: FloatArray, transform?: Matrix] => other[0] !== null && other[0] !== undefined);
 
         if (nonNullOthers.length === 0) {
@@ -628,10 +780,13 @@ export class VertexData {
         const len = nonNullOthers.reduce((sumLen, elements) => sumLen + elements[0].length, source.length);
 
         const transformRange =
-            kind === VertexBuffer.PositionKind ? VertexData._TransformVector3Coordinates :
-            kind === VertexBuffer.NormalKind ? VertexData._TransformVector3Normals :
-            kind === VertexBuffer.TangentKind ? VertexData._TransformVector4Normals :
-            () => {};
+            kind === VertexBuffer.PositionKind
+                ? VertexData._TransformVector3Coordinates
+                : kind === VertexBuffer.NormalKind
+                ? VertexData._TransformVector3Normals
+                : kind === VertexBuffer.TangentKind
+                ? VertexData._TransformVector4Normals
+                : () => {};
 
         if (source instanceof Float32Array) {
             // use non-loop method when the source is Float32Array
@@ -673,7 +828,7 @@ export class VertexData {
 
         const getElementCount = (kind: string, values: FloatArray) => {
             const stride = VertexBuffer.DeduceStride(kind);
-            if ((values.length % stride) !== 0) {
+            if (values.length % stride !== 0) {
                 throw new Error("The " + kind + "s array count must be a multiple of " + stride);
             }
 
@@ -689,19 +844,45 @@ export class VertexData {
             }
         };
 
-        if (this.normals) { validateElementCount(VertexBuffer.NormalKind, this.normals); }
-        if (this.tangents) { validateElementCount(VertexBuffer.TangentKind, this.tangents); }
-        if (this.uvs) { validateElementCount(VertexBuffer.UVKind, this.uvs); }
-        if (this.uvs2) { validateElementCount(VertexBuffer.UV2Kind, this.uvs2); }
-        if (this.uvs3) { validateElementCount(VertexBuffer.UV3Kind, this.uvs3); }
-        if (this.uvs4) { validateElementCount(VertexBuffer.UV4Kind, this.uvs4); }
-        if (this.uvs5) { validateElementCount(VertexBuffer.UV5Kind, this.uvs5); }
-        if (this.uvs6) { validateElementCount(VertexBuffer.UV6Kind, this.uvs6); }
-        if (this.colors) { validateElementCount(VertexBuffer.ColorKind, this.colors); }
-        if (this.matricesIndices) { validateElementCount(VertexBuffer.MatricesIndicesKind, this.matricesIndices); }
-        if (this.matricesWeights) { validateElementCount(VertexBuffer.MatricesWeightsKind, this.matricesWeights); }
-        if (this.matricesIndicesExtra) { validateElementCount(VertexBuffer.MatricesIndicesExtraKind, this.matricesIndicesExtra); }
-        if (this.matricesWeightsExtra) { validateElementCount(VertexBuffer.MatricesWeightsExtraKind, this.matricesWeightsExtra); }
+        if (this.normals) {
+            validateElementCount(VertexBuffer.NormalKind, this.normals);
+        }
+        if (this.tangents) {
+            validateElementCount(VertexBuffer.TangentKind, this.tangents);
+        }
+        if (this.uvs) {
+            validateElementCount(VertexBuffer.UVKind, this.uvs);
+        }
+        if (this.uvs2) {
+            validateElementCount(VertexBuffer.UV2Kind, this.uvs2);
+        }
+        if (this.uvs3) {
+            validateElementCount(VertexBuffer.UV3Kind, this.uvs3);
+        }
+        if (this.uvs4) {
+            validateElementCount(VertexBuffer.UV4Kind, this.uvs4);
+        }
+        if (this.uvs5) {
+            validateElementCount(VertexBuffer.UV5Kind, this.uvs5);
+        }
+        if (this.uvs6) {
+            validateElementCount(VertexBuffer.UV6Kind, this.uvs6);
+        }
+        if (this.colors) {
+            validateElementCount(VertexBuffer.ColorKind, this.colors);
+        }
+        if (this.matricesIndices) {
+            validateElementCount(VertexBuffer.MatricesIndicesKind, this.matricesIndices);
+        }
+        if (this.matricesWeights) {
+            validateElementCount(VertexBuffer.MatricesWeightsKind, this.matricesWeights);
+        }
+        if (this.matricesIndicesExtra) {
+            validateElementCount(VertexBuffer.MatricesIndicesExtraKind, this.matricesIndicesExtra);
+        }
+        if (this.matricesWeightsExtra) {
+            validateElementCount(VertexBuffer.MatricesWeightsExtraKind, this.matricesWeightsExtra);
+        }
     }
 
     /**
@@ -709,7 +890,7 @@ export class VertexData {
      * @returns a serialized object
      */
     public serialize(): any {
-        var serializationObject: any = {};
+        const serializationObject: any = {};
 
         if (this.positions) {
             serializationObject.positions = this.positions;
@@ -798,7 +979,7 @@ export class VertexData {
     }
 
     private static _ExtractFrom(meshOrGeometry: IGetSetVerticesData, copyWhenShared?: boolean, forceCopy?: boolean): VertexData {
-        var result = new VertexData();
+        const result = new VertexData();
 
         if (meshOrGeometry.isVerticesDataPresent(VertexBuffer.PositionKind)) {
             result.positions = meshOrGeometry.getVerticesData(VertexBuffer.PositionKind, copyWhenShared, forceCopy);
@@ -864,130 +1045,283 @@ export class VertexData {
     /**
      * Creates the VertexData for a Ribbon
      * @param options an object used to set the following optional parameters for the ribbon, required but can be empty
-      * * pathArray array of paths, each of which an array of successive Vector3
-      * * closeArray creates a seam between the first and the last paths of the pathArray, optional, default false
-      * * closePath creates a seam between the first and the last points of each path of the path array, optional, default false
-      * * offset a positive integer, only used when pathArray contains a single path (offset = 10 means the point 1 is joined to the point 11), default rounded half size of the pathArray length
-      * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
-      * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
-      * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
-      * * invertUV swaps in the U and V coordinates when applying a texture, optional, default false
-      * * uvs a linear array, of length 2 * number of vertices, of custom UV values, optional
-      * * colors a linear array, of length 4 * number of vertices, of custom color values, optional
+     * * pathArray array of paths, each of which an array of successive Vector3
+     * * closeArray creates a seam between the first and the last paths of the pathArray, optional, default false
+     * * closePath creates a seam between the first and the last points of each path of the path array, optional, default false
+     * * offset a positive integer, only used when pathArray contains a single path (offset = 10 means the point 1 is joined to the point 11), default rounded half size of the pathArray length
+     * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
+     * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
+     * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
+     * * invertUV swaps in the U and V coordinates when applying a texture, optional, default false
+     * * uvs a linear array, of length 2 * number of vertices, of custom UV values, optional
+     * * colors a linear array, of length 4 * number of vertices, of custom color values, optional
+     * @param options.pathArray
+     * @param options.closeArray
+     * @param options.closePath
+     * @param options.offset
+     * @param options.sideOrientation
+     * @param options.frontUVs
+     * @param options.backUVs
+     * @param options.invertUV
+     * @param options.uvs
+     * @param options.colors
      * @returns the VertexData of the ribbon
      * @deprecated use CreateRibbonVertexData instead
      */
-    public static CreateRibbon(options: { pathArray: Vector3[][], closeArray?: boolean, closePath?: boolean, offset?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, invertUV?: boolean, uvs?: Vector2[], colors?: Color4[] }): VertexData {
+    public static CreateRibbon(options: {
+        pathArray: Vector3[][];
+        closeArray?: boolean;
+        closePath?: boolean;
+        offset?: number;
+        sideOrientation?: number;
+        frontUVs?: Vector4;
+        backUVs?: Vector4;
+        invertUV?: boolean;
+        uvs?: Vector2[];
+        colors?: Color4[];
+    }): VertexData {
         throw _WarnImport("ribbonBuilder");
     }
 
     /**
      * Creates the VertexData for a box
      * @param options an object used to set the following optional parameters for the box, required but can be empty
-      * * size sets the width, height and depth of the box to the value of size, optional default 1
-      * * width sets the width (x direction) of the box, overwrites the width set by size, optional, default size
-      * * height sets the height (y direction) of the box, overwrites the height set by size, optional, default size
-      * * depth sets the depth (z direction) of the box, overwrites the depth set by size, optional, default size
-      * * faceUV an array of 6 Vector4 elements used to set different images to each box side
-      * * faceColors an array of 6 Color3 elements used to set different colors to each box side
-      * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
-      * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
-      * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
+     * * size sets the width, height and depth of the box to the value of size, optional default 1
+     * * width sets the width (x direction) of the box, overwrites the width set by size, optional, default size
+     * * height sets the height (y direction) of the box, overwrites the height set by size, optional, default size
+     * * depth sets the depth (z direction) of the box, overwrites the depth set by size, optional, default size
+     * * faceUV an array of 6 Vector4 elements used to set different images to each box side
+     * * faceColors an array of 6 Color3 elements used to set different colors to each box side
+     * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
+     * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
+     * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
+     * @param options.size
+     * @param options.width
+     * @param options.height
+     * @param options.depth
+     * @param options.faceUV
+     * @param options.faceColors
+     * @param options.sideOrientation
+     * @param options.frontUVs
+     * @param options.backUVs
      * @returns the VertexData of the box
      * @deprecated Please use CreateBoxVertexData from the BoxBuilder file instead
      */
-    public static CreateBox(options: { size?: number, width?: number, height?: number, depth?: number, faceUV?: Vector4[], faceColors?: Color4[], sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
+    public static CreateBox(options: {
+        size?: number;
+        width?: number;
+        height?: number;
+        depth?: number;
+        faceUV?: Vector4[];
+        faceColors?: Color4[];
+        sideOrientation?: number;
+        frontUVs?: Vector4;
+        backUVs?: Vector4;
+    }): VertexData {
         throw _WarnImport("boxBuilder");
     }
 
     /**
      * Creates the VertexData for a tiled box
      * @param options an object used to set the following optional parameters for the box, required but can be empty
-      * * faceTiles sets the pattern, tile size and number of tiles for a face
-      * * faceUV an array of 6 Vector4 elements used to set different images to each box side
-      * * faceColors an array of 6 Color3 elements used to set different colors to each box side
-      * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
+     * * faceTiles sets the pattern, tile size and number of tiles for a face
+     * * faceUV an array of 6 Vector4 elements used to set different images to each box side
+     * * faceColors an array of 6 Color3 elements used to set different colors to each box side
+     * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
+     * @param options.pattern
+     * @param options.width
+     * @param options.height
+     * @param options.depth
+     * @param options.tileSize
+     * @param options.tileWidth
+     * @param options.tileHeight
+     * @param options.alignHorizontal
+     * @param options.alignVertical
+     * @param options.faceUV
+     * @param options.faceColors
+     * @param options.sideOrientation
      * @returns the VertexData of the box
      * @deprecated Please use CreateTiledBoxVertexData instead
      */
-    public static CreateTiledBox(options: { pattern?: number, width?: number, height?: number, depth?: number, tileSize?: number, tileWidth?: number, tileHeight?: number, alignHorizontal?: number, alignVertical?: number, faceUV?: Vector4[], faceColors?: Color4[], sideOrientation?: number }): VertexData {
+    public static CreateTiledBox(options: {
+        pattern?: number;
+        width?: number;
+        height?: number;
+        depth?: number;
+        tileSize?: number;
+        tileWidth?: number;
+        tileHeight?: number;
+        alignHorizontal?: number;
+        alignVertical?: number;
+        faceUV?: Vector4[];
+        faceColors?: Color4[];
+        sideOrientation?: number;
+    }): VertexData {
         throw _WarnImport("tiledBoxBuilder");
     }
 
     /**
      * Creates the VertexData for a tiled plane
      * @param options an object used to set the following optional parameters for the box, required but can be empty
-      * * pattern a limited pattern arrangement depending on the number
-      * * tileSize sets the width, height and depth of the tile to the value of size, optional default 1
-      * * tileWidth sets the width (x direction) of the tile, overwrites the width set by size, optional, default size
-      * * tileHeight sets the height (y direction) of the tile, overwrites the height set by size, optional, default size
-      * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
-      * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
-      * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
+     * * pattern a limited pattern arrangement depending on the number
+     * * tileSize sets the width, height and depth of the tile to the value of size, optional default 1
+     * * tileWidth sets the width (x direction) of the tile, overwrites the width set by size, optional, default size
+     * * tileHeight sets the height (y direction) of the tile, overwrites the height set by size, optional, default size
+     * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
+     * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
+     * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
+     * @param options.pattern
+     * @param options.tileSize
+     * @param options.tileWidth
+     * @param options.tileHeight
+     * @param options.size
+     * @param options.width
+     * @param options.height
+     * @param options.alignHorizontal
+     * @param options.alignVertical
+     * @param options.sideOrientation
+     * @param options.frontUVs
+     * @param options.backUVs
      * @returns the VertexData of the tiled plane
      * @deprecated use CreateTiledPlaneVertexData instead
      */
-    public static CreateTiledPlane(options: { pattern?: number, tileSize?: number, tileWidth?: number, tileHeight?: number, size?: number, width?: number, height?: number, alignHorizontal?: number, alignVertical?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
+    public static CreateTiledPlane(options: {
+        pattern?: number;
+        tileSize?: number;
+        tileWidth?: number;
+        tileHeight?: number;
+        size?: number;
+        width?: number;
+        height?: number;
+        alignHorizontal?: number;
+        alignVertical?: number;
+        sideOrientation?: number;
+        frontUVs?: Vector4;
+        backUVs?: Vector4;
+    }): VertexData {
         throw _WarnImport("tiledPlaneBuilder");
     }
 
     /**
      * Creates the VertexData for an ellipsoid, defaults to a sphere
      * @param options an object used to set the following optional parameters for the box, required but can be empty
-      * * segments sets the number of horizontal strips optional, default 32
-      * * diameter sets the axes dimensions, diameterX, diameterY and diameterZ to the value of diameter, optional default 1
-      * * diameterX sets the diameterX (x direction) of the ellipsoid, overwrites the diameterX set by diameter, optional, default diameter
-      * * diameterY sets the diameterY (y direction) of the ellipsoid, overwrites the diameterY set by diameter, optional, default diameter
-      * * diameterZ sets the diameterZ (z direction) of the ellipsoid, overwrites the diameterZ set by diameter, optional, default diameter
-      * * arc a number from 0 to 1, to create an unclosed ellipsoid based on the fraction of the circumference (latitude) given by the arc value, optional, default 1
-      * * slice a number from 0 to 1, to create an unclosed ellipsoid based on the fraction of the height (latitude) given by the arc value, optional, default 1
-      * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
-      * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
-      * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
+     * * segments sets the number of horizontal strips optional, default 32
+     * * diameter sets the axes dimensions, diameterX, diameterY and diameterZ to the value of diameter, optional default 1
+     * * diameterX sets the diameterX (x direction) of the ellipsoid, overwrites the diameterX set by diameter, optional, default diameter
+     * * diameterY sets the diameterY (y direction) of the ellipsoid, overwrites the diameterY set by diameter, optional, default diameter
+     * * diameterZ sets the diameterZ (z direction) of the ellipsoid, overwrites the diameterZ set by diameter, optional, default diameter
+     * * arc a number from 0 to 1, to create an unclosed ellipsoid based on the fraction of the circumference (latitude) given by the arc value, optional, default 1
+     * * slice a number from 0 to 1, to create an unclosed ellipsoid based on the fraction of the height (latitude) given by the arc value, optional, default 1
+     * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
+     * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
+     * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
+     * @param options.segments
+     * @param options.diameter
+     * @param options.diameterX
+     * @param options.diameterY
+     * @param options.diameterZ
+     * @param options.arc
+     * @param options.slice
+     * @param options.sideOrientation
+     * @param options.frontUVs
+     * @param options.backUVs
      * @returns the VertexData of the ellipsoid
      * @deprecated use CreateSphereVertexData instead
      */
-    public static CreateSphere(options: { segments?: number, diameter?: number, diameterX?: number, diameterY?: number, diameterZ?: number, arc?: number, slice?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
+    public static CreateSphere(options: {
+        segments?: number;
+        diameter?: number;
+        diameterX?: number;
+        diameterY?: number;
+        diameterZ?: number;
+        arc?: number;
+        slice?: number;
+        sideOrientation?: number;
+        frontUVs?: Vector4;
+        backUVs?: Vector4;
+    }): VertexData {
         throw _WarnImport("sphereBuilder");
     }
 
     /**
      * Creates the VertexData for a cylinder, cone or prism
      * @param options an object used to set the following optional parameters for the box, required but can be empty
-      * * height sets the height (y direction) of the cylinder, optional, default 2
-      * * diameterTop sets the diameter of the top of the cone, overwrites diameter,  optional, default diameter
-      * * diameterBottom sets the diameter of the bottom of the cone, overwrites diameter,  optional, default diameter
-      * * diameter sets the diameter of the top and bottom of the cone, optional default 1
-      * * tessellation the number of prism sides, 3 for a triangular prism, optional, default 24
-      * * subdivisions` the number of rings along the cylinder height, optional, default 1
-      * * arc a number from 0 to 1, to create an unclosed cylinder based on the fraction of the circumference given by the arc value, optional, default 1
-      * * faceColors an array of Color3 elements used to set different colors to the top, rings and bottom respectively
-      * * faceUV an array of Vector4 elements used to set different images to the top, rings and bottom respectively
-      * * hasRings when true makes each subdivision independently treated as a face for faceUV and faceColors, optional, default false
-      * * enclose when true closes an open cylinder by adding extra flat faces between the height axis and vertical edges, think cut cake
-      * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
-      * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
-      * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
+     * * height sets the height (y direction) of the cylinder, optional, default 2
+     * * diameterTop sets the diameter of the top of the cone, overwrites diameter,  optional, default diameter
+     * * diameterBottom sets the diameter of the bottom of the cone, overwrites diameter,  optional, default diameter
+     * * diameter sets the diameter of the top and bottom of the cone, optional default 1
+     * * tessellation the number of prism sides, 3 for a triangular prism, optional, default 24
+     * * subdivisions` the number of rings along the cylinder height, optional, default 1
+     * * arc a number from 0 to 1, to create an unclosed cylinder based on the fraction of the circumference given by the arc value, optional, default 1
+     * * faceColors an array of Color3 elements used to set different colors to the top, rings and bottom respectively
+     * * faceUV an array of Vector4 elements used to set different images to the top, rings and bottom respectively
+     * * hasRings when true makes each subdivision independently treated as a face for faceUV and faceColors, optional, default false
+     * * enclose when true closes an open cylinder by adding extra flat faces between the height axis and vertical edges, think cut cake
+     * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
+     * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
+     * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
+     * @param options.height
+     * @param options.diameterTop
+     * @param options.diameterBottom
+     * @param options.diameter
+     * @param options.tessellation
+     * @param options.subdivisions
+     * @param options.arc
+     * @param options.faceColors
+     * @param options.faceUV
+     * @param options.hasRings
+     * @param options.enclose
+     * @param options.sideOrientation
+     * @param options.frontUVs
+     * @param options.backUVs
      * @returns the VertexData of the cylinder, cone or prism
      * @deprecated please use CreateCylinderVertexData instead
      */
-    public static CreateCylinder(options: { height?: number, diameterTop?: number, diameterBottom?: number, diameter?: number, tessellation?: number, subdivisions?: number, arc?: number, faceColors?: Color4[], faceUV?: Vector4[], hasRings?: boolean, enclose?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
+    public static CreateCylinder(options: {
+        height?: number;
+        diameterTop?: number;
+        diameterBottom?: number;
+        diameter?: number;
+        tessellation?: number;
+        subdivisions?: number;
+        arc?: number;
+        faceColors?: Color4[];
+        faceUV?: Vector4[];
+        hasRings?: boolean;
+        enclose?: boolean;
+        sideOrientation?: number;
+        frontUVs?: Vector4;
+        backUVs?: Vector4;
+    }): VertexData {
         throw _WarnImport("cylinderBuilder");
     }
 
     /**
      * Creates the VertexData for a torus
      * @param options an object used to set the following optional parameters for the box, required but can be empty
-      * * diameter the diameter of the torus, optional default 1
-      * * thickness the diameter of the tube forming the torus, optional default 0.5
-      * * tessellation the number of prism sides, 3 for a triangular prism, optional, default 24
-      * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
-      * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
-      * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
+     * * diameter the diameter of the torus, optional default 1
+     * * thickness the diameter of the tube forming the torus, optional default 0.5
+     * * tessellation the number of prism sides, 3 for a triangular prism, optional, default 24
+     * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
+     * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
+     * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
+     * @param options.diameter
+     * @param options.thickness
+     * @param options.tessellation
+     * @param options.sideOrientation
+     * @param options.frontUVs
+     * @param options.backUVs
      * @returns the VertexData of the torus
      * @deprecated use CreateTorusVertexData instead
      */
-    public static CreateTorus(options: { diameter?: number, thickness?: number, tessellation?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
+    public static CreateTorus(options: {
+        diameter?: number;
+        thickness?: number;
+        tessellation?: number;
+        sideOrientation?: number;
+        frontUVs?: Vector4;
+        backUVs?: Vector4;
+    }): VertexData {
         throw _WarnImport("torusBuilder");
     }
 
@@ -996,10 +1330,12 @@ export class VertexData {
      * @param options an object used to set the following optional parameters for the LineSystem, required but can be empty
      *  - lines an array of lines, each line being an array of successive Vector3
      *  - colors an array of line colors, each of the line colors being an array of successive Color4, one per line point
+     * @param options.lines
+     * @param options.colors
      * @returns the VertexData of the LineSystem
      * @deprecated use CreateLineSystemVertexData instead
      */
-    public static CreateLineSystem(options: { lines: Vector3[][], colors?: Nullable<Color4[][]> }): VertexData {
+    public static CreateLineSystem(options: { lines: Vector3[][]; colors?: Nullable<Color4[][]> }): VertexData {
         throw _WarnImport("linesBuilder");
     }
 
@@ -1010,10 +1346,14 @@ export class VertexData {
      *  - dashSize the size of the dashes relative to the dash number, optional, default 3
      *  - gapSize the size of the gap between two successive dashes relative to the dash number, optional, default 1
      *  - dashNb the intended total number of dashes, optional, default 200
+     * @param options.points
+     * @param options.dashSize
+     * @param options.gapSize
+     * @param options.dashNb
      * @returns the VertexData for the DashedLines
      * @deprecated use CreateDashedLinesVertexData instead
      */
-    public static CreateDashedLines(options: { points: Vector3[], dashSize?: number, gapSize?: number, dashNb?: number }): VertexData {
+    public static CreateDashedLines(options: { points: Vector3[]; dashSize?: number; gapSize?: number; dashNb?: number }): VertexData {
         throw _WarnImport("linesBuilder");
     }
 
@@ -1023,78 +1363,133 @@ export class VertexData {
      *  - width the width (x direction) of the ground, optional, default 1
      *  - height the height (z direction) of the ground, optional, default 1
      *  - subdivisions the number of subdivisions per side, optional, default 1
+     * @param options.width
+     * @param options.height
+     * @param options.subdivisions
+     * @param options.subdivisionsX
+     * @param options.subdivisionsY
      * @returns the VertexData of the Ground
      * @deprecated Please use CreateGroundVertexData instead
      */
-    public static CreateGround(options: { width?: number, height?: number, subdivisions?: number, subdivisionsX?: number, subdivisionsY?: number }): VertexData {
+    public static CreateGround(options: { width?: number; height?: number; subdivisions?: number; subdivisionsX?: number; subdivisionsY?: number }): VertexData {
         throw _WarnImport("groundBuilder");
     }
 
     /**
      * Creates the VertexData for a TiledGround by subdividing the ground into tiles
      * @param options an object used to set the following optional parameters for the Ground, required but can be empty
-      * * xmin the ground minimum X coordinate, optional, default -1
-      * * zmin the ground minimum Z coordinate, optional, default -1
-      * * xmax the ground maximum X coordinate, optional, default 1
-      * * zmax the ground maximum Z coordinate, optional, default 1
-      * * subdivisions a javascript object {w: positive integer, h: positive integer}, `w` and `h` are the numbers of subdivisions on the ground width and height creating 'tiles', default {w: 6, h: 6}
-      * * precision a javascript object {w: positive integer, h: positive integer}, `w` and `h` are the numbers of subdivisions on the tile width and height, default {w: 2, h: 2}
+     * * xmin the ground minimum X coordinate, optional, default -1
+     * * zmin the ground minimum Z coordinate, optional, default -1
+     * * xmax the ground maximum X coordinate, optional, default 1
+     * * zmax the ground maximum Z coordinate, optional, default 1
+     * * subdivisions a javascript object {w: positive integer, h: positive integer}, `w` and `h` are the numbers of subdivisions on the ground width and height creating 'tiles', default {w: 6, h: 6}
+     * * precision a javascript object {w: positive integer, h: positive integer}, `w` and `h` are the numbers of subdivisions on the tile width and height, default {w: 2, h: 2}
+     * @param options.xmin
+     * @param options.zmin
+     * @param options.xmax
+     * @param options.zmax
+     * @param options.subdivisions
+     * @param options.subdivisions.w
+     * @param options.subdivisions.h
+     * @param options.precision
+     * @param options.precision.w
+     * @param options.precision.h
      * @returns the VertexData of the TiledGround
      * @deprecated use CreateTiledGroundVertexData instead
      */
-    public static CreateTiledGround(options: { xmin: number, zmin: number, xmax: number, zmax: number, subdivisions?: { w: number; h: number; }, precision?: { w: number; h: number; } }): VertexData {
+    public static CreateTiledGround(options: {
+        xmin: number;
+        zmin: number;
+        xmax: number;
+        zmax: number;
+        subdivisions?: { w: number; h: number };
+        precision?: { w: number; h: number };
+    }): VertexData {
         throw _WarnImport("groundBuilder");
     }
 
     /**
      * Creates the VertexData of the Ground designed from a heightmap
      * @param options an object used to set the following parameters for the Ground, required and provided by CreateGroundFromHeightMap
-      * * width the width (x direction) of the ground
-      * * height the height (z direction) of the ground
-      * * subdivisions the number of subdivisions per side
-      * * minHeight the minimum altitude on the ground, optional, default 0
-      * * maxHeight the maximum altitude on the ground, optional default 1
-      * * colorFilter the filter to apply to the image pixel colors to compute the height, optional Color3, default (0.3, 0.59, 0.11)
-      * * buffer the array holding the image color data
-      * * bufferWidth the width of image
-      * * bufferHeight the height of image
-      * * alphaFilter Remove any data where the alpha channel is below this value, defaults 0 (all data visible)
+     * * width the width (x direction) of the ground
+     * * height the height (z direction) of the ground
+     * * subdivisions the number of subdivisions per side
+     * * minHeight the minimum altitude on the ground, optional, default 0
+     * * maxHeight the maximum altitude on the ground, optional default 1
+     * * colorFilter the filter to apply to the image pixel colors to compute the height, optional Color3, default (0.3, 0.59, 0.11)
+     * * buffer the array holding the image color data
+     * * bufferWidth the width of image
+     * * bufferHeight the height of image
+     * * alphaFilter Remove any data where the alpha channel is below this value, defaults 0 (all data visible)
+     * @param options.width
+     * @param options.height
+     * @param options.subdivisions
+     * @param options.minHeight
+     * @param options.maxHeight
+     * @param options.colorFilter
+     * @param options.buffer
+     * @param options.bufferWidth
+     * @param options.bufferHeight
+     * @param options.alphaFilter
      * @returns the VertexData of the Ground designed from a heightmap
      * @deprecated use CreateGroundFromHeightMapVertexData instead
      */
-    public static CreateGroundFromHeightMap(options: { width: number, height: number, subdivisions: number, minHeight: number, maxHeight: number, colorFilter: Color3, buffer: Uint8Array, bufferWidth: number, bufferHeight: number, alphaFilter: number }): VertexData {
+    public static CreateGroundFromHeightMap(options: {
+        width: number;
+        height: number;
+        subdivisions: number;
+        minHeight: number;
+        maxHeight: number;
+        colorFilter: Color3;
+        buffer: Uint8Array;
+        bufferWidth: number;
+        bufferHeight: number;
+        alphaFilter: number;
+    }): VertexData {
         throw _WarnImport("groundBuilder");
     }
 
     /**
      * Creates the VertexData for a Plane
      * @param options an object used to set the following optional parameters for the plane, required but can be empty
-      * * size sets the width and height of the plane to the value of size, optional default 1
-      * * width sets the width (x direction) of the plane, overwrites the width set by size, optional, default size
-      * * height sets the height (y direction) of the plane, overwrites the height set by size, optional, default size
-      * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
-      * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
-      * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
+     * * size sets the width and height of the plane to the value of size, optional default 1
+     * * width sets the width (x direction) of the plane, overwrites the width set by size, optional, default size
+     * * height sets the height (y direction) of the plane, overwrites the height set by size, optional, default size
+     * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
+     * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
+     * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
+     * @param options.size
+     * @param options.width
+     * @param options.height
+     * @param options.sideOrientation
+     * @param options.frontUVs
+     * @param options.backUVs
      * @returns the VertexData of the box
      * @deprecated use CreatePlaneVertexData instead
      */
-    public static CreatePlane(options: { size?: number, width?: number, height?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
+    public static CreatePlane(options: { size?: number; width?: number; height?: number; sideOrientation?: number; frontUVs?: Vector4; backUVs?: Vector4 }): VertexData {
         throw _WarnImport("planeBuilder");
     }
 
     /**
      * Creates the VertexData of the Disc or regular Polygon
      * @param options an object used to set the following optional parameters for the disc, required but can be empty
-      * * radius the radius of the disc, optional default 0.5
-      * * tessellation the number of polygon sides, optional, default 64
-      * * arc a number from 0 to 1, to create an unclosed polygon based on the fraction of the circumference given by the arc value, optional, default 1
-      * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
-      * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
-      * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
+     * * radius the radius of the disc, optional default 0.5
+     * * tessellation the number of polygon sides, optional, default 64
+     * * arc a number from 0 to 1, to create an unclosed polygon based on the fraction of the circumference given by the arc value, optional, default 1
+     * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
+     * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
+     * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
+     * @param options.radius
+     * @param options.tessellation
+     * @param options.arc
+     * @param options.sideOrientation
+     * @param options.frontUVs
+     * @param options.backUVs
      * @returns the VertexData of the box
      * @deprecated use CreateDiscVertexData instead
      */
-    public static CreateDisc(options: { radius?: number, tessellation?: number, arc?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
+    public static CreateDisc(options: { radius?: number; tessellation?: number; arc?: number; sideOrientation?: number; frontUVs?: Vector4; backUVs?: Vector4 }): VertexData {
         throw _WarnImport("discBuilder");
     }
 
@@ -1118,19 +1513,38 @@ export class VertexData {
     /**
      * Creates the VertexData of the IcoSphere
      * @param options an object used to set the following optional parameters for the IcoSphere, required but can be empty
-      * * radius the radius of the IcoSphere, optional default 1
-      * * radiusX allows stretching in the x direction, optional, default radius
-      * * radiusY allows stretching in the y direction, optional, default radius
-      * * radiusZ allows stretching in the z direction, optional, default radius
-      * * flat when true creates a flat shaded mesh, optional, default true
-      * * subdivisions increasing the subdivisions increases the number of faces, optional, default 4
-      * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
-      * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
-      * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
+     * * radius the radius of the IcoSphere, optional default 1
+     * * radiusX allows stretching in the x direction, optional, default radius
+     * * radiusY allows stretching in the y direction, optional, default radius
+     * * radiusZ allows stretching in the z direction, optional, default radius
+     * * flat when true creates a flat shaded mesh, optional, default true
+     * * subdivisions increasing the subdivisions increases the number of faces, optional, default 4
+     * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
+     * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
+     * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
+     * @param options.radius
+     * @param options.radiusX
+     * @param options.radiusY
+     * @param options.radiusZ
+     * @param options.flat
+     * @param options.subdivisions
+     * @param options.sideOrientation
+     * @param options.frontUVs
+     * @param options.backUVs
      * @returns the VertexData of the IcoSphere
      * @deprecated use CreateIcoSphereVertexData instead
      */
-    public static CreateIcoSphere(options: { radius?: number, radiusX?: number, radiusY?: number, radiusZ?: number, flat?: boolean, subdivisions?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
+    public static CreateIcoSphere(options: {
+        radius?: number;
+        radiusX?: number;
+        radiusY?: number;
+        radiusZ?: number;
+        flat?: boolean;
+        subdivisions?: number;
+        sideOrientation?: number;
+        frontUVs?: Vector4;
+        backUVs?: Vector4;
+    }): VertexData {
         throw _WarnImport("icoSphereBuilder");
     }
 
@@ -1153,10 +1567,35 @@ export class VertexData {
      * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
      * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
      * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
+     * @param options.type
+     * @param options.size
+     * @param options.sizeX
+     * @param options.sizeY
+     * @param options.sizeZ
+     * @param options.custom
+     * @param options.faceUV
+     * @param options.faceColors
+     * @param options.flat
+     * @param options.sideOrientation
+     * @param options.frontUVs
+     * @param options.backUVs
      * @returns the VertexData of the Polyhedron
      * @deprecated use CreatePolyhedronVertexData instead
      */
-    public static CreatePolyhedron(options: { type?: number, size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, custom?: any, faceUV?: Vector4[], faceColors?: Color4[], flat?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
+    public static CreatePolyhedron(options: {
+        type?: number;
+        size?: number;
+        sizeX?: number;
+        sizeY?: number;
+        sizeZ?: number;
+        custom?: any;
+        faceUV?: Vector4[];
+        faceColors?: Color4[];
+        flat?: boolean;
+        sideOrientation?: number;
+        frontUVs?: Vector4;
+        backUVs?: Vector4;
+    }): VertexData {
         throw _WarnImport("polyhedronBuilder");
     }
 
@@ -1166,14 +1605,16 @@ export class VertexData {
      * @returns the VertexData of the Capsule
      * @deprecated Please use CreateCapsuleVertexData from the capsuleBuilder file instead
      */
-    public static CreateCapsule(options: ICreateCapsuleOptions = {
-        orientation: Vector3.Up(),
-        subdivisions: 2,
-        tessellation: 16,
-        height: 1,
-        radius: 0.25,
-        capSubdivisions: 6
-    }): VertexData {
+    public static CreateCapsule(
+        options: ICreateCapsuleOptions = {
+            orientation: Vector3.Up(),
+            subdivisions: 2,
+            tessellation: 16,
+            height: 1,
+            radius: 0.25,
+            capSubdivisions: 6,
+        }
+    ): VertexData {
         throw _WarnImport("capsuleBuilder");
     }
 
@@ -1181,19 +1622,38 @@ export class VertexData {
     /**
      * Creates the VertexData for a TorusKnot
      * @param options an object used to set the following optional parameters for the TorusKnot, required but can be empty
-      * * radius the radius of the torus knot, optional, default 2
-      * * tube the thickness of the tube, optional, default 0.5
-      * * radialSegments the number of sides on each tube segments, optional, default 32
-      * * tubularSegments the number of tubes to decompose the knot into, optional, default 32
-      * * p the number of windings around the z axis, optional,  default 2
-      * * q the number of windings around the x axis, optional,  default 3
-      * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
-      * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
-      * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
+     * * radius the radius of the torus knot, optional, default 2
+     * * tube the thickness of the tube, optional, default 0.5
+     * * radialSegments the number of sides on each tube segments, optional, default 32
+     * * tubularSegments the number of tubes to decompose the knot into, optional, default 32
+     * * p the number of windings around the z axis, optional,  default 2
+     * * q the number of windings around the x axis, optional,  default 3
+     * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
+     * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
+     * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
+     * @param options.radius
+     * @param options.tube
+     * @param options.radialSegments
+     * @param options.tubularSegments
+     * @param options.p
+     * @param options.q
+     * @param options.sideOrientation
+     * @param options.frontUVs
+     * @param options.backUVs
      * @returns the VertexData of the Torus Knot
      * @deprecated use CreateTorusKnotVertexData instead
      */
-    public static CreateTorusKnot(options: { radius?: number, tube?: number, radialSegments?: number, tubularSegments?: number, p?: number, q?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
+    public static CreateTorusKnot(options: {
+        radius?: number;
+        tube?: number;
+        radialSegments?: number;
+        tubularSegments?: number;
+        p?: number;
+        q?: number;
+        sideOrientation?: number;
+        frontUVs?: Vector4;
+        backUVs?: Vector4;
+    }): VertexData {
         throw _WarnImport("torusKnotBuilder");
     }
 
@@ -1205,60 +1665,83 @@ export class VertexData {
      * @param indices an array of indices in groups of three for each triangular facet, [...., i, j, k, ......]
      * @param normals an array of vertex normals, [...., x, y, z, ......]
      * @param options an object used to set the following optional parameters for the TorusKnot, optional
-      * * facetNormals : optional array of facet normals (vector3)
-      * * facetPositions : optional array of facet positions (vector3)
-      * * facetPartitioning : optional partitioning array. facetPositions is required for facetPartitioning computation
-      * * ratio : optional partitioning ratio / bounding box, required for facetPartitioning computation
-      * * bInfo : optional bounding info, required for facetPartitioning computation
-      * * bbSize : optional bounding box size data, required for facetPartitioning computation
-      * * subDiv : optional partitioning data about subdivisions on  each axis (int), required for facetPartitioning computation
-      * * useRightHandedSystem: optional boolean to for right handed system computation
-      * * depthSort : optional boolean to enable the facet depth sort computation
-      * * distanceTo : optional Vector3 to compute the facet depth from this location
-      * * depthSortedFacets : optional array of depthSortedFacets to store the facet distances from the reference location
+     * * facetNormals : optional array of facet normals (vector3)
+     * * facetPositions : optional array of facet positions (vector3)
+     * * facetPartitioning : optional partitioning array. facetPositions is required for facetPartitioning computation
+     * * ratio : optional partitioning ratio / bounding box, required for facetPartitioning computation
+     * * bInfo : optional bounding info, required for facetPartitioning computation
+     * * bbSize : optional bounding box size data, required for facetPartitioning computation
+     * * subDiv : optional partitioning data about subdivisions on  each axis (int), required for facetPartitioning computation
+     * * useRightHandedSystem: optional boolean to for right handed system computation
+     * * depthSort : optional boolean to enable the facet depth sort computation
+     * * distanceTo : optional Vector3 to compute the facet depth from this location
+     * * depthSortedFacets : optional array of depthSortedFacets to store the facet distances from the reference location
+     * @param options.facetNormals
+     * @param options.facetPositions
+     * @param options.facetPartitioning
+     * @param options.ratio
+     * @param options.bInfo
+     * @param options.bbSize
+     * @param options.subDiv
+     * @param options.useRightHandedSystem
+     * @param options.depthSort
+     * @param options.distanceTo
+     * @param options.depthSortedFacets
      */
-    public static ComputeNormals(positions: any, indices: any, normals: any,
+    public static ComputeNormals(
+        positions: any,
+        indices: any,
+        normals: any,
         options?: {
-            facetNormals?: any, facetPositions?: any, facetPartitioning?: any, ratio?: number, bInfo?: any, bbSize?: Vector3, subDiv?: any,
-            useRightHandedSystem?: boolean, depthSort?: boolean, distanceTo?: Vector3, depthSortedFacets?: any
-        }): void {
-
+            facetNormals?: any;
+            facetPositions?: any;
+            facetPartitioning?: any;
+            ratio?: number;
+            bInfo?: any;
+            bbSize?: Vector3;
+            subDiv?: any;
+            useRightHandedSystem?: boolean;
+            depthSort?: boolean;
+            distanceTo?: Vector3;
+            depthSortedFacets?: any;
+        }
+    ): void {
         // temporary scalar variables
-        var index = 0;                      // facet index
-        var p1p2x = 0.0;                    // p1p2 vector x coordinate
-        var p1p2y = 0.0;                    // p1p2 vector y coordinate
-        var p1p2z = 0.0;                    // p1p2 vector z coordinate
-        var p3p2x = 0.0;                    // p3p2 vector x coordinate
-        var p3p2y = 0.0;                    // p3p2 vector y coordinate
-        var p3p2z = 0.0;                    // p3p2 vector z coordinate
-        var faceNormalx = 0.0;              // facet normal x coordinate
-        var faceNormaly = 0.0;              // facet normal y coordinate
-        var faceNormalz = 0.0;              // facet normal z coordinate
-        var length = 0.0;                   // facet normal length before normalization
-        var v1x = 0;                        // vector1 x index in the positions array
-        var v1y = 0;                        // vector1 y index in the positions array
-        var v1z = 0;                        // vector1 z index in the positions array
-        var v2x = 0;                        // vector2 x index in the positions array
-        var v2y = 0;                        // vector2 y index in the positions array
-        var v2z = 0;                        // vector2 z index in the positions array
-        var v3x = 0;                        // vector3 x index in the positions array
-        var v3y = 0;                        // vector3 y index in the positions array
-        var v3z = 0;                        // vector3 z index in the positions array
-        var computeFacetNormals = false;
-        var computeFacetPositions = false;
-        var computeFacetPartitioning = false;
-        var computeDepthSort = false;
-        var faceNormalSign = 1;
+        let index = 0; // facet index
+        let p1p2x = 0.0; // p1p2 vector x coordinate
+        let p1p2y = 0.0; // p1p2 vector y coordinate
+        let p1p2z = 0.0; // p1p2 vector z coordinate
+        let p3p2x = 0.0; // p3p2 vector x coordinate
+        let p3p2y = 0.0; // p3p2 vector y coordinate
+        let p3p2z = 0.0; // p3p2 vector z coordinate
+        let faceNormalx = 0.0; // facet normal x coordinate
+        let faceNormaly = 0.0; // facet normal y coordinate
+        let faceNormalz = 0.0; // facet normal z coordinate
+        let length = 0.0; // facet normal length before normalization
+        let v1x = 0; // vector1 x index in the positions array
+        let v1y = 0; // vector1 y index in the positions array
+        let v1z = 0; // vector1 z index in the positions array
+        let v2x = 0; // vector2 x index in the positions array
+        let v2y = 0; // vector2 y index in the positions array
+        let v2z = 0; // vector2 z index in the positions array
+        let v3x = 0; // vector3 x index in the positions array
+        let v3y = 0; // vector3 y index in the positions array
+        let v3z = 0; // vector3 z index in the positions array
+        let computeFacetNormals = false;
+        let computeFacetPositions = false;
+        let computeFacetPartitioning = false;
+        let computeDepthSort = false;
+        let faceNormalSign = 1;
         let ratio = 0;
-        var distanceTo: Nullable<Vector3> = null;
+        let distanceTo: Nullable<Vector3> = null;
         if (options) {
-            computeFacetNormals = (options.facetNormals) ? true : false;
-            computeFacetPositions = (options.facetPositions) ? true : false;
-            computeFacetPartitioning = (options.facetPartitioning) ? true : false;
-            faceNormalSign = (options.useRightHandedSystem === true) ? -1 : 1;
+            computeFacetNormals = options.facetNormals ? true : false;
+            computeFacetPositions = options.facetPositions ? true : false;
+            computeFacetPartitioning = options.facetPartitioning ? true : false;
+            faceNormalSign = options.useRightHandedSystem === true ? -1 : 1;
             ratio = options.ratio || 0;
-            computeDepthSort = (options.depthSort) ? true : false;
-            distanceTo = <Vector3>(options.distanceTo);
+            computeDepthSort = options.depthSort ? true : false;
+            distanceTo = <Vector3>options.distanceTo;
             if (computeDepthSort) {
                 if (distanceTo === undefined) {
                     distanceTo = Vector3.Zero();
@@ -1273,28 +1756,28 @@ export class VertexData {
         let zSubRatio = 0;
         let subSq = 0;
         if (computeFacetPartitioning && options && options.bbSize) {
-            var ox = 0;                 // X partitioning index for facet position
-            var oy = 0;                 // Y partitioning index for facet position
-            var oz = 0;                 // Z partitioning index for facet position
-            var b1x = 0;                // X partitioning index for facet v1 vertex
-            var b1y = 0;                // Y partitioning index for facet v1 vertex
-            var b1z = 0;                // z partitioning index for facet v1 vertex
-            var b2x = 0;                // X partitioning index for facet v2 vertex
-            var b2y = 0;                // Y partitioning index for facet v2 vertex
-            var b2z = 0;                // Z partitioning index for facet v2 vertex
-            var b3x = 0;                // X partitioning index for facet v3 vertex
-            var b3y = 0;                // Y partitioning index for facet v3 vertex
-            var b3z = 0;                // Z partitioning index for facet v3 vertex
-            var block_idx_o = 0;        // facet barycenter block index
-            var block_idx_v1 = 0;       // v1 vertex block index
-            var block_idx_v2 = 0;       // v2 vertex block index
-            var block_idx_v3 = 0;       // v3 vertex block index
+            var ox = 0; // X partitioning index for facet position
+            var oy = 0; // Y partitioning index for facet position
+            var oz = 0; // Z partitioning index for facet position
+            var b1x = 0; // X partitioning index for facet v1 vertex
+            var b1y = 0; // Y partitioning index for facet v1 vertex
+            var b1z = 0; // z partitioning index for facet v1 vertex
+            var b2x = 0; // X partitioning index for facet v2 vertex
+            var b2y = 0; // Y partitioning index for facet v2 vertex
+            var b2z = 0; // Z partitioning index for facet v2 vertex
+            var b3x = 0; // X partitioning index for facet v3 vertex
+            var b3y = 0; // Y partitioning index for facet v3 vertex
+            var b3z = 0; // Z partitioning index for facet v3 vertex
+            var block_idx_o = 0; // facet barycenter block index
+            var block_idx_v1 = 0; // v1 vertex block index
+            var block_idx_v2 = 0; // v2 vertex block index
+            var block_idx_v3 = 0; // v3 vertex block index
 
-            var bbSizeMax = (options.bbSize.x > options.bbSize.y) ? options.bbSize.x : options.bbSize.y;
-            bbSizeMax = (bbSizeMax > options.bbSize.z) ? bbSizeMax : options.bbSize.z;
-            xSubRatio = options.subDiv.X * ratio / options.bbSize.x;
-            ySubRatio = options.subDiv.Y * ratio / options.bbSize.y;
-            zSubRatio = options.subDiv.Z * ratio / options.bbSize.z;
+            let bbSizeMax = options.bbSize.x > options.bbSize.y ? options.bbSize.x : options.bbSize.y;
+            bbSizeMax = bbSizeMax > options.bbSize.z ? bbSizeMax : options.bbSize.z;
+            xSubRatio = (options.subDiv.X * ratio) / options.bbSize.x;
+            ySubRatio = (options.subDiv.Y * ratio) / options.bbSize.y;
+            zSubRatio = (options.subDiv.Z * ratio) / options.bbSize.z;
             subSq = options.subDiv.max * options.subDiv.max;
             options.facetPartitioning.length = 0;
         }
@@ -1305,9 +1788,8 @@ export class VertexData {
         }
 
         // Loop : 1 indice triplet = 1 facet
-        var nbFaces = (indices.length / 3) | 0;
+        const nbFaces = (indices.length / 3) | 0;
         for (index = 0; index < nbFaces; index++) {
-
             // get the indexes of the coordinates of each vertex of the facet
             v1x = indices[index * 3] * 3;
             v1y = v1x + 1;
@@ -1319,7 +1801,7 @@ export class VertexData {
             v3y = v3x + 1;
             v3z = v3x + 2;
 
-            p1p2x = positions[v1x] - positions[v2x];          // compute two vectors per facet : p1p2 and p3p2
+            p1p2x = positions[v1x] - positions[v2x]; // compute two vectors per facet : p1p2 and p3p2
             p1p2y = positions[v1y] - positions[v2y];
             p1p2z = positions[v1z] - positions[v2z];
 
@@ -1333,7 +1815,7 @@ export class VertexData {
             faceNormalz = faceNormalSign * (p1p2x * p3p2y - p1p2y * p3p2x);
             // normalize this normal and store it in the array facetData
             length = Math.sqrt(faceNormalx * faceNormalx + faceNormaly * faceNormaly + faceNormalz * faceNormalz);
-            length = (length === 0) ? 1.0 : length;
+            length = length === 0 ? 1.0 : length;
             faceNormalx /= length;
             faceNormaly /= length;
             faceNormalz /= length;
@@ -1391,13 +1873,13 @@ export class VertexData {
             }
 
             if (computeDepthSort && options && options.facetPositions) {
-                var dsf = depthSortedFacets[index];
+                const dsf = depthSortedFacets[index];
                 dsf.ind = index * 3;
                 dsf.sqDistance = Vector3.DistanceSquared(options.facetPositions[index], distanceTo!);
             }
 
             // compute the normals anyway
-            normals[v1x] += faceNormalx;                         // accumulate all the normals per face
+            normals[v1x] += faceNormalx; // accumulate all the normals per face
             normals[v1y] += faceNormaly;
             normals[v1z] += faceNormalz;
             normals[v2x] += faceNormalx;
@@ -1414,7 +1896,7 @@ export class VertexData {
             faceNormalz = normals[index * 3 + 2];
 
             length = Math.sqrt(faceNormalx * faceNormalx + faceNormaly * faceNormaly + faceNormalz * faceNormalz);
-            length = (length === 0) ? 1.0 : length;
+            length = length === 0 ? 1.0 : length;
             faceNormalx /= length;
             faceNormaly /= length;
             faceNormalz /= length;
@@ -1425,16 +1907,32 @@ export class VertexData {
         }
     }
 
-    /** @hidden */
-    public static _ComputeSides(sideOrientation: number, positions: FloatArray, indices: FloatArray | IndicesArray, normals: FloatArray, uvs: FloatArray, frontUVs?: Vector4, backUVs?: Vector4) {
-        var li: number = indices.length;
-        var ln: number = normals.length;
-        var i: number;
-        var n: number;
+    /**
+     * @param sideOrientation
+     * @param positions
+     * @param indices
+     * @param normals
+     * @param uvs
+     * @param frontUVs
+     * @param backUVs
+     * @hidden
+     */
+    public static _ComputeSides(
+        sideOrientation: number,
+        positions: FloatArray,
+        indices: FloatArray | IndicesArray,
+        normals: FloatArray,
+        uvs: FloatArray,
+        frontUVs?: Vector4,
+        backUVs?: Vector4
+    ) {
+        const li: number = indices.length;
+        const ln: number = normals.length;
+        let i: number;
+        let n: number;
         sideOrientation = sideOrientation || VertexData.DEFAULTSIDE;
 
         switch (sideOrientation) {
-
             case VertexData.FRONTSIDE:
                 // nothing changed
                 break;
@@ -1457,7 +1955,7 @@ export class VertexData {
                 // positions
                 var lp: number = positions.length;
                 var l: number = lp / 3;
-                for (var p = 0; p < lp; p++) {
+                for (let p = 0; p < lp; p++) {
                     positions[lp + p] = positions[p];
                 }
                 // indices
@@ -1497,82 +1995,82 @@ export class VertexData {
      * @param geometry the geometry to apply the VertexData to
      */
     public static ImportVertexData(parsedVertexData: any, geometry: Geometry) {
-        var vertexData = new VertexData();
+        const vertexData = new VertexData();
 
         // positions
-        var positions = parsedVertexData.positions;
+        const positions = parsedVertexData.positions;
         if (positions) {
             vertexData.set(positions, VertexBuffer.PositionKind);
         }
 
         // normals
-        var normals = parsedVertexData.normals;
+        const normals = parsedVertexData.normals;
         if (normals) {
             vertexData.set(normals, VertexBuffer.NormalKind);
         }
 
         // tangents
-        var tangents = parsedVertexData.tangents;
+        const tangents = parsedVertexData.tangents;
         if (tangents) {
             vertexData.set(tangents, VertexBuffer.TangentKind);
         }
 
         // uvs
-        var uvs = parsedVertexData.uvs;
+        const uvs = parsedVertexData.uvs;
         if (uvs) {
             vertexData.set(uvs, VertexBuffer.UVKind);
         }
 
         // uv2s
-        var uv2s = parsedVertexData.uv2s;
+        const uv2s = parsedVertexData.uv2s;
         if (uv2s) {
             vertexData.set(uv2s, VertexBuffer.UV2Kind);
         }
 
         // uv3s
-        var uv3s = parsedVertexData.uv3s;
+        const uv3s = parsedVertexData.uv3s;
         if (uv3s) {
             vertexData.set(uv3s, VertexBuffer.UV3Kind);
         }
 
         // uv4s
-        var uv4s = parsedVertexData.uv4s;
+        const uv4s = parsedVertexData.uv4s;
         if (uv4s) {
             vertexData.set(uv4s, VertexBuffer.UV4Kind);
         }
 
         // uv5s
-        var uv5s = parsedVertexData.uv5s;
+        const uv5s = parsedVertexData.uv5s;
         if (uv5s) {
             vertexData.set(uv5s, VertexBuffer.UV5Kind);
         }
 
         // uv6s
-        var uv6s = parsedVertexData.uv6s;
+        const uv6s = parsedVertexData.uv6s;
         if (uv6s) {
             vertexData.set(uv6s, VertexBuffer.UV6Kind);
         }
 
         // colors
-        var colors = parsedVertexData.colors;
+        const colors = parsedVertexData.colors;
         if (colors) {
             vertexData.set(Color4.CheckColors4(colors, positions.length / 3), VertexBuffer.ColorKind);
         }
 
         // matricesIndices
-        var matricesIndices = parsedVertexData.matricesIndices;
+        const matricesIndices = parsedVertexData.matricesIndices;
         if (matricesIndices) {
             vertexData.set(matricesIndices, VertexBuffer.MatricesIndicesKind);
         }
 
         // matricesWeights
-        var matricesWeights = parsedVertexData.matricesWeights;
+        const matricesWeights = parsedVertexData.matricesWeights;
         if (matricesWeights) {
             vertexData.set(matricesWeights, VertexBuffer.MatricesWeightsKind);
         }
 
         // indices
-        var indices = parsedVertexData.indices;
+        const indices = parsedVertexData.indices;
         if (indices) {
             vertexData.indices = indices;
         }

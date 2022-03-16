@@ -10,9 +10,9 @@ import { BoundingBox } from "../Culling/boundingBox";
 import { Effect } from "../Materials/effect";
 import { Material } from "../Materials/material";
 import { ShaderMaterial } from "../Materials/shaderMaterial";
-import { DataBuffer } from '../Buffers/dataBuffer';
-import { Color3 } from '../Maths/math.color';
-import { Observable } from '../Misc/observable';
+import { DataBuffer } from "../Buffers/dataBuffer";
+import { Color3 } from "../Maths/math.color";
+import { Observable } from "../Misc/observable";
 import { DrawWrapper } from "../Materials/drawWrapper";
 import { UniformBuffer } from "../Materials/uniformBuffer";
 import { CreateBoxVertexData } from "../Meshes/Builders/boxBuilder";
@@ -53,11 +53,10 @@ Object.defineProperty(Scene.prototype, "forceShowBoundingBoxes", {
         }
     },
     enumerable: true,
-    configurable: true
+    configurable: true,
 });
 
 Scene.prototype.getBoundingBoxRenderer = function (): BoundingBoxRenderer {
-
     if (!this._boundingBoxRenderer) {
         this._boundingBoxRenderer = new BoundingBoxRenderer(this);
     }
@@ -89,7 +88,7 @@ Object.defineProperty(AbstractMesh.prototype, "showBoundingBox", {
         }
     },
     enumerable: true,
-    configurable: true
+    configurable: true,
 });
 
 /**
@@ -201,7 +200,7 @@ export class BoundingBoxRenderer implements ISceneComponent {
 
     private _preActiveMesh(mesh: AbstractMesh): void {
         if (mesh.showBoundingBox || this.scene.forceShowBoundingBoxes) {
-            let boundingInfo = mesh.getBoundingInfo();
+            const boundingInfo = mesh.getBoundingInfo();
             boundingInfo.boundingBox._tag = mesh.renderingGroupId;
             this.renderList.push(boundingInfo.boundingBox);
         }
@@ -212,30 +211,40 @@ export class BoundingBoxRenderer implements ISceneComponent {
             return;
         }
 
-        this._colorShader = new ShaderMaterial("colorShader", this.scene, "boundingBoxRenderer",
+        this._colorShader = new ShaderMaterial(
+            "colorShader",
+            this.scene,
+            "boundingBoxRenderer",
             {
                 attributes: [VertexBuffer.PositionKind],
                 uniforms: ["world", "viewProjection", "color"],
-                uniformBuffers: ["BoundingBoxRenderer"]
-            }, false);
+                uniformBuffers: ["BoundingBoxRenderer"],
+            },
+            false
+        );
 
         this._colorShader.reservedDataStore = {
-            hidden: true
+            hidden: true,
         };
 
-        this._colorShaderForOcclusionQuery = new ShaderMaterial("colorShaderOccQuery", this.scene, "boundingBoxRenderer",
+        this._colorShaderForOcclusionQuery = new ShaderMaterial(
+            "colorShaderOccQuery",
+            this.scene,
+            "boundingBoxRenderer",
             {
                 attributes: [VertexBuffer.PositionKind],
                 uniforms: ["world", "viewProjection", "color"],
-                uniformBuffers: ["BoundingBoxRenderer"]
-            }, true);
+                uniformBuffers: ["BoundingBoxRenderer"],
+            },
+            true
+        );
 
         this._colorShaderForOcclusionQuery.reservedDataStore = {
-            hidden: true
+            hidden: true,
         };
 
-        var engine = this.scene.getEngine();
-        var boxdata = CreateBoxVertexData({ size: 1.0 });
+        const engine = this.scene.getEngine();
+        const boxdata = CreateBoxVertexData({ size: 1.0 });
         this._vertexBuffers[VertexBuffer.PositionKind] = new VertexBuffer(engine, <FloatArray>boxdata.positions, VertexBuffer.PositionKind, false);
         this._createIndexBuffer();
         this._fillIndexData = boxdata.indices;
@@ -243,7 +252,7 @@ export class BoundingBoxRenderer implements ISceneComponent {
     }
 
     private _createIndexBuffer(): void {
-        var engine = this.scene.getEngine();
+        const engine = this.scene.getEngine();
         this._indexBuffer = engine.createIndexBuffer([0, 1, 1, 2, 2, 3, 3, 0, 4, 5, 5, 6, 6, 7, 7, 4, 0, 7, 1, 6, 2, 5, 3, 4]);
     }
 
@@ -252,7 +261,7 @@ export class BoundingBoxRenderer implements ISceneComponent {
      * context lost for instance.
      */
     public rebuild(): void {
-        let vb = this._vertexBuffers[VertexBuffer.PositionKind];
+        const vb = this._vertexBuffers[VertexBuffer.PositionKind];
         if (vb) {
             vb._rebuild();
         }
@@ -281,15 +290,15 @@ export class BoundingBoxRenderer implements ISceneComponent {
             return;
         }
 
-        var engine = this.scene.getEngine();
+        const engine = this.scene.getEngine();
         engine.setDepthWrite(false);
 
         const frontColor = this.frontColor.toColor4();
         const backColor = this.backColor.toColor4();
         const transformMatrix = this.scene.getTransformMatrix();
 
-        for (var boundingBoxIndex = 0; boundingBoxIndex < this.renderList.length; boundingBoxIndex++) {
-            var boundingBox = this.renderList.data[boundingBoxIndex];
+        for (let boundingBoxIndex = 0; boundingBoxIndex < this.renderList.length; boundingBoxIndex++) {
+            const boundingBox = this.renderList.data[boundingBoxIndex];
             if (boundingBox._tag !== renderingGroupId) {
                 continue;
             }
@@ -297,14 +306,12 @@ export class BoundingBoxRenderer implements ISceneComponent {
             this._createWrappersForBoundingBox(boundingBox);
             this.onBeforeBoxRenderingObservable.notifyObservers(boundingBox);
 
-            var min = boundingBox.minimum;
-            var max = boundingBox.maximum;
-            var diff = max.subtract(min);
-            var median = min.add(diff.scale(0.5));
+            const min = boundingBox.minimum;
+            const max = boundingBox.maximum;
+            const diff = max.subtract(min);
+            const median = min.add(diff.scale(0.5));
 
-            var worldMatrix = Matrix.Scaling(diff.x, diff.y, diff.z)
-                .multiply(Matrix.Translation(median.x, median.y, median.z))
-                .multiply(boundingBox.getWorldMatrix());
+            const worldMatrix = Matrix.Scaling(diff.x, diff.y, diff.z).multiply(Matrix.Translation(median.x, median.y, median.z)).multiply(boundingBox.getWorldMatrix());
 
             const useReverseDepthBuffer = engine.useReverseDepthBuffer;
 
@@ -404,15 +411,13 @@ export class BoundingBoxRenderer implements ISceneComponent {
         engine.setDepthWrite(false);
         engine.setColorWrite(false);
 
-        var boundingBox = mesh.getBoundingInfo().boundingBox;
-        var min = boundingBox.minimum;
-        var max = boundingBox.maximum;
-        var diff = max.subtract(min);
-        var median = min.add(diff.scale(0.5));
+        const boundingBox = mesh.getBoundingInfo().boundingBox;
+        const min = boundingBox.minimum;
+        const max = boundingBox.maximum;
+        const diff = max.subtract(min);
+        const median = min.add(diff.scale(0.5));
 
-        var worldMatrix = Matrix.Scaling(diff.x, diff.y, diff.z)
-            .multiply(Matrix.Translation(median.x, median.y, median.z))
-            .multiply(boundingBox.getWorldMatrix());
+        const worldMatrix = Matrix.Scaling(diff.x, diff.y, diff.z).multiply(Matrix.Translation(median.x, median.y, median.z)).multiply(boundingBox.getWorldMatrix());
 
         const drawWrapper = subMesh._drawWrapper;
 
@@ -468,7 +473,7 @@ export class BoundingBoxRenderer implements ISceneComponent {
         this._uniformBufferFront.dispose();
         this._uniformBufferBack.dispose();
 
-        var buffer = this._vertexBuffers[VertexBuffer.PositionKind];
+        const buffer = this._vertexBuffers[VertexBuffer.PositionKind];
         if (buffer) {
             buffer.dispose();
             this._vertexBuffers[VertexBuffer.PositionKind] = null;

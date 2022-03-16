@@ -38,10 +38,7 @@ export class VertexAnimationBaker {
         const boneCount = this._mesh.skeleton.bones.length;
 
         /** total number of frames in our animations */
-        const frameCount = ranges.reduce(
-            (previous: number, current: AnimationRange) => previous + current.to - current.from + 1,
-            0
-        );
+        const frameCount = ranges.reduce((previous: number, current: AnimationRange) => previous + current.to - current.from + 1, 0);
 
         if (isNaN(frameCount)) {
             throw new Error("Invalid animation ranges.");
@@ -124,7 +121,7 @@ export class VertexAnimationBaker {
         const data = {
             vertexData: EncodeArrayBufferToBase64(vertexData),
             width,
-            height
+            height,
         };
         return data;
     }

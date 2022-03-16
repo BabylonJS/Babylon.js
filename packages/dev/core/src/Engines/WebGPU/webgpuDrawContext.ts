@@ -2,7 +2,7 @@ import { WebGPUDataBuffer } from "../../Meshes/WebGPU/webgpuDataBuffer";
 import { Nullable } from "../../types";
 import { IDrawContext } from "../IDrawContext";
 import { WebGPUBufferManager } from "./webgpuBufferManager";
-import * as WebGPUConstants from './webgpuConstants';
+import * as WebGPUConstants from "./webgpuConstants";
 
 /** @hidden */
 export class WebGPUDrawContext implements IDrawContext {

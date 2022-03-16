@@ -57,8 +57,7 @@ export class ConeParticleEmitter implements IParticleEmitterType {
     private _buildHeight() {
         if (this._angle !== 0) {
             this._height = this._radius / Math.tan(this._angle / 2);
-        }
-        else {
+        } else {
             this._height = 1;
         }
     }
@@ -69,9 +68,12 @@ export class ConeParticleEmitter implements IParticleEmitterType {
      * @param angle the cone base angle (PI by default)
      * @param directionRandomizer defines how much to randomize the particle direction [0-1] (default is 0)
      */
-    constructor(radius = 1, angle = Math.PI,
+    constructor(
+        radius = 1,
+        angle = Math.PI,
         /** defines how much to randomize the particle direction [0-1] (default is 0) */
-        public directionRandomizer = 0) {
+        public directionRandomizer = 0
+    ) {
         this.angle = angle;
         this.radius = radius;
     }
@@ -86,14 +88,13 @@ export class ConeParticleEmitter implements IParticleEmitterType {
     public startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle, isLocal: boolean): void {
         if (isLocal) {
             TmpVectors.Vector3[0].copyFrom(particle._localPosition!).normalize();
-        }
-        else {
+        } else {
             particle.position.subtractToRef(worldMatrix.getTranslation(), TmpVectors.Vector3[0]).normalize();
         }
 
-        var randX = Scalar.RandomRange(0, this.directionRandomizer);
-        var randY = Scalar.RandomRange(0, this.directionRandomizer);
-        var randZ = Scalar.RandomRange(0, this.directionRandomizer);
+        const randX = Scalar.RandomRange(0, this.directionRandomizer);
+        const randY = Scalar.RandomRange(0, this.directionRandomizer);
+        const randZ = Scalar.RandomRange(0, this.directionRandomizer);
         directionToUpdate.x = TmpVectors.Vector3[0].x + randX;
         directionToUpdate.y = TmpVectors.Vector3[0].y + randY;
         directionToUpdate.z = TmpVectors.Vector3[0].z + randZ;
@@ -108,8 +109,8 @@ export class ConeParticleEmitter implements IParticleEmitterType {
      * @param isLocal defines if the position should be set in local space
      */
     startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle, isLocal: boolean): void {
-        var s = Scalar.RandomRange(0, Math.PI * 2);
-        var h: number;
+        const s = Scalar.RandomRange(0, Math.PI * 2);
+        let h: number;
 
         if (!this.emitFromSpawnPointOnly) {
             h = Scalar.RandomRange(0, this.heightRange);
@@ -118,12 +119,12 @@ export class ConeParticleEmitter implements IParticleEmitterType {
         } else {
             h = 0.0001;
         }
-        var radius = this._radius - Scalar.RandomRange(0, this._radius * this.radiusRange);
+        let radius = this._radius - Scalar.RandomRange(0, this._radius * this.radiusRange);
         radius = radius * h;
 
-        var randX = radius * Math.sin(s);
-        var randZ = radius * Math.cos(s);
-        var randY = h * this._height;
+        const randX = radius * Math.sin(s);
+        const randZ = radius * Math.cos(s);
+        const randY = h * this._height;
 
         if (isLocal) {
             positionToUpdate.x = randX;
@@ -140,7 +141,7 @@ export class ConeParticleEmitter implements IParticleEmitterType {
      * @returns the new emitter
      */
     public clone(): ConeParticleEmitter {
-        let newOne = new ConeParticleEmitter(this._radius, this._angle, this.directionRandomizer);
+        const newOne = new ConeParticleEmitter(this._radius, this._angle, this.directionRandomizer);
 
         DeepCopier.DeepCopy(this, newOne);
 
@@ -196,7 +197,7 @@ export class ConeParticleEmitter implements IParticleEmitterType {
      * @returns the JSON object
      */
     public serialize(): any {
-        var serializationObject: any = {};
+        const serializationObject: any = {};
 
         serializationObject.type = this.getClassName();
         serializationObject.radius = this._radius;

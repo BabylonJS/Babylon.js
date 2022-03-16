@@ -1,12 +1,12 @@
-import { Engine } from '../../Engines/engine';
-import { DeviceType } from './deviceEnums';
-import { Nullable } from '../../types';
-import { Observable, Observer } from '../../Misc/observable';
-import { DeviceSource } from './deviceSource';
-import { InternalDeviceSourceManager, IObservableManager } from './internalDeviceSourceManager';
-import { IDisposable } from '../../scene';
-import { ThinEngine } from '../../Engines/thinEngine';
-import { IUIEvent } from '../../Events/deviceInputEvents';
+import { Engine } from "../../Engines/engine";
+import { DeviceType } from "./deviceEnums";
+import { Nullable } from "../../types";
+import { Observable, Observer } from "../../Misc/observable";
+import { DeviceSource } from "./deviceSource";
+import { InternalDeviceSourceManager, IObservableManager } from "./internalDeviceSourceManager";
+import { IDisposable } from "../../scene";
+import { ThinEngine } from "../../Engines/thinEngine";
+import { IUIEvent } from "../../Events/deviceInputEvents";
 
 /**
  * Class to keep track of devices
@@ -57,7 +57,9 @@ export class DeviceSourceManager implements IDisposable, IObservableManager {
      * @returns All available DeviceSources of a given type
      */
     public getDeviceSources<T extends DeviceType>(deviceType: T): ReadonlyArray<DeviceSource<T>> {
-        return this._devices[deviceType].filter((source) => { return !!source; });
+        return this._devices[deviceType].filter((source) => {
+            return !!source;
+        });
     }
 
     /**
@@ -122,7 +124,10 @@ export class DeviceSourceManager implements IDisposable, IObservableManager {
     }
 
     // Hidden Functions
-    /** @hidden */
+    /**
+     * @param deviceSource
+     * @hidden
+     */
     public _addDevice(deviceSource: DeviceSource<DeviceType>): void {
         if (!this._devices[deviceSource.deviceType]) {
             this._devices[deviceSource.deviceType] = new Array<DeviceSource<DeviceType>>();
@@ -136,7 +141,11 @@ export class DeviceSourceManager implements IDisposable, IObservableManager {
         this.onDeviceConnectedObservable.notifyObservers(deviceSource);
     }
 
-    /** @hidden */
+    /**
+     * @param deviceType
+     * @param deviceSlot
+     * @hidden
+     */
     public _removeDevice(deviceType: DeviceType, deviceSlot: number): void {
         const deviceSource = this._devices[deviceType]?.[deviceSlot]; // Grab local reference to use before removing from devices
         this.onDeviceDisconnectedObservable.notifyObservers(deviceSource);
@@ -147,7 +156,12 @@ export class DeviceSourceManager implements IDisposable, IObservableManager {
         this._updateFirstDevices(deviceType);
     }
 
-    /** @hidden */
+    /**
+     * @param deviceType
+     * @param deviceSlot
+     * @param eventData
+     * @hidden
+     */
     public _onInputChanged(deviceType: DeviceType, deviceSlot: number, eventData: IUIEvent): void {
         this._devices[deviceType]?.[deviceSlot]?.onInputChangedObservable.notifyObservers(eventData);
     }

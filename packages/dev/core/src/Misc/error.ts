@@ -9,7 +9,11 @@ export abstract class BaseError extends Error {
 
     // Polyfill for Object.setPrototypeOf if necessary.
     protected static _setPrototypeOf: (o: any, proto: object | null) => any =
-        (Object as any).setPrototypeOf || ((o, proto) => { o.__proto__ = proto; return o; });
+        (Object as any).setPrototypeOf ||
+        ((o, proto) => {
+            o.__proto__ = proto;
+            return o;
+        });
 }
 
 /* IMP! DO NOT CHANGE THE NUMBERING OF EXISTING ERROR CODES */
@@ -39,7 +43,7 @@ export const ErrorCodes = {
     /** Request file error */
     RequestFileError: 4001,
     /** Read file error */
-    ReadFileError: 4002
+    ReadFileError: 4002,
 } as const;
 
 /**

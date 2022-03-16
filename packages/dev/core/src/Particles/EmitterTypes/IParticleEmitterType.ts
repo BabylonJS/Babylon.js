@@ -1,6 +1,6 @@
 import { Vector3, Matrix } from "../../Maths/math.vector";
 import { Particle } from "../../Particles/particle";
-import { Nullable } from '../../types';
+import { Nullable } from "../../types";
 import { UniformBufferEffectCommonAccessor } from "../../Materials/uniformBufferEffectCommonAccessor";
 import { UniformBuffer } from "../../Materials/uniformBuffer";
 

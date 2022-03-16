@@ -3,7 +3,7 @@ import { DynamicFloat32Array } from "../PerformanceViewer/dynamicFloat32Array";
 /**
  * Defines the shape of a collection of datasets that our graphing service uses for drawing purposes.
  */
- export interface IPerfDatasets {
+export interface IPerfDatasets {
     /**
      * The ids of our dataset.
      */
@@ -23,33 +23,33 @@ import { DynamicFloat32Array } from "../PerformanceViewer/dynamicFloat32Array";
 /**
  * Defines the shape of a the metadata the graphing service uses for drawing purposes.
  */
- export interface IPerfMetadata {
+export interface IPerfMetadata {
     /**
      * The color of the line to be drawn.
      */
-     color?: string;
+    color?: string;
 
-     /**
-      * Specifies if data should be hidden, falsey by default.
-      */
-     hidden?: boolean;
+    /**
+     * Specifies if data should be hidden, falsey by default.
+     */
+    hidden?: boolean;
 
-     /**
-      * Specifies the category of the data
-      */
-     category?: string;
+    /**
+     * Specifies the category of the data
+     */
+    category?: string;
 }
 
 /**
  * Defines the shape of a custom user registered event.
  */
 export interface IPerfCustomEvent {
-   /**
-    * The name of the event.
-    */
-   name: string;
-   /**
-    * The value for the event, if set we will use it as the value, otherwise we will count the number of occurences.
-    */
-   value?: number;
+    /**
+     * The name of the event.
+     */
+    name: string;
+    /**
+     * The value for the event, if set we will use it as the value, otherwise we will count the number of occurences.
+     */
+    value?: number;
 }

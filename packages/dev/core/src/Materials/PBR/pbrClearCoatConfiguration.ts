@@ -1,13 +1,13 @@
 import { Nullable } from "../../types";
 import { serialize, serializeAsTexture, expandToProperty, serializeAsColor3 } from "../../Misc/decorators";
-import { Color3 } from '../../Maths/math.color';
+import { Color3 } from "../../Maths/math.color";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { MaterialFlags } from "../materialFlags";
 import { UniformBuffer } from "../../Materials/uniformBuffer";
 import { MaterialHelper } from "../../Materials/materialHelper";
-import { IAnimatable } from '../../Animations/animatable.interface';
-import { EffectFallbacks } from '../effectFallbacks';
-import { SubMesh } from '../../Meshes/subMesh';
+import { IAnimatable } from "../../Animations/animatable.interface";
+import { EffectFallbacks } from "../effectFallbacks";
+import { SubMesh } from "../../Meshes/subMesh";
 import { Constants } from "../../Engines/constants";
 import { MaterialPluginBase } from "../materialPluginBase";
 import { MaterialDefines } from "../materialDefines";
@@ -224,7 +224,8 @@ export class PBRClearCoatConfiguration extends MaterialPluginBase {
         if (this._isEnabled) {
             defines.CLEARCOAT = true;
             defines.CLEARCOAT_USE_ROUGHNESS_FROM_MAINTEXTURE = this._useRoughnessFromMainTexture;
-            defines.CLEARCOAT_TEXTURE_ROUGHNESS_IDENTICAL = this._texture !== null && this._texture._texture === this._textureRoughness?._texture && this._texture.checkTransformsAreIdentical(this._textureRoughness);
+            defines.CLEARCOAT_TEXTURE_ROUGHNESS_IDENTICAL =
+                this._texture !== null && this._texture._texture === this._textureRoughness?._texture && this._texture.checkTransformsAreIdentical(this._textureRoughness);
             defines.CLEARCOAT_REMAP_F0 = this._remapF0OnInterfaceChange;
 
             if (defines._areTexturesDirty) {
@@ -254,19 +255,16 @@ export class PBRClearCoatConfiguration extends MaterialPluginBase {
                         if (this._tintTexture && MaterialFlags.ClearCoatTintTextureEnabled) {
                             MaterialHelper.PrepareDefinesForMergedUV(this._tintTexture, defines, "CLEARCOAT_TINT_TEXTURE");
                             defines.CLEARCOAT_TINT_GAMMATEXTURE = this._tintTexture.gammaSpace;
-                        }
-                        else {
+                        } else {
                             defines.CLEARCOAT_TINT_TEXTURE = false;
                         }
-                    }
-                    else {
+                    } else {
                         defines.CLEARCOAT_TINT = false;
                         defines.CLEARCOAT_TINT_TEXTURE = false;
                     }
                 }
             }
-        }
-        else {
+        } else {
             defines.CLEARCOAT = false;
             defines.CLEARCOAT_TEXTURE = false;
             defines.CLEARCOAT_TEXTURE_ROUGHNESS = false;
@@ -298,7 +296,13 @@ export class PBRClearCoatConfiguration extends MaterialPluginBase {
                 uniformBuffer.updateFloat4("vClearCoatInfos", this._texture!.coordinatesIndex, this._texture!.level, -1, -1);
                 MaterialHelper.BindTextureMatrix(this._texture!, uniformBuffer, "clearCoat");
             } else if ((this._texture || this._textureRoughness) && MaterialFlags.ClearCoatTextureEnabled) {
-                uniformBuffer.updateFloat4("vClearCoatInfos", this._texture?.coordinatesIndex ?? 0, this._texture?.level ?? 0, this._textureRoughness?.coordinatesIndex ?? 0, this._textureRoughness?.level ?? 0);
+                uniformBuffer.updateFloat4(
+                    "vClearCoatInfos",
+                    this._texture?.coordinatesIndex ?? 0,
+                    this._texture?.level ?? 0,
+                    this._textureRoughness?.coordinatesIndex ?? 0,
+                    this._textureRoughness?.level ?? 0
+                );
                 if (this._texture) {
                     MaterialHelper.BindTextureMatrix(this._texture, uniformBuffer, "clearCoat");
                 }
@@ -329,16 +333,12 @@ export class PBRClearCoatConfiguration extends MaterialPluginBase {
             // Clear Coat Refraction params
             const a = 1 - this._indexOfRefraction;
             const b = 1 + this._indexOfRefraction;
-            const f0 = Math.pow((-a / b), 2); // Schlicks approx: (ior1 - ior2) / (ior1 + ior2) where ior2 for air is close to vacuum = 1.
+            const f0 = Math.pow(-a / b, 2); // Schlicks approx: (ior1 - ior2) / (ior1 + ior2) where ior2 for air is close to vacuum = 1.
             const eta = 1 / this._indexOfRefraction;
             uniformBuffer.updateFloat4("vClearCoatRefractionParams", f0, eta, a, b);
 
             if (this._isTintEnabled) {
-                uniformBuffer.updateFloat4("vClearCoatTintParams",
-                    this.tintColor.r,
-                    this.tintColor.g,
-                    this.tintColor.b,
-                    Math.max(0.00001, this.tintThickness));
+                uniformBuffer.updateFloat4("vClearCoatTintParams", this.tintColor.r, this.tintColor.g, this.tintColor.b, Math.max(0.00001, this.tintThickness));
                 uniformBuffer.updateFloat("clearCoatColorAtDistance", Math.max(0.00001, this.tintColorAtDistance));
             }
         }

@@ -30,27 +30,22 @@ export class RawTexture2DArray extends Texture {
      * @param samplingMode defines the sampling mode to use (Texture.TRILINEAR_SAMPLINGMODE by default)
      * @param textureType defines the texture Type (Engine.TEXTURETYPE_UNSIGNED_INT, Engine.TEXTURETYPE_FLOAT...)
      */
-    constructor(data: ArrayBufferView, width: number, height: number, depth: number,
+    constructor(
+        data: ArrayBufferView,
+        width: number,
+        height: number,
+        depth: number,
         /** Gets or sets the texture format to use */
-        public format: number, scene: Scene,
+        public format: number,
+        scene: Scene,
         generateMipMaps: boolean = true,
         invertY: boolean = false,
         samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
-        textureType = Constants.TEXTURETYPE_UNSIGNED_INT) {
+        textureType = Constants.TEXTURETYPE_UNSIGNED_INT
+    ) {
         super(null, scene, !generateMipMaps, invertY);
 
-        this._texture = scene.getEngine().createRawTexture2DArray(
-            data,
-            width,
-            height,
-            depth,
-            format,
-            generateMipMaps,
-            invertY,
-            samplingMode,
-            null,
-            textureType
-        );
+        this._texture = scene.getEngine().createRawTexture2DArray(data, width, height, depth, format, generateMipMaps, invertY, samplingMode, null, textureType);
 
         this._depth = depth;
         this.is2DArray = true;
@@ -80,7 +75,17 @@ export class RawTexture2DArray extends Texture {
      * @param type define the format of the data (int, float... Engine.TEXTURETYPE_xxx)
      * @returns the RGBA texture
      */
-    public static CreateRGBATexture(data: ArrayBufferView, width: number, height: number, depth: number, scene: Scene, generateMipMaps: boolean = true, invertY: boolean = false, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE, type: number = Constants.TEXTURETYPE_UNSIGNED_INT): RawTexture2DArray {
+    public static CreateRGBATexture(
+        data: ArrayBufferView,
+        width: number,
+        height: number,
+        depth: number,
+        scene: Scene,
+        generateMipMaps: boolean = true,
+        invertY: boolean = false,
+        samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
+        type: number = Constants.TEXTURETYPE_UNSIGNED_INT
+    ): RawTexture2DArray {
         return new RawTexture2DArray(data, width, height, depth, Constants.TEXTUREFORMAT_RGBA, scene, generateMipMaps, invertY, samplingMode, type);
     }
 }

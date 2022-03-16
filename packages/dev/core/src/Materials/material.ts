@@ -1,6 +1,6 @@
 import { serialize, SerializationHelper } from "../Misc/decorators";
 import { Tools } from "../Misc/tools";
-import { IAnimatable } from '../Animations/animatable.interface';
+import { IAnimatable } from "../Animations/animatable.interface";
 import { SmartArray } from "../Misc/smartArray";
 import { Observer, Observable } from "../Misc/observable";
 import { Nullable } from "../types";
@@ -16,10 +16,10 @@ import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { MaterialDefines } from "./materialDefines";
 import { Constants } from "../Engines/constants";
 import { Logger } from "../Misc/logger";
-import { IInspectable } from '../Misc/iInspectable';
-import { Plane } from '../Maths/math.plane';
-import { ShadowDepthWrapper } from './shadowDepthWrapper';
-import { MaterialHelper } from './materialHelper';
+import { IInspectable } from "../Misc/iInspectable";
+import { Plane } from "../Maths/math.plane";
+import { ShadowDepthWrapper } from "./shadowDepthWrapper";
+import { MaterialHelper } from "./materialHelper";
 import { IMaterialContext } from "../Engines/IMaterialContext";
 import { DrawWrapper } from "./drawWrapper";
 import { MaterialStencilState } from "./materialStencilState";
@@ -27,16 +27,29 @@ import { Scene } from "../scene";
 import { AbstractScene } from "../abstractScene";
 import {
     MaterialPluginEvent,
-    MaterialPluginDisposed, MaterialPluginIsReadyForSubMesh, MaterialPluginGetDefineNames, MaterialPluginBindForSubMesh, MaterialPluginGetActiveTextures, MaterialPluginHasTexture, MaterialPluginGetAnimatables, MaterialPluginPrepareDefines, MaterialPluginPrepareEffect, MaterialPluginPrepareUniformBuffer, MaterialPluginCreated, MaterialPluginFillRenderTargetTextures, MaterialPluginHasRenderTargetTextures, MaterialPluginHardBindForSubMesh
+    MaterialPluginDisposed,
+    MaterialPluginIsReadyForSubMesh,
+    MaterialPluginGetDefineNames,
+    MaterialPluginBindForSubMesh,
+    MaterialPluginGetActiveTextures,
+    MaterialPluginHasTexture,
+    MaterialPluginGetAnimatables,
+    MaterialPluginPrepareDefines,
+    MaterialPluginPrepareEffect,
+    MaterialPluginPrepareUniformBuffer,
+    MaterialPluginCreated,
+    MaterialPluginFillRenderTargetTextures,
+    MaterialPluginHasRenderTargetTextures,
+    MaterialPluginHardBindForSubMesh,
 } from "./materialPluginEvent";
 import { ShaderCustomProcessingFunction } from "../Engines/Processors/shaderProcessingOptions";
 
 declare type PrePassRenderer = import("../Rendering/prePassRenderer").PrePassRenderer;
 declare type Mesh = import("../Meshes/mesh").Mesh;
 declare type Animation = import("../Animations/animation").Animation;
-declare type InstancedMesh = import('../Meshes/instancedMesh').InstancedMesh;
+declare type InstancedMesh = import("../Meshes/instancedMesh").InstancedMesh;
 
-declare var BABYLON: any;
+declare let BABYLON: any;
 
 /**
  * Options for compiling materials.
@@ -190,7 +203,15 @@ export class Material implements IAnimatable {
     /**
      * Custom callback helping to override the default shader used in the material.
      */
-    public customShaderNameResolve: (shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: MaterialDefines | string[], attributes?: string[], options?: ICustomShaderNameResolveOptions) => string;
+    public customShaderNameResolve: (
+        shaderName: string,
+        uniforms: string[],
+        uniformBuffers: string[],
+        samplers: string[],
+        defines: MaterialDefines | string[],
+        attributes?: string[],
+        options?: ICustomShaderNameResolveOptions
+    ) => string;
 
     /**
      * Custom shadow depth material to use for shadow rendering instead of the in-built one
@@ -342,8 +363,8 @@ export class Material implements IAnimatable {
     }
 
     /**
-    * Stores the value for side orientation
-    */
+     * Stores the value for side orientation
+     */
     @serialize()
     public sideOrientation: number;
 
@@ -387,8 +408,8 @@ export class Material implements IAnimatable {
     public animations: Nullable<Array<Animation>> = null;
 
     /**
-    * An event triggered when the material is disposed
-    */
+     * An event triggered when the material is disposed
+     */
     public onDisposeObservable = new Observable<Material>();
 
     /**
@@ -410,8 +431,8 @@ export class Material implements IAnimatable {
     private _onBindObservable: Nullable<Observable<AbstractMesh>>;
 
     /**
-    * An event triggered when the material is bound
-    */
+     * An event triggered when the material is bound
+     */
     public get onBindObservable(): Observable<AbstractMesh> {
         if (!this._onBindObservable) {
             this._onBindObservable = new Observable<AbstractMesh>();
@@ -436,8 +457,8 @@ export class Material implements IAnimatable {
     }
 
     /**
-    * An event triggered when the material is unbound
-    */
+     * An event triggered when the material is unbound
+     */
     public get onUnBindObservable(): Observable<Material> {
         if (!this._onUnBindObservable) {
             this._onUnBindObservable = new Observable<Material>();
@@ -446,14 +467,14 @@ export class Material implements IAnimatable {
         return this._onUnBindObservable;
     }
 
-    protected _onEffectCreatedObservable: Nullable<Observable<{ effect: Effect, subMesh: Nullable<SubMesh> }>>;
+    protected _onEffectCreatedObservable: Nullable<Observable<{ effect: Effect; subMesh: Nullable<SubMesh> }>>;
 
     /**
-    * An event triggered when the effect is (re)created
-    */
-    public get onEffectCreatedObservable(): Observable<{ effect: Effect, subMesh: Nullable<SubMesh> }> {
+     * An event triggered when the effect is (re)created
+     */
+    public get onEffectCreatedObservable(): Observable<{ effect: Effect; subMesh: Nullable<SubMesh> }> {
         if (!this._onEffectCreatedObservable) {
-            this._onEffectCreatedObservable = new Observable<{ effect: Effect, subMesh: Nullable<SubMesh> }>();
+            this._onEffectCreatedObservable = new Observable<{ effect: Effect; subMesh: Nullable<SubMesh> }>();
         }
 
         return this._onEffectCreatedObservable;
@@ -619,7 +640,7 @@ export class Material implements IAnimatable {
      * Sets the state of wireframe mode
      */
     public set wireframe(value: boolean) {
-        this.fillMode = (value ? Material.WireFrameFillMode : Material.TriangleFillMode);
+        this.fillMode = value ? Material.WireFrameFillMode : Material.TriangleFillMode;
     }
 
     /**
@@ -640,7 +661,7 @@ export class Material implements IAnimatable {
      * Sets the state of point cloud mode
      */
     public set pointsCloud(value: boolean) {
-        this.fillMode = (value ? Material.PointFillMode : Material.TriangleFillMode);
+        this.fillMode = value ? Material.PointFillMode : Material.TriangleFillMode;
     }
 
     /**
@@ -679,7 +700,10 @@ export class Material implements IAnimatable {
     public _getDrawWrapper(): DrawWrapper {
         return this._drawWrapper;
     }
-    /** @hidden */
+    /**
+     * @param drawWrapper
+     * @hidden
+     */
     public _setDrawWrapper(drawWrapper: DrawWrapper) {
         this._drawWrapper = drawWrapper;
     }
@@ -736,8 +760,7 @@ export class Material implements IAnimatable {
     /** @hidden */
     public _uniformBufferLayoutBuilt = false;
 
-    protected _eventInfo:
-        MaterialPluginCreated &
+    protected _eventInfo: MaterialPluginCreated &
         MaterialPluginDisposed &
         MaterialPluginHasTexture &
         MaterialPluginIsReadyForSubMesh &
@@ -750,23 +773,32 @@ export class Material implements IAnimatable {
         MaterialPluginGetActiveTextures &
         MaterialPluginFillRenderTargetTextures &
         MaterialPluginHasRenderTargetTextures &
-        MaterialPluginHardBindForSubMesh
-        = {} as any; // will be initialized before each event notification
+        MaterialPluginHardBindForSubMesh = {} as any; // will be initialized before each event notification
 
     /** @hidden */
-    public _callbackPluginEventGeneric: (id: number, info: MaterialPluginGetActiveTextures | MaterialPluginGetAnimatables | MaterialPluginHasTexture | MaterialPluginDisposed | MaterialPluginGetDefineNames | MaterialPluginPrepareEffect | MaterialPluginPrepareUniformBuffer) => void = () => void (0);
+    public _callbackPluginEventGeneric: (
+        id: number,
+        info:
+            | MaterialPluginGetActiveTextures
+            | MaterialPluginGetAnimatables
+            | MaterialPluginHasTexture
+            | MaterialPluginDisposed
+            | MaterialPluginGetDefineNames
+            | MaterialPluginPrepareEffect
+            | MaterialPluginPrepareUniformBuffer
+    ) => void = () => void 0;
     /** @hidden */
-    public _callbackPluginEventIsReadyForSubMesh: (eventData: MaterialPluginIsReadyForSubMesh) => void = () => void (0);
+    public _callbackPluginEventIsReadyForSubMesh: (eventData: MaterialPluginIsReadyForSubMesh) => void = () => void 0;
     /** @hidden */
-    public _callbackPluginEventPrepareDefines: (eventData: MaterialPluginPrepareDefines) => void = () => void (0);
+    public _callbackPluginEventPrepareDefines: (eventData: MaterialPluginPrepareDefines) => void = () => void 0;
     /** @hidden */
-    public _callbackPluginEventHardBindForSubMesh: (eventData: MaterialPluginHardBindForSubMesh) => void = () => void (0);
+    public _callbackPluginEventHardBindForSubMesh: (eventData: MaterialPluginHardBindForSubMesh) => void = () => void 0;
     /** @hidden */
-    public _callbackPluginEventBindForSubMesh: (eventData: MaterialPluginBindForSubMesh) => void = () => void (0);
+    public _callbackPluginEventBindForSubMesh: (eventData: MaterialPluginBindForSubMesh) => void = () => void 0;
     /** @hidden */
-    public _callbackPluginEventHasRenderTargetTextures: (eventData: MaterialPluginHasRenderTargetTextures) => void = () => void (0);
+    public _callbackPluginEventHasRenderTargetTextures: (eventData: MaterialPluginHasRenderTargetTextures) => void = () => void 0;
     /** @hidden */
-    public _callbackPluginEventFillRenderTargetTextures: (eventData: MaterialPluginFillRenderTargetTextures) => void = () => void (0);
+    public _callbackPluginEventFillRenderTargetTextures: (eventData: MaterialPluginFillRenderTargetTextures) => void = () => void 0;
 
     /**
      * Creates a material instance
@@ -823,7 +855,7 @@ export class Material implements IAnimatable {
      * @returns a string with material information
      */
     public toString(fullDetails?: boolean): string {
-        var ret = "Name: " + this.name;
+        const ret = "Name: " + this.name;
         if (fullDetails) {
         }
         return ret;
@@ -942,7 +974,7 @@ export class Material implements IAnimatable {
 
         this._transparencyMode = value;
 
-        this._forceAlphaTest = (value === Material.MATERIAL_ALPHATESTANDBLEND);
+        this._forceAlphaTest = value === Material.MATERIAL_ALPHATESTANDBLEND;
 
         this._markAllSubMeshesAsTexturesAndMiscDirty();
     }
@@ -951,8 +983,7 @@ export class Material implements IAnimatable {
      * Returns true if alpha blending should be disabled.
      */
     protected get _disableAlphaBlending(): boolean {
-        return (this._transparencyMode === Material.MATERIAL_OPAQUE ||
-            this._transparencyMode === Material.MATERIAL_ALPHATEST);
+        return this._transparencyMode === Material.MATERIAL_OPAQUE || this._transparencyMode === Material.MATERIAL_ALPHATEST;
     }
 
     /**
@@ -964,7 +995,7 @@ export class Material implements IAnimatable {
             return false;
         }
 
-        return (this.alpha < 1.0);
+        return this.alpha < 1.0;
     }
 
     /**
@@ -977,7 +1008,7 @@ export class Material implements IAnimatable {
             return false;
         }
 
-        return this.needAlphaBlending() || (mesh.visibility < 1.0) || mesh.hasVertexAlpha;
+        return this.needAlphaBlending() || mesh.visibility < 1.0 || mesh.hasVertexAlpha;
     }
 
     /**
@@ -997,7 +1028,7 @@ export class Material implements IAnimatable {
      * @param mesh defines the mesh to check
      */
     protected _shouldTurnAlphaTestOn(mesh: AbstractMesh): boolean {
-        return (!this.needAlphaBlendingForMesh(mesh) && this.needAlphaTesting());
+        return !this.needAlphaBlendingForMesh(mesh) && this.needAlphaTesting();
     }
 
     /**
@@ -1013,11 +1044,11 @@ export class Material implements IAnimatable {
      */
     public markDirty(): void {
         const meshes = this.getScene().meshes;
-        for (var mesh of meshes) {
+        for (const mesh of meshes) {
             if (!mesh.subMeshes) {
                 continue;
             }
-            for (var subMesh of mesh.subMeshes) {
+            for (const subMesh of mesh.subMeshes) {
                 if (subMesh.getMaterial() !== this) {
                     continue;
                 }
@@ -1031,12 +1062,16 @@ export class Material implements IAnimatable {
         }
     }
 
-    /** @hidden */
+    /**
+     * @param effect
+     * @param overrideOrientation
+     * @hidden
+     */
     public _preBind(effect?: Effect | DrawWrapper, overrideOrientation: Nullable<number> = null): boolean {
-        var engine = this._scene.getEngine();
+        const engine = this._scene.getEngine();
 
-        var orientation = (overrideOrientation == null) ? this.sideOrientation : overrideOrientation;
-        var reverse = orientation === Material.ClockWiseSideOrientation;
+        const orientation = overrideOrientation == null ? this.sideOrientation : overrideOrientation;
+        const reverse = orientation === Material.ClockWiseSideOrientation;
 
         engine.enableEffect(effect ? effect : this._getDrawWrapper());
         engine.setState(this.backFaceCulling, this.zOffset, false, reverse, this.cullBackFaces, this.stencil, this.zOffsetUnits);
@@ -1049,8 +1084,7 @@ export class Material implements IAnimatable {
      * @param world defines the world transformation matrix
      * @param mesh defines the mesh to bind the material to
      */
-    public bind(world: Matrix, mesh?: Mesh): void {
-    }
+    public bind(world: Matrix, mesh?: Mesh): void {}
 
     /**
      * Initializes the uniform buffer layout for the shader.
@@ -1086,8 +1120,7 @@ export class Material implements IAnimatable {
      * Binds the world matrix to the material
      * @param world defines the world transformation matrix
      */
-    public bindOnlyWorldMatrix(world: Matrix): void {
-    }
+    public bindOnlyWorldMatrix(world: Matrix): void {}
 
     /**
      * Binds the view matrix to the effect
@@ -1130,6 +1163,7 @@ export class Material implements IAnimatable {
     /**
      * Processes to execute after binding the material to a mesh
      * @param mesh defines the rendered mesh
+     * @param effect
      */
     protected _afterBind(mesh?: Mesh, effect: Nullable<Effect> = null): void {
         this._scene._cachedMaterial = this;
@@ -1240,16 +1274,15 @@ export class Material implements IAnimatable {
      */
     public getBindedMeshes(): AbstractMesh[] {
         if (this.meshMap) {
-            var result = new Array<AbstractMesh>();
-            for (let meshId in this.meshMap) {
+            const result = new Array<AbstractMesh>();
+            for (const meshId in this.meshMap) {
                 const mesh = this.meshMap[meshId];
                 if (mesh) {
                     result.push(mesh);
                 }
             }
             return result;
-        }
-        else {
+        } else {
             const meshes = this._scene.meshes;
             return meshes.filter((mesh) => mesh.material === this);
         }
@@ -1262,15 +1295,20 @@ export class Material implements IAnimatable {
      * @param options defines the options to configure the compilation
      * @param onError defines a function to execute if the material fails compiling
      */
-    public forceCompilation(mesh: AbstractMesh, onCompiled?: (material: Material) => void, options?: Partial<IMaterialCompilationOptions>, onError?: (reason: string) => void): void {
-        let localOptions = {
+    public forceCompilation(
+        mesh: AbstractMesh,
+        onCompiled?: (material: Material) => void,
+        options?: Partial<IMaterialCompilationOptions>,
+        onError?: (reason: string) => void
+    ): void {
+        const localOptions = {
             clipPlane: false,
             useInstances: false,
-            ...options
+            ...options,
         };
 
-        var scene = this.getScene();
-        let currentHotSwapingState = this.allowShaderHotSwapping;
+        const scene = this.getScene();
+        const currentHotSwapingState = this.allowShaderHotSwapping;
         this.allowShaderHotSwapping = false; // Turned off to let us evaluate the real compilation state
 
         var checkReady = () => {
@@ -1278,16 +1316,17 @@ export class Material implements IAnimatable {
                 return;
             }
 
-            var clipPlaneState = scene.clipPlane;
+            const clipPlaneState = scene.clipPlane;
 
             if (localOptions.clipPlane) {
                 scene.clipPlane = new Plane(0, 0, 0, 1);
             }
 
             if (this._storeEffectOnSubMeshes) {
-                var allDone = true, lastError = null;
+                let allDone = true,
+                    lastError = null;
                 if (mesh.subMeshes) {
-                    let tempSubMesh = new SubMesh(0, 0, 0, 0, 0, mesh, undefined, false, false);
+                    const tempSubMesh = new SubMesh(0, 0, 0, 0, 0, mesh, undefined, false, false);
                     if (tempSubMesh.materialDefines) {
                         tempSubMesh.materialDefines._renderId = -1;
                     }
@@ -1317,8 +1356,7 @@ export class Material implements IAnimatable {
                     if (onCompiled) {
                         onCompiled(this);
                     }
-                }
-                else {
+                } else {
                     setTimeout(checkReady, 16);
                 }
             }
@@ -1339,11 +1377,16 @@ export class Material implements IAnimatable {
      */
     public forceCompilationAsync(mesh: AbstractMesh, options?: Partial<IMaterialCompilationOptions>): Promise<void> {
         return new Promise((resolve, reject) => {
-            this.forceCompilation(mesh, () => {
-                resolve();
-            }, options, (reason) => {
-                reject(reason);
-            });
+            this.forceCompilation(
+                mesh,
+                () => {
+                    resolve();
+                },
+                options,
+                (reason) => {
+                    reject(reason);
+                }
+            );
         });
     }
 
@@ -1359,19 +1402,19 @@ export class Material implements IAnimatable {
     private static _FresnelAndMiscDirtyCallBack = (defines: MaterialDefines) => {
         Material._FresnelDirtyCallBack(defines);
         Material._MiscDirtyCallBack(defines);
-    }
+    };
 
     private static _TextureAndMiscDirtyCallBack = (defines: MaterialDefines) => {
         Material._TextureDirtyCallBack(defines);
         Material._MiscDirtyCallBack(defines);
-    }
+    };
 
     private static readonly _DirtyCallbackArray: Array<(defines: MaterialDefines) => void> = [];
     private static readonly _RunDirtyCallBacks = (defines: MaterialDefines) => {
         for (const cb of Material._DirtyCallbackArray) {
             cb(defines);
         }
-    }
+    };
 
     /**
      * Marks a define in the material to indicate that it needs to be re-computed
@@ -1451,7 +1494,6 @@ export class Material implements IAnimatable {
             for (const subMesh of mesh.subMeshes) {
                 // We want to skip the submeshes which are not using this material or which have not yet rendered at least once
                 if (mesh._renderId === 0 || subMesh.getMaterial() !== this) {
-
                     continue;
                 }
 
@@ -1590,17 +1632,16 @@ export class Material implements IAnimatable {
         if (notBoundToMesh !== true) {
             // Remove from meshes
             if (this.meshMap) {
-                for (let meshId in this.meshMap) {
+                for (const meshId in this.meshMap) {
                     const mesh = this.meshMap[meshId];
                     if (mesh) {
                         mesh.material = null; // will set the entry in the map to undefined
                         this.releaseVertexArrayObject(mesh, forceDisposeEffect);
                     }
                 }
-            }
-            else {
+            } else {
                 const meshes = scene.meshes;
-                for (let mesh of meshes) {
+                for (const mesh of meshes) {
                     if (mesh.material === this && !(mesh as InstancedMesh).sourceMesh) {
                         mesh.material = null;
                         this.releaseVertexArrayObject(mesh, forceDisposeEffect);
@@ -1639,12 +1680,16 @@ export class Material implements IAnimatable {
         }
     }
 
-    /** @hidden */
+    /**
+     * @param mesh
+     * @param forceDisposeEffect
+     * @hidden
+     */
     private releaseVertexArrayObject(mesh: AbstractMesh, forceDisposeEffect?: boolean) {
         if ((<Mesh>mesh).geometry) {
-            var geometry = <Geometry>((<Mesh>mesh).geometry);
+            const geometry = <Geometry>(<Mesh>mesh).geometry;
             if (this._storeEffectOnSubMeshes) {
-                for (var subMesh of mesh.subMeshes) {
+                for (const subMesh of mesh.subMeshes) {
                     geometry._releaseVertexArrayObject(subMesh.effect);
                     if (forceDisposeEffect && subMesh.effect) {
                         subMesh.effect.dispose();
@@ -1678,8 +1723,7 @@ export class Material implements IAnimatable {
     public static Parse(parsedMaterial: any, scene: Scene, rootUrl: string): Nullable<Material> {
         if (!parsedMaterial.customType) {
             parsedMaterial.customType = "BABYLON.StandardMaterial";
-        }
-        else if (parsedMaterial.customType === "BABYLON.PBRMaterial" && parsedMaterial.overloadedAlbedo) {
+        } else if (parsedMaterial.customType === "BABYLON.PBRMaterial" && parsedMaterial.overloadedAlbedo) {
             parsedMaterial.customType = "BABYLON.LegacyPBRMaterial";
             if (!BABYLON.LegacyPBRMaterial) {
                 Logger.Error("Your scene is trying to load a legacy version of the PBRMaterial, please, include it from the materials library.");
@@ -1687,7 +1731,7 @@ export class Material implements IAnimatable {
             }
         }
 
-        var materialType = Tools.Instantiate(parsedMaterial.customType);
+        const materialType = Tools.Instantiate(parsedMaterial.customType);
         const material = materialType.Parse(parsedMaterial, scene, rootUrl);
         material._loadedUniqueId = parsedMaterial.uniqueId;
         return material;

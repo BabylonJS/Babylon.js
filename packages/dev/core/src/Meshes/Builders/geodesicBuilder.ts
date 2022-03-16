@@ -1,9 +1,9 @@
 import { Scene } from "../../scene";
 import { Vector4 } from "../../Maths/math.vector";
-import { Color4 } from '../../Maths/math.color';
+import { Color4 } from "../../Maths/math.color";
 import { Mesh } from "../../Meshes/mesh";
 import { CreatePolyhedron } from "./polyhedronBuilder";
-import { Nullable } from '../../types';
+import { Nullable } from "../../types";
 import { Logger } from "../../Misc/logger";
 import { _PrimaryIsoTriangle, GeodesicData } from "../geodesicMesh";
 
@@ -26,10 +26,41 @@ import { _PrimaryIsoTriangle, GeodesicData } from "../geodesicMesh";
  * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
  * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
  * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
+ * @param options.n
+ * @param options.size
+ * @param options.sizeX
+ * @param options.sizeY
+ * @param options.sizeZ
+ * @param options.faceUV
+ * @param options.faceColors
+ * @param options.flat
+ * @param options.updatable
+ * @param options.sideOrientation
+ * @param options.frontUVs
+ * @param options.backUVs
+ * @param options.m
  * @param scene defines the hosting scene
  * @returns Geodesic mesh
  */
-export function CreateGeodesic(name: string, options: { m?: number, n?: number, size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, faceUV?: Vector4[], faceColors?: Color4[], flat?: boolean, updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }, scene: Nullable<Scene> = null): Mesh {
+export function CreateGeodesic(
+    name: string,
+    options: {
+        m?: number;
+        n?: number;
+        size?: number;
+        sizeX?: number;
+        sizeY?: number;
+        sizeZ?: number;
+        faceUV?: Vector4[];
+        faceColors?: Color4[];
+        flat?: boolean;
+        updatable?: boolean;
+        sideOrientation?: number;
+        frontUVs?: Vector4;
+        backUVs?: Vector4;
+    },
+    scene: Nullable<Scene> = null
+): Mesh {
     let m: number = options.m || 1;
     if (m !== Math.floor(m)) {
         m === Math.floor(m);
@@ -62,7 +93,7 @@ export function CreateGeodesic(name: string, options: { m?: number, n?: number, 
         updatable: options.updatable,
         sideOrientation: options.sideOrientation,
         frontUVs: options.frontUVs,
-        backUVs: options.backUVs
+        backUVs: options.backUVs,
     };
     const geodesic = CreatePolyhedron(name, geoOptions, scene);
 

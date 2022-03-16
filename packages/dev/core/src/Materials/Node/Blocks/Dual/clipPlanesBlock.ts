@@ -94,10 +94,10 @@ export class ClipPlanesBlock extends NodeMaterialBlock {
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
-        let comments = `//${this.name}`;
+        const comments = `//${this.name}`;
         if (state.target !== NodeMaterialBlockTargets.Fragment) {
             // Vertex
-            let worldPos = this.worldPosition;
+            const worldPos = this.worldPosition;
 
             state._emitFunctionFromInclude("clipPlaneVertexDeclaration", comments, {
                 replaceStrings: [{ search: /uniform vec4 vClipPlane\d*;/g, replace: "" }],

@@ -6,25 +6,25 @@ import { IOfflineProvider } from "../Offline/IOfflineProvider";
 import { ILoadingScreen } from "../Loading/loadingScreen";
 import { IsDocumentAvailable, IsWindowObjectExist } from "../Misc/domManagement";
 import { EngineStore } from "./engineStore";
-import { _WarnImport } from '../Misc/devTools';
-import { WebGLPipelineContext } from './WebGL/webGLPipelineContext';
-import { IPipelineContext } from './IPipelineContext';
-import { ICustomAnimationFrameRequester } from '../Misc/customAnimationFrameRequester';
-import { ThinEngine, EngineOptions } from './thinEngine';
-import { Constants } from './constants';
-import { IViewportLike, IColor4Like } from '../Maths/math.like';
-import { RenderTargetTexture } from '../Materials/Textures/renderTargetTexture';
-import { PerformanceMonitor } from '../Misc/performanceMonitor';
-import { DataBuffer } from '../Buffers/dataBuffer';
-import { PerfCounter } from '../Misc/perfCounter';
-import { WebGLDataBuffer } from '../Meshes/WebGL/webGLDataBuffer';
-import { Logger } from '../Misc/logger';
+import { _WarnImport } from "../Misc/devTools";
+import { WebGLPipelineContext } from "./WebGL/webGLPipelineContext";
+import { IPipelineContext } from "./IPipelineContext";
+import { ICustomAnimationFrameRequester } from "../Misc/customAnimationFrameRequester";
+import { ThinEngine, EngineOptions } from "./thinEngine";
+import { Constants } from "./constants";
+import { IViewportLike, IColor4Like } from "../Maths/math.like";
+import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
+import { PerformanceMonitor } from "../Misc/performanceMonitor";
+import { DataBuffer } from "../Buffers/dataBuffer";
+import { PerfCounter } from "../Misc/perfCounter";
+import { WebGLDataBuffer } from "../Meshes/WebGL/webGLDataBuffer";
+import { Logger } from "../Misc/logger";
 import { RenderTargetWrapper } from "./renderTargetWrapper";
 
 import "./Extensions/engine.alpha";
 import "./Extensions/engine.readTexture";
 import "./Extensions/engine.dynamicBuffer";
-import { IAudioEngine } from '../Audio/Interfaces/IAudioEngine';
+import { IAudioEngine } from "../Audio/Interfaces/IAudioEngine";
 
 declare type Material = import("../Materials/material").Material;
 declare type PostProcess = import("../PostProcesses/postProcess").PostProcess;
@@ -335,8 +335,8 @@ export class Engine extends ThinEngine {
      * @returns an uint8array containing RGBA values of bufferWidth * bufferHeight size
      */
     public resizeImageBitmap(image: HTMLImageElement | ImageBitmap, bufferWidth: number, bufferHeight: number): Uint8Array {
-        var canvas = this.createCanvas(bufferWidth, bufferHeight);
-        var context = canvas.getContext("2d");
+        const canvas = this.createCanvas(bufferWidth, bufferHeight);
+        const context = canvas.getContext("2d");
 
         if (!context) {
             throw new Error("Unable to get 2d context for resizeImageBitmap");
@@ -346,7 +346,7 @@ export class Engine extends ThinEngine {
 
         // Create VertexData from map data
         // Cast is due to wrong definition in lib.d.ts from ts 1.3 - https://github.com/Microsoft/TypeScript/issues/949
-        var buffer = <Uint8Array>(<any>context.getImageData(0, 0, bufferWidth, bufferHeight).data);
+        const buffer = <Uint8Array>(<any>context.getImageData(0, 0, bufferWidth, bufferHeight).data);
         return buffer;
     }
 
@@ -356,10 +356,10 @@ export class Engine extends ThinEngine {
      * @param predicate defines a predicate used to filter which materials should be affected
      */
     public static MarkAllMaterialsAsDirty(flag: number, predicate?: (mat: Material) => boolean): void {
-        for (var engineIndex = 0; engineIndex < Engine.Instances.length; engineIndex++) {
-            var engine = Engine.Instances[engineIndex];
+        for (let engineIndex = 0; engineIndex < Engine.Instances.length; engineIndex++) {
+            const engine = Engine.Instances[engineIndex];
 
-            for (var sceneIndex = 0; sceneIndex < engine.scenes.length; sceneIndex++) {
+            for (let sceneIndex = 0; sceneIndex < engine.scenes.length; sceneIndex++) {
                 engine.scenes[sceneIndex].markAllMaterialsAsDirty(flag, predicate);
             }
         }
@@ -473,7 +473,11 @@ export class Engine extends ThinEngine {
      * Default AudioEngine factory responsible of creating the Audio Engine.
      * By default, this will create a BabylonJS Audio Engine if the workload has been embedded.
      */
-    public static AudioEngineFactory: (hostElement: Nullable<HTMLElement>, audioContext: Nullable<AudioContext>, audioDestination: Nullable<AudioDestinationNode | MediaStreamAudioDestinationNode>) => IAudioEngine;
+    public static AudioEngineFactory: (
+        hostElement: Nullable<HTMLElement>,
+        audioContext: Nullable<AudioContext>,
+        audioDestination: Nullable<AudioDestinationNode | MediaStreamAudioDestinationNode>
+    ) => IAudioEngine;
 
     /**
      * Default offline support factory responsible of creating a tool used to store data locally.
@@ -561,7 +565,12 @@ export class Engine extends ThinEngine {
      * @param options defines further options to be sent to the getContext() function
      * @param adaptToDeviceRatio defines whether to adapt to the device's viewport characteristics (default: false)
      */
-    constructor(canvasOrContext: Nullable<HTMLCanvasElement | OffscreenCanvas | WebGLRenderingContext | WebGL2RenderingContext>, antialias?: boolean, options?: EngineOptions, adaptToDeviceRatio: boolean = false) {
+    constructor(
+        canvasOrContext: Nullable<HTMLCanvasElement | OffscreenCanvas | WebGLRenderingContext | WebGL2RenderingContext>,
+        antialias?: boolean,
+        options?: EngineOptions,
+        adaptToDeviceRatio: boolean = false
+    ) {
         super(canvasOrContext, antialias, options, adaptToDeviceRatio);
 
         Engine.Instances.push(this);
@@ -575,7 +584,7 @@ export class Engine extends ThinEngine {
         options = this._creationOptions;
 
         if ((<any>canvasOrContext).getContext) {
-            let canvas = <HTMLCanvasElement>canvasOrContext;
+            const canvas = <HTMLCanvasElement>canvasOrContext;
 
             this._sharedInit(canvas, !!options.doNotHandleTouchAction, options.audioEngine!);
 
@@ -607,11 +616,11 @@ export class Engine extends ThinEngine {
 
                 // Pointer lock
                 this._onPointerLockChange = () => {
-                    this.isPointerLock = (anyDoc.mozPointerLockElement === canvas ||
+                    this.isPointerLock =
+                        anyDoc.mozPointerLockElement === canvas ||
                         anyDoc.webkitPointerLockElement === canvas ||
                         anyDoc.msPointerLockElement === canvas ||
-                        anyDoc.pointerLockElement === canvas
-                    );
+                        anyDoc.pointerLockElement === canvas;
                 };
 
                 document.addEventListener("pointerlockchange", this._onPointerLockChange, false);
@@ -632,7 +641,6 @@ export class Engine extends ThinEngine {
             this._deterministicLockstep = !!options.deterministicLockstep;
             this._lockstepMaxSteps = options.lockstepMaxSteps || 0;
             this._timeStep = options.timeStep || 1 / 60;
-
         }
 
         // Load WebVR Devices
@@ -711,7 +719,7 @@ export class Engine extends ThinEngine {
      * @returns a number defining the aspect ratio
      */
     public getAspectRatio(viewportOwner: IViewportOwnerLike, useScreen = false): number {
-        var viewport = viewportOwner.viewport;
+        const viewport = viewportOwner.viewport;
         return (this.getRenderWidth(useScreen) * viewport.width) / (this.getRenderHeight(useScreen) * viewport.height);
     }
 
@@ -720,7 +728,7 @@ export class Engine extends ThinEngine {
      * @returns a number defining the aspect ratio
      */
     public getScreenAspectRatio(): number {
-        return (this.getRenderWidth(true)) / (this.getRenderHeight(true));
+        return this.getRenderWidth(true) / this.getRenderHeight(true);
     }
 
     /**
@@ -778,7 +786,7 @@ export class Engine extends ThinEngine {
      */
     public generateMipMapsForCubemap(texture: InternalTexture, unbind = true) {
         if (texture.generateMipMaps) {
-            var gl = this._gl;
+            const gl = this._gl;
             this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture, true);
             gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
             if (unbind) {
@@ -1060,7 +1068,7 @@ export class Engine extends ThinEngine {
      * @return the current viewport Object (if any) that is being replaced by this call. You can restore this viewport later on to go back to the original state
      */
     public setDirectViewport(x: number, y: number, width: number, height: number): Nullable<IViewportLike> {
-        let currentViewport = this._cachedViewport;
+        const currentViewport = this._cachedViewport;
         this._cachedViewport = null;
 
         this._viewport(x, y, width, height);
@@ -1090,7 +1098,7 @@ export class Engine extends ThinEngine {
      * @param height defines the height of the clear rectangle
      */
     public enableScissor(x: number, y: number, width: number, height: number): void {
-        let gl = this._gl;
+        const gl = this._gl;
 
         // Change state
         gl.enable(gl.SCISSOR_TEST);
@@ -1101,12 +1109,15 @@ export class Engine extends ThinEngine {
      * Disable previously set scissor test rectangle
      */
     public disableScissor() {
-        let gl = this._gl;
+        const gl = this._gl;
 
         gl.disable(gl.SCISSOR_TEST);
     }
 
-    /** @hidden */
+    /**
+     * @param numDrawCalls
+     * @hidden
+     */
     public _reportDrawCall(numDrawCalls = 1) {
         this._drawCalls.addCount(numDrawCalls, false);
     }
@@ -1125,7 +1136,11 @@ export class Engine extends ThinEngine {
         // Do nothing as the engine side effect will overload it
     }
 
-    /** @hidden */
+    /**
+     * @param canvas
+     * @param document
+     * @hidden
+     */
     public _connectVREvents(canvas?: HTMLCanvasElement, document?: any) {
         // Do nothing as the engine side effect will overload it
     }
@@ -1156,24 +1171,36 @@ export class Engine extends ThinEngine {
         // Do nothing as the engine side effect will overload it
     }
 
-    /** @hidden */
+    /**
+     * @param url
+     * @param offlineProvider
+     * @param useArrayBuffer
+     * @hidden
+     */
     public _loadFileAsync(url: string, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean): Promise<string | ArrayBuffer> {
         return new Promise((resolve, reject) => {
-            this._loadFile(url, (data) => {
-                resolve(data);
-            }, undefined, offlineProvider, useArrayBuffer, (request, exception) => {
-                reject(exception);
-            });
+            this._loadFile(
+                url,
+                (data) => {
+                    resolve(data);
+                },
+                undefined,
+                offlineProvider,
+                useArrayBuffer,
+                (request, exception) => {
+                    reject(exception);
+                }
+            );
         });
     }
 
     /**
-    * Gets the source code of the vertex shader associated with a specific webGL program
-    * @param program defines the program to use
-    * @returns a string containing the source code of the vertex shader associated with the program
-    */
+     * Gets the source code of the vertex shader associated with a specific webGL program
+     * @param program defines the program to use
+     * @returns a string containing the source code of the vertex shader associated with the program
+     */
     public getVertexShaderSource(program: WebGLProgram): Nullable<string> {
-        var shaders = this._gl.getAttachedShaders(program);
+        const shaders = this._gl.getAttachedShaders(program);
 
         if (!shaders) {
             return null;
@@ -1188,7 +1215,7 @@ export class Engine extends ThinEngine {
      * @returns a string containing the source code of the fragment shader associated with the program
      */
     public getFragmentShaderSource(program: WebGLProgram): Nullable<string> {
-        var shaders = this._gl.getAttachedShaders(program);
+        const shaders = this._gl.getAttachedShaders(program);
 
         if (!shaders) {
             return null;
@@ -1215,8 +1242,7 @@ export class Engine extends ThinEngine {
 
         if (!texture || !texture.depthStencilTexture) {
             this._setTexture(channel, null, undefined, undefined, name);
-        }
-        else {
+        } else {
             this._setTexture(channel, texture, false, true, name);
         }
     }
@@ -1269,8 +1295,8 @@ export class Engine extends ThinEngine {
 
     /** @hidden */
     public _renderFrame() {
-        for (var index = 0; index < this._activeRenderLoops.length; index++) {
-            var renderFunction = this._activeRenderLoops[index];
+        for (let index = 0; index < this._activeRenderLoops.length; index++) {
+            const renderFunction = this._activeRenderLoops[index];
 
             renderFunction();
         }
@@ -1278,7 +1304,7 @@ export class Engine extends ThinEngine {
 
     public _renderLoop(): void {
         if (!this._contextWasLost) {
-            var shouldRender = true;
+            let shouldRender = true;
             if (!this.renderEvenInBackground && this._windowIsBackground) {
                 shouldRender = false;
             }
@@ -1301,7 +1327,10 @@ export class Engine extends ThinEngine {
         if (this._activeRenderLoops.length > 0) {
             // Register new frame
             if (this.customAnimationFrameRequester) {
-                this.customAnimationFrameRequester.requestID = this._queueNewFrame(this.customAnimationFrameRequester.renderFunction || this._boundRenderFunction, this.customAnimationFrameRequester);
+                this.customAnimationFrameRequester.requestID = this._queueNewFrame(
+                    this.customAnimationFrameRequester.renderFunction || this._boundRenderFunction,
+                    this.customAnimationFrameRequester
+                );
                 this._frameHandler = this.customAnimationFrameRequester.requestID;
             } else if (this.isVRPresenting()) {
                 this._requestVRFrame();
@@ -1418,11 +1447,11 @@ export class Engine extends ThinEngine {
         }
 
         if (this.scenes) {
-            for (var index = 0; index < this.scenes.length; index++) {
-                var scene = this.scenes[index];
+            for (let index = 0; index < this.scenes.length; index++) {
+                const scene = this.scenes[index];
 
-                for (var camIndex = 0; camIndex < scene.cameras.length; camIndex++) {
-                    var cam = scene.cameras[camIndex];
+                for (let camIndex = 0; camIndex < scene.cameras.length; camIndex++) {
+                    const cam = scene.cameras[camIndex];
 
                     cam._currentRenderId = 0;
                 }
@@ -1437,7 +1466,7 @@ export class Engine extends ThinEngine {
     }
 
     public _deletePipelineContext(pipelineContext: IPipelineContext): void {
-        let webGLPipelineContext = pipelineContext as WebGLPipelineContext;
+        const webGLPipelineContext = pipelineContext as WebGLPipelineContext;
         if (webGLPipelineContext && webGLPipelineContext.program) {
             if (webGLPipelineContext.transformFeedback) {
                 this.deleteTransformFeedback(webGLPipelineContext.transformFeedback);
@@ -1447,19 +1476,32 @@ export class Engine extends ThinEngine {
         super._deletePipelineContext(pipelineContext);
     }
 
-    public createShaderProgram(pipelineContext: IPipelineContext, vertexCode: string, fragmentCode: string, defines: Nullable<string>, context?: WebGLRenderingContext, transformFeedbackVaryings: Nullable<string[]> = null): WebGLProgram {
+    public createShaderProgram(
+        pipelineContext: IPipelineContext,
+        vertexCode: string,
+        fragmentCode: string,
+        defines: Nullable<string>,
+        context?: WebGLRenderingContext,
+        transformFeedbackVaryings: Nullable<string[]> = null
+    ): WebGLProgram {
         context = context || this._gl;
 
         this.onBeforeShaderCompilationObservable.notifyObservers(this);
 
-        let program = super.createShaderProgram(pipelineContext, vertexCode, fragmentCode, defines, context, transformFeedbackVaryings);
+        const program = super.createShaderProgram(pipelineContext, vertexCode, fragmentCode, defines, context, transformFeedbackVaryings);
         this.onAfterShaderCompilationObservable.notifyObservers(this);
 
         return program;
     }
 
-    protected _createShaderProgram(pipelineContext: WebGLPipelineContext, vertexShader: WebGLShader, fragmentShader: WebGLShader, context: WebGLRenderingContext, transformFeedbackVaryings: Nullable<string[]> = null): WebGLProgram {
-        var shaderProgram = context.createProgram();
+    protected _createShaderProgram(
+        pipelineContext: WebGLPipelineContext,
+        vertexShader: WebGLShader,
+        fragmentShader: WebGLShader,
+        context: WebGLRenderingContext,
+        transformFeedbackVaryings: Nullable<string[]> = null
+    ): WebGLProgram {
+        const shaderProgram = context.createProgram();
         pipelineContext.program = shaderProgram;
 
         if (!shaderProgram) {
@@ -1470,7 +1512,7 @@ export class Engine extends ThinEngine {
         context.attachShader(shaderProgram, fragmentShader);
 
         if (this.webGLVersion > 1 && transformFeedbackVaryings) {
-            let transformFeedback = this.createTransformFeedback();
+            const transformFeedback = this.createTransformFeedback();
 
             this.bindTransformFeedback(transformFeedback);
             this.setTranformFeedbackVaryings(shaderProgram, transformFeedbackVaryings);
@@ -1494,12 +1536,18 @@ export class Engine extends ThinEngine {
         return shaderProgram;
     }
 
-    /** @hidden */
+    /**
+     * @param texture
+     * @hidden
+     */
     public _releaseTexture(texture: InternalTexture): void {
         super._releaseTexture(texture);
     }
 
-    /** @hidden */
+    /**
+     * @param rtWrapper
+     * @hidden
+     */
     public _releaseRenderTargetWrapper(rtWrapper: RenderTargetWrapper): void {
         super._releaseRenderTargetWrapper(rtWrapper);
 
@@ -1593,16 +1641,18 @@ export class Engine extends ThinEngine {
         this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_WRAP_S, this._gl.CLAMP_TO_EDGE);
         this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_WRAP_T, this._gl.CLAMP_TO_EDGE);
 
-        let rtt = this.createRenderTargetTexture({
-            width: destination.width,
-            height: destination.height,
-        }, {
-            generateMipMaps: false,
-            type: Constants.TEXTURETYPE_UNSIGNED_INT,
-            samplingMode: Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
-            generateDepthBuffer: false,
-            generateStencilBuffer: false
-        }
+        const rtt = this.createRenderTargetTexture(
+            {
+                width: destination.width,
+                height: destination.height,
+            },
+            {
+                generateMipMaps: false,
+                type: Constants.TEXTURETYPE_UNSIGNED_INT,
+                samplingMode: Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
+                generateDepthBuffer: false,
+                generateStencilBuffer: false,
+            }
         );
 
         if (!this._rescalePostProcess && Engine._RescalePostProcessFactory) {
@@ -1658,20 +1708,26 @@ export class Engine extends ThinEngine {
         this._deltaTime = this._performanceMonitor.instantaneousFrameTime || 0;
     }
 
-    /** @hidden */
+    /**
+     * @param texture
+     * @param image
+     * @param faceIndex
+     * @param lod
+     * @hidden
+     */
     public _uploadImageToTexture(texture: InternalTexture, image: HTMLImageElement | ImageBitmap, faceIndex: number = 0, lod: number = 0) {
-        var gl = this._gl;
+        const gl = this._gl;
 
-        var textureType = this._getWebGLTextureType(texture.type);
-        var format = this._getInternalFormat(texture.format);
-        var internalFormat = this._getRGBABufferInternalSizedFormat(texture.type, format);
+        const textureType = this._getWebGLTextureType(texture.type);
+        const format = this._getInternalFormat(texture.format);
+        const internalFormat = this._getRGBABufferInternalSizedFormat(texture.type, format);
 
-        var bindTarget = texture.isCube ? gl.TEXTURE_CUBE_MAP : gl.TEXTURE_2D;
+        const bindTarget = texture.isCube ? gl.TEXTURE_CUBE_MAP : gl.TEXTURE_2D;
 
         this._bindTextureDirectly(bindTarget, texture, true);
         this._unpackFlipY(texture.invertY);
 
-        var target = gl.TEXTURE_2D;
+        let target = gl.TEXTURE_2D;
         if (texture.isCube) {
             target = gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex;
         }
@@ -1693,7 +1749,7 @@ export class Engine extends ThinEngine {
             return;
         }
 
-        var gl = this._gl;
+        const gl = this._gl;
 
         if (texture.isCube) {
             this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, texture, true);
@@ -1701,8 +1757,7 @@ export class Engine extends ThinEngine {
             if (comparisonFunction === 0) {
                 gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_COMPARE_FUNC, Constants.LEQUAL);
                 gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_COMPARE_MODE, gl.NONE);
-            }
-            else {
+            } else {
                 gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_COMPARE_FUNC, comparisonFunction);
                 gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_COMPARE_MODE, gl.COMPARE_REF_TO_TEXTURE);
             }
@@ -1714,8 +1769,7 @@ export class Engine extends ThinEngine {
             if (comparisonFunction === 0) {
                 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_FUNC, Constants.LEQUAL);
                 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_MODE, gl.NONE);
-            }
-            else {
+            } else {
                 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_FUNC, comparisonFunction);
                 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_MODE, gl.COMPARE_REF_TO_TEXTURE);
             }
@@ -1732,13 +1786,13 @@ export class Engine extends ThinEngine {
      * @returns the webGL buffer
      */
     public createInstancesBuffer(capacity: number): DataBuffer {
-        var buffer = this._gl.createBuffer();
+        const buffer = this._gl.createBuffer();
 
         if (!buffer) {
             throw new Error("Unable to create instance buffer");
         }
 
-        var result = new WebGLDataBuffer(buffer);
+        const result = new WebGLDataBuffer(buffer);
         result.capacity = capacity;
 
         this.bindArrayBuffer(result);
@@ -1758,9 +1812,9 @@ export class Engine extends ThinEngine {
     }
 
     private _clientWaitAsync(sync: WebGLSync, flags = 0, interval_ms = 10): Promise<void> {
-        let gl = <WebGL2RenderingContext>(this._gl as any);
+        const gl = <WebGL2RenderingContext>(this._gl as any);
         return new Promise((resolve, reject) => {
-            let check = () => {
+            const check = () => {
                 const res = gl.clientWaitSync(sync, flags, 0);
                 if (res == gl.WAIT_FAILED) {
                     reject();
@@ -1777,13 +1831,22 @@ export class Engine extends ThinEngine {
         });
     }
 
-    /** @hidden */
+    /**
+     * @param x
+     * @param y
+     * @param w
+     * @param h
+     * @param format
+     * @param type
+     * @param outputBuffer
+     * @hidden
+     */
     public _readPixelsAsync(x: number, y: number, w: number, h: number, format: number, type: number, outputBuffer: ArrayBufferView) {
         if (this._webGLVersion < 2) {
             throw new Error("_readPixelsAsync only work on WebGL2+");
         }
 
-        let gl = <WebGL2RenderingContext>(this._gl as any);
+        const gl = <WebGL2RenderingContext>(this._gl as any);
         const buf = gl.createBuffer();
         gl.bindBuffer(gl.PIXEL_PACK_BUFFER, buf);
         gl.bufferData(gl.PIXEL_PACK_BUFFER, outputBuffer.byteLength, gl.STREAM_READ);
@@ -1868,7 +1931,7 @@ export class Engine extends ThinEngine {
         super.dispose();
 
         // Remove from Instances
-        var index = Engine.Instances.indexOf(this);
+        const index = Engine.Instances.indexOf(this);
 
         if (index >= 0) {
             Engine.Instances.splice(index, 1);
@@ -1974,7 +2037,8 @@ export class Engine extends ThinEngine {
      * @param element defines the DOM element to promote
      */
     static _RequestPointerlock(element: HTMLElement): void {
-        element.requestPointerLock = element.requestPointerLock || (<any>element).msRequestPointerLock || (<any>element).mozRequestPointerLock || (<any>element).webkitRequestPointerLock;
+        element.requestPointerLock =
+            element.requestPointerLock || (<any>element).msRequestPointerLock || (<any>element).mozRequestPointerLock || (<any>element).webkitRequestPointerLock;
         if (element.requestPointerLock) {
             element.requestPointerLock();
         }
@@ -1984,7 +2048,7 @@ export class Engine extends ThinEngine {
      * Asks the browser to exit pointerlock mode
      */
     static _ExitPointerlock(): void {
-        let anyDoc = document as any;
+        const anyDoc = document as any;
         document.exitPointerLock = document.exitPointerLock || anyDoc.msExitPointerLock || anyDoc.mozExitPointerLock || anyDoc.webkitExitPointerLock;
 
         if (document.exitPointerLock) {
@@ -1997,8 +2061,10 @@ export class Engine extends ThinEngine {
      * @param element defines the DOM element to promote
      */
     static _RequestFullscreen(element: HTMLElement): void {
-        var requestFunction = element.requestFullscreen || (<any>element).msRequestFullscreen || (<any>element).webkitRequestFullscreen || (<any>element).mozRequestFullScreen;
-        if (!requestFunction) { return; }
+        const requestFunction = element.requestFullscreen || (<any>element).msRequestFullscreen || (<any>element).webkitRequestFullscreen || (<any>element).mozRequestFullScreen;
+        if (!requestFunction) {
+            return;
+        }
         requestFunction.call(element);
     }
 
@@ -2006,18 +2072,15 @@ export class Engine extends ThinEngine {
      * Asks the browser to exit fullscreen mode
      */
     static _ExitFullscreen(): void {
-        let anyDoc = document as any;
+        const anyDoc = document as any;
 
         if (document.exitFullscreen) {
             document.exitFullscreen();
-        }
-        else if (anyDoc.mozCancelFullScreen) {
+        } else if (anyDoc.mozCancelFullScreen) {
             anyDoc.mozCancelFullScreen();
-        }
-        else if (anyDoc.webkitCancelFullScreen) {
+        } else if (anyDoc.webkitCancelFullScreen) {
             anyDoc.webkitCancelFullScreen();
-        }
-        else if (anyDoc.msCancelFullScreen) {
+        } else if (anyDoc.msCancelFullScreen) {
             anyDoc.msCancelFullScreen();
         }
     }
@@ -2027,26 +2090,26 @@ export class Engine extends ThinEngine {
      * @param font font name
      * @return an object containing ascent, height and descent
      */
-    public getFontOffset(font: string): { ascent: number, height: number, descent: number } {
-        var text = document.createElement("span");
+    public getFontOffset(font: string): { ascent: number; height: number; descent: number } {
+        const text = document.createElement("span");
         text.innerHTML = "Hg";
-        text.setAttribute('style', `font: ${font} !important`);
+        text.setAttribute("style", `font: ${font} !important`);
 
-        var block = document.createElement("div");
+        const block = document.createElement("div");
         block.style.display = "inline-block";
         block.style.width = "1px";
         block.style.height = "0px";
         block.style.verticalAlign = "bottom";
 
-        var div = document.createElement("div");
+        const div = document.createElement("div");
         div.style.whiteSpace = "nowrap";
         div.appendChild(text);
         div.appendChild(block);
 
         document.body.appendChild(div);
 
-        var fontAscent = 0;
-        var fontHeight = 0;
+        let fontAscent = 0;
+        let fontHeight = 0;
         try {
             fontHeight = block.getBoundingClientRect().top - text.getBoundingClientRect().top;
             block.style.verticalAlign = "baseline";

@@ -118,11 +118,11 @@ export class WebXRHitTestLegacy extends WebXRAbstractFeature implements IWebXRHi
      * @returns a promise that resolves with an array of native XR hit result in xr coordinates system
      */
     public static XRHitTestWithSelectEvent(event: XRInputSourceEvent, referenceSpace: XRReferenceSpace): Promise<XRHitResult[]> {
-        let targetRayPose = event.frame.getPose(event.inputSource.targetRaySpace, referenceSpace);
+        const targetRayPose = event.frame.getPose(event.inputSource.targetRaySpace, referenceSpace);
         if (!targetRayPose) {
             return Promise.resolve([]);
         }
-        let targetRay = new XRRay(targetRayPose.transform);
+        const targetRay = new XRRay(targetRayPose.transform);
 
         return this.XRHitTestWithRay(event.frame.session, targetRay, referenceSpace);
     }
@@ -173,7 +173,7 @@ export class WebXRHitTestLegacy extends WebXRAbstractFeature implements IWebXRHi
         if (!this.attached || this.options.testOnPointerDownOnly) {
             return;
         }
-        let pose = frame.getViewerPose(this._xrSessionManager.referenceSpace);
+        const pose = frame.getViewerPose(this._xrSessionManager.referenceSpace);
         if (!pose) {
             return;
         }
@@ -182,13 +182,16 @@ export class WebXRHitTestLegacy extends WebXRAbstractFeature implements IWebXRHi
         Vector3.TransformCoordinatesFromFloatsToRef(0, 0, -1, this._mat, this._direction);
         this._direction.subtractInPlace(this._origin);
         this._direction.normalize();
-        let ray = new XRRay(<DOMPointReadOnly>{ x: this._origin.x, y: this._origin.y, z: this._origin.z, w: 0 }, <DOMPointReadOnly>{ x: this._direction.x, y: this._direction.y, z: this._direction.z, w: 0 });
+        const ray = new XRRay(
+            <DOMPointReadOnly>{ x: this._origin.x, y: this._origin.y, z: this._origin.z, w: 0 },
+            <DOMPointReadOnly>{ x: this._direction.x, y: this._direction.y, z: this._direction.z, w: 0 }
+        );
         WebXRHitTestLegacy.XRHitTestWithRay(this._xrSessionManager.session, ray, this._xrSessionManager.referenceSpace).then(this._onHitTestResults);
     }
 
     private _onHitTestResults = (xrResults: XRHitResult[]) => {
         const mats = xrResults.map((result) => {
-            let mat = Matrix.FromArray(result.hitMatrix);
+            const mat = Matrix.FromArray(result.hitMatrix);
             if (!this._xrSessionManager.scene.useRightHandedSystem) {
                 mat.toggleModelMatrixHandInPlace();
             }

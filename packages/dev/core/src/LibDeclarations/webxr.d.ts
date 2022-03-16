@@ -31,7 +31,20 @@ type XREye = "none" | "left" | "right";
 /**
  * Type of XR events available
  */
-type XREventType = "devicechange" | "visibilitychange" | "end" | "inputsourceschange" | "select" | "selectstart" | "selectend" | "squeeze" | "squeezestart" | "squeezeend" | "reset" | "eyetrackingstart" | "eyetrackingend";
+type XREventType =
+    | "devicechange"
+    | "visibilitychange"
+    | "end"
+    | "inputsourceschange"
+    | "select"
+    | "selectstart"
+    | "selectend"
+    | "squeeze"
+    | "squeezestart"
+    | "squeezeend"
+    | "reset"
+    | "eyetrackingstart"
+    | "eyetrackingend";
 
 type XRDOMOverlayType = "screen" | "floating" | "head-locked";
 
@@ -44,7 +57,7 @@ type XRAnchorSet = Set<XRAnchor>;
 
 type XREventHandler = (callback: any) => void;
 
-interface XRLayer extends EventTarget { }
+interface XRLayer extends EventTarget {}
 
 type XRDOMOverlayInit = {
     /**
@@ -54,7 +67,7 @@ type XRDOMOverlayInit = {
 };
 
 type XRLightProbeInit = {
-     reflectionFormat: XRReflectionFormat;
+    reflectionFormat: XRReflectionFormat;
 };
 
 interface XRSessionInit {
@@ -139,9 +152,9 @@ type XRTextureType = "texture" | "texture-array";
 
 interface XRProjectionLayerInit {
     textureType: XRTextureType; //  Default  "texture";
-    colorFormat: GLenum;        //  Default 0x1908, RGBA
-    depthFormat: GLenum;        //  Default 0x1902, DEPTH_COMPONENT
-    scaleFactor: number;        //  Default 1.0;
+    colorFormat: GLenum; //  Default 0x1908, RGBA
+    depthFormat: GLenum; //  Default 0x1902, DEPTH_COMPONENT
+    scaleFactor: number; //  Default 1.0;
 }
 
 interface XRProjectionLayer extends XRCompositionLayer {
@@ -166,7 +179,7 @@ interface XRWebGLSubImage extends XRSubImage {
 }
 
 // tslint:disable-next-line no-empty-interface
-interface XRSpace extends EventTarget { }
+interface XRSpace extends EventTarget {}
 
 interface XRRenderState {
     readonly baseLayer?: XRWebGLLayer;
@@ -259,13 +272,13 @@ type XRDOMOverlayState = {
     /**
      * set if supported, or is null if the feature is not supported
      */
-    type: XRDOMOverlayType | null
+    type: XRDOMOverlayType | null;
 };
 
 interface XRLightProbe extends EventTarget {
-    readonly probeSpace: XRSpace ;
-    onreflectionchange: XREventHandler ;
-  }
+    readonly probeSpace: XRSpace;
+    onreflectionchange: XREventHandler;
+}
 
 interface XRSession {
     addEventListener(type: XREventType, listener: XREventHandler, options?: boolean | AddEventListenerOptions): void;
@@ -445,7 +458,7 @@ interface XRPlane {
     lastChangedTime: number;
 }
 
-interface XRJointSpace extends XRSpace { }
+interface XRJointSpace extends XRSpace {}
 
 interface XRJointPose extends XRPose {
     radius: number | undefined;

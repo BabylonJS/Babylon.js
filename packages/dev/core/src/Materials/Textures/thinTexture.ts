@@ -2,9 +2,9 @@ import { Nullable } from "../../types";
 import { InternalTexture } from "../../Materials/Textures/internalTexture";
 import { Constants } from "../../Engines/constants";
 
-import { ISize, Size } from '../../Maths/math.size';
+import { ISize, Size } from "../../Maths/math.size";
 
-import { ThinEngine } from '../../Engines/thinEngine';
+import { ThinEngine } from "../../Engines/thinEngine";
 
 /**
  * Base class of all the textures in babylon.
@@ -13,12 +13,12 @@ import { ThinEngine } from '../../Engines/thinEngine';
 export class ThinTexture {
     protected _wrapU = Constants.TEXTURE_WRAP_ADDRESSMODE;
     /**
-    * | Value | Type               | Description |
-    * | ----- | ------------------ | ----------- |
-    * | 0     | CLAMP_ADDRESSMODE  |             |
-    * | 1     | WRAP_ADDRESSMODE   |             |
-    * | 2     | MIRROR_ADDRESSMODE |             |
-    */
+     * | Value | Type               | Description |
+     * | ----- | ------------------ | ----------- |
+     * | 0     | CLAMP_ADDRESSMODE  |             |
+     * | 1     | WRAP_ADDRESSMODE   |             |
+     * | 2     | MIRROR_ADDRESSMODE |             |
+     */
     public get wrapU() {
         return this._wrapU;
     }
@@ -29,12 +29,12 @@ export class ThinTexture {
 
     protected _wrapV = Constants.TEXTURE_WRAP_ADDRESSMODE;
     /**
-    * | Value | Type               | Description |
-    * | ----- | ------------------ | ----------- |
-    * | 0     | CLAMP_ADDRESSMODE  |             |
-    * | 1     | WRAP_ADDRESSMODE   |             |
-    * | 2     | MIRROR_ADDRESSMODE |             |
-    */
+     * | Value | Type               | Description |
+     * | ----- | ------------------ | ----------- |
+     * | 0     | CLAMP_ADDRESSMODE  |             |
+     * | 1     | WRAP_ADDRESSMODE   |             |
+     * | 2     | MIRROR_ADDRESSMODE |             |
+     */
     public get wrapV() {
         return this._wrapV;
     }
@@ -178,8 +178,7 @@ export class ThinTexture {
     /**
      * Triggers the load sequence in delayed load mode.
      */
-    public delayLoad(): void {
-    }
+    public delayLoad(): void {}
 
     /**
      * Get the underlying lower level texture from Babylon.

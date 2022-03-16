@@ -1,13 +1,13 @@
 import { Camera } from "../../Cameras/camera";
 import { Engine } from "../../Engines/engine";
 import { Scene } from "../../scene";
-import { InternalTexture, InternalTextureSource } from '../../Materials/Textures/internalTexture';
-import { Nullable } from '../../types';
-import { RenderTargetTexture } from '../../Materials/Textures/renderTargetTexture';
-import { Matrix, TmpVectors } from '../../Maths/math.vector';
-import { UniformBuffer } from '../../Materials/uniformBuffer';
-import { MultiviewRenderTarget } from '../../Materials/Textures/MultiviewRenderTarget';
-import { Frustum } from '../../Maths/math.frustum';
+import { InternalTexture, InternalTextureSource } from "../../Materials/Textures/internalTexture";
+import { Nullable } from "../../types";
+import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
+import { Matrix, TmpVectors } from "../../Maths/math.vector";
+import { UniformBuffer } from "../../Materials/uniformBuffer";
+import { MultiviewRenderTarget } from "../../Materials/Textures/MultiviewRenderTarget";
+import { Frustum } from "../../Maths/math.frustum";
 import { WebGLRenderTargetWrapper } from "../WebGL/webGLRenderTargetWrapper";
 import { RenderTargetWrapper } from "../renderTargetWrapper";
 
@@ -30,7 +30,7 @@ declare module "../../Engines/engine" {
 }
 
 Engine.prototype.createMultiviewRenderTargetTexture = function (width: number, height: number) {
-    var gl = this._gl;
+    const gl = this._gl;
 
     if (!this.getCaps().multiview) {
         throw "Multiview is not supported";
@@ -40,7 +40,7 @@ Engine.prototype.createMultiviewRenderTargetTexture = function (width: number, h
 
     rtWrapper._framebuffer = gl.createFramebuffer();
 
-    var internalTexture = new InternalTexture(this, InternalTextureSource.Unknown, true);
+    const internalTexture = new InternalTexture(this, InternalTextureSource.Unknown, true);
     internalTexture.width = width;
     internalTexture.height = height;
     internalTexture.isMultiview = true;
@@ -64,15 +64,23 @@ Engine.prototype.createMultiviewRenderTargetTexture = function (width: number, h
 Engine.prototype.bindMultiviewFramebuffer = function (_multiviewTexture: RenderTargetWrapper) {
     const multiviewTexture = _multiviewTexture as WebGLRenderTargetWrapper;
 
-    var gl: any = this._gl;
-    var ext = this.getCaps().oculusMultiview || this.getCaps().multiview;
+    const gl: any = this._gl;
+    const ext = this.getCaps().oculusMultiview || this.getCaps().multiview;
 
     this.bindFramebuffer(multiviewTexture, undefined, undefined, undefined, true);
     gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, multiviewTexture._framebuffer);
     if (multiviewTexture._colorTextureArray && multiviewTexture._depthStencilTextureArray) {
         if (this.getCaps().oculusMultiview) {
             ext.framebufferTextureMultisampleMultiviewOVR(gl.DRAW_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, multiviewTexture._colorTextureArray, 0, multiviewTexture.samples, 0, 2);
-            ext.framebufferTextureMultisampleMultiviewOVR(gl.DRAW_FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, multiviewTexture._depthStencilTextureArray, 0, multiviewTexture.samples, 0, 2);
+            ext.framebufferTextureMultisampleMultiviewOVR(
+                gl.DRAW_FRAMEBUFFER,
+                gl.DEPTH_STENCIL_ATTACHMENT,
+                multiviewTexture._depthStencilTextureArray,
+                0,
+                multiviewTexture.samples,
+                0,
+                2
+            );
         } else {
             ext.framebufferTextureMultiviewOVR(gl.DRAW_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, multiviewTexture._colorTextureArray, 0, 0, 2);
             ext.framebufferTextureMultiviewOVR(gl.DRAW_FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, multiviewTexture._depthStencilTextureArray, 0, 0, 2);
@@ -186,8 +194,8 @@ Scene.prototype._renderMultiviewToSingleView = function (camera: Camera) {
 
     // Render to a multiview texture
     camera._resizeOrCreateMultiviewTexture(
-        (camera._rigPostProcess && camera._rigPostProcess && camera._rigPostProcess.width > 0) ? camera._rigPostProcess.width : this.getEngine().getRenderWidth(true),
-        (camera._rigPostProcess && camera._rigPostProcess && camera._rigPostProcess.height > 0) ? camera._rigPostProcess.height : this.getEngine().getRenderHeight(true)
+        camera._rigPostProcess && camera._rigPostProcess && camera._rigPostProcess.width > 0 ? camera._rigPostProcess.width : this.getEngine().getRenderWidth(true),
+        camera._rigPostProcess && camera._rigPostProcess && camera._rigPostProcess.height > 0 ? camera._rigPostProcess.height : this.getEngine().getRenderHeight(true)
     );
     if (!this._multiviewSceneUbo) {
         this._createMultiviewUbo();
@@ -197,8 +205,8 @@ Scene.prototype._renderMultiviewToSingleView = function (camera: Camera) {
     camera.outputRenderTarget = null;
 
     // Consume the multiview texture through a shader for each eye
-    for (var index = 0; index < camera._rigCameras.length; index++) {
-        var engine = this.getEngine();
+    for (let index = 0; index < camera._rigCameras.length; index++) {
+        const engine = this.getEngine();
         this._activeCamera = camera._rigCameras[index];
         engine.setViewport(this._activeCamera.viewport);
         if (this.postProcessManager) {

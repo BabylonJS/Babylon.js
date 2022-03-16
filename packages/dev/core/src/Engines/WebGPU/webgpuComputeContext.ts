@@ -6,7 +6,7 @@ import { UniformBuffer } from "../../Materials/uniformBuffer";
 import { Logger } from "../../Misc/logger";
 import { ComputeBindingList, ComputeBindingMapping, ComputeBindingType } from "../Extensions/engine.computeShader";
 import { WebGPUCacheSampler } from "./webgpuCacheSampler";
-import * as WebGPUConstants from './webgpuConstants';
+import * as WebGPUConstants from "./webgpuConstants";
 import { WebGPUHardwareTexture } from "./webgpuHardwareTexture";
 
 /** @hidden */
@@ -100,7 +100,7 @@ export class WebGPUComputeContext implements IComputeContext {
 
                     case ComputeBindingType.UniformBuffer:
                     case ComputeBindingType.StorageBuffer: {
-                        const buffer = type === ComputeBindingType.UniformBuffer ? object as UniformBuffer : object as StorageBuffer;
+                        const buffer = type === ComputeBindingType.UniformBuffer ? (object as UniformBuffer) : (object as StorageBuffer);
                         const dataBuffer = buffer.getBuffer()!;
                         const webgpuBuffer = dataBuffer.underlyingResource as GPUBuffer;
                         if (indexInGroupEntries !== undefined && bindGroupEntriesExist) {
@@ -114,7 +114,7 @@ export class WebGPUComputeContext implements IComputeContext {
                                     buffer: webgpuBuffer,
                                     offset: 0,
                                     size: dataBuffer.capacity,
-                                }
+                                },
                             });
                         }
                         break;

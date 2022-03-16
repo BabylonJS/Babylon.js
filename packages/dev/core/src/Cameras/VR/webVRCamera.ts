@@ -13,9 +13,9 @@ import { Node } from "../../node";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Ray } from "../../Culling/ray";
 import { HemisphericLight } from "../../Lights/hemisphericLight";
-import { Logger } from '../../Misc/logger';
-import { VRMultiviewToSingleviewPostProcess } from '../../PostProcesses/vrMultiviewToSingleviewPostProcess';
-import { Tools } from '../../Misc/tools';
+import { Logger } from "../../Misc/logger";
+import { VRMultiviewToSingleviewPostProcess } from "../../PostProcesses/vrMultiviewToSingleviewPostProcess";
+import { Tools } from "../../Misc/tools";
 import { setWebVRRigMode } from "../RigModes/webVRRigMode";
 
 // Side effect import to add webvr support to engine
@@ -64,10 +64,10 @@ export interface DevicePose {
 }
 
 /**
-* Interface representing a pose controlled object in Babylon.
-* A pose controlled object has both regular pose values as well as pose values
-* from an external device such as a VR head mounted display
-*/
+ * Interface representing a pose controlled object in Babylon.
+ * A pose controlled object has both regular pose values as well as pose values
+ * from an external device such as a VR head mounted display
+ */
 export interface PoseControlled {
     /**
      * The position of the object in babylon space.
@@ -264,8 +264,12 @@ export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
         }
 
         //enable VR
-        var engine = this.getEngine();
-        this._onVREnabled = (success: boolean) => { if (success) { this.initControllers(); } };
+        const engine = this.getEngine();
+        this._onVREnabled = (success: boolean) => {
+            if (success) {
+                this.initControllers();
+            }
+        };
         engine.onVRRequestPresentComplete.add(this._onVREnabled);
         engine.initWebVR().add((event: IDisplayChangedEventArgs) => {
             if (!event.vrDisplay || this._vrDevice === event.vrDisplay) {
@@ -282,7 +286,7 @@ export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
             }
         });
 
-        if (typeof (VRFrameData) !== "undefined") {
+        if (typeof VRFrameData !== "undefined") {
             this._frameData = new VRFrameData();
         }
 
@@ -311,8 +315,10 @@ export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
             if (camera.parent === this && this.rigParenting) {
                 this._descendants = this.getDescendants(true, (n) => {
                     // don't take the cameras or the controllers!
-                    let isController = this.controllers.some((controller) => { return controller._mesh === n; });
-                    let isRigCamera = this._rigCameras.indexOf(<Camera>n) !== -1;
+                    const isController = this.controllers.some((controller) => {
+                        return controller._mesh === n;
+                    });
+                    const isRigCamera = this._rigCameras.indexOf(<Camera>n) !== -1;
                     return !isController && !isRigCamera;
                 });
                 this._descendants.forEach((node) => {
@@ -350,22 +356,24 @@ export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
      * Enables the standing matrix when supported. This can be used to position the user's view the correct height from the ground.
      * @param callback will be called when the standing matrix is set. Callback parameter is if the standing matrix is supported.
      */
-    public useStandingMatrix(callback = (bool: boolean) => { }) {
+    public useStandingMatrix(callback = (bool: boolean) => {}) {
         // Use standing matrix if available
-        this.getEngine().initWebVRAsync().then((result) => {
-            if (!result.vrDisplay || !result.vrDisplay.stageParameters || !result.vrDisplay.stageParameters.sittingToStandingTransform || !this.webVROptions.trackPosition) {
-                callback(false);
-            } else {
-                this._standingMatrix = new Matrix();
-                Matrix.FromFloat32ArrayToRefScaled(result.vrDisplay.stageParameters.sittingToStandingTransform, 0, 1, this._standingMatrix);
-                if (!this.getScene().useRightHandedSystem) {
-                    if (this._standingMatrix) {
-                        this._standingMatrix.toggleModelMatrixHandInPlace();
+        this.getEngine()
+            .initWebVRAsync()
+            .then((result) => {
+                if (!result.vrDisplay || !result.vrDisplay.stageParameters || !result.vrDisplay.stageParameters.sittingToStandingTransform || !this.webVROptions.trackPosition) {
+                    callback(false);
+                } else {
+                    this._standingMatrix = new Matrix();
+                    Matrix.FromFloat32ArrayToRefScaled(result.vrDisplay.stageParameters.sittingToStandingTransform, 0, 1, this._standingMatrix);
+                    if (!this.getScene().useRightHandedSystem) {
+                        if (this._standingMatrix) {
+                            this._standingMatrix.toggleModelMatrixHandInPlace();
+                        }
                     }
+                    callback(true);
                 }
-                callback(true);
-            }
-        });
+            });
     }
 
     /**
@@ -398,7 +406,7 @@ export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
      * @returns the controller matching the name specified or null if not found
      */
     public getControllerByName(name: string): Nullable<WebVRController> {
-        for (var gp of this.controllers) {
+        for (const gp of this.controllers) {
             if (gp.hand === name) {
                 return gp;
             }
@@ -440,8 +448,7 @@ export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
         if (this.leftCamera) {
             // Use left eye to avoid computation to compute center on every call
             return super.getForwardRay(length, this.leftCamera.getWorldMatrix(), this.leftCamera.globalPosition); // Need the actual rendered camera
-        }
-        else {
+        } else {
             return super.getForwardRay(length);
         }
     }
@@ -484,11 +491,11 @@ export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
     }
 
     private _detachIfAttached = () => {
-        var vrDisplay = this.getEngine().getVRDevice();
+        const vrDisplay = this.getEngine().getVRDevice();
         if (vrDisplay && !vrDisplay.isPresenting) {
             this.detachControl();
         }
-    }
+    };
 
     /**
      * WebVR's attach control will start broadcasting frames to the device.
@@ -509,10 +516,10 @@ export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
             this.getEngine().enableVR(this.webVROptions);
         }
 
-        let hostWindow = this._scene.getEngine().getHostWindow();
+        const hostWindow = this._scene.getEngine().getHostWindow();
 
         if (hostWindow) {
-            hostWindow.addEventListener('vrdisplaypresentchange', this._detachIfAttached);
+            hostWindow.addEventListener("vrdisplaypresentchange", this._detachIfAttached);
         }
     }
 
@@ -532,7 +539,7 @@ export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
         super.detachControl();
         this._attached = false;
         this.getEngine().disableVR();
-        window.removeEventListener('vrdisplaypresentchange', this._detachIfAttached);
+        window.removeEventListener("vrdisplaypresentchange", this._detachIfAttached);
     }
 
     /**
@@ -557,8 +564,8 @@ export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
      * Updates the rig cameras (left and right eye)
      */
     public _updateRigCameras() {
-        var camLeft = <TargetCamera>this._rigCameras[0];
-        var camRight = <TargetCamera>this._rigCameras[1];
+        const camLeft = <TargetCamera>this._rigCameras[0];
+        const camRight = <TargetCamera>this._rigCameras[1];
         camLeft.rotationQuaternion.copyFrom(this._deviceRoomRotationQuaternion);
         camRight.rotationQuaternion.copyFrom(this._deviceRoomRotationQuaternion);
 
@@ -670,11 +677,11 @@ export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
      */
     public _getWebVRViewMatrix(): Matrix {
         // Update the parent camera prior to using a child camera to avoid desynchronization
-        let parentCamera: WebVRFreeCamera = this._cameraRigParams["parentCamera"];
+        const parentCamera: WebVRFreeCamera = this._cameraRigParams["parentCamera"];
         parentCamera._updateCache();
 
         //WebVR 1.1
-        var viewArray = this._cameraRigParams["left"] ? this._cameraRigParams["frameData"].leftViewMatrix : this._cameraRigParams["frameData"].rightViewMatrix;
+        const viewArray = this._cameraRigParams["left"] ? this._cameraRigParams["frameData"].leftViewMatrix : this._cameraRigParams["frameData"].rightViewMatrix;
 
         Matrix.FromArrayToRef(viewArray, 0, this._webvrViewMatrix);
 
@@ -719,13 +726,12 @@ export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
 
     /** @hidden */
     public _getWebVRProjectionMatrix(): Matrix {
-
-        let parentCamera = <WebVRFreeCamera>this.parent;
+        const parentCamera = <WebVRFreeCamera>this.parent;
 
         parentCamera._vrDevice.depthNear = parentCamera.minZ;
         parentCamera._vrDevice.depthFar = parentCamera.maxZ;
 
-        var projectionArray = this._cameraRigParams["left"] ? this._cameraRigParams["frameData"].leftProjectionMatrix : this._cameraRigParams["frameData"].rightProjectionMatrix;
+        const projectionArray = this._cameraRigParams["left"] ? this._cameraRigParams["frameData"].leftProjectionMatrix : this._cameraRigParams["frameData"].rightProjectionMatrix;
         Matrix.FromArrayToRef(projectionArray, 0, this._projectionMatrix);
 
         //babylon compatible matrix
@@ -745,10 +751,10 @@ export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
     public initControllers() {
         this.controllers = [];
 
-        let manager = this.getScene().gamepadManager;
+        const manager = this.getScene().gamepadManager;
         this._onGamepadDisconnectedObserver = manager.onGamepadDisconnectedObservable.add((gamepad) => {
             if (gamepad.type === Gamepad.POSE_ENABLED) {
-                let webVrController: WebVRController = <WebVRController>gamepad;
+                const webVrController: WebVRController = <WebVRController>gamepad;
 
                 if (webVrController.defaultModel) {
                     webVrController.defaultModel.setEnabled(false);
@@ -769,7 +775,7 @@ export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
 
         this._onGamepadConnectedObserver = manager.onGamepadConnectedObservable.add((gamepad) => {
             if (gamepad.type === Gamepad.POSE_ENABLED) {
-                let webVrController: WebVRController = <WebVRController>gamepad;
+                const webVrController: WebVRController = <WebVRController>gamepad;
                 if (!this.webVROptions.trackPosition) {
                     webVrController._disableTrackPosition(new Vector3(webVrController.hand == "left" ? -0.15 : 0.15, -0.5, 0.25));
                     // Cache must be updated before rendering controllers to avoid them being one frame behind
@@ -795,8 +801,8 @@ export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
                                 if (!this._lightOnControllers) {
                                     this._lightOnControllers = new HemisphericLight("vrControllersLight", new Vector3(0, 1, 0), this.getScene());
                                 }
-                                let activateLightOnSubMeshes = function (mesh: AbstractMesh, light: HemisphericLight) {
-                                    let children = mesh.getChildren();
+                                const activateLightOnSubMeshes = function (mesh: AbstractMesh, light: HemisphericLight) {
+                                    const children = mesh.getChildren();
                                     if (children && children.length !== 0) {
                                         children.forEach((mesh) => {
                                             light.includedOnlyMeshes.push(<AbstractMesh>mesh);
@@ -827,8 +833,7 @@ export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
                             if (!firstViveWandDetected) {
                                 firstViveWandDetected = true;
                                 this.controllers[i].hand = "left";
-                            }
-                            else {
+                            } else {
                                 this.controllers[i].hand = "right";
                             }
                         }

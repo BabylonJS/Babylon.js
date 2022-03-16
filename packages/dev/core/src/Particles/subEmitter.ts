@@ -1,15 +1,15 @@
 import { Vector3 } from "../Maths/math.vector";
-import { _WarnImport } from '../Misc/devTools';
-import { ThinEngine } from '../Engines/thinEngine';
-import { GetClass } from '../Misc/typeStore';
+import { _WarnImport } from "../Misc/devTools";
+import { ThinEngine } from "../Engines/thinEngine";
+import { GetClass } from "../Misc/typeStore";
 
 declare type Scene = import("../scene").Scene;
 declare type AbstractMesh = import("../Meshes/abstractMesh").AbstractMesh;
 declare type ParticleSystem = import("../Particles/particleSystem").ParticleSystem;
 
 /**
-     * Type of sub emitter
-     */
+ * Type of sub emitter
+ */
 export enum SubEmitterType {
     /**
      * Attached to the particle over it's lifetime
@@ -18,7 +18,7 @@ export enum SubEmitterType {
     /**
      * Created when the particle dies
      */
-    END
+    END,
 }
 
 /**
@@ -62,7 +62,7 @@ export class SubEmitter {
      */
     public clone(): SubEmitter {
         // Clone particle system
-        var emitter = this.particleSystem.emitter;
+        let emitter = this.particleSystem.emitter;
         if (!emitter) {
             emitter = new Vector3();
         } else if (emitter instanceof Vector3) {
@@ -72,7 +72,7 @@ export class SubEmitter {
             emitter = new internalClass("", emitter.getScene());
             (emitter! as any).isVisible = false;
         }
-        var clone = new SubEmitter(this.particleSystem.clone(this.particleSystem.name, emitter));
+        const clone = new SubEmitter(this.particleSystem.clone(this.particleSystem.name, emitter));
 
         // Clone properties
         clone.particleSystem.name += "Clone";
@@ -91,7 +91,7 @@ export class SubEmitter {
      * @returns the serialized object
      */
     public serialize(serializeTexture: boolean = false): any {
-        let serializationObject: any = {};
+        const serializationObject: any = {};
 
         serializationObject.type = this.type;
         serializationObject.inheritDirection = this.inheritDirection;
@@ -101,7 +101,13 @@ export class SubEmitter {
         return serializationObject;
     }
 
-    /** @hidden */
+    /**
+     * @param system
+     * @param sceneOrEngine
+     * @param rootUrl
+     * @param doNotStart
+     * @hidden
+     */
     public static _ParseParticleSystem(system: any, sceneOrEngine: Scene | ThinEngine, rootUrl: string, doNotStart = false): ParticleSystem {
         throw _WarnImport("ParseParticle");
     }
@@ -114,8 +120,8 @@ export class SubEmitter {
      * @returns a new SubEmitter
      */
     public static Parse(serializationObject: any, sceneOrEngine: Scene | ThinEngine, rootUrl: string): SubEmitter {
-        let system = serializationObject.particleSystem;
-        let subEmitter = new SubEmitter(SubEmitter._ParseParticleSystem(system, sceneOrEngine, rootUrl, true));
+        const system = serializationObject.particleSystem;
+        const subEmitter = new SubEmitter(SubEmitter._ParseParticleSystem(system, sceneOrEngine, rootUrl, true));
         subEmitter.type = serializationObject.type;
         subEmitter.inheritDirection = serializationObject.inheritDirection;
         subEmitter.inheritedVelocityAmount = serializationObject.inheritedVelocityAmount;

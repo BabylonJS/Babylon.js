@@ -13,7 +13,7 @@ import { PointerDragBehavior } from "../Behaviors/Meshes/pointerDragBehavior";
 import { Gizmo, GizmoAxisCache } from "./gizmo";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { ScaleGizmo } from "./scaleGizmo";
-import { Color3 } from '../Maths/math.color';
+import { Color3 } from "../Maths/math.color";
 
 /**
  * Single axis scale gizmo
@@ -63,9 +63,16 @@ export class AxisScaleGizmo extends Gizmo {
      * @param gizmoLayer The utility layer the gizmo will be added to
      * @param dragAxis The axis which the gizmo will be able to scale on
      * @param color The color of the gizmo
+     * @param parent
      * @param thickness display gizmo axis thickness
      */
-    constructor(dragAxis: Vector3, color: Color3 = Color3.Gray(), gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer, parent: Nullable<ScaleGizmo> = null, thickness: number = 1) {
+    constructor(
+        dragAxis: Vector3,
+        color: Color3 = Color3.Gray(),
+        gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer,
+        parent: Nullable<ScaleGizmo> = null,
+        thickness: number = 1
+    ) {
         super(gizmoLayer);
         this._parent = parent;
         // Create Material
@@ -95,7 +102,7 @@ export class AxisScaleGizmo extends Gizmo {
         const lineScale = arrowTail.scaling.clone();
 
         const increaseGizmoMesh = (dragDistance: number) => {
-            const dragStrength = (dragDistance * (3 / this._rootMesh.scaling.length())) * 6;
+            const dragStrength = dragDistance * (3 / this._rootMesh.scaling.length()) * 6;
 
             arrowMesh.position.z += dragStrength / 3.5;
             arrowTail.scaling.y += dragStrength;
@@ -116,18 +123,18 @@ export class AxisScaleGizmo extends Gizmo {
         this.dragBehavior.moveAttached = false;
         this._rootMesh.addBehavior(this.dragBehavior);
 
-        var currentSnapDragDistance = 0;
-        var tmpVector = new Vector3();
-        var tmpSnapEvent = { snapDistance: 0 };
+        let currentSnapDragDistance = 0;
+        const tmpVector = new Vector3();
+        const tmpSnapEvent = { snapDistance: 0 };
         this.dragBehavior.onDragObservable.add((event) => {
             if (this.attachedNode) {
                 this._handlePivot();
                 // Drag strength is modified by the scale of the gizmo (eg. for small objects like boombox the strength will be increased to match the behavior of larger objects)
-                var dragStrength = this.sensitivity * event.dragDistance * ((this.scaleRatio * 3) / this._rootMesh.scaling.length());
+                const dragStrength = this.sensitivity * event.dragDistance * ((this.scaleRatio * 3) / this._rootMesh.scaling.length());
 
                 // Snapping logic
-                var snapped = false;
-                var dragSteps = 0;
+                let snapped = false;
+                let dragSteps = 0;
                 if (this.uniformScaling) {
                     tmpVector.setAll(0.57735); // 1 / sqrt(3)
                 } else {
@@ -155,7 +162,7 @@ export class AxisScaleGizmo extends Gizmo {
                 this._tmpMatrix2.multiplyToRef(this.attachedNode.getWorldMatrix(), this._tmpMatrix);
                 this._tmpMatrix.decompose(this._tmpVector);
 
-                let maxScale = 100000;
+                const maxScale = 100000;
                 if (Math.abs(this._tmpVector.x) < maxScale && Math.abs(this._tmpVector.y) < maxScale && Math.abs(this._tmpVector.z) < maxScale) {
                     this.attachedNode.getWorldMatrix().copyFrom(this._tmpMatrix);
                 }
@@ -168,7 +175,9 @@ export class AxisScaleGizmo extends Gizmo {
             }
         });
         // On Drag Listener: to move gizmo mesh with user action
-        this.dragBehavior.onDragStartObservable.add(() => { this._dragging = true; });
+        this.dragBehavior.onDragStartObservable.add(() => {
+            this._dragging = true;
+        });
         this.dragBehavior.onDragObservable.add((e) => increaseGizmoMesh(e.dragDistance));
         this.dragBehavior.onDragEndObservable.add(resetGizmoMesh);
 
@@ -183,7 +192,7 @@ export class AxisScaleGizmo extends Gizmo {
             hoverMaterial: this._hoverMaterial,
             disableMaterial: this._disableMaterial,
             active: false,
-            dragBehavior: this.dragBehavior
+            dragBehavior: this.dragBehavior,
         };
         this._parent?.addToAxisCache(this._gizmoMesh, cache);
 
@@ -202,14 +211,23 @@ export class AxisScaleGizmo extends Gizmo {
             this._setGizmoMeshMaterial(cache.gizmoMeshes, newState ? this._coloredMaterial : this._disableMaterial);
         });
 
-        var light = gizmoLayer._getSharedGizmoLight();
+        const light = gizmoLayer._getSharedGizmoLight();
         light.includedOnlyMeshes = light.includedOnlyMeshes.concat(this._rootMesh.getChildMeshes());
     }
 
-    /** Create Geometry for Gizmo */
+    /**
+     * Create Geometry for Gizmo
+     * @param parentMesh
+     * @param thickness
+     * @param isCollider
+     */
     private _createGizmoMesh(parentMesh: AbstractMesh, thickness: number, isCollider = false) {
-        var arrowMesh = CreateBox("yPosMesh", { size: 0.4 * (1 + (thickness - 1) / 4) }, this.gizmoLayer.utilityLayerScene);
-        var arrowTail = CreateCylinder("cylinder", { diameterTop: 0.005 * thickness, height: 0.275, diameterBottom: 0.005 * thickness, tessellation: 96 }, this.gizmoLayer.utilityLayerScene);
+        const arrowMesh = CreateBox("yPosMesh", { size: 0.4 * (1 + (thickness - 1) / 4) }, this.gizmoLayer.utilityLayerScene);
+        const arrowTail = CreateCylinder(
+            "cylinder",
+            { diameterTop: 0.005 * thickness, height: 0.275, diameterBottom: 0.005 * thickness, tessellation: 96 },
+            this.gizmoLayer.utilityLayerScene
+        );
 
         // Position arrow pointing in its drag axis
         arrowMesh.scaling.scaleInPlace(0.1);
@@ -246,8 +264,7 @@ export class AxisScaleGizmo extends Gizmo {
         if (!value) {
             this.attachedMesh = null;
             this.attachedNode = null;
-        }
-        else {
+        } else {
             if (this._parent) {
                 this.attachedMesh = this._parent.attachedMesh;
                 this.attachedNode = this._parent.attachedNode;

@@ -1,13 +1,13 @@
 import { serialize, expandToProperty, serializeAsColor3, serializeAsTexture } from "../../Misc/decorators";
 import { UniformBuffer } from "../../Materials/uniformBuffer";
-import { Color3 } from '../../Maths/math.color';
+import { Color3 } from "../../Maths/math.color";
 import { MaterialFlags } from "../../Materials/materialFlags";
 import { MaterialHelper } from "../../Materials/materialHelper";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Nullable } from "../../types";
-import { IAnimatable } from '../../Animations/animatable.interface';
-import { EffectFallbacks } from '../effectFallbacks';
-import { SubMesh } from '../../Meshes/subMesh';
+import { IAnimatable } from "../../Animations/animatable.interface";
+import { EffectFallbacks } from "../effectFallbacks";
+import { SubMesh } from "../../Meshes/subMesh";
 import { Constants } from "../../Engines/constants";
 import { MaterialPluginBase } from "../materialPluginBase";
 import { MaterialDefines } from "../materialDefines";
@@ -20,7 +20,7 @@ declare type PBRBaseMaterial = import("./pbrBaseMaterial").PBRBaseMaterial;
 /**
  * @hidden
  */
- export class MaterialSheenDefines extends MaterialDefines {
+export class MaterialSheenDefines extends MaterialDefines {
     public SHEEN = false;
     public SHEEN_TEXTURE = false;
     public SHEEN_GAMMATEXTURE = false;
@@ -161,7 +161,8 @@ export class PBRSheenConfiguration extends MaterialPluginBase {
             defines.SHEEN_ROUGHNESS = this._roughness !== null;
             defines.SHEEN_ALBEDOSCALING = this._albedoScaling;
             defines.SHEEN_USE_ROUGHNESS_FROM_MAINTEXTURE = this._useRoughnessFromMainTexture;
-            defines.SHEEN_TEXTURE_ROUGHNESS_IDENTICAL = this._texture !== null && this._texture._texture === this._textureRoughness?._texture && this._texture.checkTransformsAreIdentical(this._textureRoughness);
+            defines.SHEEN_TEXTURE_ROUGHNESS_IDENTICAL =
+                this._texture !== null && this._texture._texture === this._textureRoughness?._texture && this._texture.checkTransformsAreIdentical(this._textureRoughness);
 
             if (defines._areTexturesDirty) {
                 if (scene.texturesEnabled) {
@@ -179,8 +180,7 @@ export class PBRSheenConfiguration extends MaterialPluginBase {
                     }
                 }
             }
-        }
-        else {
+        } else {
             defines.SHEEN = false;
             defines.SHEEN_TEXTURE = false;
             defines.SHEEN_TEXTURE_ROUGHNESS = false;
@@ -208,7 +208,13 @@ export class PBRSheenConfiguration extends MaterialPluginBase {
                 uniformBuffer.updateFloat4("vSheenInfos", this._texture!.coordinatesIndex, this._texture!.level, -1, -1);
                 MaterialHelper.BindTextureMatrix(this._texture!, uniformBuffer, "sheen");
             } else if ((this._texture || this._textureRoughness) && MaterialFlags.SheenTextureEnabled) {
-                uniformBuffer.updateFloat4("vSheenInfos", this._texture?.coordinatesIndex ?? 0, this._texture?.level ?? 0, this._textureRoughness?.coordinatesIndex ?? 0, this._textureRoughness?.level ?? 0);
+                uniformBuffer.updateFloat4(
+                    "vSheenInfos",
+                    this._texture?.coordinatesIndex ?? 0,
+                    this._texture?.level ?? 0,
+                    this._textureRoughness?.coordinatesIndex ?? 0,
+                    this._textureRoughness?.level ?? 0
+                );
                 if (this._texture) {
                     MaterialHelper.BindTextureMatrix(this._texture, uniformBuffer, "sheen");
                 }
@@ -218,11 +224,7 @@ export class PBRSheenConfiguration extends MaterialPluginBase {
             }
 
             // Sheen
-            uniformBuffer.updateFloat4("vSheenColor",
-                this.color.r,
-                this.color.g,
-                this.color.b,
-                this.intensity);
+            uniformBuffer.updateFloat4("vSheenColor", this.color.r, this.color.g, this.color.b, this.intensity);
 
             if (this._roughness !== null) {
                 uniformBuffer.updateFloat("vSheenRoughness", this._roughness);

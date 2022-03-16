@@ -8,7 +8,6 @@ import { Texture } from "../Materials/Textures/texture";
  */
 
 export class SpritePackedManager extends SpriteManager {
-
     /**
      * Creates a new sprite manager from a packed sprite sheet
      * @param name defines the manager's name
@@ -24,10 +23,14 @@ export class SpritePackedManager extends SpriteManager {
     constructor(
         /** defines the packed manager's name */
         public name: string,
-        imgUrl: string, capacity: number, scene: Scene, spriteJSON: string | null = null, epsilon: number = 0.01, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE) {
-
+        imgUrl: string,
+        capacity: number,
+        scene: Scene,
+        spriteJSON: string | null = null,
+        epsilon: number = 0.01,
+        samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE
+    ) {
         //the cellSize parameter is not used when built from JSON which provides individual cell data, defaults to 64 if JSON load fails
         super(name, imgUrl, capacity, 64, scene, epsilon, samplingMode, true, spriteJSON);
-
     }
 }

@@ -1,10 +1,10 @@
-import { Nullable } from '../types';
-import { Tools } from './tools';
-import { Texture } from '../Materials/Textures/texture';
-import { InternalTexture, InternalTextureSource } from '../Materials/Textures/internalTexture';
-import { Scalar } from '../Maths/math.scalar';
-import { Constants } from '../Engines/constants';
-import { Engine } from '../Engines/engine';
+import { Nullable } from "../types";
+import { Tools } from "./tools";
+import { Texture } from "../Materials/Textures/texture";
+import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
+import { Scalar } from "../Maths/math.scalar";
+import { Constants } from "../Engines/constants";
+import { Engine } from "../Engines/engine";
 
 /**
  * Info about the .basis files
@@ -17,7 +17,7 @@ class BasisFileInfo {
     /**
      * Info about each image of the basis file
      */
-    public images: Array<{ levels: Array<{ width: number, height: number, transcodedPixels: ArrayBufferView }> }>;
+    public images: Array<{ levels: Array<{ width: number; height: number; transcodedPixels: ArrayBufferView }> }>;
 }
 
 /**
@@ -81,7 +81,7 @@ enum BASIS_FORMATS {
     cTFBC7_M6_OPAQUE_ONLY = 4,
     cTFETC2 = 5,
     cTFBC3 = 6,
-    cTFBC5 = 7
+    cTFBC5 = 7,
 }
 
 /**
@@ -96,12 +96,13 @@ export const BasisToolsOptions = {
     /**
      * URL to use when loading the wasm module for the transcoder
      */
-    WasmModuleURL: "https://preview.babylonjs.com/basisTranscoder/basis_transcoder.wasm"
+    WasmModuleURL: "https://preview.babylonjs.com/basisTranscoder/basis_transcoder.wasm",
 };
 
 /**
  * Get the internal format to be passed to texImage2D corresponding to the .basis format value
  * @param basisFormat format chosen from GetSupportedTranscodeFormat
+ * @param engine
  * @returns internal format corresponding to the Basis format
  */
 export const GetInternalFormatFromBasisFormat = (basisFormat: number, engine: Engine) => {
@@ -128,28 +129,30 @@ export const GetInternalFormatFromBasisFormat = (basisFormat: number, engine: En
 let _WorkerPromise: Nullable<Promise<Worker>> = null;
 let _Worker: Nullable<Worker> = null;
 let _actionId = 0;
-let _IgnoreSupportedFormats = false;
+const _IgnoreSupportedFormats = false;
 const _CreateWorkerAsync = () => {
     if (!_WorkerPromise) {
         _WorkerPromise = new Promise((res, reject) => {
             if (_Worker) {
                 res(_Worker);
             } else {
-                Tools.LoadFileAsync(BasisToolsOptions.WasmModuleURL).then((wasmBinary) => {
-                    const workerBlobUrl = URL.createObjectURL(new Blob([`(${workerFunc})()`], { type: "application/javascript" }));
-                    _Worker = new Worker(workerBlobUrl);
+                Tools.LoadFileAsync(BasisToolsOptions.WasmModuleURL)
+                    .then((wasmBinary) => {
+                        const workerBlobUrl = URL.createObjectURL(new Blob([`(${workerFunc})()`], { type: "application/javascript" }));
+                        _Worker = new Worker(workerBlobUrl);
 
-                    var initHandler = (msg: any) => {
-                        if (msg.data.action === "init") {
-                            _Worker!.removeEventListener("message", initHandler);
-                            res(_Worker!);
-                        } else if (msg.data.action === "error") {
-                            reject(msg.data.error || "error initializing worker");
-                        }
-                    };
-                    _Worker.addEventListener("message", initHandler);
-                    _Worker.postMessage({ action: "init", url: BasisToolsOptions.JSModuleURL, wasmBinary: wasmBinary });
-                }).catch(reject);
+                        var initHandler = (msg: any) => {
+                            if (msg.data.action === "init") {
+                                _Worker!.removeEventListener("message", initHandler);
+                                res(_Worker!);
+                            } else if (msg.data.action === "error") {
+                                reject(msg.data.error || "error initializing worker");
+                            }
+                        };
+                        _Worker.addEventListener("message", initHandler);
+                        _Worker.postMessage({ action: "init", url: BasisToolsOptions.JSModuleURL, wasmBinary: wasmBinary });
+                    })
+                    .catch(reject);
             }
         });
     }
@@ -166,26 +169,31 @@ export const TranscodeAsync = (data: ArrayBuffer | ArrayBufferView, config: Basi
     const dataView = data instanceof ArrayBuffer ? new Uint8Array(data) : data;
 
     return new Promise((res, rej) => {
-        _CreateWorkerAsync().then(() => {
-            var actionId = _actionId++;
-            var messageHandler = (msg: any) => {
-                if (msg.data.action === "transcode" && msg.data.id === actionId) {
-                    _Worker!.removeEventListener("message", messageHandler);
-                    if (!msg.data.success) {
-                        rej("Transcode is not supported on this device");
-                    } else {
-                        res(msg.data);
+        _CreateWorkerAsync().then(
+            () => {
+                const actionId = _actionId++;
+                var messageHandler = (msg: any) => {
+                    if (msg.data.action === "transcode" && msg.data.id === actionId) {
+                        _Worker!.removeEventListener("message", messageHandler);
+                        if (!msg.data.success) {
+                            rej("Transcode is not supported on this device");
+                        } else {
+                            res(msg.data);
+                        }
                     }
-                }
-            };
-            _Worker!.addEventListener("message", messageHandler);
+                };
+                _Worker!.addEventListener("message", messageHandler);
 
-            const dataViewCopy = new Uint8Array(dataView.byteLength);
-            dataViewCopy.set(new Uint8Array(dataView.buffer, dataView.byteOffset, dataView.byteLength));
-            _Worker!.postMessage({ action: "transcode", id: actionId, imageData: dataViewCopy, config: config, ignoreSupportedFormats: _IgnoreSupportedFormats }, [dataViewCopy.buffer]);
-        }, (error) => {
-            rej(error);
-        });
+                const dataViewCopy = new Uint8Array(dataView.byteLength);
+                dataViewCopy.set(new Uint8Array(dataView.buffer, dataView.byteOffset, dataView.byteLength));
+                _Worker!.postMessage({ action: "transcode", id: actionId, imageData: dataViewCopy, config: config, ignoreSupportedFormats: _IgnoreSupportedFormats }, [
+                    dataViewCopy.buffer,
+                ]);
+            },
+            (error) => {
+                rej(error);
+            }
+        );
     });
 };
 
@@ -195,9 +203,9 @@ export const TranscodeAsync = (data: ArrayBuffer | ArrayBufferView, config: Basi
  * @param transcodeResult the result of transcoding the basis file to load from
  */
 export const LoadTextureFromTranscodeResult = (texture: InternalTexture, transcodeResult: TranscodeResult) => {
-    let engine = texture.getEngine() as Engine;
+    const engine = texture.getEngine() as Engine;
     for (var i = 0; i < transcodeResult.fileInfo.images.length; i++) {
-        var rootImage = transcodeResult.fileInfo.images[i].levels[0];
+        const rootImage = transcodeResult.fileInfo.images[i].levels[0];
         texture._invertVScale = texture.invertY;
         if (transcodeResult.format === -1) {
             // No compatable compressed format found, fallback to RGB
@@ -206,7 +214,7 @@ export const LoadTextureFromTranscodeResult = (texture: InternalTexture, transco
 
             if (engine._features.basisNeedsPOT && (Scalar.Log2(rootImage.width) % 1 !== 0 || Scalar.Log2(rootImage.height) % 1 !== 0)) {
                 // Create non power of two texture
-                let source = new InternalTexture(engine, InternalTextureSource.Temp);
+                const source = new InternalTexture(engine, InternalTextureSource.Temp);
 
                 texture._invertVScale = texture.invertY;
                 source.type = Constants.TEXTURETYPE_UNSIGNED_SHORT_5_6_5;
@@ -231,7 +239,6 @@ export const LoadTextureFromTranscodeResult = (texture: InternalTexture, transco
                 texture.height = (rootImage.height + 3) & ~3;
                 engine._uploadDataToTextureDirectly(texture, rootImage.transcodedPixels, i, 0, Constants.TEXTUREFORMAT_RGB, true);
             }
-
         } else {
             texture.width = rootImage.width;
             texture.height = rootImage.height;
@@ -239,11 +246,21 @@ export const LoadTextureFromTranscodeResult = (texture: InternalTexture, transco
 
             // Upload all mip levels in the file
             transcodeResult.fileInfo.images[i].levels.forEach((level: any, index: number) => {
-                engine._uploadCompressedDataToTextureDirectly(texture, BasisTools.GetInternalFormatFromBasisFormat(transcodeResult.format!, engine), level.width, level.height, level.transcodedPixels, i, index);
+                engine._uploadCompressedDataToTextureDirectly(
+                    texture,
+                    BasisTools.GetInternalFormatFromBasisFormat(transcodeResult.format!, engine),
+                    level.width,
+                    level.height,
+                    level.transcodedPixels,
+                    i,
+                    index
+                );
             });
 
             if (engine._features.basisNeedsPOT && (Scalar.Log2(texture.width) % 1 !== 0 || Scalar.Log2(texture.height) % 1 !== 0)) {
-                Tools.Warn("Loaded .basis texture width and height are not a power of two. Texture wrapping will be set to Texture.CLAMP_ADDRESSMODE as other modes are not supported with non power of two dimensions in webGL 1.");
+                Tools.Warn(
+                    "Loaded .basis texture width and height are not a power of two. Texture wrapping will be set to Texture.CLAMP_ADDRESSMODE as other modes are not supported with non power of two dimensions in webGL 1."
+                );
                 texture._cachedWrapU = Texture.CLAMP_ADDRESSMODE;
                 texture._cachedWrapV = Texture.CLAMP_ADDRESSMODE;
             }
@@ -285,15 +302,15 @@ export const BasisTools = {
      * @param texture texture load to
      * @param transcodeResult the result of transcoding the basis file to load from
      */
-    LoadTextureFromTranscodeResult
+    LoadTextureFromTranscodeResult,
 };
 
 // WorkerGlobalScope
 declare function importScripts(...urls: string[]): void;
 declare function postMessage(message: any, transfer?: any[]): void;
-declare var Module: any;
+declare let Module: any;
 function workerFunc(): void {
-    var _BASIS_FORMAT = {
+    const _BASIS_FORMAT = {
         cTFETC1: 0,
         cTFBC1: 1,
         cTFBC4: 2,
@@ -303,13 +320,13 @@ function workerFunc(): void {
         cTFBC3: 6,
         cTFBC5: 7,
     };
-    var transcoderModulePromise: Nullable<Promise<any>> = null;
+    let transcoderModulePromise: Nullable<Promise<any>> = null;
     onmessage = (event) => {
         if (event.data.action === "init") {
             // Load the transcoder if it hasn't been yet
             if (!transcoderModulePromise) {
                 // Override wasm binary
-                Module = { wasmBinary: (event.data.wasmBinary) };
+                Module = { wasmBinary: event.data.wasmBinary };
                 // make sure we loaded the script correctly
                 try {
                     importScripts(event.data.url);
@@ -328,39 +345,39 @@ function workerFunc(): void {
             });
         } else if (event.data.action === "transcode") {
             // Transcode the basis image and return the resulting pixels
-            var config: BasisTranscodeConfiguration = event.data.config;
-            var imgData = event.data.imageData;
-            var loadedFile = new Module.BasisFile(imgData);
-            var fileInfo = GetFileInfo(loadedFile);
-            var format = event.data.ignoreSupportedFormats ? null : GetSupportedTranscodeFormat(event.data.config, fileInfo);
+            const config: BasisTranscodeConfiguration = event.data.config;
+            const imgData = event.data.imageData;
+            const loadedFile = new Module.BasisFile(imgData);
+            const fileInfo = GetFileInfo(loadedFile);
+            let format = event.data.ignoreSupportedFormats ? null : GetSupportedTranscodeFormat(event.data.config, fileInfo);
 
-            var needsConversion = false;
+            let needsConversion = false;
             if (format === null) {
                 needsConversion = true;
                 format = fileInfo.hasAlpha ? _BASIS_FORMAT.cTFBC3 : _BASIS_FORMAT.cTFBC1;
             }
 
             // Begin transcode
-            var success = true;
+            let success = true;
             if (!loadedFile.startTranscoding()) {
                 success = false;
             }
 
-            var buffers: Array<any> = [];
-            for (var imageIndex = 0; imageIndex < fileInfo.images.length; imageIndex++) {
+            const buffers: Array<any> = [];
+            for (let imageIndex = 0; imageIndex < fileInfo.images.length; imageIndex++) {
                 if (!success) {
                     break;
                 }
-                var image = fileInfo.images[imageIndex];
+                const image = fileInfo.images[imageIndex];
                 if (config.loadSingleImage === undefined || config.loadSingleImage === imageIndex) {
-                    var mipCount = image.levels.length;
+                    let mipCount = image.levels.length;
                     if (config.loadMipmapLevels === false) {
                         mipCount = 1;
                     }
-                    for (var levelIndex = 0; levelIndex < mipCount; levelIndex++) {
-                        var levelInfo = image.levels[levelIndex];
+                    for (let levelIndex = 0; levelIndex < mipCount; levelIndex++) {
+                        const levelInfo = image.levels[levelIndex];
 
-                        var pixels = TranscodeLevel(loadedFile, imageIndex, levelIndex, format!, needsConversion);
+                        const pixels = TranscodeLevel(loadedFile, imageIndex, levelIndex, format!, needsConversion);
                         if (!pixels) {
                             success = false;
                             break;
@@ -382,9 +399,7 @@ function workerFunc(): void {
             } else {
                 postMessage({ action: "transcode", success: success, id: event.data.id, fileInfo: fileInfo, format: format }, buffers);
             }
-
         }
-
     };
 
     /**
@@ -394,7 +409,7 @@ function workerFunc(): void {
      * @returns the chosed format or null if none are supported
      */
     function GetSupportedTranscodeFormat(config: BasisTranscodeConfiguration, fileInfo: BasisFileInfo): Nullable<number> {
-        var format = null;
+        let format = null;
         if (config.supportedCompressionFormats) {
             if (config.supportedCompressionFormats.etc1) {
                 format = _BASIS_FORMAT.cTFETC1;
@@ -417,37 +432,37 @@ function workerFunc(): void {
      * @returns information about the basis file
      */
     function GetFileInfo(basisFile: any): BasisFileInfo {
-        var hasAlpha = basisFile.getHasAlpha();
-        var imageCount = basisFile.getNumImages();
-        var images = [];
-        for (var i = 0; i < imageCount; i++) {
-            var imageInfo = {
-                levels: ([] as Array<any>)
+        const hasAlpha = basisFile.getHasAlpha();
+        const imageCount = basisFile.getNumImages();
+        const images = [];
+        for (let i = 0; i < imageCount; i++) {
+            const imageInfo = {
+                levels: [] as Array<any>,
             };
-            var levelCount = basisFile.getNumLevels(i);
-            for (var level = 0; level < levelCount; level++) {
-                var levelInfo = {
+            const levelCount = basisFile.getNumLevels(i);
+            for (let level = 0; level < levelCount; level++) {
+                const levelInfo = {
                     width: basisFile.getImageWidth(i, level),
-                    height: basisFile.getImageHeight(i, level)
+                    height: basisFile.getImageHeight(i, level),
                 };
                 imageInfo.levels.push(levelInfo);
             }
             images.push(imageInfo);
         }
-        var info = { hasAlpha, images };
+        const info = { hasAlpha, images };
         return info;
     }
 
     function TranscodeLevel(loadedFile: any, imageIndex: number, levelIndex: number, format: number, convertToRgb565: boolean): Nullable<Uint8Array | Uint16Array> {
-        var dstSize = loadedFile.getImageTranscodedSizeInBytes(imageIndex, levelIndex, format);
-        var dst: Uint8Array | Uint16Array = new Uint8Array(dstSize);
+        const dstSize = loadedFile.getImageTranscodedSizeInBytes(imageIndex, levelIndex, format);
+        let dst: Uint8Array | Uint16Array = new Uint8Array(dstSize);
         if (!loadedFile.transcodeImage(dst, imageIndex, levelIndex, format, 1, 0)) {
             return null;
         }
         // If no supported format is found, load as dxt and convert to rgb565
         if (convertToRgb565) {
-            var alignedWidth = (loadedFile.getImageWidth(imageIndex, levelIndex) + 3) & ~3;
-            var alignedHeight = (loadedFile.getImageHeight(imageIndex, levelIndex) + 3) & ~3;
+            const alignedWidth = (loadedFile.getImageWidth(imageIndex, levelIndex) + 3) & ~3;
+            const alignedHeight = (loadedFile.getImageHeight(imageIndex, levelIndex) + 3) & ~3;
             dst = ConvertDxtToRgb565(dst, 0, alignedWidth, alignedHeight);
         }
         return dst;
@@ -465,25 +480,27 @@ function workerFunc(): void {
      * @return the converted pixels
      */
     function ConvertDxtToRgb565(src: Uint8Array, srcByteOffset: number, width: number, height: number): Uint16Array {
-        var c = new Uint16Array(4);
-        var dst = new Uint16Array(width * height);
+        const c = new Uint16Array(4);
+        const dst = new Uint16Array(width * height);
 
-        var blockWidth = width / 4;
-        var blockHeight = height / 4;
-        for (var blockY = 0; blockY < blockHeight; blockY++) {
-            for (var blockX = 0; blockX < blockWidth; blockX++) {
-                var i = srcByteOffset + 8 * (blockY * blockWidth + blockX);
+        const blockWidth = width / 4;
+        const blockHeight = height / 4;
+        for (let blockY = 0; blockY < blockHeight; blockY++) {
+            for (let blockX = 0; blockX < blockWidth; blockX++) {
+                const i = srcByteOffset + 8 * (blockY * blockWidth + blockX);
                 c[0] = src[i] | (src[i + 1] << 8);
                 c[1] = src[i + 2] | (src[i + 3] << 8);
-                c[2] = (2 * (c[0] & 0x1f) + 1 * (c[1] & 0x1f)) / 3
-                    | (((2 * (c[0] & 0x7e0) + 1 * (c[1] & 0x7e0)) / 3) & 0x7e0)
-                    | (((2 * (c[0] & 0xf800) + 1 * (c[1] & 0xf800)) / 3) & 0xf800);
-                c[3] = (2 * (c[1] & 0x1f) + 1 * (c[0] & 0x1f)) / 3
-                    | (((2 * (c[1] & 0x7e0) + 1 * (c[0] & 0x7e0)) / 3) & 0x7e0)
-                    | (((2 * (c[1] & 0xf800) + 1 * (c[0] & 0xf800)) / 3) & 0xf800);
-                for (var row = 0; row < 4; row++) {
-                    var m = src[i + 4 + row];
-                    var dstI = (blockY * 4 + row) * width + blockX * 4;
+                c[2] =
+                    ((2 * (c[0] & 0x1f) + 1 * (c[1] & 0x1f)) / 3) |
+                    (((2 * (c[0] & 0x7e0) + 1 * (c[1] & 0x7e0)) / 3) & 0x7e0) |
+                    (((2 * (c[0] & 0xf800) + 1 * (c[1] & 0xf800)) / 3) & 0xf800);
+                c[3] =
+                    ((2 * (c[1] & 0x1f) + 1 * (c[0] & 0x1f)) / 3) |
+                    (((2 * (c[1] & 0x7e0) + 1 * (c[0] & 0x7e0)) / 3) & 0x7e0) |
+                    (((2 * (c[1] & 0xf800) + 1 * (c[0] & 0xf800)) / 3) & 0xf800);
+                for (let row = 0; row < 4; row++) {
+                    const m = src[i + 4 + row];
+                    let dstI = (blockY * 4 + row) * width + blockX * 4;
                     dst[dstI++] = c[m & 0x3];
                     dst[dstI++] = c[(m >> 2) & 0x3];
                     dst[dstI++] = c[(m >> 4) & 0x3];
@@ -501,7 +518,7 @@ Object.defineProperty(BasisTools, "JSModuleURL", {
     },
     set: function (this: null, value: string) {
         BasisToolsOptions.JSModuleURL = value;
-    }
+    },
 });
 
 Object.defineProperty(BasisTools, "WasmModuleURL", {
@@ -510,5 +527,5 @@ Object.defineProperty(BasisTools, "WasmModuleURL", {
     },
     set: function (this: null, value: string) {
         BasisToolsOptions.WasmModuleURL = value;
-    }
+    },
 });

@@ -17,7 +17,7 @@ export class NativeDataStream {
     // Must be multiple of 4!
     private static readonly DEFAULT_BUFFER_SIZE = 65536;
 
-    constructor () {
+    constructor() {
         const buffer = new ArrayBuffer(NativeDataStream.DEFAULT_BUFFER_SIZE);
         this._uint32s = new Uint32Array(buffer);
         this._int32s = new Int32Array(buffer);

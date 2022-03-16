@@ -53,7 +53,15 @@ export class VideoDome extends TextureDome<VideoTexture> {
 
     protected _initTexture(urlsOrElement: string | string[] | HTMLVideoElement, scene: Scene, options: any): VideoTexture {
         const tempOptions: VideoTextureSettings = { loop: options.loop, autoPlay: options.autoPlay, autoUpdateTexture: true, poster: options.poster };
-        const texture = new VideoTexture((this.name || "videoDome") + "_texture", urlsOrElement, scene, options.generateMipMaps, this._useDirectMapping, Texture.TRILINEAR_SAMPLINGMODE, tempOptions);
+        const texture = new VideoTexture(
+            (this.name || "videoDome") + "_texture",
+            urlsOrElement,
+            scene,
+            options.generateMipMaps,
+            this._useDirectMapping,
+            Texture.TRILINEAR_SAMPLINGMODE,
+            tempOptions
+        );
         // optional configuration
         if (options.clickToPlay) {
             this._pointerObserver = scene.onPointerObservable.add((pointerInfo) => {

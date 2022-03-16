@@ -24,7 +24,7 @@ export enum DualShockButton {
     /** Left stick */
     LeftStick = 10,
     /** Right stick */
-    RightStick = 11
+    RightStick = 11,
 }
 
 /** Defines values for DualShock DPad  */
@@ -36,7 +36,7 @@ export enum DualShockDpad {
     /** Left */
     Left = 14,
     /** Right */
-    Right = 15
+    Right = 15,
 }
 
 /**
@@ -180,7 +180,6 @@ export class DualShockPad extends Gamepad {
                 this.onButtonDownObservable.notifyObservers(buttonType);
             }
             if (newValue === 0) {
-
                 if (this._onbuttonup) {
                     this._onbuttonup(buttonType);
                 }

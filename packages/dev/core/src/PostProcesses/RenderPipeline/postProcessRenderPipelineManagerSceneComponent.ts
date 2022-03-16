@@ -31,7 +31,7 @@ Object.defineProperty(Scene.prototype, "postProcessRenderPipelineManager", {
         return this._postProcessRenderPipelineManager;
     },
     enumerable: true,
-    configurable: true
+    configurable: true,
 });
 
 /**

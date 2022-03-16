@@ -1,9 +1,9 @@
 import { Tags } from "../Misc/tags";
 import { Nullable } from "../types";
 import { Quaternion, Vector2, Vector3, Matrix } from "../Maths/math.vector";
-import { _WarnImport } from './devTools';
-import { IAnimatable } from '../Animations/animatable.interface';
-import { Color4, Color3 } from '../Maths/math.color';
+import { _WarnImport } from "./devTools";
+import { IAnimatable } from "../Animations/animatable.interface";
+import { Color4, Color3 } from "../Maths/math.color";
 
 declare type Scene = import("../scene").Scene;
 declare type Camera = import("../Cameras/camera").Camera;
@@ -13,42 +13,42 @@ declare type FresnelParameters = import("../Materials/fresnelParameters").Fresne
 declare type ColorCurves = import("../Materials/colorCurves").ColorCurves;
 declare type BaseTexture = import("../Materials/Textures/baseTexture").BaseTexture;
 
-var __decoratorInitialStore = {};
-var __mergedStore = {};
+const __decoratorInitialStore = {};
+const __mergedStore = {};
 
-var _copySource = function <T>(creationFunction: () => T, source: T, instanciate: boolean): T {
-    var destination = creationFunction();
+const _copySource = function <T>(creationFunction: () => T, source: T, instanciate: boolean): T {
+    const destination = creationFunction();
 
     // Tags
     if (Tags) {
         Tags.AddTagsTo(destination, (<any>source).tags);
     }
 
-    var classStore = getMergedStore(destination);
+    const classStore = getMergedStore(destination);
 
     // Properties
-    for (var property in classStore) {
-        var propertyDescriptor = classStore[property];
-        var sourceProperty = (<any>source)[property];
-        var propertyType = propertyDescriptor.type;
+    for (const property in classStore) {
+        const propertyDescriptor = classStore[property];
+        const sourceProperty = (<any>source)[property];
+        const propertyType = propertyDescriptor.type;
 
         if (sourceProperty !== undefined && sourceProperty !== null && (property !== "uniqueId" || SerializationHelper.AllowLoadingUniqueId)) {
             switch (propertyType) {
-                case 0:     // Value
-                case 6:     // Mesh reference
-                case 11:    // Camera reference
+                case 0: // Value
+                case 6: // Mesh reference
+                case 11: // Camera reference
                     (<any>destination)[property] = sourceProperty;
                     break;
-                case 1:     // Texture
-                    (<any>destination)[property] = (instanciate || sourceProperty.isRenderTarget) ? sourceProperty : sourceProperty.clone();
+                case 1: // Texture
+                    (<any>destination)[property] = instanciate || sourceProperty.isRenderTarget ? sourceProperty : sourceProperty.clone();
                     break;
-                case 2:     // Color3
-                case 3:     // FresnelParameters
-                case 4:     // Vector2
-                case 5:     // Vector3
-                case 7:     // Color Curves
-                case 10:    // Quaternion
-                case 12:    // Matrix
+                case 2: // Color3
+                case 3: // FresnelParameters
+                case 4: // Vector2
+                case 5: // Vector3
+                case 7: // Color Curves
+                case 10: // Quaternion
+                case 12: // Matrix
                     (<any>destination)[property] = instanciate ? sourceProperty : sourceProperty.clone();
                     break;
             }
@@ -59,7 +59,7 @@ var _copySource = function <T>(creationFunction: () => T, source: T, instanciate
 };
 
 function getDirectStore(target: any): any {
-    var classKey = target.getClassName();
+    const classKey = target.getClassName();
 
     if (!(<any>__decoratorInitialStore)[classKey]) {
         (<any>__decoratorInitialStore)[classKey] = {};
@@ -71,9 +71,10 @@ function getDirectStore(target: any): any {
 /**
  * Return the list of properties flagged as serializable
  * @param target: host object
+ * @param target
  */
 function getMergedStore(target: any): any {
-    let classKey = target.getClassName();
+    const classKey = target.getClassName();
 
     if ((<any>__mergedStore)[classKey]) {
         return (<any>__mergedStore)[classKey];
@@ -81,12 +82,12 @@ function getMergedStore(target: any): any {
 
     (<any>__mergedStore)[classKey] = {};
 
-    let store = (<any>__mergedStore)[classKey];
+    const store = (<any>__mergedStore)[classKey];
     let currentTarget = target;
     let currentKey = classKey;
     while (currentKey) {
-        let initialStore = (<any>__decoratorInitialStore)[currentKey];
-        for (var property in initialStore) {
+        const initialStore = (<any>__decoratorInitialStore)[currentKey];
+        for (const property in initialStore) {
             store[property] = initialStore[property];
         }
 
@@ -105,8 +106,7 @@ function getMergedStore(target: any): any {
             }
 
             currentTarget = parent;
-        }
-        while (parent);
+        } while (parent);
 
         if (done) {
             break;
@@ -121,7 +121,7 @@ function getMergedStore(target: any): any {
 
 function generateSerializableMember(type: number, sourceName?: string) {
     return (target: any, propertyKey: string | symbol) => {
-        var classStore = getDirectStore(target);
+        const classStore = getDirectStore(target);
 
         if (!classStore[propertyKey]) {
             classStore[propertyKey] = { type: type, sourceName: sourceName };
@@ -131,7 +131,7 @@ function generateSerializableMember(type: number, sourceName?: string) {
 
 function generateExpandMember(setCallback: string, targetKey: Nullable<string> = null) {
     return (target: any, propertyKey: string) => {
-        var key = targetKey || ("_" + propertyKey);
+        const key = targetKey || "_" + propertyKey;
         Object.defineProperty(target, propertyKey, {
             get: function (this: any) {
                 return this[key];
@@ -152,7 +152,7 @@ function generateExpandMember(setCallback: string, targetKey: Nullable<string> =
                 target[setCallback].apply(this);
             },
             enumerable: true,
-            configurable: true
+            configurable: true,
         });
     };
 }
@@ -222,29 +222,43 @@ export function serializeAsCameraReference(sourceName?: string) {
  */
 export class SerializationHelper {
     /**
-    * Gets or sets a boolean to indicate if the UniqueId property should be serialized
-    */
+     * Gets or sets a boolean to indicate if the UniqueId property should be serialized
+     */
     public static AllowLoadingUniqueId = false;
 
-    /** @hidden */
+    /**
+     * @param sourceProperty
+     * @hidden
+     */
     public static _ImageProcessingConfigurationParser = (sourceProperty: any): ImageProcessingConfiguration => {
         throw _WarnImport("ImageProcessingConfiguration");
-    }
+    };
 
-    /** @hidden */
+    /**
+     * @param sourceProperty
+     * @hidden
+     */
     public static _FresnelParametersParser = (sourceProperty: any): FresnelParameters => {
         throw _WarnImport("FresnelParameters");
-    }
+    };
 
-    /** @hidden */
+    /**
+     * @param sourceProperty
+     * @hidden
+     */
     public static _ColorCurvesParser = (sourceProperty: any): ColorCurves => {
         throw _WarnImport("ColorCurves");
-    }
+    };
 
-    /** @hidden */
+    /**
+     * @param sourceProperty
+     * @param scene
+     * @param rootUrl
+     * @hidden
+     */
     public static _TextureParser = (sourceProperty: any, scene: Scene, rootUrl: string): Nullable<BaseTexture> => {
         throw _WarnImport("Texture");
-    }
+    };
 
     /**
      * Appends the serialized animations from the source animations
@@ -254,8 +268,8 @@ export class SerializationHelper {
     public static AppendSerializedAnimations(source: IAnimatable, destination: any): void {
         if (source.animations) {
             destination.animations = [];
-            for (var animationIndex = 0; animationIndex < source.animations.length; animationIndex++) {
-                var animation = source.animations[animationIndex];
+            for (let animationIndex = 0; animationIndex < source.animations.length; animationIndex++) {
+                const animation = source.animations[animationIndex];
 
                 destination.animations.push(animation.serialize());
             }
@@ -278,54 +292,54 @@ export class SerializationHelper {
             serializationObject.tags = Tags.GetTags(entity);
         }
 
-        var serializedProperties = getMergedStore(entity);
+        const serializedProperties = getMergedStore(entity);
 
         // Properties
-        for (var property in serializedProperties) {
-            var propertyDescriptor = serializedProperties[property];
-            var targetPropertyName = propertyDescriptor.sourceName || property;
-            var propertyType = propertyDescriptor.type;
-            var sourceProperty = (<any>entity)[property];
+        for (const property in serializedProperties) {
+            const propertyDescriptor = serializedProperties[property];
+            const targetPropertyName = propertyDescriptor.sourceName || property;
+            const propertyType = propertyDescriptor.type;
+            const sourceProperty = (<any>entity)[property];
 
             if (sourceProperty !== undefined && sourceProperty !== null && (property !== "uniqueId" || SerializationHelper.AllowLoadingUniqueId)) {
                 switch (propertyType) {
-                    case 0:     // Value
+                    case 0: // Value
                         serializationObject[targetPropertyName] = sourceProperty;
                         break;
-                    case 1:     // Texture
+                    case 1: // Texture
                         serializationObject[targetPropertyName] = sourceProperty.serialize();
                         break;
-                    case 2:     // Color3
+                    case 2: // Color3
                         serializationObject[targetPropertyName] = sourceProperty.asArray();
                         break;
-                    case 3:     // FresnelParameters
+                    case 3: // FresnelParameters
                         serializationObject[targetPropertyName] = sourceProperty.serialize();
                         break;
-                    case 4:     // Vector2
+                    case 4: // Vector2
                         serializationObject[targetPropertyName] = sourceProperty.asArray();
                         break;
-                    case 5:     // Vector3
+                    case 5: // Vector3
                         serializationObject[targetPropertyName] = sourceProperty.asArray();
                         break;
-                    case 6:     // Mesh reference
+                    case 6: // Mesh reference
                         serializationObject[targetPropertyName] = sourceProperty.id;
                         break;
-                    case 7:     // Color Curves
+                    case 7: // Color Curves
                         serializationObject[targetPropertyName] = sourceProperty.serialize();
                         break;
-                    case 8:     // Color 4
+                    case 8: // Color 4
                         serializationObject[targetPropertyName] = (<Color4>sourceProperty).asArray();
                         break;
-                    case 9:     // Image Processing
+                    case 9: // Image Processing
                         serializationObject[targetPropertyName] = (<ImageProcessingConfiguration>sourceProperty).serialize();
                         break;
-                    case 10:    // Quaternion
+                    case 10: // Quaternion
                         serializationObject[targetPropertyName] = (<Quaternion>sourceProperty).asArray();
                         break;
-                    case 11:    // Camera reference
+                    case 11: // Camera reference
                         serializationObject[targetPropertyName] = (<Camera>sourceProperty).id;
                         break;
-                    case 12:    // Matrix
+                    case 12: // Matrix
                         serializationObject[targetPropertyName] = (<Matrix>sourceProperty).asArray();
                         break;
                 }
@@ -344,7 +358,7 @@ export class SerializationHelper {
      * @returns a new entity
      */
     public static Parse<T>(creationFunction: () => T, source: any, scene: Nullable<Scene>, rootUrl: Nullable<string> = null): T {
-        var destination = creationFunction();
+        const destination = creationFunction();
 
         if (!rootUrl) {
             rootUrl = "";
@@ -355,60 +369,60 @@ export class SerializationHelper {
             Tags.AddTagsTo(destination, source.tags);
         }
 
-        var classStore = getMergedStore(destination);
+        const classStore = getMergedStore(destination);
 
         // Properties
-        for (var property in classStore) {
-            var propertyDescriptor = classStore[property];
-            var sourceProperty = source[propertyDescriptor.sourceName || property];
-            var propertyType = propertyDescriptor.type;
+        for (const property in classStore) {
+            const propertyDescriptor = classStore[property];
+            const sourceProperty = source[propertyDescriptor.sourceName || property];
+            const propertyType = propertyDescriptor.type;
 
             if (sourceProperty !== undefined && sourceProperty !== null && (property !== "uniqueId" || SerializationHelper.AllowLoadingUniqueId)) {
-                var dest = <any>destination;
+                const dest = <any>destination;
                 switch (propertyType) {
-                    case 0:     // Value
+                    case 0: // Value
                         dest[property] = sourceProperty;
                         break;
-                    case 1:     // Texture
+                    case 1: // Texture
                         if (scene) {
                             dest[property] = SerializationHelper._TextureParser(sourceProperty, scene, rootUrl);
                         }
                         break;
-                    case 2:     // Color3
+                    case 2: // Color3
                         dest[property] = Color3.FromArray(sourceProperty);
                         break;
-                    case 3:     // FresnelParameters
+                    case 3: // FresnelParameters
                         dest[property] = SerializationHelper._FresnelParametersParser(sourceProperty);
                         break;
-                    case 4:     // Vector2
+                    case 4: // Vector2
                         dest[property] = Vector2.FromArray(sourceProperty);
                         break;
-                    case 5:     // Vector3
+                    case 5: // Vector3
                         dest[property] = Vector3.FromArray(sourceProperty);
                         break;
-                    case 6:     // Mesh reference
+                    case 6: // Mesh reference
                         if (scene) {
                             dest[property] = scene.getLastMeshById(sourceProperty);
                         }
                         break;
-                    case 7:     // Color Curves
+                    case 7: // Color Curves
                         dest[property] = SerializationHelper._ColorCurvesParser(sourceProperty);
                         break;
-                    case 8:     // Color 4
+                    case 8: // Color 4
                         dest[property] = Color4.FromArray(sourceProperty);
                         break;
-                    case 9:     // Image Processing
+                    case 9: // Image Processing
                         dest[property] = SerializationHelper._ImageProcessingConfigurationParser(sourceProperty);
                         break;
-                    case 10:    // Quaternion
+                    case 10: // Quaternion
                         dest[property] = Quaternion.FromArray(sourceProperty);
                         break;
-                    case 11:    // Camera reference
+                    case 11: // Camera reference
                         if (scene) {
                             dest[property] = scene.getCameraById(sourceProperty);
                         }
                         break;
-                    case 12:    // Matrix
+                    case 12: // Matrix
                         dest[property] = Matrix.FromArray(sourceProperty);
                         break;
                 }
@@ -444,9 +458,18 @@ declare const _native: any;
 
 /**
  * Decorator used to redirect a function to a native implementation if available.
+ * @param target
+ * @param propertyKey
+ * @param descriptor
+ * @param predicate
  * @hidden
  */
-export function nativeOverride<T extends (...params: any) => boolean>(target: any, propertyKey: string, descriptor: TypedPropertyDescriptor<(...params: Parameters<T>) => unknown>, predicate?: T) {
+export function nativeOverride<T extends (...params: any[]) => boolean>(
+    target: any,
+    propertyKey: string,
+    descriptor: TypedPropertyDescriptor<(...params: Parameters<T>) => unknown>,
+    predicate?: T
+) {
     // Cache the original JS function for later.
     const jsFunc = descriptor.value!;
 
@@ -456,12 +479,12 @@ export function nativeOverride<T extends (...params: any) => boolean>(target: an
         let func = jsFunc;
 
         // Check if we are executing in a Babylon Native context (e.g. check the presence of the _native global property) and if so also check if a function override is available.
-        if (typeof _native !== 'undefined' && _native[propertyKey]) {
+        if (typeof _native !== "undefined" && _native[propertyKey]) {
             const nativeFunc = _native[propertyKey] as (...params: Parameters<T>) => unknown;
             // If a predicate was provided, then we'll need to invoke the predicate on each invocation of the underlying function to determine whether to call the native function or the JS function.
             if (predicate) {
                 // The resolved function will execute the predicate and then either execute the native function or the JS function.
-                func = (...params: Parameters<T>) => predicate(...params) ? nativeFunc(...params) : jsFunc(...params);
+                func = (...params: Parameters<T>) => (predicate(...params) ? nativeFunc(...params) : jsFunc(...params));
             } else {
                 // The resolved function will directly execute the native function.
                 func = nativeFunc;
@@ -479,10 +502,12 @@ export function nativeOverride<T extends (...params: any) => boolean>(target: an
 
 /**
  * Decorator factory that applies the nativeOverride decorator, but determines whether to redirect to the native implementation based on a filter function that evaluates the function arguments.
+ * @param predicate
  * @example @nativeOverride.filter((...[arg1]: Parameters<typeof someClass.someMethod>) => arg1.length > 20)
  *          public someMethod(arg1: string, arg2: number): string {
  * @hidden
  */
-nativeOverride.filter = function<T extends (...params: any) => boolean>(predicate: T) {
-    return (target: any, propertyKey: string, descriptor: TypedPropertyDescriptor<(...params: Parameters<T>) => unknown>) => nativeOverride(target, propertyKey, descriptor, predicate);
+nativeOverride.filter = function <T extends (...params: any) => boolean>(predicate: T) {
+    return (target: any, propertyKey: string, descriptor: TypedPropertyDescriptor<(...params: Parameters<T>) => unknown>) =>
+        nativeOverride(target, propertyKey, descriptor, predicate);
 };

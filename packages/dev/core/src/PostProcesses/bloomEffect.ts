@@ -66,16 +66,45 @@ export class BloomEffect extends PostProcessRenderEffect {
      * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
      */
     constructor(scene: Scene, private bloomScale: number, bloomWeight: number, bloomKernel: number, pipelineTextureType = 0, blockCompilation = false) {
-        super(scene.getEngine(), "bloom", () => {
-            return this._effects;
-        }, true);
+        super(
+            scene.getEngine(),
+            "bloom",
+            () => {
+                return this._effects;
+            },
+            true
+        );
         this._downscale = new ExtractHighlightsPostProcess("highlights", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType, blockCompilation);
 
-        this._blurX = new BlurPostProcess("horizontal blur", new Vector2(1.0, 0), 10.0, bloomScale, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType, undefined, blockCompilation);
+        this._blurX = new BlurPostProcess(
+            "horizontal blur",
+            new Vector2(1.0, 0),
+            10.0,
+            bloomScale,
+            null,
+            Texture.BILINEAR_SAMPLINGMODE,
+            scene.getEngine(),
+            false,
+            pipelineTextureType,
+            undefined,
+            blockCompilation
+        );
         this._blurX.alwaysForcePOT = true;
         this._blurX.autoClear = false;
 
-        this._blurY = new BlurPostProcess("vertical blur", new Vector2(0, 1.0), 10.0, bloomScale, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType, undefined, blockCompilation);
+        this._blurY = new BlurPostProcess(
+            "vertical blur",
+            new Vector2(0, 1.0),
+            10.0,
+            bloomScale,
+            null,
+            Texture.BILINEAR_SAMPLINGMODE,
+            scene.getEngine(),
+            false,
+            pipelineTextureType,
+            undefined,
+            blockCompilation
+        );
         this._blurY.alwaysForcePOT = true;
         this._blurY.autoClear = false;
 
@@ -83,7 +112,19 @@ export class BloomEffect extends PostProcessRenderEffect {
 
         this._effects = [this._downscale, this._blurX, this._blurY];
 
-        this._merge = new BloomMergePostProcess("bloomMerge", this._downscale, this._blurY, bloomWeight, bloomScale, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType, blockCompilation);
+        this._merge = new BloomMergePostProcess(
+            "bloomMerge",
+            this._downscale,
+            this._blurY,
+            bloomWeight,
+            bloomScale,
+            null,
+            Texture.BILINEAR_SAMPLINGMODE,
+            scene.getEngine(),
+            false,
+            pipelineTextureType,
+            blockCompilation
+        );
         this._merge.autoClear = false;
         this._effects.push(this._merge);
     }
@@ -93,7 +134,7 @@ export class BloomEffect extends PostProcessRenderEffect {
      * @param camera The camera to dispose the effect on.
      */
     public disposeEffects(camera: Camera) {
-        for (var effectIndex = 0; effectIndex < this._effects.length; effectIndex++) {
+        for (let effectIndex = 0; effectIndex < this._effects.length; effectIndex++) {
             this._effects[effectIndex].dispose(camera);
         }
     }
@@ -102,7 +143,7 @@ export class BloomEffect extends PostProcessRenderEffect {
      * @hidden Internal
      */
     public _updateEffects() {
-        for (var effectIndex = 0; effectIndex < this._effects.length; effectIndex++) {
+        for (let effectIndex = 0; effectIndex < this._effects.length; effectIndex++) {
             this._effects[effectIndex].updateEffect();
         }
     }
@@ -113,7 +154,7 @@ export class BloomEffect extends PostProcessRenderEffect {
      * @hidden
      */
     public _isReady() {
-        for (var effectIndex = 0; effectIndex < this._effects.length; effectIndex++) {
+        for (let effectIndex = 0; effectIndex < this._effects.length; effectIndex++) {
             if (!this._effects[effectIndex].isReady()) {
                 return false;
             }

@@ -8,7 +8,7 @@ import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Effect } from "../Materials/effect";
 import { UniformBuffer } from "../Materials/uniformBuffer";
 import { IShadowGenerator } from "./Shadows/shadowGenerator";
-import { GetClass } from '../Misc/typeStore';
+import { GetClass } from "../Misc/typeStore";
 import { ISortableLight, LightConstants } from "./lightConstants";
 
 /**
@@ -17,7 +17,6 @@ import { ISortableLight, LightConstants } from "./lightConstants";
  * All meshes allow light to pass through them unless shadow generation is activated. The default number of lights allowed is four but this can be increased.
  */
 export abstract class Light extends Node implements ISortableLight {
-
     /**
      * Falloff Default: light is falling off following the material specification:
      * standard material is using standard falloff whereas pbr material can request special falloff per materials.
@@ -388,7 +387,7 @@ export abstract class Light extends Node implements ISortableLight {
      * @param receiveShadows Defines if the effect (mesh) we bind the light for receives shadows
      */
     public _bindLight(lightIndex: number, scene: Scene, effect: Effect, useSpecular: boolean, receiveShadows = true): void {
-        let iAsString = lightIndex.toString();
+        const iAsString = lightIndex.toString();
         let needUpdate = false;
 
         this._uniformBuffer.bindToEffect(effect, "Light" + iAsString);
@@ -397,7 +396,7 @@ export abstract class Light extends Node implements ISortableLight {
             this._renderId = scene.getRenderId();
             this._lastUseSpecular = useSpecular;
 
-            let scaledIntensity = this.getScaledIntensity();
+            const scaledIntensity = this.getScaledIntensity();
 
             this.transferToEffect(effect, iAsString);
 
@@ -415,7 +414,7 @@ export abstract class Light extends Node implements ISortableLight {
 
         // Shadows
         if (scene.shadowsEnabled && this.shadowEnabled && receiveShadows) {
-            var shadowGenerator = this.getShadowGenerator();
+            const shadowGenerator = this.getShadowGenerator();
             if (shadowGenerator) {
                 shadowGenerator.bindShadowLight(iAsString, effect);
                 needUpdate = true;
@@ -454,10 +453,10 @@ export abstract class Light extends Node implements ISortableLight {
      * @returns the human readable light info
      */
     public toString(fullDetails?: boolean): string {
-        var ret = "Name: " + this.name;
-        ret += ", type: " + (["Point", "Directional", "Spot", "Hemispheric"])[this.getTypeID()];
+        let ret = "Name: " + this.name;
+        ret += ", type: " + ["Point", "Directional", "Spot", "Hemispheric"][this.getTypeID()];
         if (this.animations) {
-            for (var i = 0; i < this.animations.length; i++) {
+            for (let i = 0; i < this.animations.length; i++) {
                 ret += ", animation[0]: " + this.animations[i].toString(fullDetails);
             }
         }
@@ -552,7 +551,7 @@ export abstract class Light extends Node implements ISortableLight {
         }
 
         // Remove from meshes
-        for (var mesh of this.getScene().meshes) {
+        for (const mesh of this.getScene().meshes) {
             mesh._removeLightSource(this, true);
         }
 
@@ -586,12 +585,12 @@ export abstract class Light extends Node implements ISortableLight {
      * @returns the new created light
      */
     public clone(name: string, newParent: Nullable<Node> = null): Nullable<Light> {
-        let constructor = Light.GetConstructorFromName(this.getTypeID(), name, this.getScene());
+        const constructor = Light.GetConstructorFromName(this.getTypeID(), name, this.getScene());
 
         if (!constructor) {
             return null;
         }
-        let clonedLight = SerializationHelper.Clone(constructor, this);
+        const clonedLight = SerializationHelper.Clone(constructor, this);
         if (name) {
             clonedLight.name = name;
         }
@@ -610,7 +609,7 @@ export abstract class Light extends Node implements ISortableLight {
      * @returns the serialized object.
      */
     public serialize(): any {
-        var serializationObject = SerializationHelper.Serialize(this);
+        const serializationObject = SerializationHelper.Serialize(this);
         serializationObject.uniqueId = this.uniqueId;
 
         // Type
@@ -654,7 +653,7 @@ export abstract class Light extends Node implements ISortableLight {
      * @returns the constructor function
      */
     static GetConstructorFromName(type: number, name: string, scene: Scene): Nullable<() => Light> {
-        let constructorFunc = Node.Construct("Light_Type_" + type, name, scene);
+        const constructorFunc = Node.Construct("Light_Type_" + type, name, scene);
 
         if (constructorFunc) {
             return <() => Light>constructorFunc;
@@ -671,13 +670,13 @@ export abstract class Light extends Node implements ISortableLight {
      * @returns the created light after parsing
      */
     public static Parse(parsedLight: any, scene: Scene): Nullable<Light> {
-        let constructor = Light.GetConstructorFromName(parsedLight.type, parsedLight.name, scene);
+        const constructor = Light.GetConstructorFromName(parsedLight.type, parsedLight.name, scene);
 
         if (!constructor) {
             return null;
         }
 
-        var light = SerializationHelper.Parse(constructor, parsedLight, scene);
+        const light = SerializationHelper.Parse(constructor, parsedLight, scene);
 
         // Inclusion / exclusions
         if (parsedLight.excludedMeshesIds) {
@@ -705,8 +704,8 @@ export abstract class Light extends Node implements ISortableLight {
 
         // Animations
         if (parsedLight.animations) {
-            for (var animationIndex = 0; animationIndex < parsedLight.animations.length; animationIndex++) {
-                var parsedAnimation = parsedLight.animations[animationIndex];
+            for (let animationIndex = 0; animationIndex < parsedLight.animations.length; animationIndex++) {
+                const parsedAnimation = parsedLight.animations[animationIndex];
                 const internalClass = GetClass("BABYLON.Animation");
                 if (internalClass) {
                     light.animations.push(internalClass.Parse(parsedAnimation));
@@ -728,46 +727,46 @@ export abstract class Light extends Node implements ISortableLight {
     }
 
     private _hookArrayForExcluded(array: AbstractMesh[]): void {
-        var oldPush = array.push;
+        const oldPush = array.push;
         array.push = (...items: AbstractMesh[]) => {
-            var result = oldPush.apply(array, items);
+            const result = oldPush.apply(array, items);
 
-            for (var item of items) {
+            for (const item of items) {
                 item._resyncLightSource(this);
             }
 
             return result;
         };
 
-        var oldSplice = array.splice;
+        const oldSplice = array.splice;
         array.splice = (index: number, deleteCount?: number) => {
-            var deleted = oldSplice.apply(array, [index, deleteCount]);
+            const deleted = oldSplice.apply(array, [index, deleteCount]);
 
-            for (var item of deleted) {
+            for (const item of deleted) {
                 item._resyncLightSource(this);
             }
 
             return deleted;
         };
 
-        for (var item of array) {
+        for (const item of array) {
             item._resyncLightSource(this);
         }
     }
 
     private _hookArrayForIncludedOnly(array: AbstractMesh[]): void {
-        var oldPush = array.push;
+        const oldPush = array.push;
         array.push = (...items: AbstractMesh[]) => {
-            var result = oldPush.apply(array, items);
+            const result = oldPush.apply(array, items);
 
             this._resyncMeshes();
 
             return result;
         };
 
-        var oldSplice = array.splice;
+        const oldSplice = array.splice;
         array.splice = (index: number, deleteCount?: number) => {
-            var deleted = oldSplice.apply(array, [index, deleteCount]);
+            const deleted = oldSplice.apply(array, [index, deleteCount]);
 
             this._resyncMeshes();
 
@@ -778,7 +777,7 @@ export abstract class Light extends Node implements ISortableLight {
     }
 
     private _resyncMeshes() {
-        for (var mesh of this.getScene().meshes) {
+        for (const mesh of this.getScene().meshes) {
             mesh._resyncLightSource(this);
         }
     }
@@ -788,7 +787,7 @@ export abstract class Light extends Node implements ISortableLight {
      * @hidden Internal Use Only
      */
     public _markMeshesAsLightDirty() {
-        for (var mesh of this.getScene().meshes) {
+        for (const mesh of this.getScene().meshes) {
             if (mesh.lightSources.indexOf(this) !== -1) {
                 mesh._markSubMeshesAsLightDirty();
             }
@@ -808,7 +807,7 @@ export abstract class Light extends Node implements ISortableLight {
      */
     private _getPhotometricScale() {
         let photometricScale = 0.0;
-        let lightTypeID = this.getTypeID();
+        const lightTypeID = this.getTypeID();
 
         //get photometric mode
         let photometricMode = this.intensityMode;
@@ -848,7 +847,7 @@ export abstract class Light extends Node implements ISortableLight {
                         let apexAngleRadians = this.radius;
                         // Impose a minimum light angular size to avoid the light becoming an infinitely small angular light source (i.e. a dirac delta function).
                         apexAngleRadians = Math.max(apexAngleRadians, 0.001);
-                        let solidAngle = 2.0 * Math.PI * (1.0 - Math.cos(apexAngleRadians));
+                        const solidAngle = 2.0 * Math.PI * (1.0 - Math.cos(apexAngleRadians));
                         photometricScale = solidAngle;
                         break;
                 }
@@ -867,7 +866,7 @@ export abstract class Light extends Node implements ISortableLight {
      * @hidden Internal Use Only
      */
     public _reorderLightsInScene(): void {
-        var scene = this.getScene();
+        const scene = this.getScene();
         if (this._renderPriority != 0) {
             scene.requireLightSorting = true;
         }

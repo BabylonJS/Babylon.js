@@ -1,9 +1,9 @@
-import { NodeMaterialBlock } from '../nodeMaterialBlock';
-import { NodeMaterialBlockConnectionPointTypes } from '../Enums/nodeMaterialBlockConnectionPointTypes';
-import { NodeMaterialBuildState } from '../nodeMaterialBuildState';
-import { NodeMaterialBlockTargets } from '../Enums/nodeMaterialBlockTargets';
-import { RegisterClass } from '../../../Misc/typeStore';
-import { Scene } from '../../../scene';
+import { NodeMaterialBlock } from "../nodeMaterialBlock";
+import { NodeMaterialBlockConnectionPointTypes } from "../Enums/nodeMaterialBlockConnectionPointTypes";
+import { NodeMaterialBuildState } from "../nodeMaterialBuildState";
+import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
+import { RegisterClass } from "../../../Misc/typeStore";
+import { Scene } from "../../../scene";
 import { Nullable } from "../../../types";
 import { NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
 
@@ -102,7 +102,7 @@ export class CustomBlock extends NodeMaterialBlock {
     }
 
     public serialize(): any {
-        let serializationObject = super.serialize();
+        const serializationObject = super.serialize();
 
         serializationObject.options = this._options;
 
@@ -119,10 +119,10 @@ export class CustomBlock extends NodeMaterialBlock {
         this._options = options;
         this._code = options.code.join("\r\n") + "\r\n";
         this.name = this.name || options.name;
-        this.target = (<any> NodeMaterialBlockTargets)[options.target];
+        this.target = (<any>NodeMaterialBlockTargets)[options.target];
 
         options.inParameters?.forEach((input: any, index: number) => {
-            const type = (<any> NodeMaterialBlockConnectionPointTypes)[input.type];
+            const type = (<any>NodeMaterialBlockConnectionPointTypes)[input.type];
             this.registerInput(input.name, type);
 
             Object.defineProperty(this, input.name, {
@@ -130,19 +130,19 @@ export class CustomBlock extends NodeMaterialBlock {
                     return this._inputs[index];
                 },
                 enumerable: true,
-                configurable: true
+                configurable: true,
             });
         });
 
         options.outParameters?.forEach((output: any, index: number) => {
-            this.registerOutput(output.name, (<any> NodeMaterialBlockConnectionPointTypes)[output.type]);
+            this.registerOutput(output.name, (<any>NodeMaterialBlockConnectionPointTypes)[output.type]);
 
             Object.defineProperty(this, output.name, {
                 get: function () {
                     return this._outputs[index];
                 },
                 enumerable: true,
-                configurable: true
+                configurable: true,
             });
 
             if (output.type === "BasedOnInput") {
@@ -160,7 +160,7 @@ export class CustomBlock extends NodeMaterialBlock {
             return null;
         }
 
-        for (var i = 0; i < this._inputs.length; i++) {
+        for (let i = 0; i < this._inputs.length; i++) {
             if (this._inputs[i].name === name) {
                 return [this._inputs[i], i];
             }

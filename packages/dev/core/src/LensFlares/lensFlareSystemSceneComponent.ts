@@ -15,8 +15,8 @@ AbstractScene.AddParser(SceneComponentConstants.NAME_LENSFLARESYSTEM, (parsedDat
         }
 
         for (let index = 0, cache = parsedData.lensFlareSystems.length; index < cache; index++) {
-            var parsedLensFlareSystem = parsedData.lensFlareSystems[index];
-            var lf = LensFlareSystem.Parse(parsedLensFlareSystem, scene, rootUrl);
+            const parsedLensFlareSystem = parsedData.lensFlareSystems[index];
+            const lf = LensFlareSystem.Parse(parsedLensFlareSystem, scene, rootUrl);
             container.lensFlareSystems.push(lf);
         }
     }
@@ -68,7 +68,7 @@ declare module "../abstractScene" {
 }
 
 AbstractScene.prototype.getLensFlareSystemByName = function (name: string): Nullable<LensFlareSystem> {
-    for (var index = 0; index < this.lensFlareSystems.length; index++) {
+    for (let index = 0; index < this.lensFlareSystems.length; index++) {
         if (this.lensFlareSystems[index].name === name) {
             return this.lensFlareSystems[index];
         }
@@ -78,7 +78,7 @@ AbstractScene.prototype.getLensFlareSystemByName = function (name: string): Null
 };
 
 AbstractScene.prototype.getLensFlareSystemById = function (id: string): Nullable<LensFlareSystem> {
-    for (var index = 0; index < this.lensFlareSystems.length; index++) {
+    for (let index = 0; index < this.lensFlareSystems.length; index++) {
         if (this.lensFlareSystems[index].id === id) {
             return this.lensFlareSystems[index];
         }
@@ -92,7 +92,7 @@ AbstractScene.prototype.getLensFlareSystemByID = function (id: string): Nullable
 };
 
 AbstractScene.prototype.removeLensFlareSystem = function (toRemove: LensFlareSystem): number {
-    var index = this.lensFlareSystems.indexOf(toRemove);
+    const index = this.lensFlareSystems.indexOf(toRemove);
     if (index !== -1) {
         this.lensFlareSystems.splice(index, 1);
     }
@@ -182,8 +182,8 @@ export class LensFlareSystemSceneComponent implements ISceneSerializableComponen
     public serialize(serializationObject: any): void {
         // Lens flares
         serializationObject.lensFlareSystems = [];
-        let lensFlareSystems = this.scene.lensFlareSystems;
-        for (let lensFlareSystem of lensFlareSystems) {
+        const lensFlareSystems = this.scene.lensFlareSystems;
+        for (const lensFlareSystem of lensFlareSystems) {
             serializationObject.lensFlareSystems.push(lensFlareSystem.serialize());
         }
     }
@@ -192,7 +192,7 @@ export class LensFlareSystemSceneComponent implements ISceneSerializableComponen
      * Disposes the component and the associated resources.
      */
     public dispose(): void {
-        let lensFlareSystems = this.scene.lensFlareSystems;
+        const lensFlareSystems = this.scene.lensFlareSystems;
         while (lensFlareSystems.length) {
             lensFlareSystems[0].dispose();
         }
@@ -201,9 +201,9 @@ export class LensFlareSystemSceneComponent implements ISceneSerializableComponen
     private _draw(camera: Camera): void {
         // Lens flares
         if (this.scene.lensFlaresEnabled) {
-            let lensFlareSystems = this.scene.lensFlareSystems;
+            const lensFlareSystems = this.scene.lensFlareSystems;
             Tools.StartPerformanceCounter("Lens flares", lensFlareSystems.length > 0);
-            for (let lensFlareSystem of lensFlareSystems) {
+            for (const lensFlareSystem of lensFlareSystems) {
                 if ((camera.layerMask & lensFlareSystem.layerMask) !== 0) {
                     lensFlareSystem.render();
                 }

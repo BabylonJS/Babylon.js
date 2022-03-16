@@ -5,21 +5,20 @@ import { Mesh } from "../Meshes/mesh";
 import { CreateBox } from "../Meshes/Builders/boxBuilder";
 import { CreateSphere } from "../Meshes/Builders/sphereBuilder";
 import { Quaternion, Vector3 } from "../Maths/math.vector";
-import { Color3 } from '../Maths/math.color';
+import { Color3 } from "../Maths/math.color";
 import { Material } from "../Materials/material";
 import { EngineStore } from "../Engines/engineStore";
 import { StandardMaterial } from "../Materials/standardMaterial";
 import { IPhysicsEnginePlugin } from "../Physics/IPhysicsEngine";
 import { PhysicsImpostor } from "../Physics/physicsImpostor";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
-import { CreateCylinder } from '../Meshes/Builders/cylinderBuilder';
-import { CreateCapsule, ICreateCapsuleOptions } from '../Meshes/Builders/capsuleBuilder';
+import { CreateCylinder } from "../Meshes/Builders/cylinderBuilder";
+import { CreateCapsule, ICreateCapsuleOptions } from "../Meshes/Builders/capsuleBuilder";
 
 /**
-     * Used to show the physics impostor around the specific mesh
-     */
+ * Used to show the physics impostor around the specific mesh
+ */
 export class PhysicsViewer {
-
     /** @hidden */
     protected _impostors: Array<Nullable<PhysicsImpostor>> = [];
     /** @hidden */
@@ -49,7 +48,7 @@ export class PhysicsViewer {
         if (!this._scene) {
             return;
         }
-        let physicEngine = this._scene.getPhysicsEngine();
+        const physicEngine = this._scene.getPhysicsEngine();
 
         if (physicEngine) {
             this._physicsEnginePlugin = physicEngine.getPhysicsPlugin();
@@ -62,10 +61,10 @@ export class PhysicsViewer {
 
     /** @hidden */
     protected _updateDebugMeshes(): void {
-        var plugin = this._physicsEnginePlugin;
+        const plugin = this._physicsEnginePlugin;
 
-        for (var i = 0; i < this._numMeshes; i++) {
-            let impostor = this._impostors[i];
+        for (let i = 0; i < this._numMeshes; i++) {
+            const impostor = this._impostors[i];
 
             if (!impostor) {
                 continue;
@@ -77,7 +76,7 @@ export class PhysicsViewer {
                 if (impostor.type === PhysicsImpostor.MeshImpostor) {
                     continue;
                 }
-                let mesh = this._meshes[i];
+                const mesh = this._meshes[i];
 
                 if (mesh && plugin) {
                     plugin.syncMeshWithImpostor(mesh, impostor);
@@ -93,18 +92,17 @@ export class PhysicsViewer {
      * @returns the new debug mesh used to render the impostor
      */
     public showImpostor(impostor: PhysicsImpostor, targetMesh?: Mesh): Nullable<AbstractMesh> {
-
         if (!this._scene) {
             return null;
         }
 
-        for (var i = 0; i < this._numMeshes; i++) {
+        for (let i = 0; i < this._numMeshes; i++) {
             if (this._impostors[i] == impostor) {
                 return null;
             }
         }
 
-        var debugMesh = this._getDebugMesh(impostor, targetMesh);
+        const debugMesh = this._getDebugMesh(impostor, targetMesh);
 
         if (debugMesh) {
             this._impostors[this._numMeshes] = impostor;
@@ -126,17 +124,16 @@ export class PhysicsViewer {
      * @param impostor defines the impostor to hide
      */
     public hideImpostor(impostor: Nullable<PhysicsImpostor>) {
-
         if (!impostor || !this._scene || !this._utilityLayer) {
             return;
         }
 
-        var removed = false;
+        let removed = false;
         const utilityLayerScene = this._utilityLayer.utilityLayerScene;
 
-        for (var i = 0; i < this._numMeshes; i++) {
+        for (let i = 0; i < this._numMeshes; i++) {
             if (this._impostors[i] == impostor) {
-                let mesh = this._meshes[i];
+                const mesh = this._meshes[i];
 
                 if (!mesh) {
                     continue;
@@ -145,7 +142,7 @@ export class PhysicsViewer {
                 utilityLayerScene.removeMesh(mesh);
                 mesh.dispose();
 
-                let index = this._debugMeshMeshes.indexOf(mesh as Mesh);
+                const index = this._debugMeshMeshes.indexOf(mesh as Mesh);
                 if (index > -1) {
                     this._debugMeshMeshes.splice(index, 1);
                 }
@@ -168,12 +165,11 @@ export class PhysicsViewer {
         if (removed && this._numMeshes === 0) {
             this._scene.unregisterBeforeRender(this._renderFunction);
         }
-
     }
 
     private _getDebugMaterial(scene: Scene): Material {
         if (!this._debugMaterial) {
-            this._debugMaterial = new StandardMaterial('', scene);
+            this._debugMaterial = new StandardMaterial("", scene);
             this._debugMaterial.wireframe = true;
             this._debugMaterial.emissiveColor = Color3.White();
             this._debugMaterial.disableLighting = true;
@@ -184,50 +180,50 @@ export class PhysicsViewer {
 
     private _getDebugBoxMesh(scene: Scene): AbstractMesh {
         if (!this._debugBoxMesh) {
-            this._debugBoxMesh = CreateBox('physicsBodyBoxViewMesh', { size: 1 }, scene);
+            this._debugBoxMesh = CreateBox("physicsBodyBoxViewMesh", { size: 1 }, scene);
             this._debugBoxMesh.rotationQuaternion = Quaternion.Identity();
             this._debugBoxMesh.material = this._getDebugMaterial(scene);
             this._debugBoxMesh.setEnabled(false);
         }
 
-        return this._debugBoxMesh.createInstance('physicsBodyBoxViewInstance');
+        return this._debugBoxMesh.createInstance("physicsBodyBoxViewInstance");
     }
 
     private _getDebugSphereMesh(scene: Scene): AbstractMesh {
         if (!this._debugSphereMesh) {
-            this._debugSphereMesh = CreateSphere('physicsBodySphereViewMesh', { diameter: 1 }, scene);
+            this._debugSphereMesh = CreateSphere("physicsBodySphereViewMesh", { diameter: 1 }, scene);
             this._debugSphereMesh.rotationQuaternion = Quaternion.Identity();
             this._debugSphereMesh.material = this._getDebugMaterial(scene);
             this._debugSphereMesh.setEnabled(false);
         }
 
-        return this._debugSphereMesh.createInstance('physicsBodySphereViewInstance');
+        return this._debugSphereMesh.createInstance("physicsBodySphereViewInstance");
     }
 
     private _getDebugCapsuleMesh(scene: Scene): AbstractMesh {
         if (!this._debugCapsuleMesh) {
-            this._debugCapsuleMesh = CreateCapsule('physicsBodyCapsuleViewMesh', { height: 1 } as ICreateCapsuleOptions, scene);
+            this._debugCapsuleMesh = CreateCapsule("physicsBodyCapsuleViewMesh", { height: 1 } as ICreateCapsuleOptions, scene);
             this._debugCapsuleMesh.rotationQuaternion = Quaternion.Identity();
             this._debugCapsuleMesh.material = this._getDebugMaterial(scene);
             this._debugCapsuleMesh.setEnabled(false);
         }
 
-        return this._debugCapsuleMesh.createInstance('physicsBodyCapsuleViewInstance');
+        return this._debugCapsuleMesh.createInstance("physicsBodyCapsuleViewInstance");
     }
 
     private _getDebugCylinderMesh(scene: Scene): AbstractMesh {
         if (!this._debugCylinderMesh) {
-            this._debugCylinderMesh = CreateCylinder('physicsBodyCylinderViewMesh', { diameterTop: 1, diameterBottom: 1, height: 1 }, scene);
+            this._debugCylinderMesh = CreateCylinder("physicsBodyCylinderViewMesh", { diameterTop: 1, diameterBottom: 1, height: 1 }, scene);
             this._debugCylinderMesh.rotationQuaternion = Quaternion.Identity();
             this._debugCylinderMesh.material = this._getDebugMaterial(scene);
             this._debugCylinderMesh.setEnabled(false);
         }
 
-        return this._debugCylinderMesh.createInstance('physicsBodyCylinderViewInstance');
+        return this._debugCylinderMesh.createInstance("physicsBodyCylinderViewInstance");
     }
 
     private _getDebugMeshMesh(mesh: Mesh, scene: Scene): AbstractMesh {
-        var wireframeOver = new Mesh(mesh.name, scene, null, mesh);
+        const wireframeOver = new Mesh(mesh.name, scene, null, mesh);
         wireframeOver.setParent(mesh);
         wireframeOver.position = Vector3.Zero();
         wireframeOver.material = this._getDebugMaterial(scene);
@@ -247,7 +243,7 @@ export class PhysicsViewer {
             return null;
         }
 
-        var mesh: Nullable<AbstractMesh> = null;
+        let mesh: Nullable<AbstractMesh> = null;
         const utilityLayerScene = this._utilityLayer.utilityLayerScene;
 
         switch (impostor.type) {
@@ -277,7 +273,9 @@ export class PhysicsViewer {
             case PhysicsImpostor.NoImpostor:
                 if (targetMesh) {
                     // Handle compound impostors
-                    var childMeshes = targetMesh.getChildMeshes().filter((c) => { return c.physicsImpostor ? 1 : 0; });
+                    const childMeshes = targetMesh.getChildMeshes().filter((c) => {
+                        return c.physicsImpostor ? 1 : 0;
+                    });
                     childMeshes.forEach((m) => {
                         if (m.physicsImpostor && m.getClassName() === "Mesh") {
                             const boundingInfo = m.getBoundingInfo();
@@ -324,8 +322,8 @@ export class PhysicsViewer {
 
     /** Releases all resources */
     public dispose() {
-        let count = this._numMeshes;
-        for (var index = 0; index < count; index++) {
+        const count = this._numMeshes;
+        for (let index = 0; index < count; index++) {
             this.hideImpostor(this._impostors[0]);
         }
 

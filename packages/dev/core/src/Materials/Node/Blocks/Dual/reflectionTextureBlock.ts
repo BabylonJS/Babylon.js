@@ -1,12 +1,12 @@
-import { NodeMaterialBlockConnectionPointTypes } from '../../Enums/nodeMaterialBlockConnectionPointTypes';
-import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
-import { NodeMaterialBlockTargets } from '../../Enums/nodeMaterialBlockTargets';
-import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPoint';
-import { NodeMaterial } from '../../nodeMaterial';
-import { RegisterClass } from '../../../../Misc/typeStore';
-import { InputBlock } from '../Input/inputBlock';
-import { NodeMaterialSystemValues } from '../../Enums/nodeMaterialSystemValues';
-import { ReflectionTextureBaseBlock } from './reflectionTextureBaseBlock';
+import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
+import { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
+import { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
+import { NodeMaterial } from "../../nodeMaterial";
+import { RegisterClass } from "../../../../Misc/typeStore";
+import { InputBlock } from "../Input/inputBlock";
+import { NodeMaterialSystemValues } from "../../Enums/nodeMaterialSystemValues";
+import { ReflectionTextureBaseBlock } from "./reflectionTextureBaseBlock";
 
 /**
  * Block used to read a reflection texture from a sampler
@@ -74,8 +74,8 @@ export class ReflectionTextureBlock extends ReflectionTextureBaseBlock {
     }
 
     /**
-    * Gets the camera (or eye) position component
-    */
+     * Gets the camera (or eye) position component
+     */
     public get cameraPosition(): NodeMaterialConnectionPoint {
         return this._inputs[4];
     }

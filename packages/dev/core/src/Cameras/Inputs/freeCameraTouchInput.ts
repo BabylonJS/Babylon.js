@@ -62,7 +62,7 @@ export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
      */
     public attachControl(noPreventDefault?: boolean): void {
         noPreventDefault = Tools.BackCompatCameraNoPreventDefault(arguments);
-        var previousPosition: Nullable<{ x: number; y: number }> = null;
+        let previousPosition: Nullable<{ x: number; y: number }> = null;
 
         if (this._pointerInput === undefined) {
             this._onLostFocus = () => {
@@ -71,9 +71,9 @@ export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
             };
 
             this._pointerInput = (p) => {
-                var evt = <IPointerEvent>p.event;
+                const evt = <IPointerEvent>p.event;
 
-                let isMouseEvent = !this.camera.getEngine().hostInformation.isMobile && evt instanceof MouseEvent;
+                const isMouseEvent = !this.camera.getEngine().hostInformation.isMobile && evt instanceof MouseEvent;
 
                 if (!this.allowMouse && (evt.pointerType === "mouse" || isMouseEvent)) {
                     return;
@@ -133,7 +133,9 @@ export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
             };
         }
 
-        this._observer = this.camera.getScene().onPointerObservable.add(this._pointerInput, PointerEventTypes.POINTERDOWN | PointerEventTypes.POINTERUP | PointerEventTypes.POINTERMOVE);
+        this._observer = this.camera
+            .getScene()
+            .onPointerObservable.add(this._pointerInput, PointerEventTypes.POINTERDOWN | PointerEventTypes.POINTERUP | PointerEventTypes.POINTERMOVE);
 
         if (this._onLostFocus) {
             const engine = this.camera.getEngine();
@@ -182,7 +184,7 @@ export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
             return;
         }
 
-        var camera = this.camera;
+        const camera = this.camera;
         camera.cameraRotation.y = this._offsetX / this.touchAngularSensibility;
 
         const rotateCamera = (this.singleFingerRotate && this._pointerPressed.length === 1) || (!this.singleFingerRotate && this._pointerPressed.length > 1);
@@ -190,8 +192,8 @@ export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
         if (rotateCamera) {
             camera.cameraRotation.x = -this._offsetY / this.touchAngularSensibility;
         } else {
-            var speed = camera._computeLocalCameraSpeed();
-            var direction = new Vector3(0, 0, (speed * this._offsetY) / this.touchMoveSensibility);
+            const speed = camera._computeLocalCameraSpeed();
+            const direction = new Vector3(0, 0, (speed * this._offsetY) / this.touchMoveSensibility);
 
             Matrix.RotationYawPitchRollToRef(camera.rotation.y, camera.rotation.x, 0, camera._cameraRotationMatrix);
             camera.cameraDirection.addInPlace(Vector3.TransformCoordinates(direction, camera._cameraRotationMatrix));

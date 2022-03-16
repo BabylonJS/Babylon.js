@@ -6,7 +6,7 @@ import { ArcRotateCamera } from "../../Cameras/arcRotateCamera";
 import { ICameraInput, CameraInputTypes } from "../../Cameras/cameraInputsManager";
 import { Engine } from "../../Engines/engine";
 import { KeyboardInfo, KeyboardEventTypes } from "../../Events/keyboardEvents";
-import { Tools } from '../../Misc/tools';
+import { Tools } from "../../Misc/tools";
 
 /**
  * Manage the keyboard inputs to control the movement of an arc rotate camera.
@@ -104,13 +104,19 @@ export class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateC
         });
 
         this._onKeyboardObserver = this._scene.onKeyboardObservable.add((info) => {
-            let evt = info.event;
+            const evt = info.event;
             if (!evt.metaKey) {
                 if (info.type === KeyboardEventTypes.KEYDOWN) {
                     this._ctrlPressed = evt.ctrlKey;
                     this._altPressed = evt.altKey;
 
-                    if (this.keysUp.indexOf(evt.keyCode) !== -1 || this.keysDown.indexOf(evt.keyCode) !== -1 || this.keysLeft.indexOf(evt.keyCode) !== -1 || this.keysRight.indexOf(evt.keyCode) !== -1 || this.keysReset.indexOf(evt.keyCode) !== -1) {
+                    if (
+                        this.keysUp.indexOf(evt.keyCode) !== -1 ||
+                        this.keysDown.indexOf(evt.keyCode) !== -1 ||
+                        this.keysLeft.indexOf(evt.keyCode) !== -1 ||
+                        this.keysRight.indexOf(evt.keyCode) !== -1 ||
+                        this.keysReset.indexOf(evt.keyCode) !== -1
+                    ) {
                         var index = this._keys.indexOf(evt.keyCode);
 
                         if (index === -1) {
@@ -124,7 +130,13 @@ export class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateC
                         }
                     }
                 } else {
-                    if (this.keysUp.indexOf(evt.keyCode) !== -1 || this.keysDown.indexOf(evt.keyCode) !== -1 || this.keysLeft.indexOf(evt.keyCode) !== -1 || this.keysRight.indexOf(evt.keyCode) !== -1 || this.keysReset.indexOf(evt.keyCode) !== -1) {
+                    if (
+                        this.keysUp.indexOf(evt.keyCode) !== -1 ||
+                        this.keysDown.indexOf(evt.keyCode) !== -1 ||
+                        this.keysLeft.indexOf(evt.keyCode) !== -1 ||
+                        this.keysRight.indexOf(evt.keyCode) !== -1 ||
+                        this.keysReset.indexOf(evt.keyCode) !== -1
+                    ) {
                         var index = this._keys.indexOf(evt.keyCode);
 
                         if (index >= 0) {
@@ -172,10 +184,10 @@ export class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateC
      */
     public checkInputs(): void {
         if (this._onKeyboardObserver) {
-            var camera = this.camera;
+            const camera = this.camera;
 
-            for (var index = 0; index < this._keys.length; index++) {
-                var keyCode = this._keys[index];
+            for (let index = 0; index < this._keys.length; index++) {
+                const keyCode = this._keys[index];
                 if (this.keysLeft.indexOf(keyCode) !== -1) {
                     if (this._ctrlPressed && this.camera._useCtrlForPanning) {
                         camera.inertialPanningX -= 1 / this.panningSensibility;

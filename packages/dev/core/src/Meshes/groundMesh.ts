@@ -92,10 +92,10 @@ export class GroundMesh extends Mesh {
      * @returns the ground y position if (x, z) are outside the ground surface.
      */
     public getHeightAtCoordinates(x: number, z: number): number {
-        var world = this.getWorldMatrix();
-        var invMat = TmpVectors.Matrix[5];
+        const world = this.getWorldMatrix();
+        const invMat = TmpVectors.Matrix[5];
         world.invertToRef(invMat);
-        var tmpVect = TmpVectors.Vector3[8];
+        const tmpVect = TmpVectors.Vector3[8];
         Vector3.TransformCoordinatesFromFloatsToRef(x, 0.0, z, invMat, tmpVect); // transform x,z in the mesh local space
         x = tmpVect.x;
         z = tmpVect.z;
@@ -106,8 +106,8 @@ export class GroundMesh extends Mesh {
             this._initHeightQuads();
             this._computeHeightQuads();
         }
-        var facet = this._getFacetAt(x, z);
-        var y = -(facet.x * x + facet.z * z + facet.w) / facet.y;
+        const facet = this._getFacetAt(x, z);
+        const y = -(facet.x * x + facet.z * z + facet.w) / facet.y;
         // return y in the World system
         Vector3.TransformCoordinatesFromFloatsToRef(0.0, y, 0.0, world, tmpVect);
         return tmpVect.y;
@@ -121,7 +121,7 @@ export class GroundMesh extends Mesh {
      * @returns Vector3(0.0, 1.0, 0.0) if (x, z) are outside the ground surface.
      */
     public getNormalAtCoordinates(x: number, z: number): Vector3 {
-        var normal = new Vector3(0.0, 1.0, 0.0);
+        const normal = new Vector3(0.0, 1.0, 0.0);
         this.getNormalAtCoordinatesToRef(x, z, normal);
         return normal;
     }
@@ -136,10 +136,10 @@ export class GroundMesh extends Mesh {
      * @returns the GroundMesh.
      */
     public getNormalAtCoordinatesToRef(x: number, z: number, ref: Vector3): GroundMesh {
-        var world = this.getWorldMatrix();
-        var tmpMat = TmpVectors.Matrix[5];
+        const world = this.getWorldMatrix();
+        const tmpMat = TmpVectors.Matrix[5];
         world.invertToRef(tmpMat);
-        var tmpVect = TmpVectors.Vector3[8];
+        const tmpVect = TmpVectors.Vector3[8];
         Vector3.TransformCoordinatesFromFloatsToRef(x, 0.0, z, tmpMat, tmpVect); // transform x,z in the mesh local space
         x = tmpVect.x;
         z = tmpVect.z;
@@ -150,17 +150,17 @@ export class GroundMesh extends Mesh {
             this._initHeightQuads();
             this._computeHeightQuads();
         }
-        var facet = this._getFacetAt(x, z);
+        const facet = this._getFacetAt(x, z);
         Vector3.TransformNormalFromFloatsToRef(facet.x, facet.y, facet.z, world, ref);
         return this;
     }
 
     /**
-    * Force the heights to be recomputed for getHeightAtCoordinates() or getNormalAtCoordinates()
-    * if the ground has been updated.
-    * This can be used in the render loop.
-    * @returns the GroundMesh.
-    */
+     * Force the heights to be recomputed for getHeightAtCoordinates() or getNormalAtCoordinates()
+     * if the ground has been updated.
+     * This can be used in the render loop.
+     * @returns the GroundMesh.
+     */
     public updateCoordinateHeights(): GroundMesh {
         if (!this._heightQuads || this._heightQuads.length == 0) {
             this._initHeightQuads();
@@ -172,10 +172,10 @@ export class GroundMesh extends Mesh {
     // Returns the element "facet" from the heightQuads array relative to (x, z) local coordinates
     private _getFacetAt(x: number, z: number): Vector4 {
         // retrieve col and row from x, z coordinates in the ground local system
-        var col = Math.floor((x + this._maxX) * this._subdivisionsX / this._width);
-        var row = Math.floor(-(z + this._maxZ) * this._subdivisionsY / this._height + this._subdivisionsY);
-        var quad = this._heightQuads[row * this._subdivisionsX + col];
-        var facet;
+        const col = Math.floor(((x + this._maxX) * this._subdivisionsX) / this._width);
+        const row = Math.floor((-(z + this._maxZ) * this._subdivisionsY) / this._height + this._subdivisionsY);
+        const quad = this._heightQuads[row * this._subdivisionsX + col];
+        let facet;
         if (z < quad.slope.x * x + quad.slope.y) {
             facet = quad.facet1;
         } else {
@@ -191,12 +191,12 @@ export class GroundMesh extends Mesh {
     // facet2 :  Vector4(a, b, c, d) = second facet 3D plane equation : ax + by + cz + d = 0
     // Returns the GroundMesh.
     private _initHeightQuads(): GroundMesh {
-        var subdivisionsX = this._subdivisionsX;
-        var subdivisionsY = this._subdivisionsY;
+        const subdivisionsX = this._subdivisionsX;
+        const subdivisionsY = this._subdivisionsY;
         this._heightQuads = new Array();
-        for (var row = 0; row < subdivisionsY; row++) {
-            for (var col = 0; col < subdivisionsX; col++) {
-                var quad = { slope: Vector2.Zero(), facet1: new Vector4(0.0, 0.0, 0.0, 0.0), facet2: new Vector4(0.0, 0.0, 0.0, 0.0) };
+        for (let row = 0; row < subdivisionsY; row++) {
+            for (let col = 0; col < subdivisionsX; col++) {
+                const quad = { slope: Vector2.Zero(), facet1: new Vector4(0.0, 0.0, 0.0, 0.0), facet2: new Vector4(0.0, 0.0, 0.0, 0.0) };
                 this._heightQuads[row * subdivisionsX + col] = quad;
             }
         }
@@ -209,34 +209,34 @@ export class GroundMesh extends Mesh {
     // facet2 :  Vector4(a, b, c, d) = second facet 3D plane equation : ax + by + cz + d = 0
     // Returns the GroundMesh.
     private _computeHeightQuads(): GroundMesh {
-        var positions = this.getVerticesData(VertexBuffer.PositionKind);
+        const positions = this.getVerticesData(VertexBuffer.PositionKind);
 
         if (!positions) {
             return this;
         }
 
-        var v1 = TmpVectors.Vector3[3];
-        var v2 = TmpVectors.Vector3[2];
-        var v3 = TmpVectors.Vector3[1];
-        var v4 = TmpVectors.Vector3[0];
-        var v1v2 = TmpVectors.Vector3[4];
-        var v1v3 = TmpVectors.Vector3[5];
-        var v1v4 = TmpVectors.Vector3[6];
-        var norm1 = TmpVectors.Vector3[7];
-        var norm2 = TmpVectors.Vector3[8];
-        var i = 0;
-        var j = 0;
-        var k = 0;
-        var cd = 0;     // 2D slope coefficient : z = cd * x + h
-        var h = 0;
-        var d1 = 0;     // facet plane equation : ax + by + cz + d = 0
-        var d2 = 0;
+        const v1 = TmpVectors.Vector3[3];
+        const v2 = TmpVectors.Vector3[2];
+        const v3 = TmpVectors.Vector3[1];
+        const v4 = TmpVectors.Vector3[0];
+        const v1v2 = TmpVectors.Vector3[4];
+        const v1v3 = TmpVectors.Vector3[5];
+        const v1v4 = TmpVectors.Vector3[6];
+        const norm1 = TmpVectors.Vector3[7];
+        const norm2 = TmpVectors.Vector3[8];
+        let i = 0;
+        let j = 0;
+        let k = 0;
+        let cd = 0; // 2D slope coefficient : z = cd * x + h
+        let h = 0;
+        let d1 = 0; // facet plane equation : ax + by + cz + d = 0
+        let d2 = 0;
 
-        var subdivisionsX = this._subdivisionsX;
-        var subdivisionsY = this._subdivisionsY;
+        const subdivisionsX = this._subdivisionsX;
+        const subdivisionsY = this._subdivisionsY;
 
-        for (var row = 0; row < subdivisionsY; row++) {
-            for (var col = 0; col < subdivisionsX; col++) {
+        for (let row = 0; row < subdivisionsY; row++) {
+            for (let col = 0; col < subdivisionsX; col++) {
                 i = col * 3;
                 j = row * (subdivisionsX + 1) * 3;
                 k = (row + 1) * (subdivisionsX + 1) * 3;
@@ -255,7 +255,7 @@ export class GroundMesh extends Mesh {
 
                 // 2D slope V1V4
                 cd = (v4.z - v1.z) / (v4.x - v1.x);
-                h = v1.z - cd * v1.x;             // v1 belongs to the slope
+                h = v1.z - cd * v1.x; // v1 belongs to the slope
 
                 // facet equations :
                 // we compute each facet normal vector
@@ -265,14 +265,14 @@ export class GroundMesh extends Mesh {
                 v2.subtractToRef(v1, v1v2);
                 v3.subtractToRef(v1, v1v3);
                 v4.subtractToRef(v1, v1v4);
-                Vector3.CrossToRef(v1v4, v1v3, norm1);  // caution : CrossToRef uses the Tmp class
+                Vector3.CrossToRef(v1v4, v1v3, norm1); // caution : CrossToRef uses the Tmp class
                 Vector3.CrossToRef(v1v2, v1v4, norm2);
                 norm1.normalize();
                 norm2.normalize();
                 d1 = -(norm1.x * v1.x + norm1.y * v1.y + norm1.z * v1.z);
                 d2 = -(norm2.x * v2.x + norm2.y * v2.y + norm2.z * v2.z);
 
-                var quad = this._heightQuads[row * subdivisionsX + col];
+                const quad = this._heightQuads[row * subdivisionsX + col];
                 quad.slope.copyFromFloats(cd, h);
                 quad.facet1.copyFromFloats(norm1.x, norm1.y, norm1.z, d1);
                 quad.facet2.copyFromFloats(norm2.x, norm2.y, norm2.z, d2);
@@ -307,7 +307,7 @@ export class GroundMesh extends Mesh {
      * @returns the created ground mesh
      */
     public static Parse(parsedMesh: any, scene: Scene): GroundMesh {
-        var result = new GroundMesh(parsedMesh.name, scene);
+        const result = new GroundMesh(parsedMesh.name, scene);
 
         result._subdivisionsX = parsedMesh.subdivisionsX || 1;
         result._subdivisionsY = parsedMesh.subdivisionsY || 1;

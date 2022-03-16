@@ -5,7 +5,6 @@ import { StencilStateComposer } from "../../States/stencilStateComposer";
  * @hidden
  **/
 export class WebGPUStencilStateComposer extends StencilStateComposer {
-
     private _cache: WebGPUCacheRenderPipeline;
 
     public constructor(cache: WebGPUCacheRenderPipeline) {

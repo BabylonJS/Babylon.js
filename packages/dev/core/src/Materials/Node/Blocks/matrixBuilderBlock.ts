@@ -1,18 +1,17 @@
-import { NodeMaterialBlock } from '../nodeMaterialBlock';
-import { NodeMaterialBlockConnectionPointTypes } from '../Enums/nodeMaterialBlockConnectionPointTypes';
-import { NodeMaterialBuildState } from '../nodeMaterialBuildState';
-import { NodeMaterialBlockTargets } from '../Enums/nodeMaterialBlockTargets';
-import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint';
-import { RegisterClass } from '../../../Misc/typeStore';
-import { NodeMaterial } from '../nodeMaterial';
-import { InputBlock } from './Input/inputBlock';
-import { Vector4 } from '../../../Maths/math.vector';
+import { NodeMaterialBlock } from "../nodeMaterialBlock";
+import { NodeMaterialBlockConnectionPointTypes } from "../Enums/nodeMaterialBlockConnectionPointTypes";
+import { NodeMaterialBuildState } from "../nodeMaterialBuildState";
+import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
+import { NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
+import { RegisterClass } from "../../../Misc/typeStore";
+import { NodeMaterial } from "../nodeMaterial";
+import { InputBlock } from "./Input/inputBlock";
+import { Vector4 } from "../../../Maths/math.vector";
 
 /**
  * Block used to build a matrix from 4 Vector4
  */
 export class MatrixBuilderBlock extends NodeMaterialBlock {
-
     /**
      * Creates a new MatrixBuilder
      * @param name defines the block name
@@ -72,25 +71,25 @@ export class MatrixBuilderBlock extends NodeMaterialBlock {
 
     public autoConfigure(material: NodeMaterial) {
         if (!this.row0.isConnected) {
-            let row0Input = new InputBlock("row0");
+            const row0Input = new InputBlock("row0");
             row0Input.value = new Vector4(1, 0, 0, 0);
             row0Input.output.connectTo(this.row0);
         }
 
         if (!this.row1.isConnected) {
-            let row1Input = new InputBlock("row1");
+            const row1Input = new InputBlock("row1");
             row1Input.value = new Vector4(0, 1, 0, 0);
             row1Input.output.connectTo(this.row1);
         }
 
         if (!this.row2.isConnected) {
-            let row2Input = new InputBlock("row2");
+            const row2Input = new InputBlock("row2");
             row2Input.value = new Vector4(0, 0, 1, 0);
             row2Input.output.connectTo(this.row2);
         }
 
         if (!this.row3.isConnected) {
-            let row3Input = new InputBlock("row3");
+            const row3Input = new InputBlock("row3");
             row3Input.value = new Vector4(0, 0, 0, 1);
             row3Input.output.connectTo(this.row3);
         }
@@ -99,13 +98,15 @@ export class MatrixBuilderBlock extends NodeMaterialBlock {
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
-        let output = this._outputs[0];
-        let row0 = this.row0;
-        let row1 = this.row1;
-        let row2 = this.row2;
-        let row3 = this.row3;
+        const output = this._outputs[0];
+        const row0 = this.row0;
+        const row1 = this.row1;
+        const row2 = this.row2;
+        const row3 = this.row3;
 
-        state.compilationString += this._declareOutput(output, state) + ` = mat4(${row0.associatedVariableName}, ${row1.associatedVariableName}, ${row2.associatedVariableName}, ${row3.associatedVariableName});\r\n`;
+        state.compilationString +=
+            this._declareOutput(output, state) +
+            ` = mat4(${row0.associatedVariableName}, ${row1.associatedVariableName}, ${row2.associatedVariableName}, ${row3.associatedVariableName});\r\n`;
 
         return this;
     }

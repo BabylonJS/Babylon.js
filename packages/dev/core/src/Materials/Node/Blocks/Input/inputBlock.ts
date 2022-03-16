@@ -1,37 +1,37 @@
-import { NodeMaterialBlock } from '../../nodeMaterialBlock';
-import { NodeMaterialBlockConnectionPointTypes } from '../../Enums/nodeMaterialBlockConnectionPointTypes';
-import { NodeMaterialBlockConnectionPointMode } from '../../Enums/nodeMaterialBlockConnectionPointMode';
-import { NodeMaterialSystemValues } from '../../Enums/nodeMaterialSystemValues';
-import { Nullable } from '../../../../types';
-import { Effect } from '../../../../Materials/effect';
-import { Matrix, Vector2, Vector3, Vector4 } from '../../../../Maths/math.vector';
-import { Scene } from '../../../../scene';
-import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPoint';
-import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
-import { NodeMaterialBlockTargets } from '../../Enums/nodeMaterialBlockTargets';
-import { GetClass, RegisterClass } from '../../../../Misc/typeStore';
-import { Color3, Color4, TmpColors } from '../../../../Maths/math';
-import { AnimatedInputBlockTypes } from './animatedInputBlockTypes';
-import { Observable } from '../../../../Misc/observable';
-import { NodeMaterial } from '../../nodeMaterial';
+import { NodeMaterialBlock } from "../../nodeMaterialBlock";
+import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
+import { NodeMaterialBlockConnectionPointMode } from "../../Enums/nodeMaterialBlockConnectionPointMode";
+import { NodeMaterialSystemValues } from "../../Enums/nodeMaterialSystemValues";
+import { Nullable } from "../../../../types";
+import { Effect } from "../../../../Materials/effect";
+import { Matrix, Vector2, Vector3, Vector4 } from "../../../../Maths/math.vector";
+import { Scene } from "../../../../scene";
+import { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
+import { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
+import { GetClass, RegisterClass } from "../../../../Misc/typeStore";
+import { Color3, Color4, TmpColors } from "../../../../Maths/math";
+import { AnimatedInputBlockTypes } from "./animatedInputBlockTypes";
+import { Observable } from "../../../../Misc/observable";
+import { NodeMaterial } from "../../nodeMaterial";
 
 const remapAttributeName: { [name: string]: string } = {
-    "position2d": "position",
-    "particle_uv": "vUV",
-    "particle_color": "vColor",
-    "particle_texturemask": "textureMask",
-    "particle_positionw": "vPositionW",
+    position2d: "position",
+    particle_uv: "vUV",
+    particle_color: "vColor",
+    particle_texturemask: "textureMask",
+    particle_positionw: "vPositionW",
 };
 
 const attributeInFragmentOnly: { [name: string]: boolean } = {
-    "particle_uv": true,
-    "particle_color": true,
-    "particle_texturemask": true,
-    "particle_positionw": true,
+    particle_uv: true,
+    particle_color: true,
+    particle_texturemask: true,
+    particle_positionw: true,
 };
 
 const attributeAsUniform: { [name: string]: boolean } = {
-    "particle_texturemask": true,
+    particle_texturemask: true,
 };
 
 /**
@@ -189,10 +189,10 @@ export class InputBlock extends NodeMaterialBlock {
     }
 
     /**
-    * Validates if a name is a reserve word.
-    * @param newName the new name to be given to the node.
-    * @returns false if the name is a reserve word, else true.
-    */
+     * Validates if a name is a reserve word.
+     * @param newName the new name to be given to the node.
+     * @returns false if the name is a reserve word, else true.
+     */
     public validateBlockName(newName: string) {
         if (!this.isAttribute) {
             return super.validateBlockName(newName);
@@ -242,8 +242,7 @@ export class InputBlock extends NodeMaterialBlock {
         if (this.type === NodeMaterialBlockConnectionPointTypes.Float) {
             if (this.isBoolean) {
                 value = value ? 1 : 0;
-            }
-            else if (this.min !== this.max) {
+            } else if (this.min !== this.max) {
                 value = Math.max(this.min, value);
                 value = Math.min(this.max, value);
             }
@@ -488,7 +487,7 @@ export class InputBlock extends NodeMaterialBlock {
             }
 
             // well known
-            let hints = state.sharedData.hints;
+            const hints = state.sharedData.hints;
             if (this._systemValue !== null && this._systemValue !== undefined) {
                 switch (this._systemValue) {
                     case NodeMaterialSystemValues.WorldView:
@@ -511,7 +510,8 @@ export class InputBlock extends NodeMaterialBlock {
         if (this.isAttribute) {
             this.associatedVariableName = remapAttributeName[this.name] ?? this.name;
 
-            if (this.target === NodeMaterialBlockTargets.Vertex && state._vertexState) { // Attribute for fragment need to be carried over by varyings
+            if (this.target === NodeMaterialBlockTargets.Vertex && state._vertexState) {
+                // Attribute for fragment need to be carried over by varyings
                 if (attributeInFragmentOnly[this.name]) {
                     if (attributeAsUniform[this.name]) {
                         state._emitUniformFromString(this.associatedVariableName, state._getGLType(this.type), define);
@@ -548,13 +548,19 @@ export class InputBlock extends NodeMaterialBlock {
         }
     }
 
-    /** @hidden */
+    /**
+     * @param effect
+     * @param world
+     * @param worldView
+     * @param worldViewProjection
+     * @hidden
+     */
     public _transmitWorld(effect: Effect, world: Matrix, worldView: Matrix, worldViewProjection: Matrix) {
         if (!this._systemValue) {
             return;
         }
 
-        let variableName = this.associatedVariableName;
+        const variableName = this.associatedVariableName;
         switch (this._systemValue) {
             case NodeMaterialSystemValues.World:
                 effect.setMatrix(variableName, world);
@@ -568,13 +574,18 @@ export class InputBlock extends NodeMaterialBlock {
         }
     }
 
-    /** @hidden */
+    /**
+     * @param effect
+     * @param scene
+     * @param material
+     * @hidden
+     */
     public _transmit(effect: Effect, scene: Scene, material: NodeMaterial) {
         if (this.isAttribute) {
             return;
         }
 
-        let variableName = this.associatedVariableName;
+        const variableName = this.associatedVariableName;
         if (this._systemValue) {
             switch (this._systemValue) {
                 case NodeMaterialSystemValues.World:
@@ -601,7 +612,13 @@ export class InputBlock extends NodeMaterialBlock {
                     break;
                 case NodeMaterialSystemValues.CameraParameters:
                     if (scene.activeCamera) {
-                        effect.setFloat4(variableName, scene.getEngine().hasOriginBottomLeft ? -1 : 1, scene.activeCamera.minZ, scene.activeCamera.maxZ, 1 / scene.activeCamera.maxZ);
+                        effect.setFloat4(
+                            variableName,
+                            scene.getEngine().hasOriginBottomLeft ? -1 : 1,
+                            scene.activeCamera.minZ,
+                            scene.activeCamera.maxZ,
+                            1 / scene.activeCamera.maxZ
+                        );
                     }
                     break;
                 case NodeMaterialSystemValues.MaterialAlpha:
@@ -611,7 +628,7 @@ export class InputBlock extends NodeMaterialBlock {
             return;
         }
 
-        let value = this._valueCallback ? this._valueCallback() : this._storedValue;
+        const value = this._valueCallback ? this._valueCallback() : this._storedValue;
 
         if (value === null) {
             return;
@@ -670,7 +687,7 @@ export class InputBlock extends NodeMaterialBlock {
     }
 
     protected _dumpPropertiesCode() {
-        let variableName = this._codeVariableName;
+        const variableName = this._codeVariableName;
 
         if (this.isAttribute) {
             return super._dumpPropertiesCode() + `${variableName}.setAsAttribute("${this.name}");\r\n`;
@@ -734,13 +751,11 @@ export class InputBlock extends NodeMaterialBlock {
             }
 
             // Common Property "Type"
-            codes.push(
-                `${variableName}.isConstant = ${this.isConstant}`,
-            );
+            codes.push(`${variableName}.isConstant = ${this.isConstant}`);
 
-            codes.push('');
+            codes.push("");
 
-            return super._dumpPropertiesCode() + codes.join(';\r\n');
+            return super._dumpPropertiesCode() + codes.join(";\r\n");
         }
         return super._dumpPropertiesCode();
     }
@@ -752,7 +767,7 @@ export class InputBlock extends NodeMaterialBlock {
     }
 
     public serialize(): any {
-        let serializationObject = super.serialize();
+        const serializationObject = super.serialize();
 
         serializationObject.type = this.type;
         serializationObject.mode = this._mode;
@@ -804,7 +819,7 @@ export class InputBlock extends NodeMaterialBlock {
         if (serializationObject.valueType === "number") {
             this._storedValue = serializationObject.value;
         } else {
-            let valueType = GetClass(serializationObject.valueType);
+            const valueType = GetClass(serializationObject.valueType);
 
             if (valueType) {
                 this._storedValue = valueType.FromArray(serializationObject.value);

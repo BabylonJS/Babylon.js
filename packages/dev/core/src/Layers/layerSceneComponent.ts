@@ -4,7 +4,7 @@ import { Engine } from "../Engines/engine";
 import { SceneComponentConstants, ISceneComponent } from "../sceneComponent";
 import { Layer } from "./layer";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
-import { AbstractScene } from '../abstractScene';
+import { AbstractScene } from "../abstractScene";
 import { EngineStore } from "../Engines/engineStore";
 
 declare module "../abstractScene" {
@@ -62,9 +62,9 @@ export class LayerSceneComponent implements ISceneComponent {
      * context lost for instance.
      */
     public rebuild(): void {
-        let layers = this.scene.layers;
+        const layers = this.scene.layers;
 
-        for (let layer of layers) {
+        for (const layer of layers) {
             layer._rebuild();
         }
     }
@@ -73,7 +73,7 @@ export class LayerSceneComponent implements ISceneComponent {
      * Disposes the component and the associated resources.
      */
     public dispose(): void {
-        let layers = this.scene.layers;
+        const layers = this.scene.layers;
 
         while (layers.length) {
             layers[0].dispose();
@@ -81,11 +81,11 @@ export class LayerSceneComponent implements ISceneComponent {
     }
 
     private _draw(predicate: (layer: Layer) => boolean): void {
-        let layers = this.scene.layers;
+        const layers = this.scene.layers;
 
         if (layers.length) {
             this._engine.setDepthBuffer(false);
-            for (let layer of layers) {
+            for (const layer of layers) {
                 if (predicate(layer)) {
                     layer.render();
                 }
@@ -95,9 +95,7 @@ export class LayerSceneComponent implements ISceneComponent {
     }
 
     private _drawCameraPredicate(layer: Layer, isBackground: boolean, cameraLayerMask: number): boolean {
-        return !layer.renderOnlyInRenderTargetTextures &&
-            layer.isBackground === isBackground &&
-            ((layer.layerMask & cameraLayerMask) !== 0);
+        return !layer.renderOnlyInRenderTargetTextures && layer.isBackground === isBackground && (layer.layerMask & cameraLayerMask) !== 0;
     }
 
     private _drawCameraBackground(camera: Camera): void {
@@ -113,10 +111,12 @@ export class LayerSceneComponent implements ISceneComponent {
     }
 
     private _drawRenderTargetPredicate(layer: Layer, isBackground: boolean, cameraLayerMask: number, renderTargetTexture: RenderTargetTexture): boolean {
-        return (layer.renderTargetTextures.length > 0) &&
+        return (
+            layer.renderTargetTextures.length > 0 &&
             layer.isBackground === isBackground &&
-            (layer.renderTargetTextures.indexOf(renderTargetTexture) > -1) &&
-            ((layer.layerMask & cameraLayerMask) !== 0);
+            layer.renderTargetTextures.indexOf(renderTargetTexture) > -1 &&
+            (layer.layerMask & cameraLayerMask) !== 0
+        );
     }
 
     private _drawRenderTargetBackground(renderTarget: RenderTargetTexture): void {
@@ -154,7 +154,7 @@ export class LayerSceneComponent implements ISceneComponent {
             return;
         }
         container.layers.forEach((layer) => {
-            var index = this.scene.layers.indexOf(layer);
+            const index = this.scene.layers.indexOf(layer);
             if (index !== -1) {
                 this.scene.layers.splice(index, 1);
             }

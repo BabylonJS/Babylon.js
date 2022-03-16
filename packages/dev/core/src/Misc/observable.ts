@@ -4,7 +4,6 @@ import { Nullable } from "../types";
  * A class serves as a medium between the observable and its observers
  */
 export class EventState {
-
     /**
      * Create a new EventState
      * @param mask defines the mask associated with this state
@@ -59,8 +58,8 @@ export class EventState {
     public lastReturnValue?: any;
 
     /**
-    * User defined information that will be sent to observers
-    */
+     * User defined information that will be sent to observers
+     */
     public userInfo?: any;
 }
 
@@ -93,8 +92,8 @@ export class Observer<T> {
         /**
          * Defines the current scope used to restore the JS context
          */
-        public scope: any = null) {
-    }
+        public scope: any = null
+    ) {}
 }
 
 /**
@@ -109,7 +108,7 @@ export class MultiObserver<T> {
      */
     public dispose(): void {
         if (this._observers && this._observables) {
-            for (var index = 0; index < this._observers.length; index++) {
+            for (let index = 0; index < this._observers.length; index++) {
                 this._observables[index].remove(this._observers[index]);
             }
         }
@@ -127,13 +126,13 @@ export class MultiObserver<T> {
      * @returns the new MultiObserver
      */
     public static Watch<T>(observables: Observable<T>[], callback: (eventData: T, eventState: EventState) => void, mask: number = -1, scope: any = null): MultiObserver<T> {
-        let result = new MultiObserver<T>();
+        const result = new MultiObserver<T>();
 
         result._observers = new Array<Observer<T>>();
         result._observables = observables;
 
-        for (var observable of observables) {
-            let observer = observable.add(callback, mask, false, scope);
+        for (const observable of observables) {
+            const observer = observable.add(callback, mask, false, scope);
             if (observer) {
                 result._observers.push(observer);
             }
@@ -165,7 +164,7 @@ export class Observable<T> {
      * @returns the new Observable
      */
     public static FromPromise<T, E = Error>(promise: Promise<T>, onErrorObservable?: Observable<E>): Observable<T> {
-        let observable = new Observable<T>();
+        const observable = new Observable<T>();
 
         promise
             .then((ret: T) => {
@@ -210,12 +209,18 @@ export class Observable<T> {
      * @param unregisterOnFirstCall defines if the observer as to be unregistered after the next notification
      * @returns the new observer created for the callback
      */
-    public add(callback: (eventData: T, eventState: EventState) => void, mask: number = -1, insertFirst = false, scope: any = null, unregisterOnFirstCall = false): Nullable<Observer<T>> {
+    public add(
+        callback: (eventData: T, eventState: EventState) => void,
+        mask: number = -1,
+        insertFirst = false,
+        scope: any = null,
+        unregisterOnFirstCall = false
+    ): Nullable<Observer<T>> {
         if (!callback) {
             return null;
         }
 
-        var observer = new Observer(callback, mask, scope);
+        const observer = new Observer(callback, mask, scope);
         observer.unregisterOnNextCall = unregisterOnFirstCall;
 
         if (insertFirst) {
@@ -250,7 +255,7 @@ export class Observable<T> {
             return false;
         }
 
-        var index = this._observers.indexOf(observer);
+        const index = this._observers.indexOf(observer);
 
         if (index !== -1) {
             this._deferUnregister(observer);
@@ -265,10 +270,9 @@ export class Observable<T> {
      * @param callback the callback to remove
      * @param scope optional scope. If used only the callbacks with this scope will be removed
      * @returns false if it doesn't belong to this Observable
-    */
+     */
     public removeCallback(callback: (eventData: T, eventState: EventState) => void, scope?: any): boolean {
-
-        for (var index = 0; index < this._observers.length; index++) {
+        for (let index = 0; index < this._observers.length; index++) {
             const observer = this._observers[index];
             if (observer._willBeUnregistered) {
                 continue;
@@ -297,7 +301,7 @@ export class Observable<T> {
             return false;
         }
 
-        var index = this._observers.indexOf(observer);
+        const index = this._observers.indexOf(observer);
 
         if (index !== -1) {
             this._observers.splice(index, 1);
@@ -340,7 +344,7 @@ export class Observable<T> {
             return true;
         }
 
-        let state = this._eventState;
+        const state = this._eventState;
         state.mask = mask;
         state.target = target;
         state.currentTarget = currentTarget;
@@ -348,7 +352,7 @@ export class Observable<T> {
         state.lastReturnValue = eventData;
         state.userInfo = userInfo;
 
-        for (var obs of this._observers) {
+        for (const obs of this._observers) {
             if (obs._willBeUnregistered) {
                 continue;
             }
@@ -386,7 +390,6 @@ export class Observable<T> {
      * @returns {Promise<T>} will return a Promise than resolves when all callbacks executed successfully.
      */
     public notifyObserversWithPromise(eventData: T, mask: number = -1, target?: any, currentTarget?: any, userInfo?: any): Promise<T> {
-
         // create an empty promise
         let p: Promise<any> = Promise.resolve(eventData);
 
@@ -395,7 +398,7 @@ export class Observable<T> {
             return p;
         }
 
-        let state = this._eventState;
+        const state = this._eventState;
         state.mask = mask;
         state.target = target;
         state.currentTarget = currentTarget;
@@ -429,7 +432,9 @@ export class Observable<T> {
         });
 
         // return the eventData
-        return p.then(() => { return eventData; });
+        return p.then(() => {
+            return eventData;
+        });
     }
 
     /**
@@ -443,7 +448,7 @@ export class Observable<T> {
             return;
         }
 
-        let state = this._eventState;
+        const state = this._eventState;
         state.mask = mask;
         state.skipNextObservers = false;
 
@@ -463,8 +468,8 @@ export class Observable<T> {
     }
 
     /**
-    * Clear the list of observers
-    */
+     * Clear the list of observers
+     */
     public clear(): void {
         this._observers = new Array<Observer<T>>();
         this._onObserverAdded = null;
@@ -475,7 +480,7 @@ export class Observable<T> {
      * @returns a new observable
      */
     public clone(): Observable<T> {
-        var result = new Observable<T>();
+        const result = new Observable<T>();
 
         result._observers = this._observers.slice(0);
 
@@ -486,9 +491,9 @@ export class Observable<T> {
      * Does this observable handles observer registered with a given mask
      * @param mask defines the mask to be tested
      * @return whether or not one observer registered with the given mask is handled
-    **/
+     **/
     public hasSpecificMask(mask: number = -1): boolean {
-        for (var obs of this._observers) {
+        for (const obs of this._observers) {
             if (obs.mask & mask || obs.mask === mask) {
                 return true;
             }

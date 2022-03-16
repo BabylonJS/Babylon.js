@@ -10,12 +10,11 @@ import { Nullable } from "../types";
  * @see https://doc.babylonjs.com/how_to/how_to_use_actions
  */
 export abstract class AbstractActionManager implements IDisposable {
-
     /** Gets the list of active triggers */
     public static Triggers: { [key: string]: number } = {};
 
     /** Gets the cursor to use when hovering items */
-    public hoverCursor: string = '';
+    public hoverCursor: string = "";
 
     /** Gets the list of actions */
     public actions = new Array<IAction>();
@@ -96,7 +95,7 @@ export abstract class AbstractActionManager implements IDisposable {
      * Does exist one action manager with at least one trigger
      **/
     public static get HasTriggers(): boolean {
-        for (var t in AbstractActionManager.Triggers) {
+        for (const t in AbstractActionManager.Triggers) {
             if (AbstractActionManager.Triggers.hasOwnProperty(t)) {
                 return true;
             }
@@ -108,9 +107,9 @@ export abstract class AbstractActionManager implements IDisposable {
      * Does exist one action manager with at least one pick trigger
      **/
     public static get HasPickTriggers(): boolean {
-        for (var t in AbstractActionManager.Triggers) {
+        for (const t in AbstractActionManager.Triggers) {
             if (AbstractActionManager.Triggers.hasOwnProperty(t)) {
-                let t_int = parseInt(t);
+                const t_int = parseInt(t);
                 if (t_int >= Constants.ACTION_OnPickTrigger && t_int <= Constants.ACTION_OnPickUpTrigger) {
                     return true;
                 }
@@ -123,11 +122,11 @@ export abstract class AbstractActionManager implements IDisposable {
      * Does exist one action manager that handles actions of a given trigger
      * @param trigger defines the trigger to be tested
      * @return a boolean indicating whether the trigger is handled by at least one action manager
-    **/
+     **/
     public static HasSpecificTrigger(trigger: number): boolean {
-        for (var t in AbstractActionManager.Triggers) {
+        for (const t in AbstractActionManager.Triggers) {
             if (AbstractActionManager.Triggers.hasOwnProperty(t)) {
-                let t_int = parseInt(t);
+                const t_int = parseInt(t);
                 if (t_int === trigger) {
                     return true;
                 }

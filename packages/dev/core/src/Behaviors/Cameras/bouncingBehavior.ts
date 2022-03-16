@@ -65,7 +65,7 @@ export class BouncingBehavior implements Behavior<ArcRotateCamera> {
 
         this._autoTransitionRange = value;
 
-        let camera = this._attachedCamera;
+        const camera = this._attachedCamera;
         if (!camera) {
             return;
         }
@@ -77,7 +77,7 @@ export class BouncingBehavior implements Behavior<ArcRotateCamera> {
                 }
 
                 mesh.computeWorldMatrix(true);
-                let diagonal = mesh.getBoundingInfo().diagonalLength;
+                const diagonal = mesh.getBoundingInfo().diagonalLength;
 
                 this.lowerRadiusTransitionRange = diagonal * 0.05;
                 this.upperRadiusTransitionRange = diagonal * 0.05;
@@ -181,8 +181,16 @@ export class BouncingBehavior implements Behavior<ArcRotateCamera> {
         // Animate to the radius limit
         this.stopAllAnimations();
         this._radiusIsAnimating = true;
-        let animatable = Animation.TransitionTo("radius", this._attachedCamera.radius + radiusDelta, this._attachedCamera, this._attachedCamera.getScene(), 60,
-            this._radiusBounceTransition, this.transitionDuration, () => this._clearAnimationLocks());
+        const animatable = Animation.TransitionTo(
+            "radius",
+            this._attachedCamera.radius + radiusDelta,
+            this._attachedCamera,
+            this._attachedCamera.getScene(),
+            60,
+            this._radiusBounceTransition,
+            this.transitionDuration,
+            () => this._clearAnimationLocks()
+        );
 
         if (animatable) {
             this._animatables.push(animatable);

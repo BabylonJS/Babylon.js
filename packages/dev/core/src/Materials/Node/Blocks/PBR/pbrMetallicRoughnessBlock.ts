@@ -1,49 +1,49 @@
-import { NodeMaterialBlock } from '../../nodeMaterialBlock';
-import { NodeMaterialBlockConnectionPointTypes } from '../../Enums/nodeMaterialBlockConnectionPointTypes';
-import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
-import { NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection } from '../../nodeMaterialBlockConnectionPoint';
-import { MaterialHelper } from '../../../materialHelper';
-import { NodeMaterialBlockTargets } from '../../Enums/nodeMaterialBlockTargets';
-import { NodeMaterial, NodeMaterialDefines } from '../../nodeMaterial';
-import { NodeMaterialSystemValues } from '../../Enums/nodeMaterialSystemValues';
-import { InputBlock } from '../Input/inputBlock';
-import { Light } from '../../../../Lights/light';
-import { Nullable } from '../../../../types';
-import { RegisterClass } from '../../../../Misc/typeStore';
-import { AbstractMesh } from '../../../../Meshes/abstractMesh';
-import { Effect } from '../../../effect';
-import { Mesh } from '../../../../Meshes/mesh';
-import { PBRBaseMaterial } from '../../../PBR/pbrBaseMaterial';
-import { Scene } from '../../../../scene';
+import { NodeMaterialBlock } from "../../nodeMaterialBlock";
+import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
+import { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
+import { MaterialHelper } from "../../../materialHelper";
+import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
+import { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
+import { NodeMaterialSystemValues } from "../../Enums/nodeMaterialSystemValues";
+import { InputBlock } from "../Input/inputBlock";
+import { Light } from "../../../../Lights/light";
+import { Nullable } from "../../../../types";
+import { RegisterClass } from "../../../../Misc/typeStore";
+import { AbstractMesh } from "../../../../Meshes/abstractMesh";
+import { Effect } from "../../../effect";
+import { Mesh } from "../../../../Meshes/mesh";
+import { PBRBaseMaterial } from "../../../PBR/pbrBaseMaterial";
+import { Scene } from "../../../../scene";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../nodeMaterialDecorator";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
-import { SheenBlock } from './sheenBlock';
-import { BaseTexture } from '../../../Textures/baseTexture';
-import { GetEnvironmentBRDFTexture } from '../../../../Misc/brdfTextureTools';
-import { MaterialFlags } from '../../../materialFlags';
-import { AnisotropyBlock } from './anisotropyBlock';
-import { ReflectionBlock } from './reflectionBlock';
-import { ClearCoatBlock } from './clearCoatBlock';
-import { SubSurfaceBlock } from './subSurfaceBlock';
-import { RefractionBlock } from './refractionBlock';
-import { PerturbNormalBlock } from '../Fragment/perturbNormalBlock';
-import { Constants } from '../../../../Engines/constants';
-import { Color3, TmpColors } from '../../../../Maths/math.color';
+import { SheenBlock } from "./sheenBlock";
+import { BaseTexture } from "../../../Textures/baseTexture";
+import { GetEnvironmentBRDFTexture } from "../../../../Misc/brdfTextureTools";
+import { MaterialFlags } from "../../../materialFlags";
+import { AnisotropyBlock } from "./anisotropyBlock";
+import { ReflectionBlock } from "./reflectionBlock";
+import { ClearCoatBlock } from "./clearCoatBlock";
+import { SubSurfaceBlock } from "./subSurfaceBlock";
+import { RefractionBlock } from "./refractionBlock";
+import { PerturbNormalBlock } from "../Fragment/perturbNormalBlock";
+import { Constants } from "../../../../Engines/constants";
+import { Color3, TmpColors } from "../../../../Maths/math.color";
 
 const mapOutputToVariable: { [name: string]: [string, string] } = {
-    "ambientClr": ["finalAmbient", ""],
-    "diffuseDir": ["finalDiffuse", ""],
-    "specularDir": ["finalSpecularScaled", "!defined(UNLIT) && defined(SPECULARTERM)"],
-    "clearcoatDir": ["finalClearCoatScaled", "!defined(UNLIT) && defined(CLEARCOAT)"],
-    "sheenDir": ["finalSheenScaled", "!defined(UNLIT) && defined(SHEEN)"],
-    "diffuseInd": ["finalIrradiance", "!defined(UNLIT) && defined(REFLECTION)"],
-    "specularInd": ["finalRadianceScaled", "!defined(UNLIT) && defined(REFLECTION)"],
-    "clearcoatInd": ["clearcoatOut.finalClearCoatRadianceScaled", "!defined(UNLIT) && defined(REFLECTION) && defined(CLEARCOAT)"],
-    "sheenInd": ["sheenOut.finalSheenRadianceScaled", "!defined(UNLIT) && defined(REFLECTION) && defined(SHEEN) && defined(ENVIRONMENTBRDF)"],
-    "refraction": ["subSurfaceOut.finalRefraction", "!defined(UNLIT) && defined(SS_REFRACTION)"],
-    "lighting": ["finalColor.rgb", ""],
-    "shadow": ["shadow", ""],
-    "alpha": ["alpha", ""],
+    ambientClr: ["finalAmbient", ""],
+    diffuseDir: ["finalDiffuse", ""],
+    specularDir: ["finalSpecularScaled", "!defined(UNLIT) && defined(SPECULARTERM)"],
+    clearcoatDir: ["finalClearCoatScaled", "!defined(UNLIT) && defined(CLEARCOAT)"],
+    sheenDir: ["finalSheenScaled", "!defined(UNLIT) && defined(SHEEN)"],
+    diffuseInd: ["finalIrradiance", "!defined(UNLIT) && defined(REFLECTION)"],
+    specularInd: ["finalRadianceScaled", "!defined(UNLIT) && defined(REFLECTION)"],
+    clearcoatInd: ["clearcoatOut.finalClearCoatRadianceScaled", "!defined(UNLIT) && defined(REFLECTION) && defined(CLEARCOAT)"],
+    sheenInd: ["sheenOut.finalSheenRadianceScaled", "!defined(UNLIT) && defined(REFLECTION) && defined(SHEEN) && defined(ENVIRONMENTBRDF)"],
+    refraction: ["subSurfaceOut.finalRefraction", "!defined(UNLIT) && defined(SS_REFRACTION)"],
+    lighting: ["finalColor.rgb", ""],
+    shadow: ["shadow", ""],
+    alpha: ["alpha", ""],
 };
 
 /**
@@ -86,16 +86,41 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         this.registerInput("opacity", NodeMaterialBlockConnectionPointTypes.Float, true, NodeMaterialBlockTargets.Fragment);
         this.registerInput("indexOfRefraction", NodeMaterialBlockConnectionPointTypes.Float, true, NodeMaterialBlockTargets.Fragment);
         this.registerInput("ambientColor", NodeMaterialBlockConnectionPointTypes.Color3, true, NodeMaterialBlockTargets.Fragment);
-        this.registerInput("reflection", NodeMaterialBlockConnectionPointTypes.Object, true, NodeMaterialBlockTargets.Fragment,
-            new NodeMaterialConnectionPointCustomObject("reflection", this, NodeMaterialConnectionPointDirection.Input, ReflectionBlock, "ReflectionBlock"));
-        this.registerInput("clearcoat", NodeMaterialBlockConnectionPointTypes.Object, true, NodeMaterialBlockTargets.Fragment,
-            new NodeMaterialConnectionPointCustomObject("clearcoat", this, NodeMaterialConnectionPointDirection.Input, ClearCoatBlock, "ClearCoatBlock"));
-        this.registerInput("sheen", NodeMaterialBlockConnectionPointTypes.Object, true, NodeMaterialBlockTargets.Fragment,
-            new NodeMaterialConnectionPointCustomObject("sheen", this, NodeMaterialConnectionPointDirection.Input, SheenBlock, "SheenBlock"));
-        this.registerInput("subsurface", NodeMaterialBlockConnectionPointTypes.Object, true, NodeMaterialBlockTargets.Fragment,
-            new NodeMaterialConnectionPointCustomObject("subsurface", this, NodeMaterialConnectionPointDirection.Input, SubSurfaceBlock, "SubSurfaceBlock"));
-        this.registerInput("anisotropy", NodeMaterialBlockConnectionPointTypes.Object, true, NodeMaterialBlockTargets.Fragment,
-            new NodeMaterialConnectionPointCustomObject("anisotropy", this, NodeMaterialConnectionPointDirection.Input, AnisotropyBlock, "AnisotropyBlock"));
+        this.registerInput(
+            "reflection",
+            NodeMaterialBlockConnectionPointTypes.Object,
+            true,
+            NodeMaterialBlockTargets.Fragment,
+            new NodeMaterialConnectionPointCustomObject("reflection", this, NodeMaterialConnectionPointDirection.Input, ReflectionBlock, "ReflectionBlock")
+        );
+        this.registerInput(
+            "clearcoat",
+            NodeMaterialBlockConnectionPointTypes.Object,
+            true,
+            NodeMaterialBlockTargets.Fragment,
+            new NodeMaterialConnectionPointCustomObject("clearcoat", this, NodeMaterialConnectionPointDirection.Input, ClearCoatBlock, "ClearCoatBlock")
+        );
+        this.registerInput(
+            "sheen",
+            NodeMaterialBlockConnectionPointTypes.Object,
+            true,
+            NodeMaterialBlockTargets.Fragment,
+            new NodeMaterialConnectionPointCustomObject("sheen", this, NodeMaterialConnectionPointDirection.Input, SheenBlock, "SheenBlock")
+        );
+        this.registerInput(
+            "subsurface",
+            NodeMaterialBlockConnectionPointTypes.Object,
+            true,
+            NodeMaterialBlockTargets.Fragment,
+            new NodeMaterialConnectionPointCustomObject("subsurface", this, NodeMaterialConnectionPointDirection.Input, SubSurfaceBlock, "SubSurfaceBlock")
+        );
+        this.registerInput(
+            "anisotropy",
+            NodeMaterialBlockConnectionPointTypes.Object,
+            true,
+            NodeMaterialBlockTargets.Fragment,
+            new NodeMaterialConnectionPointCustomObject("anisotropy", this, NodeMaterialConnectionPointDirection.Input, AnisotropyBlock, "AnisotropyBlock")
+        );
 
         this.registerOutput("ambientClr", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Fragment);
         this.registerOutput("diffuseDir", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Fragment);
@@ -116,21 +141,21 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
      * Intensity of the direct lights e.g. the four lights available in your scene.
      * This impacts both the direct diffuse and specular highlights.
      */
-    @editableInPropertyPage("Direct lights", PropertyTypeForEdition.Float, "INTENSITY", { min: 0, max: 1, "notifiers": { "update": true } })
+    @editableInPropertyPage("Direct lights", PropertyTypeForEdition.Float, "INTENSITY", { min: 0, max: 1, notifiers: { update: true } })
     public directIntensity: number = 1.0;
 
     /**
      * Intensity of the environment e.g. how much the environment will light the object
      * either through harmonics for rough material or through the reflection for shiny ones.
      */
-    @editableInPropertyPage("Environment lights", PropertyTypeForEdition.Float, "INTENSITY", { min: 0, max: 1, "notifiers": { "update": true } })
+    @editableInPropertyPage("Environment lights", PropertyTypeForEdition.Float, "INTENSITY", { min: 0, max: 1, notifiers: { update: true } })
     public environmentIntensity: number = 1.0;
 
     /**
      * This is a special control allowing the reduction of the specular highlights coming from the
      * four lights of the scene. Those highlights may not be needed in full environment lighting.
      */
-    @editableInPropertyPage("Specular highlights", PropertyTypeForEdition.Float, "INTENSITY", { min: 0, max: 1, "notifiers": { "update": true } })
+    @editableInPropertyPage("Specular highlights", PropertyTypeForEdition.Float, "INTENSITY", { min: 0, max: 1, notifiers: { update: true } })
     public specularIntensity: number = 1.0;
 
     /**
@@ -138,11 +163,12 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
      * It by default is Physical.
      */
     @editableInPropertyPage("Light falloff", PropertyTypeForEdition.List, "LIGHTING & COLORS", {
-        "notifiers": { "update": true }, "options": [
+        notifiers: { update: true },
+        options: [
             { label: "Physical", value: PBRBaseMaterial.LIGHTFALLOFF_PHYSICAL },
             { label: "GLTF", value: PBRBaseMaterial.LIGHTFALLOFF_GLTF },
             { label: "Standard", value: PBRBaseMaterial.LIGHTFALLOFF_STANDARD },
-        ]
+        ],
     })
     public lightFalloff = 0;
 
@@ -155,7 +181,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
     /**
      * Defines the alpha limits in alpha test mode.
      */
-    @editableInPropertyPage("Alpha CutOff", PropertyTypeForEdition.Float, "OPACITY", { min: 0, max: 1, "notifiers": { "update": true } })
+    @editableInPropertyPage("Alpha CutOff", PropertyTypeForEdition.Float, "OPACITY", { min: 0, max: 1, notifiers: { update: true } })
     public alphaTestCutoff: number = 0.5;
 
     /**
@@ -168,14 +194,14 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
      * Specifies that the material will keeps the reflection highlights over a transparent surface (only the most luminous ones).
      * A car glass is a good example of that. When the street lights reflects on it you can not see what is behind.
      */
-    @editableInPropertyPage("Radiance over alpha", PropertyTypeForEdition.Boolean, "RENDERING", { "notifiers": { "update": true } })
+    @editableInPropertyPage("Radiance over alpha", PropertyTypeForEdition.Boolean, "RENDERING", { notifiers: { update: true } })
     public useRadianceOverAlpha: boolean = true;
 
     /**
      * Specifies that the material will keeps the specular highlights over a transparent surface (only the most luminous ones).
      * A car glass is a good example of that. When sun reflects on it you can not see what is behind.
      */
-    @editableInPropertyPage("Specular over alpha", PropertyTypeForEdition.Boolean, "RENDERING", { "notifiers": { "update": true } })
+    @editableInPropertyPage("Specular over alpha", PropertyTypeForEdition.Boolean, "RENDERING", { notifiers: { update: true } })
     public useSpecularOverAlpha: boolean = true;
 
     /**
@@ -183,57 +209,58 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
      * It will both interacts on the Geometry for analytical and IBL lighting.
      * It also prefilter the roughness map based on the bump values.
      */
-    @editableInPropertyPage("Specular anti-aliasing", PropertyTypeForEdition.Boolean, "RENDERING", { "notifiers": { "update": true } })
+    @editableInPropertyPage("Specular anti-aliasing", PropertyTypeForEdition.Boolean, "RENDERING", { notifiers: { update: true } })
     public enableSpecularAntiAliasing: boolean = false;
 
     /**
      * Enables realtime filtering on the texture.
      */
-    @editableInPropertyPage("Realtime filtering", PropertyTypeForEdition.Boolean, "RENDERING", { "notifiers": { "update": true } })
+    @editableInPropertyPage("Realtime filtering", PropertyTypeForEdition.Boolean, "RENDERING", { notifiers: { update: true } })
     public realTimeFiltering: boolean = false;
 
     /**
      * Quality switch for realtime filtering
      */
     @editableInPropertyPage("Realtime filtering quality", PropertyTypeForEdition.List, "RENDERING", {
-        "notifiers": { "update": true }, "options": [
+        notifiers: { update: true },
+        options: [
             { label: "Low", value: Constants.TEXTURE_FILTERING_QUALITY_LOW },
             { label: "Medium", value: Constants.TEXTURE_FILTERING_QUALITY_MEDIUM },
             { label: "High", value: Constants.TEXTURE_FILTERING_QUALITY_HIGH },
-        ]
+        ],
     })
     public realTimeFilteringQuality = Constants.TEXTURE_FILTERING_QUALITY_LOW;
 
     /**
      * Defines if the material uses energy conservation.
      */
-    @editableInPropertyPage("Energy Conservation", PropertyTypeForEdition.Boolean, "ADVANCED", { "notifiers": { "update": true } })
+    @editableInPropertyPage("Energy Conservation", PropertyTypeForEdition.Boolean, "ADVANCED", { notifiers: { update: true } })
     public useEnergyConservation: boolean = true;
 
     /**
      * This parameters will enable/disable radiance occlusion by preventing the radiance to lit
      * too much the area relying on ambient texture to define their ambient occlusion.
      */
-    @editableInPropertyPage("Radiance occlusion", PropertyTypeForEdition.Boolean, "ADVANCED", { "notifiers": { "update": true } })
+    @editableInPropertyPage("Radiance occlusion", PropertyTypeForEdition.Boolean, "ADVANCED", { notifiers: { update: true } })
     public useRadianceOcclusion: boolean = true;
 
     /**
      * This parameters will enable/disable Horizon occlusion to prevent normal maps to look shiny when the normal
      * makes the reflect vector face the model (under horizon).
      */
-    @editableInPropertyPage("Horizon occlusion", PropertyTypeForEdition.Boolean, "ADVANCED", { "notifiers": { "update": true } })
+    @editableInPropertyPage("Horizon occlusion", PropertyTypeForEdition.Boolean, "ADVANCED", { notifiers: { update: true } })
     public useHorizonOcclusion: boolean = true;
 
     /**
      * If set to true, no lighting calculations will be applied.
      */
-    @editableInPropertyPage("Unlit", PropertyTypeForEdition.Boolean, "ADVANCED", { "notifiers": { "update": true } })
+    @editableInPropertyPage("Unlit", PropertyTypeForEdition.Boolean, "ADVANCED", { notifiers: { update: true } })
     public unlit: boolean = false;
 
     /**
      * Force normal to face away from face.
      */
-    @editableInPropertyPage("Force normal forward", PropertyTypeForEdition.Boolean, "ADVANCED", { "notifiers": { "update": true } })
+    @editableInPropertyPage("Force normal forward", PropertyTypeForEdition.Boolean, "ADVANCED", { notifiers: { update: true } })
     public forceNormalForward: boolean = false;
 
     /**
@@ -241,7 +268,8 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
      * It helps seeing only some components of the material while troubleshooting.
      */
     @editableInPropertyPage("Debug mode", PropertyTypeForEdition.List, "DEBUG", {
-        "notifiers": { "update": true }, "options": [
+        notifiers: { update: true },
+        options: [
             { label: "None", value: 0 },
             // Geometry
             { label: "Normalized position", value: 1 },
@@ -292,7 +320,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
             { label: "Sheen Reflectance", value: 85 },
             { label: "Luminance Over Alpha", value: 86 },
             { label: "Alpha", value: 87 },
-        ]
+        ],
     })
     public debugMode = 0;
 
@@ -302,14 +330,14 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
      * It helps with side by side comparison against the final render
      * This defaults to 0
      */
-    @editableInPropertyPage("Split position", PropertyTypeForEdition.Float, "DEBUG", { min: -1, max: 1, "notifiers": { "update": true } })
+    @editableInPropertyPage("Split position", PropertyTypeForEdition.Float, "DEBUG", { min: -1, max: 1, notifiers: { update: true } })
     public debugLimit = 0;
 
     /**
      * As the default viewing range might not be enough (if the ambient is really small for instance)
      * You can use the factor to better multiply the final value.
      */
-    @editableInPropertyPage("Output factor", PropertyTypeForEdition.Float, "DEBUG", { min: 0, max: 5, "notifiers": { "update": true } })
+    @editableInPropertyPage("Output factor", PropertyTypeForEdition.Float, "DEBUG", { min: 0, max: 5, notifiers: { update: true } })
     public debugFactor = 1;
 
     /**
@@ -645,7 +673,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         defines.setValue("ALPHABLEND", this.useAlphaBlending, true);
         defines.setValue("ALPHAFROMALBEDO", false, true);
         defines.setValue("ALPHATEST", this.useAlphaTest, true);
-        defines.setValue("ALPHATESTVALUE", alphaTestCutOffString.indexOf('.') < 0 ? alphaTestCutOffString + "." : alphaTestCutOffString, true);
+        defines.setValue("ALPHATESTVALUE", alphaTestCutOffString.indexOf(".") < 0 ? alphaTestCutOffString + "." : alphaTestCutOffString, true);
         defines.setValue("OPACITYRGB", false, true);
 
         // Rendering
@@ -694,12 +722,12 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
             // Multiview
             MaterialHelper.PrepareDefinesForMultiview(scene, defines);
         } else {
-            let state = {
+            const state = {
                 needNormals: false,
                 needRebuild: false,
                 lightmapMode: false,
                 shadowEnabled: false,
-                specularEnabled: false
+                specularEnabled: false,
             };
 
             MaterialHelper.PrepareDefinesForLight(scene, mesh, this.light, this._lightId, defines, true, state);
@@ -711,12 +739,19 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
     }
 
     public updateUniformsAndSamples(state: NodeMaterialBuildState, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, uniformBuffers: string[]) {
-        for (var lightIndex = 0; lightIndex < nodeMaterial.maxSimultaneousLights; lightIndex++) {
+        for (let lightIndex = 0; lightIndex < nodeMaterial.maxSimultaneousLights; lightIndex++) {
             if (!defines["LIGHT" + lightIndex]) {
                 break;
             }
             const onlyUpdateBuffersList = state.uniforms.indexOf("vLightData" + lightIndex) >= 0;
-            MaterialHelper.PrepareUniformsAndSamplersForLight(lightIndex, state.uniforms, state.samplers, defines["PROJECTEDLIGHTTEXTURE" + lightIndex], uniformBuffers, onlyUpdateBuffersList);
+            MaterialHelper.PrepareUniformsAndSamplersForLight(
+                lightIndex,
+                state.uniforms,
+                state.samplers,
+                defines["PROJECTEDLIGHTTEXTURE" + lightIndex],
+                uniformBuffers,
+                onlyUpdateBuffersList
+            );
         }
     }
 
@@ -757,7 +792,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
             effect.setColor3("ambientFromScene", ambientScene);
         }
 
-        const invertNormal = (scene.useRightHandedSystem === (scene._mirroredCameraPosition != null));
+        const invertNormal = scene.useRightHandedSystem === (scene._mirroredCameraPosition != null);
 
         effect.setFloat(this._invertNormalName, invertNormal ? -1 : 1);
 
@@ -784,13 +819,14 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
     }
 
     private _injectVertexCode(state: NodeMaterialBuildState) {
-        let worldPos = this.worldPosition;
-        let comments = `//${this.name}`;
+        const worldPos = this.worldPosition;
+        const comments = `//${this.name}`;
 
         // Declaration
-        if (!this.light) { // Emit for all lights
+        if (!this.light) {
+            // Emit for all lights
             state._emitFunctionFromInclude(state.supportUniformBuffers ? "lightVxUboDeclaration" : "lightVxFragmentDeclaration", comments, {
-                repeatKey: "maxSimultaneousLights"
+                repeatKey: "maxSimultaneousLights",
             });
             this._lightId = 0;
 
@@ -799,18 +835,23 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
             this._lightId = (state.counters["lightCounter"] !== undefined ? state.counters["lightCounter"] : -1) + 1;
             state.counters["lightCounter"] = this._lightId;
 
-            state._emitFunctionFromInclude(state.supportUniformBuffers ? "lightVxUboDeclaration" : "lightVxFragmentDeclaration", comments, {
-                replaceStrings: [{ search: /{X}/g, replace: this._lightId.toString() }]
-            }, this._lightId.toString());
+            state._emitFunctionFromInclude(
+                state.supportUniformBuffers ? "lightVxUboDeclaration" : "lightVxFragmentDeclaration",
+                comments,
+                {
+                    replaceStrings: [{ search: /{X}/g, replace: this._lightId.toString() }],
+                },
+                this._lightId.toString()
+            );
         }
 
         // Inject code in vertex
-        let worldPosVaryingName = "v_" + worldPos.associatedVariableName;
+        const worldPosVaryingName = "v_" + worldPos.associatedVariableName;
         if (state._emitVaryingFromString(worldPosVaryingName, "vec4")) {
             state.compilationString += `${worldPosVaryingName} = ${worldPos.associatedVariableName};\r\n`;
         }
 
-        const reflectionBlock = this.reflection.isConnected ? this.reflection.connectedPoint?.ownerBlock as ReflectionBlock : null;
+        const reflectionBlock = this.reflection.isConnected ? (this.reflection.connectedPoint?.ownerBlock as ReflectionBlock) : null;
 
         if (reflectionBlock) {
             reflectionBlock.viewConnectionPoint = this.view;
@@ -831,8 +872,8 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
             state.compilationString += state._emitCodeFromInclude("shadowsVertex", comments, {
                 replaceStrings: [
                     { search: /{X}/g, replace: this._lightId.toString() },
-                    { search: /worldPos/g, replace: worldPos.associatedVariableName }
-                ]
+                    { search: /worldPos/g, replace: worldPos.associatedVariableName },
+                ],
             });
         } else {
             state.compilationString += `vec4 worldPos = ${worldPos.associatedVariableName};\r\n`;
@@ -840,7 +881,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
                 state.compilationString += `mat4 view = ${this.view.associatedVariableName};\r\n`;
             }
             state.compilationString += state._emitCodeFromInclude("shadowsVertex", comments, {
-                repeatKey: "maxSimultaneousLights"
+                repeatKey: "maxSimultaneousLights",
             });
         }
     }
@@ -937,7 +978,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
             this._environmentBRDFTexture = GetEnvironmentBRDFTexture(this._scene);
         }
 
-        const reflectionBlock = this.reflection.isConnected ? this.reflection.connectedPoint?.ownerBlock as ReflectionBlock : null;
+        const reflectionBlock = this.reflection.isConnected ? (this.reflection.connectedPoint?.ownerBlock as ReflectionBlock) : null;
 
         if (reflectionBlock) {
             // Need those variables to be setup when calling _injectVertexCode
@@ -958,9 +999,9 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         state.sharedData.blocksWithDefines.push(this);
         state.sharedData.blockingBlocks.push(this);
 
-        let comments = `//${this.name}`;
-        let worldPosVarName = "v_" + this.worldPosition.associatedVariableName;
-        let normalShading = this.perturbedNormal;
+        const comments = `//${this.name}`;
+        const worldPosVarName = "v_" + this.worldPosition.associatedVariableName;
+        const normalShading = this.perturbedNormal;
 
         this._environmentBrdfSamplerName = state._getFreeVariableName("environmentBrdfSampler");
 
@@ -987,14 +1028,20 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         //
         // Includes
         //
-        if (!this.light) { // Emit for all lights
+        if (!this.light) {
+            // Emit for all lights
             state._emitFunctionFromInclude(state.supportUniformBuffers ? "lightUboDeclaration" : "lightFragmentDeclaration", comments, {
-                repeatKey: "maxSimultaneousLights"
+                repeatKey: "maxSimultaneousLights",
             });
         } else {
-            state._emitFunctionFromInclude(state.supportUniformBuffers ? "lightUboDeclaration" : "lightFragmentDeclaration", comments, {
-                replaceStrings: [{ search: /{X}/g, replace: this._lightId.toString() }]
-            }, this._lightId.toString());
+            state._emitFunctionFromInclude(
+                state.supportUniformBuffers ? "lightUboDeclaration" : "lightFragmentDeclaration",
+                comments,
+                {
+                    replaceStrings: [{ search: /{X}/g, replace: this._lightId.toString() }],
+                },
+                this._lightId.toString()
+            );
         }
 
         state._emitFunctionFromInclude("helperFunctions", comments);
@@ -1004,29 +1051,21 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         state._emitFunctionFromInclude("imageProcessingFunctions", comments);
 
         state._emitFunctionFromInclude("shadowsFragmentFunctions", comments, {
-            replaceStrings: [
-                { search: /vPositionW/g, replace: worldPosVarName + ".xyz" }
-            ]
+            replaceStrings: [{ search: /vPositionW/g, replace: worldPosVarName + ".xyz" }],
         });
 
         state._emitFunctionFromInclude("pbrDirectLightingSetupFunctions", comments, {
-            replaceStrings: [
-                { search: /vPositionW/g, replace: worldPosVarName + ".xyz" }
-            ]
+            replaceStrings: [{ search: /vPositionW/g, replace: worldPosVarName + ".xyz" }],
         });
 
         state._emitFunctionFromInclude("pbrDirectLightingFalloffFunctions", comments);
         state._emitFunctionFromInclude("pbrBRDFFunctions", comments, {
-            replaceStrings: [
-                { search: /REFLECTIONMAP_SKYBOX/g, replace: reflectionBlock?._defineSkyboxName ?? "REFLECTIONMAP_SKYBOX" }
-            ]
+            replaceStrings: [{ search: /REFLECTIONMAP_SKYBOX/g, replace: reflectionBlock?._defineSkyboxName ?? "REFLECTIONMAP_SKYBOX" }],
         });
         state._emitFunctionFromInclude("hdrFilteringFunctions", comments);
 
         state._emitFunctionFromInclude("pbrDirectLightingFunctions", comments, {
-            replaceStrings: [
-                { search: /vPositionW/g, replace: worldPosVarName + ".xyz" }
-            ]
+            replaceStrings: [{ search: /vPositionW/g, replace: worldPosVarName + ".xyz" }],
         });
 
         state._emitFunctionFromInclude("pbrIBLFunctions", comments);
@@ -1064,7 +1103,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
             replaceStrings: [
                 { search: /vPositionW/g, replace: worldPosVarName + ".xyz" },
                 { search: /vEyePosition.w/g, replace: this._invertNormalName },
-            ]
+            ],
         });
 
         // _____________________________ Albedo & Opacity ______________________________
@@ -1090,11 +1129,11 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
             replaceStrings: [
                 { search: /REFLECTIONMAP_SKYBOX/g, replace: reflectionBlock?._defineSkyboxName ?? "REFLECTIONMAP_SKYBOX" },
                 { search: /REFLECTIONMAP_3D/g, replace: reflectionBlock?._define3DName ?? "REFLECTIONMAP_3D" },
-            ]
+            ],
         });
 
         // _____________________________ Anisotropy _______________________________________
-        const anisotropyBlock = this.anisotropy.isConnected ? this.anisotropy.connectedPoint?.ownerBlock as AnisotropyBlock : null;
+        const anisotropyBlock = this.anisotropy.isConnected ? (this.anisotropy.connectedPoint?.ownerBlock as AnisotropyBlock) : null;
 
         if (anisotropyBlock) {
             anisotropyBlock.worldPositionConnectionPoint = this.worldPosition;
@@ -1118,17 +1157,15 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
                 { search: /LODINREFLECTIONALPHA/g, replace: reflectionBlock?._defineLODReflectionAlpha ?? "LODINREFLECTIONALPHA" },
                 { search: /LINEARSPECULARREFLECTION/g, replace: reflectionBlock?._defineLinearSpecularReflection ?? "LINEARSPECULARREFLECTION" },
                 { search: /vReflectionFilteringInfo/g, replace: reflectionBlock?._vReflectionFilteringInfoName ?? "vReflectionFilteringInfo" },
-            ]
+            ],
         });
 
         // ___________________ Compute Reflectance aka R0 F0 info _________________________
         state.compilationString += state._emitCodeFromInclude("pbrBlockReflectance0", comments, {
-            replaceStrings: [
-                { search: /metallicReflectanceFactors/g, replace: this._vMetallicReflectanceFactorsName },
-            ]
+            replaceStrings: [{ search: /metallicReflectanceFactors/g, replace: this._vMetallicReflectanceFactorsName }],
         });
         // ________________________________ Sheen ______________________________
-        const sheenBlock = this.sheen.isConnected ? this.sheen.connectedPoint?.ownerBlock as SheenBlock : null;
+        const sheenBlock = this.sheen.isConnected ? (this.sheen.connectedPoint?.ownerBlock as SheenBlock) : null;
 
         if (sheenBlock) {
             state.compilationString += sheenBlock.getCode(reflectionBlock);
@@ -1140,17 +1177,26 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
                 { search: /REFLECTIONMAP_SKYBOX/g, replace: reflectionBlock?._defineSkyboxName ?? "REFLECTIONMAP_SKYBOX" },
                 { search: /LODINREFLECTIONALPHA/g, replace: reflectionBlock?._defineLODReflectionAlpha ?? "LODINREFLECTIONALPHA" },
                 { search: /LINEARSPECULARREFLECTION/g, replace: reflectionBlock?._defineLinearSpecularReflection ?? "LINEARSPECULARREFLECTION" },
-            ]
+            ],
         });
 
         // _____________________________ Clear Coat ____________________________
-        const clearcoatBlock = this.clearcoat.isConnected ? this.clearcoat.connectedPoint?.ownerBlock as ClearCoatBlock : null;
+        const clearcoatBlock = this.clearcoat.isConnected ? (this.clearcoat.connectedPoint?.ownerBlock as ClearCoatBlock) : null;
         const generateTBNSpace = !this.perturbedNormal.isConnected && !this.anisotropy.isConnected;
-        const isTangentConnectedToPerturbNormal = this.perturbedNormal.isConnected && (this.perturbedNormal.connectedPoint?.ownerBlock as PerturbNormalBlock).worldTangent?.isConnected;
+        const isTangentConnectedToPerturbNormal =
+            this.perturbedNormal.isConnected && (this.perturbedNormal.connectedPoint?.ownerBlock as PerturbNormalBlock).worldTangent?.isConnected;
         const isTangentConnectedToAnisotropy = this.anisotropy.isConnected && (this.anisotropy.connectedPoint?.ownerBlock as AnisotropyBlock).worldTangent.isConnected;
         let vTBNAvailable = isTangentConnectedToPerturbNormal || (!this.perturbedNormal.isConnected && isTangentConnectedToAnisotropy);
 
-        state.compilationString += ClearCoatBlock.GetCode(state, clearcoatBlock, reflectionBlock, worldPosVarName, generateTBNSpace, vTBNAvailable, this.worldNormal.associatedVariableName);
+        state.compilationString += ClearCoatBlock.GetCode(
+            state,
+            clearcoatBlock,
+            reflectionBlock,
+            worldPosVarName,
+            generateTBNSpace,
+            vTBNAvailable,
+            this.worldNormal.associatedVariableName
+        );
 
         if (generateTBNSpace) {
             vTBNAvailable = clearcoatBlock?.worldTangent.isConnected ?? false;
@@ -1166,7 +1212,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
                 { search: /LODINREFLECTIONALPHA/g, replace: reflectionBlock?._defineLODReflectionAlpha ?? "LODINREFLECTIONALPHA" },
                 { search: /LINEARSPECULARREFLECTION/g, replace: reflectionBlock?._defineLinearSpecularReflection ?? "LINEARSPECULARREFLECTION" },
                 { search: /defined\(TANGENT\)/g, replace: vTBNAvailable ? "defined(TANGENT)" : "defined(IGNORE)" },
-            ]
+            ],
         });
 
         // _________________________ Specular Environment Reflectance __________________________
@@ -1174,12 +1220,14 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
             replaceStrings: [
                 { search: /REFLECTIONMAP_SKYBOX/g, replace: reflectionBlock?._defineSkyboxName ?? "REFLECTIONMAP_SKYBOX" },
                 { search: /REFLECTIONMAP_3D/g, replace: reflectionBlock?._define3DName ?? "REFLECTIONMAP_3D" },
-            ]
+            ],
         });
 
         // ___________________________________ SubSurface ______________________________________
-        const subsurfaceBlock = this.subsurface.isConnected ? this.subsurface.connectedPoint?.ownerBlock as SubSurfaceBlock : null;
-        const refractionBlock = this.subsurface.isConnected ? (this.subsurface.connectedPoint?.ownerBlock as SubSurfaceBlock).refraction.connectedPoint?.ownerBlock as RefractionBlock : null;
+        const subsurfaceBlock = this.subsurface.isConnected ? (this.subsurface.connectedPoint?.ownerBlock as SubSurfaceBlock) : null;
+        const refractionBlock = this.subsurface.isConnected
+            ? ((this.subsurface.connectedPoint?.ownerBlock as SubSurfaceBlock).refraction.connectedPoint?.ownerBlock as RefractionBlock)
+            : null;
 
         if (refractionBlock) {
             refractionBlock.viewConnectionPoint = this.view;
@@ -1197,7 +1245,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
                 { search: /SS_LODINREFRACTIONALPHA/g, replace: refractionBlock?._defineLODRefractionAlpha ?? "SS_LODINREFRACTIONALPHA" },
                 { search: /SS_LINEARSPECULARREFRACTION/g, replace: refractionBlock?._defineLinearSpecularRefraction ?? "SS_LINEARSPECULARREFRACTION" },
                 { search: /SS_REFRACTIONMAP_OPPOSITEZ/g, replace: refractionBlock?._defineOppositeZ ?? "SS_REFRACTIONMAP_OPPOSITEZ" },
-            ]
+            ],
         });
 
         // _____________________________ Direct Lighting Info __________________________________
@@ -1205,13 +1253,11 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
 
         if (this.light) {
             state.compilationString += state._emitCodeFromInclude("lightFragment", comments, {
-                replaceStrings: [
-                    { search: /{X}/g, replace: this._lightId.toString() }
-                ]
+                replaceStrings: [{ search: /{X}/g, replace: this._lightId.toString() }],
             });
         } else {
             state.compilationString += state._emitCodeFromInclude("lightFragment", comments, {
-                repeatKey: "maxSimultaneousLights"
+                repeatKey: "maxSimultaneousLights",
             });
         }
 
@@ -1226,7 +1272,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
 
         let aoDirectLightIntensity = PBRBaseMaterial.DEFAULT_AO_ON_ANALYTICAL_LIGHTS.toString();
 
-        if (aoDirectLightIntensity.indexOf('.') === -1) {
+        if (aoDirectLightIntensity.indexOf(".") === -1) {
             aoDirectLightIntensity += ".";
         }
 
@@ -1235,21 +1281,17 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
                 { search: /vec3 finalEmissive[\s\S]*?finalEmissive\*=vLightingIntensity\.y;/g, replace: "" },
                 { search: /vAmbientColor/g, replace: aoColor + " * ambientFromScene" },
                 { search: /vAmbientInfos\.w/g, replace: aoDirectLightIntensity },
-            ]
+            ],
         });
 
         // _____________________________ Output Final Color Composition ________________________
         state.compilationString += state._emitCodeFromInclude("pbrBlockFinalColorComposition", comments, {
-            replaceStrings: [
-                { search: /finalEmissive/g, replace: "vec3(0.)" },
-            ]
+            replaceStrings: [{ search: /finalEmissive/g, replace: "vec3(0.)" }],
         });
 
         // _____________________________ Apply image processing ________________________
         state.compilationString += state._emitCodeFromInclude("pbrBlockImageProcessing", comments, {
-            replaceStrings: [
-                { search: /visibility/g, replace: "1." },
-            ]
+            replaceStrings: [{ search: /visibility/g, replace: "1." }],
         });
 
         // _____________________________ Generate debug code ________________________
@@ -1258,11 +1300,11 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
                 { search: /vNormalW/g, replace: this._vNormalWName },
                 { search: /vPositionW/g, replace: worldPosVarName },
                 { search: /albedoTexture\.rgb;/g, replace: "vec3(1.);\r\ngl_FragColor.rgb = toGammaSpace(gl_FragColor.rgb);\r\n" },
-            ]
+            ],
         });
 
         // _____________________________ Generate end points ________________________
-        for (var output of this._outputs) {
+        for (const output of this._outputs) {
             if (output.hasEndpoints) {
                 const remap = mapOutputToVariable[output.name];
                 if (remap) {
@@ -1310,7 +1352,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
     }
 
     public serialize(): any {
-        let serializationObject = super.serialize();
+        const serializationObject = super.serialize();
 
         if (this.light) {
             serializationObject.lightId = this.light.id;

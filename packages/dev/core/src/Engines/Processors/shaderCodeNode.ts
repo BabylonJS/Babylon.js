@@ -1,5 +1,5 @@
-import { ProcessingOptions } from './shaderProcessingOptions';
-import { StartsWith } from '../../Misc/stringTools';
+import { ProcessingOptions } from "./shaderProcessingOptions";
+import { StartsWith } from "../../Misc/stringTools";
 
 /** @hidden */
 export class ShaderCodeNode {
@@ -16,7 +16,7 @@ export class ShaderCodeNode {
         let result = "";
         if (this.line) {
             let value: string = this.line;
-            let processor = options.processor;
+            const processor = options.processor;
             if (processor) {
                 // This must be done before other replacements to avoid mistakenly changing something that was already changed.
                 if (processor.lineProcessor) {
@@ -39,13 +39,15 @@ export class ShaderCodeNode {
                 } else if (processor.textureProcessor && processor.textureRegexp && processor.textureRegexp.test(this.line)) {
                     value = processor.textureProcessor(this.line, options.isFragment, preprocessors, options.processingContext);
                 } else if ((processor.uniformProcessor || processor.uniformBufferProcessor) && StartsWith(this.line, "uniform") && !options.lookForClosingBracketForUniformBuffer) {
-                    let regex = /uniform\s+(?:(?:highp)?|(?:lowp)?)\s*(\S+)\s+(\S+)\s*;/;
+                    const regex = /uniform\s+(?:(?:highp)?|(?:lowp)?)\s*(\S+)\s+(\S+)\s*;/;
 
-                    if (regex.test(this.line)) { // uniform
+                    if (regex.test(this.line)) {
+                        // uniform
                         if (processor.uniformProcessor) {
                             value = processor.uniformProcessor(this.line, options.isFragment, preprocessors, options.processingContext);
                         }
-                    } else { // Uniform buffer
+                    } else {
+                        // Uniform buffer
                         if (processor.uniformBufferProcessor) {
                             value = processor.uniformBufferProcessor(this.line, options.isFragment, options.processingContext);
                             options.lookForClosingBracketForUniformBuffer = true;

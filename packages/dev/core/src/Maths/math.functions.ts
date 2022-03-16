@@ -1,13 +1,12 @@
-import { FloatArray, Nullable, IndicesArray } from '../types';
-import { Vector2, Vector3 } from './math.vector';
-import { nativeOverride } from '../Misc/decorators';
+import { FloatArray, Nullable, IndicesArray } from "../types";
+import { Vector2, Vector3 } from "./math.vector";
+import { nativeOverride } from "../Misc/decorators";
 
 // This helper class is only here so we can apply the nativeOverride decorator to functions.
 class MathHelpers {
-
     @nativeOverride.filter((...[positions, indices]: Parameters<typeof MathHelpers.extractMinAndMaxIndexed>) => !Array.isArray(positions) && !Array.isArray(indices))
     public static extractMinAndMaxIndexed(positions: FloatArray, indices: IndicesArray, indexStart: number, indexCount: number, minimum: Vector3, maximum: Vector3): void {
-        for (var index = indexStart; index < indexStart + indexCount; index++) {
+        for (let index = indexStart; index < indexStart + indexCount; index++) {
             const offset = indices[index] * 3;
             const x = positions[offset];
             const y = positions[offset + 1];
@@ -19,7 +18,7 @@ class MathHelpers {
 
     @nativeOverride.filter((...[positions]: Parameters<typeof MathHelpers.extractMinAndMax>) => !Array.isArray(positions))
     public static extractMinAndMax(positions: FloatArray, start: number, count: number, stride: number, minimum: Vector3, maximum: Vector3): void {
-        for (var index = start, offset = start * stride; index < start + count; index++, offset += stride) {
+        for (let index = start, offset = start * stride; index < start + count; index++, offset += stride) {
             const x = positions[offset];
             const y = positions[offset + 1];
             const z = positions[offset + 2];
@@ -38,9 +37,15 @@ class MathHelpers {
  * @param bias defines bias value to add to the result
  * @return minimum and maximum values
  */
-export function extractMinAndMaxIndexed(positions: FloatArray, indices: IndicesArray, indexStart: number, indexCount: number, bias: Nullable<Vector2> = null): { minimum: Vector3; maximum: Vector3 } {
-    var minimum = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
-    var maximum = new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
+export function extractMinAndMaxIndexed(
+    positions: FloatArray,
+    indices: IndicesArray,
+    indexStart: number,
+    indexCount: number,
+    bias: Nullable<Vector2> = null
+): { minimum: Vector3; maximum: Vector3 } {
+    const minimum = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
+    const maximum = new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
 
     MathHelpers.extractMinAndMaxIndexed(positions, indices, indexStart, indexCount, minimum, maximum);
 
@@ -55,7 +60,7 @@ export function extractMinAndMaxIndexed(positions: FloatArray, indices: IndicesA
 
     return {
         minimum: minimum,
-        maximum: maximum
+        maximum: maximum,
     };
 }
 
@@ -69,8 +74,8 @@ export function extractMinAndMaxIndexed(positions: FloatArray, indices: IndicesA
  * @return minimum and maximum values
  */
 export function extractMinAndMax(positions: FloatArray, start: number, count: number, bias: Nullable<Vector2> = null, stride?: number): { minimum: Vector3; maximum: Vector3 } {
-    var minimum = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
-    var maximum = new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
+    const minimum = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
+    const maximum = new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
 
     if (!stride) {
         stride = 3;
@@ -89,6 +94,6 @@ export function extractMinAndMax(positions: FloatArray, start: number, count: nu
 
     return {
         minimum: minimum,
-        maximum: maximum
+        maximum: maximum,
     };
 }

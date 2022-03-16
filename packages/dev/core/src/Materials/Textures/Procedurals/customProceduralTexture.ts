@@ -1,10 +1,10 @@
 import { Logger } from "../../../Misc/logger";
 import { Scene } from "../../../scene";
 import { Vector3, Vector2 } from "../../../Maths/math.vector";
-import { Color4, Color3 } from '../../../Maths/math.color';
+import { Color4, Color3 } from "../../../Maths/math.color";
 import { Texture } from "../../../Materials/Textures/texture";
 import { ProceduralTexture } from "./proceduralTexture";
-import { WebRequest } from '../../../Misc/webRequest';
+import { WebRequest } from "../../../Misc/webRequest";
 /**
  * Procedural texturing is a way to programmatically create a texture. There are 2 types of procedural textures: code-only, and code that references some classic 2D images, sometimes called 'refMaps' or 'sampler' images.
  * Custom Procedural textures are the easiest way to create your own procedural in your application.
@@ -38,48 +38,52 @@ export class CustomProceduralTexture extends ProceduralTexture {
     }
 
     private _loadJson(jsonUrl: string): void {
-        let noConfigFile = () => {
+        const noConfigFile = () => {
             try {
                 this.setFragment(this._texturePath);
-            }
-            catch (ex) {
+            } catch (ex) {
                 Logger.Log("No json or ShaderStore or DOM element found for CustomProceduralTexture");
             }
         };
 
-        var configFileUrl = jsonUrl + "/config.json";
-        var xhr = new WebRequest();
+        const configFileUrl = jsonUrl + "/config.json";
+        const xhr = new WebRequest();
 
         xhr.open("GET", configFileUrl);
-        xhr.addEventListener("load", () => {
-            if (xhr.status === 200 || (xhr.responseText && xhr.responseText.length > 0)) {
-                try {
-                    this._config = JSON.parse(xhr.response);
+        xhr.addEventListener(
+            "load",
+            () => {
+                if (xhr.status === 200 || (xhr.responseText && xhr.responseText.length > 0)) {
+                    try {
+                        this._config = JSON.parse(xhr.response);
 
-                    this.updateShaderUniforms();
-                    this.updateTextures();
-                    this.setFragment(this._texturePath + "/custom");
+                        this.updateShaderUniforms();
+                        this.updateTextures();
+                        this.setFragment(this._texturePath + "/custom");
 
-                    this._animate = this._config.animate;
-                    this.refreshRate = this._config.refreshrate;
-                }
-                catch (ex) {
+                        this._animate = this._config.animate;
+                        this.refreshRate = this._config.refreshrate;
+                    } catch (ex) {
+                        noConfigFile();
+                    }
+                } else {
                     noConfigFile();
                 }
-            }
-            else {
-                noConfigFile();
-            }
-        }, false);
+            },
+            false
+        );
 
-        xhr.addEventListener("error", () => {
-            noConfigFile();
-        }, false);
+        xhr.addEventListener(
+            "error",
+            () => {
+                noConfigFile();
+            },
+            false
+        );
 
         try {
             xhr.send();
-        }
-        catch (ex) {
+        } catch (ex) {
             Logger.Error("CustomProceduralTexture: Error on XHR send request.");
         }
     }
@@ -93,8 +97,8 @@ export class CustomProceduralTexture extends ProceduralTexture {
             return false;
         }
 
-        for (var name in this._textures) {
-            var texture = this._textures[name];
+        for (const name in this._textures) {
+            const texture = this._textures[name];
 
             if (!texture.isReady()) {
                 return false;
@@ -109,7 +113,7 @@ export class CustomProceduralTexture extends ProceduralTexture {
      * @param useCameraPostProcess Define if camera post process should be applied to the texture
      */
     public render(useCameraPostProcess?: boolean): void {
-        let scene = this.getScene();
+        const scene = this.getScene();
         if (this._animate && scene) {
             this._time += scene.getAnimationRatio() * 0.03;
             this.updateShaderUniforms();
@@ -122,7 +126,7 @@ export class CustomProceduralTexture extends ProceduralTexture {
      * Update the list of dependant textures samplers in the shader.
      */
     public updateTextures(): void {
-        for (var i = 0; i < this._config.sampler2Ds.length; i++) {
+        for (let i = 0; i < this._config.sampler2Ds.length; i++) {
             this.setTexture(this._config.sampler2Ds[i].sample2Dname, new Texture(this._texturePath + "/" + this._config.sampler2Ds[i].textureRelativeUrl, this.getScene()));
         }
     }
@@ -132,8 +136,8 @@ export class CustomProceduralTexture extends ProceduralTexture {
      */
     public updateShaderUniforms(): void {
         if (this._config) {
-            for (var j = 0; j < this._config.uniforms.length; j++) {
-                var uniform = this._config.uniforms[j];
+            for (let j = 0; j < this._config.uniforms.length; j++) {
+                const uniform = this._config.uniforms[j];
 
                 switch (uniform.type) {
                     case "float":

@@ -1,13 +1,13 @@
-import { IDisposable } from '../../scene';
-import { DeviceType } from './deviceEnums';
-import { Observable } from '../../Misc/observable';
-import { IDeviceInputSystem } from './inputInterfaces';
-import { NativeDeviceInputSystem } from './nativeDeviceInputSystem';
-import { WebDeviceInputSystem } from './webDeviceInputSystem';
-import { DeviceSource } from './deviceSource';
-import { INative } from '../../Engines/Native/nativeInterfaces';
-import { Engine } from '../../Engines/engine';
-import { IUIEvent } from '../../Events/deviceInputEvents';
+import { IDisposable } from "../../scene";
+import { DeviceType } from "./deviceEnums";
+import { Observable } from "../../Misc/observable";
+import { IDeviceInputSystem } from "./inputInterfaces";
+import { NativeDeviceInputSystem } from "./nativeDeviceInputSystem";
+import { WebDeviceInputSystem } from "./webDeviceInputSystem";
+import { DeviceSource } from "./deviceSource";
+import { INative } from "../../Engines/Native/nativeInterfaces";
+import { Engine } from "../../Engines/engine";
+import { IUIEvent } from "../../Events/deviceInputEvents";
 
 declare const _native: INative;
 
@@ -76,10 +76,9 @@ export class InternalDeviceSourceManager implements IDisposable {
             }
         };
 
-        if (typeof _native !== 'undefined') {
+        if (typeof _native !== "undefined") {
             this._deviceInputSystem = new NativeDeviceInputSystem(onDeviceConnected, onDeviceDisconnected, onInputChanged);
-        }
-        else {
+        } else {
             this._deviceInputSystem = new WebDeviceInputSystem(engine, onDeviceConnected, onDeviceDisconnected, onInputChanged);
         }
     }
@@ -94,7 +93,7 @@ export class InternalDeviceSourceManager implements IDisposable {
             }
         }
         this._registeredManagers.push(manager);
-    }
+    };
 
     public readonly unregisterManager = (manager: IObservableManager): void => {
         const idx = this._registeredManagers.indexOf(manager);
@@ -102,7 +101,7 @@ export class InternalDeviceSourceManager implements IDisposable {
         if (idx > -1) {
             this._registeredManagers.splice(idx, 1);
         }
-    }
+    };
 
     public dispose(): void {
         this._deviceInputSystem.dispose();

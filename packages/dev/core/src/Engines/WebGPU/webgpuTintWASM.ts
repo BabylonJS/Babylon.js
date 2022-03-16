@@ -6,7 +6,7 @@ declare function importScripts(...urls: string[]): void;
 /**
  * Options to load the associated Twgsl library
  */
- export interface TwgslOptions {
+export interface TwgslOptions {
     /**
      * Defines an existing instance of Twgsl (useful in modules who do not access the global instance).
      */
@@ -35,7 +35,7 @@ export class WebGPUTintWASM {
         twgslOptions = twgslOptions || {};
         twgslOptions = {
             ...WebGPUTintWASM._twgslDefaultOptions,
-            ...twgslOptions
+            ...twgslOptions,
         };
 
         if (twgslOptions.twgsl) {
@@ -62,5 +62,4 @@ export class WebGPUTintWASM {
     public convertSpirV2WGSL(code: Uint32Array): string {
         return this._twgsl.convertSpirV2WGSL(code);
     }
-
 }

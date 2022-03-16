@@ -4,7 +4,7 @@ import { Scene } from "../scene";
 import { Matrix, Vector3 } from "../Maths/math.vector";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Light } from "./light";
-import { Axis } from '../Maths/math.axis';
+import { Axis } from "../Maths/math.axis";
 /**
  * Interface describing all the common properties and methods a shadow light needs to implement.
  * This helps both the shadow generator and materials to generate the corresponding shadow maps
@@ -121,7 +121,6 @@ export interface IShadowLight extends Light {
  * It groups all the common behaviour in order to reduce duplication and better follow the DRY pattern.
  */
 export abstract class ShadowLight extends Light implements IShadowLight {
-
     protected abstract _setDefaultShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void;
 
     protected _position: Vector3;
@@ -278,8 +277,8 @@ export abstract class ShadowLight extends Light implements IShadowLight {
      */
     public getRotation(): Vector3 {
         this.direction.normalize();
-        var xaxis = Vector3.Cross(this.direction, Axis.Y);
-        var yaxis = Vector3.Cross(xaxis, this.direction);
+        const xaxis = Vector3.Cross(this.direction, Axis.Y);
+        const yaxis = Vector3.Cross(xaxis, this.direction);
         return Vector3.RotationFromAxis(xaxis, yaxis, this.direction);
     }
 
@@ -382,8 +381,7 @@ export abstract class ShadowLight extends Light implements IShadowLight {
     public setShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): IShadowLight {
         if (this.customProjectionMatrixBuilder) {
             this.customProjectionMatrixBuilder(viewMatrix, renderList, matrix);
-        }
-        else {
+        } else {
             this._setDefaultShadowProjectionMatrix(matrix, viewMatrix, renderList);
         }
         return this;

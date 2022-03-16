@@ -1,5 +1,5 @@
 import { Vector3 } from "../../Maths/math.vector";
-import { Color4 } from '../../Maths/math.color';
+import { Color4 } from "../../Maths/math.color";
 import { _CreationDataStorage, Mesh } from "../mesh";
 import { VertexData } from "../mesh.vertexData";
 import { FloatArray, Nullable } from "../../types";
@@ -14,22 +14,24 @@ declare type Material = import("../../Materials/material").Material;
  * @param options an object used to set the following optional parameters for the LineSystem, required but can be empty
  *  - lines an array of lines, each line being an array of successive Vector3
  *  - colors an array of line colors, each of the line colors being an array of successive Color4, one per line point
+ * @param options.lines
+ * @param options.colors
  * @returns the VertexData of the LineSystem
  */
-export function CreateLineSystemVertexData(options: { lines: Vector3[][], colors?: Nullable<Color4[][]> }): VertexData {
-    var indices = [];
-    var positions = [];
-    var lines = options.lines;
-    var colors = options.colors;
-    var vertexColors = [];
-    var idx = 0;
+export function CreateLineSystemVertexData(options: { lines: Vector3[][]; colors?: Nullable<Color4[][]> }): VertexData {
+    const indices = [];
+    const positions = [];
+    const lines = options.lines;
+    const colors = options.colors;
+    const vertexColors = [];
+    let idx = 0;
 
-    for (var l = 0; l < lines.length; l++) {
-        var points = lines[l];
-        for (var index = 0; index < points.length; index++) {
+    for (let l = 0; l < lines.length; l++) {
+        const points = lines[l];
+        for (let index = 0; index < points.length; index++) {
             positions.push(points[index].x, points[index].y, points[index].z);
             if (colors) {
-                var color = colors[l];
+                const color = colors[l];
                 vertexColors.push(color[index].r, color[index].g, color[index].b, color[index].a);
             }
             if (index > 0) {
@@ -39,7 +41,7 @@ export function CreateLineSystemVertexData(options: { lines: Vector3[][], colors
             idx++;
         }
     }
-    var vertexData = new VertexData();
+    const vertexData = new VertexData();
     vertexData.indices = indices;
     vertexData.positions = positions;
     if (colors) {
@@ -55,36 +57,40 @@ export function CreateLineSystemVertexData(options: { lines: Vector3[][], colors
  *  - dashSize the size of the dashes relative to the dash number, optional, default 3
  *  - gapSize the size of the gap between two successive dashes relative to the dash number, optional, default 1
  *  - dashNb the intended total number of dashes, optional, default 200
+ * @param options.points
+ * @param options.dashSize
+ * @param options.gapSize
+ * @param options.dashNb
  * @returns the VertexData for the DashedLines
  */
-export function CreateDashedLinesVertexData(options: { points: Vector3[], dashSize?: number, gapSize?: number, dashNb?: number }): VertexData {
-    var dashSize = options.dashSize || 3;
-    var gapSize = options.gapSize || 1;
-    var dashNb = options.dashNb || 200;
-    var points = options.points;
+export function CreateDashedLinesVertexData(options: { points: Vector3[]; dashSize?: number; gapSize?: number; dashNb?: number }): VertexData {
+    const dashSize = options.dashSize || 3;
+    const gapSize = options.gapSize || 1;
+    const dashNb = options.dashNb || 200;
+    const points = options.points;
 
-    var positions = new Array<number>();
-    var indices = new Array<number>();
+    const positions = new Array<number>();
+    const indices = new Array<number>();
 
-    var curvect = Vector3.Zero();
-    var lg = 0;
-    var nb = 0;
-    var shft = 0;
-    var dashshft = 0;
-    var curshft = 0;
-    var idx = 0;
-    var i = 0;
+    const curvect = Vector3.Zero();
+    let lg = 0;
+    let nb = 0;
+    let shft = 0;
+    let dashshft = 0;
+    let curshft = 0;
+    let idx = 0;
+    let i = 0;
     for (i = 0; i < points.length - 1; i++) {
         points[i + 1].subtractToRef(points[i], curvect);
         lg += curvect.length();
     }
     shft = lg / dashNb;
-    dashshft = dashSize * shft / (dashSize + gapSize);
+    dashshft = (dashSize * shft) / (dashSize + gapSize);
     for (i = 0; i < points.length - 1; i++) {
         points[i + 1].subtractToRef(points[i], curvect);
         nb = Math.floor(curvect.length() / shft);
         curvect.normalize();
-        for (var j = 0; j < nb; j++) {
+        for (let j = 0; j < nb; j++) {
             curshft = shft * j;
             positions.push(points[i].x + curshft * curvect.x, points[i].y + curshft * curvect.y, points[i].z + curshft * curvect.z);
             positions.push(points[i].x + (curshft + dashshft) * curvect.x, points[i].y + (curshft + dashshft) * curvect.y, points[i].z + (curshft + dashshft) * curvect.z);
@@ -94,7 +100,7 @@ export function CreateDashedLinesVertexData(options: { points: Vector3[], dashSi
     }
 
     // Result
-    var vertexData = new VertexData();
+    const vertexData = new VertexData();
     vertexData.positions = positions;
     vertexData.indices = indices;
 
@@ -116,26 +122,37 @@ export function CreateDashedLinesVertexData(options: { points: Vector3[], dashSi
  * @see https://doc.babylonjs.com/how_to/parametric_shapes#line-system
  * @param name defines the name of the new line system
  * @param options defines the options used to create the line system
+ * @param options.lines
+ * @param options.updatable
+ * @param options.instance
+ * @param options.colors
+ * @param options.useVertexAlpha
+ * @param options.material
  * @param scene defines the hosting scene
  * @returns a new line system mesh
  */
-export function CreateLineSystem(name: string, options: { lines: Vector3[][], updatable?: boolean, instance?: Nullable<LinesMesh>, colors?: Nullable<Color4[][]>, useVertexAlpha?: boolean; material?: Material }, scene: Nullable<Scene>): LinesMesh {
-    var instance = options.instance;
-    var lines = options.lines;
-    var colors = options.colors;
+export function CreateLineSystem(
+    name: string,
+    options: { lines: Vector3[][]; updatable?: boolean; instance?: Nullable<LinesMesh>; colors?: Nullable<Color4[][]>; useVertexAlpha?: boolean; material?: Material },
+    scene: Nullable<Scene>
+): LinesMesh {
+    const instance = options.instance;
+    const lines = options.lines;
+    const colors = options.colors;
 
-    if (instance) { // lines update
-        var positions = instance.getVerticesData(VertexBuffer.PositionKind)!;
-        var vertexColor;
-        var lineColors;
+    if (instance) {
+        // lines update
+        const positions = instance.getVerticesData(VertexBuffer.PositionKind)!;
+        let vertexColor;
+        let lineColors;
         if (colors) {
             vertexColor = instance.getVerticesData(VertexBuffer.ColorKind)!;
         }
-        var i = 0;
-        var c = 0;
-        for (var l = 0; l < lines.length; l++) {
-            var points = lines[l];
-            for (var p = 0; p < points.length; p++) {
+        let i = 0;
+        let c = 0;
+        for (let l = 0; l < lines.length; l++) {
+            const points = lines[l];
+            for (let p = 0; p < points.length; p++) {
                 positions[i] = points[p].x;
                 positions[i + 1] = points[p].y;
                 positions[i + 2] = points[p].z;
@@ -158,9 +175,9 @@ export function CreateLineSystem(name: string, options: { lines: Vector3[][], up
     }
 
     // line system creation
-    var useVertexColor = (colors) ? true : false;
-    var lineSystem = new LinesMesh(name, scene, null, undefined, undefined, useVertexColor, options.useVertexAlpha, options.material);
-    var vertexData = CreateLineSystemVertexData(options);
+    const useVertexColor = colors ? true : false;
+    const lineSystem = new LinesMesh(name, scene, null, undefined, undefined, useVertexColor, options.useVertexAlpha, options.material);
+    const vertexData = CreateLineSystemVertexData(options);
     vertexData.applyToMesh(lineSystem, options.updatable);
     return lineSystem;
 }
@@ -179,12 +196,26 @@ export function CreateLineSystem(name: string, options: { lines: Vector3[][], up
  * @see https://doc.babylonjs.com/how_to/parametric_shapes#lines
  * @param name defines the name of the new line system
  * @param options defines the options used to create the line system
+ * @param options.points
+ * @param options.updatable
+ * @param options.instance
+ * @param options.colors
+ * @param options.useVertexAlpha
+ * @param options.material
  * @param scene defines the hosting scene
  * @returns a new line mesh
  */
-export function CreateLines(name: string, options: { points: Vector3[], updatable?: boolean, instance?: Nullable<LinesMesh>, colors?: Color4[], useVertexAlpha?: boolean, material?: Material }, scene: Nullable<Scene> = null): LinesMesh {
-    var colors = (options.colors) ? [options.colors] : null;
-    var lines = CreateLineSystem(name, { lines: [options.points], updatable: options.updatable, instance: options.instance, colors: colors, useVertexAlpha: options.useVertexAlpha, material: options.material }, scene);
+export function CreateLines(
+    name: string,
+    options: { points: Vector3[]; updatable?: boolean; instance?: Nullable<LinesMesh>; colors?: Color4[]; useVertexAlpha?: boolean; material?: Material },
+    scene: Nullable<Scene> = null
+): LinesMesh {
+    const colors = options.colors ? [options.colors] : null;
+    const lines = CreateLineSystem(
+        name,
+        { lines: [options.points], updatable: options.updatable, instance: options.instance, colors: colors, useVertexAlpha: options.useVertexAlpha, material: options.material },
+        scene
+    );
     return lines;
 }
 
@@ -203,36 +234,49 @@ export function CreateLines(name: string, options: { points: Vector3[], updatabl
  * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
  * @param name defines the name of the mesh
  * @param options defines the options used to create the mesh
+ * @param options.points
  * @param scene defines the hosting scene
+ * @param options.dashSize
+ * @param options.gapSize
+ * @param options.dashNb
+ * @param options.updatable
+ * @param options.instance
+ * @param options.useVertexAlpha
+ * @param options.material
  * @returns the dashed line mesh
  * @see https://doc.babylonjs.com/how_to/parametric_shapes#dashed-lines
  */
-export function CreateDashedLines(name: string, options: { points: Vector3[], dashSize?: number, gapSize?: number, dashNb?: number, updatable?: boolean, instance?: LinesMesh, useVertexAlpha?: boolean, material?: Material }, scene: Nullable<Scene> = null): LinesMesh {
-    var points = options.points;
-    var instance = options.instance;
-    var gapSize = options.gapSize || 1;
-    var dashSize = options.dashSize || 3;
+export function CreateDashedLines(
+    name: string,
+    options: { points: Vector3[]; dashSize?: number; gapSize?: number; dashNb?: number; updatable?: boolean; instance?: LinesMesh; useVertexAlpha?: boolean; material?: Material },
+    scene: Nullable<Scene> = null
+): LinesMesh {
+    const points = options.points;
+    const instance = options.instance;
+    const gapSize = options.gapSize || 1;
+    const dashSize = options.dashSize || 3;
 
-    if (instance) {  //  dashed lines update
-        var positionFunction = (positions: FloatArray): void => {
-            var curvect = Vector3.Zero();
-            var nbSeg = positions.length / 6;
-            var lg = 0;
-            var nb = 0;
-            var shft = 0;
-            var dashshft = 0;
-            var curshft = 0;
-            var p = 0;
-            var i = 0;
-            var j = 0;
+    if (instance) {
+        //  dashed lines update
+        const positionFunction = (positions: FloatArray): void => {
+            const curvect = Vector3.Zero();
+            const nbSeg = positions.length / 6;
+            let lg = 0;
+            let nb = 0;
+            let shft = 0;
+            let dashshft = 0;
+            let curshft = 0;
+            let p = 0;
+            let i = 0;
+            let j = 0;
             for (i = 0; i < points.length - 1; i++) {
                 points[i + 1].subtractToRef(points[i], curvect);
                 lg += curvect.length();
             }
             shft = lg / nbSeg;
-            let dashSize = instance!._creationDataStorage!.dashSize;
-            let gapSize = instance!._creationDataStorage!.gapSize;
-            dashshft = dashSize * shft / (dashSize + gapSize);
+            const dashSize = instance!._creationDataStorage!.dashSize;
+            const gapSize = instance!._creationDataStorage!.gapSize;
+            dashshft = (dashSize * shft) / (dashSize + gapSize);
             for (i = 0; i < points.length - 1; i++) {
                 points[i + 1].subtractToRef(points[i], curvect);
                 nb = Math.floor(curvect.length() / shft);
@@ -261,8 +305,8 @@ export function CreateDashedLines(name: string, options: { points: Vector3[], da
         return instance;
     }
     // dashed lines creation
-    var dashedLines = new LinesMesh(name, scene, null, undefined, undefined, undefined, options.useVertexAlpha, options.material);
-    var vertexData = CreateDashedLinesVertexData(options);
+    const dashedLines = new LinesMesh(name, scene, null, undefined, undefined, undefined, options.useVertexAlpha, options.material);
+    const vertexData = CreateDashedLinesVertexData(options);
     vertexData.applyToMesh(dashedLines, options.updatable);
 
     dashedLines._creationDataStorage = new _CreationDataStorage();
@@ -277,29 +321,38 @@ export function CreateDashedLines(name: string, options: { points: Vector3[], da
 export const LinesBuilder = {
     CreateDashedLines,
     CreateLineSystem,
-    CreateLines
+    CreateLines,
 };
 
 VertexData.CreateLineSystem = CreateLineSystemVertexData;
 VertexData.CreateDashedLines = CreateDashedLinesVertexData;
 
 Mesh.CreateLines = (name: string, points: Vector3[], scene: Nullable<Scene> = null, updatable: boolean = false, instance: Nullable<LinesMesh> = null): LinesMesh => {
-    var options = {
+    const options = {
         points,
         updatable,
-        instance
+        instance,
     };
     return CreateLines(name, options, scene);
 };
 
-Mesh.CreateDashedLines = (name: string, points: Vector3[], dashSize: number, gapSize: number, dashNb: number, scene: Nullable<Scene> = null, updatable?: boolean, instance?: LinesMesh): LinesMesh => {
-    var options = {
+Mesh.CreateDashedLines = (
+    name: string,
+    points: Vector3[],
+    dashSize: number,
+    gapSize: number,
+    dashNb: number,
+    scene: Nullable<Scene> = null,
+    updatable?: boolean,
+    instance?: LinesMesh
+): LinesMesh => {
+    const options = {
         points,
         dashSize,
         gapSize,
         dashNb,
         updatable,
-        instance
+        instance,
     };
     return CreateDashedLines(name, options, scene);
 };

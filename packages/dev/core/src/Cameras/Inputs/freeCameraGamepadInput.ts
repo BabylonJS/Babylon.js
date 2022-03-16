@@ -66,7 +66,7 @@ export class FreeCameraGamepadInput implements ICameraInput<FreeCamera> {
      * Attach the input controls to a specific dom element to get the input from.
      */
     public attachControl(): void {
-        let manager = this.camera.getScene().gamepadManager;
+        const manager = this.camera.getScene().gamepadManager;
         this._onGamepadConnectedObserver = manager.onGamepadConnectedObservable.add((gamepad) => {
             if (gamepad.type !== Gamepad.POSE_ENABLED) {
                 // prioritize XBOX gamepads.
@@ -111,17 +111,17 @@ export class FreeCameraGamepadInput implements ICameraInput<FreeCamera> {
      */
     public checkInputs(): void {
         if (this.gamepad && this.gamepad.leftStick) {
-            var camera = this.camera;
-            var LSValues = this.gamepad.leftStick;
+            const camera = this.camera;
+            const LSValues = this.gamepad.leftStick;
             if (this.gamepadMoveSensibility !== 0) {
-                LSValues.x = (Math.abs(LSValues.x) > this.deadzoneDelta) ? LSValues.x / this.gamepadMoveSensibility : 0;
-                LSValues.y = (Math.abs(LSValues.y) > this.deadzoneDelta) ? LSValues.y / this.gamepadMoveSensibility : 0;
+                LSValues.x = Math.abs(LSValues.x) > this.deadzoneDelta ? LSValues.x / this.gamepadMoveSensibility : 0;
+                LSValues.y = Math.abs(LSValues.y) > this.deadzoneDelta ? LSValues.y / this.gamepadMoveSensibility : 0;
             }
 
-            var RSValues = this.gamepad.rightStick;
+            let RSValues = this.gamepad.rightStick;
             if (RSValues && this.gamepadAngularSensibility !== 0) {
-                RSValues.x = (Math.abs(RSValues.x) > this.deadzoneDelta) ? RSValues.x / this.gamepadAngularSensibility : 0;
-                RSValues.y = ((Math.abs(RSValues.y) > this.deadzoneDelta) ? RSValues.y / this.gamepadAngularSensibility : 0) * this._yAxisScale;
+                RSValues.x = Math.abs(RSValues.x) > this.deadzoneDelta ? RSValues.x / this.gamepadAngularSensibility : 0;
+                RSValues.y = (Math.abs(RSValues.y) > this.deadzoneDelta ? RSValues.y / this.gamepadAngularSensibility : 0) * this._yAxisScale;
             } else {
                 RSValues = { x: 0, y: 0 };
             }
@@ -132,7 +132,7 @@ export class FreeCameraGamepadInput implements ICameraInput<FreeCamera> {
                 camera.rotationQuaternion.toRotationMatrix(this._cameraTransform);
             }
 
-            var speed = camera._computeLocalCameraSpeed() * 50.0;
+            const speed = camera._computeLocalCameraSpeed() * 50.0;
             this._vector3.copyFromFloats(LSValues.x * speed, 0, -LSValues.y * speed);
 
             Vector3.TransformCoordinatesToRef(this._vector3, this._cameraTransform, this._deltaTransform);

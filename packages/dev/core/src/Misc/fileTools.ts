@@ -1,18 +1,18 @@
-import { WebRequest } from './webRequest';
-import { IsWindowObjectExist } from './domManagement';
-import { Nullable } from '../types';
-import { IOfflineProvider } from '../Offline/IOfflineProvider';
-import { IFileRequest } from './fileRequest';
-import { Observable } from './observable';
-import { FilesInputStore } from './filesInputStore';
-import { RetryStrategy } from './retryStrategy';
-import { BaseError, ErrorCodes, RuntimeError } from './error';
-import { DecodeBase64ToBinary, DecodeBase64ToString, EncodeArrayBufferToBase64 } from './stringTools';
-import { ShaderProcessor } from '../Engines/Processors/shaderProcessor';
-import { ThinEngine } from '../Engines/thinEngine';
-import { EngineStore } from '../Engines/engineStore';
-import { Logger } from './logger';
-import { TimingTools } from './timingTools';
+import { WebRequest } from "./webRequest";
+import { IsWindowObjectExist } from "./domManagement";
+import { Nullable } from "../types";
+import { IOfflineProvider } from "../Offline/IOfflineProvider";
+import { IFileRequest } from "./fileRequest";
+import { Observable } from "./observable";
+import { FilesInputStore } from "./filesInputStore";
+import { RetryStrategy } from "./retryStrategy";
+import { BaseError, ErrorCodes, RuntimeError } from "./error";
+import { DecodeBase64ToBinary, DecodeBase64ToString, EncodeArrayBufferToBase64 } from "./stringTools";
+import { ShaderProcessor } from "../Engines/Processors/shaderProcessor";
+import { ThinEngine } from "../Engines/thinEngine";
+import { EngineStore } from "../Engines/engineStore";
+import { Logger } from "./logger";
+import { TimingTools } from "./timingTools";
 
 const base64DataUrlRegEx = new RegExp(/^data:([^,]+\/[^,]+)?;base64,/i);
 
@@ -35,8 +35,7 @@ export class LoadFileError extends RuntimeError {
 
         if (object instanceof WebRequest) {
             this.request = object;
-        }
-        else {
+        } else {
             this.file = object;
         }
     }
@@ -59,7 +58,7 @@ export class RequestFileError extends RuntimeError {
 /** @ignore */
 export class ReadFileError extends RuntimeError {
     /**
-    * Creates a new ReadFileError
+     * Creates a new ReadFileError
      * @param message defines the message of the error
      * @param file defines the optional file
      */
@@ -99,10 +98,11 @@ export const FileToolsOptions: {
 
     /**
      * Gets or sets a function used to pre-process url before using them to load assets
+     * @param url
      */
     PreprocessUrl: (url: string) => {
         return url;
-    }
+    },
 };
 
 /**
@@ -111,7 +111,7 @@ export const FileToolsOptions: {
  * @returns the cleaned url
  */
 const _CleanUrl = (url: string): string => {
-    url = url.replace(/#/mg, "%23");
+    url = url.replace(/#/gm, "%23");
     return url;
 };
 
@@ -119,6 +119,7 @@ const _CleanUrl = (url: string): string => {
  * Sets the cors behavior on a dom element. This will add the required Tools.CorsBehavior to the element.
  * @param url define the url we are trying
  * @param element define the dom element where to configure the cors policy
+ * @param element.crossOrigin
  * @hidden
  */
 export const SetCorsBehavior = (url: string | string[], element: { crossOrigin: string | null }): void => {
@@ -127,11 +128,10 @@ export const SetCorsBehavior = (url: string | string[], element: { crossOrigin: 
     }
 
     if (FileToolsOptions.CorsBehavior) {
-        if (typeof (FileToolsOptions.CorsBehavior) === 'string' || FileToolsOptions.CorsBehavior instanceof String) {
+        if (typeof FileToolsOptions.CorsBehavior === "string" || FileToolsOptions.CorsBehavior instanceof String) {
             element.crossOrigin = <string>FileToolsOptions.CorsBehavior;
-        }
-        else {
-            var result = FileToolsOptions.CorsBehavior(url);
+        } else {
+            const result = FileToolsOptions.CorsBehavior(url);
             if (result) {
                 element.crossOrigin = result;
             }
@@ -146,27 +146,32 @@ export const SetCorsBehavior = (url: string | string[], element: { crossOrigin: 
  * @param onError callback called when the image fails to load
  * @param offlineProvider offline provider for caching
  * @param mimeType optional mime type
+ * @param imageBitmapOptions
  * @returns the HTMLImageElement of the loaded image
  * @hidden
  */
-export const LoadImage = (input: string | ArrayBuffer | ArrayBufferView | Blob, onLoad: (img: HTMLImageElement | ImageBitmap) => void,
-    onError: (message?: string, exception?: any) => void, offlineProvider: Nullable<IOfflineProvider>, mimeType: string = "", imageBitmapOptions?: ImageBitmapOptions): Nullable<HTMLImageElement> => {
+export const LoadImage = (
+    input: string | ArrayBuffer | ArrayBufferView | Blob,
+    onLoad: (img: HTMLImageElement | ImageBitmap) => void,
+    onError: (message?: string, exception?: any) => void,
+    offlineProvider: Nullable<IOfflineProvider>,
+    mimeType: string = "",
+    imageBitmapOptions?: ImageBitmapOptions
+): Nullable<HTMLImageElement> => {
     let url: string;
     let usingObjectURL = false;
 
     if (input instanceof ArrayBuffer || ArrayBuffer.isView(input)) {
-        if (typeof Blob !== 'undefined') {
+        if (typeof Blob !== "undefined") {
             url = URL.createObjectURL(new Blob([input], { type: mimeType }));
             usingObjectURL = true;
         } else {
             url = `data:${mimeType};base64,` + EncodeArrayBufferToBase64(input);
         }
-    }
-    else if (input instanceof Blob) {
+    } else if (input instanceof Blob) {
         url = URL.createObjectURL(input);
         usingObjectURL = true;
-    }
-    else {
+    } else {
         url = _CleanUrl(input);
         url = FileToolsOptions.PreprocessUrl(input);
     }
@@ -176,30 +181,40 @@ export const LoadImage = (input: string | ArrayBuffer | ArrayBufferView | Blob, 
     const onErrorHandler = (exception: any) => {
         if (onError) {
             const inputText = url || input.toString();
-            onError(`Error while trying to load image: ${((inputText.indexOf('http') === 0 || inputText.length <= 128) ? inputText : inputText.slice(0, 128) + "...")}`, exception);
+            onError(`Error while trying to load image: ${inputText.indexOf("http") === 0 || inputText.length <= 128 ? inputText : inputText.slice(0, 128) + "..."}`, exception);
         }
     };
 
     if (typeof Image === "undefined" || (engine?._features.forceBitmapOverHTMLImageElement ?? false)) {
-        LoadFile(url, (data) => {
-            engine!.createImageBitmap(new Blob([data], { type: mimeType }), { premultiplyAlpha: "none", ...imageBitmapOptions }).then((imgBmp) => {
-                onLoad(imgBmp);
-                if (usingObjectURL) {
-                    URL.revokeObjectURL(url);
-                }
-            }).catch((reason) => {
-                if (onError) {
-                    onError("Error while trying to load image: " + input, reason);
-                }
-            });
-        }, undefined, offlineProvider || undefined, true, (request, exception) => {
-            onErrorHandler(exception);
-        });
+        LoadFile(
+            url,
+            (data) => {
+                engine!
+                    .createImageBitmap(new Blob([data], { type: mimeType }), { premultiplyAlpha: "none", ...imageBitmapOptions })
+                    .then((imgBmp) => {
+                        onLoad(imgBmp);
+                        if (usingObjectURL) {
+                            URL.revokeObjectURL(url);
+                        }
+                    })
+                    .catch((reason) => {
+                        if (onError) {
+                            onError("Error while trying to load image: " + input, reason);
+                        }
+                    });
+            },
+            undefined,
+            offlineProvider || undefined,
+            true,
+            (request, exception) => {
+                onErrorHandler(exception);
+            }
+        );
 
         return null;
     }
 
-    var img = new Image();
+    const img = new Image();
     SetCorsBehavior(url, img);
 
     const loadHandler = () => {
@@ -229,11 +244,11 @@ export const LoadImage = (input: string | ArrayBuffer | ArrayBufferView | Blob, 
     img.addEventListener("load", loadHandler);
     img.addEventListener("error", errorHandler);
 
-    var noOfflineSupport = () => {
+    const noOfflineSupport = () => {
         img.src = url;
     };
 
-    var loadFromOfflineSupport = () => {
+    const loadFromOfflineSupport = () => {
         if (offlineProvider) {
             offlineProvider.loadImage(url, img);
         }
@@ -241,24 +256,21 @@ export const LoadImage = (input: string | ArrayBuffer | ArrayBufferView | Blob, 
 
     if (url.substr(0, 5) !== "blob:" && url.substr(0, 5) !== "data:" && offlineProvider && offlineProvider.enableTexturesOffline) {
         offlineProvider.open(loadFromOfflineSupport, noOfflineSupport);
-    }
-    else {
+    } else {
         if (url.indexOf("file:") !== -1) {
-            var textureName = decodeURIComponent(url.substring(5).toLowerCase());
+            const textureName = decodeURIComponent(url.substring(5).toLowerCase());
             if (FilesInputStore.FilesToLoad[textureName]) {
                 try {
-                    var blobURL;
+                    let blobURL;
                     try {
                         blobURL = URL.createObjectURL(FilesInputStore.FilesToLoad[textureName]);
-                    }
-                    catch (ex) {
+                    } catch (ex) {
                         // Chrome doesn't support oneTimeOnly parameter
                         blobURL = URL.createObjectURL(FilesInputStore.FilesToLoad[textureName]);
                     }
                     img.src = blobURL;
                     usingObjectURL = true;
-                }
-                catch (e) {
+                } catch (e) {
                     img.src = "";
                 }
                 return img;
@@ -281,7 +293,13 @@ export const LoadImage = (input: string | ArrayBuffer | ArrayBufferView | Blob, 
  * @returns a file request object
  * @hidden
  */
-export const ReadFile = (file: File, onSuccess: (data: any) => void, onProgress?: (ev: ProgressEvent) => any, useArrayBuffer?: boolean, onError?: (error: ReadFileError) => void): IFileRequest => {
+export const ReadFile = (
+    file: File,
+    onSuccess: (data: any) => void,
+    onProgress?: (ev: ProgressEvent) => any,
+    useArrayBuffer?: boolean,
+    onError?: (error: ReadFileError) => void
+): IFileRequest => {
     const reader = new FileReader();
     const fileRequest: IFileRequest = {
         onCompleteObservable: new Observable<IFileRequest>(),
@@ -296,7 +314,7 @@ export const ReadFile = (file: File, onSuccess: (data: any) => void, onProgress?
     }
     reader.onload = (e) => {
         //target doesn't have result from ts 1.3
-        onSuccess((<any>e.target)['result']);
+        onSuccess((<any>e.target)["result"]);
     };
     if (onProgress) {
         reader.onprogress = onProgress;
@@ -304,8 +322,7 @@ export const ReadFile = (file: File, onSuccess: (data: any) => void, onProgress?
     if (!useArrayBuffer) {
         // Asynchronous read
         reader.readAsText(file);
-    }
-    else {
+    } else {
         reader.readAsArrayBuffer(file);
     }
 
@@ -320,24 +337,39 @@ export const ReadFile = (file: File, onSuccess: (data: any) => void, onProgress?
  * @param offlineProvider defines the offline provider for caching
  * @param useArrayBuffer defines a boolean indicating that date must be returned as ArrayBuffer
  * @param onError callback called when the file fails to load
+ * @param onOpened
  * @returns a file request object
  * @hidden
  */
-export const LoadFile = (fileOrUrl: File | string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void,
-    onProgress?: (ev: ProgressEvent) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean,
-    onError?: (request?: WebRequest, exception?: LoadFileError) => void, onOpened?: (request: WebRequest) => void): IFileRequest => {
+export const LoadFile = (
+    fileOrUrl: File | string,
+    onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void,
+    onProgress?: (ev: ProgressEvent) => void,
+    offlineProvider?: IOfflineProvider,
+    useArrayBuffer?: boolean,
+    onError?: (request?: WebRequest, exception?: LoadFileError) => void,
+    onOpened?: (request: WebRequest) => void
+): IFileRequest => {
     if ((fileOrUrl as File).name) {
-        return ReadFile((fileOrUrl as File), onSuccess, onProgress, useArrayBuffer, onError ? (error: ReadFileError) => {
-            onError(undefined, error);
-        } : undefined);
+        return ReadFile(
+            fileOrUrl as File,
+            onSuccess,
+            onProgress,
+            useArrayBuffer,
+            onError
+                ? (error: ReadFileError) => {
+                      onError(undefined, error);
+                  }
+                : undefined
+        );
     }
 
-    const url = (fileOrUrl as string);
+    const url = fileOrUrl as string;
 
     // If file and file input are set
     if (url.indexOf("file:") !== -1) {
         let fileName = decodeURIComponent(url.substring(5).toLowerCase());
-        if (fileName.indexOf('./') === 0) {
+        if (fileName.indexOf("./") === 0) {
             fileName = fileName.substring(2);
         }
         const file = FilesInputStore.FilesToLoad[fileName];
@@ -350,7 +382,7 @@ export const LoadFile = (fileOrUrl: File | string, onSuccess: (data: string | Ar
     if (IsBase64DataUrl(url)) {
         const fileRequest: IFileRequest = {
             onCompleteObservable: new Observable<IFileRequest>(),
-            abort: () => () => { },
+            abort: () => () => {},
         };
 
         try {
@@ -370,11 +402,21 @@ export const LoadFile = (fileOrUrl: File | string, onSuccess: (data: string | Ar
         return fileRequest;
     }
 
-    return RequestFile(url, (data, request) => {
-        onSuccess(data, request ? request.responseURL : undefined);
-    }, onProgress, offlineProvider, useArrayBuffer, onError ? (error) => {
-        onError(error.request, new LoadFileError(error.message, error.request));
-    } : undefined, onOpened);
+    return RequestFile(
+        url,
+        (data, request) => {
+            onSuccess(data, request ? request.responseURL : undefined);
+        },
+        onProgress,
+        offlineProvider,
+        useArrayBuffer,
+        onError
+            ? (error) => {
+                  onError(error.request, new LoadFileError(error.message, error.request));
+              }
+            : undefined,
+        onOpened
+    );
 };
 
 /**
@@ -389,9 +431,15 @@ export const LoadFile = (fileOrUrl: File | string, onSuccess: (data: string | Ar
  * @returns a file request object
  * @hidden
  */
-export const RequestFile = (url: string, onSuccess: (data: string | ArrayBuffer, request?: WebRequest) => void,
-    onProgress?: (event: ProgressEvent) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean,
-    onError?: (error: RequestFileError) => void, onOpened?: (request: WebRequest) => void): IFileRequest => {
+export const RequestFile = (
+    url: string,
+    onSuccess: (data: string | ArrayBuffer, request?: WebRequest) => void,
+    onProgress?: (event: ProgressEvent) => void,
+    offlineProvider?: IOfflineProvider,
+    useArrayBuffer?: boolean,
+    onError?: (error: RequestFileError) => void,
+    onOpened?: (request: WebRequest) => void
+): IFileRequest => {
     url = _CleanUrl(url);
     url = FileToolsOptions.PreprocessUrl(url);
 
@@ -400,7 +448,7 @@ export const RequestFile = (url: string, onSuccess: (data: string | ArrayBuffer,
     let aborted = false;
     const fileRequest: IFileRequest = {
         onCompleteObservable: new Observable<IFileRequest>(),
-        abort: () => aborted = true,
+        abort: () => (aborted = true),
     };
 
     const requestFile = () => {
@@ -452,7 +500,7 @@ export const RequestFile = (url: string, onSuccess: (data: string | ArrayBuffer,
             if (!request) {
                 return;
             }
-            request.open('GET', loadUrl);
+            request.open("GET", loadUrl);
 
             if (onOpened) {
                 try {
@@ -492,9 +540,9 @@ export const RequestFile = (url: string, onSuccess: (data: string | ArrayBuffer,
                         return;
                     }
 
-                    let retryStrategy = FileToolsOptions.DefaultRetryStrategy;
+                    const retryStrategy = FileToolsOptions.DefaultRetryStrategy;
                     if (retryStrategy) {
-                        let waitTime = retryStrategy(loadUrl, request, retryIndex);
+                        const waitTime = retryStrategy(loadUrl, request, retryIndex);
                         if (waitTime !== -1) {
                             // Prevent the request from completing for retry.
                             request.removeEventListener("loadend", onLoadEnd);
@@ -535,23 +583,30 @@ export const RequestFile = (url: string, onSuccess: (data: string | ArrayBuffer,
             // TODO: database needs to support aborting and should return a IFileRequest
 
             if (offlineProvider) {
-                offlineProvider.loadFile(FileToolsOptions.BaseUrl + url, (data) => {
-                    if (!aborted) {
-                        onSuccess(data);
-                    }
+                offlineProvider.loadFile(
+                    FileToolsOptions.BaseUrl + url,
+                    (data) => {
+                        if (!aborted) {
+                            onSuccess(data);
+                        }
 
-                    fileRequest.onCompleteObservable.notifyObservers(fileRequest);
-                }, onProgress ? (event) => {
-                    if (!aborted) {
-                        onProgress(event);
-                    }
-                } : undefined, noOfflineSupport, useArrayBuffer);
+                        fileRequest.onCompleteObservable.notifyObservers(fileRequest);
+                    },
+                    onProgress
+                        ? (event) => {
+                              if (!aborted) {
+                                  onProgress(event);
+                              }
+                          }
+                        : undefined,
+                    noOfflineSupport,
+                    useArrayBuffer
+                );
             }
         };
 
         offlineProvider.open(loadFromOfflineSupport, noOfflineSupport);
-    }
-    else {
+    } else {
         requestFile();
     }
 
@@ -612,5 +667,5 @@ const initSideEffects = () => {
 initSideEffects();
 
 // LTS. Export FileTools in this module for backward compatibility.
-import { _injectLTSFileTools } from './fileTools.lts';
+import { _injectLTSFileTools } from "./fileTools.lts";
 _injectLTSFileTools(DecodeBase64UrlToBinary, DecodeBase64UrlToString, FileToolsOptions, IsBase64DataUrl, IsFileURL, LoadFile, LoadImage, ReadFile, RequestFile, SetCorsBehavior);

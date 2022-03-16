@@ -24,8 +24,32 @@ export class SubSurfaceScatteringPostProcess extends PostProcess {
         return "SubSurfaceScatteringPostProcess";
     }
 
-    constructor(name: string, scene: Scene, options: number | PostProcessOptions, camera: Nullable<Camera> = null, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT) {
-        super(name, "subSurfaceScattering", ["texelSize", "viewportSize", "metersPerUnit"], ["diffusionS", "diffusionD", "filterRadii", "irradianceSampler", "depthSampler", "albedoSampler"], options, camera, samplingMode || Texture.BILINEAR_SAMPLINGMODE, engine, reusable, null, textureType, "postprocess", undefined, true);
+    constructor(
+        name: string,
+        scene: Scene,
+        options: number | PostProcessOptions,
+        camera: Nullable<Camera> = null,
+        samplingMode?: number,
+        engine?: Engine,
+        reusable?: boolean,
+        textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT
+    ) {
+        super(
+            name,
+            "subSurfaceScattering",
+            ["texelSize", "viewportSize", "metersPerUnit"],
+            ["diffusionS", "diffusionD", "filterRadii", "irradianceSampler", "depthSampler", "albedoSampler"],
+            options,
+            camera,
+            samplingMode || Texture.BILINEAR_SAMPLINGMODE,
+            engine,
+            reusable,
+            null,
+            textureType,
+            "postprocess",
+            undefined,
+            true
+        );
         this._scene = scene;
 
         this.updateEffect();
@@ -35,15 +59,17 @@ export class SubSurfaceScatteringPostProcess extends PostProcess {
                 Logger.Error("PrePass and subsurface configuration needs to be enabled for subsurface scattering.");
                 return;
             }
-            var texelSize = this.texelSize;
+            const texelSize = this.texelSize;
             effect.setFloat("metersPerUnit", scene.subSurfaceConfiguration.metersPerUnit);
             effect.setFloat2("texelSize", texelSize.x, texelSize.y);
             effect.setTexture("irradianceSampler", scene.prePassRenderer.getRenderTarget().textures[scene.prePassRenderer.getIndex(Constants.PREPASS_IRRADIANCE_TEXTURE_TYPE)]);
             effect.setTexture("depthSampler", scene.prePassRenderer.getRenderTarget().textures[scene.prePassRenderer.getIndex(Constants.PREPASS_DEPTH_TEXTURE_TYPE)]);
             effect.setTexture("albedoSampler", scene.prePassRenderer.getRenderTarget().textures[scene.prePassRenderer.getIndex(Constants.PREPASS_ALBEDO_SQRT_TEXTURE_TYPE)]);
-            effect.setFloat2("viewportSize",
+            effect.setFloat2(
+                "viewportSize",
                 Math.tan(scene.activeCamera!.fov / 2) * scene.getEngine().getAspectRatio(scene.activeCamera!, true),
-                Math.tan(scene.activeCamera!.fov / 2));
+                Math.tan(scene.activeCamera!.fov / 2)
+            );
             effect.setArray3("diffusionS", scene.subSurfaceConfiguration.ssDiffusionS);
             effect.setArray("diffusionD", scene.subSurfaceConfiguration.ssDiffusionD);
             effect.setArray("filterRadii", scene.subSurfaceConfiguration.ssFilterRadii);

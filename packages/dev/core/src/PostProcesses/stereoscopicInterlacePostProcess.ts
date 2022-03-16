@@ -33,7 +33,18 @@ export class StereoscopicInterlacePostProcessI extends PostProcess {
      * @param reusable If the post process can be reused on the same frame. (default: false)
      */
     constructor(name: string, rigCameras: Camera[], isStereoscopicHoriz: boolean, isStereoscopicInterlaced: boolean, samplingMode?: number, engine?: Engine, reusable?: boolean) {
-        super(name, "stereoscopicInterlace", ['stepSize'], ['camASampler'], 1, rigCameras[1], samplingMode, engine, reusable, isStereoscopicInterlaced ? "#define IS_STEREOSCOPIC_INTERLACED 1" : isStereoscopicHoriz ? "#define IS_STEREOSCOPIC_HORIZ 1" : undefined);
+        super(
+            name,
+            "stereoscopicInterlace",
+            ["stepSize"],
+            ["camASampler"],
+            1,
+            rigCameras[1],
+            samplingMode,
+            engine,
+            reusable,
+            isStereoscopicInterlaced ? "#define IS_STEREOSCOPIC_INTERLACED 1" : isStereoscopicHoriz ? "#define IS_STEREOSCOPIC_HORIZ 1" : undefined
+        );
 
         this._passedProcess = rigCameras[0]._rigPostProcess;
         this._stepSize = new Vector2(1 / this.width, 1 / this.height);
@@ -72,7 +83,18 @@ export class StereoscopicInterlacePostProcess extends PostProcess {
      * @param reusable If the post process can be reused on the same frame. (default: false)
      */
     constructor(name: string, rigCameras: Camera[], isStereoscopicHoriz: boolean, samplingMode?: number, engine?: Engine, reusable?: boolean) {
-        super(name, "stereoscopicInterlace", ['stepSize'], ['camASampler'], 1, rigCameras[1], samplingMode, engine, reusable, isStereoscopicHoriz ? "#define IS_STEREOSCOPIC_HORIZ 1" : undefined);
+        super(
+            name,
+            "stereoscopicInterlace",
+            ["stepSize"],
+            ["camASampler"],
+            1,
+            rigCameras[1],
+            samplingMode,
+            engine,
+            reusable,
+            isStereoscopicHoriz ? "#define IS_STEREOSCOPIC_HORIZ 1" : undefined
+        );
 
         this._passedProcess = rigCameras[0]._rigPostProcess;
         this._stepSize = new Vector2(1 / this.width, 1 / this.height);

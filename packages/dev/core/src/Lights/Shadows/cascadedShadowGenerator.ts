@@ -13,17 +13,17 @@ import { Constants } from "../../Engines/constants";
 import "../../Shaders/shadowMap.fragment";
 import "../../Shaders/shadowMap.vertex";
 import "../../Shaders/depthBoxBlur.fragment";
-import { Observer } from '../../Misc/observable';
-import { _WarnImport } from '../../Misc/devTools';
-import { ShadowGenerator } from './shadowGenerator';
-import { DirectionalLight } from '../directionalLight';
+import { Observer } from "../../Misc/observable";
+import { _WarnImport } from "../../Misc/devTools";
+import { ShadowGenerator } from "./shadowGenerator";
+import { DirectionalLight } from "../directionalLight";
 
-import { BoundingInfo } from '../../Culling/boundingInfo';
-import { DepthRenderer } from '../../Rendering/depthRenderer';
-import { DepthReducer } from '../../Misc/depthReducer';
+import { BoundingInfo } from "../../Culling/boundingInfo";
+import { DepthRenderer } from "../../Rendering/depthRenderer";
+import { DepthReducer } from "../../Misc/depthReducer";
 
 import { Logger } from "../../Misc/logger";
-import { EngineStore } from '../../Engines/engineStore';
+import { EngineStore } from "../../Engines/engineStore";
 
 interface ICascade {
     prevBreakDistance: number;
@@ -33,7 +33,7 @@ interface ICascade {
 const UpDir = Vector3.Up();
 const ZeroVec = Vector3.Zero();
 
-let tmpv1 = new Vector3(),
+const tmpv1 = new Vector3(),
     tmpv2 = new Vector3(),
     tmpMatrix = new Matrix();
 
@@ -43,7 +43,6 @@ let tmpv1 = new Vector3(),
  * Based on: https://github.com/TheRealMJP/Shadows and https://johanmedestrom.wordpress.com/2016/03/18/opengl-cascaded-shadow-maps/
  */
 export class CascadedShadowGenerator extends ShadowGenerator {
-
     private static readonly frustumCornersNDCSpace = [
         new Vector3(-1.0, +1.0, -1.0),
         new Vector3(+1.0, +1.0, -1.0),
@@ -74,9 +73,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
     public static readonly MAX_CASCADES_COUNT = 4;
 
     protected _validateFilter(filter: number): number {
-        if (filter === ShadowGenerator.FILTER_NONE ||
-            filter === ShadowGenerator.FILTER_PCF ||
-            filter === ShadowGenerator.FILTER_PCSS) {
+        if (filter === ShadowGenerator.FILTER_NONE || filter === ShadowGenerator.FILTER_PCF || filter === ShadowGenerator.FILTER_PCSS) {
             return filter;
         }
 
@@ -467,8 +464,9 @@ export class CascadedShadowGenerator extends ShadowGenerator {
 
         if (!this._depthReducer) {
             this._depthReducer = new DepthReducer(camera);
-            this._depthReducer.onAfterReductionPerformed.add((minmax: { min: number, max: number }) => {
-                let min = minmax.min, max = minmax.max;
+            this._depthReducer.onAfterReductionPerformed.add((minmax: { min: number; max: number }) => {
+                let min = minmax.min,
+                    max = minmax.max;
                 if (min >= max) {
                     min = 0;
                     max = 1;
@@ -509,7 +507,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
     }
 
     private _splitFrustum(): void {
-        let camera = this._scene.activeCamera;
+        const camera = this._scene.activeCamera;
         if (!camera) {
             return;
         }
@@ -528,7 +526,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
 
         for (let cascadeIndex = 0; cascadeIndex < this._cascades.length; ++cascadeIndex) {
             const p = (cascadeIndex + 1) / this._numCascades,
-                log = minZ * (ratio ** p),
+                log = minZ * ratio ** p,
                 uniform = minZ + range * p;
 
             const d = this._lambda * (log - uniform) + uniform;
@@ -544,9 +542,9 @@ export class CascadedShadowGenerator extends ShadowGenerator {
     }
 
     private _computeMatrices(): void {
-        var scene = this._scene;
+        const scene = this._scene;
 
-        let camera = scene.activeCamera;
+        const camera = scene.activeCamera;
         if (!camera) {
             return;
         }
@@ -572,7 +570,8 @@ export class CascadedShadowGenerator extends ShadowGenerator {
             // Come up with a new orthographic camera for the shadow caster
             Matrix.LookAtLHToRef(this._shadowCameraPos[cascadeIndex], this._frustumCenter[cascadeIndex], UpDir, this._viewMatrices[cascadeIndex]);
 
-            let minZ = 0, maxZ = tmpv1.z;
+            let minZ = 0,
+                maxZ = tmpv1.z;
 
             // Try to tighten minZ and maxZ based on the bounding box of the shadow casters
             const boundingInfo = this._shadowCastersBoundingInfo;
@@ -589,8 +588,16 @@ export class CascadedShadowGenerator extends ShadowGenerator {
                 minZ = Math.max(minZ, boundingInfo.boundingBox.minimumWorld.z);
             }
 
-            Matrix.OrthoOffCenterLHToRef(this._cascadeMinExtents[cascadeIndex].x, this._cascadeMaxExtents[cascadeIndex].x, this._cascadeMinExtents[cascadeIndex].y, this._cascadeMaxExtents[cascadeIndex].y,
-                useReverseDepthBuffer ? maxZ : minZ, useReverseDepthBuffer ? minZ : maxZ, this._projectionMatrices[cascadeIndex], scene.getEngine().isNDCHalfZRange);
+            Matrix.OrthoOffCenterLHToRef(
+                this._cascadeMinExtents[cascadeIndex].x,
+                this._cascadeMaxExtents[cascadeIndex].x,
+                this._cascadeMinExtents[cascadeIndex].y,
+                this._cascadeMaxExtents[cascadeIndex].y,
+                useReverseDepthBuffer ? maxZ : minZ,
+                useReverseDepthBuffer ? minZ : maxZ,
+                this._projectionMatrices[cascadeIndex],
+                scene.getEngine().isNDCHalfZRange
+            );
 
             this._cascadeMinExtents[cascadeIndex].z = minZ;
             this._cascadeMaxExtents[cascadeIndex].z = maxZ;
@@ -708,20 +715,23 @@ export class CascadedShadowGenerator extends ShadowGenerator {
     }
 
     /**
-    *  Support test.
-    */
+     *  Support test.
+     */
     public static get IsSupported(): boolean {
-        var engine = EngineStore.LastCreatedEngine;
+        const engine = EngineStore.LastCreatedEngine;
         if (!engine) {
             return false;
         }
         return engine._features.supportCSM;
     }
 
-    /** @hidden */
+    /**
+     * @param _
+     * @hidden
+     */
     public static _SceneComponentInitialization: (scene: Scene) => void = (_) => {
         throw _WarnImport("ShadowGeneratorSceneComponent");
-    }
+    };
 
     /**
      * Creates a Cascaded Shadow Generator object.
@@ -771,7 +781,19 @@ export class CascadedShadowGenerator extends ShadowGenerator {
     protected _createTargetRenderTexture(): void {
         const engine = this._scene.getEngine();
         const size = { width: this._mapSize, height: this._mapSize, layers: this.numCascades };
-        this._shadowMap = new RenderTargetTexture(this._light.name + "_CSMShadowMap", size, this._scene, false, true, this._textureType, false, undefined, false, false, undefined/*, Constants.TEXTUREFORMAT_RED*/);
+        this._shadowMap = new RenderTargetTexture(
+            this._light.name + "_CSMShadowMap",
+            size,
+            this._scene,
+            false,
+            true,
+            this._textureType,
+            false,
+            undefined,
+            false,
+            false,
+            undefined /*, Constants.TEXTUREFORMAT_RED*/
+        );
         this._shadowMap.createDepthStencilTexture(engine.useReverseDepthBuffer ? Constants.GREATER : Constants.LESS, true);
     }
 
@@ -818,7 +840,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
             }
         }
 
-        let engine = this._scene.getEngine();
+        const engine = this._scene.getEngine();
 
         this._shadowMap.onBeforeBindObservable.clear();
         this._shadowMap.onBeforeRenderObservable.clear();
@@ -866,8 +888,8 @@ export class CascadedShadowGenerator extends ShadowGenerator {
     public prepareDefines(defines: any, lightIndex: number): void {
         super.prepareDefines(defines, lightIndex);
 
-        var scene = this._scene;
-        var light = this._light;
+        const scene = this._scene;
+        const light = this._light;
 
         if (!scene.shadowsEnabled || !light.shadowEnabled) {
             return;
@@ -926,9 +948,18 @@ export class CascadedShadowGenerator extends ShadowGenerator {
             light._uniformBuffer.updateFloat4("shadowsInfo", this.getDarkness(), width, 1 / width, this.frustumEdgeFalloff, lightIndex);
         } else if (this._filter === ShadowGenerator.FILTER_PCSS) {
             for (let cascadeIndex = 0; cascadeIndex < this._numCascades; ++cascadeIndex) {
-                this._lightSizeUVCorrection[cascadeIndex * 2 + 0] = cascadeIndex === 0 ? 1 : (this._cascadeMaxExtents[0].x - this._cascadeMinExtents[0].x) / (this._cascadeMaxExtents[cascadeIndex].x - this._cascadeMinExtents[cascadeIndex].x); // x correction
-                this._lightSizeUVCorrection[cascadeIndex * 2 + 1] = cascadeIndex === 0 ? 1 : (this._cascadeMaxExtents[0].y - this._cascadeMinExtents[0].y) / (this._cascadeMaxExtents[cascadeIndex].y - this._cascadeMinExtents[cascadeIndex].y); // y correction
-                this._depthCorrection[cascadeIndex] = cascadeIndex === 0 ? 1 : (this._cascadeMaxExtents[cascadeIndex].z - this._cascadeMinExtents[cascadeIndex].z) / (this._cascadeMaxExtents[0].z - this._cascadeMinExtents[0].z);
+                this._lightSizeUVCorrection[cascadeIndex * 2 + 0] =
+                    cascadeIndex === 0
+                        ? 1
+                        : (this._cascadeMaxExtents[0].x - this._cascadeMinExtents[0].x) / (this._cascadeMaxExtents[cascadeIndex].x - this._cascadeMinExtents[cascadeIndex].x); // x correction
+                this._lightSizeUVCorrection[cascadeIndex * 2 + 1] =
+                    cascadeIndex === 0
+                        ? 1
+                        : (this._cascadeMaxExtents[0].y - this._cascadeMinExtents[0].y) / (this._cascadeMaxExtents[cascadeIndex].y - this._cascadeMinExtents[cascadeIndex].y); // y correction
+                this._depthCorrection[cascadeIndex] =
+                    cascadeIndex === 0
+                        ? 1
+                        : (this._cascadeMaxExtents[cascadeIndex].z - this._cascadeMinExtents[cascadeIndex].z) / (this._cascadeMaxExtents[0].z - this._cascadeMinExtents[0].z);
             }
             effect.setDepthStencilTexture("shadowSampler" + lightIndex, shadowMap);
             effect.setTexture("depthSampler" + lightIndex, shadowMap);
@@ -936,13 +967,17 @@ export class CascadedShadowGenerator extends ShadowGenerator {
             effect.setArray("depthCorrection" + lightIndex, this._depthCorrection);
             effect.setFloat("penumbraDarkness" + lightIndex, this.penumbraDarkness);
             light._uniformBuffer.updateFloat4("shadowsInfo", this.getDarkness(), 1 / width, this._contactHardeningLightSizeUVRatio * width, this.frustumEdgeFalloff, lightIndex);
-        }
-        else {
+        } else {
             effect.setTexture("shadowSampler" + lightIndex, shadowMap);
             light._uniformBuffer.updateFloat4("shadowsInfo", this.getDarkness(), width, 1 / width, this.frustumEdgeFalloff, lightIndex);
         }
 
-        light._uniformBuffer.updateFloat2("depthValues", this.getLight().getDepthMinZ(camera), this.getLight().getDepthMinZ(camera) + this.getLight().getDepthMaxZ(camera), lightIndex);
+        light._uniformBuffer.updateFloat2(
+            "depthValues",
+            this.getLight().getDepthMinZ(camera),
+            this.getLight().getDepthMinZ(camera) + this.getLight().getDepthMaxZ(camera),
+            lightIndex
+        );
     }
 
     /**
@@ -977,8 +1012,8 @@ export class CascadedShadowGenerator extends ShadowGenerator {
      * @returns The serialized JSON object
      */
     public serialize(): any {
-        var serializationObject: any = super.serialize();
-        var shadowMap = this.getShadowMap();
+        const serializationObject: any = super.serialize();
+        const shadowMap = this.getShadowMap();
 
         if (!shadowMap) {
             return serializationObject;
@@ -1000,8 +1035,8 @@ export class CascadedShadowGenerator extends ShadowGenerator {
 
         serializationObject.renderList = [];
         if (shadowMap.renderList) {
-            for (var meshIndex = 0; meshIndex < shadowMap.renderList.length; meshIndex++) {
-                var mesh = shadowMap.renderList[meshIndex];
+            for (let meshIndex = 0; meshIndex < shadowMap.renderList.length; meshIndex++) {
+                const mesh = shadowMap.renderList[meshIndex];
 
                 serializationObject.renderList.push(mesh.id);
             }
@@ -1017,7 +1052,11 @@ export class CascadedShadowGenerator extends ShadowGenerator {
      * @returns The parsed shadow generator
      */
     public static Parse(parsedShadowGenerator: any, scene: Scene): ShadowGenerator {
-        var shadowGenerator = ShadowGenerator.Parse(parsedShadowGenerator, scene, (mapSize: number, light: IShadowLight) => new CascadedShadowGenerator(mapSize, <DirectionalLight>light)) as CascadedShadowGenerator;
+        const shadowGenerator = ShadowGenerator.Parse(
+            parsedShadowGenerator,
+            scene,
+            (mapSize: number, light: IShadowLight) => new CascadedShadowGenerator(mapSize, <DirectionalLight>light)
+        ) as CascadedShadowGenerator;
 
         if (parsedShadowGenerator.numCascades !== undefined) {
             shadowGenerator.numCascades = parsedShadowGenerator.numCascades;

@@ -87,8 +87,8 @@ export class LinesMesh extends Mesh {
 
         this.intersectionThreshold = 0.1;
 
-        var defines: string[] = [];
-        var options = {
+        const defines: string[] = [];
+        const options = {
             attributes: [VertexBuffer.PositionKind],
             uniforms: ["vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "vClipPlane5", "vClipPlane6", "world", "viewProjection"],
             needAlphaBlending: true,
@@ -103,8 +103,7 @@ export class LinesMesh extends Mesh {
         if (!useVertexColor) {
             options.uniforms.push("color");
             this.color4 = new Color4();
-        }
-        else {
+        } else {
             options.defines.push("#define VERTEXCOLOR");
             options.attributes.push(VertexBuffer.ColorKind);
         }
@@ -157,7 +156,12 @@ export class LinesMesh extends Mesh {
         // Just ignore it
     }
 
-    /** @hidden */
+    /**
+     * @param subMesh
+     * @param effect
+     * @param fillMode
+     * @hidden
+     */
     public _bind(subMesh: SubMesh, effect: Effect, fillMode: number): Mesh {
         if (!this._geometry) {
             return this;
@@ -182,20 +186,24 @@ export class LinesMesh extends Mesh {
         return this;
     }
 
-    /** @hidden */
+    /**
+     * @param subMesh
+     * @param fillMode
+     * @param instancesCount
+     * @hidden
+     */
     public _draw(subMesh: SubMesh, fillMode: number, instancesCount?: number): Mesh {
         if (!this._geometry || !this._geometry.getVertexBuffers() || (!this._unIndexed && !this._geometry.getIndexBuffer())) {
             return this;
         }
 
-        var engine = this.getScene().getEngine();
+        const engine = this.getScene().getEngine();
 
         // Draw order
 
         if (this._unIndexed) {
             engine.drawArraysType(Material.LineListDrawMode, subMesh.verticesStart, subMesh.verticesCount, instancesCount);
-        }
-        else {
+        } else {
             engine.drawElementsType(Material.LineListDrawMode, subMesh.indexStart, subMesh.indexCount, instancesCount);
         }
         return this;
@@ -212,6 +220,9 @@ export class LinesMesh extends Mesh {
 
     /**
      * Returns a new LineMesh object cloned from the current one.
+     * @param name
+     * @param newParent
+     * @param doNotCloneChildren
      */
     public clone(name: string, newParent: Nullable<Node> = null, doNotCloneChildren?: boolean): LinesMesh {
         return new LinesMesh(name, this.getScene(), newParent, this, doNotCloneChildren);
@@ -248,13 +259,13 @@ export class LinesMesh extends Mesh {
     }
 
     /**
- * Parses a serialized ground mesh
- * @param parsedMesh the serialized mesh
- * @param scene the scene to create the ground mesh in
- * @returns the created ground mesh
- */
+     * Parses a serialized ground mesh
+     * @param parsedMesh the serialized mesh
+     * @param scene the scene to create the ground mesh in
+     * @returns the created ground mesh
+     */
     public static Parse(parsedMesh: any, scene: Scene): LinesMesh {
-        var result = new LinesMesh(parsedMesh.name, scene);
+        const result = new LinesMesh(parsedMesh.name, scene);
 
         result.color = Color3.FromArray(parsedMesh.color);
         result.alpha = parsedMesh.alpha;

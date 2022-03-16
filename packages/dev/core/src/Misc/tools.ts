@@ -8,7 +8,16 @@ import { _WarnImport } from "./devTools";
 import { WebRequest } from "./webRequest";
 import { IFileRequest } from "./fileRequest";
 import { EngineStore } from "../Engines/engineStore";
-import { FileToolsOptions, DecodeBase64UrlToBinary, IsBase64DataUrl, LoadFile as FileToolsLoadFile, LoadImage as FileToolLoadImage, ReadFile as FileToolsReadFile, ReadFileError, SetCorsBehavior } from "./fileTools";
+import {
+    FileToolsOptions,
+    DecodeBase64UrlToBinary,
+    IsBase64DataUrl,
+    LoadFile as FileToolsLoadFile,
+    LoadImage as FileToolLoadImage,
+    ReadFile as FileToolsReadFile,
+    ReadFileError,
+    SetCorsBehavior,
+} from "./fileTools";
 import { IOfflineProvider } from "../Offline/IOfflineProvider";
 import { PromisePolyfill } from "./promise";
 import { TimingTools } from "./timingTools";
@@ -125,10 +134,10 @@ export class Tools {
      * @param color defines the output color
      */
     public static FetchToRef(u: number, v: number, width: number, height: number, pixels: Uint8Array, color: IColor4Like): void {
-        let wrappedU = (Math.abs(u) * width) % width | 0;
-        let wrappedV = (Math.abs(v) * height) % height | 0;
+        const wrappedU = (Math.abs(u) * width) % width | 0;
+        const wrappedV = (Math.abs(v) * height) % height | 0;
 
-        let position = (wrappedU + wrappedV * width) * 4;
+        const position = (wrappedU + wrappedV * width) * 4;
         color.r = pixels[position] / 255;
         color.g = pixels[position + 1] / 255;
         color.b = pixels[position + 2] / 255;
@@ -192,7 +201,7 @@ export class Tools {
      * @returns true if the value is an exponent of 2
      */
     public static IsExponentOfTwo(value: number): boolean {
-        var count = 1;
+        let count = 1;
 
         do {
             count *= 2;
@@ -214,7 +223,7 @@ export class Tools {
             return Math.fround(value);
         }
 
-        return Tools._tmpFloatArray[0] = value, Tools._tmpFloatArray[0];
+        return (Tools._tmpFloatArray[0] = value), Tools._tmpFloatArray[0];
     }
 
     /**
@@ -223,7 +232,7 @@ export class Tools {
      * @returns the filename
      */
     public static GetFilename(path: string): string {
-        var index = path.lastIndexOf("/");
+        const index = path.lastIndexOf("/");
         if (index < 0) {
             return path;
         }
@@ -238,7 +247,7 @@ export class Tools {
      * @returns The "folder" part of the path
      */
     public static GetFolderPath(uri: string, returnUnchangedIfNoSlash = false): string {
-        var index = uri.lastIndexOf("/");
+        const index = uri.lastIndexOf("/");
         if (index < 0) {
             if (returnUnchangedIfNoSlash) {
                 return uri;
@@ -293,7 +302,7 @@ export class Tools {
      * @returns "pointer" if touch is enabled. Else returns "mouse"
      */
     public static GetPointerPrefix(engine: Engine): string {
-        var eventPrefix = "pointer";
+        let eventPrefix = "pointer";
 
         // Check if pointer events are supported
         if (IsWindowObjectExist() && !window.PointerEvent) {
@@ -317,6 +326,7 @@ export class Tools {
      * Sets the cors behavior on a dom element. This will add the required Tools.CorsBehavior to the element.
      * @param url define the url we are trying
      * @param element define the dom element where to configure the cors policy
+     * @param element.crossOrigin
      */
     public static SetCorsBehavior(url: string | string[], element: { crossOrigin: string | null }): void {
         SetCorsBehavior(url, element);
@@ -355,9 +365,14 @@ export class Tools {
      * @param imageBitmapOptions optional the options to use when creating an ImageBitmap
      * @returns the HTMLImageElement of the loaded image
      */
-    public static LoadImage(input: string | ArrayBuffer | Blob, onLoad: (img: HTMLImageElement | ImageBitmap) => void,
-        onError: (message?: string, exception?: any) => void, offlineProvider: Nullable<IOfflineProvider>,
-        mimeType?: string, imageBitmapOptions?: ImageBitmapOptions): Nullable<HTMLImageElement> {
+    public static LoadImage(
+        input: string | ArrayBuffer | Blob,
+        onLoad: (img: HTMLImageElement | ImageBitmap) => void,
+        onError: (message?: string, exception?: any) => void,
+        offlineProvider: Nullable<IOfflineProvider>,
+        mimeType?: string,
+        imageBitmapOptions?: ImageBitmapOptions
+    ): Nullable<HTMLImageElement> {
         return FileToolLoadImage(input, onLoad, onError, offlineProvider, mimeType, imageBitmapOptions);
     }
 
@@ -371,9 +386,14 @@ export class Tools {
      * @param onError callback called when the file fails to load
      * @returns a file request object
      */
-    public static LoadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void,
-        onProgress?: (data: any) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean,
-        onError?: (request?: WebRequest, exception?: any) => void): IFileRequest {
+    public static LoadFile(
+        url: string,
+        onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void,
+        onProgress?: (data: any) => void,
+        offlineProvider?: IOfflineProvider,
+        useArrayBuffer?: boolean,
+        onError?: (request?: WebRequest, exception?: any) => void
+    ): IFileRequest {
         return FileToolsLoadFile(url, onSuccess, onProgress, offlineProvider, useArrayBuffer, onError);
     }
 
@@ -412,8 +432,8 @@ export class Tools {
         if (!IsWindowObjectExist()) {
             return;
         }
-        var head = document.getElementsByTagName("head")[0];
-        var script = document.createElement("script");
+        const head = document.getElementsByTagName("head")[0];
+        const script = document.createElement("script");
         script.setAttribute("type", "text/javascript");
         script.setAttribute("src", scriptUrl);
         if (scriptId) {
@@ -464,9 +484,9 @@ export class Tools {
      * @returns a file request object
      */
     public static ReadFileAsDataURL(fileToLoad: Blob, callback: (data: any) => void, progressCallback: (ev: ProgressEvent) => any): IFileRequest {
-        let reader = new FileReader();
+        const reader = new FileReader();
 
-        let request: IFileRequest = {
+        const request: IFileRequest = {
             onCompleteObservable: new Observable<IFileRequest>(),
             abort: () => reader.abort(),
         };
@@ -496,7 +516,13 @@ export class Tools {
      * @param onError defines the callback to call when an error occurs
      * @returns a file request object
      */
-    public static ReadFile(file: File, onSuccess: (data: any) => void, onProgress?: (ev: ProgressEvent) => any, useArrayBuffer?: boolean, onError?: (error: ReadFileError) => void): IFileRequest {
+    public static ReadFile(
+        file: File,
+        onSuccess: (data: any) => void,
+        onProgress?: (ev: ProgressEvent) => any,
+        useArrayBuffer?: boolean,
+        onError?: (error: ReadFileError) => void
+    ): IFileRequest {
         return FileToolsReadFile(file, onSuccess, onProgress, useArrayBuffer, onError);
     }
 
@@ -506,9 +532,9 @@ export class Tools {
      * @returns the new data url link
      */
     public static FileAsURL(content: string): string {
-        var fileBlob = new Blob([content]);
-        var url = window.URL || window.webkitURL;
-        var link: string = url.createObjectURL(fileBlob);
+        const fileBlob = new Blob([content]);
+        const url = window.URL || window.webkitURL;
+        const link: string = url.createObjectURL(fileBlob);
         return link;
     }
 
@@ -539,7 +565,7 @@ export class Tools {
      * @returns true if object has no own property
      */
     public static IsEmpty(obj: any): boolean {
-        for (var i in obj) {
+        for (const i in obj) {
             if (obj.hasOwnProperty(i)) {
                 return false;
             }
@@ -553,8 +579,8 @@ export class Tools {
      * @param events defines the events to register
      */
     public static RegisterTopRootEvents(windowElement: Window, events: { name: string; handler: Nullable<(e: FocusEvent) => any> }[]): void {
-        for (var index = 0; index < events.length; index++) {
-            var event = events[index];
+        for (let index = 0; index < events.length; index++) {
+            const event = events[index];
             windowElement.addEventListener(event.name, <any>event.handler, false);
 
             try {
@@ -573,8 +599,8 @@ export class Tools {
      * @param events defines the events to unregister
      */
     public static UnregisterTopRootEvents(windowElement: Window, events: { name: string; handler: Nullable<(e: FocusEvent) => any> }[]): void {
-        for (var index = 0; index < events.length; index++) {
-            var event = events[index];
+        for (let index = 0; index < events.length; index++) {
+            const event = events[index];
             windowElement.removeEventListener(event.name, <any>event.handler);
 
             try {
@@ -602,9 +628,16 @@ export class Tools {
      * @param fileName defines the filename to download. If present, the result will automatically be downloaded
      * @return a void promise
      */
-    public static async DumpFramebuffer(width: number, height: number, engine: Engine, successCallback?: (data: string) => void, mimeType: string = "image/png", fileName?: string) {
+    public static async DumpFramebuffer(
+        width: number,
+        height: number,
+        engine: Engine,
+        successCallback?: (data: string) => void,
+        mimeType: string = "image/png",
+        fileName?: string
+    ) {
         // Read the contents of the framebuffer
-        let bufferView = await engine.readPixels(0, 0, width, height);
+        const bufferView = await engine.readPixels(0, 0, width, height);
 
         const data = new Uint8Array(bufferView.buffer);
 
@@ -623,14 +656,24 @@ export class Tools {
      * @param toArrayBuffer true to convert the data to an ArrayBuffer (encoded as `mimeType`) instead of a base64 string
      * @param quality defines the quality of the result
      */
-    public static DumpData(width: number, height: number, data: ArrayBufferView, successCallback?: (data: string | ArrayBuffer) => void, mimeType: string = "image/png", fileName?: string, invertY = false, toArrayBuffer = false, quality?: number) {
+    public static DumpData(
+        width: number,
+        height: number,
+        data: ArrayBufferView,
+        successCallback?: (data: string | ArrayBuffer) => void,
+        mimeType: string = "image/png",
+        fileName?: string,
+        invertY = false,
+        toArrayBuffer = false,
+        quality?: number
+    ) {
         // Create a 2D canvas to store the result
         if (!Tools._ScreenshotCanvas) {
             Tools._ScreenshotCanvas = document.createElement("canvas");
         }
         Tools._ScreenshotCanvas.width = width;
         Tools._ScreenshotCanvas.height = height;
-        var context = Tools._ScreenshotCanvas.getContext("2d");
+        const context = Tools._ScreenshotCanvas.getContext("2d");
 
         if (context) {
             // Convert if data are float32
@@ -638,26 +681,26 @@ export class Tools {
                 const data2 = new Uint8Array(data.length);
                 let n = data.length;
                 while (n--) {
-                    let v = data[n];
+                    const v = data[n];
                     data2[n] = v < 0 ? 0 : v > 1 ? 1 : Math.round(v * 255);
                 }
                 data = data2;
             }
 
             // Copy the pixels to a 2D canvas
-            var imageData = context.createImageData(width, height);
-            var castData = <any>imageData.data;
+            const imageData = context.createImageData(width, height);
+            const castData = <any>imageData.data;
             castData.set(data);
             context.putImageData(imageData, 0, 0);
 
             let canvas = Tools._ScreenshotCanvas;
 
             if (invertY) {
-                var canvas2 = document.createElement('canvas');
+                const canvas2 = document.createElement("canvas");
                 canvas2.width = width;
                 canvas2.height = height;
 
-                var ctx2 = canvas2.getContext('2d');
+                const ctx2 = canvas2.getContext("2d");
                 if (!ctx2) {
                     return;
                 }
@@ -670,16 +713,21 @@ export class Tools {
             }
 
             if (toArrayBuffer) {
-                Tools.ToBlob(canvas, (blob) => {
-                    let fileReader = new FileReader();
-                    fileReader.onload = (event: any) => {
-                        let arrayBuffer = event.target!.result as ArrayBuffer;
-                        if (successCallback) {
-                            successCallback(arrayBuffer);
-                        }
-                    };
-                    fileReader.readAsArrayBuffer(blob!);
-                }, mimeType, quality);
+                Tools.ToBlob(
+                    canvas,
+                    (blob) => {
+                        const fileReader = new FileReader();
+                        fileReader.onload = (event: any) => {
+                            const arrayBuffer = event.target!.result as ArrayBuffer;
+                            if (successCallback) {
+                                successCallback(arrayBuffer);
+                            }
+                        };
+                        fileReader.readAsArrayBuffer(blob!);
+                    },
+                    mimeType,
+                    quality
+                );
             } else {
                 Tools.EncodeScreenshotCanvasData(successCallback, mimeType, fileName, canvas, quality);
             }
@@ -698,7 +746,16 @@ export class Tools {
      * @param quality defines the quality of the result
      * @return a promise that resolve to the final data
      */
-    public static DumpDataAsync(width: number, height: number, data: ArrayBufferView, mimeType: string = "image/png", fileName?: string, invertY = false, toArrayBuffer = false, quality?: number): Promise<string | ArrayBuffer> {
+    public static DumpDataAsync(
+        width: number,
+        height: number,
+        data: ArrayBufferView,
+        mimeType: string = "image/png",
+        fileName?: string,
+        invertY = false,
+        toArrayBuffer = false,
+        quality?: number
+    ): Promise<string | ArrayBuffer> {
         return new Promise((resolve) => {
             Tools.DumpData(width, height, data, (result) => resolve(result), mimeType, fileName, invertY, toArrayBuffer, quality);
         });
@@ -718,20 +775,24 @@ export class Tools {
             //  low performance polyfill based on toDataURL (https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob)
             canvas.toBlob = function (callback, type, quality) {
                 setTimeout(() => {
-                    var binStr = atob(this.toDataURL(type, quality).split(",")[1]),
+                    const binStr = atob(this.toDataURL(type, quality).split(",")[1]),
                         len = binStr.length,
                         arr = new Uint8Array(len);
 
-                    for (var i = 0; i < len; i++) {
+                    for (let i = 0; i < len; i++) {
                         arr[i] = binStr.charCodeAt(i);
                     }
                     callback(new Blob([arr]));
                 });
             };
         }
-        canvas.toBlob(function (blob) {
-            successCallback(blob);
-        }, mimeType, quality);
+        canvas.toBlob(
+            function (blob) {
+                successCallback(blob);
+            },
+            mimeType,
+            quality
+        );
     }
 
     /**
@@ -742,38 +803,56 @@ export class Tools {
      * @param canvas canvas to get the data from. If not provided, use the default screenshot canvas
      * @param quality defines the quality of the result
      */
-    static EncodeScreenshotCanvasData(successCallback?: (data: string) => void, mimeType: string = "image/png", fileName?: string, canvas?: HTMLCanvasElement, quality?: number): void {
+    static EncodeScreenshotCanvasData(
+        successCallback?: (data: string) => void,
+        mimeType: string = "image/png",
+        fileName?: string,
+        canvas?: HTMLCanvasElement,
+        quality?: number
+    ): void {
         if (successCallback) {
-            var base64Image = (canvas ?? Tools._ScreenshotCanvas).toDataURL(mimeType, quality);
+            const base64Image = (canvas ?? Tools._ScreenshotCanvas).toDataURL(mimeType, quality);
             successCallback(base64Image);
-        }
-        else {
-            this.ToBlob(canvas ?? Tools._ScreenshotCanvas, function (blob) {
-                //Creating a link if the browser have the download attribute on the a tag, to automatically start download generated image.
-                if (("download" in document.createElement("a"))) {
-                    if (!fileName) {
-                        var date = new Date();
-                        var stringDate = (date.getFullYear() + "-" + (date.getMonth() + 1)).slice(2) + "-" + date.getDate() + "_" + date.getHours() + "-" + ('0' + date.getMinutes()).slice(-2);
-                        fileName = "screenshot_" + stringDate + ".png";
-                    }
-                    Tools.Download(blob!, fileName);
-                }
-                else {
-                    if (blob) {
-                        var url = URL.createObjectURL(blob);
+        } else {
+            this.ToBlob(
+                canvas ?? Tools._ScreenshotCanvas,
+                function (blob) {
+                    //Creating a link if the browser have the download attribute on the a tag, to automatically start download generated image.
+                    if ("download" in document.createElement("a")) {
+                        if (!fileName) {
+                            const date = new Date();
+                            const stringDate =
+                                (date.getFullYear() + "-" + (date.getMonth() + 1)).slice(2) +
+                                "-" +
+                                date.getDate() +
+                                "_" +
+                                date.getHours() +
+                                "-" +
+                                ("0" + date.getMinutes()).slice(-2);
+                            fileName = "screenshot_" + stringDate + ".png";
+                        }
+                        Tools.Download(blob!, fileName);
+                    } else {
+                        if (blob) {
+                            const url = URL.createObjectURL(blob);
 
-                        var newWindow = window.open("");
-                        if (!newWindow) { return; }
-                        var img = newWindow.document.createElement("img");
-                        img.onload = function () {
-                            // no longer need to read the blob so it's revoked
-                            URL.revokeObjectURL(url);
-                        };
-                        img.src = url;
-                        newWindow.document.body.appendChild(img);
+                            const newWindow = window.open("");
+                            if (!newWindow) {
+                                return;
+                            }
+                            const img = newWindow.document.createElement("img");
+                            img.onload = function () {
+                                // no longer need to read the blob so it's revoked
+                                URL.revokeObjectURL(url);
+                            };
+                            img.src = url;
+                            newWindow.document.body.appendChild(img);
+                        }
                     }
-                }
-            }, mimeType, quality);
+                },
+                mimeType,
+                quality
+            );
         }
     }
 
@@ -788,8 +867,8 @@ export class Tools {
             return;
         }
 
-        var url = window.URL.createObjectURL(blob);
-        var a = document.createElement("a");
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
         document.body.appendChild(a);
         a.style.display = "none";
         a.href = url;
@@ -879,7 +958,16 @@ export class Tools {
      * @param antialiasing Whether antialiasing should be turned on or not (default: false)
      * @param fileName A name for for the downloaded file.
      */
-    public static CreateScreenshotUsingRenderTarget(engine: Engine, camera: Camera, size: IScreenshotSize | number, successCallback?: (data: string) => void, mimeType: string = "image/png", samples: number = 1, antialiasing: boolean = false, fileName?: string): void {
+    public static CreateScreenshotUsingRenderTarget(
+        engine: Engine,
+        camera: Camera,
+        size: IScreenshotSize | number,
+        successCallback?: (data: string) => void,
+        mimeType: string = "image/png",
+        samples: number = 1,
+        antialiasing: boolean = false,
+        fileName?: string
+    ): void {
         throw _WarnImport("ScreenshotTools");
     }
 
@@ -901,7 +989,15 @@ export class Tools {
      * @returns screenshot as a string of base64-encoded characters. This string can be assigned
      * to the src parameter of an <img> to display it
      */
-    public static CreateScreenshotUsingRenderTargetAsync(engine: Engine, camera: Camera, size: IScreenshotSize | number, mimeType: string = "image/png", samples: number = 1, antialiasing: boolean = false, fileName?: string): Promise<string> {
+    public static CreateScreenshotUsingRenderTargetAsync(
+        engine: Engine,
+        camera: Camera,
+        size: IScreenshotSize | number,
+        mimeType: string = "image/png",
+        samples: number = 1,
+        antialiasing: boolean = false,
+        fileName?: string
+    ): Promise<string> {
         throw _WarnImport("ScreenshotTools");
     }
 
@@ -937,11 +1033,20 @@ export class Tools {
 
     /**
      * Function used to get the absolute url. Override for custom implementation.
+     * @param url
      */
     public static GetAbsoluteUrl: (url: string) => string =
-        (typeof document === "object") ? (url) => { const a = document.createElement("a"); a.href = url; return a.href; } :
-            (typeof URL === "function" && typeof location === "object") ? (url) => new URL(url, location.origin).href :
-                (url) => { throw new Error("Unable to get absolute URL. Override BABYLON.Tools.GetAbsoluteUrl to a custom implementation for the current context."); };
+        typeof document === "object"
+            ? (url) => {
+                  const a = document.createElement("a");
+                  a.href = url;
+                  return a.href;
+              }
+            : typeof URL === "function" && typeof location === "object"
+            ? (url) => new URL(url, location.origin).href
+            : (url) => {
+                  throw new Error("Unable to get absolute URL. Override BABYLON.Tools.GetAbsoluteUrl to a custom implementation for the current context.");
+              };
 
     // Logs
     /**
@@ -1066,9 +1171,9 @@ export class Tools {
         Tools.EndPerformanceCounter = Tools._EndPerformanceCounterDisabled;
     }
 
-    private static _StartPerformanceCounterDisabled(counterName: string, condition?: boolean): void { }
+    private static _StartPerformanceCounterDisabled(counterName: string, condition?: boolean): void {}
 
-    private static _EndPerformanceCounterDisabled(counterName: string, condition?: boolean): void { }
+    private static _EndPerformanceCounterDisabled(counterName: string, condition?: boolean): void {}
 
     private static _StartUserMark(counterName: string, condition = true): void {
         if (!Tools._performance) {
@@ -1145,7 +1250,7 @@ export class Tools {
             name = object.getClassName();
         } else {
             if (object instanceof Object) {
-                let classObj = isType ? object : Object.getPrototypeOf(object);
+                const classObj = isType ? object : Object.getPrototypeOf(object);
                 name = classObj.constructor["__bjsclassName__"];
             }
             if (!name) {
@@ -1162,7 +1267,7 @@ export class Tools {
      * @returns null if not found or the element
      */
     public static First<T>(array: Array<T>, predicate: (item: T) => boolean): Nullable<T> {
-        for (let el of array) {
+        for (const el of array) {
             if (predicate(el)) {
                 return el;
             }
@@ -1187,7 +1292,7 @@ export class Tools {
             className = object.getClassName();
         } else {
             if (object instanceof Object) {
-                let classObj = isType ? object : Object.getPrototypeOf(object);
+                const classObj = isType ? object : Object.getPrototypeOf(object);
                 className = classObj.constructor["__bjsclassName__"];
                 moduleName = classObj.constructor["__bjsmoduleName__"];
             }
@@ -1308,7 +1413,7 @@ export class AsyncLoop {
      * @returns the created async loop object
      */
     public static Run(iterations: number, fn: (asyncLoop: AsyncLoop) => void, successCallback: () => void, offset: number = 0): AsyncLoop {
-        var loop = new AsyncLoop(iterations, fn, successCallback, offset);
+        const loop = new AsyncLoop(iterations, fn, successCallback, offset);
 
         loop.executeNext();
 
@@ -1325,7 +1430,14 @@ export class AsyncLoop {
      * @param timeout timeout settings for the setTimeout function. default - 0.
      * @returns the created async loop object
      */
-    public static SyncAsyncForLoop(iterations: number, syncedIterations: number, fn: (iteration: number) => void, callback: () => void, breakFunction?: () => boolean, timeout: number = 0): AsyncLoop {
+    public static SyncAsyncForLoop(
+        iterations: number,
+        syncedIterations: number,
+        fn: (iteration: number) => void,
+        callback: () => void,
+        breakFunction?: () => boolean,
+        timeout: number = 0
+    ): AsyncLoop {
         return AsyncLoop.Run(
             Math.ceil(iterations / syncedIterations),
             (loop: AsyncLoop) => {
@@ -1333,8 +1445,8 @@ export class AsyncLoop {
                     loop.breakLoop();
                 } else {
                     setTimeout(() => {
-                        for (var i = 0; i < syncedIterations; ++i) {
-                            var iteration = loop.index * syncedIterations + i;
+                        for (let i = 0; i < syncedIterations; ++i) {
+                            const iteration = loop.index * syncedIterations + i;
                             if (iteration >= iterations) {
                                 break;
                             }

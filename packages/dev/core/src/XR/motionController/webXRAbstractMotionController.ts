@@ -237,7 +237,7 @@ export abstract class WebXRAbstractMotionController implements IDisposable {
         const type = componentDef.type;
         const buttonIndex = componentDef.gamepadIndices.button;
         // search for axes
-        let axes: number[] = [];
+        const axes: number[] = [];
         if (componentDef.gamepadIndices.xAxis !== undefined && componentDef.gamepadIndices.yAxis !== undefined) {
             axes.push(componentDef.gamepadIndices.xAxis, componentDef.gamepadIndices.yAxis);
         }
@@ -299,7 +299,7 @@ export abstract class WebXRAbstractMotionController implements IDisposable {
         private _controllerCache?: Array<{
             filename: string;
             path: string;
-            meshes: AbstractMesh[]
+            meshes: AbstractMesh[];
         }>
     ) {
         // initialize the components
@@ -373,7 +373,7 @@ export abstract class WebXRAbstractMotionController implements IDisposable {
      * @returns A promise fulfilled with the result of the model loading
      */
     public async loadModel(): Promise<boolean> {
-        let useGeneric = !this._getModelLoadingConstraints();
+        const useGeneric = !this._getModelLoadingConstraints();
         let loadingParams = this._getGenericFilenameAndPath();
         // Checking if GLB loader is present
         if (useGeneric) {
@@ -414,7 +414,7 @@ export abstract class WebXRAbstractMotionController implements IDisposable {
                     if (this._controllerCache) {
                         this._controllerCache.push({
                             ...loadingParams,
-                            meshes
+                            meshes,
                         });
                     }
                     meshesLoaded(meshes);
@@ -476,7 +476,9 @@ export abstract class WebXRAbstractMotionController implements IDisposable {
     /**
      * Moves the axis on the controller mesh based on its current state
      * @param axis the index of the axis
+     * @param axisMap
      * @param axisValue the value of the axis which determines the meshes new position
+     * @param fixValueCoordinates
      * @hidden
      */
     protected _lerpTransform(axisMap: IMotionControllerMeshMap, axisValue: number, fixValueCoordinates?: boolean): void {
@@ -489,7 +491,7 @@ export abstract class WebXRAbstractMotionController implements IDisposable {
         }
 
         // Convert from gamepad value range (-1 to +1) to lerp range (0 to 1)
-        let lerpValue = fixValueCoordinates ? axisValue * 0.5 + 0.5 : axisValue;
+        const lerpValue = fixValueCoordinates ? axisValue * 0.5 + 0.5 : axisValue;
         Quaternion.SlerpToRef(axisMap.minMesh.rotationQuaternion, axisMap.maxMesh.rotationQuaternion, lerpValue, axisMap.valueMesh.rotationQuaternion);
         Vector3.LerpToRef(axisMap.minMesh.position, axisMap.maxMesh.position, lerpValue, axisMap.valueMesh.position);
     }

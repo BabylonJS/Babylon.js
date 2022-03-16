@@ -1,10 +1,10 @@
 import { Nullable } from "../../types";
 import { Engine, IDisplayChangedEventArgs } from "../../Engines/engine";
-import { Size } from '../../Maths/math.size';
-import { Observable } from '../../Misc/observable';
-import { Tools } from '../../Misc/tools';
-import { IsWindowObjectExist } from '../../Misc/domManagement';
-import { WebVROptions } from '../../Cameras/VR/webVRCamera';
+import { Size } from "../../Maths/math.size";
+import { Observable } from "../../Misc/observable";
+import { Tools } from "../../Misc/tools";
+import { IsWindowObjectExist } from "../../Misc/domManagement";
+import { WebVROptions } from "../../Cameras/VR/webVRCamera";
 
 /**
  * Interface used to define additional presentation attributes
@@ -111,7 +111,7 @@ Object.defineProperty(Engine.prototype, "isInVRExclusivePointerMode", {
         return this._vrExclusivePointerMode;
     },
     enumerable: true,
-    configurable: true
+    configurable: true,
 });
 
 Engine.prototype._prepareVRComponent = function () {
@@ -136,13 +136,15 @@ Engine.prototype.initWebVR = function (): Observable<IDisplayChangedEventArgs> {
 };
 
 Engine.prototype.initWebVRAsync = function (): Promise<IDisplayChangedEventArgs> {
-    var notifyObservers = () => {
-        var eventArgs = {
+    const notifyObservers = () => {
+        const eventArgs = {
             vrDisplay: this._vrDisplay,
-            vrSupported: this._vrSupported
+            vrSupported: this._vrSupported,
         };
         this.onVRDisplayChangedObservable.notifyObservers(eventArgs);
-        this._webVRInitPromise = new Promise((res) => { res(eventArgs); });
+        this._webVRInitPromise = new Promise((res) => {
+            res(eventArgs);
+        });
     };
 
     if (!this._onVrDisplayConnect) {
@@ -159,11 +161,11 @@ Engine.prototype.initWebVRAsync = function (): Promise<IDisplayChangedEventArgs>
         this._onVrDisplayPresentChange = () => {
             this._vrExclusivePointerMode = this._vrDisplay && this._vrDisplay.isPresenting;
         };
-        let hostWindow = this.getHostWindow();
+        const hostWindow = this.getHostWindow();
         if (hostWindow) {
-            hostWindow.addEventListener('vrdisplayconnect', this._onVrDisplayConnect);
-            hostWindow.addEventListener('vrdisplaydisconnect', this._onVrDisplayDisconnect);
-            hostWindow.addEventListener('vrdisplaypresentchange', this._onVrDisplayPresentChange);
+            hostWindow.addEventListener("vrdisplayconnect", this._onVrDisplayConnect);
+            hostWindow.addEventListener("vrdisplaydisconnect", this._onVrDisplayDisconnect);
+            hostWindow.addEventListener("vrdisplaypresentchange", this._onVrDisplayPresentChange);
         }
     }
     this._webVRInitPromise = this._webVRInitPromise || this._getVRDisplaysAsync();
@@ -181,7 +183,7 @@ Engine.prototype._getVRDisplaysAsync = function (): Promise<IDisplayChangedEvent
                 this._vrDisplay = devices[0];
                 res({
                     vrDisplay: this._vrDisplay,
-                    vrSupported: this._vrSupported
+                    vrSupported: this._vrSupported,
                 });
             });
         } else {
@@ -189,7 +191,7 @@ Engine.prototype._getVRDisplaysAsync = function (): Promise<IDisplayChangedEvent
             this._vrSupported = false;
             res({
                 vrDisplay: this._vrDisplay,
-                vrSupported: this._vrSupported
+                vrSupported: this._vrSupported,
             });
         }
     });
@@ -197,27 +199,32 @@ Engine.prototype._getVRDisplaysAsync = function (): Promise<IDisplayChangedEvent
 
 Engine.prototype.enableVR = function (options: WebVROptions) {
     if (this._vrDisplay && !this._vrDisplay.isPresenting) {
-        var onResolved = () => {
+        const onResolved = () => {
             this.onVRRequestPresentComplete.notifyObservers(true);
             this._onVRFullScreenTriggered();
         };
-        var onRejected = () => {
+        const onRejected = () => {
             this.onVRRequestPresentComplete.notifyObservers(false);
         };
 
         this.onVRRequestPresentStart.notifyObservers(this);
 
-        var presentationAttributes = {
+        const presentationAttributes = {
             highRefreshRate: this.vrPresentationAttributes ? this.vrPresentationAttributes.highRefreshRate : false,
             foveationLevel: this.vrPresentationAttributes ? this.vrPresentationAttributes.foveationLevel : 1,
-            multiview: (this.getCaps().multiview || this.getCaps().oculusMultiview) && options.useMultiview
+            multiview: (this.getCaps().multiview || this.getCaps().oculusMultiview) && options.useMultiview,
         };
 
-        this._vrDisplay.requestPresent([{
-            source: this.getRenderingCanvas(),
-            attributes: presentationAttributes,
-            ...presentationAttributes
-        }]).then(onResolved).catch(onRejected);
+        this._vrDisplay
+            .requestPresent([
+                {
+                    source: this.getRenderingCanvas(),
+                    attributes: presentationAttributes,
+                    ...presentationAttributes,
+                },
+            ])
+            .then(onResolved)
+            .catch(onRejected);
     }
 };
 
@@ -228,7 +235,7 @@ Engine.prototype._onVRFullScreenTriggered = function () {
         this._oldHardwareScaleFactor = this.getHardwareScalingLevel();
 
         //get the width and height, change the render size
-        var leftEye = this._vrDisplay.getEyeParameters('left');
+        const leftEye = this._vrDisplay.getEyeParameters("left");
         this.setHardwareScalingLevel(1);
         this.setSize(leftEye.renderWidth * 2, leftEye.renderHeight);
     } else {
@@ -239,23 +246,24 @@ Engine.prototype._onVRFullScreenTriggered = function () {
 
 Engine.prototype.disableVR = function () {
     if (this._vrDisplay && this._vrDisplay.isPresenting) {
-        this._vrDisplay.exitPresent()
+        this._vrDisplay
+            .exitPresent()
             .then(() => this._onVRFullScreenTriggered())
             .catch(() => this._onVRFullScreenTriggered());
     }
 
     if (IsWindowObjectExist()) {
-        window.removeEventListener('vrdisplaypointerrestricted', this._onVRDisplayPointerRestricted);
-        window.removeEventListener('vrdisplaypointerunrestricted', this._onVRDisplayPointerUnrestricted);
+        window.removeEventListener("vrdisplaypointerrestricted", this._onVRDisplayPointerRestricted);
+        window.removeEventListener("vrdisplaypointerunrestricted", this._onVRDisplayPointerUnrestricted);
 
         if (this._onVrDisplayConnect) {
-            window.removeEventListener('vrdisplayconnect', this._onVrDisplayConnect);
+            window.removeEventListener("vrdisplayconnect", this._onVrDisplayConnect);
             if (this._onVrDisplayDisconnect) {
-                window.removeEventListener('vrdisplaydisconnect', this._onVrDisplayDisconnect);
+                window.removeEventListener("vrdisplaydisconnect", this._onVrDisplayDisconnect);
             }
 
             if (this._onVrDisplayPresentChange) {
-                window.removeEventListener('vrdisplaypresentchange', this._onVrDisplayPresentChange);
+                window.removeEventListener("vrdisplaypresentchange", this._onVrDisplayPresentChange);
             }
             this._onVrDisplayConnect = null;
             this._onVrDisplayDisconnect = null;
@@ -273,7 +281,7 @@ Engine.prototype._connectVREvents = function (canvas?: HTMLCanvasElement, docume
     this._onVRDisplayPointerUnrestricted = () => {
         // Edge fix - for some reason document is not present and this is window
         if (!document) {
-            let hostWindow = this.getHostWindow()!;
+            const hostWindow = this.getHostWindow()!;
             if (hostWindow.document && hostWindow.document.exitPointerLock) {
                 hostWindow.document.exitPointerLock();
             }
@@ -286,9 +294,9 @@ Engine.prototype._connectVREvents = function (canvas?: HTMLCanvasElement, docume
     };
 
     if (IsWindowObjectExist()) {
-        let hostWindow = this.getHostWindow()!;
-        hostWindow.addEventListener('vrdisplaypointerrestricted', this._onVRDisplayPointerRestricted, false);
-        hostWindow.addEventListener('vrdisplaypointerunrestricted', this._onVRDisplayPointerUnrestricted, false);
+        const hostWindow = this.getHostWindow()!;
+        hostWindow.addEventListener("vrdisplaypointerrestricted", this._onVRDisplayPointerRestricted, false);
+        hostWindow.addEventListener("vrdisplaypointerunrestricted", this._onVRDisplayPointerUnrestricted, false);
     }
 };
 

@@ -1,9 +1,9 @@
-import { NodeMaterialBlock } from '../../nodeMaterialBlock';
-import { NodeMaterialBlockConnectionPointTypes } from '../../Enums/nodeMaterialBlockConnectionPointTypes';
-import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
-import { NodeMaterialBlockTargets } from '../../Enums/nodeMaterialBlockTargets';
-import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPoint';
-import { RegisterClass } from '../../../../Misc/typeStore';
+import { NodeMaterialBlock } from "../../nodeMaterialBlock";
+import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
+import { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
+import { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
+import { RegisterClass } from "../../../../Misc/typeStore";
 import { Immutable } from "../../../../types";
 
 declare type FragmentOutputBlock = import("../Fragment/fragmentOutputBlock").FragmentOutputBlock;
@@ -12,7 +12,6 @@ declare type FragmentOutputBlock = import("../Fragment/fragmentOutputBlock").Fra
  * Block used to output the vertex position
  */
 export class VertexOutputBlock extends NodeMaterialBlock {
-
     /**
      * Creates a new VertexOutputBlock
      * @param name defines the block name
@@ -50,7 +49,7 @@ export class VertexOutputBlock extends NodeMaterialBlock {
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
-        let input = this.vector;
+        const input = this.vector;
 
         state.compilationString += `gl_Position = ${input.associatedVariableName};\r\n`;
 

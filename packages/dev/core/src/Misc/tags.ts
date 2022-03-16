@@ -50,8 +50,8 @@ export class Tags {
             return false;
         }
 
-        let tags = obj._tags;
-        for (var i in tags) {
+        const tags = obj._tags;
+        for (const i in tags) {
             if (tags.hasOwnProperty(i)) {
                 return true;
             }
@@ -70,8 +70,8 @@ export class Tags {
             return null;
         }
         if (asString) {
-            var tagsArray = [];
-            for (var tag in obj._tags) {
+            const tagsArray = [];
+            for (const tag in obj._tags) {
                 if (obj._tags.hasOwnProperty(tag) && obj._tags[tag] === true) {
                     tagsArray.push(tag);
                 }
@@ -80,7 +80,6 @@ export class Tags {
         } else {
             return obj._tags;
         }
-
     }
 
     /**
@@ -98,13 +97,15 @@ export class Tags {
             return;
         }
 
-        var tags = tagsString.split(" ");
+        const tags = tagsString.split(" ");
         tags.forEach(function (tag, index, array) {
             Tags._AddTagTo(obj, tag);
         });
     }
 
     /**
+     * @param obj
+     * @param tag
      * @hidden
      */
     public static _AddTagTo(obj: any, tag: string): void {
@@ -131,13 +132,15 @@ export class Tags {
         if (!Tags.HasTags(obj)) {
             return;
         }
-        var tags = tagsString.split(" ");
-        for (var t in tags) {
+        const tags = tagsString.split(" ");
+        for (const t in tags) {
             Tags._RemoveTagFrom(obj, tags[t]);
         }
     }
 
     /**
+     * @param obj
+     * @param tag
      * @hidden
      */
     public static _RemoveTagFrom(obj: any, tag: string): void {

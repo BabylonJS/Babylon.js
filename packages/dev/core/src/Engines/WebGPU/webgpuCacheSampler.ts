@@ -1,35 +1,35 @@
-import * as WebGPUConstants from './webgpuConstants';
-import { Constants } from '../constants';
+import * as WebGPUConstants from "./webgpuConstants";
+import { Constants } from "../constants";
 import { TextureSampler } from "../../Materials/Textures/textureSampler";
 import { Nullable } from "../../types";
 
 const filterToBits = [
-    0 | 0 << 1 | 0 << 2, // not used
-    0 | 0 << 1 | 0 << 2, // TEXTURE_NEAREST_SAMPLINGMODE / TEXTURE_NEAREST_NEAREST
-    1 | 1 << 1 | 0 << 2, // TEXTURE_BILINEAR_SAMPLINGMODE / TEXTURE_LINEAR_LINEAR
-    1 | 1 << 1 | 1 << 2, // TEXTURE_TRILINEAR_SAMPLINGMODE / TEXTURE_LINEAR_LINEAR_MIPLINEAR
-    0 | 0 << 1 | 0 << 2, // TEXTURE_NEAREST_NEAREST_MIPNEAREST
-    0 | 1 << 1 | 0 << 2, // TEXTURE_NEAREST_LINEAR_MIPNEAREST
-    0 | 1 << 1 | 1 << 2, // TEXTURE_NEAREST_LINEAR_MIPLINEAR
-    0 | 1 << 1 | 0 << 2, // TEXTURE_NEAREST_LINEAR
-    0 | 0 << 1 | 1 << 2, // TEXTURE_NEAREST_NEAREST_MIPLINEAR
-    1 | 0 << 1 | 0 << 2, // TEXTURE_LINEAR_NEAREST_MIPNEAREST
-    1 | 0 << 1 | 1 << 2, // TEXTURE_LINEAR_NEAREST_MIPLINEAR
-    1 | 1 << 1 | 0 << 2, // TEXTURE_LINEAR_LINEAR_MIPNEAREST
-    1 | 0 << 1 | 0 << 2, // TEXTURE_LINEAR_NEAREST
+    0 | (0 << 1) | (0 << 2), // not used
+    0 | (0 << 1) | (0 << 2), // TEXTURE_NEAREST_SAMPLINGMODE / TEXTURE_NEAREST_NEAREST
+    1 | (1 << 1) | (0 << 2), // TEXTURE_BILINEAR_SAMPLINGMODE / TEXTURE_LINEAR_LINEAR
+    1 | (1 << 1) | (1 << 2), // TEXTURE_TRILINEAR_SAMPLINGMODE / TEXTURE_LINEAR_LINEAR_MIPLINEAR
+    0 | (0 << 1) | (0 << 2), // TEXTURE_NEAREST_NEAREST_MIPNEAREST
+    0 | (1 << 1) | (0 << 2), // TEXTURE_NEAREST_LINEAR_MIPNEAREST
+    0 | (1 << 1) | (1 << 2), // TEXTURE_NEAREST_LINEAR_MIPLINEAR
+    0 | (1 << 1) | (0 << 2), // TEXTURE_NEAREST_LINEAR
+    0 | (0 << 1) | (1 << 2), // TEXTURE_NEAREST_NEAREST_MIPLINEAR
+    1 | (0 << 1) | (0 << 2), // TEXTURE_LINEAR_NEAREST_MIPNEAREST
+    1 | (0 << 1) | (1 << 2), // TEXTURE_LINEAR_NEAREST_MIPLINEAR
+    1 | (1 << 1) | (0 << 2), // TEXTURE_LINEAR_LINEAR_MIPNEAREST
+    1 | (0 << 1) | (0 << 2), // TEXTURE_LINEAR_NEAREST
 ];
 
 // subtract 0x01FF from the comparison function value before indexing this array!
 const comparisonFunctionToBits = [
-    0 << 3 | 0 << 4 | 0 << 5 | 0 << 6, // undefined
-    0 << 3 | 0 << 4 | 0 << 5 | 1 << 6, // NEVER
-    0 << 3 | 0 << 4 | 1 << 5 | 0 << 6, // LESS
-    0 << 3 | 0 << 4 | 1 << 5 | 1 << 6, // EQUAL
-    0 << 3 | 1 << 4 | 0 << 5 | 0 << 6, // LEQUAL
-    0 << 3 | 1 << 4 | 0 << 5 | 1 << 6, // GREATER
-    0 << 3 | 1 << 4 | 1 << 5 | 0 << 6, // NOTEQUAL
-    0 << 3 | 1 << 4 | 1 << 5 | 1 << 6, // GEQUAL
-    1 << 3 | 0 << 4 | 0 << 5 | 0 << 6, // ALWAYS
+    (0 << 3) | (0 << 4) | (0 << 5) | (0 << 6), // undefined
+    (0 << 3) | (0 << 4) | (0 << 5) | (1 << 6), // NEVER
+    (0 << 3) | (0 << 4) | (1 << 5) | (0 << 6), // LESS
+    (0 << 3) | (0 << 4) | (1 << 5) | (1 << 6), // EQUAL
+    (0 << 3) | (1 << 4) | (0 << 5) | (0 << 6), // LEQUAL
+    (0 << 3) | (1 << 4) | (0 << 5) | (1 << 6), // GREATER
+    (0 << 3) | (1 << 4) | (1 << 5) | (0 << 6), // NOTEQUAL
+    (0 << 3) | (1 << 4) | (1 << 5) | (1 << 6), // GEQUAL
+    (1 << 3) | (0 << 4) | (0 << 5) | (0 << 6), // ALWAYS
 ];
 
 const filterNoMipToBits = [
@@ -50,7 +50,6 @@ const filterNoMipToBits = [
 
 /** @hidden */
 export class WebGPUCacheSampler {
-
     private _samplers: { [hash: number]: GPUSampler } = {};
     private _device: GPUDevice;
 
@@ -64,7 +63,7 @@ export class WebGPUCacheSampler {
     public static GetSamplerHashCode(sampler: TextureSampler): number {
         // The WebGPU spec currently only allows values 1 and 4 for anisotropy
         const anisotropy = sampler._cachedAnisotropicFilteringLevel && sampler._cachedAnisotropicFilteringLevel > 1 ? 4 : 1;
-        let code =
+        const code =
             filterToBits[sampler.samplingMode] +
             comparisonFunctionToBits[(sampler._comparisonFunction || 0x0202) - 0x0200 + 1] +
             filterNoMipToBits[sampler.samplingMode] + // handle the lodMinClamp = lodMaxClamp = 0 case when no filter used for mip mapping
@@ -77,13 +76,16 @@ export class WebGPUCacheSampler {
         return code;
     }
 
-    private static _GetSamplerFilterDescriptor(sampler: TextureSampler, anisotropy: number): {
-        magFilter: GPUFilterMode,
-        minFilter: GPUFilterMode,
-        mipmapFilter: GPUFilterMode,
-        lodMinClamp?: number,
-        lodMaxClamp?: number,
-        anisotropyEnabled?: boolean,
+    private static _GetSamplerFilterDescriptor(
+        sampler: TextureSampler,
+        anisotropy: number
+    ): {
+        magFilter: GPUFilterMode;
+        minFilter: GPUFilterMode;
+        mipmapFilter: GPUFilterMode;
+        lodMinClamp?: number;
+        lodMaxClamp?: number;
+        anisotropyEnabled?: boolean;
     } {
         let magFilter: GPUFilterMode, minFilter: GPUFilterMode, mipmapFilter: GPUFilterMode, lodMinClamp: number | undefined, lodMaxClamp: number | undefined;
         const useMipMaps = sampler.useMipMaps;
@@ -226,9 +228,9 @@ export class WebGPUCacheSampler {
     }
 
     private static _GetSamplerWrappingDescriptor(sampler: TextureSampler): {
-        addressModeU: GPUAddressMode,
-        addressModeV: GPUAddressMode,
-        addressModeW: GPUAddressMode
+        addressModeU: GPUAddressMode;
+        addressModeV: GPUAddressMode;
+        addressModeW: GPUAddressMode;
     } {
         return {
             addressModeU: this._GetWrappingMode(sampler._cachedWrapU!),

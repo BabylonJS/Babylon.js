@@ -8,7 +8,7 @@ import { TargetCamera } from "./targetCamera";
 import { FreeCameraInputsManager } from "./freeCameraInputsManager";
 import { FreeCameraMouseInput } from "../Cameras/Inputs/freeCameraMouseInput";
 import { FreeCameraKeyboardMoveInput } from "../Cameras/Inputs/freeCameraKeyboardMoveInput";
-import { Tools } from '../Misc/tools';
+import { Tools } from "../Misc/tools";
 
 declare type Collider = import("../Collisions/collider").Collider;
 
@@ -56,7 +56,7 @@ export class FreeCamera extends TargetCamera {
      * Higher values reduce sensitivity.
      */
     public get angularSensibility(): number {
-        var mouse = <FreeCameraMouseInput>this.inputs.attached["mouse"];
+        const mouse = <FreeCameraMouseInput>this.inputs.attached["mouse"];
         if (mouse) {
             return mouse.angularSensibility;
         }
@@ -69,7 +69,7 @@ export class FreeCamera extends TargetCamera {
      * Higher values reduce sensitivity.
      */
     public set angularSensibility(value: number) {
-        var mouse = <FreeCameraMouseInput>this.inputs.attached["mouse"];
+        const mouse = <FreeCameraMouseInput>this.inputs.attached["mouse"];
         if (mouse) {
             mouse.angularSensibility = value;
         }
@@ -79,7 +79,7 @@ export class FreeCamera extends TargetCamera {
      * Gets or Set the list of keyboard keys used to control the forward move of the camera.
      */
     public get keysUp(): number[] {
-        var keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
+        const keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
         if (keyboard) {
             return keyboard.keysUp;
         }
@@ -88,7 +88,7 @@ export class FreeCamera extends TargetCamera {
     }
 
     public set keysUp(value: number[]) {
-        var keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
+        const keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
         if (keyboard) {
             keyboard.keysUp = value;
         }
@@ -98,7 +98,7 @@ export class FreeCamera extends TargetCamera {
      * Gets or Set the list of keyboard keys used to control the upward move of the camera.
      */
     public get keysUpward(): number[] {
-        var keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
+        const keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
         if (keyboard) {
             return keyboard.keysUpward;
         }
@@ -107,7 +107,7 @@ export class FreeCamera extends TargetCamera {
     }
 
     public set keysUpward(value: number[]) {
-        var keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
+        const keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
         if (keyboard) {
             keyboard.keysUpward = value;
         }
@@ -117,7 +117,7 @@ export class FreeCamera extends TargetCamera {
      * Gets or Set the list of keyboard keys used to control the backward move of the camera.
      */
     public get keysDown(): number[] {
-        var keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
+        const keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
         if (keyboard) {
             return keyboard.keysDown;
         }
@@ -126,17 +126,17 @@ export class FreeCamera extends TargetCamera {
     }
 
     public set keysDown(value: number[]) {
-        var keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
+        const keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
         if (keyboard) {
             keyboard.keysDown = value;
         }
     }
 
     /**
-    * Gets or Set the list of keyboard keys used to control the downward move of the camera.
-    */
+     * Gets or Set the list of keyboard keys used to control the downward move of the camera.
+     */
     public get keysDownward(): number[] {
-        var keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
+        const keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
         if (keyboard) {
             return keyboard.keysDownward;
         }
@@ -145,7 +145,7 @@ export class FreeCamera extends TargetCamera {
     }
 
     public set keysDownward(value: number[]) {
-        var keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
+        const keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
         if (keyboard) {
             keyboard.keysDownward = value;
         }
@@ -155,7 +155,7 @@ export class FreeCamera extends TargetCamera {
      * Gets or Set the list of keyboard keys used to control the left strafe move of the camera.
      */
     public get keysLeft(): number[] {
-        var keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
+        const keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
         if (keyboard) {
             return keyboard.keysLeft;
         }
@@ -164,7 +164,7 @@ export class FreeCamera extends TargetCamera {
     }
 
     public set keysLeft(value: number[]) {
-        var keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
+        const keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
         if (keyboard) {
             keyboard.keysLeft = value;
         }
@@ -174,7 +174,7 @@ export class FreeCamera extends TargetCamera {
      * Gets or Set the list of keyboard keys used to control the right strafe move of the camera.
      */
     public get keysRight(): number[] {
-        var keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
+        const keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
         if (keyboard) {
             return keyboard.keysRight;
         }
@@ -183,7 +183,7 @@ export class FreeCamera extends TargetCamera {
     }
 
     public set keysRight(value: number[]) {
-        var keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
+        const keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
         if (keyboard) {
             keyboard.keysRight = value;
         }
@@ -193,7 +193,7 @@ export class FreeCamera extends TargetCamera {
      * Gets or Set the list of keyboard keys used to control the left rotation move of the camera.
      */
     public get keysRotateLeft(): number[] {
-        var keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
+        const keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
         if (keyboard) {
             return keyboard.keysRotateLeft;
         }
@@ -202,7 +202,7 @@ export class FreeCamera extends TargetCamera {
     }
 
     public set keysRotateLeft(value: number[]) {
-        var keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
+        const keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
         if (keyboard) {
             keyboard.keysRotateLeft = value;
         }
@@ -212,7 +212,7 @@ export class FreeCamera extends TargetCamera {
      * Gets or Set the list of keyboard keys used to control the right rotation move of the camera.
      */
     public get keysRotateRight(): number[] {
-        var keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
+        const keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
         if (keyboard) {
             return keyboard.keysRotateRight;
         }
@@ -221,7 +221,7 @@ export class FreeCamera extends TargetCamera {
     }
 
     public set keysRotateRight(value: number[]) {
-        var keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
+        const keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
         if (keyboard) {
             keyboard.keysRotateRight = value;
         }
@@ -315,9 +315,12 @@ export class FreeCamera extends TargetCamera {
         this._collisionMask = !isNaN(mask) ? mask : -1;
     }
 
-    /** @hidden */
+    /**
+     * @param displacement
+     * @hidden
+     */
     public _collideWithWorld(displacement: Vector3): void {
-        var globalPosition: Vector3;
+        let globalPosition: Vector3;
 
         if (this.parent) {
             globalPosition = Vector3.TransformCoordinates(this.position, this.parent.getWorldMatrix());
@@ -328,7 +331,7 @@ export class FreeCamera extends TargetCamera {
         globalPosition.subtractFromFloatsToRef(0, this.ellipsoid.y, 0, this._oldPosition);
         this._oldPosition.addInPlace(this.ellipsoidOffset);
 
-        let coordinator = this.getScene().collisionCoordinator;
+        const coordinator = this.getScene().collisionCoordinator;
         if (!this._collider) {
             this._collider = coordinator.createCollider();
         }
@@ -337,7 +340,7 @@ export class FreeCamera extends TargetCamera {
         this._collider.collisionMask = this._collisionMask;
 
         //no need for clone, as long as gravity is not on.
-        var actualDisplacement = displacement;
+        let actualDisplacement = displacement;
 
         //add gravity to the direction to prevent the dual-collision checking
         if (this.applyGravity) {
@@ -346,12 +349,10 @@ export class FreeCamera extends TargetCamera {
         }
 
         coordinator.getNewPosition(this._oldPosition, actualDisplacement, this._collider, 3, null, this._onCollisionPositionChange, this.uniqueId);
-
     }
 
     private _onCollisionPositionChange = (collisionId: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh> = null) => {
-
-        var updatePosition = (newPos: Vector3) => {
+        const updatePosition = (newPos: Vector3) => {
             this._newPosition.copyFrom(newPos);
 
             this._newPosition.subtractToRef(this._oldPosition, this._diffPosition);
@@ -365,7 +366,7 @@ export class FreeCamera extends TargetCamera {
         };
 
         updatePosition(newPosition);
-    }
+    };
 
     /** @hidden */
     public _checkInputs(): void {

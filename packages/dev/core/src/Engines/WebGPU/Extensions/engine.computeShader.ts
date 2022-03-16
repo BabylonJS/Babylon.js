@@ -23,7 +23,7 @@ WebGPUEngine.prototype.createComputeEffect = function (baseName: any, options: I
 
     const name = compute + "@" + options.defines;
     if (this._compiledComputeEffects[name]) {
-        var compiledEffect = <ComputeEffect>this._compiledComputeEffects[name];
+        const compiledEffect = <ComputeEffect>this._compiledComputeEffects[name];
         if (options.onCompiled && compiledEffect.isReady()) {
             options.onCompiled(compiledEffect);
         }
@@ -52,7 +52,15 @@ WebGPUEngine.prototype.areAllComputeEffectsReady = function (): boolean {
     return true;
 };
 
-WebGPUEngine.prototype.computeDispatch = function (effect: ComputeEffect, context: IComputeContext, bindings: ComputeBindingList, x: number, y?: number, z?: number, bindingsMapping?: ComputeBindingMapping): void {
+WebGPUEngine.prototype.computeDispatch = function (
+    effect: ComputeEffect,
+    context: IComputeContext,
+    bindings: ComputeBindingList,
+    x: number,
+    y?: number,
+    z?: number,
+    bindingsMapping?: ComputeBindingMapping
+): void {
     if (this._currentRenderTarget) {
         // A render target pass is currently in effect (meaning beingRenderPass has been called on the command encoder this._renderTargetEncoder): we are not allowed to open
         // another pass on this command encoder (even if it's a compute pass) until endPass has been called, so we need to defer the compute pass for after the current render target pass is closed
@@ -67,7 +75,7 @@ WebGPUEngine.prototype.computeDispatch = function (effect: ComputeEffect, contex
 
     if (!contextPipeline.computePipeline) {
         contextPipeline.computePipeline = this._device.createComputePipeline({
-            compute: contextPipeline.stage!
+            compute: contextPipeline.stage!,
         });
     }
 
@@ -98,7 +106,13 @@ WebGPUEngine.prototype.releaseComputeEffects = function () {
     this._compiledComputeEffects = {};
 };
 
-WebGPUEngine.prototype._prepareComputePipelineContext = function (pipelineContext: IComputePipelineContext, computeSourceCode: string, rawComputeSourceCode: string, defines: Nullable<string>, entryPoint: string): void {
+WebGPUEngine.prototype._prepareComputePipelineContext = function (
+    pipelineContext: IComputePipelineContext,
+    computeSourceCode: string,
+    rawComputeSourceCode: string,
+    defines: Nullable<string>,
+    entryPoint: string
+): void {
     const webGpuContext = pipelineContext as WebGPUComputePipelineContext;
 
     if (this.dbgShowShaderCode) {
@@ -149,6 +163,6 @@ WebGPUEngine.prototype._createComputePipelineStageDescriptor = function (compute
         module: this._device.createShaderModule({
             code: defines + computeShader,
         }),
-        entryPoint
+        entryPoint,
     };
 };

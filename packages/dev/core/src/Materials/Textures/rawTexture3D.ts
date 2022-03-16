@@ -19,27 +19,22 @@ export class RawTexture3D extends Texture {
      * @param samplingMode defines the sampling mode to use (Texture.TRILINEAR_SAMPLINGMODE by default)
      * @param textureType defines the texture Type (Engine.TEXTURETYPE_UNSIGNED_INT, Engine.TEXTURETYPE_FLOAT...)
      */
-    constructor(data: ArrayBufferView, width: number, height: number, depth: number,
+    constructor(
+        data: ArrayBufferView,
+        width: number,
+        height: number,
+        depth: number,
         /** Gets or sets the texture format to use */
-        public format: number, scene: Scene,
+        public format: number,
+        scene: Scene,
         generateMipMaps: boolean = true,
         invertY: boolean = false,
         samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
-        textureType = Constants.TEXTURETYPE_UNSIGNED_INT) {
+        textureType = Constants.TEXTURETYPE_UNSIGNED_INT
+    ) {
         super(null, scene, !generateMipMaps, invertY);
 
-        this._texture = scene.getEngine().createRawTexture3D(
-            data,
-            width,
-            height,
-            depth,
-            format,
-            generateMipMaps,
-            invertY,
-            samplingMode,
-            null,
-            textureType
-        );
+        this._texture = scene.getEngine().createRawTexture3D(data, width, height, depth, format, generateMipMaps, invertY, samplingMode, null, textureType);
 
         this.is3D = true;
     }

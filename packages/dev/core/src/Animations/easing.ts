@@ -44,7 +44,7 @@ export class EasingFunction implements IEasingFunction {
      * @param easingMode Defines the willing mode (EASINGMODE_EASEIN, EASINGMODE_EASEOUT or EASINGMODE_EASEINOUT)
      */
     public setEasingMode(easingMode: number) {
-        var n = Math.min(Math.max(easingMode, 0), 2);
+        const n = Math.min(Math.max(easingMode, 0), 2);
         this._easingMode = n;
     }
     /**
@@ -56,10 +56,11 @@ export class EasingFunction implements IEasingFunction {
     }
 
     /**
+     * @param gradient
      * @hidden
      */
     public easeInCore(gradient: number): number {
-        throw new Error('You must implement this method');
+        throw new Error("You must implement this method");
     }
 
     /**
@@ -73,14 +74,14 @@ export class EasingFunction implements IEasingFunction {
             case EasingFunction.EASINGMODE_EASEIN:
                 return this.easeInCore(gradient);
             case EasingFunction.EASINGMODE_EASEOUT:
-                return (1 - this.easeInCore(1 - gradient));
+                return 1 - this.easeInCore(1 - gradient);
         }
 
         if (gradient >= 0.5) {
-            return (((1 - this.easeInCore((1 - gradient) * 2)) * 0.5) + 0.5);
+            return (1 - this.easeInCore((1 - gradient) * 2)) * 0.5 + 0.5;
         }
 
-        return (this.easeInCore(gradient * 2) * 0.5);
+        return this.easeInCore(gradient * 2) * 0.5;
     }
 }
 
@@ -90,10 +91,13 @@ export class EasingFunction implements IEasingFunction {
  * @see https://doc.babylonjs.com/babylon101/animations#easing-functions
  */
 export class CircleEase extends EasingFunction implements IEasingFunction {
-    /** @hidden */
+    /**
+     * @param gradient
+     * @hidden
+     */
     public easeInCore(gradient: number): number {
         gradient = Math.max(0, Math.min(1, gradient));
-        return (1.0 - Math.sqrt(1.0 - (gradient * gradient)));
+        return 1.0 - Math.sqrt(1.0 - gradient * gradient);
     }
 }
 
@@ -110,14 +114,18 @@ export class BackEase extends EasingFunction implements IEasingFunction {
      */
     constructor(
         /** Defines the amplitude of the function */
-        public amplitude: number = 1) {
+        public amplitude: number = 1
+    ) {
         super();
     }
 
-    /** @hidden */
+    /**
+     * @param gradient
+     * @hidden
+     */
     public easeInCore(gradient: number): number {
-        var num = Math.max(0, this.amplitude);
-        return (Math.pow(gradient, 3.0) - ((gradient * num) * Math.sin(3.1415926535897931 * gradient)));
+        const num = Math.max(0, this.amplitude);
+        return Math.pow(gradient, 3.0) - gradient * num * Math.sin(3.1415926535897931 * gradient);
     }
 }
 
@@ -137,30 +145,34 @@ export class BounceEase extends EasingFunction implements IEasingFunction {
         /** Defines the number of bounces */
         public bounces: number = 3,
         /** Defines the amplitude of the bounce */
-        public bounciness: number = 2) {
+        public bounciness: number = 2
+    ) {
         super();
     }
 
-    /** @hidden */
+    /**
+     * @param gradient
+     * @hidden
+     */
     public easeInCore(gradient: number): number {
-        var y = Math.max(0.0, this.bounces);
-        var bounciness = this.bounciness;
+        const y = Math.max(0.0, this.bounces);
+        let bounciness = this.bounciness;
         if (bounciness <= 1.0) {
             bounciness = 1.001;
         }
-        var num9 = Math.pow(bounciness, y);
-        var num5 = 1.0 - bounciness;
-        var num4 = ((1.0 - num9) / num5) + (num9 * 0.5);
-        var num15 = gradient * num4;
-        var num65 = Math.log((-num15 * (1.0 - bounciness)) + 1.0) / Math.log(bounciness);
-        var num3 = Math.floor(num65);
-        var num13 = num3 + 1.0;
-        var num8 = (1.0 - Math.pow(bounciness, num3)) / (num5 * num4);
-        var num12 = (1.0 - Math.pow(bounciness, num13)) / (num5 * num4);
-        var num7 = (num8 + num12) * 0.5;
-        var num6 = gradient - num7;
-        var num2 = num7 - num8;
-        return (((-Math.pow(1.0 / bounciness, y - num3) / (num2 * num2)) * (num6 - num2)) * (num6 + num2));
+        const num9 = Math.pow(bounciness, y);
+        const num5 = 1.0 - bounciness;
+        const num4 = (1.0 - num9) / num5 + num9 * 0.5;
+        const num15 = gradient * num4;
+        const num65 = Math.log(-num15 * (1.0 - bounciness) + 1.0) / Math.log(bounciness);
+        const num3 = Math.floor(num65);
+        const num13 = num3 + 1.0;
+        const num8 = (1.0 - Math.pow(bounciness, num3)) / (num5 * num4);
+        const num12 = (1.0 - Math.pow(bounciness, num13)) / (num5 * num4);
+        const num7 = (num8 + num12) * 0.5;
+        const num6 = gradient - num7;
+        const num2 = num7 - num8;
+        return (-Math.pow(1.0 / bounciness, y - num3) / (num2 * num2)) * (num6 - num2) * (num6 + num2);
     }
 }
 
@@ -170,9 +182,12 @@ export class BounceEase extends EasingFunction implements IEasingFunction {
  * @see https://doc.babylonjs.com/babylon101/animations#easing-functions
  */
 export class CubicEase extends EasingFunction implements IEasingFunction {
-    /** @hidden */
+    /**
+     * @param gradient
+     * @hidden
+     */
     public easeInCore(gradient: number): number {
-        return (gradient * gradient * gradient);
+        return gradient * gradient * gradient;
     }
 }
 
@@ -192,22 +207,26 @@ export class ElasticEase extends EasingFunction implements IEasingFunction {
         /** Defines the number of oscillations*/
         public oscillations: number = 3,
         /** Defines the amplitude of the oscillations*/
-        public springiness: number = 3) {
+        public springiness: number = 3
+    ) {
         super();
     }
 
-    /** @hidden */
+    /**
+     * @param gradient
+     * @hidden
+     */
     public easeInCore(gradient: number): number {
-        var num2;
-        var num3 = Math.max(0.0, this.oscillations);
-        var num = Math.max(0.0, this.springiness);
+        let num2;
+        const num3 = Math.max(0.0, this.oscillations);
+        const num = Math.max(0.0, this.springiness);
 
         if (num == 0) {
             num2 = gradient;
         } else {
             num2 = (Math.exp(num * gradient) - 1.0) / (Math.exp(num) - 1.0);
         }
-        return (num2 * Math.sin(((6.2831853071795862 * num3) + 1.5707963267948966) * gradient));
+        return num2 * Math.sin((6.2831853071795862 * num3 + 1.5707963267948966) * gradient);
     }
 }
 
@@ -224,17 +243,21 @@ export class ExponentialEase extends EasingFunction implements IEasingFunction {
      */
     constructor(
         /** Defines the exponent of the function */
-        public exponent: number = 2) {
+        public exponent: number = 2
+    ) {
         super();
     }
 
-    /** @hidden */
+    /**
+     * @param gradient
+     * @hidden
+     */
     public easeInCore(gradient: number): number {
         if (this.exponent <= 0) {
             return gradient;
         }
 
-        return ((Math.exp(this.exponent * gradient) - 1.0) / (Math.exp(this.exponent) - 1.0));
+        return (Math.exp(this.exponent * gradient) - 1.0) / (Math.exp(this.exponent) - 1.0);
     }
 }
 
@@ -251,13 +274,17 @@ export class PowerEase extends EasingFunction implements IEasingFunction {
      */
     constructor(
         /** Defines the power of the function */
-        public power: number = 2) {
+        public power: number = 2
+    ) {
         super();
     }
 
-    /** @hidden */
+    /**
+     * @param gradient
+     * @hidden
+     */
     public easeInCore(gradient: number): number {
-        var y = Math.max(0.0, this.power);
+        const y = Math.max(0.0, this.power);
         return Math.pow(gradient, y);
     }
 }
@@ -268,9 +295,12 @@ export class PowerEase extends EasingFunction implements IEasingFunction {
  * @see https://doc.babylonjs.com/babylon101/animations#easing-functions
  */
 export class QuadraticEase extends EasingFunction implements IEasingFunction {
-    /** @hidden */
+    /**
+     * @param gradient
+     * @hidden
+     */
     public easeInCore(gradient: number): number {
-        return (gradient * gradient);
+        return gradient * gradient;
     }
 }
 
@@ -280,9 +310,12 @@ export class QuadraticEase extends EasingFunction implements IEasingFunction {
  * @see https://doc.babylonjs.com/babylon101/animations#easing-functions
  */
 export class QuarticEase extends EasingFunction implements IEasingFunction {
-    /** @hidden */
+    /**
+     * @param gradient
+     * @hidden
+     */
     public easeInCore(gradient: number): number {
-        return (gradient * gradient * gradient * gradient);
+        return gradient * gradient * gradient * gradient;
     }
 }
 
@@ -292,9 +325,12 @@ export class QuarticEase extends EasingFunction implements IEasingFunction {
  * @see https://doc.babylonjs.com/babylon101/animations#easing-functions
  */
 export class QuinticEase extends EasingFunction implements IEasingFunction {
-    /** @hidden */
+    /**
+     * @param gradient
+     * @hidden
+     */
     public easeInCore(gradient: number): number {
-        return (gradient * gradient * gradient * gradient * gradient);
+        return gradient * gradient * gradient * gradient * gradient;
     }
 }
 
@@ -304,9 +340,12 @@ export class QuinticEase extends EasingFunction implements IEasingFunction {
  * @see https://doc.babylonjs.com/babylon101/animations#easing-functions
  */
 export class SineEase extends EasingFunction implements IEasingFunction {
-    /** @hidden */
+    /**
+     * @param gradient
+     * @hidden
+     */
     public easeInCore(gradient: number): number {
-        return (1.0 - Math.sin(1.5707963267948966 * (1.0 - gradient)));
+        return 1.0 - Math.sin(1.5707963267948966 * (1.0 - gradient));
     }
 }
 
@@ -332,11 +371,15 @@ export class BezierCurveEase extends EasingFunction implements IEasingFunction {
         /** Defines the x component of the end tangent in the bezier curve */
         public x2: number = 1,
         /** Defines the y component of the end tangent in the bezier curve */
-        public y2: number = 1) {
+        public y2: number = 1
+    ) {
         super();
     }
 
-    /** @hidden */
+    /**
+     * @param gradient
+     * @hidden
+     */
     public easeInCore(gradient: number): number {
         return BezierCurve.Interpolate(gradient, this.x1, this.y1, this.x2, this.y2);
     }

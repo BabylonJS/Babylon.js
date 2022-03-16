@@ -166,11 +166,18 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
      * @param rotationQuaternion an optional rotation offset for this anchor
      * @returns A promise that fulfills when babylon has created the corresponding WebXRAnchor object and tracking has begun
      */
-    public async addAnchorPointUsingHitTestResultAsync(hitTestResult: IWebXRHitResult, position: Vector3 = new Vector3(), rotationQuaternion: Quaternion = new Quaternion()): Promise<IWebXRAnchor> {
+    public async addAnchorPointUsingHitTestResultAsync(
+        hitTestResult: IWebXRHitResult,
+        position: Vector3 = new Vector3(),
+        rotationQuaternion: Quaternion = new Quaternion()
+    ): Promise<IWebXRAnchor> {
         // convert to XR space (right handed) if needed
         this._populateTmpTransformation(position, rotationQuaternion);
         // the matrix that we'll use
-        const m = new XRRigidTransform({ x: this._tmpVector.x, y: this._tmpVector.y, z: this._tmpVector.z }, { x: this._tmpQuaternion.x, y: this._tmpQuaternion.y, z: this._tmpQuaternion.z, w: this._tmpQuaternion.w });
+        const m = new XRRigidTransform(
+            { x: this._tmpVector.x, y: this._tmpVector.y, z: this._tmpVector.z },
+            { x: this._tmpQuaternion.x, y: this._tmpQuaternion.y, z: this._tmpQuaternion.z, w: this._tmpQuaternion.w }
+        );
         if (!hitTestResult.xrHitResult.createAnchor) {
             this.detach();
             throw new Error("Anchors not enabled in this environment/browser");
@@ -205,12 +212,22 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
      * @param forceCreateInCurrentFrame force the creation of this anchor in the current frame. Must be called inside xrFrame loop!
      * @returns A promise that fulfills when babylon has created the corresponding WebXRAnchor object and tracking has begun
      */
-    public async addAnchorAtPositionAndRotationAsync(position: Vector3, rotationQuaternion: Quaternion = new Quaternion(), forceCreateInCurrentFrame = false): Promise<IWebXRAnchor> {
+    public async addAnchorAtPositionAndRotationAsync(
+        position: Vector3,
+        rotationQuaternion: Quaternion = new Quaternion(),
+        forceCreateInCurrentFrame = false
+    ): Promise<IWebXRAnchor> {
         // convert to XR space (right handed) if needed
         this._populateTmpTransformation(position, rotationQuaternion);
         // the matrix that we'll use
-        const xrTransformation = new XRRigidTransform({ x: this._tmpVector.x, y: this._tmpVector.y, z: this._tmpVector.z }, { x: this._tmpQuaternion.x, y: this._tmpQuaternion.y, z: this._tmpQuaternion.z, w: this._tmpQuaternion.w });
-        const xrAnchor = forceCreateInCurrentFrame && this.attached && this._xrSessionManager.currentFrame ? await this._createAnchorAtTransformation(xrTransformation, this._xrSessionManager.currentFrame) : undefined;
+        const xrTransformation = new XRRigidTransform(
+            { x: this._tmpVector.x, y: this._tmpVector.y, z: this._tmpVector.z },
+            { x: this._tmpQuaternion.x, y: this._tmpQuaternion.y, z: this._tmpQuaternion.z, w: this._tmpQuaternion.w }
+        );
+        const xrAnchor =
+            forceCreateInCurrentFrame && this.attached && this._xrSessionManager.currentFrame
+                ? await this._createAnchorAtTransformation(xrTransformation, this._xrSessionManager.currentFrame)
+                : undefined;
         // add the transformation to the future anchors list
         return new Promise<IWebXRAnchor>((resolve, reject) => {
             this._futureAnchors.push({
@@ -310,7 +327,7 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
                         result.resolved = true;
                     }
                 } else {
-                    let index = this._findIndexInAnchorArray(xrAnchor);
+                    const index = this._findIndexInAnchorArray(xrAnchor);
                     const anchor = this._trackedAnchors[index];
                     try {
                         // anchors update every frame

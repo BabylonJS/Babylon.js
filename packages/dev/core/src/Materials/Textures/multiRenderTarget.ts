@@ -64,7 +64,6 @@ export interface IMultiRenderTargetOptions {
  * just one color from a single pass.
  */
 export class MultiRenderTarget extends RenderTargetTexture {
-
     private _textures: Texture[];
     private _multiRenderTargetOptions: IMultiRenderTargetOptions;
     private _count: number;
@@ -104,7 +103,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
      */
     public set wrapU(wrap: number) {
         if (this._textures) {
-            for (var i = 0; i < this._textures.length; i++) {
+            for (let i = 0; i < this._textures.length; i++) {
                 this._textures[i].wrapU = wrap;
             }
         }
@@ -116,7 +115,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
      */
     public set wrapV(wrap: number) {
         if (this._textures) {
-            for (var i = 0; i < this._textures.length; i++) {
+            for (let i = 0; i < this._textures.length; i++) {
                 this._textures[i].wrapV = wrap;
             }
         }
@@ -136,32 +135,24 @@ export class MultiRenderTarget extends RenderTargetTexture {
      * @param textureNames Define the names to set to the textures (if count > 0 - optional)
      */
     constructor(name: string, size: any, count: number, scene?: Scene, options?: IMultiRenderTargetOptions, textureNames?: string[]) {
-        var generateMipMaps = options && options.generateMipMaps ? options.generateMipMaps : false;
-        var generateDepthTexture = options && options.generateDepthTexture ? options.generateDepthTexture : false;
-        var depthTextureFormat = options && options.depthTextureFormat ? options.depthTextureFormat : Constants.TEXTUREFORMAT_DEPTH16;
-        var doNotChangeAspectRatio = !options || options.doNotChangeAspectRatio === undefined ? true : options.doNotChangeAspectRatio;
-        var drawOnlyOnFirstAttachmentByDefault = options && options.drawOnlyOnFirstAttachmentByDefault ? options.drawOnlyOnFirstAttachmentByDefault : false;
-        super(name, size, scene, generateMipMaps, doNotChangeAspectRatio,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            true);
+        const generateMipMaps = options && options.generateMipMaps ? options.generateMipMaps : false;
+        const generateDepthTexture = options && options.generateDepthTexture ? options.generateDepthTexture : false;
+        const depthTextureFormat = options && options.depthTextureFormat ? options.depthTextureFormat : Constants.TEXTUREFORMAT_DEPTH16;
+        const doNotChangeAspectRatio = !options || options.doNotChangeAspectRatio === undefined ? true : options.doNotChangeAspectRatio;
+        const drawOnlyOnFirstAttachmentByDefault = options && options.drawOnlyOnFirstAttachmentByDefault ? options.drawOnlyOnFirstAttachmentByDefault : false;
+        super(name, size, scene, generateMipMaps, doNotChangeAspectRatio, undefined, undefined, undefined, undefined, undefined, undefined, undefined, true);
 
         if (!this.isSupported) {
             this.dispose();
             return;
         }
 
-        var types: number[] = [];
-        var samplingModes: number[] = [];
+        const types: number[] = [];
+        const samplingModes: number[] = [];
         this._initTypes(count, types, samplingModes, options);
 
-        var generateDepthBuffer = !options || options.generateDepthBuffer === undefined ? true : options.generateDepthBuffer;
-        var generateStencilBuffer = !options || options.generateStencilBuffer === undefined ? false : options.generateStencilBuffer;
+        const generateDepthBuffer = !options || options.generateDepthBuffer === undefined ? true : options.generateDepthBuffer;
+        const generateStencilBuffer = !options || options.generateStencilBuffer === undefined ? false : options.generateStencilBuffer;
 
         this._size = size;
         this._multiRenderTargetOptions = {
@@ -172,7 +163,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
             generateDepthTexture: generateDepthTexture,
             depthTextureFormat: depthTextureFormat,
             types: types,
-            textureCount: count
+            textureCount: count,
         };
 
         this._count = count;
@@ -185,7 +176,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
     }
 
     private _initTypes(count: number, types: number[], samplingModes: number[], options?: IMultiRenderTargetOptions) {
-        for (var i = 0; i < count; i++) {
+        for (let i = 0; i < count; i++) {
             if (options && options.types && options.types[i] !== undefined) {
                 types.push(options.types[i]);
             } else {
@@ -200,7 +191,11 @@ export class MultiRenderTarget extends RenderTargetTexture {
         }
     }
 
-    /** @hidden */
+    /**
+     * @param forceFullRebuild
+     * @param textureNames
+     * @hidden
+     */
     public _rebuild(forceFullRebuild: boolean = false, textureNames?: string[]): void {
         if (this._count < 1) {
             return;
@@ -215,8 +210,8 @@ export class MultiRenderTarget extends RenderTargetTexture {
         }
 
         const internalTextures = this._renderTarget!.textures!;
-        for (var i = 0; i < internalTextures.length; i++) {
-            var texture = this._textures[i];
+        for (let i = 0; i < internalTextures.length; i++) {
+            const texture = this._textures[i];
             texture._texture = internalTextures[i];
         }
 
@@ -242,8 +237,8 @@ export class MultiRenderTarget extends RenderTargetTexture {
     private _createTextures(textureNames?: string[]): void {
         const internalTextures = this._renderTarget!.textures!;
         this._textures = [];
-        for (var i = 0; i < internalTextures.length; i++) {
-            var texture = new Texture(null, this.getScene());
+        for (let i = 0; i < internalTextures.length; i++) {
+            const texture = new Texture(null, this.getScene());
             if (textureNames?.[i]) {
                 texture.name = textureNames[i];
             }
@@ -340,6 +335,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
 
     /**
      * Dispose the render targets and their associated resources
+     * @param doNotDisposeInternalTextures
      */
     public dispose(doNotDisposeInternalTextures = false): void {
         this._releaseTextures();
@@ -362,7 +358,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
             return;
         }
 
-        for (var i = internalTextures.length - 1; i >= 0; i--) {
+        for (let i = internalTextures.length - 1; i >= 0; i--) {
             this._textures[i]._texture = null;
         }
 

@@ -3,7 +3,7 @@ import { Nullable, FloatArray } from "../types";
 import { IMatrixLike, IVector3Like, IVector4Like, IColor3Like, IColor4Like } from "../Maths/math.like";
 import { Effect } from "./effect";
 import { ThinTexture } from "../Materials/Textures/thinTexture";
-import { DataBuffer } from '../Buffers/dataBuffer';
+import { DataBuffer } from "../Buffers/dataBuffer";
 import { ThinEngine } from "../Engines/thinEngine";
 import { Tools } from "../Misc/tools";
 
@@ -33,7 +33,7 @@ export class UniformBuffer {
     private _dynamic?: boolean;
     private _uniformLocations: { [key: string]: number };
     private _uniformSizes: { [key: string]: number };
-    private _uniformArraySizes: { [key: string]: { strideSize: number, arraySize: number } };
+    private _uniformArraySizes: { [key: string]: { strideSize: number; arraySize: number } };
     private _uniformLocationPointer: number;
     private _needSync: boolean;
     private _noUBO: boolean;
@@ -160,10 +160,10 @@ export class UniformBuffer {
     public updateDirectColor4: (name: string, color: IColor4Like, suffix?: string) => void;
 
     /**
-    * Lambda to Update a int a uniform buffer.
-    * This is dynamic to allow compat with webgl 1 and 2.
-    * You will need to pass the name of the uniform as well as the value.
-    */
+     * Lambda to Update a int a uniform buffer.
+     * This is dynamic to allow compat with webgl 1 and 2.
+     * You will need to pass the name of the uniform as well as the value.
+     */
     public updateInt: (name: string, x: number, suffix?: string) => void;
 
     /**
@@ -267,7 +267,6 @@ export class UniformBuffer {
             this.updateInt3 = this._updateInt3ForUniform;
             this.updateInt4 = this._updateInt4ForUniform;
         }
-
     }
 
     /**
@@ -316,25 +315,26 @@ export class UniformBuffer {
      * std140 layout specifies how to align data within an UBO structure.
      * See https://khronos.org/registry/OpenGL/specs/gl/glspec45.core.pdf#page=159
      * for specs.
+     * @param size
      */
     private _fillAlignment(size: number) {
         // This code has been simplified because we only use floats, vectors of 1, 2, 3, 4 components
         // and 4x4 matrices
         // TODO : change if other types are used
 
-        var alignment;
+        let alignment;
         if (size <= 2) {
             alignment = size;
         } else {
             alignment = 4;
         }
 
-        if ((this._uniformLocationPointer % alignment) !== 0) {
-            var oldPointer = this._uniformLocationPointer;
+        if (this._uniformLocationPointer % alignment !== 0) {
+            const oldPointer = this._uniformLocationPointer;
             this._uniformLocationPointer += alignment - (this._uniformLocationPointer % alignment);
-            var diff = this._uniformLocationPointer - oldPointer;
+            const diff = this._uniformLocationPointer - oldPointer;
 
-            for (var i = 0; i < diff; i++) {
+            for (let i = 0; i < diff; i++) {
                 this._data.push(0);
             }
         }
@@ -359,7 +359,7 @@ export class UniformBuffer {
         }
         // This function must be called in the order of the shader layout !
         // size can be the size of the uniform, or data directly
-        var data;
+        let data;
 
         // std140 FTW...
         if (arraySize > 0) {
@@ -372,8 +372,7 @@ export class UniformBuffer {
             this._uniformArraySizes[name] = { strideSize: size, arraySize };
             if (size == 16) {
                 size = size * arraySize;
-            }
-            else {
+            } else {
                 const perElementPadding = 4 - size;
                 const totalPadding = perElementPadding * arraySize;
                 size = size * arraySize + totalPadding;
@@ -384,8 +383,7 @@ export class UniformBuffer {
             for (var i = 0; i < size; i++) {
                 data.push(0);
             }
-        }
-        else {
+        } else {
             if (size instanceof Array) {
                 data = size;
                 size = data.length;
@@ -428,7 +426,7 @@ export class UniformBuffer {
      * @param y Define the y component value of the vec2
      */
     public addFloat2(name: string, x: number, y: number) {
-        var temp = [x, y];
+        const temp = [x, y];
         this.addUniform(name, temp);
     }
 
@@ -440,7 +438,7 @@ export class UniformBuffer {
      * @param z Define the z component value of the vec3
      */
     public addFloat3(name: string, x: number, y: number, z: number) {
-        var temp = [x, y, z];
+        const temp = [x, y, z];
         this.addUniform(name, temp);
     }
 
@@ -450,7 +448,7 @@ export class UniformBuffer {
      * @param color Define the vec3 from a Color
      */
     public addColor3(name: string, color: IColor3Like) {
-        var temp = [color.r, color.g, color.b];
+        const temp = [color.r, color.g, color.b];
         this.addUniform(name, temp);
     }
 
@@ -461,7 +459,7 @@ export class UniformBuffer {
      * @param alpha Define the a component of the vec4
      */
     public addColor4(name: string, color: IColor3Like, alpha: number) {
-        var temp = [color.r, color.g, color.b, alpha];
+        const temp = [color.r, color.g, color.b, alpha];
         this.addUniform(name, temp);
     }
 
@@ -471,7 +469,7 @@ export class UniformBuffer {
      * @param vector Define the vec3 components from a Vector
      */
     public addVector3(name: string, vector: IVector3Like) {
-        var temp = [vector.x, vector.y, vector.z];
+        const temp = [vector.x, vector.y, vector.z];
         this.addUniform(name, temp);
     }
 
@@ -635,7 +633,7 @@ export class UniformBuffer {
     public updateUniform(uniformName: string, data: FloatArray, size: number) {
         this._checkNewFrame();
 
-        var location = this._uniformLocations[uniformName];
+        let location = this._uniformLocations[uniformName];
         if (location === undefined) {
             if (this._buffer) {
                 // Cannot add an uniform if the buffer is already created
@@ -652,7 +650,7 @@ export class UniformBuffer {
 
         if (!this._dynamic) {
             // Cache for static uniform buffers
-            var changed = false;
+            let changed = false;
 
             for (var i = 0; i < size; i++) {
                 // We are checking the matrix cache before calling updateUniform so we do not need to check it here
@@ -684,7 +682,7 @@ export class UniformBuffer {
     public updateUniformArray(uniformName: string, data: FloatArray, size: number) {
         this._checkNewFrame();
 
-        var location = this._uniformLocations[uniformName];
+        const location = this._uniformLocations[uniformName];
         if (location === undefined) {
             Logger.Error("Cannot add an uniform Array dynamically. Please, add it using addUniform.");
             return;
@@ -698,7 +696,7 @@ export class UniformBuffer {
 
         if (!this._dynamic) {
             // Cache for static uniform buffers
-            var changed = false;
+            let changed = false;
             let countToFour = 0;
             let baseStride = 0;
             for (var i = 0; i < size; i++) {
@@ -747,7 +745,7 @@ export class UniformBuffer {
 
     private _updateMatrix3x3ForUniform(name: string, matrix: Float32Array): void {
         // To match std140, matrix must be realigned
-        for (var i = 0; i < 3; i++) {
+        for (let i = 0; i < 3; i++) {
             UniformBuffer._tempBuffer[i * 4] = matrix[i * 3];
             UniformBuffer._tempBuffer[i * 4 + 1] = matrix[i * 3 + 1];
             UniformBuffer._tempBuffer[i * 4 + 2] = matrix[i * 3 + 2];
@@ -767,7 +765,7 @@ export class UniformBuffer {
 
     private _updateMatrix2x2ForUniform(name: string, matrix: Float32Array): void {
         // To match std140, matrix must be realigned
-        for (var i = 0; i < 2; i++) {
+        for (let i = 0; i < 2; i++) {
             UniformBuffer._tempBuffer[i * 4] = matrix[i * 2];
             UniformBuffer._tempBuffer[i * 4 + 1] = matrix[i * 2 + 1];
             UniformBuffer._tempBuffer[i * 4 + 2] = 0.0;
@@ -805,7 +803,6 @@ export class UniformBuffer {
         UniformBuffer._tempBuffer[1] = y;
         UniformBuffer._tempBuffer[2] = z;
         this.updateUniform(name, UniformBuffer._tempBuffer, 3);
-
     }
 
     private _updateFloat4ForEffect(name: string, x: number, y: number, z: number, w: number, suffix = "") {
@@ -1044,7 +1041,7 @@ export class UniformBuffer {
         }
 
         const uniformBuffers = this._engine._uniformBuffers;
-        let index = uniformBuffers.indexOf(this);
+        const index = uniformBuffers.indexOf(this);
 
         if (index !== -1) {
             uniformBuffers[index] = uniformBuffers[uniformBuffers.length - 1];

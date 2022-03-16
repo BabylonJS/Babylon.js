@@ -189,8 +189,7 @@ export interface INavigationEnginePlugin {
 /**
  * Obstacle interface
  */
-export interface IObstacle {
-}
+export interface IObstacle {}
 
 /**
  * Crowd Interface. A Crowd is a collection of moving agents constrained by a navigation mesh
@@ -377,7 +376,7 @@ export interface IAgentParameters {
      * Observers will be notified when agent gets inside the virtual circle with this Radius around destination point.
      * Default is agent radius
      */
-     reachRadius?: number;
+    reachRadius?: number;
 }
 
 /**
@@ -464,7 +463,7 @@ export interface INavMeshParameters {
     tileSize?: number;
 
     /**
-    * The size of the non-navigable border around the heightfield.
-    */
+     * The size of the non-navigable border around the heightfield.
+     */
     borderSize?: number;
 }

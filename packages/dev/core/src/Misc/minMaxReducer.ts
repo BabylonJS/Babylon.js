@@ -2,11 +2,11 @@ import { Nullable } from "../types";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { Camera } from "../Cameras/camera";
 import { Constants } from "../Engines/constants";
-import { Observer } from "./observable";
+import { Observer , Observable } from "./observable";
 import { Effect } from "../Materials/effect";
 import { PostProcess } from "../PostProcesses/postProcess";
 import { PostProcessManager } from "../PostProcesses/postProcessManager";
-import { Observable } from "./observable";
+
 import { ThinEngine } from "../Engines/thinEngine";
 
 import "../Shaders/minmaxRedux.fragment";
@@ -18,11 +18,10 @@ import "../Shaders/minmaxRedux.fragment";
  * The source values are read from the red channel of the texture.
  */
 export class MinMaxReducer {
-
     /**
      * Observable triggered when the computation has been performed
      */
-    public onAfterReductionPerformed = new Observable<{ min: number, max: number }>();
+    public onAfterReductionPerformed = new Observable<{ min: number; max: number }>();
 
     protected _camera: Camera;
     protected _sourceTexture: Nullable<RenderTargetTexture>;
@@ -77,11 +76,11 @@ export class MinMaxReducer {
         const scene = this._camera.getScene();
 
         // create the first step
-        let reductionInitial = new PostProcess(
-            'Initial reduction phase',
-            'minmaxRedux', // shader
-            ['texSize'],
-            ['sourceTexture'], // textures
+        const reductionInitial = new PostProcess(
+            "Initial reduction phase",
+            "minmaxRedux", // shader
+            ["texSize"],
+            ["sourceTexture"], // textures
             1.0, // options
             null, // camera
             Constants.TEXTURE_NEAREST_NEAREST, // sampling
@@ -92,18 +91,19 @@ export class MinMaxReducer {
             undefined,
             undefined,
             undefined,
-            Constants.TEXTUREFORMAT_RG,
+            Constants.TEXTUREFORMAT_RG
         );
 
         reductionInitial.autoClear = false;
         reductionInitial.forceFullscreenViewport = forceFullscreenViewport;
 
-        let w = this._sourceTexture.getRenderWidth(), h = this._sourceTexture.getRenderHeight();
+        let w = this._sourceTexture.getRenderWidth(),
+            h = this._sourceTexture.getRenderHeight();
 
         reductionInitial.onApply = ((w: number, h: number) => {
             return (effect: Effect) => {
-                effect.setTexture('sourceTexture', this._sourceTexture);
-                effect.setFloat2('texSize', w, h);
+                effect.setTexture("sourceTexture", this._sourceTexture);
+                effect.setFloat2("texSize", w, h);
             };
         })(w, h);
 
@@ -116,22 +116,22 @@ export class MinMaxReducer {
             w = Math.max(Math.round(w / 2), 1);
             h = Math.max(Math.round(h / 2), 1);
 
-            let reduction = new PostProcess(
-                'Reduction phase ' + index,
-                'minmaxRedux', // shader
-                ['texSize'],
+            const reduction = new PostProcess(
+                "Reduction phase " + index,
+                "minmaxRedux", // shader
+                ["texSize"],
                 null,
                 { width: w, height: h }, // options
                 null, // camera
                 Constants.TEXTURE_NEAREST_NEAREST, // sampling
                 scene.getEngine(), // engine
                 false, // reusable
-                "#define " + ((w == 1 && h == 1) ? 'LAST' : (w == 1 || h == 1) ? 'ONEBEFORELAST' : 'MAIN'), // defines
+                "#define " + (w == 1 && h == 1 ? "LAST" : w == 1 || h == 1 ? "ONEBEFORELAST" : "MAIN"), // defines
                 type,
                 undefined,
                 undefined,
                 undefined,
-                Constants.TEXTUREFORMAT_RG,
+                Constants.TEXTUREFORMAT_RG
             );
 
             reduction.autoClear = false;
@@ -140,9 +140,9 @@ export class MinMaxReducer {
             reduction.onApply = ((w: number, h: number) => {
                 return (effect: Effect) => {
                     if (w == 1 || h == 1) {
-                        effect.setInt2('texSize', w, h);
+                        effect.setInt2("texSize", w, h);
                     } else {
-                        effect.setFloat2('texSize', w, h);
+                        effect.setFloat2("texSize", w, h);
                     }
                 };
             })(w, h);
@@ -152,8 +152,8 @@ export class MinMaxReducer {
             index++;
 
             if (w == 1 && h == 1) {
-                let func = (w: number, h: number, reduction: PostProcess) => {
-                    let buffer = new Float32Array(4 * w * h),
+                const func = (w: number, h: number, reduction: PostProcess) => {
+                    const buffer = new Float32Array(4 * w * h),
                         minmax = { min: 0, max: 0 };
                     return () => {
                         scene.getEngine()._readTexturePixels(reduction.inputTexture.texture!, w, h, -1, 0, buffer, false);
@@ -254,5 +254,4 @@ export class MinMaxReducer {
 
         this._sourceTexture = null;
     }
-
 }

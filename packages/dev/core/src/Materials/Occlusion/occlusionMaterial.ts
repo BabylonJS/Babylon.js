@@ -1,6 +1,6 @@
-import { Color4 } from '../../Maths/math.color';
+import { Color4 } from "../../Maths/math.color";
 import { Scene } from "../../scene";
-import { ShaderMaterial } from '../shaderMaterial';
+import { ShaderMaterial } from "../shaderMaterial";
 
 import "../../Shaders/color.fragment";
 import "../../Shaders/color.vertex";
@@ -13,7 +13,7 @@ export class OcclusionMaterial extends ShaderMaterial {
     constructor(name: string, scene: Scene) {
         super(name, scene, "color", {
             attributes: ["position"],
-            uniforms: ["world", "viewProjection", "color"]
+            uniforms: ["world", "viewProjection", "color"],
         });
         this.disableColorWrite = true;
         this.forceDepthWrite = true;

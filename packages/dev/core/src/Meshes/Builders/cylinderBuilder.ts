@@ -1,51 +1,82 @@
 import { Vector4, Vector3, Vector2 } from "../../Maths/math.vector";
-import { Color4 } from '../../Maths/math.color';
+import { Color4 } from "../../Maths/math.color";
 import { Mesh, _CreationDataStorage } from "../mesh";
 import { VertexData } from "../mesh.vertexData";
 import { Scene } from "../../scene";
 import { Nullable } from "../../types";
-import { Axis } from '../../Maths/math.axis';
+import { Axis } from "../../Maths/math.axis";
 import { CompatibilityOptions } from "../../Compat/compatibilityOptions";
 
 /**
  * Creates the VertexData for a cylinder, cone or prism
  * @param options an object used to set the following optional parameters for the box, required but can be empty
-  * * height sets the height (y direction) of the cylinder, optional, default 2
-  * * diameterTop sets the diameter of the top of the cone, overwrites diameter,  optional, default diameter
-  * * diameterBottom sets the diameter of the bottom of the cone, overwrites diameter,  optional, default diameter
-  * * diameter sets the diameter of the top and bottom of the cone, optional default 1
-  * * tessellation the number of prism sides, 3 for a triangular prism, optional, default 24
-  * * subdivisions` the number of rings along the cylinder height, optional, default 1
-  * * arc a number from 0 to 1, to create an unclosed cylinder based on the fraction of the circumference given by the arc value, optional, default 1
-  * * faceColors an array of Color3 elements used to set different colors to the top, rings and bottom respectively
-  * * faceUV an array of Vector4 elements used to set different images to the top, rings and bottom respectively
-  * * hasRings when true makes each subdivision independently treated as a face for faceUV and faceColors, optional, default false
-  * * enclose when true closes an open cylinder by adding extra flat faces between the height axis and vertical edges, think cut cake
-  * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
-  * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
-  * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
+ * * height sets the height (y direction) of the cylinder, optional, default 2
+ * * diameterTop sets the diameter of the top of the cone, overwrites diameter,  optional, default diameter
+ * * diameterBottom sets the diameter of the bottom of the cone, overwrites diameter,  optional, default diameter
+ * * diameter sets the diameter of the top and bottom of the cone, optional default 1
+ * * tessellation the number of prism sides, 3 for a triangular prism, optional, default 24
+ * * subdivisions` the number of rings along the cylinder height, optional, default 1
+ * * arc a number from 0 to 1, to create an unclosed cylinder based on the fraction of the circumference given by the arc value, optional, default 1
+ * * faceColors an array of Color3 elements used to set different colors to the top, rings and bottom respectively
+ * * faceUV an array of Vector4 elements used to set different images to the top, rings and bottom respectively
+ * * hasRings when true makes each subdivision independently treated as a face for faceUV and faceColors, optional, default false
+ * * enclose when true closes an open cylinder by adding extra flat faces between the height axis and vertical edges, think cut cake
+ * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
+ * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
+ * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
+ * @param options.height
+ * @param options.diameterTop
+ * @param options.diameterBottom
+ * @param options.diameter
+ * @param options.tessellation
+ * @param options.subdivisions
+ * @param options.arc
+ * @param options.faceColors
+ * @param options.faceUV
+ * @param options.hasRings
+ * @param options.enclose
+ * @param options.cap
+ * @param options.sideOrientation
+ * @param options.frontUVs
+ * @param options.backUVs
  * @returns the VertexData of the cylinder, cone or prism
  */
-export function CreateCylinderVertexData(options: { height?: number, diameterTop?: number, diameterBottom?: number, diameter?: number, tessellation?: number, subdivisions?: number, arc?: number, faceColors?: Color4[], faceUV?: Vector4[], hasRings?: boolean, enclose?: boolean, cap?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
-    var height: number = options.height || 2;
-    var diameterTop: number = (options.diameterTop === 0) ? 0 : options.diameterTop || options.diameter || 1;
-    var diameterBottom: number = (options.diameterBottom === 0) ? 0 : options.diameterBottom || options.diameter || 1;
+export function CreateCylinderVertexData(options: {
+    height?: number;
+    diameterTop?: number;
+    diameterBottom?: number;
+    diameter?: number;
+    tessellation?: number;
+    subdivisions?: number;
+    arc?: number;
+    faceColors?: Color4[];
+    faceUV?: Vector4[];
+    hasRings?: boolean;
+    enclose?: boolean;
+    cap?: number;
+    sideOrientation?: number;
+    frontUVs?: Vector4;
+    backUVs?: Vector4;
+}): VertexData {
+    const height: number = options.height || 2;
+    let diameterTop: number = options.diameterTop === 0 ? 0 : options.diameterTop || options.diameter || 1;
+    let diameterBottom: number = options.diameterBottom === 0 ? 0 : options.diameterBottom || options.diameter || 1;
     diameterTop = diameterTop || 0.00001; // Prevent broken normals
     diameterBottom = diameterBottom || 0.00001; // Prevent broken normals
-    var tessellation: number = options.tessellation || 24;
-    var subdivisions: number = options.subdivisions || 1;
-    var hasRings: boolean = options.hasRings ? true : false;
-    var enclose: boolean = options.enclose ? true : false;
-    var cap = (options.cap === 0) ? 0 : options.cap || Mesh.CAP_ALL;
-    var arc: number = options.arc && (options.arc <= 0 || options.arc > 1) ? 1.0 : options.arc || 1.0;
-    var sideOrientation: number = (options.sideOrientation === 0) ? 0 : options.sideOrientation || VertexData.DEFAULTSIDE;
-    var faceUV: Vector4[] = options.faceUV || new Array<Vector4>(3);
-    var faceColors = options.faceColors;
+    const tessellation: number = options.tessellation || 24;
+    const subdivisions: number = options.subdivisions || 1;
+    const hasRings: boolean = options.hasRings ? true : false;
+    const enclose: boolean = options.enclose ? true : false;
+    const cap = options.cap === 0 ? 0 : options.cap || Mesh.CAP_ALL;
+    const arc: number = options.arc && (options.arc <= 0 || options.arc > 1) ? 1.0 : options.arc || 1.0;
+    const sideOrientation: number = options.sideOrientation === 0 ? 0 : options.sideOrientation || VertexData.DEFAULTSIDE;
+    const faceUV: Vector4[] = options.faceUV || new Array<Vector4>(3);
+    const faceColors = options.faceColors;
     // default face colors and UV if undefined
-    var quadNb: number = (arc !== 1 && enclose) ? 2 : 0;
-    var ringNb: number = (hasRings) ? subdivisions : 1;
-    var surfaceNb: number = 2 + (1 + quadNb) * ringNb;
-    var f: number;
+    const quadNb: number = arc !== 1 && enclose ? 2 : 0;
+    const ringNb: number = hasRings ? subdivisions : 1;
+    const surfaceNb: number = 2 + (1 + quadNb) * ringNb;
+    let f: number;
 
     for (f = 0; f < surfaceNb; f++) {
         if (faceColors && faceColors[f] === undefined) {
@@ -58,37 +89,37 @@ export function CreateCylinderVertexData(options: { height?: number, diameterTop
         }
     }
 
-    var indices = new Array<number>();
-    var positions = new Array<number>();
-    var normals = new Array<number>();
-    var uvs = new Array<number>();
-    var colors = new Array<number>();
+    const indices = new Array<number>();
+    const positions = new Array<number>();
+    const normals = new Array<number>();
+    const uvs = new Array<number>();
+    const colors = new Array<number>();
 
-    var angle_step = Math.PI * 2 * arc / tessellation;
-    var angle: number;
-    var h: number;
-    var radius: number;
-    var tan = (diameterBottom - diameterTop) / 2 / height;
-    var ringVertex: Vector3 = Vector3.Zero();
-    var ringNormal: Vector3 = Vector3.Zero();
-    var ringFirstVertex: Vector3 = Vector3.Zero();
-    var ringFirstNormal: Vector3 = Vector3.Zero();
-    var quadNormal: Vector3 = Vector3.Zero();
-    var Y: Vector3 = Axis.Y;
+    const angle_step = (Math.PI * 2 * arc) / tessellation;
+    let angle: number;
+    let h: number;
+    let radius: number;
+    const tan = (diameterBottom - diameterTop) / 2 / height;
+    const ringVertex: Vector3 = Vector3.Zero();
+    const ringNormal: Vector3 = Vector3.Zero();
+    const ringFirstVertex: Vector3 = Vector3.Zero();
+    const ringFirstNormal: Vector3 = Vector3.Zero();
+    const quadNormal: Vector3 = Vector3.Zero();
+    const Y: Vector3 = Axis.Y;
 
     // positions, normals, uvs
-    var i: number;
-    var j: number;
-    var r: number;
-    var ringIdx: number = 1;
-    var s: number = 1;      // surface index
-    var cs: number = 0;
-    var v: number = 0;
+    let i: number;
+    let j: number;
+    let r: number;
+    let ringIdx: number = 1;
+    var s: number = 1; // surface index
+    let cs: number = 0;
+    let v: number = 0;
 
     for (i = 0; i <= subdivisions; i++) {
         h = i / subdivisions;
         radius = (h * (diameterTop - diameterBottom) + diameterBottom) / 2;
-        ringIdx = (hasRings && i !== 0 && i !== subdivisions) ? 2 : 1;
+        ringIdx = hasRings && i !== 0 && i !== subdivisions ? 2 : 1;
         for (r = 0; r < ringIdx; r++) {
             if (hasRings) {
                 s += r;
@@ -110,8 +141,7 @@ export function CreateCylinderVertexData(options: { height?: number, diameterTop
                     ringNormal.x = normals[normals.length - (tessellation + 1) * 3];
                     ringNormal.y = normals[normals.length - (tessellation + 1) * 3 + 1];
                     ringNormal.z = normals[normals.length - (tessellation + 1) * 3 + 2];
-                }
-                else {
+                } else {
                     ringNormal.x = ringVertex.x;
                     ringNormal.z = ringVertex.z;
                     ringNormal.y = Math.sqrt(ringNormal.x * ringNormal.x + ringNormal.z * ringNormal.z) * tan;
@@ -127,11 +157,11 @@ export function CreateCylinderVertexData(options: { height?: number, diameterTop
                 positions.push(ringVertex.x, ringVertex.y, ringVertex.z);
                 normals.push(ringNormal.x, ringNormal.y, ringNormal.z);
                 if (hasRings) {
-                    v = (cs !== s) ? faceUV[s].y : faceUV[s].w;
+                    v = cs !== s ? faceUV[s].y : faceUV[s].w;
                 } else {
                     v = faceUV[s].y + (faceUV[s].w - faceUV[s].y) * h;
                 }
-                uvs.push(faceUV[s].x + (faceUV[s].z - faceUV[s].x) * j / tessellation, CompatibilityOptions.UseOpenGLOrientationForUV ? 1 - v : v);
+                uvs.push(faceUV[s].x + ((faceUV[s].z - faceUV[s].x) * j) / tessellation, CompatibilityOptions.UseOpenGLOrientationForUV ? 1 - v : v);
                 if (faceColors) {
                     colors.push(faceColors[s].r, faceColors[s].g, faceColors[s].b, faceColors[s].a);
                 }
@@ -150,14 +180,14 @@ export function CreateCylinderVertexData(options: { height?: number, diameterTop
                 quadNormal.normalize();
                 normals.push(quadNormal.x, quadNormal.y, quadNormal.z, quadNormal.x, quadNormal.y, quadNormal.z);
                 if (hasRings) {
-                    v = (cs !== s) ? faceUV[s + 1].y : faceUV[s + 1].w;
+                    v = cs !== s ? faceUV[s + 1].y : faceUV[s + 1].w;
                 } else {
                     v = faceUV[s + 1].y + (faceUV[s + 1].w - faceUV[s + 1].y) * h;
                 }
                 uvs.push(faceUV[s + 1].x, CompatibilityOptions.UseOpenGLOrientationForUV ? 1 - v : v);
                 uvs.push(faceUV[s + 1].z, CompatibilityOptions.UseOpenGLOrientationForUV ? 1 - v : v);
                 if (hasRings) {
-                    v = (cs !== s) ? faceUV[s + 2].y : faceUV[s + 2].w;
+                    v = cs !== s ? faceUV[s + 2].y : faceUV[s + 2].w;
                 } else {
                     v = faceUV[s + 2].y + (faceUV[s + 2].w - faceUV[s + 2].y) * h;
                 }
@@ -173,13 +203,11 @@ export function CreateCylinderVertexData(options: { height?: number, diameterTop
             if (cs !== s) {
                 cs = s;
             }
-
         }
-
     }
 
     // indices
-    var e: number = (arc !== 1 && enclose) ? tessellation + 4 : tessellation;     // correction of number of iteration if enclose
+    const e: number = arc !== 1 && enclose ? tessellation + 4 : tessellation; // correction of number of iteration if enclose
     var s: number;
     i = 0;
     for (s = 0; s < subdivisions; s++) {
@@ -195,35 +223,36 @@ export function CreateCylinderVertexData(options: { height?: number, diameterTop
             indices.push(i0, i1, i2);
             indices.push(i3, i2, i1);
         }
-        if (arc !== 1 && enclose) {      // if enclose, add two quads
+        if (arc !== 1 && enclose) {
+            // if enclose, add two quads
             indices.push(i0 + 2, i1 + 2, i2 + 2);
             indices.push(i3 + 2, i2 + 2, i1 + 2);
             indices.push(i0 + 4, i1 + 4, i2 + 4);
             indices.push(i3 + 4, i2 + 4, i1 + 4);
         }
-        i = (hasRings) ? (i + 2) : (i + 1);
+        i = hasRings ? i + 2 : i + 1;
     }
 
     // Caps
-    var createCylinderCap = (isTop: boolean) => {
-        var radius = isTop ? diameterTop / 2 : diameterBottom / 2;
+    const createCylinderCap = (isTop: boolean) => {
+        const radius = isTop ? diameterTop / 2 : diameterBottom / 2;
         if (radius === 0) {
             return;
         }
 
         // Cap positions, normals & uvs
-        var angle;
-        var circleVector;
-        var i: number;
-        var u: Vector4 = (isTop) ? faceUV[surfaceNb - 1] : faceUV[0];
-        var c: Nullable<Color4> = null;
+        let angle;
+        let circleVector;
+        let i: number;
+        const u: Vector4 = isTop ? faceUV[surfaceNb - 1] : faceUV[0];
+        let c: Nullable<Color4> = null;
         if (faceColors) {
-            c = (isTop) ? faceColors[surfaceNb - 1] : faceColors[0];
+            c = isTop ? faceColors[surfaceNb - 1] : faceColors[0];
         }
         // cap center
-        var vbase = positions.length / 3;
-        var offset = isTop ? height / 2 : -height / 2;
-        var center = new Vector3(0, offset, 0);
+        const vbase = positions.length / 3;
+        const offset = isTop ? height / 2 : -height / 2;
+        const center = new Vector3(0, offset, 0);
         positions.push(center.x, center.y, center.z);
         normals.push(0, isTop ? 1 : -1, 0);
         const v = u.y + (u.w - u.y) * 0.5;
@@ -232,13 +261,13 @@ export function CreateCylinderVertexData(options: { height?: number, diameterTop
             colors.push(c.r, c.g, c.b, c.a);
         }
 
-        var textureScale = new Vector2(0.5, 0.5);
+        const textureScale = new Vector2(0.5, 0.5);
         for (i = 0; i <= tessellation; i++) {
-            angle = Math.PI * 2 * i * arc / tessellation;
-            var cos = Math.cos(-angle);
-            var sin = Math.sin(-angle);
+            angle = (Math.PI * 2 * i * arc) / tessellation;
+            const cos = Math.cos(-angle);
+            const sin = Math.sin(-angle);
             circleVector = new Vector3(cos * radius, offset, sin * radius);
-            var textureCoordinate = new Vector2(cos * textureScale.x + 0.5, sin * textureScale.y + 0.5);
+            const textureCoordinate = new Vector2(cos * textureScale.x + 0.5, sin * textureScale.y + 0.5);
             positions.push(circleVector.x, circleVector.y, circleVector.z);
             normals.push(0, isTop ? 1 : -1, 0);
             const v = u.y + (u.w - u.y) * textureCoordinate.y;
@@ -253,8 +282,7 @@ export function CreateCylinderVertexData(options: { height?: number, diameterTop
                 indices.push(vbase);
                 indices.push(vbase + (i + 1));
                 indices.push(vbase + (i + 2));
-            }
-            else {
+            } else {
                 indices.push(vbase);
                 indices.push(vbase + (i + 2));
                 indices.push(vbase + (i + 1));
@@ -263,19 +291,17 @@ export function CreateCylinderVertexData(options: { height?: number, diameterTop
     };
 
     // add caps to geometry based on cap parameter
-    if ((cap === Mesh.CAP_START)
-        || (cap === Mesh.CAP_ALL)) {
+    if (cap === Mesh.CAP_START || cap === Mesh.CAP_ALL) {
         createCylinderCap(false);
     }
-    if ((cap === Mesh.CAP_END)
-        || (cap === Mesh.CAP_ALL)) {
+    if (cap === Mesh.CAP_END || cap === Mesh.CAP_ALL) {
         createCylinderCap(true);
     }
 
     // Sides
     VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs, options.frontUVs, options.backUVs);
 
-    var vertexData = new VertexData();
+    const vertexData = new VertexData();
 
     vertexData.indices = indices;
     vertexData.positions = positions;
@@ -312,17 +338,54 @@ export function CreateCylinderVertexData(options: { height?: number, diameterTop
  * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
  * @param name defines the name of the mesh
  * @param options defines the options used to create the mesh
+ * @param options.height
  * @param scene defines the hosting scene
+ * @param options.diameterTop
+ * @param options.diameterBottom
+ * @param options.diameter
+ * @param options.tessellation
+ * @param options.subdivisions
+ * @param options.arc
+ * @param options.faceColors
+ * @param options.faceUV
+ * @param options.updatable
+ * @param options.hasRings
+ * @param options.enclose
+ * @param options.cap
+ * @param options.sideOrientation
+ * @param options.frontUVs
+ * @param options.backUVs
  * @returns the cylinder mesh
  * @see https://doc.babylonjs.com/how_to/set_shapes#cylinder-or-cone
  */
-export function CreateCylinder(name: string, options: { height?: number, diameterTop?: number, diameterBottom?: number, diameter?: number, tessellation?: number, subdivisions?: number, arc?: number, faceColors?: Color4[], faceUV?: Vector4[], updatable?: boolean, hasRings?: boolean, enclose?: boolean, cap?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 } = {}, scene: any): Mesh {
-    var cylinder = new Mesh(name, scene);
+export function CreateCylinder(
+    name: string,
+    options: {
+        height?: number;
+        diameterTop?: number;
+        diameterBottom?: number;
+        diameter?: number;
+        tessellation?: number;
+        subdivisions?: number;
+        arc?: number;
+        faceColors?: Color4[];
+        faceUV?: Vector4[];
+        updatable?: boolean;
+        hasRings?: boolean;
+        enclose?: boolean;
+        cap?: number;
+        sideOrientation?: number;
+        frontUVs?: Vector4;
+        backUVs?: Vector4;
+    } = {},
+    scene: any
+): Mesh {
+    const cylinder = new Mesh(name, scene);
 
     options.sideOrientation = Mesh._GetDefaultSideOrientation(options.sideOrientation);
     cylinder._originalBuilderSideOrientation = options.sideOrientation;
 
-    var vertexData = CreateCylinderVertexData(options);
+    const vertexData = CreateCylinderVertexData(options);
 
     vertexData.applyToMesh(cylinder, options.updatable);
 
@@ -334,12 +397,22 @@ export function CreateCylinder(name: string, options: { height?: number, diamete
  * @deprecated Please use CreateCylinder directly
  */
 export const CylinderBuilder = {
-    CreateCylinder
+    CreateCylinder,
 };
 
 VertexData.CreateCylinder = CreateCylinderVertexData;
 
-Mesh.CreateCylinder = (name: string, height: number, diameterTop: number, diameterBottom: number, tessellation: number, subdivisions: any, scene?: Scene, updatable?: any, sideOrientation?: number): Mesh => {
+Mesh.CreateCylinder = (
+    name: string,
+    height: number,
+    diameterTop: number,
+    diameterBottom: number,
+    tessellation: number,
+    subdivisions: any,
+    scene?: Scene,
+    updatable?: any,
+    sideOrientation?: number
+): Mesh => {
     if (scene === undefined || !(scene instanceof Scene)) {
         if (scene !== undefined) {
             sideOrientation = updatable || Mesh.DEFAULTSIDE;
@@ -356,7 +429,7 @@ Mesh.CreateCylinder = (name: string, height: number, diameterTop: number, diamet
         tessellation,
         subdivisions,
         sideOrientation,
-        updatable
+        updatable,
     };
 
     return CreateCylinder(name, options, scene);

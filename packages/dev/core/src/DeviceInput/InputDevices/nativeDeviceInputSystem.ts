@@ -10,13 +10,25 @@ declare const _native: INative;
 export class NativeDeviceInputSystem implements IDeviceInputSystem {
     private readonly _nativeInput: IDeviceInputSystem;
 
-    public constructor(onDeviceConnected: (deviceType: DeviceType, deviceSlot: number) => void, onDeviceDisconnected: (deviceType: DeviceType, deviceSlot: number) => void, onInputChanged: (deviceType: DeviceType, deviceSlot: number, eventData: IUIEvent) => void) {
-        this._nativeInput = (_native.DeviceInputSystem) ? new _native.DeviceInputSystem(onDeviceConnected, onDeviceDisconnected, (deviceType, deviceSlot, inputIndex, currentState) => {
-            const idx = (inputIndex === NativePointerInput.Horizontal || inputIndex === NativePointerInput.Vertical || inputIndex === NativePointerInput.DeltaHorizontal || inputIndex === NativePointerInput.DeltaVertical) ? PointerInput.Move : inputIndex;
-            const evt = DeviceEventFactory.CreateDeviceEvent(deviceType, deviceSlot, idx, currentState, this);
+    public constructor(
+        onDeviceConnected: (deviceType: DeviceType, deviceSlot: number) => void,
+        onDeviceDisconnected: (deviceType: DeviceType, deviceSlot: number) => void,
+        onInputChanged: (deviceType: DeviceType, deviceSlot: number, eventData: IUIEvent) => void
+    ) {
+        this._nativeInput = _native.DeviceInputSystem
+            ? new _native.DeviceInputSystem(onDeviceConnected, onDeviceDisconnected, (deviceType, deviceSlot, inputIndex, currentState) => {
+                  const idx =
+                      inputIndex === NativePointerInput.Horizontal ||
+                      inputIndex === NativePointerInput.Vertical ||
+                      inputIndex === NativePointerInput.DeltaHorizontal ||
+                      inputIndex === NativePointerInput.DeltaVertical
+                          ? PointerInput.Move
+                          : inputIndex;
+                  const evt = DeviceEventFactory.CreateDeviceEvent(deviceType, deviceSlot, idx, currentState, this);
 
-            onInputChanged(deviceType, deviceSlot, evt);
-        }) : this._createDummyNativeInput();
+                  onInputChanged(deviceType, deviceSlot, evt);
+              })
+            : this._createDummyNativeInput();
     }
 
     // Public functions
@@ -38,7 +50,7 @@ export class NativeDeviceInputSystem implements IDeviceInputSystem {
      */
     public isDeviceAvailable(deviceType: DeviceType): boolean {
         //TODO: FIx native side first
-        return (deviceType === DeviceType.Mouse || deviceType === DeviceType.Touch);
+        return deviceType === DeviceType.Mouse || deviceType === DeviceType.Touch;
     }
 
     /**
@@ -53,10 +65,14 @@ export class NativeDeviceInputSystem implements IDeviceInputSystem {
      * @returns Object with dummy functions
      */
     private _createDummyNativeInput() {
-        let nativeInput = {
-            pollInput: () => { return 0; },
-            isDeviceAvailable: () => { return false; },
-            dispose: () => { },
+        const nativeInput = {
+            pollInput: () => {
+                return 0;
+            },
+            isDeviceAvailable: () => {
+                return false;
+            },
+            dispose: () => {},
         };
 
         return nativeInput;

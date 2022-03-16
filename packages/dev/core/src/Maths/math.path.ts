@@ -28,17 +28,17 @@ export class BezierCurve {
      */
     public static Interpolate(t: number, x1: number, y1: number, x2: number, y2: number): number {
         // Extract X (which is equal to time here)
-        var f0 = 1 - 3 * x2 + 3 * x1;
-        var f1 = 3 * x2 - 6 * x1;
-        var f2 = 3 * x1;
+        const f0 = 1 - 3 * x2 + 3 * x1;
+        const f1 = 3 * x2 - 6 * x1;
+        const f2 = 3 * x1;
 
-        var refinedT = t;
-        for (var i = 0; i < 5; i++) {
-            var refinedT2 = refinedT * refinedT;
-            var refinedT3 = refinedT2 * refinedT;
+        let refinedT = t;
+        for (let i = 0; i < 5; i++) {
+            const refinedT2 = refinedT * refinedT;
+            const refinedT3 = refinedT2 * refinedT;
 
-            var x = f0 * refinedT3 + f1 * refinedT2 + f2 * refinedT;
-            var slope = 1.0 / (3.0 * f0 * refinedT2 + 2.0 * f1 * refinedT + f2);
+            const x = f0 * refinedT3 + f1 * refinedT2 + f2 * refinedT;
+            const slope = 1.0 / (3.0 * f0 * refinedT2 + 2.0 * f1 * refinedT + f2);
             refinedT -= (x - t) * slope;
             refinedT = Math.min(1, Math.max(0, refinedT));
         }
@@ -88,8 +88,8 @@ export class Angle {
      * @returns a new Angle
      */
     public static BetweenTwoPoints(a: DeepImmutable<Vector2>, b: DeepImmutable<Vector2>): Angle {
-        var delta = b.subtract(a);
-        var theta = Math.atan2(delta.y, delta.x);
+        const delta = b.subtract(a);
+        const theta = Math.atan2(delta.y, delta.x);
         return new Angle(theta);
     }
 
@@ -150,20 +150,23 @@ export class Arc2 {
         /** Defines the end point of the arc */
         public endPoint: Vector2
     ) {
-        var temp = Math.pow(midPoint.x, 2) + Math.pow(midPoint.y, 2);
-        var startToMid = (Math.pow(startPoint.x, 2) + Math.pow(startPoint.y, 2) - temp) / 2;
-        var midToEnd = (temp - Math.pow(endPoint.x, 2) - Math.pow(endPoint.y, 2)) / 2;
-        var det = (startPoint.x - midPoint.x) * (midPoint.y - endPoint.y) - (midPoint.x - endPoint.x) * (startPoint.y - midPoint.y);
+        const temp = Math.pow(midPoint.x, 2) + Math.pow(midPoint.y, 2);
+        const startToMid = (Math.pow(startPoint.x, 2) + Math.pow(startPoint.y, 2) - temp) / 2;
+        const midToEnd = (temp - Math.pow(endPoint.x, 2) - Math.pow(endPoint.y, 2)) / 2;
+        const det = (startPoint.x - midPoint.x) * (midPoint.y - endPoint.y) - (midPoint.x - endPoint.x) * (startPoint.y - midPoint.y);
 
-        this.centerPoint = new Vector2((startToMid * (midPoint.y - endPoint.y) - midToEnd * (startPoint.y - midPoint.y)) / det, ((startPoint.x - midPoint.x) * midToEnd - (midPoint.x - endPoint.x) * startToMid) / det);
+        this.centerPoint = new Vector2(
+            (startToMid * (midPoint.y - endPoint.y) - midToEnd * (startPoint.y - midPoint.y)) / det,
+            ((startPoint.x - midPoint.x) * midToEnd - (midPoint.x - endPoint.x) * startToMid) / det
+        );
 
         this.radius = this.centerPoint.subtract(this.startPoint).length();
 
         this.startAngle = Angle.BetweenTwoPoints(this.centerPoint, this.startPoint);
 
-        var a1 = this.startAngle.degrees();
-        var a2 = Angle.BetweenTwoPoints(this.centerPoint, this.midPoint).degrees();
-        var a3 = Angle.BetweenTwoPoints(this.centerPoint, this.endPoint).degrees();
+        const a1 = this.startAngle.degrees();
+        let a2 = Angle.BetweenTwoPoints(this.centerPoint, this.midPoint).degrees();
+        let a3 = Angle.BetweenTwoPoints(this.centerPoint, this.endPoint).degrees();
 
         // angles correction
         if (a2 - a1 > +180.0) {
@@ -215,8 +218,8 @@ export class Path2 {
         if (this.closed) {
             return this;
         }
-        var newPoint = new Vector2(x, y);
-        var previousPoint = this._points[this._points.length - 1];
+        const newPoint = new Vector2(x, y);
+        const previousPoint = this._points[this._points.length - 1];
         this._points.push(newPoint);
         this._length += newPoint.subtract(previousPoint).length();
         return this;
@@ -235,21 +238,21 @@ export class Path2 {
         if (this.closed) {
             return this;
         }
-        var startPoint = this._points[this._points.length - 1];
-        var midPoint = new Vector2(midX, midY);
-        var endPoint = new Vector2(endX, endY);
+        const startPoint = this._points[this._points.length - 1];
+        const midPoint = new Vector2(midX, midY);
+        const endPoint = new Vector2(endX, endY);
 
-        var arc = new Arc2(startPoint, midPoint, endPoint);
+        const arc = new Arc2(startPoint, midPoint, endPoint);
 
-        var increment = arc.angle.radians() / numberOfSegments;
+        let increment = arc.angle.radians() / numberOfSegments;
         if (arc.orientation === Orientation.CW) {
             increment *= -1;
         }
-        var currentAngle = arc.startAngle.radians() + increment;
+        let currentAngle = arc.startAngle.radians() + increment;
 
-        for (var i = 0; i < numberOfSegments; i++) {
-            var x = Math.cos(currentAngle) * arc.radius + arc.centerPoint.x;
-            var y = Math.sin(currentAngle) * arc.radius + arc.centerPoint.y;
+        for (let i = 0; i < numberOfSegments; i++) {
+            const x = Math.cos(currentAngle) * arc.radius + arc.centerPoint.x;
+            const y = Math.sin(currentAngle) * arc.radius + arc.centerPoint.y;
             this.addLineTo(x, y);
             currentAngle += increment;
         }
@@ -268,11 +271,11 @@ export class Path2 {
      * @returns the Path2 total length (float).
      */
     public length(): number {
-        var result = this._length;
+        let result = this._length;
 
         if (this.closed) {
-            var lastPoint = this._points[this._points.length - 1];
-            var firstPoint = this._points[0];
+            const lastPoint = this._points[this._points.length - 1];
+            const firstPoint = this._points[0];
             result += firstPoint.subtract(lastPoint).length();
         }
         return result;
@@ -296,20 +299,20 @@ export class Path2 {
             return Vector2.Zero();
         }
 
-        var lengthPosition = normalizedLengthPosition * this.length();
+        const lengthPosition = normalizedLengthPosition * this.length();
 
-        var previousOffset = 0;
-        for (var i = 0; i < this._points.length; i++) {
-            var j = (i + 1) % this._points.length;
+        let previousOffset = 0;
+        for (let i = 0; i < this._points.length; i++) {
+            const j = (i + 1) % this._points.length;
 
-            var a = this._points[i];
-            var b = this._points[j];
-            var bToA = b.subtract(a);
+            const a = this._points[i];
+            const b = this._points[j];
+            const bToA = b.subtract(a);
 
-            var nextOffset = bToA.length() + previousOffset;
+            const nextOffset = bToA.length() + previousOffset;
             if (lengthPosition >= previousOffset && lengthPosition <= nextOffset) {
-                var dir = bToA.normalize();
-                var localOffset = lengthPosition - previousOffset;
+                const dir = bToA.normalize();
+                const localOffset = lengthPosition - previousOffset;
 
                 return new Vector2(a.x + dir.x * localOffset, a.y + dir.y * localOffset);
             }
@@ -374,7 +377,7 @@ export class Path3D {
         raw?: boolean,
         alignTangentsWithPath = false
     ) {
-        for (var p = 0; p < path.length; p++) {
+        for (let p = 0; p < path.length; p++) {
             this._curve[p] = path[p].clone(); // hard copy
         }
         this._raw = raw || false;
@@ -517,11 +520,11 @@ export class Path3D {
         let smallestDistance = Number.MAX_VALUE;
         let closestPosition = 0.0;
         for (let i = 0; i < this._curve.length - 1; i++) {
-            let point = this._curve[i + 0];
-            let tangent = this._curve[i + 1].subtract(point).normalize();
-            let subLength = this._distances[i + 1] - this._distances[i + 0];
-            let subPosition = Math.min((Math.max(Vector3.Dot(tangent, target.subtract(point).normalize()), 0.0) * Vector3.Distance(point, target)) / subLength, 1.0);
-            let distance = Vector3.Distance(point.add(tangent.scale(subPosition * subLength)), target);
+            const point = this._curve[i + 0];
+            const tangent = this._curve[i + 1].subtract(point).normalize();
+            const subLength = this._distances[i + 1] - this._distances[i + 0];
+            const subPosition = Math.min((Math.max(Vector3.Dot(tangent, target.subtract(point).normalize()), 0.0) * Vector3.Distance(point, target)) / subLength, 1.0);
+            const distance = Vector3.Distance(point.add(tangent.scale(subPosition * subLength)), target);
 
             if (distance < smallestDistance) {
                 smallestDistance = distance;
@@ -545,19 +548,19 @@ export class Path3D {
             end = 1 - ((end * -1.0) % 1.0);
         }
         if (start > end) {
-            let _start = start;
+            const _start = start;
             start = end;
             end = _start;
         }
-        let curvePoints = this.getCurve();
+        const curvePoints = this.getCurve();
 
-        let startPoint = this.getPointAt(start);
+        const startPoint = this.getPointAt(start);
         let startIndex = this.getPreviousPointIndexAt(start);
 
-        let endPoint = this.getPointAt(end);
-        let endIndex = this.getPreviousPointIndexAt(end) + 1;
+        const endPoint = this.getPointAt(end);
+        const endIndex = this.getPreviousPointIndexAt(end) + 1;
 
-        let slicePoints: Vector3[] = [];
+        const slicePoints: Vector3[] = [];
         if (start !== 0.0) {
             startIndex++;
             slicePoints.push(startPoint);
@@ -578,7 +581,7 @@ export class Path3D {
      * @returns the same object updated.
      */
     public update(path: Vector3[], firstNormal: Nullable<Vector3> = null, alignTangentsWithPath = false): Path3D {
-        for (var p = 0; p < path.length; p++) {
+        for (let p = 0; p < path.length; p++) {
             this._curve[p].x = path[p].x;
             this._curve[p].y = path[p].y;
             this._curve[p].z = path[p].z;
@@ -606,8 +609,8 @@ export class Path3D {
         }
 
         // normals and binormals at first point : arbitrary vector with _normalVector()
-        var tg0 = this._tangents[0];
-        var pp0 = this._normalVector(tg0, firstNormal);
+        const tg0 = this._tangents[0];
+        const pp0 = this._normalVector(tg0, firstNormal);
         this._normals[0] = pp0;
         if (!this._raw) {
             this._normals[0].normalize();
@@ -619,14 +622,14 @@ export class Path3D {
         this._distances[0] = 0.0;
 
         // normals and binormals : next points
-        var prev: Vector3; // previous vector (segment)
-        var cur: Vector3; // current vector (segment)
-        var curTang: Vector3; // current tangent
+        let prev: Vector3; // previous vector (segment)
+        let cur: Vector3; // current vector (segment)
+        let curTang: Vector3; // current tangent
         // previous normal
-        var prevNor: Vector3; // previous normal
-        var prevBinor: Vector3; // previous binormal
+        let prevNor: Vector3; // previous normal
+        let prevBinor: Vector3; // previous binormal
 
-        for (var i = 1; i < l; i++) {
+        for (let i = 1; i < l; i++) {
             // tangents
             prev = this._getLastNonNullVector(i);
             if (i < l - 1) {
@@ -660,8 +663,8 @@ export class Path3D {
     // private function getFirstNonNullVector(index)
     // returns the first non null vector from index : curve[index + N].subtract(curve[index])
     private _getFirstNonNullVector(index: number): Vector3 {
-        var i = 1;
-        var nNVector: Vector3 = this._curve[index + i].subtract(this._curve[index]);
+        let i = 1;
+        let nNVector: Vector3 = this._curve[index + i].subtract(this._curve[index]);
         while (nNVector.length() === 0 && index + i + 1 < this._curve.length) {
             i++;
             nNVector = this._curve[index + i].subtract(this._curve[index]);
@@ -672,8 +675,8 @@ export class Path3D {
     // private function getLastNonNullVector(index)
     // returns the last non null vector from index : curve[index].subtract(curve[index - N])
     private _getLastNonNullVector(index: number): Vector3 {
-        var i = 1;
-        var nLVector: Vector3 = this._curve[index].subtract(this._curve[index - i]);
+        let i = 1;
+        let nLVector: Vector3 = this._curve[index].subtract(this._curve[index - i]);
         while (nLVector.length() === 0 && index > i + 1) {
             i++;
             nLVector = this._curve[index].subtract(this._curve[index - i]);
@@ -685,14 +688,14 @@ export class Path3D {
     // returns an arbitrary point in the plane defined by the point v0 and the vector vt orthogonal to this plane
     // if va is passed, it returns the va projection on the plane orthogonal to vt at the point v0
     private _normalVector(vt: Vector3, va: Nullable<Vector3>): Vector3 {
-        var normal0: Vector3;
-        var tgl = vt.length();
+        let normal0: Vector3;
+        let tgl = vt.length();
         if (tgl === 0.0) {
             tgl = 1.0;
         }
 
         if (va === undefined || va === null) {
-            var point: Vector3;
+            let point: Vector3;
             if (!Scalar.WithinEpsilon(Math.abs(vt.y) / tgl, 1.0, Epsilon)) {
                 // search for a point in the plane
                 point = new Vector3(0.0, -1.0, 0.0);
@@ -715,6 +718,7 @@ export class Path3D {
     /**
      * Updates the point at data for an interpolated point along this curve
      * @param position the position of the point along this curve, from 0.0 to 1.0
+     * @param interpolateTNB
      * @interpolateTNB wether to compute the interpolated tangent, normal and binormal
      * @returns the (updated) point at data
      */
@@ -728,7 +732,7 @@ export class Path3D {
         } else {
             this._pointAtData.id = position;
         }
-        let curvePoints = this.getPoints();
+        const curvePoints = this.getPoints();
 
         // clamp position between 0.0 and 1.0
         if (position <= 0.0) {
@@ -740,19 +744,19 @@ export class Path3D {
         let previousPoint: Vector3 = curvePoints[0];
         let currentPoint: Vector3;
         let currentLength = 0.0;
-        let targetLength = position * this.length();
+        const targetLength = position * this.length();
 
         for (let i = 1; i < curvePoints.length; i++) {
             currentPoint = curvePoints[i];
-            let distance = Vector3.Distance(previousPoint, currentPoint);
+            const distance = Vector3.Distance(previousPoint, currentPoint);
             currentLength += distance;
             if (currentLength === targetLength) {
                 return this._setPointAtData(position, 1.0, currentPoint, i, interpolateTNB);
             } else if (currentLength > targetLength) {
-                let toLength = currentLength - targetLength;
-                let diff = toLength / distance;
-                let dir = previousPoint.subtract(currentPoint);
-                let point = currentPoint.add(dir.scaleInPlace(diff));
+                const toLength = currentLength - targetLength;
+                const diff = toLength / distance;
+                const dir = previousPoint.subtract(currentPoint);
+                const point = currentPoint.add(dir.scaleInPlace(diff));
                 return this._setPointAtData(position, 1 - diff, point, i - 1, interpolateTNB);
             }
             previousPoint = currentPoint;
@@ -763,8 +767,10 @@ export class Path3D {
     /**
      * Updates the point at data from the specified parameters
      * @param position where along the path the interpolated point is, from 0.0 to 1.0
+     * @param subPosition
      * @param point the interpolated point
      * @param parentIndex the index of an existing curve point that is on, or else positionally the first behind, the interpolated point
+     * @param interpolateTNB
      */
     private _setPointAtData(position: number, subPosition: number, point: Vector3, parentIndex: number, interpolateTNB: boolean) {
         this._pointAtData.point = point;
@@ -784,22 +790,22 @@ export class Path3D {
      */
     private _updateInterpolationMatrix() {
         this._pointAtData.interpolationMatrix = Matrix.Identity();
-        let parentIndex = this._pointAtData.previousPointArrayIndex;
+        const parentIndex = this._pointAtData.previousPointArrayIndex;
 
         if (parentIndex !== this._tangents.length - 1) {
-            let index = parentIndex + 1;
+            const index = parentIndex + 1;
 
-            let tangentFrom = this._tangents[parentIndex].clone();
-            let normalFrom = this._normals[parentIndex].clone();
-            let binormalFrom = this._binormals[parentIndex].clone();
+            const tangentFrom = this._tangents[parentIndex].clone();
+            const normalFrom = this._normals[parentIndex].clone();
+            const binormalFrom = this._binormals[parentIndex].clone();
 
-            let tangentTo = this._tangents[index].clone();
-            let normalTo = this._normals[index].clone();
-            let binormalTo = this._binormals[index].clone();
+            const tangentTo = this._tangents[index].clone();
+            const normalTo = this._normals[index].clone();
+            const binormalTo = this._binormals[index].clone();
 
-            let quatFrom = Quaternion.RotationQuaternionFromAxis(normalFrom, binormalFrom, tangentFrom);
-            let quatTo = Quaternion.RotationQuaternionFromAxis(normalTo, binormalTo, tangentTo);
-            let quatAt = Quaternion.Slerp(quatFrom, quatTo, this._pointAtData.subPosition);
+            const quatFrom = Quaternion.RotationQuaternionFromAxis(normalFrom, binormalFrom, tangentFrom);
+            const quatTo = Quaternion.RotationQuaternionFromAxis(normalTo, binormalTo, tangentTo);
+            const quatAt = Quaternion.Slerp(quatFrom, quatTo, this._pointAtData.subPosition);
 
             quatAt.toRotationMatrix(this._pointAtData.interpolationMatrix);
         }
@@ -825,12 +831,12 @@ export class Curve3 {
      */
     public static CreateQuadraticBezier(v0: DeepImmutable<Vector3>, v1: DeepImmutable<Vector3>, v2: DeepImmutable<Vector3>, nbPoints: number): Curve3 {
         nbPoints = nbPoints > 2 ? nbPoints : 3;
-        var bez = new Array<Vector3>();
-        var equation = (t: number, val0: number, val1: number, val2: number) => {
-            var res = (1.0 - t) * (1.0 - t) * val0 + 2.0 * t * (1.0 - t) * val1 + t * t * val2;
+        const bez = new Array<Vector3>();
+        const equation = (t: number, val0: number, val1: number, val2: number) => {
+            const res = (1.0 - t) * (1.0 - t) * val0 + 2.0 * t * (1.0 - t) * val1 + t * t * val2;
             return res;
         };
-        for (var i = 0; i <= nbPoints; i++) {
+        for (let i = 0; i <= nbPoints; i++) {
             bez.push(new Vector3(equation(i / nbPoints, v0.x, v1.x, v2.x), equation(i / nbPoints, v0.y, v1.y, v2.y), equation(i / nbPoints, v0.z, v1.z, v2.z)));
         }
         return new Curve3(bez);
@@ -847,12 +853,12 @@ export class Curve3 {
      */
     public static CreateCubicBezier(v0: DeepImmutable<Vector3>, v1: DeepImmutable<Vector3>, v2: DeepImmutable<Vector3>, v3: DeepImmutable<Vector3>, nbPoints: number): Curve3 {
         nbPoints = nbPoints > 3 ? nbPoints : 4;
-        var bez = new Array<Vector3>();
-        var equation = (t: number, val0: number, val1: number, val2: number, val3: number) => {
-            var res = (1.0 - t) * (1.0 - t) * (1.0 - t) * val0 + 3.0 * t * (1.0 - t) * (1.0 - t) * val1 + 3.0 * t * t * (1.0 - t) * val2 + t * t * t * val3;
+        const bez = new Array<Vector3>();
+        const equation = (t: number, val0: number, val1: number, val2: number, val3: number) => {
+            const res = (1.0 - t) * (1.0 - t) * (1.0 - t) * val0 + 3.0 * t * (1.0 - t) * (1.0 - t) * val1 + 3.0 * t * t * (1.0 - t) * val2 + t * t * t * val3;
             return res;
         };
-        for (var i = 0; i <= nbPoints; i++) {
+        for (let i = 0; i <= nbPoints; i++) {
             bez.push(new Vector3(equation(i / nbPoints, v0.x, v1.x, v2.x, v3.x), equation(i / nbPoints, v0.y, v1.y, v2.y, v3.y), equation(i / nbPoints, v0.z, v1.z, v2.z, v3.z)));
         }
         return new Curve3(bez);
@@ -868,9 +874,9 @@ export class Curve3 {
      * @returns the created Curve3
      */
     public static CreateHermiteSpline(p1: DeepImmutable<Vector3>, t1: DeepImmutable<Vector3>, p2: DeepImmutable<Vector3>, t2: DeepImmutable<Vector3>, nbPoints: number): Curve3 {
-        var hermite = new Array<Vector3>();
-        var step = 1.0 / nbPoints;
-        for (var i = 0; i <= nbPoints; i++) {
+        const hermite = new Array<Vector3>();
+        const step = 1.0 / nbPoints;
+        for (let i = 0; i <= nbPoints; i++) {
             hermite.push(Vector3.Hermite(p1, t1, p2, t2, i * step));
         }
         return new Curve3(hermite);
@@ -884,21 +890,23 @@ export class Curve3 {
      * @returns the created Curve3
      */
     public static CreateCatmullRomSpline(points: DeepImmutable<Vector3[]>, nbPoints: number, closed?: boolean): Curve3 {
-        var catmullRom = new Array<Vector3>();
-        var step = 1.0 / nbPoints;
-        var amount = 0.0;
+        const catmullRom = new Array<Vector3>();
+        const step = 1.0 / nbPoints;
+        let amount = 0.0;
         if (closed) {
-            var pointsCount = points.length;
+            const pointsCount = points.length;
             for (var i = 0; i < pointsCount; i++) {
                 amount = 0;
                 for (var c = 0; c < nbPoints; c++) {
-                    catmullRom.push(Vector3.CatmullRom(points[i % pointsCount], points[(i + 1) % pointsCount], points[(i + 2) % pointsCount], points[(i + 3) % pointsCount], amount));
+                    catmullRom.push(
+                        Vector3.CatmullRom(points[i % pointsCount], points[(i + 1) % pointsCount], points[(i + 2) % pointsCount], points[(i + 3) % pointsCount], amount)
+                    );
                     amount += step;
                 }
             }
             catmullRom.push(catmullRom[0]);
         } else {
-            var totalPoints = new Array<Vector3>();
+            const totalPoints = new Array<Vector3>();
             totalPoints.push(points[0].clone());
             Array.prototype.push.apply(totalPoints, points);
             totalPoints.push(points[points.length - 1].clone());
@@ -948,19 +956,19 @@ export class Curve3 {
      * @returns the newly constructed curve
      */
     public continue(curve: DeepImmutable<Curve3>): Curve3 {
-        var lastPoint = this._points[this._points.length - 1];
-        var continuedPoints = this._points.slice();
-        var curvePoints = curve.getPoints();
-        for (var i = 1; i < curvePoints.length; i++) {
+        const lastPoint = this._points[this._points.length - 1];
+        const continuedPoints = this._points.slice();
+        const curvePoints = curve.getPoints();
+        for (let i = 1; i < curvePoints.length; i++) {
             continuedPoints.push(curvePoints[i].subtract(curvePoints[0]).add(lastPoint));
         }
-        var continuedCurve = new Curve3(continuedPoints);
+        const continuedCurve = new Curve3(continuedPoints);
         return continuedCurve;
     }
 
     private _computeLength(path: DeepImmutable<Vector3[]>): number {
-        var l = 0;
-        for (var i = 1; i < path.length; i++) {
+        let l = 0;
+        for (let i = 1; i < path.length; i++) {
             l += path[i].subtract(path[i - 1]).length();
         }
         return l;

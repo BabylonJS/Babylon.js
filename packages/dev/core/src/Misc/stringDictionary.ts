@@ -6,7 +6,6 @@ import { Nullable } from "../types";
  * The value can be anything including 'null' but except 'undefined'
  */
 export class StringDictionary<T> {
-
     /**
      * This will clear this dictionary and copy the content from the 'source' one.
      * If the T value is a custom object, it won't be copied/cloned, the same object will be used
@@ -23,7 +22,7 @@ export class StringDictionary<T> {
      * @return the value if found, otherwise undefined is returned
      */
     public get(key: string): T | undefined {
-        var val = this._data[key];
+        const val = this._data[key];
         if (val !== undefined) {
             return val;
         }
@@ -39,7 +38,7 @@ export class StringDictionary<T> {
      * @return the value corresponding to the key.
      */
     public getOrAddWithFactory(key: string, factory: (key: string) => T): T {
-        var val = this.get(key);
+        let val = this.get(key);
         if (val !== undefined) {
             return val;
         }
@@ -59,7 +58,7 @@ export class StringDictionary<T> {
      * @return the value corresponding to the key
      */
     public getOrAdd(key: string, val: T): T {
-        var curVal = this.get(key);
+        const curVal = this.get(key);
         if (curVal !== undefined) {
             return curVal;
         }
@@ -112,7 +111,7 @@ export class StringDictionary<T> {
      * @returns the value associated with the key or null if not found
      */
     public getAndRemove(key: string): Nullable<T> {
-        let val = this.get(key);
+        const val = this.get(key);
         if (val !== undefined) {
             delete this._data[key];
             --this._count;
@@ -156,8 +155,8 @@ export class StringDictionary<T> {
      * @param callback the callback to execute on a given key/value pair
      */
     public forEach(callback: (key: string, val: T) => void) {
-        for (let cur in this._data) {
-            var val = this._data[cur];
+        for (const cur in this._data) {
+            const val = this._data[cur];
             callback(cur, val);
         }
     }
@@ -170,9 +169,9 @@ export class StringDictionary<T> {
      * @returns the first item
      */
     public first<TRes>(callback: (key: string, val: T) => TRes) {
-        for (let cur in this._data) {
-            var val = this._data[cur];
-            var res = callback(cur, val);
+        for (const cur in this._data) {
+            const val = this._data[cur];
+            const res = callback(cur, val);
             if (res) {
                 return res;
             }

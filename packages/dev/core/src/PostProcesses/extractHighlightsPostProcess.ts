@@ -7,8 +7,8 @@ import { ToGammaSpace } from "../Maths/math.constants";
 import { Constants } from "../Engines/constants";
 
 import "../Shaders/extractHighlights.fragment";
-import { serialize } from '../Misc/decorators';
-import { RegisterClass } from '../Misc/typeStore';
+import { serialize } from "../Misc/decorators";
+import { RegisterClass } from "../Misc/typeStore";
 
 /**
  * The extract highlights post process sets all pixels to black except pixels above the specified luminance threshold. Used as the first step for a bloom effect.
@@ -37,15 +37,24 @@ export class ExtractHighlightsPostProcess extends PostProcess {
         return "ExtractHighlightsPostProcess";
     }
 
-    constructor(name: string, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT, blockCompilation = false) {
+    constructor(
+        name: string,
+        options: number | PostProcessOptions,
+        camera: Nullable<Camera>,
+        samplingMode?: number,
+        engine?: Engine,
+        reusable?: boolean,
+        textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT,
+        blockCompilation = false
+    ) {
         super(name, "extractHighlights", ["threshold", "exposure"], null, options, camera, samplingMode, engine, reusable, null, textureType, undefined, null, blockCompilation);
         this.onApplyObservable.add((effect: Effect) => {
             this.externalTextureSamplerBinding = !!this._inputPostProcess;
             if (this._inputPostProcess) {
                 effect.setTextureFromPostProcess("textureSampler", this._inputPostProcess);
             }
-            effect.setFloat('threshold', Math.pow(this.threshold, ToGammaSpace));
-            effect.setFloat('exposure', this._exposure);
+            effect.setFloat("threshold", Math.pow(this.threshold, ToGammaSpace));
+            effect.setFloat("exposure", this._exposure);
         });
     }
 }

@@ -1,13 +1,13 @@
 import { Nullable } from "../types";
 import { Vector3, Matrix, TmpVectors, Quaternion, Vector4, Vector2 } from "../Maths/math.vector";
-import { Color4 } from '../Maths/math.color';
+import { Color4 } from "../Maths/math.color";
 import { Mesh } from "../Meshes/mesh";
 import { BoundingInfo } from "../Culling/boundingInfo";
 import { BoundingSphere } from "../Culling/boundingSphere";
 import { SolidParticleSystem } from "./solidParticleSystem";
-import { AbstractMesh } from '../Meshes/abstractMesh';
-import { Plane } from '../Maths/math.plane';
-import { Material } from '../Materials/material';
+import { AbstractMesh } from "../Meshes/abstractMesh";
+import { Plane } from "../Maths/math.plane";
+import { Material } from "../Materials/material";
 /**
  * Represents one particle of a solid particle system.
  */
@@ -163,7 +163,18 @@ export class SolidParticle {
      * @param modelBoundingInfo is the reference to the model BoundingInfo used for intersection computations.
      * @param materialIndex is the particle material identifier (integer) when the MultiMaterials are enabled in the SPS.
      */
-    constructor(particleIndex: number, particleId: number, positionIndex: number, indiceIndex: number, model: Nullable<ModelShape>, shapeId: number, idxInShape: number, sps: SolidParticleSystem, modelBoundingInfo: Nullable<BoundingInfo> = null, materialIndex: Nullable<number> = null) {
+    constructor(
+        particleIndex: number,
+        particleId: number,
+        positionIndex: number,
+        indiceIndex: number,
+        model: Nullable<ModelShape>,
+        shapeId: number,
+        idxInShape: number,
+        sps: SolidParticleSystem,
+        modelBoundingInfo: Nullable<BoundingInfo> = null,
+        materialIndex: Nullable<number> = null
+    ) {
         this.idx = particleIndex;
         this.id = particleId;
         this._pos = positionIndex;
@@ -191,8 +202,7 @@ export class SolidParticle {
         if (this.rotationQuaternion) {
             if (target.rotationQuaternion) {
                 target.rotationQuaternion!.copyFrom(this.rotationQuaternion!);
-            }
-            else {
+            } else {
                 target.rotationQuaternion = this.rotationQuaternion.clone();
             }
         }
@@ -200,8 +210,7 @@ export class SolidParticle {
         if (this.color) {
             if (target.color) {
                 target.color!.copyFrom(this.color!);
-            }
-            else {
+            } else {
                 target.color = this.color.clone();
             }
         }
@@ -274,14 +283,14 @@ export class SolidParticle {
 
     /**
      * get the rotation matrix of the particle
+     * @param m
      * @hidden
      */
     public getRotationMatrix(m: Matrix) {
         let quaternion: Quaternion;
         if (this.rotationQuaternion) {
             quaternion = this.rotationQuaternion;
-        }
-        else {
+        } else {
             quaternion = TmpVectors.Quaternion[0];
             const rotation = this.rotation;
             Quaternion.RotationYawPitchRollToRef(rotation.y, rotation.x, rotation.z, quaternion);
@@ -360,11 +369,28 @@ export class ModelShape {
     /**
      * Creates a ModelShape object. This is an internal simplified reference to a mesh used as for a model to replicate particles from by the SPS.
      * SPS internal tool, don't use it manually.
+     * @param id
+     * @param shape
+     * @param indices
+     * @param normals
+     * @param colors
+     * @param shapeUV
+     * @param posFunction
+     * @param vtxFunction
+     * @param material
      * @hidden
      */
-    constructor(id: number, shape: Vector3[], indices: number[], normals: number[], colors: number[], shapeUV: number[],
-        posFunction: Nullable<(particle: SolidParticle, i: number, s: number) => void>, vtxFunction: Nullable<(particle: SolidParticle, vertex: Vector3, i: number) => void>,
-        material: Nullable<Material>) {
+    constructor(
+        id: number,
+        shape: Vector3[],
+        indices: number[],
+        normals: number[],
+        colors: number[],
+        shapeUV: number[],
+        posFunction: Nullable<(particle: SolidParticle, i: number, s: number) => void>,
+        vtxFunction: Nullable<(particle: SolidParticle, vertex: Vector3, i: number) => void>,
+        material: Nullable<Material>
+    ) {
         this.shapeId = id;
         this._shape = shape;
         this._indices = indices;
@@ -406,6 +432,9 @@ export class DepthSortedParticle {
 
     /**
      * Creates a new sorted particle
+     * @param idx
+     * @param ind
+     * @param indLength
      * @param materialIndex
      */
     constructor(idx: number, ind: number, indLength: number, materialIndex: number) {

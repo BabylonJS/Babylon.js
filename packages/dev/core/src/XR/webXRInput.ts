@@ -125,12 +125,12 @@ export class WebXRInput implements IDisposable {
 
     private _addAndRemoveControllers(addInputs: Array<XRInputSource>, removeInputs: Array<XRInputSource>) {
         // Add controllers if they don't already exist
-        let sources = this.controllers.map((c) => {
+        const sources = this.controllers.map((c) => {
             return c.inputSource;
         });
-        for (let input of addInputs) {
+        for (const input of addInputs) {
             if (sources.indexOf(input) === -1) {
-                let controller = new WebXRInputSource(this.xrSessionManager.scene, input, {
+                const controller = new WebXRInputSource(this.xrSessionManager.scene, input, {
                     ...(this.options.controllerOptions || {}),
                     forceControllerProfile: this.options.forceInputProfile,
                     doNotLoadControllerMesh: this.options.doNotLoadControllerMeshes,
@@ -142,8 +142,8 @@ export class WebXRInput implements IDisposable {
         }
 
         // Remove and dispose of controllers to be disposed
-        let keepControllers: Array<WebXRInputSource> = [];
-        let removedControllers: Array<WebXRInputSource> = [];
+        const keepControllers: Array<WebXRInputSource> = [];
+        const removedControllers: Array<WebXRInputSource> = [];
         this.controllers.forEach((c) => {
             if (removeInputs.indexOf(c.inputSource) === -1) {
                 keepControllers.push(c);

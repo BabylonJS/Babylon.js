@@ -1,5 +1,5 @@
-import { Buffer } from "../Buffers/buffer";
-import { VertexBuffer } from "../Buffers/buffer";
+import { Buffer , VertexBuffer } from "../Buffers/buffer";
+
 import { DataBuffer } from "../Buffers/dataBuffer";
 import { Effect } from "../Materials/effect";
 import { UniformBufferEffectCommonAccessor } from "../Materials/uniformBufferEffectCommonAccessor";
@@ -7,7 +7,6 @@ import { DataArray } from "../types";
 
 /** @hidden */
 export interface IGPUParticleSystemPlatform {
-
     alignDataInBuffer: boolean;
 
     isUpdateBufferCreated: () => boolean;

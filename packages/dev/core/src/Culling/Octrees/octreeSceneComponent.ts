@@ -47,7 +47,7 @@ Scene.prototype.createOrUpdateSelectionOctree = function (maxCapacity = 64, maxD
         this._selectionOctree = new Octree<AbstractMesh>(Octree.CreationFuncForMeshes, maxCapacity, maxDepth);
     }
 
-    var worldExtends = this.getWorldExtends();
+    const worldExtends = this.getWorldExtends();
 
     // Update octree
     this._selectionOctree.update(worldExtends.min, worldExtends.max, this.meshes);
@@ -60,7 +60,7 @@ Object.defineProperty(Scene.prototype, "selectionOctree", {
         return this._selectionOctree;
     },
     enumerable: true,
-    configurable: true
+    configurable: true,
 });
 
 declare module "../../Meshes/abstractMesh" {
@@ -107,10 +107,10 @@ AbstractMesh.prototype.createOrUpdateSubmeshesOctree = function (maxCapacity = 6
 
     this.computeWorldMatrix(true);
 
-    let boundingInfo = this.getBoundingInfo();
+    const boundingInfo = this.getBoundingInfo();
 
     // Update octree
-    var bbox = boundingInfo.boundingBox;
+    const bbox = boundingInfo.boundingBox;
     this._submeshesOctree.update(bbox.minimumWorld, bbox.maximumWorld, this.subMeshes);
 
     return this._submeshesOctree;
@@ -161,7 +161,7 @@ export class OctreeSceneComponent {
         this.scene.onMeshRemovedObservable.add((mesh: AbstractMesh) => {
             const sceneOctree = this.scene.selectionOctree;
             if (sceneOctree !== undefined && sceneOctree !== null) {
-                var index = sceneOctree.dynamicContent.indexOf(mesh);
+                const index = sceneOctree.dynamicContent.indexOf(mesh);
 
                 if (index !== -1) {
                     sceneOctree.dynamicContent.splice(index, 1);
@@ -183,7 +183,7 @@ export class OctreeSceneComponent {
      */
     public getActiveMeshCandidates(): ISmartArrayLike<AbstractMesh> {
         if (this.scene._selectionOctree) {
-            var selection = this.scene._selectionOctree.select(this.scene.frustumPlanes);
+            const selection = this.scene._selectionOctree.select(this.scene.frustumPlanes);
             return selection;
         }
         return this.scene._getDefaultMeshCandidates();
@@ -196,7 +196,7 @@ export class OctreeSceneComponent {
      */
     public getActiveSubMeshCandidates(mesh: AbstractMesh): ISmartArrayLike<SubMesh> {
         if (mesh._submeshesOctree && mesh.useOctreeForRenderingSelection) {
-            var intersections = mesh._submeshesOctree.select(this.scene.frustumPlanes);
+            const intersections = mesh._submeshesOctree.select(this.scene.frustumPlanes);
             return intersections;
         }
         return this.scene._getDefaultSubMeshCandidates(mesh);
@@ -212,7 +212,7 @@ export class OctreeSceneComponent {
     public getIntersectingSubMeshCandidates(mesh: AbstractMesh, localRay: Ray): ISmartArrayLike<SubMesh> {
         if (mesh._submeshesOctree && mesh.useOctreeForPicking) {
             Ray.TransformToRef(localRay, mesh.getWorldMatrix(), this._tempRay);
-            var intersections = mesh._submeshesOctree.intersectsRay(this._tempRay);
+            const intersections = mesh._submeshesOctree.intersectsRay(this._tempRay);
 
             return intersections;
         }
@@ -227,8 +227,8 @@ export class OctreeSceneComponent {
      */
     public getCollidingSubMeshCandidates(mesh: AbstractMesh, collider: Collider): ISmartArrayLike<SubMesh> {
         if (mesh._submeshesOctree && mesh.useOctreeForCollisions) {
-            var radius = collider._velocityWorldLength + Math.max(collider._radius.x, collider._radius.y, collider._radius.z);
-            var intersections = mesh._submeshesOctree.intersects(collider._basePointWorld, radius);
+            const radius = collider._velocityWorldLength + Math.max(collider._radius.x, collider._radius.y, collider._radius.z);
+            const intersections = mesh._submeshesOctree.intersects(collider._basePointWorld, radius);
 
             return intersections;
         }

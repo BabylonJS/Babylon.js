@@ -4,7 +4,7 @@ import { Quaternion, Vector3 } from "../Maths/math.vector";
 import { Node } from "../node";
 
 import "./Inputs/freeCameraDeviceOrientationInput";
-import { Axis } from '../Maths/math.axis';
+import { Axis } from "../Maths/math.axis";
 
 Node.AddNodeConstructor("DeviceOrientationCamera", (name, scene) => {
     return () => new DeviceOrientationCamera(name, Vector3.Zero(), scene);
@@ -16,7 +16,6 @@ Node.AddNodeConstructor("DeviceOrientationCamera", (name, scene) => {
  * being tilted forward or back and left or right.
  */
 export class DeviceOrientationCamera extends FreeCamera {
-
     private _initialQuaternion: Quaternion;
     private _quaternionCache: Quaternion;
     private _tmpDragQuaternion = new Quaternion();
@@ -101,9 +100,10 @@ export class DeviceOrientationCamera extends FreeCamera {
      * @param axis The axis to reset
      */
     public resetToCurrentRotation(axis: Axis = Axis.Y): void {
-
         //can only work if this camera has a rotation quaternion already.
-        if (!this.rotationQuaternion) { return; }
+        if (!this.rotationQuaternion) {
+            return;
+        }
 
         if (!this._initialQuaternion) {
             this._initialQuaternion = new Quaternion();
@@ -111,7 +111,7 @@ export class DeviceOrientationCamera extends FreeCamera {
 
         this._initialQuaternion.copyFrom(this._quaternionCache || this.rotationQuaternion);
 
-        ['x', 'y', 'z'].forEach((axisName) => {
+        ["x", "y", "z"].forEach((axisName) => {
             if (!(<any>axis)[axisName]) {
                 (<any>this._initialQuaternion)[axisName] = 0;
             } else {

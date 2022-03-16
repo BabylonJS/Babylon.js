@@ -18,7 +18,6 @@ Node.AddNodeConstructor("Light_Type_1", (name, scene) => {
  * Documentation: https://doc.babylonjs.com/babylon101/lights
  */
 export class DirectionalLight extends ShadowLight {
-
     private _shadowFrustumSize = 0;
     /**
      * Fix frustum size for the shadow generation. This is disabled if the value is 0.
@@ -157,12 +156,14 @@ export class DirectionalLight extends ShadowLight {
     /**
      * Sets the passed matrix "matrix" as projection matrix for the shadows cast by the light according to the passed view matrix.
      * Returns the DirectionalLight Shadow projection matrix.
+     * @param matrix
+     * @param viewMatrix
+     * @param renderList
      */
     protected _setDefaultShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void {
         if (this.shadowFrustumSize > 0) {
             this._setDefaultFixedFrustumShadowProjectionMatrix(matrix);
-        }
-        else {
+        } else {
             this._setDefaultAutoExtendShadowProjectionMatrix(matrix, viewMatrix, renderList);
         }
     }
@@ -170,24 +171,34 @@ export class DirectionalLight extends ShadowLight {
     /**
      * Sets the passed matrix "matrix" as fixed frustum projection matrix for the shadows cast by the light according to the passed view matrix.
      * Returns the DirectionalLight Shadow projection matrix.
+     * @param matrix
      */
     protected _setDefaultFixedFrustumShadowProjectionMatrix(matrix: Matrix): void {
-        var activeCamera = this.getScene().activeCamera;
+        const activeCamera = this.getScene().activeCamera;
 
         if (!activeCamera) {
             return;
         }
 
-        Matrix.OrthoLHToRef(this.shadowFrustumSize, this.shadowFrustumSize,
-            this.shadowMinZ !== undefined ? this.shadowMinZ : activeCamera.minZ, this.shadowMaxZ !== undefined ? this.shadowMaxZ : activeCamera.maxZ, matrix, this.getScene().getEngine().isNDCHalfZRange);
+        Matrix.OrthoLHToRef(
+            this.shadowFrustumSize,
+            this.shadowFrustumSize,
+            this.shadowMinZ !== undefined ? this.shadowMinZ : activeCamera.minZ,
+            this.shadowMaxZ !== undefined ? this.shadowMaxZ : activeCamera.maxZ,
+            matrix,
+            this.getScene().getEngine().isNDCHalfZRange
+        );
     }
 
     /**
      * Sets the passed matrix "matrix" as auto extend projection matrix for the shadows cast by the light according to the passed view matrix.
      * Returns the DirectionalLight Shadow projection matrix.
+     * @param matrix
+     * @param viewMatrix
+     * @param renderList
      */
     protected _setDefaultAutoExtendShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void {
-        var activeCamera = this.getScene().activeCamera;
+        const activeCamera = this.getScene().activeCamera;
 
         if (!activeCamera) {
             return;
@@ -195,27 +206,27 @@ export class DirectionalLight extends ShadowLight {
 
         // Check extends
         if (this.autoUpdateExtends || this._orthoLeft === Number.MAX_VALUE) {
-            var tempVector3 = Vector3.Zero();
+            const tempVector3 = Vector3.Zero();
 
             this._orthoLeft = Number.MAX_VALUE;
             this._orthoRight = Number.MIN_VALUE;
             this._orthoTop = Number.MIN_VALUE;
             this._orthoBottom = Number.MAX_VALUE;
 
-            var shadowMinZ = Number.MAX_VALUE;
-            var shadowMaxZ = Number.MIN_VALUE;
+            let shadowMinZ = Number.MAX_VALUE;
+            let shadowMaxZ = Number.MIN_VALUE;
 
-            for (var meshIndex = 0; meshIndex < renderList.length; meshIndex++) {
-                var mesh = renderList[meshIndex];
+            for (let meshIndex = 0; meshIndex < renderList.length; meshIndex++) {
+                const mesh = renderList[meshIndex];
 
                 if (!mesh) {
                     continue;
                 }
 
-                var boundingInfo = mesh.getBoundingInfo();
-                var boundingBox = boundingInfo.boundingBox;
+                const boundingInfo = mesh.getBoundingInfo();
+                const boundingBox = boundingInfo.boundingBox;
 
-                for (var index = 0; index < boundingBox.vectorsWorld.length; index++) {
+                for (let index = 0; index < boundingBox.vectorsWorld.length; index++) {
                     Vector3.TransformCoordinatesToRef(boundingBox.vectorsWorld[index], viewMatrix, tempVector3);
 
                     if (tempVector3.x < this._orthoLeft) {
@@ -248,17 +259,24 @@ export class DirectionalLight extends ShadowLight {
             }
         }
 
-        var xOffset = this._orthoRight - this._orthoLeft;
-        var yOffset = this._orthoTop - this._orthoBottom;
+        const xOffset = this._orthoRight - this._orthoLeft;
+        const yOffset = this._orthoTop - this._orthoBottom;
 
         const minZ = this.shadowMinZ !== undefined ? this.shadowMinZ : activeCamera.minZ;
         const maxZ = this.shadowMaxZ !== undefined ? this.shadowMaxZ : activeCamera.maxZ;
 
         const useReverseDepthBuffer = this.getScene().getEngine().useReverseDepthBuffer;
 
-        Matrix.OrthoOffCenterLHToRef(this._orthoLeft - xOffset * this.shadowOrthoScale, this._orthoRight + xOffset * this.shadowOrthoScale,
-            this._orthoBottom - yOffset * this.shadowOrthoScale, this._orthoTop + yOffset * this.shadowOrthoScale,
-            useReverseDepthBuffer ? maxZ : minZ, useReverseDepthBuffer ? minZ : maxZ, matrix, this.getScene().getEngine().isNDCHalfZRange);
+        Matrix.OrthoOffCenterLHToRef(
+            this._orthoLeft - xOffset * this.shadowOrthoScale,
+            this._orthoRight + xOffset * this.shadowOrthoScale,
+            this._orthoBottom - yOffset * this.shadowOrthoScale,
+            this._orthoTop + yOffset * this.shadowOrthoScale,
+            useReverseDepthBuffer ? maxZ : minZ,
+            useReverseDepthBuffer ? minZ : maxZ,
+            matrix,
+            this.getScene().getEngine().isNDCHalfZRange
+        );
     }
 
     protected _buildUniformLayout(): void {

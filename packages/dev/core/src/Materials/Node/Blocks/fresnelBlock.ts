@@ -1,20 +1,19 @@
-import { NodeMaterialBlock } from '../nodeMaterialBlock';
-import { NodeMaterialBlockTargets } from '../Enums/nodeMaterialBlockTargets';
-import { NodeMaterialBlockConnectionPointTypes } from '../Enums/nodeMaterialBlockConnectionPointTypes';
-import { NodeMaterialBuildState } from '../nodeMaterialBuildState';
-import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint';
-import { RegisterClass } from '../../../Misc/typeStore';
-import { InputBlock } from './Input/inputBlock';
-import { NodeMaterial } from '../nodeMaterial';
+import { NodeMaterialBlock } from "../nodeMaterialBlock";
+import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
+import { NodeMaterialBlockConnectionPointTypes } from "../Enums/nodeMaterialBlockConnectionPointTypes";
+import { NodeMaterialBuildState } from "../nodeMaterialBuildState";
+import { NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
+import { RegisterClass } from "../../../Misc/typeStore";
+import { InputBlock } from "./Input/inputBlock";
+import { NodeMaterial } from "../nodeMaterial";
 
 import "../../../Shaders/ShadersInclude/fresnelFunction";
-import { ViewDirectionBlock } from './viewDirectionBlock';
+import { ViewDirectionBlock } from "./viewDirectionBlock";
 
 /**
  * Block used to compute fresnel value
  */
 export class FresnelBlock extends NodeMaterialBlock {
-
     /**
      * Create a new FresnelBlock
      * @param name defines the block name
@@ -46,22 +45,22 @@ export class FresnelBlock extends NodeMaterialBlock {
     }
 
     /**
-    * Gets the view direction input component
-    */
+     * Gets the view direction input component
+     */
     public get viewDirection(): NodeMaterialConnectionPoint {
         return this._inputs[1];
     }
 
     /**
-    * Gets the bias input component
-    */
+     * Gets the bias input component
+     */
     public get bias(): NodeMaterialConnectionPoint {
         return this._inputs[2];
     }
 
     /**
-    * Gets the camera (or eye) position component
-    */
+     * Gets the camera (or eye) position component
+     */
     public get power(): NodeMaterialConnectionPoint {
         return this._inputs[3];
     }
@@ -75,19 +74,19 @@ export class FresnelBlock extends NodeMaterialBlock {
 
     public autoConfigure(material: NodeMaterial) {
         if (!this.viewDirection.isConnected) {
-            let viewDirectionInput = new ViewDirectionBlock("View direction");
+            const viewDirectionInput = new ViewDirectionBlock("View direction");
             viewDirectionInput.output.connectTo(this.viewDirection);
             viewDirectionInput.autoConfigure(material);
         }
 
         if (!this.bias.isConnected) {
-            let biasInput = new InputBlock("bias");
+            const biasInput = new InputBlock("bias");
             biasInput.value = 0;
             biasInput.output.connectTo(this.bias);
         }
 
         if (!this.power.isConnected) {
-            let powerInput = new InputBlock("power");
+            const powerInput = new InputBlock("power");
             powerInput.value = 1;
             powerInput.output.connectTo(this.power);
         }
@@ -96,11 +95,13 @@ export class FresnelBlock extends NodeMaterialBlock {
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
-        let comments = `//${this.name}`;
+        const comments = `//${this.name}`;
 
         state._emitFunctionFromInclude("fresnelFunction", comments, { removeIfDef: true });
 
-        state.compilationString += this._declareOutput(this.fresnel, state) + ` = computeFresnelTerm(${this.viewDirection.associatedVariableName}.xyz, ${this.worldNormal.associatedVariableName}.xyz, ${this.bias.associatedVariableName}, ${this.power.associatedVariableName});\r\n`;
+        state.compilationString +=
+            this._declareOutput(this.fresnel, state) +
+            ` = computeFresnelTerm(${this.viewDirection.associatedVariableName}.xyz, ${this.worldNormal.associatedVariableName}.xyz, ${this.bias.associatedVariableName}, ${this.power.associatedVariableName});\r\n`;
 
         return this;
     }

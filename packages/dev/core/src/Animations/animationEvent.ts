@@ -19,8 +19,8 @@ export class AnimationEvent {
         /** The event to perform when triggered **/
         public action: (currentFrame: number) => void,
         /** Specifies if the event should be triggered only once**/
-        public onlyOnce?: boolean) {
-    }
+        public onlyOnce?: boolean
+    ) {}
 
     /** @hidden */
     public _clone(): AnimationEvent {

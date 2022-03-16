@@ -14,8 +14,8 @@ export class AnimationRange {
         /**The starting frame of the animation */
         public from: number,
         /**The ending frame of the animation*/
-        public to: number) {
-    }
+        public to: number
+    ) {}
 
     /**
      * Makes a copy of the animation range

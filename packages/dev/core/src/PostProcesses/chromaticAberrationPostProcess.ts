@@ -7,8 +7,8 @@ import { Engine } from "../Engines/engine";
 import { Constants } from "../Engines/constants";
 
 import "../Shaders/chromaticAberration.fragment";
-import { RegisterClass } from '../Misc/typeStore';
-import { serialize, SerializationHelper } from '../Misc/decorators';
+import { RegisterClass } from "../Misc/typeStore";
+import { serialize, SerializationHelper } from "../Misc/decorators";
 
 declare type Scene = import("../scene").Scene;
 
@@ -69,33 +69,75 @@ export class ChromaticAberrationPostProcess extends PostProcess {
      * @param textureType Type of textures used when performing the post process. (default: 0)
      * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
      */
-    constructor(name: string, screenWidth: number, screenHeight: number, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT, blockCompilation = false) {
-        super(name, "chromaticAberration", ["chromatic_aberration", "screen_width", "screen_height", "direction", "radialIntensity", "centerPosition"], [], options, camera, samplingMode, engine, reusable, null, textureType, undefined, null, blockCompilation);
+    constructor(
+        name: string,
+        screenWidth: number,
+        screenHeight: number,
+        options: number | PostProcessOptions,
+        camera: Nullable<Camera>,
+        samplingMode?: number,
+        engine?: Engine,
+        reusable?: boolean,
+        textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT,
+        blockCompilation = false
+    ) {
+        super(
+            name,
+            "chromaticAberration",
+            ["chromatic_aberration", "screen_width", "screen_height", "direction", "radialIntensity", "centerPosition"],
+            [],
+            options,
+            camera,
+            samplingMode,
+            engine,
+            reusable,
+            null,
+            textureType,
+            undefined,
+            null,
+            blockCompilation
+        );
 
         this.screenWidth = screenWidth;
         this.screenHeight = screenHeight;
 
         this.onApplyObservable.add((effect: Effect) => {
-            effect.setFloat('chromatic_aberration', this.aberrationAmount);
-            effect.setFloat('screen_width', screenWidth);
-            effect.setFloat('screen_height', screenHeight);
-            effect.setFloat('radialIntensity', this.radialIntensity);
-            effect.setFloat2('direction', this.direction.x, this.direction.y);
-            effect.setFloat2('centerPosition', this.centerPosition.x, this.centerPosition.y);
+            effect.setFloat("chromatic_aberration", this.aberrationAmount);
+            effect.setFloat("screen_width", screenWidth);
+            effect.setFloat("screen_height", screenHeight);
+            effect.setFloat("radialIntensity", this.radialIntensity);
+            effect.setFloat2("direction", this.direction.x, this.direction.y);
+            effect.setFloat2("centerPosition", this.centerPosition.x, this.centerPosition.y);
         });
     }
 
-    /** @hidden */
+    /**
+     * @param parsedPostProcess
+     * @param targetCamera
+     * @param scene
+     * @param rootUrl
+     * @hidden
+     */
     public static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string): Nullable<ChromaticAberrationPostProcess> {
-        return SerializationHelper.Parse(() => {
-            return new ChromaticAberrationPostProcess(
-                parsedPostProcess.name,
-                parsedPostProcess.screenWidth, parsedPostProcess.screenHeight,
-                parsedPostProcess.options, targetCamera,
-                parsedPostProcess.renderTargetSamplingMode,
-                scene.getEngine(), parsedPostProcess.reusable,
-                parsedPostProcess.textureType, false);
-        }, parsedPostProcess, scene, rootUrl);
+        return SerializationHelper.Parse(
+            () => {
+                return new ChromaticAberrationPostProcess(
+                    parsedPostProcess.name,
+                    parsedPostProcess.screenWidth,
+                    parsedPostProcess.screenHeight,
+                    parsedPostProcess.options,
+                    targetCamera,
+                    parsedPostProcess.renderTargetSamplingMode,
+                    scene.getEngine(),
+                    parsedPostProcess.reusable,
+                    parsedPostProcess.textureType,
+                    false
+                );
+            },
+            parsedPostProcess,
+            scene,
+            rootUrl
+        );
     }
 }
 

@@ -42,8 +42,7 @@ Scene.prototype.enableDepthRenderer = function (camera?: Nullable<Camera>, store
         let textureType = 0;
         if (this.getEngine().getCaps().textureHalfFloatRender && (!force32bitsFloat || !supportFullfloat)) {
             textureType = Constants.TEXTURETYPE_HALF_FLOAT;
-        }
-        else if (supportFullfloat) {
+        } else if (supportFullfloat) {
             textureType = Constants.TEXTURETYPE_FLOAT;
         } else {
             textureType = Constants.TEXTURETYPE_UNSIGNED_BYTE;
@@ -91,7 +90,11 @@ export class DepthRendererSceneComponent implements ISceneComponent {
      */
     public register(): void {
         this.scene._gatherRenderTargetsStage.registerStep(SceneComponentConstants.STEP_GATHERRENDERTARGETS_DEPTHRENDERER, this, this._gatherRenderTargets);
-        this.scene._gatherActiveCameraRenderTargetsStage.registerStep(SceneComponentConstants.STEP_GATHERACTIVECAMERARENDERTARGETS_DEPTHRENDERER, this, this._gatherActiveCameraRenderTargets);
+        this.scene._gatherActiveCameraRenderTargetsStage.registerStep(
+            SceneComponentConstants.STEP_GATHERACTIVECAMERARENDERTARGETS_DEPTHRENDERER,
+            this,
+            this._gatherActiveCameraRenderTargets
+        );
     }
 
     /**
@@ -106,15 +109,15 @@ export class DepthRendererSceneComponent implements ISceneComponent {
      * Disposes the component and the associated resources
      */
     public dispose(): void {
-        for (var key in this.scene._depthRenderer) {
+        for (const key in this.scene._depthRenderer) {
             this.scene._depthRenderer[key].dispose();
         }
     }
 
     private _gatherRenderTargets(renderTargets: SmartArrayNoDuplicate<RenderTargetTexture>): void {
         if (this.scene._depthRenderer) {
-            for (var key in this.scene._depthRenderer) {
-                let depthRenderer = this.scene._depthRenderer[key];
+            for (const key in this.scene._depthRenderer) {
+                const depthRenderer = this.scene._depthRenderer[key];
                 if (depthRenderer.enabled && !depthRenderer.useOnlyInActiveCamera) {
                     renderTargets.push(depthRenderer.getDepthMap());
                 }
@@ -124,8 +127,8 @@ export class DepthRendererSceneComponent implements ISceneComponent {
 
     private _gatherActiveCameraRenderTargets(renderTargets: SmartArrayNoDuplicate<RenderTargetTexture>): void {
         if (this.scene._depthRenderer) {
-            for (var key in this.scene._depthRenderer) {
-                let depthRenderer = this.scene._depthRenderer[key];
+            for (const key in this.scene._depthRenderer) {
+                const depthRenderer = this.scene._depthRenderer[key];
                 if (depthRenderer.enabled && depthRenderer.useOnlyInActiveCamera && this.scene.activeCamera!.id === key) {
                     renderTargets.push(depthRenderer.getDepthMap());
                 }

@@ -7,9 +7,9 @@ import { Observable } from "../Misc/observable";
 import { Nullable } from "../types";
 import { EngineStore } from "../Engines/engineStore";
 
-import "./animatable";
+
 import { AbstractScene } from "../abstractScene";
-import { Tags } from '../Misc/tags';
+import { Tags } from "../Misc/tags";
 
 /**
  * This class defines the direct association between an animation and a target
@@ -37,7 +37,7 @@ export class TargetedAnimation {
      * @returns the JSON object representing the current entity
      */
     public serialize(): any {
-        var serializationObject: any = {};
+        const serializationObject: any = {};
         serializationObject.animation = this.animation.serialize();
         serializationObject.targetId = this.target.id;
 
@@ -149,8 +149,8 @@ export class AnimationGroup implements IDisposable {
 
         this._speedRatio = value;
 
-        for (var index = 0; index < this._animatables.length; index++) {
-            let animatable = this._animatables[index];
+        for (let index = 0; index < this._animatables.length; index++) {
+            const animatable = this._animatables[index];
             animatable.speedRatio = this._speedRatio;
         }
     }
@@ -169,8 +169,8 @@ export class AnimationGroup implements IDisposable {
 
         this._loopAnimation = value;
 
-        for (var index = 0; index < this._animatables.length; index++) {
-            let animatable = this._animatables[index];
+        for (let index = 0; index < this._animatables.length; index++) {
+            const animatable = this._animatables[index];
             animatable.loopAnimation = this._loopAnimation;
         }
     }
@@ -189,8 +189,8 @@ export class AnimationGroup implements IDisposable {
 
         this._isAdditive = value;
 
-        for (var index = 0; index < this._animatables.length; index++) {
-            let animatable = this._animatables[index];
+        for (let index = 0; index < this._animatables.length; index++) {
+            const animatable = this._animatables[index];
             animatable.isAdditive = this._isAdditive;
         }
     }
@@ -226,7 +226,8 @@ export class AnimationGroup implements IDisposable {
     public constructor(
         /** The name of the animation group */
         public name: string,
-        scene: Nullable<Scene> = null) {
+        scene: Nullable<Scene> = null
+    ) {
         this._scene = scene || EngineStore.LastCreatedScene!;
         this.uniqueId = this._scene.getUniqueId();
 
@@ -240,11 +241,11 @@ export class AnimationGroup implements IDisposable {
      * @returns the TargetedAnimation object
      */
     public addTargetedAnimation(animation: Animation, target: any): TargetedAnimation {
-        let targetedAnimation = new TargetedAnimation();
+        const targetedAnimation = new TargetedAnimation();
         targetedAnimation.animation = animation;
         targetedAnimation.target = target;
 
-        let keys = animation.getKeys();
+        const keys = animation.getKeys();
         if (this._from > keys[0].frame) {
             this._from = keys[0].frame;
         }
@@ -266,33 +267,37 @@ export class AnimationGroup implements IDisposable {
      * @returns the animation group
      */
     public normalize(beginFrame: Nullable<number> = null, endFrame: Nullable<number> = null): AnimationGroup {
-        if (beginFrame == null) { beginFrame = this._from; }
-        if (endFrame == null) { endFrame = this._to; }
+        if (beginFrame == null) {
+            beginFrame = this._from;
+        }
+        if (endFrame == null) {
+            endFrame = this._to;
+        }
 
-        for (var index = 0; index < this._targetedAnimations.length; index++) {
-            let targetedAnimation = this._targetedAnimations[index];
-            let keys = targetedAnimation.animation.getKeys();
-            let startKey = keys[0];
-            let endKey = keys[keys.length - 1];
+        for (let index = 0; index < this._targetedAnimations.length; index++) {
+            const targetedAnimation = this._targetedAnimations[index];
+            const keys = targetedAnimation.animation.getKeys();
+            const startKey = keys[0];
+            const endKey = keys[keys.length - 1];
 
             if (startKey.frame > beginFrame) {
-                let newKey: IAnimationKey = {
+                const newKey: IAnimationKey = {
                     frame: beginFrame,
                     value: startKey.value,
                     inTangent: startKey.inTangent,
                     outTangent: startKey.outTangent,
-                    interpolation: startKey.interpolation
+                    interpolation: startKey.interpolation,
                 };
                 keys.splice(0, 0, newKey);
             }
 
             if (endKey.frame < endFrame) {
-                let newKey: IAnimationKey = {
+                const newKey: IAnimationKey = {
                     frame: endFrame,
                     value: endKey.value,
                     inTangent: endKey.inTangent,
                     outTangent: endKey.outTangent,
-                    interpolation: endKey.interpolation
+                    interpolation: endKey.interpolation,
                 };
                 keys.push(newKey);
             }
@@ -345,9 +350,9 @@ export class AnimationGroup implements IDisposable {
         this._animationLoopCount = 0;
         this._animationLoopFlags = [];
 
-        for (var index = 0; index < this._targetedAnimations.length; index++) {
+        for (let index = 0; index < this._targetedAnimations.length; index++) {
             const targetedAnimation = this._targetedAnimations[index];
-            let animatable = this._scene.beginDirectAnimation(
+            const animatable = this._scene.beginDirectAnimation(
                 targetedAnimation.target,
                 [targetedAnimation.animation],
                 from !== undefined ? from : this._from,
@@ -388,8 +393,8 @@ export class AnimationGroup implements IDisposable {
 
         this._isPaused = true;
 
-        for (var index = 0; index < this._animatables.length; index++) {
-            let animatable = this._animatables[index];
+        for (let index = 0; index < this._animatables.length; index++) {
+            const animatable = this._animatables[index];
             animatable.pause();
         }
 
@@ -433,8 +438,8 @@ export class AnimationGroup implements IDisposable {
             return this;
         }
 
-        for (var index = 0; index < this._animatables.length; index++) {
-            let animatable = this._animatables[index];
+        for (let index = 0; index < this._animatables.length; index++) {
+            const animatable = this._animatables[index];
             animatable.reset();
         }
 
@@ -450,8 +455,8 @@ export class AnimationGroup implements IDisposable {
             return this;
         }
 
-        for (var index = 0; index < this._animatables.length; index++) {
-            let animatable = this._animatables[index];
+        for (let index = 0; index < this._animatables.length; index++) {
+            const animatable = this._animatables[index];
             animatable.restart();
         }
 
@@ -469,8 +474,8 @@ export class AnimationGroup implements IDisposable {
             return this;
         }
 
-        var list = this._animatables.slice();
-        for (var index = 0; index < list.length; index++) {
+        const list = this._animatables.slice();
+        for (let index = 0; index < list.length; index++) {
             list[index].stop();
         }
 
@@ -486,8 +491,8 @@ export class AnimationGroup implements IDisposable {
      * @see https://doc.babylonjs.com/babylon101/animations#animation-weights
      */
     public setWeightForAllAnimatables(weight: number): AnimationGroup {
-        for (var index = 0; index < this._animatables.length; index++) {
-            let animatable = this._animatables[index];
+        for (let index = 0; index < this._animatables.length; index++) {
+            const animatable = this._animatables[index];
             animatable.weight = weight;
         }
 
@@ -501,8 +506,8 @@ export class AnimationGroup implements IDisposable {
      * @see https://doc.babylonjs.com/babylon101/animations#animation-weights
      */
     public syncAllAnimationsWith(root: Nullable<Animatable>): AnimationGroup {
-        for (var index = 0; index < this._animatables.length; index++) {
-            let animatable = this._animatables[index];
+        for (let index = 0; index < this._animatables.length; index++) {
+            const animatable = this._animatables[index];
             animatable.syncWith(root);
         }
 
@@ -519,8 +524,8 @@ export class AnimationGroup implements IDisposable {
             return this;
         }
 
-        for (var index = 0; index < this._animatables.length; index++) {
-            let animatable = this._animatables[index];
+        for (let index = 0; index < this._animatables.length; index++) {
+            const animatable = this._animatables[index];
             animatable.goToFrame(frame);
         }
 
@@ -535,7 +540,7 @@ export class AnimationGroup implements IDisposable {
         this._animatables = [];
 
         // Remove from scene
-        var index = this._scene.animationGroups.indexOf(this);
+        const index = this._scene.animationGroups.indexOf(this);
 
         if (index > -1) {
             this._scene.animationGroups.splice(index, 1);
@@ -559,7 +564,7 @@ export class AnimationGroup implements IDisposable {
 
     private _checkAnimationGroupEnded(animatable: Animatable) {
         // animatable should be taken out of the array
-        let idx = this._animatables.indexOf(animatable);
+        const idx = this._animatables.indexOf(animatable);
         if (idx > -1) {
             this._animatables.splice(idx, 1);
         }
@@ -579,11 +584,13 @@ export class AnimationGroup implements IDisposable {
      * @returns the new animation group
      */
     public clone(newName: string, targetConverter?: (oldTarget: any) => any, cloneAnimations = false): AnimationGroup {
-        let newGroup = new AnimationGroup(newName || this.name, this._scene);
+        const newGroup = new AnimationGroup(newName || this.name, this._scene);
 
-        for (var targetAnimation of this._targetedAnimations) {
-            newGroup.addTargetedAnimation(cloneAnimations ? targetAnimation.animation.clone() : targetAnimation.animation,
-                targetConverter ? targetConverter(targetAnimation.target) : targetAnimation.target);
+        for (const targetAnimation of this._targetedAnimations) {
+            newGroup.addTargetedAnimation(
+                cloneAnimations ? targetAnimation.animation.clone() : targetAnimation.animation,
+                targetConverter ? targetConverter(targetAnimation.target) : targetAnimation.target
+            );
         }
 
         return newGroup;
@@ -594,14 +601,14 @@ export class AnimationGroup implements IDisposable {
      * @returns Serialized object
      */
     public serialize(): any {
-        var serializationObject: any = {};
+        const serializationObject: any = {};
 
         serializationObject.name = this.name;
         serializationObject.from = this.from;
         serializationObject.to = this.to;
         serializationObject.targetedAnimations = [];
-        for (var targetedAnimationIndex = 0; targetedAnimationIndex < this.targetedAnimations.length; targetedAnimationIndex++) {
-            var targetedAnimation = this.targetedAnimations[targetedAnimationIndex];
+        for (let targetedAnimationIndex = 0; targetedAnimationIndex < this.targetedAnimations.length; targetedAnimationIndex++) {
+            const targetedAnimation = this.targetedAnimations[targetedAnimationIndex];
             serializationObject.targetedAnimations[targetedAnimationIndex] = targetedAnimation.serialize();
         }
 
@@ -625,19 +632,19 @@ export class AnimationGroup implements IDisposable {
      * @returns a new AnimationGroup
      */
     public static Parse(parsedAnimationGroup: any, scene: Scene): AnimationGroup {
-        var animationGroup = new AnimationGroup(parsedAnimationGroup.name, scene);
-        for (var i = 0; i < parsedAnimationGroup.targetedAnimations.length; i++) {
-            var targetedAnimation = parsedAnimationGroup.targetedAnimations[i];
-            var animation = Animation.Parse(targetedAnimation.animation);
-            var id = targetedAnimation.targetId;
-            if (targetedAnimation.animation.property === "influence") { // morph target animation
-                let morphTarget = scene.getMorphTargetById(id);
+        const animationGroup = new AnimationGroup(parsedAnimationGroup.name, scene);
+        for (let i = 0; i < parsedAnimationGroup.targetedAnimations.length; i++) {
+            const targetedAnimation = parsedAnimationGroup.targetedAnimations[i];
+            const animation = Animation.Parse(targetedAnimation.animation);
+            const id = targetedAnimation.targetId;
+            if (targetedAnimation.animation.property === "influence") {
+                // morph target animation
+                const morphTarget = scene.getMorphTargetById(id);
                 if (morphTarget) {
                     animationGroup.addTargetedAnimation(animation, morphTarget);
                 }
-            }
-            else {
-                var targetNode = scene.getNodeById(id);
+            } else {
+                const targetNode = scene.getNodeById(id);
 
                 if (targetNode != null) {
                     animationGroup.addTargetedAnimation(animation, targetNode);
@@ -675,9 +682,9 @@ export class AnimationGroup implements IDisposable {
             animationGroup = sourceAnimationGroup.clone(clonedName || animationGroup.name);
         }
 
-        let targetedAnimations = animationGroup.targetedAnimations;
-        for (var index = 0; index < targetedAnimations.length; index++) {
-            let targetedAnimation = targetedAnimations[index];
+        const targetedAnimations = animationGroup.targetedAnimations;
+        for (let index = 0; index < targetedAnimations.length; index++) {
+            const targetedAnimation = targetedAnimations[index];
             Animation.MakeAnimationAdditive(targetedAnimation.animation, referenceFrame, range);
         }
 
@@ -700,7 +707,7 @@ export class AnimationGroup implements IDisposable {
      * @returns a string representing the object
      */
     public toString(fullDetails?: boolean): string {
-        var ret = "Name: " + this.name;
+        let ret = "Name: " + this.name;
         ret += ", type: " + this.getClassName();
         if (fullDetails) {
             ret += ", from: " + this._from;
@@ -712,5 +719,4 @@ export class AnimationGroup implements IDisposable {
         }
         return ret;
     }
-
 }

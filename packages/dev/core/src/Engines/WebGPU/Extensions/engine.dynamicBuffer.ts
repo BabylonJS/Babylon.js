@@ -6,28 +6,23 @@ import { WebGPUEngine } from "../../webgpuEngine";
 WebGPUEngine.prototype.updateDynamicIndexBuffer = function (indexBuffer: DataBuffer, indices: IndicesArray, offset: number = 0): void {
     const gpuBuffer = indexBuffer as WebGPUDataBuffer;
 
-    var view: ArrayBufferView;
+    let view: ArrayBufferView;
     if (indices instanceof Uint16Array) {
         if (indexBuffer.is32Bits) {
             view = Uint32Array.from(indices);
-        }
-        else {
+        } else {
             view = indices;
         }
-    }
-    else if (indices instanceof Uint32Array) {
+    } else if (indices instanceof Uint32Array) {
         if (indexBuffer.is32Bits) {
             view = indices;
-        }
-        else {
+        } else {
             view = Uint16Array.from(indices);
         }
-    }
-    else {
+    } else {
         if (indexBuffer.is32Bits) {
             view = new Uint32Array(indices);
-        }
-        else {
+        } else {
             view = new Uint16Array(indices);
         }
     }
@@ -45,22 +40,18 @@ WebGPUEngine.prototype.updateDynamicVertexBuffer = function (vertexBuffer: DataB
     if (byteLength === undefined) {
         if (data instanceof Array) {
             view = new Float32Array(data);
-        }
-        else if (data instanceof ArrayBuffer) {
+        } else if (data instanceof ArrayBuffer) {
             view = new Uint8Array(data);
-        }
-        else {
+        } else {
             view = data;
         }
         byteLength = view.byteLength;
     } else {
         if (data instanceof Array) {
             view = new Float32Array(data);
-        }
-        else if (data instanceof ArrayBuffer) {
+        } else if (data instanceof ArrayBuffer) {
             view = new Uint8Array(data);
-        }
-        else {
+        } else {
             view = data;
         }
     }

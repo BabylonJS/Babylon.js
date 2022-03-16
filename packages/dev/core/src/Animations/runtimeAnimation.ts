@@ -1,14 +1,14 @@
 import { DeepImmutable, Nullable } from "../types";
 import { Quaternion, Vector3, Vector2, Matrix } from "../Maths/math.vector";
-import { Color3 } from '../Maths/math.color';
+import { Color3 } from "../Maths/math.color";
 import { Animation, _IAnimationState } from "./animation";
 import { AnimationEvent } from "./animationEvent";
 
 declare type Animatable = import("./animatable").Animatable;
 
 import { Scene } from "../scene";
-import { IAnimationKey } from './animationKey';
-import { Size } from '../Maths/math.size';
+import { IAnimationKey } from "./animationKey";
+import { Size } from "../Maths/math.size";
 
 // Static values to help the garbage collector
 
@@ -202,7 +202,7 @@ export class RuntimeAnimation {
         this._animationState = {
             key: 0,
             repeatCount: 0,
-            loopMode: this._getCorrectLoopMode()
+            loopMode: this._getCorrectLoopMode(),
         };
 
         if (this._animation.dataType === Animation.ANIMATIONTYPE_MATRIX) {
@@ -224,15 +224,14 @@ export class RuntimeAnimation {
 
         // Check data
         if (this._target instanceof Array) {
-            var index = 0;
+            let index = 0;
             for (const target of this._target) {
                 this._preparePath(target, index);
                 this._getOriginalValues(index);
                 index++;
             }
             this._targetIsArray = true;
-        }
-        else {
+        } else {
             this._preparePath(this._target);
             this._getOriginalValues();
             this._targetIsArray = false;
@@ -240,7 +239,7 @@ export class RuntimeAnimation {
         }
 
         // Cloning events locally
-        var events = animation.getEvents();
+        const events = animation.getEvents();
         if (events && events.length > 0) {
             events.forEach((e) => {
                 this._events.push(e._clone());
@@ -251,12 +250,12 @@ export class RuntimeAnimation {
     }
 
     private _preparePath(target: any, targetIndex = 0) {
-        let targetPropertyPath = this._animation.targetPropertyPath;
+        const targetPropertyPath = this._animation.targetPropertyPath;
 
         if (targetPropertyPath.length > 1) {
-            var property = target[targetPropertyPath[0]];
+            let property = target[targetPropertyPath[0]];
 
-            for (var index = 1; index < targetPropertyPath.length - 1; index++) {
+            for (let index = 1; index < targetPropertyPath.length - 1; index++) {
                 property = property[targetPropertyPath[index]];
             }
 
@@ -289,8 +288,7 @@ export class RuntimeAnimation {
                     }
                     index++;
                 }
-            }
-            else {
+            } else {
                 if (this._originalValue[0] !== undefined) {
                     this._setValue(this._target, this._directTarget, this._originalValue[0], -1, 0);
                 }
@@ -320,7 +318,7 @@ export class RuntimeAnimation {
      * Disposes of the runtime animation
      */
     public dispose(): void {
-        let index = this._animation.runtimeAnimations.indexOf(this);
+        const index = this._animation.runtimeAnimations.indexOf(this);
 
         if (index > -1) {
             this._animation.runtimeAnimations.splice(index, 1);
@@ -334,7 +332,7 @@ export class RuntimeAnimation {
      */
     public setValue(currentValue: any, weight: number) {
         if (this._targetIsArray) {
-            for (var index = 0; index < this._target.length; index++) {
+            for (let index = 0; index < this._target.length; index++) {
                 const target = this._target[index];
                 this._setValue(target, this._activeTargets[index], currentValue, weight, index);
             }
@@ -345,9 +343,10 @@ export class RuntimeAnimation {
 
     private _getOriginalValues(targetIndex = 0) {
         let originalValue: any;
-        let target = this._activeTargets[targetIndex];
+        const target = this._activeTargets[targetIndex];
 
-        if (target.getRestPose && this._targetPath === "_matrix") { // For bones
+        if (target.getRestPose && this._targetPath === "_matrix") {
+            // For bones
             originalValue = target.getRestPose();
         } else {
             originalValue = target[this._targetPath];
@@ -368,7 +367,7 @@ export class RuntimeAnimation {
 
         if (this._enableBlending && this._blendingFactor <= 1.0) {
             if (!this._originalBlendValue) {
-                let originalValue = destination[this._targetPath];
+                const originalValue = destination[this._targetPath];
 
                 if (originalValue.clone) {
                     this._originalBlendValue = originalValue.clone();
@@ -377,7 +376,8 @@ export class RuntimeAnimation {
                 }
             }
 
-            if (this._originalBlendValue.m) { // Matrix
+            if (this._originalBlendValue.m) {
+                // Matrix
                 if (Animation.AllowMatrixDecomposeForInterpolation) {
                     if (this._currentValue) {
                         Matrix.DecomposeLerpToRef(this._originalBlendValue, currentValue, this._blendingFactor, this._currentValue);
@@ -439,7 +439,7 @@ export class RuntimeAnimation {
      * @param frame defines the frame to move to
      */
     public goToFrame(frame: number): void {
-        let keys = this._animation.getKeys();
+        const keys = this._animation.getKeys();
 
         if (frame < keys[0].frame) {
             frame = keys[0].frame;
@@ -450,7 +450,7 @@ export class RuntimeAnimation {
         // Need to reset animation events
         const events = this._events;
         if (events.length) {
-            for (var index = 0; index < events.length; index++) {
+            for (let index = 0; index < events.length; index++) {
                 if (!events[index].onlyOnce) {
                     // reset events in the future
                     events[index].isDone = events[index].frame < frame;
@@ -459,16 +459,17 @@ export class RuntimeAnimation {
         }
 
         this._currentFrame = frame;
-        var currentValue = this._animation._interpolate(frame, this._animationState);
+        const currentValue = this._animation._interpolate(frame, this._animationState);
 
         this.setValue(currentValue, -1);
     }
 
     /**
+     * @param newSpeedRatio
      * @hidden Internal use only
      */
     public _prepareForSpeedRatioChange(newSpeedRatio: number): void {
-        let newRatio = this._previousDelay * (this._animation.framePerSecond * newSpeedRatio) / 1000.0;
+        const newRatio = (this._previousDelay * (this._animation.framePerSecond * newSpeedRatio)) / 1000.0;
 
         this._ratioOffset = this._previousRatio - newRatio;
     }
@@ -485,8 +486,8 @@ export class RuntimeAnimation {
      * @returns a boolean indicating if the animation is running
      */
     public animate(delay: number, from: number, to: number, loop: boolean, speedRatio: number, weight = -1.0): boolean {
-        let animation = this._animation;
-        let targetPropertyPath = animation.targetPropertyPath;
+        const animation = this._animation;
+        const targetPropertyPath = animation.targetPropertyPath;
         if (!targetPropertyPath || targetPropertyPath.length < 1) {
             this._stopped = true;
             return false;
@@ -506,25 +507,26 @@ export class RuntimeAnimation {
         let offsetValue: any;
 
         // Compute ratio which represents the frame delta between from and to
-        const ratio = (delay * (animation.framePerSecond * speedRatio) / 1000.0) + this._ratioOffset;
+        const ratio = (delay * (animation.framePerSecond * speedRatio)) / 1000.0 + this._ratioOffset;
         let highLimitValue = 0;
 
         this._previousDelay = delay;
         this._previousRatio = ratio;
 
-        if (!loop && (to >= from && ratio >= range)) { // If we are out of range and not looping get back to caller
+        if (!loop && to >= from && ratio >= range) {
+            // If we are out of range and not looping get back to caller
             returnValue = false;
             highLimitValue = animation._getKeyValue(this._maxValue);
-        } else if (!loop && (from >= to && ratio <= range)) {
+        } else if (!loop && from >= to && ratio <= range) {
             returnValue = false;
             highLimitValue = animation._getKeyValue(this._minValue);
         } else if (this._animationState.loopMode !== Animation.ANIMATIONLOOPMODE_CYCLE) {
-            var keyOffset = to.toString() + from.toString();
+            const keyOffset = to.toString() + from.toString();
             if (!this._offsetsCache[keyOffset]) {
                 this._animationState.repeatCount = 0;
                 this._animationState.loopMode = Animation.ANIMATIONLOOPMODE_CYCLE;
-                var fromValue = animation._interpolate(from, this._animationState);
-                var toValue = animation._interpolate(to, this._animationState);
+                const fromValue = animation._interpolate(from, this._animationState);
+                const toValue = animation._interpolate(to, this._animationState);
 
                 this._animationState.loopMode = this._getCorrectLoopMode();
                 switch (animation.dataType) {
@@ -599,18 +601,17 @@ export class RuntimeAnimation {
             const hostNormalizedFrame = (syncRoot.masterFrame - syncRoot.fromFrame) / (syncRoot.toFrame - syncRoot.fromFrame);
             currentFrame = from + (to - from) * hostNormalizedFrame;
         } else {
-            if (ratio > 0 && from > to || ratio < 0 && from < to) {
-                currentFrame = (returnValue && range !== 0) ? to + ratio % range : from;
+            if ((ratio > 0 && from > to) || (ratio < 0 && from < to)) {
+                currentFrame = returnValue && range !== 0 ? to + (ratio % range) : from;
             } else {
-                currentFrame = (returnValue && range !== 0) ? from + ratio % range : to;
+                currentFrame = returnValue && range !== 0 ? from + (ratio % range) : to;
             }
         }
 
         // Reset events if looping
         const events = this._events;
 
-        if (speedRatio > 0 && this.currentFrame > currentFrame ||
-            speedRatio < 0 && this.currentFrame < currentFrame) {
+        if ((speedRatio > 0 && this.currentFrame > currentFrame) || (speedRatio < 0 && this.currentFrame < currentFrame)) {
             this._onLoop();
 
             // Need to reset animation events
@@ -642,7 +643,7 @@ export class RuntimeAnimation {
                     (range > 0 && currentFrame >= events[index].frame && events[index].frame >= from) ||
                     (range < 0 && currentFrame <= events[index].frame && events[index].frame <= from)
                 ) {
-                    var event = events[index];
+                    const event = events[index];
                     if (!event.isDone) {
                         // If event should be done only once, remove it.
                         if (event.onlyOnce) {

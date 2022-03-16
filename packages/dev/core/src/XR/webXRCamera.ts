@@ -247,7 +247,7 @@ export class WebXRCamera extends FreeCamera {
                 this._projectionMatrix.copyFrom(currentRig._projectionMatrix);
             }
 
-            let renderTargetTexture = this._xrSessionManager.getRenderTargetTextureForView(view);
+            const renderTargetTexture = this._xrSessionManager.getRenderTargetTextureForView(view);
             this._renderingMultiview = renderTargetTexture?._texture?.isMultiview || false;
             if (this._renderingMultiview) {
                 // For multiview, the render target texture is the same per-view (just the slice index is different),
@@ -268,7 +268,7 @@ export class WebXRCamera extends FreeCamera {
 
     private _updateNumberOfRigCameras(viewCount = 1) {
         while (this.rigCameras.length < viewCount) {
-            var newCamera = new TargetCamera("XR-RigCamera: " + this.rigCameras.length, Vector3.Zero(), this.getScene());
+            const newCamera = new TargetCamera("XR-RigCamera: " + this.rigCameras.length, Vector3.Zero(), this.getScene());
             newCamera.minZ = 0.1;
             newCamera.rotationQuaternion = new Quaternion();
             newCamera.updateUpVectorFromRotation = true;
@@ -279,7 +279,7 @@ export class WebXRCamera extends FreeCamera {
             this.rigCameras.push(newCamera);
         }
         while (this.rigCameras.length > viewCount) {
-            var removedCamera = this.rigCameras.pop();
+            const removedCamera = this.rigCameras.pop();
             if (removedCamera) {
                 removedCamera.dispose();
             }

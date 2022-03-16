@@ -10,10 +10,10 @@ import { TargetCamera } from "../Cameras/targetCamera";
 import { Node } from "../node";
 import { Bone } from "../Bones/bone";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
-import { TransformNode } from '../Meshes/transformNode';
-import { StandardMaterial } from '../Materials/standardMaterial';
-import { PointerEventTypes, PointerInfo } from '../Events/pointerEvents';
-import { LinesMesh } from '../Meshes/linesMesh';
+import { TransformNode } from "../Meshes/transformNode";
+import { StandardMaterial } from "../Materials/standardMaterial";
+import { PointerEventTypes, PointerInfo } from "../Events/pointerEvents";
+import { LinesMesh } from "../Meshes/linesMesh";
 import { PointerDragBehavior } from "../Behaviors/Meshes/pointerDragBehavior";
 import { ShadowLight } from "../Lights/shadowLight";
 import { Light } from "../Lights/light";
@@ -144,8 +144,7 @@ export class Gizmo implements IDisposable {
      */
     public updateScale = true;
     protected _interactionsEnabled = true;
-    protected _attachedNodeChanged(value: Nullable<Node>) {
-    }
+    protected _attachedNodeChanged(value: Nullable<Node>) {}
 
     private _beforeRenderObserver: Nullable<Observer<Scene>>;
     private _tempQuaternion = new Quaternion(0, 0, 0, 1);
@@ -161,8 +160,8 @@ export class Gizmo implements IDisposable {
      */
     constructor(
         /** The utility layer the gizmo will be added to */
-        public gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer) {
-
+        public gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer
+    ) {
         this._rootMesh = new Mesh("gizmoRootNode", gizmoLayer.utilityLayerScene);
         this._rootMesh.rotationQuaternion = Quaternion.Identity();
 
@@ -188,7 +187,7 @@ export class Gizmo implements IDisposable {
      */
     protected _update() {
         if (this.attachedNode) {
-            var effectiveNode = this.attachedNode;
+            let effectiveNode = this.attachedNode;
             if (this.attachedMesh) {
                 effectiveNode = this.attachedMesh || this.attachedNode;
             }
@@ -203,8 +202,7 @@ export class Gizmo implements IDisposable {
             // Rotation
             if (this.updateGizmoRotationToMatchAttachedMesh) {
                 effectiveNode.getWorldMatrix().decompose(undefined, this._rootMesh.rotationQuaternion!);
-            }
-            else {
+            } else {
                 if (this._customRotationQuaternion) {
                     this._rootMesh.rotationQuaternion!.copyFrom(this._customRotationQuaternion);
                 } else {
@@ -215,12 +213,12 @@ export class Gizmo implements IDisposable {
             // Scale
             if (this.updateScale) {
                 const activeCamera = this.gizmoLayer.utilityLayerScene.activeCamera!;
-                var cameraPosition = activeCamera.globalPosition;
+                let cameraPosition = activeCamera.globalPosition;
                 if ((<WebVRFreeCamera>activeCamera).devicePosition) {
                     cameraPosition = (<WebVRFreeCamera>activeCamera).devicePosition;
                 }
                 this._rootMesh.position.subtractToRef(cameraPosition, this._tempVector);
-                var dist = this._tempVector.length() * this.scaleRatio;
+                const dist = this._tempVector.length() * this.scaleRatio;
                 this._rootMesh.scaling.set(dist, dist, dist);
 
                 // Account for handedness, similar to Matrix.decompose
@@ -258,9 +256,9 @@ export class Gizmo implements IDisposable {
         }
 
         if ((<Camera>this._attachedNode)._isCamera) {
-            var camera = this._attachedNode as Camera;
-            var worldMatrix;
-            var worldMatrixUC;
+            const camera = this._attachedNode as Camera;
+            let worldMatrix;
+            let worldMatrixUC;
             if (camera.parent) {
                 var parentInv = this._tempMatrix2;
                 camera.parent._worldMatrix.invertToRef(parentInv);
@@ -280,15 +278,16 @@ export class Gizmo implements IDisposable {
 
             worldMatrixUC.decompose(this._tempVector2, this._tempQuaternion, this._tempVector);
 
-            var inheritsTargetCamera = this._attachedNode.getClassName() === "FreeCamera"
-                || this._attachedNode.getClassName() === "FlyCamera"
-                || this._attachedNode.getClassName() === "ArcFollowCamera"
-                || this._attachedNode.getClassName() === "TargetCamera"
-                || this._attachedNode.getClassName() === "TouchCamera"
-                || this._attachedNode.getClassName() === "UniversalCamera";
+            const inheritsTargetCamera =
+                this._attachedNode.getClassName() === "FreeCamera" ||
+                this._attachedNode.getClassName() === "FlyCamera" ||
+                this._attachedNode.getClassName() === "ArcFollowCamera" ||
+                this._attachedNode.getClassName() === "TargetCamera" ||
+                this._attachedNode.getClassName() === "TouchCamera" ||
+                this._attachedNode.getClassName() === "UniversalCamera";
 
             if (inheritsTargetCamera) {
-                var targetCamera = this._attachedNode as TargetCamera;
+                const targetCamera = this._attachedNode as TargetCamera;
                 targetCamera.rotation = this._tempQuaternion.toEulerAngles();
 
                 if (targetCamera.rotationQuaternion) {
@@ -298,11 +297,16 @@ export class Gizmo implements IDisposable {
             }
 
             camera.position.copyFrom(this._tempVector);
-        } else if ((<Mesh>this._attachedNode)._isMesh || this._attachedNode.getClassName() === "AbstractMesh" || this._attachedNode.getClassName() === "TransformNode" || this._attachedNode.getClassName() === "InstancedMesh") {
-            var transform = this._attachedNode as TransformNode;
+        } else if (
+            (<Mesh>this._attachedNode)._isMesh ||
+            this._attachedNode.getClassName() === "AbstractMesh" ||
+            this._attachedNode.getClassName() === "TransformNode" ||
+            this._attachedNode.getClassName() === "InstancedMesh"
+        ) {
+            const transform = this._attachedNode as TransformNode;
             if (transform.parent) {
                 var parentInv = this._tempMatrix1;
-                var localMat = this._tempMatrix2;
+                const localMat = this._tempMatrix2;
                 transform.parent.getWorldMatrix().invertToRef(parentInv);
                 this._attachedNode.getWorldMatrix().multiplyToRef(parentInv, localMat);
                 localMat.decompose(transform.scaling, this._tempQuaternion, transform.position);
@@ -318,12 +322,12 @@ export class Gizmo implements IDisposable {
                 }
             }
         } else if (this._attachedNode.getClassName() === "Bone") {
-            var bone = this._attachedNode as Bone;
+            const bone = this._attachedNode as Bone;
             const parent = bone.getParent();
 
             if (parent) {
                 var invParent = this._tempMatrix1;
-                var boneLocalMatrix = this._tempMatrix2;
+                const boneLocalMatrix = this._tempMatrix2;
                 parent.getWorldMatrix().invertToRef(invParent);
                 bone.getWorldMatrix().multiplyToRef(invParent, boneLocalMatrix);
                 var lmat = bone.getLocalMatrix();
@@ -335,15 +339,14 @@ export class Gizmo implements IDisposable {
             bone.markAsDirty();
         } else {
             const light = this._attachedNode as ShadowLight;
-            if (light.getTypeID)
-            {
+            if (light.getTypeID) {
                 const type = light.getTypeID();
                 if (type === Light.LIGHTTYPEID_DIRECTIONALLIGHT || type === Light.LIGHTTYPEID_SPOTLIGHT || type === Light.LIGHTTYPEID_POINTLIGHT) {
                     const parent = light.parent;
 
                     if (parent) {
                         var invParent = this._tempMatrix1;
-                        var nodeLocalMatrix = this._tempMatrix2;
+                        const nodeLocalMatrix = this._tempMatrix2;
                         parent.getWorldMatrix().invertToRef(invParent);
                         light.getWorldMatrix().multiplyToRef(invParent, nodeLocalMatrix);
                         nodeLocalMatrix.decompose(undefined, this._tempQuaternion, this._tempVector);
@@ -361,6 +364,7 @@ export class Gizmo implements IDisposable {
 
     /**
      * refresh gizmo mesh material
+     * @param gizmoMeshes
      * @param material material to apply
      */
     protected _setGizmoMeshMaterial(gizmoMeshes: Mesh[], material: StandardMaterial) {
@@ -381,17 +385,18 @@ export class Gizmo implements IDisposable {
      * @returns {Observer<PointerInfo>} pointerObserver
      */
     public static GizmoAxisPointerObserver(gizmoLayer: UtilityLayerRenderer, gizmoAxisCache: Map<Mesh, GizmoAxisCache>): Observer<PointerInfo> {
-
         let dragging = false;
 
         const pointerObserver = gizmoLayer.utilityLayerScene.onPointerObservable.add((pointerInfo) => {
             if (pointerInfo.pickInfo) {
                 // On Hover Logic
                 if (pointerInfo.type === PointerEventTypes.POINTERMOVE) {
-                    if (dragging) { return; }
+                    if (dragging) {
+                        return;
+                    }
                     gizmoAxisCache.forEach((cache) => {
                         if (cache.colliderMeshes && cache.gizmoMeshes) {
-                            const isHovered = (cache.colliderMeshes?.indexOf((pointerInfo?.pickInfo?.pickedMesh as Mesh)) != -1);
+                            const isHovered = cache.colliderMeshes?.indexOf(pointerInfo?.pickInfo?.pickedMesh as Mesh) != -1;
                             const material = cache.dragBehavior.enabled ? (isHovered || cache.active ? cache.hoverMaterial : cache.material) : cache.disableMaterial;
                             cache.gizmoMeshes.forEach((m: Mesh) => {
                                 m.material = material;
@@ -411,8 +416,8 @@ export class Gizmo implements IDisposable {
                         const statusMap = gizmoAxisCache.get(pointerInfo.pickInfo.pickedMesh?.parent as Mesh);
                         statusMap!.active = true;
                         gizmoAxisCache.forEach((cache) => {
-                            const isHovered = (cache.colliderMeshes?.indexOf((pointerInfo?.pickInfo?.pickedMesh as Mesh)) != -1);
-                            const material = ((isHovered || cache.active) && cache.dragBehavior.enabled) ? cache.hoverMaterial : cache.disableMaterial;
+                            const isHovered = cache.colliderMeshes?.indexOf(pointerInfo?.pickInfo?.pickedMesh as Mesh) != -1;
+                            const material = (isHovered || cache.active) && cache.dragBehavior.enabled ? cache.hoverMaterial : cache.disableMaterial;
                             cache.gizmoMeshes.forEach((m: Mesh) => {
                                 m.material = material;
                                 if ((m as LinesMesh).color) {

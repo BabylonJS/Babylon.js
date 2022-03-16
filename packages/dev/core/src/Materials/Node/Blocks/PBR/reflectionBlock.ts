@@ -1,27 +1,26 @@
-import { NodeMaterialBlockConnectionPointTypes } from '../../Enums/nodeMaterialBlockConnectionPointTypes';
-import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
-import { NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection } from '../../nodeMaterialBlockConnectionPoint';
-import { NodeMaterialBlockTargets } from '../../Enums/nodeMaterialBlockTargets';
-import { NodeMaterial, NodeMaterialDefines } from '../../nodeMaterial';
-import { RegisterClass } from '../../../../Misc/typeStore';
+import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
+import { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
+import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
+import { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
+import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
-import { ReflectionTextureBaseBlock } from '../Dual/reflectionTextureBaseBlock';
-import { AbstractMesh } from '../../../../Meshes/abstractMesh';
-import { Nullable } from '../../../../types';
-import { Texture } from '../../../Textures/texture';
-import { BaseTexture } from '../../../Textures/baseTexture';
-import { Mesh } from '../../../../Meshes/mesh';
-import { SubMesh } from '../../../../Meshes/subMesh';
-import { Effect } from '../../../effect';
+import { ReflectionTextureBaseBlock } from "../Dual/reflectionTextureBaseBlock";
+import { AbstractMesh } from "../../../../Meshes/abstractMesh";
+import { Nullable } from "../../../../types";
+import { Texture } from "../../../Textures/texture";
+import { BaseTexture } from "../../../Textures/baseTexture";
+import { Mesh } from "../../../../Meshes/mesh";
+import { SubMesh } from "../../../../Meshes/subMesh";
+import { Effect } from "../../../effect";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../nodeMaterialDecorator";
-import { Scene } from '../../../../scene';
-import { Scalar } from '../../../../Maths/math.scalar';
+import { Scene } from "../../../../scene";
+import { Scalar } from "../../../../Maths/math.scalar";
 
 /**
  * Block used to implement the reflection module of the PBR material
  */
 export class ReflectionBlock extends ReflectionTextureBaseBlock {
-
     /** @hidden */
     public _defineLODReflectionAlpha: string;
     /** @hidden */
@@ -39,7 +38,7 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
      * The properties below are set by the main PBR block prior to calling methods of this class.
      * This is to avoid having to add them as inputs here whereas they are already inputs of the main block, so already known.
      * It's less burden on the user side in the editor part.
-    */
+     */
 
     /** @hidden */
     public worldPositionConnectionPoint: NodeMaterialConnectionPoint;
@@ -54,13 +53,13 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
      * Defines if the material uses spherical harmonics vs spherical polynomials for the
      * diffuse part of the IBL.
      */
-    @editableInPropertyPage("Spherical Harmonics", PropertyTypeForEdition.Boolean, "ADVANCED", { "notifiers": { "update": true } })
+    @editableInPropertyPage("Spherical Harmonics", PropertyTypeForEdition.Boolean, "ADVANCED", { notifiers: { update: true } })
     public useSphericalHarmonics: boolean = true;
 
     /**
      * Force the shader to compute irradiance in the fragment shader in order to take bump in account.
      */
-    @editableInPropertyPage("Force irradiance in fragment", PropertyTypeForEdition.Boolean, "ADVANCED", { "notifiers": { "update": true } })
+    @editableInPropertyPage("Force irradiance in fragment", PropertyTypeForEdition.Boolean, "ADVANCED", { notifiers: { update: true } })
     public forceIrradianceInFragment: boolean = false;
 
     /**
@@ -76,8 +75,12 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
         this.registerInput("world", NodeMaterialBlockConnectionPointTypes.Matrix, false, NodeMaterialBlockTargets.Vertex);
         this.registerInput("color", NodeMaterialBlockConnectionPointTypes.Color3, true, NodeMaterialBlockTargets.Fragment);
 
-        this.registerOutput("reflection", NodeMaterialBlockConnectionPointTypes.Object, NodeMaterialBlockTargets.Fragment,
-            new NodeMaterialConnectionPointCustomObject("reflection", this, NodeMaterialConnectionPointDirection.Output, ReflectionBlock, "ReflectionBlock"));
+        this.registerOutput(
+            "reflection",
+            NodeMaterialBlockConnectionPointTypes.Object,
+            NodeMaterialBlockTargets.Fragment,
+            new NodeMaterialConnectionPointCustomObject("reflection", this, NodeMaterialConnectionPointDirection.Output, ReflectionBlock, "ReflectionBlock")
+        );
     }
 
     /**
@@ -117,8 +120,8 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
     }
 
     /**
-    * Gets the camera (or eye) position component
-    */
+     * Gets the camera (or eye) position component
+     */
     public get cameraPosition(): NodeMaterialConnectionPoint {
         return this.cameraPositionConnectionPoint;
     }
@@ -192,8 +195,7 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
                 defines.setValue("USEIRRADIANCEMAP", false);
                 if (this.forceIrradianceInFragment || this._scene.getEngine().getCaps().maxVaryingVectors <= 8) {
                     defines.setValue("USESPHERICALINVERTEX", false);
-                }
-                else {
+                } else {
                     defines.setValue("USESPHERICALINVERTEX", true);
                 }
             }
@@ -235,17 +237,12 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
                 effect.setVector3("vSphericalL20", preScaledHarmonics.l20);
                 effect.setVector3("vSphericalL21", preScaledHarmonics.l21);
                 effect.setVector3("vSphericalL22", preScaledHarmonics.l22);
-            }
-            else {
+            } else {
                 effect.setFloat3("vSphericalX", polynomials.x.x, polynomials.x.y, polynomials.x.z);
                 effect.setFloat3("vSphericalY", polynomials.y.x, polynomials.y.y, polynomials.y.z);
                 effect.setFloat3("vSphericalZ", polynomials.z.x, polynomials.z.y, polynomials.z.z);
-                effect.setFloat3("vSphericalXX_ZZ", polynomials.xx.x - polynomials.zz.x,
-                    polynomials.xx.y - polynomials.zz.y,
-                    polynomials.xx.z - polynomials.zz.z);
-                effect.setFloat3("vSphericalYY_ZZ", polynomials.yy.x - polynomials.zz.x,
-                    polynomials.yy.y - polynomials.zz.y,
-                    polynomials.yy.z - polynomials.zz.z);
+                effect.setFloat3("vSphericalXX_ZZ", polynomials.xx.x - polynomials.zz.x, polynomials.xx.y - polynomials.zz.y, polynomials.xx.z - polynomials.zz.z);
+                effect.setFloat3("vSphericalYY_ZZ", polynomials.yy.x - polynomials.zz.x, polynomials.yy.y - polynomials.zz.y, polynomials.yy.z - polynomials.zz.z);
                 effect.setFloat3("vSphericalZZ", polynomials.zz.x, polynomials.zz.y, polynomials.zz.z);
                 effect.setFloat3("vSphericalXY", polynomials.xy.x, polynomials.xy.y, polynomials.xy.z);
                 effect.setFloat3("vSphericalYZ", polynomials.yz.x, polynomials.yz.y, polynomials.yz.z);
@@ -266,7 +263,7 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
             replaceStrings: [
                 { search: /uniform vec3 vSphericalL00;[\s\S]*?uniform vec3 vSphericalL22;/g, replace: "" },
                 { search: /uniform vec3 vSphericalX;[\s\S]*?uniform vec3 vSphericalZX;/g, replace: "" },
-            ]
+            ],
         });
 
         const reflectionVectorName = state._getFreeVariableName("reflectionVector");
@@ -295,8 +292,7 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
         state._emitUniformFromString("vSphericalYZ", "vec3", "SPHERICAL_HARMONICS", true);
         state._emitUniformFromString("vSphericalZX", "vec3", "SPHERICAL_HARMONICS", true);
 
-        code +=
-            `#if defined(USESPHERICALFROMREFLECTIONMAP) && defined(USESPHERICALINVERTEX)
+        code += `#if defined(USESPHERICALFROMREFLECTIONMAP) && defined(USESPHERICALINVERTEX)
                 vec3 ${reflectionVectorName} = vec3(${this._reflectionMatrixName} * vec4(normalize(${this.worldNormal.associatedVariableName}).xyz, 0)).xyz;
                 #ifdef ${this._defineOppositeZ}
                     ${reflectionVectorName}.z *= -1.0;
@@ -322,26 +318,34 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
             replaceStrings: [
                 { search: /uniform vec3 vSphericalL00;[\s\S]*?uniform vec3 vSphericalL22;/g, replace: "" },
                 { search: /uniform vec3 vSphericalX;[\s\S]*?uniform vec3 vSphericalZX;/g, replace: "" },
-            ]
+            ],
         });
 
-        state._emitFunction("sampleReflection", `
+        state._emitFunction(
+            "sampleReflection",
+            `
             #ifdef ${this._define3DName}
                 #define sampleReflection(s, c) textureCube(s, c)
             #else
                 #define sampleReflection(s, c) texture2D(s, c)
-            #endif\r\n`, `//${this.name}`);
+            #endif\r\n`,
+            `//${this.name}`
+        );
 
-        state._emitFunction("sampleReflectionLod", `
+        state._emitFunction(
+            "sampleReflectionLod",
+            `
             #ifdef ${this._define3DName}
                 #define sampleReflectionLod(s, c, l) textureCubeLodEXT(s, c, l)
             #else
                 #define sampleReflectionLod(s, c, l) texture2DLodEXT(s, c, l)
-            #endif\r\n`, `//${this.name}`);
+            #endif\r\n`,
+            `//${this.name}`
+        );
 
         const computeReflectionCoordsFunc = `
             vec3 computeReflectionCoordsPBR(vec4 worldPos, vec3 worldNormal) {
-                ${this.handleFragmentSideCodeReflectionCoords('worldNormal', 'worldPos', true)}
+                ${this.handleFragmentSideCodeReflectionCoords("worldNormal", "worldPos", true)}
                 return ${this._reflectionVectorName};
             }\r\n`;
 
@@ -437,7 +441,7 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
     }
 
     public serialize(): any {
-        let serializationObject = super.serialize();
+        const serializationObject = super.serialize();
 
         serializationObject.useSphericalHarmonics = this.useSphericalHarmonics;
         serializationObject.forceIrradianceInFragment = this.forceIrradianceInFragment;

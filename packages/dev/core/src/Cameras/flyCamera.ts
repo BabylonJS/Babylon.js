@@ -8,7 +8,7 @@ import { TargetCamera } from "./targetCamera";
 import { FlyCameraInputsManager } from "./flyCameraInputsManager";
 import { FlyCameraMouseInput } from "../Cameras/Inputs/flyCameraMouseInput";
 import { FlyCameraKeyboardInput } from "../Cameras/Inputs/flyCameraKeyboardInput";
-import { Tools } from '../Misc/tools';
+import { Tools } from "../Misc/tools";
 
 declare type Collider = import("../Collisions/collider").Collider;
 
@@ -62,8 +62,8 @@ export class FlyCamera extends TargetCamera {
     public _trackRoll: number = 0;
 
     /**
-    * Slowly correct the Roll to its original value after a Pitch+Yaw rotation.
-    */
+     * Slowly correct the Roll to its original value after a Pitch+Yaw rotation.
+     */
     public rollCorrect: number = 100;
 
     /**
@@ -93,7 +93,7 @@ export class FlyCamera extends TargetCamera {
      * Higher values reduce sensitivity.
      */
     public get angularSensibility(): number {
-        var mouse = <FlyCameraMouseInput>this.inputs.attached["mouse"];
+        const mouse = <FlyCameraMouseInput>this.inputs.attached["mouse"];
         if (mouse) {
             return mouse.angularSensibility;
         }
@@ -106,7 +106,7 @@ export class FlyCamera extends TargetCamera {
      * Higher values reduce sensitivity.
      */
     public set angularSensibility(value: number) {
-        var mouse = <FlyCameraMouseInput>this.inputs.attached["mouse"];
+        const mouse = <FlyCameraMouseInput>this.inputs.attached["mouse"];
         if (mouse) {
             mouse.angularSensibility = value;
         }
@@ -116,7 +116,7 @@ export class FlyCamera extends TargetCamera {
      * Get the keys for camera movement forward.
      */
     public get keysForward(): number[] {
-        var keyboard = <FlyCameraKeyboardInput>this.inputs.attached["keyboard"];
+        const keyboard = <FlyCameraKeyboardInput>this.inputs.attached["keyboard"];
         if (keyboard) {
             return keyboard.keysForward;
         }
@@ -125,10 +125,10 @@ export class FlyCamera extends TargetCamera {
     }
 
     /**
-    * Set the keys for camera movement forward.
-    */
+     * Set the keys for camera movement forward.
+     */
     public set keysForward(value: number[]) {
-        var keyboard = <FlyCameraKeyboardInput>this.inputs.attached["keyboard"];
+        const keyboard = <FlyCameraKeyboardInput>this.inputs.attached["keyboard"];
         if (keyboard) {
             keyboard.keysForward = value;
         }
@@ -138,7 +138,7 @@ export class FlyCamera extends TargetCamera {
      * Get the keys for camera movement backward.
      */
     public get keysBackward(): number[] {
-        var keyboard = <FlyCameraKeyboardInput>this.inputs.attached["keyboard"];
+        const keyboard = <FlyCameraKeyboardInput>this.inputs.attached["keyboard"];
         if (keyboard) {
             return keyboard.keysBackward;
         }
@@ -147,7 +147,7 @@ export class FlyCamera extends TargetCamera {
     }
 
     public set keysBackward(value: number[]) {
-        var keyboard = <FlyCameraKeyboardInput>this.inputs.attached["keyboard"];
+        const keyboard = <FlyCameraKeyboardInput>this.inputs.attached["keyboard"];
         if (keyboard) {
             keyboard.keysBackward = value;
         }
@@ -157,7 +157,7 @@ export class FlyCamera extends TargetCamera {
      * Get the keys for camera movement up.
      */
     public get keysUp(): number[] {
-        var keyboard = <FlyCameraKeyboardInput>this.inputs.attached["keyboard"];
+        const keyboard = <FlyCameraKeyboardInput>this.inputs.attached["keyboard"];
         if (keyboard) {
             return keyboard.keysUp;
         }
@@ -166,10 +166,10 @@ export class FlyCamera extends TargetCamera {
     }
 
     /**
-    * Set the keys for camera movement up.
-    */
+     * Set the keys for camera movement up.
+     */
     public set keysUp(value: number[]) {
-        var keyboard = <FlyCameraKeyboardInput>this.inputs.attached["keyboard"];
+        const keyboard = <FlyCameraKeyboardInput>this.inputs.attached["keyboard"];
         if (keyboard) {
             keyboard.keysUp = value;
         }
@@ -179,7 +179,7 @@ export class FlyCamera extends TargetCamera {
      * Get the keys for camera movement down.
      */
     public get keysDown(): number[] {
-        var keyboard = <FlyCameraKeyboardInput>this.inputs.attached["keyboard"];
+        const keyboard = <FlyCameraKeyboardInput>this.inputs.attached["keyboard"];
         if (keyboard) {
             return keyboard.keysDown;
         }
@@ -188,10 +188,10 @@ export class FlyCamera extends TargetCamera {
     }
 
     /**
-    * Set the keys for camera movement down.
-    */
+     * Set the keys for camera movement down.
+     */
     public set keysDown(value: number[]) {
-        var keyboard = <FlyCameraKeyboardInput>this.inputs.attached["keyboard"];
+        const keyboard = <FlyCameraKeyboardInput>this.inputs.attached["keyboard"];
         if (keyboard) {
             keyboard.keysDown = value;
         }
@@ -201,7 +201,7 @@ export class FlyCamera extends TargetCamera {
      * Get the keys for camera movement left.
      */
     public get keysLeft(): number[] {
-        var keyboard = <FlyCameraKeyboardInput>this.inputs.attached["keyboard"];
+        const keyboard = <FlyCameraKeyboardInput>this.inputs.attached["keyboard"];
         if (keyboard) {
             return keyboard.keysLeft;
         }
@@ -210,10 +210,10 @@ export class FlyCamera extends TargetCamera {
     }
 
     /**
-    * Set the keys for camera movement left.
-    */
+     * Set the keys for camera movement left.
+     */
     public set keysLeft(value: number[]) {
-        var keyboard = <FlyCameraKeyboardInput>this.inputs.attached["keyboard"];
+        const keyboard = <FlyCameraKeyboardInput>this.inputs.attached["keyboard"];
         if (keyboard) {
             keyboard.keysLeft = value;
         }
@@ -223,7 +223,7 @@ export class FlyCamera extends TargetCamera {
      * Set the keys for camera movement right.
      */
     public get keysRight(): number[] {
-        var keyboard = <FlyCameraKeyboardInput>this.inputs.attached["keyboard"];
+        const keyboard = <FlyCameraKeyboardInput>this.inputs.attached["keyboard"];
         if (keyboard) {
             return keyboard.keysRight;
         }
@@ -232,10 +232,10 @@ export class FlyCamera extends TargetCamera {
     }
 
     /**
-    * Set the keys for camera movement right.
-    */
+     * Set the keys for camera movement right.
+     */
     public set keysRight(value: number[]) {
-        var keyboard = <FlyCameraKeyboardInput>this.inputs.attached["keyboard"];
+        const keyboard = <FlyCameraKeyboardInput>this.inputs.attached["keyboard"];
         if (keyboard) {
             keyboard.keysRight = value;
         }
@@ -265,7 +265,7 @@ export class FlyCamera extends TargetCamera {
      * @param position Define the starting position of the camera in the scene.
      * @param scene Define the scene the camera belongs to.
      * @param setActiveOnSceneIfNoneActive Defines whether the camera should be marked as active, if no other camera has been defined as active.
-    */
+     */
     constructor(name: string, position: Vector3, scene?: Scene, setActiveOnSceneIfNoneActive = true) {
         super(name, position, scene, setActiveOnSceneIfNoneActive);
         this.inputs = new FlyCameraInputsManager(this);
@@ -308,15 +308,18 @@ export class FlyCamera extends TargetCamera {
     }
 
     /**
-    * Set the mask that the camera ignores in collision events.
-    */
+     * Set the mask that the camera ignores in collision events.
+     */
     public set collisionMask(mask: number) {
         this._collisionMask = !isNaN(mask) ? mask : -1;
     }
 
-    /** @hidden */
+    /**
+     * @param displacement
+     * @hidden
+     */
     public _collideWithWorld(displacement: Vector3): void {
-        var globalPosition: Vector3;
+        let globalPosition: Vector3;
 
         if (this.parent) {
             globalPosition = Vector3.TransformCoordinates(this.position, this.parent.getWorldMatrix());
@@ -326,7 +329,7 @@ export class FlyCamera extends TargetCamera {
 
         globalPosition.subtractFromFloatsToRef(0, this.ellipsoid.y, 0, this._oldPosition);
         this._oldPosition.addInPlace(this.ellipsoidOffset);
-        let coordinator = this.getScene().collisionCoordinator;
+        const coordinator = this.getScene().collisionCoordinator;
 
         if (!this._collider) {
             this._collider = coordinator.createCollider();
@@ -336,7 +339,7 @@ export class FlyCamera extends TargetCamera {
         this._collider.collisionMask = this._collisionMask;
 
         // No need for clone, as long as gravity is not on.
-        var actualDisplacement = displacement;
+        let actualDisplacement = displacement;
 
         // Add gravity to direction to prevent dual-collision checking.
         if (this.applyGravity) {
@@ -347,10 +350,14 @@ export class FlyCamera extends TargetCamera {
         coordinator.getNewPosition(this._oldPosition, actualDisplacement, this._collider, 3, null, this._onCollisionPositionChange, this.uniqueId);
     }
 
-    /** @hidden */
+    /**
+     * @param collisionId
+     * @param newPosition
+     * @param collidedMesh
+     * @hidden
+     */
     private _onCollisionPositionChange = (collisionId: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh> = null) => {
-
-        var updatePosition = (newPos: Vector3) => {
+        const updatePosition = (newPos: Vector3) => {
             this._newPosition.copyFrom(newPos);
 
             this._newPosition.subtractToRef(this._oldPosition, this._diffPosition);
@@ -364,7 +371,7 @@ export class FlyCamera extends TargetCamera {
         };
 
         updatePosition(newPosition);
-    }
+    };
 
     /** @hidden */
     public _checkInputs(): void {
@@ -398,11 +405,11 @@ export class FlyCamera extends TargetCamera {
      * @hidden
      */
     public restoreRoll(rate: number): void {
-        let limit = this._trackRoll;    // Target Roll.
-        let z = this.rotation.z; // Current Roll.
-        let delta = limit - z;          // Difference in Roll.
+        const limit = this._trackRoll; // Target Roll.
+        const z = this.rotation.z; // Current Roll.
+        const delta = limit - z; // Difference in Roll.
 
-        let minRad = 0.001; // Tenth of a radian is a barely noticable difference.
+        const minRad = 0.001; // Tenth of a radian is a barely noticable difference.
 
         // If the difference is noticable, restore the Roll.
         if (Math.abs(delta) >= minRad) {

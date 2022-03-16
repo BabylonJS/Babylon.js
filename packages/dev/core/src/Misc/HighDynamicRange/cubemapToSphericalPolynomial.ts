@@ -5,8 +5,8 @@ import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Nullable } from "../../types";
 import { Constants } from "../../Engines/constants";
 import { CubeMapInfo } from "./panoramaToCubemap";
-import { ToLinearSpace } from '../../Maths/math.constants';
-import { Color3 } from '../../Maths/math.color';
+import { ToLinearSpace } from "../../Maths/math.constants";
+import { Color3 } from "../../Maths/math.color";
 
 class FileFaceOrientation {
     public name: string;
@@ -27,14 +27,13 @@ class FileFaceOrientation {
  * from a cube map.
  */
 export class CubeMapToSphericalPolynomialTools {
-
     private static FileFaces: FileFaceOrientation[] = [
         new FileFaceOrientation("right", new Vector3(1, 0, 0), new Vector3(0, 0, -1), new Vector3(0, -1, 0)), // +X east
         new FileFaceOrientation("left", new Vector3(-1, 0, 0), new Vector3(0, 0, 1), new Vector3(0, -1, 0)), // -X west
         new FileFaceOrientation("up", new Vector3(0, 1, 0), new Vector3(1, 0, 0), new Vector3(0, 0, 1)), // +Y north
         new FileFaceOrientation("down", new Vector3(0, -1, 0), new Vector3(1, 0, 0), new Vector3(0, 0, -1)), // -Y south
         new FileFaceOrientation("front", new Vector3(0, 0, 1), new Vector3(1, 0, 0), new Vector3(0, -1, 0)), // +Z top
-        new FileFaceOrientation("back", new Vector3(0, 0, -1), new Vector3(-1, 0, 0), new Vector3(0, -1, 0))// -Z bottom
+        new FileFaceOrientation("back", new Vector3(0, 0, -1), new Vector3(-1, 0, 0), new Vector3(0, -1, 0)), // -Z bottom
     ];
 
     /**
@@ -52,35 +51,34 @@ export class CubeMapToSphericalPolynomialTools {
 
         texture.getScene()?.getEngine().flushFramebuffer();
 
-        var size = texture.getSize().width;
-        var rightPromise = texture.readPixels(0, undefined, undefined, false);
-        var leftPromise = texture.readPixels(1, undefined, undefined, false);
+        const size = texture.getSize().width;
+        const rightPromise = texture.readPixels(0, undefined, undefined, false);
+        const leftPromise = texture.readPixels(1, undefined, undefined, false);
 
-        var upPromise: Nullable<Promise<ArrayBufferView>>;
-        var downPromise: Nullable<Promise<ArrayBufferView>>;
+        let upPromise: Nullable<Promise<ArrayBufferView>>;
+        let downPromise: Nullable<Promise<ArrayBufferView>>;
         if (texture.isRenderTarget) {
             upPromise = texture.readPixels(3, undefined, undefined, false);
             downPromise = texture.readPixels(2, undefined, undefined, false);
-        }
-        else {
+        } else {
             upPromise = texture.readPixels(2, undefined, undefined, false);
             downPromise = texture.readPixels(3, undefined, undefined, false);
         }
 
-        var frontPromise = texture.readPixels(4, undefined, undefined, false);
-        var backPromise = texture.readPixels(5, undefined, undefined, false);
+        const frontPromise = texture.readPixels(4, undefined, undefined, false);
+        const backPromise = texture.readPixels(5, undefined, undefined, false);
 
-        var gammaSpace = texture.gammaSpace;
+        const gammaSpace = texture.gammaSpace;
         // Always read as RGBA.
-        var format = Constants.TEXTUREFORMAT_RGBA;
-        var type = Constants.TEXTURETYPE_UNSIGNED_INT;
+        const format = Constants.TEXTUREFORMAT_RGBA;
+        let type = Constants.TEXTURETYPE_UNSIGNED_INT;
         if (texture.textureType == Constants.TEXTURETYPE_FLOAT || texture.textureType == Constants.TEXTURETYPE_HALF_FLOAT) {
             type = Constants.TEXTURETYPE_FLOAT;
         }
 
         return new Promise((resolve, reject) => {
             Promise.all([leftPromise, rightPromise, upPromise, downPromise, frontPromise, backPromise]).then(([left, right, up, down, front, back]) => {
-                var cubeInfo: CubeMapInfo = {
+                const cubeInfo: CubeMapInfo = {
                     size,
                     right,
                     left,
@@ -101,6 +99,8 @@ export class CubeMapToSphericalPolynomialTools {
     /**
      * Compute the area on the unit sphere of the rectangle defined by (x,y) and the origin
      * See https://www.rorydriscoll.com/2012/01/15/cubemap-texel-solid-angle/
+     * @param x
+     * @param y
      */
     private static _AreaElement(x: number, y: number): number {
         return Math.atan2(x * y, Math.sqrt(x * x + y * y + 1));
@@ -114,52 +114,55 @@ export class CubeMapToSphericalPolynomialTools {
      * @return The Spherical Polynomial data.
      */
     public static ConvertCubeMapToSphericalPolynomial(cubeInfo: CubeMapInfo): SphericalPolynomial {
-        var sphericalHarmonics = new SphericalHarmonics();
-        var totalSolidAngle = 0.0;
+        const sphericalHarmonics = new SphericalHarmonics();
+        let totalSolidAngle = 0.0;
 
         // The (u,v) range is [-1,+1], so the distance between each texel is 2/Size.
-        var du = 2.0 / cubeInfo.size;
-        var dv = du;
+        const du = 2.0 / cubeInfo.size;
+        const dv = du;
 
-        var halfTexel = 0.5 * du;
+        const halfTexel = 0.5 * du;
 
         // The (u,v) of the first texel is half a texel from the corner (-1,-1).
-        var minUV = halfTexel - 1.0;
+        const minUV = halfTexel - 1.0;
 
-        for (var faceIndex = 0; faceIndex < 6; faceIndex++) {
-            var fileFace = this.FileFaces[faceIndex];
-            var dataArray = (<any>cubeInfo)[fileFace.name];
-            var v = minUV;
+        for (let faceIndex = 0; faceIndex < 6; faceIndex++) {
+            const fileFace = this.FileFaces[faceIndex];
+            const dataArray = (<any>cubeInfo)[fileFace.name];
+            let v = minUV;
 
             // TODO: we could perform the summation directly into a SphericalPolynomial (SP), which is more efficient than SphericalHarmonic (SH).
             // This is possible because during the summation we do not need the SH-specific properties, e.g. orthogonality.
             // Because SP is still linear, so summation is fine in that basis.
             const stride = cubeInfo.format === Constants.TEXTUREFORMAT_RGBA ? 4 : 3;
-            for (var y = 0; y < cubeInfo.size; y++) {
-                var u = minUV;
+            for (let y = 0; y < cubeInfo.size; y++) {
+                let u = minUV;
 
-                for (var x = 0; x < cubeInfo.size; x++) {
+                for (let x = 0; x < cubeInfo.size; x++) {
                     // World direction (not normalised)
-                    var worldDirection =
-                        fileFace.worldAxisForFileX.scale(u).add(
-                            fileFace.worldAxisForFileY.scale(v)).add(
-                                fileFace.worldAxisForNormal);
+                    const worldDirection = fileFace.worldAxisForFileX.scale(u).add(fileFace.worldAxisForFileY.scale(v)).add(fileFace.worldAxisForNormal);
                     worldDirection.normalize();
 
-                    var deltaSolidAngle =
+                    const deltaSolidAngle =
                         this._AreaElement(u - halfTexel, v - halfTexel) -
                         this._AreaElement(u - halfTexel, v + halfTexel) -
                         this._AreaElement(u + halfTexel, v - halfTexel) +
                         this._AreaElement(u + halfTexel, v + halfTexel);
 
-                    var r = dataArray[(y * cubeInfo.size * stride) + (x * stride) + 0];
-                    var g = dataArray[(y * cubeInfo.size * stride) + (x * stride) + 1];
-                    var b = dataArray[(y * cubeInfo.size * stride) + (x * stride) + 2];
+                    let r = dataArray[y * cubeInfo.size * stride + x * stride + 0];
+                    let g = dataArray[y * cubeInfo.size * stride + x * stride + 1];
+                    let b = dataArray[y * cubeInfo.size * stride + x * stride + 2];
 
                     // Prevent NaN harmonics with extreme HDRI data.
-                    if (isNaN(r)) { r = 0; }
-                    if (isNaN(g)) { g = 0; }
-                    if (isNaN(b)) { b = 0; }
+                    if (isNaN(r)) {
+                        r = 0;
+                    }
+                    if (isNaN(g)) {
+                        g = 0;
+                    }
+                    if (isNaN(b)) {
+                        b = 0;
+                    }
 
                     // Handle Integer types.
                     if (cubeInfo.type === Constants.TEXTURETYPE_UNSIGNED_INT) {
@@ -182,7 +185,7 @@ export class CubeMapToSphericalPolynomialTools {
                     g = Scalar.Clamp(g, 0, max);
                     b = Scalar.Clamp(b, 0, max);
 
-                    var color = new Color3(r, g, b);
+                    const color = new Color3(r, g, b);
 
                     sphericalHarmonics.addLight(worldDirection, color, deltaSolidAngle);
 
@@ -196,17 +199,17 @@ export class CubeMapToSphericalPolynomialTools {
         }
 
         // Solid angle for entire sphere is 4*pi
-        var sphereSolidAngle = 4.0 * Math.PI;
+        const sphereSolidAngle = 4.0 * Math.PI;
 
         // Adjust the solid angle to allow for how many faces we processed.
-        var facesProcessed = 6.0;
-        var expectedSolidAngle = sphereSolidAngle * facesProcessed / 6.0;
+        const facesProcessed = 6.0;
+        const expectedSolidAngle = (sphereSolidAngle * facesProcessed) / 6.0;
 
         // Adjust the harmonics so that the accumulated solid angle matches the expected solid angle.
         // This is needed because the numerical integration over the cube uses a
         // small angle approximation of solid angle for each texel (see deltaSolidAngle),
         // and also to compensate for accumulative error due to float precision in the summation.
-        var correctionFactor = expectedSolidAngle / totalSolidAngle;
+        const correctionFactor = expectedSolidAngle / totalSolidAngle;
         sphericalHarmonics.scaleInPlace(correctionFactor);
 
         sphericalHarmonics.convertIncidentRadianceToIrradiance();

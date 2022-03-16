@@ -22,7 +22,10 @@ import { GeometryBufferRenderer } from "../Rendering/geometryBufferRenderer";
  * It is necessary for effects like subsurface scattering or deferred shading
  */
 export class PrePassRenderer {
-    /** @hidden */
+    /**
+     * @param _
+     * @hidden
+     */
     public static _SceneComponentInitialization: (scene: Scene) => void = (_) => {
         throw _WarnImport("PrePassRendererSceneComponent");
     };
@@ -381,6 +384,9 @@ export class PrePassRenderer {
     }
 
     /**
+     * @param camera
+     * @param faceIndex
+     * @param layer
      * @hidden
      */
     public _beforeDraw(camera?: Camera, faceIndex?: number, layer?: number) {
@@ -413,7 +419,7 @@ export class PrePassRenderer {
 
     private _renderPostProcesses(prePassRenderTarget: PrePassRenderTarget, faceIndex?: number) {
         const firstPP = this._postProcessesSourceForThisPass[0];
-        let outputTexture = firstPP ? firstPP.inputTexture : prePassRenderTarget.renderTargetTexture ? prePassRenderTarget.renderTargetTexture.renderTarget : null;
+        const outputTexture = firstPP ? firstPP.inputTexture : prePassRenderTarget.renderTargetTexture ? prePassRenderTarget.renderTargetTexture.renderTarget : null;
 
         // Build post process chain for this prepass post draw
         let postProcessChain = this._currentTarget._beforeCompositionPostProcesses;
@@ -430,6 +436,8 @@ export class PrePassRenderer {
     }
 
     /**
+     * @param faceIndex
+     * @param layer
      * @hidden
      */
     public _afterDraw(faceIndex?: number, layer?: number) {
@@ -458,7 +466,7 @@ export class PrePassRenderer {
     private _bindFrameBuffer(prePassRenderTarget: PrePassRenderTarget) {
         if (this._enabled && this._currentTarget.enabled) {
             this._currentTarget._checkSize();
-            var internalTexture = this._currentTarget.renderTarget;
+            const internalTexture = this._currentTarget.renderTarget;
             if (internalTexture) {
                 this._engine.bindFramebuffer(internalTexture);
             }
@@ -619,7 +627,10 @@ export class PrePassRenderer {
         }
     }
 
-    /** @hidden */
+    /**
+     * @param prePassRenderTarget
+     * @hidden
+     */
     public _unlinkInternalTexture(prePassRenderTarget: PrePassRenderTarget) {
         if (prePassRenderTarget._outputPostProcess) {
             prePassRenderTarget._outputPostProcess.autoClear = true;
@@ -654,10 +665,11 @@ export class PrePassRenderer {
 
     /**
      * Internal, gets the first post proces.
+     * @param postProcesses
      * @returns the first post process to be run on this camera.
      */
     private _getFirstPostProcess(postProcesses: Nullable<PostProcess>[]): Nullable<PostProcess> {
-        for (var ppIndex = 0; ppIndex < postProcesses.length; ppIndex++) {
+        for (let ppIndex = 0; ppIndex < postProcesses.length; ppIndex++) {
             if (postProcesses[ppIndex] !== null) {
                 return postProcesses[ppIndex];
             }
@@ -674,13 +686,14 @@ export class PrePassRenderer {
 
     /**
      * Enables a texture on the MultiRenderTarget for prepass
+     * @param types
      */
     private _enableTextures(types: number[]) {
         // For velocity : enable storage of previous matrices for instances
         this._scene.needsPreviousWorldMatrices = false;
 
         for (let i = 0; i < types.length; i++) {
-            let type = types[i];
+            const type = types[i];
 
             if (this._textureIndices[type] === -1) {
                 this._textureIndices[type] = this._mrtLayout.length;

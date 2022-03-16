@@ -1,4 +1,4 @@
-import { Nullable } from '../types';
+import { Nullable } from "../types";
 
 declare type Animation = import("./animation").Animation;
 

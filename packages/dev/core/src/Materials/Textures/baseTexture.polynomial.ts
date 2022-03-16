@@ -20,7 +20,7 @@ declare module "./baseTexture" {
     }
 }
 
-BaseTexture.prototype.forceSphericalPolynomialsRecompute = function(): void {
+BaseTexture.prototype.forceSphericalPolynomialsRecompute = function (): void {
     if (this._texture) {
         this._texture._sphericalPolynomial = null;
         this._texture._sphericalPolynomialPromise = null;
@@ -60,5 +60,5 @@ Object.defineProperty(BaseTexture.prototype, "sphericalPolynomial", {
         }
     },
     enumerable: true,
-    configurable: true
+    configurable: true,
 });

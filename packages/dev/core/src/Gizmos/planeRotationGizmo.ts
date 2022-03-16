@@ -2,7 +2,7 @@ import { Observer, Observable } from "../Misc/observable";
 import { Nullable } from "../types";
 import { PointerInfo } from "../Events/pointerEvents";
 import { Quaternion, Matrix, Vector3 } from "../Maths/math.vector";
-import { Color3 } from '../Maths/math.color';
+import { Color3 } from "../Maths/math.color";
 import "../Meshes/Builders/linesBuilder";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
@@ -41,7 +41,7 @@ export class PlaneRotationGizmo extends Gizmo {
      * The maximum angle between the camera and the rotation allowed for interaction
      * If a rotation plane appears 'flat', a lower value allows interaction.
      */
-    public static MaxDragAngle: number = Math.PI * 9 / 20;
+    public static MaxDragAngle: number = (Math.PI * 9) / 20;
 
     /**
      * Acumulated relative angle value for rotation on the axis. Reset to 0 when a dragStart occurs
@@ -107,10 +107,19 @@ export class PlaneRotationGizmo extends Gizmo {
      * @param planeNormal The normal of the plane which the gizmo will be able to rotate on
      * @param color The color of the gizmo
      * @param tessellation Amount of tessellation to be used when creating rotation circles
+     * @param parent
      * @param useEulerRotation Use and update Euler angle instead of quaternion
      * @param thickness display gizmo axis thickness
      */
-    constructor(planeNormal: Vector3, color: Color3 = Color3.Gray(), gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer, tessellation = 32, parent: Nullable<RotationGizmo> = null, useEulerRotation = false, thickness: number = 1) {
+    constructor(
+        planeNormal: Vector3,
+        color: Color3 = Color3.Gray(),
+        gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer,
+        tessellation = 32,
+        parent: Nullable<RotationGizmo> = null,
+        useEulerRotation = false,
+        thickness: number = 1
+    ) {
         super(gizmoLayer);
         this._parent = parent;
         // Create Material
@@ -137,14 +146,18 @@ export class PlaneRotationGizmo extends Gizmo {
 
         Effect.ShadersStore["rotationGizmoVertexShader"] = PlaneRotationGizmo._rotationGizmoVertexShader;
         Effect.ShadersStore["rotationGizmoFragmentShader"] = PlaneRotationGizmo._rotationGizmoFragmentShader;
-        this._rotationShaderMaterial = new ShaderMaterial("shader", this.gizmoLayer.utilityLayerScene, {
-            vertex: "rotationGizmo",
-            fragment: "rotationGizmo",
-        },
+        this._rotationShaderMaterial = new ShaderMaterial(
+            "shader",
+            this.gizmoLayer.utilityLayerScene,
+            {
+                vertex: "rotationGizmo",
+                fragment: "rotationGizmo",
+            },
             {
                 attributes: ["position", "uv"],
-                uniforms: ["worldViewProjection", "angles"]
-            });
+                uniforms: ["worldViewProjection", "angles"],
+            }
+        );
         this._rotationShaderMaterial.backFaceCulling = false;
 
         this._rotationDisplayPlane.material = this._rotationShaderMaterial;
@@ -190,24 +203,24 @@ export class PlaneRotationGizmo extends Gizmo {
             this._rotationDisplayPlane.setEnabled(false);
         });
 
-        var tmpSnapEvent = { snapDistance: 0 };
-        var currentSnapDragDistance = 0;
-        var tmpMatrix = new Matrix();
-        var amountToRotate = new Quaternion();
+        const tmpSnapEvent = { snapDistance: 0 };
+        let currentSnapDragDistance = 0;
+        const tmpMatrix = new Matrix();
+        const amountToRotate = new Quaternion();
         this.dragBehavior.onDragObservable.add((event) => {
             if (this.attachedNode) {
                 // Calc angle over full 360 degree (https://stackoverflow.com/questions/43493711/the-angle-between-two-3d-vectors-with-a-result-range-0-360)
-                var nodeScale = new Vector3(1, 1, 1);
-                var nodeQuaternion = new Quaternion(0, 0, 0, 1);
-                var nodeTranslation = new Vector3(0, 0, 0);
+                const nodeScale = new Vector3(1, 1, 1);
+                const nodeQuaternion = new Quaternion(0, 0, 0, 1);
+                const nodeTranslation = new Vector3(0, 0, 0);
                 this._handlePivot();
                 this.attachedNode.getWorldMatrix().decompose(nodeScale, nodeQuaternion, nodeTranslation);
 
-                var newVector = event.dragPlanePoint.subtract(nodeTranslation).normalize();
-                var originalVector = lastDragPosition.subtract(nodeTranslation).normalize();
-                var cross = Vector3.Cross(newVector, originalVector);
-                var dot = Vector3.Dot(newVector, originalVector);
-                var angle = Math.atan2(cross.length(), dot);
+                const newVector = event.dragPlanePoint.subtract(nodeTranslation).normalize();
+                const originalVector = lastDragPosition.subtract(nodeTranslation).normalize();
+                const cross = Vector3.Cross(newVector, originalVector);
+                const dot = Vector3.Dot(newVector, originalVector);
+                let angle = Math.atan2(cross.length(), dot);
                 planeNormalTowardsCamera.copyFrom(planeNormal);
                 localPlaneNormalTowardsCamera.copyFrom(planeNormal);
                 if (this.updateGizmoRotationToMatchAttachedMesh) {
@@ -217,22 +230,24 @@ export class PlaneRotationGizmo extends Gizmo {
                 // Flip up vector depending on which side the camera is on
                 let cameraFlipped = false;
                 if (gizmoLayer.utilityLayerScene.activeCamera) {
-                    var camVec = gizmoLayer.utilityLayerScene.activeCamera.position.subtract(nodeTranslation).normalize();
+                    const camVec = gizmoLayer.utilityLayerScene.activeCamera.position.subtract(nodeTranslation).normalize();
                     if (Vector3.Dot(camVec, localPlaneNormalTowardsCamera) > 0) {
                         planeNormalTowardsCamera.scaleInPlace(-1);
                         localPlaneNormalTowardsCamera.scaleInPlace(-1);
                         cameraFlipped = true;
                     }
                 }
-                var halfCircleSide = Vector3.Dot(localPlaneNormalTowardsCamera, cross) > 0.0;
-                if (halfCircleSide) { angle = -angle; }
+                const halfCircleSide = Vector3.Dot(localPlaneNormalTowardsCamera, cross) > 0.0;
+                if (halfCircleSide) {
+                    angle = -angle;
+                }
 
                 // Snapping logic
-                var snapped = false;
+                let snapped = false;
                 if (this.snapDistance != 0) {
                     currentSnapDragDistance += angle;
                     if (Math.abs(currentSnapDragDistance) > this.snapDistance) {
-                        var dragSteps = Math.floor(Math.abs(currentSnapDragDistance) / this.snapDistance);
+                        let dragSteps = Math.floor(Math.abs(currentSnapDragDistance) / this.snapDistance);
                         if (currentSnapDragDistance < 0) {
                             dragSteps *= -1;
                         }
@@ -245,12 +260,17 @@ export class PlaneRotationGizmo extends Gizmo {
                 }
 
                 // Convert angle and axis to quaternion (http://www.euclideanspace.com/maths/geometry/rotations/conversions/angleToQuaternion/index.htm)
-                var quaternionCoefficient = Math.sin(angle / 2);
-                amountToRotate.set(planeNormalTowardsCamera.x * quaternionCoefficient, planeNormalTowardsCamera.y * quaternionCoefficient, planeNormalTowardsCamera.z * quaternionCoefficient, Math.cos(angle / 2));
+                const quaternionCoefficient = Math.sin(angle / 2);
+                amountToRotate.set(
+                    planeNormalTowardsCamera.x * quaternionCoefficient,
+                    planeNormalTowardsCamera.y * quaternionCoefficient,
+                    planeNormalTowardsCamera.z * quaternionCoefficient,
+                    Math.cos(angle / 2)
+                );
 
                 // If the meshes local scale is inverted (eg. loaded gltf file parent with z scale of -1) the rotation needs to be inverted on the y axis
                 if (tmpMatrix.determinant() > 0) {
-                    var tmpVector = new Vector3();
+                    const tmpVector = new Vector3();
                     amountToRotate.toEulerAnglesToRef(tmpVector);
                     Quaternion.RotationYawPitchRollToRef(tmpVector.y, -tmpVector.x, -tmpVector.z, amountToRotate);
                 }
@@ -278,7 +298,7 @@ export class PlaneRotationGizmo extends Gizmo {
             }
         });
 
-        var light = gizmoLayer._getSharedGizmoLight();
+        const light = gizmoLayer._getSharedGizmoLight();
         light.includedOnlyMeshes = light.includedOnlyMeshes.concat(this._rootMesh.getChildMeshes(false));
 
         const cache: GizmoAxisCache = {
@@ -288,7 +308,7 @@ export class PlaneRotationGizmo extends Gizmo {
             hoverMaterial: this._hoverMaterial,
             disableMaterial: this._disableMaterial,
             active: false,
-            dragBehavior: this.dragBehavior
+            dragBehavior: this.dragBehavior,
         };
         this._parent?.addToAxisCache(this._gizmoMesh, cache);
 
@@ -310,19 +330,32 @@ export class PlaneRotationGizmo extends Gizmo {
         });
     }
 
-    /** Create Geometry for Gizmo */
+    /**
+     * Create Geometry for Gizmo
+     * @param parentMesh
+     * @param thickness
+     * @param tessellation
+     */
     private _createGizmoMesh(parentMesh: AbstractMesh, thickness: number, tessellation: number) {
-        let collider = CreateTorus("ignore", {
-            diameter: 0.6,
-            thickness: 0.03 * thickness,
-            tessellation,
-        }, this.gizmoLayer.utilityLayerScene);
+        const collider = CreateTorus(
+            "ignore",
+            {
+                diameter: 0.6,
+                thickness: 0.03 * thickness,
+                tessellation,
+            },
+            this.gizmoLayer.utilityLayerScene
+        );
         collider.visibility = 0;
-        let rotationMesh = CreateTorus("", {
-            diameter: 0.6,
-            thickness: 0.005 * thickness,
-            tessellation,
-        }, this.gizmoLayer.utilityLayerScene);
+        const rotationMesh = CreateTorus(
+            "",
+            {
+                diameter: 0.6,
+                thickness: 0.005 * thickness,
+                tessellation,
+            },
+            this.gizmoLayer.utilityLayerScene
+        );
         rotationMesh.material = this._coloredMaterial;
 
         // Position arrow pointing in its drag axis
@@ -341,14 +374,13 @@ export class PlaneRotationGizmo extends Gizmo {
     }
 
     /**
-         * If the gizmo is enabled
-         */
+     * If the gizmo is enabled
+     */
     public set isEnabled(value: boolean) {
         this._isEnabled = value;
         if (!value) {
             this.attachedMesh = null;
-        }
-        else {
+        } else {
             if (this._parent) {
                 this.attachedMesh = this._parent.attachedMesh;
             }

@@ -3,13 +3,13 @@ import { Camera } from "../Cameras/camera";
 import { Effect } from "../Materials/effect";
 import { PostProcess, PostProcessOptions } from "./postProcess";
 import { Constants } from "../Engines/constants";
-import { GeometryBufferRenderer } from '../Rendering/geometryBufferRenderer';
-import { serialize, SerializationHelper } from '../Misc/decorators';
+import { GeometryBufferRenderer } from "../Rendering/geometryBufferRenderer";
+import { serialize, SerializationHelper } from "../Misc/decorators";
 import { PrePassRenderer } from "../Rendering/prePassRenderer";
 import { ScreenSpaceReflectionsConfiguration } from "../Rendering/screenSpaceReflectionsConfiguration";
 
 import "../Shaders/screenSpaceReflection.fragment";
-import { RegisterClass } from '../Misc/typeStore';
+import { RegisterClass } from "../Misc/typeStore";
 
 declare type Engine = import("../Engines/engine").Engine;
 declare type Scene = import("../scene").Scene;
@@ -88,14 +88,34 @@ export class ScreenSpaceReflectionPostProcess extends PostProcess {
      * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: true)
      * @param forceGeometryBuffer If this post process should use geometry buffer instead of prepass (default: false)
      */
-    constructor(name: string, scene: Scene, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT, blockCompilation = false, forceGeometryBuffer = false) {
-        super(name, "screenSpaceReflection", [
-            "projection", "view", "threshold", "reflectionSpecularFalloffExponent", "strength", "stepSize", "roughnessFactor"
-        ], [
-            "textureSampler", "normalSampler", "positionSampler", "reflectivitySampler"
-        ], options, camera, samplingMode, engine, reusable,
+    constructor(
+        name: string,
+        scene: Scene,
+        options: number | PostProcessOptions,
+        camera: Nullable<Camera>,
+        samplingMode?: number,
+        engine?: Engine,
+        reusable?: boolean,
+        textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT,
+        blockCompilation = false,
+        forceGeometryBuffer = false
+    ) {
+        super(
+            name,
+            "screenSpaceReflection",
+            ["projection", "view", "threshold", "reflectionSpecularFalloffExponent", "strength", "stepSize", "roughnessFactor"],
+            ["textureSampler", "normalSampler", "positionSampler", "reflectivitySampler"],
+            options,
+            camera,
+            samplingMode,
+            engine,
+            reusable,
             "#define SSR_SUPPORTED\n#define REFLECTION_SAMPLES 64\n#define SMOOTH_STEPS 5\n",
-            textureType, undefined, null, blockCompilation);
+            textureType,
+            undefined,
+            null,
+            blockCompilation
+        );
 
         this._forceGeometryBuffer = forceGeometryBuffer;
 
@@ -251,15 +271,31 @@ export class ScreenSpaceReflectionPostProcess extends PostProcess {
         this.updateEffect(defines.join("\n"));
     }
 
-    /** @hidden */
+    /**
+     * @param parsedPostProcess
+     * @param targetCamera
+     * @param scene
+     * @param rootUrl
+     * @hidden
+     */
     public static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string) {
-        return SerializationHelper.Parse(() => {
-            return new ScreenSpaceReflectionPostProcess(
-                parsedPostProcess.name, scene,
-                parsedPostProcess.options, targetCamera,
-                parsedPostProcess.renderTargetSamplingMode,
-                scene.getEngine(), parsedPostProcess.textureType, parsedPostProcess.reusable);
-        }, parsedPostProcess, scene, rootUrl);
+        return SerializationHelper.Parse(
+            () => {
+                return new ScreenSpaceReflectionPostProcess(
+                    parsedPostProcess.name,
+                    scene,
+                    parsedPostProcess.options,
+                    targetCamera,
+                    parsedPostProcess.renderTargetSamplingMode,
+                    scene.getEngine(),
+                    parsedPostProcess.textureType,
+                    parsedPostProcess.reusable
+                );
+            },
+            parsedPostProcess,
+            scene,
+            rootUrl
+        );
     }
 }
 

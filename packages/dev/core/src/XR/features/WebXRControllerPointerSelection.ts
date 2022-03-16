@@ -347,7 +347,10 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         return null;
     }
 
-    /** @hidden */
+    /**
+     * @param id
+     * @hidden
+     */
     public _getPointerSelectionDisabledByPointerId(id: number): boolean {
         const keys = Object.keys(this._controllers);
 
@@ -359,7 +362,11 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         return true;
     }
 
-    /** @hidden */
+    /**
+     * @param id
+     * @param state
+     * @hidden
+     */
     public _setPointerSelectionDisabledByPointerId(id: number, state: boolean) {
         const keys = Object.keys(this._controllers);
 
@@ -412,7 +419,12 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                     camera.viewport.toGlobalToRef(scene.getEngine().getRenderWidth(), scene.getEngine().getRenderHeight(), this._viewportRef);
                     Vector3.ProjectToRef(controllerGlobalPosition, this._identityMatrix, scene.getTransformMatrix(), this._viewportRef, this._screenCoordinatesRef);
                     // stay safe
-                    if (typeof this._screenCoordinatesRef.x === "number" && typeof this._screenCoordinatesRef.y === "number" && !isNaN(this._screenCoordinatesRef.x) && !isNaN(this._screenCoordinatesRef.y)) {
+                    if (
+                        typeof this._screenCoordinatesRef.x === "number" &&
+                        typeof this._screenCoordinatesRef.y === "number" &&
+                        !isNaN(this._screenCoordinatesRef.x) &&
+                        !isNaN(this._screenCoordinatesRef.y)
+                    ) {
                         scene.pointerX = this._screenCoordinatesRef.x;
                         scene.pointerY = this._screenCoordinatesRef.y;
 
@@ -429,7 +441,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                 utilityScenePick = this._utilityLayerScene.pickWithRay(controllerData.tmpRay, this._utilityLayerScene.pointerMovePredicate || this.raySelectionPredicate);
             }
 
-            let originalScenePick = this._scene.pickWithRay(controllerData.tmpRay, this._scene.pointerMovePredicate || this.raySelectionPredicate);
+            const originalScenePick = this._scene.pickWithRay(controllerData.tmpRay, this._scene.pointerMovePredicate || this.raySelectionPredicate);
             if (!utilityScenePick || !utilityScenePick.hit) {
                 // No hit in utility scene
                 controllerData.pick = originalScenePick;
@@ -462,12 +474,12 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                 controllerData.selectionMesh.scaling.z = Math.sqrt(pick.distance);
 
                 // To avoid z-fighting
-                let pickNormal = this._convertNormalToDirectionOfRay(pick.getNormal(true), controllerData.tmpRay);
-                let deltaFighting = 0.001;
+                const pickNormal = this._convertNormalToDirectionOfRay(pick.getNormal(true), controllerData.tmpRay);
+                const deltaFighting = 0.001;
                 controllerData.selectionMesh.position.copyFrom(pick.pickedPoint);
                 if (pickNormal) {
-                    let axis1 = Vector3.Cross(Axis.Y, pickNormal);
-                    let axis2 = Vector3.Cross(pickNormal, axis1);
+                    const axis1 = Vector3.Cross(Axis.Y, pickNormal);
+                    const axis2 = Vector3.Cross(pickNormal, axis1);
                     Vector3.RotationFromAxisToRef(axis2, pickNormal, axis1, controllerData.selectionMesh.rotation);
                     controllerData.selectionMesh.position.addInPlace(pickNormal.scale(deltaFighting));
                 }
@@ -491,7 +503,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         const timeToSelect = this._options.timeToSelect || 3000;
         const sceneToRenderTo = this._options.useUtilityLayer ? this._utilityLayerScene : this._scene;
         let oldPick = new PickingInfo();
-        let discMesh = CreateTorus(
+        const discMesh = CreateTorus(
             "selection",
             {
                 diameter: 0.0035 * 15,
@@ -694,7 +706,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
 
     private _convertNormalToDirectionOfRay(normal: Nullable<Vector3>, ray: Ray) {
         if (normal) {
-            let angle = Math.acos(Vector3.Dot(normal, ray.direction));
+            const angle = Math.acos(Vector3.Dot(normal, ray.direction));
             if (angle < Math.PI / 2) {
                 normal.scaleInPlace(-1);
             }
@@ -737,7 +749,6 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         }
         this._xrSessionManager.scene.onBeforeRenderObservable.addOnce(() => {
             try {
-
                 controllerData.selectionMesh.dispose();
                 controllerData.laserPointer.dispose();
                 // remove from the map
@@ -759,19 +770,21 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
 
     private _generateNewMeshPair(meshParent: Node) {
         const sceneToRenderTo = this._options.useUtilityLayer ? this._options.customUtilityLayerScene || UtilityLayerRenderer.DefaultUtilityLayer.utilityLayerScene : this._scene;
-        const laserPointer = this._options.customLasterPointerMeshGenerator ? this._options.customLasterPointerMeshGenerator() : CreateCylinder(
-            "laserPointer",
-            {
-                height: 1,
-                diameterTop: 0.0002,
-                diameterBottom: 0.004,
-                tessellation: 20,
-                subdivisions: 1,
-            },
-            sceneToRenderTo
-        );
+        const laserPointer = this._options.customLasterPointerMeshGenerator
+            ? this._options.customLasterPointerMeshGenerator()
+            : CreateCylinder(
+                  "laserPointer",
+                  {
+                      height: 1,
+                      diameterTop: 0.0002,
+                      diameterBottom: 0.004,
+                      tessellation: 20,
+                      subdivisions: 1,
+                  },
+                  sceneToRenderTo
+              );
         laserPointer.parent = meshParent;
-        let laserPointerMaterial = new StandardMaterial("laserPointerMat", sceneToRenderTo);
+        const laserPointerMaterial = new StandardMaterial("laserPointerMat", sceneToRenderTo);
         laserPointerMaterial.emissiveColor = this.laserPointerDefaultColor;
         laserPointerMaterial.alpha = 0.7;
         laserPointer.material = laserPointerMaterial;
@@ -781,19 +794,21 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         laserPointer.isVisible = false;
 
         // Create a gaze tracker for the  XR controller
-        const selectionMesh = this._options.customSelectionMeshGenerator ? this._options.customSelectionMeshGenerator() : CreateTorus(
-            "gazeTracker",
-            {
-                diameter: 0.0035 * 3,
-                thickness: 0.0025 * 3,
-                tessellation: 20,
-            },
-            sceneToRenderTo
-        );
+        const selectionMesh = this._options.customSelectionMeshGenerator
+            ? this._options.customSelectionMeshGenerator()
+            : CreateTorus(
+                  "gazeTracker",
+                  {
+                      diameter: 0.0035 * 3,
+                      thickness: 0.0025 * 3,
+                      tessellation: 20,
+                  },
+                  sceneToRenderTo
+              );
         selectionMesh.bakeCurrentTransformIntoVertices();
         selectionMesh.isPickable = false;
         selectionMesh.isVisible = false;
-        let targetMat = new StandardMaterial("targetMat", sceneToRenderTo);
+        const targetMat = new StandardMaterial("targetMat", sceneToRenderTo);
         targetMat.specularColor = Color3.Black();
         targetMat.emissiveColor = this.selectionMeshDefaultColor;
         targetMat.backFaceCulling = false;
@@ -839,7 +854,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         _laserPointer.position.z = distance / 2 + 0.05;
     }
 
-    private _augmentPointerInit(pointerEventInit: PointerEventInit, id: number, screenCoordinates?: { x: number; y: number; }): void {
+    private _augmentPointerInit(pointerEventInit: PointerEventInit, id: number, screenCoordinates?: { x: number; y: number }): void {
         pointerEventInit.pointerId = id;
         pointerEventInit.pointerType = "xr";
         if (screenCoordinates) {

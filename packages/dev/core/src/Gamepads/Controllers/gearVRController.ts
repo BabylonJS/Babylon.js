@@ -8,26 +8,26 @@ import { WebVRController } from "./webVRController";
 import { PoseEnabledControllerType, ExtendedGamepadButton, PoseEnabledControllerHelper } from "./poseEnabledController";
 
 /**
-     * Gear VR Controller
-     */
+ * Gear VR Controller
+ */
 export class GearVRController extends WebVRController {
     /**
      * Base Url for the controller model.
      */
-    public static MODEL_BASE_URL: string = 'https://controllers.babylonjs.com/generic/';
+    public static MODEL_BASE_URL: string = "https://controllers.babylonjs.com/generic/";
     /**
      * File name for the controller model.
      */
-    public static MODEL_FILENAME: string = 'generic.babylon';
+    public static MODEL_FILENAME: string = "generic.babylon";
 
     /**
      * Gamepad Id prefix used to identify this controller.
      */
-    public static readonly GAMEPAD_ID_PREFIX: string = 'Gear VR'; // id is 'Gear VR Controller'
+    public static readonly GAMEPAD_ID_PREFIX: string = "Gear VR"; // id is 'Gear VR Controller'
 
     private readonly _buttonIndexToObservableNameMap = [
-        'onPadStateChangedObservable', // Pad
-        'onTriggerStateChangedObservable' // Trigger
+        "onPadStateChangedObservable", // Pad
+        "onTriggerStateChangedObservable", // Trigger
     ];
 
     /**
@@ -50,7 +50,7 @@ export class GearVRController extends WebVRController {
     public initControllerMesh(scene: Scene, meshLoaded?: (mesh: AbstractMesh) => void) {
         SceneLoader.ImportMesh("", GearVRController.MODEL_BASE_URL, GearVRController.MODEL_FILENAME, scene, (newMeshes) => {
             // Offset the controller so it will rotate around the users wrist
-            var mesh = new Mesh("", scene);
+            const mesh = new Mesh("", scene);
             newMeshes[1].parent = mesh;
             newMeshes[1].position.z = -0.15;
             this._defaultModel = mesh;
@@ -72,7 +72,7 @@ export class GearVRController extends WebVRController {
             const observableName: string = this._buttonIndexToObservableNameMap[buttonIdx];
 
             // Only emit events for buttons that we know how to map from index to observable
-            let observable = (<any>this)[observableName];
+            const observable = (<any>this)[observableName];
             if (observable) {
                 observable.notifyObservers(state);
             }
@@ -82,11 +82,9 @@ export class GearVRController extends WebVRController {
 
 PoseEnabledControllerHelper._ControllerFactories.push({
     canCreate: (gamepadInfo) => {
-        return gamepadInfo.id.indexOf(GearVRController.GAMEPAD_ID_PREFIX) === 0 ||
-            gamepadInfo.id.indexOf('Oculus Go') !== -1 ||
-            gamepadInfo.id.indexOf('Vive Focus') !== -1;
+        return gamepadInfo.id.indexOf(GearVRController.GAMEPAD_ID_PREFIX) === 0 || gamepadInfo.id.indexOf("Oculus Go") !== -1 || gamepadInfo.id.indexOf("Vive Focus") !== -1;
     },
     create: (gamepadInfo) => {
         return new GearVRController(gamepadInfo);
-    }
+    },
 });

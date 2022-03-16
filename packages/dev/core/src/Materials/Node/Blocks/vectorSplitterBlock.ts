@@ -1,15 +1,14 @@
-import { NodeMaterialBlock } from '../nodeMaterialBlock';
-import { NodeMaterialBlockConnectionPointTypes } from '../Enums/nodeMaterialBlockConnectionPointTypes';
-import { NodeMaterialBuildState } from '../nodeMaterialBuildState';
-import { NodeMaterialBlockTargets } from '../Enums/nodeMaterialBlockTargets';
-import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint';
-import { RegisterClass } from '../../../Misc/typeStore';
+import { NodeMaterialBlock } from "../nodeMaterialBlock";
+import { NodeMaterialBlockConnectionPointTypes } from "../Enums/nodeMaterialBlockConnectionPointTypes";
+import { NodeMaterialBuildState } from "../nodeMaterialBuildState";
+import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
+import { NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
+import { RegisterClass } from "../../../Misc/typeStore";
 
 /**
  * Block used to expand a Vector3/4 into 4 outputs (one for each component)
  */
 export class VectorSplitterBlock extends NodeMaterialBlock {
-
     /**
      * Create a new VectorSplitterBlock
      * @param name defines the block name
@@ -135,15 +134,15 @@ export class VectorSplitterBlock extends NodeMaterialBlock {
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
-        let input = this.xyzw.isConnected ? this.xyzw : this.xyzIn.isConnected ? this.xyzIn : this.xyIn;
+        const input = this.xyzw.isConnected ? this.xyzw : this.xyzIn.isConnected ? this.xyzIn : this.xyIn;
 
-        let xyzOutput = this._outputs[0];
-        let xyOutput = this._outputs[1];
-        let zwOutput = this._outputs[2];
-        let xOutput = this._outputs[3];
-        let yOutput = this._outputs[4];
-        let zOutput = this._outputs[5];
-        let wOutput = this._outputs[6];
+        const xyzOutput = this._outputs[0];
+        const xyOutput = this._outputs[1];
+        const zwOutput = this._outputs[2];
+        const xOutput = this._outputs[3];
+        const yOutput = this._outputs[4];
+        const zOutput = this._outputs[5];
+        const wOutput = this._outputs[6];
 
         if (xyzOutput.hasEndpoints) {
             if (input === this.xyIn) {

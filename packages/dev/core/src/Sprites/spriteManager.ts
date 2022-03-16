@@ -10,10 +10,10 @@ import { Texture } from "../Materials/Textures/texture";
 import { SceneComponentConstants } from "../sceneComponent";
 import { Logger } from "../Misc/logger";
 import { Tools } from "../Misc/tools";
-import { WebRequest } from '../Misc/webRequest';
-import { SpriteRenderer } from './spriteRenderer';
-import { ThinSprite } from './thinSprite';
-import { ISize } from '../Maths/math.size';
+import { WebRequest } from "../Misc/webRequest";
+import { SpriteRenderer } from "./spriteRenderer";
+import { ThinSprite } from "./thinSprite";
+import { ISize } from "../Maths/math.size";
 import { EngineStore } from "../Engines/engineStore";
 
 declare type Ray = import("../Culling/ray").Ray;
@@ -25,7 +25,6 @@ declare const Reflect: any;
  * Defines the minimum interface to fulfill in order to be a sprite manager.
  */
 export interface ISpriteManager extends IDisposable {
-
     /**
      * Gets manager's name
      */
@@ -114,13 +113,13 @@ export class SpriteManager implements ISpriteManager {
     /** Gets or sets the rendering group id (0 by default) */
     public renderingGroupId = 0;
     /** Gets or sets camera layer mask */
-    public layerMask: number = 0x0FFFFFFF;
+    public layerMask: number = 0x0fffffff;
     /** Gets or sets a boolean indicating if the sprites are pickable */
     public isPickable = false;
 
     /**
-    * An event triggered when the manager is disposed.
-    */
+     * An event triggered when the manager is disposed.
+     */
     public onDisposeObservable = new Observable<SpriteManager>();
 
     /**
@@ -212,7 +211,7 @@ export class SpriteManager implements ISpriteManager {
     /** Disables writing to the depth buffer when rendering the sprites.
      *  It can be handy to disable depth writing when using textures without alpha channel
      *  and setting some specific blend modes.
-    */
+     */
     public get disableDepthWrite() {
         return this._disableDepthWrite;
     }
@@ -249,8 +248,15 @@ export class SpriteManager implements ISpriteManager {
     constructor(
         /** defines the manager's name */
         public name: string,
-        imgUrl: string, capacity: number, cellSize: any, scene: Scene, epsilon: number = 0.01, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, fromPacked: boolean = false, spriteJSON: any | null = null) {
-
+        imgUrl: string,
+        capacity: number,
+        cellSize: any,
+        scene: Scene,
+        epsilon: number = 0.01,
+        samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
+        fromPacked: boolean = false,
+        spriteJSON: any | null = null
+    ) {
         if (!scene) {
             scene = EngineStore.LastCreatedScene!;
         }
@@ -307,39 +313,37 @@ export class SpriteManager implements ISpriteManager {
                 }
 
                 if (celldata.frames.length) {
-                    let frametemp: any = {};
+                    const frametemp: any = {};
                     for (let i = 0; i < celldata.frames.length; i++) {
-                        let _f = celldata.frames[i];
-                        if (typeof (Object.keys(_f))[0] !== "string") {
+                        const _f = celldata.frames[i];
+                        if (typeof Object.keys(_f)[0] !== "string") {
                             throw new Error("Invalid JSON Format.  Check the frame values and make sure the name is the first parameter.");
                         }
 
-                        let name: string = _f[(Object.keys(_f))[0]];
+                        const name: string = _f[Object.keys(_f)[0]];
                         frametemp[name] = _f;
                     }
                     celldata.frames = frametemp;
                 }
 
-                let spritemap = (<string[]>(Reflect).ownKeys(celldata.frames));
+                const spritemap = <string[]>Reflect.ownKeys(celldata.frames);
 
                 this._spriteMap = spritemap;
                 this._packedAndReady = true;
                 this._cellData = celldata.frames;
-            }
-            catch (e) {
+            } catch (e) {
                 this._fromPacked = false;
                 this._packedAndReady = false;
                 throw new Error("Invalid JSON from string. Spritesheet managed with constant cell size.");
             }
-        }
-        else {
-            let re = /\./g;
+        } else {
+            const re = /\./g;
             let li: number;
             do {
                 li = re.lastIndex;
                 re.test(imgUrl);
             } while (re.lastIndex > 0);
-            let jsonUrl = imgUrl.substring(0, li - 1) + ".json";
+            const jsonUrl = imgUrl.substring(0, li - 1) + ".json";
             const onerror = () => {
                 Logger.Error("JSON ERROR: Unable to load JSON file.");
                 this._fromPacked = false;
@@ -347,13 +351,12 @@ export class SpriteManager implements ISpriteManager {
             };
             const onload = (data: string | ArrayBuffer) => {
                 try {
-                    let celldata = JSON.parse(data as string);
-                    let spritemap = (<string[]>(Reflect).ownKeys(celldata.frames));
+                    const celldata = JSON.parse(data as string);
+                    const spritemap = <string[]>Reflect.ownKeys(celldata.frames);
                     this._spriteMap = spritemap;
                     this._packedAndReady = true;
                     this._cellData = celldata.frames;
-                }
-                catch (e) {
+                } catch (e) {
                     this._fromPacked = false;
                     this._packedAndReady = false;
                     throw new Error("Invalid JSON format. Please check documentation for format specifications.");
@@ -368,13 +371,13 @@ export class SpriteManager implements ISpriteManager {
             return true;
         }
 
-        let textureSize = this.texture.getSize();
+        const textureSize = this.texture.getSize();
         if (!this._textureContent) {
             this._textureContent = new Uint8Array(textureSize.width * textureSize.height * 4);
             this.texture.readPixels(0, 0, this._textureContent);
         }
 
-        let contactPoint = TmpVectors.Vector3[0];
+        const contactPoint = TmpVectors.Vector3[0];
 
         contactPoint.copyFrom(ray.direction);
 
@@ -382,20 +385,20 @@ export class SpriteManager implements ISpriteManager {
         contactPoint.scaleInPlace(distance);
         contactPoint.addInPlace(ray.origin);
 
-        let contactPointU = ((contactPoint.x - min.x) / (max.x - min.x)) - 0.5;
-        let contactPointV = (1.0 - (contactPoint.y - min.y) / (max.y - min.y)) - 0.5;
+        const contactPointU = (contactPoint.x - min.x) / (max.x - min.x) - 0.5;
+        const contactPointV = 1.0 - (contactPoint.y - min.y) / (max.y - min.y) - 0.5;
 
         // Rotate
-        let angle = sprite.angle;
-        let rotatedU = 0.5 + (contactPointU * Math.cos(angle) - contactPointV * Math.sin(angle));
-        let rotatedV = 0.5 + (contactPointU * Math.sin(angle) + contactPointV * Math.cos(angle));
+        const angle = sprite.angle;
+        const rotatedU = 0.5 + (contactPointU * Math.cos(angle) - contactPointV * Math.sin(angle));
+        const rotatedV = 0.5 + (contactPointU * Math.sin(angle) + contactPointV * Math.cos(angle));
 
-        let u = (sprite._xOffset * textureSize.width + rotatedU * sprite._xSize) | 0;
-        let v = (sprite._yOffset * textureSize.height + rotatedV * sprite._ySize) | 0;
+        const u = (sprite._xOffset * textureSize.width + rotatedU * sprite._xSize) | 0;
+        const v = (sprite._yOffset * textureSize.height + rotatedV * sprite._ySize) | 0;
 
-        let alpha = this._textureContent![(u + v * textureSize.width) * 4 + 3];
+        const alpha = this._textureContent![(u + v * textureSize.width) * 4 + 3];
 
-        return (alpha > 0.5);
+        return alpha > 0.5;
     }
 
     /**
@@ -407,19 +410,19 @@ export class SpriteManager implements ISpriteManager {
      * @returns null if no hit or a PickingInfo
      */
     public intersects(ray: Ray, camera: Camera, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean): Nullable<PickingInfo> {
-        var count = Math.min(this.capacity, this.sprites.length);
-        var min = Vector3.Zero();
-        var max = Vector3.Zero();
-        var distance = Number.MAX_VALUE;
-        var currentSprite: Nullable<Sprite> = null;
-        var pickedPoint = TmpVectors.Vector3[0];
-        var cameraSpacePosition = TmpVectors.Vector3[1];
-        var cameraView = camera.getViewMatrix();
+        const count = Math.min(this.capacity, this.sprites.length);
+        const min = Vector3.Zero();
+        const max = Vector3.Zero();
+        let distance = Number.MAX_VALUE;
+        let currentSprite: Nullable<Sprite> = null;
+        const pickedPoint = TmpVectors.Vector3[0];
+        const cameraSpacePosition = TmpVectors.Vector3[1];
+        const cameraView = camera.getViewMatrix();
         let activeRay: Ray = ray;
         let pickedRay: Ray = ray;
 
-        for (var index = 0; index < count; index++) {
-            var sprite = this.sprites[index];
+        for (let index = 0; index < count; index++) {
+            const sprite = this.sprites[index];
             if (!sprite) {
                 continue;
             }
@@ -455,10 +458,9 @@ export class SpriteManager implements ISpriteManager {
             max.copyFromFloats(cameraSpacePosition.x + sprite.width / 2, cameraSpacePosition.y + sprite.height / 2, cameraSpacePosition.z);
 
             if (activeRay.intersectsBoxMinMax(min, max)) {
-                var currentDistance = Vector3.Distance(cameraSpacePosition, activeRay.origin);
+                const currentDistance = Vector3.Distance(cameraSpacePosition, activeRay.origin);
 
                 if (distance > currentDistance) {
-
                     if (!this._checkTextureAlpha(sprite, activeRay, currentDistance, min, max)) {
                         continue;
                     }
@@ -475,7 +477,7 @@ export class SpriteManager implements ISpriteManager {
         }
 
         if (currentSprite) {
-            var result = new PickingInfo();
+            const result = new PickingInfo();
 
             cameraView.invertToRef(TmpVectors.Matrix[0]);
             result.hit = true;
@@ -483,7 +485,7 @@ export class SpriteManager implements ISpriteManager {
             result.distance = distance;
 
             // Get picked point
-            let direction = TmpVectors.Vector3[2];
+            const direction = TmpVectors.Vector3[2];
             direction.copyFrom(pickedRay.direction);
             direction.normalize();
             direction.scaleInPlace(distance);
@@ -505,17 +507,17 @@ export class SpriteManager implements ISpriteManager {
      * @returns null if no hit or a PickingInfo array
      */
     public multiIntersects(ray: Ray, camera: Camera, predicate?: (sprite: Sprite) => boolean): Nullable<PickingInfo[]> {
-        var count = Math.min(this.capacity, this.sprites.length);
-        var min = Vector3.Zero();
-        var max = Vector3.Zero();
-        var distance: number;
-        var results: Nullable<PickingInfo[]> = [];
-        var pickedPoint = TmpVectors.Vector3[0].copyFromFloats(0, 0, 0);
-        var cameraSpacePosition = TmpVectors.Vector3[1].copyFromFloats(0, 0, 0);
-        var cameraView = camera.getViewMatrix();
+        const count = Math.min(this.capacity, this.sprites.length);
+        const min = Vector3.Zero();
+        const max = Vector3.Zero();
+        let distance: number;
+        const results: Nullable<PickingInfo[]> = [];
+        const pickedPoint = TmpVectors.Vector3[0].copyFromFloats(0, 0, 0);
+        const cameraSpacePosition = TmpVectors.Vector3[1].copyFromFloats(0, 0, 0);
+        const cameraView = camera.getViewMatrix();
 
-        for (var index = 0; index < count; index++) {
-            var sprite = this.sprites[index];
+        for (let index = 0; index < count; index++) {
+            const sprite = this.sprites[index];
             if (!sprite) {
                 continue;
             }
@@ -540,7 +542,7 @@ export class SpriteManager implements ISpriteManager {
                     continue;
                 }
 
-                var result = new PickingInfo();
+                const result = new PickingInfo();
                 results.push(result);
 
                 cameraView.invertToRef(TmpVectors.Matrix[0]);
@@ -549,7 +551,7 @@ export class SpriteManager implements ISpriteManager {
                 result.distance = distance;
 
                 // Get picked point
-                let direction = TmpVectors.Vector3[2];
+                const direction = TmpVectors.Vector3[2];
                 direction.copyFrom(ray.direction);
                 direction.normalize();
                 direction.scaleInPlace(distance);
@@ -557,7 +559,6 @@ export class SpriteManager implements ISpriteManager {
                 ray.origin.addToRef(direction, pickedPoint);
                 result.pickedPoint = Vector3.TransformCoordinates(pickedPoint, TmpVectors.Matrix[0]);
             }
-
         }
 
         return results;
@@ -572,12 +573,11 @@ export class SpriteManager implements ISpriteManager {
             return;
         }
 
-        var engine = this._scene.getEngine();
-        var deltaTime = engine.getDeltaTime();
+        const engine = this._scene.getEngine();
+        const deltaTime = engine.getDeltaTime();
         if (this._packedAndReady) {
             this._spriteRenderer.render(this.sprites, deltaTime, this._scene.getViewMatrix(), this._scene.getProjectionMatrix(), this._customUpdate);
-        }
-        else {
+        } else {
             this._spriteRenderer.render(this.sprites, deltaTime, this._scene.getViewMatrix(), this._scene.getProjectionMatrix());
         }
     }
@@ -586,8 +586,8 @@ export class SpriteManager implements ISpriteManager {
         if (!sprite.cellRef) {
             sprite.cellIndex = 0;
         }
-        let num = sprite.cellIndex;
-        if (typeof (num) === "number" && isFinite(num) && Math.floor(num) === num) {
+        const num = sprite.cellIndex;
+        if (typeof num === "number" && isFinite(num) && Math.floor(num) === num) {
             sprite.cellRef = this._spriteMap[sprite.cellIndex];
         }
         sprite._xOffset = this._cellData[sprite.cellRef].frame.x / baseSize.width;
@@ -615,7 +615,7 @@ export class SpriteManager implements ISpriteManager {
         this._textureContent = null;
 
         // Remove from scene
-        var index = this._scene.spriteManagers.indexOf(this);
+        const index = this._scene.spriteManagers.indexOf(this);
         this._scene.spriteManagers.splice(index, 1);
 
         // Callback
@@ -629,7 +629,7 @@ export class SpriteManager implements ISpriteManager {
      * @returns the JSON object
      */
     public serialize(serializeTexture = false): any {
-        var serializationObject: any = {};
+        const serializationObject: any = {};
 
         serializationObject.name = this.name;
         serializationObject.capacity = this.capacity;
@@ -647,7 +647,7 @@ export class SpriteManager implements ISpriteManager {
 
         serializationObject.sprites = [];
 
-        for (var sprite of this.sprites) {
+        for (const sprite of this.sprites) {
             serializationObject.sprites.push(sprite.serialize());
         }
 
@@ -662,10 +662,16 @@ export class SpriteManager implements ISpriteManager {
      * @returns the new sprite manager
      */
     public static Parse(parsedManager: any, scene: Scene, rootUrl: string): SpriteManager {
-        var manager = new SpriteManager(parsedManager.name, "", parsedManager.capacity, {
-            width: parsedManager.cellWidth,
-            height: parsedManager.cellHeight,
-        }, scene);
+        const manager = new SpriteManager(
+            parsedManager.name,
+            "",
+            parsedManager.capacity,
+            {
+                width: parsedManager.cellWidth,
+                height: parsedManager.cellHeight,
+            },
+            scene
+        );
 
         if (parsedManager.texture) {
             manager.texture = Texture.Parse(parsedManager.texture, scene, rootUrl) as Texture;
@@ -673,7 +679,7 @@ export class SpriteManager implements ISpriteManager {
             manager.texture = new Texture(rootUrl + parsedManager.textureUrl, scene, false, parsedManager.invertY !== undefined ? parsedManager.invertY : true);
         }
 
-        for (var parsedSprite of parsedManager.sprites) {
+        for (const parsedSprite of parsedManager.sprites) {
             Sprite.Parse(parsedSprite, manager);
         }
 
@@ -689,14 +695,13 @@ export class SpriteManager implements ISpriteManager {
      * @returns a promise that will resolve to the new sprite manager
      */
     public static ParseFromFileAsync(name: Nullable<string>, url: string, scene: Scene, rootUrl: string = ""): Promise<SpriteManager> {
-
         return new Promise((resolve, reject) => {
-            var request = new WebRequest();
+            const request = new WebRequest();
             request.addEventListener("readystatechange", () => {
                 if (request.readyState == 4) {
                     if (request.status == 200) {
-                        let serializationObject = JSON.parse(request.responseText);
-                        let output = SpriteManager.Parse(serializationObject, scene || EngineStore.LastCreatedScene, rootUrl);
+                        const serializationObject = JSON.parse(request.responseText);
+                        const output = SpriteManager.Parse(serializationObject, scene || EngineStore.LastCreatedScene, rootUrl);
 
                         if (name) {
                             output.name = name;
@@ -727,13 +732,13 @@ export class SpriteManager implements ISpriteManager {
         }
 
         return new Promise((resolve, reject) => {
-            var request = new WebRequest();
+            const request = new WebRequest();
             request.addEventListener("readystatechange", () => {
                 if (request.readyState == 4) {
                     if (request.status == 200) {
-                        var snippet = JSON.parse(JSON.parse(request.responseText).jsonPayload);
-                        let serializationObject = JSON.parse(snippet.spriteManager);
-                        let output = SpriteManager.Parse(serializationObject, scene || EngineStore.LastCreatedScene, rootUrl);
+                        const snippet = JSON.parse(JSON.parse(request.responseText).jsonPayload);
+                        const serializationObject = JSON.parse(snippet.spriteManager);
+                        const output = SpriteManager.Parse(serializationObject, scene || EngineStore.LastCreatedScene, rootUrl);
 
                         output.snippetId = snippetId;
 

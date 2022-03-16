@@ -162,7 +162,10 @@ export class Sound {
     private _length?: number;
     private _offset?: number;
 
-    /** @hidden */
+    /**
+     * @param _
+     * @hidden
+     */
     public static _SceneComponentInitialization: (scene: Scene) => void = (_) => {
         throw _WarnImport("AudioSceneComponent");
     };
@@ -221,7 +224,7 @@ export class Sound {
                 this._createSpatialParameters();
             }
             this._scene.mainSoundTrack.addSound(this);
-            var validParameter = true;
+            let validParameter = true;
 
             // if no parameter is passed, you need to call setAudioBuffer yourself to prepare the sound
             if (urlOrArrayBuffer) {
@@ -238,8 +241,8 @@ export class Sound {
                         this._urlType = "Array";
                     }
 
-                    var urls: string[] = [];
-                    var codecSupportedFound = false;
+                    let urls: string[] = [];
+                    let codecSupportedFound = false;
 
                     switch (this._urlType) {
                         case "MediaElement":
@@ -281,7 +284,7 @@ export class Sound {
                                 urls = urlOrArrayBuffer;
                             }
                             // If we found a supported format, we load it immediately and stop the loop
-                            for (var i = 0; i < urls.length; i++) {
+                            for (let i = 0; i < urls.length; i++) {
                                 var url = urls[i];
                                 codecSupportedFound =
                                     (options && options.skipCodecCheck) ||
@@ -689,8 +692,8 @@ export class Sound {
             return;
         }
 
-        var mat = this._connectedTransformNode.getWorldMatrix();
-        var direction = Vector3.TransformNormal(this._localDirection, mat);
+        const mat = this._connectedTransformNode.getWorldMatrix();
+        const direction = Vector3.TransformNormal(this._localDirection, mat);
         direction.normalize();
         this._soundPanner.orientationX.value = direction.x;
         this._soundPanner.orientationY.value = direction.y;
@@ -700,7 +703,7 @@ export class Sound {
     /** @hidden */
     public updateDistanceFromListener() {
         if (Engine.audioEngine?.canUseWebAudio && this._connectedTransformNode && this.useCustomAttenuation && this._soundGain && this._scene.activeCamera) {
-            var distance = this._connectedTransformNode.getDistanceToCamera(this._scene.activeCamera);
+            const distance = this._connectedTransformNode.getDistanceToCamera(this._scene.activeCamera);
             this._soundGain.gain.value = this._customAttenuationFunction(this._volume, distance, this.maxDistance, this.refDistance, this.rolloffFactor);
         }
     }
@@ -727,7 +730,7 @@ export class Sound {
                     time = -this._startOffset;
                     this._startOffset = 0;
                 }
-                var startTime = time ? Engine.audioEngine?.audioContext.currentTime + time : Engine.audioEngine?.audioContext.currentTime;
+                let startTime = time ? Engine.audioEngine?.audioContext.currentTime + time : Engine.audioEngine?.audioContext.currentTime;
                 if (!this._soundSource || !this._streamingSource) {
                     if (this._spatialSound && this._soundPanner) {
                         if (!isNaN(this._position.x) && !isNaN(this._position.y) && !isNaN(this._position.z)) {
@@ -766,7 +769,7 @@ export class Sound {
                         // an HTML Audio element
                         var tryToPlay = () => {
                             if (Engine.audioEngine?.unlocked) {
-                                var playPromise = this._htmlAudioElement.play();
+                                const playPromise = this._htmlAudioElement.play();
 
                                 // In browsers that don’t yet support this functionality,
                                 // playPromise won’t be defined.
@@ -882,7 +885,7 @@ export class Sound {
                 }
                 this.isPlaying = false;
             } else if (Engine.audioEngine?.audioContext && this._soundSource) {
-                var stopTime = time ? Engine.audioEngine.audioContext.currentTime + time : undefined;
+                const stopTime = time ? Engine.audioEngine.audioContext.currentTime + time : undefined;
                 this._soundSource.stop(stopTime);
                 if (stopTime === undefined) {
                     this.isPlaying = false;
@@ -1000,8 +1003,8 @@ export class Sound {
         if (!(<any>node).getBoundingInfo) {
             this.setPosition(node.absolutePosition);
         } else {
-            let mesh = node as AbstractMesh;
-            let boundingInfo = mesh.getBoundingInfo();
+            const mesh = node as AbstractMesh;
+            const boundingInfo = mesh.getBoundingInfo();
             this.setPosition(boundingInfo.boundingSphere.centerWorld);
         }
         if (Engine.audioEngine?.canUseWebAudio && this._isDirectional && this.isPlaying) {
@@ -1027,7 +1030,7 @@ export class Sound {
                 }
             };
 
-            var currentOptions = {
+            const currentOptions = {
                 autoplay: this.autoplay,
                 loop: this.loop,
                 volume: this._volume,
@@ -1084,7 +1087,7 @@ export class Sound {
      * @returns the JSON representation of the sound
      */
     public serialize(): any {
-        var serializationObject: any = {
+        const serializationObject: any = {
             name: this.name,
             url: this.name,
             autoplay: this.autoplay,
@@ -1129,8 +1132,8 @@ export class Sound {
      * @returns the newly parsed sound
      */
     public static Parse(parsedSound: any, scene: Scene, rootUrl: string, sourceSound?: Sound): Sound {
-        var soundName = parsedSound.name;
-        var soundUrl;
+        const soundName = parsedSound.name;
+        let soundUrl;
 
         if (parsedSound.url) {
             soundUrl = rootUrl + parsedSound.url;
@@ -1138,7 +1141,7 @@ export class Sound {
             soundUrl = rootUrl + soundName;
         }
 
-        var options = {
+        const options = {
             autoplay: parsedSound.autoplay,
             loop: parsedSound.loop,
             volume: parsedSound.volume,
@@ -1150,7 +1153,7 @@ export class Sound {
             playbackRate: parsedSound.playbackRate,
         };
 
-        var newSound: Sound;
+        let newSound: Sound;
 
         if (!sourceSound) {
             newSound = new Sound(
@@ -1181,18 +1184,18 @@ export class Sound {
         }
 
         if (parsedSound.position) {
-            var soundPosition = Vector3.FromArray(parsedSound.position);
+            const soundPosition = Vector3.FromArray(parsedSound.position);
             newSound.setPosition(soundPosition);
         }
         if (parsedSound.isDirectional) {
             newSound.setDirectionalCone(parsedSound.coneInnerAngle || 360, parsedSound.coneOuterAngle || 360, parsedSound.coneOuterGain || 0);
             if (parsedSound.localDirectionToMesh) {
-                var localDirectionToMesh = Vector3.FromArray(parsedSound.localDirectionToMesh);
+                const localDirectionToMesh = Vector3.FromArray(parsedSound.localDirectionToMesh);
                 newSound.setLocalDirectionToMesh(localDirectionToMesh);
             }
         }
         if (parsedSound.connectedMeshId) {
-            var connectedMesh = scene.getMeshById(parsedSound.connectedMeshId);
+            const connectedMesh = scene.getMeshById(parsedSound.connectedMeshId);
             if (connectedMesh) {
                 newSound.attachToMesh(connectedMesh);
             }

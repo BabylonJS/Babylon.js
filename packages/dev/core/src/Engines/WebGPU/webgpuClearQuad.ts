@@ -17,7 +17,6 @@ import "../../Shaders/clearQuad.fragment";
 
 /** @hidden */
 export class WebGPUClearQuad {
-
     private _device: GPUDevice;
     private _engine: WebGPUEngine;
     private _cacheRenderPipeline: WebGPUCacheRenderPipeline;
@@ -47,12 +46,18 @@ export class WebGPUClearQuad {
 
         this._cacheRenderPipeline = new WebGPUCacheRenderPipelineTree(this._device, emptyVertexBuffer, !engine._caps.textureFloatLinearFiltering);
         this._cacheRenderPipeline.setDepthTestEnabled(false);
-        this._cacheRenderPipeline.setStencilReadMask(0xFF);
+        this._cacheRenderPipeline.setStencilReadMask(0xff);
 
         this._effect = engine.createEffect("clearQuad", [], ["color", "depthValue"]);
     }
 
-    public clear(renderPass: Nullable<GPURenderPassEncoder>, clearColor?: Nullable<IColor4Like>, clearDepth?: boolean, clearStencil?: boolean, sampleCount = 1): Nullable<GPURenderBundle> {
+    public clear(
+        renderPass: Nullable<GPURenderPassEncoder>,
+        clearColor?: Nullable<IColor4Like>,
+        clearDepth?: boolean,
+        clearStencil?: boolean,
+        sampleCount = 1
+    ): Nullable<GPURenderBundle> {
         let renderPass2: GPURenderPassEncoder | GPURenderBundleEncoder;
         let bundle: Nullable<GPURenderBundle> = null;
         let bundleKey: string;
@@ -70,13 +75,14 @@ export class WebGPUClearQuad {
 
             const depthStencilFormatIndex = renderableTextureFormatToIndex[this._depthTextureFormat ?? 0];
 
-            this._keyTemp[idx] = (clearColor ? clearColor.r + clearColor.g * 256 + clearColor.b * 256 * 256 + clearColor.a * 256 * 256 * 256 : 0) +
+            this._keyTemp[idx] =
+                (clearColor ? clearColor.r + clearColor.g * 256 + clearColor.b * 256 * 256 + clearColor.a * 256 * 256 * 256 : 0) +
                 (clearDepth ? 2 ** 32 : 0) +
                 (clearStencil ? 2 ** 33 : 0) +
                 (this._engine.useReverseDepthBuffer ? 2 ** 34 : 0) +
                 (isRTTPass ? 2 ** 35 : 0) +
                 (sampleCount > 1 ? 2 ** 36 : 0) +
-                depthStencilFormatIndex * (2 ** 37);
+                depthStencilFormatIndex * 2 ** 37;
 
             bundleKey = this._keyTemp.join("_");
             bundle = this._bundleCache[bundleKey];
@@ -94,10 +100,10 @@ export class WebGPUClearQuad {
 
         this._cacheRenderPipeline.setDepthWriteEnabled(!!clearDepth);
         this._cacheRenderPipeline.setStencilEnabled(!!clearStencil && !!this._depthTextureFormat && WebGPUTextureHelper.HasStencilAspect(this._depthTextureFormat));
-        this._cacheRenderPipeline.setStencilWriteMask(clearStencil ? 0xFF : 0);
+        this._cacheRenderPipeline.setStencilWriteMask(clearStencil ? 0xff : 0);
         this._cacheRenderPipeline.setStencilCompare(clearStencil ? Constants.ALWAYS : Constants.NEVER);
         this._cacheRenderPipeline.setStencilPassOp(clearStencil ? Constants.REPLACE : Constants.KEEP);
-        this._cacheRenderPipeline.setWriteMask(clearColor ? 0xF : 0);
+        this._cacheRenderPipeline.setWriteMask(clearColor ? 0xf : 0);
 
         const pipeline = this._cacheRenderPipeline.getRenderPipeline(Constants.MATERIAL_TriangleStripDrawMode, this._effect, sampleCount);
 
@@ -124,33 +130,36 @@ export class WebGPUClearQuad {
             bindGroups.push(
                 this._device.createBindGroup({
                     layout: bindGroupLayouts[0],
-                    entries: []
+                    entries: [],
                 })
             );
             if (!WebGPUShaderProcessingContext._SimplifiedKnownBindings) {
                 bindGroups.push(
                     this._device.createBindGroup({
                         layout: bindGroupLayouts[1],
-                        entries: []
-                    }),
+                        entries: [],
+                    })
                 );
             }
             bindGroups.push(
                 this._device.createBindGroup({
                     layout: bindGroupLayouts[WebGPUShaderProcessingContext._SimplifiedKnownBindings ? 1 : 2],
-                    entries: [{
-                        binding: 0,
-                        resource: {
-                            buffer: bufferInternals.underlyingResource,
-                            size: bufferInternals.capacity
+                    entries: [
+                        {
+                            binding: 0,
+                            resource: {
+                                buffer: bufferInternals.underlyingResource,
+                                size: bufferInternals.capacity,
+                            },
                         },
-                    }, {
-                        binding: 1,
-                        resource: {
-                            buffer: bufferLeftOver.underlyingResource,
-                            size: bufferLeftOver.capacity
+                        {
+                            binding: 1,
+                            resource: {
+                                buffer: bufferLeftOver.underlyingResource,
+                                size: bufferLeftOver.capacity,
+                            },
                         },
-                    }],
+                    ],
                 })
             );
         }

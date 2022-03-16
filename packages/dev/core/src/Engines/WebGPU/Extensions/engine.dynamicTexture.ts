@@ -3,12 +3,21 @@ import { Nullable } from "../../../types";
 import { WebGPUEngine } from "../../webgpuEngine";
 import { WebGPUHardwareTexture } from "../webgpuHardwareTexture";
 
-WebGPUEngine.prototype.updateDynamicTexture = function (texture: Nullable<InternalTexture>, canvas: HTMLCanvasElement | OffscreenCanvas, invertY: boolean, premulAlpha: boolean = false, format?: number, forceBindTexture?: boolean, allowGPUOptimization?: boolean): void {
+WebGPUEngine.prototype.updateDynamicTexture = function (
+    texture: Nullable<InternalTexture>,
+    canvas: HTMLCanvasElement | OffscreenCanvas,
+    invertY: boolean,
+    premulAlpha: boolean = false,
+    format?: number,
+    forceBindTexture?: boolean,
+    allowGPUOptimization?: boolean
+): void {
     if (!texture) {
         return;
     }
 
-    const width = canvas.width, height = canvas.height;
+    const width = canvas.width,
+        height = canvas.height;
 
     let gpuTextureWrapper = texture._hardwareTexture as WebGPUHardwareTexture;
 

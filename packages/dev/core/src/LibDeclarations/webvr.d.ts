@@ -136,7 +136,7 @@ interface VRDisplay extends EventTarget {
 
 declare var VRDisplay: {
     prototype: VRDisplay;
-    new(): VRDisplay;
+    new (): VRDisplay;
 };
 
 interface VRLayer {

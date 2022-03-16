@@ -1,8 +1,8 @@
-import { VertexBuffer } from "../Buffers/buffer";
+import { VertexBuffer , Buffer } from "../Buffers/buffer";
 import { ThinEngine } from "../Engines/thinEngine";
 import { Effect, IEffectCreationOptions } from "../Materials/effect";
 import { IGPUParticleSystemPlatform } from "./IGPUParticleSystemPlatform";
-import { Buffer } from "../Buffers/buffer";
+
 import { CustomParticleEmitter } from "./EmitterTypes/customParticleEmitter";
 import { GPUParticleSystem } from "./gpuParticleSystem";
 import { DataArray } from "../types";
@@ -18,7 +18,6 @@ declare type Engine = import("../Engines/engine").Engine;
 
 /** @hidden */
 export class WebGL2ParticleSystem implements IGPUParticleSystemPlatform {
-
     private _parent: GPUParticleSystem;
     private _engine: ThinEngine;
     private _updateEffect: Effect;
@@ -33,7 +32,22 @@ export class WebGL2ParticleSystem implements IGPUParticleSystemPlatform {
         this._engine = engine;
 
         this._updateEffectOptions = {
-            attributes: ["position", "initialPosition", "age", "life", "seed", "size", "color", "direction", "initialDirection", "angle", "cellIndex", "cellStartOffset", "noiseCoordinates1", "noiseCoordinates2"],
+            attributes: [
+                "position",
+                "initialPosition",
+                "age",
+                "life",
+                "seed",
+                "size",
+                "color",
+                "direction",
+                "initialDirection",
+                "angle",
+                "cellIndex",
+                "cellStartOffset",
+                "noiseCoordinates1",
+                "noiseCoordinates2",
+            ],
             uniformsNames: [
                 "currentCount",
                 "timeDelta",
@@ -61,7 +75,16 @@ export class WebGL2ParticleSystem implements IGPUParticleSystemPlatform {
                 "limitVelocityDamping",
             ],
             uniformBuffersNames: [],
-            samplers: ["randomSampler", "randomSampler2", "sizeGradientSampler", "angularSpeedGradientSampler", "velocityGradientSampler", "limitVelocityGradientSampler", "noiseSampler", "dragGradientSampler"],
+            samplers: [
+                "randomSampler",
+                "randomSampler2",
+                "sizeGradientSampler",
+                "angularSpeedGradientSampler",
+                "velocityGradientSampler",
+                "limitVelocityGradientSampler",
+                "noiseSampler",
+                "dragGradientSampler",
+            ],
             defines: "",
             fallbacks: null,
             onCompiled: null,
@@ -188,8 +211,7 @@ export class WebGL2ParticleSystem implements IGPUParticleSystemPlatform {
         engine.bindTransformFeedbackBuffer(null);
     }
 
-    public releaseBuffers(): void {
-    }
+    public releaseBuffers(): void {}
 
     public releaseVertexBuffers(): void {
         for (let index = 0; index < this._updateVAO.length; index++) {
@@ -204,7 +226,7 @@ export class WebGL2ParticleSystem implements IGPUParticleSystemPlatform {
     }
 
     private _createUpdateVAO(source: Buffer): WebGLVertexArrayObject {
-        let updateVertexBuffers: { [key: string]: VertexBuffer } = {};
+        const updateVertexBuffers: { [key: string]: VertexBuffer } = {};
         updateVertexBuffers["position"] = source.createVertexBuffer("position", 0, 3);
 
         let offset = 3;
@@ -258,7 +280,7 @@ export class WebGL2ParticleSystem implements IGPUParticleSystemPlatform {
             }
         }
 
-        let vao = this._engine.recordVertexArrayObject(updateVertexBuffers, null, this._updateEffect);
+        const vao = this._engine.recordVertexArrayObject(updateVertexBuffers, null, this._updateEffect);
         this._engine.bindArrayBuffer(null);
 
         return vao;

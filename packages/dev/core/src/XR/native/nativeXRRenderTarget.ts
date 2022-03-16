@@ -16,8 +16,9 @@ export class NativeXRLayerWrapper extends WebXRLayerWrapper {
             () => layer.framebufferWidth,
             () => layer.framebufferHeight,
             layer,
-            'XRWebGLLayer',
-            (sessionManager) => new NativeXRLayerRenderTargetTextureProvider(sessionManager, this));
+            "XRWebGLLayer",
+            (sessionManager) => new NativeXRLayerRenderTargetTextureProvider(sessionManager, this)
+        );
     }
 }
 
@@ -31,7 +32,11 @@ export class NativeXRLayerRenderTargetTextureProvider extends WebXRLayerRenderTa
 
     constructor(sessionManager: WebXRSessionManager, public readonly layerWrapper: NativeXRLayerWrapper) {
         super(sessionManager.scene, layerWrapper);
-        this._nativeRTTProvider = (navigator as any).xr.getNativeRenderTargetProvider(sessionManager.session, this._createRenderTargetTexture.bind(this), this._destroyRenderTargetTexture.bind(this));
+        this._nativeRTTProvider = (navigator as any).xr.getNativeRenderTargetProvider(
+            sessionManager.session,
+            this._createRenderTargetTexture.bind(this),
+            this._destroyRenderTargetTexture.bind(this)
+        );
         this._nativeLayer = layerWrapper.layer;
     }
 
@@ -52,10 +57,10 @@ export class NativeXRLayerRenderTargetTextureProvider extends WebXRLayerRenderTa
         return (this._nativeRTTProvider as any).getRenderTargetForEye(view.eye);
     }
 
-    public getFramebufferDimensions(): Nullable<{ framebufferWidth: number; framebufferHeight: number; }> {
+    public getFramebufferDimensions(): Nullable<{ framebufferWidth: number; framebufferHeight: number }> {
         return {
             framebufferWidth: this._nativeLayer.framebufferWidth,
-            framebufferHeight: this._nativeLayer.framebufferHeight
+            framebufferHeight: this._nativeLayer.framebufferHeight,
         };
     }
 }

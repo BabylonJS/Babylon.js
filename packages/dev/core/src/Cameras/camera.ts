@@ -11,11 +11,11 @@ import { Mesh } from "../Meshes/mesh";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { ICullable } from "../Culling/boundingInfo";
 import { Logger } from "../Misc/logger";
-import { GetClass } from '../Misc/typeStore';
-import { _WarnImport } from '../Misc/devTools';
-import { Viewport } from '../Maths/math.viewport';
-import { Frustum } from '../Maths/math.frustum';
-import { Plane } from '../Maths/math.plane';
+import { GetClass } from "../Misc/typeStore";
+import { _WarnImport } from "../Misc/devTools";
+import { Viewport } from "../Maths/math.viewport";
+import { Frustum } from "../Maths/math.frustum";
+import { Plane } from "../Maths/math.plane";
 import { Constants } from "../Engines/constants";
 
 declare type PostProcess = import("../PostProcesses/postProcess").PostProcess;
@@ -29,10 +29,14 @@ declare type Ray = import("../Culling/ray").Ray;
  * @see https://doc.babylonjs.com/features/cameras
  */
 export class Camera extends Node {
-    /** @hidden */
+    /**
+     * @param name
+     * @param scene
+     * @hidden
+     */
     public static _createDefaultParsedCamera = (name: string, scene: Scene): Camera => {
         throw _WarnImport("UniversalCamera");
-    }
+    };
 
     /**
      * This is the default projection mode used by the cameras.
@@ -248,7 +252,7 @@ export class Camera extends Node {
      * A camera with a layerMask of 1 will render mesh.layerMask & camera.layerMask!== 0
      */
     @serialize()
-    public layerMask: number = 0x0FFFFFFF;
+    public layerMask: number = 0x0fffffff;
 
     /**
      * fovMode sets the camera frustum bounds to the viewport bounds. (default is FOVMODE_VERTICAL_FIXED)
@@ -432,10 +436,10 @@ export class Camera extends Node {
      * @returns the string representation
      */
     public toString(fullDetails?: boolean): string {
-        var ret = "Name: " + this.name;
+        let ret = "Name: " + this.name;
         ret += ", type: " + this.getClassName();
         if (this.animations) {
-            for (var i = 0; i < this.animations.length; i++) {
+            for (let i = 0; i < this.animations.length; i++) {
                 ret += ", animation[0]: " + this.animations[i].toString(fullDetails);
             }
         }
@@ -474,7 +478,7 @@ export class Camera extends Node {
      * @returns true if active, false otherwise
      */
     public isActiveMesh(mesh: Mesh): boolean {
-        return (this._activeMeshes.indexOf(mesh) !== -1);
+        return this._activeMeshes.indexOf(mesh) !== -1;
     }
 
     /**
@@ -484,7 +488,7 @@ export class Camera extends Node {
      */
     public isReady(completeCheck = false): boolean {
         if (completeCheck) {
-            for (var pp of this._postProcesses) {
+            for (const pp of this._postProcesses) {
                 if (pp && !pp.isReady()) {
                     return false;
                 }
@@ -516,7 +520,10 @@ export class Camera extends Node {
         this._cache.renderHeight = undefined;
     }
 
-    /** @hidden */
+    /**
+     * @param ignoreParentClass
+     * @hidden
+     */
     public _updateCache(ignoreParentClass?: boolean): void {
         if (!ignoreParentClass) {
             super._updateCache();
@@ -537,36 +544,33 @@ export class Camera extends Node {
             return false;
         }
 
-        return this._cache.position.equals(this.position)
-            && this._cache.upVector.equals(this.upVector)
-            && this.isSynchronizedWithParent();
+        return this._cache.position.equals(this.position) && this._cache.upVector.equals(this.upVector) && this.isSynchronizedWithParent();
     }
 
     /** @hidden */
     public _isSynchronizedProjectionMatrix(): boolean {
-        var check = this._cache.mode === this.mode
-            && this._cache.minZ === this.minZ
-            && this._cache.maxZ === this.maxZ;
+        let check = this._cache.mode === this.mode && this._cache.minZ === this.minZ && this._cache.maxZ === this.maxZ;
 
         if (!check) {
             return false;
         }
 
-        var engine = this.getEngine();
+        const engine = this.getEngine();
 
         if (this.mode === Camera.PERSPECTIVE_CAMERA) {
-            check = this._cache.fov === this.fov
-                && this._cache.fovMode === this.fovMode
-                && this._cache.aspectRatio === engine.getAspectRatio(this)
-                && this._cache.projectionPlaneTilt === this.projectionPlaneTilt;
-        }
-        else {
-            check = this._cache.orthoLeft === this.orthoLeft
-                && this._cache.orthoRight === this.orthoRight
-                && this._cache.orthoBottom === this.orthoBottom
-                && this._cache.orthoTop === this.orthoTop
-                && this._cache.renderWidth === engine.getRenderWidth()
-                && this._cache.renderHeight === engine.getRenderHeight();
+            check =
+                this._cache.fov === this.fov &&
+                this._cache.fovMode === this.fovMode &&
+                this._cache.aspectRatio === engine.getAspectRatio(this) &&
+                this._cache.projectionPlaneTilt === this.projectionPlaneTilt;
+        } else {
+            check =
+                this._cache.orthoLeft === this.orthoLeft &&
+                this._cache.orthoRight === this.orthoRight &&
+                this._cache.orthoBottom === this.orthoBottom &&
+                this._cache.orthoTop === this.orthoTop &&
+                this._cache.renderWidth === engine.getRenderWidth() &&
+                this._cache.renderHeight === engine.getRenderHeight();
         }
 
         return check;
@@ -589,8 +593,7 @@ export class Camera extends Node {
      * @param ignored defines an ignored parameter kept for backward compatibility.
      * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
      */
-    public attachControl(ignored?: any, noPreventDefault?: boolean): void {
-    }
+    public attachControl(ignored?: any, noPreventDefault?: boolean): void {}
 
     /**
      * Detach the current controls from the specified dom element.
@@ -605,8 +608,7 @@ export class Camera extends Node {
      * Detach the current controls from the specified dom element.
      * @param ignored defines an ignored parameter kept for backward compatibility.
      */
-    public detachControl(ignored?: any): void {
-    }
+    public detachControl(ignored?: any): void {}
 
     /**
      * Update the camera state according to the different inputs gathered during the frame.
@@ -640,7 +642,7 @@ export class Camera extends Node {
      * @returns the first post process to be run on this camera.
      */
     public _getFirstPostProcess(): Nullable<PostProcess> {
-        for (var ppIndex = 0; ppIndex < this._postProcesses.length; ppIndex++) {
+        for (let ppIndex = 0; ppIndex < this._postProcesses.length; ppIndex++) {
             if (this._postProcesses[ppIndex] !== null) {
                 return this._postProcesses[ppIndex];
             }
@@ -650,26 +652,25 @@ export class Camera extends Node {
 
     private _cascadePostProcessesToRigCams(): void {
         // invalidate framebuffer
-        var firstPostProcess = this._getFirstPostProcess();
+        const firstPostProcess = this._getFirstPostProcess();
         if (firstPostProcess) {
             firstPostProcess.markTextureDirty();
         }
 
         // glue the rigPostProcess to the end of the user postprocesses & assign to each sub-camera
-        for (var i = 0, len = this._rigCameras.length; i < len; i++) {
-            var cam = this._rigCameras[i];
-            var rigPostProcess = cam._rigPostProcess;
+        for (let i = 0, len = this._rigCameras.length; i < len; i++) {
+            const cam = this._rigCameras[i];
+            const rigPostProcess = cam._rigPostProcess;
 
             // for VR rig, there does not have to be a post process
             if (rigPostProcess) {
-                var isPass = rigPostProcess.getEffectName() === "pass";
+                const isPass = rigPostProcess.getEffectName() === "pass";
                 if (isPass) {
                     // any rig which has a PassPostProcess for rig[0], cannot be isIntermediate when there are also user postProcesses
                     cam.isIntermediate = this._postProcesses.length === 0;
                 }
                 cam._postProcesses = this._postProcesses.slice(0).concat(rigPostProcess);
                 rigPostProcess.markTextureDirty();
-
             } else {
                 cam._postProcesses = this._postProcesses.slice(0);
             }
@@ -712,7 +713,7 @@ export class Camera extends Node {
      * @param postProcess The post process to detach from the camera
      */
     public detachPostProcess(postProcess: PostProcess): void {
-        var idx = this._postProcesses.indexOf(postProcess);
+        const idx = this._postProcesses.indexOf(postProcess);
         if (idx !== -1) {
             this._postProcesses[idx] = null;
         }
@@ -767,7 +768,7 @@ export class Camera extends Node {
 
         // Notify parent camera if rig camera is changed
         if (this.parent && (this.parent as Camera).onViewMatrixChangedObservable) {
-            (this.parent as Camera).onViewMatrixChangedObservable.notifyObservers((this.parent as Camera));
+            (this.parent as Camera).onViewMatrixChangedObservable.notifyObservers(this.parent as Camera);
         }
 
         this.onViewMatrixChangedObservable.notifyObservers(this);
@@ -815,8 +816,8 @@ export class Camera extends Node {
         // Matrix
         this._refreshFrustumPlanes = true;
 
-        var engine = this.getEngine();
-        var scene = this.getScene();
+        const engine = this.getEngine();
+        const scene = this.getScene();
         if (this.mode === Camera.PERSPECTIVE_CAMERA) {
             this._cache.fov = this.fov;
             this._cache.fovMode = this.fovMode;
@@ -828,14 +829,25 @@ export class Camera extends Node {
             }
 
             const reverseDepth = engine.useReverseDepthBuffer;
-            let getProjectionMatrix: (fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed: boolean, halfZRange: boolean, projectionPlaneTilt: number, reverseDepthBufferMode: boolean) => void;
+            let getProjectionMatrix: (
+                fov: number,
+                aspect: number,
+                znear: number,
+                zfar: number,
+                result: Matrix,
+                isVerticalFovFixed: boolean,
+                halfZRange: boolean,
+                projectionPlaneTilt: number,
+                reverseDepthBufferMode: boolean
+            ) => void;
             if (scene.useRightHandedSystem) {
                 getProjectionMatrix = Matrix.PerspectiveFovRHToRef;
             } else {
                 getProjectionMatrix = Matrix.PerspectiveFovLHToRef;
             }
 
-            getProjectionMatrix(this.fov,
+            getProjectionMatrix(
+                this.fov,
                 engine.getAspectRatio(this),
                 reverseDepth ? this.maxZ : this.minZ,
                 reverseDepth ? this.minZ : this.maxZ,
@@ -843,28 +855,33 @@ export class Camera extends Node {
                 this.fovMode === Camera.FOVMODE_VERTICAL_FIXED,
                 engine.isNDCHalfZRange,
                 this.projectionPlaneTilt,
-                engine.useReverseDepthBuffer);
+                engine.useReverseDepthBuffer
+            );
         } else {
-            var halfWidth = engine.getRenderWidth() / 2.0;
-            var halfHeight = engine.getRenderHeight() / 2.0;
+            const halfWidth = engine.getRenderWidth() / 2.0;
+            const halfHeight = engine.getRenderHeight() / 2.0;
             if (scene.useRightHandedSystem) {
-                Matrix.OrthoOffCenterRHToRef(this.orthoLeft ?? -halfWidth,
+                Matrix.OrthoOffCenterRHToRef(
+                    this.orthoLeft ?? -halfWidth,
                     this.orthoRight ?? halfWidth,
                     this.orthoBottom ?? -halfHeight,
                     this.orthoTop ?? halfHeight,
                     this.minZ,
                     this.maxZ,
                     this._projectionMatrix,
-                    engine.isNDCHalfZRange);
+                    engine.isNDCHalfZRange
+                );
             } else {
-                Matrix.OrthoOffCenterLHToRef(this.orthoLeft ?? -halfWidth,
+                Matrix.OrthoOffCenterLHToRef(
+                    this.orthoLeft ?? -halfWidth,
                     this.orthoRight ?? halfWidth,
                     this.orthoBottom ?? -halfHeight,
                     this.orthoTop ?? halfHeight,
                     this.minZ,
                     this.maxZ,
                     this._projectionMatrix,
-                    engine.isNDCHalfZRange);
+                    engine.isNDCHalfZRange
+                );
             }
 
             this._cache.orthoLeft = this.orthoLeft;
@@ -916,7 +933,7 @@ export class Camera extends Node {
         this._updateFrustumPlanes();
 
         if (checkRigCameras && this.rigCameras.length > 0) {
-            var result = false;
+            let result = false;
             this.rigCameras.forEach((cam) => {
                 cam._updateFrustumPlanes();
                 result = result || target.isInFrustum(cam._frustumPlanes);
@@ -985,7 +1002,7 @@ export class Camera extends Node {
         // Remove from scene
         this.getScene().removeCamera(this);
         while (this._rigCameras.length > 0) {
-            let camera = this._rigCameras.pop();
+            const camera = this._rigCameras.pop();
             if (camera) {
                 camera.dispose();
             }
@@ -1004,14 +1021,13 @@ export class Camera extends Node {
             this._rigPostProcess.dispose(this);
             this._rigPostProcess = null;
             this._postProcesses = [];
-        }
-        else if (this.cameraRigMode !== Camera.RIG_MODE_NONE) {
+        } else if (this.cameraRigMode !== Camera.RIG_MODE_NONE) {
             this._rigPostProcess = null;
             this._postProcesses = [];
         } else {
             var i = this._postProcesses.length;
             while (--i >= 0) {
-                var postProcess = this._postProcesses[i];
+                const postProcess = this._postProcesses[i];
                 if (postProcess) {
                     postProcess.dispose(this);
                 }
@@ -1058,7 +1074,7 @@ export class Camera extends Node {
         if (this._rigCameras.length < 1) {
             return null;
         }
-        return (<FreeCamera>this._rigCameras[0]);
+        return <FreeCamera>this._rigCameras[0];
     }
 
     /**
@@ -1068,7 +1084,7 @@ export class Camera extends Node {
         if (this._rigCameras.length < 2) {
             return null;
         }
-        return (<FreeCamera>this._rigCameras[1]);
+        return <FreeCamera>this._rigCameras[1];
     }
 
     /**
@@ -1094,6 +1110,8 @@ export class Camera extends Node {
     }
 
     /**
+     * @param mode
+     * @param rigParams
      * @hidden
      */
     public setCameraRigMode(mode: number, rigParams: any): void {
@@ -1102,7 +1120,7 @@ export class Camera extends Node {
         }
 
         while (this._rigCameras.length > 0) {
-            let camera = this._rigCameras.pop();
+            const camera = this._rigCameras.pop();
 
             if (camera) {
                 camera.dispose();
@@ -1117,11 +1135,11 @@ export class Camera extends Node {
 
         // create the rig cameras, unless none
         if (this.cameraRigMode !== Camera.RIG_MODE_NONE) {
-            let leftCamera = this.createRigCamera(this.name + "_L", 0);
+            const leftCamera = this.createRigCamera(this.name + "_L", 0);
             if (leftCamera) {
                 leftCamera._isLeftCamera = true;
             }
-            let rightCamera = this.createRigCamera(this.name + "_R", 1);
+            const rightCamera = this.createRigCamera(this.name + "_R", 1);
             if (rightCamera) {
                 rightCamera._isRightCamera = true;
             }
@@ -1143,7 +1161,15 @@ export class Camera extends Node {
 
     /** @hidden */
     public _getVRProjectionMatrix(): Matrix {
-        Matrix.PerspectiveFovLHToRef(this._cameraRigParams.vrMetrics.aspectRatioFov, this._cameraRigParams.vrMetrics.aspectRatio, this.minZ, this.maxZ, this._cameraRigParams.vrWorkMatrix, true, this.getEngine().isNDCHalfZRange);
+        Matrix.PerspectiveFovLHToRef(
+            this._cameraRigParams.vrMetrics.aspectRatioFov,
+            this._cameraRigParams.vrMetrics.aspectRatio,
+            this.minZ,
+            this.maxZ,
+            this._cameraRigParams.vrWorkMatrix,
+            true,
+            this.getEngine().isNDCHalfZRange
+        );
         this._cameraRigParams.vrWorkMatrix.multiplyToRef(this._cameraRigParams.vrHMatrix, this._projectionMatrix);
         return this._projectionMatrix;
     }
@@ -1174,7 +1200,11 @@ export class Camera extends Node {
         return Matrix.Identity();
     }
 
-    /** @hidden */
+    /**
+     * @param name
+     * @param value
+     * @hidden
+     */
     public setCameraRigParameter(name: string, value: any) {
         if (!this._cameraRigParams) {
             this._cameraRigParams = {};
@@ -1188,6 +1218,8 @@ export class Camera extends Node {
 
     /**
      * needs to be overridden by children so sub has required properties to be copied
+     * @param name
+     * @param cameraIndex
      * @hidden
      */
     public createRigCamera(name: string, cameraIndex: number): Nullable<Camera> {
@@ -1199,7 +1231,7 @@ export class Camera extends Node {
      * @hidden
      */
     public _updateRigCameras() {
-        for (var i = 0; i < this._rigCameras.length; i++) {
+        for (let i = 0; i < this._rigCameras.length; i++) {
             this._rigCameras[i].minZ = this.minZ;
             this._rigCameras[i].maxZ = this.maxZ;
             this._rigCameras[i].fov = this.fov;
@@ -1213,15 +1245,14 @@ export class Camera extends Node {
     }
 
     /** @hidden */
-    public _setupInputs() {
-    }
+    public _setupInputs() {}
 
     /**
      * Serialiaze the camera setup to a json representation
      * @returns the JSON representation
      */
     public serialize(): any {
-        var serializationObject = SerializationHelper.Serialize(this);
+        const serializationObject = SerializationHelper.Serialize(this);
         serializationObject.uniqueId = this.uniqueId;
 
         // Type
@@ -1250,7 +1281,10 @@ export class Camera extends Node {
      * @returns the cloned camera
      */
     public clone(name: string): Camera {
-        const camera = SerializationHelper.Clone(Camera.GetConstructorFromName(this.getClassName(), name, this.getScene(), this.interaxialDistance, this.isStereoscopicSideBySide), this);
+        const camera = SerializationHelper.Clone(
+            Camera.GetConstructorFromName(this.getClassName(), name, this.getScene(), this.interaxialDistance, this.isStereoscopicSideBySide),
+            this
+        );
         camera.name = name;
 
         this.onClonedObservable.notifyObservers(camera);
@@ -1264,7 +1298,7 @@ export class Camera extends Node {
      * @return the direction
      */
     public getDirection(localAxis: Vector3): Vector3 {
-        var result = Vector3.Zero();
+        const result = Vector3.Zero();
 
         this.getDirectionToRef(localAxis, result);
 
@@ -1299,9 +1333,9 @@ export class Camera extends Node {
      * @returns a factory method to construct the camera
      */
     static GetConstructorFromName(type: string, name: string, scene: Scene, interaxial_distance: number = 0, isStereoscopicSideBySide: boolean = true): () => Camera {
-        let constructorFunc = Node.Construct(type, name, scene, {
+        const constructorFunc = Node.Construct(type, name, scene, {
             interaxial_distance: interaxial_distance,
-            isStereoscopicSideBySide: isStereoscopicSideBySide
+            isStereoscopicSideBySide: isStereoscopicSideBySide,
         });
 
         if (constructorFunc) {
@@ -1327,10 +1361,10 @@ export class Camera extends Node {
      * @returns the newly constructed camera
      */
     public static Parse(parsedCamera: any, scene: Scene): Camera {
-        var type = parsedCamera.type;
-        var construct = Camera.GetConstructorFromName(type, parsedCamera.name, scene, parsedCamera.interaxial_distance, parsedCamera.isStereoscopicSideBySide);
+        const type = parsedCamera.type;
+        const construct = Camera.GetConstructorFromName(type, parsedCamera.name, scene, parsedCamera.interaxial_distance, parsedCamera.isStereoscopicSideBySide);
 
-        var camera = SerializationHelper.Parse(construct, parsedCamera, scene);
+        const camera = SerializationHelper.Parse(construct, parsedCamera, scene);
 
         // Parent
         if (parsedCamera.parentId !== undefined) {
@@ -1348,7 +1382,8 @@ export class Camera extends Node {
             camera.upVector = Vector3.FromArray(parsedCamera.upVector); // need to force the upVector
         }
 
-        if ((<any>camera).setPosition) { // need to force position
+        if ((<any>camera).setPosition) {
+            // need to force position
             camera.position.copyFromFloats(0, 0, 0);
             (<any>camera).setPosition(Vector3.FromArray(parsedCamera.position));
         }
@@ -1362,14 +1397,14 @@ export class Camera extends Node {
 
         // Apply 3d rig, when found
         if (parsedCamera.cameraRigMode) {
-            var rigParams = (parsedCamera.interaxial_distance) ? { interaxialDistance: parsedCamera.interaxial_distance } : {};
+            const rigParams = parsedCamera.interaxial_distance ? { interaxialDistance: parsedCamera.interaxial_distance } : {};
             camera.setCameraRigMode(parsedCamera.cameraRigMode, rigParams);
         }
 
         // Animations
         if (parsedCamera.animations) {
-            for (var animationIndex = 0; animationIndex < parsedCamera.animations.length; animationIndex++) {
-                var parsedAnimation = parsedCamera.animations[animationIndex];
+            for (let animationIndex = 0; animationIndex < parsedCamera.animations.length; animationIndex++) {
+                const parsedAnimation = parsedCamera.animations[animationIndex];
                 const internalClass = GetClass("BABYLON.Animation");
                 if (internalClass) {
                     camera.animations.push(internalClass.Parse(parsedAnimation));

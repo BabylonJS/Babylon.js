@@ -51,8 +51,7 @@ export class RenderingGroup {
         this._opaqueSortCompareFn = value;
         if (value) {
             this._renderOpaque = this.renderOpaqueSorted;
-        }
-        else {
+        } else {
             this._renderOpaque = RenderingGroup.renderUnsorted;
         }
     }
@@ -65,8 +64,7 @@ export class RenderingGroup {
         this._alphaTestSortCompareFn = value;
         if (value) {
             this._renderAlphaTest = this.renderAlphaTestSorted;
-        }
-        else {
+        } else {
             this._renderAlphaTest = RenderingGroup.renderUnsorted;
         }
     }
@@ -78,8 +76,7 @@ export class RenderingGroup {
     public set transparentSortCompareFn(value: Nullable<(a: SubMesh, b: SubMesh) => number>) {
         if (value) {
             this._transparentSortCompareFn = value;
-        }
-        else {
+        } else {
             this._transparentSortCompareFn = RenderingGroup.defaultTransparentSortCompare;
         }
         this._renderTransparent = this.renderTransparentSorted;
@@ -88,14 +85,18 @@ export class RenderingGroup {
     /**
      * Creates a new rendering group.
      * @param index The rendering group index
+     * @param scene
      * @param opaqueSortCompareFn The opaque sort comparison function. If null no order is applied
      * @param alphaTestSortCompareFn The alpha test sort comparison function. If null no order is applied
      * @param transparentSortCompareFn The transparent sort comparison function. If null back to front + alpha index sort is applied
      */
-    constructor(public index: number, scene: Scene,
+    constructor(
+        public index: number,
+        scene: Scene,
         opaqueSortCompareFn: Nullable<(a: SubMesh, b: SubMesh) => number> = null,
         alphaTestSortCompareFn: Nullable<(a: SubMesh, b: SubMesh) => number> = null,
-        transparentSortCompareFn: Nullable<(a: SubMesh, b: SubMesh) => number> = null) {
+        transparentSortCompareFn: Nullable<(a: SubMesh, b: SubMesh) => number> = null
+    ) {
         this._scene = scene;
 
         this.opaqueSortCompareFn = opaqueSortCompareFn;
@@ -106,15 +107,30 @@ export class RenderingGroup {
     /**
      * Render all the sub meshes contained in the group.
      * @param customRenderFunction Used to override the default render behaviour of the group.
+     * @param renderSprites
+     * @param renderParticles
+     * @param activeMeshes
      * @returns true if rendered some submeshes.
      */
-    public render(customRenderFunction: Nullable<(opaqueSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, depthOnlySubMeshes: SmartArray<SubMesh>) => void>, renderSprites: boolean, renderParticles: boolean, activeMeshes: Nullable<AbstractMesh[]>): void {
+    public render(
+        customRenderFunction: Nullable<
+            (
+                opaqueSubMeshes: SmartArray<SubMesh>,
+                transparentSubMeshes: SmartArray<SubMesh>,
+                alphaTestSubMeshes: SmartArray<SubMesh>,
+                depthOnlySubMeshes: SmartArray<SubMesh>
+            ) => void
+        >,
+        renderSprites: boolean,
+        renderParticles: boolean,
+        activeMeshes: Nullable<AbstractMesh[]>
+    ): void {
         if (customRenderFunction) {
             customRenderFunction(this._opaqueSubMeshes, this._alphaTestSubMeshes, this._transparentSubMeshes, this._depthOnlySubMeshes);
             return;
         }
 
-        var engine = this._scene.getEngine();
+        const engine = this._scene.getEngine();
 
         // Depth only
         if (this._depthOnlySubMeshes.length !== 0) {
@@ -133,7 +149,7 @@ export class RenderingGroup {
             this._renderAlphaTest(this._alphaTestSubMeshes);
         }
 
-        var stencilState = engine.getStencilBuffer();
+        const stencilState = engine.getStencilBuffer();
         engine.setStencilBuffer(false);
 
         // Sprites
@@ -170,7 +186,7 @@ export class RenderingGroup {
 
         // Edges
         if (this._edgesRenderers.length) {
-            for (var edgesRendererIndex = 0; edgesRendererIndex < this._edgesRenderers.length; edgesRendererIndex++) {
+            for (let edgesRendererIndex = 0; edgesRendererIndex < this._edgesRenderers.length; edgesRendererIndex++) {
                 this._edgesRenderers.data[edgesRendererIndex].render();
             }
 
@@ -210,19 +226,20 @@ export class RenderingGroup {
      * @param subMeshes The submeshes to sort before render
      * @param sortCompareFn The comparison function use to sort
      * @param cameraPosition The camera position use to preprocess the submeshes to help sorting
+     * @param camera
      * @param transparent Specifies to activate blending if true
      */
     private static renderSorted(subMeshes: SmartArray<SubMesh>, sortCompareFn: Nullable<(a: SubMesh, b: SubMesh) => number>, camera: Nullable<Camera>, transparent: boolean): void {
         let subIndex = 0;
         let subMesh: SubMesh;
-        let cameraPosition = camera ? camera.globalPosition : RenderingGroup._zeroVector;
+        const cameraPosition = camera ? camera.globalPosition : RenderingGroup._zeroVector;
         for (; subIndex < subMeshes.length; subIndex++) {
             subMesh = subMeshes.data[subIndex];
             subMesh._alphaIndex = subMesh.getMesh().alphaIndex;
             subMesh._distanceToCamera = Vector3.Distance(subMesh.getBoundingInfo().boundingSphere.centerWorld, cameraPosition);
         }
 
-        let sortedArray = subMeshes.data.slice(0, subMeshes.length);
+        const sortedArray = subMeshes.data.slice(0, subMeshes.length);
 
         if (sortCompareFn) {
             sortedArray.sort(sortCompareFn);
@@ -232,10 +249,10 @@ export class RenderingGroup {
             subMesh = sortedArray[subIndex];
 
             if (transparent) {
-                let material = subMesh.getMaterial();
+                const material = subMesh.getMaterial();
 
                 if (material && material.needDepthPrePass) {
-                    let engine = material.getScene().getEngine();
+                    const engine = material.getScene().getEngine();
                     engine.setColorWrite(false);
                     engine.setAlphaMode(Constants.ALPHA_DISABLE);
                     subMesh.render(false);
@@ -252,8 +269,8 @@ export class RenderingGroup {
      * @param subMeshes The submeshes to render
      */
     private static renderUnsorted(subMeshes: SmartArray<SubMesh>): void {
-        for (var subIndex = 0; subIndex < subMeshes.length; subIndex++) {
-            let submesh = subMeshes.data[subIndex];
+        for (let subIndex = 0; subIndex < subMeshes.length; subIndex++) {
+            const submesh = subMeshes.data[subIndex];
             submesh.render(false);
         }
     }
@@ -362,9 +379,11 @@ export class RenderingGroup {
             return;
         }
 
-        if (material.needAlphaBlendingForMesh(mesh)) { // Transparent
+        if (material.needAlphaBlendingForMesh(mesh)) {
+            // Transparent
             this._transparentSubMeshes.push(subMesh);
-        } else if (material.needAlphaTesting()) { // Alpha test
+        } else if (material.needAlphaTesting()) {
+            // Alpha test
             if (material.needDepthPrePass) {
                 this._depthOnlySubMeshes.push(subMesh);
             }
@@ -403,22 +422,21 @@ export class RenderingGroup {
         }
 
         // Particles
-        var activeCamera = this._scene.activeCamera;
+        const activeCamera = this._scene.activeCamera;
         this._scene.onBeforeParticlesRenderingObservable.notifyObservers(this._scene);
-        for (var particleIndex = 0; particleIndex < this._particleSystems.length; particleIndex++) {
-            var particleSystem = this._particleSystems.data[particleIndex];
+        for (let particleIndex = 0; particleIndex < this._particleSystems.length; particleIndex++) {
+            const particleSystem = this._particleSystems.data[particleIndex];
 
             if ((activeCamera && activeCamera.layerMask & particleSystem.layerMask) === 0) {
                 continue;
             }
 
-            let emitter: any = particleSystem.emitter;
+            const emitter: any = particleSystem.emitter;
             if (!emitter.position || !activeMeshes || activeMeshes.indexOf(emitter) !== -1) {
                 this._scene._activeParticles.addCount(particleSystem.render(), false);
             }
         }
         this._scene.onAfterParticlesRenderingObservable.notifyObservers(this._scene);
-
     }
 
     private _renderSprites(): void {
@@ -427,12 +445,12 @@ export class RenderingGroup {
         }
 
         // Sprites
-        var activeCamera = this._scene.activeCamera;
+        const activeCamera = this._scene.activeCamera;
         this._scene.onBeforeSpritesRenderingObservable.notifyObservers(this._scene);
-        for (var id = 0; id < this._spriteManagers.length; id++) {
-            var spriteManager = this._spriteManagers.data[id];
+        for (let id = 0; id < this._spriteManagers.length; id++) {
+            const spriteManager = this._spriteManagers.data[id];
 
-            if (((activeCamera && activeCamera.layerMask & spriteManager.layerMask) !== 0)) {
+            if ((activeCamera && activeCamera.layerMask & spriteManager.layerMask) !== 0) {
                 spriteManager.render();
             }
         }

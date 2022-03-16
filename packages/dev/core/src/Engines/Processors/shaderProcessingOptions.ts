@@ -1,5 +1,5 @@
-import { IShaderProcessor } from './iShaderProcessor';
-import { Nullable } from '../../types';
+import { IShaderProcessor } from "./iShaderProcessor";
+import { Nullable } from "../../types";
 
 /**
  * Function for custom code generation
@@ -7,7 +7,7 @@ import { Nullable } from '../../types';
 export type ShaderCustomProcessingFunction = (shaderType: string, code: string) => string;
 
 /** @hidden */
-export interface ShaderProcessingContext { }
+export interface ShaderProcessingContext {}
 
 /** @hidden */
 export interface ProcessingOptions {

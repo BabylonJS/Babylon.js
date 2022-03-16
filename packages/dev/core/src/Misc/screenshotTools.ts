@@ -6,7 +6,7 @@ import { FxaaPostProcess } from "../PostProcesses/fxaaPostProcess";
 import { Constants } from "../Engines/constants";
 import { Logger } from "./logger";
 import { Tools } from "./tools";
-import { IScreenshotSize } from './interfaces/screenshotSize';
+import { IScreenshotSize } from "./interfaces/screenshotSize";
 
 declare type Engine = import("../Engines/engine").Engine;
 
@@ -27,7 +27,14 @@ declare type Engine = import("../Engines/engine").Engine;
  * Check your browser for supported MIME types
  * @param forceDownload force the system to download the image even if a successCallback is provided
  */
-export function CreateScreenshot(engine: Engine, camera: Camera, size: IScreenshotSize | number, successCallback?: (data: string) => void, mimeType: string = "image/png", forceDownload = false): void {
+export function CreateScreenshot(
+    engine: Engine,
+    camera: Camera,
+    size: IScreenshotSize | number,
+    successCallback?: (data: string) => void,
+    mimeType: string = "image/png",
+    forceDownload = false
+): void {
     const { height, width } = _getScreenshotSize(engine, camera, size);
 
     if (!(height && width)) {
@@ -36,27 +43,27 @@ export function CreateScreenshot(engine: Engine, camera: Camera, size: IScreensh
     }
 
     if (!Tools._ScreenshotCanvas) {
-        Tools._ScreenshotCanvas = document.createElement('canvas');
+        Tools._ScreenshotCanvas = document.createElement("canvas");
     }
 
     Tools._ScreenshotCanvas.width = width;
     Tools._ScreenshotCanvas.height = height;
 
-    var renderContext = Tools._ScreenshotCanvas.getContext("2d");
+    const renderContext = Tools._ScreenshotCanvas.getContext("2d");
 
-    var ratio = engine.getRenderWidth() / engine.getRenderHeight();
-    var newWidth = width;
-    var newHeight = newWidth / ratio;
+    const ratio = engine.getRenderWidth() / engine.getRenderHeight();
+    let newWidth = width;
+    let newHeight = newWidth / ratio;
     if (newHeight > height) {
         newHeight = height;
         newWidth = newHeight * ratio;
     }
 
-    var offsetX = Math.max(0, width - newWidth) / 2;
-    var offsetY = Math.max(0, height - newHeight) / 2;
+    const offsetX = Math.max(0, width - newWidth) / 2;
+    const offsetY = Math.max(0, height - newHeight) / 2;
 
     engine.onEndFrameObservable.addOnce(() => {
-        var renderingCanvas = engine.getRenderingCanvas();
+        const renderingCanvas = engine.getRenderingCanvas();
         if (renderContext && renderingCanvas) {
             renderContext.drawImage(renderingCanvas, offsetX, offsetY, newWidth, newHeight);
         }
@@ -89,13 +96,19 @@ export function CreateScreenshot(engine: Engine, camera: Camera, size: IScreensh
  */
 export function CreateScreenshotAsync(engine: Engine, camera: Camera, size: IScreenshotSize | number, mimeType: string = "image/png"): Promise<string> {
     return new Promise((resolve, reject) => {
-        CreateScreenshot(engine, camera, size, (data) => {
-            if (typeof (data) !== "undefined") {
-                resolve(data);
-            } else {
-                reject(new Error("Data is undefined"));
-            }
-        }, mimeType);
+        CreateScreenshot(
+            engine,
+            camera,
+            size,
+            (data) => {
+                if (typeof data !== "undefined") {
+                    resolve(data);
+                } else {
+                    reject(new Error("Data is undefined"));
+                }
+            },
+            mimeType
+        );
     });
 }
 
@@ -113,9 +126,16 @@ export function CreateScreenshotAsync(engine: Engine, camera: Camera, size: IScr
  */
 export function CreateScreenshotWithResizeAsync(engine: Engine, camera: Camera, width: number, height: number, mimeType: string = "image/png"): Promise<void> {
     return new Promise((resolve, reject) => {
-        CreateScreenshot(engine, camera, { width: width, height: height }, () => {
-            resolve();
-        }, mimeType, true);
+        CreateScreenshot(
+            engine,
+            camera,
+            { width: width, height: height },
+            () => {
+                resolve();
+            },
+            mimeType,
+            true
+        );
     });
 }
 
@@ -140,18 +160,29 @@ export function CreateScreenshotWithResizeAsync(engine: Engine, camera: Camera, 
  * @param renderSprites Whether the sprites should be rendered or not (default: false)
  * @param enableStencilBuffer Whether the stencil buffer should be enabled or not (default: false)
  */
-export function CreateScreenshotUsingRenderTarget(engine: Engine, camera: Camera, size: IScreenshotSize | number, successCallback?: (data: string) => void, mimeType: string = "image/png", samples: number = 1, antialiasing: boolean = false, fileName?: string, renderSprites: boolean = false, enableStencilBuffer: boolean = false): void {
+export function CreateScreenshotUsingRenderTarget(
+    engine: Engine,
+    camera: Camera,
+    size: IScreenshotSize | number,
+    successCallback?: (data: string) => void,
+    mimeType: string = "image/png",
+    samples: number = 1,
+    antialiasing: boolean = false,
+    fileName?: string,
+    renderSprites: boolean = false,
+    enableStencilBuffer: boolean = false
+): void {
     const { height, width } = _getScreenshotSize(engine, camera, size);
-    let targetTextureSize = { width, height };
+    const targetTextureSize = { width, height };
 
     if (!(height && width)) {
         Logger.Error("Invalid 'size' parameter !");
         return;
     }
 
-    var scene = camera.getScene();
-    var previousCamera: Nullable<Camera> = null;
-    var previousCameras = scene.activeCameras;
+    const scene = camera.getScene();
+    let previousCamera: Nullable<Camera> = null;
+    const previousCameras = scene.activeCameras;
 
     scene.activeCameras = null;
 
@@ -163,7 +194,22 @@ export function CreateScreenshotUsingRenderTarget(engine: Engine, camera: Camera
     scene.render(); // make sure the scene is ready to be rendered in the RTT with the right list of active meshes (which depends on the camera, that may have been changed above)
 
     // At this point size can be a number, or an object (according to engine.prototype.createRenderTargetTexture method)
-    var texture = new RenderTargetTexture("screenShot", targetTextureSize, scene, false, false, Constants.TEXTURETYPE_UNSIGNED_INT, false, Texture.NEAREST_SAMPLINGMODE, undefined, enableStencilBuffer, undefined, undefined, undefined, samples);
+    const texture = new RenderTargetTexture(
+        "screenShot",
+        targetTextureSize,
+        scene,
+        false,
+        false,
+        Constants.TEXTURETYPE_UNSIGNED_INT,
+        false,
+        Texture.NEAREST_SAMPLINGMODE,
+        undefined,
+        enableStencilBuffer,
+        undefined,
+        undefined,
+        undefined,
+        samples
+    );
     texture.renderList = null;
     texture.samples = samples;
     texture.renderSprites = renderSprites;
@@ -194,7 +240,7 @@ export function CreateScreenshotUsingRenderTarget(engine: Engine, camera: Camera
     };
 
     if (antialiasing) {
-        const fxaaPostProcess = new FxaaPostProcess('antialiasing', 1.0, scene.activeCamera);
+        const fxaaPostProcess = new FxaaPostProcess("antialiasing", 1.0, scene.activeCamera);
         texture.addPostProcess(fxaaPostProcess);
         // Async Shader Compilation can lead to none ready effects in synchronous code
         if (!fxaaPostProcess.getEffect().isReady()) {
@@ -206,8 +252,7 @@ export function CreateScreenshotUsingRenderTarget(engine: Engine, camera: Camera
         else {
             renderToTexture();
         }
-    }
-    else {
+    } else {
         // No need to wait for extra resources to be ready
         renderToTexture();
     }
@@ -232,28 +277,50 @@ export function CreateScreenshotUsingRenderTarget(engine: Engine, camera: Camera
  * @returns screenshot as a string of base64-encoded characters. This string can be assigned
  * to the src parameter of an <img> to display it
  */
-export function CreateScreenshotUsingRenderTargetAsync(engine: Engine, camera: Camera, size: IScreenshotSize | number, mimeType: string = "image/png", samples: number = 1, antialiasing: boolean = false, fileName?: string, renderSprites: boolean = false): Promise<string> {
+export function CreateScreenshotUsingRenderTargetAsync(
+    engine: Engine,
+    camera: Camera,
+    size: IScreenshotSize | number,
+    mimeType: string = "image/png",
+    samples: number = 1,
+    antialiasing: boolean = false,
+    fileName?: string,
+    renderSprites: boolean = false
+): Promise<string> {
     return new Promise((resolve, reject) => {
-        CreateScreenshotUsingRenderTarget(engine, camera, size, (data) => {
-            if (typeof (data) !== "undefined") {
-                resolve(data);
-            } else {
-                reject(new Error("Data is undefined"));
-            }
-        }, mimeType, samples, antialiasing, fileName, renderSprites);
+        CreateScreenshotUsingRenderTarget(
+            engine,
+            camera,
+            size,
+            (data) => {
+                if (typeof data !== "undefined") {
+                    resolve(data);
+                } else {
+                    reject(new Error("Data is undefined"));
+                }
+            },
+            mimeType,
+            samples,
+            antialiasing,
+            fileName,
+            renderSprites
+        );
     });
 }
 
 /**
  * Gets height and width for screenshot size
+ * @param engine
+ * @param camera
+ * @param size
  * @private
  */
-function _getScreenshotSize(engine: Engine, camera: Camera, size: IScreenshotSize | number): { height: number, width: number } {
+function _getScreenshotSize(engine: Engine, camera: Camera, size: IScreenshotSize | number): { height: number; width: number } {
     let height = 0;
     let width = 0;
 
     //If a size value defined as object
-    if (typeof (size) === 'object') {
+    if (typeof size === "object") {
         const precision = size.precision
             ? Math.abs(size.precision) // prevent GL_INVALID_VALUE : glViewport: negative width/height
             : 1;
@@ -272,8 +339,7 @@ function _getScreenshotSize(engine: Engine, camera: Camera, size: IScreenshotSiz
         else if (size.height && !size.width) {
             height = size.height * precision;
             width = Math.round(height * engine.getAspectRatio(camera));
-        }
-        else {
+        } else {
             width = Math.round(engine.getRenderWidth() * precision);
             height = Math.round(width / engine.getAspectRatio(camera));
         }

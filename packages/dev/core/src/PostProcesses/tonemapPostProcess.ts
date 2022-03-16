@@ -42,23 +42,28 @@ export class TonemapPostProcess extends PostProcess {
      * @param textureFormat defines the texture format to use (BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT by default)
      * @param reusable If the post process can be reused on the same frame. (default: false)
      */
-    constructor(name: string, private _operator: TonemappingOperator,
+    constructor(
+        name: string,
+        private _operator: TonemappingOperator,
         /** Defines the required exposure adjustment */
-        public exposureAdjustment: number, camera: Camera, samplingMode: number = Constants.TEXTURE_BILINEAR_SAMPLINGMODE, engine?: Engine, textureFormat = Constants.TEXTURETYPE_UNSIGNED_INT, reusable?: boolean) {
+        public exposureAdjustment: number,
+        camera: Camera,
+        samplingMode: number = Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
+        engine?: Engine,
+        textureFormat = Constants.TEXTURETYPE_UNSIGNED_INT,
+        reusable?: boolean
+    ) {
         super(name, "tonemap", ["_ExposureAdjustment"], null, 1.0, camera, samplingMode, engine, reusable, null, textureFormat);
 
-        var defines = "#define ";
+        let defines = "#define ";
 
         if (this._operator === TonemappingOperator.Hable) {
             defines += "HABLE_TONEMAPPING";
-        }
-        else if (this._operator === TonemappingOperator.Reinhard) {
+        } else if (this._operator === TonemappingOperator.Reinhard) {
             defines += "REINHARD_TONEMAPPING";
-        }
-        else if (this._operator === TonemappingOperator.HejiDawson) {
+        } else if (this._operator === TonemappingOperator.HejiDawson) {
             defines += "OPTIMIZED_HEJIDAWSON_TONEMAPPING";
-        }
-        else if (this._operator === TonemappingOperator.Photographic) {
+        } else if (this._operator === TonemappingOperator.Photographic) {
             defines += "PHOTOGRAPHIC_TONEMAPPING";
         }
 

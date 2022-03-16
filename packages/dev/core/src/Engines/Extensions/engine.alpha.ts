@@ -1,5 +1,5 @@
 import { ThinEngine } from "../../Engines/thinEngine";
-import { Constants } from '../constants';
+import { Constants } from "../constants";
 
 declare module "../../Engines/thinEngine" {
     export interface ThinEngine {
@@ -87,7 +87,12 @@ ThinEngine.prototype.setAlphaMode = function (mode: number, noDepthWriteChange: 
             this._alphaState.alphaBlend = true;
             break;
         case Constants.ALPHA_INTERPOLATE:
-            this._alphaState.setAlphaBlendFunctionParameters(this._gl.CONSTANT_COLOR, this._gl.ONE_MINUS_CONSTANT_COLOR, this._gl.CONSTANT_ALPHA, this._gl.ONE_MINUS_CONSTANT_ALPHA);
+            this._alphaState.setAlphaBlendFunctionParameters(
+                this._gl.CONSTANT_COLOR,
+                this._gl.ONE_MINUS_CONSTANT_COLOR,
+                this._gl.CONSTANT_ALPHA,
+                this._gl.ONE_MINUS_CONSTANT_ALPHA
+            );
             this._alphaState.alphaBlend = true;
             break;
         case Constants.ALPHA_SCREENMODE:
@@ -103,7 +108,12 @@ ThinEngine.prototype.setAlphaMode = function (mode: number, noDepthWriteChange: 
             this._alphaState.alphaBlend = true;
             break;
         case Constants.ALPHA_REVERSEONEMINUS:
-            this._alphaState.setAlphaBlendFunctionParameters(this._gl.ONE_MINUS_DST_COLOR, this._gl.ONE_MINUS_SRC_COLOR, this._gl.ONE_MINUS_DST_ALPHA, this._gl.ONE_MINUS_SRC_ALPHA);
+            this._alphaState.setAlphaBlendFunctionParameters(
+                this._gl.ONE_MINUS_DST_COLOR,
+                this._gl.ONE_MINUS_SRC_COLOR,
+                this._gl.ONE_MINUS_DST_ALPHA,
+                this._gl.ONE_MINUS_SRC_ALPHA
+            );
             this._alphaState.alphaBlend = true;
             break;
         case Constants.ALPHA_SRC_DSTONEMINUSSRCALPHA:
@@ -125,7 +135,7 @@ ThinEngine.prototype.setAlphaMode = function (mode: number, noDepthWriteChange: 
             break;
     }
     if (!noDepthWriteChange) {
-        this.depthCullingState.depthMask = (mode === Constants.ALPHA_DISABLE);
+        this.depthCullingState.depthMask = mode === Constants.ALPHA_DISABLE;
     }
     this._alphaMode = mode;
 };

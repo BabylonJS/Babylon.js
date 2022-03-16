@@ -31,7 +31,13 @@ export class WebXROculusTouchMotionController extends WebXRAbstractMotionControl
 
     public profileId = "oculus-touch";
 
-    constructor(scene: Scene, gamepadObject: IMinimalMotionControllerObject, handedness: MotionControllerHandedness, legacyMapping: boolean = false, private _forceLegacyControllers: boolean = false) {
+    constructor(
+        scene: Scene,
+        gamepadObject: IMinimalMotionControllerObject,
+        handedness: MotionControllerHandedness,
+        legacyMapping: boolean = false,
+        private _forceLegacyControllers: boolean = false
+    ) {
         super(scene, OculusTouchLayouts[handedness], gamepadObject, handedness);
     }
 
@@ -44,7 +50,7 @@ export class WebXROculusTouchMotionController extends WebXRAbstractMotionControl
             filename = WebXROculusTouchMotionController.MODEL_RIGHT_FILENAME;
         }
 
-        let path = this._isQuest() ? WebXROculusTouchMotionController.QUEST_MODEL_BASE_URL : WebXROculusTouchMotionController.MODEL_BASE_URL;
+        const path = this._isQuest() ? WebXROculusTouchMotionController.QUEST_MODEL_BASE_URL : WebXROculusTouchMotionController.MODEL_BASE_URL;
         return {
             filename,
             path,

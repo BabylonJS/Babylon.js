@@ -1,7 +1,7 @@
 import { Nullable } from "../types";
 import { Scene } from "../scene";
 import { serialize, expandToProperty, serializeAsTexture, SerializationHelper } from "../Misc/decorators";
-import { BaseTexture } from '../Materials/Textures/baseTexture';
+import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Vector4 } from "../Maths/math.vector";
 import { Effect } from "../Materials/effect";
 import { EngineStore } from "../Engines/engineStore";
@@ -45,12 +45,7 @@ export interface IBakedVertexAnimationManager {
      * @param offset The offset when starting the animation.
      * @param speedFramesPerSecond The frame rate.
      */
-    setAnimationParameters(
-        startFrame: number,
-        endFrame: number,
-        offset: number,
-        speedFramesPerSecond: number
-    ): void;
+    setAnimationParameters(startFrame: number, endFrame: number, offset: number, speedFramesPerSecond: number): void;
 
     /**
      * Disposes the resources of the manager.
@@ -134,11 +129,7 @@ export class BakedVertexAnimationManager implements IBakedVertexAnimationManager
         }
 
         const size = this._texture.getSize();
-        effect.setFloat2(
-            "bakedVertexAnimationTextureSizeInverted",
-            1.0 / size.width,
-            1.0 / size.height
-        );
+        effect.setFloat2("bakedVertexAnimationTextureSizeInverted", 1.0 / size.width, 1.0 / size.height);
         effect.setFloat("bakedVertexAnimationTime", this.time);
 
         if (!useInstances) {
@@ -152,8 +143,8 @@ export class BakedVertexAnimationManager implements IBakedVertexAnimationManager
      * Clone the current manager
      * @returns a new BakedVertexAnimationManager
      */
-     public clone(): BakedVertexAnimationManager {
-        let copy = new BakedVertexAnimationManager(this._scene);
+    public clone(): BakedVertexAnimationManager {
+        const copy = new BakedVertexAnimationManager(this._scene);
         this.copyTo(copy);
         return copy;
     }
@@ -165,12 +156,7 @@ export class BakedVertexAnimationManager implements IBakedVertexAnimationManager
      * @param offset The offset when starting the animation.
      * @param speedFramesPerSecond The frame rate.
      */
-    public setAnimationParameters(
-        startFrame: number,
-        endFrame: number,
-        offset: number = 0,
-        speedFramesPerSecond: number = 30
-    ): void {
+    public setAnimationParameters(startFrame: number, endFrame: number, offset: number = 0, speedFramesPerSecond: number = 30): void {
         this.animationParameters = new Vector4(startFrame, endFrame, offset, speedFramesPerSecond);
     }
 

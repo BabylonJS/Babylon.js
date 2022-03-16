@@ -1,9 +1,9 @@
-import { WebXRFeaturesManager, WebXRFeatureName } from '../webXRFeaturesManager';
-import { WebXRAbstractFeature } from './WebXRAbstractFeature';
-import { WebXRSessionManager } from '../webXRSessionManager';
-import { TransformNode } from '../../Meshes/transformNode';
-import { Matrix } from '../../Maths/math';
-import { Observable } from '../../Misc/observable';
+import { WebXRFeaturesManager, WebXRFeatureName } from "../webXRFeaturesManager";
+import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
+import { WebXRSessionManager } from "../webXRSessionManager";
+import { TransformNode } from "../../Meshes/transformNode";
+import { Matrix } from "../../Maths/math";
+import { Observable } from "../../Misc/observable";
 
 /**
  * Options used in the mesh detector module
@@ -123,8 +123,7 @@ export class WebXRMeshDetector extends WebXRAbstractFeature {
         }
 
         // Only supported by BabylonNative
-        if (!!this._xrSessionManager.isNative &&
-            !!this._xrSessionManager.session.trySetMeshDetectorEnabled) {
+        if (!!this._xrSessionManager.isNative && !!this._xrSessionManager.session.trySetMeshDetectorEnabled) {
             this._xrSessionManager.session.trySetMeshDetectorEnabled(false);
         }
 
@@ -154,8 +153,8 @@ export class WebXRMeshDetector extends WebXRAbstractFeature {
             }
 
             const detectedMeshes = frame.worldInformation?.detectedMeshes;
-            if (!!detectedMeshes) {
-                let toRemove = new Set<XRMesh>();
+            if (detectedMeshes) {
+                const toRemove = new Set<XRMesh>();
                 this._detectedMeshes.forEach((vertexData, xrMesh) => {
                     if (!detectedMeshes.has(xrMesh)) {
                         toRemove.add(xrMesh);
@@ -163,7 +162,7 @@ export class WebXRMeshDetector extends WebXRAbstractFeature {
                 });
                 toRemove.forEach((xrMesh) => {
                     const vertexData = this._detectedMeshes.get(xrMesh);
-                    if (!!vertexData) {
+                    if (vertexData) {
                         this.onMeshRemovedObservable.notifyObservers(vertexData);
                         this._detectedMeshes.delete(xrMesh);
                     }
@@ -183,7 +182,7 @@ export class WebXRMeshDetector extends WebXRAbstractFeature {
                         // updated?
                         if (xrMesh.lastChangedTime === this._xrSessionManager.currentTimestamp) {
                             const vertexData = this._detectedMeshes.get(xrMesh);
-                            if (!!vertexData) {
+                            if (vertexData) {
                                 this._updateVertexDataWithXRMesh(xrMesh, vertexData, frame);
                                 this.onMeshUpdatedObservable.notifyObservers(vertexData);
                             }
@@ -198,13 +197,12 @@ export class WebXRMeshDetector extends WebXRAbstractFeature {
 
     private _init() {
         // Only supported by BabylonNative
-        if (!!this._xrSessionManager.isNative) {
-            if (!!this._xrSessionManager.session.trySetMeshDetectorEnabled) {
+        if (this._xrSessionManager.isNative) {
+            if (this._xrSessionManager.session.trySetMeshDetectorEnabled) {
                 this._xrSessionManager.session.trySetMeshDetectorEnabled(true);
             }
 
-            if (!!this._options.preferredDetectorOptions &&
-                !!this._xrSessionManager.session.trySetPreferredMeshDetectorOptions) {
+            if (!!this._options.preferredDetectorOptions && !!this._xrSessionManager.session.trySetPreferredMeshDetectorOptions) {
                 this._xrSessionManager.session.trySetPreferredMeshDetectorOptions(this._options.preferredDetectorOptions);
             }
         }
@@ -214,7 +212,7 @@ export class WebXRMeshDetector extends WebXRAbstractFeature {
         mesh.xrMesh = xrMesh;
         mesh.worldParentNode = this._options.worldParentNode;
 
-        if (!!this._options.convertCoordinateSystems) {
+        if (this._options.convertCoordinateSystems) {
             if (!this._xrSessionManager.scene.useRightHandedSystem) {
                 mesh.positions = new Float32Array(xrMesh.positions.length);
                 for (let i = 0; i < xrMesh.positions.length; i += 3) {
@@ -223,7 +221,7 @@ export class WebXRMeshDetector extends WebXRAbstractFeature {
                     mesh.positions[i + 2] = -1 * xrMesh.positions[i + 2];
                 }
 
-                if (!!xrMesh.normals) {
+                if (xrMesh.normals) {
                     mesh.normals = new Float32Array(xrMesh.normals.length);
                     for (let i = 0; i < xrMesh.normals.length; i += 3) {
                         mesh.normals[i] = xrMesh.normals[i];

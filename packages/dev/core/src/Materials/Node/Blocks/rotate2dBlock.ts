@@ -1,17 +1,16 @@
-import { NodeMaterialBlock } from '../nodeMaterialBlock';
-import { NodeMaterialBlockConnectionPointTypes } from '../Enums/nodeMaterialBlockConnectionPointTypes';
-import { NodeMaterialBuildState } from '../nodeMaterialBuildState';
-import { NodeMaterialBlockTargets } from '../Enums/nodeMaterialBlockTargets';
-import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint';
-import { RegisterClass } from '../../../Misc/typeStore';
-import { NodeMaterial } from '../nodeMaterial';
-import { InputBlock } from './Input/inputBlock';
+import { NodeMaterialBlock } from "../nodeMaterialBlock";
+import { NodeMaterialBlockConnectionPointTypes } from "../Enums/nodeMaterialBlockConnectionPointTypes";
+import { NodeMaterialBuildState } from "../nodeMaterialBuildState";
+import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
+import { NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
+import { RegisterClass } from "../../../Misc/typeStore";
+import { NodeMaterial } from "../nodeMaterial";
+import { InputBlock } from "./Input/inputBlock";
 
 /**
  * Block used to rotate a 2d vector by a given angle
  */
 export class Rotate2dBlock extends NodeMaterialBlock {
-
     /**
      * Creates a new Rotate2dBlock
      * @param name defines the block name
@@ -55,7 +54,7 @@ export class Rotate2dBlock extends NodeMaterialBlock {
 
     public autoConfigure(material: NodeMaterial) {
         if (!this.angle.isConnected) {
-            let angleInput = new InputBlock("angle");
+            const angleInput = new InputBlock("angle");
             angleInput.value = 0;
             angleInput.output.connectTo(this.angle);
         }
@@ -64,11 +63,13 @@ export class Rotate2dBlock extends NodeMaterialBlock {
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
-        let output = this._outputs[0];
-        let angle = this.angle;
-        let input = this.input;
+        const output = this._outputs[0];
+        const angle = this.angle;
+        const input = this.input;
 
-        state.compilationString += this._declareOutput(output, state) + ` = vec2(cos(${angle.associatedVariableName}) * ${input.associatedVariableName}.x - sin(${angle.associatedVariableName}) * ${input.associatedVariableName}.y, sin(${angle.associatedVariableName}) * ${input.associatedVariableName}.x + cos(${angle.associatedVariableName}) * ${input.associatedVariableName}.y);\r\n`;
+        state.compilationString +=
+            this._declareOutput(output, state) +
+            ` = vec2(cos(${angle.associatedVariableName}) * ${input.associatedVariableName}.x - sin(${angle.associatedVariableName}) * ${input.associatedVariableName}.y, sin(${angle.associatedVariableName}) * ${input.associatedVariableName}.x + cos(${angle.associatedVariableName}) * ${input.associatedVariableName}.y);\r\n`;
 
         return this;
     }

@@ -8,7 +8,7 @@ import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTextur
 import { ImageProcessingConfiguration } from "../../Materials/imageProcessingConfiguration";
 import { BlurPostProcess } from "../../PostProcesses/blurPostProcess";
 import { Constants } from "../../Engines/constants";
-import { Plane } from '../../Maths/math.plane';
+import { Plane } from "../../Maths/math.plane";
 import { UniformBuffer } from "../uniformBuffer";
 /**
  * Mirror texture can be used to simulate the view from a mirror in a scene.
@@ -94,10 +94,10 @@ export class MirrorTexture extends RenderTargetTexture {
     }
 
     private _autoComputeBlurKernel(): void {
-        let engine = this.getScene()!.getEngine();
+        const engine = this.getScene()!.getEngine();
 
-        let dw = this.getRenderWidth() / engine.getRenderWidth();
-        let dh = this.getRenderHeight() / engine.getRenderHeight();
+        const dw = this.getRenderWidth() / engine.getRenderWidth();
+        const dh = this.getRenderHeight() / engine.getRenderHeight();
         this.blurKernelX = this._adaptiveBlurKernel * dw;
         this.blurKernelY = this._adaptiveBlurKernel * dh;
     }
@@ -148,7 +148,15 @@ export class MirrorTexture extends RenderTargetTexture {
      * @param samplingMode
      * @param generateDepthBuffer
      */
-    constructor(name: string, size: number | { width: number, height: number } | { ratio: number }, private scene?: Scene, generateMipMaps?: boolean, type: number = Constants.TEXTURETYPE_UNSIGNED_INT, samplingMode = Texture.BILINEAR_SAMPLINGMODE, generateDepthBuffer = true) {
+    constructor(
+        name: string,
+        size: number | { width: number; height: number } | { ratio: number },
+        private scene?: Scene,
+        generateMipMaps?: boolean,
+        type: number = Constants.TEXTURETYPE_UNSIGNED_INT,
+        samplingMode = Texture.BILINEAR_SAMPLINGMODE,
+        generateDepthBuffer = true
+    ) {
         super(name, size, scene, generateMipMaps, true, type, false, samplingMode, generateDepthBuffer);
 
         this.scene = <Scene>this.getScene();
@@ -215,11 +223,21 @@ export class MirrorTexture extends RenderTargetTexture {
         this.clearPostProcesses(true);
 
         if (this._blurKernelX && this._blurKernelY) {
-            var engine = (<Scene>this.getScene()).getEngine();
+            const engine = (<Scene>this.getScene()).getEngine();
 
-            var textureType = engine.getCaps().textureFloatRender && engine.getCaps().textureFloatLinearFiltering ? Constants.TEXTURETYPE_FLOAT : Constants.TEXTURETYPE_HALF_FLOAT;
+            const textureType = engine.getCaps().textureFloatRender && engine.getCaps().textureFloatLinearFiltering ? Constants.TEXTURETYPE_FLOAT : Constants.TEXTURETYPE_HALF_FLOAT;
 
-            this._blurX = new BlurPostProcess("horizontal blur", new Vector2(1.0, 0), this._blurKernelX, this._blurRatio, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, textureType);
+            this._blurX = new BlurPostProcess(
+                "horizontal blur",
+                new Vector2(1.0, 0),
+                this._blurKernelX,
+                this._blurRatio,
+                null,
+                Texture.BILINEAR_SAMPLINGMODE,
+                engine,
+                false,
+                textureType
+            );
             this._blurX.autoClear = false;
 
             if (this._blurRatio === 1 && this.samples < 2 && this._texture) {
@@ -228,14 +246,23 @@ export class MirrorTexture extends RenderTargetTexture {
                 this._blurX.alwaysForcePOT = true;
             }
 
-            this._blurY = new BlurPostProcess("vertical blur", new Vector2(0, 1.0), this._blurKernelY, this._blurRatio, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, textureType);
+            this._blurY = new BlurPostProcess(
+                "vertical blur",
+                new Vector2(0, 1.0),
+                this._blurKernelY,
+                this._blurRatio,
+                null,
+                Texture.BILINEAR_SAMPLINGMODE,
+                engine,
+                false,
+                textureType
+            );
             this._blurY.autoClear = false;
             this._blurY.alwaysForcePOT = this._blurRatio !== 1;
 
             this.addPostProcess(this._blurX);
             this.addPostProcess(this._blurY);
-        }
-        else {
+        } else {
             if (this._blurY) {
                 this.removePostProcess(this._blurY);
                 this._blurY.dispose();
@@ -254,14 +281,14 @@ export class MirrorTexture extends RenderTargetTexture {
      * @returns the cloned texture
      */
     public clone(): MirrorTexture {
-        let scene = this.getScene();
+        const scene = this.getScene();
 
         if (!scene) {
             return this;
         }
 
-        var textureSize = this.getSize();
-        var newTexture = new MirrorTexture(
+        const textureSize = this.getSize();
+        const newTexture = new MirrorTexture(
             this.name,
             textureSize.width,
             scene,
@@ -293,7 +320,7 @@ export class MirrorTexture extends RenderTargetTexture {
             return null;
         }
 
-        var serializationObject = super.serialize();
+        const serializationObject = super.serialize();
 
         serializationObject.mirrorPlane = this.mirrorPlane.asArray();
 

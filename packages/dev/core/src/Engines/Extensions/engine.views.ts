@@ -1,7 +1,7 @@
 import { Engine } from "../engine";
-import { Camera } from '../../Cameras/camera';
-import { Nullable } from '../../types';
-import { Scene } from '../../scene';
+import { Camera } from "../../Cameras/camera";
+import { Nullable } from "../../types";
+import { Scene } from "../../scene";
 
 /**
  * Class used to define an additional view for the engine
@@ -84,19 +84,19 @@ Engine.prototype.registerView = function (canvas: HTMLCanvasElement, camera?: Ca
         this.views = [];
     }
 
-    for (var view of this.views) {
+    for (const view of this.views) {
         if (view.target === canvas) {
             return view;
         }
     }
 
-    let masterCanvas = this.getRenderingCanvas();
+    const masterCanvas = this.getRenderingCanvas();
     if (masterCanvas) {
         canvas.width = masterCanvas.width;
         canvas.height = masterCanvas.height;
     }
 
-    let newView = { target: canvas, camera, clearBeforeCopy, enabled: true };
+    const newView = { target: canvas, camera, clearBeforeCopy, enabled: true };
     this.views.push(newView);
 
     if (camera) {
@@ -113,9 +113,9 @@ Engine.prototype.unRegisterView = function (canvas: HTMLCanvasElement): Engine {
         return this;
     }
 
-    for (var view of this.views) {
+    for (const view of this.views) {
         if (view.target === canvas) {
-            let index = this.views.indexOf(view);
+            const index = this.views.indexOf(view);
 
             if (index !== -1) {
                 this.views.splice(index, 1);
@@ -132,22 +132,22 @@ Engine.prototype._renderViews = function () {
         return false;
     }
 
-    let parent = this.getRenderingCanvas();
+    const parent = this.getRenderingCanvas();
 
     if (!parent) {
         return false;
     }
 
-    for (var view of this.views) {
+    for (const view of this.views) {
         if (!view.enabled) {
             continue;
         }
-        let canvas = view.target;
-        let context = canvas.getContext("2d");
+        const canvas = view.target;
+        const context = canvas.getContext("2d");
         if (!context) {
             continue;
         }
-        let camera = view.camera;
+        const camera = view.camera;
         let previewCamera: Nullable<Camera> = null;
         let scene: Nullable<Scene> = null;
         if (camera) {
@@ -165,15 +165,12 @@ Engine.prototype._renderViews = function () {
 
         if (view.customResize) {
             view.customResize(canvas);
-        }
-        else {
+        } else {
             // Set sizes
             const width = Math.floor(canvas.clientWidth / this._hardwareScalingLevel);
             const height = Math.floor(canvas.clientHeight / this._hardwareScalingLevel);
 
-            const dimsChanged =
-                width !== canvas.width || parent.width !== canvas.width ||
-                height !== canvas.height || parent.height !== canvas.height;
+            const dimsChanged = width !== canvas.width || parent.width !== canvas.width || height !== canvas.height || parent.height !== canvas.height;
             if (canvas.clientWidth && canvas.clientHeight && dimsChanged) {
                 canvas.width = width;
                 canvas.height = height;

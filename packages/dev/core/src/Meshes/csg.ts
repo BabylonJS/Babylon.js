@@ -6,12 +6,12 @@ import { AbstractMesh } from "../Meshes/abstractMesh";
 import { SubMesh } from "../Meshes/subMesh";
 import { Mesh } from "../Meshes/mesh";
 import { Material } from "../Materials/material";
-import { Color4 } from '../Maths/math.color';
+import { Color4 } from "../Maths/math.color";
 import { Constants } from "../Engines/constants";
 /**
  * Unique ID when we import meshes from Babylon to CSG
  */
-var currentCSGMeshId = 0;
+let currentCSGMeshId = 0;
 
 /**
  * Represents a vertex of a polygon. Use your own vertex class instead of this
@@ -47,8 +47,8 @@ class Vertex {
         /**
          * The texture coordinate of the vertex
          */
-        public vertColor?: Color4) {
-    }
+        public vertColor?: Color4
+    ) {}
 
     /**
      * Make a clone, or deep copy, of the vertex
@@ -74,7 +74,8 @@ class Vertex {
      * @param t The factor used to linearly interpolate between the vertices
      */
     public interpolate(other: Vertex, t: number): Vertex {
-        return new Vertex(Vector3.Lerp(this.pos, other.pos, t),
+        return new Vertex(
+            Vector3.Lerp(this.pos, other.pos, t),
             Vector3.Lerp(this.normal, other.normal, t),
             this.uv && other.uv ? Vector2.Lerp(this.uv, other.uv, t) : undefined,
             this.vertColor && other.vertColor ? Color4.Lerp(this.vertColor, other.vertColor, t) : undefined
@@ -91,8 +92,7 @@ class Plane {
      * @param normal The normal for the plane
      * @param w
      */
-    constructor(public normal: Vector3, public w: number) {
-    }
+    constructor(public normal: Vector3, public w: number) {}
 
     /**
      * `CSG.Plane.EPSILON` is the tolerance used by `splitPolygon()` to decide if a
@@ -107,14 +107,14 @@ class Plane {
      * @param c Point c
      */
     public static FromPoints(a: Vector3, b: Vector3, c: Vector3): Nullable<Plane> {
-        var v0 = c.subtract(a);
-        var v1 = b.subtract(a);
+        const v0 = c.subtract(a);
+        const v1 = b.subtract(a);
 
         if (v0.lengthSquared() === 0 || v1.lengthSquared() === 0) {
             return null;
         }
 
-        var n = Vector3.Normalize(Vector3.Cross(v0, v1));
+        const n = Vector3.Normalize(Vector3.Cross(v0, v1));
         return new Plane(n, Vector3.Dot(n, a));
     }
 
@@ -147,20 +147,20 @@ class Plane {
      * @param back Will contain the polygons begind the plane
      */
     public splitPolygon(polygon: Polygon, coplanarFront: Polygon[], coplanarBack: Polygon[], front: Polygon[], back: Polygon[]): void {
-        var COPLANAR = 0;
-        var FRONT = 1;
-        var BACK = 2;
-        var SPANNING = 3;
+        const COPLANAR = 0;
+        const FRONT = 1;
+        const BACK = 2;
+        const SPANNING = 3;
 
         // Classify each point as well as the entire polygon into one of the above
         // four classes.
-        var polygonType = 0;
-        var types = [];
-        var i: number;
-        var t: number;
+        let polygonType = 0;
+        const types = [];
+        let i: number;
+        let t: number;
         for (i = 0; i < polygon.vertices.length; i++) {
             t = Vector3.Dot(this.normal, polygon.vertices[i].pos) - this.w;
-            var type = (t < -Plane.EPSILON) ? BACK : (t > Plane.EPSILON) ? FRONT : COPLANAR;
+            const type = t < -Plane.EPSILON ? BACK : t > Plane.EPSILON ? FRONT : COPLANAR;
             polygonType |= type;
             types.push(type);
         }
@@ -177,16 +177,23 @@ class Plane {
                 back.push(polygon);
                 break;
             case SPANNING:
-                var f = [], b = [];
+                var f = [],
+                    b = [];
                 for (i = 0; i < polygon.vertices.length; i++) {
-                    var j = (i + 1) % polygon.vertices.length;
-                    var ti = types[i], tj = types[j];
-                    var vi = polygon.vertices[i], vj = polygon.vertices[j];
-                    if (ti !== BACK) { f.push(vi); }
-                    if (ti !== FRONT) { b.push(ti !== BACK ? vi.clone() : vi); }
+                    const j = (i + 1) % polygon.vertices.length;
+                    const ti = types[i],
+                        tj = types[j];
+                    const vi = polygon.vertices[i],
+                        vj = polygon.vertices[j];
+                    if (ti !== BACK) {
+                        f.push(vi);
+                    }
+                    if (ti !== FRONT) {
+                        b.push(ti !== BACK ? vi.clone() : vi);
+                    }
                     if ((ti | tj) === SPANNING) {
                         t = (this.w - Vector3.Dot(this.normal, vi.pos)) / Vector3.Dot(this.normal, vj.pos.subtract(vi.pos));
-                        var v = vi.interpolate(vj, t);
+                        const v = vi.interpolate(vj, t);
                         f.push(v);
                         b.push(v.clone());
                     }
@@ -243,14 +250,13 @@ class Polygon {
         this.vertices = vertices;
         this.shared = shared;
         this.plane = <Plane>Plane.FromPoints(vertices[0].pos, vertices[1].pos, vertices[2].pos);
-
     }
 
     /**
      * Clones, or makes a deep copy, or the polygon
      */
     public clone(): Polygon {
-        var vertices = this.vertices.map((v) => v.clone());
+        const vertices = this.vertices.map((v) => v.clone());
         return new Polygon(vertices, this.shared);
     }
 
@@ -258,7 +264,9 @@ class Polygon {
      * Flips the faces of the polygon
      */
     public flip() {
-        this.vertices.reverse().map((v) => { v.flip(); });
+        this.vertices.reverse().map((v) => {
+            v.flip();
+        });
         this.plane.flip();
     }
 }
@@ -291,7 +299,7 @@ class Node {
      * @returns The cloned node
      */
     public clone(): Node {
-        var node = new Node();
+        const node = new Node();
         node.plane = this.plane && this.plane.clone();
         node.front = this.front && this.front.clone();
         node.back = this.back && this.back.clone();
@@ -303,7 +311,7 @@ class Node {
      * Convert solid space to empty space and empty space to solid space
      */
     public invert(): void {
-        for (var i = 0; i < this.polygons.length; i++) {
+        for (let i = 0; i < this.polygons.length; i++) {
             this.polygons[i].flip();
         }
         if (this.plane) {
@@ -315,7 +323,7 @@ class Node {
         if (this.back) {
             this.back.invert();
         }
-        var temp = this.front;
+        const temp = this.front;
         this.front = this.back;
         this.back = temp;
     }
@@ -327,9 +335,12 @@ class Node {
      * @returns Polygons clipped from the BSP
      */
     clipPolygons(polygons: Polygon[]): Polygon[] {
-        if (!this.plane) { return polygons.slice(); }
-        var front = new Array<Polygon>(), back = new Array<Polygon>();
-        for (var i = 0; i < polygons.length; i++) {
+        if (!this.plane) {
+            return polygons.slice();
+        }
+        let front = new Array<Polygon>(),
+            back = new Array<Polygon>();
+        for (let i = 0; i < polygons.length; i++) {
             this.plane.splitPolygon(polygons[i], front, back, front, back);
         }
         if (this.front) {
@@ -350,8 +361,12 @@ class Node {
      */
     clipTo(bsp: Node): void {
         this.polygons = bsp.clipPolygons(this.polygons);
-        if (this.front) { this.front.clipTo(bsp); }
-        if (this.back) { this.back.clipTo(bsp); }
+        if (this.front) {
+            this.front.clipTo(bsp);
+        }
+        if (this.back) {
+            this.back.clipTo(bsp);
+        }
     }
 
     /**
@@ -359,9 +374,13 @@ class Node {
      * @returns List of all polygons in this BSP tree
      */
     allPolygons(): Polygon[] {
-        var polygons = this.polygons.slice();
-        if (this.front) { polygons = polygons.concat(this.front.allPolygons()); }
-        if (this.back) { polygons = polygons.concat(this.back.allPolygons()); }
+        let polygons = this.polygons.slice();
+        if (this.front) {
+            polygons = polygons.concat(this.front.allPolygons());
+        }
+        if (this.back) {
+            polygons = polygons.concat(this.back.allPolygons());
+        }
         return polygons;
     }
 
@@ -373,18 +392,27 @@ class Node {
      * @param polygons Polygons used to construct the BSP tree
      */
     build(polygons: Polygon[]): void {
-        if (!polygons.length) { return; }
-        if (!this.plane) { this.plane = polygons[0].plane.clone(); }
-        var front = new Array<Polygon>(), back = new Array<Polygon>();
-        for (var i = 0; i < polygons.length; i++) {
+        if (!polygons.length) {
+            return;
+        }
+        if (!this.plane) {
+            this.plane = polygons[0].plane.clone();
+        }
+        const front = new Array<Polygon>(),
+            back = new Array<Polygon>();
+        for (let i = 0; i < polygons.length; i++) {
             this.plane.splitPolygon(polygons[i], this.polygons, this.polygons, front, back);
         }
         if (front.length) {
-            if (!this.front) { this.front = new Node(); }
+            if (!this.front) {
+                this.front = new Node();
+            }
             this.front.build(front);
         }
         if (back.length) {
-            if (!this.back) { this.back = new Node(); }
+            if (!this.back) {
+                this.back = new Node();
+            }
             this.back.build(back);
         }
     }
@@ -423,11 +451,15 @@ export class CSG {
      * @returns A new CSG from the Mesh
      */
     public static FromMesh(mesh: Mesh, absolute = false): CSG {
-        var vertex: Vertex, normal: Vector3, uv: Vector2 | undefined = undefined, position: Vector3, vertColor: Color4 | undefined = undefined,
+        let vertex: Vertex,
+            normal: Vector3,
+            uv: Vector2 | undefined = undefined,
+            position: Vector3,
+            vertColor: Color4 | undefined = undefined,
             polygon: Polygon,
             polygons = new Array<Polygon>(),
             vertices;
-        var matrix: Matrix,
+        let matrix: Matrix,
             meshPosition: Vector3,
             meshRotation: Vector3,
             meshRotationQuaternion: Nullable<Quaternion> = null,
@@ -447,30 +479,35 @@ export class CSG {
                 invertWinding = mesh.material.sideOrientation === Constants.MATERIAL_ClockWiseSideOrientation;
             }
         } else {
-            throw 'BABYLON.CSG: Wrong Mesh type, must be BABYLON.Mesh';
+            throw "BABYLON.CSG: Wrong Mesh type, must be BABYLON.Mesh";
         }
 
-        var indices = <IndicesArray>mesh.getIndices(),
+        const indices = <IndicesArray>mesh.getIndices(),
             positions = <FloatArray>mesh.getVerticesData(VertexBuffer.PositionKind),
             normals = <FloatArray>mesh.getVerticesData(VertexBuffer.NormalKind),
             uvs = <FloatArray>mesh.getVerticesData(VertexBuffer.UVKind),
             vertColors = <FloatArray>mesh.getVerticesData(VertexBuffer.ColorKind);
 
-        var subMeshes = mesh.subMeshes;
+        const subMeshes = mesh.subMeshes;
 
-        for (var sm = 0, sml = subMeshes.length; sm < sml; sm++) {
-            for (var i = subMeshes[sm].indexStart, il = subMeshes[sm].indexCount + subMeshes[sm].indexStart; i < il; i += 3) {
+        for (let sm = 0, sml = subMeshes.length; sm < sml; sm++) {
+            for (let i = subMeshes[sm].indexStart, il = subMeshes[sm].indexCount + subMeshes[sm].indexStart; i < il; i += 3) {
                 vertices = [];
-                for (var j = 0; j < 3; j++) {
+                for (let j = 0; j < 3; j++) {
                     const indexIndices = j === 0 ? i + j : invertWinding ? i + 3 - j : i + j;
-                    var sourceNormal = new Vector3(normals[indices[indexIndices] * 3], normals[indices[indexIndices] * 3 + 1], normals[indices[indexIndices] * 3 + 2]);
+                    const sourceNormal = new Vector3(normals[indices[indexIndices] * 3], normals[indices[indexIndices] * 3 + 1], normals[indices[indexIndices] * 3 + 2]);
                     if (uvs) {
                         uv = new Vector2(uvs[indices[indexIndices] * 2], uvs[indices[indexIndices] * 2 + 1]);
                     }
                     if (vertColors) {
-                        vertColor = new Color4(vertColors[indices[indexIndices] * 4], vertColors[indices[indexIndices] * 4 + 1], vertColors[indices[indexIndices] * 4 + 2], vertColors[indices[indexIndices] * 4 + 3]);
+                        vertColor = new Color4(
+                            vertColors[indices[indexIndices] * 4],
+                            vertColors[indices[indexIndices] * 4 + 1],
+                            vertColors[indices[indexIndices] * 4 + 2],
+                            vertColors[indices[indexIndices] * 4 + 3]
+                        );
                     }
-                    var sourcePosition = new Vector3(positions[indices[indexIndices] * 3], positions[indices[indexIndices] * 3 + 1], positions[indices[indexIndices] * 3 + 2]);
+                    const sourcePosition = new Vector3(positions[indices[indexIndices] * 3], positions[indices[indexIndices] * 3 + 1], positions[indices[indexIndices] * 3 + 2]);
                     position = Vector3.TransformCoordinates(sourcePosition, matrix);
                     normal = Vector3.TransformNormal(sourceNormal, matrix);
 
@@ -488,7 +525,7 @@ export class CSG {
             }
         }
 
-        var csg = CSG.FromPolygons(polygons);
+        const csg = CSG.FromPolygons(polygons);
         csg.matrix = absolute ? Matrix.Identity() : matrix;
         csg.position = absolute ? Vector3.Zero() : meshPosition;
         csg.rotation = absolute ? Vector3.Zero() : meshRotation;
@@ -504,7 +541,7 @@ export class CSG {
      * @param polygons Polygons used to construct a CSG solid
      */
     private static FromPolygons(polygons: Polygon[]): CSG {
-        var csg = new CSG();
+        const csg = new CSG();
         csg.polygons = polygons;
         return csg;
     }
@@ -514,7 +551,7 @@ export class CSG {
      * @returns A new CSG
      */
     public clone(): CSG {
-        var csg = new CSG();
+        const csg = new CSG();
         csg.polygons = this.polygons.map((p) => p.clone());
         csg.copyTransformAttributes(this);
         return csg;
@@ -526,8 +563,8 @@ export class CSG {
      * @returns The unioned CSG
      */
     public union(csg: CSG): CSG {
-        var a = new Node(this.clone().polygons);
-        var b = new Node(csg.clone().polygons);
+        const a = new Node(this.clone().polygons);
+        const b = new Node(csg.clone().polygons);
         a.clipTo(b);
         b.clipTo(a);
         b.invert();
@@ -542,8 +579,8 @@ export class CSG {
      * @param csg The CSG to union against this CSG
      */
     public unionInPlace(csg: CSG): void {
-        var a = new Node(this.polygons);
-        var b = new Node(csg.polygons);
+        const a = new Node(this.polygons);
+        const b = new Node(csg.polygons);
 
         a.clipTo(b);
         b.clipTo(a);
@@ -561,8 +598,8 @@ export class CSG {
      * @returns A new CSG
      */
     public subtract(csg: CSG): CSG {
-        var a = new Node(this.clone().polygons);
-        var b = new Node(csg.clone().polygons);
+        const a = new Node(this.clone().polygons);
+        const b = new Node(csg.clone().polygons);
         a.invert();
         a.clipTo(b);
         b.clipTo(a);
@@ -579,8 +616,8 @@ export class CSG {
      * @param csg The CSG to subtract against this CSG
      */
     public subtractInPlace(csg: CSG): void {
-        var a = new Node(this.polygons);
-        var b = new Node(csg.polygons);
+        const a = new Node(this.polygons);
+        const b = new Node(csg.polygons);
 
         a.invert();
         a.clipTo(b);
@@ -600,8 +637,8 @@ export class CSG {
      * @returns A new CSG
      */
     public intersect(csg: CSG): CSG {
-        var a = new Node(this.clone().polygons);
-        var b = new Node(csg.clone().polygons);
+        const a = new Node(this.clone().polygons);
+        const b = new Node(csg.clone().polygons);
         a.invert();
         b.clipTo(a);
         b.invert();
@@ -617,8 +654,8 @@ export class CSG {
      * @param csg The CSG to intersect against this CSG
      */
     public intersectInPlace(csg: CSG): void {
-        var a = new Node(this.polygons);
-        var b = new Node(csg.polygons);
+        const a = new Node(this.polygons);
+        const b = new Node(csg.polygons);
 
         a.invert();
         b.clipTo(a);
@@ -637,7 +674,7 @@ export class CSG {
      * @returns A new CSG solid with solid and empty space switched
      */
     public inverse(): CSG {
-        var csg = this.clone();
+        const csg = this.clone();
         csg.inverseInPlace();
         return csg;
     }
@@ -646,7 +683,9 @@ export class CSG {
      * Inverses the CSG in place
      */
     public inverseInPlace(): void {
-        this.polygons.map((p) => { p.flip(); });
+        this.polygons.map((p) => {
+            p.flip();
+        });
     }
 
     /**
@@ -675,26 +714,27 @@ export class CSG {
      * @returns A new Mesh
      */
     public buildMeshGeometry(name: string, scene?: Scene, keepSubMeshes?: boolean): Mesh {
-        var matrix = this.matrix.clone();
+        const matrix = this.matrix.clone();
         matrix.invert();
 
-        var mesh = new Mesh(name, scene);
-        var vertices = [];
-        var indices = [];
-        var normals = [];
-        var uvs: Nullable<number[]> = null;
-        var vertColors: Nullable<number[]> = null;
-        var vertex = Vector3.Zero();
-        var normal = Vector3.Zero();
-        var uv = Vector2.Zero();
-        var vertColor = new Color4(0, 0, 0, 0);
-        var polygons = this.polygons;
-        var polygonIndices = [0, 0, 0], polygon;
-        var vertice_dict = {};
-        var vertex_idx;
-        var currentIndex = 0;
-        var subMesh_dict = {};
-        var subMesh_obj;
+        const mesh = new Mesh(name, scene);
+        const vertices = [];
+        const indices = [];
+        const normals = [];
+        let uvs: Nullable<number[]> = null;
+        let vertColors: Nullable<number[]> = null;
+        const vertex = Vector3.Zero();
+        const normal = Vector3.Zero();
+        const uv = Vector2.Zero();
+        const vertColor = new Color4(0, 0, 0, 0);
+        const polygons = this.polygons;
+        let polygonIndices = [0, 0, 0],
+            polygon;
+        const vertice_dict = {};
+        let vertex_idx;
+        let currentIndex = 0;
+        const subMesh_dict = {};
+        let subMesh_obj;
 
         if (keepSubMeshes) {
             // Sort Polygons, since subMeshes are indices range
@@ -707,7 +747,7 @@ export class CSG {
             });
         }
 
-        for (var i = 0, il = polygons.length; i < il; i++) {
+        for (let i = 0, il = polygons.length; i < il; i++) {
             polygon = polygons[i];
 
             // Building SubMeshes
@@ -718,18 +758,17 @@ export class CSG {
                 (<any>subMesh_dict)[polygon.shared.meshId][polygon.shared.subMeshId] = {
                     indexStart: +Infinity,
                     indexEnd: -Infinity,
-                    materialIndex: polygon.shared.materialIndex
+                    materialIndex: polygon.shared.materialIndex,
                 };
             }
             subMesh_obj = (<any>subMesh_dict)[polygon.shared.meshId][polygon.shared.subMeshId];
 
-            for (var j = 2, jl = polygon.vertices.length; j < jl; j++) {
-
+            for (let j = 2, jl = polygon.vertices.length; j < jl; j++) {
                 polygonIndices[0] = 0;
                 polygonIndices[1] = j - 1;
                 polygonIndices[2] = j;
 
-                for (var k = 0; k < 3; k++) {
+                for (let k = 0; k < 3; k++) {
                     vertex.copyFrom(polygon.vertices[polygonIndices[k]].pos);
                     normal.copyFrom(polygon.vertices[polygonIndices[k]].normal);
                     if (polygon.vertices[polygonIndices[k]].uv) {
@@ -745,34 +784,42 @@ export class CSG {
                         }
                         vertColor.copyFrom(polygon.vertices[polygonIndices[k]].vertColor!);
                     }
-                    var localVertex = Vector3.TransformCoordinates(vertex, matrix);
-                    var localNormal = Vector3.TransformNormal(normal, matrix);
+                    const localVertex = Vector3.TransformCoordinates(vertex, matrix);
+                    const localNormal = Vector3.TransformNormal(normal, matrix);
 
-                    vertex_idx = (<any>vertice_dict)[localVertex.x + ',' + localVertex.y + ',' + localVertex.z];
+                    vertex_idx = (<any>vertice_dict)[localVertex.x + "," + localVertex.y + "," + localVertex.z];
 
                     let areUvsDifferent = false;
 
-                    if (uvs &&
-                        !(uvs[vertex_idx * 2] === uv.x ||
-                            uvs[vertex_idx * 2 + 1] === uv.y)) {
+                    if (uvs && !(uvs[vertex_idx * 2] === uv.x || uvs[vertex_idx * 2 + 1] === uv.y)) {
                         areUvsDifferent = true;
                     }
 
                     let areColorsDifferent = false;
 
-                    if (vertColors &&
-                        !(vertColors[vertex_idx * 4] === vertColor.r ||
+                    if (
+                        vertColors &&
+                        !(
+                            vertColors[vertex_idx * 4] === vertColor.r ||
                             vertColors[vertex_idx * 4 + 1] === vertColor.g ||
                             vertColors[vertex_idx * 4 + 2] === vertColor.b ||
-                            vertColors[vertex_idx * 4 + 3] === vertColor.a)) {
+                            vertColors[vertex_idx * 4 + 3] === vertColor.a
+                        )
+                    ) {
                         areColorsDifferent = true;
                     }
 
                     // Check if 2 points can be merged
-                    if (!(typeof vertex_idx !== 'undefined' &&
-                        normals[vertex_idx * 3] === localNormal.x &&
-                        normals[vertex_idx * 3 + 1] === localNormal.y &&
-                        normals[vertex_idx * 3 + 2] === localNormal.z) || areUvsDifferent || areColorsDifferent) {
+                    if (
+                        !(
+                            typeof vertex_idx !== "undefined" &&
+                            normals[vertex_idx * 3] === localNormal.x &&
+                            normals[vertex_idx * 3 + 1] === localNormal.y &&
+                            normals[vertex_idx * 3 + 2] === localNormal.z
+                        ) ||
+                        areUvsDifferent ||
+                        areColorsDifferent
+                    ) {
                         vertices.push(localVertex.x, localVertex.y, localVertex.z);
                         if (uvs) {
                             uvs.push(uv.x, uv.y);
@@ -781,7 +828,7 @@ export class CSG {
                         if (vertColors) {
                             vertColors.push(vertColor.r, vertColor.g, vertColor.b, vertColor.a);
                         }
-                        vertex_idx = (<any>vertice_dict)[localVertex.x + ',' + localVertex.y + ',' + localVertex.z] = (vertices.length / 3) - 1;
+                        vertex_idx = (<any>vertice_dict)[localVertex.x + "," + localVertex.y + "," + localVertex.z] = vertices.length / 3 - 1;
                     }
 
                     indices.push(vertex_idx);
@@ -790,9 +837,7 @@ export class CSG {
                     subMesh_obj.indexEnd = Math.max(currentIndex, subMesh_obj.indexEnd);
                     currentIndex++;
                 }
-
             }
-
         }
 
         mesh.setVerticesData(VertexBuffer.PositionKind, vertices);
@@ -807,16 +852,21 @@ export class CSG {
 
         if (keepSubMeshes) {
             // We offset the materialIndex by the previous number of materials in the CSG mixed meshes
-            var materialIndexOffset = 0,
+            let materialIndexOffset = 0,
                 materialMaxIndex;
 
             mesh.subMeshes = new Array<SubMesh>();
 
-            for (var m in subMesh_dict) {
+            for (const m in subMesh_dict) {
                 materialMaxIndex = -1;
-                for (var sm in (<any>subMesh_dict)[m]) {
+                for (const sm in (<any>subMesh_dict)[m]) {
                     subMesh_obj = (<any>subMesh_dict)[m][sm];
-                    SubMesh.CreateFromIndices(subMesh_obj.materialIndex + materialIndexOffset, subMesh_obj.indexStart, subMesh_obj.indexEnd - subMesh_obj.indexStart + 1, <AbstractMesh>mesh);
+                    SubMesh.CreateFromIndices(
+                        subMesh_obj.materialIndex + materialIndexOffset,
+                        subMesh_obj.indexStart,
+                        subMesh_obj.indexEnd - subMesh_obj.indexStart + 1,
+                        <AbstractMesh>mesh
+                    );
                     materialMaxIndex = Math.max(subMesh_obj.materialIndex, materialMaxIndex);
                 }
                 materialIndexOffset += ++materialMaxIndex;
@@ -835,7 +885,7 @@ export class CSG {
      * @returns The new Mesh
      */
     public toMesh(name: string, material: Nullable<Material> = null, scene?: Scene, keepSubMeshes?: boolean): Mesh {
-        var mesh = this.buildMeshGeometry(name, scene, keepSubMeshes);
+        const mesh = this.buildMeshGeometry(name, scene, keepSubMeshes);
 
         mesh.material = material;
 

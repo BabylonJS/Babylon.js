@@ -1,12 +1,12 @@
 import { InternalTexture, InternalTextureSource } from "../../Materials/Textures/internalTexture";
 import { Logger } from "../../Misc/logger";
-import { RenderTargetCreationOptions, DepthTextureCreationOptions } from "../../Materials/Textures/textureCreationOptions";
+import { RenderTargetCreationOptions, DepthTextureCreationOptions , TextureSize } from "../../Materials/Textures/textureCreationOptions";
 import { ThinEngine } from "../thinEngine";
 import { Nullable } from "../../types";
 import { RenderTargetWrapper } from "../renderTargetWrapper";
 import { WebGLRenderTargetWrapper } from "../WebGL/webGLRenderTargetWrapper";
 import { WebGLHardwareTexture } from "../WebGL/webGLHardwareTexture";
-import { TextureSize } from "../../Materials/Textures/textureCreationOptions";
+
 import { Constants } from "../constants";
 
 /**
@@ -100,7 +100,7 @@ ThinEngine.prototype.createRenderTargetTexture = function (this: ThinEngine, siz
 
 ThinEngine.prototype.createDepthStencilTexture = function (size: TextureSize, options: DepthTextureCreationOptions, rtWrapper: RenderTargetWrapper): InternalTexture {
     if (options.isCube) {
-        let width = (<{ width: number; height: number }>size).width || <number>size;
+        const width = (<{ width: number; height: number }>size).width || <number>size;
         return this._createDepthStencilCubeTexture(width, options, rtWrapper);
     } else {
         return this._createDepthStencilTexture(size, options, rtWrapper);
@@ -169,7 +169,7 @@ ThinEngine.prototype.updateRenderTargetTextureSampleCount = function (rtWrapper:
         return samples;
     }
 
-    var gl = this._gl;
+    const gl = this._gl;
 
     samples = Math.min(samples, this.getCaps().maxMSAASamples);
 
@@ -191,7 +191,7 @@ ThinEngine.prototype.updateRenderTargetTextureSampleCount = function (rtWrapper:
     }
 
     if (samples > 1 && gl.renderbufferStorageMultisample) {
-        let framebuffer = gl.createFramebuffer();
+        const framebuffer = gl.createFramebuffer();
 
         if (!framebuffer) {
             throw new Error("Unable to create multi sampled framebuffer");

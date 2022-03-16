@@ -1,23 +1,23 @@
-import { NodeMaterialBlock } from '../../nodeMaterialBlock';
-import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
-import { NodeMaterialBlockTargets } from '../../Enums/nodeMaterialBlockTargets';
-import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPoint';
-import { BaseTexture } from '../../../Textures/baseTexture';
-import { AbstractMesh } from '../../../../Meshes/abstractMesh';
-import { NodeMaterial, NodeMaterialDefines } from '../../nodeMaterial';
-import { Effect } from '../../../effect';
-import { Mesh } from '../../../../Meshes/mesh';
-import { Nullable } from '../../../../types';
-import { RegisterClass } from '../../../../Misc/typeStore';
-import { Scene } from '../../../../scene';
-import { InputBlock } from '../Input/inputBlock';
-import { NodeMaterialSystemValues } from '../../Enums/nodeMaterialSystemValues';
-import { Constants } from '../../../../Engines/constants';
+import { NodeMaterialBlock } from "../../nodeMaterialBlock";
+import { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
+import { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
+import { BaseTexture } from "../../../Textures/baseTexture";
+import { AbstractMesh } from "../../../../Meshes/abstractMesh";
+import { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
+import { Effect } from "../../../effect";
+import { Mesh } from "../../../../Meshes/mesh";
+import { Nullable } from "../../../../types";
+import { RegisterClass } from "../../../../Misc/typeStore";
+import { Scene } from "../../../../scene";
+import { InputBlock } from "../Input/inputBlock";
+import { NodeMaterialSystemValues } from "../../Enums/nodeMaterialSystemValues";
+import { Constants } from "../../../../Engines/constants";
 
 import "../../../../Shaders/ShadersInclude/reflectionFunction";
-import { CubeTexture } from '../../../Textures/cubeTexture';
-import { Texture } from '../../../Textures/texture';
-import { EngineStore } from '../../../../Engines/engineStore';
+import { CubeTexture } from "../../../Textures/cubeTexture";
+import { Texture } from "../../../Textures/texture";
+import { EngineStore } from "../../../../Engines/engineStore";
 
 /**
  * Base block used to read a reflection texture from a sampler
@@ -132,8 +132,8 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
     public abstract get world(): NodeMaterialConnectionPoint;
 
     /**
-    * Gets the camera (or eye) position component
-    */
+     * Gets the camera (or eye) position component
+     */
     public abstract get cameraPosition(): NodeMaterialConnectionPoint;
 
     /**
@@ -228,7 +228,7 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
         }
 
         if ((<any>texture).boundingBoxSize) {
-            let cubeTexture = <CubeTexture>texture;
+            const cubeTexture = <CubeTexture>texture;
             effect.setVector3(this._reflectionPositionName, cubeTexture.boundingBoxPosition);
             effect.setVector3(this._reflectionSizeName, cubeTexture.boundingBoxSize);
         }
@@ -259,7 +259,7 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
 
         let code = "";
 
-        let worldPosVaryingName = "v_" + this.worldPosition.associatedVariableName;
+        const worldPosVaryingName = "v_" + this.worldPosition.associatedVariableName;
         if (state._emitVaryingFromString(worldPosVaryingName, "vec4")) {
             code += `${worldPosVaryingName} = ${this.worldPosition.associatedVariableName};\r\n`;
         }
@@ -273,7 +273,13 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
             code += `#endif\r\n`;
         }
 
-        if (state._emitVaryingFromString(this._directionWName, "vec3", `defined(${this._defineEquirectangularFixedName}) || defined(${this._defineMirroredEquirectangularFixedName})`)) {
+        if (
+            state._emitVaryingFromString(
+                this._directionWName,
+                "vec3",
+                `defined(${this._defineEquirectangularFixedName}) || defined(${this._defineMirroredEquirectangularFixedName})`
+            )
+        ) {
             code += `#if defined(${this._defineEquirectangularFixedName}) || defined(${this._defineMirroredEquirectangularFixedName})\r\n`;
             code += `${this._directionWName} = normalize(vec3(${this.world.associatedVariableName} * vec4(${this.position.associatedVariableName}.xyz, 0.0)));\r\n`;
             code += `#endif\r\n`;
@@ -307,13 +313,11 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
         state.sharedData.blocksWithDefines.push(this);
         state.sharedData.bindableBlocks.push(this);
 
-        let comments = `//${this.name}`;
+        const comments = `//${this.name}`;
         state._emitFunction("ReciprocalPI", "#define RECIPROCAL_PI2 0.15915494", "");
         state._emitFunctionFromInclude("helperFunctions", comments);
         state._emitFunctionFromInclude("reflectionFunction", comments, {
-            replaceStrings: [
-                { search: /vec3 computeReflectionCoords/g, replace: "void DUMMYFUNC" }
-            ]
+            replaceStrings: [{ search: /vec3 computeReflectionCoords/g, replace: "void DUMMYFUNC" }],
         });
 
         this._reflectionColorName = state._getFreeVariableName("reflectionColor");
@@ -338,11 +342,11 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
         if (!worldPos) {
             worldPos = `v_${this.worldPosition.associatedVariableName}`;
         }
-        let reflectionMatrix = this._reflectionMatrixName;
-        let direction = `normalize(${this._directionWName})`;
-        let positionUVW = `${this._positionUVWName}`;
-        let vEyePosition = `${this.cameraPosition.associatedVariableName}`;
-        let view = `${this.view.associatedVariableName}`;
+        const reflectionMatrix = this._reflectionMatrixName;
+        const direction = `normalize(${this._directionWName})`;
+        const positionUVW = `${this._positionUVWName}`;
+        const vEyePosition = `${this.cameraPosition.associatedVariableName}`;
+        const view = `${this.view.associatedVariableName}`;
 
         worldNormalVarName += ".xyz";
 
@@ -414,7 +418,7 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
      * @returns the shader code
      */
     public handleFragmentSideCodeReflectionColor(lodVarName?: string, swizzleLookupTexture = ".rgb"): string {
-        const colorType = "vec" + (swizzleLookupTexture.length === 0 ? "4" : (swizzleLookupTexture.length - 1));
+        const colorType = "vec" + (swizzleLookupTexture.length === 0 ? "4" : swizzleLookupTexture.length - 1);
 
         let code = `${colorType} ${this._reflectionColorName};
             #ifdef ${this._define3DName}\r\n`;
@@ -449,7 +453,7 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
         let code = "";
 
         if (state.target === NodeMaterialBlockTargets.Fragment) {
-            for (var output of this._outputs) {
+            for (const output of this._outputs) {
                 if (output.hasEndpoints) {
                     code += `${this._declareOutput(output, state)} = ${varName}.${output.name};\r\n`;
                 }
@@ -473,7 +477,9 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
 
         if (this.texture.isCube) {
             const forcedExtension = (this.texture as CubeTexture).forcedExtension;
-            codeString += `${this._codeVariableName}.texture = new BABYLON.CubeTexture("${this.texture.name}", undefined, undefined, ${this.texture.noMipmap}, null, undefined, undefined, undefined, ${this.texture._prefiltered}, ${forcedExtension ? "\"" + forcedExtension + "\"" : "null"});\r\n`;
+            codeString += `${this._codeVariableName}.texture = new BABYLON.CubeTexture("${this.texture.name}", undefined, undefined, ${
+                this.texture.noMipmap
+            }, null, undefined, undefined, undefined, ${this.texture._prefiltered}, ${forcedExtension ? '"' + forcedExtension + '"' : "null"});\r\n`;
         } else {
             codeString += `${this._codeVariableName}.texture = new BABYLON.Texture("${this.texture.name}", null);\r\n`;
         }
@@ -483,7 +489,7 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
     }
 
     public serialize(): any {
-        let serializationObject = super.serialize();
+        const serializationObject = super.serialize();
 
         if (this.texture && !this.texture.isRenderTarget) {
             serializationObject.texture = this.texture.serialize();

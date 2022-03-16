@@ -64,7 +64,6 @@ export class ImageProcessingConfigurationDefines extends MaterialDefines impleme
  * or not.
  */
 export class ImageProcessingConfiguration {
-
     /**
      * Default tone mapping applied in BabylonJS.
      */
@@ -405,8 +404,8 @@ export class ImageProcessingConfiguration {
     }
 
     /**
-    * An event triggered when the configuration changes and requires Shader to Update some parameters.
-    */
+     * An event triggered when the configuration changes and requires Shader to Update some parameters.
+     */
     public onUpdateParameters = new Observable<ImageProcessingConfiguration>();
 
     /**
@@ -482,7 +481,7 @@ export class ImageProcessingConfiguration {
         }
 
         defines.VIGNETTE = this.vignetteEnabled;
-        defines.VIGNETTEBLENDMODEMULTIPLY = (this.vignetteBlendMode === ImageProcessingConfiguration._VIGNETTEMODE_MULTIPLY);
+        defines.VIGNETTEBLENDMODEMULTIPLY = this.vignetteBlendMode === ImageProcessingConfiguration._VIGNETTEMODE_MULTIPLY;
         defines.VIGNETTEBLENDMODEOPAQUE = !defines.VIGNETTEBLENDMODEMULTIPLY;
 
         defines.TONEMAPPING = this.toneMappingEnabled;
@@ -495,10 +494,10 @@ export class ImageProcessingConfiguration {
                 break;
         }
 
-        defines.CONTRAST = (this.contrast !== 1.0);
-        defines.EXPOSURE = (this.exposure !== 1.0);
-        defines.COLORCURVES = (this.colorCurvesEnabled && !!this.colorCurves);
-        defines.COLORGRADING = (this.colorGradingEnabled && !!this.colorGradingTexture);
+        defines.CONTRAST = this.contrast !== 1.0;
+        defines.EXPOSURE = this.exposure !== 1.0;
+        defines.COLORCURVES = this.colorCurvesEnabled && !!this.colorCurves;
+        defines.COLORGRADING = this.colorGradingEnabled && !!this.colorGradingTexture;
         if (defines.COLORGRADING) {
             defines.COLORGRADING3D = this.colorGradingTexture!.is3D;
         } else {
@@ -533,22 +532,22 @@ export class ImageProcessingConfiguration {
 
         // Vignette
         if (this._vignetteEnabled) {
-            var inverseWidth = 1 / effect.getEngine().getRenderWidth();
-            var inverseHeight = 1 / effect.getEngine().getRenderHeight();
+            const inverseWidth = 1 / effect.getEngine().getRenderWidth();
+            const inverseHeight = 1 / effect.getEngine().getRenderHeight();
             effect.setFloat2("vInverseScreenSize", inverseWidth, inverseHeight);
 
-            let aspectRatio = overrideAspectRatio != null ? overrideAspectRatio : (inverseHeight / inverseWidth);
+            const aspectRatio = overrideAspectRatio != null ? overrideAspectRatio : inverseHeight / inverseWidth;
 
             let vignetteScaleY = Math.tan(this.vignetteCameraFov * 0.5);
             let vignetteScaleX = vignetteScaleY * aspectRatio;
 
-            let vignetteScaleGeometricMean = Math.sqrt(vignetteScaleX * vignetteScaleY);
+            const vignetteScaleGeometricMean = Math.sqrt(vignetteScaleX * vignetteScaleY);
             vignetteScaleX = Tools.Mix(vignetteScaleX, vignetteScaleGeometricMean, this.vignetteStretch);
             vignetteScaleY = Tools.Mix(vignetteScaleY, vignetteScaleGeometricMean, this.vignetteStretch);
 
             effect.setFloat4("vignetteSettings1", vignetteScaleX, vignetteScaleY, -vignetteScaleX * this.vignetteCentreX, -vignetteScaleY * this.vignetteCentreY);
 
-            let vignettePower = -2.0 * this.vignetteWeight;
+            const vignettePower = -2.0 * this.vignetteWeight;
             effect.setFloat4("vignetteSettings2", this.vignetteColor.r, this.vignetteColor.g, this.vignetteColor.b, vignettePower);
         }
 
@@ -561,9 +560,10 @@ export class ImageProcessingConfiguration {
         // Color transform settings
         if (this.colorGradingTexture) {
             effect.setTexture("txColorTransform", this.colorGradingTexture);
-            let textureSize = this.colorGradingTexture.getSize().height;
+            const textureSize = this.colorGradingTexture.getSize().height;
 
-            effect.setFloat4("colorTransformSettings",
+            effect.setFloat4(
+                "colorTransformSettings",
                 (textureSize - 1) / textureSize, // textureScale
                 0.5 / textureSize, // textureOffset
                 textureSize, // textureSize

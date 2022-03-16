@@ -1,12 +1,12 @@
-import { NodeMaterialBlock } from '../../nodeMaterialBlock';
-import { NodeMaterialBlockConnectionPointTypes } from '../../Enums/nodeMaterialBlockConnectionPointTypes';
-import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
-import { NodeMaterialBlockTargets } from '../../Enums/nodeMaterialBlockTargets';
-import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPoint';
-import { BaseTexture } from '../../../Textures/baseTexture';
-import { RegisterClass } from '../../../../Misc/typeStore';
-import { Scene } from '../../../../scene';
-import { InputBlock } from '../Input/inputBlock';
+import { NodeMaterialBlock } from "../../nodeMaterialBlock";
+import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
+import { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
+import { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
+import { BaseTexture } from "../../../Textures/baseTexture";
+import { RegisterClass } from "../../../../Misc/typeStore";
+import { Scene } from "../../../../scene";
+import { InputBlock } from "../Input/inputBlock";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../nodeMaterialDecorator";
 import { Effect } from "../../../effect";
 import { Mesh } from "../../../../Meshes/mesh";
@@ -18,7 +18,6 @@ declare type NodeMaterial = import("../../nodeMaterial").NodeMaterial;
  * @since 5.0.0
  */
 export class SceneDepthBlock extends NodeMaterialBlock {
-
     private _samplerName = "textureSampler";
     private _mainUVName: string;
     private _tempTextureRead: string;
@@ -26,13 +25,17 @@ export class SceneDepthBlock extends NodeMaterialBlock {
     /**
      * Defines if the depth renderer should be setup in non linear mode
      */
-    @editableInPropertyPage("Use non linear depth", PropertyTypeForEdition.Boolean, "ADVANCED", { notifiers: { "activatePreviewCommand": true, "callback": (scene) => scene.disableDepthRenderer() } })
+    @editableInPropertyPage("Use non linear depth", PropertyTypeForEdition.Boolean, "ADVANCED", {
+        notifiers: { activatePreviewCommand: true, callback: (scene) => scene.disableDepthRenderer() },
+    })
     public useNonLinearDepth = false;
 
     /**
      * Defines if the depth renderer should be setup in full 32 bits float mode
      */
-    @editableInPropertyPage("Force 32 bits float", PropertyTypeForEdition.Boolean, "ADVANCED", { notifiers: { "activatePreviewCommand": true, "callback": (scene) => scene.disableDepthRenderer() } })
+    @editableInPropertyPage("Force 32 bits float", PropertyTypeForEdition.Boolean, "ADVANCED", {
+        notifiers: { activatePreviewCommand: true, callback: (scene) => scene.disableDepthRenderer() },
+    })
     public force32itsFloat = false;
 
     /**
@@ -109,13 +112,16 @@ export class SceneDepthBlock extends NodeMaterialBlock {
     }
 
     private _injectVertexCode(state: NodeMaterialBuildState) {
-        let uvInput = this.uv;
+        const uvInput = this.uv;
 
         if (uvInput.connectedPoint!.ownerBlock.isInput) {
-            let uvInputOwnerBlock = uvInput.connectedPoint!.ownerBlock as InputBlock;
+            const uvInputOwnerBlock = uvInput.connectedPoint!.ownerBlock as InputBlock;
 
             if (!uvInputOwnerBlock.isAttribute) {
-                state._emitUniformFromString(uvInput.associatedVariableName, "vec" + (uvInput.type === NodeMaterialBlockConnectionPointTypes.Vector3 ? "3" : uvInput.type === NodeMaterialBlockConnectionPointTypes.Vector4 ? "4" : "2"));
+                state._emitUniformFromString(
+                    uvInput.associatedVariableName,
+                    "vec" + (uvInput.type === NodeMaterialBlockConnectionPointTypes.Vector3 ? "3" : uvInput.type === NodeMaterialBlockConnectionPointTypes.Vector4 ? "4" : "2")
+                );
             }
         }
 
@@ -131,7 +137,7 @@ export class SceneDepthBlock extends NodeMaterialBlock {
 
         this._writeTextureRead(state, true);
 
-        for (var output of this._outputs) {
+        for (const output of this._outputs) {
             if (output.hasEndpoints) {
                 this._writeOutput(state, output, "r", true);
             }
@@ -139,7 +145,7 @@ export class SceneDepthBlock extends NodeMaterialBlock {
     }
 
     private _writeTextureRead(state: NodeMaterialBuildState, vertexMode = false) {
-        let uvInput = this.uv;
+        const uvInput = this.uv;
 
         if (vertexMode) {
             if (state.target === NodeMaterialBlockTargets.Fragment) {
@@ -201,7 +207,7 @@ export class SceneDepthBlock extends NodeMaterialBlock {
 
         this._writeTextureRead(state);
 
-        for (var output of this._outputs) {
+        for (const output of this._outputs) {
             if (output.hasEndpoints) {
                 this._writeOutput(state, output, "r");
             }
@@ -211,7 +217,7 @@ export class SceneDepthBlock extends NodeMaterialBlock {
     }
 
     public serialize(): any {
-        let serializationObject = super.serialize();
+        const serializationObject = super.serialize();
 
         serializationObject.useNonLinearDepth = this.useNonLinearDepth;
         serializationObject.force32itsFloat = this.force32itsFloat;

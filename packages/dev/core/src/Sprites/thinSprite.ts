@@ -114,7 +114,10 @@ export class ThinSprite {
         this._animationStarted = false;
     }
 
-    /** @hidden */
+    /**
+     * @param deltaTime
+     * @hidden
+     */
     public _animate(deltaTime: number): void {
         if (!this._animationStarted) {
             return;
@@ -124,7 +127,7 @@ export class ThinSprite {
         if (this._time > this._delay) {
             this._time = this._time % this._delay;
             this.cellIndex += this._direction;
-            if (this._direction > 0 && this.cellIndex > this._toIndex || this._direction < 0 && this.cellIndex < this._fromIndex) {
+            if ((this._direction > 0 && this.cellIndex > this._toIndex) || (this._direction < 0 && this.cellIndex < this._fromIndex)) {
                 if (this._loopAnimation) {
                     this.cellIndex = this._direction > 0 ? this._fromIndex : this._toIndex;
                 } else {

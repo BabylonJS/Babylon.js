@@ -5,7 +5,7 @@ import { VertexBuffer } from "../../Buffers/buffer";
 import { VertexData } from "../mesh.vertexData";
 import { AbstractMesh } from "../abstractMesh";
 import { Camera } from "../../Cameras/camera";
-import { PositionNormalTextureVertex } from '../../Maths/math.vertexFormat';
+import { PositionNormalTextureVertex } from "../../Maths/math.vertexFormat";
 import { CompatibilityOptions } from "../../Compat/compatibilityOptions";
 
 /**
@@ -20,53 +20,58 @@ import { CompatibilityOptions } from "../../Compat/compatibilityOptions";
  * @param sourceMesh defines the mesh where the decal must be applied
  * @param options defines the options used to create the mesh
  * @param scene defines the hosting scene
+ * @param options.position
+ * @param options.normal
+ * @param options.size
+ * @param options.angle
+ * @param options.captureUVS
  * @returns the decal mesh
  * @see https://doc.babylonjs.com/how_to/decals
  */
-export function CreateDecal(name: string, sourceMesh: AbstractMesh, options: { position?: Vector3, normal?: Vector3, size?: Vector3, angle?: number, captureUVS?: boolean }): Mesh {
-    var indices = <IndicesArray>sourceMesh.getIndices();
-    var positions = sourceMesh.getVerticesData(VertexBuffer.PositionKind);
-    var normals = sourceMesh.getVerticesData(VertexBuffer.NormalKind);
-    var uvs = sourceMesh.getVerticesData(VertexBuffer.UVKind);
-    var position = options.position || Vector3.Zero();
-    var normal = options.normal || Vector3.Up();
-    var size = options.size || Vector3.One();
-    var angle = options.angle || 0;
+export function CreateDecal(name: string, sourceMesh: AbstractMesh, options: { position?: Vector3; normal?: Vector3; size?: Vector3; angle?: number; captureUVS?: boolean }): Mesh {
+    const indices = <IndicesArray>sourceMesh.getIndices();
+    const positions = sourceMesh.getVerticesData(VertexBuffer.PositionKind);
+    const normals = sourceMesh.getVerticesData(VertexBuffer.NormalKind);
+    const uvs = sourceMesh.getVerticesData(VertexBuffer.UVKind);
+    const position = options.position || Vector3.Zero();
+    let normal = options.normal || Vector3.Up();
+    const size = options.size || Vector3.One();
+    const angle = options.angle || 0;
 
     // Getting correct rotation
     if (!normal) {
-        var target = new Vector3(0, 0, 1);
-        var camera = <Camera>sourceMesh.getScene().activeCamera;
-        var cameraWorldTarget = Vector3.TransformCoordinates(target, camera.getWorldMatrix());
+        const target = new Vector3(0, 0, 1);
+        const camera = <Camera>sourceMesh.getScene().activeCamera;
+        const cameraWorldTarget = Vector3.TransformCoordinates(target, camera.getWorldMatrix());
 
         normal = camera.globalPosition.subtract(cameraWorldTarget);
     }
 
-    var yaw = -Math.atan2(normal.z, normal.x) - Math.PI / 2;
-    var len = Math.sqrt(normal.x * normal.x + normal.z * normal.z);
-    var pitch = Math.atan2(normal.y, len);
+    const yaw = -Math.atan2(normal.z, normal.x) - Math.PI / 2;
+    const len = Math.sqrt(normal.x * normal.x + normal.z * normal.z);
+    const pitch = Math.atan2(normal.y, len);
 
     // Matrix
-    var decalWorldMatrix = Matrix.RotationYawPitchRoll(yaw, pitch, angle).multiply(Matrix.Translation(position.x, position.y, position.z));
-    var inverseDecalWorldMatrix = Matrix.Invert(decalWorldMatrix);
-    var meshWorldMatrix = sourceMesh.getWorldMatrix();
-    var transformMatrix = meshWorldMatrix.multiply(inverseDecalWorldMatrix);
+    const decalWorldMatrix = Matrix.RotationYawPitchRoll(yaw, pitch, angle).multiply(Matrix.Translation(position.x, position.y, position.z));
+    const inverseDecalWorldMatrix = Matrix.Invert(decalWorldMatrix);
+    const meshWorldMatrix = sourceMesh.getWorldMatrix();
+    const transformMatrix = meshWorldMatrix.multiply(inverseDecalWorldMatrix);
 
-    var vertexData = new VertexData();
+    const vertexData = new VertexData();
     vertexData.indices = [];
     vertexData.positions = [];
     vertexData.normals = [];
     vertexData.uvs = [];
 
-    var currentVertexDataIndex = 0;
+    let currentVertexDataIndex = 0;
 
-    var extractDecalVector3 = (indexId: number): PositionNormalTextureVertex => {
-        var result = new PositionNormalTextureVertex();
+    const extractDecalVector3 = (indexId: number): PositionNormalTextureVertex => {
+        const result = new PositionNormalTextureVertex();
         if (!indices || !positions || !normals) {
             return result;
         }
 
-        var vertexId = indices[indexId];
+        const vertexId = indices[indexId];
         result.position = new Vector3(positions[vertexId * 3], positions[vertexId * 3 + 1], positions[vertexId * 3 + 2]);
 
         // Send vector to decal local world
@@ -83,36 +88,33 @@ export function CreateDecal(name: string, sourceMesh: AbstractMesh, options: { p
 
         return result;
     }; // Inspired by https://github.com/mrdoob/three.js/blob/eee231960882f6f3b6113405f524956145148146/examples/js/geometries/DecalGeometry.js
-    var clip = (vertices: PositionNormalTextureVertex[], axis: Vector3): PositionNormalTextureVertex[] => {
+    const clip = (vertices: PositionNormalTextureVertex[], axis: Vector3): PositionNormalTextureVertex[] => {
         if (vertices.length === 0) {
             return vertices;
         }
 
-        var clipSize = 0.5 * Math.abs(Vector3.Dot(size, axis));
+        const clipSize = 0.5 * Math.abs(Vector3.Dot(size, axis));
 
-        var clipVertices = (v0: PositionNormalTextureVertex, v1: PositionNormalTextureVertex): PositionNormalTextureVertex => {
-            var clipFactor = Vector3.GetClipFactor(v0.position, v1.position, axis, clipSize);
+        const clipVertices = (v0: PositionNormalTextureVertex, v1: PositionNormalTextureVertex): PositionNormalTextureVertex => {
+            const clipFactor = Vector3.GetClipFactor(v0.position, v1.position, axis, clipSize);
 
-            return new PositionNormalTextureVertex(
-                Vector3.Lerp(v0.position, v1.position, clipFactor),
-                Vector3.Lerp(v0.normal, v1.normal, clipFactor)
-            );
+            return new PositionNormalTextureVertex(Vector3.Lerp(v0.position, v1.position, clipFactor), Vector3.Lerp(v0.normal, v1.normal, clipFactor));
         };
-        var result = new Array<PositionNormalTextureVertex>();
+        const result = new Array<PositionNormalTextureVertex>();
 
-        for (var index = 0; index < vertices.length; index += 3) {
+        for (let index = 0; index < vertices.length; index += 3) {
             var v1Out: boolean;
             var v2Out: boolean;
             var v3Out: boolean;
-            var total = 0;
+            let total = 0;
             let nV1: Nullable<PositionNormalTextureVertex> = null;
             let nV2: Nullable<PositionNormalTextureVertex> = null;
             let nV3: Nullable<PositionNormalTextureVertex> = null;
             let nV4: Nullable<PositionNormalTextureVertex> = null;
 
-            var d1 = Vector3.Dot(vertices[index].position, axis) - clipSize;
-            var d2 = Vector3.Dot(vertices[index + 1].position, axis) - clipSize;
-            var d3 = Vector3.Dot(vertices[index + 2].position, axis) - clipSize;
+            const d1 = Vector3.Dot(vertices[index].position, axis) - clipSize;
+            const d2 = Vector3.Dot(vertices[index + 1].position, axis) - clipSize;
+            const d3 = Vector3.Dot(vertices[index + 2].position, axis) - clipSize;
 
             v1Out = d1 > 0;
             v2Out = d2 > 0;
@@ -127,7 +129,6 @@ export function CreateDecal(name: string, sourceMesh: AbstractMesh, options: { p
                     result.push(vertices[index + 2]);
                     break;
                 case 1:
-
                     if (v1Out) {
                         nV1 = vertices[index + 1];
                         nV2 = vertices[index + 2];
@@ -200,8 +201,8 @@ export function CreateDecal(name: string, sourceMesh: AbstractMesh, options: { p
 
         return result;
     };
-    for (var index = 0; index < indices.length; index += 3) {
-        var faceVertices = new Array<PositionNormalTextureVertex>();
+    for (let index = 0; index < indices.length; index += 3) {
+        let faceVertices = new Array<PositionNormalTextureVertex>();
 
         faceVertices.push(extractDecalVector3(index));
         faceVertices.push(extractDecalVector3(index + 1));
@@ -220,8 +221,8 @@ export function CreateDecal(name: string, sourceMesh: AbstractMesh, options: { p
         }
 
         // Add UVs and get back to world
-        for (var vIndex = 0; vIndex < faceVertices.length; vIndex++) {
-            var vertex = faceVertices[vIndex];
+        for (let vIndex = 0; vIndex < faceVertices.length; vIndex++) {
+            const vertex = faceVertices[vIndex];
 
             //TODO check for Int32Array | Uint32Array | Uint16Array
             (<number[]>vertexData.indices).push(currentVertexDataIndex);
@@ -240,7 +241,7 @@ export function CreateDecal(name: string, sourceMesh: AbstractMesh, options: { p
     }
 
     // Return mesh
-    var decal = new Mesh(name, sourceMesh.getScene());
+    const decal = new Mesh(name, sourceMesh.getScene());
     vertexData.applyToMesh(decal);
 
     decal.position = position.clone();
@@ -254,7 +255,7 @@ export function CreateDecal(name: string, sourceMesh: AbstractMesh, options: { p
  * @deprecated use the function directly from the module
  */
 export const DecalBuilder = {
-    CreateDecal
+    CreateDecal,
 };
 
 Mesh.CreateDecal = (name: string, sourceMesh: AbstractMesh, position: Vector3, normal: Vector3, size: Vector3, angle: number): Mesh => {
@@ -262,7 +263,7 @@ Mesh.CreateDecal = (name: string, sourceMesh: AbstractMesh, position: Vector3, n
         position,
         normal,
         size,
-        angle
+        angle,
     };
 
     return CreateDecal(name, sourceMesh, options);

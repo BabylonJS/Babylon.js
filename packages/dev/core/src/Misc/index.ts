@@ -53,7 +53,7 @@ export * from "./dataStorage";
 export * from "./sceneRecorder";
 export * from "./khronosTextureContainer2";
 export * from "./trajectoryClassifier";
-export * from './timer';
+export * from "./timer";
 export * from "./copyTools";
 export * from "./reflector";
 export * from "./domManagement";

@@ -1,10 +1,10 @@
-import { InternalTexture, InternalTextureSource } from '../../Materials/Textures/internalTexture';
-import { Logger } from '../../Misc/logger';
-import { Constants } from '../constants';
-import { ThinEngine } from '../thinEngine';
+import { InternalTexture, InternalTextureSource } from "../../Materials/Textures/internalTexture";
+import { Logger } from "../../Misc/logger";
+import { Constants } from "../constants";
+import { ThinEngine } from "../thinEngine";
 import { RenderTargetWrapper } from "../renderTargetWrapper";
 import { WebGLRenderTargetWrapper } from "../WebGL/webGLRenderTargetWrapper";
-import { RenderTargetCreationOptions } from '../../Materials/Textures/textureCreationOptions';
+import { RenderTargetCreationOptions } from "../../Materials/Textures/textureCreationOptions";
 
 declare module "../../Engines/thinEngine" {
     export interface ThinEngine {
@@ -21,31 +21,30 @@ declare module "../../Engines/thinEngine" {
 ThinEngine.prototype.createRenderTargetCubeTexture = function (size: number, options?: Partial<RenderTargetCreationOptions>): RenderTargetWrapper {
     const rtWrapper = this._createHardwareRenderTargetWrapper(false, true, size) as WebGLRenderTargetWrapper;
 
-    let fullOptions = {
+    const fullOptions = {
         generateMipMaps: true,
         generateDepthBuffer: true,
         generateStencilBuffer: false,
         type: Constants.TEXTURETYPE_UNSIGNED_INT,
         samplingMode: Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
         format: Constants.TEXTUREFORMAT_RGBA,
-        ...options
+        ...options,
     };
     fullOptions.generateStencilBuffer = fullOptions.generateDepthBuffer && fullOptions.generateStencilBuffer;
 
     if (fullOptions.type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
         // if floating point linear (gl.FLOAT) then force to NEAREST_SAMPLINGMODE
         fullOptions.samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
-    }
-    else if (fullOptions.type === Constants.TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
+    } else if (fullOptions.type === Constants.TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
         // if floating point linear (HALF_FLOAT) then force to NEAREST_SAMPLINGMODE
         fullOptions.samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
     }
-    var gl = this._gl;
+    const gl = this._gl;
 
-    var texture = new InternalTexture(this, InternalTextureSource.RenderTarget);
+    const texture = new InternalTexture(this, InternalTextureSource.RenderTarget);
     this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture, true);
 
-    var filters = this._getSamplingParameters(fullOptions.samplingMode, fullOptions.generateMipMaps);
+    const filters = this._getSamplingParameters(fullOptions.samplingMode, fullOptions.generateMipMaps);
 
     if (fullOptions.type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
         fullOptions.type = Constants.TEXTURETYPE_UNSIGNED_INT;
@@ -57,12 +56,22 @@ ThinEngine.prototype.createRenderTargetCubeTexture = function (size: number, opt
     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
-    for (var face = 0; face < 6; face++) {
-        gl.texImage2D((gl.TEXTURE_CUBE_MAP_POSITIVE_X + face), 0, this._getRGBABufferInternalSizedFormat(fullOptions.type, fullOptions.format), size, size, 0, this._getInternalFormat(fullOptions.format), this._getWebGLTextureType(fullOptions.type), null);
+    for (let face = 0; face < 6; face++) {
+        gl.texImage2D(
+            gl.TEXTURE_CUBE_MAP_POSITIVE_X + face,
+            0,
+            this._getRGBABufferInternalSizedFormat(fullOptions.type, fullOptions.format),
+            size,
+            size,
+            0,
+            this._getInternalFormat(fullOptions.format),
+            this._getWebGLTextureType(fullOptions.type),
+            null
+        );
     }
 
     // Create the framebuffer
-    var framebuffer = gl.createFramebuffer();
+    const framebuffer = gl.createFramebuffer();
     this._bindUnboundFramebuffer(framebuffer);
 
     rtWrapper._depthStencilBuffer = this._setupFramebufferDepthAttachments(fullOptions.generateStencilBuffer, fullOptions.generateDepthBuffer, size, size);

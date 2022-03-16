@@ -1,4 +1,4 @@
-import { PrecisionDate } from './precisionDate';
+import { PrecisionDate } from "./precisionDate";
 
 /**
  * This class is used to track a performance counter which is number based.
@@ -128,7 +128,7 @@ export class PerfCounter {
             this.fetchNewFrame();
         }
 
-        let currentTime = PrecisionDate.Now;
+        const currentTime = PrecisionDate.Now;
         this._current = currentTime - this._startMonitoringTime;
 
         if (newFrame) {
@@ -146,8 +146,8 @@ export class PerfCounter {
         this._average = this._totalAccumulated / this._totalValueCount;
 
         // Reset last sec?
-        let now = PrecisionDate.Now;
-        if ((now - this._lastSecTime) > 1000) {
+        const now = PrecisionDate.Now;
+        if (now - this._lastSecTime > 1000) {
             this._lastSecAverage = this._lastSecAccumulated / this._lastSecValueCount;
             this._lastSecTime = now;
             this._lastSecAccumulated = 0;

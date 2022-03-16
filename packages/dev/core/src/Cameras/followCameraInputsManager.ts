@@ -1,8 +1,8 @@
 import { CameraInputsManager } from "./cameraInputsManager";
 import { FollowCamera } from "./followCamera";
-import { FollowCameraKeyboardMoveInput } from './Inputs/followCameraKeyboardMoveInput';
-import { FollowCameraMouseWheelInput } from './Inputs/followCameraMouseWheelInput';
-import { FollowCameraPointersInput } from './Inputs/followCameraPointersInput';
+import { FollowCameraKeyboardMoveInput } from "./Inputs/followCameraKeyboardMoveInput";
+import { FollowCameraMouseWheelInput } from "./Inputs/followCameraMouseWheelInput";
+import { FollowCameraPointersInput } from "./Inputs/followCameraPointersInput";
 
 /**
  * Default Inputs manager for the FollowCamera.

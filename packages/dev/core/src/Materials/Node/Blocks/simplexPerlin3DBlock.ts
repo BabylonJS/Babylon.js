@@ -1,9 +1,9 @@
-import { NodeMaterialBlock } from '../nodeMaterialBlock';
-import { NodeMaterialBlockConnectionPointTypes } from '../Enums/nodeMaterialBlockConnectionPointTypes';
-import { NodeMaterialBuildState } from '../nodeMaterialBuildState';
-import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint';
-import { NodeMaterialBlockTargets } from '../Enums/nodeMaterialBlockTargets';
-import { RegisterClass } from '../../../Misc/typeStore';
+import { NodeMaterialBlock } from "../nodeMaterialBlock";
+import { NodeMaterialBlockConnectionPointTypes } from "../Enums/nodeMaterialBlockConnectionPointTypes";
+import { NodeMaterialBuildState } from "../nodeMaterialBuildState";
+import { NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
+import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
+import { RegisterClass } from "../../../Misc/typeStore";
 /**
  * block used to Generate a Simplex Perlin 3d Noise Pattern
  */
@@ -122,7 +122,7 @@ export class SimplexPerlin3DBlock extends NodeMaterialBlock {
         functionString += `    return dot( kernel_weights, grad_results ) * FINAL_NORMALIZATION;\r\n`;
         functionString += `}\r\n`;
 
-        state._emitFunction('SimplexPerlin3D', functionString, '// SimplexPerlin3D');
+        state._emitFunction("SimplexPerlin3D", functionString, "// SimplexPerlin3D");
         state.compilationString += this._declareOutput(this._outputs[0], state) + ` = SimplexPerlin3D(${this.seed.associatedVariableName});\r\n`;
 
         return this;

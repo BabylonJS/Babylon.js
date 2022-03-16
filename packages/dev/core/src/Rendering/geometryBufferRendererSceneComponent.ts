@@ -39,7 +39,7 @@ Object.defineProperty(Scene.prototype, "geometryBufferRenderer", {
         }
     },
     enumerable: true,
-    configurable: true
+    configurable: true,
 });
 
 Scene.prototype.enableGeometryBufferRenderer = function (ratio: number = 1): Nullable<GeometryBufferRenderer> {

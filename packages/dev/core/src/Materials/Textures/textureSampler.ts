@@ -11,12 +11,12 @@ export class TextureSampler {
     public samplingMode: number = -1;
 
     /**
-    * | Value | Type               | Description |
-    * | ----- | ------------------ | ----------- |
-    * | 0     | CLAMP_ADDRESSMODE  |             |
-    * | 1     | WRAP_ADDRESSMODE   |             |
-    * | 2     | MIRROR_ADDRESSMODE |             |
-    */
+     * | Value | Type               | Description |
+     * | ----- | ------------------ | ----------- |
+     * | 0     | CLAMP_ADDRESSMODE  |             |
+     * | 1     | WRAP_ADDRESSMODE   |             |
+     * | 2     | MIRROR_ADDRESSMODE |             |
+     */
     public get wrapU() {
         return this._cachedWrapU;
     }
@@ -26,12 +26,12 @@ export class TextureSampler {
     }
 
     /**
-    * | Value | Type               | Description |
-    * | ----- | ------------------ | ----------- |
-    * | 0     | CLAMP_ADDRESSMODE  |             |
-    * | 1     | WRAP_ADDRESSMODE   |             |
-    * | 2     | MIRROR_ADDRESSMODE |             |
-    */
+     * | Value | Type               | Description |
+     * | ----- | ------------------ | ----------- |
+     * | 0     | CLAMP_ADDRESSMODE  |             |
+     * | 1     | WRAP_ADDRESSMODE   |             |
+     * | 2     | MIRROR_ADDRESSMODE |             |
+     */
     public get wrapV() {
         return this._cachedWrapV;
     }
@@ -41,12 +41,12 @@ export class TextureSampler {
     }
 
     /**
-    * | Value | Type               | Description |
-    * | ----- | ------------------ | ----------- |
-    * | 0     | CLAMP_ADDRESSMODE  |             |
-    * | 1     | WRAP_ADDRESSMODE   |             |
-    * | 2     | MIRROR_ADDRESSMODE |             |
-    */
+     * | Value | Type               | Description |
+     * | ----- | ------------------ | ----------- |
+     * | 0     | CLAMP_ADDRESSMODE  |             |
+     * | 1     | WRAP_ADDRESSMODE   |             |
+     * | 2     | MIRROR_ADDRESSMODE |             |
+     */
     public get wrapR() {
         return this._cachedWrapR;
     }
@@ -110,8 +110,7 @@ export class TextureSampler {
     /**
      * Creates a Sampler instance
      */
-    constructor() {
-    }
+    constructor() {}
 
     /**
      * Sets all the parameters of the sampler
@@ -123,7 +122,14 @@ export class TextureSampler {
      * @param comparisonFunction comparison function (default: 0 - no comparison function)
      * @returns the current sampler instance
      */
-    public setParameters(wrapU = Constants.TEXTURE_WRAP_ADDRESSMODE, wrapV = Constants.TEXTURE_WRAP_ADDRESSMODE, wrapR = Constants.TEXTURE_WRAP_ADDRESSMODE, anisotropicFilteringLevel = 1, samplingMode = Constants.TEXTURE_BILINEAR_SAMPLINGMODE, comparisonFunction = 0): TextureSampler {
+    public setParameters(
+        wrapU = Constants.TEXTURE_WRAP_ADDRESSMODE,
+        wrapV = Constants.TEXTURE_WRAP_ADDRESSMODE,
+        wrapR = Constants.TEXTURE_WRAP_ADDRESSMODE,
+        anisotropicFilteringLevel = 1,
+        samplingMode = Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
+        comparisonFunction = 0
+    ): TextureSampler {
         this._cachedWrapU = wrapU;
         this._cachedWrapV = wrapV;
         this._cachedWrapR = wrapR;
@@ -140,13 +146,14 @@ export class TextureSampler {
      * @returns true if the samplers have the same parametres, else false
      */
     public compareSampler(other: TextureSampler): boolean {
-        return this._cachedWrapU === other._cachedWrapU &&
+        return (
+            this._cachedWrapU === other._cachedWrapU &&
             this._cachedWrapV === other._cachedWrapV &&
             this._cachedWrapR === other._cachedWrapR &&
             this._cachedAnisotropicFilteringLevel === other._cachedAnisotropicFilteringLevel &&
             this.samplingMode === other.samplingMode &&
             this._comparisonFunction === other._comparisonFunction &&
-            this._useMipMaps === other._useMipMaps;
+            this._useMipMaps === other._useMipMaps
+        );
     }
-
 }

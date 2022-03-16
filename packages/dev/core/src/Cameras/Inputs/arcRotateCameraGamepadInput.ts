@@ -53,7 +53,7 @@ export class ArcRotateCameraGamepadInput implements ICameraInput<ArcRotateCamera
      * Attach the input controls to a specific dom element to get the input from.
      */
     public attachControl(): void {
-        let manager = this.camera.getScene().gamepadManager;
+        const manager = this.camera.getScene().gamepadManager;
         this._onGamepadConnectedObserver = manager.onGamepadConnectedObservable.add((gamepad) => {
             if (gamepad.type !== Gamepad.POSE_ENABLED) {
                 // prioritize XBOX gamepads.
@@ -93,33 +93,32 @@ export class ArcRotateCameraGamepadInput implements ICameraInput<ArcRotateCamera
      */
     public checkInputs(): void {
         if (this.gamepad) {
-            var camera = this.camera;
-            var RSValues = this.gamepad.rightStick;
+            const camera = this.camera;
+            const RSValues = this.gamepad.rightStick;
 
             if (RSValues) {
                 if (RSValues.x != 0) {
-                    var normalizedRX = RSValues.x / this.gamepadRotationSensibility;
+                    const normalizedRX = RSValues.x / this.gamepadRotationSensibility;
                     if (normalizedRX != 0 && Math.abs(normalizedRX) > 0.005) {
                         camera.inertialAlphaOffset += normalizedRX;
                     }
                 }
 
                 if (RSValues.y != 0) {
-                    var normalizedRY = (RSValues.y / this.gamepadRotationSensibility) * this._yAxisScale;
+                    const normalizedRY = (RSValues.y / this.gamepadRotationSensibility) * this._yAxisScale;
                     if (normalizedRY != 0 && Math.abs(normalizedRY) > 0.005) {
                         camera.inertialBetaOffset += normalizedRY;
                     }
                 }
             }
 
-            var LSValues = this.gamepad.leftStick;
+            const LSValues = this.gamepad.leftStick;
             if (LSValues && LSValues.y != 0) {
-                var normalizedLY = LSValues.y / this.gamepadMoveSensibility;
+                const normalizedLY = LSValues.y / this.gamepadMoveSensibility;
                 if (normalizedLY != 0 && Math.abs(normalizedLY) > 0.005) {
                     this.camera.inertialRadiusOffset -= normalizedLY;
                 }
             }
-
         }
     }
 

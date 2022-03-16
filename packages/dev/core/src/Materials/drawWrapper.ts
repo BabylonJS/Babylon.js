@@ -18,7 +18,7 @@ export class DrawWrapper {
     }
 
     public static GetEffect(effect: Effect | DrawWrapper): Nullable<Effect> {
-        return (effect as Effect).getPipelineContext === undefined ? (effect as DrawWrapper).effect : effect as Effect;
+        return (effect as Effect).getPipelineContext === undefined ? (effect as DrawWrapper).effect : (effect as Effect);
     }
 
     constructor(engine: ThinEngine, createMaterialContext = true) {

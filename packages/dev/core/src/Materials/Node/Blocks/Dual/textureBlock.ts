@@ -1,23 +1,23 @@
-import { NodeMaterialBlock } from '../../nodeMaterialBlock';
-import { NodeMaterialBlockConnectionPointTypes } from '../../Enums/nodeMaterialBlockConnectionPointTypes';
-import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
-import { NodeMaterialBlockTargets } from '../../Enums/nodeMaterialBlockTargets';
-import { NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection } from '../../nodeMaterialBlockConnectionPoint';
-import { AbstractMesh } from '../../../../Meshes/abstractMesh';
-import { NodeMaterial, NodeMaterialDefines } from '../../nodeMaterial';
-import { InputBlock } from '../Input/inputBlock';
-import { Effect } from '../../../effect';
-import { Mesh } from '../../../../Meshes/mesh';
-import { Nullable } from '../../../../types';
-import { RegisterClass } from '../../../../Misc/typeStore';
-import { Texture } from '../../../Textures/texture';
-import { Scene } from '../../../../scene';
-import { NodeMaterialModes } from '../../Enums/nodeMaterialModes';
-import { Constants } from '../../../../Engines/constants';
+import { NodeMaterialBlock } from "../../nodeMaterialBlock";
+import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
+import { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
+import { NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
+import { AbstractMesh } from "../../../../Meshes/abstractMesh";
+import { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
+import { InputBlock } from "../Input/inputBlock";
+import { Effect } from "../../../effect";
+import { Mesh } from "../../../../Meshes/mesh";
+import { Nullable } from "../../../../types";
+import { RegisterClass } from "../../../../Misc/typeStore";
+import { Texture } from "../../../Textures/texture";
+import { Scene } from "../../../../scene";
+import { NodeMaterialModes } from "../../Enums/nodeMaterialModes";
+import { Constants } from "../../../../Engines/constants";
 import "../../../../Shaders/ShadersInclude/helperFunctions";
-import { ImageSourceBlock } from './imageSourceBlock';
-import { NodeMaterialConnectionPointCustomObject } from '../../nodeMaterialConnectionPointCustomObject';
-import { EngineStore } from '../../../../Engines/engineStore';
+import { ImageSourceBlock } from "./imageSourceBlock";
+import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
+import { EngineStore } from "../../../../Engines/engineStore";
 
 /**
  * Block used to read a texture from a sampler
@@ -136,6 +136,7 @@ export class TextureBlock extends NodeMaterialBlock {
     /**
      * Create a new TextureBlock
      * @param name defines the block name
+     * @param fragmentOnly
      */
     public constructor(name: string, fragmentOnly = false) {
         super(name, fragmentOnly ? NodeMaterialBlockTargets.Fragment : NodeMaterialBlockTargets.VertexAndFragment);
@@ -143,8 +144,13 @@ export class TextureBlock extends NodeMaterialBlock {
         this._fragmentOnly = fragmentOnly;
 
         this.registerInput("uv", NodeMaterialBlockConnectionPointTypes.Vector2, false, NodeMaterialBlockTargets.VertexAndFragment);
-        this.registerInput("source", NodeMaterialBlockConnectionPointTypes.Object, true, NodeMaterialBlockTargets.VertexAndFragment,
-        new NodeMaterialConnectionPointCustomObject("source", this, NodeMaterialConnectionPointDirection.Input, ImageSourceBlock, "ImageSourceBlock"));
+        this.registerInput(
+            "source",
+            NodeMaterialBlockConnectionPointTypes.Object,
+            true,
+            NodeMaterialBlockTargets.VertexAndFragment,
+            new NodeMaterialConnectionPointCustomObject("source", this, NodeMaterialConnectionPointDirection.Input, ImageSourceBlock, "ImageSourceBlock")
+        );
 
         this.registerOutput("rgba", NodeMaterialBlockConnectionPointTypes.Color4, NodeMaterialBlockTargets.Neutral);
         this.registerOutput("rgb", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Neutral);
@@ -179,7 +185,7 @@ export class TextureBlock extends NodeMaterialBlock {
     /**
      * Gets the source input component
      */
-     public get source(): NodeMaterialConnectionPoint {
+    public get source(): NodeMaterialConnectionPoint {
         return this._inputs[1];
     }
 
@@ -259,33 +265,31 @@ export class TextureBlock extends NodeMaterialBlock {
             }
 
             if (parent.target === NodeMaterialBlockTargets.Neutral || parent.target === NodeMaterialBlockTargets.VertexAndFragment) {
-                let parentBlock = parent.ownerBlock;
+                const parentBlock = parent.ownerBlock;
 
                 if (parentBlock.target === NodeMaterialBlockTargets.Fragment) {
                     return NodeMaterialBlockTargets.Fragment;
                 }
 
                 parent = null;
-                for (var input of parentBlock.inputs) {
+                for (const input of parentBlock.inputs) {
                     if (input.connectedPoint) {
                         parent = input.connectedPoint;
                         break;
                     }
                 }
             }
-
         }
 
         return NodeMaterialBlockTargets.VertexAndFragment;
     }
 
-    public set target(value: NodeMaterialBlockTargets) {
-    }
+    public set target(value: NodeMaterialBlockTargets) {}
 
     public autoConfigure(material: NodeMaterial) {
         if (!this.uv.isConnected) {
             if (material.mode === NodeMaterialModes.PostProcess) {
-                let uvInput = material.getBlockByPredicate((b) => b.name === "uv");
+                const uvInput = material.getBlockByPredicate((b) => b.name === "uv");
 
                 if (uvInput) {
                     uvInput.connectTo(this);
@@ -370,7 +374,7 @@ export class TextureBlock extends NodeMaterialBlock {
     }
 
     private _injectVertexCode(state: NodeMaterialBuildState) {
-        let uvInput = this.uv;
+        const uvInput = this.uv;
 
         // Inject code in vertex
         this._defineName = state._getFreeDefineName("UVTRANSFORM");
@@ -400,7 +404,7 @@ export class TextureBlock extends NodeMaterialBlock {
 
         this._writeTextureRead(state, true);
 
-        for (var output of this._outputs) {
+        for (const output of this._outputs) {
             if (output.hasEndpoints && output.name !== "level") {
                 this._writeOutput(state, output, output.name, true);
             }
@@ -418,7 +422,7 @@ export class TextureBlock extends NodeMaterialBlock {
     }
 
     private _writeTextureRead(state: NodeMaterialBuildState, vertexMode = false) {
-        let uvInput = this.uv;
+        const uvInput = this.uv;
 
         if (vertexMode) {
             if (state.target === NodeMaterialBlockTargets.Fragment) {
@@ -438,7 +442,8 @@ export class TextureBlock extends NodeMaterialBlock {
     }
 
     private _generateConversionCode(state: NodeMaterialBuildState, output: NodeMaterialConnectionPoint, swizzle: string): void {
-        if (swizzle !== 'a') { // no conversion if the output is "a" (alpha)
+        if (swizzle !== "a") {
+            // no conversion if the output is "a" (alpha)
             if (!this.texture || !this.texture.gammaSpace) {
                 state.compilationString += `#ifdef ${this._linearDefineName}
                     ${output.associatedVariableName} = toGammaSpace(${output.associatedVariableName});
@@ -496,7 +501,7 @@ export class TextureBlock extends NodeMaterialBlock {
             this._gammaDefineName = state._getFreeDefineName("ISGAMMA");
         }
 
-        if (!this._isMixed && state.target === NodeMaterialBlockTargets.Fragment || this._isMixed && state.target === NodeMaterialBlockTargets.Vertex) {
+        if ((!this._isMixed && state.target === NodeMaterialBlockTargets.Fragment) || (this._isMixed && state.target === NodeMaterialBlockTargets.Vertex)) {
             if (!this._imageSource) {
                 this._samplerName = state._getFreeVariableName(this.name + "Sampler");
 
@@ -526,7 +531,7 @@ export class TextureBlock extends NodeMaterialBlock {
             state._emit2DSampler(this._samplerName);
         }
 
-        let comments = `//${this.name}`;
+        const comments = `//${this.name}`;
         state._emitFunctionFromInclude("helperFunctions", comments);
 
         if (this._isMixed) {
@@ -535,7 +540,7 @@ export class TextureBlock extends NodeMaterialBlock {
 
         this._writeTextureRead(state);
 
-        for (var output of this._outputs) {
+        for (const output of this._outputs) {
             if (output.hasEndpoints && output.name !== "level") {
                 this._writeOutput(state, output, output.name);
             }
@@ -571,7 +576,7 @@ export class TextureBlock extends NodeMaterialBlock {
     }
 
     public serialize(): any {
-        let serializationObject = super.serialize();
+        const serializationObject = super.serialize();
 
         serializationObject.convertToGammaSpace = this.convertToGammaSpace;
         serializationObject.convertToLinearSpace = this.convertToLinearSpace;

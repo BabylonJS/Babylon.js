@@ -3,6 +3,7 @@ import { PassPostProcess } from "../../PostProcesses/passPostProcess";
 import { AnaglyphPostProcess } from "../../PostProcesses/anaglyphPostProcess";
 
 /**
+ * @param camera
  * @hidden
  */
 export function setStereoscopicAnaglyphRigMode(camera: Camera) {

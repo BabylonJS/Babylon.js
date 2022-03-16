@@ -2,7 +2,7 @@ import { Logger } from "../Misc/logger";
 import { Observable, Observer } from "../Misc/observable";
 import { Nullable } from "../types";
 import { Vector3 } from "../Maths/math.vector";
-import { Color3 } from '../Maths/math.color';
+import { Color3 } from "../Maths/math.color";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Node } from "../node";
 import { Mesh } from "../Meshes/mesh";
@@ -11,7 +11,7 @@ import { AxisDragGizmo } from "./axisDragGizmo";
 import { PlaneDragGizmo } from "./planeDragGizmo";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { PointerInfo } from "../Events/pointerEvents";
-import { GizmoManager } from './gizmoManager';
+import { GizmoManager } from "./gizmoManager";
 /**
  * Gizmo that enables dragging a mesh along 3 axis
  */
@@ -71,8 +71,7 @@ export class PositionGizmo extends Gizmo {
         [this.xGizmo, this.yGizmo, this.zGizmo, this.xPlaneGizmo, this.yPlaneGizmo, this.zPlaneGizmo].forEach((gizmo) => {
             if (gizmo.isEnabled) {
                 gizmo.attachedMesh = mesh;
-            }
-            else {
+            } else {
                 gizmo.attachedMesh = null;
             }
         });
@@ -87,8 +86,7 @@ export class PositionGizmo extends Gizmo {
         [this.xGizmo, this.yGizmo, this.zGizmo, this.xPlaneGizmo, this.yPlaneGizmo, this.zPlaneGizmo].forEach((gizmo) => {
             if (gizmo.isEnabled) {
                 gizmo.attachedNode = node;
-            }
-            else {
+            } else {
                 gizmo.attachedNode = null;
             }
         });
@@ -98,7 +96,7 @@ export class PositionGizmo extends Gizmo {
      * True when the mouse pointer is hovering a gizmo mesh
      */
     public get isHovered() {
-        var hovered = false;
+        let hovered = false;
         [this.xGizmo, this.yGizmo, this.zGizmo, this.xPlaneGizmo, this.yPlaneGizmo, this.zPlaneGizmo].forEach((gizmo) => {
             hovered = hovered || gizmo.isHovered;
         });
@@ -109,6 +107,7 @@ export class PositionGizmo extends Gizmo {
      * Creates a PositionGizmo
      * @param gizmoLayer The utility layer the gizmo will be added to
       @param thickness display gizmo axis thickness
+     * @param gizmoManager
      */
     constructor(gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer, thickness: number = 1, gizmoManager?: GizmoManager) {
         super(gizmoLayer);
@@ -154,7 +153,6 @@ export class PositionGizmo extends Gizmo {
                     } else {
                         gizmo.attachedNode = this.attachedNode;
                     }
-
                 }
             }
         }, this);
@@ -235,6 +233,8 @@ export class PositionGizmo extends Gizmo {
      * @param mesh The mesh to replace the default mesh of the gizmo
      */
     public setCustomMesh(mesh: Mesh) {
-        Logger.Error("Custom meshes are not supported on this gizmo, please set the custom meshes on the gizmos contained within this one (gizmo.xGizmo, gizmo.yGizmo, gizmo.zGizmo,gizmo.xPlaneGizmo, gizmo.yPlaneGizmo, gizmo.zPlaneGizmo)");
+        Logger.Error(
+            "Custom meshes are not supported on this gizmo, please set the custom meshes on the gizmos contained within this one (gizmo.xGizmo, gizmo.yGizmo, gizmo.zGizmo,gizmo.xPlaneGizmo, gizmo.yPlaneGizmo, gizmo.zPlaneGizmo)"
+        );
     }
 }

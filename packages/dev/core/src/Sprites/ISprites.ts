@@ -53,13 +53,13 @@ export interface ISpriteJSONSprite {
     frame: ISpriteJSONSpriteFrameData;
 
     /**
-    * boolean to flag is the frame was rotated.
-    */
+     * boolean to flag is the frame was rotated.
+     */
     rotated: boolean;
 
     /**
-    * boolean to flag is the frame was trimmed.
-    */
+     * boolean to flag is the frame was trimmed.
+     */
     trimmed: boolean;
 
     /**
@@ -77,7 +77,6 @@ export interface ISpriteJSONSprite {
  * Defines the basic options interface of a JSON atlas.
  */
 export interface ISpriteJSONAtlas {
-
     /**
      * Array of objects that contain the frame data.
      */
@@ -87,5 +86,4 @@ export interface ISpriteJSONAtlas {
      * object basic object containing the sprite meta data.
      */
     meta?: object;
-
 }

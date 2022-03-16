@@ -1,15 +1,14 @@
-import { NodeMaterialBlock } from '../nodeMaterialBlock';
-import { NodeMaterialBlockConnectionPointTypes } from '../Enums/nodeMaterialBlockConnectionPointTypes';
-import { NodeMaterialBuildState } from '../nodeMaterialBuildState';
-import { NodeMaterialBlockTargets } from '../Enums/nodeMaterialBlockTargets';
-import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint';
-import { RegisterClass } from '../../../Misc/typeStore';
+import { NodeMaterialBlock } from "../nodeMaterialBlock";
+import { NodeMaterialBlockConnectionPointTypes } from "../Enums/nodeMaterialBlockConnectionPointTypes";
+import { NodeMaterialBuildState } from "../nodeMaterialBuildState";
+import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
+import { NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
+import { RegisterClass } from "../../../Misc/typeStore";
 
 /**
  * Block used to expand a Color3/4 into 4 outputs (one for each component)
  */
 export class ColorSplitterBlock extends NodeMaterialBlock {
-
     /**
      * Create a new ColorSplitterBlock
      * @param name defines the block name
@@ -101,17 +100,17 @@ export class ColorSplitterBlock extends NodeMaterialBlock {
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
-        let input = this.rgba.isConnected ? this.rgba : this.rgbIn;
+        const input = this.rgba.isConnected ? this.rgba : this.rgbIn;
 
         if (!input.isConnected) {
             return;
         }
 
-        let rgbOutput = this._outputs[0];
-        let rOutput = this._outputs[1];
-        let gOutput = this._outputs[2];
-        let bOutput = this._outputs[3];
-        let aOutput = this._outputs[4];
+        const rgbOutput = this._outputs[0];
+        const rOutput = this._outputs[1];
+        const gOutput = this._outputs[2];
+        const bOutput = this._outputs[3];
+        const aOutput = this._outputs[4];
 
         if (rgbOutput.hasEndpoints) {
             state.compilationString += this._declareOutput(rgbOutput, state) + ` = ${input.associatedVariableName}.rgb;\r\n`;

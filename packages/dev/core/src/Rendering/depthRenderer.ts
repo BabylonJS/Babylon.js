@@ -13,7 +13,7 @@ import { Constants } from "../Engines/constants";
 
 import "../Shaders/depth.fragment";
 import "../Shaders/depth.vertex";
-import { _WarnImport } from '../Misc/devTools';
+import { _WarnImport } from "../Misc/devTools";
 
 declare type Material = import("../Materials/material").Material;
 declare type AbstractMesh = import("../Meshes/abstractMesh").AbstractMesh;
@@ -46,10 +46,13 @@ export class DepthRenderer {
      */
     public useOnlyInActiveCamera: boolean = false;
 
-    /** @hidden */
+    /**
+     * @param _
+     * @hidden
+     */
     public static _SceneComponentInitialization: (scene: Scene) => void = (_) => {
         throw _WarnImport("DepthRendererSceneComponent");
-    }
+    };
 
     /**
      * Sets a specific material to be used to render a mesh/a list of meshes by the depth renderer
@@ -68,20 +71,25 @@ export class DepthRenderer {
      * @param storeNonLinearDepth Defines whether the depth is stored linearly like in Babylon Shadows or directly like glFragCoord.z
      * @param samplingMode The sampling mode to be used with the render target (Linear, Nearest...)
      */
-    constructor(scene: Scene, type: number = Constants.TEXTURETYPE_FLOAT, camera: Nullable<Camera> = null, storeNonLinearDepth = false, samplingMode = Texture.TRILINEAR_SAMPLINGMODE) {
+    constructor(
+        scene: Scene,
+        type: number = Constants.TEXTURETYPE_FLOAT,
+        camera: Nullable<Camera> = null,
+        storeNonLinearDepth = false,
+        samplingMode = Texture.TRILINEAR_SAMPLINGMODE
+    ) {
         this._scene = scene;
         this._storeNonLinearDepth = storeNonLinearDepth;
         this.isPacked = type === Constants.TEXTURETYPE_UNSIGNED_BYTE;
         if (this.isPacked) {
             this._clearColor = new Color4(1.0, 1.0, 1.0, 1.0);
-        }
-        else {
+        } else {
             this._clearColor = new Color4(1.0, 0.0, 0.0, 1.0);
         }
 
         DepthRenderer._SceneComponentInitialization(this._scene);
 
-        var engine = scene.getEngine();
+        const engine = scene.getEngine();
 
         this._camera = camera;
 
@@ -95,10 +103,21 @@ export class DepthRenderer {
         }
 
         // Render target
-        var format = (this.isPacked || !engine._features.supportExtendedTextureFormats) ? Constants.TEXTUREFORMAT_RGBA : Constants.TEXTUREFORMAT_R;
-        this._depthMap = new RenderTargetTexture("DepthRenderer", { width: engine.getRenderWidth(), height: engine.getRenderHeight() }, this._scene, false, true, type,
-            false, samplingMode, undefined, undefined, undefined,
-            format);
+        const format = this.isPacked || !engine._features.supportExtendedTextureFormats ? Constants.TEXTUREFORMAT_RGBA : Constants.TEXTUREFORMAT_R;
+        this._depthMap = new RenderTargetTexture(
+            "DepthRenderer",
+            { width: engine.getRenderWidth(), height: engine.getRenderHeight() },
+            this._scene,
+            false,
+            true,
+            type,
+            false,
+            samplingMode,
+            undefined,
+            undefined,
+            undefined,
+            format
+        );
         this._depthMap.wrapU = Texture.CLAMP_ADDRESSMODE;
         this._depthMap.wrapV = Texture.CLAMP_ADDRESSMODE;
         this._depthMap.refreshRate = 1;
@@ -134,7 +153,9 @@ export class DepthRenderer {
                     const renderingMesh = subMesh.getRenderingMesh();
 
                     const batch = renderingMesh._getInstancesRenderList(subMesh._id, !!subMesh.getReplacementMesh());
-                    const hardwareInstancedRendering = engine.getCaps().instancedArrays && (batch.visibleInstances[subMesh._id] !== null && batch.visibleInstances[subMesh._id] !== undefined || renderingMesh.hasThinInstances);
+                    const hardwareInstancedRendering =
+                        engine.getCaps().instancedArrays &&
+                        ((batch.visibleInstances[subMesh._id] !== null && batch.visibleInstances[subMesh._id] !== undefined) || renderingMesh.hasThinInstances);
 
                     if (!this.isReady(subMesh, hardwareInstancedRendering)) {
                         return false;
@@ -146,12 +167,12 @@ export class DepthRenderer {
         };
 
         // Custom render function
-        var renderSubMesh = (subMesh: SubMesh): void => {
-            var renderingMesh = subMesh.getRenderingMesh();
-            var effectiveMesh = subMesh.getEffectiveMesh();
-            var scene = this._scene;
-            var engine = scene.getEngine();
-            let material = subMesh.getMaterial();
+        const renderSubMesh = (subMesh: SubMesh): void => {
+            const renderingMesh = subMesh.getRenderingMesh();
+            const effectiveMesh = subMesh.getEffectiveMesh();
+            const scene = this._scene;
+            const engine = scene.getEngine();
+            const material = subMesh.getMaterial();
 
             effectiveMesh._internalAbstractMeshDataInfo._isActiveIntermediate = false;
 
@@ -163,22 +184,27 @@ export class DepthRenderer {
             const detNeg = effectiveMesh._getWorldMatrixDeterminant() < 0;
             let sideOrientation = renderingMesh.overrideMaterialSideOrientation ?? material.sideOrientation;
             if (detNeg) {
-                sideOrientation = sideOrientation === Constants.MATERIAL_ClockWiseSideOrientation ? Constants.MATERIAL_CounterClockWiseSideOrientation : Constants.MATERIAL_ClockWiseSideOrientation;
+                sideOrientation =
+                    sideOrientation === Constants.MATERIAL_ClockWiseSideOrientation
+                        ? Constants.MATERIAL_CounterClockWiseSideOrientation
+                        : Constants.MATERIAL_ClockWiseSideOrientation;
             }
-            let reverseSideOrientation = sideOrientation === Constants.MATERIAL_ClockWiseSideOrientation;
+            const reverseSideOrientation = sideOrientation === Constants.MATERIAL_ClockWiseSideOrientation;
 
             engine.setState(material.backFaceCulling, 0, false, reverseSideOrientation, material.cullBackFaces);
 
             // Managing instances
-            var batch = renderingMesh._getInstancesRenderList(subMesh._id, !!subMesh.getReplacementMesh());
+            const batch = renderingMesh._getInstancesRenderList(subMesh._id, !!subMesh.getReplacementMesh());
 
             if (batch.mustReturn) {
                 return;
             }
 
-            var hardwareInstancedRendering = engine.getCaps().instancedArrays && (batch.visibleInstances[subMesh._id] !== null && batch.visibleInstances[subMesh._id] !== undefined || renderingMesh.hasThinInstances);
+            const hardwareInstancedRendering =
+                engine.getCaps().instancedArrays &&
+                ((batch.visibleInstances[subMesh._id] !== null && batch.visibleInstances[subMesh._id] !== undefined) || renderingMesh.hasThinInstances);
 
-            let camera = this._camera || scene.activeCamera;
+            const camera = this._camera || scene.activeCamera;
             if (this.isReady(subMesh, hardwareInstancedRendering) && camera) {
                 subMesh._renderId = scene.getRenderId();
 
@@ -224,7 +250,7 @@ export class DepthRenderer {
                 if (!renderingMaterial) {
                     // Alpha test
                     if (material && material.needAlphaTesting()) {
-                        var alphaTexture = material.getAlphaTestTexture();
+                        const alphaTexture = material.getAlphaTestTexture();
 
                         if (alphaTexture) {
                             effect.setTexture("diffuseSampler", alphaTexture);
@@ -245,7 +271,7 @@ export class DepthRenderer {
                             effect.setTexture("boneSampler", boneTexture);
                             effect.setFloat("boneTextureWidth", 4.0 * (skeleton.bones.length + 1));
                         } else {
-                            effect.setMatrices("mBones", skeleton.getTransformMatrices((renderingMesh)));
+                            effect.setMatrices("mBones", skeleton.getTransformMatrices(renderingMesh));
                         }
                     }
 
@@ -257,13 +283,19 @@ export class DepthRenderer {
                 }
 
                 // Draw
-                renderingMesh._processRendering(effectiveMesh, subMesh, effect, material.fillMode, batch, hardwareInstancedRendering,
-                    (isInstance, world) => effect.setMatrix("world", world));
+                renderingMesh._processRendering(effectiveMesh, subMesh, effect, material.fillMode, batch, hardwareInstancedRendering, (isInstance, world) =>
+                    effect.setMatrix("world", world)
+                );
             }
         };
 
-        this._depthMap.customRenderFunction = (opaqueSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, depthOnlySubMeshes: SmartArray<SubMesh>): void => {
-            var index;
+        this._depthMap.customRenderFunction = (
+            opaqueSubMeshes: SmartArray<SubMesh>,
+            alphaTestSubMeshes: SmartArray<SubMesh>,
+            transparentSubMeshes: SmartArray<SubMesh>,
+            depthOnlySubMeshes: SmartArray<SubMesh>
+        ): void => {
+            let index;
 
             if (depthOnlySubMeshes.length) {
                 for (index = 0; index < depthOnlySubMeshes.length; index++) {
@@ -307,14 +339,14 @@ export class DepthRenderer {
             return renderingMaterial.isReadyForSubMesh(mesh, subMesh, useInstances);
         }
 
-        var material = subMesh.getMaterial();
+        const material = subMesh.getMaterial();
         if (!material || material.disableDepthWrite) {
             return false;
         }
 
-        var defines = [];
+        const defines = [];
 
-        var attribs = [VertexBuffer.PositionKind];
+        const attribs = [VertexBuffer.PositionKind];
 
         // Alpha test
         if (material && material.needAlphaTesting() && material.getAlphaTestTexture()) {
@@ -391,12 +423,30 @@ export class DepthRenderer {
         const cachedDefines = drawWrapper.defines;
         const join = defines.join("\n");
         if (cachedDefines !== join) {
-            drawWrapper.setEffect(engine.createEffect("depth",
-                attribs,
-                ["world", "mBones", "boneTextureWidth", "viewProjection", "diffuseMatrix", "depthValues", "morphTargetInfluences", "morphTargetTextureInfo", "morphTargetTextureIndices"],
-                ["diffuseSampler", "morphTargets", "boneSampler"], join,
-                undefined, undefined, undefined, { maxSimultaneousMorphTargets: numMorphInfluencers }),
-                join);
+            drawWrapper.setEffect(
+                engine.createEffect(
+                    "depth",
+                    attribs,
+                    [
+                        "world",
+                        "mBones",
+                        "boneTextureWidth",
+                        "viewProjection",
+                        "diffuseMatrix",
+                        "depthValues",
+                        "morphTargetInfluences",
+                        "morphTargetTextureInfo",
+                        "morphTargetTextureIndices",
+                    ],
+                    ["diffuseSampler", "morphTargets", "boneSampler"],
+                    join,
+                    undefined,
+                    undefined,
+                    undefined,
+                    { maxSimultaneousMorphTargets: numMorphInfluencers }
+                ),
+                join
+            );
         }
 
         return drawWrapper.effect!.isReady();
@@ -415,7 +465,7 @@ export class DepthRenderer {
      */
     public dispose(): void {
         const keysToDelete = [];
-        for (var key in this._scene._depthRenderer) {
+        for (const key in this._scene._depthRenderer) {
             const depthRenderer = this._scene._depthRenderer[key];
             if (depthRenderer === this) {
                 keysToDelete.push(key);

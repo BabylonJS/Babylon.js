@@ -16,69 +16,62 @@ export function CreateCapsuleVertexData(
         tessellation: 16,
         height: 1,
         radius: 0.25,
-        capSubdivisions: 6
-    }): VertexData {
+        capSubdivisions: 6,
+    }
+): VertexData {
+    const subdivisions = Math.max(options.subdivisions ? options.subdivisions : 2, 1);
+    const tessellation = Math.max(options.tessellation ? options.tessellation : 16, 3);
+    const height = Math.max(options.height ? options.height : 1, 0);
+    const radius = Math.max(options.radius ? options.radius : 0.25, 0);
+    const capDetail = Math.max(options.capSubdivisions ? options.capSubdivisions : 6, 1);
 
-    let subdivisions = Math.max(options.subdivisions ? options.subdivisions : 2, 1);
-    let tessellation = Math.max(options.tessellation ? options.tessellation : 16, 3);
-    let height = Math.max(options.height ? options.height : 1, 0.);
-    let radius = Math.max(options.radius ? options.radius : 0.25, 0.);
-    let capDetail = Math.max(options.capSubdivisions ? options.capSubdivisions : 6, 1);
+    const radialSegments = tessellation;
+    const heightSegments = subdivisions;
 
-    let radialSegments = tessellation;
-    let heightSegments = subdivisions;
+    const radiusTop = Math.max(options.radiusTop ? options.radiusTop : radius, 0);
+    const radiusBottom = Math.max(options.radiusBottom ? options.radiusBottom : radius, 0);
 
-    let radiusTop = Math.max(options.radiusTop ? options.radiusTop : radius, 0.);
-    let radiusBottom = Math.max(options.radiusBottom ? options.radiusBottom : radius, 0.);
+    const heightMinusCaps = height - (radiusTop + radiusBottom);
 
-    let heightMinusCaps = height - (radiusTop + radiusBottom);
+    const thetaStart = 0.0;
+    const thetaLength = 2.0 * Math.PI;
 
-    let thetaStart = 0.0;
-    let thetaLength = (2.0 * Math.PI);
+    const capsTopSegments = Math.max(options.topCapSubdivisions ? options.topCapSubdivisions : capDetail, 1);
+    const capsBottomSegments = Math.max(options.bottomCapSubdivisions ? options.bottomCapSubdivisions : capDetail, 1);
 
-    let capsTopSegments = Math.max(options.topCapSubdivisions ? options.topCapSubdivisions : capDetail, 1);
-    let capsBottomSegments = Math.max(options.bottomCapSubdivisions ? options.bottomCapSubdivisions : capDetail, 1);
+    const alpha = Math.acos((radiusBottom - radiusTop) / height);
 
-    var alpha = Math.acos((radiusBottom - radiusTop) / height);
+    let indices = [];
+    const vertices = [];
+    const normals = [];
+    const uvs = [];
 
-    var indices = [];
-    var vertices = [];
-    var normals = [];
-    var uvs = [];
-
-    var index = 0,
+    let index = 0,
         indexArray = [],
         halfHeight = heightMinusCaps * 0.5;
-    let pi2 = Math.PI * 0.5;
+    const pi2 = Math.PI * 0.5;
 
-    var x, y;
-    var normal = Vector3.Zero();
-    var vertex = Vector3.Zero();
+    let x, y;
+    const normal = Vector3.Zero();
+    const vertex = Vector3.Zero();
 
-    var cosAlpha = Math.cos(alpha);
-    var sinAlpha = Math.sin(alpha);
+    const cosAlpha = Math.cos(alpha);
+    const sinAlpha = Math.sin(alpha);
 
-    var cone_length =
-        new Vector2(
-            radiusTop * sinAlpha,
-            halfHeight + radiusTop * cosAlpha
-        ).subtract(new Vector2(
-            radiusBottom * sinAlpha,
-            -halfHeight + radiusBottom * cosAlpha
-        )
-        ).length();
+    const cone_length = new Vector2(radiusTop * sinAlpha, halfHeight + radiusTop * cosAlpha)
+        .subtract(new Vector2(radiusBottom * sinAlpha, -halfHeight + radiusBottom * cosAlpha))
+        .length();
 
     // Total length for v texture coord
-    var vl = radiusTop * alpha + cone_length + radiusBottom * (pi2 - alpha);
+    const vl = radiusTop * alpha + cone_length + radiusBottom * (pi2 - alpha);
 
-    var v = 0;
+    let v = 0;
     for (y = 0; y <= capsTopSegments; y++) {
-
         var indexRow = [];
 
         var a = pi2 - alpha * (y / capsTopSegments);
 
-        v += radiusTop * alpha / capsTopSegments;
+        v += (radiusTop * alpha) / capsTopSegments;
 
         var cosA = Math.cos(a);
         var sinA = Math.sin(a);
@@ -110,14 +103,14 @@ export function CreateCapsuleVertexData(
         indexArray.push(indexRow);
     }
 
-    var cone_height = (height - radiusTop - radiusBottom) + cosAlpha * radiusTop - cosAlpha * radiusBottom;
-    var slope = sinAlpha * (radiusBottom - radiusTop) / cone_height;
+    const cone_height = height - radiusTop - radiusBottom + cosAlpha * radiusTop - cosAlpha * radiusBottom;
+    const slope = (sinAlpha * (radiusBottom - radiusTop)) / cone_height;
 
     for (y = 1; y <= heightSegments; y++) {
         var indexRow = [];
         v += cone_length / heightSegments;
         // calculate the radius of the current row
-        var _radius = sinAlpha * (y * (radiusBottom - radiusTop) / heightSegments + radiusTop);
+        var _radius = sinAlpha * ((y * (radiusBottom - radiusTop)) / heightSegments + radiusTop);
         for (x = 0; x <= radialSegments; x++) {
             var u = x / radialSegments;
             var theta = u * thetaLength + thetaStart;
@@ -125,7 +118,7 @@ export function CreateCapsuleVertexData(
             var cosTheta = Math.cos(theta);
             // vertex
             vertex.x = _radius * sinTheta;
-            vertex.y = halfHeight + cosAlpha * radiusTop - y * cone_height / heightSegments;
+            vertex.y = halfHeight + cosAlpha * radiusTop - (y * cone_height) / heightSegments;
             vertex.z = _radius * cosTheta;
             vertices.push(vertex.x, vertex.y, vertex.z);
             // normal
@@ -144,8 +137,8 @@ export function CreateCapsuleVertexData(
 
     for (y = 1; y <= capsBottomSegments; y++) {
         var indexRow = [];
-        var a = (pi2 - alpha) - (Math.PI - alpha) * (y / capsBottomSegments);
-        v += radiusBottom * alpha / capsBottomSegments;
+        var a = pi2 - alpha - (Math.PI - alpha) * (y / capsBottomSegments);
+        v += (radiusBottom * alpha) / capsBottomSegments;
         var cosA = Math.cos(a);
         var sinA = Math.sin(a);
         // calculate the radius of the current row
@@ -177,10 +170,10 @@ export function CreateCapsuleVertexData(
     for (x = 0; x < radialSegments; x++) {
         for (y = 0; y < capsTopSegments + heightSegments + capsBottomSegments; y++) {
             // we use the index array to access the correct indices
-            var i1 = indexArray[y][x];
-            var i2 = indexArray[y + 1][x];
-            var i3 = indexArray[y + 1][x + 1];
-            var i4 = indexArray[y][x + 1];
+            const i1 = indexArray[y][x];
+            const i2 = indexArray[y + 1][x];
+            const i3 = indexArray[y + 1][x + 1];
+            const i4 = indexArray[y][x + 1];
             // face one
             indices.push(i1);
             indices.push(i2);
@@ -195,9 +188,14 @@ export function CreateCapsuleVertexData(
     indices = indices.reverse();
 
     if (options.orientation && !options.orientation.equals(Vector3.Up())) {
-        let m = new Matrix();
-        (options.orientation.clone().scale(Math.PI * 0.5).cross(Vector3.Up()).toQuaternion()).toRotationMatrix(m);
-        let v = Vector3.Zero();
+        const m = new Matrix();
+        options.orientation
+            .clone()
+            .scale(Math.PI * 0.5)
+            .cross(Vector3.Up())
+            .toQuaternion()
+            .toRotationMatrix(m);
+        const v = Vector3.Zero();
         for (let i = 0; i < vertices.length; i += 3) {
             v.set(vertices[i], vertices[i + 1], vertices[i + 2]);
             Vector3.TransformCoordinatesToRef(v.clone(), m, v);
@@ -207,7 +205,7 @@ export function CreateCapsuleVertexData(
         }
     }
 
-    let vDat = new VertexData();
+    const vDat = new VertexData();
     vDat.positions = vertices;
     vDat.normals = normals;
     vDat.uvs = uvs;
@@ -274,8 +272,8 @@ export function CreateCapsule(
     },
     scene: Nullable<Scene> = null
 ): Mesh {
-    var capsule = new Mesh(name, scene);
-    var vertexData = CreateCapsuleVertexData(options);
+    const capsule = new Mesh(name, scene);
+    const vertexData = CreateCapsuleVertexData(options);
     vertexData.applyToMesh(capsule, options.updatable);
     return capsule;
 }
@@ -285,7 +283,7 @@ export function CreateCapsule(
  * @deprecated please use CreateCapsule directly
  */
 export const CapsuleBuilder = {
-    CreateCapsule
+    CreateCapsule,
 };
 
 /**

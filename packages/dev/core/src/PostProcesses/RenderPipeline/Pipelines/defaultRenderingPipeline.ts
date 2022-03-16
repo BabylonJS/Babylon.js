@@ -1,16 +1,16 @@
 import { Nullable } from "../../../types";
 import { serialize, SerializationHelper } from "../../../Misc/decorators";
 import { Observable, Observer } from "../../../Misc/observable";
-import { IAnimatable } from '../../../Animations/animatable.interface';
+import { IAnimatable } from "../../../Animations/animatable.interface";
 import { Logger } from "../../../Misc/logger";
 import { Camera } from "../../../Cameras/camera";
 import { ImageProcessingConfiguration } from "../../../Materials/imageProcessingConfiguration";
 import { Texture } from "../../../Materials/Textures/texture";
 import { Engine } from "../../../Engines/engine";
 import { Constants } from "../../../Engines/constants";
-import { IDisposable } from "../../../scene";
+import { IDisposable , Scene } from "../../../scene";
 import { GlowLayer } from "../../../Layers/glowLayer";
-import { Scene } from "../../../scene";
+
 import { PostProcess } from "../../../PostProcesses/postProcess";
 import { SharpenPostProcess } from "../../../PostProcesses/sharpenPostProcess";
 import { ImageProcessingPostProcess } from "../../../PostProcesses/imageProcessingPostProcess";
@@ -21,7 +21,7 @@ import { PostProcessRenderPipeline } from "../../../PostProcesses/RenderPipeline
 import { PostProcessRenderEffect } from "../../../PostProcesses/RenderPipeline/postProcessRenderEffect";
 import { DepthOfFieldEffect, DepthOfFieldEffectBlurLevel } from "../../../PostProcesses/depthOfFieldEffect";
 import { BloomEffect } from "../../../PostProcesses/bloomEffect";
-import { RegisterClass } from '../../../Misc/typeStore';
+import { RegisterClass } from "../../../Misc/typeStore";
 import { EngineStore } from "../../../Engines/engineStore";
 
 import "../../../PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent";
@@ -242,10 +242,10 @@ export class DefaultRenderingPipeline extends PostProcessRenderPipeline implemen
 
     private _rebuildBloom() {
         // recreate bloom and dispose old as this setting is not dynamic
-        var oldBloom = this.bloom;
+        const oldBloom = this.bloom;
         this.bloom = new BloomEffect(this._scene, this.bloomScale, this._bloomWeight, this.bloomKernel, this._defaultPipelineTextureType, false);
         this.bloom.threshold = oldBloom.threshold;
-        for (var i = 0; i < this._cameras.length; i++) {
+        for (let i = 0; i < this._cameras.length; i++) {
             oldBloom.disposeEffects(this._cameras[i]);
         }
     }
@@ -282,7 +282,7 @@ export class DefaultRenderingPipeline extends PostProcessRenderPipeline implemen
         this._depthOfFieldBlurLevel = value;
 
         // recreate dof and dispose old as this setting is not dynamic
-        var oldDof = this.depthOfField;
+        const oldDof = this.depthOfField;
 
         this.depthOfField = new DepthOfFieldEffect(this._scene, null, this._depthOfFieldBlurLevel, this._defaultPipelineTextureType, false);
         this.depthOfField.focalLength = oldDof.focalLength;
@@ -290,7 +290,7 @@ export class DefaultRenderingPipeline extends PostProcessRenderPipeline implemen
         this.depthOfField.fStop = oldDof.fStop;
         this.depthOfField.lensSize = oldDof.lensSize;
 
-        for (var i = 0; i < this._cameras.length; i++) {
+        for (let i = 0; i < this._cameras.length; i++) {
             oldDof.disposeEffects(this._cameras[i]);
         }
 
@@ -423,15 +423,14 @@ export class DefaultRenderingPipeline extends PostProcessRenderPipeline implemen
 
         // Initialize
         this._scene = scene;
-        var caps = this._scene.getEngine().getCaps();
+        const caps = this._scene.getEngine().getCaps();
         this._hdr = hdr && (caps.textureHalfFloatRender || caps.textureFloatRender);
 
         // Misc
         if (this._hdr) {
             if (caps.textureHalfFloatRender) {
                 this._defaultPipelineTextureType = Constants.TEXTURETYPE_HALF_FLOAT;
-            }
-            else if (caps.textureFloatRender) {
+            } else if (caps.textureFloatRender) {
                 this._defaultPipelineTextureType = Constants.TEXTURETYPE_FLOAT;
             }
         } else {
@@ -441,21 +440,53 @@ export class DefaultRenderingPipeline extends PostProcessRenderPipeline implemen
         // Attach
         scene.postProcessRenderPipelineManager.addPipeline(this);
 
-        var engine = this._scene.getEngine();
+        const engine = this._scene.getEngine();
         // Create post processes before hand so they can be modified before enabled.
         // Block compilation flag is set to true to avoid compilation prior to use, these will be updated on first use in build pipeline.
         this.sharpen = new SharpenPostProcess("sharpen", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType, true);
-        this._sharpenEffect = new PostProcessRenderEffect(engine, this.SharpenPostProcessId, () => { return this.sharpen; }, true);
+        this._sharpenEffect = new PostProcessRenderEffect(
+            engine,
+            this.SharpenPostProcessId,
+            () => {
+                return this.sharpen;
+            },
+            true
+        );
 
         this.depthOfField = new DepthOfFieldEffect(this._scene, null, this._depthOfFieldBlurLevel, this._defaultPipelineTextureType, true);
 
         this.bloom = new BloomEffect(this._scene, this._bloomScale, this._bloomWeight, this.bloomKernel, this._defaultPipelineTextureType, true);
 
-        this.chromaticAberration = new ChromaticAberrationPostProcess("ChromaticAberration", engine.getRenderWidth(), engine.getRenderHeight(), 1.0, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType, true);
-        this._chromaticAberrationEffect = new PostProcessRenderEffect(engine, this.ChromaticAberrationPostProcessId, () => { return this.chromaticAberration; }, true);
+        this.chromaticAberration = new ChromaticAberrationPostProcess(
+            "ChromaticAberration",
+            engine.getRenderWidth(),
+            engine.getRenderHeight(),
+            1.0,
+            null,
+            Texture.BILINEAR_SAMPLINGMODE,
+            engine,
+            false,
+            this._defaultPipelineTextureType,
+            true
+        );
+        this._chromaticAberrationEffect = new PostProcessRenderEffect(
+            engine,
+            this.ChromaticAberrationPostProcessId,
+            () => {
+                return this.chromaticAberration;
+            },
+            true
+        );
 
         this.grain = new GrainPostProcess("Grain", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType, true);
-        this._grainEffect = new PostProcessRenderEffect(engine, this.GrainPostProcessId, () => { return this.grain; }, true);
+        this._grainEffect = new PostProcessRenderEffect(
+            engine,
+            this.GrainPostProcessId,
+            () => {
+                return this.grain;
+            },
+            true
+        );
 
         this._resizeObserver = engine.onResizeObservable.add(() => {
             this._hardwareScaleLevel = engine.getHardwareScalingLevel();
@@ -486,7 +517,7 @@ export class DefaultRenderingPipeline extends PostProcessRenderPipeline implemen
      * Force the compilation of the entire pipeline.
      */
     public prepare(): void {
-        let previousState = this._buildAllowed;
+        const previousState = this._buildAllowed;
         this._buildAllowed = true;
         this._buildPipeline();
         this._buildAllowed = previousState;
@@ -527,7 +558,7 @@ export class DefaultRenderingPipeline extends PostProcessRenderPipeline implemen
         }
         this._scene.autoClear = true;
 
-        var engine = this._scene.getEngine();
+        const engine = this._scene.getEngine();
 
         this._disposePostProcesses();
         if (this._cameras !== null) {
@@ -543,7 +574,7 @@ export class DefaultRenderingPipeline extends PostProcessRenderPipeline implemen
         if (this.depthOfFieldEnabled) {
             // Multi camera suport
             if (this._cameras.length > 1) {
-                for (let camera of this._cameras) {
+                for (const camera of this._cameras) {
                     const depthRenderer = this._scene.enableDepthRenderer(camera);
                     depthRenderer.useOnlyInActiveCamera = true;
                 }
@@ -553,8 +584,7 @@ export class DefaultRenderingPipeline extends PostProcessRenderPipeline implemen
                         this.depthOfField.depthTexture = scene.enableDepthRenderer(scene.activeCamera).getDepthMap();
                     }
                 });
-            }
-            else {
+            } else {
                 this._scene.onAfterRenderTargetsRenderObservable.remove(this._depthOfFieldSceneObserver);
                 const depthRenderer = this._scene.enableDepthRenderer(this._cameras[0]);
                 this.depthOfField.depthTexture = depthRenderer.getDepthMap();
@@ -565,8 +595,7 @@ export class DefaultRenderingPipeline extends PostProcessRenderPipeline implemen
             }
             this.addEffect(this.depthOfField);
             this._setAutoClearAndTextureSharing(this.depthOfField._effects[0], true);
-        }
-        else {
+        } else {
             this._scene.onAfterRenderTargetsRenderObservable.remove(this._depthOfFieldSceneObserver);
         }
 
@@ -581,7 +610,16 @@ export class DefaultRenderingPipeline extends PostProcessRenderPipeline implemen
         if (this._imageProcessingEnabled) {
             this.imageProcessing = new ImageProcessingPostProcess("imageProcessing", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType);
             if (this._hdr) {
-                this.addEffect(new PostProcessRenderEffect(engine, this.ImageProcessingPostProcessId, () => { return this.imageProcessing; }, true));
+                this.addEffect(
+                    new PostProcessRenderEffect(
+                        engine,
+                        this.ImageProcessingPostProcessId,
+                        () => {
+                            return this.imageProcessing;
+                        },
+                        true
+                    )
+                );
                 this._setAutoClearAndTextureSharing(this.imageProcessing);
             } else {
                 this._scene.imageProcessingConfiguration.applyByPostProcess = false;
@@ -622,7 +660,16 @@ export class DefaultRenderingPipeline extends PostProcessRenderPipeline implemen
 
         if (this.fxaaEnabled) {
             this.fxaa = new FxaaPostProcess("fxaa", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType);
-            this.addEffect(new PostProcessRenderEffect(engine, this.FxaaPostProcessId, () => { return this.fxaa; }, true));
+            this.addEffect(
+                new PostProcessRenderEffect(
+                    engine,
+                    this.FxaaPostProcessId,
+                    () => {
+                        return this.fxaa;
+                    },
+                    true
+                )
+            );
             this._setAutoClearAndTextureSharing(this.fxaa, true);
         }
 
@@ -643,8 +690,8 @@ export class DefaultRenderingPipeline extends PostProcessRenderPipeline implemen
     }
 
     private _disposePostProcesses(disposeNonRecreated = false): void {
-        for (var i = 0; i < this._cameras.length; i++) {
-            var camera = this._cameras[i];
+        for (let i = 0; i < this._cameras.length; i++) {
+            const camera = this._cameras[i];
 
             if (this.imageProcessing) {
                 this.imageProcessing.dispose(camera);
@@ -712,7 +759,7 @@ export class DefaultRenderingPipeline extends PostProcessRenderPipeline implemen
      * @param camera the camera to remove
      */
     public removeCamera(camera: Camera): void {
-        var index = this._camerasToBeAttached.indexOf(camera);
+        const index = this._camerasToBeAttached.indexOf(camera);
         this._camerasToBeAttached.splice(index, 1);
         this._buildPipeline();
     }
@@ -738,7 +785,7 @@ export class DefaultRenderingPipeline extends PostProcessRenderPipeline implemen
      * @returns the serialized object
      */
     public serialize(): any {
-        var serializationObject = SerializationHelper.Serialize(this);
+        const serializationObject = SerializationHelper.Serialize(this);
         serializationObject.customType = "DefaultRenderingPipeline";
 
         return serializationObject;

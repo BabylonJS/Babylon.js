@@ -3,11 +3,21 @@ import { Vector2, Vector3 } from "../Maths/math.vector";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { ImageProcessingConfiguration, ImageProcessingConfigurationDefines } from "../Materials/imageProcessingConfiguration";
 import { ColorGradient, FactorGradient, Color3Gradient, IValueGradient } from "../Misc/gradients";
-import { BoxParticleEmitter, IParticleEmitterType, PointParticleEmitter, HemisphericParticleEmitter, SphereParticleEmitter, SphereDirectedParticleEmitter, CylinderParticleEmitter, CylinderDirectedParticleEmitter, ConeParticleEmitter } from "../Particles/EmitterTypes/index";
+import {
+    BoxParticleEmitter,
+    IParticleEmitterType,
+    PointParticleEmitter,
+    HemisphericParticleEmitter,
+    SphereParticleEmitter,
+    SphereDirectedParticleEmitter,
+    CylinderParticleEmitter,
+    CylinderDirectedParticleEmitter,
+    ConeParticleEmitter,
+} from "../Particles/EmitterTypes/index";
 import { Constants } from "../Engines/constants";
-import { BaseTexture } from '../Materials/Textures/baseTexture';
-import { Color4 } from '../Maths/math.color';
-import { ThinEngine } from '../Engines/thinEngine';
+import { BaseTexture } from "../Materials/Textures/baseTexture";
+import { Color4 } from "../Maths/math.color";
+import { ThinEngine } from "../Engines/thinEngine";
 
 import "../Engines/Extensions/engine.dynamicBuffer";
 
@@ -176,7 +186,7 @@ export class BaseParticleSystem {
     /**
      * The layer mask we are rendering the particles through.
      */
-    public layerMask: number = 0x0FFFFFFF;
+    public layerMask: number = 0x0fffffff;
 
     /**
      * This can help using your own shader to render the particle system.
@@ -338,9 +348,11 @@ export class BaseParticleSystem {
     protected _alphaRemapGradients: Nullable<Array<FactorGradient>> = null;
 
     protected _hasTargetStopDurationDependantGradient() {
-        return (this._startSizeGradients && this._startSizeGradients.length > 0)
-            || (this._emitRateGradients && this._emitRateGradients.length > 0)
-            || (this._lifeTimeGradients && this._lifeTimeGradients.length > 0);
+        return (
+            (this._startSizeGradients && this._startSizeGradients.length > 0) ||
+            (this._emitRateGradients && this._emitRateGradients.length > 0) ||
+            (this._lifeTimeGradients && this._lifeTimeGradients.length > 0)
+        );
     }
 
     /**
@@ -634,24 +646,27 @@ export class BaseParticleSystem {
         // Pick the scene configuration if needed.
         if (!configuration && this._scene) {
             this._imageProcessingConfiguration = this._scene.imageProcessingConfiguration;
-        }
-        else {
+        } else {
             this._imageProcessingConfiguration = configuration;
         }
     }
 
     /** @hidden */
-    protected _reset() {
-    }
+    protected _reset() {}
 
-    /** @hidden */
+    /**
+     * @param gradient
+     * @param gradients
+     * @param texture
+     * @hidden
+     */
     protected _removeGradientAndTexture(gradient: number, gradients: Nullable<IValueGradient[]>, texture: Nullable<RawTexture>): BaseParticleSystem {
         if (!gradients) {
             return this;
         }
 
         let index = 0;
-        for (var valueGradient of gradients) {
+        for (const valueGradient of gradients) {
             if (valueGradient.gradient === gradient) {
                 gradients.splice(index, 1);
                 break;
@@ -683,7 +698,7 @@ export class BaseParticleSystem {
      * @returns the emitter
      */
     public createPointEmitter(direction1: Vector3, direction2: Vector3): PointParticleEmitter {
-        var particleEmitter = new PointParticleEmitter();
+        const particleEmitter = new PointParticleEmitter();
         particleEmitter.direction1 = direction1;
         particleEmitter.direction2 = direction2;
 
@@ -698,7 +713,7 @@ export class BaseParticleSystem {
      * @returns the emitter
      */
     public createHemisphericEmitter(radius = 1, radiusRange = 1): HemisphericParticleEmitter {
-        var particleEmitter = new HemisphericParticleEmitter(radius, radiusRange);
+        const particleEmitter = new HemisphericParticleEmitter(radius, radiusRange);
         this.particleEmitterType = particleEmitter;
         return particleEmitter;
     }
@@ -710,7 +725,7 @@ export class BaseParticleSystem {
      * @returns the emitter
      */
     public createSphereEmitter(radius = 1, radiusRange = 1): SphereParticleEmitter {
-        var particleEmitter = new SphereParticleEmitter(radius, radiusRange);
+        const particleEmitter = new SphereParticleEmitter(radius, radiusRange);
         this.particleEmitterType = particleEmitter;
         return particleEmitter;
     }
@@ -723,7 +738,7 @@ export class BaseParticleSystem {
      * @returns the emitter
      */
     public createDirectedSphereEmitter(radius = 1, direction1 = new Vector3(0, 1.0, 0), direction2 = new Vector3(0, 1.0, 0)): SphereDirectedParticleEmitter {
-        var particleEmitter = new SphereDirectedParticleEmitter(radius, direction1, direction2);
+        const particleEmitter = new SphereDirectedParticleEmitter(radius, direction1, direction2);
         this.particleEmitterType = particleEmitter;
         return particleEmitter;
     }
@@ -737,7 +752,7 @@ export class BaseParticleSystem {
      * @returns the emitter
      */
     public createCylinderEmitter(radius = 1, height = 1, radiusRange = 1, directionRandomizer = 0): CylinderParticleEmitter {
-        var particleEmitter = new CylinderParticleEmitter(radius, height, radiusRange, directionRandomizer);
+        const particleEmitter = new CylinderParticleEmitter(radius, height, radiusRange, directionRandomizer);
         this.particleEmitterType = particleEmitter;
         return particleEmitter;
     }
@@ -751,8 +766,14 @@ export class BaseParticleSystem {
      * @param direction2 Particles are emitted between the direction1 and direction2 from within the cylinder
      * @returns the emitter
      */
-    public createDirectedCylinderEmitter(radius = 1, height = 1, radiusRange = 1, direction1 = new Vector3(0, 1.0, 0), direction2 = new Vector3(0, 1.0, 0)): CylinderDirectedParticleEmitter {
-        var particleEmitter = new CylinderDirectedParticleEmitter(radius, height, radiusRange, direction1, direction2);
+    public createDirectedCylinderEmitter(
+        radius = 1,
+        height = 1,
+        radiusRange = 1,
+        direction1 = new Vector3(0, 1.0, 0),
+        direction2 = new Vector3(0, 1.0, 0)
+    ): CylinderDirectedParticleEmitter {
+        const particleEmitter = new CylinderDirectedParticleEmitter(radius, height, radiusRange, direction1, direction2);
         this.particleEmitterType = particleEmitter;
         return particleEmitter;
     }
@@ -764,7 +785,7 @@ export class BaseParticleSystem {
      * @returns the emitter
      */
     public createConeEmitter(radius = 1, angle = Math.PI / 4): ConeParticleEmitter {
-        var particleEmitter = new ConeParticleEmitter(radius, angle);
+        const particleEmitter = new ConeParticleEmitter(radius, angle);
         this.particleEmitterType = particleEmitter;
         return particleEmitter;
     }
@@ -778,7 +799,7 @@ export class BaseParticleSystem {
      * @returns the emitter
      */
     public createBoxEmitter(direction1: Vector3, direction2: Vector3, minEmitBox: Vector3, maxEmitBox: Vector3): BoxParticleEmitter {
-        var particleEmitter = new BoxParticleEmitter();
+        const particleEmitter = new BoxParticleEmitter();
         this.particleEmitterType = particleEmitter;
         this.direction1 = direction1;
         this.direction2 = direction2;

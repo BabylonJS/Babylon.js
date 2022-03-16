@@ -1,4 +1,4 @@
-import { IAnimatable } from '../Animations/animatable.interface';
+import { IAnimatable } from "../Animations/animatable.interface";
 import { Observable } from "../Misc/observable";
 import { Nullable, FloatArray } from "../types";
 import { Scene } from "../scene";
@@ -7,7 +7,7 @@ import { AbstractMesh } from "../Meshes/abstractMesh";
 import { VertexBuffer } from "../Buffers/buffer";
 import { AnimationPropertiesOverride } from "../Animations/animationPropertiesOverride";
 import { serialize, SerializationHelper } from "../Misc/decorators";
-import { GetClass } from '../Misc/typeStore';
+import { GetClass } from "../Misc/typeStore";
 
 declare type Animation = import("../Animations/animation").Animation;
 
@@ -49,7 +49,7 @@ export class MorphTarget implements IAnimatable {
             return;
         }
 
-        var previous = this._influence;
+        const previous = this._influence;
         this._influence = influence;
 
         if (this.onInfluenceChanged.hasObservers()) {
@@ -87,7 +87,10 @@ export class MorphTarget implements IAnimatable {
      */
     public constructor(
         /** defines the name of the target */
-        public name: string, influence = 0, scene: Nullable<Scene> = null) {
+        public name: string,
+        influence = 0,
+        scene: Nullable<Scene> = null
+    ) {
         this._scene = scene || EngineStore.LastCreatedScene;
         this.influence = influence;
 
@@ -224,7 +227,7 @@ export class MorphTarget implements IAnimatable {
      * @returns a new MorphTarget
      */
     public clone(): MorphTarget {
-        let newOne = SerializationHelper.Clone(() => new MorphTarget(this.name, this.influence, this._scene), this);
+        const newOne = SerializationHelper.Clone(() => new MorphTarget(this.name, this.influence, this._scene), this);
 
         newOne._positions = this._positions;
         newOne._normals = this._normals;
@@ -239,7 +242,7 @@ export class MorphTarget implements IAnimatable {
      * @returns the serialized object
      */
     public serialize(): any {
-        var serializationObject: any = {};
+        const serializationObject: any = {};
 
         serializationObject.name = this.name;
         serializationObject.influence = this.influence;
@@ -281,7 +284,7 @@ export class MorphTarget implements IAnimatable {
      * @returns a new MorphTarget
      */
     public static Parse(serializationObject: any, scene?: Scene): MorphTarget {
-        var result = new MorphTarget(serializationObject.name, serializationObject.influence);
+        const result = new MorphTarget(serializationObject.name, serializationObject.influence);
 
         result.setPositions(serializationObject.positions);
 
@@ -300,8 +303,8 @@ export class MorphTarget implements IAnimatable {
 
         // Animations
         if (serializationObject.animations) {
-            for (var animationIndex = 0; animationIndex < serializationObject.animations.length; animationIndex++) {
-                var parsedAnimation = serializationObject.animations[animationIndex];
+            for (let animationIndex = 0; animationIndex < serializationObject.animations.length; animationIndex++) {
+                const parsedAnimation = serializationObject.animations[animationIndex];
                 const internalClass = GetClass("BABYLON.Animation");
                 if (internalClass) {
                     result.animations.push(internalClass.Parse(parsedAnimation));
@@ -309,7 +312,13 @@ export class MorphTarget implements IAnimatable {
             }
 
             if (serializationObject.autoAnimate && scene) {
-                scene.beginAnimation(result, serializationObject.autoAnimateFrom, serializationObject.autoAnimateTo, serializationObject.autoAnimateLoop, serializationObject.autoAnimateSpeed || 1.0);
+                scene.beginAnimation(
+                    result,
+                    serializationObject.autoAnimateFrom,
+                    serializationObject.autoAnimateTo,
+                    serializationObject.autoAnimateLoop,
+                    serializationObject.autoAnimateSpeed || 1.0
+                );
             }
         }
 
@@ -328,7 +337,7 @@ export class MorphTarget implements IAnimatable {
             name = mesh.name;
         }
 
-        var result = new MorphTarget(name, influence, mesh.getScene());
+        const result = new MorphTarget(name, influence, mesh.getScene());
 
         result.setPositions(<FloatArray>mesh.getVerticesData(VertexBuffer.PositionKind));
 

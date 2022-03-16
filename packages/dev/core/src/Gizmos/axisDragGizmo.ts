@@ -12,7 +12,7 @@ import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { StandardMaterial } from "../Materials/standardMaterial";
 import { Scene } from "../scene";
 import { PositionGizmo } from "./positionGizmo";
-import { Color3 } from '../Maths/math.color';
+import { Color3 } from "../Maths/math.color";
 /**
  * Single axis drag gizmo
  */
@@ -41,11 +41,17 @@ export class AxisDragGizmo extends Gizmo {
     private _disableMaterial: StandardMaterial;
     private _dragging: boolean = false;
 
-    /** @hidden */
+    /**
+     * @param scene
+     * @param material
+     * @param thickness
+     * @param isCollider
+     * @hidden
+     */
     public static _CreateArrow(scene: Scene, material: StandardMaterial, thickness: number = 1, isCollider = false): TransformNode {
-        var arrow = new TransformNode("arrow", scene);
-        var cylinder = CreateCylinder("cylinder", { diameterTop: 0, height: 0.075, diameterBottom: 0.0375 * (1 + (thickness - 1) / 4), tessellation: 96 }, scene);
-        var line = CreateCylinder("cylinder", { diameterTop: 0.005 * thickness, height: 0.275, diameterBottom: 0.005 * thickness, tessellation: 96 }, scene);
+        const arrow = new TransformNode("arrow", scene);
+        const cylinder = CreateCylinder("cylinder", { diameterTop: 0, height: 0.075, diameterBottom: 0.0375 * (1 + (thickness - 1) / 4), tessellation: 96 }, scene);
+        const line = CreateCylinder("cylinder", { diameterTop: 0.005 * thickness, height: 0.275, diameterBottom: 0.005 * thickness, tessellation: 96 }, scene);
 
         // Position arrow pointing in its drag axis
         cylinder.parent = arrow;
@@ -65,7 +71,11 @@ export class AxisDragGizmo extends Gizmo {
         return arrow;
     }
 
-    /** @hidden */
+    /**
+     * @param scene
+     * @param arrow
+     * @hidden
+     */
     public static _CreateArrowInstance(scene: Scene, arrow: TransformNode): TransformNode {
         const instance = new TransformNode("arrow", scene);
         for (const mesh of arrow.getChildMeshes()) {
@@ -80,9 +90,16 @@ export class AxisDragGizmo extends Gizmo {
      * @param gizmoLayer The utility layer the gizmo will be added to
      * @param dragAxis The axis which the gizmo will be able to drag on
      * @param color The color of the gizmo
+     * @param parent
      * @param thickness display gizmo axis thickness
      */
-    constructor(dragAxis: Vector3, color: Color3 = Color3.Gray(), gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer, parent: Nullable<PositionGizmo> = null, thickness: number = 1) {
+    constructor(
+        dragAxis: Vector3,
+        color: Color3 = Color3.Gray(),
+        gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer,
+        parent: Nullable<PositionGizmo> = null,
+        thickness: number = 1
+    ) {
         super(gizmoLayer);
         this._parent = parent;
 
@@ -104,17 +121,17 @@ export class AxisDragGizmo extends Gizmo {
 
         // Add to Root Node
         this._gizmoMesh = new Mesh("", gizmoLayer.utilityLayerScene);
-        this._gizmoMesh.addChild((arrow as Mesh));
-        this._gizmoMesh.addChild((collider as Mesh));
+        this._gizmoMesh.addChild(arrow as Mesh);
+        this._gizmoMesh.addChild(collider as Mesh);
 
         this._gizmoMesh.lookAt(this._rootMesh.position.add(dragAxis));
         this._gizmoMesh.scaling.scaleInPlace(1 / 3);
         this._gizmoMesh.parent = this._rootMesh;
 
-        var currentSnapDragDistance = 0;
-        var tmpVector = new Vector3();
-        var tmpVector2 = new Vector3();
-        var tmpSnapEvent = { snapDistance: 0 };
+        let currentSnapDragDistance = 0;
+        const tmpVector = new Vector3();
+        const tmpVector2 = new Vector3();
+        const tmpSnapEvent = { snapDistance: 0 };
         // Add drag behavior to handle events when the gizmo is dragged
         this.dragBehavior = new PointerDragBehavior({ dragAxis: dragAxis });
         this.dragBehavior.moveAttached = false;
@@ -133,7 +150,8 @@ export class AxisDragGizmo extends Gizmo {
                     this.attachedNode.getWorldMatrix().getTranslationToRef(tmpVector2);
                     tmpVector2.addInPlace(event.delta);
                     if (this.dragBehavior.validateDrag(tmpVector2)) {
-                        if ((this.attachedNode as any).position) { // Required for nodes like lights
+                        if ((this.attachedNode as any).position) {
+                            // Required for nodes like lights
                             (this.attachedNode as any).position.addInPlaceFromFloats(event.delta.x, event.delta.y, event.delta.z);
                         }
 
@@ -145,7 +163,7 @@ export class AxisDragGizmo extends Gizmo {
                 } else {
                     currentSnapDragDistance += event.dragDistance;
                     if (Math.abs(currentSnapDragDistance) > this.snapDistance) {
-                        var dragSteps = Math.floor(Math.abs(currentSnapDragDistance) / this.snapDistance);
+                        const dragSteps = Math.floor(Math.abs(currentSnapDragDistance) / this.snapDistance);
                         currentSnapDragDistance = currentSnapDragDistance % this.snapDistance;
                         event.delta.normalizeToRef(tmpVector);
                         tmpVector.scaleInPlace(this.snapDistance * dragSteps);
@@ -166,10 +184,14 @@ export class AxisDragGizmo extends Gizmo {
                 }
             }
         });
-        this.dragBehavior.onDragStartObservable.add(() => { this._dragging = true; });
-        this.dragBehavior.onDragEndObservable.add(() => { this._dragging = false; });
+        this.dragBehavior.onDragStartObservable.add(() => {
+            this._dragging = true;
+        });
+        this.dragBehavior.onDragEndObservable.add(() => {
+            this._dragging = false;
+        });
 
-        var light = gizmoLayer._getSharedGizmoLight();
+        const light = gizmoLayer._getSharedGizmoLight();
         light.includedOnlyMeshes = light.includedOnlyMeshes.concat(this._rootMesh.getChildMeshes(false));
 
         const cache: GizmoAxisCache = {
@@ -179,7 +201,7 @@ export class AxisDragGizmo extends Gizmo {
             hoverMaterial: this._hoverMaterial,
             disableMaterial: this._disableMaterial,
             active: false,
-            dragBehavior: this.dragBehavior
+            dragBehavior: this.dragBehavior,
         };
         this._parent?.addToAxisCache(collider as Mesh, cache);
 
@@ -212,8 +234,7 @@ export class AxisDragGizmo extends Gizmo {
         if (!value) {
             this.attachedMesh = null;
             this.attachedNode = null;
-        }
-        else {
+        } else {
             if (this._parent) {
                 this.attachedMesh = this._parent.attachedMesh;
                 this.attachedNode = this._parent.attachedNode;

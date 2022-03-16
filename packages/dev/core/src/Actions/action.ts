@@ -2,8 +2,8 @@ import { Observable } from "../Misc/observable";
 import { Vector2, Vector3 } from "../Maths/math.vector";
 import { Color3, Color4 } from "../Maths/math.color";
 import { Condition } from "./condition";
-import { RegisterClass } from '../Misc/typeStore';
-import { AbstractActionManager } from './abstractActionManager';
+import { RegisterClass } from "../Misc/typeStore";
+import { AbstractActionManager } from "./abstractActionManager";
 import { Nullable } from "../types";
 
 declare type Scene = import("../scene").Scene;
@@ -19,8 +19,8 @@ declare type Node = import("../node").Node;
  */
 export interface IAction {
     /**
-   * Trigger for the action
-   */
+     * Trigger for the action
+     */
     trigger: number;
 
     /** Options of the trigger */
@@ -46,9 +46,9 @@ export interface IAction {
     serialize(parent: any): any;
 
     /**
-    * Internal only
-    * @hidden
-    */
+     * Internal only
+     * @hidden
+     */
     _prepare(): void;
 
     /**
@@ -88,8 +88,8 @@ export class Action implements IAction {
     private _triggerParameter: any;
 
     /**
-    * An event triggered prior to action being executed.
-    */
+     * An event triggered prior to action being executed.
+     */
     public onBeforeExecuteObservable = new Observable<Action>();
 
     /**
@@ -99,8 +99,9 @@ export class Action implements IAction {
      */
     constructor(
         /** the trigger, with or without parameters, for the action */
-        public triggerOptions: any, condition?: Condition) {
-
+        public triggerOptions: any,
+        condition?: Condition
+    ) {
         if (triggerOptions.parameter) {
             this.trigger = triggerOptions.trigger;
             this._triggerParameter = triggerOptions.parameter;
@@ -118,8 +119,7 @@ export class Action implements IAction {
      * Internal only
      * @hidden
      */
-    public _prepare(): void {
-    }
+    public _prepare(): void {}
 
     /**
      * Gets the trigger parameter
@@ -141,7 +141,7 @@ export class Action implements IAction {
      * Internal only - Returns if the current condition allows to run the action
      * @hidden
      */
-     public _evaluateConditionForCurrentFrame(): boolean {
+    public _evaluateConditionForCurrentFrame(): boolean {
         const condition = this._condition;
         if (!condition) {
             return true;
@@ -160,6 +160,7 @@ export class Action implements IAction {
 
     /**
      * Internal only - executes current action event
+     * @param evt
      * @hidden
      */
     public _executeCurrent(evt?: ActionEvent): void {
@@ -178,16 +179,13 @@ export class Action implements IAction {
      * Execute placeholder for child classes
      * @param evt optional action event
      */
-    public execute(evt?: ActionEvent): void {
-
-    }
+    public execute(evt?: ActionEvent): void {}
 
     /**
      * Skips to next active action
      */
     public skipToNextActiveAction(): void {
         if (this._nextActiveAction._child) {
-
             if (!this._nextActiveAction._child._actionManager) {
                 this._nextActiveAction._child._actionManager = this._actionManager;
             }
@@ -215,6 +213,7 @@ export class Action implements IAction {
 
     /**
      * Internal only
+     * @param propertyPath
      * @hidden
      */
     public _getProperty(propertyPath: string): string {
@@ -223,6 +222,8 @@ export class Action implements IAction {
 
     /**
      * Internal only
+     * @param target
+     * @param propertyPath
      * @hidden
      */
     public _getEffectiveTarget(target: any, propertyPath: string): any {
@@ -234,19 +235,20 @@ export class Action implements IAction {
      * @param parent of child
      * @returns the serialized object
      */
-    public serialize(parent: any): any {
-    }
+    public serialize(parent: any): any {}
 
     /**
      * Internal only called by serialize
+     * @param serializedAction
+     * @param parent
      * @hidden
      */
     protected _serialize(serializedAction: any, parent?: any): any {
-        var serializationObject: any = {
+        const serializationObject: any = {
             type: 1,
             children: [],
             name: serializedAction.name,
-            properties: serializedAction.properties || []
+            properties: serializedAction.properties || [],
         };
 
         // Serialize child
@@ -256,7 +258,7 @@ export class Action implements IAction {
 
         // Check if "this" has a condition
         if (this._condition) {
-            var serializedCondition = this._condition.serialize();
+            const serializedCondition = this._condition.serialize();
             serializedCondition.children.push(serializationObject);
 
             if (parent) {
@@ -273,6 +275,7 @@ export class Action implements IAction {
 
     /**
      * Internal only
+     * @param value
      * @hidden
      */
     public static _SerializeValueAsString = (value: any): string => {
@@ -299,22 +302,26 @@ export class Action implements IAction {
         }
 
         return value; // string
-    }
+    };
 
     /**
      * Internal only
+     * @param target
      * @hidden
      */
     public static _GetTargetProperty = (target: Scene | Node) => {
         return {
             name: "target",
-            targetType: (<Mesh>target)._isMesh ? "MeshProperties"
-                : (<Light>target)._isLight ? "LightProperties"
-                    : (<Camera>target)._isCamera ? "CameraProperties"
-                        : "SceneProperties",
-            value: (<Scene>target)._isScene ? "Scene" : (<Node>target).name
+            targetType: (<Mesh>target)._isMesh
+                ? "MeshProperties"
+                : (<Light>target)._isLight
+                ? "LightProperties"
+                : (<Camera>target)._isCamera
+                ? "CameraProperties"
+                : "SceneProperties",
+            value: (<Scene>target)._isScene ? "Scene" : (<Node>target).name,
         };
-    }
+    };
 }
 
 RegisterClass("BABYLON.Action", Action);

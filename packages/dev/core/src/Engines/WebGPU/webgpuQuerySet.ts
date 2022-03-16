@@ -1,10 +1,9 @@
-import { WebGPUBufferManager } from './webgpuBufferManager';
-import * as WebGPUConstants from './webgpuConstants';
+import { WebGPUBufferManager } from "./webgpuBufferManager";
+import * as WebGPUConstants from "./webgpuConstants";
 import { QueryType } from "./webgpuConstants";
 
 /** @hidden */
 export class WebGPUQuerySet {
-
     private _device: GPUDevice;
     private _bufferManager: WebGPUBufferManager;
 
@@ -60,7 +59,7 @@ export class WebGPUQuerySet {
     }
 
     public async readValues(firstQuery = 0, queryCount = 1): Promise<BigUint64Array | null> {
-        let buffer = this._getBuffer(firstQuery, queryCount);
+        const buffer = this._getBuffer(firstQuery, queryCount);
         if (buffer === null) {
             return null;
         }
@@ -77,7 +76,7 @@ export class WebGPUQuerySet {
     }
 
     public async readValue(firstQuery = 0): Promise<number | null> {
-        let buffer = this._getBuffer(firstQuery, 1);
+        const buffer = this._getBuffer(firstQuery, 1);
         if (buffer === null) {
             return null;
         }
@@ -95,7 +94,7 @@ export class WebGPUQuerySet {
     }
 
     public async readTwoValuesAndSubtract(firstQuery = 0): Promise<number | null> {
-        let buffer = this._getBuffer(firstQuery, 2);
+        const buffer = this._getBuffer(firstQuery, 2);
         if (buffer === null) {
             return null;
         }

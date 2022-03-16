@@ -1,9 +1,9 @@
-import { NodeMaterialBlock } from '../nodeMaterialBlock';
-import { NodeMaterialBlockConnectionPointTypes } from '../Enums/nodeMaterialBlockConnectionPointTypes';
-import { NodeMaterialBuildState } from '../nodeMaterialBuildState';
-import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint';
-import { NodeMaterialBlockTargets } from '../Enums/nodeMaterialBlockTargets';
-import { RegisterClass } from '../../../Misc/typeStore';
+import { NodeMaterialBlock } from "../nodeMaterialBlock";
+import { NodeMaterialBlockConnectionPointTypes } from "../Enums/nodeMaterialBlockConnectionPointTypes";
+import { NodeMaterialBuildState } from "../nodeMaterialBuildState";
+import { NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
+import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
+import { RegisterClass } from "../../../Misc/typeStore";
 
 /**
  * block used to Generate a Voronoi Noise Pattern
@@ -40,15 +40,15 @@ export class VoronoiNoiseBlock extends NodeMaterialBlock {
 
     /**
      * Gets the offset input component
-    */
+     */
     public get offset(): NodeMaterialConnectionPoint {
         return this._inputs[1];
     }
 
     /**
      * Gets the density input component
-    */
-     public get density(): NodeMaterialConnectionPoint {
+     */
+    public get density(): NodeMaterialConnectionPoint {
         return this._inputs[2];
     }
 
@@ -61,8 +61,8 @@ export class VoronoiNoiseBlock extends NodeMaterialBlock {
 
     /**
      * Gets the output component
-    */
-     public get cells(): NodeMaterialConnectionPoint {
+     */
+    public get cells(): NodeMaterialConnectionPoint {
         return this._outputs[1];
     }
 
@@ -80,7 +80,7 @@ export class VoronoiNoiseBlock extends NodeMaterialBlock {
         }
         `;
 
-        state._emitFunction('voronoiRandom', functionString, '// Voronoi random generator');
+        state._emitFunction("voronoiRandom", functionString, "// Voronoi random generator");
 
         functionString = `void voronoi(vec2 seed, float offset, float density, out float outValue, out float cells){
             vec2 g = floor(seed * density);
@@ -106,10 +106,10 @@ export class VoronoiNoiseBlock extends NodeMaterialBlock {
         }
         `;
 
-        state._emitFunction('voronoi', functionString, '// Voronoi');
+        state._emitFunction("voronoi", functionString, "// Voronoi");
 
-        let tempOutput = state._getFreeVariableName("tempOutput");
-        let tempCells = state._getFreeVariableName("tempCells");
+        const tempOutput = state._getFreeVariableName("tempOutput");
+        const tempCells = state._getFreeVariableName("tempCells");
 
         state.compilationString += `float ${tempOutput} = 0.0;\r\n`;
         state.compilationString += `float ${tempCells} = 0.0;\r\n`;
@@ -125,7 +125,6 @@ export class VoronoiNoiseBlock extends NodeMaterialBlock {
 
         return this;
     }
-
 }
 
 RegisterClass("BABYLON.VoronoiNoiseBlock", VoronoiNoiseBlock);

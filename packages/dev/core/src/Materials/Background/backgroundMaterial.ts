@@ -1,4 +1,12 @@
-import { SerializationHelper, serialize, serializeAsColor3, expandToProperty, serializeAsTexture, serializeAsVector3, serializeAsImageProcessingConfiguration } from "../../Misc/decorators";
+import {
+    SerializationHelper,
+    serialize,
+    serializeAsColor3,
+    expandToProperty,
+    serializeAsTexture,
+    serializeAsVector3,
+    serializeAsImageProcessingConfiguration,
+} from "../../Misc/decorators";
 import { SmartArray } from "../../Misc/smartArray";
 import { Observer } from "../../Misc/observable";
 import { Logger } from "../../Misc/logger";
@@ -22,11 +30,11 @@ import { IShadowLight } from "../../Lights/shadowLight";
 import { Constants } from "../../Engines/constants";
 import { RegisterClass } from "../../Misc/typeStore";
 import { MaterialFlags } from "../materialFlags";
-import { Color3 } from '../../Maths/math.color';
+import { Color3 } from "../../Maths/math.color";
 
 import "../../Shaders/background.fragment";
 import "../../Shaders/background.vertex";
-import { EffectFallbacks } from '../effectFallbacks';
+import { EffectFallbacks } from "../effectFallbacks";
 
 /**
  * Background material defines definition.
@@ -181,7 +189,6 @@ class BackgroundMaterialDefines extends MaterialDefines implements IImageProcess
  * Background material used to create an efficient environment around your scene.
  */
 export class BackgroundMaterial extends PushMaterial {
-
     /**
      * Standard reflectance value at parallel view angle.
      */
@@ -457,8 +464,7 @@ export class BackgroundMaterial extends PushMaterial {
         // Pick the scene configuration if needed.
         if (!configuration) {
             this._imageProcessingConfiguration = this.getScene().imageProcessingConfiguration;
-        }
-        else {
+        } else {
             this._imageProcessingConfiguration = configuration;
         }
 
@@ -659,7 +665,7 @@ export class BackgroundMaterial extends PushMaterial {
      * @returns true if blending is enable
      */
     public needAlphaBlending(): boolean {
-        return (this.alpha < 1) || (this._diffuseTexture != null && this._diffuseTexture.hasAlpha) || this._shadowOnly;
+        return this.alpha < 1 || (this._diffuseTexture != null && this._diffuseTexture.hasAlpha) || this._shadowOnly;
     }
 
     /**
@@ -680,14 +686,14 @@ export class BackgroundMaterial extends PushMaterial {
             subMesh.materialDefines = new BackgroundMaterialDefines();
         }
 
-        var scene = this.getScene();
-        var defines = <BackgroundMaterialDefines>subMesh.materialDefines;
+        const scene = this.getScene();
+        const defines = <BackgroundMaterialDefines>subMesh.materialDefines;
 
         if (this._isReadyForSubMesh(subMesh)) {
             return true;
         }
 
-        var engine = scene.getEngine();
+        const engine = scene.getEngine();
 
         // Lights
         MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, false, this._maxSimultaneousLights);
@@ -720,7 +726,7 @@ export class BackgroundMaterial extends PushMaterial {
                     defines.OPACITYFRESNEL = false;
                 }
 
-                var reflectionTexture = this._reflectionTexture;
+                const reflectionTexture = this._reflectionTexture;
                 if (reflectionTexture && MaterialFlags.ReflectionTextureEnabled) {
                     if (!reflectionTexture.isReadyOrNotBlocking()) {
                         return false;
@@ -781,8 +787,7 @@ export class BackgroundMaterial extends PushMaterial {
                         this._reflectionControls.y = this.reflectionReflectance0;
                         this._reflectionControls.z = this.reflectionReflectance90;
                         this._reflectionControls.w = 1 / this.reflectionFalloffDistance;
-                    }
-                    else {
+                    } else {
                         defines.REFLECTIONFRESNEL = false;
                         defines.REFLECTIONFALLOFF = false;
                     }
@@ -809,7 +814,7 @@ export class BackgroundMaterial extends PushMaterial {
                 }
             }
 
-            defines.PREMULTIPLYALPHA = (this.alphaMode === Constants.ALPHA_PREMULTIPLIED || this.alphaMode === Constants.ALPHA_PREMULTIPLIED_PORTERDUFF);
+            defines.PREMULTIPLYALPHA = this.alphaMode === Constants.ALPHA_PREMULTIPLIED || this.alphaMode === Constants.ALPHA_PREMULTIPLIED_PORTERDUFF;
             defines.USERGBCOLOR = this._useRGBColor;
             defines.NOISE = this._enableNoise;
         }
@@ -849,7 +854,7 @@ export class BackgroundMaterial extends PushMaterial {
             scene.resetCachedMaterial();
 
             // Fallbacks
-            var fallbacks = new EffectFallbacks();
+            const fallbacks = new EffectFallbacks();
             if (defines.FOG) {
                 fallbacks.addFallback(0, "FOG");
             }
@@ -865,7 +870,7 @@ export class BackgroundMaterial extends PushMaterial {
             MaterialHelper.HandleFallbacksForShadows(defines, fallbacks, this._maxSimultaneousLights);
 
             //Attributes
-            var attribs = [VertexBuffer.PositionKind];
+            const attribs = [VertexBuffer.PositionKind];
 
             if (defines.NORMAL) {
                 attribs.push(VertexBuffer.NormalKind);
@@ -882,22 +887,42 @@ export class BackgroundMaterial extends PushMaterial {
             MaterialHelper.PrepareAttributesForBones(attribs, mesh, defines, fallbacks);
             MaterialHelper.PrepareAttributesForInstances(attribs, defines);
 
-            var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType",
-                "vFogInfos", "vFogColor", "pointSize",
-                "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "vClipPlane5", "vClipPlane6", "mBones",
+            const uniforms = [
+                "world",
+                "view",
+                "viewProjection",
+                "vEyePosition",
+                "vLightsType",
+                "vFogInfos",
+                "vFogColor",
+                "pointSize",
+                "vClipPlane",
+                "vClipPlane2",
+                "vClipPlane3",
+                "vClipPlane4",
+                "vClipPlane5",
+                "vClipPlane6",
+                "mBones",
 
-                "vPrimaryColor", "vPrimaryColorShadow",
-                "vReflectionInfos", "reflectionMatrix", "vReflectionMicrosurfaceInfos", "fFovMultiplier",
+                "vPrimaryColor",
+                "vPrimaryColorShadow",
+                "vReflectionInfos",
+                "reflectionMatrix",
+                "vReflectionMicrosurfaceInfos",
+                "fFovMultiplier",
 
-                "shadowLevel", "alpha",
+                "shadowLevel",
+                "alpha",
 
-                "vBackgroundCenter", "vReflectionControl",
+                "vBackgroundCenter",
+                "vReflectionControl",
 
-                "vDiffuseInfos", "diffuseMatrix",
+                "vDiffuseInfos",
+                "diffuseMatrix",
             ];
 
-            var samplers = ["diffuseSampler", "reflectionSampler", "reflectionSamplerLow", "reflectionSamplerHigh"];
-            var uniformBuffers = ["Material", "Scene"];
+            const samplers = ["diffuseSampler", "reflectionSampler", "reflectionSamplerLow", "reflectionSamplerHigh"];
+            const uniformBuffers = ["Material", "Scene"];
 
             if (ImageProcessingConfiguration) {
                 ImageProcessingConfiguration.PrepareUniforms(uniforms, defines);
@@ -909,21 +934,25 @@ export class BackgroundMaterial extends PushMaterial {
                 uniformBuffersNames: uniformBuffers,
                 samplers: samplers,
                 defines: defines,
-                maxSimultaneousLights: this._maxSimultaneousLights
+                maxSimultaneousLights: this._maxSimultaneousLights,
             });
 
-            var join = defines.toString();
-            const effect = scene.getEngine().createEffect("background", <IEffectCreationOptions>{
-                attributes: attribs,
-                uniformsNames: uniforms,
-                uniformBuffersNames: uniformBuffers,
-                samplers: samplers,
-                defines: join,
-                fallbacks: fallbacks,
-                onCompiled: this.onCompiled,
-                onError: this.onError,
-                indexParameters: { maxSimultaneousLights: this._maxSimultaneousLights }
-            }, engine);
+            const join = defines.toString();
+            const effect = scene.getEngine().createEffect(
+                "background",
+                <IEffectCreationOptions>{
+                    attributes: attribs,
+                    uniformsNames: uniforms,
+                    uniformBuffersNames: uniformBuffers,
+                    samplers: samplers,
+                    defines: join,
+                    fallbacks: fallbacks,
+                    onCompiled: this.onCompiled,
+                    onError: this.onError,
+                    indexParameters: { maxSimultaneousLights: this._maxSimultaneousLights },
+                },
+                engine
+            );
             subMesh.setEffect(effect, defines, this._materialContext);
 
             this.buildUniformLayout();
@@ -1027,17 +1056,18 @@ export class BackgroundMaterial extends PushMaterial {
     /**
      * Bind the material for a dedicated submeh (every used meshes will be considered opaque).
      * @param world The world matrix to bind.
+     * @param mesh
      * @param subMesh The submesh to bind for.
      */
     public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
-        var scene = this.getScene();
+        const scene = this.getScene();
 
-        var defines = <BackgroundMaterialDefines>subMesh.materialDefines;
+        const defines = <BackgroundMaterialDefines>subMesh.materialDefines;
         if (!defines) {
             return;
         }
 
-        var effect = subMesh.effect;
+        const effect = subMesh.effect;
         if (!effect) {
             return;
         }
@@ -1049,15 +1079,14 @@ export class BackgroundMaterial extends PushMaterial {
         // Bones
         MaterialHelper.BindBonesParameters(mesh, this._activeEffect);
 
-        let mustRebind = this._mustRebind(scene, effect, mesh.visibility);
+        const mustRebind = this._mustRebind(scene, effect, mesh.visibility);
         if (mustRebind) {
             this._uniformBuffer.bindToEffect(effect, "Material");
 
             this.bindViewProjection(effect);
 
-            let reflectionTexture = this._reflectionTexture;
+            const reflectionTexture = this._reflectionTexture;
             if (!this._uniformBuffer.useUbo || !this.isFrozen || !this._uniformBuffer.isSync) {
-
                 // Texture uniforms
                 if (scene.texturesEnabled) {
                     if (this._diffuseTexture && MaterialFlags.DiffuseTextureEnabled) {
@@ -1069,10 +1098,12 @@ export class BackgroundMaterial extends PushMaterial {
                         this._uniformBuffer.updateMatrix("reflectionMatrix", reflectionTexture.getReflectionTextureMatrix());
                         this._uniformBuffer.updateFloat2("vReflectionInfos", reflectionTexture.level, this._reflectionBlur);
 
-                        this._uniformBuffer.updateFloat3("vReflectionMicrosurfaceInfos",
+                        this._uniformBuffer.updateFloat3(
+                            "vReflectionMicrosurfaceInfos",
                             reflectionTexture.getSize().width,
                             reflectionTexture.lodGenerationScale,
-                            reflectionTexture.lodGenerationOffset);
+                            reflectionTexture.lodGenerationOffset
+                        );
                     }
                 }
 
@@ -1089,8 +1120,7 @@ export class BackgroundMaterial extends PushMaterial {
                 if (defines.USEHIGHLIGHTANDSHADOWCOLORS) {
                     this._uniformBuffer.updateColor4("vPrimaryColor", this._primaryHighlightColor, 1.0);
                     this._uniformBuffer.updateColor4("vPrimaryColorShadow", this._primaryShadowColor, 1.0);
-                }
-                else {
+                } else {
                     this._uniformBuffer.updateColor4("vPrimaryColor", this._primaryColor, 1.0);
                 }
             }
@@ -1106,11 +1136,9 @@ export class BackgroundMaterial extends PushMaterial {
                 if (reflectionTexture && MaterialFlags.ReflectionTextureEnabled) {
                     if (defines.REFLECTIONBLUR && defines.TEXTURELODSUPPORT) {
                         this._uniformBuffer.setTexture("reflectionSampler", reflectionTexture);
-                    }
-                    else if (!defines.REFLECTIONBLUR) {
+                    } else if (!defines.REFLECTIONBLUR) {
                         this._uniformBuffer.setTexture("reflectionSampler", reflectionTexture);
-                    }
-                    else {
+                    } else {
                         this._uniformBuffer.setTexture("reflectionSampler", reflectionTexture._lodTextureMid || reflectionTexture);
                         this._uniformBuffer.setTexture("reflectionSamplerLow", reflectionTexture._lodTextureLow || reflectionTexture);
                         this._uniformBuffer.setTexture("reflectionSamplerHigh", reflectionTexture._lodTextureHigh || reflectionTexture);
@@ -1118,7 +1146,13 @@ export class BackgroundMaterial extends PushMaterial {
 
                     if (defines.REFLECTIONFRESNEL) {
                         this._uniformBuffer.updateFloat3("vBackgroundCenter", this.sceneCenter.x, this.sceneCenter.y, this.sceneCenter.z);
-                        this._uniformBuffer.updateFloat4("vReflectionControl", this._reflectionControls.x, this._reflectionControls.y, this._reflectionControls.z, this._reflectionControls.w);
+                        this._uniformBuffer.updateFloat4(
+                            "vReflectionControl",
+                            this._reflectionControls.x,
+                            this._reflectionControls.y,
+                            this._reflectionControls.z,
+                            this._reflectionControls.w
+                        );
                     }
                 }
             }
@@ -1213,7 +1247,7 @@ export class BackgroundMaterial extends PushMaterial {
      * @returns The JSON representation.
      */
     public serialize(): any {
-        var serializationObject = SerializationHelper.Serialize(this);
+        const serializationObject = SerializationHelper.Serialize(this);
         serializationObject.customType = "BABYLON.BackgroundMaterial";
         return serializationObject;
     }

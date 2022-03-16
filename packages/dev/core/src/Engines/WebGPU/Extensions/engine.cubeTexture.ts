@@ -16,13 +16,20 @@ WebGPUEngine.prototype._createDepthStencilCubeTexture = function (size: number, 
         comparisonFunction: 0,
         generateStencil: false,
         samples: 1,
-        ...options
+        ...options,
     };
 
     // TODO WEBGPU allow to choose the format?
     internalTexture.format = internalOptions.generateStencil ? Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 : Constants.TEXTUREFORMAT_DEPTH32_FLOAT;
 
-    this._setupDepthStencilTexture(internalTexture, size, internalOptions.generateStencil, internalOptions.bilinearFiltering, internalOptions.comparisonFunction, internalOptions.samples);
+    this._setupDepthStencilTexture(
+        internalTexture,
+        size,
+        internalOptions.generateStencil,
+        internalOptions.bilinearFiltering,
+        internalOptions.comparisonFunction,
+        internalOptions.samples
+    );
 
     this._textureHelper.createGPUTextureForInternalTexture(internalTexture);
 
@@ -31,11 +38,34 @@ WebGPUEngine.prototype._createDepthStencilCubeTexture = function (size: number, 
     return internalTexture;
 };
 
-WebGPUEngine.prototype.createCubeTexture = function (rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap?: boolean, onLoad: Nullable<(data?: any) => void> = null,
-    onError: Nullable<(message?: string, exception?: any) => void> = null, format?: number, forcedExtension: any = null, createPolynomials: boolean = false, lodScale: number = 0, lodOffset: number = 0,
-    fallback: Nullable<InternalTexture> = null, useSRGBBuffer = false): InternalTexture {
+WebGPUEngine.prototype.createCubeTexture = function (
+    rootUrl: string,
+    scene: Nullable<Scene>,
+    files: Nullable<string[]>,
+    noMipmap?: boolean,
+    onLoad: Nullable<(data?: any) => void> = null,
+    onError: Nullable<(message?: string, exception?: any) => void> = null,
+    format?: number,
+    forcedExtension: any = null,
+    createPolynomials: boolean = false,
+    lodScale: number = 0,
+    lodOffset: number = 0,
+    fallback: Nullable<InternalTexture> = null,
+    useSRGBBuffer = false
+): InternalTexture {
     return this.createCubeTextureBase(
-        rootUrl, scene, files, !!noMipmap, onLoad, onError, format, forcedExtension, createPolynomials, lodScale, lodOffset, fallback,
+        rootUrl,
+        scene,
+        files,
+        !!noMipmap,
+        onLoad,
+        onError,
+        format,
+        forcedExtension,
+        createPolynomials,
+        lodScale,
+        lodOffset,
+        fallback,
         null,
         (texture: InternalTexture, imgs: HTMLImageElement[] | ImageBitmap[]) => {
             const imageBitmaps = imgs as ImageBitmap[]; // we will always get an ImageBitmap array in WebGPU
@@ -61,7 +91,8 @@ WebGPUEngine.prototype.createCubeTexture = function (rootUrl: string, scene: Nul
             if (onLoad) {
                 onLoad();
             }
-        }, !!useSRGBBuffer
+        },
+        !!useSRGBBuffer
     );
 };
 

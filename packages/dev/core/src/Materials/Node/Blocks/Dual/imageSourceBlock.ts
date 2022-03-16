@@ -1,18 +1,18 @@
-import { NodeMaterialBlock } from '../../nodeMaterialBlock';
-import { NodeMaterialBlockConnectionPointTypes } from '../../Enums/nodeMaterialBlockConnectionPointTypes';
-import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
-import { NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection } from '../../nodeMaterialBlockConnectionPoint';
-import { NodeMaterialBlockTargets } from '../../Enums/nodeMaterialBlockTargets';
-import { RegisterClass } from '../../../../Misc/typeStore';
-import { Nullable } from '../../../../types';
-import { Texture } from '../../../Textures/texture';
-import { Constants } from '../../../../Engines/constants';
-import { Effect } from '../../../effect';
-import { NodeMaterial } from '../../nodeMaterial';
-import { Mesh } from '../../../../Meshes/mesh';
-import { Scene } from '../../../../scene';
-import { NodeMaterialConnectionPointCustomObject } from '../../nodeMaterialConnectionPointCustomObject';
-import { EngineStore } from '../../../../Engines/engineStore';
+import { NodeMaterialBlock } from "../../nodeMaterialBlock";
+import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
+import { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
+import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
+import { RegisterClass } from "../../../../Misc/typeStore";
+import { Nullable } from "../../../../types";
+import { Texture } from "../../../Textures/texture";
+import { Constants } from "../../../../Engines/constants";
+import { Effect } from "../../../effect";
+import { NodeMaterial } from "../../nodeMaterial";
+import { Mesh } from "../../../../Meshes/mesh";
+import { Scene } from "../../../../scene";
+import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
+import { EngineStore } from "../../../../Engines/engineStore";
 /**
  * Block used to provide an image for a TextureBlock
  */
@@ -51,7 +51,7 @@ export class ImageSourceBlock extends NodeMaterialBlock {
     /**
      * Gets the sampler name associated with this image source
      */
-     public get samplerName(): string {
+    public get samplerName(): string {
         return this._samplerName;
     }
 
@@ -62,8 +62,12 @@ export class ImageSourceBlock extends NodeMaterialBlock {
     public constructor(name: string) {
         super(name, NodeMaterialBlockTargets.VertexAndFragment);
 
-        this.registerOutput("source", NodeMaterialBlockConnectionPointTypes.Object, NodeMaterialBlockTargets.VertexAndFragment,
-            new NodeMaterialConnectionPointCustomObject("source", this, NodeMaterialConnectionPointDirection.Output, ImageSourceBlock, "ImageSourceBlock"));
+        this.registerOutput(
+            "source",
+            NodeMaterialBlockConnectionPointTypes.Object,
+            NodeMaterialBlockTargets.VertexAndFragment,
+            new NodeMaterialConnectionPointCustomObject("source", this, NodeMaterialConnectionPointDirection.Output, ImageSourceBlock, "ImageSourceBlock")
+        );
     }
 
     public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
@@ -137,7 +141,7 @@ export class ImageSourceBlock extends NodeMaterialBlock {
     }
 
     public serialize(): any {
-        let serializationObject = super.serialize();
+        const serializationObject = super.serialize();
 
         if (this.texture && !this.texture.isRenderTarget && this.texture.getClassName() !== "VideoTexture") {
             serializationObject.texture = this.texture.serialize();

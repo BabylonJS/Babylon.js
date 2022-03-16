@@ -1,20 +1,20 @@
-import { NodeMaterialBlock } from '../../nodeMaterialBlock';
-import { NodeMaterialBlockConnectionPointTypes } from '../../Enums/nodeMaterialBlockConnectionPointTypes';
-import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
-import { NodeMaterialSystemValues } from '../../Enums/nodeMaterialSystemValues';
-import { NodeMaterialBlockTargets } from '../../Enums/nodeMaterialBlockTargets';
-import { AbstractMesh } from '../../../../Meshes/abstractMesh';
-import { Mesh } from '../../../../Meshes/mesh';
-import { Effect } from '../../../effect';
-import { MaterialHelper } from '../../../materialHelper';
-import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPoint';
-import { NodeMaterial, NodeMaterialDefines } from '../../nodeMaterial';
-import { InputBlock } from '../Input/inputBlock';
-import { RegisterClass } from '../../../../Misc/typeStore';
+import { NodeMaterialBlock } from "../../nodeMaterialBlock";
+import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
+import { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { NodeMaterialSystemValues } from "../../Enums/nodeMaterialSystemValues";
+import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
+import { AbstractMesh } from "../../../../Meshes/abstractMesh";
+import { Mesh } from "../../../../Meshes/mesh";
+import { Effect } from "../../../effect";
+import { MaterialHelper } from "../../../materialHelper";
+import { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
+import { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
+import { InputBlock } from "../Input/inputBlock";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 import "../../../../Shaders/ShadersInclude/bonesDeclaration";
 import "../../../../Shaders/ShadersInclude/bonesVertex";
-import { EffectFallbacks } from '../../../effectFallbacks';
+import { EffectFallbacks } from "../../../effectFallbacks";
 
 /**
  * Block used to add support for vertex skinning (bones)
@@ -163,31 +163,31 @@ export class BonesBlock extends NodeMaterialBlock {
         state.samplers.push("boneSampler");
 
         // Emit code
-        let comments = `//${this.name}`;
+        const comments = `//${this.name}`;
         state._emitFunctionFromInclude("bonesDeclaration", comments, {
             removeAttributes: true,
             removeUniforms: false,
             removeVaryings: true,
-            removeIfDef: false
+            removeIfDef: false,
         });
 
-        let influenceVariablename = state._getFreeVariableName("influence");
+        const influenceVariablename = state._getFreeVariableName("influence");
 
         state.compilationString += state._emitCodeFromInclude("bonesVertex", comments, {
             replaceStrings: [
                 {
                     search: /finalWorld=finalWorld\*influence;/,
-                    replace: ""
+                    replace: "",
                 },
                 {
                     search: /influence/gm,
-                    replace: influenceVariablename
-                }
-            ]
+                    replace: influenceVariablename,
+                },
+            ],
         });
 
-        let output = this._outputs[0];
-        let worldInput = this.world;
+        const output = this._outputs[0];
+        const worldInput = this.world;
 
         state.compilationString += `#if NUM_BONE_INFLUENCERS>0\r\n`;
         state.compilationString += this._declareOutput(output, state) + ` = ${worldInput.associatedVariableName} * ${influenceVariablename};\r\n`;

@@ -152,8 +152,7 @@ export class CloudPoint {
 
         if (isSphere) {
             return target.getBoundingInfo().boundingSphere.intersectsPoint(this.position.add(this._pcs.mesh.position));
-        }
-        else {
+        } else {
             let maxX = 0;
             let minX = 0;
             let maxY = 0;
@@ -167,23 +166,23 @@ export class CloudPoint {
             maxZ = target.getBoundingInfo().boundingBox.maximumWorld.z;
             minZ = target.getBoundingInfo().boundingBox.minimumWorld.z;
 
-            let x = this.position.x + this._pcs.mesh.position.x;
-            let y = this.position.y + this._pcs.mesh.position.y;
-            let z = this.position.z + this._pcs.mesh.position.z;
+            const x = this.position.x + this._pcs.mesh.position.x;
+            const y = this.position.y + this._pcs.mesh.position.y;
+            const z = this.position.z + this._pcs.mesh.position.z;
             return minX <= x && x <= maxX && minY <= y && y <= maxY && minZ <= z && z <= maxZ;
         }
     }
 
     /**
      * get the rotation matrix of the particle
+     * @param m
      * @hidden
      */
     public getRotationMatrix(m: Matrix) {
         let quaternion: Quaternion;
         if (this.rotationQuaternion) {
             quaternion = this.rotationQuaternion;
-        }
-        else {
+        } else {
             quaternion = TmpVectors.Quaternion[0];
             const rotation = this.rotation;
             Quaternion.RotationYawPitchRollToRef(rotation.y, rotation.x, rotation.z, quaternion);
@@ -247,6 +246,8 @@ export class PointsGroup {
     /**
      * Creates a points group object. This is an internal reference to produce particles for the PCS.
      * PCS internal tool, don't use it manually.
+     * @param id
+     * @param posFunction
      * @hidden
      */
     constructor(id: number, posFunction: Nullable<(particle: CloudPoint, i?: number, s?: number) => void>) {

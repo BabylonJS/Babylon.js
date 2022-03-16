@@ -1,18 +1,18 @@
-import { NodeMaterialBlockConnectionPointTypes } from './Enums/nodeMaterialBlockConnectionPointTypes';
-import { NodeMaterialBuildState } from './nodeMaterialBuildState';
-import { Nullable } from '../../types';
-import { NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection } from './nodeMaterialBlockConnectionPoint';
-import { NodeMaterialBlockTargets } from './Enums/nodeMaterialBlockTargets';
-import { Effect } from '../effect';
-import { AbstractMesh } from '../../Meshes/abstractMesh';
-import { Mesh } from '../../Meshes/mesh';
-import { SubMesh } from '../../Meshes/subMesh';
-import { NodeMaterial, NodeMaterialDefines } from './nodeMaterial';
-import { InputBlock } from './Blocks/Input/inputBlock';
-import { UniqueIdGenerator } from '../../Misc/uniqueIdGenerator';
-import { Scene } from '../../scene';
-import { GetClass } from '../../Misc/typeStore';
-import { EffectFallbacks } from '../effectFallbacks';
+import { NodeMaterialBlockConnectionPointTypes } from "./Enums/nodeMaterialBlockConnectionPointTypes";
+import { NodeMaterialBuildState } from "./nodeMaterialBuildState";
+import { Nullable } from "../../types";
+import { NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection } from "./nodeMaterialBlockConnectionPoint";
+import { NodeMaterialBlockTargets } from "./Enums/nodeMaterialBlockTargets";
+import { Effect } from "../effect";
+import { AbstractMesh } from "../../Meshes/abstractMesh";
+import { Mesh } from "../../Meshes/mesh";
+import { SubMesh } from "../../Meshes/subMesh";
+import { NodeMaterial, NodeMaterialDefines } from "./nodeMaterial";
+import { InputBlock } from "./Blocks/Input/inputBlock";
+import { UniqueIdGenerator } from "../../Misc/uniqueIdGenerator";
+import { Scene } from "../../scene";
+import { GetClass } from "../../Misc/typeStore";
+import { EffectFallbacks } from "../effectFallbacks";
 
 /**
  * Defines a block that can be used inside a node based material
@@ -135,7 +135,7 @@ export class NodeMaterialBlock {
      * @returns the input or null if not found
      */
     public getInputByName(name: string) {
-        let filter = this._inputs.filter((e) => e.name === name);
+        const filter = this._inputs.filter((e) => e.name === name);
 
         if (filter.length) {
             return filter[0];
@@ -150,7 +150,7 @@ export class NodeMaterialBlock {
      * @returns the output or null if not found
      */
     public getOutputByName(name: string) {
-        let filter = this._outputs.filter((e) => e.name === name);
+        const filter = this._outputs.filter((e) => e.name === name);
 
         if (filter.length) {
             return filter[0];
@@ -173,7 +173,6 @@ export class NodeMaterialBlock {
      * @param isInput defines a boolean indicating that this block is an input (e.g. it sends data to the shader). Default is false
      */
     public constructor(name: string, target = NodeMaterialBlockTargets.Vertex, isFinalMerger = false, isInput = false) {
-
         this._target = target;
         this._originalTargetIsNeutral = target === NodeMaterialBlockTargets.Neutral;
         this._isFinalMerger = isFinalMerger;
@@ -206,7 +205,7 @@ export class NodeMaterialBlock {
     }
 
     protected _writeVariable(currentPoint: NodeMaterialConnectionPoint): string {
-        let connectionPoint = currentPoint.connectedPoint;
+        const connectionPoint = currentPoint.connectedPoint;
 
         if (connectionPoint) {
             return `${currentPoint.associatedVariableName}`;
@@ -241,7 +240,13 @@ export class NodeMaterialBlock {
      * @param point an already created connection point. If not provided, create a new one
      * @returns the current block
      */
-    public registerInput(name: string, type: NodeMaterialBlockConnectionPointTypes, isOptional: boolean = false, target?: NodeMaterialBlockTargets, point?: NodeMaterialConnectionPoint) {
+    public registerInput(
+        name: string,
+        type: NodeMaterialBlockConnectionPointTypes,
+        isOptional: boolean = false,
+        target?: NodeMaterialBlockTargets,
+        point?: NodeMaterialConnectionPoint
+    ) {
         point = point ?? new NodeMaterialConnectionPoint(name, this, NodeMaterialConnectionPointDirection.Input);
         point.type = type;
         point.isOptional = isOptional;
@@ -280,9 +285,9 @@ export class NodeMaterialBlock {
      * @returns the first available input or null
      */
     public getFirstAvailableInput(forOutput: Nullable<NodeMaterialConnectionPoint> = null) {
-        for (var input of this._inputs) {
+        for (const input of this._inputs) {
             if (!input.connectedPoint) {
-                if (!forOutput || (forOutput.type === input.type) || (input.type === NodeMaterialBlockConnectionPointTypes.AutoDetect)) {
+                if (!forOutput || forOutput.type === input.type || input.type === NodeMaterialBlockConnectionPointTypes.AutoDetect) {
                     return input;
                 }
             }
@@ -297,7 +302,7 @@ export class NodeMaterialBlock {
      * @returns the first available input or null
      */
     public getFirstAvailableOutput(forBlock: Nullable<NodeMaterialBlock> = null) {
-        for (var output of this._outputs) {
+        for (const output of this._outputs) {
             if (!forBlock || !forBlock.target || forBlock.target === NodeMaterialBlockTargets.Neutral || (forBlock.target & output.target) !== 0) {
                 return output;
             }
@@ -312,7 +317,7 @@ export class NodeMaterialBlock {
      * @returns the next output in the list or null
      */
     public getSiblingOutput(current: NodeMaterialConnectionPoint) {
-        let index = this._outputs.indexOf(current);
+        const index = this._outputs.indexOf(current);
 
         if (index === -1 || index >= this._outputs.length) {
             return null;
@@ -327,12 +332,12 @@ export class NodeMaterialBlock {
      * @returns true if block is a descendant
      */
     public isAnAncestorOf(block: NodeMaterialBlock): boolean {
-        for (var output of this._outputs) {
+        for (const output of this._outputs) {
             if (!output.hasEndpoints) {
                 continue;
             }
 
-            for (var endpoint of output.endpoints) {
+            for (const endpoint of output.endpoints) {
                 if (endpoint.ownerBlock === block) {
                     return true;
                 }
@@ -349,13 +354,19 @@ export class NodeMaterialBlock {
      * Connect current block with another block
      * @param other defines the block to connect with
      * @param options define the various options to help pick the right connections
+     * @param options.input
+     * @param options.output
+     * @param options.outputSwizzle
      * @returns the current block
      */
-    public connectTo(other: NodeMaterialBlock, options?: {
-        input?: string,
-        output?: string,
-        outputSwizzle?: string
-    }) {
+    public connectTo(
+        other: NodeMaterialBlock,
+        options?: {
+            input?: string;
+            output?: string;
+            outputSwizzle?: string;
+        }
+    ) {
         if (this._outputs.length === 0) {
             return;
         }
@@ -364,7 +375,7 @@ export class NodeMaterialBlock {
 
         let notFound = true;
         while (notFound) {
-            let input = options && options.input ? other.getInputByName(options.input) : other.getFirstAvailableInput(output);
+            const input = options && options.input ? other.getInputByName(options.input) : other.getFirstAvailableInput(output);
 
             if (output && input && output.canConnectTo(input)) {
                 output.connectTo(input);
@@ -410,8 +421,7 @@ export class NodeMaterialBlock {
      * @param defines defines the material defines to update
      * @param useInstances specifies that instances should be used
      */
-    public initializeDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances: boolean = false) {
-    }
+    public initializeDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances: boolean = false) {}
 
     /**
      * Update defines for shader compilation
@@ -491,18 +501,21 @@ export class NodeMaterialBlock {
     private _processBuild(block: NodeMaterialBlock, state: NodeMaterialBuildState, input: NodeMaterialConnectionPoint, activeBlocks: NodeMaterialBlock[]) {
         block.build(state, activeBlocks);
 
-        const localBlockIsFragment = (state._vertexState != null);
+        const localBlockIsFragment = state._vertexState != null;
         const otherBlockWasGeneratedInVertexShader = block._buildTarget === NodeMaterialBlockTargets.Vertex && block.target !== NodeMaterialBlockTargets.VertexAndFragment;
 
-        if (localBlockIsFragment && (
-            ((block.target & block._buildTarget) === 0) ||
-            ((block.target & input.target) === 0) ||
-            (this.target !== NodeMaterialBlockTargets.VertexAndFragment && otherBlockWasGeneratedInVertexShader)
-        )) { // context switch! We need a varying
-            if ((!block.isInput && state.target !== block._buildTarget) // block was already emitted by vertex shader
-                || (block.isInput && (block as InputBlock).isAttribute && !(block as InputBlock)._noContextSwitch) // block is an attribute
+        if (
+            localBlockIsFragment &&
+            ((block.target & block._buildTarget) === 0 ||
+                (block.target & input.target) === 0 ||
+                (this.target !== NodeMaterialBlockTargets.VertexAndFragment && otherBlockWasGeneratedInVertexShader))
+        ) {
+            // context switch! We need a varying
+            if (
+                (!block.isInput && state.target !== block._buildTarget) || // block was already emitted by vertex shader
+                (block.isInput && (block as InputBlock).isAttribute && !(block as InputBlock)._noContextSwitch) // block is an attribute
             ) {
-                let connectedPoint = input.connectedPoint!;
+                const connectedPoint = input.connectedPoint!;
                 if (state._vertexState._emitVaryingFromString("v_" + connectedPoint.associatedVariableName, state._getGLType(connectedPoint.type))) {
                     state._vertexState.compilationString += `${"v_" + connectedPoint.associatedVariableName} = ${connectedPoint.associatedVariableName};\r\n`;
                 }
@@ -513,12 +526,12 @@ export class NodeMaterialBlock {
     }
 
     /**
-    * Validates the new name for the block node.
-    * @param newName the new name to be given to the node.
-    * @returns false if the name is a reserve word, else true.
-    */
+     * Validates the new name for the block node.
+     * @param newName the new name to be given to the node.
+     * @returns false if the name is a reserve word, else true.
+     */
     public validateBlockName(newName: string) {
-        let reservedNames: Array<string> = [
+        const reservedNames: Array<string> = [
             "position",
             "normal",
             "tangent",
@@ -538,8 +551,9 @@ export class NodeMaterialBlock {
             "world2",
             "world3",
             "particle_color",
-            "particle_texturemask"];
-        for (var reservedName of reservedNames) {
+            "particle_texturemask",
+        ];
+        for (const reservedName of reservedNames) {
             if (newName === reservedName) {
                 return false;
             }
@@ -568,9 +582,10 @@ export class NodeMaterialBlock {
         }
 
         // Check if "parent" blocks are compiled
-        for (var input of this._inputs) {
+        for (const input of this._inputs) {
             if (!input.connectedPoint) {
-                if (!input.isOptional) { // Emit a warning
+                if (!input.isOptional) {
+                    // Emit a warning
                     state.sharedData.checks.notConnectedNonOptionalInputs.push(input);
                 }
                 continue;
@@ -586,7 +601,7 @@ export class NodeMaterialBlock {
                 }
             }
 
-            let block = input.connectedPoint.ownerBlock;
+            const block = input.connectedPoint.ownerBlock;
             if (block && block !== this) {
                 this._processBuild(block, state, input, activeBlocks);
             }
@@ -628,8 +643,8 @@ export class NodeMaterialBlock {
                 continue;
             }
 
-            for (var endpoint of output.endpoints) {
-                let block = endpoint.ownerBlock;
+            for (const endpoint of output.endpoints) {
+                const block = endpoint.ownerBlock;
 
                 if (block && (block.target & state.target) !== 0 && activeBlocks.indexOf(block) !== -1) {
                     this._processBuild(block, state, endpoint, activeBlocks);
@@ -648,18 +663,22 @@ export class NodeMaterialBlock {
     }
 
     protected _dumpPropertiesCode() {
-        let variableName = this._codeVariableName;
+        const variableName = this._codeVariableName;
         return `${variableName}.visibleInInspector = ${this.visibleInInspector};\r\n${variableName}.visibleOnFrame = ${this.visibleOnFrame};\r\n${variableName}.target = ${this.target};\r\n`;
     }
 
-    /** @hidden */
+    /**
+     * @param uniqueNames
+     * @param alreadyDumped
+     * @hidden
+     */
     public _dumpCode(uniqueNames: string[], alreadyDumped: NodeMaterialBlock[]) {
         alreadyDumped.push(this);
 
         let codeString: string;
 
         // Get unique name
-        let nameAsVariableName = this.name.replace(/[^A-Za-z_]+/g, "");
+        const nameAsVariableName = this.name.replace(/[^A-Za-z_]+/g, "");
         this._codeVariableName = nameAsVariableName || `${this.getClassName()}_${this.uniqueId}`;
 
         if (uniqueNames.indexOf(this._codeVariableName) !== -1) {
@@ -667,8 +686,7 @@ export class NodeMaterialBlock {
             do {
                 index++;
                 this._codeVariableName = nameAsVariableName + index;
-            }
-            while (uniqueNames.indexOf(this._codeVariableName) !== -1);
+            } while (uniqueNames.indexOf(this._codeVariableName) !== -1);
         }
 
         uniqueNames.push(this._codeVariableName);
@@ -684,12 +702,12 @@ export class NodeMaterialBlock {
         codeString += this._dumpPropertiesCode();
 
         // Inputs
-        for (var input of this.inputs) {
+        for (const input of this.inputs) {
             if (!input.isConnected) {
                 continue;
             }
 
-            var connectedOutput = input.connectedPoint!;
+            const connectedOutput = input.connectedPoint!;
             var connectedBlock = connectedOutput.ownerBlock;
 
             if (alreadyDumped.indexOf(connectedBlock) === -1) {
@@ -698,12 +716,12 @@ export class NodeMaterialBlock {
         }
 
         // Outputs
-        for (var output of this.outputs) {
+        for (const output of this.outputs) {
             if (!output.hasEndpoints) {
                 continue;
             }
 
-            for (var endpoint of output.endpoints) {
+            for (const endpoint of output.endpoints) {
                 var connectedBlock = endpoint.ownerBlock;
                 if (connectedBlock && alreadyDumped.indexOf(connectedBlock) === -1) {
                     codeString += connectedBlock._dumpCode(uniqueNames, alreadyDumped);
@@ -714,7 +732,10 @@ export class NodeMaterialBlock {
         return codeString;
     }
 
-    /** @hidden */
+    /**
+     * @param alreadyDumped
+     * @hidden
+     */
     public _dumpCodeForOutputConnections(alreadyDumped: NodeMaterialBlock[]) {
         let codeString = "";
 
@@ -724,16 +745,18 @@ export class NodeMaterialBlock {
 
         alreadyDumped.push(this);
 
-        for (var input of this.inputs) {
+        for (const input of this.inputs) {
             if (!input.isConnected) {
                 continue;
             }
 
-            var connectedOutput = input.connectedPoint!;
-            var connectedBlock = connectedOutput.ownerBlock;
+            const connectedOutput = input.connectedPoint!;
+            const connectedBlock = connectedOutput.ownerBlock;
 
             codeString += connectedBlock._dumpCodeForOutputConnections(alreadyDumped);
-            codeString += `${connectedBlock._codeVariableName}.${connectedBlock._outputRename(connectedOutput.name)}.connectTo(${this._codeVariableName}.${this._inputRename(input.name)});\r\n`;
+            codeString += `${connectedBlock._codeVariableName}.${connectedBlock._outputRename(connectedOutput.name)}.connectTo(${this._codeVariableName}.${this._inputRename(
+                input.name
+            )});\r\n`;
         }
 
         return codeString;
@@ -746,11 +769,11 @@ export class NodeMaterialBlock {
      * @returns a copy of the current block
      */
     public clone(scene: Scene, rootUrl: string = "") {
-        let serializationObject = this.serialize();
+        const serializationObject = this.serialize();
 
-        let blockType = GetClass(serializationObject.customType);
+        const blockType = GetClass(serializationObject.customType);
         if (blockType) {
-            let block: NodeMaterialBlock = new blockType();
+            const block: NodeMaterialBlock = new blockType();
             block._deserialize(serializationObject, scene, rootUrl);
 
             return block;
@@ -764,7 +787,7 @@ export class NodeMaterialBlock {
      * @returns the serialized block object
      */
     public serialize(): any {
-        let serializationObject: any = {};
+        const serializationObject: any = {};
         serializationObject.customType = "BABYLON." + this.getClassName();
         serializationObject.id = this.uniqueId;
         serializationObject.name = this.name;
@@ -776,18 +799,23 @@ export class NodeMaterialBlock {
         serializationObject.inputs = [];
         serializationObject.outputs = [];
 
-        for (var input of this.inputs) {
+        for (const input of this.inputs) {
             serializationObject.inputs.push(input.serialize());
         }
 
-        for (var output of this.outputs) {
+        for (const output of this.outputs) {
             serializationObject.outputs.push(output.serialize(false));
         }
 
         return serializationObject;
     }
 
-    /** @hidden */
+    /**
+     * @param serializationObject
+     * @param scene
+     * @param rootUrl
+     * @hidden
+     */
     public _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
         this.name = serializationObject.name;
         this.comments = serializationObject.comments;
@@ -828,11 +856,11 @@ export class NodeMaterialBlock {
      * Release resources
      */
     public dispose() {
-        for (var input of this.inputs) {
+        for (const input of this.inputs) {
             input.dispose();
         }
 
-        for (var output of this.outputs) {
+        for (const output of this.outputs) {
             output.dispose();
         }
     }

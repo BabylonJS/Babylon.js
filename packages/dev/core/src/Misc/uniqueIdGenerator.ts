@@ -9,7 +9,7 @@ export class UniqueIdGenerator {
      * Gets an unique (relatively to the current scene) Id
      */
     public static get UniqueId() {
-        var result = this._UniqueIdCounter;
+        const result = this._UniqueIdCounter;
         this._UniqueIdCounter++;
         return result;
     }

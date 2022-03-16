@@ -5,5 +5,5 @@ export enum AnimatedInputBlockTypes {
     /** No animation */
     None,
     /** Time based animation. Will only work for floats */
-    Time
+    Time,
 }

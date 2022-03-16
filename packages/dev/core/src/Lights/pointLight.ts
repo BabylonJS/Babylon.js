@@ -18,7 +18,6 @@ Node.AddNodeConstructor("Light_Type_0", (name, scene) => {
  * Documentation: https://doc.babylonjs.com/babylon101/lights
  */
 export class PointLight extends ShadowLight {
-
     private _shadowAngle = Math.PI / 2;
     /**
      * Getter: In case of direction provided, the shadow will not use a cube texture but simulate a spot shadow as a fallback
@@ -53,7 +52,7 @@ export class PointLight extends ShadowLight {
      * In case of direction provided, the shadow will not use a cube texture but simulate a spot shadow as a fallback
      */
     public set direction(value: Vector3) {
-        var previousNeedCube = this.needCube();
+        const previousNeedCube = this.needCube();
         this._direction = value;
         if (this.needCube() !== previousNeedCube && this._shadowGenerator) {
             this._shadowGenerator.recreateShadowMap();
@@ -110,8 +109,7 @@ export class PointLight extends ShadowLight {
     public getShadowDirection(faceIndex?: number): Vector3 {
         if (this.direction) {
             return super.getShadowDirection(faceIndex);
-        }
-        else {
+        } else {
             switch (faceIndex) {
                 case 0:
                     return new Vector3(1.0, 0.0, 0.0);
@@ -137,9 +135,12 @@ export class PointLight extends ShadowLight {
      * - aspect ratio : 1.0
      * - z-near and far equal to the active camera minZ and maxZ.
      * Returns the PointLight.
+     * @param matrix
+     * @param viewMatrix
+     * @param renderList
      */
     protected _setDefaultShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void {
-        var activeCamera = this.getScene().activeCamera;
+        const activeCamera = this.getScene().activeCamera;
 
         if (!activeCamera) {
             return;
@@ -150,7 +151,17 @@ export class PointLight extends ShadowLight {
 
         const useReverseDepthBuffer = this.getScene().getEngine().useReverseDepthBuffer;
 
-        Matrix.PerspectiveFovLHToRef(this.shadowAngle, 1.0, useReverseDepthBuffer ? maxZ : minZ, useReverseDepthBuffer ? minZ : maxZ, matrix, true, this._scene.getEngine().isNDCHalfZRange, undefined, useReverseDepthBuffer);
+        Matrix.PerspectiveFovLHToRef(
+            this.shadowAngle,
+            1.0,
+            useReverseDepthBuffer ? maxZ : minZ,
+            useReverseDepthBuffer ? minZ : maxZ,
+            matrix,
+            true,
+            this._scene.getEngine().isNDCHalfZRange,
+            undefined,
+            useReverseDepthBuffer
+        );
     }
 
     protected _buildUniformLayout(): void {
@@ -171,32 +182,19 @@ export class PointLight extends ShadowLight {
      */
     public transferToEffect(effect: Effect, lightIndex: string): PointLight {
         if (this.computeTransformedInformation()) {
-            this._uniformBuffer.updateFloat4("vLightData",
-                this.transformedPosition.x,
-                this.transformedPosition.y,
-                this.transformedPosition.z,
-                0.0,
-                lightIndex);
-        }
-        else {
+            this._uniformBuffer.updateFloat4("vLightData", this.transformedPosition.x, this.transformedPosition.y, this.transformedPosition.z, 0.0, lightIndex);
+        } else {
             this._uniformBuffer.updateFloat4("vLightData", this.position.x, this.position.y, this.position.z, 0, lightIndex);
         }
 
-        this._uniformBuffer.updateFloat4("vLightFalloff",
-            this.range,
-            this._inverseSquaredRange,
-            0,
-            0,
-            lightIndex
-        );
+        this._uniformBuffer.updateFloat4("vLightFalloff", this.range, this._inverseSquaredRange, 0, 0, lightIndex);
         return this;
     }
 
     public transferToNodeMaterialEffect(effect: Effect, lightDataUniformName: string) {
         if (this.computeTransformedInformation()) {
             effect.setFloat3(lightDataUniformName, this.transformedPosition.x, this.transformedPosition.y, this.transformedPosition.z);
-        }
-        else {
+        } else {
             effect.setFloat3(lightDataUniformName, this.position.x, this.position.y, this.position.z);
         }
 

@@ -187,20 +187,19 @@ export class UtilityLayerRenderer implements IDisposable {
                 }
                 this.utilityLayerScene.pointerX = originalScene.pointerX;
                 this.utilityLayerScene.pointerY = originalScene.pointerY;
-                let pointerEvent = <IPointerEvent>prePointerInfo.event;
+                const pointerEvent = <IPointerEvent>prePointerInfo.event;
                 if (originalScene!.isPointerCaptured(pointerEvent.pointerId)) {
                     this._pointerCaptures[pointerEvent.pointerId] = false;
                     return;
                 }
 
-                let getNearPickDataForScene = (scene: Scene) => {
+                const getNearPickDataForScene = (scene: Scene) => {
                     let scenePick = null;
 
                     if (prePointerInfo.nearInteractionPickingInfo) {
                         if (prePointerInfo.nearInteractionPickingInfo.pickedMesh!.getScene() == scene) {
                             scenePick = prePointerInfo.nearInteractionPickingInfo;
-                        }
-                        else {
+                        } else {
                             scenePick = new PickingInfo();
                         }
                     } else {
@@ -216,9 +215,7 @@ export class UtilityLayerRenderer implements IDisposable {
                             scene._activeCamera = this._renderCamera;
                             prePointerInfo.ray = null;
                         }
-                        scenePick = prePointerInfo.ray
-                            ? scene.pickWithRay(prePointerInfo.ray)
-                            : scene.pick(originalScene.pointerX, originalScene.pointerY);
+                        scenePick = prePointerInfo.ray ? scene.pickWithRay(prePointerInfo.ray) : scene.pick(originalScene.pointerX, originalScene.pointerY);
                         if (previousActiveCamera) {
                             scene._activeCamera = previousActiveCamera;
                         }
@@ -227,7 +224,7 @@ export class UtilityLayerRenderer implements IDisposable {
                     return scenePick;
                 };
 
-                let utilityScenePick = getNearPickDataForScene(this.utilityLayerScene);
+                const utilityScenePick = getNearPickDataForScene(this.utilityLayerScene);
 
                 if (!prePointerInfo.ray && utilityScenePick) {
                     prePointerInfo.ray = utilityScenePick.ray;
@@ -262,8 +259,8 @@ export class UtilityLayerRenderer implements IDisposable {
                         prePointerInfo.skipOnPointerObservable = true;
                     }
                 } else {
-                    let originalScenePick = getNearPickDataForScene(originalScene);
-                    let pointerEvent = <IPointerEvent>prePointerInfo.event;
+                    const originalScenePick = getNearPickDataForScene(originalScene);
+                    const pointerEvent = <IPointerEvent>prePointerInfo.event;
 
                     // If the layer can be occluded by the original scene, only fire pointer events to the first layer that hit they ray
                     if (originalScenePick && utilityScenePick) {
@@ -355,8 +352,8 @@ export class UtilityLayerRenderer implements IDisposable {
         this._updateCamera();
         if (this.utilityLayerScene.activeCamera) {
             // Set the camera's scene to utility layers scene
-            var oldScene = this.utilityLayerScene.activeCamera.getScene();
-            var camera = this.utilityLayerScene.activeCamera;
+            const oldScene = this.utilityLayerScene.activeCamera.getScene();
+            const camera = this.utilityLayerScene.activeCamera;
             camera._scene = this.utilityLayerScene;
             if (camera.leftCamera) {
                 camera.leftCamera._scene = this.utilityLayerScene;

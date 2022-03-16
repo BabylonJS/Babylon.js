@@ -38,7 +38,7 @@ export enum WebXRTrackingState {
     /**
      * Transformation tracking works normally
      */
-    TRACKING
+    TRACKING,
 }
 
 /**

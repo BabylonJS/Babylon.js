@@ -27,6 +27,7 @@ ShaderStore.##SHADERSTORE_PLACEHOLDER##[name] = shader;
 
 /**
  * Get the shaders name from their path.
+ * @param filename
  */
 function getShaderName(filename: string) {
     const parts = filename.split(".");
@@ -39,6 +40,7 @@ function getShaderName(filename: string) {
 
 /**
  * Get the shaders included in the current one to generate to proper imports.
+ * @param sourceCode
  */
 function getIncludes(sourceCode: string) {
     const regex = /#include<(.+)>(\((.*)\))*(\[(.*)\])*/g;
@@ -73,6 +75,9 @@ function getIncludes(sourceCode: string) {
 
 /**
  * Generate a ts file per shader file.
+ * @param filePath
+ * @param basePackageName
+ * @param isCore
  */
 export function buildShader(filePath: string, basePackageName: string = "core", isCore?: boolean | string) {
     const isVerbose = checkArgs("--verbose", true);

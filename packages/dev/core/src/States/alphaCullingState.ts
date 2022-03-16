@@ -39,12 +39,7 @@ export class AlphaState {
     }
 
     public setAlphaBlendConstants(r: number, g: number, b: number, a: number): void {
-        if (
-            this._blendConstants[0] === r &&
-            this._blendConstants[1] === g &&
-            this._blendConstants[2] === b &&
-            this._blendConstants[3] === a
-        ) {
+        if (this._blendConstants[0] === r && this._blendConstants[1] === g && this._blendConstants[2] === b && this._blendConstants[3] === a) {
             return;
         }
 
@@ -75,10 +70,7 @@ export class AlphaState {
     }
 
     public setAlphaEquationParameters(rgb: number, alpha: number): void {
-        if (
-            this._blendEquationParameters[0] === rgb &&
-            this._blendEquationParameters[1] === alpha
-        ) {
+        if (this._blendEquationParameters[0] === rgb && this._blendEquationParameters[1] === alpha) {
             return;
         }
 
@@ -110,7 +102,6 @@ export class AlphaState {
     }
 
     public apply(gl: WebGLRenderingContext) {
-
         if (!this.isDirty) {
             return;
         }
@@ -128,7 +119,12 @@ export class AlphaState {
 
         // Alpha function
         if (this._isBlendFunctionParametersDirty) {
-            gl.blendFuncSeparate(<number>this._blendFunctionParameters[0], <number>this._blendFunctionParameters[1], <number>this._blendFunctionParameters[2], <number>this._blendFunctionParameters[3]);
+            gl.blendFuncSeparate(
+                <number>this._blendFunctionParameters[0],
+                <number>this._blendFunctionParameters[1],
+                <number>this._blendFunctionParameters[2],
+                <number>this._blendFunctionParameters[3]
+            );
             this._isBlendFunctionParametersDirty = false;
         }
 

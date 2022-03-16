@@ -94,7 +94,7 @@ export class WebXRMicrosoftMixedRealityController extends WebXRAbstractMotionCon
         }
 
         const device = "default";
-        let path = WebXRMicrosoftMixedRealityController.MODEL_BASE_URL + device + "/";
+        const path = WebXRMicrosoftMixedRealityController.MODEL_BASE_URL + device + "/";
         return {
             filename,
             path,
@@ -127,7 +127,7 @@ export class WebXRMicrosoftMixedRealityController extends WebXRAbstractMotionCon
                     return;
                 }
 
-                var buttonMesh = this._getChildByName(this.rootMesh, buttonMeshName);
+                const buttonMesh = this._getChildByName(this.rootMesh, buttonMeshName);
                 if (!buttonMesh) {
                     Logger.Warn("Missing button mesh with name: " + buttonMeshName);
                     return;
@@ -168,7 +168,7 @@ export class WebXRMicrosoftMixedRealityController extends WebXRAbstractMotionCon
                 }
                 const axisMap = (<any>this._mapping.axes)[id][axis];
 
-                var axisMesh = this._getChildByName(this.rootMesh, axisMap.rootNodeName);
+                const axisMesh = this._getChildByName(this.rootMesh, axisMap.rootNodeName);
                 if (!axisMesh) {
                     Logger.Warn("Missing axis mesh with name: " + axisMap.rootNodeName);
                     return;
@@ -203,7 +203,7 @@ export class WebXRMicrosoftMixedRealityController extends WebXRAbstractMotionCon
         let rootMesh;
         // Find the root node in the loaded glTF scene, and attach it as a child of 'parentMesh'
         for (let i = 0; i < meshes.length; i++) {
-            let mesh = meshes[i];
+            const mesh = meshes[i];
 
             mesh.isPickable = false;
 

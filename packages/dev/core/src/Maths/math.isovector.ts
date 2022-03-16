@@ -17,15 +17,16 @@ export class _IsoVector {
         /** defines the first coordinate */
         public x: number = 0,
         /** defines the second coordinate */
-        public y: number = 0) {
-            if (x !== Math.floor(x)) {
-                x === Math.floor(x);
-                Logger.Warn("x is not an integer, floor(x) used");
-            }
-            if (y !== Math.floor(y)) {
-                y === Math.floor(y);
-                Logger.Warn("y is not an integer, floor(y) used");
-            }
+        public y: number = 0
+    ) {
+        if (x !== Math.floor(x)) {
+            x === Math.floor(x);
+            Logger.Warn("x is not an integer, floor(x) used");
+        }
+        if (y !== Math.floor(y)) {
+            y === Math.floor(y);
+            Logger.Warn("y is not an integer, floor(y) used");
+        }
     }
 
     // Operators
@@ -44,8 +45,9 @@ export class _IsoVector {
      * @param other an IsoVector a center of rotation
      * @returns the rotated IsoVector
      */
-    public rotate60About(other: _IsoVector) { //other IsoVector
-        let x: number = this.x;
+    public rotate60About(other: _IsoVector) {
+        //other IsoVector
+        const x: number = this.x;
         this.x = other.x + other.y - this.y;
         this.y = x + this.y - other.x;
         return this;
@@ -58,7 +60,7 @@ export class _IsoVector {
      * @returns the rotated IsoVector
      */
     public rotateNeg60About(other: _IsoVector) {
-        let x = this.x;
+        const x = this.x;
         this.x = x + this.y - other.y;
         this.y = other.x + other.y - x;
         return this;
@@ -72,7 +74,8 @@ export class _IsoVector {
      * @param n >= 0 integer a measure for a Primary triangle of order (m, n)
      * @returns the rotated IsoVector
      */
-    public rotate120(m: number, n: number) { //m, n integers
+    public rotate120(m: number, n: number) {
+        //m, n integers
         if (m !== Math.floor(m)) {
             m === Math.floor(m);
             Logger.Warn("m not an integer only floor(m) used");
@@ -81,7 +84,7 @@ export class _IsoVector {
             n === Math.floor(n);
             Logger.Warn("n not an integer only floor(n) used");
         }
-        let x = this.x;
+        const x = this.x;
         this.x = m - x - this.y;
         this.y = n + x;
         return this;
@@ -95,7 +98,8 @@ export class _IsoVector {
      * @param n >= 0 integer a measure for a Primary triangle of order (m, n)
      * @returns the rotated IsoVector
      */
-    public rotateNeg120(m: number, n: number) { //m, n integers
+    public rotateNeg120(m: number, n: number) {
+        //m, n integers
         if (m !== Math.floor(m)) {
             m === Math.floor(m);
             Logger.Warn("m is not an integer, floor(m) used");
@@ -104,7 +108,7 @@ export class _IsoVector {
             n === Math.floor(n);
             Logger.Warn("n is not an integer,   floor(n) used");
         }
-        let x = this.x;
+        const x = this.x;
         this.x = this.y - n;
         this.y = m + n - x - this.y;
         return this;
@@ -113,6 +117,7 @@ export class _IsoVector {
     /**
      * Transforms an IsoVector to one in Cartesian 3D space based on an isovector
      * @param origin an IsoVector
+     * @param isoGridSize
      * @returns Point as a Vector3
      */
     public toCartesianOrigin(origin: _IsoVector, isoGridSize: number) {

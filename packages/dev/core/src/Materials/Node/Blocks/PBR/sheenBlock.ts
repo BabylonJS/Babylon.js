@@ -1,22 +1,21 @@
-import { NodeMaterialBlock } from '../../nodeMaterialBlock';
-import { NodeMaterialBlockConnectionPointTypes } from '../../Enums/nodeMaterialBlockConnectionPointTypes';
-import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
-import { NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection } from '../../nodeMaterialBlockConnectionPoint';
-import { NodeMaterialBlockTargets } from '../../Enums/nodeMaterialBlockTargets';
-import { RegisterClass } from '../../../../Misc/typeStore';
+import { NodeMaterialBlock } from "../../nodeMaterialBlock";
+import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
+import { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
+import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
+import { RegisterClass } from "../../../../Misc/typeStore";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../nodeMaterialDecorator";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
-import { NodeMaterial, NodeMaterialDefines } from '../../nodeMaterial';
-import { AbstractMesh } from '../../../../Meshes/abstractMesh';
-import { ReflectionBlock } from './reflectionBlock';
-import { Scene } from '../../../../scene';
-import { Nullable } from '../../../../types';
+import { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
+import { AbstractMesh } from "../../../../Meshes/abstractMesh";
+import { ReflectionBlock } from "./reflectionBlock";
+import { Scene } from "../../../../scene";
+import { Nullable } from "../../../../types";
 
 /**
  * Block used to implement the sheen module of the PBR material
  */
 export class SheenBlock extends NodeMaterialBlock {
-
     /**
      * Create a new SheenBlock
      * @param name defines the block name
@@ -30,8 +29,12 @@ export class SheenBlock extends NodeMaterialBlock {
         this.registerInput("color", NodeMaterialBlockConnectionPointTypes.Color3, true, NodeMaterialBlockTargets.Fragment);
         this.registerInput("roughness", NodeMaterialBlockConnectionPointTypes.Float, true, NodeMaterialBlockTargets.Fragment);
 
-        this.registerOutput("sheen", NodeMaterialBlockConnectionPointTypes.Object, NodeMaterialBlockTargets.Fragment,
-            new NodeMaterialConnectionPointCustomObject("sheen", this, NodeMaterialConnectionPointDirection.Output, SheenBlock, "SheenBlock"));
+        this.registerOutput(
+            "sheen",
+            NodeMaterialBlockConnectionPointTypes.Object,
+            NodeMaterialBlockTargets.Fragment,
+            new NodeMaterialConnectionPointCustomObject("sheen", this, NodeMaterialConnectionPointDirection.Output, SheenBlock, "SheenBlock")
+        );
     }
 
     /**
@@ -39,13 +42,13 @@ export class SheenBlock extends NodeMaterialBlock {
      * It allows the strength of the sheen effect to not depend on the base color of the material,
      * making it easier to setup and tweak the effect
      */
-    @editableInPropertyPage("Albedo scaling", PropertyTypeForEdition.Boolean, "PROPERTIES", { "notifiers": { "update": true } })
+    @editableInPropertyPage("Albedo scaling", PropertyTypeForEdition.Boolean, "PROPERTIES", { notifiers: { update: true } })
     public albedoScaling: boolean = false;
 
     /**
      * Defines if the sheen is linked to the sheen color.
      */
-    @editableInPropertyPage("Link sheen with albedo", PropertyTypeForEdition.Boolean, "PROPERTIES", { "notifiers": { "update": true } })
+    @editableInPropertyPage("Link sheen with albedo", PropertyTypeForEdition.Boolean, "PROPERTIES", { notifiers: { update: true } })
     public linkSheenWithAlbedo: boolean = false;
 
     /**
@@ -200,7 +203,7 @@ export class SheenBlock extends NodeMaterialBlock {
     }
 
     public serialize(): any {
-        let serializationObject = super.serialize();
+        const serializationObject = super.serialize();
 
         serializationObject.albedoScaling = this.albedoScaling;
         serializationObject.linkSheenWithAlbedo = this.linkSheenWithAlbedo;

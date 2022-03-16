@@ -22,14 +22,22 @@ declare module "./subMesh" {
     }
 }
 
-/** @hidden */
+/**
+ * @param vector
+ * @param positions
+ * @param indices
+ * @param step
+ * @param checkStopper
+ * @param ref
+ * @hidden
+ */
 SubMesh.prototype._projectOnTrianglesToRef = function (vector: Vector3, positions: Vector3[], indices: IndicesArray, step: number, checkStopper: boolean, ref: Vector3): number {
     // Triangles test
-    var proj = TmpVectors.Vector3[0];
-    var tmp = TmpVectors.Vector3[1];
-    var distance = +Infinity;
+    const proj = TmpVectors.Vector3[0];
+    const tmp = TmpVectors.Vector3[1];
+    let distance = +Infinity;
 
-    for (var index = this.indexStart; index < this.indexStart + this.indexCount - (3 - step); index += step) {
+    for (let index = this.indexStart; index < this.indexStart + this.indexCount - (3 - step); index += step) {
         const indexA = indices[index];
         const indexB = indices[index + 1];
         const indexC = indices[index + 2];
@@ -39,16 +47,16 @@ SubMesh.prototype._projectOnTrianglesToRef = function (vector: Vector3, position
             continue;
         }
 
-        var p0 = positions[indexA];
-        var p1 = positions[indexB];
-        var p2 = positions[indexC];
+        const p0 = positions[indexA];
+        const p1 = positions[indexB];
+        const p2 = positions[indexC];
 
         // stay defensive and don't check against undefined positions.
         if (!p0 || !p1 || !p2) {
             continue;
         }
 
-        var tmpDist = Vector3.ProjectOnTriangleToRef(vector, p0, p1, p2, tmp);
+        const tmpDist = Vector3.ProjectOnTriangleToRef(vector, p0, p1, p2, tmp);
         if (tmpDist < distance) {
             proj.copyFrom(tmp);
             distance = tmpDist;
@@ -60,19 +68,25 @@ SubMesh.prototype._projectOnTrianglesToRef = function (vector: Vector3, position
     return distance;
 };
 
-/** @hidden */
+/**
+ * @param vector
+ * @param positions
+ * @param indices
+ * @param ref
+ * @hidden
+ */
 SubMesh.prototype._projectOnUnIndexedTrianglesToRef = function (vector: Vector3, positions: Vector3[], indices: IndicesArray, ref: Vector3): number {
     // Triangles test
-    var proj = TmpVectors.Vector3[0];
-    var tmp = TmpVectors.Vector3[1];
-    var distance = +Infinity;
+    const proj = TmpVectors.Vector3[0];
+    const tmp = TmpVectors.Vector3[1];
+    let distance = +Infinity;
 
-    for (var index = this.verticesStart; index < this.verticesStart + this.verticesCount; index += 3) {
-        var p0 = positions[index];
-        var p1 = positions[index + 1];
-        var p2 = positions[index + 2];
+    for (let index = this.verticesStart; index < this.verticesStart + this.verticesCount; index += 3) {
+        const p0 = positions[index];
+        const p1 = positions[index + 1];
+        const p2 = positions[index + 2];
 
-        var tmpDist = Vector3.ProjectOnTriangleToRef(vector, p0, p1, p2, tmp);
+        const tmpDist = Vector3.ProjectOnTriangleToRef(vector, p0, p1, p2, tmp);
         if (tmpDist < distance) {
             proj.copyFrom(tmp);
             distance = tmpDist;

@@ -1,5 +1,5 @@
-import { DeepImmutable } from '../types';
-import { Vector3, Matrix } from './math.vector';
+import { DeepImmutable } from "../types";
+import { Vector3, Matrix } from "./math.vector";
 
 /**
  * Represents a plane by the equation ax + by + cz + d = 0
@@ -60,8 +60,8 @@ export class Plane {
      * @returns the updated Plane.
      */
     public normalize(): Plane {
-        var norm = (Math.sqrt((this.normal.x * this.normal.x) + (this.normal.y * this.normal.y) + (this.normal.z * this.normal.z)));
-        var magnitude = 0.0;
+        const norm = Math.sqrt(this.normal.x * this.normal.x + this.normal.y * this.normal.y + this.normal.z * this.normal.z);
+        let magnitude = 0.0;
 
         if (norm !== 0) {
             magnitude = 1.0 / norm;
@@ -81,15 +81,15 @@ export class Plane {
         const invertedMatrix = Plane._TmpMatrix;
         transformation.invertToRef(invertedMatrix);
         const m = invertedMatrix.m;
-        var x = this.normal.x;
-        var y = this.normal.y;
-        var z = this.normal.z;
-        var d = this.d;
+        const x = this.normal.x;
+        const y = this.normal.y;
+        const z = this.normal.z;
+        const d = this.d;
 
-        var normalX = x * m[0] + y * m[1] + z * m[2] + d * m[3];
-        var normalY = x * m[4] + y * m[5] + z * m[6] + d * m[7];
-        var normalZ = x * m[8] + y * m[9] + z * m[10] + d * m[11];
-        var finalD = x * m[12] + y * m[13] + z * m[14] + d * m[15];
+        const normalX = x * m[0] + y * m[1] + z * m[2] + d * m[3];
+        const normalY = x * m[4] + y * m[5] + z * m[6] + d * m[7];
+        const normalZ = x * m[8] + y * m[9] + z * m[10] + d * m[11];
+        const finalD = x * m[12] + y * m[13] + z * m[14] + d * m[15];
 
         return new Plane(normalX, normalY, normalZ, finalD);
     }
@@ -100,7 +100,7 @@ export class Plane {
      * @returns the dot product (float) of the point coordinates and the plane normal.
      */
     public dotCoordinate(point: DeepImmutable<Vector3>): number {
-        return ((((this.normal.x * point.x) + (this.normal.y * point.y)) + (this.normal.z * point.z)) + this.d);
+        return this.normal.x * point.x + this.normal.y * point.y + this.normal.z * point.z + this.d;
     }
 
     /**
@@ -111,29 +111,28 @@ export class Plane {
      * @returns the updated Plane.
      */
     public copyFromPoints(point1: DeepImmutable<Vector3>, point2: DeepImmutable<Vector3>, point3: DeepImmutable<Vector3>): Plane {
-        var x1 = point2.x - point1.x;
-        var y1 = point2.y - point1.y;
-        var z1 = point2.z - point1.z;
-        var x2 = point3.x - point1.x;
-        var y2 = point3.y - point1.y;
-        var z2 = point3.z - point1.z;
-        var yz = (y1 * z2) - (z1 * y2);
-        var xz = (z1 * x2) - (x1 * z2);
-        var xy = (x1 * y2) - (y1 * x2);
-        var pyth = (Math.sqrt((yz * yz) + (xz * xz) + (xy * xy)));
-        var invPyth;
+        const x1 = point2.x - point1.x;
+        const y1 = point2.y - point1.y;
+        const z1 = point2.z - point1.z;
+        const x2 = point3.x - point1.x;
+        const y2 = point3.y - point1.y;
+        const z2 = point3.z - point1.z;
+        const yz = y1 * z2 - z1 * y2;
+        const xz = z1 * x2 - x1 * z2;
+        const xy = x1 * y2 - y1 * x2;
+        const pyth = Math.sqrt(yz * yz + xz * xz + xy * xy);
+        let invPyth;
 
         if (pyth !== 0) {
             invPyth = 1.0 / pyth;
-        }
-        else {
+        } else {
             invPyth = 0.0;
         }
 
         this.normal.x = yz * invPyth;
         this.normal.y = xz * invPyth;
         this.normal.z = xy * invPyth;
-        this.d = -((this.normal.x * point1.x) + (this.normal.y * point1.y) + (this.normal.z * point1.z));
+        this.d = -(this.normal.x * point1.x + this.normal.y * point1.y + this.normal.z * point1.z);
 
         return this;
     }
@@ -148,8 +147,8 @@ export class Plane {
      * @returns True if the plane is facing the given direction
      */
     public isFrontFacingTo(direction: DeepImmutable<Vector3>, epsilon: number): boolean {
-        var dot = Vector3.Dot(this.normal, direction);
-        return (dot <= epsilon);
+        const dot = Vector3.Dot(this.normal, direction);
+        return dot <= epsilon;
     }
 
     /**
@@ -178,7 +177,7 @@ export class Plane {
      * @returns a new Plane defined by the three given points.
      */
     static FromPoints(point1: DeepImmutable<Vector3>, point2: DeepImmutable<Vector3>, point3: DeepImmutable<Vector3>): Plane {
-        var result = new Plane(0.0, 0.0, 0.0, 0.0);
+        const result = new Plane(0.0, 0.0, 0.0, 0.0);
         result.copyFromPoints(point1, point2, point3);
         return result;
     }
@@ -190,7 +189,7 @@ export class Plane {
      * Note : the vector "normal" is updated because normalized.
      */
     static FromPositionAndNormal(origin: DeepImmutable<Vector3>, normal: Vector3): Plane {
-        var result = new Plane(0.0, 0.0, 0.0, 0.0);
+        const result = new Plane(0.0, 0.0, 0.0, 0.0);
         normal.normalize();
         result.normal = normal;
         result.d = -(normal.x * origin.x + normal.y * origin.y + normal.z * origin.z);
@@ -205,7 +204,7 @@ export class Plane {
      * @returns the signed distance between the plane defined by the normal vector at the "origin"" point and the given other point.
      */
     static SignedDistanceToPlaneFromPositionAndNormal(origin: DeepImmutable<Vector3>, normal: DeepImmutable<Vector3>, point: DeepImmutable<Vector3>): number {
-        var d = -(normal.x * origin.x + normal.y * origin.y + normal.z * origin.z);
+        const d = -(normal.x * origin.x + normal.y * origin.y + normal.z * origin.z);
         return Vector3.Dot(point, normal) + d;
     }
 }

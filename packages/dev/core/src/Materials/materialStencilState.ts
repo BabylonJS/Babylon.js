@@ -9,7 +9,6 @@ declare type Scene = import("../scene").Scene;
  * Usage example: https://playground.babylonjs.com/#CW5PRI#10
  */
 export class MaterialStencilState implements IStencilState {
-
     /**
      * Creates a material stencil state instance
      */
@@ -22,11 +21,11 @@ export class MaterialStencilState implements IStencilState {
      */
     public reset() {
         this.enabled = false;
-        this.mask = 0xFF;
+        this.mask = 0xff;
 
         this.func = Constants.ALWAYS;
         this.funcRef = 1;
-        this.funcMask = 0xFF;
+        this.funcMask = 0xff;
 
         this.opStencilFail = Constants.KEEP;
         this.opDepthFail = Constants.KEEP;
@@ -138,9 +137,9 @@ export class MaterialStencilState implements IStencilState {
     }
 
     /**
-    * Get the current class name, useful for serialization or dynamic coding.
-    * @returns "MaterialStencilState"
-    */
+     * Get the current class name, useful for serialization or dynamic coding.
+     * @returns "MaterialStencilState"
+     */
     public getClassName(): string {
         return "MaterialStencilState";
     }

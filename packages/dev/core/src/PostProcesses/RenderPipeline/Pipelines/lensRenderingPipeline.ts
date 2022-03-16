@@ -1,4 +1,3 @@
-
 import { Camera } from "../../../Cameras/camera";
 import { Effect } from "../../../Materials/effect";
 import { Texture } from "../../../Materials/Textures/texture";
@@ -22,7 +21,6 @@ import "../../../Shaders/depthOfField.fragment";
  * Inspired by Francois Tarlier & Martins Upitis
  */
 export class LensRenderingPipeline extends PostProcessRenderPipeline {
-
     // Lens effects can be of the following:
     // - chromatic aberration (slight shift of RGB colors)
     // - blur on the edge of the lens
@@ -47,8 +45,8 @@ export class LensRenderingPipeline extends PostProcessRenderPipeline {
     public HighlightsEnhancingEffect: string = "HighlightsEnhancingEffect";
     /**
      * @ignore
-    * The depth-of-field PostProcess id in the pipeline
-    */
+     * The depth-of-field PostProcess id in the pipeline
+     */
     public LensDepthOfFieldEffect: string = "LensDepthOfFieldEffect";
 
     private _scene: Scene;
@@ -104,8 +102,11 @@ export class LensRenderingPipeline extends PostProcessRenderPipeline {
 
         // Fetch texture samplers
         this._depthTexture = scene.enableDepthRenderer().getDepthMap(); // Force depth renderer "on"
-        if (parameters.grain_texture) { this._grainTexture = parameters.grain_texture; }
-        else { this._createGrainTexture(); }
+        if (parameters.grain_texture) {
+            this._grainTexture = parameters.grain_texture;
+        } else {
+            this._createGrainTexture();
+        }
 
         // save parameters
         this._edgeBlur = parameters.edge_blur ? parameters.edge_blur : 0;
@@ -126,9 +127,36 @@ export class LensRenderingPipeline extends PostProcessRenderPipeline {
         this._createDepthOfFieldPostProcess(ratio / 4);
 
         // Set up pipeline
-        this.addEffect(new PostProcessRenderEffect(scene.getEngine(), this.LensChromaticAberrationEffect, () => { return this._chromaticAberrationPostProcess; }, true));
-        this.addEffect(new PostProcessRenderEffect(scene.getEngine(), this.HighlightsEnhancingEffect, () => { return this._highlightsPostProcess; }, true));
-        this.addEffect(new PostProcessRenderEffect(scene.getEngine(), this.LensDepthOfFieldEffect, () => { return this._depthOfFieldPostProcess; }, true));
+        this.addEffect(
+            new PostProcessRenderEffect(
+                scene.getEngine(),
+                this.LensChromaticAberrationEffect,
+                () => {
+                    return this._chromaticAberrationPostProcess;
+                },
+                true
+            )
+        );
+        this.addEffect(
+            new PostProcessRenderEffect(
+                scene.getEngine(),
+                this.HighlightsEnhancingEffect,
+                () => {
+                    return this._highlightsPostProcess;
+                },
+                true
+            )
+        );
+        this.addEffect(
+            new PostProcessRenderEffect(
+                scene.getEngine(),
+                this.LensDepthOfFieldEffect,
+                () => {
+                    return this._depthOfFieldPostProcess;
+                },
+                true
+            )
+        );
 
         if (this._highlightsGain === -1) {
             this._disableEffect(this.HighlightsEnhancingEffect, null);
@@ -288,57 +316,81 @@ export class LensRenderingPipeline extends PostProcessRenderPipeline {
      * Sets the amount of blur at the edges
      * @param amount blur amount
      */
-    public setEdgeBlur(amount: number) { this._edgeBlur = amount; }
+    public setEdgeBlur(amount: number) {
+        this._edgeBlur = amount;
+    }
     /**
      * Sets edge blur to 0
      */
-    public disableEdgeBlur() { this._edgeBlur = 0; }
+    public disableEdgeBlur() {
+        this._edgeBlur = 0;
+    }
     /**
      * Sets the amount of grain
      * @param amount Amount of grain
      */
-    public setGrainAmount(amount: number) { this._grainAmount = amount; }
+    public setGrainAmount(amount: number) {
+        this._grainAmount = amount;
+    }
     /**
      * Set grain amount to 0
      */
-    public disableGrain() { this._grainAmount = 0; }
+    public disableGrain() {
+        this._grainAmount = 0;
+    }
     /**
      * Sets the chromatic aberration amount
      * @param amount amount of chromatic aberration
      */
-    public setChromaticAberration(amount: number) { this._chromaticAberration = amount; }
+    public setChromaticAberration(amount: number) {
+        this._chromaticAberration = amount;
+    }
     /**
      * Sets chromatic aberration amount to 0
      */
-    public disableChromaticAberration() { this._chromaticAberration = 0; }
+    public disableChromaticAberration() {
+        this._chromaticAberration = 0;
+    }
     /**
      * Sets the EdgeDistortion amount
      * @param amount amount of EdgeDistortion
      */
-    public setEdgeDistortion(amount: number) { this._distortion = amount; }
+    public setEdgeDistortion(amount: number) {
+        this._distortion = amount;
+    }
     /**
      * Sets edge distortion to 0
      */
-    public disableEdgeDistortion() { this._distortion = 0; }
+    public disableEdgeDistortion() {
+        this._distortion = 0;
+    }
     /**
      * Sets the FocusDistance amount
      * @param amount amount of FocusDistance
      */
-    public setFocusDistance(amount: number) { this._dofDistance = amount; }
+    public setFocusDistance(amount: number) {
+        this._dofDistance = amount;
+    }
     /**
-    * Disables depth of field
-    */
-    public disableDepthOfField() { this._dofDistance = -1; }
+     * Disables depth of field
+     */
+    public disableDepthOfField() {
+        this._dofDistance = -1;
+    }
     /**
      * Sets the Aperture amount
      * @param amount amount of Aperture
      */
-    public setAperture(amount: number) { this._dofAperture = amount; }
+    public setAperture(amount: number) {
+        this._dofAperture = amount;
+    }
     /**
      * Sets the DarkenOutOfFocus amount
      * @param amount amount of DarkenOutOfFocus
      */
-    public setDarkenOutOfFocus(amount: number) { this._dofDarken = amount; }
+    public setDarkenOutOfFocus(amount: number) {
+        this._dofDarken = amount;
+    }
 
     private _pentagonBokehIsEnabled = false;
     /**
@@ -358,11 +410,15 @@ export class LensRenderingPipeline extends PostProcessRenderPipeline {
     /**
      * Enables noise blur
      */
-    public enableNoiseBlur() { this._blurNoise = true; }
+    public enableNoiseBlur() {
+        this._blurNoise = true;
+    }
     /**
      * Disables noise blur
      */
-    public disableNoiseBlur() { this._blurNoise = false; }
+    public disableNoiseBlur() {
+        this._blurNoise = false;
+    }
     /**
      * Sets the HighlightsGain amount
      * @param amount amount of HighlightsGain
@@ -407,103 +463,131 @@ export class LensRenderingPipeline extends PostProcessRenderPipeline {
 
     // colors shifting and distortion
     private _createChromaticAberrationPostProcess(ratio: number): void {
-        this._chromaticAberrationPostProcess = new PostProcess("LensChromaticAberration", "chromaticAberration",
-            ["chromatic_aberration", "screen_width", "screen_height", "direction", "radialIntensity", "centerPosition"],      // uniforms
-            [],                                         // samplers
-            ratio, null, Texture.TRILINEAR_SAMPLINGMODE,
-            this._scene.getEngine(), false);
+        this._chromaticAberrationPostProcess = new PostProcess(
+            "LensChromaticAberration",
+            "chromaticAberration",
+            ["chromatic_aberration", "screen_width", "screen_height", "direction", "radialIntensity", "centerPosition"], // uniforms
+            [], // samplers
+            ratio,
+            null,
+            Texture.TRILINEAR_SAMPLINGMODE,
+            this._scene.getEngine(),
+            false
+        );
 
         this._chromaticAberrationPostProcess.onApply = (effect: Effect) => {
-            effect.setFloat('chromatic_aberration', this._chromaticAberration);
-            effect.setFloat('screen_width', this._scene.getEngine().getRenderWidth());
-            effect.setFloat('screen_height', this._scene.getEngine().getRenderHeight());
-            effect.setFloat('radialIntensity', 1);
-            effect.setFloat2('direction', 17, 17);
-            effect.setFloat2('centerPosition', 0.5, 0.5);
+            effect.setFloat("chromatic_aberration", this._chromaticAberration);
+            effect.setFloat("screen_width", this._scene.getEngine().getRenderWidth());
+            effect.setFloat("screen_height", this._scene.getEngine().getRenderHeight());
+            effect.setFloat("radialIntensity", 1);
+            effect.setFloat2("direction", 17, 17);
+            effect.setFloat2("centerPosition", 0.5, 0.5);
         };
     }
 
     // highlights enhancing
     private _createHighlightsPostProcess(ratio: number): void {
-        this._highlightsPostProcess = new PostProcess("LensHighlights", "lensHighlights",
-            ["gain", "threshold", "screen_width", "screen_height"],      // uniforms
-            [],     // samplers
+        this._highlightsPostProcess = new PostProcess(
+            "LensHighlights",
+            "lensHighlights",
+            ["gain", "threshold", "screen_width", "screen_height"], // uniforms
+            [], // samplers
             ratio,
-            null, Texture.TRILINEAR_SAMPLINGMODE,
-            this._scene.getEngine(), false, this._dofPentagon ? "#define PENTAGON\n" : "");
+            null,
+            Texture.TRILINEAR_SAMPLINGMODE,
+            this._scene.getEngine(),
+            false,
+            this._dofPentagon ? "#define PENTAGON\n" : ""
+        );
 
         this._highlightsPostProcess.externalTextureSamplerBinding = true;
         this._highlightsPostProcess.onApply = (effect: Effect) => {
-            effect.setFloat('gain', this._highlightsGain);
-            effect.setFloat('threshold', this._highlightsThreshold);
+            effect.setFloat("gain", this._highlightsGain);
+            effect.setFloat("threshold", this._highlightsThreshold);
             effect.setTextureFromPostProcess("textureSampler", this._chromaticAberrationPostProcess);
-            effect.setFloat('screen_width', this._scene.getEngine().getRenderWidth());
-            effect.setFloat('screen_height', this._scene.getEngine().getRenderHeight());
+            effect.setFloat("screen_width", this._scene.getEngine().getRenderWidth());
+            effect.setFloat("screen_height", this._scene.getEngine().getRenderHeight());
         };
     }
 
     // colors shifting and distortion
     private _createDepthOfFieldPostProcess(ratio: number): void {
-        this._depthOfFieldPostProcess = new PostProcess("LensDepthOfField", "depthOfField",
+        this._depthOfFieldPostProcess = new PostProcess(
+            "LensDepthOfField",
+            "depthOfField",
             [
-                "grain_amount", "blur_noise", "screen_width", "screen_height", "distortion", "dof_enabled",
-                "screen_distance", "aperture", "darken", "edge_blur", "highlights", "near", "far"
+                "grain_amount",
+                "blur_noise",
+                "screen_width",
+                "screen_height",
+                "distortion",
+                "dof_enabled",
+                "screen_distance",
+                "aperture",
+                "darken",
+                "edge_blur",
+                "highlights",
+                "near",
+                "far",
             ],
             ["depthSampler", "grainSampler", "highlightsSampler"],
-            ratio, null, Texture.TRILINEAR_SAMPLINGMODE,
-            this._scene.getEngine(), false);
+            ratio,
+            null,
+            Texture.TRILINEAR_SAMPLINGMODE,
+            this._scene.getEngine(),
+            false
+        );
 
         this._depthOfFieldPostProcess.externalTextureSamplerBinding = true;
         this._depthOfFieldPostProcess.onApply = (effect: Effect) => {
-
             effect.setTexture("depthSampler", this._depthTexture);
             effect.setTexture("grainSampler", this._grainTexture);
             effect.setTextureFromPostProcess("textureSampler", this._highlightsPostProcess);
             effect.setTextureFromPostProcess("highlightsSampler", this._depthOfFieldPostProcess);
 
-            effect.setFloat('grain_amount', this._grainAmount);
-            effect.setBool('blur_noise', this._blurNoise);
+            effect.setFloat("grain_amount", this._grainAmount);
+            effect.setBool("blur_noise", this._blurNoise);
 
-            effect.setFloat('screen_width', this._scene.getEngine().getRenderWidth());
-            effect.setFloat('screen_height', this._scene.getEngine().getRenderHeight());
+            effect.setFloat("screen_width", this._scene.getEngine().getRenderWidth());
+            effect.setFloat("screen_height", this._scene.getEngine().getRenderHeight());
 
-            effect.setFloat('distortion', this._distortion);
+            effect.setFloat("distortion", this._distortion);
 
-            effect.setBool('dof_enabled', (this._dofDistance !== -1));
-            effect.setFloat('screen_distance', 1.0 / (0.1 - 1.0 / this._dofDistance));
-            effect.setFloat('aperture', this._dofAperture);
-            effect.setFloat('darken', this._dofDarken);
+            effect.setBool("dof_enabled", this._dofDistance !== -1);
+            effect.setFloat("screen_distance", 1.0 / (0.1 - 1.0 / this._dofDistance));
+            effect.setFloat("aperture", this._dofAperture);
+            effect.setFloat("darken", this._dofDarken);
 
-            effect.setFloat('edge_blur', this._edgeBlur);
+            effect.setFloat("edge_blur", this._edgeBlur);
 
-            effect.setBool('highlights', (this._highlightsGain !== -1));
+            effect.setBool("highlights", this._highlightsGain !== -1);
 
             if (this._scene.activeCamera) {
-                effect.setFloat('near', this._scene.activeCamera.minZ);
-                effect.setFloat('far', this._scene.activeCamera.maxZ);
+                effect.setFloat("near", this._scene.activeCamera.minZ);
+                effect.setFloat("far", this._scene.activeCamera.maxZ);
             }
         };
     }
 
     // creates a black and white random noise texture, 512x512
     private _createGrainTexture(): void {
-        var size = 512;
+        const size = 512;
 
         this._grainTexture = new DynamicTexture("LensNoiseTexture", size, this._scene, false, Texture.BILINEAR_SAMPLINGMODE);
         this._grainTexture.wrapU = Texture.WRAP_ADDRESSMODE;
         this._grainTexture.wrapV = Texture.WRAP_ADDRESSMODE;
 
-        var context = (<DynamicTexture>this._grainTexture).getContext();
+        const context = (<DynamicTexture>this._grainTexture).getContext();
 
-        var rand = (min: number, max: number) => {
+        const rand = (min: number, max: number) => {
             return Math.random() * (max - min) + min;
         };
 
-        var value;
-        for (var x = 0; x < size; x++) {
-            for (var y = 0; y < size; y++) {
+        let value;
+        for (let x = 0; x < size; x++) {
+            for (let y = 0; y < size; y++) {
                 value = Math.floor(rand(0.42, 0.58) * 255);
-                context.fillStyle = 'rgb(' + value + ', ' + value + ', ' + value + ')';
+                context.fillStyle = "rgb(" + value + ", " + value + ", " + value + ")";
                 context.fillRect(x, y, 1, 1);
             }
         }

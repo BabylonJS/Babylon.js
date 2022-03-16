@@ -6,8 +6,8 @@ import { Effect } from "../Materials/effect";
 import { Constants } from "../Engines/constants";
 
 import "../Shaders/convolution.fragment";
-import { RegisterClass } from '../Misc/typeStore';
-import { serialize, SerializationHelper } from '../Misc/decorators';
+import { RegisterClass } from "../Misc/typeStore";
+import { serialize, SerializationHelper } from "../Misc/decorators";
 
 declare type Scene = import("../scene").Scene;
 
@@ -40,9 +40,16 @@ export class ConvolutionPostProcess extends PostProcess {
      * @param reusable If the post process can be reused on the same frame. (default: false)
      * @param textureType Type of textures used when performing the post process. (default: 0)
      */
-    constructor(name: string,
+    constructor(
+        name: string,
         kernel: number[],
-        options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT) {
+        options: number | PostProcessOptions,
+        camera: Nullable<Camera>,
+        samplingMode?: number,
+        engine?: Engine,
+        reusable?: boolean,
+        textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT
+    ) {
         super(name, "convolution", ["kernel", "screenSize"], null, options, camera, samplingMode, engine, reusable, null, textureType);
         this.kernel = kernel;
         this.onApply = (effect: Effect) => {
@@ -51,15 +58,31 @@ export class ConvolutionPostProcess extends PostProcess {
         };
     }
 
-    /** @hidden */
+    /**
+     * @param parsedPostProcess
+     * @param targetCamera
+     * @param scene
+     * @param rootUrl
+     * @hidden
+     */
     public static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string): Nullable<ConvolutionPostProcess> {
-        return SerializationHelper.Parse(() => {
-            return new ConvolutionPostProcess(
-                parsedPostProcess.name, parsedPostProcess.kernel,
-                parsedPostProcess.options, targetCamera,
-                parsedPostProcess.renderTargetSamplingMode,
-                scene.getEngine(), parsedPostProcess.reusable, parsedPostProcess.textureType);
-        }, parsedPostProcess, scene, rootUrl);
+        return SerializationHelper.Parse(
+            () => {
+                return new ConvolutionPostProcess(
+                    parsedPostProcess.name,
+                    parsedPostProcess.kernel,
+                    parsedPostProcess.options,
+                    targetCamera,
+                    parsedPostProcess.renderTargetSamplingMode,
+                    scene.getEngine(),
+                    parsedPostProcess.reusable,
+                    parsedPostProcess.textureType
+                );
+            },
+            parsedPostProcess,
+            scene,
+            rootUrl
+        );
     }
 
     // Statics

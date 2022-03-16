@@ -6,9 +6,9 @@ import { IBehaviorAware, Behavior } from "./Behaviors/behavior";
 import { serialize } from "./Misc/decorators";
 import { Observable, Observer } from "./Misc/observable";
 import { EngineStore } from "./Engines/engineStore";
-import { _WarnImport } from './Misc/devTools';
-import { AbstractActionManager } from './Actions/abstractActionManager';
-import { IInspectable } from './Misc/iInspectable';
+import { _WarnImport } from "./Misc/devTools";
+import { AbstractActionManager } from "./Actions/abstractActionManager";
+import { IInspectable } from "./Misc/iInspectable";
 import { AbstractScene } from "./abstractScene";
 
 declare type Animatable = import("./Animations/animatable").Animatable;
@@ -40,10 +40,15 @@ class _InternalNodeDataInfo {
 export class Node implements IBehaviorAware<Node> {
     protected _isDirty = false;
 
-    /** @hidden */
+    /**
+     * @param name
+     * @param from
+     * @param to
+     * @hidden
+     */
     public static _AnimationRangeFactory = (name: string, from: number, to: number): AnimationRange => {
         throw _WarnImport("AnimationRange");
-    }
+    };
 
     private static _NodeConstructors: { [key: string]: any } = {};
 
@@ -65,7 +70,7 @@ export class Node implements IBehaviorAware<Node> {
      * @returns the new constructor or null
      */
     public static Construct(type: string, name: string, scene: Scene, options?: any): Nullable<() => Node> {
-        let constructorFunc = this._NodeConstructors[type];
+        const constructorFunc = this._NodeConstructors[type];
 
         if (!constructorFunc) {
             return null;
@@ -196,7 +201,7 @@ export class Node implements IBehaviorAware<Node> {
 
         // Remove self from list of children of parent
         if (this._parentNode && this._parentNode._children !== undefined && this._parentNode._children !== null) {
-            var index = this._parentNode._children.indexOf(this);
+            const index = this._parentNode._children.indexOf(this);
             if (index !== -1) {
                 this._parentNode._children.splice(index, 1);
             }
@@ -277,8 +282,8 @@ export class Node implements IBehaviorAware<Node> {
     public readonly _isNode = true;
 
     /**
-    * An event triggered when the mesh is disposed
-    */
+     * An event triggered when the mesh is disposed
+     */
     public onDisposeObservable = new Observable<Node>();
 
     private _onDisposeObserver: Nullable<Observer<Node>> = null;
@@ -295,9 +300,9 @@ export class Node implements IBehaviorAware<Node> {
     /**
      * An event triggered when the enabled state of the node changes
      */
-     public get onEnabledStateChangedObservable(): Observable<boolean> {
-         return this._nodeDataStorage._onEnabledStateChangedObservable;
-     }
+    public get onEnabledStateChangedObservable(): Observable<boolean> {
+        return this._nodeDataStorage._onEnabledStateChangedObservable;
+    }
 
     /**
      * An event triggered when the node is cloned
@@ -346,7 +351,7 @@ export class Node implements IBehaviorAware<Node> {
      * @returns the current Node
      */
     public addBehavior(behavior: Behavior<Node>, attachImmediately = false): Node {
-        var index = this._behaviors.indexOf(behavior);
+        const index = this._behaviors.indexOf(behavior);
 
         if (index !== -1) {
             return this;
@@ -373,7 +378,7 @@ export class Node implements IBehaviorAware<Node> {
      * @returns the current Node
      */
     public removeBehavior(behavior: Behavior<Node>): Node {
-        var index = this._behaviors.indexOf(behavior);
+        const index = this._behaviors.indexOf(behavior);
 
         if (index === -1) {
             return this;
@@ -400,7 +405,7 @@ export class Node implements IBehaviorAware<Node> {
      * @returns null if behavior was not found else the requested behavior
      */
     public getBehaviorByName(name: string): Nullable<Behavior<Node>> {
-        for (var behavior of this._behaviors) {
+        for (const behavior of this._behaviors) {
             if (behavior.name === name) {
                 return behavior;
             }
@@ -445,7 +450,10 @@ export class Node implements IBehaviorAware<Node> {
         this._cache.parent = undefined;
     }
 
-    /** @hidden */
+    /**
+     * @param force
+     * @hidden
+     */
     public updateCache(force?: boolean): void {
         if (!force && this.isSynchronized()) {
             return;
@@ -456,7 +464,11 @@ export class Node implements IBehaviorAware<Node> {
         this._updateCache();
     }
 
-    /** @hidden */
+    /**
+     * @param trigger
+     * @param initialCall
+     * @hidden
+     */
     public _getActionManagerForTrigger(trigger?: number, initialCall = true): Nullable<AbstractActionManager> {
         if (!this.parent) {
             return null;
@@ -467,9 +479,11 @@ export class Node implements IBehaviorAware<Node> {
 
     // override it in derived class if you add new variables to the cache
     // and call the parent class method if !ignoreParentClass
-    /** @hidden */
-    public _updateCache(ignoreParentClass?: boolean): void {
-    }
+    /**
+     * @param ignoreParentClass
+     * @hidden
+     */
+    public _updateCache(ignoreParentClass?: boolean): void {}
 
     // override it in derived class if you add new variables to the cache
     /** @hidden */
@@ -521,10 +535,10 @@ export class Node implements IBehaviorAware<Node> {
     }
 
     /**
-    * Flag the  node as dirty (Forcing it to update everything)
-    * @param property helps children apply precise "dirtyfication"
-    * @returns this node
-    */
+     * Flag the  node as dirty (Forcing it to update everything)
+     * @param property helps children apply precise "dirtyfication"
+     * @returns this node
+     */
     public markAsDirty(property?: string): Node {
         this._currentRenderId = Number.MAX_VALUE;
         this._isDirty = true;
@@ -592,14 +606,19 @@ export class Node implements IBehaviorAware<Node> {
         return false;
     }
 
-    /** @hidden */
+    /**
+     * @param results
+     * @param directDescendantsOnly
+     * @param predicate
+     * @hidden
+     */
     public _getDescendants(results: Node[], directDescendantsOnly: boolean = false, predicate?: (node: Node) => boolean): void {
         if (!this._children) {
             return;
         }
 
-        for (var index = 0; index < this._children.length; index++) {
-            var item = this._children[index];
+        for (let index = 0; index < this._children.length; index++) {
+            const item = this._children[index];
 
             if (!predicate || predicate(item)) {
                 results.push(item);
@@ -634,7 +653,7 @@ export class Node implements IBehaviorAware<Node> {
      * @return all children nodes of all types
      */
     public getDescendants(directDescendantsOnly?: boolean, predicate?: (node: Node) => boolean): Node[] {
-        var results = new Array<Node>();
+        const results = new Array<Node>();
 
         this._getDescendants(results, directDescendantsOnly, predicate);
 
@@ -664,9 +683,9 @@ export class Node implements IBehaviorAware<Node> {
      * @returns an array of AbstractMesh
      */
     public getChildMeshes(directDescendantsOnly?: boolean, predicate?: (node: Node) => boolean): AbstractMesh[] {
-        var results: Array<AbstractMesh> = [];
+        const results: Array<AbstractMesh> = [];
         this._getDescendants(results, directDescendantsOnly, (node: Node) => {
-            return ((!predicate || predicate(node)) && ((<AbstractMesh>node).cullingStrategy !== undefined));
+            return (!predicate || predicate(node)) && (<AbstractMesh>node).cullingStrategy !== undefined;
         });
         return results;
     }
@@ -697,7 +716,10 @@ export class Node implements IBehaviorAware<Node> {
         return this.getDescendants(directDescendantsOnly, predicate);
     }
 
-    /** @hidden */
+    /**
+     * @param state
+     * @hidden
+     */
     public _setReady(state: boolean): void {
         if (state === this._nodeDataStorage._isReady) {
             return;
@@ -720,8 +742,8 @@ export class Node implements IBehaviorAware<Node> {
      * @returns null if not found else the requested animation
      */
     public getAnimationByName(name: string): Nullable<Animation> {
-        for (var i = 0; i < this.animations.length; i++) {
-            var animation = this.animations[i];
+        for (let i = 0; i < this.animations.length; i++) {
+            const animation = this.animations[i];
 
             if (animation.name === name) {
                 return animation;
@@ -741,7 +763,7 @@ export class Node implements IBehaviorAware<Node> {
         // check name not already in use
         if (!this._ranges[name]) {
             this._ranges[name] = Node._AnimationRangeFactory(name, from, to);
-            for (var i = 0, nAnimations = this.animations.length; i < nAnimations; i++) {
+            for (let i = 0, nAnimations = this.animations.length; i < nAnimations; i++) {
                 if (this.animations[i]) {
                     this.animations[i].createRange(name, from, to);
                 }
@@ -755,7 +777,7 @@ export class Node implements IBehaviorAware<Node> {
      * @param deleteFrames defines if animation frames from the range must be deleted as well
      */
     public deleteAnimationRange(name: string, deleteFrames = true): void {
-        for (var i = 0, nAnimations = this.animations.length; i < nAnimations; i++) {
+        for (let i = 0, nAnimations = this.animations.length; i < nAnimations; i++) {
             if (this.animations[i]) {
                 this.animations[i].deleteRange(name, deleteFrames);
             }
@@ -777,8 +799,8 @@ export class Node implements IBehaviorAware<Node> {
      * @returns an array
      */
     public getAnimationRanges(): Nullable<AnimationRange>[] {
-        var animationRanges: Nullable<AnimationRange>[] = [];
-        var name: string;
+        const animationRanges: Nullable<AnimationRange>[] = [];
+        let name: string;
         for (name in this._ranges) {
             animationRanges.push(this._ranges[name]);
         }
@@ -794,7 +816,7 @@ export class Node implements IBehaviorAware<Node> {
      * @returns the object created for this animation. If range does not exist, it will return null
      */
     public beginAnimation(name: string, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void): Nullable<Animatable> {
-        var range = this.getAnimationRange(name);
+        const range = this.getAnimationRange(name);
 
         if (!range) {
             return null;
@@ -808,13 +830,13 @@ export class Node implements IBehaviorAware<Node> {
      * @returns serialization object
      */
     public serializeAnimationRanges(): any {
-        var serializationRanges = [];
-        for (var name in this._ranges) {
-            var localRange = this._ranges[name];
+        const serializationRanges = [];
+        for (const name in this._ranges) {
+            const localRange = this._ranges[name];
             if (!localRange) {
                 continue;
             }
-            var range: any = {};
+            const range: any = {};
             range.name = name;
             range.from = localRange.from;
             range.to = localRange.to;
@@ -864,7 +886,7 @@ export class Node implements IBehaviorAware<Node> {
         this.onClonedObservable.clear();
 
         // Behaviors
-        for (var behavior of this._behaviors) {
+        for (const behavior of this._behaviors) {
             behavior.detach();
         }
 
@@ -881,19 +903,19 @@ export class Node implements IBehaviorAware<Node> {
      */
     public static ParseAnimationRanges(node: Node, parsedNode: any, scene: Scene): void {
         if (parsedNode.ranges) {
-            for (var index = 0; index < parsedNode.ranges.length; index++) {
-                var data = parsedNode.ranges[index];
+            for (let index = 0; index < parsedNode.ranges.length; index++) {
+                const data = parsedNode.ranges[index];
                 node.createAnimationRange(data.name, data.from, data.to);
             }
         }
     }
     /**
- * Return the minimum and maximum world vectors of the entire hierarchy under current node
- * @param includeDescendants Include bounding info from descendants as well (true by default)
- * @param predicate defines a callback function that can be customize to filter what meshes should be included in the list used to compute the bounding vectors
- * @returns the new bounding vectors
- */
-    public getHierarchyBoundingVectors(includeDescendants = true, predicate: Nullable<(abstractMesh: AbstractMesh) => boolean> = null): { min: Vector3, max: Vector3 } {
+     * Return the minimum and maximum world vectors of the entire hierarchy under current node
+     * @param includeDescendants Include bounding info from descendants as well (true by default)
+     * @param predicate defines a callback function that can be customize to filter what meshes should be included in the list used to compute the bounding vectors
+     * @returns the new bounding vectors
+     */
+    public getHierarchyBoundingVectors(includeDescendants = true, predicate: Nullable<(abstractMesh: AbstractMesh) => boolean> = null): { min: Vector3; max: Vector3 } {
         // Ensures that all world matrix will be recomputed.
         this.getScene().incrementRenderId();
 
@@ -902,10 +924,10 @@ export class Node implements IBehaviorAware<Node> {
         let min: Vector3;
         let max: Vector3;
 
-        let thisAbstractMesh = (this as Node as AbstractMesh);
+        const thisAbstractMesh = this as Node as AbstractMesh;
         if (thisAbstractMesh.getBoundingInfo && thisAbstractMesh.subMeshes) {
             // If this is an abstract mesh get its bounding info
-            let boundingInfo = thisAbstractMesh.getBoundingInfo();
+            const boundingInfo = thisAbstractMesh.getBoundingInfo();
             min = boundingInfo.boundingBox.minimumWorld.clone();
             max = boundingInfo.boundingBox.maximumWorld.clone();
         } else {
@@ -914,10 +936,10 @@ export class Node implements IBehaviorAware<Node> {
         }
 
         if (includeDescendants) {
-            let descendants = this.getDescendants(false);
+            const descendants = this.getDescendants(false);
 
-            for (var descendant of descendants) {
-                let childMesh = <AbstractMesh>descendant;
+            for (const descendant of descendants) {
+                const childMesh = <AbstractMesh>descendant;
                 childMesh.computeWorldMatrix(true);
 
                 // Filters meshes based on custom predicate function.
@@ -930,11 +952,11 @@ export class Node implements IBehaviorAware<Node> {
                     continue;
                 }
 
-                let childBoundingInfo = childMesh.getBoundingInfo();
-                let boundingBox = childBoundingInfo.boundingBox;
+                const childBoundingInfo = childMesh.getBoundingInfo();
+                const boundingBox = childBoundingInfo.boundingBox;
 
-                var minBox = boundingBox.minimumWorld;
-                var maxBox = boundingBox.maximumWorld;
+                const minBox = boundingBox.minimumWorld;
+                const maxBox = boundingBox.maximumWorld;
 
                 Vector3.CheckExtends(minBox, min, max);
                 Vector3.CheckExtends(maxBox, min, max);
@@ -943,7 +965,7 @@ export class Node implements IBehaviorAware<Node> {
 
         return {
             min: min,
-            max: max
+            max: max,
         };
     }
 }

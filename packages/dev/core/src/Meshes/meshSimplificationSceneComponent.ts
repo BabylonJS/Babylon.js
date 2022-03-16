@@ -31,7 +31,7 @@ Object.defineProperty(Scene.prototype, "simplificationQueue", {
         this._simplificationQueue = value;
     },
     enumerable: true,
-    configurable: true
+    configurable: true,
 });
 
 declare module "../Meshes/mesh" {
@@ -45,17 +45,27 @@ declare module "../Meshes/mesh" {
          * @param successCallback optional success callback to be called after the simplification finished processing all settings
          * @returns the current mesh
          */
-        simplify(settings: Array<ISimplificationSettings>, parallelProcessing?: boolean, simplificationType?: SimplificationType, successCallback?: (mesh?: Mesh, submeshIndex?: number) => void): Mesh;
+        simplify(
+            settings: Array<ISimplificationSettings>,
+            parallelProcessing?: boolean,
+            simplificationType?: SimplificationType,
+            successCallback?: (mesh?: Mesh, submeshIndex?: number) => void
+        ): Mesh;
     }
 }
 
-Mesh.prototype.simplify = function (settings: Array<ISimplificationSettings>, parallelProcessing: boolean = true, simplificationType: SimplificationType = SimplificationType.QUADRATIC, successCallback?: (mesh?: Mesh, submeshIndex?: number) => void): Mesh {
+Mesh.prototype.simplify = function (
+    settings: Array<ISimplificationSettings>,
+    parallelProcessing: boolean = true,
+    simplificationType: SimplificationType = SimplificationType.QUADRATIC,
+    successCallback?: (mesh?: Mesh, submeshIndex?: number) => void
+): Mesh {
     this.getScene().simplificationQueue.addTask({
         settings: settings,
         parallelProcessing: parallelProcessing,
         mesh: this,
         simplificationType: simplificationType,
-        successCallback: successCallback
+        successCallback: successCallback,
     });
     return this;
 };

@@ -1,4 +1,3 @@
-
 /**
  * Interface for the size containing width and height
  */
@@ -112,7 +111,7 @@ export class Size implements ISize {
         if (!other) {
             return false;
         }
-        return (this.width === other.width) && (this.height === other.height);
+        return this.width === other.width && this.height === other.height;
     }
     /**
      * The surface of the Size : width * height (float).
@@ -133,7 +132,7 @@ export class Size implements ISize {
      * @returns a new Size set as the addition result of the current Size and the given one.
      */
     public add(otherSize: Size): Size {
-        let r = new Size(this.width + otherSize.width, this.height + otherSize.height);
+        const r = new Size(this.width + otherSize.width, this.height + otherSize.height);
         return r;
     }
     /**
@@ -142,7 +141,7 @@ export class Size implements ISize {
      * @returns a new Size set as the subtraction result of  the given one from the current Size.
      */
     public subtract(otherSize: Size): Size {
-        let r = new Size(this.width - otherSize.width, this.height - otherSize.height);
+        const r = new Size(this.width - otherSize.width, this.height - otherSize.height);
         return r;
     }
     /**
@@ -153,10 +152,9 @@ export class Size implements ISize {
      * @returns a new Size set at the linear interpolation "amount" between "start" and "end"
      */
     public static Lerp(start: Size, end: Size, amount: number): Size {
-        var w = start.width + ((end.width - start.width) * amount);
-        var h = start.height + ((end.height - start.height) * amount);
+        const w = start.width + (end.width - start.width) * amount;
+        const h = start.height + (end.height - start.height) * amount;
 
         return new Size(w, h);
     }
-
 }

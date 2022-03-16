@@ -394,7 +394,7 @@ export class PerformanceViewerCollector {
 
         // populate the ids.
         for (let i = PerformanceViewerCollector.SliceDataOffset; i < firstLine.length; i++) {
-            let [id, category] = firstLine[i].split(exportedDataSeparator);
+            const [id, category] = firstLine[i].split(exportedDataSeparator);
             parsedDatasets.ids.push(id);
             idCategoryMap.set(id, category);
         }

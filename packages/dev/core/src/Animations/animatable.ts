@@ -4,9 +4,9 @@ import { RuntimeAnimation } from "./runtimeAnimation";
 import { Nullable } from "../types";
 import { Observable } from "../Misc/observable";
 import { Scene } from "../scene";
-import { Matrix, Quaternion, Vector3, TmpVectors } from '../Maths/math.vector';
-import { PrecisionDate } from '../Misc/precisionDate';
-import { Bone } from '../Bones/bone';
+import { Matrix, Quaternion, Vector3, TmpVectors } from "../Maths/math.vector";
+import { PrecisionDate } from "../Misc/precisionDate";
+import { Bone } from "../Bones/bone";
 import { Node } from "../node";
 
 /**
@@ -72,7 +72,8 @@ export class Animatable {
     }
 
     public set weight(value: number) {
-        if (value === -1) { // -1 is ok and means no weight
+        if (value === -1) {
+            // -1 is ok and means no weight
             this._weight = -1;
             return;
         }
@@ -89,8 +90,8 @@ export class Animatable {
     }
 
     public set speedRatio(value: number) {
-        for (var index = 0; index < this._runtimeAnimations.length; index++) {
-            var animation = this._runtimeAnimations[index];
+        for (let index = 0; index < this._runtimeAnimations.length; index++) {
+            const animation = this._runtimeAnimations[index];
 
             animation._prepareForSpeedRatioChange(value);
         }
@@ -110,7 +111,8 @@ export class Animatable {
      * @param onAnimationLoop defines a callback to call when animation loops
      * @param isAdditive defines whether the animation should be evaluated additively
      */
-    constructor(scene: Scene,
+    constructor(
+        scene: Scene,
         /** defines the target object */
         public target: any,
         /** defines the starting frame number (default is 0) */
@@ -126,7 +128,8 @@ export class Animatable {
         /** defines a callback to call when animation loops */
         public onAnimationLoop?: Nullable<() => void>,
         /** defines whether the animation should be evaluated additively */
-        public isAdditive: boolean = false) {
+        public isAdditive: boolean = false
+    ) {
         this._scene = scene;
         if (animations) {
             this.appendAnimations(target, animations);
@@ -148,7 +151,7 @@ export class Animatable {
 
         if (root) {
             // Make sure this animatable will animate after the root
-            let index = this._scene._activeAnimatables.indexOf(this);
+            const index = this._scene._activeAnimatables.indexOf(this);
             if (index > -1) {
                 this._scene._activeAnimatables.splice(index, 1);
                 this._scene._activeAnimatables.push(this);
@@ -172,10 +175,10 @@ export class Animatable {
      * @param animations defines the new animations to add
      */
     public appendAnimations(target: any, animations: Animation[]): void {
-        for (var index = 0; index < animations.length; index++) {
-            var animation = animations[index];
+        for (let index = 0; index < animations.length; index++) {
+            const animation = animations[index];
 
-            let newRuntimeAnimation = new RuntimeAnimation(target, animation, this._scene, this);
+            const newRuntimeAnimation = new RuntimeAnimation(target, animation, this._scene, this);
             newRuntimeAnimation._onLoop = () => {
                 this.onAnimationLoopObservable.notifyObservers(this);
                 if (this.onAnimationLoop) {
@@ -193,9 +196,9 @@ export class Animatable {
      * @returns null or the source animation for the given property
      */
     public getAnimationByTargetProperty(property: string): Nullable<Animation> {
-        var runtimeAnimations = this._runtimeAnimations;
+        const runtimeAnimations = this._runtimeAnimations;
 
-        for (var index = 0; index < runtimeAnimations.length; index++) {
+        for (let index = 0; index < runtimeAnimations.length; index++) {
             if (runtimeAnimations[index].animation.targetProperty === property) {
                 return runtimeAnimations[index].animation;
             }
@@ -210,9 +213,9 @@ export class Animatable {
      * @returns null or the runtime animation for the given property
      */
     public getRuntimeAnimationByTargetProperty(property: string): Nullable<RuntimeAnimation> {
-        var runtimeAnimations = this._runtimeAnimations;
+        const runtimeAnimations = this._runtimeAnimations;
 
-        for (var index = 0; index < runtimeAnimations.length; index++) {
+        for (let index = 0; index < runtimeAnimations.length; index++) {
             if (runtimeAnimations[index].animation.targetProperty === property) {
                 return runtimeAnimations[index];
             }
@@ -225,9 +228,9 @@ export class Animatable {
      * Resets the animatable to its original state
      */
     public reset(): void {
-        var runtimeAnimations = this._runtimeAnimations;
+        const runtimeAnimations = this._runtimeAnimations;
 
-        for (var index = 0; index < runtimeAnimations.length; index++) {
+        for (let index = 0; index < runtimeAnimations.length; index++) {
             runtimeAnimations[index].reset(true);
         }
 
@@ -241,9 +244,9 @@ export class Animatable {
      * @param blendingSpeed defines the blending speed to use
      */
     public enableBlending(blendingSpeed: number): void {
-        var runtimeAnimations = this._runtimeAnimations;
+        const runtimeAnimations = this._runtimeAnimations;
 
-        for (var index = 0; index < runtimeAnimations.length; index++) {
+        for (let index = 0; index < runtimeAnimations.length; index++) {
             runtimeAnimations[index].animation.enableBlending = true;
             runtimeAnimations[index].animation.blendingSpeed = blendingSpeed;
         }
@@ -254,9 +257,9 @@ export class Animatable {
      * @see https://doc.babylonjs.com/babylon101/animations#animation-blending
      */
     public disableBlending(): void {
-        var runtimeAnimations = this._runtimeAnimations;
+        const runtimeAnimations = this._runtimeAnimations;
 
-        for (var index = 0; index < runtimeAnimations.length; index++) {
+        for (let index = 0; index < runtimeAnimations.length; index++) {
             runtimeAnimations[index].animation.enableBlending = false;
         }
     }
@@ -266,16 +269,16 @@ export class Animatable {
      * @param frame defines the frame to jump to
      */
     public goToFrame(frame: number): void {
-        var runtimeAnimations = this._runtimeAnimations;
+        const runtimeAnimations = this._runtimeAnimations;
 
         if (runtimeAnimations[0]) {
-            var fps = runtimeAnimations[0].animation.framePerSecond;
+            const fps = runtimeAnimations[0].animation.framePerSecond;
             this._frameToSyncFromJump = this._frameToSyncFromJump ?? runtimeAnimations[0].currentFrame;
-            var delay = this.speedRatio === 0 ? 0 : ((frame - this._frameToSyncFromJump) / fps * 1000) / this.speedRatio;
+            const delay = this.speedRatio === 0 ? 0 : (((frame - this._frameToSyncFromJump) / fps) * 1000) / this.speedRatio;
             this._manualJumpDelay = -delay;
         }
 
-        for (var index = 0; index < runtimeAnimations.length; index++) {
+        for (let index = 0; index < runtimeAnimations.length; index++) {
             runtimeAnimations[index].goToFrame(frame);
         }
     }
@@ -312,10 +315,9 @@ export class Animatable {
      */
     public stop(animationName?: string, targetMask?: (target: any) => boolean): void {
         if (animationName || targetMask) {
-            var idx = this._scene._activeAnimatables.indexOf(this);
+            const idx = this._scene._activeAnimatables.indexOf(this);
 
             if (idx > -1) {
-
                 var runtimeAnimations = this._runtimeAnimations;
 
                 for (var index = runtimeAnimations.length - 1; index >= 0; index--) {
@@ -336,9 +338,7 @@ export class Animatable {
                     this._raiseOnAnimationEnd();
                 }
             }
-
         } else {
-
             var index = this._scene._activeAnimatables.indexOf(this);
 
             if (index > -1) {
@@ -360,13 +360,22 @@ export class Animatable {
      */
     public waitAsync(): Promise<Animatable> {
         return new Promise((resolve, reject) => {
-            this.onAnimationEndObservable.add(() => {
-                resolve(this);
-            }, undefined, undefined, this, true);
+            this.onAnimationEndObservable.add(
+                () => {
+                    resolve(this);
+                },
+                undefined,
+                undefined,
+                this,
+                true
+            );
         });
     }
 
-    /** @hidden */
+    /**
+     * @param delay
+     * @hidden
+     */
     public _animate(delay: number): boolean {
         if (this._paused) {
             this.animationStarted = false;
@@ -390,20 +399,19 @@ export class Animatable {
             this._frameToSyncFromJump = null;
         }
 
-        if (this._weight === 0) { // We consider that an animation with a weight === 0 is "actively" paused
+        if (this._weight === 0) {
+            // We consider that an animation with a weight === 0 is "actively" paused
             return true;
         }
 
         // Animating
-        var running = false;
-        var runtimeAnimations = this._runtimeAnimations;
-        var index: number;
+        let running = false;
+        const runtimeAnimations = this._runtimeAnimations;
+        let index: number;
 
         for (index = 0; index < runtimeAnimations.length; index++) {
-            var animation = runtimeAnimations[index];
-            var isRunning = animation.animate(delay - this._localDelayOffset, this.fromFrame,
-                this.toFrame, this.loopAnimation, this._speedRatio, this._weight
-            );
+            const animation = runtimeAnimations[index];
+            const isRunning = animation.animate(delay - this._localDelayOffset, this.fromFrame, this.toFrame, this.loopAnimation, this._speedRatio, this._weight);
             running = running || isRunning;
         }
 
@@ -442,21 +450,24 @@ declare module "../scene" {
 
         /** @hidden */
         _processLateAnimationBindingsForMatrices(holder: {
-            totalWeight: number,
-            totalAdditiveWeight: number,
-            animations: RuntimeAnimation[],
-            additiveAnimations: RuntimeAnimation[],
-            originalValue: Matrix
+            totalWeight: number;
+            totalAdditiveWeight: number;
+            animations: RuntimeAnimation[];
+            additiveAnimations: RuntimeAnimation[];
+            originalValue: Matrix;
         }): any;
 
         /** @hidden */
-        _processLateAnimationBindingsForQuaternions(holder: {
-            totalWeight: number,
-            totalAdditiveWeight: number,
-            animations: RuntimeAnimation[],
-            additiveAnimations: RuntimeAnimation[],
-            originalValue: Quaternion
-        }, refQuaternion: Quaternion): Quaternion;
+        _processLateAnimationBindingsForQuaternions(
+            holder: {
+                totalWeight: number;
+                totalAdditiveWeight: number;
+                animations: RuntimeAnimation[];
+                additiveAnimations: RuntimeAnimation[];
+                originalValue: Quaternion;
+            },
+            refQuaternion: Quaternion
+        ): Quaternion;
 
         /** @hidden */
         _processLateAnimationBindings(): void;
@@ -476,8 +487,19 @@ declare module "../scene" {
          * @param isAdditive defines whether the animation should be evaluated additively (false by default)
          * @returns the animatable object created for this animation
          */
-        beginWeightedAnimation(target: any, from: number, to: number, weight: number, loop?: boolean, speedRatio?: number,
-            onAnimationEnd?: () => void, animatable?: Animatable, targetMask?: (target: any) => boolean, onAnimationLoop?: () => void, isAdditive?: boolean): Animatable;
+        beginWeightedAnimation(
+            target: any,
+            from: number,
+            to: number,
+            weight: number,
+            loop?: boolean,
+            speedRatio?: number,
+            onAnimationEnd?: () => void,
+            animatable?: Animatable,
+            targetMask?: (target: any) => boolean,
+            onAnimationLoop?: () => void,
+            isAdditive?: boolean
+        ): Animatable;
 
         /**
          * Will start the animation sequence of a given target
@@ -494,9 +516,19 @@ declare module "../scene" {
          * @param isAdditive defines whether the animation should be evaluated additively (false by default)
          * @returns the animatable object created for this animation
          */
-        beginAnimation(target: any, from: number, to: number, loop?: boolean, speedRatio?: number,
-            onAnimationEnd?: () => void, animatable?: Animatable, stopCurrent?: boolean,
-            targetMask?: (target: any) => boolean, onAnimationLoop?: () => void, isAdditive?: boolean): Animatable;
+        beginAnimation(
+            target: any,
+            from: number,
+            to: number,
+            loop?: boolean,
+            speedRatio?: number,
+            onAnimationEnd?: () => void,
+            animatable?: Animatable,
+            stopCurrent?: boolean,
+            targetMask?: (target: any) => boolean,
+            onAnimationLoop?: () => void,
+            isAdditive?: boolean
+        ): Animatable;
 
         /**
          * Will start the animation sequence of a given target and its hierarchy
@@ -514,9 +546,20 @@ declare module "../scene" {
          * @param isAdditive defines whether the animation should be evaluated additively (false by default)
          * @returns the list of created animatables
          */
-        beginHierarchyAnimation(target: any, directDescendantsOnly: boolean, from: number, to: number, loop?: boolean, speedRatio?: number,
-            onAnimationEnd?: () => void, animatable?: Animatable, stopCurrent?: boolean,
-            targetMask?: (target: any) => boolean, onAnimationLoop?: () => void, isAdditive?: boolean): Animatable[];
+        beginHierarchyAnimation(
+            target: any,
+            directDescendantsOnly: boolean,
+            from: number,
+            to: number,
+            loop?: boolean,
+            speedRatio?: number,
+            onAnimationEnd?: () => void,
+            animatable?: Animatable,
+            stopCurrent?: boolean,
+            targetMask?: (target: any) => boolean,
+            onAnimationLoop?: () => void,
+            isAdditive?: boolean
+        ): Animatable[];
 
         /**
          * Begin a new animation on a given node
@@ -531,7 +574,17 @@ declare module "../scene" {
          * @param isAdditive defines whether the animation should be evaluated additively (false by default)
          * @returns the list of created animatables
          */
-        beginDirectAnimation(target: any, animations: Animation[], from: number, to: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void, onAnimationLoop?: () => void, isAdditive?: boolean): Animatable;
+        beginDirectAnimation(
+            target: any,
+            animations: Animation[],
+            from: number,
+            to: number,
+            loop?: boolean,
+            speedRatio?: number,
+            onAnimationEnd?: () => void,
+            onAnimationLoop?: () => void,
+            isAdditive?: boolean
+        ): Animatable;
 
         /**
          * Begin a new animation on a given node and its hierarchy
@@ -547,7 +600,18 @@ declare module "../scene" {
          * @param isAdditive defines whether the animation should be evaluated additively (false by default)
          * @returns the list of animatables created for all nodes
          */
-        beginDirectHierarchyAnimation(target: Node, directDescendantsOnly: boolean, animations: Animation[], from: number, to: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void, onAnimationLoop?: () => void, isAdditive?: boolean): Animatable[];
+        beginDirectHierarchyAnimation(
+            target: Node,
+            directDescendantsOnly: boolean,
+            animations: Animation[],
+            from: number,
+            to: number,
+            loop?: boolean,
+            speedRatio?: number,
+            onAnimationEnd?: () => void,
+            onAnimationLoop?: () => void,
+            isAdditive?: boolean
+        ): Animatable[];
 
         /**
          * Gets the animatable associated with a specific target
@@ -564,8 +628,8 @@ declare module "../scene" {
         getAllAnimatablesByTarget(target: any): Array<Animatable>;
 
         /**
-        * Stops and removes all animations that have been applied to the scene
-        */
+         * Stops and removes all animations that have been applied to the scene
+         */
         stopAllAnimations(): void;
 
         /**
@@ -581,7 +645,7 @@ Scene.prototype._animate = function (): void {
     }
 
     // Getting time
-    var now = PrecisionDate.Now;
+    const now = PrecisionDate.Now;
     if (!this._animationTimeLast) {
         if (this._pendingData.length > 0) {
             return;
@@ -601,7 +665,7 @@ Scene.prototype._animate = function (): void {
     const animationTime = this._animationTime;
 
     for (let index = 0; index < animatables.length; index++) {
-        let animatable = animatables[index];
+        const animatable = animatables[index];
 
         if (!animatable._animate(animationTime) && animatable.disposeOnEnd) {
             index--; // Array was updated
@@ -612,19 +676,38 @@ Scene.prototype._animate = function (): void {
     this._processLateAnimationBindings();
 };
 
-Scene.prototype.beginWeightedAnimation = function (target: any, from: number, to: number, weight = 1.0, loop?: boolean, speedRatio: number = 1.0,
-    onAnimationEnd?: () => void, animatable?: Animatable, targetMask?: (target: any) => boolean, onAnimationLoop?: () => void, isAdditive = false): Animatable {
-
-    let returnedAnimatable = this.beginAnimation(target, from, to, loop, speedRatio, onAnimationEnd, animatable, false, targetMask, onAnimationLoop, isAdditive);
+Scene.prototype.beginWeightedAnimation = function (
+    target: any,
+    from: number,
+    to: number,
+    weight = 1.0,
+    loop?: boolean,
+    speedRatio: number = 1.0,
+    onAnimationEnd?: () => void,
+    animatable?: Animatable,
+    targetMask?: (target: any) => boolean,
+    onAnimationLoop?: () => void,
+    isAdditive = false
+): Animatable {
+    const returnedAnimatable = this.beginAnimation(target, from, to, loop, speedRatio, onAnimationEnd, animatable, false, targetMask, onAnimationLoop, isAdditive);
     returnedAnimatable.weight = weight;
 
     return returnedAnimatable;
 };
 
-Scene.prototype.beginAnimation = function (target: any, from: number, to: number, loop?: boolean, speedRatio: number = 1.0,
-    onAnimationEnd?: () => void, animatable?: Animatable, stopCurrent = true,
-    targetMask?: (target: any) => boolean, onAnimationLoop?: () => void, isAdditive = false): Animatable {
-
+Scene.prototype.beginAnimation = function (
+    target: any,
+    from: number,
+    to: number,
+    loop?: boolean,
+    speedRatio: number = 1.0,
+    onAnimationEnd?: () => void,
+    animatable?: Animatable,
+    stopCurrent = true,
+    targetMask?: (target: any) => boolean,
+    onAnimationLoop?: () => void,
+    isAdditive = false
+): Animatable {
     if (from > to && speedRatio > 0) {
         speedRatio *= -1;
     }
@@ -645,8 +728,8 @@ Scene.prototype.beginAnimation = function (target: any, from: number, to: number
 
     // Children animations
     if (target.getAnimatables) {
-        var animatables = target.getAnimatables();
-        for (var index = 0; index < animatables.length; index++) {
+        const animatables = target.getAnimatables();
+        for (let index = 0; index < animatables.length; index++) {
             this.beginAnimation(animatables[index], from, to, loop, speedRatio, onAnimationEnd, animatable, stopCurrent, targetMask, onAnimationLoop);
         }
     }
@@ -656,22 +739,42 @@ Scene.prototype.beginAnimation = function (target: any, from: number, to: number
     return animatable;
 };
 
-Scene.prototype.beginHierarchyAnimation = function (target: any, directDescendantsOnly: boolean, from: number, to: number, loop?: boolean, speedRatio: number = 1.0,
-    onAnimationEnd?: () => void, animatable?: Animatable, stopCurrent = true,
-    targetMask?: (target: any) => boolean, onAnimationLoop?: () => void, isAdditive = false): Animatable[] {
+Scene.prototype.beginHierarchyAnimation = function (
+    target: any,
+    directDescendantsOnly: boolean,
+    from: number,
+    to: number,
+    loop?: boolean,
+    speedRatio: number = 1.0,
+    onAnimationEnd?: () => void,
+    animatable?: Animatable,
+    stopCurrent = true,
+    targetMask?: (target: any) => boolean,
+    onAnimationLoop?: () => void,
+    isAdditive = false
+): Animatable[] {
+    const children = target.getDescendants(directDescendantsOnly);
 
-    let children = target.getDescendants(directDescendantsOnly);
-
-    let result = [];
+    const result = [];
     result.push(this.beginAnimation(target, from, to, loop, speedRatio, onAnimationEnd, animatable, stopCurrent, targetMask, undefined, isAdditive));
-    for (var child of children) {
+    for (const child of children) {
         result.push(this.beginAnimation(child, from, to, loop, speedRatio, onAnimationEnd, animatable, stopCurrent, targetMask, undefined, isAdditive));
     }
 
     return result;
 };
 
-Scene.prototype.beginDirectAnimation = function (target: any, animations: Animation[], from: number, to: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void, onAnimationLoop?: () => void, isAdditive = false): Animatable {
+Scene.prototype.beginDirectAnimation = function (
+    target: any,
+    animations: Animation[],
+    from: number,
+    to: number,
+    loop?: boolean,
+    speedRatio?: number,
+    onAnimationEnd?: () => void,
+    onAnimationLoop?: () => void,
+    isAdditive = false
+): Animatable {
     if (speedRatio === undefined) {
         speedRatio = 1.0;
     }
@@ -679,22 +782,33 @@ Scene.prototype.beginDirectAnimation = function (target: any, animations: Animat
     if (from > to && speedRatio > 0) {
         speedRatio *= -1;
     } else if (to > from && speedRatio < 0) {
-        var temp = to;
+        const temp = to;
         to = from;
         from = temp;
     }
 
-    var animatable = new Animatable(this, target, from, to, loop, speedRatio, onAnimationEnd, animations, onAnimationLoop, isAdditive);
+    const animatable = new Animatable(this, target, from, to, loop, speedRatio, onAnimationEnd, animations, onAnimationLoop, isAdditive);
 
     return animatable;
 };
 
-Scene.prototype.beginDirectHierarchyAnimation = function (target: Node, directDescendantsOnly: boolean, animations: Animation[], from: number, to: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void, onAnimationLoop?: () => void, isAdditive = false): Animatable[] {
-    let children = target.getDescendants(directDescendantsOnly);
+Scene.prototype.beginDirectHierarchyAnimation = function (
+    target: Node,
+    directDescendantsOnly: boolean,
+    animations: Animation[],
+    from: number,
+    to: number,
+    loop?: boolean,
+    speedRatio?: number,
+    onAnimationEnd?: () => void,
+    onAnimationLoop?: () => void,
+    isAdditive = false
+): Animatable[] {
+    const children = target.getDescendants(directDescendantsOnly);
 
-    let result = [];
+    const result = [];
     result.push(this.beginDirectAnimation(target, animations, from, to, loop, speedRatio, onAnimationEnd, onAnimationLoop, isAdditive));
-    for (var child of children) {
+    for (const child of children) {
         result.push(this.beginDirectAnimation(child, animations, from, to, loop, speedRatio, onAnimationEnd, onAnimationLoop, isAdditive));
     }
 
@@ -702,7 +816,7 @@ Scene.prototype.beginDirectHierarchyAnimation = function (target: Node, directDe
 };
 
 Scene.prototype.getAnimatableByTarget = function (target: any): Nullable<Animatable> {
-    for (var index = 0; index < this._activeAnimatables.length; index++) {
+    for (let index = 0; index < this._activeAnimatables.length; index++) {
         if (this._activeAnimatables[index].target === target) {
             return this._activeAnimatables[index];
         }
@@ -712,8 +826,8 @@ Scene.prototype.getAnimatableByTarget = function (target: any): Nullable<Animata
 };
 
 Scene.prototype.getAllAnimatablesByTarget = function (target: any): Array<Animatable> {
-    let result = [];
-    for (var index = 0; index < this._activeAnimatables.length; index++) {
+    const result = [];
+    for (let index = 0; index < this._activeAnimatables.length; index++) {
         if (this._activeAnimatables[index].target === target) {
             result.push(this._activeAnimatables[index]);
         }
@@ -729,9 +843,9 @@ Scene.prototype.getAllAnimatablesByTarget = function (target: any): Array<Animat
  * @param targetMask - a function that determines if the animation should be stopped based on its target (all animations will be stopped if both this and animationName are empty)
  */
 Scene.prototype.stopAnimation = function (target: any, animationName?: string, targetMask?: (target: any) => boolean): void {
-    var animatables = this.getAllAnimatablesByTarget(target);
+    const animatables = this.getAllAnimatablesByTarget(target);
 
-    for (var animatable of animatables) {
+    for (const animatable of animatables) {
         animatable.stop(animationName, targetMask);
     }
 };
@@ -747,13 +861,13 @@ Scene.prototype.stopAllAnimations = function (): void {
         this._activeAnimatables = [];
     }
 
-    for (var group of this.animationGroups) {
+    for (const group of this.animationGroups) {
         group.stop();
     }
 };
 
 Scene.prototype._registerTargetForLateAnimationBinding = function (runtimeAnimation: RuntimeAnimation, originalValue: any): void {
-    let target = runtimeAnimation.target;
+    const target = runtimeAnimation.target;
     this._registeredForLateAnimationBindings.pushNoDuplicate(target);
 
     if (!target._lateAnimationHolders) {
@@ -766,7 +880,7 @@ Scene.prototype._registerTargetForLateAnimationBinding = function (runtimeAnimat
             totalAdditiveWeight: 0,
             animations: [],
             additiveAnimations: [],
-            originalValue: originalValue
+            originalValue: originalValue,
         };
     }
 
@@ -780,23 +894,23 @@ Scene.prototype._registerTargetForLateAnimationBinding = function (runtimeAnimat
 };
 
 Scene.prototype._processLateAnimationBindingsForMatrices = function (holder: {
-    totalWeight: number,
-    totalAdditiveWeight: number,
-    animations: RuntimeAnimation[],
-    additiveAnimations: RuntimeAnimation[],
-    originalValue: Matrix
+    totalWeight: number;
+    totalAdditiveWeight: number;
+    animations: RuntimeAnimation[];
+    additiveAnimations: RuntimeAnimation[];
+    originalValue: Matrix;
 }): any {
     if (holder.totalWeight === 0 && holder.totalAdditiveWeight === 0) {
         return holder.originalValue;
     }
 
     let normalizer = 1.0;
-    let finalPosition = TmpVectors.Vector3[0];
-    let finalScaling = TmpVectors.Vector3[1];
-    let finalQuaternion = TmpVectors.Quaternion[0];
+    const finalPosition = TmpVectors.Vector3[0];
+    const finalScaling = TmpVectors.Vector3[1];
+    const finalQuaternion = TmpVectors.Quaternion[0];
     let startIndex = 0;
-    let originalAnimation = holder.animations[0];
-    let originalValue = holder.originalValue;
+    const originalAnimation = holder.animations[0];
+    const originalValue = holder.originalValue;
 
     var scale = 1;
     let skipOverride = false;
@@ -826,16 +940,16 @@ Scene.prototype._processLateAnimationBindingsForMatrices = function (holder: {
         finalPosition.scaleInPlace(scale);
         finalQuaternion.scaleInPlace(scale);
 
-        for (var animIndex = startIndex; animIndex < holder.animations.length; animIndex++) {
+        for (let animIndex = startIndex; animIndex < holder.animations.length; animIndex++) {
             var runtimeAnimation = holder.animations[animIndex];
             if (runtimeAnimation.weight === 0) {
                 continue;
             }
 
             var scale = runtimeAnimation.weight / normalizer;
-            let currentPosition = TmpVectors.Vector3[2];
-            let currentScaling = TmpVectors.Vector3[3];
-            let currentQuaternion = TmpVectors.Quaternion[1];
+            const currentPosition = TmpVectors.Vector3[2];
+            const currentScaling = TmpVectors.Vector3[3];
+            const currentQuaternion = TmpVectors.Quaternion[1];
 
             runtimeAnimation.currentValue.decompose(currentScaling, currentQuaternion, currentPosition);
             currentScaling.scaleAndAddToRef(scale, finalScaling);
@@ -851,9 +965,9 @@ Scene.prototype._processLateAnimationBindingsForMatrices = function (holder: {
             continue;
         }
 
-        let currentPosition = TmpVectors.Vector3[2];
-        let currentScaling = TmpVectors.Vector3[3];
-        let currentQuaternion = TmpVectors.Quaternion[1];
+        const currentPosition = TmpVectors.Vector3[2];
+        const currentScaling = TmpVectors.Vector3[3];
+        const currentQuaternion = TmpVectors.Quaternion[1];
 
         runtimeAnimation.currentValue.decompose(currentScaling, currentQuaternion, currentPosition);
         currentScaling.multiplyToRef(finalScaling, currentScaling);
@@ -861,27 +975,29 @@ Scene.prototype._processLateAnimationBindingsForMatrices = function (holder: {
         finalQuaternion.multiplyToRef(currentQuaternion, currentQuaternion);
         Quaternion.SlerpToRef(finalQuaternion, currentQuaternion, runtimeAnimation.weight, finalQuaternion);
         currentPosition.scaleAndAddToRef(runtimeAnimation.weight, finalPosition);
-
     }
 
-    let workValue = originalAnimation ? originalAnimation._animationState.workValue : TmpVectors.Matrix[0].clone();
+    const workValue = originalAnimation ? originalAnimation._animationState.workValue : TmpVectors.Matrix[0].clone();
     Matrix.ComposeToRef(finalScaling, finalQuaternion, finalPosition, workValue);
     return workValue;
 };
 
-Scene.prototype._processLateAnimationBindingsForQuaternions = function (holder: {
-    totalWeight: number,
-    totalAdditiveWeight: number,
-    animations: RuntimeAnimation[],
-    additiveAnimations: RuntimeAnimation[],
-    originalValue: Quaternion
-}, refQuaternion: Quaternion): Quaternion {
+Scene.prototype._processLateAnimationBindingsForQuaternions = function (
+    holder: {
+        totalWeight: number;
+        totalAdditiveWeight: number;
+        animations: RuntimeAnimation[];
+        additiveAnimations: RuntimeAnimation[];
+        originalValue: Quaternion;
+    },
+    refQuaternion: Quaternion
+): Quaternion {
     if (holder.totalWeight === 0 && holder.totalAdditiveWeight === 0) {
         return refQuaternion;
     }
 
-    let originalAnimation = holder.animations[0];
-    let originalValue = holder.originalValue;
+    const originalAnimation = holder.animations[0];
+    const originalValue = holder.originalValue;
     let cumulativeQuaternion = refQuaternion;
 
     if (holder.totalWeight === 0 && holder.totalAdditiveWeight > 0) {
@@ -899,7 +1015,7 @@ Scene.prototype._processLateAnimationBindingsForQuaternions = function (holder: 
         let weights: Array<number>;
 
         if (holder.totalWeight < 1.0) {
-            let scale = 1.0 - holder.totalWeight;
+            const scale = 1.0 - holder.totalWeight;
 
             quaternions = [];
             weights = [];
@@ -907,7 +1023,8 @@ Scene.prototype._processLateAnimationBindingsForQuaternions = function (holder: 
             quaternions.push(originalValue);
             weights.push(scale);
         } else {
-            if (holder.animations.length === 2) { // Slerp as soon as we can
+            if (holder.animations.length === 2) {
+                // Slerp as soon as we can
                 Quaternion.SlerpToRef(holder.animations[0].currentValue, holder.animations[1].currentValue, holder.animations[1].weight / holder.totalWeight, refQuaternion);
 
                 if (holder.totalAdditiveWeight === 0) {
@@ -920,8 +1037,8 @@ Scene.prototype._processLateAnimationBindingsForQuaternions = function (holder: 
             normalizer = holder.totalWeight;
         }
 
-        for (var animIndex = 0; animIndex < holder.animations.length; animIndex++) {
-            let runtimeAnimation = holder.animations[animIndex];
+        for (let animIndex = 0; animIndex < holder.animations.length; animIndex++) {
+            const runtimeAnimation = holder.animations[animIndex];
             quaternions.push(runtimeAnimation.currentValue);
             weights.push(runtimeAnimation.weight / normalizer);
         }
@@ -929,7 +1046,7 @@ Scene.prototype._processLateAnimationBindingsForQuaternions = function (holder: 
         // https://gamedev.stackexchange.com/questions/62354/method-for-interpolation-between-3-quaternions
 
         let cumulativeAmount = 0;
-        for (var index = 0; index < quaternions.length;) {
+        for (let index = 0; index < quaternions.length; ) {
             if (!index) {
                 Quaternion.SlerpToRef(quaternions[index], quaternions[index + 1], weights[index + 1] / (weights[index] + weights[index + 1]), refQuaternion);
                 cumulativeQuaternion = refQuaternion;
@@ -945,7 +1062,7 @@ Scene.prototype._processLateAnimationBindingsForQuaternions = function (holder: 
 
     // Add up the additive animations
     for (let animIndex = 0; animIndex < holder.additiveAnimations.length; animIndex++) {
-        let runtimeAnimation = holder.additiveAnimations[animIndex];
+        const runtimeAnimation = holder.additiveAnimations[animIndex];
         if (runtimeAnimation.weight === 0) {
             continue;
         }
@@ -961,25 +1078,24 @@ Scene.prototype._processLateAnimationBindings = function (): void {
     if (!this._registeredForLateAnimationBindings.length) {
         return;
     }
-    for (var index = 0; index < this._registeredForLateAnimationBindings.length; index++) {
-        var target = this._registeredForLateAnimationBindings.data[index];
+    for (let index = 0; index < this._registeredForLateAnimationBindings.length; index++) {
+        const target = this._registeredForLateAnimationBindings.data[index];
 
-        for (var path in target._lateAnimationHolders) {
-            var holder = target._lateAnimationHolders[path];
-            let originalAnimation: RuntimeAnimation = holder.animations[0];
-            let originalValue = holder.originalValue;
+        for (const path in target._lateAnimationHolders) {
+            const holder = target._lateAnimationHolders[path];
+            const originalAnimation: RuntimeAnimation = holder.animations[0];
+            const originalValue = holder.originalValue;
 
-            let matrixDecomposeMode = Animation.AllowMatrixDecomposeForInterpolation && originalValue.m; // ie. data is matrix
+            const matrixDecomposeMode = Animation.AllowMatrixDecomposeForInterpolation && originalValue.m; // ie. data is matrix
 
             let finalValue: any = target[path];
             if (matrixDecomposeMode) {
                 finalValue = this._processLateAnimationBindingsForMatrices(holder);
             } else {
-                let quaternionMode = originalValue.w !== undefined;
+                const quaternionMode = originalValue.w !== undefined;
                 if (quaternionMode) {
                     finalValue = this._processLateAnimationBindingsForQuaternions(holder, finalValue || Quaternion.Identity());
                 } else {
-
                     let startIndex = 0;
                     let normalizer = 1.0;
 
@@ -997,7 +1113,7 @@ Scene.prototype._processLateAnimationBindings = function (): void {
                     } else if (originalAnimation) {
                         // We need to normalize the weights
                         normalizer = holder.totalWeight;
-                        let scale = originalAnimation.weight / normalizer;
+                        const scale = originalAnimation.weight / normalizer;
                         if (scale !== 1) {
                             if (originalAnimation.currentValue.scale) {
                                 finalValue = originalAnimation.currentValue.scale(scale);
@@ -1012,7 +1128,7 @@ Scene.prototype._processLateAnimationBindings = function (): void {
                     }
 
                     // Add up the override animations
-                    for (var animIndex = startIndex; animIndex < holder.animations.length; animIndex++) {
+                    for (let animIndex = startIndex; animIndex < holder.animations.length; animIndex++) {
                         var runtimeAnimation = holder.animations[animIndex];
                         var scale = runtimeAnimation.weight / normalizer;
 
@@ -1063,7 +1179,13 @@ declare module "../Bones/bone" {
     }
 }
 
-Bone.prototype.copyAnimationRange = function (source: Bone, rangeName: string, frameOffset: number, rescaleAsRequired = false, skelDimensionsRatio: Nullable<Vector3> = null): boolean {
+Bone.prototype.copyAnimationRange = function (
+    source: Bone,
+    rangeName: string,
+    frameOffset: number,
+    rescaleAsRequired = false,
+    skelDimensionsRatio: Nullable<Vector3> = null
+): boolean {
     // all animation may be coming from a library skeleton, so may need to create animation
     if (this.animations.length === 0) {
         this.animations.push(new Animation(this.name, "_matrix", source.animations[0].framePerSecond, Animation.ANIMATIONTYPE_MATRIX, 0));
@@ -1071,31 +1193,31 @@ Bone.prototype.copyAnimationRange = function (source: Bone, rangeName: string, f
     }
 
     // get animation info / verify there is such a range from the source bone
-    var sourceRange = source.animations[0].getRange(rangeName);
+    const sourceRange = source.animations[0].getRange(rangeName);
     if (!sourceRange) {
         return false;
     }
-    var from = sourceRange.from;
-    var to = sourceRange.to;
-    var sourceKeys = source.animations[0].getKeys();
+    const from = sourceRange.from;
+    const to = sourceRange.to;
+    const sourceKeys = source.animations[0].getKeys();
 
     // rescaling prep
-    var sourceBoneLength = source.length;
-    var sourceParent = source.getParent();
-    var parent = this.getParent();
-    var parentScalingReqd = rescaleAsRequired && sourceParent && sourceBoneLength && this.length && sourceBoneLength !== this.length;
-    var parentRatio = parentScalingReqd && parent && sourceParent ? parent.length / sourceParent.length : 1;
+    const sourceBoneLength = source.length;
+    const sourceParent = source.getParent();
+    const parent = this.getParent();
+    const parentScalingReqd = rescaleAsRequired && sourceParent && sourceBoneLength && this.length && sourceBoneLength !== this.length;
+    const parentRatio = parentScalingReqd && parent && sourceParent ? parent.length / sourceParent.length : 1;
 
-    var dimensionsScalingReqd = rescaleAsRequired && !parent && skelDimensionsRatio && (skelDimensionsRatio.x !== 1 || skelDimensionsRatio.y !== 1 || skelDimensionsRatio.z !== 1);
+    const dimensionsScalingReqd = rescaleAsRequired && !parent && skelDimensionsRatio && (skelDimensionsRatio.x !== 1 || skelDimensionsRatio.y !== 1 || skelDimensionsRatio.z !== 1);
 
-    var destKeys = this.animations[0].getKeys();
+    const destKeys = this.animations[0].getKeys();
 
     // loop vars declaration
-    var orig: { frame: number, value: Matrix };
-    var origTranslation: Vector3;
-    var mat: Matrix;
+    let orig: { frame: number; value: Matrix };
+    let origTranslation: Vector3;
+    let mat: Matrix;
 
-    for (var key = 0, nKeys = sourceKeys.length; key < nKeys; key++) {
+    for (let key = 0, nKeys = sourceKeys.length; key < nKeys; key++) {
         orig = sourceKeys[key];
         if (orig.frame >= from && orig.frame <= to) {
             if (rescaleAsRequired) {
