@@ -1,5 +1,5 @@
 import { IEnvironmentMapConfiguration } from './interfaces/environmentMapConfiguration';
-import { EngineOptions } from 'babylonjs/Engines/thinEngine';
+import { EngineOptions } from 'core/Engines/thinEngine';
 import { IObserversConfiguration } from './interfaces/observersConfiguration';
 import { IModelConfiguration } from './interfaces/modelConfiguration';
 import { ISceneConfiguration } from './interfaces/sceneConfiguration';

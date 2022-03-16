@@ -1,12 +1,12 @@
 
 import { Template, EventCallback } from '../templating/templateManager';
-import { FilesInput } from 'babylonjs/Misc/filesInput';
-import { SpotLight } from 'babylonjs/Lights/spotLight';
-import { Vector3 } from 'babylonjs/Maths/math';
+import { FilesInput } from 'core/Misc/filesInput';
+import { SpotLight } from 'core/Lights/spotLight';
+import { Vector3 } from 'core/Maths/math';
 import { TemplateManager } from '../templating/templateManager';
 import { AbstractViewerWithTemplate } from './viewerWithTemplate';
-import { StandardMaterial } from 'babylonjs/Materials/standardMaterial';
-import { PBRMaterial } from 'babylonjs/Materials/PBR/pbrMaterial';
+import { StandardMaterial } from 'core/Materials/standardMaterial';
+import { PBRMaterial } from 'core/Materials/PBR/pbrMaterial';
 import { extendClassWithConfig } from '../helper/index';
 import { ViewerModel } from '../model/viewerModel';
 import { IModelAnimation, AnimationState } from '../model/modelAnimation';

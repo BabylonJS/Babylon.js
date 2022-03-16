@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="ie=edge">
+        <title>BabylonJS Viewer - DOM usage</title>
+        <style>
+            babylon {
+                width: 800px;
+                height: 500px;
+            }
+        </style>
+    </head>
+
+    <body>
+        <babylon extends="minimal">
+            <model url="https://playground.babylonjs.com/scenes/BoomBox.glb">
+                <scaling x="10" y="10" z="10"></scaling>
+            </model>
+            <camera>
+                <behaviors>
+                    <auto-rotate type="0"></auto-rotate>
+                </behaviors>
+            </camera>
+        </babylon>
+        <script src="viewer.js"></script>
+    </body>
+
+</html>
+<html>
+
+</html>

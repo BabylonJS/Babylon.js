@@ -1,18 +1,18 @@
 import { RenderOnlyViewer } from './viewer/renderOnlyViewer';
 
 // Required side effects
-import 'babylonjs-loaders/glTF/2.0';
-import "babylonjs/Lights/Shadows/shadowGeneratorSceneComponent"
-import "babylonjs/Debug/debugLayer";
-import "babylonjs/Meshes/Builders/planeBuilder";
-import "babylonjs/Meshes/Builders/boxBuilder";
-import "babylonjs/Materials/Textures/Loaders/ddsTextureLoader"
-import "babylonjs/Materials/Textures/Loaders/envTextureLoader"
-import "babylonjs/Materials/Textures/Loaders/ktxTextureLoader"
-import "babylonjs/PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent";
+import 'loaders/glTF/2.0';
+import "core/Lights/Shadows/shadowGeneratorSceneComponent"
+import "core/Debug/debugLayer";
+import "core/Meshes/Builders/planeBuilder";
+import "core/Meshes/Builders/boxBuilder";
+import "core/Materials/Textures/Loaders/ddsTextureLoader"
+import "core/Materials/Textures/Loaders/envTextureLoader"
+import "core/Materials/Textures/Loaders/ktxTextureLoader"
+import "core/PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent";
 
 // Override default material factory to avoid the dependency on standard material
-import { Scene } from 'babylonjs/scene';
+import { Scene } from 'core/scene';
 Scene.DefaultMaterialFactory = (scene: Scene) => { return null as any };
 
 export { RenderOnlyViewer };
