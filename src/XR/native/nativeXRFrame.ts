@@ -4,7 +4,7 @@ import { RegisterNativeTypeAsync } from "../../Engines/nativeEngine";
 interface INativeXRFrame extends XRFrame {
     // Native-only helper functions
     getPoseData: (space: XRSpace, baseSpace: XRReferenceSpace, vectorBuffer: ArrayBuffer, matrixBuffer: ArrayBuffer) => XRPose;
-    _imageTrackingResults: XRImageTrackingResult[];
+    _imageTrackingResults?: XRImageTrackingResult[];
 }
 
 /** @hidden */
@@ -78,7 +78,7 @@ export class NativeXRFrame implements XRFrame {
     }
 
     public readonly getImageTrackingResults = (): XRImageTrackingResult[] => {
-        return this._nativeImpl._imageTrackingResults;
+        return this._nativeImpl._imageTrackingResults ?? [];
     }
 }
 
