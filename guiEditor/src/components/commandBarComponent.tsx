@@ -15,6 +15,7 @@ const zoomIcon: string = require("../../public/imgs/zoomIcon.svg");
 const guidesIcon: string = require("../../public/imgs/guidesIcon.svg");
 const logoIcon: string = require("../../public/imgs/babylonLogo.svg");
 const canvasFitIcon: string = require("../../public/imgs/canvasFitIcon.svg");
+const betaFlag: string = require("../../public/imgs/betaFlag.svg");
 
 require("../scss/commandBar.scss");
 
@@ -106,7 +107,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
             <div className={"ge-commands"}>
                 <div className="commands-left">
                     <div className="divider">
-                        <img src={logoIcon} color="white" className={"active"} />
+                        <img src={logoIcon} color="white" className={"active"} draggable={false} />
                         <CommandDropdownComponent
                             globalState={this.props.globalState}
                             toRight={true}
@@ -296,7 +297,9 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                     )}
                     </div>
                 </div>
-                <div className="commands-right"></div>
+                <div className="commands-right">
+                    <img src={betaFlag} className="beta-flag" draggable={false} />
+                </div>
             </div>
         );
     }

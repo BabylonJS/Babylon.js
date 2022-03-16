@@ -8,9 +8,10 @@
         font-weight: 600;
         font-size: 12px;
     }
-    grid-row: 1;
-    grid-column: 1;
     user-select: none;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
 
     .commands-left {
         float: left;
@@ -20,6 +21,12 @@
     .commands-right {
         float: right;
         display: flex;
+
+        .beta-flag {
+            width: 110px;
+            height: 30px;
+            display: none;
+        }
     }
 
     &.background-ts {
@@ -61,7 +68,7 @@
     .command-button {
         cursor: pointer;
         width: 55px;
-        height: 55px;
+        height: 40px;
 
         .command-label {
             display: none;
@@ -101,7 +108,7 @@
     .command-dropdown {        
         cursor: pointer;
         width: 55px;
-        height: 55px;
+        height: 40px;
 
         .command-dropdown-icon {
             height: 100%;
@@ -165,7 +172,6 @@
     .command-dropdown-content {
         background: #333333;
         position: absolute;
-        top: 55px;
         width: 55px;
         transform: scale(1);
 
