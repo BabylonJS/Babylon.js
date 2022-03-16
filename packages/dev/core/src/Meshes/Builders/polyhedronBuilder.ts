@@ -645,7 +645,7 @@ export const PolyhedronBuilder = {
 
 VertexData.CreatePolyhedron = CreatePolyhedronVertexData;
 
-Mesh.CreatePolyhedron = (
+(Mesh as any).CreatePolyhedron = (
     name: string,
     options: {
         type?: number;

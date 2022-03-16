@@ -346,7 +346,7 @@ export const ShapeBuilder = {
     ExtrudeShapeCustom,
 };
 
-Mesh.ExtrudeShape = (
+(Mesh as any).ExtrudeShape = (
     name: string,
     shape: Vector3[],
     path: Vector3[],
@@ -372,7 +372,7 @@ Mesh.ExtrudeShape = (
     return ExtrudeShape(name, options, scene);
 };
 
-Mesh.ExtrudeShapeCustom = (
+(Mesh as any).ExtrudeShapeCustom = (
     name: string,
     shape: Vector3[],
     path: Vector3[],

@@ -121,7 +121,7 @@ export const DiscBuilder = {
 
 VertexData.CreateDisc = CreateDiscVertexData;
 
-Mesh.CreateDisc = (name: string, radius: number, tessellation: number, scene: Nullable<Scene> = null, updatable?: boolean, sideOrientation?: number): Mesh => {
+(Mesh as any).CreateDisc = (name: string, radius: number, tessellation: number, scene: Nullable<Scene> = null, updatable?: boolean, sideOrientation?: number): Mesh => {
     const options = {
         radius,
         tessellation,

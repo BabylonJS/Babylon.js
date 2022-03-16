@@ -509,7 +509,7 @@ VertexData.CreateGround = CreateGroundVertexData;
 VertexData.CreateTiledGround = CreateTiledGroundVertexData;
 VertexData.CreateGroundFromHeightMap = CreateGroundFromHeightMapVertexData;
 
-Mesh.CreateGround = (name: string, width: number, height: number, subdivisions: number, scene?: Scene, updatable?: boolean): Mesh => {
+(Mesh as any).CreateGround = (name: string, width: number, height: number, subdivisions: number, scene?: Scene, updatable?: boolean): Mesh => {
     const options = {
         width,
         height,
@@ -520,7 +520,7 @@ Mesh.CreateGround = (name: string, width: number, height: number, subdivisions: 
     return CreateGround(name, options, scene);
 };
 
-Mesh.CreateTiledGround = (
+(Mesh as any).CreateTiledGround = (
     name: string,
     xmin: number,
     zmin: number,
@@ -544,7 +544,7 @@ Mesh.CreateTiledGround = (
     return CreateTiledGround(name, options, scene);
 };
 
-Mesh.CreateGroundFromHeightMap = (
+(Mesh as any).CreateGroundFromHeightMap = (
     name: string,
     url: string,
     width: number,

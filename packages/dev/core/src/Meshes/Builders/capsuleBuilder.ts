@@ -294,7 +294,7 @@ export const CapsuleBuilder = {
  * @returns the capsule mesh
  * @see https://doc.babylonjs.com/how_to/capsule_shape
  */
-Mesh.CreateCapsule = (name: string, options: ICreateCapsuleOptions, scene): Mesh => {
+(Mesh as any).CreateCapsule = (name: string, options: ICreateCapsuleOptions, scene?: Nullable<Scene>): Mesh => {
     return CreateCapsule(name, options, scene);
 };
 

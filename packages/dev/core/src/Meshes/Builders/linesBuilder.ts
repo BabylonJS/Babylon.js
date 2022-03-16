@@ -327,7 +327,7 @@ export const LinesBuilder = {
 VertexData.CreateLineSystem = CreateLineSystemVertexData;
 VertexData.CreateDashedLines = CreateDashedLinesVertexData;
 
-Mesh.CreateLines = (name: string, points: Vector3[], scene: Nullable<Scene> = null, updatable: boolean = false, instance: Nullable<LinesMesh> = null): LinesMesh => {
+(Mesh as any).CreateLines = (name: string, points: Vector3[], scene: Nullable<Scene> = null, updatable: boolean = false, instance: Nullable<LinesMesh> = null): LinesMesh => {
     const options = {
         points,
         updatable,
@@ -336,7 +336,7 @@ Mesh.CreateLines = (name: string, points: Vector3[], scene: Nullable<Scene> = nu
     return CreateLines(name, options, scene);
 };
 
-Mesh.CreateDashedLines = (
+(Mesh as any).CreateDashedLines = (
     name: string,
     points: Vector3[],
     dashSize: number,

@@ -226,7 +226,7 @@ export const BoxBuilder = {
 // Side effects
 VertexData.CreateBox = CreateBoxVertexData;
 
-Mesh.CreateBox = (name: string, size: number, scene: Nullable<Scene> = null, updatable?: boolean, sideOrientation?: number): Mesh => {
+(Mesh as any).CreateBox = (name: string, size: number, scene: Nullable<Scene> = null, updatable?: boolean, sideOrientation?: number): Mesh => {
     const options = {
         size,
         sideOrientation,

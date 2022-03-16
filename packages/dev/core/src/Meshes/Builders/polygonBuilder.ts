@@ -253,7 +253,7 @@ export const PolygonBuilder = {
 };
 
 VertexData.CreatePolygon = CreatePolygonVertexData;
-Mesh.CreatePolygon = (name: string, shape: Vector3[], scene: Scene, holes?: Vector3[][], updatable?: boolean, sideOrientation?: number, earcutInjection = earcut): Mesh => {
+(Mesh as any).CreatePolygon = (name: string, shape: Vector3[], scene: Scene, holes?: Vector3[][], updatable?: boolean, sideOrientation?: number, earcutInjection = earcut): Mesh => {
     const options = {
         shape: shape,
         holes: holes,
@@ -263,7 +263,7 @@ Mesh.CreatePolygon = (name: string, shape: Vector3[], scene: Scene, holes?: Vect
     return CreatePolygon(name, options, scene, earcutInjection);
 };
 
-Mesh.ExtrudePolygon = (
+(Mesh as any).ExtrudePolygon = (
     name: string,
     shape: Vector3[],
     depth: number,

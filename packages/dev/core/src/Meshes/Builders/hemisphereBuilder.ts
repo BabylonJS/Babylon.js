@@ -46,7 +46,7 @@ export const HemisphereBuilder = {
  * @param diameter
  * @param scene
  */
-Mesh.CreateHemisphere = (name: string, segments: number, diameter: number, scene?: Scene): Mesh => {
+(Mesh as any).CreateHemisphere = (name: string, segments: number, diameter: number, scene?: Scene): Mesh => {
     const options = {
         segments: segments,
         diameter: diameter,

@@ -136,7 +136,7 @@ export const TorusBuilder = {
 
 VertexData.CreateTorus = CreateTorusVertexData;
 
-Mesh.CreateTorus = (name: string, diameter: number, thickness: number, tessellation: number, scene?: Scene, updatable?: boolean, sideOrientation?: number): Mesh => {
+(Mesh as any).CreateTorus = (name: string, diameter: number, thickness: number, tessellation: number, scene?: Scene, updatable?: boolean, sideOrientation?: number): Mesh => {
     const options = {
         diameter,
         thickness,

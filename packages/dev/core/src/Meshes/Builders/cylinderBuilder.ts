@@ -402,7 +402,7 @@ export const CylinderBuilder = {
 
 VertexData.CreateCylinder = CreateCylinderVertexData;
 
-Mesh.CreateCylinder = (
+(Mesh as any).CreateCylinder = (
     name: string,
     height: number,
     diameterTop: number,
