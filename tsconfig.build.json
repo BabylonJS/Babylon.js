@@ -1,0 +1,39 @@
+{
+    "compilerOptions": {
+        "baseUrl": "packages",
+        "importHelpers": true,
+        "moduleResolution": "node",
+        "module": "es2020",
+        "target": "es2017", // esnext has an issue with class generation and our decoders. TODO - avoid using decorators until in standard
+        "declaration": true,
+        "sourceMap": true,
+        "inlineSources": true,
+        "experimentalDecorators": true,
+        "noImplicitAny": true,
+        "noImplicitReturns": true,
+        "noImplicitThis": true,
+        "noUnusedLocals": true,
+        "strictNullChecks": true,
+        "strictFunctionTypes": true,
+        "skipLibCheck": true,
+        "removeComments": false,
+        "jsx": "react-jsx",
+        "lib": ["es5", "dom", "es2015.promise", "es2015.collection", "es2015.iterable", "es2015.symbol.wellknown", "es2020.bigint", "es2017"],
+        "paths": {
+            "core/*": ["dev/core/dist/*"],
+            "gui/*": ["dev/gui/dist/*"],
+            "materials/*": ["dev/materials/dist/*"],
+            "post-processes/*": ["dev/postProcesses/dist/*"],
+            "procedural-textures/*": ["dev/proceduralTextures/dist/*"],
+            "loaders/*": ["dev/loaders/dist/*"],
+            "serializers/*": ["dev/serializers/dist/*"],
+            "inspector/*": ["dev/inspector/dist/*"],
+            "shared-ui-components/*": ["dev/sharedUiComponents/dist/*"],
+            "node-editor/*": ["tools/nodeEditor/dist/*"],
+            "gui-editor/*": ["tools/guiEditor/dist/*"],
+            "ktx2decoder/*": ["tools/ktx2Decoder/dist/*"],
+        }
+    },
+
+    "exclude": ["node_modules", "dist", "test"]
+}

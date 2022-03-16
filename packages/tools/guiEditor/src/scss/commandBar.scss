@@ -1,0 +1,439 @@
+:root {
+    --selectionGrey: #666666;
+}
+
+.ge-commands {
+    * {
+        font-family: "acumin-pro-condensed";
+        font-weight: 600;
+        font-size: 12px;
+    }
+    user-select: none;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+
+    .commands-left {
+        float: left;
+        display: flex;
+    }
+
+    .commands-right {
+        float: right;
+        display: flex;
+
+        .beta-flag {
+            width: 110px;
+            height: 30px;
+            display: none;
+        }
+    }
+
+    &.background-ts {
+        .command-button, .command-dropdown  {
+            img {
+                filter: invert(64%) sepia(78%) saturate(940%) hue-rotate(323deg) brightness(105%) contrast(103%);
+            }
+
+            .command-dropdown-active {
+                color: #333333;
+            }
+
+            &:hover, &.activated {
+                img {
+                    filter: invert(34%) sepia(21%) saturate(3832%) hue-rotate(324deg) brightness(88%) contrast(82%) !important;
+                }
+            } 
+        }
+    }
+
+    &.background-js {
+        .command-button, .command-dropdown  {
+            img {
+                filter: invert(57%) sepia(80%) saturate(2031%) hue-rotate(215deg);
+            }
+
+            .command-dropdown-active {
+                color: #333333;
+            }
+
+            &:hover, &.activated {
+                img {
+                    filter: invert(17%) !important;
+                }
+            } 
+        }
+    }
+
+    .command-button {
+        cursor: pointer;
+        width: 55px;
+        height: 40px;
+
+        .command-label {
+            display: none;
+        }        
+
+        .command-button-icon {
+            height: 100%;
+            width: 100%;
+            display: grid;
+            color: white;
+            align-content: center;
+            justify-content: center;
+        }
+
+        &:hover {
+            background-color: var(--selectionGrey);
+        } 
+        
+        .active {
+            transform-origin: center;
+            background-color: var(--selectionGrey);
+        }
+
+        img {
+            &.active {
+                background-color: var(--selectionGrey);
+            }
+        }
+    }
+
+    .command-dropdown-root {
+        position: relative;
+        text-transform: uppercase;
+        z-index: 1;
+    }
+
+    .command-dropdown {        
+        cursor: pointer;
+        width: 55px;
+        height: 40px;
+
+        .command-dropdown-icon {
+            height: 100%;
+            width: 100%;
+            display: grid;
+            align-content: center;
+            justify-content: center;
+        }
+
+        .command-dropdown-active {
+            height: 100%;
+            width: 100%;
+            display: grid;
+            align-content: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        &:hover, &.activated {
+            background-color:#666666;
+            color: black;
+        } 
+        
+        &:active {
+            transform-origin: center;
+            transform: scale(0.95);
+        }
+    }
+
+    .command-dropdown-blocker {
+        position: absolute;    
+        top:0;
+        left:0;
+        width: 100%;
+        height: 100%;
+        transform: scale(1);
+        z-index: 1;
+    }
+
+    &.background-js {
+        .command-dropdown-content {
+            background: #333333;
+            .command-dropdown-label {
+                &:hover {
+                    background: #333333;
+                }
+            }
+        }
+    }
+
+    &.background-ts {
+        .command-dropdown-content {
+            .command-dropdown-label {
+                &:hover {
+                    background: #333333;
+                }
+            }
+        }
+    }
+        
+    .command-dropdown-content {
+        background: #333333;
+        position: absolute;
+        width: 55px;
+        transform: scale(1);
+
+        &.toRight {
+            width: 120px;
+        } 
+        
+        .command-dropdown-label {
+            color:white;
+            padding: 5px;
+            padding-left: 7px;
+            height: 35px;
+            font-size: 18px;
+            display: grid;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+            grid-template-columns: 1fr 20px;
+            grid-template-rows: 100%;
+            position: relative;
+
+            &.active {
+                font-weight: bold;
+                font-size: 20px;
+            }
+
+            &:hover {
+                background: var(--selectionGrey);
+                .sub-items {
+                    display: block;
+                }
+            } 
+
+            .command-dropdown-label-text {
+                font-size: 12px;
+                grid-column: 1;
+                grid-row: 1;
+            }
+
+            .command-dropdown-label-check {
+                grid-column: 2;
+                grid-row: 1;
+            }
+
+            .command-dropdown-arrow {
+                grid-column: 2;
+                grid-row: 1;    
+                font-size: 20px;
+                font-weight: bold;
+                padding-bottom: 10px;
+                padding-left: 4px;
+            }
+
+            .sub-items {
+                position: absolute;
+                left: 200px;
+                top: 0;
+                width: 150px;
+                display: none;        
+    
+                &.background-js {
+                    background: #bfabff;
+                    .sub-item {                      
+                        &:hover {
+                            background-color: #333333;
+                            color: white;
+                        }
+                    }
+                }   
+
+                &.background-ts {
+                    background: #333333;
+                    .sub-item {                      
+                        &:hover {
+                            background-color: #333333;
+                            color: white;
+                        }
+                    }
+                }   
+                                    
+                .sub-item {                      
+                    color: white;
+                    padding: 5px;
+                    padding-left: 10px;
+                    height: 35px;
+                    display: grid;
+
+                    &.checked {
+                        background: white;
+                        color: black;
+                    }
+                }
+            }            
+        }
+
+        .buttonLine {
+            color:white;
+            padding: 5px;
+            padding-left: 7px;
+            height: 35px;
+            font-size: 18px;
+            display: grid;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+            grid-template-columns: 1fr 20px;
+            grid-template-rows: 100%;
+            position: relative;
+            font-size: 12px;
+            grid-column: 1;
+            grid-row: 1;
+            input[type="file"] {
+                display: none;
+            }
+
+            &.active {
+                font-weight: bold;
+                font-size: 20px;
+                cursor: pointer;
+            }
+
+            &:hover {
+                background: var(--selectionGrey);
+                .sub-items {
+                    display: block;
+                }
+                cursor: pointer;
+            } 
+
+            .file-upload{
+                cursor: pointer;
+            }
+        }
+    }
+    
+    .divider {
+        display: flex;
+        align-items: center;
+        border-right: 1px solid black;
+        color: white;
+        &:last-of-type {
+            border-right: none;
+        }
+        &.padded {
+            padding-left: 10px;
+            padding-right: 10px;
+        }
+    }
+
+    .floatLine, .checkBoxLine {
+        display: flex;
+        align-items: center;
+    }
+
+    .checkBoxLine {
+        .icon {
+            filter: brightness(10);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .checkBox {
+            height: 40px;
+        }
+    }
+
+    .color3Line {
+        display: grid;
+
+        .firstLine {
+            display: flex;
+            align-items: center;
+
+            .label {
+                padding-right: 5px;
+            }
+
+            .textInputLine {
+                .value {
+                    padding-left: 2px;
+                }
+            }
+
+            .copy {
+                display: none;
+            }
+
+            .expand {
+                display: none;
+            }
+        }   
+
+        .secondLine {
+            display: grid;
+            padding-right: 5px;  
+            border-left: 1px solid rgb(51, 122, 183);
+
+            .numeric {
+                display: grid;
+                grid-template-columns: 1fr auto;
+            }
+
+            .numeric-label {
+                text-align: right;
+                grid-column: 1;
+                display: flex;
+                align-items: center;                            
+                justify-self: right;
+                margin-right: 10px;                          
+            }
+
+            .numeric-value {
+                width: 120px;
+                grid-column: 2;
+                display: flex;
+                align-items: center;  
+                border: 1px solid  rgb(51, 122, 183);
+            }                        
+        }                  
+    }
+
+    .color-picker {
+        height: 26px;
+        width: 26px;
+
+        .color-rect-background {
+            width: calc(100% - 2px);
+            height: calc(100% - 2px);
+            border: 1px solid white;
+            cursor: pointer;
+            background: repeating-conic-gradient(#E2E2E2 0% 25%, white 0% 50%) 50% / 100% 100%;
+            .color-rect {
+                height: 100%;
+            }
+        }
+
+        .color-picker-cover {
+            position: fixed;
+            top: 0px;
+            right: 0px;
+            bottom: 0px;
+            left: 0px;
+            z-index: 2;
+        }
+
+        .color-picker-float {
+            position: absolute;  
+        }                
+    }
+
+    .floatLine input, .listLine select {
+        background-color: #000000;
+        color: white;
+        margin: 5px;
+        outline: none;
+        padding: 5px;
+        border: none;
+    }
+
+    .listLine select {
+        width: 150px;
+    }
+}

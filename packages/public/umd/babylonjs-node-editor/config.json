@@ -1,0 +1,5 @@
+{
+    "declarationLibs": ["@tools/node-editor"],
+    "devPackageName": "nodeEditor",
+    "filename": "babylon.nodeEditor.module.d.ts"
+}

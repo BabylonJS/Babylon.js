@@ -1,0 +1,32 @@
+{
+    "name": "@dev/core",
+    "version": "1.0.0",
+    "main": "dist/index",
+    "module": "dist/index",
+    "esnext": "dist/index",
+    "types": "dist/index",
+    "private": true,
+    "files": [
+        "dist",
+        "src"
+    ],
+    "scripts": {
+        "build": "npm run clean && npm run compile",
+        "test": "jest -c ../../../jest.config.ts",
+        "clean": "rimraf dist && rimraf tsconfig.build.tsbuildinfo",
+        "lint": "npm run lint:check",
+        "lint:check": "eslint src/**/*.{ts,tsx}",
+        "lint:fix": "eslint src/**/*.{ts,tsx} --fix",
+        "precompile": "npm run compile:assets",
+        "compile": "npm run compile:source",
+        "compile:source": "tsc -b tsconfig.build.json",
+        "compile:assets": "build-tools -c process-assets --isCore",
+        "watch:assets": "build-tools -c process-assets --isCore --watch",
+        "watch:source": "tsc -b tsconfig.build.json -w",
+        "watch": "build-tools -c dev-watch --package \"core\" -wa"
+    },
+    "sideEffects": false,
+    "devDependencies": {
+        "@dev/build-tools": "^1.0.0"
+    }
+}
