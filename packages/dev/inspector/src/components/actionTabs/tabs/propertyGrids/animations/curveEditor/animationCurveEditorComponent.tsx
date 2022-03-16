@@ -1,5 +1,5 @@
 import * as React from "react";
-import { ButtonLineComponent } from "../../../../../../sharedUiComponents/lines/buttonLineComponent";
+import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
 import { GlobalState } from "../../../../../globalState";
 import { PopupComponent } from "../../../../../popupComponent";
 import { BottomBarComponent } from "./bottomBar/bottomBarComponent";
@@ -7,10 +7,10 @@ import { Context } from "./context";
 import { TopBarComponent } from "./topBarComponent";
 import { CanvasComponent } from "./graph/canvasComponent";
 import { SideBarComponent } from "./sideBar/sideBarComponent";
-import { Animation } from "babylonjs/Animations/animation";
-import { TargetedAnimation } from "babylonjs/Animations/animationGroup";
+import { Animation } from "core/Animations/animation";
+import { TargetedAnimation } from "core/Animations/animationGroup";
 
-require("./scss/curveEditor.scss");
+import "./scss/curveEditor.scss";
 
 interface IAnimationCurveEditorComponentProps {
     globalState: GlobalState;

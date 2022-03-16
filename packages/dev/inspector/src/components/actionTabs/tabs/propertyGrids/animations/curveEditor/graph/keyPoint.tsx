@@ -1,8 +1,8 @@
-import { Animation } from "babylonjs/Animations/animation";
-import { AnimationKeyInterpolation } from "babylonjs/Animations/animationKey";
-import { TmpVectors, Vector2 } from "babylonjs/Maths/math.vector";
-import { Observer } from "babylonjs/Misc/observable";
-import { Nullable } from "babylonjs/types";
+import { Animation } from "core/Animations/animation";
+import { AnimationKeyInterpolation } from "core/Animations/animationKey";
+import { TmpVectors, Vector2 } from "core/Maths/math.vector";
+import { Observer } from "core/Misc/observable";
+import { Nullable } from "core/types";
 import * as React from "react";
 import { Context } from "../context";
 import { Curve } from "./curve";
@@ -161,7 +161,7 @@ export class KeyPointComponent extends React.Component<IKeyPointComponentProps, 
             if (!this._keyPointSVG.current) {
                 return;
             }
-            const animationType = this.props.curve.animation.dataType;  
+            const animationType = this.props.curve.animation.dataType;
             const isQuaternionAnimation = animationType === Animation.ANIMATIONTYPE_QUATERNION;
             if (isQuaternionAnimation) {
                 return;
@@ -573,10 +573,7 @@ export class KeyPointComponent extends React.Component<IKeyPointComponentProps, 
             }
         } else {
             const keys = this.props.curve.keys;
-            const isLockedTangent =
-                keys[this.props.keyId].lockedTangent &&
-                this.props.keyId !== 0 &&
-                this.props.keyId !== keys.length - 1;
+            const isLockedTangent = keys[this.props.keyId].lockedTangent && this.props.keyId !== 0 && this.props.keyId !== keys.length - 1;
 
             let angleDiff = 0;
             let tmpVector = TmpVectors.Vector2[0];

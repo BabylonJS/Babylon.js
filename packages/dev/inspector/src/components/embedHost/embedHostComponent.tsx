@@ -3,13 +3,13 @@ import { HeaderComponent } from "../headerComponent";
 import Resizable from "re-resizable";
 import { SceneExplorerComponent } from "../sceneExplorer/sceneExplorerComponent";
 import { ActionTabsComponent } from "../actionTabs/actionTabsComponent";
-import { Scene } from "babylonjs/scene";
+import { Scene } from "core/scene";
 import { GlobalState } from "../../components/globalState";
-import { IExplorerExtensibilityGroup, DebugLayerTab } from "babylonjs/Debug/debugLayer";
+import { IExplorerExtensibilityGroup, DebugLayerTab } from "core/Debug/debugLayer";
 
 const Split = require("split.js").default;
 
-require("./embedHost.scss");
+import "./embedHost.scss";
 
 interface IEmbedHostComponentProps {
     scene: Scene;

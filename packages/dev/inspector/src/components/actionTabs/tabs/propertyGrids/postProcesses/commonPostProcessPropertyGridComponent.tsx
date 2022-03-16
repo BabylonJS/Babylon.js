@@ -1,18 +1,18 @@
 import * as React from "react";
 
-import { Observable } from "babylonjs/Misc/observable";
+import { Observable } from "core/Misc/observable";
 
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
-import { CheckBoxLineComponent } from "../../../../../sharedUiComponents/lines/checkBoxLineComponent";
-import { LineContainerComponent } from "../../../../../sharedUiComponents/lines/lineContainerComponent";
-import { TextLineComponent } from "../../../../../sharedUiComponents/lines/textLineComponent";
-import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
-import { PostProcess } from "babylonjs/PostProcesses/postProcess";
-import { Color3LineComponent } from "../../../../../sharedUiComponents/lines/color3LineComponent";
-import { SliderLineComponent } from "../../../../../sharedUiComponents/lines/sliderLineComponent";
+import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
+import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
+import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
+import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import { PostProcess } from "core/PostProcesses/postProcess";
+import { Color3LineComponent } from "shared-ui-components/lines/color3LineComponent";
+import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
 import { GlobalState } from "../../../../globalState";
-import { ButtonLineComponent } from "../../../../../sharedUiComponents/lines/buttonLineComponent";
-import { TextInputLineComponent } from "../../../../../sharedUiComponents/lines/textInputLineComponent";
+import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
+import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 
 interface ICommonPostProcessPropertyGridComponentProps {
     globalState: GlobalState;

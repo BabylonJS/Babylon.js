@@ -1,12 +1,12 @@
 import * as React from "react";
 
-import { Observable } from "babylonjs/Misc/observable";
+import { Observable } from "core/Misc/observable";
 import { GlobalState } from "../../../../globalState";
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
-import { SliderLineComponent } from "../../../../../sharedUiComponents/lines/sliderLineComponent";
-import { FloatLineComponent } from "../../../../../sharedUiComponents/lines/floatLineComponent";
-import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
-import { HemisphericParticleEmitter } from "babylonjs/Particles/EmitterTypes/hemisphericParticleEmitter";
+import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
+import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
+import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import { HemisphericParticleEmitter } from "core/Particles/EmitterTypes/hemisphericParticleEmitter";
 
 interface IHemisphericEmitterGridComponentProps {
     globalState: GlobalState;

@@ -1,10 +1,10 @@
 import * as React from "react";
 
-import { Observable } from "babylonjs/Misc/observable";
-import { PostProcessRenderPipeline } from "babylonjs/PostProcesses/RenderPipeline/postProcessRenderPipeline";
+import { Observable } from "core/Misc/observable";
+import { PostProcessRenderPipeline } from "core/PostProcesses/RenderPipeline/postProcessRenderPipeline";
 
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
-import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
+import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { CommonRenderingPipelinePropertyGridComponent } from "./commonRenderingPipelinePropertyGridComponent";
 import { GlobalState } from "../../../../globalState";
 

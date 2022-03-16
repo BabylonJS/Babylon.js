@@ -1,9 +1,9 @@
-import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
+import { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
 import { faBone } from "@fortawesome/free-solid-svg-icons";
 import { TreeItemLabelComponent } from "../treeItemLabelComponent";
 import { ExtensionsComponent } from "../extensionsComponent";
 import * as React from "react";
-import { Bone } from "babylonjs/Bones/bone";
+import { Bone } from "core/Bones/bone";
 
 interface IBoneTreeItemComponenttProps {
     bone: Bone;

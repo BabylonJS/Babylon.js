@@ -1,15 +1,15 @@
 import * as React from "react";
-import { Observable } from "babylonjs/Misc/observable";
-import { Light } from "babylonjs/Lights/light";
+import { Observable } from "core/Misc/observable";
+import { Light } from "core/Lights/light";
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
-import { LineContainerComponent } from "../../../../../sharedUiComponents/lines/lineContainerComponent";
-import { FloatLineComponent } from "../../../../../sharedUiComponents/lines/floatLineComponent";
-import { TextLineComponent } from "../../../../../sharedUiComponents/lines/textLineComponent";
-import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
+import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
+import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
+import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
+import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { GlobalState } from "../../../../globalState";
 import { CustomPropertyGridComponent } from "../customPropertyGridComponent";
-import { ButtonLineComponent } from "../../../../../sharedUiComponents/lines/buttonLineComponent";
-import { TextInputLineComponent } from "../../../../../sharedUiComponents/lines/textInputLineComponent";
+import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
+import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 import { AnimationGridComponent } from "../animations/animationPropertyGridComponent";
 
 interface ICommonLightPropertyGridComponentProps {

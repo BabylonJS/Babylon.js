@@ -1,16 +1,16 @@
 import * as React from "react";
 import { GlobalState } from "../../../../../../globalState";
 import { Context, IActiveAnimationChangedOptions } from "../context";
-import { Animation } from "babylonjs/Animations/animation";
+import { Animation } from "core/Animations/animation";
 import { Curve } from "./curve";
 import { KeyPointComponent } from "./keyPoint";
 import { CurveComponent } from "./curveComponent";
-import { Nullable } from "babylonjs/types";
-import { Observer } from "babylonjs/Misc/observable";
-import { IAnimationKey } from "babylonjs/Animations/animationKey";
-import { Quaternion, Vector2, Vector3 } from "babylonjs/Maths/math.vector";
-import { Color3, Color4 } from "babylonjs/Maths/math.color";
-import { Scalar } from "babylonjs/Maths/math.scalar";
+import { Nullable } from "core/types";
+import { Observer } from "core/Misc/observable";
+import { IAnimationKey } from "core/Animations/animationKey";
+import { Quaternion, Vector2, Vector3 } from "core/Maths/math.vector";
+import { Color3, Color4 } from "core/Maths/math.color";
+import { Scalar } from "core/Maths/math.scalar";
 
 interface IGraphComponentProps {
     globalState: GlobalState;
@@ -70,10 +70,10 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
             this._computeSizes();
         });
 
-        this._onActiveAnimationChangedObserver = this.props.context.onActiveAnimationChanged.add(({evaluateKeys = true, frame = true, range = true}) => {
+        this._onActiveAnimationChangedObserver = this.props.context.onActiveAnimationChanged.add(({ evaluateKeys = true, frame = true, range = true }) => {
             if (evaluateKeys) {
                 this._evaluateKeys(frame, range);
-            } 
+            }
             this._computeSizes();
             this.forceUpdate();
         });
@@ -121,13 +121,12 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
                 if (deletedFrame !== null) {
                     this.props.context.moveToFrame(deletedFrame);
                 }
-
             }
             this._evaluateKeys(false, false);
 
             this.props.context.activeKeyPoints = [];
             this.props.context.onActiveKeyPointChanged.notifyObservers();
-            this.props.context.onActiveAnimationChanged.notifyObservers({evaluateKeys: false});
+            this.props.context.onActiveAnimationChanged.notifyObservers({ evaluateKeys: false });
             this.forceUpdate();
         });
 
@@ -184,9 +183,9 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
                     let newKey: IAnimationKey = {
                         frame: currentFrame,
                         value: value,
-                        lockedTangent: true
+                        lockedTangent: true,
                     };
-                    
+
                     if (leftKey?.outTangent !== undefined && rightKey?.inTangent !== undefined) {
                         let derivative: Nullable<any> = null;
                         const invFrameDelta = 1.0 / (rightKey.frame - leftKey.frame);
@@ -257,7 +256,7 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
 
             this.props.context.activeKeyPoints = [];
             this.props.context.onActiveKeyPointChanged.notifyObservers();
-            this.props.context.onActiveAnimationChanged.notifyObservers({evaluateKeys: false});
+            this.props.context.onActiveAnimationChanged.notifyObservers({ evaluateKeys: false });
             this.forceUpdate();
         });
     }
@@ -955,7 +954,8 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
                         newKeys.push(keys[keyPoint.props.keyId]);
                         if (i === 0 && keyPoint.props.keyId >= 1) {
                             newKeys.unshift(keys[keyPoint.props.keyId - 1]);
-                        } if (i === this.props.context.activeKeyPoints.length - 1 && keyPoint.props.keyId < keys.length - 1) {
+                        }
+                        if (i === this.props.context.activeKeyPoints.length - 1 && keyPoint.props.keyId < keys.length - 1) {
                             newKeys.push(keys[keyPoint.props.keyId + 1]);
                         }
                     }

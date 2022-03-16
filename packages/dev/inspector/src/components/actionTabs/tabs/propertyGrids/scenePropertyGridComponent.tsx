@@ -1,32 +1,32 @@
 import * as React from "react";
 
-import { Nullable } from "babylonjs/types";
-import { Observable } from "babylonjs/Misc/observable";
-import { Tools } from "babylonjs/Misc/tools";
-import { Vector3 } from "babylonjs/Maths/math.vector";
-import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
-import { CubeTexture } from "babylonjs/Materials/Textures/cubeTexture";
-import { ImageProcessingConfiguration } from "babylonjs/Materials/imageProcessingConfiguration";
-import { Scene } from "babylonjs/scene";
+import { Nullable } from "core/types";
+import { Observable } from "core/Misc/observable";
+import { Tools } from "core/Misc/tools";
+import { Vector3 } from "core/Maths/math.vector";
+import { BaseTexture } from "core/Materials/Textures/baseTexture";
+import { CubeTexture } from "core/Materials/Textures/cubeTexture";
+import { ImageProcessingConfiguration } from "core/Materials/imageProcessingConfiguration";
+import { Scene } from "core/scene";
 
 import { PropertyChangedEvent } from "../../../propertyChangedEvent";
-import { LineContainerComponent } from "../../../../sharedUiComponents/lines/lineContainerComponent";
-import { RadioButtonLineComponent } from "../../../../sharedUiComponents/lines/radioLineComponent";
-import { Color3LineComponent } from "../../../../sharedUiComponents/lines/color3LineComponent";
-import { CheckBoxLineComponent } from "../../../../sharedUiComponents/lines/checkBoxLineComponent";
+import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
+import { RadioButtonLineComponent } from "shared-ui-components/lines/radioLineComponent";
+import { Color3LineComponent } from "shared-ui-components/lines/color3LineComponent";
+import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
 import { FogPropertyGridComponent } from "./fogPropertyGridComponent";
-import { FileButtonLineComponent } from "../../../../sharedUiComponents/lines/fileButtonLineComponent";
+import { FileButtonLineComponent } from "shared-ui-components/lines/fileButtonLineComponent";
 import { TextureLinkLineComponent } from "../../lines/textureLinkLineComponent";
-import { Vector3LineComponent } from "../../../../sharedUiComponents/lines/vector3LineComponent";
-import { FloatLineComponent } from "../../../../sharedUiComponents/lines/floatLineComponent";
-import { SliderLineComponent } from "../../../../sharedUiComponents/lines/sliderLineComponent";
-import { OptionsLineComponent } from "../../../../sharedUiComponents/lines/optionsLineComponent";
-import { LockObject } from "../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
+import { Vector3LineComponent } from "shared-ui-components/lines/vector3LineComponent";
+import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
+import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
+import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
+import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { GlobalState } from "../../../globalState";
-import { ButtonLineComponent } from "../../../../sharedUiComponents/lines/buttonLineComponent";
+import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
 import { AnimationGridComponent } from "./animations/animationPropertyGridComponent";
 
-import "babylonjs/Physics/physicsEngineComponent";
+import "core/Physics/physicsEngineComponent";
 
 interface IScenePropertyGridComponentProps {
     globalState: GlobalState;

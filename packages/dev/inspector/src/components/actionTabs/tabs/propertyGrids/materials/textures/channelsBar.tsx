@@ -13,8 +13,8 @@ interface IChannelsBarProps {
     setChannels(channelState: IChannel[]): void;
 }
 
-const eyeOpen = require("./assets/eyeOpen.svg");
-const eyeClosed = require("./assets/eyeClosed.svg");
+import eyeOpen from "./assets/eyeOpen.svg";
+import eyeClosed from "./assets/eyeClosed.svg";
 
 export class ChannelsBar extends React.PureComponent<IChannelsBarProps> {
     render() {

@@ -1,10 +1,10 @@
-import { Observer } from "babylonjs/Misc/observable";
-import { Nullable } from "babylonjs/types";
+import { Observer } from "core/Misc/observable";
+import { Nullable } from "core/types";
 import * as React from "react";
 import { Context, IActiveAnimationChangedOptions } from "../context";
 import { Curve } from "./curve";
-import { AnimationKeyInterpolation } from "babylonjs/Animations/animationKey";
-import { Animation } from "babylonjs/Animations/animation";
+import { AnimationKeyInterpolation } from "core/Animations/animationKey";
+import { Animation } from "core/Animations/animation";
 
 interface ICurveComponentProps {
     curve: Curve;
@@ -68,23 +68,20 @@ export class CurveComponent extends React.Component<ICurveComponentProps, ICurve
         if (!this.props.context.isChannelEnabled(this.props.curve.animation, this.props.curve.color)) {
             return null;
         }
-        const pathStyle : any = {
+        const pathStyle: any = {
             stroke: this.props.curve.color,
             fill: "none",
             strokeWidth: "1",
         };
 
         if (this.props.curve.animation.dataType === Animation.ANIMATIONTYPE_QUATERNION) {
-            pathStyle['stroke-dasharray'] = '5';
-            pathStyle['stroke-opacity'] = '0.5';
+            pathStyle["stroke-dasharray"] = "5";
+            pathStyle["stroke-opacity"] = "0.5";
         }
 
         return (
             <svg style={{ cursor: "pointer", overflow: "auto" }}>
-                <path
-                    d={this.props.curve.getPathData(this.props.convertX, this.props.convertY)}
-                    style={pathStyle}
-                ></path>
+                <path d={this.props.curve.getPathData(this.props.convertX, this.props.convertY)} style={pathStyle}></path>
             </svg>
         );
     }

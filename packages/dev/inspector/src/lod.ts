@@ -1,6 +1,6 @@
-import { Effect } from "babylonjs/Materials/effect";
+import { Effect } from "core/Materials/effect";
 
-let name = 'lodPixelShader';
+let name = "lodPixelShader";
 let shader = `
 #extension GL_EXT_shader_texture_lod : enable
 

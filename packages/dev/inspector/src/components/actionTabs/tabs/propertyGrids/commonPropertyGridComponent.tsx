@@ -1,13 +1,13 @@
 import * as React from "react";
 
-import { Observable } from "babylonjs/Misc/observable";
+import { Observable } from "core/Misc/observable";
 
 import { PropertyChangedEvent } from "../../../propertyChangedEvent";
-import { LineContainerComponent } from "../../../../sharedUiComponents/lines/lineContainerComponent";
-import { LockObject } from "../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
+import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
+import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { GlobalState } from "../../../globalState";
-import { TextLineComponent } from "../../../../sharedUiComponents/lines/textLineComponent";
-import { IndentedTextLineComponent } from "../../../../sharedUiComponents/lines/indentedTextLineComponent";
+import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
+import { IndentedTextLineComponent } from "shared-ui-components/lines/indentedTextLineComponent";
 
 interface ICommonPropertyGridComponentProps {
     globalState: GlobalState;

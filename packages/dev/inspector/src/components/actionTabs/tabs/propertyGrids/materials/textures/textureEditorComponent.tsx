@@ -7,18 +7,18 @@ import { BottomBar } from "./bottomBar";
 import { TextureCanvasComponent } from "./textureCanvasComponent";
 import defaultTools from "./defaultTools/defaultTools";
 
-import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
-import { Tools } from "babylonjs/Misc/tools";
-import { Scene } from "babylonjs/scene";
-import { ISize } from "babylonjs/Maths/math.size";
-import { Vector2 } from "babylonjs/Maths/math.vector";
-import { PointerInfo } from "babylonjs/Events/pointerEvents";
+import { BaseTexture } from "core/Materials/Textures/baseTexture";
+import { Tools } from "core/Misc/tools";
+import { Scene } from "core/scene";
+import { ISize } from "core/Maths/math.size";
+import { Vector2 } from "core/Maths/math.vector";
+import { PointerInfo } from "core/Events/pointerEvents";
 
 import { PopupComponent } from "../../../../../popupComponent";
 import { ToolSettings } from "./toolSettings";
-import { Constants } from "babylonjs/Engines/constants";
+import { Constants } from "core/Engines/constants";
 
-require("./textureEditor.scss");
+import "./textureEditor.scss";
 
 interface ITextureEditorComponentProps {
     texture: BaseTexture;

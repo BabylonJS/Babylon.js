@@ -1,20 +1,20 @@
-import { Observable } from "babylonjs/Misc/observable";
-import { Scene } from "babylonjs/scene";
+import { Observable } from "core/Misc/observable";
+import { Scene } from "core/scene";
 import * as React from "react";
 import { useEffect, useState } from "react";
-import { ButtonLineComponent } from "../../../../sharedUiComponents/lines/buttonLineComponent";
-import { FileButtonLineComponent } from "../../../../sharedUiComponents/lines/fileButtonLineComponent";
-import { LineContainerComponent } from "../../../../sharedUiComponents/lines/lineContainerComponent";
+import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
+import { FileButtonLineComponent } from "shared-ui-components/lines/fileButtonLineComponent";
+import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import { IPerfLayoutSize } from "../../../graph/graphSupportingTypes";
-import { PerformanceViewerCollector } from "babylonjs/Misc/PerformanceViewer/performanceViewerCollector";
-import { PerfCollectionStrategy } from "babylonjs/Misc/PerformanceViewer/performanceViewerCollectionStrategies";
-import { Tools } from "babylonjs/Misc/tools";
-import "babylonjs/Misc/PerformanceViewer/performanceViewerSceneExtension";
+import { PerformanceViewerCollector } from "core/Misc/PerformanceViewer/performanceViewerCollector";
+import { PerfCollectionStrategy } from "core/Misc/PerformanceViewer/performanceViewerCollectionStrategies";
+import { Tools } from "core/Misc/tools";
+import "core/Misc/PerformanceViewer/performanceViewerSceneExtension";
 import { Inspector } from "../../../../inspector";
 import { PerformanceViewerPopupComponent } from "./performanceViewerPopupComponent";
-import { ComputePressureObserverWrapper } from "babylonjs/Misc/computePressure";
+import { ComputePressureObserverWrapper } from "core/Misc/computePressure";
 
-require("./scss/performanceViewer.scss");
+import "./scss/performanceViewer.scss";
 
 interface IPerformanceViewerComponentProps {
     scene: Scene;
@@ -155,7 +155,7 @@ export const PerformanceViewerComponent: React.FC<IPerformanceViewerComponentPro
             perfCollector.addCollectionStrategies({
                 strategyCallback: PerfCollectionStrategy.CpuStrategy(),
                 category: IPerfMetadataCategory.FrameSteps,
-                hidden: true
+                hidden: true,
             });
         }
     };

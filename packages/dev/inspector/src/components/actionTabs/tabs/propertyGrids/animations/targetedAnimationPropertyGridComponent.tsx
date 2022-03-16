@@ -1,15 +1,15 @@
 import * as React from "react";
-import { Observable } from "babylonjs/Misc/observable";
-import { TargetedAnimation } from "babylonjs/Animations/animationGroup";
-import { Scene } from "babylonjs/scene";
+import { Observable } from "core/Misc/observable";
+import { TargetedAnimation } from "core/Animations/animationGroup";
+import { Scene } from "core/scene";
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
-import { ButtonLineComponent } from "../../../../../sharedUiComponents/lines/buttonLineComponent";
-import { LineContainerComponent } from "../../../../../sharedUiComponents/lines/lineContainerComponent";
-import { TextLineComponent } from "../../../../../sharedUiComponents/lines/textLineComponent";
-import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
+import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
+import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
+import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
+import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { GlobalState } from "../../../../globalState";
-import { TextInputLineComponent } from "../../../../../sharedUiComponents/lines/textInputLineComponent";
-import { AnimationGroup } from "babylonjs/Animations/animationGroup";
+import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
+import { AnimationGroup } from "core/Animations/animationGroup";
 import { AnimationCurveEditorComponent } from "./curveEditor/animationCurveEditorComponent";
 import { Context } from "./curveEditor/context";
 

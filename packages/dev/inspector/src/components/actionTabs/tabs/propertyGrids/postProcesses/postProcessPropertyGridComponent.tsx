@@ -1,14 +1,14 @@
 import * as React from "react";
 
-import { Observable } from "babylonjs/Misc/observable";
-import { PostProcess } from "babylonjs/PostProcesses/postProcess";
+import { Observable } from "core/Misc/observable";
+import { PostProcess } from "core/PostProcesses/postProcess";
 
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
-import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
+import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { CommonPostProcessPropertyGridComponent } from "./commonPostProcessPropertyGridComponent";
 import { GlobalState } from "../../../../globalState";
-import { LineContainerComponent } from "../../../../../sharedUiComponents/lines/lineContainerComponent";
-import { ButtonLineComponent } from "../../../../../sharedUiComponents/lines/buttonLineComponent";
+import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
+import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
 
 interface IPostProcessPropertyGridComponentProps {
     globalState: GlobalState;

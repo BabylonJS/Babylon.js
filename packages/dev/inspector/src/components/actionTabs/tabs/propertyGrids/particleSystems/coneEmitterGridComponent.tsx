@@ -1,11 +1,11 @@
 import * as React from "react";
 
-import { Observable } from "babylonjs/Misc/observable";
+import { Observable } from "core/Misc/observable";
 import { GlobalState } from "../../../../globalState";
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
-import { ConeParticleEmitter } from "babylonjs/Particles/EmitterTypes/coneParticleEmitter";
-import { SliderLineComponent } from "../../../../../sharedUiComponents/lines/sliderLineComponent";
-import { CheckBoxLineComponent } from "../../../../../sharedUiComponents/lines/checkBoxLineComponent";
+import { ConeParticleEmitter } from "core/Particles/EmitterTypes/coneParticleEmitter";
+import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
+import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
 
 interface IConeEmitterGridComponentProps {
     globalState: GlobalState;

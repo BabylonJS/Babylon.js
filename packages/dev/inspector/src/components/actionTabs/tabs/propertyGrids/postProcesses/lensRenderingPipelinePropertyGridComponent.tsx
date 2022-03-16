@@ -1,14 +1,14 @@
 import * as React from "react";
 
-import { Observable } from "babylonjs/Misc/observable";
-import { LensRenderingPipeline } from "babylonjs/PostProcesses/RenderPipeline/Pipelines/lensRenderingPipeline";
+import { Observable } from "core/Misc/observable";
+import { LensRenderingPipeline } from "core/PostProcesses/RenderPipeline/Pipelines/lensRenderingPipeline";
 
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
-import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
+import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { CommonRenderingPipelinePropertyGridComponent } from "./commonRenderingPipelinePropertyGridComponent";
-import { SliderLineComponent } from "../../../../../sharedUiComponents/lines/sliderLineComponent";
-import { LineContainerComponent } from "../../../../../sharedUiComponents/lines/lineContainerComponent";
-import { CheckBoxLineComponent } from "../../../../../sharedUiComponents/lines/checkBoxLineComponent";
+import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
+import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
+import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
 import { GlobalState } from "../../../../globalState";
 
 interface ILenstRenderingPipelinePropertyGridComponentProps {

@@ -1,33 +1,33 @@
 import * as React from "react";
 
-import { Nullable } from "babylonjs/types";
-import { Tools } from "babylonjs/Misc/tools";
-import { Observable } from "babylonjs/Misc/observable";
-import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
-import { Texture } from "babylonjs/Materials/Textures/texture";
-import { RenderTargetTexture } from "babylonjs/Materials/Textures/renderTargetTexture";
-import { MultiRenderTarget } from "babylonjs/Materials/Textures/multiRenderTarget";
-import { CubeTexture } from "babylonjs/Materials/Textures/cubeTexture";
-import { Constants } from "babylonjs/Engines/constants";
+import { Nullable } from "core/types";
+import { Tools } from "core/Misc/tools";
+import { Observable } from "core/Misc/observable";
+import { BaseTexture } from "core/Materials/Textures/baseTexture";
+import { Texture } from "core/Materials/Textures/texture";
+import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
+import { MultiRenderTarget } from "core/Materials/Textures/multiRenderTarget";
+import { CubeTexture } from "core/Materials/Textures/cubeTexture";
+import { Constants } from "core/Engines/constants";
 
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
-import { LineContainerComponent } from "../../../../../sharedUiComponents/lines/lineContainerComponent";
-import { SliderLineComponent } from "../../../../../sharedUiComponents/lines/sliderLineComponent";
-import { TextLineComponent } from "../../../../../sharedUiComponents/lines/textLineComponent";
-import { CheckBoxLineComponent } from "../../../../../sharedUiComponents/lines/checkBoxLineComponent";
+import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
+import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
+import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
+import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
 import { TextureLineComponent } from "../../../lines/textureLineComponent";
-import { FloatLineComponent } from "../../../../../sharedUiComponents/lines/floatLineComponent";
-import { OptionsLineComponent } from "../../../../../sharedUiComponents/lines/optionsLineComponent";
-import { FileButtonLineComponent } from "../../../../../sharedUiComponents/lines/fileButtonLineComponent";
-import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
-import { ValueLineComponent } from "../../../../../sharedUiComponents/lines/valueLineComponent";
+import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
+import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
+import { FileButtonLineComponent } from "shared-ui-components/lines/fileButtonLineComponent";
+import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import { ValueLineComponent } from "shared-ui-components/lines/valueLineComponent";
 import { GlobalState } from "../../../../../components/globalState";
 
-import { AdvancedDynamicTextureInstrumentation } from "babylonjs-gui/2D/adtInstrumentation";
-import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
+import { AdvancedDynamicTextureInstrumentation } from "gui/2D/adtInstrumentation";
+import { AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
 import { CustomPropertyGridComponent } from "../customPropertyGridComponent";
-import { ButtonLineComponent } from "../../../../../sharedUiComponents/lines/buttonLineComponent";
-import { TextInputLineComponent } from "../../../../../sharedUiComponents/lines/textInputLineComponent";
+import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
+import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 import { AnimationGridComponent } from "../animations/animationPropertyGridComponent";
 
 import { PopupComponent } from "../../../../popupComponent";
@@ -253,7 +253,8 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
         const otype = this.findTextureType(type === -1 ? Constants.TEXTURETYPE_UNSIGNED_BYTE : type);
         const textureClass = texture instanceof MultiRenderTarget ? "MultiRenderTarget" : texture instanceof RenderTargetTexture ? "RenderTargetTexture" : texture.getClassName();
         const count = texture instanceof MultiRenderTarget ? texture.count : -1;
-        const oformatDepthStencil = texture.isRenderTarget && textureAsRTT.renderTarget?._depthStencilTexture ? this.findTextureFormat(textureAsRTT.renderTarget._depthStencilTexture.format) : null;
+        const oformatDepthStencil =
+            texture.isRenderTarget && textureAsRTT.renderTarget?._depthStencilTexture ? this.findTextureFormat(textureAsRTT.renderTarget._depthStencilTexture.format) : null;
 
         let extension = "";
         let url = (texture as Texture).url;
@@ -273,13 +274,16 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                 <LineContainerComponent title="PREVIEW" selection={this.props.globalState}>
                     <TextureLineComponent ref={this.textureLineRef} texture={texture} width={256} height={256} globalState={this.props.globalState} />
                     <FileButtonLineComponent label="Load texture from file" onClick={(file) => this.updateTexture(file)} accept=".jpg, .png, .tga, .dds, .env" />
-                    <ButtonLineComponent label="Edit" onClick={() => {
-                        if (this.props.texture instanceof AdvancedDynamicTexture) {
-                            EditAdvancedDynamicTexture(this.props.texture as AdvancedDynamicTexture);
-                        } else {
-                            this.openTextureEditor();
-                        }
-                    }} />
+                    <ButtonLineComponent
+                        label="Edit"
+                        onClick={() => {
+                            if (this.props.texture instanceof AdvancedDynamicTexture) {
+                                EditAdvancedDynamicTexture(this.props.texture as AdvancedDynamicTexture);
+                            } else {
+                                this.openTextureEditor();
+                            }
+                        }}
+                    />
                     <TextInputLineComponent
                         label="URL"
                         value={textureUrl}
@@ -346,16 +350,12 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                     <TextLineComponent label="Class" value={textureClass} />
                     {count >= 0 && <TextLineComponent label="Number of textures" value={count.toString()} />}
                     <TextLineComponent label="Has alpha" value={texture.hasAlpha ? "Yes" : "No"} />
-                    <CheckBoxLineComponent label="Get alpha from RGB"
-                        isSelected={() => texture.getAlphaFromRGB}
-                        onSelect={(value) => texture.getAlphaFromRGB = value}/>
+                    <CheckBoxLineComponent label="Get alpha from RGB" isSelected={() => texture.getAlphaFromRGB} onSelect={(value) => (texture.getAlphaFromRGB = value)} />
                     <TextLineComponent label="Is 3D" value={texture.is3D ? "Yes" : "No"} />
                     <TextLineComponent label="Is 2D array" value={texture.is2DArray ? "Yes" : "No"} />
                     <TextLineComponent label="Is cube" value={texture.isCube ? "Yes" : "No"} />
                     <TextLineComponent label="Is render target" value={texture.isRenderTarget ? "Yes" : "No"} />
-                    { texture.isRenderTarget &&
-                        <TextLineComponent label="Depth/stencil texture format" value={oformatDepthStencil?.label ?? "no"} />
-                    }
+                    {texture.isRenderTarget && <TextLineComponent label="Depth/stencil texture format" value={oformatDepthStencil?.label ?? "no"} />}
                     {texture instanceof Texture && <TextLineComponent label="Stored as inverted on Y" value={texture.invertY ? "Yes" : "No"} />}
                     <TextLineComponent label="Has mipmaps" value={!texture.noMipmap ? "Yes" : "No"} />
                     <SliderLineComponent

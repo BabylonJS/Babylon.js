@@ -1,19 +1,19 @@
 import * as React from "react";
-import { Observable } from "babylonjs/Misc/observable";
+import { Observable } from "core/Misc/observable";
 import { PropertyChangedEvent } from "../../../propertyChangedEvent";
-import { Color3LineComponent } from "../../../../sharedUiComponents/lines/color3LineComponent";
+import { Color3LineComponent } from "shared-ui-components/lines/color3LineComponent";
 import { GlobalState } from "../../../globalState";
-import { IInspectable, InspectableType } from "babylonjs/Misc/iInspectable";
-import { CheckBoxLineComponent } from "../../../../sharedUiComponents/lines/checkBoxLineComponent";
-import { SliderLineComponent } from "../../../../sharedUiComponents/lines/sliderLineComponent";
-import { Vector3LineComponent } from "../../../../sharedUiComponents/lines/vector3LineComponent";
+import { IInspectable, InspectableType } from "core/Misc/iInspectable";
+import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
+import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
+import { Vector3LineComponent } from "shared-ui-components/lines/vector3LineComponent";
 import { QuaternionLineComponent } from "../../lines/quaternionLineComponent";
-import { LineContainerComponent } from "../../../../sharedUiComponents/lines/lineContainerComponent";
-import { TextInputLineComponent } from "../../../../sharedUiComponents/lines/textInputLineComponent";
-import { LockObject } from "../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
-import { ButtonLineComponent } from "../../../../sharedUiComponents/lines/buttonLineComponent";
-import { OptionsLineComponent } from "../../../../sharedUiComponents/lines/optionsLineComponent";
-import { TextLineComponent } from "../../../../sharedUiComponents/lines/textLineComponent";
+import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
+import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
+import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
+import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
+import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
 
 interface ICustomPropertyGridComponentProps {
     globalState: GlobalState;

@@ -1,11 +1,11 @@
 import * as React from "react";
 
-import { Observable } from "babylonjs/Misc/observable";
-import { Material } from "babylonjs/Materials/material";
+import { Observable } from "core/Misc/observable";
+import { Material } from "core/Materials/material";
 
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { CommonMaterialPropertyGridComponent } from "./commonMaterialPropertyGridComponent";
-import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
+import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { GlobalState } from "../../../../globalState";
 
 interface IMaterialPropertyGridComponentProps {

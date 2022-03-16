@@ -1,15 +1,14 @@
-import * as React from "react";
 import { PaneComponent, IPaneComponentProps } from "../paneComponent";
-import { TextLineComponent } from "../../../sharedUiComponents/lines/textLineComponent";
-import { LineContainerComponent } from "../../../sharedUiComponents/lines/lineContainerComponent";
+import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
+import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 
-import { Nullable } from "babylonjs/types";
-import { EngineInstrumentation } from "babylonjs/Instrumentation/engineInstrumentation";
-import { SceneInstrumentation } from "babylonjs/Instrumentation/sceneInstrumentation";
-import { Engine } from "babylonjs/Engines/engine";
+import { Nullable } from "core/types";
+import { EngineInstrumentation } from "core/Instrumentation/engineInstrumentation";
+import { SceneInstrumentation } from "core/Instrumentation/sceneInstrumentation";
+import { Engine } from "core/Engines/engine";
 
-import { ValueLineComponent } from "../../../sharedUiComponents/lines/valueLineComponent";
-import { BooleanLineComponent } from "../../../sharedUiComponents/lines/booleanLineComponent";
+import { ValueLineComponent } from "shared-ui-components/lines/valueLineComponent";
+import { BooleanLineComponent } from "shared-ui-components/lines/booleanLineComponent";
 import { PerformanceViewerComponent } from "./performanceViewer/performanceViewerComponent";
 
 export class StatisticsTabComponent extends PaneComponent {

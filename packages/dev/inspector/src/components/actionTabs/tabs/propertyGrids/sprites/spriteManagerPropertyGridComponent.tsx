@@ -1,25 +1,25 @@
 import * as React from "react";
 
-import { Observable } from "babylonjs/Misc/observable";
+import { Observable } from "core/Misc/observable";
 
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
-import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
-import { LineContainerComponent } from "../../../../../sharedUiComponents/lines/lineContainerComponent";
+import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import { GlobalState } from "../../../../globalState";
-import { SpriteManager } from "babylonjs/Sprites/spriteManager";
-import { TextInputLineComponent } from "../../../../../sharedUiComponents/lines/textInputLineComponent";
-import { TextLineComponent } from "../../../../../sharedUiComponents/lines/textLineComponent";
-import { CheckBoxLineComponent } from "../../../../../sharedUiComponents/lines/checkBoxLineComponent";
-import { FloatLineComponent } from "../../../../../sharedUiComponents/lines/floatLineComponent";
-import { SliderLineComponent } from "../../../../../sharedUiComponents/lines/sliderLineComponent";
-import { RenderingManager } from "babylonjs/Rendering/renderingManager";
+import { SpriteManager } from "core/Sprites/spriteManager";
+import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
+import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
+import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
+import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
+import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
+import { RenderingManager } from "core/Rendering/renderingManager";
 import { TextureLinkLineComponent } from "../../../lines/textureLinkLineComponent";
-import { ButtonLineComponent } from "../../../../../sharedUiComponents/lines/buttonLineComponent";
-import { Sprite } from "babylonjs/Sprites/sprite";
-import { Tools } from "babylonjs/Misc/tools";
-import { FileButtonLineComponent } from "../../../../../sharedUiComponents/lines/fileButtonLineComponent";
-import { Constants } from "babylonjs/Engines/constants";
-import { OptionsLineComponent } from "../../../../../sharedUiComponents/lines/optionsLineComponent";
+import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
+import { Sprite } from "core/Sprites/sprite";
+import { Tools } from "core/Misc/tools";
+import { FileButtonLineComponent } from "shared-ui-components/lines/fileButtonLineComponent";
+import { Constants } from "core/Engines/constants";
+import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
 
 interface ISpriteManagerPropertyGridComponentProps {
     globalState: GlobalState;

@@ -1,13 +1,13 @@
 import * as React from "react";
-import { FreeCamera } from "babylonjs/Cameras/freeCamera";
-import { Observable } from "babylonjs/Misc/observable";
+import { FreeCamera } from "core/Cameras/freeCamera";
+import { Observable } from "core/Misc/observable";
 import { CommonCameraPropertyGridComponent } from "./commonCameraPropertyGridComponent";
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
-import { LineContainerComponent } from "../../../../../sharedUiComponents/lines/lineContainerComponent";
-import { Vector3LineComponent } from "../../../../../sharedUiComponents/lines/vector3LineComponent";
-import { FloatLineComponent } from "../../../../../sharedUiComponents/lines/floatLineComponent";
-import { CheckBoxLineComponent } from "../../../../../sharedUiComponents/lines/checkBoxLineComponent";
-import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
+import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
+import { Vector3LineComponent } from "shared-ui-components/lines/vector3LineComponent";
+import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
+import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
+import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { GlobalState } from "../../../../globalState";
 
 interface IFreeCameraPropertyGridComponentProps {

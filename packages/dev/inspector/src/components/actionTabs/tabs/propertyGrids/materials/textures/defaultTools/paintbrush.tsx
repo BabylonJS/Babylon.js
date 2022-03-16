@@ -1,10 +1,10 @@
 import * as React from "react";
 import { IToolParameters, IToolData, IToolType, IToolGUIProps } from "../textureEditorComponent";
-import { PointerEventTypes, PointerInfo } from "babylonjs/Events/pointerEvents";
-import { Nullable } from "babylonjs/types";
-import { Observer } from "babylonjs/Misc/observable";
-import { Vector2 } from "babylonjs/Maths/math.vector";
-import { Color3 } from "babylonjs/Maths/math.color";
+import { PointerEventTypes, PointerInfo } from "core/Events/pointerEvents";
+import { Nullable } from "core/types";
+import { Observer } from "core/Misc/observable";
+import { Vector2 } from "core/Maths/math.vector";
+import { Color3 } from "core/Maths/math.color";
 
 class paintbrushTool implements IToolType {
     getParameters: () => IToolParameters;

@@ -1,6 +1,6 @@
-import { Effect } from "babylonjs/Materials/effect";
+import { Effect } from "core/Materials/effect";
 
-let name = 'lodCubePixelShader';
+let name = "lodCubePixelShader";
 let shader = `
 precision highp float;
 

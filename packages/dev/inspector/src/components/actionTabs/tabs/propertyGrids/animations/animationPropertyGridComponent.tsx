@@ -1,23 +1,23 @@
 import * as React from "react";
 
-import { Observable, Observer } from "babylonjs/Misc/observable";
-import { Scene } from "babylonjs/scene";
+import { Observable, Observer } from "core/Misc/observable";
+import { Scene } from "core/scene";
 
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
-import { ButtonLineComponent } from "../../../../../sharedUiComponents/lines/buttonLineComponent";
-import { LineContainerComponent } from "../../../../../sharedUiComponents/lines/lineContainerComponent";
-import { SliderLineComponent } from "../../../../../sharedUiComponents/lines/sliderLineComponent";
-import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
+import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
+import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
+import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
+import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { GlobalState } from "../../../../globalState";
-import { Animation } from "babylonjs/Animations/animation";
-import { Animatable } from "babylonjs/Animations/animatable";
-import { AnimationPropertiesOverride } from "babylonjs/Animations/animationPropertiesOverride";
-import { AnimationRange } from "babylonjs/Animations/animationRange";
-import { CheckBoxLineComponent } from "../../../../../sharedUiComponents/lines/checkBoxLineComponent";
-import { Nullable } from "babylonjs/types";
-import { FloatLineComponent } from "../../../../../sharedUiComponents/lines/floatLineComponent";
-import { TextLineComponent } from "../../../../../sharedUiComponents/lines/textLineComponent";
-import { IAnimatable } from "babylonjs/Animations/animatable.interface";
+import { Animation } from "core/Animations/animation";
+import { Animatable } from "core/Animations/animatable";
+import { AnimationPropertiesOverride } from "core/Animations/animationPropertiesOverride";
+import { AnimationRange } from "core/Animations/animationRange";
+import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
+import { Nullable } from "core/types";
+import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
+import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
+import { IAnimatable } from "core/Animations/animatable.interface";
 import { AnimationCurveEditorComponent } from "./curveEditor/animationCurveEditorComponent";
 import { Context } from "./curveEditor/context";
 
@@ -41,7 +41,7 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
         from: 0,
         to: 0,
         loop: false,
-        initialized: false
+        initialized: false,
     };
 
     constructor(props: IAnimationGridComponentProps) {

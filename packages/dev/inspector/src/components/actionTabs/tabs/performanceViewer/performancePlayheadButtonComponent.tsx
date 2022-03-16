@@ -1,4 +1,4 @@
-import { Observable } from "babylonjs/Misc/observable";
+import { Observable } from "core/Misc/observable";
 import * as React from "react";
 
 interface IPerformancePlayheadButtonProps {

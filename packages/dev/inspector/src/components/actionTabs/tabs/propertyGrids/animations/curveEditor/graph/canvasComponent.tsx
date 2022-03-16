@@ -5,10 +5,10 @@ import { FrameBarComponent } from "./frameBarComponent";
 import { GraphComponent } from "./graphComponent";
 import { PlayHeadComponent } from "./playHeadComponent";
 import { RangeFrameBarComponent } from "./rangeFrameBarComponent";
-import { Nullable } from "babylonjs/types";
-import { Observer } from "babylonjs/Misc/observable";
+import { Nullable } from "core/types";
+import { Observer } from "core/Misc/observable";
 
-require("../scss/canvas.scss");
+import "../scss/canvas.scss";
 
 interface ICanvasComponentProps {
     globalState: GlobalState;

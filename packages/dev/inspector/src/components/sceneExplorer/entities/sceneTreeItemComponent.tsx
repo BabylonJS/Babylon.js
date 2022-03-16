@@ -1,9 +1,9 @@
-import { Nullable } from "babylonjs/types";
-import { Observer, Observable } from "babylonjs/Misc/observable";
-import { PointerInfo, PointerEventTypes } from "babylonjs/Events/pointerEvents";
-import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
-import { GizmoManager } from "babylonjs/Gizmos/gizmoManager";
-import { Scene } from "babylonjs/scene";
+import { Nullable } from "core/types";
+import { Observer, Observable } from "core/Misc/observable";
+import { PointerInfo, PointerEventTypes } from "core/Events/pointerEvents";
+import { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
+import { GizmoManager } from "core/Gizmos/gizmoManager";
+import { Scene } from "core/scene";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSyncAlt, faImage, faCrosshairs, faArrowsAlt, faCompress, faRedoAlt, faVectorSquare } from "@fortawesome/free-solid-svg-icons";
@@ -11,11 +11,11 @@ import { ExtensionsComponent } from "../extensionsComponent";
 import * as React from "react";
 
 import { GlobalState } from "../../globalState";
-import { UtilityLayerRenderer } from "babylonjs/Rendering/utilityLayerRenderer";
+import { UtilityLayerRenderer } from "core/Rendering/utilityLayerRenderer";
 import { PropertyChangedEvent } from "../../../components/propertyChangedEvent";
-import { LightGizmo } from "babylonjs/Gizmos/lightGizmo";
-import { CameraGizmo } from "babylonjs/Gizmos/cameraGizmo";
-import { TmpVectors, Vector3 } from "babylonjs/Maths/math";
+import { LightGizmo } from "core/Gizmos/lightGizmo";
+import { CameraGizmo } from "core/Gizmos/cameraGizmo";
+import { TmpVectors, Vector3 } from "core/Maths/math";
 
 interface ISceneTreeItemComponentProps {
     scene: Scene;

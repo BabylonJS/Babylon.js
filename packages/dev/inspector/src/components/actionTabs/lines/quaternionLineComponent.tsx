@@ -1,12 +1,12 @@
 import * as React from "react";
-import { Observable } from "babylonjs/Misc/observable";
-import { Quaternion, Vector3 } from "babylonjs/Maths/math.vector";
-import { NumericInputComponent } from "../../../sharedUiComponents/lines/numericInputComponent";
+import { Observable } from "core/Misc/observable";
+import { Quaternion, Vector3 } from "core/Maths/math.vector";
+import { NumericInputComponent } from "shared-ui-components/lines/numericInputComponent";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { PropertyChangedEvent } from "../../propertyChangedEvent";
-import { Tools } from "babylonjs/Misc/tools";
-import { FloatLineComponent } from "../../../sharedUiComponents/lines/floatLineComponent";
+import { Tools } from "core/Misc/tools";
+import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 
 interface IQuaternionLineComponentProps {
     label: string;

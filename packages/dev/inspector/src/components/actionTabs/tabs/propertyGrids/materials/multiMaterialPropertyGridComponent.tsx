@@ -1,15 +1,15 @@
 import * as React from "react";
 
-import { Observable } from "babylonjs/Misc/observable";
+import { Observable } from "core/Misc/observable";
 
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
-import { LineContainerComponent } from "../../../../../sharedUiComponents/lines/lineContainerComponent";
+import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import { CommonMaterialPropertyGridComponent } from "./commonMaterialPropertyGridComponent";
-import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
+import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { GlobalState } from "../../../../globalState";
-import { TextLineComponent } from "../../../../../sharedUiComponents/lines/textLineComponent";
-import { Material } from "babylonjs/Materials/material";
-import { MultiMaterial } from "babylonjs/Materials/multiMaterial";
+import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
+import { Material } from "core/Materials/material";
+import { MultiMaterial } from "core/Materials/multiMaterial";
 
 interface IMultiMaterialPropertyGridComponentProps {
     globalState: GlobalState;

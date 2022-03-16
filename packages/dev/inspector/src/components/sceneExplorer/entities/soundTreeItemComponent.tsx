@@ -1,9 +1,9 @@
-import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
+import { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
 import { faMusic } from "@fortawesome/free-solid-svg-icons";
 import { TreeItemLabelComponent } from "../treeItemLabelComponent";
 import { ExtensionsComponent } from "../extensionsComponent";
 import * as React from "react";
-import { Sound } from "babylonjs/Audio/sound";
+import { Sound } from "core/Audio/sound";
 
 interface ISoundTreeItemComponentProps {
     sound: Sound;

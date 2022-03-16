@@ -1,15 +1,15 @@
 import * as React from "react";
 
-import { Observable } from "babylonjs/Misc/observable";
-import { Nullable } from "babylonjs/types";
+import { Observable } from "core/Misc/observable";
+import { Nullable } from "core/types";
 
 import { PropertyChangedEvent } from "../../../propertyChangedEvent";
-import { LineContainerComponent } from "../../../../sharedUiComponents/lines/lineContainerComponent";
-import { LockObject } from "../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
+import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
+import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { GlobalState } from "../../../globalState";
-import { OptionsLineComponent } from "../../../../sharedUiComponents/lines/optionsLineComponent";
+import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
 
-declare type KHR_materials_variants = import("babylonjs-loaders/glTF/2.0/Extensions/KHR_materials_variants").KHR_materials_variants;
+declare type KHR_materials_variants = import("loaders/glTF/2.0/Extensions/KHR_materials_variants").KHR_materials_variants;
 
 interface IVariantsPropertyGridComponentProps {
     globalState: GlobalState;

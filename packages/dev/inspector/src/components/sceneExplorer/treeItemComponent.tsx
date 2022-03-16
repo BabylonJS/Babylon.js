@@ -1,7 +1,7 @@
 import * as React from "react";
 
-import { Nullable } from "babylonjs/types";
-import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
+import { Nullable } from "core/types";
+import { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus, faMinus, faBan, faExpandArrowsAlt, faCompress } from "@fortawesome/free-solid-svg-icons";

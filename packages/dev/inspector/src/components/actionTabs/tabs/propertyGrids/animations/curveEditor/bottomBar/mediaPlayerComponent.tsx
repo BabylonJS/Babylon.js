@@ -3,32 +3,32 @@ import { GlobalState } from "../../../../../../globalState";
 import { Context } from "../context";
 import { ControlButtonComponent } from "../controls/controlButtonComponent";
 
-const firstKeyIcon = require("../assets/animationLastKeyIcon.svg");
-const firstKeyHoverIcon = require("../assets/animationLastKeyHoverIcon.svg");
+import firstKeyIcon from "../assets/animationLastKeyIcon.svg";
+import firstKeyHoverIcon from "../assets/animationLastKeyHoverIcon.svg";
 
-const revKeyIcon = require("../assets/animationPlayRevIcon.svg");
-const revKeyHoverIcon = require("../assets/animationPlayRevHoverIcon.svg");
+import revKeyIcon from "../assets/animationPlayRevIcon.svg";
+import revKeyHoverIcon from "../assets/animationPlayRevHoverIcon.svg";
 
-const fwdKeyIcon = require("../assets/animationPlayFwdIcon.svg");
-const fwdKeyHoverIcon = require("../assets/animationPlayFwdHoverIcon.svg");
+import fwdKeyIcon from "../assets/animationPlayFwdIcon.svg";
+import fwdKeyHoverIcon from "../assets/animationPlayFwdHoverIcon.svg";
 
-const nextKeyIcon = require("../assets/animationNextKeyIcon.svg");
-const nextKeyHoverIcon = require("../assets/animationNextKeyHoverIcon.svg");
+import nextKeyIcon from "../assets/animationNextKeyIcon.svg";
+import nextKeyHoverIcon from "../assets/animationNextKeyHoverIcon.svg";
 
-const startKeyIcon = require("../assets/animationStartIcon.svg");
-const startKeyHoverIcon = require("../assets/animationStartHoverIcon.svg");
+import startKeyIcon from "../assets/animationStartIcon.svg";
+import startKeyHoverIcon from "../assets/animationStartHoverIcon.svg";
 
-const endKeyIcon = require("../assets/animationEndIcon.svg");
-const endKeyHoverIcon = require("../assets/animationEndHoverIcon.svg");
+import endKeyIcon from "../assets/animationEndIcon.svg";
+import endKeyHoverIcon from "../assets/animationEndHoverIcon.svg";
 
-const stopIcon = require("../assets/animationStopIcon.svg");
-const stopHoverIcon = require("../assets/animationStopHoverIcon.svg");
+import stopIcon from "../assets/animationStopIcon.svg";
+import stopHoverIcon from "../assets/animationStopHoverIcon.svg";
 
-const nextFrameIcon = require("../assets/animationNextFrameIcon.svg");
-const nextFrameHoverIcon = require("../assets/animationNextFrameHoverIcon.svg");
+import nextFrameIcon from "../assets/animationNextFrameIcon.svg";
+import nextFrameHoverIcon from "../assets/animationNextFrameHoverIcon.svg";
 
-const lastFrameIcon = require("../assets/animationLastFrameIcon.svg");
-const lastFrameHoverIcon = require("../assets/animationLastFrameHoverIcon.svg");
+import lastFrameIcon from "../assets/animationLastFrameIcon.svg";
+import lastFrameHoverIcon from "../assets/animationLastFrameHoverIcon.svg";
 
 interface IMediaPlayerComponentProps {
     globalState: GlobalState;

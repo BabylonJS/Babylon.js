@@ -1,5 +1,5 @@
-import { Observer } from "babylonjs/Misc/observable";
-import { Nullable } from "babylonjs/types";
+import { Observer } from "core/Misc/observable";
+import { Nullable } from "core/types";
 import * as React from "react";
 import { GlobalState } from "../../../../../../globalState";
 import { Context, IActiveAnimationChangedOptions } from "../context";
@@ -7,7 +7,7 @@ import { TextInputComponent } from "../controls/textInputComponent";
 import { MediaPlayerComponent } from "./mediaPlayerComponent";
 import { RangeSelectorComponent } from "./rangeSelectorComponent";
 
-require("../scss/bottomBar.scss");
+import "../scss/bottomBar.scss";
 
 interface IBottomBarComponentProps {
     globalState: GlobalState;

@@ -13,10 +13,10 @@ import {
     IPerfTooltipHoverPosition,
     IVisibleRangeChangedObservableProps,
 } from "./graphSupportingTypes";
-import { IPerfDatasets, IPerfMetadata } from "babylonjs/Misc/interfaces/iPerfViewer";
-import { Scalar } from "babylonjs/Maths/math.scalar";
-import { PerformanceViewerCollector } from "babylonjs/Misc/PerformanceViewer/performanceViewerCollector";
-import { Observable } from "babylonjs/Misc/observable";
+import { IPerfDatasets, IPerfMetadata } from "core/Misc/interfaces/iPerfViewer";
+import { Scalar } from "core/Maths/math.scalar";
+import { PerformanceViewerCollector } from "core/Misc/PerformanceViewer/performanceViewerCollector";
+import { Observable } from "core/Misc/observable";
 
 const defaultColor = "#000";
 const axisColor = "#c0c4c8";
@@ -351,7 +351,7 @@ export class CanvasGraphService {
             }
 
             let values = new Array(this._datasetBounds.end - this._datasetBounds.start);
-            
+
             for (let pointIndex = this._datasetBounds.start; pointIndex < this._datasetBounds.end; pointIndex++) {
                 const numPoints = this.datasets.data.at(this.datasets.startingIndices.at(pointIndex) + PerformanceViewerCollector.NumberOfPointsOffset);
 
@@ -361,7 +361,7 @@ export class CanvasGraphService {
 
                 const valueIndex = this.datasets.startingIndices.at(pointIndex) + PerformanceViewerCollector.SliceDataOffset + idOffset;
                 const value = this.datasets.data.at(valueIndex);
-                
+
                 if (prevValue === undefined) {
                     prevValue = value;
                     this._prevValueById.set(id, prevValue);
@@ -370,15 +370,14 @@ export class CanvasGraphService {
                 // perform smoothing
                 const smoothedValue = smoothingFactor * value + (1 - smoothingFactor) * prevValue;
                 values[pointIndex - this._datasetBounds.start] = smoothedValue;
-                
+
                 if (!valueMinMax) {
                     valueMinMax = {
                         min: smoothedValue,
-                        max: smoothedValue
-                    }
+                        max: smoothedValue,
+                    };
                 }
 
-                
                 this._prevValueById.set(id, smoothedValue);
                 valueMinMax.min = Math.min(valueMinMax.min, smoothedValue);
                 valueMinMax.max = Math.max(valueMinMax.max, smoothedValue);
@@ -394,7 +393,7 @@ export class CanvasGraphService {
 
                 const drawableTime = this._getPixelForNumber(timestamp, this._globalTimeMinMax, left, right - left, false);
                 const drawableValue = this._getPixelForNumber(smoothedValue, valueMinMax!, top, bottom - top, true);
-                
+
                 if (prevPoint === undefined) {
                     prevPoint = [drawableTime, drawableValue];
                     this._prevPointById.set(id, prevPoint);

@@ -1,13 +1,13 @@
 import * as React from "react";
-import { Observable } from "babylonjs/Misc/observable";
-import { PointLight } from "babylonjs/Lights/pointLight";
+import { Observable } from "core/Misc/observable";
+import { PointLight } from "core/Lights/pointLight";
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { CommonLightPropertyGridComponent } from "./commonLightPropertyGridComponent";
-import { LineContainerComponent } from "../../../../../sharedUiComponents/lines/lineContainerComponent";
-import { Color3LineComponent } from "../../../../../sharedUiComponents/lines/color3LineComponent";
-import { Vector3LineComponent } from "../../../../../sharedUiComponents/lines/vector3LineComponent";
+import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
+import { Color3LineComponent } from "shared-ui-components/lines/color3LineComponent";
+import { Vector3LineComponent } from "shared-ui-components/lines/vector3LineComponent";
 import { CommonShadowLightPropertyGridComponent } from "./commonShadowLightPropertyGridComponent";
-import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
+import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { GlobalState } from "../../../../globalState";
 
 interface IPointLightPropertyGridComponentProps {

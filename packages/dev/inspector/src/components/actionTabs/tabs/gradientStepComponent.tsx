@@ -1,11 +1,11 @@
 import * as React from "react";
 import { GlobalState } from "../../globalState";
-import { Color3 } from "babylonjs/Maths/math.color";
-import { GradientBlockColorStep } from "babylonjs/Materials/Node/Blocks/gradientBlock";
-import { ColorPickerLineComponent } from "../../../sharedUiComponents/lines/colorPickerComponent";
+import { Color3 } from "core/Maths/math.color";
+import { GradientBlockColorStep } from "core/Materials/Node/Blocks/gradientBlock";
+import { ColorPickerLineComponent } from "shared-ui-components/lines/colorPickerComponent";
 
-const deleteButton = require("../lines/delete.svg");
-const copyIcon = require("../lines/copyStep.svg");
+import deleteButton from "../lines/delete.svg";
+import copyIcon from "../lines/copyStep.svg";
 
 interface IGradientStepComponentProps {
     globalState: GlobalState;

@@ -1,12 +1,12 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 
-import { IInspectorOptions } from "babylonjs/Debug/debugLayer";
-import { Nullable } from "babylonjs/types";
-import { Observable, Observer } from "babylonjs/Misc/observable";
-import { EngineStore } from "babylonjs/Engines/engineStore";
-import { Scene } from "babylonjs/scene";
-import { SceneLoader } from "babylonjs/Loading/sceneLoader";
+import { IInspectorOptions } from "core/Debug/debugLayer";
+import { Nullable } from "core/types";
+import { Observable, Observer } from "core/Misc/observable";
+import { EngineStore } from "core/Engines/engineStore";
+import { Scene } from "core/scene";
+import { SceneLoader } from "core/Loading/sceneLoader";
 
 import { ActionTabsComponent } from "./components/actionTabs/actionTabsComponent";
 import { SceneExplorerComponent } from "./components/sceneExplorer/sceneExplorerComponent";
@@ -85,9 +85,7 @@ export class Inspector {
                     newLinkEl.href = styleSheet.href;
                     targetDoc.head!.appendChild(newLinkEl);
                 }
-            } catch (e) {
-
-            }
+            } catch (e) {}
         }
     }
 
@@ -356,7 +354,7 @@ export class Inspector {
             this._GlobalState.onPluginActivatedObserver = SceneLoader.OnPluginActivatedObservable.add((rawLoader) => {
                 this._GlobalState.resetGLTFValidationResults();
 
-                const loader = rawLoader as import("babylonjs-loaders/glTF/index").GLTFFileLoader;
+                const loader = rawLoader as import("loaders/glTF/index").GLTFFileLoader;
                 if (loader.name === "gltf") {
                     this._GlobalState.prepareGLTFPlugin(loader);
                 }
@@ -562,10 +560,10 @@ export class Inspector {
             this._ActionTabsHost = null;
             this._GlobalState.onActionTabsClosedObservable.notifyObservers();
         }
-        
+
         if (this._SceneExplorerHost) {
             ReactDOM.unmountComponentAtNode(this._SceneExplorerHost);
-            
+
             if (this._SceneExplorerHost.parentElement) {
                 this._SceneExplorerHost.parentElement.removeChild(this._SceneExplorerHost);
             }
@@ -573,10 +571,10 @@ export class Inspector {
             this._SceneExplorerHost = null;
             this._GlobalState.onSceneExplorerClosedObservable.notifyObservers();
         }
-        
+
         if (this._EmbedHost) {
             ReactDOM.unmountComponentAtNode(this._EmbedHost);
-            
+
             if (this._EmbedHost.parentElement) {
                 this._EmbedHost.parentElement.removeChild(this._EmbedHost);
             }
@@ -609,7 +607,6 @@ export class Inspector {
         if (config.closeWhenActionTabsCloses) {
             this._OnActionTabsClosedObserver = this._GlobalState.onActionTabsClosedObservable.add(() => this._ClosePersistentPopup());
         }
-          
     }
 
     public static _ClosePersistentPopup() {

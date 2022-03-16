@@ -1,11 +1,11 @@
-import { Observer } from "babylonjs/Misc/observable";
-import { Nullable } from "babylonjs/types";
+import { Observer } from "core/Misc/observable";
+import { Nullable } from "core/types";
 import * as React from "react";
 import { GlobalState } from "../../../../../../globalState";
 import { Context } from "../context";
 import { AnimationEntryComponent } from "./animationEntryComponent";
-import { Animation } from "babylonjs/Animations/animation";
-import { TargetedAnimation } from "babylonjs/Animations/animationGroup";
+import { Animation } from "core/Animations/animation";
+import { TargetedAnimation } from "core/Animations/animationGroup";
 
 interface IAnimationListComponentProps {
     globalState: GlobalState;

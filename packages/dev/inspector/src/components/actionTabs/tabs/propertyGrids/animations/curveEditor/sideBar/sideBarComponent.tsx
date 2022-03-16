@@ -2,21 +2,21 @@ import * as React from "react";
 import { GlobalState } from "../../../../../../globalState";
 import { ActionButtonComponent } from "../controls/actionButtonComponent";
 import { Context } from "../context";
-import { Animation } from "babylonjs/Animations/animation";
+import { Animation } from "core/Animations/animation";
 import { AnimationListComponent } from "./animationListComponent";
 import { TextInputComponent } from "../controls/textInputComponent";
 import { SaveAnimationComponent } from "./saveAnimationComponent";
 import { LoadAnimationComponent } from "./loadAnimationComponent";
 import { AddAnimationComponent } from "./addAnimationComponent";
 import { EditAnimationComponent } from "./editAnimationComponent";
-import { TargetedAnimation } from "babylonjs/Animations/animationGroup";
+import { TargetedAnimation } from "core/Animations/animationGroup";
 
-require("../scss/sideBar.scss");
+import "../scss/sideBar.scss";
 
-const addIcon = require("../assets/addAnimationIcon.svg");
-const loadIcon = require("../assets/loadIcon.svg");
-const saveIcon = require("../assets/saveIcon.svg");
-const editIcon = require("../assets/editIcon.svg");
+import addIcon from "../assets/addAnimationIcon.svg";
+import loadIcon from "../assets/loadIcon.svg";
+import saveIcon from "../assets/saveIcon.svg";
+import editIcon from "../assets/editIcon.svg";
 
 interface ISideBarComponentProps {
     globalState: GlobalState;

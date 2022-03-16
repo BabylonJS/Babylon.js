@@ -1,10 +1,10 @@
-import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
+import { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
 
 import { faBraille } from "@fortawesome/free-solid-svg-icons";
 import { TreeItemLabelComponent } from "../treeItemLabelComponent";
 import { ExtensionsComponent } from "../extensionsComponent";
 import * as React from "react";
-import { IParticleSystem } from "babylonjs/Particles/IParticleSystem";
+import { IParticleSystem } from "core/Particles/IParticleSystem";
 
 interface IParticleSystemTreeItemComponentProps {
     system: IParticleSystem;

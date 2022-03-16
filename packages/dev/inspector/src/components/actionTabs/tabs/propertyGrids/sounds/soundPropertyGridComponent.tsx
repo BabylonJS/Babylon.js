@@ -1,18 +1,18 @@
 import * as React from "react";
 
-import { Observable } from "babylonjs/Misc/observable";
+import { Observable } from "core/Misc/observable";
 
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
-import { LineContainerComponent } from "../../../../../sharedUiComponents/lines/lineContainerComponent";
-import { TextLineComponent } from "../../../../../sharedUiComponents/lines/textLineComponent";
-import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
+import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
+import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
+import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { GlobalState } from "../../../../globalState";
-import { Sound } from "babylonjs/Audio/sound";
-import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
-import { TextInputLineComponent } from "../../../../../sharedUiComponents/lines/textInputLineComponent";
-import { ButtonLineComponent } from "../../../../../sharedUiComponents/lines/buttonLineComponent";
-import { SliderLineComponent } from "../../../../../sharedUiComponents/lines/sliderLineComponent";
-import { CheckBoxLineComponent } from "../../../../../sharedUiComponents/lines/checkBoxLineComponent";
+import { Sound } from "core/Audio/sound";
+import { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
+import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
+import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
+import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
+import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
 
 interface ISoundPropertyGridComponentProps {
     globalState: GlobalState;

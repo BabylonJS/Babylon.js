@@ -1,9 +1,9 @@
 import * as React from "react";
-import { StringTools } from "../../../../../../../sharedUiComponents/stringTools";
+import { StringTools } from "shared-ui-components/stringTools";
 import { GlobalState } from "../../../../../../globalState";
 import { Context } from "../context";
-import { Animation } from "babylonjs/Animations/animation";
-import { TargetedAnimation } from "babylonjs/Animations/animationGroup";
+import { Animation } from "core/Animations/animation";
+import { TargetedAnimation } from "core/Animations/animationGroup";
 
 interface ISaveAnimationComponentProps {
     globalState: GlobalState;

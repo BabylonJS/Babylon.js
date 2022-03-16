@@ -1,17 +1,17 @@
 import * as React from "react";
 
-import { Nullable } from "babylonjs/types";
-import { Observable, Observer } from "babylonjs/Misc/observable";
-import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
-import { Material } from "babylonjs/Materials/material";
-import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
+import { Nullable } from "core/types";
+import { Observable, Observer } from "core/Misc/observable";
+import { BaseTexture } from "core/Materials/Textures/baseTexture";
+import { Material } from "core/Materials/material";
+import { StandardMaterial } from "core/Materials/standardMaterial";
 
-import { TextLineComponent } from "./../../../sharedUiComponents/lines/textLineComponent";
+import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faWrench, faTrash } from "@fortawesome/free-solid-svg-icons";
-import { Texture } from "babylonjs/Materials/Textures/texture";
-import { FileButtonLineComponent } from "./../../../sharedUiComponents/lines/fileButtonLineComponent";
-import { Tools } from "babylonjs/Misc/tools";
+import { Texture } from "core/Materials/Textures/texture";
+import { FileButtonLineComponent } from "shared-ui-components/lines/fileButtonLineComponent";
+import { Tools } from "core/Misc/tools";
 
 export interface ITextureLinkLineComponentProps {
     label: string;

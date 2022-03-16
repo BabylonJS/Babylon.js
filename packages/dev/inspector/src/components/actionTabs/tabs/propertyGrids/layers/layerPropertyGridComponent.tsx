@@ -1,16 +1,16 @@
 import * as React from "react";
 
-import { Observable } from "babylonjs/Misc/observable";
+import { Observable } from "core/Misc/observable";
 
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
-import { LineContainerComponent } from "../../../../../sharedUiComponents/lines/lineContainerComponent";
-import { TextLineComponent } from "../../../../../sharedUiComponents/lines/textLineComponent";
-import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
+import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
+import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
+import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { GlobalState } from "../../../../globalState";
-import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
-import { TextInputLineComponent } from "../../../../../sharedUiComponents/lines/textInputLineComponent";
-import { SliderLineComponent } from "../../../../../sharedUiComponents/lines/sliderLineComponent";
-import { EffectLayer } from "babylonjs/Layers/effectLayer";
+import { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
+import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
+import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
+import { EffectLayer } from "core/Layers/effectLayer";
 
 interface ILayerPropertyGridComponentProps {
     globalState: GlobalState;

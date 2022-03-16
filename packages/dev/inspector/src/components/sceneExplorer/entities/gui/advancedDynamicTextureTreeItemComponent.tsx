@@ -1,9 +1,9 @@
-import { Nullable } from "babylonjs/types";
-import { Observer, Observable } from "babylonjs/Misc/observable";
-import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
+import { Nullable } from "core/types";
+import { Observer, Observable } from "core/Misc/observable";
+import { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
 
-import { Control } from "babylonjs-gui/2D/controls/control";
-import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
+import { Control } from "gui/2D/controls/control";
+import { AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
 
 import { faImage, faCrosshairs, faPen } from "@fortawesome/free-solid-svg-icons";
 import { TreeItemLabelComponent } from "../../treeItemLabelComponent";
@@ -66,11 +66,7 @@ export class AdvancedDynamicTextureTreeItemComponent extends React.Component<IAd
         return (
             <div className="adtextureTools">
                 <TreeItemLabelComponent label={this.props.texture.name} onClick={() => this.props.onClick()} icon={faImage} color="mediumpurple" />
-                <div
-                    className={"icon edit"}
-                    onClick={() => EditAdvancedDynamicTexture(this.props.texture)}
-                    title="Edit"
-                >
+                <div className={"icon edit"} onClick={() => EditAdvancedDynamicTexture(this.props.texture)} title="Edit">
                     <FontAwesomeIcon icon={faPen} />
                 </div>
                 <div

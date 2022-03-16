@@ -1,20 +1,20 @@
 import * as React from "react";
 
-import { Observable } from "babylonjs/Misc/observable";
+import { Observable } from "core/Misc/observable";
 
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
-import { LineContainerComponent } from "../../../../../sharedUiComponents/lines/lineContainerComponent";
-import { CheckBoxLineComponent } from "../../../../../sharedUiComponents/lines/checkBoxLineComponent";
-import { TextLineComponent } from "../../../../../sharedUiComponents/lines/textLineComponent";
-import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
+import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
+import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
+import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
+import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { GlobalState } from "../../../../globalState";
-import { Skeleton } from "babylonjs/Bones/skeleton";
+import { Skeleton } from "core/Bones/skeleton";
 import { AnimationGridComponent } from "../animations/animationPropertyGridComponent";
-import { SkeletonViewer } from "babylonjs/Debug/skeletonViewer";
+import { SkeletonViewer } from "core/Debug/skeletonViewer";
 import { CustomPropertyGridComponent } from "../customPropertyGridComponent";
-import { OptionsLineComponent } from "../../../../../sharedUiComponents/lines/optionsLineComponent";
-import { FloatLineComponent } from "../../../../../sharedUiComponents/lines/floatLineComponent";
-import { ButtonLineComponent } from "../../../../../sharedUiComponents/lines/buttonLineComponent";
+import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
+import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
+import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
 
 interface ISkeletonPropertyGridComponentProps {
     globalState: GlobalState;

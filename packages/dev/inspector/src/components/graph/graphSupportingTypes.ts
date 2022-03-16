@@ -1,5 +1,5 @@
-import { IPerfDatasets } from "babylonjs/Misc/interfaces/iPerfViewer"
-import { Observable } from "babylonjs/Misc/observable";
+import { IPerfDatasets } from "core/Misc/interfaces/iPerfViewer";
+import { Observable } from "core/Misc/observable";
 
 /**
  * Defines a structure to hold max, min and a optional current.
@@ -36,7 +36,7 @@ export interface IPerfLayoutSize {
  */
 export interface IPerfTooltip {
     text: string;
-    color: string
+    color: string;
 }
 
 /**
@@ -58,7 +58,7 @@ export interface IGraphDrawableArea {
 }
 
 /**
- * Defines the structure representing necessary ticker information. 
+ * Defines the structure representing necessary ticker information.
  */
 export interface IPerfTicker extends IPerfMinMax {
     id: string;
@@ -67,7 +67,7 @@ export interface IPerfTicker extends IPerfMinMax {
 
 export interface IVisibleRangeChangedObservableProps {
     valueMap: Map<string, IPerfMinMax>;
-};
+}
 
 /**
  * Defines what settings our canvas graphing service accepts

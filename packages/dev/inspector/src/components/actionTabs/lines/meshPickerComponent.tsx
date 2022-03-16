@@ -1,10 +1,10 @@
 import * as React from "react";
 import { GlobalState } from "../../globalState";
-import { Observable } from "babylonjs/Misc/observable";
+import { Observable } from "core/Misc/observable";
 import { PropertyChangedEvent } from "../../propertyChangedEvent";
-import { Scene } from "babylonjs/scene";
-import { OptionsLineComponent } from "../../../sharedUiComponents/lines/optionsLineComponent";
-import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
+import { Scene } from "core/scene";
+import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
+import { AbstractMesh } from "core/Meshes/abstractMesh";
 
 interface IMeshPickerComponentProps {
     globalState: GlobalState;
