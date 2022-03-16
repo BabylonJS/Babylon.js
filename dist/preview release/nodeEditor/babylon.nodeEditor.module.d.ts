@@ -821,21 +821,16 @@ declare module "babylonjs-node-editor/sharedComponents/color3LineComponent" {
         onChange?: () => void;
         globalState: GlobalState;
     }
-    export class Color3LineComponent extends React.Component<IColor3LineComponentProps, {
+    interface IColor3LineComponentState {
         isExpanded: boolean;
-        color: Color3 | Color4;
-    }> {
-        private _localChange;
+    }
+    export class Color3LineComponent extends React.Component<IColor3LineComponentProps, IColor3LineComponentState> {
         constructor(props: IColor3LineComponentProps);
-        shouldComponentUpdate(nextProps: IColor3LineComponentProps, nextState: {
-            color: Color3 | Color4;
-        }): boolean;
         onChange(newValue: string): void;
         switchExpandState(): void;
-        raiseOnPropertyChanged(previousValue: Color3 | Color4): void;
-        updateStateR(value: number): void;
-        updateStateG(value: number): void;
-        updateStateB(value: number): void;
+        updateColor(newValue: Color3 | Color4): void;
+        modifyColor(modifier: (previous: Color3 | Color4) => void): void;
+        getCurrentColor(): Color3 | Color4;
         copyToClipboard(): void;
         render(): JSX.Element;
     }
@@ -1173,20 +1168,13 @@ declare module "babylonjs-node-editor/sharedComponents/color4LineComponent" {
     }
     export class Color4LineComponent extends React.Component<IColor4LineComponentProps, {
         isExpanded: boolean;
-        color: Color4;
     }> {
-        private _localChange;
         constructor(props: IColor4LineComponentProps);
-        shouldComponentUpdate(nextProps: IColor4LineComponentProps, nextState: {
-            color: Color4;
-        }): boolean;
         onChange(newValue: string): void;
         switchExpandState(): void;
-        raiseOnPropertyChanged(previousValue: Color4): void;
-        updateStateR(value: number): void;
-        updateStateG(value: number): void;
-        updateStateB(value: number): void;
-        updateStateA(value: number): void;
+        updateColor(newValue: Color4): void;
+        modifyColor(modifier: (previous: Color4) => void): void;
+        getCurrentColor(): Color4;
         copyToClipboard(): void;
         render(): JSX.Element;
     }
@@ -2366,7 +2354,6 @@ declare module "babylonjs-node-editor/sharedUiComponents/lines/colorLineComponen
     interface IColorLineComponentState {
         isExpanded: boolean;
         color: Color4;
-        colorString: string;
     }
     export class ColorLineComponent extends React.Component<IColorLineComponentProps, IColorLineComponentState> {
         constructor(props: IColorLineComponentProps);
@@ -2374,20 +2361,14 @@ declare module "babylonjs-node-editor/sharedUiComponents/lines/colorLineComponen
         getValue(props?: Readonly<IColorLineComponentProps> & Readonly<{
             children?: React.ReactNode;
         }>): Color4;
-        getValueAsString(props?: Readonly<IColorLineComponentProps> & Readonly<{
-            children?: React.ReactNode;
-        }>): string;
         setColorFromString(colorString: string): void;
-        setColor(color: Color4): void;
-        updateColor(newColor: Color4): void;
+        setColor(newColor: Color4): void;
         switchExpandState(): void;
         updateStateR(value: number): void;
         updateStateG(value: number): void;
         updateStateB(value: number): void;
         updateStateA(value: number): void;
         copyToClipboard(): void;
-        get colorString(): string;
-        set colorString(_: string);
         private convertToColor;
         private toColor3;
         render(): JSX.Element;
@@ -3833,21 +3814,16 @@ declare module NODEEDITOR {
         onChange?: () => void;
         globalState: GlobalState;
     }
-    export class Color3LineComponent extends React.Component<IColor3LineComponentProps, {
+    interface IColor3LineComponentState {
         isExpanded: boolean;
-        color: BABYLON.Color3 | BABYLON.Color4;
-    }> {
-        private _localChange;
+    }
+    export class Color3LineComponent extends React.Component<IColor3LineComponentProps, IColor3LineComponentState> {
         constructor(props: IColor3LineComponentProps);
-        shouldComponentUpdate(nextProps: IColor3LineComponentProps, nextState: {
-            color: BABYLON.Color3 | BABYLON.Color4;
-        }): boolean;
         onChange(newValue: string): void;
         switchExpandState(): void;
-        raiseOnPropertyChanged(previousValue: BABYLON.Color3 | BABYLON.Color4): void;
-        updateStateR(value: number): void;
-        updateStateG(value: number): void;
-        updateStateB(value: number): void;
+        updateColor(newValue: BABYLON.Color3 | BABYLON.Color4): void;
+        modifyColor(modifier: (previous: BABYLON.Color3 | BABYLON.Color4) => void): void;
+        getCurrentColor(): BABYLON.Color3 | BABYLON.Color4;
         copyToClipboard(): void;
         render(): JSX.Element;
     }
@@ -4135,20 +4111,13 @@ declare module NODEEDITOR {
     }
     export class Color4LineComponent extends React.Component<IColor4LineComponentProps, {
         isExpanded: boolean;
-        color: BABYLON.Color4;
     }> {
-        private _localChange;
         constructor(props: IColor4LineComponentProps);
-        shouldComponentUpdate(nextProps: IColor4LineComponentProps, nextState: {
-            color: BABYLON.Color4;
-        }): boolean;
         onChange(newValue: string): void;
         switchExpandState(): void;
-        raiseOnPropertyChanged(previousValue: BABYLON.Color4): void;
-        updateStateR(value: number): void;
-        updateStateG(value: number): void;
-        updateStateB(value: number): void;
-        updateStateA(value: number): void;
+        updateColor(newValue: BABYLON.Color4): void;
+        modifyColor(modifier: (previous: BABYLON.Color4) => void): void;
+        getCurrentColor(): BABYLON.Color4;
         copyToClipboard(): void;
         render(): JSX.Element;
     }
@@ -5165,7 +5134,6 @@ declare module NODEEDITOR {
     interface IColorLineComponentState {
         isExpanded: boolean;
         color: BABYLON.Color4;
-        colorString: string;
     }
     export class ColorLineComponent extends React.Component<IColorLineComponentProps, IColorLineComponentState> {
         constructor(props: IColorLineComponentProps);
@@ -5173,20 +5141,14 @@ declare module NODEEDITOR {
         getValue(props?: Readonly<IColorLineComponentProps> & Readonly<{
             children?: React.ReactNode;
         }>): BABYLON.Color4;
-        getValueAsString(props?: Readonly<IColorLineComponentProps> & Readonly<{
-            children?: React.ReactNode;
-        }>): string;
         setColorFromString(colorString: string): void;
-        setColor(color: BABYLON.Color4): void;
-        updateColor(newColor: BABYLON.Color4): void;
+        setColor(newColor: BABYLON.Color4): void;
         switchExpandState(): void;
         updateStateR(value: number): void;
         updateStateG(value: number): void;
         updateStateB(value: number): void;
         updateStateA(value: number): void;
         copyToClipboard(): void;
-        get colorString(): string;
-        set colorString(_: string);
         private convertToColor;
         private toColor3;
         render(): JSX.Element;

@@ -518,240 +518,6 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Event Types
-     */
-    export enum DeviceInputEventType {
-        /** PointerMove */
-        PointerMove = 0,
-        /** PointerDown */
-        PointerDown = 1,
-        /** PointerUp */
-        PointerUp = 2
-    }
-    /**
-     * Native friendly interface for Event Object
-     */
-    export interface IUIEvent {
-        /**
-         * Input array index
-         */
-        inputIndex: number;
-        /**
-         * Current target for an event
-         */
-        currentTarget?: any;
-        /**
-         * Alias for target
-         * @deprecated
-         */
-        srcElement?: any;
-        /**
-         * Type of event
-         */
-        type: string;
-        /**
-         * Reference to object where object was dispatched
-         */
-        target: any;
-        /**
-         * Tells user agent what to do when not explicitly handled
-         */
-        preventDefault: () => void;
-    }
-    /**
-     * Native friendly interface for KeyboardEvent Object
-     */
-    export interface IKeyboardEvent extends IUIEvent {
-        /**
-         * Status of Alt key being pressed
-         */
-        altKey: boolean;
-        /**
-         * Unicode value of character pressed
-         * @deprecated
-         */
-        charCode?: number;
-        /**
-         * Code for key based on layout
-         */
-        code: string;
-        /**
-         * Status of Ctrl key being pressed
-         */
-        ctrlKey: boolean;
-        /**
-         * String representation of key
-         */
-        key: string;
-        /**
-         * ASCII value of key
-         * @deprecated
-         */
-        keyCode: number;
-        /**
-         * Status of Meta key (eg. Windows key) being pressed
-         */
-        metaKey: boolean;
-        /**
-         * Status of Shift key being pressed
-         */
-        shiftKey: boolean;
-    }
-    /**
-     * Native friendly interface for MouseEvent Object
-     */
-    export interface IMouseEvent extends IUIEvent {
-        /**
-         * Status of Alt key being pressed
-         */
-        altKey: boolean;
-        /**
-         * Value of single mouse button pressed
-         */
-        button: number;
-        /**
-         * Value of all mouse buttons pressed
-         */
-        buttons: number;
-        /**
-         * Current X coordinate
-         */
-        clientX: number;
-        /**
-         * Current Y coordinate
-         */
-        clientY: number;
-        /**
-         * Status of Ctrl key being pressed
-         */
-        ctrlKey: boolean;
-        /**
-         * Provides current click count
-         */
-        detail?: number;
-        /**
-         * Status of Meta key (eg. Windows key) being pressed
-         */
-        metaKey: boolean;
-        /**
-         * Delta of movement on X axis
-         */
-        movementX: number;
-        /**
-         * Delta of movement on Y axis
-         */
-        movementY: number;
-        /**
-         * Delta of movement on X axis
-         */
-        mozMovementX?: number;
-        /**
-         * Delta of movement on Y axis
-         */
-        mozMovementY?: number;
-        /**
-         * Delta of movement on X axis
-         */
-        msMovementX?: any;
-        /**
-         * Delta of movement on Y axis
-         */
-        msMovementY?: any;
-        /**
-         * Current coordinate of X within container
-         */
-        offsetX: number;
-        /**
-         * Current coordinate of Y within container
-         */
-        offsetY: number;
-        /**
-         * Horizontal coordinate of event
-         */
-        pageX: number;
-        /**
-         * Vertical coordinate of event
-         */
-        pageY: number;
-        /**
-         * Status of Shift key being pressed
-         */
-        shiftKey: boolean;
-        /**
-         * Delta of movement on X axis
-         */
-        webkitMovementX?: any;
-        /**
-         * Delta of movement on Y axis
-         */
-        webkitMovementY?: any;
-        /**
-         * Alias of clientX
-         */
-        x: number;
-        /**
-         * Alias of clientY
-         */
-        y: number;
-    }
-    /**
-     * Native friendly interface for PointerEvent Object
-     */
-    export interface IPointerEvent extends IMouseEvent {
-        /**
-         * Pointer Event ID
-         */
-        pointerId: number;
-        /**
-         * Type of pointer
-         */
-        pointerType: string;
-    }
-    /**
-     * Native friendly interface for WheelEvent Object
-     */
-    export interface IWheelEvent extends IMouseEvent {
-        /**
-         * Units for delta value
-         */
-        deltaMode: number;
-        /**
-         * Horizontal scroll delta
-         */
-        deltaX: number;
-        /**
-         * Vertical scroll delta
-         */
-        deltaY: number;
-        /**
-         * Z-Axis scroll delta
-         */
-        deltaZ: number;
-        /**
-         * WheelDelta (From MouseWheel Event)
-         */
-        wheelDelta?: number;
-    }
-    /**
-     * Constants used for Events
-     */
-    export class EventConstants {
-        /**
-         * Pixel delta for Wheel Events (Default)
-         */
-        static DOM_DELTA_PIXEL: number;
-        /**
-         * Line delta for Wheel Events
-         */
-        static DOM_DELTA_LINE: number;
-        /**
-         * Page delta for Wheel Events
-         */
-        static DOM_DELTA_PAGE: number;
-    }
-}
-declare module BABYLON {
-    /**
      * Enum for Device Types
      */
     export enum DeviceType {
@@ -1023,52 +789,9 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Interface for NativeInput object
-     */
-    export interface INativeInput extends IDisposable {
-        /**
-         * Callback for when a device is connected
-         */
-        onDeviceConnected: (deviceType: DeviceType, deviceSlot: number) => void;
-        /**
-         * Callback for when a device is disconnected
-         */
-        onDeviceDisconnected: (deviceType: DeviceType, deviceSlot: number) => void;
-        /**
-         * Callback for when input is changed on a device
-         */
-        onInputChanged: (deviceType: DeviceType, deviceSlot: number, inputIndex: number, currentState: Nullable<number>) => void;
-        /**
-         * Checks for current device input value, given an id and input index.
-         * @param deviceType Type of device
-         * @param deviceSlot "Slot" or index that device is referenced in
-         * @param inputIndex Id of input to be checked
-         * @returns Current value of input
-         */
-        pollInput(deviceType: DeviceType, deviceSlot: number, inputIndex: number): number;
-        /**
-         * Check for a specific device in the DeviceInputSystem
-         * @param deviceType Type of device to check for
-         * @returns bool with status of device's existence
-         */
-        isDeviceAvailable(deviceType: DeviceType): boolean;
-    }
-    /**
      * Interface for DeviceInputSystem implementations (JS and Native)
      */
     export interface IDeviceInputSystem extends IDisposable {
-        /**
-         * Callback for when a device is connected
-         */
-        onDeviceConnected: (deviceType: DeviceType, deviceSlot: number) => void;
-        /**
-         * Callback for when a device is disconnected
-         */
-        onDeviceDisconnected: (deviceType: DeviceType, deviceSlot: number) => void;
-        /**
-         * Callback for when an input is changed
-         */
-        onInputChanged: (deviceType: DeviceType, deviceSlot: number, eventData: IUIEvent) => void;
         /**
          * Checks for current device input value, given an id and input index. Throws exception if requested device not initialized.
          * @param deviceType Enum specifiying device type
@@ -12357,6 +12080,240 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Event Types
+     */
+    export enum DeviceInputEventType {
+        /** PointerMove */
+        PointerMove = 0,
+        /** PointerDown */
+        PointerDown = 1,
+        /** PointerUp */
+        PointerUp = 2
+    }
+    /**
+     * Native friendly interface for Event Object
+     */
+    export interface IUIEvent {
+        /**
+         * Input array index
+         */
+        inputIndex: number;
+        /**
+         * Current target for an event
+         */
+        currentTarget?: any;
+        /**
+         * Alias for target
+         * @deprecated
+         */
+        srcElement?: any;
+        /**
+         * Type of event
+         */
+        type: string;
+        /**
+         * Reference to object where object was dispatched
+         */
+        target: any;
+        /**
+         * Tells user agent what to do when not explicitly handled
+         */
+        preventDefault: () => void;
+    }
+    /**
+     * Native friendly interface for KeyboardEvent Object
+     */
+    export interface IKeyboardEvent extends IUIEvent {
+        /**
+         * Status of Alt key being pressed
+         */
+        altKey: boolean;
+        /**
+         * Unicode value of character pressed
+         * @deprecated
+         */
+        charCode?: number;
+        /**
+         * Code for key based on layout
+         */
+        code: string;
+        /**
+         * Status of Ctrl key being pressed
+         */
+        ctrlKey: boolean;
+        /**
+         * String representation of key
+         */
+        key: string;
+        /**
+         * ASCII value of key
+         * @deprecated
+         */
+        keyCode: number;
+        /**
+         * Status of Meta key (eg. Windows key) being pressed
+         */
+        metaKey: boolean;
+        /**
+         * Status of Shift key being pressed
+         */
+        shiftKey: boolean;
+    }
+    /**
+     * Native friendly interface for MouseEvent Object
+     */
+    export interface IMouseEvent extends IUIEvent {
+        /**
+         * Status of Alt key being pressed
+         */
+        altKey: boolean;
+        /**
+         * Value of single mouse button pressed
+         */
+        button: number;
+        /**
+         * Value of all mouse buttons pressed
+         */
+        buttons: number;
+        /**
+         * Current X coordinate
+         */
+        clientX: number;
+        /**
+         * Current Y coordinate
+         */
+        clientY: number;
+        /**
+         * Status of Ctrl key being pressed
+         */
+        ctrlKey: boolean;
+        /**
+         * Provides current click count
+         */
+        detail?: number;
+        /**
+         * Status of Meta key (eg. Windows key) being pressed
+         */
+        metaKey: boolean;
+        /**
+         * Delta of movement on X axis
+         */
+        movementX: number;
+        /**
+         * Delta of movement on Y axis
+         */
+        movementY: number;
+        /**
+         * Delta of movement on X axis
+         */
+        mozMovementX?: number;
+        /**
+         * Delta of movement on Y axis
+         */
+        mozMovementY?: number;
+        /**
+         * Delta of movement on X axis
+         */
+        msMovementX?: any;
+        /**
+         * Delta of movement on Y axis
+         */
+        msMovementY?: any;
+        /**
+         * Current coordinate of X within container
+         */
+        offsetX: number;
+        /**
+         * Current coordinate of Y within container
+         */
+        offsetY: number;
+        /**
+         * Horizontal coordinate of event
+         */
+        pageX: number;
+        /**
+         * Vertical coordinate of event
+         */
+        pageY: number;
+        /**
+         * Status of Shift key being pressed
+         */
+        shiftKey: boolean;
+        /**
+         * Delta of movement on X axis
+         */
+        webkitMovementX?: any;
+        /**
+         * Delta of movement on Y axis
+         */
+        webkitMovementY?: any;
+        /**
+         * Alias of clientX
+         */
+        x: number;
+        /**
+         * Alias of clientY
+         */
+        y: number;
+    }
+    /**
+     * Native friendly interface for PointerEvent Object
+     */
+    export interface IPointerEvent extends IMouseEvent {
+        /**
+         * Pointer Event ID
+         */
+        pointerId: number;
+        /**
+         * Type of pointer
+         */
+        pointerType: string;
+    }
+    /**
+     * Native friendly interface for WheelEvent Object
+     */
+    export interface IWheelEvent extends IMouseEvent {
+        /**
+         * Units for delta value
+         */
+        deltaMode: number;
+        /**
+         * Horizontal scroll delta
+         */
+        deltaX: number;
+        /**
+         * Vertical scroll delta
+         */
+        deltaY: number;
+        /**
+         * Z-Axis scroll delta
+         */
+        deltaZ: number;
+        /**
+         * WheelDelta (From MouseWheel Event)
+         */
+        wheelDelta?: number;
+    }
+    /**
+     * Constants used for Events
+     */
+    export class EventConstants {
+        /**
+         * Pixel delta for Wheel Events (Default)
+         */
+        static DOM_DELTA_PIXEL: number;
+        /**
+         * Line delta for Wheel Events
+         */
+        static DOM_DELTA_LINE: number;
+        /**
+         * Page delta for Wheel Events
+         */
+        static DOM_DELTA_PAGE: number;
+    }
+}
+declare module BABYLON {
+    /**
      * Groups all the scene component constants in one place to ease maintenance.
      * @hidden
      */
@@ -17479,6 +17436,8 @@ declare module BABYLON {
         private _renderOpaque;
         private _renderAlphaTest;
         private _renderTransparent;
+        /** @hidden */
+        _empty: boolean;
         /** @hidden */
         _edgesRenderers: SmartArrayNoDuplicate<IEdgesRenderer>;
         onBeforeTransparentRendering: () => void;
@@ -22609,9 +22568,10 @@ declare module BABYLON {
         /**
          * Loads the current Node Material from a url pointing to a file save by the Node Material Editor
          * @param url defines the url to load from
+         * @param rootUrl defines the root URL for nested url in the node material
          * @returns a promise that will fulfil when the material is fully loaded
          */
-        loadAsync(url: string): Promise<void>;
+        loadAsync(url: string, rootUrl?: string): Promise<void>;
         private _gatherBlocks;
         /**
          * Generate a string containing the code declaration required to create an equivalent of this material
@@ -22650,9 +22610,10 @@ declare module BABYLON {
          * @param name defines the name of the material to create
          * @param url defines the url to load from
          * @param scene defines the hosting scene
+         * @param rootUrl defines the root URL for nested url in the node material
          * @returns a promise that will resolve to the new node material
          */
-        static ParseFromFileAsync(name: string, url: string, scene: Scene): Promise<NodeMaterial>;
+        static ParseFromFileAsync(name: string, url: string, scene: Scene, rootUrl?: string): Promise<NodeMaterial>;
         /**
          * Creates a node material from a snippet saved by the node material editor
          * @param snippetId defines the snippet to load
@@ -23837,7 +23798,7 @@ declare module BABYLON {
         attachControl(noPreventDefault?: boolean): void;
         /**
          * Attach the input controls to a specific dom element to get the input from.
-         * @param ignored defines an ignored parameter kept for backward compatibility. If you want to define the source input element, you can set engine.inputElement before calling camera.attachControl
+         * @param ignored defines an ignored parameter kept for backward compatibility.
          * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
          * BACK COMPAT SIGNATURE ONLY.
          */
@@ -23848,7 +23809,7 @@ declare module BABYLON {
         detachControl(): void;
         /**
          * Detach the current controls from the specified dom element.
-         * @param ignored defines an ignored parameter kept for backward compatibility. If you want to define the source input element, you can set engine.inputElement before calling camera.attachControl
+         * @param ignored defines an ignored parameter kept for backward compatibility.
          */
         detachControl(ignored: any): void;
         private _collisionMask;
@@ -29353,7 +29314,7 @@ declare module BABYLON {
         /**
          * Initializes the physics imposter
          * @param object The physics-enabled object used as the physics imposter
-         * @param type The type of the physics imposter
+         * @param type The type of the physics imposter. Types are available as static members of this class.
          * @param _options The options for the physics imposter
          * @param _scene The Babylon scene
          */
@@ -29647,7 +29608,7 @@ declare module BABYLON {
          */
         static PlaneImpostor: number;
         /**
-         * Mesh-imposter type
+         * Mesh-imposter type (Only available to objects with vertices data)
          */
         static MeshImpostor: number;
         /**
@@ -41820,7 +41781,7 @@ declare module BABYLON {
         attachControl(noPreventDefault?: boolean): void;
         /**
          * Attach the input controls to a specific dom element to get the input from.
-         * @param ignored defines an ignored parameter kept for backward compatibility. If you want to define the source input element, you can set engine.inputElement before calling camera.attachControl
+         * @param ignored defines an ignored parameter kept for backward compatibility.
          * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
          * BACK COMPAT SIGNATURE ONLY.
          */
@@ -41831,7 +41792,7 @@ declare module BABYLON {
         detachControl(): void;
         /**
          * Detach the current controls from the specified dom element.
-         * @param ignored defines an ignored parameter kept for backward compatibility. If you want to define the source input element, you can set engine.inputElement before calling camera.attachControl
+         * @param ignored defines an ignored parameter kept for backward compatibility.
          */
         detachControl(ignored: any): void;
         /**
@@ -47380,8 +47341,8 @@ declare module BABYLON {
     }
     /** @hidden */
     interface IDeviceInputSystemConstructor {
-        prototype: INativeInput;
-        new (): INativeInput;
+        prototype: IDeviceInputSystem;
+        new (onDeviceConnected: (deviceType: DeviceType, deviceSlot: number) => void, onDeviceDisconnected: (deviceType: DeviceType, deviceSlot: number) => void, onInputChanged: (deviceType: DeviceType, deviceSlot: number, inputIndex: number, currentState: number) => void): IDeviceInputSystem;
     }
     /** @hidden */
     export interface INativeDataStream {
@@ -48431,11 +48392,8 @@ declare module BABYLON {
 declare module BABYLON {
     /** @hidden */
     export class NativeDeviceInputSystem implements IDeviceInputSystem {
-        onDeviceConnected: (deviceType: DeviceType, deviceSlot: number) => void;
-        onDeviceDisconnected: (deviceType: DeviceType, deviceSlot: number) => void;
-        onInputChanged: (deviceType: DeviceType, deviceSlot: number, eventData: IUIEvent) => void;
         private readonly _nativeInput;
-        constructor(nativeInput?: INativeInput);
+        constructor(onDeviceConnected: (deviceType: DeviceType, deviceSlot: number) => void, onDeviceDisconnected: (deviceType: DeviceType, deviceSlot: number) => void, onInputChanged: (deviceType: DeviceType, deviceSlot: number, eventData: IUIEvent) => void);
         /**
          * Checks for current device input value, given an id and input index. Throws exception if requested device not initialized.
          * @param deviceType Enum specifiying device type
@@ -48464,11 +48422,6 @@ declare module BABYLON {
 declare module BABYLON {
     /** @hidden */
     export class WebDeviceInputSystem implements IDeviceInputSystem {
-        /** onDeviceConnected property */
-        set onDeviceConnected(callback: (deviceType: DeviceType, deviceSlot: number) => void);
-        get onDeviceConnected(): (deviceType: DeviceType, deviceSlot: number) => void;
-        onDeviceDisconnected: (deviceType: DeviceType, deviceSlot: number) => void;
-        onInputChanged: (deviceType: DeviceType, deviceSlot: number, eventData: IUIEvent) => void;
         private _inputs;
         private _gamepads;
         private _keyboardActive;
@@ -48477,6 +48430,8 @@ declare module BABYLON {
         private readonly _engine;
         private readonly _usingSafari;
         private _onDeviceConnected;
+        private _onDeviceDisconnected;
+        private _onInputChanged;
         private _keyboardDownEvent;
         private _keyboardUpEvent;
         private _keyboardBlurEvent;
@@ -48496,7 +48451,7 @@ declare module BABYLON {
         private _gamepadConnectedEvent;
         private _gamepadDisconnectedEvent;
         private _eventPrefix;
-        constructor(engine: Engine);
+        constructor(engine: Engine, onDeviceConnected: (deviceType: DeviceType, deviceSlot: number) => void, onDeviceDisconnected: (deviceType: DeviceType, deviceSlot: number) => void, onInputChanged: (deviceType: DeviceType, deviceSlot: number, eventData: IUIEvent) => void);
         /**
          * Checks for current device input value, given an id and input index. Throws exception if requested device not initialized.
          * @param deviceType Enum specifiying device type
@@ -53839,7 +53794,7 @@ declare module BABYLON {
         protected _targetHost: Nullable<AbstractMesh>;
         /**
          * Defines the target point of the camera.
-         * The camera looks towards it form the radius distance.
+         * The camera looks towards it from the radius distance.
          */
         get target(): Vector3;
         set target(value: Vector3);
@@ -54163,7 +54118,7 @@ declare module BABYLON {
         attachControl(noPreventDefault?: boolean): void;
         /**
          * Attach the input controls to a specific dom element to get the input from.
-         * @param ignored defines an ignored parameter kept for backward compatibility. If you want to define the source input element, you can set engine.inputElement before calling camera.attachControl
+         * @param ignored defines an ignored parameter kept for backward compatibility.
          * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
          */
         attachControl(ignored: any, noPreventDefault?: boolean): void;
@@ -54175,7 +54130,7 @@ declare module BABYLON {
         attachControl(noPreventDefault: boolean, useCtrlForPanning: boolean): void;
         /**
          * Attached controls to the current camera.
-         * @param ignored defines an ignored parameter kept for backward compatibility. If you want to define the source input element, you can set engine.inputElement before calling camera.attachControl
+         * @param ignored defines an ignored parameter kept for backward compatibility.
          * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
          * @param useCtrlForPanning  Defines whether ctrl is used for panning within the controls
          */
@@ -54193,7 +54148,7 @@ declare module BABYLON {
         detachControl(): void;
         /**
          * Detach the current controls from the specified dom element.
-         * @param ignored defines an ignored parameter kept for backward compatibility. If you want to define the source input element, you can set engine.inputElement before calling camera.attachControl
+         * @param ignored defines an ignored parameter kept for backward compatibility.
          */
         detachControl(ignored: any): void;
         /** @hidden */
@@ -59131,6 +59086,7 @@ declare module BABYLON {
         private _getAngleDiff;
         private _getAngleBetween;
         private _isAngleBetween;
+        private _updateLinkedTransformRotation;
     }
 }
 declare module BABYLON {
@@ -61653,6 +61609,7 @@ declare module BABYLON {
         private _handleTransitionAnimation;
         private readonly _hoverRadius;
         private readonly _pickRadius;
+        private readonly _controllerPickRadius;
         private readonly _nearGrabLengthScale;
         private _processTouchPoint;
         protected _onXRFrame(_xrFrame: XRFrame): void;
@@ -61661,11 +61618,6 @@ declare module BABYLON {
         private _isControllerReadyForNearInteraction;
         private _attachNearInteractionMode;
         private _detachController;
-        private readonly _hoverSize;
-        private readonly _touchSize;
-        private readonly _hydrateTransitionSize;
-        private readonly _touchHoverTransitionSize;
-        private readonly _hoverTouchTransitionSize;
         private _generateNewTouchPointMesh;
         private _pickWithSphere;
         /**
@@ -64819,8 +64771,9 @@ declare module BABYLON.Debug {
          * @param xAxis defines the node hierarchy used to render the x-axis
          * @param yAxis defines the node hierarchy used to render the y-axis
          * @param zAxis defines the node hierarchy used to render the z-axis
+         * @param lineThickness The line thickness to use when creating the arrow. defaults to 1.
          */
-        constructor(scene?: Scene, scaleLines?: number, renderingGroupId?: Nullable<number>, xAxis?: TransformNode, yAxis?: TransformNode, zAxis?: TransformNode);
+        constructor(scene?: Scene, scaleLines?: number, renderingGroupId?: Nullable<number>, xAxis?: TransformNode, yAxis?: TransformNode, zAxis?: TransformNode, lineThickness?: number);
         /**
          * Force the viewer to update
          * @param position defines the position of the viewer
@@ -65324,8 +65277,8 @@ declare module BABYLON {
      * * The parameter `path` is a required array of successive Vector3. This is the axis curve the shape is extruded along.
      * * The parameter `rotation` (float, default 0 radians) is the angle value to rotate the shape each step (each path point), from the former step (so rotation added each step) along the curve.
      * * The parameter `scale` (float, default 1) is the value to scale the shape.
-     * * The parameter `closeShape` (boolean, default false) closes the shape when true.
-     * * The parameter `closePath` (boolean, default false) closes the path when true and no caps.
+     * * The parameter `closeShape` (boolean, default false) closes the shape when true, since v5.0.0.
+     * * The parameter `closePath` (boolean, default false) closes the path when true and no caps, since v5.0.0.
      * * The parameter `cap` sets the way the extruded shape is capped. Possible values : BABYLON.Mesh.NO_CAP (default), BABYLON.Mesh.CAP_START, BABYLON.Mesh.CAP_END, BABYLON.Mesh.CAP_ALL
      * * The optional parameter `instance` is an instance of an existing ExtrudedShape object to be updated with the passed `shape`, `path`, `scale` or `rotation` parameters : https://doc.babylonjs.com/how_to/how_to_dynamically_morph_a_mesh#extruded-shape
      * * Remember you can only change the shape or path point positions, not their number when updating an extruded shape.
@@ -65364,8 +65317,8 @@ declare module BABYLON {
      * * It must returns a float value that will be the rotation in radians applied to the shape on each path point.
      * * The parameter `scaleFunction` (JS function) is a custom Javascript function called on each path point. This function is passed the position i of the point in the path and the distance of this point from the beginning of the path
      * * It must returns a float value that will be the scale value applied to the shape on each path point
-     * * The parameter `closeShape` (boolean, default false) forces the extrusion underlying ribbon to close all the shape paths in its `pathArray`
-     * * The parameter `closePath` (boolean, default false) forces the extrusion underlying ribbon to close its `pathArray` when no caps
+     * * The parameter `closeShape` (boolean, default false) closes the shape when true, since v5.0.0.
+     * * The parameter `closePath` (boolean, default false) closes the path when true and no caps, since v5.0.0.
      * * The parameter `ribbonClosePath` (boolean, default false) forces the extrusion underlying ribbon to close all the paths in its `pathArray` - depreciated in favor of closeShape
      * * The parameter `ribbonCloseArray` (boolean, default false) forces the extrusion underlying ribbon to close its `pathArray` - depreciated in favor of closePath
      * * The parameter `cap` sets the way the extruded shape is capped. Possible values : BABYLON.Mesh.NO_CAP (default), BABYLON.Mesh.CAP_START, BABYLON.Mesh.CAP_END, BABYLON.Mesh.CAP_ALL

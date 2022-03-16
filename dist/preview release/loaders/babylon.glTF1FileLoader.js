@@ -2904,6 +2904,14 @@ var GLTFFileLoader = /** @class */ (function () {
          */
         this.loadAllMaterials = false;
         /**
+         * If true, load only the materials defined in the file. Defaults to false.
+         */
+        this.loadOnlyMaterials = false;
+        /**
+         * If true, do not load any materials defined in the file. Defaults to false.
+         */
+        this.skipMaterials = false;
+        /**
          * If true, load the color (gamma encoded) textures into sRGB buffers (if supported by the GPU), which will yield more accurate results when sampling the texture. Defaults to true.
          */
         this.useSRGBBuffers = true;

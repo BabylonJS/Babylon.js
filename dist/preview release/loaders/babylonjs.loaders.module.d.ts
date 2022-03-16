@@ -202,6 +202,14 @@ declare module "babylonjs-loaders/glTF/glTFFileLoader" {
          */
         loadAllMaterials: boolean;
         /**
+         * If true, load only the materials defined in the file. Defaults to false.
+         */
+        loadOnlyMaterials: boolean;
+        /**
+         * If true, do not load any materials defined in the file. Defaults to false.
+         */
+        skipMaterials: boolean;
+        /**
          * If true, load the color (gamma encoded) textures into sRGB buffers (if supported by the GPU), which will yield more accurate results when sampling the texture. Defaults to true.
          */
         useSRGBBuffers: boolean;
@@ -3359,6 +3367,14 @@ declare module BABYLON {
          * If true, load all materials defined in the file, even if not used by any mesh. Defaults to false.
          */
         loadAllMaterials: boolean;
+        /**
+         * If true, load only the materials defined in the file. Defaults to false.
+         */
+        loadOnlyMaterials: boolean;
+        /**
+         * If true, do not load any materials defined in the file. Defaults to false.
+         */
+        skipMaterials: boolean;
         /**
          * If true, load the color (gamma encoded) textures into sRGB buffers (if supported by the GPU), which will yield more accurate results when sampling the texture. Defaults to true.
          */

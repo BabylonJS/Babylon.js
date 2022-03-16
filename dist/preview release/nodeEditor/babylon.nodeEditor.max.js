@@ -65147,42 +65147,24 @@ var Color3LineComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(Color3LineComponent, _super);
     function Color3LineComponent(props) {
         var _this = _super.call(this, props) || this;
-        _this._localChange = false;
-        _this.state = { isExpanded: false, color: _this.props.target[_this.props.propertyName].clone() };
+        _this.state = { isExpanded: false };
         return _this;
     }
-    Color3LineComponent.prototype.shouldComponentUpdate = function (nextProps, nextState) {
-        var currentState = nextProps.target[nextProps.propertyName];
-        if (!currentState.equals(nextState.color) || this._localChange) {
-            nextState.color = currentState.clone();
-            this._localChange = false;
-            return true;
-        }
-        return false;
-    };
     Color3LineComponent.prototype.onChange = function (newValue) {
-        this._localChange = true;
-        var isColor4 = this.props.target[this.props.propertyName].getClassName() === "Color4";
+        var isColor4 = this.getCurrentColor().getClassName() === "Color4";
         var newColor = isColor4 ? babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color4"].FromHexString(newValue) : babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color3"].FromHexString(newValue);
-        if (this.props.onPropertyChangedObservable) {
-            this.props.onPropertyChangedObservable.notifyObservers({
-                object: this.props.target,
-                property: this.props.propertyName,
-                value: newColor,
-                initialValue: this.state.color,
-            });
-        }
-        this.props.target[this.props.propertyName] = newColor;
-        this.setState({ color: newColor });
-        if (this.props.onChange) {
-            this.props.onChange();
-        }
+        this.updateColor(newColor);
     };
     Color3LineComponent.prototype.switchExpandState = function () {
-        this._localChange = true;
         this.setState({ isExpanded: !this.state.isExpanded });
     };
-    Color3LineComponent.prototype.raiseOnPropertyChanged = function (previousValue) {
+    Color3LineComponent.prototype.updateColor = function (newValue) {
+        var previousValue = this.getCurrentColor();
+        if (newValue.equals(previousValue)) {
+            return;
+        }
+        this.props.target[this.props.propertyName] = newValue;
+        this.forceUpdate();
         if (this.props.onChange) {
             this.props.onChange();
         }
@@ -65192,40 +65174,21 @@ var Color3LineComponent = /** @class */ (function (_super) {
         this.props.onPropertyChangedObservable.notifyObservers({
             object: this.props.target,
             property: this.props.propertyName,
-            value: this.state.color,
+            value: newValue,
             initialValue: previousValue,
         });
     };
-    Color3LineComponent.prototype.updateStateR = function (value) {
-        this._localChange = true;
-        var store = this.state.color.clone();
-        this.props.target[this.props.propertyName].x = value;
-        this.state.color.r = value;
-        this.props.target[this.props.propertyName] = this.state.color;
-        this.setState({ color: this.state.color });
-        this.raiseOnPropertyChanged(store);
+    Color3LineComponent.prototype.modifyColor = function (modifier) {
+        var color = this.getCurrentColor();
+        modifier(color);
+        this.updateColor(color);
     };
-    Color3LineComponent.prototype.updateStateG = function (value) {
-        this._localChange = true;
-        var store = this.state.color.clone();
-        this.props.target[this.props.propertyName].g = value;
-        this.state.color.g = value;
-        this.props.target[this.props.propertyName] = this.state.color;
-        this.setState({ color: this.state.color });
-        this.raiseOnPropertyChanged(store);
-    };
-    Color3LineComponent.prototype.updateStateB = function (value) {
-        this._localChange = true;
-        var store = this.state.color.clone();
-        this.props.target[this.props.propertyName].b = value;
-        this.state.color.b = value;
-        this.props.target[this.props.propertyName] = this.state.color;
-        this.setState({ color: this.state.color });
-        this.raiseOnPropertyChanged(store);
+    Color3LineComponent.prototype.getCurrentColor = function () {
+        return this.props.target[this.props.propertyName].clone();
     };
     Color3LineComponent.prototype.copyToClipboard = function () {
         var element = document.createElement("div");
-        element.textContent = this.state.color.toHexString();
+        element.textContent = this.getCurrentColor().toHexString();
         document.body.appendChild(element);
         if (window.getSelection) {
             var range = document.createRange();
@@ -65239,11 +65202,12 @@ var Color3LineComponent = /** @class */ (function (_super) {
     Color3LineComponent.prototype.render = function () {
         var _this = this;
         var expandedIcon = this.state.isExpanded ? minusIcon : plusIcon;
+        var color = this.getCurrentColor();
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color3Line" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "firstLine" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color3" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorPickerComponent__WEBPACK_IMPORTED_MODULE_4__["ColorPickerLineComponent"], { value: this.state.color, globalState: this.props.globalState, onColorChanged: function (color) {
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorPickerComponent__WEBPACK_IMPORTED_MODULE_4__["ColorPickerLineComponent"], { value: color, globalState: this.props.globalState, onColorChanged: function (color) {
                             _this.onChange(color);
                         } })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "copy hoverIcon", onClick: function () { return _this.copyToClipboard(); }, title: "Copy to clipboard" },
@@ -65251,9 +65215,9 @@ var Color3LineComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "expand hoverIcon", onClick: function () { return _this.switchExpandState(); }, title: "Expand" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: expandedIcon, alt: "" }))),
             this.state.isExpanded && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "secondLine" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_3__["NumericInputComponent"], { globalState: this.props.globalState, label: "r", value: this.state.color.r, onChange: function (value) { return _this.updateStateR(value); } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_3__["NumericInputComponent"], { globalState: this.props.globalState, label: "g", value: this.state.color.g, onChange: function (value) { return _this.updateStateG(value); } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_3__["NumericInputComponent"], { globalState: this.props.globalState, label: "b", value: this.state.color.b, onChange: function (value) { return _this.updateStateB(value); } })))));
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_3__["NumericInputComponent"], { globalState: this.props.globalState, label: "r", value: color.r, onChange: function (value) { return _this.modifyColor(function (col) { return col.r = value; }); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_3__["NumericInputComponent"], { globalState: this.props.globalState, label: "g", value: color.g, onChange: function (value) { return _this.modifyColor(function (col) { return col.g = value; }); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_3__["NumericInputComponent"], { globalState: this.props.globalState, label: "b", value: color.b, onChange: function (value) { return _this.modifyColor(function (col) { return col.b = value; }); } })))));
     };
     return Color3LineComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -65291,44 +65255,23 @@ var Color4LineComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(Color4LineComponent, _super);
     function Color4LineComponent(props) {
         var _this = _super.call(this, props) || this;
-        _this._localChange = false;
-        var value = _this.props.target[_this.props.propertyName];
-        var currentColor = value.getClassName() === "Color4" ? value.clone() : new babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color4"](value.r, value.g, value.b, 1.0);
-        _this.state = { isExpanded: false, color: currentColor };
+        _this.state = { isExpanded: false };
         return _this;
     }
-    Color4LineComponent.prototype.shouldComponentUpdate = function (nextProps, nextState) {
-        var currentState = nextProps.target[nextProps.propertyName];
-        var currentColor = currentState.getClassName() === "Color4" ? currentState : new babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color4"](currentState.r, currentState.g, currentState.b, 1.0);
-        if (!currentColor.equals(nextState.color) || this._localChange) {
-            nextState.color = currentColor.clone();
-            this._localChange = false;
-            return true;
-        }
-        return false;
-    };
     Color4LineComponent.prototype.onChange = function (newValue) {
-        this._localChange = true;
         var newColor = babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color4"].FromHexString(newValue);
-        if (this.props.onPropertyChangedObservable) {
-            this.props.onPropertyChangedObservable.notifyObservers({
-                object: this.props.target,
-                property: this.props.propertyName,
-                value: newColor,
-                initialValue: this.state.color,
-            });
-        }
-        this.props.target[this.props.propertyName] = newColor;
-        this.setState({ color: this.props.target[this.props.propertyName] });
-        if (this.props.onChange) {
-            this.props.onChange();
-        }
+        this.updateColor(newColor);
     };
     Color4LineComponent.prototype.switchExpandState = function () {
-        this._localChange = true;
         this.setState({ isExpanded: !this.state.isExpanded });
     };
-    Color4LineComponent.prototype.raiseOnPropertyChanged = function (previousValue) {
+    Color4LineComponent.prototype.updateColor = function (newValue) {
+        var previousValue = this.getCurrentColor();
+        if (newValue.equals(previousValue)) {
+            return;
+        }
+        this.props.target[this.props.propertyName] = newValue;
+        this.forceUpdate();
         if (this.props.onChange) {
             this.props.onChange();
         }
@@ -65338,49 +65281,21 @@ var Color4LineComponent = /** @class */ (function (_super) {
         this.props.onPropertyChangedObservable.notifyObservers({
             object: this.props.target,
             property: this.props.propertyName,
-            value: this.state.color,
+            value: newValue,
             initialValue: previousValue,
         });
     };
-    Color4LineComponent.prototype.updateStateR = function (value) {
-        this._localChange = true;
-        var store = this.state.color.clone();
-        this.props.target[this.props.propertyName].x = value;
-        this.state.color.r = value;
-        this.props.target[this.props.propertyName] = this.state.color;
-        this.setState({ color: this.state.color });
-        this.raiseOnPropertyChanged(store);
+    Color4LineComponent.prototype.modifyColor = function (modifier) {
+        var color = this.getCurrentColor();
+        modifier(color);
+        this.updateColor(color);
     };
-    Color4LineComponent.prototype.updateStateG = function (value) {
-        this._localChange = true;
-        var store = this.state.color.clone();
-        this.props.target[this.props.propertyName].g = value;
-        this.state.color.g = value;
-        this.props.target[this.props.propertyName] = this.state.color;
-        this.setState({ color: this.state.color });
-        this.raiseOnPropertyChanged(store);
-    };
-    Color4LineComponent.prototype.updateStateB = function (value) {
-        this._localChange = true;
-        var store = this.state.color.clone();
-        this.props.target[this.props.propertyName].b = value;
-        this.state.color.b = value;
-        this.props.target[this.props.propertyName] = this.state.color;
-        this.setState({ color: this.state.color });
-        this.raiseOnPropertyChanged(store);
-    };
-    Color4LineComponent.prototype.updateStateA = function (value) {
-        this._localChange = true;
-        var store = this.state.color.clone();
-        this.props.target[this.props.propertyName].a = value;
-        this.state.color.a = value;
-        this.props.target[this.props.propertyName] = this.state.color;
-        this.setState({ color: this.state.color });
-        this.raiseOnPropertyChanged(store);
+    Color4LineComponent.prototype.getCurrentColor = function () {
+        return this.props.target[this.props.propertyName].clone();
     };
     Color4LineComponent.prototype.copyToClipboard = function () {
         var element = document.createElement("div");
-        element.textContent = this.state.color.toHexString();
+        element.textContent = this.getCurrentColor().toHexString();
         document.body.appendChild(element);
         if (window.getSelection) {
             var range = document.createRange();
@@ -65394,11 +65309,12 @@ var Color4LineComponent = /** @class */ (function (_super) {
     Color4LineComponent.prototype.render = function () {
         var _this = this;
         var expandedIcon = this.state.isExpanded ? minusIcon : plusIcon;
+        var color = this.getCurrentColor();
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color3Line" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "firstLine" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label", title: this.props.label }, this.props.label),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color3" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorPickerComponent__WEBPACK_IMPORTED_MODULE_4__["ColorPickerLineComponent"], { globalState: this.props.globalState, value: this.state.color, onColorChanged: function (color) {
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_colorPickerComponent__WEBPACK_IMPORTED_MODULE_4__["ColorPickerLineComponent"], { globalState: this.props.globalState, value: color, onColorChanged: function (color) {
                             _this.onChange(color);
                         } })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "copy hoverIcon", onClick: function () { return _this.copyToClipboard(); }, title: "Copy to clipboard" },
@@ -65406,10 +65322,10 @@ var Color4LineComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "expand hoverIcon", onClick: function () { return _this.switchExpandState(); }, title: "Expand" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: expandedIcon, alt: "" }))),
             this.state.isExpanded && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "secondLine" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_3__["NumericInputComponent"], { globalState: this.props.globalState, label: "r", value: this.state.color.r, onChange: function (value) { return _this.updateStateR(value); } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_3__["NumericInputComponent"], { globalState: this.props.globalState, label: "g", value: this.state.color.g, onChange: function (value) { return _this.updateStateG(value); } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_3__["NumericInputComponent"], { globalState: this.props.globalState, label: "b", value: this.state.color.b, onChange: function (value) { return _this.updateStateB(value); } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_3__["NumericInputComponent"], { globalState: this.props.globalState, label: "a", value: this.state.color.a, onChange: function (value) { return _this.updateStateA(value); } })))));
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_3__["NumericInputComponent"], { globalState: this.props.globalState, label: "r", value: color.r, onChange: function (value) { return _this.modifyColor(function (col) { return col.r = value; }); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_3__["NumericInputComponent"], { globalState: this.props.globalState, label: "g", value: color.g, onChange: function (value) { return _this.modifyColor(function (col) { return col.g = value; }); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_3__["NumericInputComponent"], { globalState: this.props.globalState, label: "b", value: color.b, onChange: function (value) { return _this.modifyColor(function (col) { return col.b = value; }); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_3__["NumericInputComponent"], { globalState: this.props.globalState, label: "a", value: color.a, onChange: function (value) { return _this.modifyColor(function (col) { return col.a = value; }); } })))));
     };
     return Color4LineComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -65459,12 +65375,11 @@ var ColorPickerLineComponent = /** @class */ (function (_super) {
         div.style.left = host.getBoundingClientRect().left - div.getBoundingClientRect().width + "px";
     };
     ColorPickerLineComponent.prototype.shouldComponentUpdate = function (nextProps, nextState) {
-        var result = nextProps.value.toHexString() !== this.props.value.toHexString() || nextState.hex !== this.state.hex || nextState.pickerEnabled !== this.state.pickerEnabled;
         if (nextProps.value.toHexString() !== this.props.value.toHexString()) {
             nextState.color = nextProps.value;
             nextState.hex = nextProps.value.toHexString();
         }
-        return result;
+        return true;
     };
     ColorPickerLineComponent.prototype.componentDidUpdate = function () {
         this.syncPositions();
@@ -65474,7 +65389,6 @@ var ColorPickerLineComponent = /** @class */ (function (_super) {
     };
     ColorPickerLineComponent.prototype.setPickerState = function (enabled) {
         this.setState({ pickerEnabled: enabled });
-        this.props.globalState.blockKeyboardEvents = enabled;
     };
     ColorPickerLineComponent.prototype.render = function () {
         var _this = this;
@@ -65483,13 +65397,12 @@ var ColorPickerLineComponent = /** @class */ (function (_super) {
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-rect", ref: this._floatHostRef, style: { background: this.state.hex }, onClick: function () { return _this.setPickerState(true); } }),
             this.state.pickerEnabled && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-cover", onClick: function () { return _this.setPickerState(false); } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-float", ref: this._floatRef },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_colorPicker_colorPicker__WEBPACK_IMPORTED_MODULE_2__["ColorPicker"], { color: color, onColorChanged: function (color) {
-                            var hex = color.toHexString();
-                            _this.setState({ hex: hex, color: color });
-                            _this.props.onColorChanged(hex);
-                        } }))))));
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-cover", onClick: function () { return _this.setPickerState(false); } },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker-float", onClick: function (ev) { return ev.stopPropagation(); }, ref: this._floatRef },
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedUiComponents_colorPicker_colorPicker__WEBPACK_IMPORTED_MODULE_2__["ColorPicker"], { color: color, onColorChanged: function (color) {
+                                var hex = color.toHexString();
+                                _this.props.onColorChanged(hex);
+                            } })))))));
     };
     return ColorPickerLineComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));

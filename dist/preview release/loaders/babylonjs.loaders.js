@@ -7580,14 +7580,16 @@ var GLTFLoader = /** @class */ (function () {
             // Block the marking of materials dirty until the scene is loaded.
             var oldBlockMaterialDirtyMechanism = _this._babylonScene.blockMaterialDirtyMechanism;
             _this._babylonScene.blockMaterialDirtyMechanism = true;
-            if (nodes) {
-                promises.push(_this.loadSceneAsync("/nodes", { nodes: nodes, index: -1 }));
+            if (!_this.parent.loadOnlyMaterials) {
+                if (nodes) {
+                    promises.push(_this.loadSceneAsync("/nodes", { nodes: nodes, index: -1 }));
+                }
+                else if (_this._gltf.scene != undefined || (_this._gltf.scenes && _this._gltf.scenes[0])) {
+                    var scene = ArrayItem.Get("/scene", _this._gltf.scenes, _this._gltf.scene || 0);
+                    promises.push(_this.loadSceneAsync("/scenes/".concat(scene.index), scene));
+                }
             }
-            else if (_this._gltf.scene != undefined || (_this._gltf.scenes && _this._gltf.scenes[0])) {
-                var scene = ArrayItem.Get("/scene", _this._gltf.scenes, _this._gltf.scene || 0);
-                promises.push(_this.loadSceneAsync("/scenes/".concat(scene.index), scene));
-            }
-            if (_this.parent.loadAllMaterials && _this._gltf.materials) {
+            if (!_this.parent.skipMaterials && _this.parent.loadAllMaterials && _this._gltf.materials) {
                 for (var m = 0; m < _this._gltf.materials.length; ++m) {
                     var material = _this._gltf.materials[m];
                     var context_1 = "/materials/" + m;
@@ -8079,7 +8081,7 @@ var GLTFLoader = /** @class */ (function () {
                 }
                 babylonMesh_1.material = babylonMaterial;
             }
-            else {
+            else if (!this.parent.skipMaterials) {
                 var material = ArrayItem.Get("".concat(context, "/material"), this._gltf.materials, primitive.material);
                 promises.push(this._loadMaterialAsync("/materials/".concat(material.index), material, babylonMesh_1, babylonDrawMode, function (babylonMaterial) {
                     babylonMesh_1.material = babylonMaterial;
@@ -9860,6 +9862,14 @@ var GLTFFileLoader = /** @class */ (function () {
          * If true, load all materials defined in the file, even if not used by any mesh. Defaults to false.
          */
         this.loadAllMaterials = false;
+        /**
+         * If true, load only the materials defined in the file. Defaults to false.
+         */
+        this.loadOnlyMaterials = false;
+        /**
+         * If true, do not load any materials defined in the file. Defaults to false.
+         */
+        this.skipMaterials = false;
         /**
          * If true, load the color (gamma encoded) textures into sRGB buffers (if supported by the GPU), which will yield more accurate results when sampling the texture. Defaults to true.
          */
