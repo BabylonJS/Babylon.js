@@ -2,7 +2,7 @@ import * as React from "react";
 import { GlobalState } from "../../globalState";
 import * as ReactDOM from "react-dom";
 
-require("./log.scss");
+import "./log.scss";
 
 interface ILogComponentProps {
     globalState: GlobalState;

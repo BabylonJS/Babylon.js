@@ -1,11 +1,11 @@
 import * as React from "react";
-import { Observable } from "babylonjs/Misc/observable";
-import { PropertyChangedEvent } from "../../../../sharedUiComponents/propertyChangedEvent";
-import { CheckBoxLineComponent } from "../../../../sharedUiComponents/lines/checkBoxLineComponent";
-import { makeTargetsProxy } from "../../../../sharedUiComponents/lines/targetsProxy";
-import { Container } from "babylonjs-gui/2D/controls/container";
+import { Observable } from "core/Misc/observable";
+import { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
+import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
+import { makeTargetsProxy } from "shared-ui-components/lines/targetsProxy";
+import { Container } from "gui/2D/controls/container";
 
-const clipContentsIcon: string = require("../../../../sharedUiComponents/imgs/clipContentsIcon.svg");
+import clipContentsIcon from "shared-ui-components/imgs/clipContentsIcon.svg";
 
 interface IContainerPropertyGridComponentProps {
     containers: Container[];

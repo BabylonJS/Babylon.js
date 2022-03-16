@@ -1,15 +1,15 @@
-import { Nullable } from "babylonjs/types";
-import { Observable } from "babylonjs/Misc/observable";
+import { Nullable } from "core/types";
+import { Observable } from "core/Misc/observable";
 import { LogEntry } from "./components/log/logComponent";
-import { DataStorage } from "babylonjs/Misc/dataStorage";
-import { Color3 } from "babylonjs/Maths/math.color";
+import { DataStorage } from "core/Misc/dataStorage";
+import { Color3 } from "core/Maths/math.color";
 import { WorkbenchComponent } from "./diagram/workbench";
-import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
-import { PropertyChangedEvent } from "./sharedUiComponents/propertyChangedEvent";
-import { Scene } from "babylonjs/scene";
-import { Control } from "babylonjs-gui/2D/controls/control";
-import { LockObject } from "./sharedUiComponents/tabs/propertyGrids/lockObject";
-import { ISize } from "babylonjs/Maths/math";
+import { AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
+import { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
+import { Scene } from "core/scene";
+import { Control } from "gui/2D/controls/control";
+import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import { ISize } from "core/Maths/math";
 import { CoordinateHelper } from "./diagram/coordinateHelper";
 
 export enum DragOverLocation {

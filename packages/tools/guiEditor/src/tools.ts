@@ -1,6 +1,6 @@
-import { Control } from "babylonjs-gui/2D/controls/control";
-import { Grid } from "babylonjs-gui/2D/controls/grid";
-import { Vector2 } from "babylonjs/Maths/math";
+import { Control } from "gui/2D/controls/control";
+import { Grid } from "gui/2D/controls/grid";
+import { Vector2 } from "core/Maths/math";
 
 export class Tools {
     public static LookForItems(item: any, selectedEntities: any[], firstIteration : boolean = true): boolean {

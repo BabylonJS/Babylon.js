@@ -3,20 +3,20 @@ import { GlobalState } from "./globalState";
 import { PropertyTabComponent } from "./components/propertyTab/propertyTabComponent";
 import { Portal } from "./portal";
 import { LogComponent } from "./components/log/logComponent";
-import { DataStorage } from "babylonjs/Misc/dataStorage";
+import { DataStorage } from "core/Misc/dataStorage";
 import { GUINodeTools } from "./guiNodeTools";
 import { WorkbenchComponent } from "./diagram/workbench";
 import { MessageDialogComponent } from "./sharedComponents/messageDialog";
 import { SceneExplorerComponent } from "./components/sceneExplorer/sceneExplorerComponent";
 import { CommandBarComponent } from "./components/commandBarComponent";
 import { GizmoWrapper } from "./diagram/guiGizmoWrapper";
-import { Nullable } from "babylonjs/types";
+import { Nullable } from "core/types";
 import { ArtBoardComponent } from './diagram/artBoard';
-import { Control } from "babylonjs-gui/2D/controls/control";
+import { Control } from "gui/2D/controls/control";
 import { ControlTypes } from "./controlTypes";
 
-require("./main.scss");
-require("./scss/header.scss");
+import "./main.scss";
+import "./scss/header.scss";
 
 interface IGraphEditorProps {
     globalState: GlobalState;

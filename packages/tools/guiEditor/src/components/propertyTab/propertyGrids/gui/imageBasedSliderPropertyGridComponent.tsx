@@ -1,17 +1,17 @@
 import * as React from "react";
-import { Observable } from "babylonjs/Misc/observable";
-import { PropertyChangedEvent } from "../../../../sharedUiComponents/propertyChangedEvent";
+import { Observable } from "core/Misc/observable";
+import { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
 import { CommonControlPropertyGridComponent } from "../gui/commonControlPropertyGridComponent";
-import { LockObject } from "../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
-import { ImageBasedSlider } from "babylonjs-gui/2D/controls/sliders/imageBasedSlider";
-import { TextInputLineComponent } from "../../../../sharedUiComponents/lines/textInputLineComponent";
-import { TextLineComponent } from "../../../../sharedUiComponents/lines/textLineComponent";
+import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import { ImageBasedSlider } from "gui/2D/controls/sliders/imageBasedSlider";
+import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
+import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
 import { SliderPropertyGridComponent } from "./sliderPropertyGridComponent";
-import { makeTargetsProxy } from "../../../../sharedUiComponents/lines/targetsProxy";
+import { makeTargetsProxy } from "shared-ui-components/lines/targetsProxy";
 
-const thumbImageLinkIcon: string = require("../../../../sharedUiComponents/imgs/thumbImageLinkIcon.svg");
-const valueBarImageLinkIcon: string = require("../../../../sharedUiComponents/imgs/valueBarImageLinkIcon.svg");
-const sliderBackgroundImageIcon: string = require("../../../../sharedUiComponents/imgs/sliderBackgroundImageIcon.svg");
+import thumbImageLinkIcon from "shared-ui-components/imgs/thumbImageLinkIcon.svg";
+import valueBarImageLinkIcon from "shared-ui-components/imgs/valueBarImageLinkIcon.svg";
+import sliderBackgroundImageIcon from "shared-ui-components/imgs/sliderBackgroundImageIcon.svg";
 
 interface IImageBasedSliderPropertyGridComponentProps {
     imageBasedSliders: ImageBasedSlider[];

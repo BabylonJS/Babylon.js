@@ -1,15 +1,15 @@
 import * as React from "react";
-import { Observable } from "babylonjs/Misc/observable";
-import { PropertyChangedEvent } from "../../../../sharedUiComponents/propertyChangedEvent";
+import { Observable } from "core/Misc/observable";
+import { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
 import { CommonControlPropertyGridComponent } from "../gui/commonControlPropertyGridComponent";
-import { LockObject } from "../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
-import { Line } from "babylonjs-gui/2D/controls/line";
-import { FloatLineComponent } from "../../../../sharedUiComponents/lines/floatLineComponent";
-import { TextInputLineComponent } from "../../../../sharedUiComponents/lines/textInputLineComponent";
-import { TextLineComponent } from "../../../../sharedUiComponents/lines/textLineComponent";
-import { makeTargetsProxy } from "../../../../sharedUiComponents/lines/targetsProxy";
+import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import { Line } from "gui/2D/controls/line";
+import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
+import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
+import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
+import { makeTargetsProxy } from "shared-ui-components/lines/targetsProxy";
 
-const positionIcon: string = require("../../../../sharedUiComponents/imgs/positionIcon.svg");
+import positionIcon from "shared-ui-components/imgs/positionIcon.svg";
 
 interface ILinePropertyGridComponentProps {
     lines: Line[];

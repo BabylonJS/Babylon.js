@@ -1,22 +1,22 @@
 import * as React from "react";
-import { Observable } from "babylonjs/Misc/observable";
-import { PropertyChangedEvent } from "../../../../sharedUiComponents/propertyChangedEvent";
+import { Observable } from "core/Misc/observable";
+import { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
 import { CommonControlPropertyGridComponent } from "../gui/commonControlPropertyGridComponent";
-import { LockObject } from "../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
-import { Grid } from "babylonjs-gui/2D/controls/grid";
-import { TextLineComponent } from "../../../../sharedUiComponents/lines/textLineComponent";
-import { Nullable } from "babylonjs/types";
-import { TextInputLineComponent } from "../../../../sharedUiComponents/lines/textInputLineComponent";
+import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import { Grid } from "gui/2D/controls/grid";
+import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
+import { Nullable } from "core/types";
+import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 import { CommandButtonComponent } from "../../../commandButtonComponent";
 
-const gridColumnIconDark: string = require("../../../../sharedUiComponents/imgs/gridColumnIconDark.svg");
-const gridRowIconDark: string = require("../../../../sharedUiComponents/imgs/gridColumnIconDark.svg"); //needs change
-const confirmGridElementDark: string = require("../../../../sharedUiComponents/imgs/confirmGridElementDark.svg");
-const subtractGridElementDark: string = require("../../../../sharedUiComponents/imgs/subtractGridElementDark.svg");
-const addGridElementDark: string = require("../../../../sharedUiComponents/imgs/addGridElementDark.svg");
-const cancelGridElementDark: string = require("../../../../sharedUiComponents/imgs/cancelGridElementDark.svg");
-const valueChangedGridDark: string = require("../../../../sharedUiComponents/imgs/valueChangedGridDark.svg");
-const deleteGridElementDark: string = require("../../../../sharedUiComponents/imgs/deleteGridElementDark.svg");
+import gridColumnIconDark from "shared-ui-components/imgs/gridColumnIconDark.svg";
+import gridRowIconDark from "shared-ui-components/imgs/gridColumnIconDark.svg"; //needs change
+import confirmGridElementDark from "shared-ui-components/imgs/confirmGridElementDark.svg";
+import subtractGridElementDark from "shared-ui-components/imgs/subtractGridElementDark.svg";
+import addGridElementDark from "shared-ui-components/imgs/addGridElementDark.svg";
+import cancelGridElementDark from "shared-ui-components/imgs/cancelGridElementDark.svg";
+import valueChangedGridDark from "shared-ui-components/imgs/valueChangedGridDark.svg";
+import deleteGridElementDark from "shared-ui-components/imgs/deleteGridElementDark.svg";
 
 interface IGridPropertyGridComponentProps {
     grids: Grid[];

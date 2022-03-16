@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Observable } from "babylonjs/Misc/observable";
+import { Observable } from "core/Misc/observable";
 import { PropertyChangedEvent } from "./propertyChangedEvent";
 import { GlobalState } from "../globalState";
 

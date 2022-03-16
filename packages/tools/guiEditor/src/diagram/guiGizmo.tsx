@@ -1,16 +1,16 @@
-import { Control } from "babylonjs-gui/2D/controls/control";
-import { Vector2 } from "babylonjs/Maths/math.vector";
+import { Control } from "gui/2D/controls/control";
+import { Vector2 } from "core/Maths/math.vector";
 import * as React from "react";
 import { GlobalState } from "../globalState";
-import { Image } from "babylonjs-gui/2D/controls/image";
-import { TextBlock } from "babylonjs-gui/2D/controls/textBlock";
+import { Image } from "gui/2D/controls/image";
+import { TextBlock } from "gui/2D/controls/textBlock";
 import { CoordinateHelper, DimensionProperties, Rect } from './coordinateHelper';
-import { Observer } from "babylonjs/Misc/observable";
-import { Nullable } from "babylonjs/types";
-import { ValueAndUnit } from "babylonjs-gui/2D/valueAndUnit";
+import { Observer } from "core/Misc/observable";
+import { Nullable } from "core/types";
+import { ValueAndUnit } from "gui/2D/valueAndUnit";
 
-require("./workbenchCanvas.scss");
-const gizmoPivotIcon: string = require("../../public/imgs/gizmoPivotIcon.svg");
+import "./workbenchCanvas.scss";
+import gizmoPivotIcon from "../imgs/gizmoPivotIcon.svg";
 
 export interface IGuiGizmoProps {
     globalState: GlobalState;
@@ -54,14 +54,38 @@ const lines = [
 ];
 
 // load in custom cursor icons
-const cursorScaleDiagonaLeft: string = `url("${require("../../public/imgs/cursor_scaleDiagonalLeft.svg")}") 12 12, nwse-resize`;
-const cursorScaleDiagonalRight: string = `url("${require("../../public/imgs/cursor_scaleDiagonalRight.svg")}") 12 12, nesw-resize`;
-const cursorScaleHorizontal: string = `url("${require("../../public/imgs/cursor_scaleHorizontal.svg")}") 12 12, pointer`;
-const cursorScaleVertical: string = `url("${require("../../public/imgs/cursor_scaleVertical.svg")}") 12 12, ns-resize`;
-const scalePointCursors = [cursorScaleVertical, cursorScaleDiagonalRight, cursorScaleHorizontal, cursorScaleDiagonaLeft, cursorScaleVertical, cursorScaleDiagonalRight, cursorScaleHorizontal, cursorScaleDiagonaLeft];
-const rotateCursors : string[] = [];
-for(let idx = 0; idx < 8; idx++) {
-    rotateCursors.push(`url("${require(`../../public/imgs/cursor_rotate${idx}.svg`)}") 12 12, pointer`);
+import cursor_scaleDiagonalLeft from "../imgs/cursor_scaleDiagonalLeft.svg";
+import cursor_scaleDiagonalRight from "../imgs/cursor_scaleDiagonalRight.svg";
+import cursor_scaleHorizontal from "../imgs/cursor_scaleHorizontal.svg";
+import cursor_scaleVertical from "../imgs/cursor_scaleVertical.svg";
+
+import cursor_rotate0 from "../imgs/cursor_rotate0.svg";
+import cursor_rotate1 from "../imgs/cursor_rotate1.svg";
+import cursor_rotate2 from "../imgs/cursor_rotate2.svg";
+import cursor_rotate3 from "../imgs/cursor_rotate3.svg";
+import cursor_rotate4 from "../imgs/cursor_rotate4.svg";
+import cursor_rotate5 from "../imgs/cursor_rotate5.svg";
+import cursor_rotate6 from "../imgs/cursor_rotate6.svg";
+import cursor_rotate7 from "../imgs/cursor_rotate7.svg";
+
+// load in custom cursor icons
+const cursorScaleDiagonaLeft: string = `url("${cursor_scaleDiagonalLeft}") 12 12, nwse-resize`;
+const cursorScaleDiagonalRight: string = `url("${cursor_scaleDiagonalRight}") 12 12, nesw-resize`;
+const cursorScaleHorizontal: string = `url("${cursor_scaleHorizontal}") 12 12, pointer`;
+const cursorScaleVertical: string = `url("${cursor_scaleVertical}") 12 12, ns-resize`;
+const scalePointCursors = [
+    cursorScaleVertical,
+    cursorScaleDiagonalRight,
+    cursorScaleHorizontal,
+    cursorScaleDiagonaLeft,
+    cursorScaleVertical,
+    cursorScaleDiagonalRight,
+    cursorScaleHorizontal,
+    cursorScaleDiagonaLeft,
+];
+const rotateCursors: string[] = [];
+for (let idx = 0; idx < 8; idx++) {
+    rotateCursors.push(cursor_rotate0, cursor_rotate1, cursor_rotate2, cursor_rotate3, cursor_rotate4, cursor_rotate5, cursor_rotate6, cursor_rotate7);
 }
 // used to calculate which cursor icon we should display for the scalepoints
 const defaultScalePointRotations = [

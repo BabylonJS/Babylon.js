@@ -1,21 +1,21 @@
-const rectangleIcon: string = require("../public/imgs/rectangleIcon.svg");
-const ellipseIcon: string = require("../public/imgs/ellipseIcon.svg");
-const gridIcon: string = require("../public/imgs/gridIcon.svg");
-const stackPanelIcon: string = require("../public/imgs/stackPanelIcon.svg");
-const textBoxIcon: string = require("../public/imgs/textBoxIcon.svg");
-const sliderIcon: string = require("../public/imgs/sliderIcon.svg");
-const imageBasedSliderIcon: string = require("../public/imgs/imageSliderIcon.svg");
-const buttonIcon: string = require("../public/imgs/buttonIcon.svg");
-const passwordFieldIcon: string = require("../public/imgs/passwordFieldIcon.svg");
-const checkboxIcon: string = require("../public/imgs/checkboxIcon.svg");
-const imageIcon: string = require("../public/imgs/imageIcon.svg");
-const keyboardIcon: string = require("../public/imgs/keyboardIcon.svg");
-const inputFieldIcon: string = require("../public/imgs/inputFieldIcon.svg");
-const lineIcon: string = require("../public/imgs/lineIcon.svg");
-const displaygridIcon: string = require("../public/imgs/displaygridIcon.svg");
-const colorPickerIcon: string = require("../public/imgs/colorPickerIcon.svg");
-const scrollbarIcon: string = require("../public/imgs/scrollbarIcon.svg");
-const radioButtonIcon: string = require("../public/imgs/radioButtonIcon.svg");
+import rectangleIcon from "./imgs/rectangleIcon.svg";
+import ellipseIcon from "./imgs/ellipseIcon.svg";
+import gridIcon from "./imgs/gridIcon.svg";
+import stackPanelIcon from "./imgs/stackPanelIcon.svg";
+import textBoxIcon from "./imgs/textBoxIcon.svg";
+import sliderIcon from "./imgs/sliderIcon.svg";
+import imageBasedSliderIcon from "./imgs/imageSliderIcon.svg";
+import buttonIcon from "./imgs/buttonIcon.svg";
+import passwordFieldIcon from "./imgs/passwordFieldIcon.svg";
+import checkboxIcon from "./imgs/checkboxIcon.svg";
+import imageIcon from "./imgs/imageIcon.svg";
+import keyboardIcon from "./imgs/keyboardIcon.svg";
+import inputFieldIcon from "./imgs/inputFieldIcon.svg";
+import lineIcon from "./imgs/lineIcon.svg";
+import displaygridIcon from "./imgs/displaygridIcon.svg";
+import colorPickerIcon from "./imgs/colorPickerIcon.svg";
+import scrollbarIcon from "./imgs/scrollbarIcon.svg";
+import radioButtonIcon from "./imgs/radioButtonIcon.svg";
 
 export const ControlTypes = [
     {

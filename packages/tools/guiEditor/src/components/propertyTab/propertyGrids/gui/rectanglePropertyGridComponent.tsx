@@ -1,16 +1,16 @@
 import * as React from "react";
-import { Observable } from "babylonjs/Misc/observable";
-import { PropertyChangedEvent } from "../../../../sharedUiComponents/propertyChangedEvent";
+import { Observable } from "core/Misc/observable";
+import { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
 import { CommonControlPropertyGridComponent } from "../gui/commonControlPropertyGridComponent";
-import { LockObject } from "../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
-import { Rectangle } from "babylonjs-gui/2D/controls/rectangle";
-import { FloatLineComponent } from "../../../../sharedUiComponents/lines/floatLineComponent";
-import { TextLineComponent } from "../../../../sharedUiComponents/lines/textLineComponent";
-import { makeTargetsProxy } from "../../../../sharedUiComponents/lines/targetsProxy";
+import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import { Rectangle } from "gui/2D/controls/rectangle";
+import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
+import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
+import { makeTargetsProxy } from "shared-ui-components/lines/targetsProxy";
 import { ContainerPropertyGridComponent } from "./containerPropertyGridComponent";
 
-const conerRadiusIcon: string = require("../../../../sharedUiComponents/imgs/conerRadiusIcon.svg");
-const strokeWeightIcon: string = require("../../../../sharedUiComponents/imgs/strokeWeightIcon.svg");
+import conerRadiusIcon from "shared-ui-components/imgs/conerRadiusIcon.svg";
+import strokeWeightIcon from "shared-ui-components/imgs/strokeWeightIcon.svg";
 
 interface IRectanglePropertyGridComponentProps {
     rectangles: Rectangle[];

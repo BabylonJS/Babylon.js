@@ -1,18 +1,18 @@
 import * as React from "react";
-import { Observable } from "babylonjs/Misc/observable";
-import { PropertyChangedEvent } from "../../../../sharedUiComponents/propertyChangedEvent";
+import { Observable } from "core/Misc/observable";
+import { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
 import { CommonControlPropertyGridComponent } from "../gui/commonControlPropertyGridComponent";
-import { LockObject } from "../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
-import { RadioButton } from "babylonjs-gui/2D/controls/radioButton";
-import { FloatLineComponent } from "../../../../sharedUiComponents/lines/floatLineComponent";
-import { TextInputLineComponent } from "../../../../sharedUiComponents/lines/textInputLineComponent";
-import { CheckBoxLineComponent } from "../../../../sharedUiComponents/lines/checkBoxLineComponent";
-import { TextLineComponent } from "../../../../sharedUiComponents/lines/textLineComponent";
-import { makeTargetsProxy } from "../../../../sharedUiComponents/lines/targetsProxy";
+import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import { RadioButton } from "gui/2D/controls/radioButton";
+import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
+import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
+import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
+import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
+import { makeTargetsProxy } from "shared-ui-components/lines/targetsProxy";
 
-const strokeWeightIcon: string = require("../../../../sharedUiComponents/imgs/strokeWeightIcon.svg");
-const checkboxIcon: string = require("../../../../sharedUiComponents/imgs/checkboxIconDark.svg");
-const scaleIcon: string = require("../../../../sharedUiComponents/imgs/scaleIcon.svg");
+import strokeWeightIcon from "shared-ui-components/imgs/strokeWeightIcon.svg";
+import checkboxIcon from "shared-ui-components/imgs/checkboxIconDark.svg";
+import scaleIcon from "shared-ui-components/imgs/scaleIcon.svg";
 
 interface IRadioButtonPropertyGridComponentProps {
     radioButtons: RadioButton[];

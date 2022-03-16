@@ -1,24 +1,24 @@
 import * as React from "react";
-import { Observable } from "babylonjs/Misc/observable";
-import { PropertyChangedEvent } from "../../../../sharedUiComponents/propertyChangedEvent";
+import { Observable } from "core/Misc/observable";
+import { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
 import { CommonControlPropertyGridComponent } from "../gui/commonControlPropertyGridComponent";
-import { InputText } from "babylonjs-gui/2D/controls/inputText";
-import { TextInputLineComponent } from "../../../../sharedUiComponents/lines/textInputLineComponent";
-import { SliderLineComponent } from "../../../../sharedUiComponents/lines/sliderLineComponent";
-import { CheckBoxLineComponent } from "../../../../sharedUiComponents/lines/checkBoxLineComponent";
-import { FloatLineComponent } from "../../../../sharedUiComponents/lines/floatLineComponent";
-import { LockObject } from "../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
-import { TextLineComponent } from "../../../../sharedUiComponents/lines/textLineComponent";
-import { makeTargetsProxy } from "../../../../sharedUiComponents/lines/targetsProxy";
-import { ColorLineComponent } from "../../../../sharedUiComponents/lines/colorLineComponent";
+import { InputText } from "gui/2D/controls/inputText";
+import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
+import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
+import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
+import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
+import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
+import { makeTargetsProxy } from "shared-ui-components/lines/targetsProxy";
+import { ColorLineComponent } from "shared-ui-components/lines/colorLineComponent";
 
-const fillColorIcon: string = require("../../../../sharedUiComponents/imgs/fillColorIcon.svg");
-const strokeWeightIcon: string = require("../../../../sharedUiComponents/imgs/strokeWeightIcon.svg");
-const sizeIcon: string = require("../../../../sharedUiComponents/imgs/sizeIcon.svg");
-const verticalMarginIcon: string = require("../../../../sharedUiComponents/imgs/verticalMarginIcon.svg");
-const fontFamilyIcon: string = require("../../../../sharedUiComponents/imgs/fontFamilyIcon.svg");
-const alphaIcon: string = require("../../../../sharedUiComponents/imgs/alphaIcon.svg");
-const colorIcon: string = require("../../../../sharedUiComponents/imgs/colorIcon.svg");
+import fillColorIcon from "shared-ui-components/imgs/fillColorIcon.svg";
+import strokeWeightIcon from "shared-ui-components/imgs/strokeWeightIcon.svg";
+import sizeIcon from "shared-ui-components/imgs/sizeIcon.svg";
+import verticalMarginIcon from "shared-ui-components/imgs/verticalMarginIcon.svg";
+import fontFamilyIcon from "shared-ui-components/imgs/fontFamilyIcon.svg";
+import alphaIcon from "shared-ui-components/imgs/alphaIcon.svg";
+import colorIcon from "shared-ui-components/imgs/colorIcon.svg";
 
 interface IInputTextPropertyGridComponentProps {
     inputTexts: InputText[];

@@ -1,15 +1,15 @@
 import * as React from "react";
 
-import { Nullable } from "babylonjs/types";
-import { Observer } from "babylonjs/Misc/observable";
-import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
-import { Scene } from "babylonjs/scene";
+import { Nullable } from "core/types";
+import { Observer } from "core/Misc/observable";
+import { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
+import { Scene } from "core/scene";
 import { TreeItemComponent } from "./treeItemComponent";
 import { Tools } from "../../tools";
 import { GlobalState } from "../../globalState";
-import { PropertyChangedEvent } from "../../sharedUiComponents/propertyChangedEvent";
+import { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
 
-require("./sceneExplorer.scss");
+import "./sceneExplorer.scss";
 
 interface ISceneExplorerFilterComponentProps {
     onFilter: (filter: string) => void;

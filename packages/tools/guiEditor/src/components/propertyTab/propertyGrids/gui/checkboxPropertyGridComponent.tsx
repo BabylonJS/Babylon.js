@@ -1,16 +1,16 @@
 import * as React from "react";
-import { Observable } from "babylonjs/Misc/observable";
-import { PropertyChangedEvent } from "../../../../sharedUiComponents/propertyChangedEvent";
+import { Observable } from "core/Misc/observable";
+import { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
 import { CommonControlPropertyGridComponent } from "../gui/commonControlPropertyGridComponent";
-import { LockObject } from "../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
-import { Checkbox } from "babylonjs-gui/2D/controls/checkbox";
-import { FloatLineComponent } from "../../../../sharedUiComponents/lines/floatLineComponent";
-import { CheckBoxLineComponent } from "../../../../sharedUiComponents/lines/checkBoxLineComponent";
-import { TextLineComponent } from "../../../../sharedUiComponents/lines/textLineComponent";
-import { makeTargetsProxy } from "../../../../sharedUiComponents/lines/targetsProxy";
+import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import { Checkbox } from "gui/2D/controls/checkbox";
+import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
+import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
+import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
+import { makeTargetsProxy } from "shared-ui-components/lines/targetsProxy";
 
-const fillColorIcon: string = require("../../../../sharedUiComponents/imgs/fillColorIcon.svg");
-const sizeIcon: string = require("../../../../sharedUiComponents/imgs/sizeIcon.svg");
+import fillColorIcon from "shared-ui-components/imgs/fillColorIcon.svg";
+import sizeIcon from "shared-ui-components/imgs/sizeIcon.svg";
 
 interface ICheckboxPropertyGridComponentProps {
     checkboxes: Checkbox[];

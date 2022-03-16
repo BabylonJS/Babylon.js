@@ -1,9 +1,9 @@
 import * as React from "react";
-import { Observable } from "babylonjs/Misc/observable";
-import { PropertyChangedEvent } from "../../../../sharedUiComponents/propertyChangedEvent";
+import { Observable } from "core/Misc/observable";
+import { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
 import { CommonControlPropertyGridComponent } from "./commonControlPropertyGridComponent";
-import { LockObject } from "../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
-import { Slider } from "babylonjs-gui/2D/controls/sliders/slider";
+import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import { Slider } from "gui/2D/controls/sliders/slider";
 import { SliderPropertyGridComponent } from "./sliderPropertyGridComponent";
 
 interface ISliderGenericPropertyGridComponentProps {

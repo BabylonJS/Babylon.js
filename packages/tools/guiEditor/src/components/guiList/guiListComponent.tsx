@@ -1,11 +1,11 @@
 import * as React from "react";
 import { GlobalState } from "../../globalState";
-import { LineContainerComponent } from "../../sharedUiComponents/lines/lineContainerComponent";
-import { DraggableLineComponent } from "../../sharedUiComponents/lines/draggableLineComponent";
-import { Observer } from "babylonjs/Misc/observable";
-import { Nullable } from "babylonjs/types";
+import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
+import { DraggableLineComponent } from "shared-ui-components/lines/draggableLineComponent";
+import { Observer } from "core/Misc/observable";
+import { Nullable } from "core/types";
 
-require("./guiList.scss");
+import "./guiList.scss";
 
 interface IGuiListComponentProps {
     globalState: GlobalState;

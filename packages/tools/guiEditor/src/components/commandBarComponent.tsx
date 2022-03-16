@@ -1,23 +1,23 @@
-import { DataStorage } from "babylonjs/Misc/dataStorage";
+import { DataStorage } from "core/Misc/dataStorage";
 import * as React from "react";
 import { GlobalState } from "../globalState";
-import { FloatLineComponent } from "../sharedUiComponents/lines/floatLineComponent";
-import { CheckBoxLineComponent } from "../sharedUiComponents/lines/checkBoxLineComponent";
-import { OptionsLineComponent } from "../sharedUiComponents/lines/optionsLineComponent";
+import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
+import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
+import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
 import { CommandButtonComponent } from "./commandButtonComponent";
 import { CommandDropdownComponent } from "./commandDropdownComponent";
-import { ColorLineComponent } from "../sharedUiComponents/lines/colorLineComponent";
+import { ColorLineComponent } from "shared-ui-components/lines/colorLineComponent";
 
-const hamburgerIcon: string = require("../../public/imgs/hamburgerIcon.svg");
-const pointerIcon: string = require("../../public/imgs/pointerIcon.svg");
-const handIcon: string = require("../../public/imgs/handIcon.svg");
-const zoomIcon: string = require("../../public/imgs/zoomIcon.svg");
-const guidesIcon: string = require("../../public/imgs/guidesIcon.svg");
-const logoIcon: string = require("../../public/imgs/babylonLogo.svg");
-const canvasFitIcon: string = require("../../public/imgs/canvasFitIcon.svg");
-const betaFlag: string = require("../../public/imgs/betaFlag.svg");
+import hamburgerIcon from "../imgs/hamburgerIcon.svg";
+import pointerIcon from "../imgs/pointerIcon.svg";
+import handIcon from "../imgs/handIcon.svg";
+import zoomIcon from "../imgs/zoomIcon.svg";
+import guidesIcon from "../imgs/guidesIcon.svg";
+import logoIcon from "../imgs/babylonLogo.svg";
+import canvasFitIcon from "../imgs/canvasFitIcon.svg";
+import betaFlag from "../imgs/betaFlag.svg";
 
-require("../scss/commandBar.scss");
+import "../scss/commandBar.scss";
 
 declare var Versions: any;
 

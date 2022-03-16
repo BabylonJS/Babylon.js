@@ -1,13 +1,13 @@
 import * as React from "react";
-import { Control } from "babylonjs-gui/2D/controls/control";
-import { TextLineComponent } from "../sharedUiComponents/lines/textLineComponent";
-import { FloatLineComponent } from "../sharedUiComponents/lines/floatLineComponent";
-import { LockObject } from "../sharedUiComponents/tabs/propertyGrids/lockObject";
-import { PropertyChangedEvent } from "../sharedUiComponents/propertyChangedEvent";
-import { Observable } from "babylonjs/Misc/observable";
-import { Grid } from "babylonjs-gui/2D/controls/grid";
+import { Control } from "gui/2D/controls/control";
+import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
+import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
+import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
+import { Observable } from "core/Misc/observable";
+import { Grid } from "gui/2D/controls/grid";
 import { Tools } from "../tools";
-import { Vector2 } from "babylonjs/Maths/math.vector";
+import { Vector2 } from "core/Maths/math.vector";
 
 interface IParentingPropertyGridComponentProps {
     control: Control;

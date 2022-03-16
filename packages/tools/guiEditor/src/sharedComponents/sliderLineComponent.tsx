@@ -1,6 +1,6 @@
 import * as React from "react";
-import { Observable } from "babylonjs/Misc/observable";
-import { Tools } from "babylonjs/Misc/tools";
+import { Observable } from "core/Misc/observable";
+import { Tools } from "core/Misc/tools";
 import { PropertyChangedEvent } from "./propertyChangedEvent";
 import { FloatLineComponent } from "./floatLineComponent";
 import { GlobalState } from "../globalState";
