@@ -1,6 +1,6 @@
 import * as React from "react";
-import { Observable } from "babylonjs/Misc/observable";
-import { Color3, Color4 } from "babylonjs/Maths/math.color";
+import { Observable } from "core/Misc/observable";
+import { Color3, Color4 } from "core/Maths/math.color";
 import { NumericInputComponent } from "./numericInputComponent";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
@@ -10,7 +10,7 @@ import { LockObject } from "../tabs/propertyGrids/lockObject";
 import { TextInputLineComponent } from "./textInputLineComponent";
 import { conflictingValuesPlaceholder } from "./targetsProxy";
 
-const copyIcon: string = require("./copy.svg");
+import copyIcon from "./copy.svg";
 const emptyColor = new Color4(0, 0, 0, 0);
 
 export interface IColorLineComponentProps {
@@ -35,7 +35,7 @@ export class ColorLineComponent extends React.Component<IColorLineComponentProps
     constructor(props: IColorLineComponentProps) {
         super(props);
 
-        this.state = { isExpanded: false, color: this.getValue()};
+        this.state = { isExpanded: false, color: this.getValue() };
 
         const target = this.props.target;
         target._isLinearColor = props.isLinear; // so that replayRecorder can append toLinearSpace() as appropriate
@@ -81,7 +81,7 @@ export class ColorLineComponent extends React.Component<IColorLineComponentProps
     }
 
     setColor(newColor: Color4) {
-        this.setState({color: newColor.clone()});
+        this.setState({ color: newColor.clone() });
         if (this.props.isLinear) {
             newColor.toLinearSpaceToRef(newColor);
         }
@@ -99,10 +99,10 @@ export class ColorLineComponent extends React.Component<IColorLineComponentProps
                 object: target,
                 property: this.props.propertyName,
                 value,
-                initialValue
+                initialValue,
             });
         }
-        
+
         if (this.props.onChange) {
             this.props.onChange();
         }
@@ -183,7 +183,7 @@ export class ColorLineComponent extends React.Component<IColorLineComponentProps
 
     render() {
         const chevron = this.state.isExpanded ? <FontAwesomeIcon icon={faMinus} /> : <FontAwesomeIcon icon={faPlus} />;
-        
+
         return (
             <div className="color3Line">
                 <div className="firstLine">
@@ -196,7 +196,7 @@ export class ColorLineComponent extends React.Component<IColorLineComponentProps
                             linearHint={this.props.isLinear}
                             value={this.props.disableAlpha ? this.toColor3(this.state.color) : this.state.color}
                             onColorChanged={(colorString) => {
-                                this.setColorFromString(colorString)
+                                this.setColorFromString(colorString);
                             }}
                         />
                     </div>

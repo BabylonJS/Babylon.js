@@ -1,10 +1,10 @@
 import * as React from "react";
 
-import { Observable } from "babylonjs/Misc/observable";
+import { Observable } from "core/Misc/observable";
 import { PropertyChangedEvent } from "../propertyChangedEvent";
 import { LockObject } from "../tabs/propertyGrids/lockObject";
 import { SliderLineComponent } from "./sliderLineComponent";
-import { Tools } from "babylonjs/Misc/tools";
+import { Tools } from "core/Misc/tools";
 import { conflictingValuesPlaceholder } from "./targetsProxy";
 
 interface IFloatLineComponentProps {
@@ -25,7 +25,7 @@ interface IFloatLineComponentProps {
     onEnter?: (newValue: number) => void;
     icon?: string;
     iconLabel?: string;
-    defaultValue?: number
+    defaultValue?: number;
     unit?: string;
     onUnitClicked?: () => void;
     unitLocked?: boolean;
@@ -51,8 +51,7 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
         if (value) {
             if (value === conflictingValuesPlaceholder) {
                 return conflictingValuesPlaceholder;
-            }
-            else if (this.props.isInteger) {
+            } else if (this.props.isInteger) {
                 return value.toFixed(0);
             } else {
                 return value.toFixed(this.props.digits || 4);
@@ -196,12 +195,16 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
                                 onChange={(evt) => this.updateValue(evt.target.value)}
                             />
                         </div>
-                        {this.props.unit && <button
-                            className={this.props.unitLocked ? "unit disabled" : "unit"}
-                            onClick={() => {if (this.props.onUnitClicked && !this.props.unitLocked) this.props.onUnitClicked()}}
-                        >
-                            {this.props.unit}
-                        </button>}
+                        {this.props.unit && (
+                            <button
+                                className={this.props.unitLocked ? "unit disabled" : "unit"}
+                                onClick={() => {
+                                    if (this.props.onUnitClicked && !this.props.unitLocked) this.props.onUnitClicked();
+                                }}
+                            >
+                                {this.props.unit}
+                            </button>
+                        )}
                     </div>
                 )}
                 {this.props.useEuler && (

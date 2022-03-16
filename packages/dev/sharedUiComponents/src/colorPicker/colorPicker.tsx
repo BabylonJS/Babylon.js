@@ -1,9 +1,9 @@
 import * as React from "react";
-import { Color3, Color4 } from "babylonjs/Maths/math.color";
+import { Color3, Color4 } from "core/Maths/math.color";
 import { ColorComponentEntry } from "./colorComponentEntry";
 import { HexColor } from "./hexColor";
 
-require("./colorPicker.scss");
+import "./colorPicker.scss";
 
 /**
  * Interface used to specify creation options for color picker
@@ -100,7 +100,7 @@ export class ColorPicker extends React.Component<IColorPickerProps, IColorPicker
         let hsv = this.state.color.toHSV();
         Color3.HSVtoRGBToRef(hsv.r, saturation, value, this.state.color);
         if (this.state.alpha === 0) {
-            this.setState({alpha: 1});
+            this.setState({ alpha: 1 });
         }
         this.setState({ color: this.state.color });
     }
@@ -192,9 +192,7 @@ export class ColorPicker extends React.Component<IColorPickerProps, IColorPicker
                         ></div>
                     </div>
                 </div>
-                <div className="color-picker-alpha">
-
-                </div>
+                <div className="color-picker-alpha"></div>
                 <div className="color-picker-rgb">
                     <div className="red">
                         <ColorComponentEntry

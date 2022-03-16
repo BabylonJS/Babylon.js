@@ -1,9 +1,8 @@
 import * as React from "react";
-import { Observable } from "babylonjs/Misc/observable";
+import { Observable } from "core/Misc/observable";
 import { PropertyChangedEvent } from "../propertyChangedEvent";
 import { LockObject } from "../tabs/propertyGrids/lockObject";
 import { ColorLineComponent } from "./colorLineComponent";
-
 
 export interface IColor4LineComponentProps {
     label: string;
@@ -20,6 +19,6 @@ export interface IColor4LineComponentProps {
 export class Color4LineComponent extends React.Component<IColor4LineComponentProps> {
     render() {
         const props = this.props;
-        return <ColorLineComponent {...props}/>
+        return <ColorLineComponent {...props} />;
     }
 }

@@ -1,10 +1,10 @@
 import * as React from "react";
-import { Observable } from "babylonjs/Misc/observable";
+import { Observable } from "core/Misc/observable";
 import { PropertyChangedEvent } from "../../../propertyChangedEvent";
 import { LineContainerComponent } from "../../../lines/lineContainerComponent";
 import { TextLineComponent } from "../../../lines/textLineComponent";
-import { Control } from "babylonjs-gui/2D/controls/control";
-import { Grid } from "babylonjs-gui/2D/controls/grid";
+import { Control } from "gui/2D/controls/control";
+import { Grid } from "gui/2D/controls/grid";
 import { SliderLineComponent } from "../../../lines/sliderLineComponent";
 import { FloatLineComponent } from "../../../lines/floatLineComponent";
 import { TextInputLineComponent } from "../../../lines/textInputLineComponent";

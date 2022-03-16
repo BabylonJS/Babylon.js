@@ -1,7 +1,7 @@
 import * as React from "react";
-import { DataStorage } from "babylonjs/Misc/dataStorage";
+import { DataStorage } from "core/Misc/dataStorage";
 import { ISelectedLineContainer } from "./iSelectedLineContainer";
-const downArrow = require("./downArrow.svg");
+import downArrow from "./downArrow.svg";
 
 interface ILineContainerComponentProps {
     selection?: ISelectedLineContainer;

@@ -1,8 +1,8 @@
 import * as React from "react";
-import { Observable } from "babylonjs/Misc/observable";
+import { Observable } from "core/Misc/observable";
 import { PropertyChangedEvent } from "../propertyChangedEvent";
 import { LockObject } from "../tabs/propertyGrids/lockObject";
-import { conflictingValuesPlaceholder } from './targetsProxy';
+import { conflictingValuesPlaceholder } from "./targetsProxy";
 import { InputArrowsComponent } from "./inputArrowsComponent";
 
 interface ITextInputLineComponentProps {
@@ -23,10 +23,10 @@ interface ITextInputLineComponentProps {
     unitLocked?: boolean;
     arrows?: boolean;
     arrowsIncrement?: (amount: number) => void;
-    step?: number
+    step?: number;
 }
 
-export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, { value: string, dragging: boolean }> {
+export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, { value: string; dragging: boolean }> {
     private _localChange = false;
 
     constructor(props: ITextInputLineComponentProps) {
@@ -34,7 +34,7 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
 
         this.state = {
             value: (this.props.value !== undefined ? this.props.value : this.props.target[this.props.propertyName!]) || "",
-            dragging: false
+            dragging: false,
         };
     }
 
@@ -42,7 +42,7 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
         this.props.lockObject.lock = false;
     }
 
-    shouldComponentUpdate(nextProps: ITextInputLineComponentProps, nextState: { value: string, dragging: boolean }) {
+    shouldComponentUpdate(nextProps: ITextInputLineComponentProps, nextState: { value: string; dragging: boolean }) {
         if (this._localChange) {
             this._localChange = false;
             return true;
@@ -134,37 +134,35 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
         return (
             <div className={this.props.unit !== undefined ? "textInputLine withUnits" : "textInputLine"}>
                 {this.props.icon && <img src={this.props.icon} title={this.props.iconLabel} alt={this.props.iconLabel} color="black" className="icon" />}
-                {(this.props.label !== undefined) && (
+                {this.props.label !== undefined && (
                     <div className="label" title={this.props.label}>
                         {this.props.label}
                     </div>
                 )}
-                <div className={`value${this.props.noUnderline === true ? " noUnderline" : ""}${this.props.arrows ? " hasArrows": ""}${this.state.dragging ? " dragging" : ""}`}>
+                <div className={`value${this.props.noUnderline === true ? " noUnderline" : ""}${this.props.arrows ? " hasArrows" : ""}${this.state.dragging ? " dragging" : ""}`}>
                     <input
                         value={value}
                         onBlur={() => {
                             this.props.lockObject.lock = false;
-                            this.updateValue((this.props.value !== undefined ? this.props.value : this.props.target[this.props.propertyName!]) || "" );
+                            this.updateValue((this.props.value !== undefined ? this.props.value : this.props.target[this.props.propertyName!]) || "");
                         }}
                         onFocus={() => (this.props.lockObject.lock = true)}
                         onChange={(evt) => this.updateValue(evt.target.value)}
-                        onKeyDown={evt => this.onKeyDown(evt)}
+                        onKeyDown={(evt) => this.onKeyDown(evt)}
                         placeholder={placeholder}
                     />
-                    {
-                    this.props.arrows &&
-                    <InputArrowsComponent
-                        incrementValue={amount => this.incrementValue(amount)}
-                        setDragging={dragging => this.setState({dragging})}
-                    />
-                    }
+                    {this.props.arrows && <InputArrowsComponent incrementValue={(amount) => this.incrementValue(amount)} setDragging={(dragging) => this.setState({ dragging })} />}
                 </div>
-                {this.props.unit !== undefined && <button
-                    className={this.props.unitLocked ? "unit disabled" : "unit"}
-                    onClick={() => {if (this.props.onUnitClicked && !this.props.unitLocked) this.props.onUnitClicked(this.props.unit || "")}}
-                >
-                    {this.props.unit}
-                </button>}
+                {this.props.unit !== undefined && (
+                    <button
+                        className={this.props.unitLocked ? "unit disabled" : "unit"}
+                        onClick={() => {
+                            if (this.props.onUnitClicked && !this.props.unitLocked) this.props.onUnitClicked(this.props.unit || "");
+                        }}
+                    >
+                        {this.props.unit}
+                    </button>
+                )}
             </div>
         );
     }
