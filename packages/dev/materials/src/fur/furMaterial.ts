@@ -1,24 +1,24 @@
-import { Nullable } from "babylonjs/types";
-import { serializeAsVector3, serializeAsTexture, serialize, expandToProperty, serializeAsColor3, SerializationHelper } from "babylonjs/Misc/decorators";
-import { Matrix, Vector3 } from "babylonjs/Maths/math.vector";
-import { Color3 } from "babylonjs/Maths/math.color";
-import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
-import { Tags } from "babylonjs/Misc/tags";
-import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
-import { Texture } from "babylonjs/Materials/Textures/texture";
-import { DynamicTexture } from "babylonjs/Materials/Textures/dynamicTexture";
-import { IEffectCreationOptions } from "babylonjs/Materials/effect";
-import { MaterialDefines } from "babylonjs/Materials/materialDefines";
-import { MaterialHelper } from "babylonjs/Materials/materialHelper";
-import { PushMaterial } from "babylonjs/Materials/pushMaterial";
-import { MaterialFlags } from "babylonjs/Materials/materialFlags";
-import { VertexBuffer } from "babylonjs/Buffers/buffer";
-import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
-import { SubMesh } from "babylonjs/Meshes/subMesh";
-import { Mesh } from "babylonjs/Meshes/mesh";
-import { Scene } from "babylonjs/scene";
-import { RegisterClass } from 'babylonjs/Misc/typeStore';
-import { EffectFallbacks } from 'babylonjs/Materials/effectFallbacks';
+import { Nullable } from "core/types";
+import { serializeAsVector3, serializeAsTexture, serialize, expandToProperty, serializeAsColor3, SerializationHelper } from "core/Misc/decorators";
+import { Matrix, Vector3 } from "core/Maths/math.vector";
+import { Color3 } from "core/Maths/math.color";
+import { IAnimatable } from "core/Animations/animatable.interface";
+import { Tags } from "core/Misc/tags";
+import { BaseTexture } from "core/Materials/Textures/baseTexture";
+import { Texture } from "core/Materials/Textures/texture";
+import { DynamicTexture } from "core/Materials/Textures/dynamicTexture";
+import { IEffectCreationOptions } from "core/Materials/effect";
+import { MaterialDefines } from "core/Materials/materialDefines";
+import { MaterialHelper } from "core/Materials/materialHelper";
+import { PushMaterial } from "core/Materials/pushMaterial";
+import { MaterialFlags } from "core/Materials/materialFlags";
+import { VertexBuffer } from "core/Buffers/buffer";
+import { AbstractMesh } from "core/Meshes/abstractMesh";
+import { SubMesh } from "core/Meshes/subMesh";
+import { Mesh } from "core/Meshes/mesh";
+import { Scene } from "core/scene";
+import { RegisterClass } from "core/Misc/typeStore";
+import { EffectFallbacks } from "core/Materials/effectFallbacks";
 
 import "./fur.fragment";
 import "./fur.vertex";
@@ -56,7 +56,6 @@ class FurMaterialDefines extends MaterialDefines {
 }
 
 export class FurMaterial extends PushMaterial {
-
     @serializeAsTexture("diffuseTexture")
     private _diffuseTexture: BaseTexture;
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
@@ -130,7 +129,7 @@ export class FurMaterial extends PushMaterial {
     }
 
     public needAlphaBlending(): boolean {
-        return (this.alpha < 1.0);
+        return this.alpha < 1.0;
     }
 
     public needAlphaTesting(): boolean {
@@ -265,16 +264,36 @@ export class FurMaterial extends PushMaterial {
             // Legacy browser patch
             var shaderName = "fur";
             var join = defines.toString();
-            var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vDiffuseColor",
-                "vFogInfos", "vFogColor", "pointSize",
+            var uniforms = [
+                "world",
+                "view",
+                "viewProjection",
+                "vEyePosition",
+                "vLightsType",
+                "vDiffuseColor",
+                "vFogInfos",
+                "vFogColor",
+                "pointSize",
                 "vDiffuseInfos",
                 "mBones",
-                "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "vClipPlane5", "vClipPlane6", "diffuseMatrix",
-                "furLength", "furAngle", "furColor", "furOffset", "furGravity", "furTime", "furSpacing", "furDensity", "furOcclusion"
+                "vClipPlane",
+                "vClipPlane2",
+                "vClipPlane3",
+                "vClipPlane4",
+                "vClipPlane5",
+                "vClipPlane6",
+                "diffuseMatrix",
+                "furLength",
+                "furAngle",
+                "furColor",
+                "furOffset",
+                "furGravity",
+                "furTime",
+                "furSpacing",
+                "furDensity",
+                "furOcclusion",
             ];
-            var samplers = ["diffuseSampler",
-                "heightTexture", "furTexture"
-            ];
+            var samplers = ["diffuseSampler", "heightTexture", "furTexture"];
 
             var uniformBuffers = new Array<string>();
 
@@ -283,21 +302,28 @@ export class FurMaterial extends PushMaterial {
                 uniformBuffersNames: uniformBuffers,
                 samplers: samplers,
                 defines: defines,
-                maxSimultaneousLights: this.maxSimultaneousLights
+                maxSimultaneousLights: this.maxSimultaneousLights,
             });
 
-            subMesh.setEffect(scene.getEngine().createEffect(shaderName,
-                <IEffectCreationOptions>{
-                    attributes: attribs,
-                    uniformsNames: uniforms,
-                    uniformBuffersNames: uniformBuffers,
-                    samplers: samplers,
-                    defines: join,
-                    fallbacks: fallbacks,
-                    onCompiled: this.onCompiled,
-                    onError: this.onError,
-                    indexParameters: { maxSimultaneousLights: this.maxSimultaneousLights }
-                }, engine), defines, this._materialContext);
+            subMesh.setEffect(
+                scene.getEngine().createEffect(
+                    shaderName,
+                    <IEffectCreationOptions>{
+                        attributes: attribs,
+                        uniformsNames: uniforms,
+                        uniformBuffersNames: uniformBuffers,
+                        samplers: samplers,
+                        defines: join,
+                        fallbacks: fallbacks,
+                        onCompiled: this.onCompiled,
+                        onError: this.onError,
+                        indexParameters: { maxSimultaneousLights: this.maxSimultaneousLights },
+                    },
+                    engine
+                ),
+                defines,
+                this._materialContext
+            );
         }
         if (!subMesh.effect || !subMesh.effect.isReady()) {
             return false;
@@ -496,7 +522,7 @@ export class FurMaterial extends PushMaterial {
 
         for (var i = 0; i < 20000; ++i) {
             context.fillStyle = "rgba(255, " + Math.floor(Math.random() * 255) + ", " + Math.floor(Math.random() * 255) + ", 1)";
-            context.fillRect((Math.random() * texture.getSize().width), (Math.random() * texture.getSize().height), 2, 2);
+            context.fillRect(Math.random() * texture.getSize().width, Math.random() * texture.getSize().height, 2, 2);
         }
 
         texture.update(false);

@@ -1,24 +1,24 @@
-import { Nullable } from "babylonjs/types";
-import { SerializationHelper } from "babylonjs/Misc/decorators";
-import { Matrix } from "babylonjs/Maths/math.vector";
-import { Color3 } from "babylonjs/Maths/math.color";
-import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
-import { IShadowLight } from "babylonjs/Lights/shadowLight";
-import { IEffectCreationOptions } from "babylonjs/Materials/effect";
-import { MaterialDefines } from "babylonjs/Materials/materialDefines";
-import { MaterialHelper } from "babylonjs/Materials/materialHelper";
-import { PushMaterial } from "babylonjs/Materials/pushMaterial";
-import { VertexBuffer } from "babylonjs/Buffers/buffer";
-import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
-import { SubMesh } from "babylonjs/Meshes/subMesh";
-import { Mesh } from "babylonjs/Meshes/mesh";
-import { Scene } from "babylonjs/scene";
-import { RegisterClass } from 'babylonjs/Misc/typeStore';
+import { Nullable } from "core/types";
+import { SerializationHelper } from "core/Misc/decorators";
+import { Matrix } from "core/Maths/math.vector";
+import { Color3 } from "core/Maths/math.color";
+import { BaseTexture } from "core/Materials/Textures/baseTexture";
+import { IShadowLight } from "core/Lights/shadowLight";
+import { IEffectCreationOptions } from "core/Materials/effect";
+import { MaterialDefines } from "core/Materials/materialDefines";
+import { MaterialHelper } from "core/Materials/materialHelper";
+import { PushMaterial } from "core/Materials/pushMaterial";
+import { VertexBuffer } from "core/Buffers/buffer";
+import { AbstractMesh } from "core/Meshes/abstractMesh";
+import { SubMesh } from "core/Meshes/subMesh";
+import { Mesh } from "core/Meshes/mesh";
+import { Scene } from "core/scene";
+import { RegisterClass } from "core/Misc/typeStore";
 
 import "./shadowOnly.fragment";
 import "./shadowOnly.vertex";
-import { EffectFallbacks } from 'babylonjs/Materials/effectFallbacks';
-import { CascadedShadowGenerator } from 'babylonjs/Lights/Shadows/cascadedShadowGenerator';
+import { EffectFallbacks } from "core/Materials/effectFallbacks";
+import { CascadedShadowGenerator } from "core/Lights/Shadows/cascadedShadowGenerator";
 
 class ShadowOnlyMaterialDefines extends MaterialDefines {
     public CLIPPLANE = false;
@@ -131,7 +131,7 @@ export class ShadowOnlyMaterial extends PushMaterial {
 
         this._needAlphaBlending = true;
 
-        if (shadowGenerator && (shadowGenerator as any).getClassName && (shadowGenerator as any).getClassName() === 'CascadedShadowGenerator') {
+        if (shadowGenerator && (shadowGenerator as any).getClassName && (shadowGenerator as any).getClassName() === "CascadedShadowGenerator") {
             const csg = shadowGenerator as CascadedShadowGenerator;
 
             this._needAlphaBlending = !csg.autoCalcDepthBounds;
@@ -172,10 +172,24 @@ export class ShadowOnlyMaterial extends PushMaterial {
 
             var shaderName = "shadowOnly";
             var join = defines.toString();
-            var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType",
-                "vFogInfos", "vFogColor", "pointSize", "alpha", "shadowColor",
+            var uniforms = [
+                "world",
+                "view",
+                "viewProjection",
+                "vEyePosition",
+                "vLightsType",
+                "vFogInfos",
+                "vFogColor",
+                "pointSize",
+                "alpha",
+                "shadowColor",
                 "mBones",
-                "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "vClipPlane5", "vClipPlane6"
+                "vClipPlane",
+                "vClipPlane2",
+                "vClipPlane3",
+                "vClipPlane4",
+                "vClipPlane5",
+                "vClipPlane6",
             ];
             var samplers = new Array<string>();
 
@@ -186,21 +200,28 @@ export class ShadowOnlyMaterial extends PushMaterial {
                 uniformBuffersNames: uniformBuffers,
                 samplers: samplers,
                 defines: defines,
-                maxSimultaneousLights: 1
+                maxSimultaneousLights: 1,
             });
 
-            subMesh.setEffect(scene.getEngine().createEffect(shaderName,
-                <IEffectCreationOptions>{
-                    attributes: attribs,
-                    uniformsNames: uniforms,
-                    uniformBuffersNames: uniformBuffers,
-                    samplers: samplers,
-                    defines: join,
-                    fallbacks: fallbacks,
-                    onCompiled: this.onCompiled,
-                    onError: this.onError,
-                    indexParameters: { maxSimultaneousLights: 1 }
-                }, engine), defines, this._materialContext);
+            subMesh.setEffect(
+                scene.getEngine().createEffect(
+                    shaderName,
+                    <IEffectCreationOptions>{
+                        attributes: attribs,
+                        uniformsNames: uniforms,
+                        uniformBuffersNames: uniformBuffers,
+                        samplers: samplers,
+                        defines: join,
+                        fallbacks: fallbacks,
+                        onCompiled: this.onCompiled,
+                        onError: this.onError,
+                        indexParameters: { maxSimultaneousLights: 1 },
+                    },
+                    engine
+                ),
+                defines,
+                this._materialContext
+            );
         }
         if (!subMesh.effect || !subMesh.effect.isReady()) {
             return false;
@@ -265,7 +286,7 @@ export class ShadowOnlyMaterial extends PushMaterial {
         }
 
         // View
-        if (scene.fogEnabled && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE || defines["SHADOWCSM0"]) {
+        if ((scene.fogEnabled && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE) || defines["SHADOWCSM0"]) {
             this._activeEffect.setMatrix("view", scene.getViewMatrix());
         }
 

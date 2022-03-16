@@ -1,25 +1,25 @@
-import { Nullable } from "babylonjs/types";
-import { serializeAsTexture, serialize, expandToProperty, serializeAsColor3, SerializationHelper } from "babylonjs/Misc/decorators";
-import { Matrix } from "babylonjs/Maths/math.vector";
-import { Color3 } from "babylonjs/Maths/math.color";
-import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
-import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
-import { Texture } from "babylonjs/Materials/Textures/texture";
-import { IEffectCreationOptions } from "babylonjs/Materials/effect";
-import { MaterialDefines } from "babylonjs/Materials/materialDefines";
-import { MaterialHelper } from "babylonjs/Materials/materialHelper";
-import { PushMaterial } from "babylonjs/Materials/pushMaterial";
-import { MaterialFlags } from "babylonjs/Materials/materialFlags";
-import { VertexBuffer } from "babylonjs/Buffers/buffer";
-import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
-import { SubMesh } from "babylonjs/Meshes/subMesh";
-import { Mesh } from "babylonjs/Meshes/mesh";
-import { Scene } from "babylonjs/scene";
-import { RegisterClass } from 'babylonjs/Misc/typeStore';
+import { Nullable } from "core/types";
+import { serializeAsTexture, serialize, expandToProperty, serializeAsColor3, SerializationHelper } from "core/Misc/decorators";
+import { Matrix } from "core/Maths/math.vector";
+import { Color3 } from "core/Maths/math.color";
+import { IAnimatable } from "core/Animations/animatable.interface";
+import { BaseTexture } from "core/Materials/Textures/baseTexture";
+import { Texture } from "core/Materials/Textures/texture";
+import { IEffectCreationOptions } from "core/Materials/effect";
+import { MaterialDefines } from "core/Materials/materialDefines";
+import { MaterialHelper } from "core/Materials/materialHelper";
+import { PushMaterial } from "core/Materials/pushMaterial";
+import { MaterialFlags } from "core/Materials/materialFlags";
+import { VertexBuffer } from "core/Buffers/buffer";
+import { AbstractMesh } from "core/Meshes/abstractMesh";
+import { SubMesh } from "core/Meshes/subMesh";
+import { Mesh } from "core/Meshes/mesh";
+import { Scene } from "core/scene";
+import { RegisterClass } from "core/Misc/typeStore";
 
 import "./terrain.fragment";
 import "./terrain.vertex";
-import { EffectFallbacks } from 'babylonjs/Materials/effectFallbacks';
+import { EffectFallbacks } from "core/Materials/effectFallbacks";
 
 class TerrainMaterialDefines extends MaterialDefines {
     public DIFFUSE = false;
@@ -113,7 +113,7 @@ export class TerrainMaterial extends PushMaterial {
     }
 
     public needAlphaBlending(): boolean {
-        return (this.alpha < 1.0);
+        return this.alpha < 1.0;
     }
 
     public needAlphaTesting(): boolean {
@@ -239,16 +239,31 @@ export class TerrainMaterial extends PushMaterial {
             // Legacy browser patch
             var shaderName = "terrain";
             var join = defines.toString();
-            var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vDiffuseColor", "vSpecularColor",
-                "vFogInfos", "vFogColor", "pointSize",
+            var uniforms = [
+                "world",
+                "view",
+                "viewProjection",
+                "vEyePosition",
+                "vLightsType",
+                "vDiffuseColor",
+                "vSpecularColor",
+                "vFogInfos",
+                "vFogColor",
+                "pointSize",
                 "vTextureInfos",
                 "mBones",
-                "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "vClipPlane5", "vClipPlane6", "textureMatrix",
-                "diffuse1Infos", "diffuse2Infos", "diffuse3Infos"
+                "vClipPlane",
+                "vClipPlane2",
+                "vClipPlane3",
+                "vClipPlane4",
+                "vClipPlane5",
+                "vClipPlane6",
+                "textureMatrix",
+                "diffuse1Infos",
+                "diffuse2Infos",
+                "diffuse3Infos",
             ];
-            var samplers = ["textureSampler", "diffuse1Sampler", "diffuse2Sampler", "diffuse3Sampler",
-                "bump1Sampler", "bump2Sampler", "bump3Sampler"
-            ];
+            var samplers = ["textureSampler", "diffuse1Sampler", "diffuse2Sampler", "diffuse3Sampler", "bump1Sampler", "bump2Sampler", "bump3Sampler"];
 
             var uniformBuffers = new Array<string>();
 
@@ -257,21 +272,28 @@ export class TerrainMaterial extends PushMaterial {
                 uniformBuffersNames: uniformBuffers,
                 samplers: samplers,
                 defines: defines,
-                maxSimultaneousLights: this.maxSimultaneousLights
+                maxSimultaneousLights: this.maxSimultaneousLights,
             });
 
-            subMesh.setEffect(scene.getEngine().createEffect(shaderName,
-                <IEffectCreationOptions>{
-                    attributes: attribs,
-                    uniformsNames: uniforms,
-                    uniformBuffersNames: uniformBuffers,
-                    samplers: samplers,
-                    defines: join,
-                    fallbacks: fallbacks,
-                    onCompiled: this.onCompiled,
-                    onError: this.onError,
-                    indexParameters: { maxSimultaneousLights: this.maxSimultaneousLights }
-                }, engine), defines, this._materialContext);
+            subMesh.setEffect(
+                scene.getEngine().createEffect(
+                    shaderName,
+                    <IEffectCreationOptions>{
+                        attributes: attribs,
+                        uniformsNames: uniforms,
+                        uniformBuffersNames: uniformBuffers,
+                        samplers: samplers,
+                        defines: join,
+                        fallbacks: fallbacks,
+                        onCompiled: this.onCompiled,
+                        onError: this.onError,
+                        indexParameters: { maxSimultaneousLights: this.maxSimultaneousLights },
+                    },
+                    engine
+                ),
+                defines,
+                this._materialContext
+            );
         }
         if (!subMesh.effect || !subMesh.effect.isReady()) {
             return false;

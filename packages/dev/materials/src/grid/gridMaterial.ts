@@ -1,17 +1,17 @@
-import { serializeAsTexture, serialize, expandToProperty, serializeAsColor3, SerializationHelper, serializeAsVector3 } from "babylonjs/Misc/decorators";
-import { Matrix, Vector4, Vector3 } from "babylonjs/Maths/math.vector";
-import { Color3 } from "babylonjs/Maths/math.color";
-import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
-import { MaterialDefines } from "babylonjs/Materials/materialDefines";
-import { MaterialHelper } from "babylonjs/Materials/materialHelper";
-import { PushMaterial } from "babylonjs/Materials/pushMaterial";
-import { MaterialFlags } from "babylonjs/Materials/materialFlags";
-import { VertexBuffer } from "babylonjs/Buffers/buffer";
-import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
-import { SubMesh } from "babylonjs/Meshes/subMesh";
-import { Mesh } from "babylonjs/Meshes/mesh";
-import { Scene } from "babylonjs/scene";
-import { RegisterClass } from 'babylonjs/Misc/typeStore';
+import { serializeAsTexture, serialize, expandToProperty, serializeAsColor3, SerializationHelper, serializeAsVector3 } from "core/Misc/decorators";
+import { Matrix, Vector4, Vector3 } from "core/Maths/math.vector";
+import { Color3 } from "core/Maths/math.color";
+import { BaseTexture } from "core/Materials/Textures/baseTexture";
+import { MaterialDefines } from "core/Materials/materialDefines";
+import { MaterialHelper } from "core/Materials/materialHelper";
+import { PushMaterial } from "core/Materials/pushMaterial";
+import { MaterialFlags } from "core/Materials/materialFlags";
+import { VertexBuffer } from "core/Buffers/buffer";
+import { AbstractMesh } from "core/Meshes/abstractMesh";
+import { SubMesh } from "core/Meshes/subMesh";
+import { Mesh } from "core/Meshes/mesh";
+import { Scene } from "core/scene";
+import { RegisterClass } from "core/Misc/typeStore";
 
 import "./grid.fragment";
 import "./grid.vertex";
@@ -40,7 +40,6 @@ class GridMaterialDefines extends MaterialDefines {
  * Colors are customizable.
  */
 export class GridMaterial extends PushMaterial {
-
     /**
      * Main color of the grid (e.g. between lines)
      */
@@ -115,7 +114,7 @@ export class GridMaterial extends PushMaterial {
      * Returns wehter or not the grid requires alpha blending.
      */
     public needAlphaBlending(): boolean {
-        return this.opacity < 1.0 || this._opacityTexture && this._opacityTexture.isReady();
+        return this.opacity < 1.0 || (this._opacityTexture && this._opacityTexture.isReady());
     }
 
     public needAlphaBlendingForMesh(mesh: AbstractMesh): boolean {
@@ -140,7 +139,7 @@ export class GridMaterial extends PushMaterial {
             return true;
         }
 
-        if (defines.TRANSPARENT !== (this.opacity < 1.0)) {
+        if (defines.TRANSPARENT !== this.opacity < 1.0) {
             defines.TRANSPARENT = !defines.TRANSPARENT;
             defines.markAsUnprocessed();
         }
@@ -197,15 +196,35 @@ export class GridMaterial extends PushMaterial {
 
             // Defines
             var join = defines.toString();
-            subMesh.setEffect(scene.getEngine().createEffect("grid",
-                attribs,
-                ["projection", "mainColor", "lineColor", "gridControl", "gridOffset", "vFogInfos", "vFogColor", "world", "view",
-                    "opacityMatrix", "vOpacityInfos", "visibility"],
-                ["opacitySampler"],
-                join,
-                undefined,
-                this.onCompiled,
-                this.onError), defines, this._materialContext);
+            subMesh.setEffect(
+                scene
+                    .getEngine()
+                    .createEffect(
+                        "grid",
+                        attribs,
+                        [
+                            "projection",
+                            "mainColor",
+                            "lineColor",
+                            "gridControl",
+                            "gridOffset",
+                            "vFogInfos",
+                            "vFogColor",
+                            "world",
+                            "view",
+                            "opacityMatrix",
+                            "vOpacityInfos",
+                            "visibility",
+                        ],
+                        ["opacitySampler"],
+                        join,
+                        undefined,
+                        this.onCompiled,
+                        this.onError
+                    ),
+                defines,
+                this._materialContext
+            );
         }
 
         if (!subMesh.effect || !subMesh.effect.isReady()) {
