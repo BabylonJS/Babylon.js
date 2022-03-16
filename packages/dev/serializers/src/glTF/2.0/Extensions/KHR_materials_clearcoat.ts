@@ -1,11 +1,11 @@
 import { IMaterial } from "babylonjs-gltf2interface";
 import { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
 import { _Exporter } from "../glTFExporter";
-import { Material } from "babylonjs/Materials/material";
-import { PBRBaseMaterial } from "babylonjs/Materials/PBR/pbrBaseMaterial";
-import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
+import { Material } from "core/Materials/material";
+import { PBRBaseMaterial } from "core/Materials/PBR/pbrBaseMaterial";
+import { BaseTexture } from "core/Materials/Textures/baseTexture";
 import { IKHRMaterialsClearcoat } from "babylonjs-gltf2interface";
-import { Tools } from "babylonjs/Misc/tools";
+import { Tools } from "core/Misc/tools";
 
 const NAME = "KHR_materials_clearcoat";
 
@@ -30,8 +30,7 @@ export class KHR_materials_clearcoat implements IGLTFExporterExtensionV2 {
         this._exporter = exporter;
     }
 
-    public dispose() {
-    }
+    public dispose() {}
 
     /** @hidden */
     public get wasUsed() {
@@ -96,7 +95,7 @@ export class KHR_materials_clearcoat implements IGLTFExporterExtensionV2 {
                     clearcoatNormalTexture: clearCoatNormalTextureInfo ?? undefined,
                     hasTextures: () => {
                         return clearCoatInfo.clearcoatTexture !== null || clearCoatInfo.clearcoatRoughnessTexture !== null || clearCoatInfo.clearcoatRoughnessTexture !== null;
-                    }
+                    },
                 };
 
                 node.extensions[NAME] = clearCoatInfo;

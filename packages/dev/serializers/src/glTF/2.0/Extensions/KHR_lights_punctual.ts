@@ -1,15 +1,15 @@
-import { SpotLight } from "babylonjs/Lights/spotLight";
-import { Nullable } from "babylonjs/types";
-import { Vector3, Quaternion, TmpVectors, Matrix } from "babylonjs/Maths/math.vector";
-import { Color3 } from "babylonjs/Maths/math.color";
-import { Light } from "babylonjs/Lights/light";
-import { DirectionalLight } from "babylonjs/Lights/directionalLight";
-import { Node } from "babylonjs/node";
-import { ShadowLight } from "babylonjs/Lights/shadowLight";
+import { SpotLight } from "core/Lights/spotLight";
+import { Nullable } from "core/types";
+import { Vector3, Quaternion, TmpVectors, Matrix } from "core/Maths/math.vector";
+import { Color3 } from "core/Maths/math.color";
+import { Light } from "core/Lights/light";
+import { DirectionalLight } from "core/Lights/directionalLight";
+import { Node } from "core/node";
+import { ShadowLight } from "core/Lights/shadowLight";
 import { INode } from "babylonjs-gltf2interface";
 import { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
 import { _Exporter } from "../glTFExporter";
-import { Logger } from "babylonjs/Misc/logger";
+import { Logger } from "core/Misc/logger";
 import { _GLTFUtilities } from "../glTFUtilities";
 import { IKHRLightsPunctual_LightType, IKHRLightsPunctual_LightReference, IKHRLightsPunctual_Light, IKHRLightsPunctual } from "babylonjs-gltf2interface";
 
@@ -66,15 +66,17 @@ export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
                 const babylonLight: ShadowLight = babylonNode;
                 let light: IKHRLightsPunctual_Light;
 
-                const lightType = (
-                    babylonLight.getTypeID() == Light.LIGHTTYPEID_POINTLIGHT ? IKHRLightsPunctual_LightType.POINT : (
-                        babylonLight.getTypeID() == Light.LIGHTTYPEID_DIRECTIONALLIGHT ? IKHRLightsPunctual_LightType.DIRECTIONAL : (
-                            babylonLight.getTypeID() == Light.LIGHTTYPEID_SPOTLIGHT ? IKHRLightsPunctual_LightType.SPOT : null
-                        )));
+                const lightType =
+                    babylonLight.getTypeID() == Light.LIGHTTYPEID_POINTLIGHT
+                        ? IKHRLightsPunctual_LightType.POINT
+                        : babylonLight.getTypeID() == Light.LIGHTTYPEID_DIRECTIONALLIGHT
+                        ? IKHRLightsPunctual_LightType.DIRECTIONAL
+                        : babylonLight.getTypeID() == Light.LIGHTTYPEID_SPOTLIGHT
+                        ? IKHRLightsPunctual_LightType.SPOT
+                        : null;
                 if (lightType == null) {
                     Logger.Warn(`${context}: Light ${babylonLight.name} is not supported in ${NAME}`);
-                }
-                else {
+                } else {
                     const lightPosition = babylonLight.position.clone();
                     let convertToRightHandedSystem = this._exporter._convertToRightHandedSystemMap[babylonNode.uniqueId];
                     if (!lightPosition.equals(Vector3.Zero())) {
@@ -101,7 +103,7 @@ export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
                         Logger.Warn(`${context}: Light falloff for ${babylonLight.name} does not match the ${NAME} specification!`);
                     }
                     light = {
-                        type: lightType
+                        type: lightType,
                     };
                     if (!babylonLight.diffuse.equals(Color3.White())) {
                         light.color = babylonLight.diffuse.asArray();
@@ -131,14 +133,14 @@ export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
 
                     if (this._lights == null) {
                         this._lights = {
-                            lights: []
+                            lights: [],
                         };
                     }
 
                     this._lights.lights.push(light);
 
                     const lightReference: IKHRLightsPunctual_LightReference = {
-                        light: this._lights.lights.length - 1
+                        light: this._lights.lights.length - 1,
                     };
 
                     // Avoid duplicating the Light's parent node if possible.
@@ -148,8 +150,12 @@ export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
                         if (parentNode) {
                             let parentNodeLocalMatrix = TmpVectors.Matrix[0];
                             let parentInvertNodeLocalMatrix = TmpVectors.Matrix[1];
-                            let parentNodeLocalTranslation = parentNode.translation ? new Vector3(parentNode.translation[0], parentNode.translation[1], parentNode.translation[2]) : Vector3.Zero();
-                            let parentNodeLocalRotation = parentNode.rotation ? new Quaternion(parentNode.rotation[0], parentNode.rotation[1], parentNode.rotation[2], parentNode.rotation[3]) : Quaternion.Identity();
+                            let parentNodeLocalTranslation = parentNode.translation
+                                ? new Vector3(parentNode.translation[0], parentNode.translation[1], parentNode.translation[2])
+                                : Vector3.Zero();
+                            let parentNodeLocalRotation = parentNode.rotation
+                                ? new Quaternion(parentNode.rotation[0], parentNode.rotation[1], parentNode.rotation[2], parentNode.rotation[3])
+                                : Quaternion.Identity();
                             let parentNodeLocalScale = parentNode.scale ? new Vector3(parentNode.scale[0], parentNode.scale[1], parentNode.scale[2]) : Vector3.One();
 
                             Matrix.ComposeToRef(parentNodeLocalScale, parentNodeLocalRotation, parentNodeLocalTranslation, parentNodeLocalMatrix);
@@ -161,7 +167,11 @@ export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
 
                             // Undo directional light positional offset
                             if (babylonLight instanceof DirectionalLight) {
-                                nodeLocalTranslation.subtractInPlace(this._exporter._babylonScene.useRightHandedSystem ? babylonLight.direction : _GLTFUtilities._GetRightHandedPositionVector3(babylonLight.direction));
+                                nodeLocalTranslation.subtractInPlace(
+                                    this._exporter._babylonScene.useRightHandedSystem
+                                        ? babylonLight.direction
+                                        : _GLTFUtilities._GetRightHandedPositionVector3(babylonLight.direction)
+                                );
                             }
                             let nodeLocalRotation = this._exporter._babylonScene.useRightHandedSystem ? Quaternion.Identity() : new Quaternion(0, 1, 0, 0);
                             if (node.rotation) {

@@ -1,9 +1,9 @@
 import { IMaterial } from "babylonjs-gltf2interface";
 import { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
 import { _Exporter } from "../glTFExporter";
-import { Material } from 'babylonjs/Materials/material';
-import { PBRMaterial } from 'babylonjs/Materials/PBR/pbrMaterial';
-import { StandardMaterial } from 'babylonjs/Materials/standardMaterial';
+import { Material } from "core/Materials/material";
+import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
+import { StandardMaterial } from "core/Materials/standardMaterial";
 
 const NAME = "KHR_materials_unlit";
 
@@ -22,16 +22,14 @@ export class KHR_materials_unlit implements IGLTFExporterExtensionV2 {
 
     private _wasUsed = false;
 
-    constructor(exporter: _Exporter) {
-    }
+    constructor(exporter: _Exporter) {}
 
     /** @hidden */
     public get wasUsed() {
         return this._wasUsed;
     }
 
-    public dispose() {
-    }
+    public dispose() {}
 
     public postExportMaterialAsync?(context: string, node: IMaterial, babylonMaterial: Material): Promise<IMaterial> {
         return new Promise((resolve, reject) => {

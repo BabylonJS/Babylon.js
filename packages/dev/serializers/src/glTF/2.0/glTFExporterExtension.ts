@@ -1,15 +1,15 @@
 import { ImageMimeType, IMeshPrimitive, INode, IMaterial, ITextureInfo } from "babylonjs-gltf2interface";
-import { Node } from "babylonjs/node";
-import { Nullable } from "babylonjs/types";
+import { Node } from "core/node";
+import { Nullable } from "core/types";
 
-import { Texture } from "babylonjs/Materials/Textures/texture";
-import { SubMesh } from "babylonjs/Meshes/subMesh";
-import { IDisposable } from "babylonjs/scene";
+import { Texture } from "core/Materials/Textures/texture";
+import { SubMesh } from "core/Meshes/subMesh";
+import { IDisposable } from "core/scene";
 
 import { _BinaryWriter } from "./glTFExporter";
 import { IGLTFExporterExtension } from "../glTFFileExporter";
-import { Material } from 'babylonjs/Materials/material';
-import { BaseTexture } from 'babylonjs/Materials/Textures/baseTexture';
+import { Material } from "core/Materials/material";
+import { BaseTexture } from "core/Materials/Textures/baseTexture";
 
 /** @hidden */
 export var __IGLTFExporterExtensionV2 = 0; // I am here to allow dts to be created

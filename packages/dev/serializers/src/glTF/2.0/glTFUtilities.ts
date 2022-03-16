@@ -1,7 +1,7 @@
 import { IBufferView, AccessorType, AccessorComponentType, IAccessor } from "babylonjs-gltf2interface";
 
-import { FloatArray, Nullable } from "babylonjs/types";
-import { Vector3, Vector4, Quaternion } from "babylonjs/Maths/math.vector";
+import { FloatArray, Nullable } from "core/types";
+import { Vector3, Vector4, Quaternion } from "core/Maths/math.vector";
 
 /**
  * @hidden
@@ -43,7 +43,16 @@ export class _GLTFUtilities {
      * @param max Maximum value of each component in this attribute
      * @returns accessor for glTF
      */
-    public static _CreateAccessor(bufferviewIndex: number, name: string, type: AccessorType, componentType: AccessorComponentType, count: number, byteOffset: Nullable<number>, min: Nullable<number[]>, max: Nullable<number[]>): IAccessor {
+    public static _CreateAccessor(
+        bufferviewIndex: number,
+        name: string,
+        type: AccessorType,
+        componentType: AccessorComponentType,
+        count: number,
+        byteOffset: Nullable<number>,
+        min: Nullable<number[]>,
+        max: Nullable<number[]>
+    ): IAccessor {
         let accessor: IAccessor = { name: name, bufferView: bufferviewIndex, componentType: componentType, count: count, type: type };
 
         if (min != null) {
@@ -66,7 +75,12 @@ export class _GLTFUtilities {
      * @param vertexCount Number of vertices to check for min and max values
      * @returns min number array and max number array
      */
-    public static _CalculateMinMaxPositions(positions: FloatArray, vertexStart: number, vertexCount: number, convertToRightHandedSystem: boolean): { min: number[], max: number[] } {
+    public static _CalculateMinMaxPositions(
+        positions: FloatArray,
+        vertexStart: number,
+        vertexCount: number,
+        convertToRightHandedSystem: boolean
+    ): { min: number[]; max: number[] } {
         const min = [Infinity, Infinity, Infinity];
         const max = [-Infinity, -Infinity, -Infinity];
         const positionStrideSize = 3;
