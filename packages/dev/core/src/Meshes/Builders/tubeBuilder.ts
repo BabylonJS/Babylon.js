@@ -200,7 +200,7 @@ export const TubeBuilder = {
     CreateTube,
 };
 
-Mesh.CreateTube = (
+(Mesh as any).CreateTube = (
     name: string,
     path: Vector3[],
     radius: number,

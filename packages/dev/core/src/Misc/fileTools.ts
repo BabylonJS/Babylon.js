@@ -665,7 +665,3 @@ const initSideEffects = () => {
 };
 
 initSideEffects();
-
-// LTS. Export FileTools in this module for backward compatibility.
-import { _injectLTSFileTools } from "./fileTools.lts";
-_injectLTSFileTools(DecodeBase64UrlToBinary, DecodeBase64UrlToString, FileToolsOptions, IsBase64DataUrl, IsFileURL, LoadFile, LoadImage, ReadFile, RequestFile, SetCorsBehavior);

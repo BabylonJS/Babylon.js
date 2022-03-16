@@ -5307,7 +5307,3 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      */
     public onComputePressureChanged = new Observable<IComputePressureData>();
 }
-
-// LTS version
-import { _injectLTSScene } from "./scene.lts";
-_injectLTSScene(Scene);
