@@ -11,7 +11,8 @@ import {
     TextureWrapMode,
     ITexture,
     IImage,
- IMaterialExtension } from "babylonjs-gltf2interface";
+    IMaterialExtension,
+} from "babylonjs-gltf2interface";
 
 import { Nullable } from "core/types";
 import { Vector2 } from "core/Maths/math.vector";

@@ -1,4 +1,4 @@
-import { Template, EventCallback , TemplateManager } from "../templating/templateManager";
+import { Template, EventCallback, TemplateManager } from "../templating/templateManager";
 import { FilesInput } from "core/Misc/filesInput";
 import { SpotLight } from "core/Lights/spotLight";
 import { Vector3 } from "core/Maths/math";

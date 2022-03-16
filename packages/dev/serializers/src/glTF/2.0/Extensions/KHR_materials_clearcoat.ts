@@ -1,4 +1,4 @@
-import { IMaterial , IKHRMaterialsClearcoat } from "babylonjs-gltf2interface";
+import { IMaterial, IKHRMaterialsClearcoat } from "babylonjs-gltf2interface";
 import { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
 import { _Exporter } from "../glTFExporter";
 import { Material } from "core/Materials/material";

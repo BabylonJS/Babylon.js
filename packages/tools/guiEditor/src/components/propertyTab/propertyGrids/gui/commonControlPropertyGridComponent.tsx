@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Observable , Observer } from "core/Misc/observable";
+import { Observable, Observer } from "core/Misc/observable";
 import { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
 import { Control } from "gui/2D/controls/control";

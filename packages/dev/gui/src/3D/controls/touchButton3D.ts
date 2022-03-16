@@ -1,6 +1,6 @@
 // Assumptions: absolute position of button mesh is inside the mesh
 
-import { Vector3 , TmpVectors } from "core/Maths/math.vector";
+import { Vector3, TmpVectors } from "core/Maths/math.vector";
 import { Mesh } from "core/Meshes/mesh";
 import { PointerEventTypes } from "core/Events/pointerEvents";
 import { TransformNode } from "core/Meshes/transformNode";

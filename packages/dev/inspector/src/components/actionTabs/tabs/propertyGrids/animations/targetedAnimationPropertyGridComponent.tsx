@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Observable } from "core/Misc/observable";
-import { TargetedAnimation , AnimationGroup } from "core/Animations/animationGroup";
+import { TargetedAnimation, AnimationGroup } from "core/Animations/animationGroup";
 import { Scene } from "core/scene";
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";

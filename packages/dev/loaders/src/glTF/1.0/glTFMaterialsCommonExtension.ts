@@ -1,5 +1,4 @@
-import { GLTFLoaderExtension , GLTFLoaderBase , GLTFLoader } from "./glTFLoader";
-
+import { GLTFLoaderExtension, GLTFLoaderBase, GLTFLoader } from "./glTFLoader";
 
 import { IGLTFRuntime, IGLTFMaterial } from "./glTFLoaderInterfaces";
 
@@ -12,8 +11,6 @@ import { HemisphericLight } from "core/Lights/hemisphericLight";
 import { DirectionalLight } from "core/Lights/directionalLight";
 import { PointLight } from "core/Lights/pointLight";
 import { SpotLight } from "core/Lights/spotLight";
-
-
 
 interface IGLTFMaterialsCommonExtensionValues {
     ambient?: number[] | string;

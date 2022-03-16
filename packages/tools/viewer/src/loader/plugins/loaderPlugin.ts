@@ -1,6 +1,6 @@
 import { ViewerModel } from "../../model/viewerModel";
 import { IGLTFLoaderExtension, IGLTFLoaderData } from "loaders/glTF/glTFFileLoader";
-import { ISceneLoaderPlugin, ISceneLoaderPluginAsync , ISceneLoaderProgressEvent } from "core/Loading/sceneLoader";
+import { ISceneLoaderPlugin, ISceneLoaderPluginAsync, ISceneLoaderProgressEvent } from "core/Loading/sceneLoader";
 
 import { AbstractMesh } from "core/Meshes/abstractMesh";
 import { BaseTexture } from "core/Materials/Textures/baseTexture";

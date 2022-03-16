@@ -1,4 +1,4 @@
-import { Vector3, Quaternion, Matrix , TmpVectors } from "core/Maths/math.vector";
+import { Vector3, Quaternion, Matrix, TmpVectors } from "core/Maths/math.vector";
 import { Mesh } from "core/Meshes/mesh";
 import { TransformNode } from "core/Meshes/transformNode";
 import { Nullable } from "core/types";

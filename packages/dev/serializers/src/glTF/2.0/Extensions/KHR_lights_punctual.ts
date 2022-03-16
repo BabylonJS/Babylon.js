@@ -6,12 +6,11 @@ import { Light } from "core/Lights/light";
 import { DirectionalLight } from "core/Lights/directionalLight";
 import { Node } from "core/node";
 import { ShadowLight } from "core/Lights/shadowLight";
-import { INode , IKHRLightsPunctual_LightType, IKHRLightsPunctual_LightReference, IKHRLightsPunctual_Light, IKHRLightsPunctual } from "babylonjs-gltf2interface";
+import { INode, IKHRLightsPunctual_LightType, IKHRLightsPunctual_LightReference, IKHRLightsPunctual_Light, IKHRLightsPunctual } from "babylonjs-gltf2interface";
 import { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
 import { _Exporter } from "../glTFExporter";
 import { Logger } from "core/Misc/logger";
 import { _GLTFUtilities } from "../glTFUtilities";
-
 
 const NAME = "KHR_lights_punctual";
 

@@ -1,10 +1,9 @@
-import { IMaterial , IKHRMaterialsSheen } from "babylonjs-gltf2interface";
+import { IMaterial, IKHRMaterialsSheen } from "babylonjs-gltf2interface";
 import { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
 import { _Exporter } from "../glTFExporter";
 import { Material } from "core/Materials/material";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import { BaseTexture } from "core/Materials/Textures/baseTexture";
-
 
 const NAME = "KHR_materials_sheen";
 

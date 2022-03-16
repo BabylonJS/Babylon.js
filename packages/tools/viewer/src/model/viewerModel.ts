@@ -1,5 +1,5 @@
 import { IDisposable } from "core/scene";
-import { ISceneLoaderPlugin, ISceneLoaderPluginAsync , ISceneLoaderProgressEvent } from "core/Loading/sceneLoader";
+import { ISceneLoaderPlugin, ISceneLoaderPluginAsync, ISceneLoaderProgressEvent } from "core/Loading/sceneLoader";
 import { AbstractMesh } from "core/Meshes/abstractMesh";
 import { IParticleSystem } from "core/Particles/IParticleSystem";
 import { Skeleton } from "core/Bones/skeleton";

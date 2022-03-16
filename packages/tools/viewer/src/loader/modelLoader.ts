@@ -1,5 +1,5 @@
 import { GLTFFileLoader, GLTFLoaderAnimationStartMode } from "loaders/glTF/glTFFileLoader";
-import { ISceneLoaderPlugin, ISceneLoaderPluginAsync , SceneLoader } from "core/Loading/sceneLoader";
+import { ISceneLoaderPlugin, ISceneLoaderPluginAsync, SceneLoader } from "core/Loading/sceneLoader";
 import { Tools } from "core/Misc/tools";
 
 import { Tags } from "core/Misc/tags";
