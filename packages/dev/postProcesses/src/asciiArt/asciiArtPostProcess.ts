@@ -1,12 +1,12 @@
-import { Nullable } from "babylonjs/types";
-import { serialize, SerializationHelper } from "babylonjs/Misc/decorators";
-import { Camera } from "babylonjs/Cameras/camera";
-import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
-import { Texture } from "babylonjs/Materials/Textures/texture";
-import { Effect } from "babylonjs/Materials/effect";
-import { PostProcess } from "babylonjs/PostProcesses/postProcess";
-import { Scene } from "babylonjs/scene";
-import "babylonjs/Engines/Extensions/engine.dynamicTexture";
+import { Nullable } from "core/types";
+import { serialize, SerializationHelper } from "core/Misc/decorators";
+import { Camera } from "core/Cameras/camera";
+import { BaseTexture } from "core/Materials/Textures/baseTexture";
+import { Texture } from "core/Materials/Textures/texture";
+import { Effect } from "core/Materials/effect";
+import { PostProcess } from "core/PostProcesses/postProcess";
+import { Scene } from "core/scene";
+import "core/Engines/Extensions/engine.dynamicTexture";
 import "./asciiart.fragment";
 
 /**
