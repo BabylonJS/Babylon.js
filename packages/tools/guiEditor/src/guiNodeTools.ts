@@ -1,21 +1,21 @@
-import { Button } from "babylonjs-gui/2D/controls/button";
-import { Checkbox } from "babylonjs-gui/2D/controls/checkbox";
-import { ColorPicker } from "babylonjs-gui/2D/controls/colorpicker";
-import { Ellipse } from "babylonjs-gui/2D/controls/ellipse";
-import { Line } from "babylonjs-gui/2D/controls/line";
-import { Rectangle } from "babylonjs-gui/2D/controls/rectangle";
-import { Slider } from "babylonjs-gui/2D/controls/sliders/slider";
-import { TextBlock } from "babylonjs-gui/2D/controls/textBlock";
-import { VirtualKeyboard } from "babylonjs-gui/2D/controls/virtualKeyboard";
-import { Image } from "babylonjs-gui/2D/controls/image"
-import { InputText } from "babylonjs-gui/2D/controls/inputText";
-import { InputPassword } from "babylonjs-gui/2D/controls/inputPassword";
-import { Grid } from "babylonjs-gui/2D/controls/grid";
-import { DisplayGrid } from "babylonjs-gui/2D/controls/displayGrid";
-import { StackPanel } from "babylonjs-gui/2D/controls/stackPanel";
-import { ScrollViewer } from "babylonjs-gui/2D/controls/scrollViewers/scrollViewer";
-import { RadioButton } from "babylonjs-gui/2D/controls/radioButton";
-import { ImageBasedSlider } from "babylonjs-gui/2D/controls/sliders/imageBasedSlider";
+import { Button } from "gui/2D/controls/button";
+import { Checkbox } from "gui/2D/controls/checkbox";
+import { ColorPicker } from "gui/2D/controls/colorpicker";
+import { Ellipse } from "gui/2D/controls/ellipse";
+import { Line } from "gui/2D/controls/line";
+import { Rectangle } from "gui/2D/controls/rectangle";
+import { Slider } from "gui/2D/controls/sliders/slider";
+import { TextBlock } from "gui/2D/controls/textBlock";
+import { VirtualKeyboard } from "gui/2D/controls/virtualKeyboard";
+import { Image } from "gui/2D/controls/image"
+import { InputText } from "gui/2D/controls/inputText";
+import { InputPassword } from "gui/2D/controls/inputPassword";
+import { Grid } from "gui/2D/controls/grid";
+import { DisplayGrid } from "gui/2D/controls/displayGrid";
+import { StackPanel } from "gui/2D/controls/stackPanel";
+import { ScrollViewer } from "gui/2D/controls/scrollViewers/scrollViewer";
+import { RadioButton } from "gui/2D/controls/radioButton";
+import { ImageBasedSlider } from "gui/2D/controls/sliders/imageBasedSlider";
 
 export class GUINodeTools {
     public static ImageControlDefaultUrl = "./imageControlDefault.jpg";

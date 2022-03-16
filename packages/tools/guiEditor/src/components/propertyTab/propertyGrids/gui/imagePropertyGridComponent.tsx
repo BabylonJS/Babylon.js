@@ -1,23 +1,23 @@
 import * as React from "react";
-import { Observable } from "babylonjs/Misc/observable";
-import { PropertyChangedEvent } from "../../../../sharedUiComponents/propertyChangedEvent";
+import { Observable } from "core/Misc/observable";
+import { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
 import { CommonControlPropertyGridComponent } from "../gui/commonControlPropertyGridComponent";
-import { LockObject } from "../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
-import { Image } from "babylonjs-gui/2D/controls/image";
-import { FloatLineComponent } from "../../../../sharedUiComponents/lines/floatLineComponent";
-import { CheckBoxLineComponent } from "../../../../sharedUiComponents/lines/checkBoxLineComponent";
-import { OptionsLineComponent } from "../../../../sharedUiComponents/lines/optionsLineComponent";
-import { TextInputLineComponent } from "../../../../sharedUiComponents/lines/textInputLineComponent";
-import { TextLineComponent } from "../../../../sharedUiComponents/lines/textLineComponent";
-import { makeTargetsProxy } from "../../../../sharedUiComponents/lines/targetsProxy";
+import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import { Image } from "gui/2D/controls/image";
+import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
+import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
+import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
+import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
+import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
+import { makeTargetsProxy } from "shared-ui-components/lines/targetsProxy";
 
-const stretchFillIcon: string = require("../../../../sharedUiComponents/imgs/stretchFillIcon.svg");
-const imageLinkIcon: string = require("../../../../sharedUiComponents/imgs/imageLinkIcon.svg");
-const cropIcon: string = require("../../../../sharedUiComponents/imgs/cropIcon.svg");
-const cellIDIcon: string = require("../../../../sharedUiComponents/imgs/cellIDIcon.svg");
-const autoResizeIcon: string = require("../../../../sharedUiComponents/imgs/autoResizeIcon.svg");
-const sizeIcon: string = require("../../../../sharedUiComponents/imgs/sizeIcon.svg");
-const animationSheetIcon: string = require("../../../../sharedUiComponents/imgs/animationSheetIcon.svg");
+import stretchFillIcon from "shared-ui-components/imgs/stretchFillIcon.svg";
+import imageLinkIcon from "shared-ui-components/imgs/imageLinkIcon.svg";
+import cropIcon from "shared-ui-components/imgs/cropIcon.svg";
+import cellIDIcon from "shared-ui-components/imgs/cellIDIcon.svg";
+import autoResizeIcon from "shared-ui-components/imgs/autoResizeIcon.svg";
+import sizeIcon from "shared-ui-components/imgs/sizeIcon.svg";
+import animationSheetIcon from "shared-ui-components/imgs/animationSheetIcon.svg";
 
 interface IImagePropertyGridComponentProps {
     images: Image[];

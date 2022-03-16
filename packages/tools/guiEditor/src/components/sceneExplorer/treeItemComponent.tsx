@@ -1,7 +1,7 @@
 import * as React from "react";
 
-import { Nullable } from "babylonjs/types";
-import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
+import { Nullable } from "core/types";
+import { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBan } from "@fortawesome/free-solid-svg-icons";
@@ -10,8 +10,8 @@ import { Tools } from "../../tools";
 import { ContextMenu, MenuItem, ContextMenuTrigger } from "react-contextmenu";
 import { GlobalState } from "../../globalState";
 
-const expandedIcon: string = require("../../../public/imgs/expandedIcon.svg");
-const collapsedIcon: string = require("../../../public/imgs/collapsedIcon.svg");
+import expandedIcon from "../../imgs/expandedIcon.svg";
+import collapsedIcon from "../../imgs/collapsedIcon.svg";
 
 interface ITreeItemExpandableHeaderComponentProps {
     isExpanded: boolean;

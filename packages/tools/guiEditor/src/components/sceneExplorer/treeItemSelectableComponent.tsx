@@ -1,16 +1,16 @@
-import { Nullable } from "babylonjs/types";
-import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
+import { Nullable } from "core/types";
+import { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
 
 import { Tools } from "../../tools";
 import * as ReactDOM from "react-dom";
 import * as React from "react";
 import { DragOverLocation, GlobalState } from "../../globalState";
 import { ControlTreeItemComponent } from "./entities/gui/controlTreeItemComponent";
-import { Observer } from "babylonjs/Misc/observable";
-import { Container } from "babylonjs-gui/2D/controls/container";
+import { Observer } from "core/Misc/observable";
+import { Container } from "gui/2D/controls/container";
 
-const expandedIcon: string = require("../../../public/imgs/expandedIcon.svg");
-const collapsedIcon: string = require("../../../public/imgs/collapsedIcon.svg");
+import expandedIcon from "../../imgs/expandedIcon.svg";
+import collapsedIcon from "../../imgs/collapsedIcon.svg";
 const CONTROL_HEIGHT = 32;
 
 export interface ITreeItemSelectableComponentProps {

@@ -1,6 +1,6 @@
 import * as React from "react";
 import { GlobalState } from "../globalState";
-import { FileButtonLineComponent } from "../sharedUiComponents/lines/fileButtonLineComponent";
+import { FileButtonLineComponent } from "shared-ui-components/lines/fileButtonLineComponent";
 
 interface ICommandDropdownComponentProps {
     globalState: GlobalState;

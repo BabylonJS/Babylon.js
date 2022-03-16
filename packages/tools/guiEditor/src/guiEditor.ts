@@ -2,9 +2,9 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { GlobalState } from "./globalState";
 import { WorkbenchEditor } from "./workbenchEditor";
-import { Popup } from "./sharedUiComponents/lines/popup";
-import { Observable } from "babylonjs/Misc/observable";
-import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
+import { Popup } from "shared-ui-components/lines/popup";
+import { Observable } from "core/Misc/observable";
+import { AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
 
 /**
  * Interface used to specify creation options for the gui editor

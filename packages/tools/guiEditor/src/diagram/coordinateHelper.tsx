@@ -1,12 +1,12 @@
-import { ValueAndUnit } from "babylonjs-gui/2D/valueAndUnit";
-import { Control } from "babylonjs-gui/2D/controls/control";
-import { Grid } from "babylonjs-gui/2D/controls/grid";
-import { Rectangle } from "babylonjs-gui/2D/controls/rectangle";
-import { Matrix2D } from "babylonjs-gui/2D/math2D";
-import { Vector2 } from "babylonjs/Maths/math.vector";
-import { Observable } from "babylonjs/Misc/observable";
+import { ValueAndUnit } from "gui/2D/valueAndUnit";
+import { Control } from "gui/2D/controls/control";
+import { Grid } from "gui/2D/controls/grid";
+import { Rectangle } from "gui/2D/controls/rectangle";
+import { Matrix2D } from "gui/2D/math2D";
+import { Vector2 } from "core/Maths/math.vector";
+import { Observable } from "core/Misc/observable";
 import { GlobalState } from '../globalState';
-import { PropertyChangedEvent } from "../sharedUiComponents/propertyChangedEvent";
+import { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
 
 export type DimensionProperties = "width" | "left" | "height" | "top" | "paddingLeft" | "paddingRight" | "paddingTop" | "paddingBottom" | "fontSize";
 

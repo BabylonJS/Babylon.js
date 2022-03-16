@@ -1,16 +1,16 @@
 import * as React from "react";
-import { Observable } from "babylonjs/Misc/observable";
-import { PropertyChangedEvent } from "../../../../sharedUiComponents/propertyChangedEvent";
+import { Observable } from "core/Misc/observable";
+import { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
 import { CommonControlPropertyGridComponent } from "../gui/commonControlPropertyGridComponent";
-import { LockObject } from "../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
-import { StackPanel } from "babylonjs-gui/2D/controls/stackPanel";
-import { CheckBoxLineComponent } from "../../../../sharedUiComponents/lines/checkBoxLineComponent";
-import { TextLineComponent } from "../../../../sharedUiComponents/lines/textLineComponent";
-import { FloatLineComponent } from "../../../../sharedUiComponents/lines/floatLineComponent";
-import { makeTargetsProxy } from "../../../../sharedUiComponents/lines/targetsProxy";
+import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import { StackPanel } from "gui/2D/controls/stackPanel";
+import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
+import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
+import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
+import { makeTargetsProxy } from "shared-ui-components/lines/targetsProxy";
 import { ContainerPropertyGridComponent } from "./containerPropertyGridComponent";
 
-const verticalMarginIcon: string = require("../../../../sharedUiComponents/imgs/verticalMarginIcon.svg");
+import verticalMarginIcon from "shared-ui-components/imgs/verticalMarginIcon.svg";
 
 interface IStackPanelPropertyGridComponentProps {
     stackPanels: StackPanel[];

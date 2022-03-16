@@ -1,17 +1,17 @@
-import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
-import { Control } from "babylonjs-gui/2D/controls/control";
+import { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
+import { Control } from "gui/2D/controls/control";
 import { TreeItemLabelComponent } from "../../treeItemLabelComponent";
 import { ExtensionsComponent } from "../../extensionsComponent";
 import * as React from "react";
 import { DragOverLocation, GlobalState } from "../../../../globalState";
-import { Grid } from "babylonjs-gui/2D/controls/grid";
-import { Container } from "babylonjs-gui/2D/controls/container";
+import { Grid } from "gui/2D/controls/grid";
+import { Container } from "gui/2D/controls/container";
 import { ControlTypes } from "../../../../controlTypes";
 
-const visibilityNotActiveIcon: string = require("../../../../../public/imgs/visibilityNotActiveIcon.svg");
-const visibilityActiveIcon: string = require("../../../../../public/imgs/visibilityActiveIcon.svg");
-const makeComponentIcon: string = require("../../../../../public/imgs/makeComponentIcon.svg");
-const makeChildOfContainerIcon: string = require("../../../../../public/imgs/makeChildOfContainerIcon.svg");
+import visibilityNotActiveIcon from "../../../../imgs/visibilityNotActiveIcon.svg";
+import visibilityActiveIcon from "../../../../imgs/visibilityActiveIcon.svg";
+import makeComponentIcon from "../../../../imgs/makeComponentIcon.svg";
+import makeChildOfContainerIcon from "../../../../imgs/makeChildOfContainerIcon.svg";
 
 interface IControlTreeItemComponentProps {
     control: Control;

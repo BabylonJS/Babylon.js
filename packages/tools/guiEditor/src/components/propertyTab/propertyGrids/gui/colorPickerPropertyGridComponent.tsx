@@ -1,12 +1,12 @@
 import * as React from "react";
-import { Observable } from "babylonjs/Misc/observable";
-import { PropertyChangedEvent } from "../../../../sharedUiComponents/propertyChangedEvent";
+import { Observable } from "core/Misc/observable";
+import { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
 import { CommonControlPropertyGridComponent } from "../gui/commonControlPropertyGridComponent";
-import { ColorPicker } from "babylonjs-gui/2D/controls/colorpicker";
-import { Color3LineComponent } from "../../../../sharedUiComponents/lines/color3LineComponent";
-import { LockObject } from "../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
-import { TextLineComponent } from "../../../../sharedUiComponents/lines/textLineComponent";
-import { makeTargetsProxy } from "../../../../sharedUiComponents/lines/targetsProxy";
+import { ColorPicker } from "gui/2D/controls/colorpicker";
+import { Color3LineComponent } from "shared-ui-components/lines/color3LineComponent";
+import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
+import { makeTargetsProxy } from "shared-ui-components/lines/targetsProxy";
 
 interface IColorPickerPropertyGridComponentProps {
     colorPickers: ColorPicker[];

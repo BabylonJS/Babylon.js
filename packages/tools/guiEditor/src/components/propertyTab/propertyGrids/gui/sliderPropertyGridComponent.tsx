@@ -1,26 +1,26 @@
 import * as React from "react";
-import { Observable } from "babylonjs/Misc/observable";
-import { PropertyChangedEvent } from "../../../../sharedUiComponents/propertyChangedEvent";
-import { LockObject } from "../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
-import { Slider } from "babylonjs-gui/2D/controls/sliders/slider";
-import { FloatLineComponent } from "../../../../sharedUiComponents/lines/floatLineComponent";
-import { CheckBoxLineComponent } from "../../../../sharedUiComponents/lines/checkBoxLineComponent";
-import { TextInputLineComponent } from "../../../../sharedUiComponents/lines/textInputLineComponent";
-import { TextLineComponent } from "../../../../sharedUiComponents/lines/textLineComponent";
-import { ColorLineComponent } from "../../../../sharedUiComponents/lines/colorLineComponent";
-import { ImageBasedSlider } from "babylonjs-gui/2D/controls/sliders/imageBasedSlider";
-import { makeTargetsProxy } from "../../../../sharedUiComponents/lines/targetsProxy";
+import { Observable } from "core/Misc/observable";
+import { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
+import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import { Slider } from "gui/2D/controls/sliders/slider";
+import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
+import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
+import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
+import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
+import { ColorLineComponent } from "shared-ui-components/lines/colorLineComponent";
+import { ImageBasedSlider } from "gui/2D/controls/sliders/imageBasedSlider";
+import { makeTargetsProxy } from "shared-ui-components/lines/targetsProxy";
 
-const colorIcon: string = require("../../../../sharedUiComponents/imgs/colorIcon.svg");
-const verticalSliderIcon: string = require("../../../../sharedUiComponents/imgs/verticalSliderIcon.svg");
-const sliderValueIcon: string = require("../../../../sharedUiComponents/imgs/sliderValueIcon.svg");
-const sliderValueMaximumIcon: string = require("../../../../sharedUiComponents/imgs/sliderValueMaximumIcon.svg");
-const sliderValueMinimumIcon: string = require("../../../../sharedUiComponents/imgs/sliderValueMinimumIcon.svg");
-const thumbWidthIcon: string = require("../../../../sharedUiComponents/imgs/thumbWidthIcon.svg");
-const clampSliderValueIcon: string = require("../../../../sharedUiComponents/imgs/clampSliderValueIcon.svg");
-const showThumbIcon: string = require("../../../../sharedUiComponents/imgs/showThumbIcon.svg");
-const barOffsetIcon: string = require("../../../../sharedUiComponents/imgs/barOffsetIcon.svg");
-const thumbCircleIcon: string = require("../../../../sharedUiComponents/imgs/thumbCircleIcon.svg");
+import colorIcon from "shared-ui-components/imgs/colorIcon.svg";
+import verticalSliderIcon from "shared-ui-components/imgs/verticalSliderIcon.svg";
+import sliderValueIcon from "shared-ui-components/imgs/sliderValueIcon.svg";
+import sliderValueMaximumIcon from "shared-ui-components/imgs/sliderValueMaximumIcon.svg";
+import sliderValueMinimumIcon from "shared-ui-components/imgs/sliderValueMinimumIcon.svg";
+import thumbWidthIcon from "shared-ui-components/imgs/thumbWidthIcon.svg";
+import clampSliderValueIcon from "shared-ui-components/imgs/clampSliderValueIcon.svg";
+import showThumbIcon from "shared-ui-components/imgs/showThumbIcon.svg";
+import barOffsetIcon from "shared-ui-components/imgs/barOffsetIcon.svg";
+import thumbCircleIcon from "shared-ui-components/imgs/thumbCircleIcon.svg";
 
 interface ISliderPropertyGridComponentProps {
     sliders: (Slider | ImageBasedSlider)[];

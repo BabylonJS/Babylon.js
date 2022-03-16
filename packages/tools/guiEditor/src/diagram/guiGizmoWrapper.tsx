@@ -1,5 +1,5 @@
-import { Nullable } from "babylonjs/types";
-import { Observer } from "babylonjs/Misc/observable";
+import { Nullable } from "core/types";
+import { Observer } from "core/Misc/observable";
 import * as React from "react";
 import { GlobalState } from "../globalState";
 import { GuiGizmoComponent } from "./guiGizmo";

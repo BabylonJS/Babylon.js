@@ -1,18 +1,18 @@
 import * as React from "react";
-import { Observable } from "babylonjs/Misc/observable";
-import { PropertyChangedEvent } from "../../../../sharedUiComponents/propertyChangedEvent";
+import { Observable } from "core/Misc/observable";
+import { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
 import { CommonControlPropertyGridComponent } from "../gui/commonControlPropertyGridComponent";
-import { LockObject } from "../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
-import { TextLineComponent } from "../../../../sharedUiComponents/lines/textLineComponent";
-import { DisplayGrid } from "babylonjs-gui/2D/controls/displayGrid";
-import { FloatLineComponent } from "../../../../sharedUiComponents/lines/floatLineComponent";
-import { ColorLineComponent } from "../../../../sharedUiComponents/lines/colorLineComponent";
-import { makeTargetsProxy } from "../../../../sharedUiComponents/lines/targetsProxy";
+import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
+import { DisplayGrid } from "gui/2D/controls/displayGrid";
+import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
+import { ColorLineComponent } from "shared-ui-components/lines/colorLineComponent";
+import { makeTargetsProxy } from "shared-ui-components/lines/targetsProxy";
 
-const sizeIcon: string = require("../../../../sharedUiComponents/imgs/sizeIcon.svg");
-const colorIcon: string = require("../../../../sharedUiComponents/imgs/colorIcon.svg");
-const conerRadiusIcon: string = require("../../../../sharedUiComponents/imgs/conerRadiusIcon.svg");
-const strokeWeightIcon: string = require("../../../../sharedUiComponents/imgs/strokeWeightIcon.svg");
+import sizeIcon from "shared-ui-components/imgs/sizeIcon.svg";
+import colorIcon from "shared-ui-components/imgs/colorIcon.svg";
+import conerRadiusIcon from "shared-ui-components/imgs/conerRadiusIcon.svg";
+import strokeWeightIcon from "shared-ui-components/imgs/strokeWeightIcon.svg";
 
 interface IDisplayGridPropertyGridComponentProps {
     displayGrids: DisplayGrid[];

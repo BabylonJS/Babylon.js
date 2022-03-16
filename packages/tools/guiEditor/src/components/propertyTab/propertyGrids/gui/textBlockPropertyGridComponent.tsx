@@ -1,16 +1,16 @@
 import * as React from "react";
-import { Observable } from "babylonjs/Misc/observable";
-import { PropertyChangedEvent } from "../../../../sharedUiComponents/propertyChangedEvent";
+import { Observable } from "core/Misc/observable";
+import { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
 import { CommonControlPropertyGridComponent } from "../gui/commonControlPropertyGridComponent";
-import { TextBlock, TextWrapping } from "babylonjs-gui/2D/controls/textBlock";
-import { TextInputLineComponent } from "../../../../sharedUiComponents/lines/textInputLineComponent";
-import { LockObject } from "../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
-import { OptionsLineComponent } from "../../../../sharedUiComponents/lines/optionsLineComponent";
-import { CheckBoxLineComponent } from "../../../../sharedUiComponents/lines/checkBoxLineComponent";
-import { FloatLineComponent } from "../../../../sharedUiComponents/lines/floatLineComponent";
-import { TextLineComponent } from "../../../../sharedUiComponents/lines/textLineComponent";
-import { ColorLineComponent } from "../../../../sharedUiComponents/lines/colorLineComponent";
-import { makeTargetsProxy } from "../../../../sharedUiComponents/lines/targetsProxy";
+import { TextBlock, TextWrapping } from "gui/2D/controls/textBlock";
+import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
+import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
+import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
+import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
+import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
+import { ColorLineComponent } from "shared-ui-components/lines/colorLineComponent";
+import { makeTargetsProxy } from "shared-ui-components/lines/targetsProxy";
 
 interface ITextBlockPropertyGridComponentProps {
     textBlocks: TextBlock[];
@@ -18,9 +18,9 @@ interface ITextBlockPropertyGridComponentProps {
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
 
-const fillColorIcon: string = require("../../../../sharedUiComponents/imgs/fillColorIcon.svg");
-const fontFamilyIcon: string = require("../../../../sharedUiComponents/imgs/fontFamilyIcon.svg");
-const strokeWeightIcon: string = require("../../../../sharedUiComponents/imgs/strokeWeightIcon.svg");
+import fillColorIcon from "shared-ui-components/imgs/fillColorIcon.svg";
+import fontFamilyIcon from "shared-ui-components/imgs/fontFamilyIcon.svg";
+import strokeWeightIcon from "shared-ui-components/imgs/strokeWeightIcon.svg";
 
 export class TextBlockPropertyGridComponent extends React.Component<ITextBlockPropertyGridComponentProps> {
     constructor(props: ITextBlockPropertyGridComponentProps) {

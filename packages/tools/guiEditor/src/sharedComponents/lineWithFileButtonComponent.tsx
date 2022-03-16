@@ -1,5 +1,5 @@
 import * as React from "react";
-import { DataStorage } from "babylonjs/Misc/dataStorage";
+import { DataStorage } from "core/Misc/dataStorage";
 
 interface ILineWithFileButtonComponentProps {
     title: string;
