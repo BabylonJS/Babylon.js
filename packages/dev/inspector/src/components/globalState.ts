@@ -122,7 +122,7 @@ export class GlobalState {
 
     public prepareGLTFPlugin(loader: import("loaders/glTF/index").GLTFFileLoader) {
         this.glTFLoaderExtensions = {};
-        var loaderState = this.glTFLoaderDefaults;
+        const loaderState = this.glTFLoaderDefaults;
         if (loaderState !== undefined) {
             for (const key in loaderState) {
                 (loader as any)[key] = loaderState[key];
@@ -130,7 +130,7 @@ export class GlobalState {
         }
 
         loader.onExtensionLoadedObservable.add((extension: import("loaders/glTF/index").IGLTFLoaderExtension) => {
-            var extensionState = this.glTFLoaderExtensionDefaults[extension.name];
+            const extensionState = this.glTFLoaderExtensionDefaults[extension.name];
             if (extensionState !== undefined) {
                 for (const key in extensionState) {
                     (extension as any)[key] = extensionState[key];

@@ -350,7 +350,7 @@ export class CanvasGraphService {
                 ctx.globalAlpha = backgroundLineAlpha;
             }
 
-            let values = new Array(this._datasetBounds.end - this._datasetBounds.start);
+            const values = new Array(this._datasetBounds.end - this._datasetBounds.start);
 
             for (let pointIndex = this._datasetBounds.start; pointIndex < this._datasetBounds.end; pointIndex++) {
                 const numPoints = this.datasets.data.at(this.datasets.startingIndices.at(pointIndex) + PerformanceViewerCollector.NumberOfPointsOffset);
@@ -435,7 +435,7 @@ export class CanvasGraphService {
         this._numberOfTickers = 0;
         const valueMap = new Map<string, IPerfMinMax>();
         this.datasets.ids.forEach((id, idOffset) => {
-            if (!!this.metadata.get(id)?.hidden) {
+            if (this.metadata.get(id)?.hidden) {
                 return;
             }
 
@@ -682,6 +682,8 @@ export class CanvasGraphService {
      * Gets the min and max as a single object from an array of numbers.
      *
      * @param items the array of numbers to get the min and max for.
+     * @param bounds
+     * @param offset
      * @returns the min and max of the array.
      */
     private _getMinMax(bounds: IPerfIndexBounds, offset: number): IPerfMinMax {
@@ -876,7 +878,7 @@ export class CanvasGraphService {
         let closestLineDistance: number = Number.POSITIVE_INFINITY;
 
         this.datasets.ids.forEach((id, idOffset) => {
-            if (!!this.metadata.get(id)?.hidden) {
+            if (this.metadata.get(id)?.hidden) {
                 return;
             }
 
@@ -995,7 +997,7 @@ export class CanvasGraphService {
 
         // draw pointer triangle
         ctx.fillStyle = positionIndicatorColor;
-        let yTriangle = drawableArea.bottom + trianglePaddingFromAxisLine;
+        const yTriangle = drawableArea.bottom + trianglePaddingFromAxisLine;
         ctx.beginPath();
         ctx.moveTo(xForActualTimestamp, yTriangle);
         ctx.lineTo(xForActualTimestamp + triangleWidth / 2, yTriangle + triangleHeight);
@@ -1074,6 +1076,7 @@ export class CanvasGraphService {
      * @param startingPixel position of the starting pixel in range.
      * @param endingPixel position of ending pixel in range.
      * @param shouldFlipValue if we should use a [1, 0] scale instead of a [0, 1] scale.
+     * @param shouldFlip
      * @returns number corresponding to pixel position
      */
     private _getNumberFromPixel(pixel: number, minMax: IPerfMinMax, startingPixel: number, endingPixel: number, shouldFlip: boolean): number {

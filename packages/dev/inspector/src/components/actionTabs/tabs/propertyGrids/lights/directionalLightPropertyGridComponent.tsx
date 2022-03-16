@@ -30,7 +30,7 @@ export class DirectionalLightPropertyGridComponent extends React.Component<IDire
         const light = this.props.light;
         const camera = light.getScene().activeCamera;
 
-        let displayFrustum = ((light as any)._displayFrustum = !!!(light as any)._displayFrustum);
+        const displayFrustum = ((light as any)._displayFrustum = !(light as any)._displayFrustum);
 
         if ((light as any)._displayFrustumObservable) {
             light.getScene().onAfterRenderObservable.remove((light as any)._displayFrustumObservable);

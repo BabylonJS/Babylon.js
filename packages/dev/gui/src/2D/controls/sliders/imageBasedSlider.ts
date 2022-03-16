@@ -112,10 +112,10 @@ export class ImageBasedSlider extends BaseSlider {
 
         this._prepareRenderingData("rectangle");
         const thumbPosition = this._getThumbPosition();
-        var left = this._renderLeft;
-        var top = this._renderTop;
-        var width = this._renderWidth;
-        var height = this._renderHeight;
+        const left = this._renderLeft;
+        const top = this._renderTop;
+        const width = this._renderWidth;
+        const height = this._renderHeight;
 
         // Background
         if (this._backgroundImage) {
@@ -176,9 +176,9 @@ export class ImageBasedSlider extends BaseSlider {
      */
     public serialize(serializationObject: any) {
         super.serialize(serializationObject);
-        let backgroundImage = {};
-        let thumbImage = {};
-        let valueBarImage = {};
+        const backgroundImage = {};
+        const thumbImage = {};
+        const valueBarImage = {};
         this.backgroundImage.serialize(backgroundImage);
         this.thumbImage.serialize(thumbImage);
         this.valueBarImage.serialize(valueBarImage);
@@ -187,7 +187,11 @@ export class ImageBasedSlider extends BaseSlider {
         serializationObject.valueBarImage = valueBarImage;
     }
 
-    /** @hidden */
+    /**
+     * @param serializedObject
+     * @param host
+     * @hidden
+     */
     public _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture) {
         super._parseFromContent(serializedObject, host);
         this.backgroundImage = Image.Parse(serializedObject.backgroundImage, host) as Image;

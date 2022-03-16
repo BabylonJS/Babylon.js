@@ -43,9 +43,9 @@ export class AnimationBar extends React.Component<IAnimationBarProps, { groupInd
         if (!this._currentGroup) {
             return "0";
         }
-        let targetedAnimations = this._currentGroup.targetedAnimations;
+        const targetedAnimations = this._currentGroup.targetedAnimations;
         if (targetedAnimations.length > 0) {
-            let runtimeAnimations = this._currentGroup.targetedAnimations[0].animation.runtimeAnimations;
+            const runtimeAnimations = this._currentGroup.targetedAnimations[0].animation.runtimeAnimations;
             if (runtimeAnimations.length > 0) {
                 return runtimeAnimations[0].currentFrame.toString();
             }
@@ -94,7 +94,7 @@ export class AnimationBar extends React.Component<IAnimationBarProps, { groupInd
             return;
         }
 
-        let value = parseFloat((evt.target as HTMLInputElement).value);
+        const value = parseFloat((evt.target as HTMLInputElement).value);
 
         if (!this._currentGroup.isPlaying) {
             this._currentGroup.play(true);
@@ -110,14 +110,14 @@ export class AnimationBar extends React.Component<IAnimationBarProps, { groupInd
             this._currentGroup = null;
             return null;
         }
-        let scene = this.props.globalState.currentScene;
+        const scene = this.props.globalState.currentScene;
 
         if (scene.animationGroups.length === 0) {
             this._currentGroup = null;
             return null;
         }
 
-        let groupNames = scene.animationGroups.map((g) => g.name);
+        const groupNames = scene.animationGroups.map((g) => g.name);
 
         this._currentGroup = scene.animationGroups[this.state.groupIndex];
         this._currentPlayingState = this._currentGroup.isPlaying;
@@ -150,7 +150,7 @@ export class AnimationBar extends React.Component<IAnimationBarProps, { groupInd
                     onOptionPicked={(option) => {
                         this._currentGroup!.stop();
 
-                        let newIndex = groupNames.indexOf(option);
+                        const newIndex = groupNames.indexOf(option);
                         this.setState({ groupIndex: newIndex });
 
                         scene.animationGroups[newIndex].play(true);

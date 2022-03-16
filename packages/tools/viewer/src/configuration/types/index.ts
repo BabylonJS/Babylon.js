@@ -14,9 +14,9 @@ import { deepmerge } from "../../helper/index";
  *
  * @param types a comma-separated string of the type(s) or configuration to load.
  */
-let getConfigurationType = function (types: string): ViewerConfiguration {
+const getConfigurationType = function (types: string): ViewerConfiguration {
     let config: ViewerConfiguration = {};
-    let typesSeparated = types.split(",");
+    const typesSeparated = types.split(",");
     typesSeparated.forEach((type) => {
         switch (type.trim()) {
             case "environmentMap":

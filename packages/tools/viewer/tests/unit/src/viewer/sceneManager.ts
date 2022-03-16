@@ -3,11 +3,11 @@ import { assert, expect, should } from "../viewerReference";
 import { DefaultViewer, AbstractViewer, Version, viewerManager } from "../../../../src";
 import { PBRMaterial } from "babylonjs";
 
-export let name = "scene manager";
+export const name = "scene manager";
 
 describe(name, function () {
     it("should be initialized when an engine is created", (done) => {
-        let viewer = Helper.getNewViewerInstance();
+        const viewer = Helper.getNewViewerInstance();
 
         viewer.onEngineInitObservable.add(() => {
             assert.isDefined(viewer.sceneManager, "scene manager should be defined");
@@ -19,7 +19,7 @@ describe(name, function () {
     });
 
     it("should have objects initialized after init", (done) => {
-        let viewer = Helper.getNewViewerInstance();
+        const viewer = Helper.getNewViewerInstance();
         viewer.onInitDoneObservable.add(() => {
             assert.isDefined(viewer.sceneManager.scene);
             assert.isDefined(viewer.sceneManager.labs);
@@ -41,7 +41,7 @@ describe(name, function () {
     });
 
     it("should set the default material to be PBR-Enabled per default", (done) => {
-        let viewer = Helper.getNewViewerInstance();
+        const viewer = Helper.getNewViewerInstance();
         viewer.onInitDoneObservable.add(() => {
             assert.isTrue(viewer.sceneManager.scene.defaultMaterial instanceof PBRMaterial);
 
@@ -51,7 +51,7 @@ describe(name, function () {
     });
 
     it("should call observers correctly", (done) => {
-        let viewer = Helper.getNewViewerInstance(undefined, { extends: "none" });
+        const viewer = Helper.getNewViewerInstance(undefined, { extends: "none" });
         let sceneInitCalled = false;
         viewer.runRenderLoop = false;
 
@@ -65,7 +65,7 @@ describe(name, function () {
                 sceneInitCalled = true;
             });
 
-            let update = (str: string, data) => {
+            const update = (str: string, data) => {
                 if (s.indexOf(str) !== -1) {
                     assert.fail(false, true, str + " observer already called");
                     return false;
@@ -96,7 +96,7 @@ describe(name, function () {
     });
 
     it("should delete and rebuild post process pipeline when enabled and disabled", (done) => {
-        let viewer = Helper.getNewViewerInstance(undefined, {
+        const viewer = Helper.getNewViewerInstance(undefined, {
             scene: {
                 imageProcessingConfiguration: {
                     isEnabled: true,
@@ -137,7 +137,7 @@ describe(name, function () {
     });
 
     it("should allow disabling and enabling ground", (done) => {
-        let viewer = Helper.getNewViewerInstance(undefined, {
+        const viewer = Helper.getNewViewerInstance(undefined, {
             ground: true,
         });
 
@@ -172,7 +172,7 @@ describe(name, function () {
     });
 
     it("should allow disabling and enabling ground texture", (done) => {
-        let viewer = Helper.getNewViewerInstance(undefined, {
+        const viewer = Helper.getNewViewerInstance(undefined, {
             ground: {
                 mirror: true,
             },

@@ -74,7 +74,7 @@ export class Container3D extends Control3D {
      * @returns the current container
      */
     public addControl(control: Control3D): Container3D {
-        var index = this._children.indexOf(control);
+        const index = this._children.indexOf(control);
 
         if (index !== -1) {
             return this;
@@ -114,7 +114,7 @@ export class Container3D extends Control3D {
      * @returns the current container
      */
     public removeControl(control: Control3D): Container3D {
-        var index = this._children.indexOf(control);
+        const index = this._children.indexOf(control);
 
         if (index !== -1) {
             this._children.splice(index, 1);
@@ -134,7 +134,7 @@ export class Container3D extends Control3D {
      * Releases all associated resources
      */
     public dispose() {
-        for (var control of this._children) {
+        for (const control of this._children) {
             control.dispose();
         }
 

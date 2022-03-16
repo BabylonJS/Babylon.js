@@ -12,11 +12,11 @@ export class PrintButtonPlugin extends AbstractViewerNavbarButton {
         this._viewer.onModelLoadedObservable.add((model) => {
             this._currentModelUrl = "";
             if (model.configuration.url) {
-                let filename = Tools.GetFilename(model.configuration.url) || model.configuration.url;
-                let baseUrl = model.configuration.root || Tools.GetFolderPath(model.configuration.url);
+                const filename = Tools.GetFilename(model.configuration.url) || model.configuration.url;
+                const baseUrl = model.configuration.root || Tools.GetFolderPath(model.configuration.url);
 
                 //gltf, obj, stl
-                let extension = model.configuration.loader || filename.split(".").pop() || "";
+                const extension = model.configuration.loader || filename.split(".").pop() || "";
                 let printable = false;
                 // not using .some sue to IE11
                 ["gltf", "glb", "obj", "stl"].forEach((ext) => {
@@ -33,7 +33,7 @@ export class PrintButtonPlugin extends AbstractViewerNavbarButton {
 
     onEvent(event: EventCallback): void {
         if (this._currentModelUrl) {
-            let printUrl = this._currentModelUrl.replace(/https?:\/\//, "com.microsoft.builder3d://");
+            const printUrl = this._currentModelUrl.replace(/https?:\/\//, "com.microsoft.builder3d://");
             window.open(printUrl, "_self");
         }
     }

@@ -71,6 +71,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
     /**
      * Creates a node and recursivly creates its parent nodes from it's input
      * @param nodeMaterialBlock
+     * @param block
+     * @param recursion
      */
     public createNodeFromObject(block: NodeMaterialBlock, recursion = true) {
         if (this._blocks.indexOf(block) !== -1) {
@@ -112,9 +114,9 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
     }
 
     addValueNode(type: string) {
-        let nodeType: NodeMaterialBlockConnectionPointTypes = BlockTools.GetConnectionNodeTypeFromString(type);
+        const nodeType: NodeMaterialBlockConnectionPointTypes = BlockTools.GetConnectionNodeTypeFromString(type);
 
-        let newInputBlock = new InputBlock(type, undefined, nodeType);
+        const newInputBlock = new InputBlock(type, undefined, nodeType);
         return this.createNodeFromObject(newInputBlock);
     }
 
@@ -211,14 +213,14 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             (evt) => {
                 if ((evt.keyCode === 46 || evt.keyCode === 8) && !this.props.globalState.blockKeyboardEvents) {
                     // Delete
-                    let selectedItems = this._graphCanvas.selectedNodes;
+                    const selectedItems = this._graphCanvas.selectedNodes;
 
-                    for (var selectedItem of selectedItems) {
+                    for (const selectedItem of selectedItems) {
                         selectedItem.dispose();
 
-                        let targetBlock = selectedItem.block;
+                        const targetBlock = selectedItem.block;
                         this.props.globalState.nodeMaterial!.removeBlock(targetBlock);
-                        let blockIndex = this._blocks.indexOf(targetBlock);
+                        const blockIndex = this._blocks.indexOf(targetBlock);
 
                         if (blockIndex > -1) {
                             this._blocks.splice(blockIndex, 1);
@@ -230,12 +232,12 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                     }
 
                     if (this._graphCanvas.selectedFrames.length) {
-                        for (let frame of this._graphCanvas.selectedFrames) {
+                        for (const frame of this._graphCanvas.selectedFrames) {
                             if (frame.isCollapsed) {
                                 while (frame.nodes.length > 0) {
-                                    let targetBlock = frame.nodes[0].block;
+                                    const targetBlock = frame.nodes[0].block;
                                     this.props.globalState.nodeMaterial!.removeBlock(targetBlock);
-                                    let blockIndex = this._blocks.indexOf(targetBlock);
+                                    const blockIndex = this._blocks.indexOf(targetBlock);
 
                                     if (blockIndex > -1) {
                                         this._blocks.splice(blockIndex, 1);
@@ -267,19 +269,19 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                     this._copiedFrames = [];
 
                     if (this._graphCanvas.selectedFrames.length) {
-                        for (let frame of this._graphCanvas.selectedFrames) {
+                        for (const frame of this._graphCanvas.selectedFrames) {
                             frame.serialize(true);
                             this._copiedFrames.push(frame);
                         }
                         return;
                     }
 
-                    let selectedItems = this._graphCanvas.selectedNodes;
+                    const selectedItems = this._graphCanvas.selectedNodes;
                     if (!selectedItems.length) {
                         return;
                     }
 
-                    let selectedItem = selectedItems[0] as GraphNode;
+                    const selectedItem = selectedItems[0] as GraphNode;
 
                     if (!selectedItem.block) {
                         return;
@@ -293,9 +295,9 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                     let currentY = (this._mouseLocationY - rootElement.offsetTop - this._graphCanvas.y - 20) / zoomLevel;
 
                     if (this._copiedFrames.length) {
-                        for (let frame of this._copiedFrames) {
+                        for (const frame of this._copiedFrames) {
                             // New frame
-                            let newFrame = new GraphFrame(null, this._graphCanvas, true);
+                            const newFrame = new GraphFrame(null, this._graphCanvas, true);
                             this._graphCanvas.frames.push(newFrame);
 
                             newFrame.width = frame.width;
@@ -314,9 +316,9 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                                 currentY = newFrame.y + frame.nodes[0].y - frame.y;
 
                                 this._graphCanvas._frameIsMoving = true;
-                                let newNodes = this.pasteSelection(frame.nodes, currentX, currentY);
+                                const newNodes = this.pasteSelection(frame.nodes, currentX, currentY);
                                 if (newNodes) {
-                                    for (var node of newNodes) {
+                                    for (const node of newNodes) {
                                         newFrame.syncNode(node);
                                     }
                                 }
@@ -339,7 +341,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                         return;
                     }
 
-                    let currentX = (this._mouseLocationX - rootElement.offsetLeft - this._graphCanvas.x - GraphEditor.NodeWidth) / zoomLevel;
+                    const currentX = (this._mouseLocationX - rootElement.offsetLeft - this._graphCanvas.x - GraphEditor.NodeWidth) / zoomLevel;
                     this.pasteSelection(this._copiedNodes, currentX, currentY, true);
                 }
             },
@@ -356,8 +358,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         const block = currentNode.block;
         const sourceNode = sourceNodes[nodeIndex];
 
-        for (var inputIndex = 0; inputIndex < sourceNode.block.inputs.length; inputIndex++) {
-            let sourceInput = sourceNode.block.inputs[inputIndex];
+        for (let inputIndex = 0; inputIndex < sourceNode.block.inputs.length; inputIndex++) {
+            const sourceInput = sourceNode.block.inputs[inputIndex];
             const currentInput = block.inputs[inputIndex];
             if (!sourceInput.isConnected) {
                 continue;
@@ -367,7 +369,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
             if (activeNodes.length > 0) {
                 const activeNode = activeNodes[0];
-                let indexInList = sourceNodes.indexOf(activeNode);
+                const indexInList = sourceNodes.indexOf(activeNode);
 
                 // First make sure to connect the other one
                 this.reconnectNewNodes(indexInList, newNodes, sourceNodes, done);
@@ -393,7 +395,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
     pasteSelection(copiedNodes: GraphNode[], currentX: number, currentY: number, selectNew = false) {
         let originalNode: Nullable<GraphNode> = null;
 
-        let newNodes: GraphNode[] = [];
+        const newNodes: GraphNode[] = [];
 
         // Copy to prevent recursive side effects while creating nodes.
         copiedNodes = copiedNodes.slice();
@@ -402,20 +404,20 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
 
         // Create new nodes
-        for (var node of copiedNodes) {
-            let block = node.block;
+        for (const node of copiedNodes) {
+            const block = node.block;
 
             if (!block) {
                 continue;
             }
 
-            let clone = block.clone(this.props.globalState.nodeMaterial.getScene());
+            const clone = block.clone(this.props.globalState.nodeMaterial.getScene());
 
             if (!clone) {
                 return;
             }
 
-            let newNode = this.createNodeFromObject(clone, false);
+            const newNode = this.createNodeFromObject(clone, false);
 
             let x = 0;
             let y = 0;
@@ -440,8 +442,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         }
 
         // Relink
-        let done = new Array<boolean>(newNodes.length);
-        for (var index = 0; index < newNodes.length; index++) {
+        const done = new Array<boolean>(newNodes.length);
+        for (let index = 0; index < newNodes.length; index++) {
             this.reconnectNewNodes(index, newNodes, copiedNodes, done);
         }
 
@@ -493,7 +495,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
     }
 
     loadGraph() {
-        var material = this.props.globalState.nodeMaterial;
+        const material = this.props.globalState.nodeMaterial;
         material._vertexOutputNodes.forEach((n: any) => {
             this.createNodeFromObject(n, true);
         });
@@ -508,7 +510,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         // Links
         material.attachedBlocks.forEach((n: any) => {
             if (n.inputs.length) {
-                for (var input of n.inputs) {
+                for (const input of n.inputs) {
                     if (input.isConnected) {
                         this._graphCanvas.connectPorts(input.connectedPoint!, input);
                     }
@@ -534,7 +536,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                 this._graphCanvas.distributeGraph();
             } else {
                 // Locations
-                for (var location of editorData.locations) {
+                for (const location of editorData.locations) {
                     for (var node of this._graphCanvas.nodes) {
                         if (node.block && node.block.uniqueId === location.blockId) {
                             node.x = location.x;
@@ -603,7 +605,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         let customBlockData: any;
 
         if (blockType.indexOf("CustomBlock") > -1) {
-            let storageData = localStorage.getItem(blockType);
+            const storageData = localStorage.getItem(blockType);
             if (!storageData) {
                 this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers(`Error loading custom block`);
                 return;
@@ -615,18 +617,18 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                 return;
             }
         } else if (blockType.indexOf("Custom") > -1) {
-            let storageData = localStorage.getItem(blockType);
+            const storageData = localStorage.getItem(blockType);
             if (storageData) {
-                let frameData = JSON.parse(storageData);
+                const frameData = JSON.parse(storageData);
 
                 //edit position before loading.
-                let newX = (targetX - this._graphCanvas.x - GraphEditor.NodeWidth) / this._graphCanvas.zoom;
-                let newY = (targetY - this._graphCanvas.y - 20) / this._graphCanvas.zoom;
-                let oldX = frameData.editorData.frames[0].x;
-                let oldY = frameData.editorData.frames[0].y;
+                const newX = (targetX - this._graphCanvas.x - GraphEditor.NodeWidth) / this._graphCanvas.zoom;
+                const newY = (targetY - this._graphCanvas.y - 20) / this._graphCanvas.zoom;
+                const oldX = frameData.editorData.frames[0].x;
+                const oldY = frameData.editorData.frames[0].y;
                 frameData.editorData.frames[0].x = newX;
                 frameData.editorData.frames[0].y = newY;
-                for (var location of frameData.editorData.locations) {
+                for (const location of frameData.editorData.locations) {
                     location.x += newX - oldX;
                     location.y += newY - oldY;
                 }
@@ -651,7 +653,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
             if (block.isUnique) {
                 const className = block.getClassName();
-                for (var other of this._blocks) {
+                for (const other of this._blocks) {
                     if (other !== block && other.getClassName() === className) {
                         this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers(`You can only have one ${className} per graph`);
                         return;
@@ -684,16 +686,16 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
         this.props.globalState.onSelectionChangedObservable.notifyObservers({ selection: newNode });
 
-        let block = newNode.block;
+        const block = newNode.block;
 
         x -= GraphEditor.NodeWidth + 150;
 
         block.inputs.forEach((connection) => {
             if (connection.connectedPoint) {
-                var existingNodes = this._graphCanvas.nodes.filter((n) => {
+                const existingNodes = this._graphCanvas.nodes.filter((n) => {
                     return n.block === (connection as any).connectedPoint.ownerBlock;
                 });
-                let connectedNode = existingNodes[0];
+                const connectedNode = existingNodes[0];
 
                 if (connectedNode.x === 0 && connectedNode.y === 0) {
                     connectedNode.x = x / this._graphCanvas.zoom;
@@ -708,7 +710,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
     }
 
     dropNewBlock(event: React.DragEvent<HTMLDivElement>) {
-        var data = event.dataTransfer.getData("babylonjs-material-node") as string;
+        const data = event.dataTransfer.getData("babylonjs-material-node") as string;
 
         this.emitNewBlock(data, event.clientX - this._diagramContainer.offsetLeft, event.clientY - this._diagramContainer.offsetTop);
     }
@@ -773,7 +775,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             left: (this.props.globalState.hostWindow.innerWidth - height) / 2 + window.screenX,
         };
 
-        var windowCreationOptions = Object.keys(windowCreationOptionsList)
+        const windowCreationOptions = Object.keys(windowCreationOptionsList)
             .map((key) => key + "=" + (windowCreationOptionsList as any)[key])
             .join(",");
 
@@ -790,7 +792,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         parentDocument.body.style.margin = "0";
         parentDocument.body.style.padding = "0";
 
-        let parentControl = parentDocument.createElement("div");
+        const parentControl = parentDocument.createElement("div");
         parentControl.style.width = "100%";
         parentControl.style.height = "100%";
         parentControl.style.margin = "0";

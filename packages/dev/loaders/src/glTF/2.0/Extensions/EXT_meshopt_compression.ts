@@ -30,7 +30,10 @@ export class EXT_meshopt_compression implements IGLTFLoaderExtension {
 
     private _loader: GLTFLoader;
 
-    /** @hidden */
+    /**
+     * @param loader
+     * @hidden
+     */
     constructor(loader: GLTFLoader) {
         this.enabled = loader.isExtensionUsed(NAME);
         this._loader = loader;
@@ -41,7 +44,11 @@ export class EXT_meshopt_compression implements IGLTFLoaderExtension {
         (this._loader as any) = null;
     }
 
-    /** @hidden */
+    /**
+     * @param context
+     * @param bufferView
+     * @hidden
+     */
     public loadBufferViewAsync(context: string, bufferView: IBufferView): Nullable<Promise<ArrayBufferView>> {
         return GLTFLoader.LoadExtensionAsync<IEXTMeshoptCompression, ArrayBufferView>(context, bufferView, this.name, (extensionContext, extension) => {
             const bufferViewMeshopt = bufferView as IBufferViewMeshopt;

@@ -164,8 +164,8 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
                             return true;
                         }
 
-                        let p0p1 = TmpVectors.Vector3[0];
-                        let p1p2 = TmpVectors.Vector3[1];
+                        const p0p1 = TmpVectors.Vector3[0];
+                        const p1p2 = TmpVectors.Vector3[1];
                         let normal = TmpVectors.Vector3[2];
 
                         p1.subtractToRef(p0, p0p1);
@@ -180,8 +180,8 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
                 // Pick light gizmos first
                 if (this.props.globalState.lightGizmos.length > 0) {
                     var gizmoScene = this.props.globalState.lightGizmos[0].gizmoLayer.utilityLayerScene;
-                    let pickInfo = gizmoScene.pick(pickPosition.x, pickPosition.y, (m: any) => {
-                        for (var g of this.props.globalState.lightGizmos as any) {
+                    const pickInfo = gizmoScene.pick(pickPosition.x, pickPosition.y, (m: any) => {
+                        for (const g of this.props.globalState.lightGizmos as any) {
                             if (g.attachedNode == m) {
                                 return true;
                             }
@@ -196,8 +196,8 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
                 // Pick camera gizmos
                 if (this.props.globalState.cameraGizmos.length > 0) {
                     var gizmoScene = this.props.globalState.cameraGizmos[0].gizmoLayer.utilityLayerScene;
-                    let pickInfo = gizmoScene.pick(pickPosition.x, pickPosition.y, (m: any) => {
-                        for (var g of this.props.globalState.cameraGizmos as any) {
+                    const pickInfo = gizmoScene.pick(pickPosition.x, pickPosition.y, (m: any) => {
+                        for (const g of this.props.globalState.cameraGizmos as any) {
                             if (g.attachedNode == m) {
                                 return true;
                             }
@@ -239,12 +239,12 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
         this._gizmoLayerOnPointerObserver = UtilityLayerRenderer.DefaultUtilityLayer.utilityLayerScene.onPointerObservable.add((pointerInfo) => {
             if (pointerInfo.type == PointerEventTypes.POINTERDOWN) {
                 if (pointerInfo.pickInfo && pointerInfo.pickInfo.pickedMesh) {
-                    var node: Nullable<any> = pointerInfo.pickInfo.pickedMesh;
+                    let node: Nullable<any> = pointerInfo.pickInfo.pickedMesh;
                     // Attach to the most parent node
                     while (node && node.parent != null) {
                         node = node.parent;
                     }
-                    for (var gizmo of this.props.globalState.lightGizmos) {
+                    for (const gizmo of this.props.globalState.lightGizmos) {
                         if (gizmo._rootMesh == node) {
                             manager.attachToNode(gizmo.attachedNode);
                         }
@@ -270,10 +270,10 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
                         // Record movement for generating replay code
                         this._posDragEnd = manager.gizmos.positionGizmo!.onDragEndObservable.add(() => {
                             if (manager.gizmos.positionGizmo && manager.gizmos.positionGizmo.attachedNode) {
-                                var lightGizmo: Nullable<LightGizmo> = manager.gizmos.positionGizmo.attachedNode.reservedDataStore
+                                const lightGizmo: Nullable<LightGizmo> = manager.gizmos.positionGizmo.attachedNode.reservedDataStore
                                     ? manager.gizmos.positionGizmo.attachedNode.reservedDataStore.lightGizmo
                                     : null;
-                                var objLight: any = lightGizmo && lightGizmo.light ? lightGizmo.light : manager.gizmos.positionGizmo.attachedNode;
+                                const objLight: any = lightGizmo && lightGizmo.light ? lightGizmo.light : manager.gizmos.positionGizmo.attachedNode;
 
                                 if (objLight.position) {
                                     var e = new PropertyChangedEvent();
@@ -282,10 +282,10 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
                                     e.value = objLight.position;
                                     this.props.globalState.onPropertyChangedObservable.notifyObservers(e);
                                 } else {
-                                    var cameraGizmo: Nullable<CameraGizmo> = manager.gizmos.positionGizmo.attachedNode.reservedDataStore
+                                    const cameraGizmo: Nullable<CameraGizmo> = manager.gizmos.positionGizmo.attachedNode.reservedDataStore
                                         ? manager.gizmos.positionGizmo.attachedNode.reservedDataStore.cameraGizmo
                                         : null;
-                                    var objCamera: any = cameraGizmo && cameraGizmo.camera ? cameraGizmo.camera : manager.gizmos.positionGizmo.attachedNode;
+                                    const objCamera: any = cameraGizmo && cameraGizmo.camera ? cameraGizmo.camera : manager.gizmos.positionGizmo.attachedNode;
 
                                     if (objCamera.position) {
                                         var e = new PropertyChangedEvent();
@@ -306,14 +306,14 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
                         // Record movement for generating replay code
                         this._rotateDragEnd = manager.gizmos.rotationGizmo!.onDragEndObservable.add(() => {
                             if (manager.gizmos.rotationGizmo && manager.gizmos.rotationGizmo.attachedNode) {
-                                var lightGizmo: Nullable<LightGizmo> = manager.gizmos.rotationGizmo.attachedNode.reservedDataStore
+                                const lightGizmo: Nullable<LightGizmo> = manager.gizmos.rotationGizmo.attachedNode.reservedDataStore
                                     ? manager.gizmos.rotationGizmo.attachedNode.reservedDataStore.lightGizmo
                                     : null;
-                                var objLight: any = lightGizmo && lightGizmo.light ? lightGizmo.light : manager.gizmos.rotationGizmo.attachedNode;
-                                var cameraGizmo: Nullable<CameraGizmo> = manager.gizmos.rotationGizmo.attachedNode.reservedDataStore
+                                const objLight: any = lightGizmo && lightGizmo.light ? lightGizmo.light : manager.gizmos.rotationGizmo.attachedNode;
+                                const cameraGizmo: Nullable<CameraGizmo> = manager.gizmos.rotationGizmo.attachedNode.reservedDataStore
                                     ? manager.gizmos.rotationGizmo.attachedNode.reservedDataStore.cameraGizmo
                                     : null;
-                                var objCamera: any = cameraGizmo && cameraGizmo.camera ? cameraGizmo.camera : manager.gizmos.rotationGizmo.attachedNode;
+                                const objCamera: any = cameraGizmo && cameraGizmo.camera ? cameraGizmo.camera : manager.gizmos.rotationGizmo.attachedNode;
 
                                 if (objLight.rotationQuaternion) {
                                     var e = new PropertyChangedEvent();
@@ -357,13 +357,13 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
                         // Record movement for generating replay code
                         this._scaleDragEnd = manager.gizmos.scaleGizmo!.onDragEndObservable.add(() => {
                             if (manager.gizmos.scaleGizmo && manager.gizmos.scaleGizmo.attachedMesh) {
-                                var lightGizmo: Nullable<LightGizmo> = manager.gizmos.scaleGizmo.attachedMesh.reservedDataStore
+                                const lightGizmo: Nullable<LightGizmo> = manager.gizmos.scaleGizmo.attachedMesh.reservedDataStore
                                     ? manager.gizmos.scaleGizmo.attachedMesh.reservedDataStore.lightGizmo
                                     : null;
-                                var obj: any = lightGizmo && lightGizmo.light ? lightGizmo.light : manager.gizmos.scaleGizmo.attachedMesh;
+                                const obj: any = lightGizmo && lightGizmo.light ? lightGizmo.light : manager.gizmos.scaleGizmo.attachedMesh;
 
                                 if (obj.scaling) {
-                                    var e = new PropertyChangedEvent();
+                                    const e = new PropertyChangedEvent();
                                     e.object = obj;
                                     e.property = "scaling";
                                     e.value = obj.scaling;

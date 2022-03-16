@@ -50,9 +50,9 @@ export class SideBarComponent extends React.Component<ISideBarComponentProps, IS
 
             let index = -1;
             if (this.props.context.useTargetAnimations) {
-                let targetedAnimations = this.props.context.animations as TargetedAnimation[];
+                const targetedAnimations = this.props.context.animations as TargetedAnimation[];
 
-                for (var i = 0; i < targetedAnimations.length; i++) {
+                for (let i = 0; i < targetedAnimations.length; i++) {
                     if (targetedAnimations[i].animation === animationToDelete) {
                         index = i;
                         break;

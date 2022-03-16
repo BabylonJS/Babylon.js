@@ -33,12 +33,12 @@ export class CylinderPanel extends VolumeBasedPanel {
     }
 
     protected _mapGridNode(control: Control3D, nodePosition: Vector3) {
-        let mesh = control.mesh;
+        const mesh = control.mesh;
 
         if (!mesh) {
             return;
         }
-        let newPos = this._cylindricalMapping(nodePosition);
+        const newPos = this._cylindricalMapping(nodePosition);
         control.position = newPos;
 
         switch (this.orientation) {
@@ -57,9 +57,9 @@ export class CylinderPanel extends VolumeBasedPanel {
     }
 
     private _cylindricalMapping(source: Vector3) {
-        let newPos = new Vector3(0, source.y, this._radius);
+        const newPos = new Vector3(0, source.y, this._radius);
 
-        let yAngle = source.x / this._radius;
+        const yAngle = source.x / this._radius;
 
         Matrix.RotationYawPitchRollToRef(yAngle, 0, 0, TmpVectors.Matrix[0]);
 

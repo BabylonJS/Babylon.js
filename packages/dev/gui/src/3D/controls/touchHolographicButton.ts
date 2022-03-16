@@ -111,8 +111,8 @@ export class TouchHolographicButton extends TouchButton3D {
             const rightHandedScene = this._backPlate._scene.useRightHandedSystem;
             // Create tooltip with mesh and text
             this._tooltipMesh = CreatePlane("", { size: 1 }, this._backPlate._scene);
-            var tooltipBackground = CreatePlane("", { size: 1, sideOrientation: Mesh.DOUBLESIDE }, this._backPlate._scene);
-            var mat = new StandardMaterial("", this._backPlate._scene);
+            const tooltipBackground = CreatePlane("", { size: 1, sideOrientation: Mesh.DOUBLESIDE }, this._backPlate._scene);
+            const mat = new StandardMaterial("", this._backPlate._scene);
             mat.diffuseColor = Color3.FromHexString("#212121");
             tooltipBackground.material = mat;
             tooltipBackground.isPickable = false;
@@ -236,6 +236,7 @@ export class TouchHolographicButton extends TouchButton3D {
     /**
      * Creates a new button
      * @param name defines the control name
+     * @param shareMaterials
      */
     constructor(name?: string, shareMaterials = true) {
         super(name);
@@ -293,12 +294,12 @@ export class TouchHolographicButton extends TouchButton3D {
     private _rebuildContent(): void {
         this._disposeFacadeTexture();
 
-        let panel = new StackPanel();
+        const panel = new StackPanel();
         panel.isVertical = true;
 
         if (DomManagement.IsDocumentAvailable() && !!document.createElement) {
             if (this._imageUrl) {
-                let image = new Image();
+                const image = new Image();
                 image.source = this._imageUrl;
                 image.paddingTop = "40px";
                 image.height = "180px";
@@ -309,7 +310,7 @@ export class TouchHolographicButton extends TouchButton3D {
         }
 
         if (this._text) {
-            let text = new TextBlock();
+            const text = new TextBlock();
             text.text = this._text;
             text.color = "white";
             text.height = "30px";
@@ -338,7 +339,7 @@ export class TouchHolographicButton extends TouchButton3D {
         collisionMesh.position = Vector3.Forward(scene.useRightHandedSystem).scale(-this._frontPlateDepth / 2);
 
         SceneLoader.ImportMeshAsync(undefined, TouchHolographicButton.MODEL_BASE_URL, TouchHolographicButton.MODEL_FILENAME, scene).then((result) => {
-            let alphaMesh = CreateBox(
+            const alphaMesh = CreateBox(
                 "${this.name}_alphaMesh",
                 {
                     width: 1.0,
@@ -351,13 +352,13 @@ export class TouchHolographicButton extends TouchButton3D {
             alphaMesh.material = new StandardMaterial("${this.name}_alphaMesh_material", scene);
             alphaMesh.material.alpha = 0.15;
 
-            var importedFrontPlate = result.meshes[1];
+            const importedFrontPlate = result.meshes[1];
             importedFrontPlate.name = `${this.name}_frontPlate`;
             importedFrontPlate.isPickable = false;
             importedFrontPlate.scaling.z = this._frontPlateDepth;
             alphaMesh.parent = importedFrontPlate;
             importedFrontPlate.parent = collisionMesh;
-            if (!!this._frontMaterial) {
+            if (this._frontMaterial) {
                 importedFrontPlate.material = this._frontMaterial;
             }
             this._frontPlate = importedFrontPlate;
@@ -384,7 +385,7 @@ export class TouchHolographicButton extends TouchButton3D {
         this._backPlate.addChild(collisionMesh);
         this._backPlate.addChild(this._textPlate);
 
-        let tn = new TransformNode(`{this.name}_root`, scene);
+        const tn = new TransformNode(`{this.name}_root`, scene);
         this._backPlate.setParent(tn);
 
         this.collisionMesh = collisionMesh;
@@ -456,7 +457,7 @@ export class TouchHolographicButton extends TouchButton3D {
         if (!this._isBackplateVisible) {
             this._backPlate.visibility = 0;
         }
-        if (!!this._frontPlate) {
+        if (this._frontPlate) {
             this._frontPlate.material = this._frontMaterial;
         }
 

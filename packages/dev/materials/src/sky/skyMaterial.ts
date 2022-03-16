@@ -179,8 +179,8 @@ export class SkyMaterial extends PushMaterial {
             subMesh.materialDefines = new SkyMaterialDefines();
         }
 
-        var defines = <SkyMaterialDefines>subMesh.materialDefines;
-        var scene = this.getScene();
+        const defines = <SkyMaterialDefines>subMesh.materialDefines;
+        const scene = this.getScene();
 
         if (this._isReadyForSubMesh(subMesh)) {
             return true;
@@ -202,7 +202,7 @@ export class SkyMaterial extends PushMaterial {
             scene.resetCachedMaterial();
 
             // Fallbacks
-            var fallbacks = new EffectFallbacks();
+            const fallbacks = new EffectFallbacks();
             if (defines.FOG) {
                 fallbacks.addFallback(1, "FOG");
             }
@@ -210,15 +210,15 @@ export class SkyMaterial extends PushMaterial {
             defines.IMAGEPROCESSINGPOSTPROCESS = scene.imageProcessingConfiguration.applyByPostProcess;
 
             //Attributes
-            var attribs = [VertexBuffer.PositionKind];
+            const attribs = [VertexBuffer.PositionKind];
 
             if (defines.VERTEXCOLOR) {
                 attribs.push(VertexBuffer.ColorKind);
             }
 
-            var shaderName = "sky";
+            const shaderName = "sky";
 
-            var join = defines.toString();
+            const join = defines.toString();
             subMesh.setEffect(
                 scene
                     .getEngine()
@@ -276,14 +276,14 @@ export class SkyMaterial extends PushMaterial {
      * @param subMesh defines the submesh to bind the material to
      */
     public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
-        var scene = this.getScene();
+        const scene = this.getScene();
 
-        var defines = <SkyMaterialDefines>subMesh.materialDefines;
+        const defines = <SkyMaterialDefines>subMesh.materialDefines;
         if (!defines) {
             return;
         }
 
-        var effect = subMesh.effect;
+        const effect = subMesh.effect;
         if (!effect) {
             return;
         }
@@ -311,9 +311,9 @@ export class SkyMaterial extends PushMaterial {
         MaterialHelper.BindFogParameters(scene, mesh, this._activeEffect);
 
         // Sky
-        var camera = scene.activeCamera;
+        const camera = scene.activeCamera;
         if (camera) {
-            var cameraWorldMatrix = camera.getWorldMatrix();
+            const cameraWorldMatrix = camera.getWorldMatrix();
             this._cameraPosition.x = cameraWorldMatrix.m[12];
             this._cameraPosition.y = cameraWorldMatrix.m[13];
             this._cameraPosition.z = cameraWorldMatrix.m[14];
@@ -334,8 +334,8 @@ export class SkyMaterial extends PushMaterial {
         this._activeEffect.setFloat("mieDirectionalG", this.mieDirectionalG);
 
         if (!this.useSunPosition) {
-            var theta = Math.PI * (this.inclination - 0.5);
-            var phi = 2 * Math.PI * (this.azimuth - 0.5);
+            const theta = Math.PI * (this.inclination - 0.5);
+            const phi = 2 * Math.PI * (this.azimuth - 0.5);
 
             this.sunPosition.x = this.distance * Math.cos(phi) * Math.cos(theta);
             this.sunPosition.y = this.distance * Math.sin(-theta);
@@ -380,7 +380,7 @@ export class SkyMaterial extends PushMaterial {
      * @returns the serialized material object
      */
     public serialize(): any {
-        var serializationObject = super.serialize();
+        const serializationObject = super.serialize();
         serializationObject.customType = "BABYLON.SkyMaterial";
         return serializationObject;
     }

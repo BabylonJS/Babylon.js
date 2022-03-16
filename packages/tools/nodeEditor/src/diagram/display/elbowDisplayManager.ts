@@ -17,7 +17,7 @@ export class ElbowDisplayManager implements IDisplayManager {
     }
 
     public getBackgroundColor(block: NodeMaterialBlock): string {
-        let elbowBlock = block as ElbowBlock;
+        const elbowBlock = block as ElbowBlock;
 
         return BlockTools.GetColorFromConnectionNodeType(elbowBlock.input.type);
     }

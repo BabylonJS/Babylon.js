@@ -93,7 +93,7 @@ export class ScrollViewer extends Rectangle {
     }
 
     public _flagDescendantsAsMatrixDirty(): void {
-        for (var child of this._children) {
+        for (const child of this._children) {
             child._markMatrixAsDirty();
         }
     }
@@ -168,6 +168,7 @@ export class ScrollViewer extends Rectangle {
     /**
      * Creates a new ScrollViewer
      * @param name of ScrollViewer
+     * @param isImageBased
      */
     constructor(name?: string, isImageBased?: boolean) {
         super(name);
@@ -245,7 +246,7 @@ export class ScrollViewer extends Rectangle {
     }
 
     private _buildClientSizes() {
-        let ratio = this.host.idealRatio;
+        const ratio = this.host.idealRatio;
 
         this._window.parentClientWidth = this._currentMeasure.width - (this._verticalBar.isVisible || this.forceVerticalBar ? this._barSize * ratio : 0) - 2 * this.thickness;
         this._window.parentClientHeight = this._currentMeasure.height - (this._horizontalBar.isVisible || this.forceHorizontalBar ? this._barSize * ratio : 0) - 2 * this.thickness;
@@ -331,8 +332,8 @@ export class ScrollViewer extends Rectangle {
         }
 
         this._barImage = value;
-        let hb = <ImageScrollBar>this._horizontalBar;
-        let vb = <ImageScrollBar>this._verticalBar;
+        const hb = <ImageScrollBar>this._horizontalBar;
+        const vb = <ImageScrollBar>this._verticalBar;
         hb.thumbImage = value;
         vb.thumbImage = value;
     }
@@ -348,7 +349,7 @@ export class ScrollViewer extends Rectangle {
         }
 
         this._horizontalBarImage = value;
-        let hb = <ImageScrollBar>this._horizontalBar;
+        const hb = <ImageScrollBar>this._horizontalBar;
         hb.thumbImage = value;
     }
 
@@ -363,7 +364,7 @@ export class ScrollViewer extends Rectangle {
         }
 
         this._verticalBarImage = value;
-        let vb = <ImageScrollBar>this._verticalBar;
+        const vb = <ImageScrollBar>this._verticalBar;
         vb.thumbImage = value;
     }
 
@@ -404,8 +405,8 @@ export class ScrollViewer extends Rectangle {
             value = 1;
         }
         this._thumbLength = value;
-        var hb = <ImageScrollBar>this._horizontalBar;
-        var vb = <ImageScrollBar>this._verticalBar;
+        const hb = <ImageScrollBar>this._horizontalBar;
+        const vb = <ImageScrollBar>this._verticalBar;
         hb.thumbLength = value;
         vb.thumbLength = value;
         this._markAsDirty();
@@ -427,8 +428,8 @@ export class ScrollViewer extends Rectangle {
             value = 1;
         }
         this._thumbHeight = value;
-        var hb = <ImageScrollBar>this._horizontalBar;
-        var vb = <ImageScrollBar>this._verticalBar;
+        const hb = <ImageScrollBar>this._horizontalBar;
+        const vb = <ImageScrollBar>this._verticalBar;
         hb.thumbHeight = value;
         vb.thumbHeight = value;
         this._markAsDirty();
@@ -450,8 +451,8 @@ export class ScrollViewer extends Rectangle {
             value = 1;
         }
         this._barImageHeight = value;
-        var hb = <ImageScrollBar>this._horizontalBar;
-        var vb = <ImageScrollBar>this._verticalBar;
+        const hb = <ImageScrollBar>this._horizontalBar;
+        const vb = <ImageScrollBar>this._verticalBar;
         hb.barImageHeight = value;
         vb.barImageHeight = value;
         this._markAsDirty();
@@ -473,7 +474,7 @@ export class ScrollViewer extends Rectangle {
             value = 1;
         }
         this._horizontalBarImageHeight = value;
-        var hb = <ImageScrollBar>this._horizontalBar;
+        const hb = <ImageScrollBar>this._horizontalBar;
         hb.barImageHeight = value;
         this._markAsDirty();
     }
@@ -494,7 +495,7 @@ export class ScrollViewer extends Rectangle {
             value = 1;
         }
         this._verticalBarImageHeight = value;
-        var vb = <ImageScrollBar>this._verticalBar;
+        const vb = <ImageScrollBar>this._verticalBar;
         vb.barImageHeight = value;
         this._markAsDirty();
     }
@@ -510,8 +511,8 @@ export class ScrollViewer extends Rectangle {
         }
 
         this._barBackground = color;
-        let hb = <ScrollBar>this._horizontalBar;
-        let vb = <ScrollBar>this._verticalBar;
+        const hb = <ScrollBar>this._horizontalBar;
+        const vb = <ScrollBar>this._verticalBar;
         hb.background = color;
         vb.background = color;
         this._dragSpace.background = color;
@@ -527,8 +528,8 @@ export class ScrollViewer extends Rectangle {
         }
 
         this._barBackgroundImage = value;
-        let hb = <ImageScrollBar>this._horizontalBar;
-        let vb = <ImageScrollBar>this._verticalBar;
+        const hb = <ImageScrollBar>this._horizontalBar;
+        const vb = <ImageScrollBar>this._verticalBar;
         hb.backgroundImage = value;
         vb.backgroundImage = value;
     }
@@ -543,7 +544,7 @@ export class ScrollViewer extends Rectangle {
         }
 
         this._horizontalBarBackgroundImage = value;
-        let hb = <ImageScrollBar>this._horizontalBar;
+        const hb = <ImageScrollBar>this._horizontalBar;
         hb.backgroundImage = value;
     }
 
@@ -557,14 +558,14 @@ export class ScrollViewer extends Rectangle {
         }
 
         this._verticalBarBackgroundImage = value;
-        let vb = <ImageScrollBar>this._verticalBar;
+        const vb = <ImageScrollBar>this._verticalBar;
         vb.backgroundImage = value;
     }
 
     private _setWindowPosition(force = true): void {
-        let ratio = this.host.idealRatio;
-        let windowContentsWidth = this._window._currentMeasure.width;
-        let windowContentsHeight = this._window._currentMeasure.height;
+        const ratio = this.host.idealRatio;
+        const windowContentsWidth = this._window._currentMeasure.width;
+        const windowContentsHeight = this._window._currentMeasure.height;
 
         if (!force && this._oldWindowContentsWidth === windowContentsWidth && this._oldWindowContentsHeight === windowContentsHeight) {
             return;
@@ -596,8 +597,8 @@ export class ScrollViewer extends Rectangle {
 
     /** @hidden */
     private _updateScroller(): void {
-        let windowContentsWidth = this._window._currentMeasure.width;
-        let windowContentsHeight = this._window._currentMeasure.height;
+        const windowContentsWidth = this._window._currentMeasure.width;
+        const windowContentsHeight = this._window._currentMeasure.height;
 
         if (this._horizontalBar.isVisible && windowContentsWidth <= this._clientWidth && !this.forceHorizontalBar) {
             this._grid.setRowDefinition(1, 0, true);
@@ -623,7 +624,7 @@ export class ScrollViewer extends Rectangle {
 
         this._buildClientSizes();
 
-        let ratio = this.host.idealRatio;
+        const ratio = this.host.idealRatio;
 
         this._horizontalBar.thumbWidth = this._thumbLength * 0.9 * (this._clientWidth / ratio) + "px";
         this._verticalBar.thumbWidth = this._thumbLength * 0.9 * (this._clientHeight / ratio) + "px";
@@ -635,7 +636,13 @@ export class ScrollViewer extends Rectangle {
         this._attachWheel();
     }
 
-    /** @hidden */
+    /**
+     * @param barControl
+     * @param barContainer
+     * @param isVertical
+     * @param rotation
+     * @hidden
+     */
     private _addBar(barControl: ScrollBar | ImageScrollBar, barContainer: Rectangle, isVertical: boolean, rotation: number) {
         barControl.paddingLeft = 0;
         barControl.width = "100%";

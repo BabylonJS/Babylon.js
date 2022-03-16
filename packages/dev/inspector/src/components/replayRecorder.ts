@@ -25,7 +25,7 @@ export class ReplayRecorder {
     }
 
     public export() {
-        let content = JSON.stringify(this._sceneRecorder.getDelta());
+        const content = JSON.stringify(this._sceneRecorder.getDelta());
 
         Tools.Download(new Blob([content]), "diff.json");
 

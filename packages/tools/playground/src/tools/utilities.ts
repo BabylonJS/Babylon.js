@@ -2,8 +2,8 @@ import { GlobalState } from "../globalState";
 
 export class Utilities {
     public static FastEval(code: string) {
-        var head = document.getElementsByTagName("head")[0];
-        var script = document.createElement("script");
+        const head = document.getElementsByTagName("head")[0];
+        const script = document.createElement("script");
         script.setAttribute("type", "text/javascript");
 
         script.innerHTML = `try {${code};}
@@ -15,11 +15,11 @@ export class Utilities {
     }
 
     public static ParseQuery() {
-        let queryString = location.search;
-        var query: any = {};
-        var pairs = (queryString[0] === "?" ? queryString.substr(1) : queryString).split("&");
-        for (var i = 0; i < pairs.length; i++) {
-            var pair = pairs[i].split("=");
+        const queryString = location.search;
+        const query: any = {};
+        const pairs = (queryString[0] === "?" ? queryString.substr(1) : queryString).split("&");
+        for (let i = 0; i < pairs.length; i++) {
+            const pair = pairs[i].split("=");
             query[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1] || "");
         }
         return query;

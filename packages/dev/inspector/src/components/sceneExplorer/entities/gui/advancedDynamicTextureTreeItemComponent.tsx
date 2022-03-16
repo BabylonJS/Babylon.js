@@ -29,7 +29,7 @@ export class AdvancedDynamicTextureTreeItemComponent extends React.Component<IAd
     }
 
     componentWillUnmount() {
-        let adt = this.props.texture;
+        const adt = this.props.texture;
 
         if (this._onControlPickedObserver) {
             adt.onControlPickedObservable.remove(this._onControlPickedObserver);
@@ -38,7 +38,7 @@ export class AdvancedDynamicTextureTreeItemComponent extends React.Component<IAd
     }
 
     onPickingMode() {
-        let adt = this.props.texture;
+        const adt = this.props.texture;
 
         if (this._onControlPickedObserver) {
             adt.onControlPickedObservable.remove(this._onControlPickedObserver);

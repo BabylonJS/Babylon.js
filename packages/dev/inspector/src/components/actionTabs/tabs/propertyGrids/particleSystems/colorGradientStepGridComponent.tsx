@@ -74,7 +74,7 @@ export class ColorGradientStepGridComponent extends React.Component<IColorGradie
     }
 
     render() {
-        let gradient = this.props.gradient;
+        const gradient = this.props.gradient;
 
         return (
             <div className="gradient-step">

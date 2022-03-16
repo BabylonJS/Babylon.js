@@ -7,7 +7,7 @@ export class Popup {
             left: (window.innerWidth - height) / 2 + window.screenX,
         };
 
-        var windowCreationOptions = Object.keys(windowCreationOptionsList)
+        const windowCreationOptions = Object.keys(windowCreationOptionsList)
             .map((key) => key + "=" + (windowCreationOptionsList as any)[key])
             .join(",");
 
@@ -31,7 +31,7 @@ export class Popup {
         parentDocument.body.style.margin = "0";
         parentDocument.body.style.padding = "0";
 
-        let parentControl = parentDocument.createElement("div");
+        const parentControl = parentDocument.createElement("div");
         parentControl.style.width = "100%";
         parentControl.style.height = "100%";
         parentControl.style.margin = "0";
@@ -50,14 +50,14 @@ export class Popup {
     }
 
     public static _CopyStyles(sourceDoc: HTMLDocument, targetDoc: HTMLDocument) {
-        for (var index = 0; index < sourceDoc.styleSheets.length; index++) {
-            var styleSheet: any = sourceDoc.styleSheets[index];
+        for (let index = 0; index < sourceDoc.styleSheets.length; index++) {
+            const styleSheet: any = sourceDoc.styleSheets[index];
             try {
                 if (styleSheet.cssRules) {
                     // for <style> elements
                     const newStyleEl = sourceDoc.createElement("style");
 
-                    for (var cssRule of styleSheet.cssRules) {
+                    for (const cssRule of styleSheet.cssRules) {
                         // write the text of each rule into the body of the style element
                         newStyleEl.appendChild(sourceDoc.createTextNode(cssRule.cssText));
                     }

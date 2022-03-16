@@ -1,10 +1,10 @@
-import { IMaterial } from "babylonjs-gltf2interface";
+import { IMaterial , IKHRMaterialsClearcoat } from "babylonjs-gltf2interface";
 import { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
 import { _Exporter } from "../glTFExporter";
 import { Material } from "core/Materials/material";
 import { PBRBaseMaterial } from "core/Materials/PBR/pbrBaseMaterial";
 import { BaseTexture } from "core/Materials/Textures/baseTexture";
-import { IKHRMaterialsClearcoat } from "babylonjs-gltf2interface";
+
 import { Tools } from "core/Misc/tools";
 
 const NAME = "KHR_materials_clearcoat";

@@ -35,7 +35,7 @@ export class InputsPropertyTabComponent extends React.Component<IInputsPropertyT
     renderInputBlock(block: InputBlock) {
         switch (block.type) {
             case NodeMaterialBlockConnectionPointTypes.Float:
-                let cantDisplaySlider = isNaN(block.min) || isNaN(block.max) || block.min === block.max;
+                const cantDisplaySlider = isNaN(block.min) || isNaN(block.max) || block.min === block.max;
                 return (
                     <div key={block.uniqueId}>
                         {block.isBoolean && (

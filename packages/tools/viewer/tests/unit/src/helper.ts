@@ -3,13 +3,13 @@ import { assert, expect, should } from "./viewerReference";
 import { mapperManager, ViewerConfiguration } from ".";
 import { camelToKebab, kebabToCamel, isUrl, extendClassWithConfig } from "../../../src/helper";
 
-export let name = "viewer helper tests";
+export const name = "viewer helper tests";
 
 describe("viewer helper", () => {
     it("should convert camelCase to kebab-case and back", (done) => {
-        let camelString = "oneTestTwoTestThreeTest";
+        const camelString = "oneTestTwoTestThreeTest";
 
-        let kebab = camelToKebab(camelString);
+        const kebab = camelToKebab(camelString);
 
         assert.equal(kebab, "one-test-two-test-three-test");
 
@@ -19,11 +19,11 @@ describe("viewer helper", () => {
     });
 
     it("should find absolute and relative http urls", (done) => {
-        let url = "http://test.url/?param=123";
-        let https = "https://https.url.to.check/";
-        let relativeUrl = "/url/to/find";
-        let notUrl = "not a url!";
-        let ftp = "ftp://test.ftp.server";
+        const url = "http://test.url/?param=123";
+        const https = "https://https.url.to.check/";
+        const relativeUrl = "/url/to/find";
+        const notUrl = "not a url!";
+        const ftp = "ftp://test.ftp.server";
 
         assert.isTrue(isUrl(url));
         assert.isTrue(isUrl(https));
@@ -35,9 +35,9 @@ describe("viewer helper", () => {
     });
 
     it("should extend objects correctly", (done) => {
-        let finalKey = Math.random();
+        const finalKey = Math.random();
 
-        let toAugoment: any = {
+        const toAugoment: any = {
             definedKey: Math.random(),
             color: {
                 r: 0,
@@ -46,7 +46,7 @@ describe("viewer helper", () => {
             test: function () {},
         };
 
-        let augmentation: any = {
+        const augmentation: any = {
             definedKey: finalKey,
             color: {
                 r: finalKey,

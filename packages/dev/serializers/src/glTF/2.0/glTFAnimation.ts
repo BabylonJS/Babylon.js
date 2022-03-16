@@ -192,7 +192,7 @@ export class _GLTFAnimation {
         let animationChannelTargetPath: Nullable<AnimationChannelTargetPath> = null;
         let dataAccessorType = AccessorType.VEC3;
         let useQuaternion: boolean = false;
-        let property = animation.targetProperty.split(".");
+        const property = animation.targetProperty.split(".");
         switch (property[0]) {
             case "scaling": {
                 animationChannelTargetPath = AnimationChannelTargetPath.SCALE;
@@ -259,8 +259,8 @@ export class _GLTFAnimation {
         let glTFAnimation: IAnimation;
         if (babylonNode instanceof TransformNode) {
             if (babylonNode.animations) {
-                for (let animation of babylonNode.animations) {
-                    let animationInfo = _GLTFAnimation._DeduceAnimationInfo(animation);
+                for (const animation of babylonNode.animations) {
+                    const animationInfo = _GLTFAnimation._DeduceAnimationInfo(animation);
                     if (animationInfo) {
                         glTFAnimation = {
                             name: animation.name,
@@ -336,7 +336,7 @@ export class _GLTFAnimation {
                         const animationKeys = animation.getKeys();
 
                         for (let j = 0; j < animationKeys.length; ++j) {
-                            let animationKey = animationKeys[j];
+                            const animationKey = animationKeys[j];
                             for (let k = 0; k < morphTargetManager.numTargets; ++k) {
                                 if (k == i) {
                                     combinedAnimationKeys.push(animationKey);
@@ -406,7 +406,7 @@ export class _GLTFAnimation {
         let glTFAnimation: IAnimation;
         if (babylonScene.animationGroups) {
             const animationGroups = babylonScene.animationGroups;
-            for (let animationGroup of animationGroups) {
+            for (const animationGroup of animationGroups) {
                 const morphAnimations: Map<Mesh, Map<MorphTarget, Animation>> = new Map();
                 const sampleAnimations: Map<Mesh, Animation> = new Map();
                 const morphAnimationMeshes: Set<Mesh> = new Set();
@@ -585,7 +585,7 @@ export class _GLTFAnimation {
             if (morphAnimationChannels) {
                 let index = 0;
                 let currentInput: number = 0;
-                let newInputs: number[] = [];
+                const newInputs: number[] = [];
                 while (animationData.inputs.length > 0) {
                     currentInput = animationData.inputs.shift()!;
                     if (index % morphAnimationChannels == 0) {
@@ -596,7 +596,7 @@ export class _GLTFAnimation {
                 animationData.inputs = newInputs;
             }
 
-            let nodeIndex = nodeMap[babylonTransformNode.uniqueId];
+            const nodeIndex = nodeMap[babylonTransformNode.uniqueId];
 
             // Creates buffer view and accessor for key frames.
             let byteLength = animationData.inputs.length * 4;
@@ -665,9 +665,13 @@ export class _GLTFAnimation {
      * @param minFrame minimum animation frame
      * @param maxFrame maximum animation frame
      * @param fps frames per second of the animation
+     * @param sampleRate
      * @param inputs input key frames of the animation
      * @param outputs output key frame data of the animation
+     * @param minMaxFrames
+     * @param minMaxFrames.min
      * @param convertToRightHandedSystem converts the values to right-handed
+     * @param minMaxFrames.max
      * @param useQuaternion specifies if quaternions should be used
      */
     private static _CreateBakedAnimation(
@@ -685,7 +689,7 @@ export class _GLTFAnimation {
         useQuaternion: boolean
     ) {
         let value: number | Vector3 | Quaternion;
-        let quaternionCache: Quaternion = Quaternion.Identity();
+        const quaternionCache: Quaternion = Quaternion.Identity();
         let previousTime: Nullable<number> = null;
         let time: number;
         let maxUsedFrame: Nullable<number> = null;
@@ -695,7 +699,7 @@ export class _GLTFAnimation {
         let endFrame: Nullable<number> = null;
         minMaxFrames.min = Tools.FloatRound(minFrame / fps);
 
-        let keyFrames = animation.getKeys();
+        const keyFrames = animation.getKeys();
 
         for (let i = 0, length = keyFrames.length; i < length; ++i) {
             endFrame = null;
@@ -730,7 +734,7 @@ export class _GLTFAnimation {
                     }
                     previousTime = time;
                     maxUsedFrame = time;
-                    let state = {
+                    const state = {
                         key: 0,
                         repeatCount: 0,
                         loopMode: animation.loopMode,
@@ -888,7 +892,7 @@ export class _GLTFAnimation {
         convertToRightHandedSystem: boolean,
         useQuaternion: boolean
     ) {
-        for (let keyFrame of animation.getKeys()) {
+        for (const keyFrame of animation.getKeys()) {
             inputs.push(keyFrame.frame / animation.framePerSecond); // keyframes in seconds.
             _GLTFAnimation._AddKeyframeValue(keyFrame, animation, outputs, animationChannelTargetPath, babylonTransformNode, convertToRightHandedSystem, useQuaternion);
         }
@@ -987,6 +991,7 @@ export class _GLTFAnimation {
      * @param outputs
      * @param animationChannelTargetPath
      * @param basePositionRotationOrScale
+     * @param babylonTransformNode
      * @param convertToRightHandedSystem
      * @param useQuaternion
      */
@@ -1142,6 +1147,7 @@ export class _GLTFAnimation {
     /**
      * Adds an input tangent or output tangent to the output data
      * If an input tangent or output tangent is missing, it uses the zero vector or zero quaternion
+     * @param babylonTransformNode
      * @param tangentType Specifies which type of tangent to handle (inTangent or outTangent)
      * @param outputs The animation data by keyframe
      * @param animationChannelTargetPath The target animation channel
@@ -1163,7 +1169,7 @@ export class _GLTFAnimation {
         convertToRightHandedSystem: boolean
     ) {
         let tangent: number[];
-        let tangentValue: Vector3 | Quaternion | number = tangentType === _TangentType.INTANGENT ? keyFrame.inTangent : keyFrame.outTangent;
+        const tangentValue: Vector3 | Quaternion | number = tangentType === _TangentType.INTANGENT ? keyFrame.inTangent : keyFrame.outTangent;
         if (interpolation === AnimationSamplerInterpolation.CUBICSPLINE) {
             if (animationChannelTargetPath === AnimationChannelTargetPath.ROTATION) {
                 if (tangentValue) {

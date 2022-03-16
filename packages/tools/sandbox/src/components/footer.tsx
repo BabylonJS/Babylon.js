@@ -43,7 +43,7 @@ export class Footer extends React.Component<IFooterProps> {
     }
 
     switchCamera(name: string) {
-        let camera = this.props.globalState.currentScene!.getCameraByName(name);
+        const camera = this.props.globalState.currentScene!.getCameraByName(name);
 
         if (camera) {
             if (this.props.globalState.currentScene!.activeCamera) {
@@ -72,11 +72,11 @@ export class Footer extends React.Component<IFooterProps> {
         let switchVariant = (name: string, index: number) => {};
         const variantExtension = this._getVariantsExtension();
         if (variantExtension && this.props.globalState.currentScene) {
-            let scene = this.props.globalState.currentScene;
-            let rootNode = scene.getMeshByName("__root__") as Mesh;
+            const scene = this.props.globalState.currentScene;
+            const rootNode = scene.getMeshByName("__root__") as Mesh;
 
             if (rootNode) {
-                let variants: string[] = variantExtension.getAvailableVariants(rootNode);
+                const variants: string[] = variantExtension.getAvailableVariants(rootNode);
 
                 if (variants && variants.length > 0) {
                     hasVariants = true;
@@ -85,7 +85,7 @@ export class Footer extends React.Component<IFooterProps> {
                     variantNames = variants;
 
                     activeEntry = () => {
-                        let lastPickedVariant = variantExtension!.getLastSelectedVariant(rootNode) || 0;
+                        const lastPickedVariant = variantExtension!.getLastSelectedVariant(rootNode) || 0;
                         if (lastPickedVariant && Object.prototype.toString.call(lastPickedVariant) === "[object String]") {
                             return lastPickedVariant as string;
                         }

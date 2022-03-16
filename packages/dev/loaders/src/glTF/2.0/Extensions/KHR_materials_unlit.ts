@@ -30,7 +30,10 @@ export class KHR_materials_unlit implements IGLTFLoaderExtension {
 
     private _loader: GLTFLoader;
 
-    /** @hidden */
+    /**
+     * @param loader
+     * @hidden
+     */
     constructor(loader: GLTFLoader) {
         this._loader = loader;
         this.enabled = this._loader.isExtensionUsed(NAME);
@@ -41,7 +44,12 @@ export class KHR_materials_unlit implements IGLTFLoaderExtension {
         (this._loader as any) = null;
     }
 
-    /** @hidden */
+    /**
+     * @param context
+     * @param material
+     * @param babylonMaterial
+     * @hidden
+     */
     public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
         return GLTFLoader.LoadExtensionAsync(context, material, this.name, () => {
             return this._loadUnlitPropertiesAsync(context, material, babylonMaterial);

@@ -1,7 +1,7 @@
 import * as GLTF2 from "babylonjs-gltf2interface";
 import { Tools } from "core/Misc/tools";
 
-declare var GLTFValidator: GLTF2.IGLTFValidator;
+declare let GLTFValidator: GLTF2.IGLTFValidator;
 
 // WorkerGlobalScope
 declare function importScripts(...urls: string[]): void;

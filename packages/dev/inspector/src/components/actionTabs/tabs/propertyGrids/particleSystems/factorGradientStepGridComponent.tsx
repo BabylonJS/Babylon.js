@@ -41,7 +41,7 @@ export class FactorGradientStepGridComponent extends React.Component<IFactorGrad
             return;
         }
 
-        let valueAsNumber = parseFloat(valueString);
+        const valueAsNumber = parseFloat(valueString);
 
         this.setState({ factor1: valueString });
 
@@ -60,7 +60,7 @@ export class FactorGradientStepGridComponent extends React.Component<IFactorGrad
             return;
         }
 
-        let valueAsNumber = parseFloat(valueString);
+        const valueAsNumber = parseFloat(valueString);
 
         this.setState({ factor2: valueString });
 
@@ -99,7 +99,7 @@ export class FactorGradientStepGridComponent extends React.Component<IFactorGrad
     }
 
     render() {
-        let gradient = this.props.gradient;
+        const gradient = this.props.gradient;
 
         return (
             <div className="gradient-step">

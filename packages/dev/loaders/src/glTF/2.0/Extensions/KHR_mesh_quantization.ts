@@ -17,7 +17,10 @@ export class KHR_mesh_quantization implements IGLTFLoaderExtension {
      */
     public enabled: boolean;
 
-    /** @hidden */
+    /**
+     * @param loader
+     * @hidden
+     */
     constructor(loader: GLTFLoader) {
         this.enabled = loader.isExtensionUsed(NAME);
     }

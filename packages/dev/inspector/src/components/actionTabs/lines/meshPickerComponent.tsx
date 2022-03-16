@@ -21,10 +21,10 @@ export class MeshPickerComponent extends React.Component<IMeshPickerComponentPro
     }
 
     render() {
-        var meshEmitters = this.props.scene.meshes.filter((m) => !!m.name);
+        const meshEmitters = this.props.scene.meshes.filter((m) => !!m.name);
         meshEmitters.sort((a, b) => a.name.localeCompare(b.name));
 
-        var emitterOptions = [{ label: "None", value: -1 }];
+        const emitterOptions = [{ label: "None", value: -1 }];
 
         meshEmitters.sort((a, b) => a.name.localeCompare(b.name));
 
@@ -67,7 +67,7 @@ export class MeshPickerComponent extends React.Component<IMeshPickerComponentPro
                             return -1;
                         }
 
-                        let meshIndex = meshEmitters.indexOf(this.props.target[this.props.property] as AbstractMesh);
+                        const meshIndex = meshEmitters.indexOf(this.props.target[this.props.property] as AbstractMesh);
 
                         if (meshIndex > -1) {
                             return meshIndex;

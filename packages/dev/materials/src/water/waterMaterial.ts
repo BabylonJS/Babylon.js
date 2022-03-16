@@ -225,6 +225,9 @@ export class WaterMaterial extends PushMaterial {
 
     /**
      * Constructor
+     * @param name
+     * @param scene
+     * @param renderTargetSize
      */
     constructor(name: string, scene?: Scene, public renderTargetSize: Vector2 = new Vector2(512, 512)) {
         super(name, scene);
@@ -279,7 +282,7 @@ export class WaterMaterial extends PushMaterial {
     }
 
     public enableRenderTargets(enable: boolean): void {
-        var refreshRate = enable ? 1 : 0;
+        const refreshRate = enable ? 1 : 0;
 
         if (this._refractionRTT) {
             this._refractionRTT.refreshRate = refreshRate;
@@ -321,14 +324,14 @@ export class WaterMaterial extends PushMaterial {
             subMesh.materialDefines = new WaterMaterialDefines();
         }
 
-        var defines = <WaterMaterialDefines>subMesh.materialDefines;
-        var scene = this.getScene();
+        const defines = <WaterMaterialDefines>subMesh.materialDefines;
+        const scene = this.getScene();
 
         if (this._isReadyForSubMesh(subMesh)) {
             return true;
         }
 
-        var engine = scene.getEngine();
+        const engine = scene.getEngine();
 
         // Textures
         if (defines._areTexturesDirty) {
@@ -389,7 +392,7 @@ export class WaterMaterial extends PushMaterial {
         this._mesh = mesh;
 
         if (this._waitingRenderList) {
-            for (var i = 0; i < this._waitingRenderList.length; i++) {
+            for (let i = 0; i < this._waitingRenderList.length; i++) {
                 this.addToRenderList(scene.getNodeById(this._waitingRenderList[i]));
             }
 
@@ -402,7 +405,7 @@ export class WaterMaterial extends PushMaterial {
             scene.resetCachedMaterial();
 
             // Fallbacks
-            var fallbacks = new EffectFallbacks();
+            const fallbacks = new EffectFallbacks();
             if (defines.FOG) {
                 fallbacks.addFallback(1, "FOG");
             }
@@ -418,7 +421,7 @@ export class WaterMaterial extends PushMaterial {
             }
 
             //Attributes
-            var attribs = [VertexBuffer.PositionKind];
+            const attribs = [VertexBuffer.PositionKind];
 
             if (defines.NORMAL) {
                 attribs.push(VertexBuffer.NormalKind);
@@ -440,9 +443,9 @@ export class WaterMaterial extends PushMaterial {
             MaterialHelper.PrepareAttributesForInstances(attribs, defines);
 
             // Legacy browser patch
-            var shaderName = "water";
-            var join = defines.toString();
-            var uniforms = [
+            const shaderName = "water";
+            const join = defines.toString();
+            const uniforms = [
                 "world",
                 "view",
                 "viewProjection",
@@ -480,13 +483,13 @@ export class WaterMaterial extends PushMaterial {
                 "waveSpeed",
                 "waveCount",
             ];
-            var samplers = [
+            const samplers = [
                 "normalSampler",
                 // Water
                 "refractionSampler",
                 "reflectionSampler",
             ];
-            var uniformBuffers = new Array<string>();
+            const uniformBuffers = new Array<string>();
 
             if (ImageProcessingConfiguration) {
                 ImageProcessingConfiguration.PrepareUniforms(uniforms, defines);
@@ -531,14 +534,14 @@ export class WaterMaterial extends PushMaterial {
     }
 
     public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
-        var scene = this.getScene();
+        const scene = this.getScene();
 
-        var defines = <WaterMaterialDefines>subMesh.materialDefines;
+        const defines = <WaterMaterialDefines>subMesh.materialDefines;
         if (!defines) {
             return;
         }
 
-        var effect = subMesh.effect;
+        const effect = subMesh.effect;
         if (!effect || !this._mesh) {
             return;
         }
@@ -597,10 +600,10 @@ export class WaterMaterial extends PushMaterial {
             this._activeEffect.setTexture("reflectionSampler", this._reflectionRTT);
         }
 
-        var wrvp = this._mesh.getWorldMatrix().multiply(this._reflectionTransform).multiply(scene.getProjectionMatrix());
+        const wrvp = this._mesh.getWorldMatrix().multiply(this._reflectionTransform).multiply(scene.getProjectionMatrix());
 
         // Add delta time. Prevent adding delta time if it hasn't changed.
-        let deltaTime = scene.getEngine().getDeltaTime();
+        const deltaTime = scene.getEngine().getDeltaTime();
         if (deltaTime !== this._lastDeltaTime) {
             this._lastDeltaTime = deltaTime;
             this._lastTime += this._lastDeltaTime;
@@ -640,10 +643,10 @@ export class WaterMaterial extends PushMaterial {
         this._reflectionRTT.wrapV = Constants.TEXTURE_MIRROR_ADDRESSMODE;
         this._reflectionRTT.ignoreCameraViewport = true;
 
-        var isVisible: boolean;
-        var clipPlane: Nullable<Plane> = null;
-        var savedViewMatrix: Matrix;
-        var mirrorMatrix = Matrix.Zero();
+        let isVisible: boolean;
+        let clipPlane: Nullable<Plane> = null;
+        let savedViewMatrix: Matrix;
+        const mirrorMatrix = Matrix.Zero();
 
         this._refractionRTT.onBeforeRender = () => {
             if (this._mesh) {
@@ -655,7 +658,7 @@ export class WaterMaterial extends PushMaterial {
             if (!this.disableClipPlane) {
                 clipPlane = scene.clipPlane;
 
-                var positiony = this._mesh ? this._mesh.position.y : 0.0;
+                const positiony = this._mesh ? this._mesh.position.y : 0.0;
                 scene.clipPlane = Plane.FromPositionAndNormal(new Vector3(0, positiony + 0.05, 0), new Vector3(0, 1, 0));
             }
         };
@@ -681,7 +684,7 @@ export class WaterMaterial extends PushMaterial {
             if (!this.disableClipPlane) {
                 clipPlane = scene.clipPlane;
 
-                var positiony = this._mesh ? this._mesh.position.y : 0.0;
+                const positiony = this._mesh ? this._mesh.position.y : 0.0;
                 scene.clipPlane = Plane.FromPositionAndNormal(new Vector3(0, positiony - 0.05, 0), new Vector3(0, -1, 0));
 
                 Matrix.ReflectionToRef(scene.clipPlane, mirrorMatrix);
@@ -712,7 +715,7 @@ export class WaterMaterial extends PushMaterial {
     }
 
     public getAnimatables(): IAnimatable[] {
-        var results = [];
+        const results = [];
 
         if (this.bumpTexture && this.bumpTexture.animations && this.bumpTexture.animations.length > 0) {
             results.push(this.bumpTexture);
@@ -728,7 +731,7 @@ export class WaterMaterial extends PushMaterial {
     }
 
     public getActiveTextures(): BaseTexture[] {
-        var activeTextures = super.getActiveTextures();
+        const activeTextures = super.getActiveTextures();
 
         if (this._bumpTexture) {
             activeTextures.push(this._bumpTexture);
@@ -754,7 +757,7 @@ export class WaterMaterial extends PushMaterial {
             this.bumpTexture.dispose();
         }
 
-        var index = this.getScene().customRenderTargets.indexOf(<RenderTargetTexture>this._refractionRTT);
+        let index = this.getScene().customRenderTargets.indexOf(<RenderTargetTexture>this._refractionRTT);
         if (index != -1) {
             this.getScene().customRenderTargets.splice(index, 1);
         }
@@ -784,12 +787,12 @@ export class WaterMaterial extends PushMaterial {
     }
 
     public serialize(): any {
-        var serializationObject = super.serialize();
+        const serializationObject = super.serialize();
         serializationObject.customType = "BABYLON.WaterMaterial";
 
         serializationObject.renderList = [];
         if (this._refractionRTT && this._refractionRTT.renderList) {
-            for (var i = 0; i < this._refractionRTT.renderList.length; i++) {
+            for (let i = 0; i < this._refractionRTT.renderList.length; i++) {
                 serializationObject.renderList.push(this._refractionRTT.renderList[i].id);
             }
         }
@@ -803,14 +806,14 @@ export class WaterMaterial extends PushMaterial {
 
     // Statics
     public static Parse(source: any, scene: Scene, rootUrl: string): WaterMaterial {
-        var mat = SerializationHelper.Parse(() => new WaterMaterial(source.name, scene), source, scene, rootUrl);
+        const mat = SerializationHelper.Parse(() => new WaterMaterial(source.name, scene), source, scene, rootUrl);
         mat._waitingRenderList = source.renderList;
 
         return mat;
     }
 
     public static CreateDefaultMesh(name: string, scene: Scene): Mesh {
-        var mesh = CreateGround(name, { width: 512, height: 512, subdivisions: 32, updatable: false }, scene);
+        const mesh = CreateGround(name, { width: 512, height: 512, subdivisions: 32, updatable: false }, scene);
         return mesh;
     }
 }

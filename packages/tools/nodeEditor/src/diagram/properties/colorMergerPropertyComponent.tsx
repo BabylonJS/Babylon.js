@@ -11,9 +11,9 @@ export class ColorMergerPropertyTabComponent extends React.Component<IPropertyCo
     }
 
     render() {
-        let colorMergerBlock = this.props.block as ColorMergerBlock;
+        const colorMergerBlock = this.props.block as ColorMergerBlock;
 
-        var targetOptions: { label: string; value: string }[] = [
+        const targetOptions: { label: string; value: string }[] = [
             { label: "R", value: "r" },
             { label: "G", value: "g" },
             { label: "B", value: "b" },

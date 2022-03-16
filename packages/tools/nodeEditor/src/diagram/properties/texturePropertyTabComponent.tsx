@@ -33,14 +33,14 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
     constructor(props: IPropertyComponentProps) {
         super(props);
 
-        let texture = this.textureBlock.texture as BaseTexture;
+        const texture = this.textureBlock.texture as BaseTexture;
 
         this.state = { isEmbedded: !texture || texture.name.substring(0, 4) === "data", loadAsCubeTexture: texture && texture.isCube, textureIsPrefiltered: true };
     }
 
     UNSAFE_componentWillUpdate(nextProps: IPropertyComponentProps, nextState: { isEmbedded: boolean; loadAsCubeTexture: boolean }) {
         if (nextProps.block !== this.props.block) {
-            let texture = (nextProps.block as AnyTexture).texture as BaseTexture;
+            const texture = (nextProps.block as AnyTexture).texture as BaseTexture;
 
             nextState.isEmbedded = !texture || texture.name.substring(0, 4) === "data";
             nextState.loadAsCubeTexture = texture && texture.isCube;
@@ -49,7 +49,7 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
 
     private _generateRandomForCache() {
         return "xxxxxxxxxxxxxxxxxxxx".replace(/[x]/g, (c) => {
-            var r = (Math.random() * 10) | 0;
+            const r = (Math.random() * 10) | 0;
             return r.toString();
         });
     }
@@ -108,16 +108,16 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
     replaceTexture(file: File) {
         this._prepareTexture();
 
-        let texture = this.textureBlock.texture as BaseTexture;
+        const texture = this.textureBlock.texture as BaseTexture;
         Tools.ReadFile(
             file,
             (data) => {
-                var blob = new Blob([data], { type: "octet/stream" });
+                const blob = new Blob([data], { type: "octet/stream" });
 
-                var reader = new FileReader();
+                const reader = new FileReader();
                 reader.readAsDataURL(blob);
                 reader.onloadend = () => {
-                    let base64data = reader.result as string;
+                    const base64data = reader.result as string;
 
                     let extension: string | undefined = undefined;
                     if (file.name.toLowerCase().indexOf(".dds") > 0) {
@@ -140,7 +140,7 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
     replaceTextureWithUrl(url: string) {
         this._prepareTexture();
 
-        let texture = this.textureBlock.texture as BaseTexture;
+        const texture = this.textureBlock.texture as BaseTexture;
         if (texture.isCube || this.textureBlock instanceof ReflectionTextureBlock || this.textureBlock instanceof ReflectionBlock || this.textureBlock instanceof RefractionBlock) {
             let extension: string | undefined = undefined;
             if (url.toLowerCase().indexOf(".dds") > 0) {
@@ -158,19 +158,19 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
     render() {
         let url = "";
 
-        let texture = (this.textureBlock as TextureBlock).hasImageSource ? null : (this.textureBlock.texture as BaseTexture);
+        const texture = (this.textureBlock as TextureBlock).hasImageSource ? null : (this.textureBlock.texture as BaseTexture);
         if (texture && texture.name && texture.name.substring(0, 4) !== "data") {
             url = texture.name;
         }
 
         url = url.replace(/\?nocache=\d+/, "");
 
-        let isInReflectionMode =
+        const isInReflectionMode =
             this.textureBlock instanceof ReflectionTextureBlock || this.textureBlock instanceof ReflectionBlock || this.textureBlock instanceof RefractionBlock;
-        let isFrozenTexture = this.textureBlock instanceof CurrentScreenBlock || this.textureBlock instanceof ParticleTextureBlock;
-        let showIsInGammaSpace = this.textureBlock instanceof ReflectionBlock;
+        const isFrozenTexture = this.textureBlock instanceof CurrentScreenBlock || this.textureBlock instanceof ParticleTextureBlock;
+        const showIsInGammaSpace = this.textureBlock instanceof ReflectionBlock;
 
-        var reflectionModeOptions: { label: string; value: number }[] = [
+        const reflectionModeOptions: { label: string; value: number }[] = [
             {
                 label: "Cubic",
                 value: Texture.CUBIC_MODE,
@@ -209,7 +209,7 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
             },
         ];
 
-        var samplingMode = [
+        const samplingMode = [
             { label: "Nearest", value: Texture.NEAREST_NEAREST }, // 1
             { label: "Linear", value: Texture.LINEAR_LINEAR }, // 2
 

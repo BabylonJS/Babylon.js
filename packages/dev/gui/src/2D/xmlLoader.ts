@@ -62,8 +62,8 @@ export class XmlLoader {
 
     private _createGuiElement(node: any, parent: any, linkParent: boolean = true): void {
         try {
-            let className = GetClass("BABYLON.GUI." + node.nodeName);
-            let guiNode = new className();
+            const className = GetClass("BABYLON.GUI." + node.nodeName);
+            const guiNode = new className();
 
             if (parent && linkParent) {
                 parent.addControl(guiNode);
@@ -75,7 +75,7 @@ export class XmlLoader {
                 }
 
                 if (node.attributes[i].name.toLowerCase().includes("observable")) {
-                    let element = this._getChainElement(node.attributes[i].value);
+                    const element = this._getChainElement(node.attributes[i].value);
                     guiNode[node.attributes[i].name].add(element);
 
                     continue;
@@ -86,7 +86,7 @@ export class XmlLoader {
                         guiNode.linkWithMesh(window[node.attributes[i].value]);
                     }
                 } else if (node.attributes[i].value.startsWith("{{") && node.attributes[i].value.endsWith("}}")) {
-                    let element = this._getChainElement(node.attributes[i].value.substring(2, node.attributes[i].value.length - 2));
+                    const element = this._getChainElement(node.attributes[i].value.substring(2, node.attributes[i].value.length - 2));
                     guiNode[node.attributes[i].name] = element;
                 } else if (!this._objectAttributes[node.attributes[i].name]) {
                     if (node.attributes[i].value == "true" || node.attributes[i].value == "false") {
@@ -124,7 +124,7 @@ export class XmlLoader {
         let width;
         let height;
         let columns;
-        let rows = node.children;
+        const rows = node.children;
         let cells;
         let isPixel = false;
         let cellNode;
@@ -217,13 +217,13 @@ export class XmlLoader {
     }
 
     private _parseElementsFromSource(node: any, guiNode: any, parent: any): void {
-        let dataSource = node.attributes.getNamedItem("dataSource").value;
+        const dataSource = node.attributes.getNamedItem("dataSource").value;
 
         if (!dataSource.includes(" in ")) {
             throw "XmlLoader Exception : Malformed XML, Data Source must include an in";
         } else {
             let isArray = true;
-            let splittedSource = dataSource.split(" in ");
+            const splittedSource = dataSource.split(" in ");
             if (splittedSource.length < 2) {
                 throw "XmlLoader Exception : Malformed XML, Data Source must have an iterator and a source";
             }
@@ -247,7 +247,7 @@ export class XmlLoader {
                     this._prepareSourceElement(node, guiNode, splittedSource[0], source, i);
                 }
             } else {
-                for (let i in source) {
+                for (const i in source) {
                     this._prepareSourceElement(node, guiNode, splittedSource[0], source, i);
                 }
             }
@@ -270,7 +270,7 @@ export class XmlLoader {
             node.setAttribute("id", parent.id + (parent._children.length + 1));
         }
 
-        let guiNode = this._createGuiElement(node, parent);
+        const guiNode = this._createGuiElement(node, parent);
 
         if (!this._rootNode) {
             this._rootNode = guiNode;
@@ -328,7 +328,7 @@ export class XmlLoader {
      * @param onError defines the callback called on layout load failure.
      */
     public loadLayout(xmlFile: any, rootNode: any, onSuccess: Nullable<() => void> = null, onError: Nullable<(error: string) => void> = null): void {
-        let xhttp = new XMLHttpRequest();
+        const xhttp = new XMLHttpRequest();
         xhttp.onload = () => {
             if (xhttp.readyState === 4 && xhttp.status === 200) {
                 if (!xhttp.responseXML) {
@@ -340,7 +340,7 @@ export class XmlLoader {
                     }
                 }
 
-                let xmlDoc = xhttp.responseXML.documentElement;
+                const xmlDoc = xhttp.responseXML.documentElement;
                 this._parseXml(xmlDoc.firstChild, rootNode);
                 this._isLoaded = true;
 

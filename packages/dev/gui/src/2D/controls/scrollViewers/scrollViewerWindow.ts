@@ -33,13 +33,13 @@ export class _ScrollViewerWindow extends Container {
         // trigger a full normal layout calculation to be sure all children have their measures up to date
         this._freezeControls = false;
 
-        var textureSize = this.host.getSize();
-        var renderWidth = textureSize.width;
-        var renderHeight = textureSize.height;
+        const textureSize = this.host.getSize();
+        const renderWidth = textureSize.width;
+        const renderHeight = textureSize.height;
 
-        var context = this.host.getContext();
+        const context = this.host.getContext();
 
-        var measure = new Measure(0, 0, renderWidth, renderHeight);
+        const measure = new Measure(0, 0, renderWidth, renderHeight);
 
         this.host._numLayoutCalls = 0;
 
@@ -98,7 +98,7 @@ export class _ScrollViewerWindow extends Container {
 
     private _dispatchInBuckets(children: Control[]): void {
         for (let i = 0; i < children.length; ++i) {
-            let child = children[i];
+            const child = children[i];
 
             let bStartX = Math.max(0, Math.floor((child._customData._origLeft - this._customData.origLeft) / this._bucketWidth)),
                 bEndX = Math.floor((child._customData._origLeft - this._customData.origLeft + child._currentMeasure.width - 1) / this._bucketWidth),
@@ -128,7 +128,7 @@ export class _ScrollViewerWindow extends Container {
 
     // reset left and top measures for the window and all its children
     private _updateMeasures(): void {
-        let left = this.leftInPixels | 0,
+        const left = this.leftInPixels | 0,
             top = this.topInPixels | 0;
 
         this._measureForChildren.left -= left;
@@ -146,7 +146,7 @@ export class _ScrollViewerWindow extends Container {
 
     private _updateChildrenMeasures(children: Control[], left: number, top: number): void {
         for (let i = 0; i < children.length; ++i) {
-            let child = children[i];
+            const child = children[i];
 
             child._currentMeasure.left -= left;
             child._currentMeasure.top -= top;
@@ -161,7 +161,7 @@ export class _ScrollViewerWindow extends Container {
     }
 
     private _restoreMeasures(): void {
-        let left = this.leftInPixels | 0,
+        const left = this.leftInPixels | 0,
             top = this.topInPixels | 0;
 
         this._measureForChildren.left = this._customData.origLeftForChildren + left;
@@ -182,7 +182,11 @@ export class _ScrollViewerWindow extends Container {
         return "ScrollViewerWindow";
     }
 
-    /** @hidden */
+    /**
+     * @param parentMeasure
+     * @param context
+     * @hidden
+     */
     protected _additionalProcessing(parentMeasure: Measure, context: ICanvasRenderingContext): void {
         super._additionalProcessing(parentMeasure, context);
 
@@ -195,7 +199,11 @@ export class _ScrollViewerWindow extends Container {
         this._measureForChildren.height = parentMeasure.height;
     }
 
-    /** @hidden */
+    /**
+     * @param parentMeasure
+     * @param context
+     * @hidden
+     */
     public _layout(parentMeasure: Measure, context: ICanvasRenderingContext): boolean {
         if (this._freezeControls) {
             this.invalidateRect(); // will trigger a redraw of the window
@@ -207,7 +215,7 @@ export class _ScrollViewerWindow extends Container {
 
     private _scrollChildren(children: Control[], left: number, top: number): void {
         for (let i = 0; i < children.length; ++i) {
-            let child = children[i];
+            const child = children[i];
 
             child._currentMeasure.left = child._customData._origLeft + left;
             child._currentMeasure.top = child._customData._origTop + top;
@@ -227,12 +235,12 @@ export class _ScrollViewerWindow extends Container {
 
         while (bStartY <= bEndY) {
             for (let x = bStartX; x <= bEndX; ++x) {
-                let bucket = bStartY * this._bucketLen + x,
+                const bucket = bStartY * this._bucketLen + x,
                     lstc = this._buckets[bucket];
 
                 if (lstc) {
                     for (let i = 0; i < lstc.length; ++i) {
-                        let child = lstc[i];
+                        const child = lstc[i];
                         child._currentMeasure.left = child._customData._origLeft + scrollLeft;
                         child._currentMeasure.top = child._customData._origTop + scrollTop;
                         child._isClipped = false; // clipping will be handled by _draw and the call to _intersectsRect()
@@ -243,7 +251,11 @@ export class _ScrollViewerWindow extends Container {
         }
     }
 
-    /** @hidden */
+    /**
+     * @param context
+     * @param invalidatedRectangle
+     * @hidden
+     */
     public _draw(context: ICanvasRenderingContext, invalidatedRectangle?: Measure): void {
         if (!this._freezeControls) {
             super._draw(context, invalidatedRectangle);
@@ -256,7 +268,7 @@ export class _ScrollViewerWindow extends Container {
             this._clipForChildren(context);
         }
 
-        let left = this.leftInPixels | 0,
+        const left = this.leftInPixels | 0,
             top = this.topInPixels | 0;
 
         if (this._useBuckets()) {
@@ -273,7 +285,7 @@ export class _ScrollViewerWindow extends Container {
         this._oldLeft = left;
         this._oldTop = top;
 
-        for (var child of this._children) {
+        for (const child of this._children) {
             if (!child._intersectsRect(this._parentMeasure)) {
                 continue;
             }
@@ -287,9 +299,9 @@ export class _ScrollViewerWindow extends Container {
             return;
         }
 
-        var maxWidth = this.parentClientWidth;
-        var maxHeight = this.parentClientHeight;
-        for (var child of this.children) {
+        let maxWidth = this.parentClientWidth;
+        let maxHeight = this.parentClientHeight;
+        for (const child of this.children) {
             if (!child.isVisible || child.notRenderable) {
                 continue;
             }

@@ -102,7 +102,7 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
             return null;
         }
 
-        let children = Tools.SortAndFilter(entity, entity.getChildren ? entity.getChildren() : entity.children);
+        const children = Tools.SortAndFilter(entity, entity.getChildren ? entity.getChildren() : entity.children);
         if (entity.typeName === "StackPanel" || entity.typeName === "VirtualKeyboard") {
             children.reverse();
         }
@@ -144,7 +144,7 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
                 setExpandedState: (expanded: boolean) => (entity.reservedDataStore.isExpanded = expanded),
             };
         }
-        let isExpanded = entity.reservedDataStore.isExpanded || Tools.LookForItems(this.props.entity, this.props.selectedEntities);
+        const isExpanded = entity.reservedDataStore.isExpanded || Tools.LookForItems(this.props.entity, this.props.selectedEntities);
         entity.reservedDataStore.isExpanded = isExpanded;
 
         const chevron = isExpanded ? <img src={expandedIcon} className="icon" /> : <img src={collapsedIcon} className="icon" />;

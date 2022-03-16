@@ -83,8 +83,8 @@ export class SpritePropertyGridComponent extends React.Component<ISpriteProperty
     updatePreview() {
         const sprite = this.props.sprite;
         const manager = sprite.manager;
-        var texture = manager.texture;
-        var size = texture.getSize();
+        const texture = manager.texture;
+        const size = texture.getSize();
 
         if (!this.imageData) {
             TextureHelper.GetTextureDataAsync(texture, size.width, size.height, 0, { R: true, G: true, B: true, A: true }, this.props.globalState).then((data) => {
@@ -104,22 +104,22 @@ export class SpritePropertyGridComponent extends React.Component<ISpriteProperty
         const previewCanvas = this.canvasRef.current as HTMLCanvasElement;
         previewCanvas.width = manager.cellWidth;
         previewCanvas.height = manager.cellHeight;
-        var context = previewCanvas.getContext("2d");
+        const context = previewCanvas.getContext("2d");
 
         if (context) {
             // Copy the pixels to the preview canvas
-            var imageData = context.createImageData(manager.cellWidth, manager.cellHeight);
-            var castData = imageData.data;
+            const imageData = context.createImageData(manager.cellWidth, manager.cellHeight);
+            const castData = imageData.data;
 
-            let rowLength = (size.width / manager.cellWidth) | 0;
-            let offsetY = (sprite.cellIndex / rowLength) | 0;
-            let offsetX = sprite.cellIndex - offsetY * rowLength;
-            let offset = (offsetX + offsetY * size.width) * 4 * manager.cellWidth;
+            const rowLength = (size.width / manager.cellWidth) | 0;
+            const offsetY = (sprite.cellIndex / rowLength) | 0;
+            const offsetX = sprite.cellIndex - offsetY * rowLength;
+            const offset = (offsetX + offsetY * size.width) * 4 * manager.cellWidth;
 
-            for (var x = 0; x < manager.cellWidth; x++) {
-                for (var y = 0; y < manager.cellHeight; y++) {
-                    let targetCoord = (x + y * manager.cellWidth) * 4;
-                    let sourceCoord = (x + y * size.width) * 4;
+            for (let x = 0; x < manager.cellWidth; x++) {
+                for (let y = 0; y < manager.cellHeight; y++) {
+                    const targetCoord = (x + y * manager.cellWidth) * 4;
+                    const sourceCoord = (x + y * size.width) * 4;
                     castData[targetCoord] = this.imageData[offset + sourceCoord];
                     castData[targetCoord + 1] = this.imageData[offset + sourceCoord + 1];
                     castData[targetCoord + 2] = this.imageData[offset + sourceCoord + 2];

@@ -78,7 +78,7 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
         this._rowDefinitions = [];
         this._rowEditFlags = [];
         this._editedRow = false;
-        for (var index = 0; index < grid.rowCount; index++) {
+        for (let index = 0; index < grid.rowCount; index++) {
             const value = grid.getRowDefinition(index);
             if (value) {
                 this._rowDefinitions.push(value.toString(grid._host, 2));
@@ -92,7 +92,7 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
         this._columnDefinitions = [];
         this._columnEditFlags = [];
         this._editedColumn = false;
-        for (var index = 0; index < grid.columnCount; index++) {
+        for (let index = 0; index < grid.columnCount; index++) {
             const value = grid.getColumnDefinition(index);
             if (value) {
                 this._columnDefinitions.push(value.toString(grid._host, 2));
@@ -142,10 +142,10 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
         let total = 0;
         let editCount = 0;
         let percentCount = 0;
-        let rowValues: number[] = [];
+        const rowValues: number[] = [];
         for (let i = 0; i < this._rowDefinitions.length; ++i) {
             let value = this._rowDefinitions[i];
-            let percent = this.checkPercentage(value);
+            const percent = this.checkPercentage(value);
             if (this._rowEditFlags[i]) {
                 value = this.checkValue(value, percent);
                 if (percent) {
@@ -155,39 +155,39 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
 
             if (percent) {
                 percentCount++;
-                let valueAsInt = parseInt(value.substring(0, value.length - 1));
+                const valueAsInt = parseInt(value.substring(0, value.length - 1));
                 total += valueAsInt / 100;
                 rowValues.push(valueAsInt / 100);
             } else {
-                let valueAsInt = parseInt(value.substring(0, value.length - 2));
+                const valueAsInt = parseInt(value.substring(0, value.length - 2));
                 rowValues.push(valueAsInt);
             }
         }
 
-        let allEdited = editCount === percentCount;
+        const allEdited = editCount === percentCount;
 
         if (total > 1.0 || allEdited) {
-            let difference = total - 1.0;
-            let diff = Math.abs(difference);
+            const difference = total - 1.0;
+            const diff = Math.abs(difference);
             for (let i = 0; i < grid.rowCount; ++i) {
                 if (this.checkPercentage(this._rowDefinitions[i])) {
-                    let value = rowValues[i];
-                    let weighted = diff * (value / total);
+                    const value = rowValues[i];
+                    const weighted = diff * (value / total);
                     rowValues[i] = difference > 0 ? value - weighted : value + weighted;
                 }
             }
         } else if (total < 1.0) {
-            let difference = 1.0 - total;
+            const difference = 1.0 - total;
             for (let i = 0; i < grid.rowCount; ++i) {
                 if (this.checkPercentage(this._rowDefinitions[i]) && this._rowEditFlags[i]) {
-                    let value = rowValues[i];
+                    const value = rowValues[i];
                     total -= value;
                 }
             }
             for (let i = 0; i < grid.rowCount; ++i) {
                 if (this.checkPercentage(this._rowDefinitions[i]) && !this._rowEditFlags[i]) {
-                    let value = rowValues[i];
-                    let weighted = difference * (value / total);
+                    const value = rowValues[i];
+                    const weighted = difference * (value / total);
                     rowValues[i] = value + weighted;
                 }
             }
@@ -205,10 +205,10 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
         let total = 0;
         let editCount = 0;
         let percentCount = 0;
-        let columnValues: number[] = [];
+        const columnValues: number[] = [];
         for (let i = 0; i < this._columnDefinitions.length; ++i) {
             let value = this._columnDefinitions[i];
-            let percent = this.checkPercentage(value);
+            const percent = this.checkPercentage(value);
             if (this._columnEditFlags[i]) {
                 value = this.checkValue(value, percent);
                 if (percent) {
@@ -218,39 +218,39 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
 
             if (percent) {
                 percentCount++;
-                let valueAsInt = parseInt(value.substring(0, value.length - 1));
+                const valueAsInt = parseInt(value.substring(0, value.length - 1));
                 total += valueAsInt / 100;
                 columnValues.push(valueAsInt / 100);
             } else {
-                let valueAsInt = parseInt(value.substring(0, value.length - 2));
+                const valueAsInt = parseInt(value.substring(0, value.length - 2));
                 columnValues.push(valueAsInt);
             }
         }
 
-        let allEdited = editCount === percentCount;
+        const allEdited = editCount === percentCount;
 
         if (total > 1.0 || allEdited) {
-            let difference = total - 1.0;
-            let diff = Math.abs(difference);
+            const difference = total - 1.0;
+            const diff = Math.abs(difference);
             for (let i = 0; i < grid.columnCount; ++i) {
                 if (this.checkPercentage(this._columnDefinitions[i])) {
-                    let value = columnValues[i];
-                    let weighted = diff * (value / total);
+                    const value = columnValues[i];
+                    const weighted = diff * (value / total);
                     columnValues[i] = difference > 0 ? value - weighted : value + weighted;
                 }
             }
         } else if (total < 1.0) {
-            let difference = 1.0 - total;
+            const difference = 1.0 - total;
             for (let i = 0; i < grid.columnCount; ++i) {
                 if (this.checkPercentage(this._columnDefinitions[i]) && this._columnEditFlags[i]) {
-                    let value = columnValues[i];
+                    const value = columnValues[i];
                     total -= value;
                 }
             }
             for (let i = 0; i < grid.columnCount; ++i) {
                 if (this.checkPercentage(this._columnDefinitions[i]) && !this._columnEditFlags[i]) {
-                    let value = columnValues[i];
-                    let weighted = difference * (value / total);
+                    const value = columnValues[i];
+                    const weighted = difference * (value / total);
                     columnValues[i] = value + weighted;
                 }
             }
@@ -317,7 +317,7 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                                         let total = 0;
                                         let count = 0;
                                         for (let i = 0; i < grid.rowCount; ++i) {
-                                            let rd = grid.getRowDefinition(i);
+                                            const rd = grid.getRowDefinition(i);
                                             if (rd?.isPercentage) {
                                                 total += rd?.getValue(grid.host);
                                                 count++;
@@ -437,7 +437,7 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                                     let total = 0;
                                     let count = 0;
                                     for (let i = 0; i < grid.columnCount; ++i) {
-                                        let cd = grid.getColumnDefinition(i);
+                                        const cd = grid.getColumnDefinition(i);
                                         if (cd?.isPercentage) {
                                             total += cd?.getValue(grid.host);
                                             count++;

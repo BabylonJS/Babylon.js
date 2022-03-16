@@ -281,6 +281,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
 
     /**
      * Function called before loading a url referenced by the asset.
+     * @param url
      */
     public preprocessUrlAsync = (url: string) => Promise.resolve(url);
 
@@ -541,7 +542,15 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
         this.onDisposeObservable.clear();
     }
 
-    /** @hidden */
+    /**
+     * @param scene
+     * @param fileOrUrl
+     * @param onSuccess
+     * @param onProgress
+     * @param useArrayBuffer
+     * @param onError
+     * @hidden
+     */
     public loadFile(
         scene: Scene,
         fileOrUrl: File | string,
@@ -633,7 +642,15 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
         );
     }
 
-    /** @hidden */
+    /**
+     * @param meshesNames
+     * @param scene
+     * @param data
+     * @param rootUrl
+     * @param onProgress
+     * @param fileName
+     * @hidden
+     */
     public importMeshAsync(
         meshesNames: any,
         scene: Scene,
@@ -652,7 +669,14 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
         });
     }
 
-    /** @hidden */
+    /**
+     * @param scene
+     * @param data
+     * @param rootUrl
+     * @param onProgress
+     * @param fileName
+     * @hidden
+     */
     public loadAsync(scene: Scene, data: any, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName?: string): Promise<void> {
         return Promise.resolve().then(() => {
             this.onParsedObservable.notifyObservers(data);
@@ -664,7 +688,14 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
         });
     }
 
-    /** @hidden */
+    /**
+     * @param scene
+     * @param data
+     * @param rootUrl
+     * @param onProgress
+     * @param fileName
+     * @hidden
+     */
     public loadAssetContainerAsync(scene: Scene, data: any, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName?: string): Promise<AssetContainer> {
         return Promise.resolve().then(() => {
             this.onParsedObservable.notifyObservers(data);
@@ -706,7 +737,10 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
         });
     }
 
-    /** @hidden */
+    /**
+     * @param data
+     * @hidden
+     */
     public canDirectLoad(data: string): boolean {
         return (
             (data.indexOf("asset") !== -1 && data.indexOf("version") !== -1) ||
@@ -717,7 +751,11 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
         );
     }
 
-    /** @hidden */
+    /**
+     * @param scene
+     * @param data
+     * @hidden
+     */
     public directLoad(scene: Scene, data: string): Promise<any> {
         if (
             StringTools.StartsWith(data, "base64," + GLTFFileLoader.magicBase64Encoded) || // this is technically incorrect, but will continue to support for backcompat.
@@ -780,7 +818,10 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
         });
     }
 
-    /** @hidden */
+    /**
+     * @param state
+     * @hidden
+     */
     public _setState(state: GLTFLoaderState): void {
         if (this._state === state) {
             return;
@@ -791,7 +832,15 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
         this._log(GLTFLoaderState[this._state]);
     }
 
-    /** @hidden */
+    /**
+     * @param scene
+     * @param fileOrUrl
+     * @param onSuccess
+     * @param useArrayBuffer
+     * @param onError
+     * @param onOpened
+     * @hidden
+     */
     public _loadFile(
         scene: Scene,
         fileOrUrl: File | string,
@@ -830,7 +879,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
         let lengthComputable = true;
         let loaded = 0;
         let total = 0;
-        for (let request of this._requests) {
+        for (const request of this._requests) {
             if (request._lengthComputable === undefined || request._loaded === undefined || request._total === undefined) {
                 return;
             }
@@ -1086,7 +1135,10 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
     /** @hidden */
     public _log = this._logDisabled;
 
-    /** @hidden */
+    /**
+     * @param message
+     * @hidden
+     */
     public _logOpen(message: string): void {
         this._log(message);
         this._logIndentLevel++;

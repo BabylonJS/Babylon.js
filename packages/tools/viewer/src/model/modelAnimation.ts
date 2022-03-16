@@ -214,8 +214,8 @@ export class GroupModelAnimation implements IModelAnimation {
     public get fps(): number {
         // get the first currentFrame found
         for (let i = 0; i < this._animationGroup.animatables.length; ++i) {
-            let animatable: Animatable = this._animationGroup.animatables[i];
-            let animations = animatable.getAnimations();
+            const animatable: Animatable = this._animationGroup.animatables[i];
+            const animations = animatable.getAnimations();
             if (!animations || !animations.length) {
                 continue;
             }

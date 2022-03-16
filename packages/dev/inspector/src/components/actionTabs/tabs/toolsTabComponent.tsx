@@ -144,7 +144,7 @@ export class ToolsTabComponent extends PaneComponent {
         this._previousRenderingScale = engine.getHardwareScalingLevel();
         engine.setHardwareScalingLevel(engine.getRenderWidth() / this._gifOptions.width ?? 1);
 
-        let intervalId = setInterval(() => {
+        const intervalId = setInterval(() => {
             if (!this._gifRecorder) {
                 clearInterval(intervalId);
                 return;
@@ -193,19 +193,19 @@ export class ToolsTabComponent extends PaneComponent {
         const overwriteAnimations = this.props.globalState.sceneImportDefaults["overwriteAnimations"];
         const animationGroupLoadingMode = this.props.globalState.sceneImportDefaults["animationGroupLoadingMode"];
 
-        var reload = function (sceneFile: File) {
+        const reload = function (sceneFile: File) {
             // If a scene file has been provided
             if (sceneFile) {
-                var onSuccess = function (scene: Scene) {
+                const onSuccess = function (scene: Scene) {
                     if (scene.animationGroups.length > 0) {
-                        let currentGroup = scene.animationGroups[0];
+                        const currentGroup = scene.animationGroups[0];
                         currentGroup.play(true);
                     }
                 };
                 (BABYLON as any).SceneLoader.ImportAnimationsAsync("file:", sceneFile, scene, overwriteAnimations, animationGroupLoadingMode, null, onSuccess);
             }
         };
-        let filesInputAnimation = new FilesInput(
+        const filesInputAnimation = new FilesInput(
             scene.getEngine() as any,
             scene as any,
             () => {},
@@ -262,8 +262,8 @@ export class ToolsTabComponent extends PaneComponent {
     exportBabylon() {
         const scene = this.props.scene;
 
-        var strScene = JSON.stringify(SceneSerializer.Serialize(scene));
-        var blob = new Blob([strScene], { type: "octet/stream" });
+        const strScene = JSON.stringify(SceneSerializer.Serialize(scene));
+        const blob = new Blob([strScene], { type: "octet/stream" });
 
         Tools.Download(blob, "scene.babylon");
     }
@@ -275,7 +275,7 @@ export class ToolsTabComponent extends PaneComponent {
             imageQuality: this._envOptions.imageQuality,
         })
             .then((buffer: ArrayBuffer) => {
-                var blob = new Blob([buffer], { type: "octet/stream" });
+                const blob = new Blob([buffer], { type: "octet/stream" });
                 Tools.Download(blob, "environment.env");
             })
             .catch((error: any) => {
@@ -319,7 +319,7 @@ export class ToolsTabComponent extends PaneComponent {
 
         const sceneImportDefaults = this.props.globalState.sceneImportDefaults;
 
-        var animationGroupLoadingModes = [
+        const animationGroupLoadingModes = [
             { label: "Clean", value: SceneLoaderAnimationGroupLoadingMode.Clean },
             { label: "Stop", value: SceneLoaderAnimationGroupLoadingMode.Stop },
             { label: "Sync", value: SceneLoaderAnimationGroupLoadingMode.Sync },

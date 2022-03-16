@@ -17,7 +17,7 @@ export class _GLTFUtilities {
      * @returns bufferView for glTF
      */
     public static _CreateBufferView(bufferIndex: number, byteOffset: number, byteLength: number, byteStride?: number, name?: string): IBufferView {
-        let bufferview: IBufferView = { buffer: bufferIndex, byteLength: byteLength };
+        const bufferview: IBufferView = { buffer: bufferIndex, byteLength: byteLength };
         if (byteOffset) {
             bufferview.byteOffset = byteOffset;
         }
@@ -53,7 +53,7 @@ export class _GLTFUtilities {
         min: Nullable<number[]>,
         max: Nullable<number[]>
     ): IAccessor {
-        let accessor: IAccessor = { name: name, bufferView: bufferviewIndex, componentType: componentType, count: count, type: type };
+        const accessor: IAccessor = { name: name, bufferView: bufferviewIndex, componentType: componentType, count: count, type: type };
 
         if (min != null) {
             accessor.min = min;
@@ -73,6 +73,7 @@ export class _GLTFUtilities {
      * @param positions Positions array of a mesh
      * @param vertexStart Starting vertex offset to calculate min and max values
      * @param vertexCount Number of vertices to check for min and max values
+     * @param convertToRightHandedSystem
      * @returns min number array and max number array
      */
     public static _CalculateMinMaxPositions(
@@ -99,7 +100,7 @@ export class _GLTFUtilities {
                 vector = position.asArray();
 
                 for (let j = 0; j < positionStrideSize; ++j) {
-                    let num = vector[j];
+                    const num = vector[j];
                     if (num < min[j]) {
                         min[j] = num;
                     }

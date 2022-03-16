@@ -37,7 +37,7 @@ export class CommonShadowLightPropertyGridComponent extends React.Component<ICom
         const light = this.props.light;
         const scene = light.getScene();
         const internals = this._internals;
-        let generator = internals.generatorType === 0 ? new ShadowGenerator(internals.mapSize, light) : new CascadedShadowGenerator(internals.mapSize, light as DirectionalLight);
+        const generator = internals.generatorType === 0 ? new ShadowGenerator(internals.mapSize, light) : new CascadedShadowGenerator(internals.mapSize, light as DirectionalLight);
 
         scene.meshes.forEach((m) => {
             if (m.infiniteDistance) {
@@ -67,20 +67,20 @@ export class CommonShadowLightPropertyGridComponent extends React.Component<ICom
         const csmGenerator = generator instanceof CascadedShadowGenerator;
         const camera = light.getScene().activeCamera;
 
-        var typeGeneratorOptions = [{ label: "Shadow Generator", value: 0 }];
+        const typeGeneratorOptions = [{ label: "Shadow Generator", value: 0 }];
 
         if (light instanceof DirectionalLight) {
             typeGeneratorOptions.push({ label: "Cascaded Shadow Generator", value: 1 });
         }
 
-        var mapSizeOptions = [
+        const mapSizeOptions = [
             { label: "2048x2048", value: 2048 },
             { label: "1024x1024", value: 1024 },
             { label: "512x512", value: 512 },
             { label: "256x256", value: 256 },
         ];
 
-        var blurModeOptions;
+        let blurModeOptions;
 
         if (generator instanceof CascadedShadowGenerator) {
             blurModeOptions = [
@@ -101,13 +101,13 @@ export class CommonShadowLightPropertyGridComponent extends React.Component<ICom
             ];
         }
 
-        var filteringQualityOptions = [
+        const filteringQualityOptions = [
             { label: "Low", value: ShadowGenerator.QUALITY_LOW },
             { label: "Medium", value: ShadowGenerator.QUALITY_MEDIUM },
             { label: "High", value: ShadowGenerator.QUALITY_HIGH },
         ];
 
-        var numCascadesOptions = [
+        const numCascadesOptions = [
             { label: "2", value: 2 },
             { label: "3", value: 3 },
             { label: "4", value: 4 },
@@ -116,7 +116,7 @@ export class CommonShadowLightPropertyGridComponent extends React.Component<ICom
         const near = camera ? camera.minZ : 0,
             far = camera ? camera.maxZ : 0;
 
-        let filter = generator ? generator.filter : 0;
+        const filter = generator ? generator.filter : 0;
 
         return (
             <div>

@@ -9,14 +9,14 @@ import { VolumeBasedPanel } from "./volumeBasedPanel";
  */
 export class PlanePanel extends VolumeBasedPanel {
     protected _mapGridNode(control: Control3D, nodePosition: Vector3) {
-        let mesh = control.mesh;
+        const mesh = control.mesh;
 
         if (!mesh) {
             return;
         }
 
         control.position = nodePosition.clone();
-        let target = TmpVectors.Vector3[0];
+        const target = TmpVectors.Vector3[0];
 
         target.copyFrom(nodePosition);
 

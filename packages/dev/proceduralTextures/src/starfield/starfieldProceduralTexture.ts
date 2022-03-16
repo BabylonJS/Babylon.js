@@ -153,7 +153,7 @@ export class StarfieldProceduralTexture extends ProceduralTexture {
      * @returns a serialized starfield procedural texture object
      */
     public serialize(): any {
-        var serializationObject = SerializationHelper.Serialize(this, super.serialize());
+        const serializationObject = SerializationHelper.Serialize(this, super.serialize());
         serializationObject.customType = "BABYLON.StarfieldProceduralTexture";
 
         return serializationObject;
@@ -167,7 +167,7 @@ export class StarfieldProceduralTexture extends ProceduralTexture {
      * @returns a parsed Starfield Procedural Texture
      */
     public static Parse(parsedTexture: any, scene: Scene, rootUrl: string): StarfieldProceduralTexture {
-        var texture = SerializationHelper.Parse(
+        const texture = SerializationHelper.Parse(
             () => new StarfieldProceduralTexture(parsedTexture.name, parsedTexture._size, scene, undefined, parsedTexture._generateMipMaps),
             parsedTexture,
             scene,

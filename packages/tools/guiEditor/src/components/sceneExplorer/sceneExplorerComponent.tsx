@@ -113,7 +113,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
             return false;
         }
 
-        for (var item of sortedItems) {
+        for (const item of sortedItems) {
             if (item === target) {
                 // found the current selection!
                 data.found = true;
@@ -160,7 +160,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
             case "Enter":
             case "ArrowRight":
                 this.props.globalState.selectedControls.forEach((node) => {
-                    var reservedDataStore = (node as any).reservedDataStore;
+                    const reservedDataStore = (node as any).reservedDataStore;
                     if (reservedDataStore && reservedDataStore.setExpandedState) {
                         reservedDataStore.setExpandedState(true);
                     }
@@ -170,7 +170,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                 return;
             case "ArrowLeft":
                 this.props.globalState.selectedControls.forEach((node) => {
-                    var reservedDataStore = (node as any).reservedDataStore;
+                    const reservedDataStore = (node as any).reservedDataStore;
                     console.log(reservedDataStore);
                     if (reservedDataStore && reservedDataStore.setExpandedState) {
                         reservedDataStore.setExpandedState(false);
@@ -216,7 +216,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
             return null;
         }
 
-        let guiElements = scene.textures.filter((t) => t.getClassName() === "AdvancedDynamicTexture");
+        const guiElements = scene.textures.filter((t) => t.getClassName() === "AdvancedDynamicTexture");
 
         return (
             <div

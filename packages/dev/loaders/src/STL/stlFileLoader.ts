@@ -68,7 +68,7 @@ export class STLFileLoader implements ISceneLoaderPlugin {
         particleSystems: Nullable<IParticleSystem[]>,
         skeletons: Nullable<Skeleton[]>
     ): boolean {
-        var matches;
+        let matches;
 
         if (typeof data !== "string") {
             if (this._isBinary(data)) {
@@ -84,9 +84,9 @@ export class STLFileLoader implements ISceneLoaderPlugin {
             // ASCII .stl
 
             // convert to string
-            var array_buffer = new Uint8Array(data);
-            var str = "";
-            for (var i = 0; i < data.byteLength; i++) {
+            const array_buffer = new Uint8Array(data);
+            let str = "";
+            for (let i = 0; i < data.byteLength; i++) {
                 str += String.fromCharCode(array_buffer[i]); // implicitly assumes little-endian
             }
             data = str;
@@ -95,8 +95,8 @@ export class STLFileLoader implements ISceneLoaderPlugin {
         //if arrived here, data is a string, containing the STLA data.
 
         while ((matches = this.solidPattern.exec(data))) {
-            var meshName = matches[1];
-            var meshNameFromEnd = matches[3];
+            let meshName = matches[1];
+            const meshNameFromEnd = matches[3];
             if (meshName != meshNameFromEnd) {
                 Tools.Error("Error in STL, solid name != endsolid name");
                 return false;
@@ -137,7 +137,7 @@ export class STLFileLoader implements ISceneLoaderPlugin {
      * @returns true if successful or false otherwise
      */
     public load(scene: Scene, data: any, rootUrl: string): boolean {
-        var result = this.importMesh(null, scene, data, rootUrl, null, null, null);
+        const result = this.importMesh(null, scene, data, rootUrl, null, null, null);
         return result;
     }
 
@@ -150,7 +150,7 @@ export class STLFileLoader implements ISceneLoaderPlugin {
      * @returns The loaded asset container
      */
     public loadAssetContainer(scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void): AssetContainer {
-        var container = new AssetContainer(scene);
+        const container = new AssetContainer(scene);
         scene._blockEntityCollection = true;
         this.importMesh(null, scene, data, rootUrl, container.meshes, null, null);
         scene._blockEntityCollection = false;
@@ -159,7 +159,7 @@ export class STLFileLoader implements ISceneLoaderPlugin {
 
     private _isBinary(data: any) {
         // check if file size is correct for binary stl
-        var faceSize, nFaces, reader;
+        let faceSize, nFaces, reader;
         reader = new DataView(data);
 
         // A Binary STL header is 80 bytes, if the data size is not great than
@@ -176,8 +176,8 @@ export class STLFileLoader implements ISceneLoaderPlugin {
         }
 
         // check characters higher than ASCII to confirm binary
-        var fileLength = reader.byteLength;
-        for (var index = 0; index < fileLength; index++) {
+        const fileLength = reader.byteLength;
+        for (let index = 0; index < fileLength; index++) {
             if (reader.getUint8(index) > 127) {
                 return true;
             }
@@ -187,27 +187,27 @@ export class STLFileLoader implements ISceneLoaderPlugin {
     }
 
     private _parseBinary(mesh: Mesh, data: ArrayBuffer) {
-        var reader = new DataView(data);
-        var faces = reader.getUint32(80, true);
+        const reader = new DataView(data);
+        const faces = reader.getUint32(80, true);
 
-        var dataOffset = 84;
-        var faceLength = 12 * 4 + 2;
+        const dataOffset = 84;
+        const faceLength = 12 * 4 + 2;
 
-        var offset = 0;
+        let offset = 0;
 
-        var positions = new Float32Array(faces * 3 * 3);
-        var normals = new Float32Array(faces * 3 * 3);
-        var indices = new Uint32Array(faces * 3);
-        var indicesCount = 0;
+        const positions = new Float32Array(faces * 3 * 3);
+        const normals = new Float32Array(faces * 3 * 3);
+        const indices = new Uint32Array(faces * 3);
+        let indicesCount = 0;
 
-        for (var face = 0; face < faces; face++) {
-            var start = dataOffset + face * faceLength;
-            var normalX = reader.getFloat32(start, true);
-            var normalY = reader.getFloat32(start + 4, true);
-            var normalZ = reader.getFloat32(start + 8, true);
+        for (let face = 0; face < faces; face++) {
+            const start = dataOffset + face * faceLength;
+            const normalX = reader.getFloat32(start, true);
+            const normalY = reader.getFloat32(start + 4, true);
+            const normalZ = reader.getFloat32(start + 8, true);
 
-            for (var i = 1; i <= 3; i++) {
-                var vertexstart = start + i * 12;
+            for (let i = 1; i <= 3; i++) {
+                const vertexstart = start + i * 12;
 
                 // ordering is intentional to match ascii import
                 positions[offset] = reader.getFloat32(vertexstart, true);
@@ -241,22 +241,22 @@ export class STLFileLoader implements ISceneLoaderPlugin {
     }
 
     private _parseASCII(mesh: Mesh, solidData: string) {
-        var positions = [];
-        var normals = [];
-        var indices = [];
-        var indicesCount = 0;
+        const positions = [];
+        const normals = [];
+        const indices = [];
+        let indicesCount = 0;
 
         //load facets, ignoring loop as the standard doesn't define it can contain more than vertices
-        var matches;
+        let matches;
         while ((matches = this.facetsPattern.exec(solidData))) {
-            var facet = matches[1];
+            const facet = matches[1];
             //one normal per face
-            var normalMatches = this.normalPattern.exec(facet);
+            const normalMatches = this.normalPattern.exec(facet);
             this.normalPattern.lastIndex = 0;
             if (!normalMatches) {
                 continue;
             }
-            var normal = [Number(normalMatches[1]), Number(normalMatches[5]), Number(normalMatches[3])];
+            const normal = [Number(normalMatches[1]), Number(normalMatches[5]), Number(normalMatches[3])];
 
             var vertexMatch;
             while ((vertexMatch = this.vertexPattern.exec(facet))) {

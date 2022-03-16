@@ -212,7 +212,7 @@ export class BaseSlider extends Control {
     }
 
     protected _getThumbThickness(type: string): number {
-        var thumbThickness = 0;
+        let thumbThickness = 0;
         switch (type) {
             case "circle":
                 if (this._thumbWidth.isPixel) {
@@ -280,7 +280,11 @@ export class BaseSlider extends Control {
     // Events
     private _pointerIsDown = false;
 
-    /** @hidden */
+    /**
+     * @param x
+     * @param y
+     * @hidden
+     */
     protected _updateValueFromPointer(x: number, y: number): void {
         if (this.rotation != 0) {
             this._invertTransformMatrix.transformCoordinates(x, y, this._transformedPosition);

@@ -110,7 +110,7 @@ export class SolidParser {
         if (!arr[obj[0]]) {
             arr[obj[0]] = { normals: [], idx: [] };
         }
-        var idx = arr[obj[0]].normals.indexOf(obj[1]);
+        const idx = arr[obj[0]].normals.indexOf(obj[1]);
 
         return idx === -1 ? -1 : arr[obj[0]].idx[idx];
     }
@@ -119,7 +119,7 @@ export class SolidParser {
         if (!arr[obj[0]]) {
             arr[obj[0]] = { normals: [], idx: [], uv: [] };
         }
-        var idx = arr[obj[0]].normals.indexOf(obj[1]);
+        const idx = arr[obj[0]].normals.indexOf(obj[1]);
 
         if (idx != 1 && obj[2] === arr[obj[0]].uv[idx]) {
             return arr[obj[0]].idx[idx];
@@ -139,6 +139,7 @@ export class SolidParser {
      * @param positionVectorFromOBJ Vector3 The value of position at index objIndice
      * @param textureVectorFromOBJ Vector3 The value of uvs
      * @param normalsVectorFromOBJ Vector3 The value of normals at index objNormale
+     * @param positionColorsFromOBJ
      */
     private _setData(
         indicePositionFromObj: number,
@@ -150,7 +151,7 @@ export class SolidParser {
         positionColorsFromOBJ?: Color4
     ) {
         //Check if this tuple already exists in the list of tuples
-        var _index: number;
+        let _index: number;
         if (this._loadingOptions.optimizeWithUV) {
             _index = this._isInArrayUV(this._tuplePosNorm, [indicePositionFromObj, indiceNormalFromObj, indiceUvsFromObj]);
         } else {
@@ -198,7 +199,7 @@ export class SolidParser {
      */
     private _unwrapData() {
         //Every array has the same length
-        for (var l = 0; l < this._wrappedPositionForBabylon.length; l++) {
+        for (let l = 0; l < this._wrappedPositionForBabylon.length; l++) {
             //Push the x, y, z values of each element in the unwrapped array
             this._unwrappedPositionsForBabylon.push(this._wrappedPositionForBabylon[l].x, this._wrappedPositionForBabylon[l].y, this._wrappedPositionForBabylon[l].z);
             this._unwrappedNormalsForBabylon.push(this._wrappedNormalsForBabylon[l].x, this._wrappedNormalsForBabylon[l].y, this._wrappedNormalsForBabylon[l].z);
@@ -233,11 +234,12 @@ export class SolidParser {
      * facePattern5 = ["-1/-1/-1","-2/-2/-2","-3/-3/-3","-4/-4/-4","-5/-5/-5","-6/-6/-6"]
      * Each pattern is divided by the same method
      * @param face Array[String] The indices of elements
+     * @param faces
      * @param v Integer The variable to increment
      */
     private _getTriangles(faces: Array<string>, v: number) {
         //Work for each element of the array
-        for (var faceIndex = v; faceIndex < faces.length - 1; faceIndex++) {
+        for (let faceIndex = v; faceIndex < faces.length - 1; faceIndex++) {
             //Add on the triangle variable the indexes to obtain triangles
             this._triangles.push(faces[0], faces[faceIndex], faces[faceIndex + 1]);
         }
@@ -261,9 +263,9 @@ export class SolidParser {
         this._getTriangles(face, v);
         //For each element in the triangles array.
         //This var could contains 1 to an infinity of triangles
-        for (var k = 0; k < this._triangles.length; k++) {
+        for (let k = 0; k < this._triangles.length; k++) {
             // Set position indice
-            var indicePositionFromObj = parseInt(this._triangles[k]) - 1;
+            const indicePositionFromObj = parseInt(this._triangles[k]) - 1;
 
             this._setData(
                 indicePositionFromObj,
@@ -288,14 +290,14 @@ export class SolidParser {
     private _setDataForCurrentFaceWithPattern2(face: Array<string>, v: number) {
         //Get the indices of triangles for each polygon
         this._getTriangles(face, v);
-        for (var k = 0; k < this._triangles.length; k++) {
+        for (let k = 0; k < this._triangles.length; k++) {
             //triangle[k] = "1/1"
             //Split the data for getting position and uv
-            var point = this._triangles[k].split("/"); // ["1", "1"]
+            const point = this._triangles[k].split("/"); // ["1", "1"]
             //Set position indice
-            var indicePositionFromObj = parseInt(point[0]) - 1;
+            const indicePositionFromObj = parseInt(point[0]) - 1;
             //Set uv indice
-            var indiceUvsFromObj = parseInt(point[1]) - 1;
+            const indiceUvsFromObj = parseInt(point[1]) - 1;
 
             this._setData(
                 indicePositionFromObj,
@@ -322,16 +324,16 @@ export class SolidParser {
         //Get the indices of triangles for each polygon
         this._getTriangles(face, v);
 
-        for (var k = 0; k < this._triangles.length; k++) {
+        for (let k = 0; k < this._triangles.length; k++) {
             //triangle[k] = "1/1/1"
             //Split the data for getting position, uv, and normals
-            var point = this._triangles[k].split("/"); // ["1", "1", "1"]
+            const point = this._triangles[k].split("/"); // ["1", "1", "1"]
             // Set position indice
-            var indicePositionFromObj = parseInt(point[0]) - 1;
+            const indicePositionFromObj = parseInt(point[0]) - 1;
             // Set uv indice
-            var indiceUvsFromObj = parseInt(point[1]) - 1;
+            const indiceUvsFromObj = parseInt(point[1]) - 1;
             // Set normal indice
-            var indiceNormalFromObj = parseInt(point[2]) - 1;
+            const indiceNormalFromObj = parseInt(point[2]) - 1;
 
             this._setData(
                 indicePositionFromObj,
@@ -355,13 +357,13 @@ export class SolidParser {
     private _setDataForCurrentFaceWithPattern4(face: Array<string>, v: number) {
         this._getTriangles(face, v);
 
-        for (var k = 0; k < this._triangles.length; k++) {
+        for (let k = 0; k < this._triangles.length; k++) {
             //triangle[k] = "1//1"
             //Split the data for getting position and normals
-            var point = this._triangles[k].split("//"); // ["1", "1"]
+            const point = this._triangles[k].split("//"); // ["1", "1"]
             // We check indices, and normals
-            var indicePositionFromObj = parseInt(point[0]) - 1;
-            var indiceNormalFromObj = parseInt(point[1]) - 1;
+            const indicePositionFromObj = parseInt(point[0]) - 1;
+            const indiceNormalFromObj = parseInt(point[1]) - 1;
 
             this._setData(
                 indicePositionFromObj,
@@ -387,16 +389,16 @@ export class SolidParser {
         //Get the indices of triangles for each polygon
         this._getTriangles(face, v);
 
-        for (var k = 0; k < this._triangles.length; k++) {
+        for (let k = 0; k < this._triangles.length; k++) {
             //triangle[k] = "-1/-1/-1"
             //Split the data for getting position, uv, and normals
-            var point = this._triangles[k].split("/"); // ["-1", "-1", "-1"]
+            const point = this._triangles[k].split("/"); // ["-1", "-1", "-1"]
             // Set position indice
-            var indicePositionFromObj = this._positions.length + parseInt(point[0]);
+            const indicePositionFromObj = this._positions.length + parseInt(point[0]);
             // Set uv indice
-            var indiceUvsFromObj = this._uvs.length + parseInt(point[1]);
+            const indiceUvsFromObj = this._uvs.length + parseInt(point[1]);
             // Set normal indice
-            var indiceNormalFromObj = this._normals.length + parseInt(point[2]);
+            const indiceNormalFromObj = this._normals.length + parseInt(point[2]);
 
             this._setData(
                 indicePositionFromObj,
@@ -505,10 +507,10 @@ export class SolidParser {
      */
     public parse(meshesNames: any, data: string, scene: Scene, assetContainer: Nullable<AssetContainer>, onFileToLoadFound: (fileToLoad: string) => void): void {
         // Split the file into lines
-        var lines = data.split("\n");
+        const lines = data.split("\n");
         // Look at each line
-        for (var i = 0; i < lines.length; i++) {
-            var line = lines[i].trim().replace(/\s\s/g, " ");
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i].trim().replace(/\s\s/g, " ");
             var result;
 
             // Comment or newLine
@@ -702,24 +704,24 @@ export class SolidParser {
                 this._unwrapData();
             } else {
                 // There is no indices in the file. We will have to switch to point cloud rendering
-                for (var pos of this._positions) {
+                for (const pos of this._positions) {
                     this._unwrappedPositionsForBabylon.push(pos.x, pos.y, pos.z);
                 }
 
                 if (this._normals.length) {
-                    for (var normal of this._normals) {
+                    for (const normal of this._normals) {
                         this._unwrappedNormalsForBabylon.push(normal.x, normal.y, normal.z);
                     }
                 }
 
                 if (this._uvs.length) {
-                    for (var uv of this._uvs) {
+                    for (const uv of this._uvs) {
                         this._unwrappedUVForBabylon.push(uv.x, uv.y);
                     }
                 }
 
                 if (this._colors.length) {
-                    for (var color of this._colors) {
+                    for (const color of this._colors) {
                         this._unwrappedColorsForBabylon.push(color.r, color.g, color.b, color.a);
                     }
                 }
@@ -753,7 +755,7 @@ export class SolidParser {
         }
 
         //Set data for each mesh
-        for (var j = 0; j < this._meshesFromObj.length; j++) {
+        for (let j = 0; j < this._meshesFromObj.length; j++) {
             //check meshesNames (stlFileLoader)
             if (meshesNames && this._meshesFromObj[j].name) {
                 if (meshesNames instanceof Array) {
@@ -773,7 +775,7 @@ export class SolidParser {
             //Create a Mesh with the name of the obj mesh
 
             scene._blockEntityCollection = !!assetContainer;
-            var babylonMesh = new Mesh(this._meshesFromObj[j].name, scene);
+            const babylonMesh = new Mesh(this._meshesFromObj[j].name, scene);
             babylonMesh._parentContainer = assetContainer;
             scene._blockEntityCollection = false;
 
@@ -787,13 +789,13 @@ export class SolidParser {
                 continue;
             }
 
-            var vertexData: VertexData = new VertexData(); //The container for the values
+            const vertexData: VertexData = new VertexData(); //The container for the values
             //Set the data for the babylonMesh
             vertexData.uvs = this._handledMesh.uvs as FloatArray;
             vertexData.indices = this._handledMesh.indices as IndicesArray;
             vertexData.positions = this._handledMesh.positions as FloatArray;
             if (this._loadingOptions.computeNormals) {
-                let normals: Array<number> = new Array<number>();
+                const normals: Array<number> = new Array<number>();
                 VertexData.ComputeNormals(this._handledMesh.positions, this._handledMesh.indices, normals);
                 vertexData.normals = normals;
             } else {

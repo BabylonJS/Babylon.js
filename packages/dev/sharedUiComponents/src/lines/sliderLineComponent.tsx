@@ -130,11 +130,11 @@ export class SliderLineComponent extends React.Component<ISliderLineComponentPro
                     min={this.props.minimum}
                     max={this.props.maximum}
                     onEnter={() => {
-                        var changed = this.prepareDataToRead(this.state.value);
+                        const changed = this.prepareDataToRead(this.state.value);
                         this.onChange(changed);
                     }}
                     onChange={(evt) => {
-                        var changed = this.prepareDataToRead(this.state.value);
+                        const changed = this.prepareDataToRead(this.state.value);
                         this.onChange(changed);
                     }}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}

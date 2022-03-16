@@ -39,7 +39,7 @@ export class LoadAnimationComponent extends React.Component<ILoadAnimationCompon
                 const parsedAnimations = JSON.parse(decoder.decode(data)).animations;
                 context.animations = [];
 
-                let animations = context.animations as Animation[];
+                const animations = context.animations as Animation[];
 
                 for (const parsedAnimation of parsedAnimations) {
                     animations.push(Animation.Parse(parsedAnimation));
@@ -62,7 +62,7 @@ export class LoadAnimationComponent extends React.Component<ILoadAnimationCompon
 
     public loadFromSnippetServer() {
         const context = this.props.context;
-        let snippetId = this._textInput.current!.value;
+        const snippetId = this._textInput.current!.value;
 
         Animation.CreateFromSnippetAsync(snippetId)
             .then((animations) => {

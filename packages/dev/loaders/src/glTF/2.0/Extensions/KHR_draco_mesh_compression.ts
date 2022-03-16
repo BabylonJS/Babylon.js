@@ -36,7 +36,10 @@ export class KHR_draco_mesh_compression implements IGLTFLoaderExtension {
 
     private _loader: GLTFLoader;
 
-    /** @hidden */
+    /**
+     * @param loader
+     * @hidden
+     */
     constructor(loader: GLTFLoader) {
         this._loader = loader;
         this.enabled = DracoCompression.DecoderAvailable && this._loader.isExtensionUsed(NAME);
@@ -48,7 +51,12 @@ export class KHR_draco_mesh_compression implements IGLTFLoaderExtension {
         (this._loader as any) = null;
     }
 
-    /** @hidden */
+    /**
+     * @param context
+     * @param primitive
+     * @param babylonMesh
+     * @hidden
+     */
     public _loadVertexDataAsync(context: string, primitive: IMeshPrimitive, babylonMesh: Mesh): Nullable<Promise<Geometry>> {
         return GLTFLoader.LoadExtensionAsync<IKHRDracoMeshCompression, Geometry>(context, primitive, this.name, (extensionContext, extension) => {
             if (primitive.mode != undefined) {
@@ -114,7 +122,7 @@ export class KHR_draco_mesh_compression implements IGLTFLoaderExtension {
             loadAttribute("WEIGHTS_0", VertexBuffer.MatricesWeightsKind);
             loadAttribute("COLOR_0", VertexBuffer.ColorKind);
 
-            var bufferView = ArrayItem.Get(extensionContext, this._loader.gltf.bufferViews, extension.bufferView) as IBufferViewDraco;
+            const bufferView = ArrayItem.Get(extensionContext, this._loader.gltf.bufferViews, extension.bufferView) as IBufferViewDraco;
             if (!bufferView._dracoBabylonGeometry) {
                 bufferView._dracoBabylonGeometry = this._loader.loadBufferViewAsync(`/bufferViews/${bufferView.index}`, bufferView).then((data) => {
                     const dracoCompression = this.dracoCompression || DracoCompression.Default;

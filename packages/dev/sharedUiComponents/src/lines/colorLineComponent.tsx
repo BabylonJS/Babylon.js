@@ -76,7 +76,7 @@ export class ColorLineComponent extends React.Component<IColorLineComponentProps
     }
 
     setColorFromString(colorString: string) {
-        let color = this.convertToColor(colorString);
+        const color = this.convertToColor(colorString);
         this.setColor(color);
     }
 
@@ -132,12 +132,12 @@ export class ColorLineComponent extends React.Component<IColorLineComponentProps
     }
 
     copyToClipboard() {
-        var element = document.createElement("div");
+        const element = document.createElement("div");
         element.textContent = this.state.color.toHexString();
         document.body.appendChild(element);
 
         if (window.getSelection) {
-            var range = document.createRange();
+            const range = document.createRange();
             range.selectNode(element);
             window.getSelection()!.removeAllRanges();
             window.getSelection()!.addRange(range);

@@ -28,7 +28,7 @@ export class RenderGridPropertyGridComponent extends React.Component<IRenderGrid
     componentDidMount() {
         const scene = UtilityLayerRenderer.DefaultKeepDepthUtilityLayer.utilityLayerScene;
 
-        for (var mesh of scene.meshes) {
+        for (const mesh of scene.meshes) {
             if (mesh.reservedDataStore && mesh.reservedDataStore.isInspectorGrid) {
                 this._gridMesh = mesh;
                 this.setState({ isEnabled: true });
@@ -41,9 +41,9 @@ export class RenderGridPropertyGridComponent extends React.Component<IRenderGrid
         const scene = UtilityLayerRenderer.DefaultKeepDepthUtilityLayer.utilityLayerScene;
 
         if (!this._gridMesh) {
-            var extend = this.props.scene.getWorldExtends();
-            var width = (extend.max.x - extend.min.x) * 5.0;
-            var depth = (extend.max.z - extend.min.z) * 5.0;
+            const extend = this.props.scene.getWorldExtends();
+            const width = (extend.max.x - extend.min.x) * 5.0;
+            const depth = (extend.max.z - extend.min.z) * 5.0;
 
             this._gridMesh = CreateGround("grid", { width: 1.0, height: 1.0, subdivisions: 1 }, scene);
             if (!this._gridMesh.reservedDataStore) {
@@ -54,7 +54,7 @@ export class RenderGridPropertyGridComponent extends React.Component<IRenderGrid
             this._gridMesh.reservedDataStore.isInspectorGrid = true;
             this._gridMesh.isPickable = false;
 
-            var groundMaterial = new GridMaterial("GridMaterial", scene);
+            const groundMaterial = new GridMaterial("GridMaterial", scene);
             groundMaterial.majorUnitFrequency = 10;
             groundMaterial.minorUnitVisibility = 0.3;
             groundMaterial.gridRatio = 0.01;

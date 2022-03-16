@@ -65,7 +65,7 @@ export class CustomMaterial extends StandardMaterial {
 
     public AttachAfterBind(mesh: Mesh | undefined, effect: Effect) {
         if (this._newUniformInstances) {
-            for (let el in this._newUniformInstances) {
+            for (const el in this._newUniformInstances) {
                 const ea = el.toString().split("-");
                 if (ea[0] == "vec2") {
                     effect.setVector2(ea[1], this._newUniformInstances[el]);
@@ -81,7 +81,7 @@ export class CustomMaterial extends StandardMaterial {
             }
         }
         if (this._newSamplerInstances) {
-            for (let el in this._newSamplerInstances) {
+            for (const el in this._newSamplerInstances) {
                 const ea = el.toString().split("-");
                 if (ea[0] == "sampler2D" && this._newSamplerInstances[el].isReady && this._newSamplerInstances[el].isReady()) {
                     effect.setTexture(ea[1], this._newSamplerInstances[el]);
@@ -122,9 +122,9 @@ export class CustomMaterial extends StandardMaterial {
         this._isCreatedShader = false;
 
         CustomMaterial.ShaderIndexer++;
-        var name: string = "custom_" + CustomMaterial.ShaderIndexer;
+        const name: string = "custom_" + CustomMaterial.ShaderIndexer;
 
-        var fn_afterBind = this._afterBind.bind(this);
+        const fn_afterBind = this._afterBind.bind(this);
         this._afterBind = (m, e) => {
             if (!e) {
                 return;

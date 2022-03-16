@@ -56,32 +56,32 @@ export class DigitalRainFontTexture extends BaseTexture {
         this.wrapV = Texture.CLAMP_ADDRESSMODE;
 
         // Get the font specific info.
-        var maxCharHeight = this.getFontHeight(font);
-        var maxCharWidth = this.getFontWidth(font);
+        const maxCharHeight = this.getFontHeight(font);
+        const maxCharWidth = this.getFontWidth(font);
 
         this._charSize = Math.max(maxCharHeight.height, maxCharWidth);
 
         // This is an approximate size, but should always be able to fit at least the maxCharCount.
-        var textureWidth = this._charSize;
-        var textureHeight = Math.ceil(this._charSize * text.length);
+        const textureWidth = this._charSize;
+        const textureHeight = Math.ceil(this._charSize * text.length);
 
         // Create the texture that will store the font characters.
         this._texture = scene.getEngine().createDynamicTexture(textureWidth, textureHeight, false, Texture.NEAREST_SAMPLINGMODE);
         //scene.getEngine().setclamp
-        var textureSize = this.getSize();
+        const textureSize = this.getSize();
 
         // Create a canvas with the final size: the one matching the texture.
-        var canvas = document.createElement("canvas");
+        const canvas = document.createElement("canvas");
         canvas.width = textureSize.width;
         canvas.height = textureSize.height;
-        var context = <CanvasRenderingContext2D>canvas.getContext("2d");
+        const context = <CanvasRenderingContext2D>canvas.getContext("2d");
         context.textBaseline = "top";
         context.font = font;
         context.fillStyle = "white";
         context.imageSmoothingEnabled = false;
 
         // Sets the text in the texture.
-        for (var i = 0; i < text.length; i++) {
+        for (let i = 0; i < text.length; i++) {
             context.fillText(text[i], 0, i * this._charSize - maxCharHeight.offset);
         }
 
@@ -95,8 +95,8 @@ export class DigitalRainFontTexture extends BaseTexture {
      * @return the max char width
      */
     private getFontWidth(font: string): number {
-        var fontDraw = document.createElement("canvas");
-        var ctx = <CanvasRenderingContext2D>fontDraw.getContext("2d");
+        const fontDraw = document.createElement("canvas");
+        const ctx = <CanvasRenderingContext2D>fontDraw.getContext("2d");
         ctx.fillStyle = "white";
         ctx.font = font;
 
@@ -110,19 +110,19 @@ export class DigitalRainFontTexture extends BaseTexture {
      * @return the max char height
      */
     private getFontHeight(font: string): { height: number; offset: number } {
-        var fontDraw = document.createElement("canvas");
-        var ctx = <CanvasRenderingContext2D>fontDraw.getContext("2d");
+        const fontDraw = document.createElement("canvas");
+        const ctx = <CanvasRenderingContext2D>fontDraw.getContext("2d");
         ctx.fillRect(0, 0, fontDraw.width, fontDraw.height);
         ctx.textBaseline = "top";
         ctx.fillStyle = "white";
         ctx.font = font;
         ctx.fillText("jH|", 0, 0);
-        var pixels = ctx.getImageData(0, 0, fontDraw.width, fontDraw.height).data;
-        var start = -1;
-        var end = -1;
-        for (var row = 0; row < fontDraw.height; row++) {
-            for (var column = 0; column < fontDraw.width; column++) {
-                var index = (row * fontDraw.width + column) * 4;
+        const pixels = ctx.getImageData(0, 0, fontDraw.width, fontDraw.height).data;
+        let start = -1;
+        let end = -1;
+        for (let row = 0; row < fontDraw.height; row++) {
+            for (let column = 0; column < fontDraw.width; column++) {
+                const index = (row * fontDraw.width + column) * 4;
                 if (pixels[index] === 0) {
                     if (column === fontDraw.width - 1 && start !== -1) {
                         end = row;
@@ -156,7 +156,7 @@ export class DigitalRainFontTexture extends BaseTexture {
      * @return the parsed texture
      */
     public static Parse(source: any, scene: Scene): DigitalRainFontTexture {
-        var texture = SerializationHelper.Parse(() => new DigitalRainFontTexture(source.name, source.font, source.text, scene), source, scene, null);
+        const texture = SerializationHelper.Parse(() => new DigitalRainFontTexture(source.name, source.font, source.text, scene), source, scene, null);
 
         return texture;
     }
@@ -217,6 +217,7 @@ export class DigitalRainPostProcess extends PostProcess {
      * Instantiates a new Digital Rain Post Process.
      * @param name the name to give to the postprocess
      * @camera the camera to apply the post process to.
+     * @param camera
      * @param options can either be the font name or an option object following the IDigitalRainPostProcessOptions format
      */
     constructor(name: string, camera: Camera, options?: string | IDigitalRainPostProcessOptions) {
@@ -236,8 +237,8 @@ export class DigitalRainPostProcess extends PostProcess {
         );
 
         // Default values.
-        var font = "15px Monospace";
-        var characterSet =
+        let font = "15px Monospace";
+        const characterSet =
             "古池や蛙飛び込む水の音ふるいけやかわずとびこむみずのおと初しぐれ猿も小蓑をほしげ也はつしぐれさるもこみのをほしげなり江戸の雨何石呑んだ時鳥えどのあめなんごくのんだほととぎす";
 
         // Use options.
@@ -252,11 +253,11 @@ export class DigitalRainPostProcess extends PostProcess {
         }
 
         this._digitalRainFontTexture = new DigitalRainFontTexture(name, font, characterSet, camera.getScene());
-        var textureSize = this._digitalRainFontTexture.getSize();
+        const textureSize = this._digitalRainFontTexture.getSize();
 
-        var alpha = 0.0;
-        var cosTimeZeroOne = 0.0;
-        var matrix = Matrix.FromValues(
+        let alpha = 0.0;
+        let cosTimeZeroOne = 0.0;
+        const matrix = Matrix.FromValues(
             Math.random(),
             Math.random(),
             Math.random(),

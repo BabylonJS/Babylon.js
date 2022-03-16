@@ -15,8 +15,8 @@ export class EnvironmentTools {
     public static SkyboxesNames = ["Default", "Studio"];
 
     public static LoadSkyboxPathTexture(scene: Scene) {
-        var defaultSkyboxIndex = Math.max(0, LocalStorageHelper.ReadLocalStorageValue("defaultSkyboxId", 0));
-        let path = this.SkyboxPath || this.Skyboxes[defaultSkyboxIndex];
+        const defaultSkyboxIndex = Math.max(0, LocalStorageHelper.ReadLocalStorageValue("defaultSkyboxId", 0));
+        const path = this.SkyboxPath || this.Skyboxes[defaultSkyboxIndex];
         if (path.indexOf(".hdr") === path.length - 4) {
             return new HDRCubeTexture(path, scene, 256, false, true, false, true);
         }
@@ -24,25 +24,25 @@ export class EnvironmentTools {
     }
 
     public static GetActiveSkyboxName() {
-        var defaultSkyboxIndex = Math.max(0, LocalStorageHelper.ReadLocalStorageValue("defaultSkyboxId", 0));
+        const defaultSkyboxIndex = Math.max(0, LocalStorageHelper.ReadLocalStorageValue("defaultSkyboxId", 0));
         return this.SkyboxesNames[defaultSkyboxIndex];
     }
 
     public static HookWithEnvironmentChange(globalState: GlobalState) {
         globalState.onEnvironmentChanged.add((option) => {
             this.SkyboxPath = "";
-            let index = EnvironmentTools.SkyboxesNames.indexOf(option);
+            const index = EnvironmentTools.SkyboxesNames.indexOf(option);
 
             if (typeof Storage !== "undefined") {
                 localStorage.setItem("defaultSkyboxId", index.toString());
             }
 
-            var currentScene = EngineStore.LastCreatedScene!;
+            const currentScene = EngineStore.LastCreatedScene!;
             currentScene.environmentTexture = this.LoadSkyboxPathTexture(currentScene);
-            for (var i = 0; i < currentScene.materials.length; i++) {
-                var material = currentScene.materials[i] as StandardMaterial | PBRMaterial;
+            for (let i = 0; i < currentScene.materials.length; i++) {
+                const material = currentScene.materials[i] as StandardMaterial | PBRMaterial;
                 if (material.name === "skyBox") {
-                    var reflectionTexture = material.reflectionTexture;
+                    const reflectionTexture = material.reflectionTexture;
                     if (reflectionTexture && reflectionTexture.coordinatesMode === Texture.SKYBOX_MODE) {
                         material.reflectionTexture = currentScene.environmentTexture.clone();
                         if (material.reflectionTexture) {

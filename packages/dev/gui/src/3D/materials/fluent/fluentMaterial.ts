@@ -142,8 +142,8 @@ export class FluentMaterial extends PushMaterial {
             subMesh.materialDefines = new FluentMaterialDefines();
         }
 
-        var scene = this.getScene();
-        var defines = <FluentMaterialDefines>subMesh.materialDefines;
+        const scene = this.getScene();
+        const defines = <FluentMaterialDefines>subMesh.materialDefines;
         if (!this.checkReadyOnEveryCall && subMesh.effect) {
             if (defines._renderId === scene.getRenderId()) {
                 return true;
@@ -166,20 +166,20 @@ export class FluentMaterial extends PushMaterial {
             }
         }
 
-        var engine = scene.getEngine();
+        const engine = scene.getEngine();
         // Get correct effect
         if (defines.isDirty) {
             defines.markAsProcessed();
             scene.resetCachedMaterial();
 
             //Attributes
-            var attribs = [VertexBuffer.PositionKind];
+            const attribs = [VertexBuffer.PositionKind];
             attribs.push(VertexBuffer.NormalKind);
             attribs.push(VertexBuffer.UVKind);
 
-            var shaderName = "fluent";
+            const shaderName = "fluent";
 
-            var uniforms = [
+            const uniforms = [
                 "world",
                 "viewProjection",
                 "innerGlowColor",
@@ -194,8 +194,8 @@ export class FluentMaterial extends PushMaterial {
                 "textureMatrix",
             ];
 
-            var samplers = ["albedoSampler"];
-            var uniformBuffers = new Array<string>();
+            const samplers = ["albedoSampler"];
+            const uniformBuffers = new Array<string>();
 
             MaterialHelper.PrepareUniformsAndSamplersList(<IEffectCreationOptions>{
                 uniformsNames: uniforms,
@@ -205,7 +205,7 @@ export class FluentMaterial extends PushMaterial {
                 maxSimultaneousLights: 4,
             });
 
-            var join = defines.toString();
+            const join = defines.toString();
             subMesh.setEffect(
                 scene.getEngine().createEffect(
                     shaderName,
@@ -238,14 +238,14 @@ export class FluentMaterial extends PushMaterial {
     }
 
     public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
-        var scene = this.getScene();
+        const scene = this.getScene();
 
-        var defines = <FluentMaterialDefines>subMesh.materialDefines;
+        const defines = <FluentMaterialDefines>subMesh.materialDefines;
         if (!defines) {
             return;
         }
 
-        var effect = subMesh.effect;
+        const effect = subMesh.effect;
         if (!effect) {
             return;
         }
@@ -288,7 +288,7 @@ export class FluentMaterial extends PushMaterial {
     }
 
     public getActiveTextures(): BaseTexture[] {
-        var activeTextures = super.getActiveTextures();
+        const activeTextures = super.getActiveTextures();
 
         return activeTextures;
     }
@@ -310,7 +310,7 @@ export class FluentMaterial extends PushMaterial {
     }
 
     public serialize(): any {
-        var serializationObject = super.serialize();
+        const serializationObject = super.serialize();
         serializationObject.customType = "BABYLON.GUI.FluentMaterial";
         return serializationObject;
     }

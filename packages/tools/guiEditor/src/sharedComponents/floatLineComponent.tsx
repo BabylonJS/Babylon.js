@@ -27,7 +27,7 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
     private _digits: number;
     constructor(props: IFloatLineComponentProps) {
         super(props);
-        let currentValue = this.props.target[this.props.propertyName];
+        const currentValue = this.props.target[this.props.propertyName];
 
         (this._digits == this.props.digits) == undefined ? 2 : this.props.digits;
 
@@ -111,7 +111,7 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
     }
 
     render() {
-        let className = this.props.smallUI ? "short" : "value";
+        const className = this.props.smallUI ? "short" : "value";
 
         return (
             <div>

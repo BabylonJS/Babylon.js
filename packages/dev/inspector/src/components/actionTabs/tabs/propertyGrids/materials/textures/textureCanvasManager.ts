@@ -648,17 +648,17 @@ export class TextureCanvasManager {
         Tools.ReadFile(
             file,
             (data) => {
-                var blob = new Blob([data], { type: "octet/stream" });
+                const blob = new Blob([data], { type: "octet/stream" });
                 let extension: string | undefined = undefined;
                 if (file.name.toLowerCase().indexOf(".dds") > 0) {
                     extension = ".dds";
                 } else if (file.name.toLowerCase().indexOf(".env") > 0) {
                     extension = ".env";
                 }
-                var reader = new FileReader();
+                const reader = new FileReader();
                 reader.readAsDataURL(blob);
                 reader.onloadend = () => {
-                    let base64data = reader.result as string;
+                    const base64data = reader.result as string;
 
                     if (extension === ".dds" || extension === ".env") {
                         (this._originalTexture as CubeTexture).updateURL(base64data, extension, () => this.grabOriginalTexture());

@@ -22,7 +22,7 @@ export class QuaternionLineComponent extends React.Component<IQuaternionLineComp
     constructor(props: IQuaternionLineComponentProps) {
         super(props);
 
-        let quat = this.props.target[this.props.propertyName].clone();
+        const quat = this.props.target[this.props.propertyName].clone();
 
         this.state = { isExpanded: false, value: quat, eulerValue: quat.toEulerAngles() };
     }
@@ -109,7 +109,7 @@ export class QuaternionLineComponent extends React.Component<IQuaternionLineComp
     }
 
     updateQuaternionFromEuler() {
-        let quat = this.state.eulerValue.toQuaternion();
+        const quat = this.state.eulerValue.toQuaternion();
         this.state.value.x = quat.x;
         this.state.value.y = quat.y;
         this.state.value.z = quat.z;
@@ -142,8 +142,8 @@ export class QuaternionLineComponent extends React.Component<IQuaternionLineComp
     render() {
         const chevron = this.state.isExpanded ? <FontAwesomeIcon icon={faMinus} /> : <FontAwesomeIcon icon={faPlus} />;
 
-        let quat = this.state.value;
-        let eulerDegrees = this.state.eulerValue.clone();
+        const quat = this.state.value;
+        const eulerDegrees = this.state.eulerValue.clone();
         eulerDegrees.x = Tools.ToDegrees(eulerDegrees.x);
         eulerDegrees.y = Tools.ToDegrees(eulerDegrees.y);
         eulerDegrees.z = Tools.ToDegrees(eulerDegrees.z);

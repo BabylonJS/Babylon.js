@@ -51,9 +51,12 @@ export class SelectorGroup {
         this._groupHeader.text = label;
     }
 
-    /** @hidden */
+    /**
+     * @param text
+     * @hidden
+     */
     private _addGroupHeader(text: string): TextBlock {
-        var groupHeading = new TextBlock("groupHead", text);
+        const groupHeading = new TextBlock("groupHead", text);
         groupHeading.width = 0.9;
         groupHeading.height = "30px";
         groupHeading.textWrapping = true;
@@ -65,7 +68,10 @@ export class SelectorGroup {
         return groupHeading;
     }
 
-    /** @hidden*/
+    /**
+     * @param selectorNb
+     * @hidden
+     */
     public _getSelector(selectorNb: number) {
         if (selectorNb < 0 || selectorNb >= this._selectors.length) {
             return;
@@ -96,7 +102,7 @@ export class CheckboxGroup extends SelectorGroup {
      */
     public addCheckbox(text: string, func = (s: boolean) => {}, checked: boolean = false): void {
         var checked = checked || false;
-        var button = new Checkbox();
+        const button = new Checkbox();
         button.width = "20px";
         button.height = "20px";
         button.color = "#364249";
@@ -107,7 +113,7 @@ export class CheckboxGroup extends SelectorGroup {
             func(state);
         });
 
-        var _selector = Control.AddHeader(button, text, "200px", { isHorizontal: true, controlFirst: true });
+        const _selector = Control.AddHeader(button, text, "200px", { isHorizontal: true, controlFirst: true });
         _selector.height = "30px";
         _selector.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
         _selector.left = "4px";
@@ -122,22 +128,38 @@ export class CheckboxGroup extends SelectorGroup {
         }
     }
 
-    /** @hidden */
+    /**
+     * @param selectorNb
+     * @param label
+     * @hidden
+     */
     public _setSelectorLabel(selectorNb: number, label: string) {
         (<TextBlock>this.selectors[selectorNb].children[1]).text = label;
     }
 
-    /** @hidden */
+    /**
+     * @param selectorNb
+     * @param color
+     * @hidden
+     */
     public _setSelectorLabelColor(selectorNb: number, color: string) {
         (<TextBlock>this.selectors[selectorNb].children[1]).color = color;
     }
 
-    /** @hidden */
+    /**
+     * @param selectorNb
+     * @param color
+     * @hidden
+     */
     public _setSelectorButtonColor(selectorNb: number, color: string) {
         this.selectors[selectorNb].children[0].color = color;
     }
 
-    /** @hidden */
+    /**
+     * @param selectorNb
+     * @param color
+     * @hidden
+     */
     public _setSelectorButtonBackground(selectorNb: number, color: string) {
         (<Checkbox>this.selectors[selectorNb].children[0]).background = color;
     }
@@ -155,8 +177,8 @@ export class RadioGroup extends SelectorGroup {
      * @param checked is true when Selector is checked
      */
     public addRadio(label: string, func = (n: number) => {}, checked = false): void {
-        var nb = this._selectNb++;
-        var button = new RadioButton();
+        const nb = this._selectNb++;
+        const button = new RadioButton();
         button.name = label;
         button.width = "20px";
         button.height = "20px";
@@ -171,7 +193,7 @@ export class RadioGroup extends SelectorGroup {
             }
         });
 
-        var _selector = Control.AddHeader(button, label, "200px", { isHorizontal: true, controlFirst: true });
+        const _selector = Control.AddHeader(button, label, "200px", { isHorizontal: true, controlFirst: true });
         _selector.height = "30px";
         _selector.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
         _selector.left = "4px";
@@ -185,22 +207,38 @@ export class RadioGroup extends SelectorGroup {
         }
     }
 
-    /** @hidden */
+    /**
+     * @param selectorNb
+     * @param label
+     * @hidden
+     */
     public _setSelectorLabel(selectorNb: number, label: string) {
         (<TextBlock>this.selectors[selectorNb].children[1]).text = label;
     }
 
-    /** @hidden */
+    /**
+     * @param selectorNb
+     * @param color
+     * @hidden
+     */
     public _setSelectorLabelColor(selectorNb: number, color: string) {
         (<TextBlock>this.selectors[selectorNb].children[1]).color = color;
     }
 
-    /** @hidden */
+    /**
+     * @param selectorNb
+     * @param color
+     * @hidden
+     */
     public _setSelectorButtonColor(selectorNb: number, color: string) {
         this.selectors[selectorNb].children[0].color = color;
     }
 
-    /** @hidden */
+    /**
+     * @param selectorNb
+     * @param color
+     * @hidden
+     */
     public _setSelectorButtonBackground(selectorNb: number, color: string) {
         (<RadioButton>this.selectors[selectorNb].children[0]).background = color;
     }
@@ -231,7 +269,7 @@ export class SliderGroup extends SelectorGroup {
             return v | 0;
         }
     ): void {
-        var button = new Slider();
+        const button = new Slider();
         button.name = unit;
         button.value = value;
         button.minimum = min;
@@ -250,7 +288,7 @@ export class SliderGroup extends SelectorGroup {
             func(value);
         });
 
-        var _selector = Control.AddHeader(button, label + ": " + onValueChange(value) + " " + unit, "30px", { isHorizontal: false, controlFirst: false });
+        const _selector = Control.AddHeader(button, label + ": " + onValueChange(value) + " " + unit, "30px", { isHorizontal: false, controlFirst: false });
         _selector.height = "60px";
         _selector.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
         _selector.left = "4px";
@@ -264,24 +302,40 @@ export class SliderGroup extends SelectorGroup {
         }
     }
 
-    /** @hidden */
+    /**
+     * @param selectorNb
+     * @param label
+     * @hidden
+     */
     public _setSelectorLabel(selectorNb: number, label: string) {
         this.selectors[selectorNb].children[0].name = label;
         (<TextBlock>this.selectors[selectorNb].children[0]).text =
             label + ": " + (<Slider>this.selectors[selectorNb].children[1]).value + " " + this.selectors[selectorNb].children[1].name;
     }
 
-    /** @hidden */
+    /**
+     * @param selectorNb
+     * @param color
+     * @hidden
+     */
     public _setSelectorLabelColor(selectorNb: number, color: string) {
         (<TextBlock>this.selectors[selectorNb].children[0]).color = color;
     }
 
-    /** @hidden */
+    /**
+     * @param selectorNb
+     * @param color
+     * @hidden
+     */
     public _setSelectorButtonColor(selectorNb: number, color: string) {
         this.selectors[selectorNb].children[1].color = color;
     }
 
-    /** @hidden */
+    /**
+     * @param selectorNb
+     * @param color
+     * @hidden
+     */
     public _setSelectorButtonBackground(selectorNb: number, color: string) {
         (<Slider>this.selectors[selectorNb].children[1]).background = color;
     }
@@ -323,7 +377,7 @@ export class SelectionPanel extends Rectangle {
         this._panel.left = 5;
         this._panel.width = 0.95;
         if (groups.length > 0) {
-            for (var i = 0; i < groups.length - 1; i++) {
+            for (let i = 0; i < groups.length - 1; i++) {
                 this._panel.addControl(groups[i].groupPanel);
                 this._addSpacer();
             }
@@ -355,7 +409,7 @@ export class SelectionPanel extends Rectangle {
     }
 
     private _setHeaderColor() {
-        for (var i = 0; i < this._groups.length; i++) {
+        for (let i = 0; i < this._groups.length; i++) {
             this._groups[i].groupPanel.children[0].color = this._headerColor;
         }
     }
@@ -375,8 +429,8 @@ export class SelectionPanel extends Rectangle {
     }
 
     private _setbuttonColor() {
-        for (var i = 0; i < this._groups.length; i++) {
-            for (var j = 0; j < this._groups[i].selectors.length; j++) {
+        for (let i = 0; i < this._groups.length; i++) {
+            for (let j = 0; j < this._groups[i].selectors.length; j++) {
                 (<CheckboxGroup | RadioGroup | SliderGroup>this._groups[i])._setSelectorButtonColor(j, this._buttonColor);
             }
         }
@@ -396,8 +450,8 @@ export class SelectionPanel extends Rectangle {
     }
 
     private _setLabelColor() {
-        for (var i = 0; i < this._groups.length; i++) {
-            for (var j = 0; j < this._groups[i].selectors.length; j++) {
+        for (let i = 0; i < this._groups.length; i++) {
+            for (let j = 0; j < this._groups[i].selectors.length; j++) {
                 (<CheckboxGroup | RadioGroup | SliderGroup>this._groups[i])._setSelectorLabelColor(j, this._labelColor);
             }
         }
@@ -418,8 +472,8 @@ export class SelectionPanel extends Rectangle {
     }
 
     private _setButtonBackground() {
-        for (var i = 0; i < this._groups.length; i++) {
-            for (var j = 0; j < this._groups[i].selectors.length; j++) {
+        for (let i = 0; i < this._groups.length; i++) {
+            for (let j = 0; j < this._groups[i].selectors.length; j++) {
                 (<CheckboxGroup | RadioGroup | SliderGroup>this._groups[i])._setSelectorButtonBackground(j, this._buttonBackground);
             }
         }
@@ -440,7 +494,7 @@ export class SelectionPanel extends Rectangle {
     }
 
     private _setBarColor() {
-        for (var i = 0; i < this._bars.length; i++) {
+        for (let i = 0; i < this._bars.length; i++) {
             this._bars[i].children[0].background = this._barColor;
         }
     }
@@ -460,7 +514,7 @@ export class SelectionPanel extends Rectangle {
     }
 
     private _setBarHeight() {
-        for (var i = 0; i < this._bars.length; i++) {
+        for (let i = 0; i < this._bars.length; i++) {
             this._bars[i].children[0].height = this._barHeight;
         }
     }
@@ -480,19 +534,19 @@ export class SelectionPanel extends Rectangle {
     }
 
     private _setSpacerHeight() {
-        for (var i = 0; i < this._bars.length; i++) {
+        for (let i = 0; i < this._bars.length; i++) {
             this._bars[i].height = this._spacerHeight;
         }
     }
 
     /** Adds a bar between groups */
     private _addSpacer(): void {
-        var separator = new Container();
+        const separator = new Container();
         separator.width = 1;
         separator.height = this._spacerHeight;
         separator.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
 
-        var bar = new Rectangle();
+        const bar = new Rectangle();
         bar.width = 1;
         bar.height = this._barHeight;
         bar.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
@@ -515,7 +569,7 @@ export class SelectionPanel extends Rectangle {
         this._panel.addControl(group.groupPanel);
         this._groups.push(group);
         group.groupPanel.children[0].color = this._headerColor;
-        for (var j = 0; j < group.selectors.length; j++) {
+        for (let j = 0; j < group.selectors.length; j++) {
             (<CheckboxGroup | RadioGroup | SliderGroup>group)._setSelectorButtonColor(j, this._buttonColor);
             (<CheckboxGroup | RadioGroup | SliderGroup>group)._setSelectorButtonBackground(j, this._buttonBackground);
         }
@@ -528,7 +582,7 @@ export class SelectionPanel extends Rectangle {
         if (groupNb < 0 || groupNb >= this._groups.length) {
             return;
         }
-        var group = this._groups[groupNb];
+        const group = this._groups[groupNb];
         this._panel.removeControl(group.groupPanel);
         this._groups.splice(groupNb, 1);
         if (groupNb < this._bars.length) {
@@ -545,7 +599,7 @@ export class SelectionPanel extends Rectangle {
         if (groupNb < 0 || groupNb >= this._groups.length) {
             return;
         }
-        var group = this._groups[groupNb];
+        const group = this._groups[groupNb];
         (<TextBlock>group.groupPanel.children[0]).text = label;
     }
 
@@ -558,7 +612,7 @@ export class SelectionPanel extends Rectangle {
         if (groupNb < 0 || groupNb >= this._groups.length) {
             return;
         }
-        var group = this._groups[groupNb];
+        const group = this._groups[groupNb];
         if (selectorNb < 0 || selectorNb >= group.selectors.length) {
             return;
         }
@@ -573,7 +627,7 @@ export class SelectionPanel extends Rectangle {
         if (groupNb < 0 || groupNb >= this._groups.length) {
             return;
         }
-        var group = this._groups[groupNb];
+        const group = this._groups[groupNb];
         if (selectorNb < 0 || selectorNb >= group.selectors.length) {
             return;
         }
@@ -590,7 +644,7 @@ export class SelectionPanel extends Rectangle {
         if (groupNb < 0 || groupNb >= this._groups.length) {
             return;
         }
-        var group = this._groups[groupNb];
+        const group = this._groups[groupNb];
         (<CheckboxGroup>group).addCheckbox(label, func, checked);
     }
 
@@ -604,7 +658,7 @@ export class SelectionPanel extends Rectangle {
         if (groupNb < 0 || groupNb >= this._groups.length) {
             return;
         }
-        var group = this._groups[groupNb];
+        const group = this._groups[groupNb];
         (<RadioGroup>group).addRadio(label, func, checked);
     }
 
@@ -634,7 +688,7 @@ export class SelectionPanel extends Rectangle {
         if (groupNb < 0 || groupNb >= this._groups.length) {
             return;
         }
-        var group = this._groups[groupNb];
+        const group = this._groups[groupNb];
         (<SliderGroup>group).addSlider(label, func, unit, min, max, value, onVal);
     }
 }

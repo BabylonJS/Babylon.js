@@ -45,7 +45,7 @@ export class NodeMaterialPropertyGridComponent extends React.Component<INodeMate
 
         const onDebugSelectionChangeObservable = this._onDebugSelectionChangeObservable;
 
-        let textureBlocks = material.getTextureBlocks();
+        const textureBlocks = material.getTextureBlocks();
 
         if (!textureBlocks || textureBlocks.length === 0) {
             return null;
@@ -73,7 +73,7 @@ export class NodeMaterialPropertyGridComponent extends React.Component<INodeMate
     renderInputBlock(block: InputBlock) {
         switch (block.type) {
             case NodeMaterialBlockConnectionPointTypes.Float:
-                let cantDisplaySlider = isNaN(block.min) || isNaN(block.max) || block.min === block.max;
+                const cantDisplaySlider = isNaN(block.min) || isNaN(block.max) || block.min === block.max;
                 return (
                     <div key={block.name}>
                         {block.isBoolean && (
@@ -165,7 +165,7 @@ export class NodeMaterialPropertyGridComponent extends React.Component<INodeMate
     }
 
     renderInputValues() {
-        let configurableInputBlocks = this.props.material
+        const configurableInputBlocks = this.props.material
             .getInputBlocks()
             .filter((block) => {
                 return block.visibleInInspector && block.isUniform && !block.isSystemValue;
@@ -174,7 +174,7 @@ export class NodeMaterialPropertyGridComponent extends React.Component<INodeMate
                 return a.name.localeCompare(b.name);
             });
 
-        let namedGroups: string[] = [];
+        const namedGroups: string[] = [];
         configurableInputBlocks.forEach((block) => {
             if (!block.groupInInspector) {
                 return;
@@ -186,7 +186,7 @@ export class NodeMaterialPropertyGridComponent extends React.Component<INodeMate
         });
         namedGroups.sort();
 
-        let gradiantNodeMaterialBlocks = this.props.material.attachedBlocks
+        const gradiantNodeMaterialBlocks = this.props.material.attachedBlocks
             .filter((block) => {
                 return block.visibleInInspector && block.getClassName() === "GradientBlock";
             })
@@ -194,7 +194,7 @@ export class NodeMaterialPropertyGridComponent extends React.Component<INodeMate
                 return a.name.localeCompare(b.name);
             });
 
-        let inputBlockContainer =
+        const inputBlockContainer =
             configurableInputBlocks.length > 0 ? (
                 <LineContainerComponent title="INPUTS" selection={this.props.globalState}>
                     {" "}

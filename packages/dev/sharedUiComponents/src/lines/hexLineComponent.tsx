@@ -29,7 +29,7 @@ export class HexLineComponent extends React.Component<IHexLineComponentProps, { 
     constructor(props: IHexLineComponentProps) {
         super(props);
 
-        let currentValue = this.props.target[this.props.propertyName];
+        const currentValue = this.props.target[this.props.propertyName];
         this.state = { value: currentValue ? (this.props.isInteger ? currentValue.toFixed(0) : currentValue.toFixed(this.props.digits || 3)) : "0" };
         this._store = currentValue;
     }
@@ -86,7 +86,7 @@ export class HexLineComponent extends React.Component<IHexLineComponentProps, { 
             }
         }
 
-        let valueSubstr = valueString.substr(2);
+        const valueSubstr = valueString.substr(2);
         if (valueSubstr != "" && /^[0-9A-Fa-f]+$/g.test(valueSubstr) == false) {
             return;
         }
@@ -95,7 +95,7 @@ export class HexLineComponent extends React.Component<IHexLineComponentProps, { 
             return;
         }
 
-        let valueStringAsHex = this.convertToHexString(valueString);
+        const valueStringAsHex = this.convertToHexString(valueString);
         let valueAsNumber: number;
 
         valueAsNumber = parseInt(valueStringAsHex);
@@ -140,7 +140,7 @@ export class HexLineComponent extends React.Component<IHexLineComponentProps, { 
     render() {
         let valueAsHex: string;
         if (this._propertyChange) {
-            let valueAsNumber = parseInt(this.state.value);
+            const valueAsNumber = parseInt(this.state.value);
             valueAsHex = valueAsNumber.toString(16);
             let hex0String = "";
             for (let i = 0; i < 8 - valueAsHex.length; i++) {

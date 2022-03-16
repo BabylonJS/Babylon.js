@@ -43,9 +43,9 @@ export class ExtensionsComponent extends React.Component<IExtensionsComponentPro
             return null;
         }
 
-        let options = [];
+        const options = [];
 
-        for (var group of this.props.extensibilityGroups) {
+        for (const group of this.props.extensibilityGroups) {
             if (group.predicate(this.props.target)) {
                 options.push(...group.entries);
             }

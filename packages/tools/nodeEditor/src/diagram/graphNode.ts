@@ -59,7 +59,7 @@ export class GraphNode {
             this._upateNodePortNames();
         }
 
-        for (var link of this._links) {
+        for (const link of this._links) {
             link.isVisible = value;
         }
 
@@ -67,7 +67,7 @@ export class GraphNode {
     }
 
     private _upateNodePortNames() {
-        for (var port of this._inputPorts.concat(this._outputPorts)) {
+        for (const port of this._inputPorts.concat(this._outputPorts)) {
             if (port.hasLabel()) {
                 port.portName = port.connectionPoint.displayName || port.connectionPoint.name;
             }
@@ -166,7 +166,7 @@ export class GraphNode {
 
         if (!value) {
             this._visual.classList.remove("selected");
-            let indexInSelection = this._ownerCanvas.selectedNodes.indexOf(this);
+            const indexInSelection = this._ownerCanvas.selectedNodes.indexOf(this);
 
             if (indexInSelection > -1) {
                 this._ownerCanvas.selectedNodes.splice(indexInSelection, 1);
@@ -201,7 +201,7 @@ export class GraphNode {
 
         this._onSelectionBoxMovedObserver = this._globalState.onSelectionBoxMoved.add((rect1) => {
             const rect2 = this._visual.getBoundingClientRect();
-            var overlap = !(rect1.right < rect2.left || rect1.left > rect2.right || rect1.bottom < rect2.top || rect1.top > rect2.bottom);
+            const overlap = !(rect1.right < rect2.left || rect1.left > rect2.right || rect1.bottom < rect2.top || rect1.top > rect2.bottom);
 
             this.isSelected = overlap;
         });
@@ -235,7 +235,7 @@ export class GraphNode {
 
     public getPortForConnectionPoint(point: NodeMaterialConnectionPoint) {
         for (var port of this._inputPorts) {
-            let attachedPoint = port.connectionPoint;
+            const attachedPoint = port.connectionPoint;
 
             if (attachedPoint === point) {
                 return port;
@@ -243,7 +243,7 @@ export class GraphNode {
         }
 
         for (var port of this._outputPorts) {
-            let attachedPoint = port.connectionPoint;
+            const attachedPoint = port.connectionPoint;
 
             if (attachedPoint === point) {
                 return port;
@@ -263,7 +263,7 @@ export class GraphNode {
         }
 
         // Frames
-        for (var frame of this._ownerCanvas.frames) {
+        for (const frame of this._ownerCanvas.frames) {
             frame.syncNode(this);
         }
     }
@@ -272,7 +272,7 @@ export class GraphNode {
         if (this._ownerCanvas._isLoading) {
             return;
         }
-        for (var link of this._links) {
+        for (const link of this._links) {
             link.update();
         }
     }
@@ -282,7 +282,7 @@ export class GraphNode {
             this._header.innerHTML = this._displayManager.getHeaderText(this.block);
             this._displayManager.updatePreviewContent(this.block, this._content);
             this._visual.style.background = this._displayManager.getBackgroundColor(this.block);
-            let additionalClass = this._displayManager.getHeaderClass(this.block);
+            const additionalClass = this._displayManager.getHeaderClass(this.block);
             this._header.classList.value = "header";
             this._headerContainer.classList.value = "header-container";
             if (additionalClass) {
@@ -301,7 +301,7 @@ export class GraphNode {
         }
 
         if (this.enclosingFrameId !== -1) {
-            let index = this._ownerCanvas.frames.findIndex((frame) => frame.id === this.enclosingFrameId);
+            const index = this._ownerCanvas.frames.findIndex((frame) => frame.id === this.enclosingFrameId);
             if (index >= 0 && this._ownerCanvas.frames[index].isCollapsed) {
                 this._ownerCanvas.frames[index].redrawFramePorts();
             }
@@ -331,7 +331,7 @@ export class GraphNode {
 
         evt.stopPropagation();
 
-        for (var selectedNode of this._ownerCanvas.selectedNodes) {
+        for (const selectedNode of this._ownerCanvas.selectedNodes) {
             selectedNode.cleanAccumulation();
         }
 
@@ -349,7 +349,7 @@ export class GraphNode {
     private _onUp(evt: PointerEvent) {
         evt.stopPropagation();
 
-        for (var selectedNode of this._ownerCanvas.selectedNodes) {
+        for (const selectedNode of this._ownerCanvas.selectedNodes) {
             selectedNode.cleanAccumulation();
         }
 
@@ -363,14 +363,14 @@ export class GraphNode {
             return;
         }
 
-        let newX = (evt.clientX - this._mouseStartPointX) / this._ownerCanvas.zoom;
-        let newY = (evt.clientY - this._mouseStartPointY) / this._ownerCanvas.zoom;
+        const newX = (evt.clientX - this._mouseStartPointX) / this._ownerCanvas.zoom;
+        const newY = (evt.clientY - this._mouseStartPointY) / this._ownerCanvas.zoom;
 
-        for (var selectedNode of this._ownerCanvas.selectedNodes) {
+        for (const selectedNode of this._ownerCanvas.selectedNodes) {
             selectedNode.x += newX;
             selectedNode.y += newY;
         }
-        for (let frame of this._ownerCanvas.selectedFrames) {
+        for (const frame of this._ownerCanvas.selectedFrames) {
             frame._moveFrame(newX, newY);
         }
 
@@ -397,7 +397,7 @@ export class GraphNode {
         this._ownerCanvas = owner;
 
         // Display manager
-        let displayManagerClass = DisplayLedger.RegisteredControls[this.block.getClassName()];
+        const displayManagerClass = DisplayLedger.RegisteredControls[this.block.getClassName()];
 
         if (displayManagerClass) {
             this._displayManager = new displayManagerClass();
@@ -428,7 +428,7 @@ export class GraphNode {
         this._promotionWarning.appendChild(img);
         this._visual.appendChild(this._promotionWarning);
 
-        var selectionBorder = root.ownerDocument!.createElement("div");
+        const selectionBorder = root.ownerDocument!.createElement("div");
         selectionBorder.classList.add("selection-border");
         this._visual.appendChild(selectionBorder);
 
@@ -457,11 +457,11 @@ export class GraphNode {
         this._visual.appendChild(this._comments);
 
         // Connections
-        for (var input of this.block.inputs) {
+        for (const input of this.block.inputs) {
             this._inputPorts.push(NodePort.CreatePortElement(input, this, this._inputsContainer, this._displayManager, this._globalState));
         }
 
-        for (var output of this.block.outputs) {
+        for (const output of this.block.outputs) {
             this._outputPorts.push(NodePort.CreatePortElement(output, this, this._outputsContainer, this._displayManager, this._globalState));
         }
 
@@ -500,8 +500,8 @@ export class GraphNode {
             port.dispose();
         }
 
-        let links = this._links.slice(0);
-        for (var link of links) {
+        const links = this._links.slice(0);
+        for (const link of links) {
             link.dispose();
         }
 

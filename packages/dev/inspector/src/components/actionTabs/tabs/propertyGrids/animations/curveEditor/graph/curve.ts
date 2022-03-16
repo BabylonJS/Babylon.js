@@ -48,7 +48,7 @@ export class Curve {
         let pathData = `M${convertX(keys[0].frame)} ${convertY(keys[0].value)}`;
 
         const dataType = this.animation.dataType;
-        for (var keyIndex = 1; keyIndex < keys.length; keyIndex++) {
+        for (let keyIndex = 1; keyIndex < keys.length; keyIndex++) {
             const outTangent = keys[keyIndex - 1].outTangent;
             const inTangent = keys[keyIndex].inTangent;
             const currentFrame = keys[keyIndex].frame;
@@ -72,7 +72,7 @@ export class Curve {
             }
 
             // Let's sample the curve else
-            for (var frame = prevFrame; frame < currentFrame; frame += frameDist / Curve.SampleRate) {
+            for (let frame = prevFrame; frame < currentFrame; frame += frameDist / Curve.SampleRate) {
                 const keyValue = this.animation.evaluate(frame);
                 const value = this.property ? keyValue[this.property] : keyValue;
                 pathData += ` L${convertX(frame)} ${convertY(value)}`;
@@ -201,7 +201,7 @@ export class Curve {
         const keys = this.keys;
         keys[keyId].inTangent = slope;
 
-        let animationKeys = this.animation.getKeys();
+        const animationKeys = this.animation.getKeys();
         if (this.property) {
             if (!animationKeys[keyId].inTangent) {
                 animationKeys[keyId].inTangent = this.tangentBuilder!();
@@ -228,7 +228,7 @@ export class Curve {
         const keys = this.keys;
         keys[keyId].outTangent = slope;
 
-        let animationKeys = this.animation.getKeys();
+        const animationKeys = this.animation.getKeys();
 
         if (this.property) {
             if (!animationKeys[keyId + 1].inTangent) {
@@ -263,7 +263,7 @@ export class Curve {
     public updateKeyValue(keyId: number, value: number) {
         this.keys[keyId].value = value;
 
-        let sourceKey = this.animation.getKeys()[keyId];
+        const sourceKey = this.animation.getKeys()[keyId];
 
         if (this.property) {
             sourceKey.value[this.property] = value;

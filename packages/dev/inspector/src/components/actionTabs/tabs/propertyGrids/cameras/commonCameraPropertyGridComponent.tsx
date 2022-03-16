@@ -32,7 +32,7 @@ export class CommonCameraPropertyGridComponent extends React.Component<ICommonCa
     render() {
         const camera = this.props.camera;
 
-        var modeOptions = [
+        const modeOptions = [
             { label: "Perspective", value: Camera.PERSPECTIVE_CAMERA },
             { label: "Orthographic", value: Camera.ORTHOGRAPHIC_CAMERA },
         ];

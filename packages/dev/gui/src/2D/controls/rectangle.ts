@@ -132,12 +132,12 @@ export class Rectangle extends Container {
     }
 
     private _drawRoundedRect(context: ICanvasRenderingContext, offset: number = 0): void {
-        var x = this._currentMeasure.left + offset;
-        var y = this._currentMeasure.top + offset;
-        var width = this._currentMeasure.width - offset * 2;
-        var height = this._currentMeasure.height - offset * 2;
+        const x = this._currentMeasure.left + offset;
+        const y = this._currentMeasure.top + offset;
+        const width = this._currentMeasure.width - offset * 2;
+        const height = this._currentMeasure.height - offset * 2;
 
-        var radius = Math.min(height / 2 - 2, Math.min(width / 2 - 2, this._cornerRadius));
+        const radius = Math.min(height / 2 - 2, Math.min(width / 2 - 2, this._cornerRadius));
 
         context.beginPath();
         context.moveTo(x + radius, y);

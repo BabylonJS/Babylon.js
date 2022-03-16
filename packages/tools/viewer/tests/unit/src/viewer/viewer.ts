@@ -3,7 +3,7 @@ import { assert, expect, should } from "../viewerReference";
 import { DefaultViewer, AbstractViewer, Version, viewerManager } from "../../../../src";
 import { Engine } from "babylonjs";
 
-export let name = "viewer Tests";
+export const name = "viewer Tests";
 
 /**
  * To prevent test-state-leakage ensure that there is a viewer.dispose() for every new DefaultViewer
@@ -11,7 +11,7 @@ export let name = "viewer Tests";
 
 describe("Viewer", function () {
     it("should initialize a new viewer and its internal variables", (done) => {
-        let viewer = Helper.getNewViewerInstance();
+        const viewer = Helper.getNewViewerInstance();
         assert.isDefined(viewer.baseId, "base id should be defined");
         assert.isDefined(viewer.modelLoader, "model loader should be defined");
         viewer.onInitDoneObservable.add(() => {
@@ -23,7 +23,7 @@ describe("Viewer", function () {
     });
 
     it("should be added to the viewer manager", (done) => {
-        let viewer = Helper.getNewViewerInstance();
+        const viewer = Helper.getNewViewerInstance();
         viewer.onInitDoneObservable.add(() => {
             assert.isDefined(viewerManager.getViewerById(viewer.baseId), "Viewer was not added to the viewer manager.");
             viewer.dispose();
@@ -32,7 +32,7 @@ describe("Viewer", function () {
     });
 
     it("should have a defined canvas", (done) => {
-        let viewer = Helper.getNewViewerInstance();
+        const viewer = Helper.getNewViewerInstance();
         viewer.onInitDoneObservable.add(() => {
             assert.isDefined(viewer.canvas, "Canvas is not defined");
             assert.isTrue(viewer.canvas instanceof HTMLCanvasElement, "Canvas is not a canvas");
@@ -44,7 +44,7 @@ describe("Viewer", function () {
     it("should not initialize if element is undefined", (done) => {
         try {
             // force typescript to "think" that the element exist with "!"
-            let viewer = Helper.getNewViewerInstance(document.getElementById("doesntexist")!);
+            const viewer = Helper.getNewViewerInstance(document.getElementById("doesntexist")!);
             expect(viewer).not.to.exist;
             if (viewer) {
                 viewer.dispose();
@@ -57,7 +57,7 @@ describe("Viewer", function () {
     });
 
     it("should be shown and hidden", (done) => {
-        let viewer: DefaultViewer = <DefaultViewer>Helper.getNewViewerInstance();
+        const viewer: DefaultViewer = <DefaultViewer>Helper.getNewViewerInstance();
         viewer.onInitDoneObservable.add(() => {
             // default visibility is not none
             const htmlElement = viewer.containerElement as HTMLElement;
@@ -76,7 +76,7 @@ describe("Viewer", function () {
     });
 
     it("should execute registered functions on every rendered frame", (done) => {
-        let viewer: DefaultViewer = <DefaultViewer>Helper.getNewViewerInstance();
+        const viewer: DefaultViewer = <DefaultViewer>Helper.getNewViewerInstance();
         let renderCount = 0;
         let sceneRenderCount = 0;
         viewer.onSceneInitObservable.add((scene) => {
@@ -95,7 +95,7 @@ describe("Viewer", function () {
     });
 
     it("should disable and enable rendering", (done) => {
-        let viewer: DefaultViewer = <DefaultViewer>Helper.getNewViewerInstance();
+        const viewer: DefaultViewer = <DefaultViewer>Helper.getNewViewerInstance();
         let renderCount = 0;
 
         viewer.onInitDoneObservable.add(() => {
@@ -126,7 +126,7 @@ describe("Viewer", function () {
     });
 
     it("should resize the viewer correctly", (done) => {
-        let viewer: DefaultViewer = <DefaultViewer>Helper.getNewViewerInstance();
+        const viewer: DefaultViewer = <DefaultViewer>Helper.getNewViewerInstance();
         let resizeCount = 0;
         //wait for the engine to init
         viewer.onEngineInitObservable.add((engine) => {
@@ -173,7 +173,7 @@ describe("Viewer", function () {
     });
 
     it("should render in background if set to true", (done) => {
-        let viewer = Helper.getNewViewerInstance();
+        const viewer = Helper.getNewViewerInstance();
         viewer.onInitDoneObservable.add(() => {
             assert.isTrue(viewer.engine.renderEvenInBackground, "Engine is rendering in background");
             assert.equal(viewer.engine.renderEvenInBackground, viewer.renderInBackground, "engine render in background should be equal to the viewer's");
@@ -190,7 +190,7 @@ describe("Viewer", function () {
     });
 
     it("should attach and detach camera control correctly", (done) => {
-        let viewer = Helper.getNewViewerInstance();
+        const viewer = Helper.getNewViewerInstance();
         viewer.onInitDoneObservable.add(() => {
             assert.isTrue(viewer.sceneManager.camera.inputs.attachedToElement, "Camera is not attached per default");
             viewer.updateConfiguration({
@@ -211,7 +211,7 @@ describe("Viewer", function () {
     });
 
     it("should take screenshot when called", (done) => {
-        let viewer = Helper.getNewViewerInstance();
+        const viewer = Helper.getNewViewerInstance();
         viewer.onInitDoneObservable.add(() => {
             Helper.MockScreenCapture(viewer, Helper.mockScreenCaptureData());
 
@@ -225,7 +225,7 @@ describe("Viewer", function () {
     });
 
     it("should notify observers correctly during init", (done) => {
-        let viewer = Helper.getNewViewerInstance();
+        const viewer = Helper.getNewViewerInstance();
 
         let shouldBeRendering = false;
 
@@ -252,7 +252,7 @@ describe("Viewer", function () {
     });
 
     it("should render if forceRender was called", (done) => {
-        let viewer = Helper.getNewViewerInstance();
+        const viewer = Helper.getNewViewerInstance();
         viewer.runRenderLoop = false;
         viewer.onInitDoneObservable.add(() => {
             viewer.onFrameRenderedObservable.add(() => {
@@ -265,10 +265,10 @@ describe("Viewer", function () {
     });
 
     it("should have the correct base ID", (done) => {
-        let element = document.createElement("div");
-        let randomString = "" + Math.random();
+        const element = document.createElement("div");
+        const randomString = "" + Math.random();
         element.id = randomString;
-        let viewer = Helper.getNewViewerInstance(element);
+        const viewer = Helper.getNewViewerInstance(element);
         assert.equal(viewer.baseId, viewer.containerElement.id);
         assert.equal(randomString, viewer.baseId);
         viewer.dispose();
@@ -276,13 +276,13 @@ describe("Viewer", function () {
     });
 
     it("should update the configuration object when updateConfiguration is called", (done) => {
-        let randomVersion = "" + Math.random();
-        let viewer = Helper.getNewViewerInstance(undefined, {
+        const randomVersion = "" + Math.random();
+        const viewer = Helper.getNewViewerInstance(undefined, {
             version: randomVersion,
         });
         viewer.onInitDoneObservable.add(() => {
             assert.equal(viewer.configuration.version, randomVersion);
-            let newRandom = "" + Math.random();
+            const newRandom = "" + Math.random();
             viewer.updateConfiguration({
                 version: newRandom,
             });
@@ -293,10 +293,10 @@ describe("Viewer", function () {
     });
 
     it("should not init engine if viewer is disposed right after created", (done) => {
-        let viewer = Helper.getNewViewerInstance();
+        const viewer = Helper.getNewViewerInstance();
         viewer.dispose();
         // wait a bit for the engine to initialize, if failed
-        let timeout = setTimeout(() => {
+        const timeout = setTimeout(() => {
             assert.isUndefined(viewer.engine);
             done();
         }, 1000);

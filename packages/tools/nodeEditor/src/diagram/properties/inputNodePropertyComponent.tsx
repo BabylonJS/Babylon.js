@@ -30,7 +30,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
     }
 
     componentDidMount() {
-        let inputBlock = this.props.block as InputBlock;
+        const inputBlock = this.props.block as InputBlock;
         this.onValueChangedObserver = inputBlock.onValueChangedObservable.add(() => {
             this.forceUpdate();
             this.props.globalState.onUpdateRequiredObservable.notifyObservers(this.props.block);
@@ -38,7 +38,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
     }
 
     componentWillUnmount() {
-        let inputBlock = this.props.block as InputBlock;
+        const inputBlock = this.props.block as InputBlock;
         if (this.onValueChangedObserver) {
             inputBlock.onValueChangedObservable.remove(this.onValueChangedObserver);
             this.onValueChangedObserver = null;
@@ -46,10 +46,10 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
     }
 
     renderValue(globalState: GlobalState) {
-        let inputBlock = this.props.block as InputBlock;
+        const inputBlock = this.props.block as InputBlock;
         switch (inputBlock.type) {
             case NodeMaterialBlockConnectionPointTypes.Float: {
-                let cantDisplaySlider = isNaN(inputBlock.min) || isNaN(inputBlock.max) || inputBlock.min === inputBlock.max;
+                const cantDisplaySlider = isNaN(inputBlock.min) || isNaN(inputBlock.max) || inputBlock.min === inputBlock.max;
                 return (
                     <>
                         <CheckBoxLineComponent label="Is boolean" target={inputBlock} propertyName="isBoolean" />
@@ -181,16 +181,16 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
     }
 
     setDefaultValue() {
-        let inputBlock = this.props.block as InputBlock;
+        const inputBlock = this.props.block as InputBlock;
         inputBlock.setDefaultValue();
     }
 
     render() {
-        let inputBlock = this.props.block as InputBlock;
+        const inputBlock = this.props.block as InputBlock;
 
-        var systemValuesOptions: { label: string; value: NodeMaterialSystemValues }[] = [];
-        var attributeOptions: { label: string; value: string }[] = [];
-        var animationOptions: { label: string; value: AnimatedInputBlockTypes }[] = [];
+        let systemValuesOptions: { label: string; value: NodeMaterialSystemValues }[] = [];
+        let attributeOptions: { label: string; value: string }[] = [];
+        let animationOptions: { label: string; value: AnimatedInputBlockTypes }[] = [];
 
         switch (inputBlock.type) {
             case NodeMaterialBlockConnectionPointTypes.Float:
@@ -246,7 +246,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                 break;
         }
 
-        var modeOptions = [{ label: "User-defined", value: 0 }];
+        const modeOptions = [{ label: "User-defined", value: 0 }];
 
         if (attributeOptions.length > 0) {
             modeOptions.push({ label: "Mesh attribute", value: 1 });
@@ -256,7 +256,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
             modeOptions.push({ label: "System value", value: 2 });
         }
 
-        var typeOptions = [
+        const typeOptions = [
             { label: "None", value: 0 },
             { label: "Visible in the inspector", value: 1 },
             { label: "Constant", value: 2 },

@@ -39,7 +39,10 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
 
     private _variants?: Array<IKHRMaterialVariants_Variant>;
 
-    /** @hidden */
+    /**
+     * @param loader
+     * @hidden
+     */
     constructor(loader: GLTFLoader) {
         this._loader = loader;
         this.enabled = this._loader.isExtensionUsed(NAME);
@@ -174,7 +177,15 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
         }
     }
 
-    /** @hidden */
+    /**
+     * @param context
+     * @param name
+     * @param node
+     * @param mesh
+     * @param primitive
+     * @param assign
+     * @hidden
+     */
     public _loadMeshPrimitiveAsync(
         context: string,
         name: string,
@@ -246,7 +257,7 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
 
                                                 // Duplicate the extension specific metadata
                                                 newRoot.metadata.gltf[NAME] = { lastSelected: null, original: [], variants: {} };
-                                                for (var original of metadata.original) {
+                                                for (const original of metadata.original) {
                                                     newRoot.metadata.gltf[NAME].original.push({
                                                         mesh: original.mesh,
                                                         material: original.material,
@@ -255,7 +266,7 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
                                                 for (var key in metadata.variants) {
                                                     if (metadata.variants.hasOwnProperty(key)) {
                                                         newRoot.metadata.gltf[NAME].variants[key] = [];
-                                                        for (var variantEntry of metadata.variants[key]) {
+                                                        for (const variantEntry of metadata.variants[key]) {
                                                             newRoot.metadata.gltf[NAME].variants[key].push({
                                                                 mesh: variantEntry.mesh,
                                                                 material: variantEntry.material,

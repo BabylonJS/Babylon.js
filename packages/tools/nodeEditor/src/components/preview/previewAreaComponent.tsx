@@ -66,7 +66,7 @@ export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentP
     }
 
     render() {
-        var blendModeOptions = [
+        const blendModeOptions = [
             { label: "Add", value: ParticleSystem.BLENDMODE_ADD },
             { label: "Multiply", value: ParticleSystem.BLENDMODE_MULTIPLY },
             { label: "Multiply Add", value: ParticleSystem.BLENDMODE_MULTIPLYADD },

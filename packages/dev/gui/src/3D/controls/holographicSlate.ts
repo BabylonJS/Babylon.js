@@ -301,7 +301,7 @@ export class HolographicSlate extends ContentDisplay3D {
         this._titleBarTitle.parent = node;
         this._titleBarTitle.isPickable = false;
 
-        var adt = AdvancedDynamicTexture.CreateForMesh(this._titleBarTitle);
+        const adt = AdvancedDynamicTexture.CreateForMesh(this._titleBarTitle);
         this._titleTextComponent = new TextBlock("titleText_" + this.name, this._titleText);
         this._titleTextComponent.textWrapping = TextWrapping.Ellipsis;
         this._titleTextComponent.textHorizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
@@ -428,7 +428,10 @@ export class HolographicSlate extends ContentDisplay3D {
         this._applyContentViewport();
     }
 
-    /** @hidden **/
+    /**
+     * @param scene
+     * @hidden*
+     */
     public _prepareNode(scene: Scene): void {
         super._prepareNode(scene);
         this._gizmo = new SlateGizmo(this._host.utilityLayer!);

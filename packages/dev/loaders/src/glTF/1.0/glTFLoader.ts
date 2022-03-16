@@ -133,52 +133,55 @@ class Tokenizer {
 /**
  * Values
  */
-var glTFTransforms = ["MODEL", "VIEW", "PROJECTION", "MODELVIEW", "MODELVIEWPROJECTION", "JOINTMATRIX"];
-var babylonTransforms = ["world", "view", "projection", "worldView", "worldViewProjection", "mBones"];
+const glTFTransforms = ["MODEL", "VIEW", "PROJECTION", "MODELVIEW", "MODELVIEWPROJECTION", "JOINTMATRIX"];
+const babylonTransforms = ["world", "view", "projection", "worldView", "worldViewProjection", "mBones"];
 
-var glTFAnimationPaths = ["translation", "rotation", "scale"];
-var babylonAnimationPaths = ["position", "rotationQuaternion", "scaling"];
+const glTFAnimationPaths = ["translation", "rotation", "scale"];
+const babylonAnimationPaths = ["position", "rotationQuaternion", "scaling"];
 
 /**
  * Parse
+ * @param parsedBuffers
+ * @param gltfRuntime
  */
-var parseBuffers = (parsedBuffers: any, gltfRuntime: IGLTFRuntime) => {
-    for (var buf in parsedBuffers) {
-        var parsedBuffer = parsedBuffers[buf];
+const parseBuffers = (parsedBuffers: any, gltfRuntime: IGLTFRuntime) => {
+    for (const buf in parsedBuffers) {
+        const parsedBuffer = parsedBuffers[buf];
         gltfRuntime.buffers[buf] = parsedBuffer;
         gltfRuntime.buffersCount++;
     }
 };
 
-var parseShaders = (parsedShaders: any, gltfRuntime: IGLTFRuntime) => {
-    for (var sha in parsedShaders) {
-        var parsedShader = parsedShaders[sha];
+const parseShaders = (parsedShaders: any, gltfRuntime: IGLTFRuntime) => {
+    for (const sha in parsedShaders) {
+        const parsedShader = parsedShaders[sha];
         gltfRuntime.shaders[sha] = parsedShader;
         gltfRuntime.shaderscount++;
     }
 };
 
-var parseObject = (parsedObjects: any, runtimeProperty: string, gltfRuntime: IGLTFRuntime) => {
-    for (var object in parsedObjects) {
-        var parsedObject = parsedObjects[object];
+const parseObject = (parsedObjects: any, runtimeProperty: string, gltfRuntime: IGLTFRuntime) => {
+    for (const object in parsedObjects) {
+        const parsedObject = parsedObjects[object];
         (<any>gltfRuntime)[runtimeProperty][object] = parsedObject;
     }
 };
 
 /**
  * Utils
+ * @param buffer
  */
-var normalizeUVs = (buffer: any) => {
+const normalizeUVs = (buffer: any) => {
     if (!buffer) {
         return;
     }
 
-    for (var i = 0; i < buffer.length / 2; i++) {
+    for (let i = 0; i < buffer.length / 2; i++) {
         buffer[i * 2 + 1] = 1.0 - buffer[i * 2 + 1];
     }
 };
 
-var getAttribute = (attributeParameter: IGLTFTechniqueParameter): Nullable<string> => {
+const getAttribute = (attributeParameter: IGLTFTechniqueParameter): Nullable<string> => {
     if (attributeParameter.semantic === "NORMAL") {
         return "normal";
     } else if (attributeParameter.semantic === "POSITION") {
@@ -190,7 +193,7 @@ var getAttribute = (attributeParameter: IGLTFTechniqueParameter): Nullable<strin
     } else if (attributeParameter.semantic === "COLOR") {
         return "color";
     } else if (attributeParameter.semantic && attributeParameter.semantic.indexOf("TEXCOORD_") !== -1) {
-        var channel = Number(attributeParameter.semantic.split("_")[1]);
+        const channel = Number(attributeParameter.semantic.split("_")[1]);
         return "uv" + (channel === 0 ? "" : channel + 1);
     }
 
@@ -199,28 +202,29 @@ var getAttribute = (attributeParameter: IGLTFTechniqueParameter): Nullable<strin
 
 /**
  * Loads and creates animations
+ * @param gltfRuntime
  */
-var loadAnimations = (gltfRuntime: IGLTFRuntime) => {
-    for (var anim in gltfRuntime.animations) {
-        var animation: IGLTFAnimation = gltfRuntime.animations[anim];
+const loadAnimations = (gltfRuntime: IGLTFRuntime) => {
+    for (const anim in gltfRuntime.animations) {
+        const animation: IGLTFAnimation = gltfRuntime.animations[anim];
 
         if (!animation.channels || !animation.samplers) {
             continue;
         }
 
-        var lastAnimation: Nullable<Animation> = null;
+        let lastAnimation: Nullable<Animation> = null;
 
-        for (var i = 0; i < animation.channels.length; i++) {
+        for (let i = 0; i < animation.channels.length; i++) {
             // Get parameters and load buffers
-            var channel = animation.channels[i];
-            var sampler: IGLTFAnimationSampler = animation.samplers[channel.sampler];
+            const channel = animation.channels[i];
+            const sampler: IGLTFAnimationSampler = animation.samplers[channel.sampler];
 
             if (!sampler) {
                 continue;
             }
 
-            var inputData: Nullable<string> = null;
-            var outputData: Nullable<string> = null;
+            let inputData: Nullable<string> = null;
+            let outputData: Nullable<string> = null;
 
             if (animation.parameters) {
                 inputData = animation.parameters[sampler.input];
@@ -230,11 +234,11 @@ var loadAnimations = (gltfRuntime: IGLTFRuntime) => {
                 outputData = sampler.output;
             }
 
-            var bufferInput = GLTFUtils.GetBufferFromAccessor(gltfRuntime, gltfRuntime.accessors[inputData]);
-            var bufferOutput = GLTFUtils.GetBufferFromAccessor(gltfRuntime, gltfRuntime.accessors[outputData]);
+            const bufferInput = GLTFUtils.GetBufferFromAccessor(gltfRuntime, gltfRuntime.accessors[inputData]);
+            const bufferOutput = GLTFUtils.GetBufferFromAccessor(gltfRuntime, gltfRuntime.accessors[outputData]);
 
-            var targetId = channel.target.id;
-            var targetNode: any = gltfRuntime.scene.getNodeById(targetId);
+            const targetId = channel.target.id;
+            let targetNode: any = gltfRuntime.scene.getNodeById(targetId);
 
             if (targetNode === null) {
                 targetNode = gltfRuntime.scene.getNodeByName(targetId);
@@ -245,18 +249,18 @@ var loadAnimations = (gltfRuntime: IGLTFRuntime) => {
                 continue;
             }
 
-            var isBone = targetNode instanceof Bone;
+            const isBone = targetNode instanceof Bone;
 
             // Get target path (position, rotation or scaling)
-            var targetPath = channel.target.path;
-            var targetPathIndex = glTFAnimationPaths.indexOf(targetPath);
+            let targetPath = channel.target.path;
+            const targetPathIndex = glTFAnimationPaths.indexOf(targetPath);
 
             if (targetPathIndex !== -1) {
                 targetPath = babylonAnimationPaths[targetPathIndex];
             }
 
             // Determine animation type
-            var animationType = Animation.ANIMATIONTYPE_MATRIX;
+            let animationType = Animation.ANIMATIONTYPE_MATRIX;
 
             if (!isBone) {
                 if (targetPath === "rotationQuaternion") {
@@ -268,10 +272,10 @@ var loadAnimations = (gltfRuntime: IGLTFRuntime) => {
             }
 
             // Create animation and key frames
-            var babylonAnimation: Nullable<Animation> = null;
-            var keys = [];
-            var arrayOffset = 0;
-            var modifyKey = false;
+            let babylonAnimation: Nullable<Animation> = null;
+            const keys = [];
+            let arrayOffset = 0;
+            let modifyKey = false;
 
             if (isBone && lastAnimation && lastAnimation.getKeys().length === bufferInput.length) {
                 babylonAnimation = lastAnimation;
@@ -285,8 +289,8 @@ var loadAnimations = (gltfRuntime: IGLTFRuntime) => {
             }
 
             // For each frame
-            for (var j = 0; j < bufferInput.length; j++) {
-                var value: any = null;
+            for (let j = 0; j < bufferInput.length; j++) {
+                let value: any = null;
 
                 if (targetPath === "rotationQuaternion") {
                     // VEC4
@@ -299,13 +303,13 @@ var loadAnimations = (gltfRuntime: IGLTFRuntime) => {
                 }
 
                 if (isBone) {
-                    var bone = <Bone>targetNode;
-                    var translation = Vector3.Zero();
-                    var rotationQuaternion = new Quaternion();
-                    var scaling = Vector3.Zero();
+                    const bone = <Bone>targetNode;
+                    let translation = Vector3.Zero();
+                    let rotationQuaternion = new Quaternion();
+                    let scaling = Vector3.Zero();
 
                     // Warning on decompose
-                    var mat = bone.getBaseMatrix();
+                    let mat = bone.getBaseMatrix();
 
                     if (modifyKey && lastAnimation) {
                         mat = lastAnimation.getKeys()[j].value;
@@ -350,14 +354,15 @@ var loadAnimations = (gltfRuntime: IGLTFRuntime) => {
 
 /**
  * Returns the bones transformation matrix
+ * @param node
  */
-var configureBoneTransformation = (node: IGLTFNode): Matrix => {
-    var mat: Nullable<Matrix> = null;
+const configureBoneTransformation = (node: IGLTFNode): Matrix => {
+    let mat: Nullable<Matrix> = null;
 
     if (node.translation || node.rotation || node.scale) {
-        var scale = Vector3.FromArray(node.scale || [1, 1, 1]);
-        var rotation = Quaternion.FromArray(node.rotation || [0, 0, 0, 1]);
-        var position = Vector3.FromArray(node.translation || [0, 0, 0]);
+        const scale = Vector3.FromArray(node.scale || [1, 1, 1]);
+        const rotation = Quaternion.FromArray(node.rotation || [0, 0, 0, 1]);
+        const position = Vector3.FromArray(node.translation || [0, 0, 0]);
 
         mat = Matrix.Compose(scale, rotation, position);
     } else {
@@ -369,6 +374,10 @@ var configureBoneTransformation = (node: IGLTFNode): Matrix => {
 
 /**
  * Returns the parent bone
+ * @param gltfRuntime
+ * @param skins
+ * @param jointName
+ * @param newSkeleton
  */
 var getParentBone = (gltfRuntime: IGLTFRuntime, skins: IGLTFSkins, jointName: string, newSkeleton: Skeleton): Nullable<Bone> => {
     // Try to find
@@ -379,24 +388,24 @@ var getParentBone = (gltfRuntime: IGLTFRuntime, skins: IGLTFSkins, jointName: st
     }
 
     // Not found, search in gltf nodes
-    var nodes = gltfRuntime.nodes;
-    for (var nde in nodes) {
-        var node: IGLTFNode = nodes[nde];
+    const nodes = gltfRuntime.nodes;
+    for (const nde in nodes) {
+        const node: IGLTFNode = nodes[nde];
 
         if (!node.jointName) {
             continue;
         }
 
-        var children = node.children;
+        const children = node.children;
         for (var i = 0; i < children.length; i++) {
-            var child: IGLTFNode = gltfRuntime.nodes[children[i]];
+            const child: IGLTFNode = gltfRuntime.nodes[children[i]];
             if (!child.jointName) {
                 continue;
             }
 
             if (child.jointName === jointName) {
-                var mat = configureBoneTransformation(node);
-                var bone = new Bone(node.name || "", newSkeleton, getParentBone(gltfRuntime, skins, node.jointName, newSkeleton), mat);
+                const mat = configureBoneTransformation(node);
+                const bone = new Bone(node.name || "", newSkeleton, getParentBone(gltfRuntime, skins, node.jointName, newSkeleton), mat);
                 bone.id = nde;
                 return bone;
             }
@@ -408,13 +417,15 @@ var getParentBone = (gltfRuntime: IGLTFRuntime, skins: IGLTFSkins, jointName: st
 
 /**
  * Returns the appropriate root node
+ * @param nodesToRoot
+ * @param id
  */
-var getNodeToRoot = (nodesToRoot: INodeToRoot[], id: string): Nullable<Bone> => {
-    for (var i = 0; i < nodesToRoot.length; i++) {
-        var nodeToRoot = nodesToRoot[i];
+const getNodeToRoot = (nodesToRoot: INodeToRoot[], id: string): Nullable<Bone> => {
+    for (let i = 0; i < nodesToRoot.length; i++) {
+        const nodeToRoot = nodesToRoot[i];
 
-        for (var j = 0; j < nodeToRoot.node.children.length; j++) {
-            var child = nodeToRoot.node.children[j];
+        for (let j = 0; j < nodeToRoot.node.children.length; j++) {
+            const child = nodeToRoot.node.children[j];
             if (child === id) {
                 return nodeToRoot.bone;
             }
@@ -426,10 +437,12 @@ var getNodeToRoot = (nodesToRoot: INodeToRoot[], id: string): Nullable<Bone> => 
 
 /**
  * Returns the node with the joint name
+ * @param gltfRuntime
+ * @param jointName
  */
-var getJointNode = (gltfRuntime: IGLTFRuntime, jointName: string): Nullable<IJointNode> => {
-    var nodes = gltfRuntime.nodes;
-    var node: IGLTFNode = nodes[jointName];
+const getJointNode = (gltfRuntime: IGLTFRuntime, jointName: string): Nullable<IJointNode> => {
+    const nodes = gltfRuntime.nodes;
+    let node: IGLTFNode = nodes[jointName];
     if (node) {
         return {
             node: node,
@@ -437,7 +450,7 @@ var getJointNode = (gltfRuntime: IGLTFRuntime, jointName: string): Nullable<IJoi
         };
     }
 
-    for (var nde in nodes) {
+    for (const nde in nodes) {
         node = nodes[nde];
         if (node.jointName === jointName) {
             return {
@@ -452,9 +465,11 @@ var getJointNode = (gltfRuntime: IGLTFRuntime, jointName: string): Nullable<IJoi
 
 /**
  * Checks if a nodes is in joints
+ * @param skins
+ * @param id
  */
-var nodeIsInJoints = (skins: IGLTFSkins, id: string): boolean => {
-    for (var i = 0; i < skins.jointNames.length; i++) {
+const nodeIsInJoints = (skins: IGLTFSkins, id: string): boolean => {
+    for (let i = 0; i < skins.jointNames.length; i++) {
         if (skins.jointNames[i] === id) {
             return true;
         }
@@ -465,33 +480,37 @@ var nodeIsInJoints = (skins: IGLTFSkins, id: string): boolean => {
 
 /**
  * Fills the nodes to root for bones and builds hierarchy
+ * @param gltfRuntime
+ * @param newSkeleton
+ * @param skins
+ * @param nodesToRoot
  */
-var getNodesToRoot = (gltfRuntime: IGLTFRuntime, newSkeleton: Skeleton, skins: IGLTFSkins, nodesToRoot: INodeToRoot[]) => {
+const getNodesToRoot = (gltfRuntime: IGLTFRuntime, newSkeleton: Skeleton, skins: IGLTFSkins, nodesToRoot: INodeToRoot[]) => {
     // Creates nodes for root
-    for (var nde in gltfRuntime.nodes) {
-        var node: IGLTFNode = gltfRuntime.nodes[nde];
-        var id = nde;
+    for (const nde in gltfRuntime.nodes) {
+        const node: IGLTFNode = gltfRuntime.nodes[nde];
+        const id = nde;
 
         if (!node.jointName || nodeIsInJoints(skins, node.jointName)) {
             continue;
         }
 
         // Create node to root bone
-        var mat = configureBoneTransformation(node);
-        var bone = new Bone(node.name || "", newSkeleton, null, mat);
+        const mat = configureBoneTransformation(node);
+        const bone = new Bone(node.name || "", newSkeleton, null, mat);
         bone.id = id;
         nodesToRoot.push({ bone: bone, node: node, id: id });
     }
 
     // Parenting
-    for (var i = 0; i < nodesToRoot.length; i++) {
-        var nodeToRoot = nodesToRoot[i];
-        var children = nodeToRoot.node.children;
+    for (let i = 0; i < nodesToRoot.length; i++) {
+        const nodeToRoot = nodesToRoot[i];
+        const children = nodeToRoot.node.children;
 
-        for (var j = 0; j < children.length; j++) {
-            var child: Nullable<INodeToRoot> = null;
+        for (let j = 0; j < children.length; j++) {
+            let child: Nullable<INodeToRoot> = null;
 
-            for (var k = 0; k < nodesToRoot.length; k++) {
+            for (let k = 0; k < nodesToRoot.length; k++) {
                 if (nodesToRoot[k].id === children[j]) {
                     child = nodesToRoot[k];
                     break;
@@ -508,8 +527,13 @@ var getNodesToRoot = (gltfRuntime: IGLTFRuntime, newSkeleton: Skeleton, skins: I
 
 /**
  * Imports a skeleton
+ * @param gltfRuntime
+ * @param skins
+ * @param mesh
+ * @param newSkeleton
+ * @param id
  */
-var importSkeleton = (gltfRuntime: IGLTFRuntime, skins: IGLTFSkins, mesh: Mesh, newSkeleton: Skeleton | undefined, id: string): Skeleton => {
+const importSkeleton = (gltfRuntime: IGLTFRuntime, skins: IGLTFSkins, mesh: Mesh, newSkeleton: Skeleton | undefined, id: string): Skeleton => {
     if (!newSkeleton) {
         newSkeleton = new Skeleton(skins.name || "", "", gltfRuntime.scene);
     }
@@ -519,8 +543,8 @@ var importSkeleton = (gltfRuntime: IGLTFRuntime, skins: IGLTFSkins, mesh: Mesh, 
     }
 
     // Find the root bones
-    var nodesToRoot: INodeToRoot[] = [];
-    var nodesToRootToAdd: Bone[] = [];
+    const nodesToRoot: INodeToRoot[] = [];
+    const nodesToRootToAdd: Bone[] = [];
 
     getNodesToRoot(gltfRuntime, newSkeleton, skins, nodesToRoot);
     newSkeleton.bones = [];
@@ -533,7 +557,7 @@ var importSkeleton = (gltfRuntime: IGLTFRuntime, skins: IGLTFSkins, mesh: Mesh, 
             continue;
         }
 
-        var node = jointNode.node;
+        const node = jointNode.node;
 
         if (!node) {
             Tools.Warn("Joint named " + skins.jointNames[i] + " does not exist");
@@ -543,37 +567,37 @@ var importSkeleton = (gltfRuntime: IGLTFRuntime, skins: IGLTFSkins, mesh: Mesh, 
         var id = jointNode.id;
 
         // Optimize, if the bone already exists...
-        var existingBone = gltfRuntime.scene.getBoneById(id);
+        const existingBone = gltfRuntime.scene.getBoneById(id);
         if (existingBone) {
             newSkeleton.bones.push(existingBone);
             continue;
         }
 
         // Search for parent bone
-        var foundBone = false;
-        var parentBone: Nullable<Bone> = null;
+        let foundBone = false;
+        let parentBone: Nullable<Bone> = null;
 
         for (var j = 0; j < i; j++) {
-            let jointNode = getJointNode(gltfRuntime, skins.jointNames[j]);
+            const jointNode = getJointNode(gltfRuntime, skins.jointNames[j]);
 
             if (!jointNode) {
                 continue;
             }
 
-            var joint: IGLTFNode = jointNode.node;
+            const joint: IGLTFNode = jointNode.node;
 
             if (!joint) {
                 Tools.Warn("Joint named " + skins.jointNames[j] + " does not exist when looking for parent");
                 continue;
             }
 
-            var children = joint.children;
+            const children = joint.children;
             if (!children) {
                 continue;
             }
             foundBone = false;
 
-            for (var k = 0; k < children.length; k++) {
+            for (let k = 0; k < children.length; k++) {
                 if (children[k] === id) {
                     parentBone = getParentBone(gltfRuntime, skins, skins.jointNames[j], newSkeleton);
                     foundBone = true;
@@ -587,7 +611,7 @@ var importSkeleton = (gltfRuntime: IGLTFRuntime, skins: IGLTFSkins, mesh: Mesh, 
         }
 
         // Create bone
-        var mat = configureBoneTransformation(node);
+        const mat = configureBoneTransformation(node);
 
         if (!parentBone && nodesToRoot.length > 0) {
             parentBone = getNodeToRoot(nodesToRoot, id);
@@ -599,12 +623,12 @@ var importSkeleton = (gltfRuntime: IGLTFRuntime, skins: IGLTFSkins, mesh: Mesh, 
             }
         }
 
-        var bone = new Bone(node.jointName || "", newSkeleton, parentBone, mat);
+        const bone = new Bone(node.jointName || "", newSkeleton, parentBone, mat);
         bone.id = id;
     }
 
     // Polish
-    var bones = newSkeleton.bones;
+    const bones = newSkeleton.bones;
     newSkeleton.bones = [];
 
     for (var i = 0; i < skins.jointNames.length; i++) {
@@ -634,8 +658,13 @@ var importSkeleton = (gltfRuntime: IGLTFRuntime, skins: IGLTFSkins, mesh: Mesh, 
 
 /**
  * Imports a mesh and its geometries
+ * @param gltfRuntime
+ * @param node
+ * @param meshes
+ * @param id
+ * @param newMesh
  */
-var importMesh = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, meshes: string[], id: string, newMesh: Mesh): Mesh => {
+const importMesh = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, meshes: string[], id: string, newMesh: Mesh): Mesh => {
     if (!newMesh) {
         gltfRuntime.scene._blockEntityCollection = !!gltfRuntime.assetContainer;
         newMesh = new Mesh(node.name || "", gltfRuntime.scene);
@@ -650,11 +679,11 @@ var importMesh = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, meshes: string[], 
 
     const subMaterials: Material[] = [];
 
-    var vertexData: Nullable<VertexData> = null;
-    var verticesStarts = new Array<number>();
-    var verticesCounts = new Array<number>();
-    var indexStarts = new Array<number>();
-    var indexCounts = new Array<number>();
+    let vertexData: Nullable<VertexData> = null;
+    const verticesStarts = new Array<number>();
+    const verticesCounts = new Array<number>();
+    const indexStarts = new Array<number>();
+    const indexCounts = new Array<number>();
 
     for (var meshIndex = 0; meshIndex < meshes.length; meshIndex++) {
         var meshId = meshes[meshIndex];
@@ -667,19 +696,19 @@ var importMesh = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, meshes: string[], 
         // Positions, normals and UVs
         for (var i = 0; i < mesh.primitives.length; i++) {
             // Temporary vertex data
-            var tempVertexData = new VertexData();
+            const tempVertexData = new VertexData();
 
-            var primitive = mesh.primitives[i];
+            const primitive = mesh.primitives[i];
             if (primitive.mode !== 4) {
                 // continue;
             }
 
-            var attributes = primitive.attributes;
-            var accessor: Nullable<IGLTFAccessor> = null;
-            var buffer: any = null;
+            const attributes = primitive.attributes;
+            let accessor: Nullable<IGLTFAccessor> = null;
+            let buffer: any = null;
 
             // Set positions, normal and uvs
-            for (var semantic in attributes) {
+            for (const semantic in attributes) {
                 // Link accessor and buffer view
                 accessor = gltfRuntime.accessors[attributes[semantic]];
                 buffer = GLTFUtils.GetBufferFromAccessor(gltfRuntime, accessor);
@@ -703,9 +732,9 @@ var importMesh = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, meshes: string[], 
 
                     verticesCounts.push(tempVertexData.positions.length);
                 } else if (semantic.indexOf("TEXCOORD_") !== -1) {
-                    var channel = Number(semantic.split("_")[1]);
-                    var uvKind = VertexBuffer.UVKind + (channel === 0 ? "" : channel + 1);
-                    var uvs = new Float32Array(buffer.length);
+                    const channel = Number(semantic.split("_")[1]);
+                    const uvKind = VertexBuffer.UVKind + (channel === 0 ? "" : channel + 1);
+                    const uvs = new Float32Array(buffer.length);
                     (<Float32Array>uvs).set(buffer);
                     normalizeUVs(uvs);
                     tempVertexData.set(uvs, uvKind);
@@ -731,7 +760,7 @@ var importMesh = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, meshes: string[], 
                 indexCounts.push(tempVertexData.indices.length);
             } else {
                 // Set indices on the fly
-                var indices: number[] = [];
+                const indices: number[] = [];
                 for (var j = 0; j < (<FloatArray>tempVertexData.positions).length / 3; j++) {
                     indices.push(j);
                 }
@@ -747,7 +776,7 @@ var importMesh = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, meshes: string[], 
             }
 
             // Sub material
-            let material = gltfRuntime.scene.getMaterialById(primitive.material);
+            const material = gltfRuntime.scene.getMaterialById(primitive.material);
 
             subMaterials.push(material === null ? GLTFUtils.GetDefaultMaterial(gltfRuntime.scene) : material);
 
@@ -783,7 +812,7 @@ var importMesh = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, meshes: string[], 
 
     // Apply submeshes
     newMesh.subMeshes = [];
-    var index = 0;
+    let index = 0;
     for (var meshIndex = 0; meshIndex < meshes.length; meshIndex++) {
         var meshId = meshes[meshIndex];
         var mesh: IGLTFMesh = gltfRuntime.meshes[meshId];
@@ -808,8 +837,12 @@ var importMesh = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, meshes: string[], 
 
 /**
  * Configure node transformation from position, rotation and scaling
+ * @param newNode
+ * @param position
+ * @param rotation
+ * @param scaling
  */
-var configureNode = (newNode: any, position: Vector3, rotation: Quaternion, scaling: Vector3) => {
+const configureNode = (newNode: any, position: Vector3, rotation: Quaternion, scaling: Vector3) => {
     if (newNode.position) {
         newNode.position = position;
     }
@@ -825,13 +858,16 @@ var configureNode = (newNode: any, position: Vector3, rotation: Quaternion, scal
 
 /**
  * Configures node from transformation matrix
+ * @param newNode
+ * @param node
+ * @param parent
  */
-var configureNodeFromMatrix = (newNode: Mesh, node: IGLTFNode, parent: Nullable<Node>) => {
+const configureNodeFromMatrix = (newNode: Mesh, node: IGLTFNode, parent: Nullable<Node>) => {
     if (node.matrix) {
-        var position = new Vector3(0, 0, 0);
-        var rotation = new Quaternion();
-        var scaling = new Vector3(0, 0, 0);
-        var mat = Matrix.FromArray(node.matrix);
+        const position = new Vector3(0, 0, 0);
+        const rotation = new Quaternion();
+        const scaling = new Vector3(0, 0, 0);
+        const mat = Matrix.FromArray(node.matrix);
         mat.decompose(scaling, rotation, position);
 
         configureNode(newNode, position, rotation, scaling);
@@ -844,9 +880,13 @@ var configureNodeFromMatrix = (newNode: Mesh, node: IGLTFNode, parent: Nullable<
 
 /**
  * Imports a node
+ * @param gltfRuntime
+ * @param node
+ * @param id
+ * @param parent
  */
-var importNode = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, id: string, parent: Nullable<Node>): Nullable<Node> => {
-    var lastNode: Nullable<Node> = null;
+const importNode = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, id: string, parent: Nullable<Node>): Nullable<Node> => {
+    let lastNode: Nullable<Node> = null;
 
     if (gltfRuntime.importOnlyMeshes && (node.skin || node.meshes)) {
         if (gltfRuntime.importMeshesNames && gltfRuntime.importMeshesNames.length > 0 && gltfRuntime.importMeshesNames.indexOf(node.name || "") === -1) {
@@ -857,7 +897,7 @@ var importNode = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, id: string, parent
     // Meshes
     if (node.skin) {
         if (node.meshes) {
-            var skin: IGLTFSkins = gltfRuntime.skins[node.skin];
+            const skin: IGLTFSkins = gltfRuntime.skins[node.skin];
 
             var newMesh = importMesh(gltfRuntime, node, node.meshes, id, <Mesh>node.babylonNode);
             newMesh.skeleton = gltfRuntime.scene.getLastSkeletonById(node.skin);
@@ -881,12 +921,12 @@ var importNode = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, id: string, parent
     }
     // Lights
     else if (node.light && !node.babylonNode && !gltfRuntime.importOnlyMeshes) {
-        var light: IGLTFLight = gltfRuntime.lights[node.light];
+        const light: IGLTFLight = gltfRuntime.lights[node.light];
 
         if (light) {
             if (light.type === "ambient") {
-                var ambienLight: IGLTFAmbienLight = (<any>light)[light.type];
-                var hemiLight = new HemisphericLight(node.light, Vector3.Zero(), gltfRuntime.scene);
+                const ambienLight: IGLTFAmbienLight = (<any>light)[light.type];
+                const hemiLight = new HemisphericLight(node.light, Vector3.Zero(), gltfRuntime.scene);
                 hemiLight.name = node.name || "";
 
                 if (ambienLight.color) {
@@ -895,8 +935,8 @@ var importNode = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, id: string, parent
 
                 lastNode = hemiLight;
             } else if (light.type === "directional") {
-                var directionalLight: IGLTFDirectionalLight = (<any>light)[light.type];
-                var dirLight = new DirectionalLight(node.light, Vector3.Zero(), gltfRuntime.scene);
+                const directionalLight: IGLTFDirectionalLight = (<any>light)[light.type];
+                const dirLight = new DirectionalLight(node.light, Vector3.Zero(), gltfRuntime.scene);
                 dirLight.name = node.name || "";
 
                 if (directionalLight.color) {
@@ -905,8 +945,8 @@ var importNode = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, id: string, parent
 
                 lastNode = dirLight;
             } else if (light.type === "point") {
-                var pointLight: IGLTFPointLight = (<any>light)[light.type];
-                var ptLight = new PointLight(node.light, Vector3.Zero(), gltfRuntime.scene);
+                const pointLight: IGLTFPointLight = (<any>light)[light.type];
+                const ptLight = new PointLight(node.light, Vector3.Zero(), gltfRuntime.scene);
                 ptLight.name = node.name || "";
 
                 if (pointLight.color) {
@@ -915,8 +955,8 @@ var importNode = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, id: string, parent
 
                 lastNode = ptLight;
             } else if (light.type === "spot") {
-                var spotLight: IGLTFSpotLight = (<any>light)[light.type];
-                var spLight = new SpotLight(node.light, Vector3.Zero(), Vector3.Zero(), 0, 0, gltfRuntime.scene);
+                const spotLight: IGLTFSpotLight = (<any>light)[light.type];
+                const spLight = new SpotLight(node.light, Vector3.Zero(), Vector3.Zero(), 0, 0, gltfRuntime.scene);
                 spLight.name = node.name || "";
 
                 if (spotLight.color) {
@@ -937,12 +977,12 @@ var importNode = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, id: string, parent
     }
     // Cameras
     else if (node.camera && !node.babylonNode && !gltfRuntime.importOnlyMeshes) {
-        var camera: IGLTFCamera = gltfRuntime.cameras[node.camera];
+        const camera: IGLTFCamera = gltfRuntime.cameras[node.camera];
 
         if (camera) {
             gltfRuntime.scene._blockEntityCollection = !!gltfRuntime.assetContainer;
             if (camera.type === "orthographic") {
-                var orthoCamera = new FreeCamera(node.camera, Vector3.Zero(), gltfRuntime.scene, false);
+                const orthoCamera = new FreeCamera(node.camera, Vector3.Zero(), gltfRuntime.scene, false);
 
                 orthoCamera.name = node.name || "";
                 orthoCamera.mode = Camera.ORTHOGRAPHIC_CAMERA;
@@ -952,8 +992,8 @@ var importNode = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, id: string, parent
 
                 orthoCamera._parentContainer = gltfRuntime.assetContainer;
             } else if (camera.type === "perspective") {
-                var perspectiveCamera: IGLTFCameraPerspective = (<any>camera)[camera.type];
-                var persCamera = new FreeCamera(node.camera, Vector3.Zero(), gltfRuntime.scene, false);
+                const perspectiveCamera: IGLTFCameraPerspective = (<any>camera)[camera.type];
+                const persCamera = new FreeCamera(node.camera, Vector3.Zero(), gltfRuntime.scene, false);
 
                 persCamera.name = node.name || "";
                 persCamera.attachControl();
@@ -981,7 +1021,7 @@ var importNode = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, id: string, parent
             return node.babylonNode;
         } else if (lastNode === null) {
             gltfRuntime.scene._blockEntityCollection = !!gltfRuntime.assetContainer;
-            var dummy = new Mesh(node.name || "", gltfRuntime.scene);
+            const dummy = new Mesh(node.name || "", gltfRuntime.scene);
             dummy._parentContainer = gltfRuntime.assetContainer;
             gltfRuntime.scene._blockEntityCollection = false;
             node.babylonNode = dummy;
@@ -993,9 +1033,9 @@ var importNode = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, id: string, parent
         if (node.matrix && lastNode instanceof Mesh) {
             configureNodeFromMatrix(lastNode, node, parent);
         } else {
-            var translation = node.translation || [0, 0, 0];
-            var rotation = node.rotation || [0, 0, 0, 1];
-            var scale = node.scale || [1, 1, 1];
+            const translation = node.translation || [0, 0, 0];
+            const rotation = node.rotation || [0, 0, 0, 1];
+            const scale = node.scale || [1, 1, 1];
             configureNode(lastNode, Vector3.FromArray(translation), Quaternion.FromArray(rotation), Vector3.FromArray(scale));
         }
 
@@ -1008,10 +1048,14 @@ var importNode = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, id: string, parent
 
 /**
  * Traverses nodes and creates them
+ * @param gltfRuntime
+ * @param id
+ * @param parent
+ * @param meshIncluded
  */
 var traverseNodes = (gltfRuntime: IGLTFRuntime, id: string, parent: Nullable<Node>, meshIncluded: boolean = false) => {
-    var node: IGLTFNode = gltfRuntime.nodes[id];
-    var newNode: Nullable<Node> = null;
+    const node: IGLTFNode = gltfRuntime.nodes[id];
+    let newNode: Nullable<Node> = null;
 
     if (gltfRuntime.importOnlyMeshes && !meshIncluded && gltfRuntime.importMeshesNames) {
         if (gltfRuntime.importMeshesNames.indexOf(node.name || "") !== -1 || gltfRuntime.importMeshesNames.length === 0) {
@@ -1033,7 +1077,7 @@ var traverseNodes = (gltfRuntime: IGLTFRuntime, id: string, parent: Nullable<Nod
     }
 
     if (node.children) {
-        for (var i = 0; i < node.children.length; i++) {
+        for (let i = 0; i < node.children.length; i++) {
             traverseNodes(gltfRuntime, node.children[i], newNode, meshIncluded);
         }
     }
@@ -1041,17 +1085,18 @@ var traverseNodes = (gltfRuntime: IGLTFRuntime, id: string, parent: Nullable<Nod
 
 /**
  * do stuff after buffers, shaders are loaded (e.g. hook up materials, load animations, etc.)
+ * @param gltfRuntime
  */
-var postLoad = (gltfRuntime: IGLTFRuntime) => {
+const postLoad = (gltfRuntime: IGLTFRuntime) => {
     // Nodes
-    var currentScene: IGLTFScene = <IGLTFScene>gltfRuntime.currentScene;
+    let currentScene: IGLTFScene = <IGLTFScene>gltfRuntime.currentScene;
 
     if (currentScene) {
         for (var i = 0; i < currentScene.nodes.length; i++) {
             traverseNodes(gltfRuntime, currentScene.nodes[i], null);
         }
     } else {
-        for (var thing in gltfRuntime.scenes) {
+        for (const thing in gltfRuntime.scenes) {
             currentScene = <IGLTFScene>gltfRuntime.scenes[thing];
 
             for (var i = 0; i < currentScene.nodes.length; i++) {
@@ -1064,15 +1109,21 @@ var postLoad = (gltfRuntime: IGLTFRuntime) => {
     loadAnimations(gltfRuntime);
 
     for (var i = 0; i < gltfRuntime.scene.skeletons.length; i++) {
-        var skeleton = gltfRuntime.scene.skeletons[i];
+        const skeleton = gltfRuntime.scene.skeletons[i];
         gltfRuntime.scene.beginAnimation(skeleton, 0, Number.MAX_VALUE, true, 1.0);
     }
 };
 
 /**
  * onBind shaderrs callback to set uniforms and matrices
+ * @param mesh
+ * @param gltfRuntime
+ * @param shaderMaterial
+ * @param technique
+ * @param material
+ * @param onSuccess
  */
-var onBindShaderMaterial = (
+const onBindShaderMaterial = (
     mesh: AbstractMesh,
     gltfRuntime: IGLTFRuntime,
     unTreatedUniforms: { [key: string]: IGLTFTechniqueParameter },
@@ -1081,17 +1132,17 @@ var onBindShaderMaterial = (
     material: IGLTFMaterial,
     onSuccess: (shaderMaterial: ShaderMaterial) => void
 ) => {
-    var materialValues = material.values || technique.parameters;
+    const materialValues = material.values || technique.parameters;
 
-    for (var unif in unTreatedUniforms) {
-        var uniform: IGLTFTechniqueParameter = unTreatedUniforms[unif];
-        var type = uniform.type;
+    for (const unif in unTreatedUniforms) {
+        const uniform: IGLTFTechniqueParameter = unTreatedUniforms[unif];
+        const type = uniform.type;
 
         if (type === EParameterType.FLOAT_MAT2 || type === EParameterType.FLOAT_MAT3 || type === EParameterType.FLOAT_MAT4) {
             if (uniform.semantic && !uniform.source && !uniform.node) {
                 GLTFUtils.SetMatrix(gltfRuntime.scene, mesh, uniform, unif, <Effect>shaderMaterial.getEffect());
             } else if (uniform.semantic && (uniform.source || uniform.node)) {
-                var source = gltfRuntime.scene.getNodeByName(uniform.source || uniform.node || "");
+                let source = gltfRuntime.scene.getNodeByName(uniform.source || uniform.node || "");
                 if (source === null) {
                     source = gltfRuntime.scene.getNodeById(uniform.source || uniform.node || "");
                 }
@@ -1102,13 +1153,13 @@ var onBindShaderMaterial = (
                 GLTFUtils.SetMatrix(gltfRuntime.scene, source, uniform, unif, <Effect>shaderMaterial.getEffect());
             }
         } else {
-            var value = (<any>materialValues)[technique.uniforms[unif]];
+            const value = (<any>materialValues)[technique.uniforms[unif]];
             if (!value) {
                 continue;
             }
 
             if (type === EParameterType.SAMPLER_2D) {
-                var texture = gltfRuntime.textures[material.values ? value : uniform.value].babylonTexture;
+                const texture = gltfRuntime.textures[material.values ? value : uniform.value].babylonTexture;
 
                 if (texture === null || texture === undefined) {
                     continue;
@@ -1127,24 +1178,28 @@ var onBindShaderMaterial = (
 /**
  * Prepare uniforms to send the only one time
  * Loads the appropriate textures
+ * @param gltfRuntime
+ * @param shaderMaterial
+ * @param technique
+ * @param material
  */
-var prepareShaderMaterialUniforms = (
+const prepareShaderMaterialUniforms = (
     gltfRuntime: IGLTFRuntime,
     shaderMaterial: ShaderMaterial,
     technique: IGLTFTechnique,
     material: IGLTFMaterial,
     unTreatedUniforms: { [key: string]: IGLTFTechniqueParameter }
 ) => {
-    var materialValues = material.values || technique.parameters;
-    var techniqueUniforms = technique.uniforms;
+    const materialValues = material.values || technique.parameters;
+    const techniqueUniforms = technique.uniforms;
 
     /**
      * Prepare values here (not matrices)
      */
-    for (var unif in unTreatedUniforms) {
+    for (const unif in unTreatedUniforms) {
         var uniform: IGLTFTechniqueParameter = unTreatedUniforms[unif];
-        var type = uniform.type;
-        var value = (<any>materialValues)[techniqueUniforms[unif]];
+        const type = uniform.type;
+        let value = (<any>materialValues)[techniqueUniforms[unif]];
 
         if (value === undefined) {
             // In case the value is the same for all materials
@@ -1181,8 +1236,11 @@ var prepareShaderMaterialUniforms = (
 
 /**
  * Shader compilation failed
+ * @param program
+ * @param shaderMaterial
+ * @param onError
  */
-var onShaderCompileError = (program: IGLTFProgram, shaderMaterial: ShaderMaterial, onError: (message: string) => void) => {
+const onShaderCompileError = (program: IGLTFProgram, shaderMaterial: ShaderMaterial, onError: (message: string) => void) => {
     return (effect: Effect, error: string) => {
         shaderMaterial.dispose(true);
         onError("Cannot compile program named " + program.name + ". Error: " + error + ". Default material will be applied");
@@ -1191,8 +1249,13 @@ var onShaderCompileError = (program: IGLTFProgram, shaderMaterial: ShaderMateria
 
 /**
  * Shader compilation success
+ * @param gltfRuntime
+ * @param shaderMaterial
+ * @param technique
+ * @param material
+ * @param onSuccess
  */
-var onShaderCompileSuccess = (
+const onShaderCompileSuccess = (
     gltfRuntime: IGLTFRuntime,
     shaderMaterial: ShaderMaterial,
     technique: IGLTFTechnique,
@@ -1211,15 +1274,17 @@ var onShaderCompileSuccess = (
 
 /**
  * Returns the appropriate uniform if already handled by babylon
+ * @param tokenizer
+ * @param technique
  */
-var parseShaderUniforms = (tokenizer: Tokenizer, technique: IGLTFTechnique, unTreatedUniforms: { [key: string]: IGLTFTechniqueParameter }): string => {
-    for (var unif in technique.uniforms) {
-        var uniform = technique.uniforms[unif];
-        var uniformParameter: IGLTFTechniqueParameter = technique.parameters[uniform];
+const parseShaderUniforms = (tokenizer: Tokenizer, technique: IGLTFTechnique, unTreatedUniforms: { [key: string]: IGLTFTechniqueParameter }): string => {
+    for (const unif in technique.uniforms) {
+        const uniform = technique.uniforms[unif];
+        const uniformParameter: IGLTFTechniqueParameter = technique.parameters[uniform];
 
         if (tokenizer.currentIdentifier === unif) {
             if (uniformParameter.semantic && !uniformParameter.source && !uniformParameter.node) {
-                var transformIndex = glTFTransforms.indexOf(uniformParameter.semantic);
+                const transformIndex = glTFTransforms.indexOf(uniformParameter.semantic);
 
                 if (transformIndex !== -1) {
                     delete unTreatedUniforms[unif];
@@ -1234,10 +1299,11 @@ var parseShaderUniforms = (tokenizer: Tokenizer, technique: IGLTFTechnique, unTr
 
 /**
  * All shaders loaded. Create materials one by one
+ * @param gltfRuntime
  */
-var importMaterials = (gltfRuntime: IGLTFRuntime) => {
+const importMaterials = (gltfRuntime: IGLTFRuntime) => {
     // Create materials
-    for (var mat in gltfRuntime.materials) {
+    for (const mat in gltfRuntime.materials) {
         GLTFLoaderExtension.LoadMaterialAsync(
             gltfRuntime,
             mat,
@@ -1253,7 +1319,7 @@ var importMaterials = (gltfRuntime: IGLTFRuntime) => {
  */
 export class GLTFLoaderBase {
     public static CreateRuntime(parsedData: any, scene: Scene, rootUrl: string): IGLTFRuntime {
-        var gltfRuntime: IGLTFRuntime = {
+        const gltfRuntime: IGLTFRuntime = {
             extensions: {},
             accessors: {},
             buffers: {},
@@ -1384,7 +1450,7 @@ export class GLTFLoaderBase {
         onError: (message: string) => void,
         onProgress?: () => void
     ): void {
-        var buffer: IGLTFBuffer = gltfRuntime.buffers[id];
+        const buffer: IGLTFBuffer = gltfRuntime.buffers[id];
 
         if (Tools.IsBase64(buffer.uri)) {
             setTimeout(() => onSuccess(new Uint8Array(Tools.DecodeBase64(buffer.uri))));
@@ -1405,7 +1471,7 @@ export class GLTFLoaderBase {
     }
 
     public static LoadTextureBufferAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (buffer: Nullable<ArrayBufferView>) => void, onError: (message: string) => void): void {
-        var texture: IGLTFTexture = gltfRuntime.textures[id];
+        const texture: IGLTFTexture = gltfRuntime.textures[id];
 
         if (!texture || !texture.source) {
             onError("");
@@ -1417,7 +1483,7 @@ export class GLTFLoaderBase {
             return;
         }
 
-        var source: IGLTFImage = gltfRuntime.images[texture.source];
+        const source: IGLTFImage = gltfRuntime.images[texture.source];
 
         if (Tools.IsBase64(source.uri)) {
             setTimeout(() => onSuccess(new Uint8Array(Tools.DecodeBase64(source.uri))));
@@ -1444,27 +1510,27 @@ export class GLTFLoaderBase {
         onSuccess: (texture: Texture) => void,
         onError: (message: string) => void
     ): void {
-        var texture: IGLTFTexture = gltfRuntime.textures[id];
+        const texture: IGLTFTexture = gltfRuntime.textures[id];
 
         if (texture.babylonTexture) {
             onSuccess(texture.babylonTexture);
             return;
         }
 
-        var sampler: IGLTFSampler = gltfRuntime.samplers[texture.sampler];
+        const sampler: IGLTFSampler = gltfRuntime.samplers[texture.sampler];
 
-        var createMipMaps =
+        const createMipMaps =
             sampler.minFilter === ETextureFilterType.NEAREST_MIPMAP_NEAREST ||
             sampler.minFilter === ETextureFilterType.NEAREST_MIPMAP_LINEAR ||
             sampler.minFilter === ETextureFilterType.LINEAR_MIPMAP_NEAREST ||
             sampler.minFilter === ETextureFilterType.LINEAR_MIPMAP_LINEAR;
 
-        var samplingMode = Texture.BILINEAR_SAMPLINGMODE;
+        const samplingMode = Texture.BILINEAR_SAMPLINGMODE;
 
-        var blob = buffer == null ? new Blob() : new Blob([buffer]);
-        var blobURL = URL.createObjectURL(blob);
-        var revokeBlobURL = () => URL.revokeObjectURL(blobURL);
-        var newTexture = new Texture(blobURL, gltfRuntime.scene, !createMipMaps, true, samplingMode, revokeBlobURL, revokeBlobURL);
+        const blob = buffer == null ? new Blob() : new Blob([buffer]);
+        const blobURL = URL.createObjectURL(blob);
+        const revokeBlobURL = () => URL.revokeObjectURL(blobURL);
+        const newTexture = new Texture(blobURL, gltfRuntime.scene, !createMipMaps, true, samplingMode, revokeBlobURL, revokeBlobURL);
         if (sampler.wrapS !== undefined) {
             newTexture.wrapU = GLTFUtils.GetWrapMode(sampler.wrapS);
         }
@@ -1478,10 +1544,10 @@ export class GLTFLoaderBase {
     }
 
     public static LoadShaderStringAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (shaderString: string | ArrayBuffer) => void, onError?: (message: string) => void): void {
-        var shader: IGLTFShader = gltfRuntime.shaders[id];
+        const shader: IGLTFShader = gltfRuntime.shaders[id];
 
         if (Tools.IsBase64(shader.uri)) {
-            var shaderString = atob(shader.uri.split(",")[1]);
+            const shaderString = atob(shader.uri.split(",")[1]);
             if (onSuccess) {
                 onSuccess(shaderString);
             }
@@ -1495,7 +1561,7 @@ export class GLTFLoaderBase {
     }
 
     public static LoadMaterialAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (material: Material) => void, onError: (message: string) => void): void {
-        var material: IGLTFMaterial = gltfRuntime.materials[id];
+        const material: IGLTFMaterial = gltfRuntime.materials[id];
         if (!material.technique) {
             if (onError) {
                 onError("No technique found.");
@@ -1503,10 +1569,10 @@ export class GLTFLoaderBase {
             return;
         }
 
-        var technique: IGLTFTechnique = gltfRuntime.techniques[material.technique];
+        const technique: IGLTFTechnique = gltfRuntime.techniques[material.technique];
         if (!technique) {
             gltfRuntime.scene._blockEntityCollection = !!gltfRuntime.assetContainer;
-            var defaultMaterial = new StandardMaterial(id, gltfRuntime.scene);
+            const defaultMaterial = new StandardMaterial(id, gltfRuntime.scene);
             defaultMaterial._parentContainer = gltfRuntime.assetContainer;
             gltfRuntime.scene._blockEntityCollection = false;
             defaultMaterial.diffuseColor = new Color3(0.5, 0.5, 0.5);
@@ -1515,31 +1581,31 @@ export class GLTFLoaderBase {
             return;
         }
 
-        var program: IGLTFProgram = gltfRuntime.programs[technique.program];
-        var states: IGLTFTechniqueStates = technique.states;
+        const program: IGLTFProgram = gltfRuntime.programs[technique.program];
+        const states: IGLTFTechniqueStates = technique.states;
 
-        var vertexShader: string = Effect.ShadersStore[program.vertexShader + "VertexShader"];
-        var pixelShader: string = Effect.ShadersStore[program.fragmentShader + "PixelShader"];
-        var newVertexShader = "";
-        var newPixelShader = "";
+        const vertexShader: string = Effect.ShadersStore[program.vertexShader + "VertexShader"];
+        const pixelShader: string = Effect.ShadersStore[program.fragmentShader + "PixelShader"];
+        let newVertexShader = "";
+        let newPixelShader = "";
 
-        var vertexTokenizer = new Tokenizer(vertexShader);
-        var pixelTokenizer = new Tokenizer(pixelShader);
+        const vertexTokenizer = new Tokenizer(vertexShader);
+        const pixelTokenizer = new Tokenizer(pixelShader);
 
-        var unTreatedUniforms: { [key: string]: IGLTFTechniqueParameter } = {};
-        var uniforms: string[] = [];
-        var attributes: string[] = [];
-        var samplers: string[] = [];
+        const unTreatedUniforms: { [key: string]: IGLTFTechniqueParameter } = {};
+        const uniforms: string[] = [];
+        const attributes: string[] = [];
+        const samplers: string[] = [];
 
         // Fill uniform, sampler2D and attributes
-        for (var unif in technique.uniforms) {
-            var uniform = technique.uniforms[unif];
-            var uniformParameter: IGLTFTechniqueParameter = technique.parameters[uniform];
+        for (const unif in technique.uniforms) {
+            const uniform = technique.uniforms[unif];
+            const uniformParameter: IGLTFTechniqueParameter = technique.parameters[uniform];
 
             unTreatedUniforms[unif] = uniformParameter;
 
             if (uniformParameter.semantic && !uniformParameter.node && !uniformParameter.source) {
-                var transformIndex = glTFTransforms.indexOf(uniformParameter.semantic);
+                const transformIndex = glTFTransforms.indexOf(uniformParameter.semantic);
                 if (transformIndex !== -1) {
                     uniforms.push(babylonTransforms[transformIndex]);
                     delete unTreatedUniforms[unif];
@@ -1558,7 +1624,7 @@ export class GLTFLoaderBase {
             var attributeParameter: IGLTFTechniqueParameter = technique.parameters[attribute];
 
             if (attributeParameter.semantic) {
-                let name = getAttribute(attributeParameter);
+                const name = getAttribute(attributeParameter);
                 if (name) {
                     attributes.push(name);
                 }
@@ -1574,7 +1640,7 @@ export class GLTFLoaderBase {
                 continue;
             }
 
-            var foundAttribute = false;
+            let foundAttribute = false;
 
             for (var attr in technique.attributes) {
                 var attribute = technique.attributes[attr];
@@ -1607,12 +1673,12 @@ export class GLTFLoaderBase {
         }
 
         // Create shader material
-        var shaderPath = {
+        const shaderPath = {
             vertex: program.vertexShader + id,
             fragment: program.fragmentShader + id,
         };
 
-        var options = {
+        const options = {
             attributes: attributes,
             uniforms: uniforms,
             samplers: samplers,
@@ -1622,18 +1688,18 @@ export class GLTFLoaderBase {
         Effect.ShadersStore[program.vertexShader + id + "VertexShader"] = newVertexShader;
         Effect.ShadersStore[program.fragmentShader + id + "PixelShader"] = newPixelShader;
 
-        var shaderMaterial = new ShaderMaterial(id, gltfRuntime.scene, shaderPath, options);
+        const shaderMaterial = new ShaderMaterial(id, gltfRuntime.scene, shaderPath, options);
         shaderMaterial.onError = onShaderCompileError(program, shaderMaterial, onError);
         shaderMaterial.onCompiled = onShaderCompileSuccess(gltfRuntime, shaderMaterial, technique, material, unTreatedUniforms, onSuccess);
         shaderMaterial.sideOrientation = Material.CounterClockWiseSideOrientation;
 
         if (states && states.functions) {
-            var functions = states.functions;
+            const functions = states.functions;
             if (functions.cullFace && functions.cullFace[0] !== ECullingType.BACK) {
                 shaderMaterial.backFaceCulling = false;
             }
 
-            var blendFunc = functions.blendFuncSeparate;
+            const blendFunc = functions.blendFuncSeparate;
             if (blendFunc) {
                 if (
                     blendFunc[0] === EBlendingFunction.SRC_ALPHA &&
@@ -1737,20 +1803,20 @@ export class GLTFLoader implements IGLTFLoader {
                 // Create nodes
                 this._createNodes(gltfRuntime);
 
-                var meshes = new Array<AbstractMesh>();
-                var skeletons = new Array<Skeleton>();
+                const meshes = new Array<AbstractMesh>();
+                const skeletons = new Array<Skeleton>();
 
                 // Fill arrays of meshes and skeletons
-                for (var nde in gltfRuntime.nodes) {
-                    var node: IGLTFNode = gltfRuntime.nodes[nde];
+                for (const nde in gltfRuntime.nodes) {
+                    const node: IGLTFNode = gltfRuntime.nodes[nde];
 
                     if (node.babylonNode instanceof AbstractMesh) {
                         meshes.push(<AbstractMesh>node.babylonNode);
                     }
                 }
 
-                for (var skl in gltfRuntime.skins) {
-                    var skin: IGLTFSkins = gltfRuntime.skins[skl];
+                for (const skl in gltfRuntime.skins) {
+                    const skin: IGLTFSkins = gltfRuntime.skins[skl];
 
                     if (skin.babylonSkeleton instanceof Skeleton) {
                         skeletons.push(skin.babylonSkeleton);
@@ -1898,9 +1964,9 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     private _loadShadersAsync(gltfRuntime: IGLTFRuntime, onload: () => void): void {
-        var hasShaders = false;
+        let hasShaders = false;
 
-        var processShader = (sha: string, shader: IGLTFShader) => {
+        const processShader = (sha: string, shader: IGLTFShader) => {
             GLTFLoaderExtension.LoadShaderStringAsync(
                 gltfRuntime,
                 sha,
@@ -1925,10 +1991,10 @@ export class GLTFLoader implements IGLTFLoader {
             );
         };
 
-        for (var sha in gltfRuntime.shaders) {
+        for (const sha in gltfRuntime.shaders) {
             hasShaders = true;
 
-            var shader: IGLTFShader = gltfRuntime.shaders[sha];
+            const shader: IGLTFShader = gltfRuntime.shaders[sha];
             if (shader) {
                 processShader.bind(this, sha, shader)();
             } else {
@@ -1942,9 +2008,9 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     private _loadBuffersAsync(gltfRuntime: IGLTFRuntime, onLoad: () => void, onProgress?: (event: ISceneLoaderProgressEvent) => void): void {
-        var hasBuffers = false;
+        let hasBuffers = false;
 
-        var processBuffer = (buf: string, buffer: IGLTFBuffer) => {
+        const processBuffer = (buf: string, buffer: IGLTFBuffer) => {
             GLTFLoaderExtension.LoadBufferAsync(
                 gltfRuntime,
                 buf,
@@ -1969,10 +2035,10 @@ export class GLTFLoader implements IGLTFLoader {
             );
         };
 
-        for (var buf in gltfRuntime.buffers) {
+        for (const buf in gltfRuntime.buffers) {
             hasBuffers = true;
 
-            var buffer: IGLTFBuffer = gltfRuntime.buffers[buf];
+            const buffer: IGLTFBuffer = gltfRuntime.buffers[buf];
             if (buffer) {
                 processBuffer.bind(this, buf, buffer)();
             } else {
@@ -1986,7 +2052,7 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     private _createNodes(gltfRuntime: IGLTFRuntime): void {
-        var currentScene = <IGLTFScene>gltfRuntime.currentScene;
+        let currentScene = <IGLTFScene>gltfRuntime.currentScene;
 
         if (currentScene) {
             // Only one scene even if multiple scenes are defined
@@ -1995,7 +2061,7 @@ export class GLTFLoader implements IGLTFLoader {
             }
         } else {
             // Load all scenes
-            for (var thing in gltfRuntime.scenes) {
+            for (const thing in gltfRuntime.scenes) {
                 currentScene = <IGLTFScene>gltfRuntime.scenes[thing];
 
                 for (var i = 0; i < currentScene.nodes.length; i++) {
@@ -2021,6 +2087,11 @@ export abstract class GLTFLoaderExtension {
     /**
      * Defines an override for loading the runtime
      * Return true to stop further extensions from loading the runtime
+     * @param scene
+     * @param data
+     * @param rootUrl
+     * @param onSuccess
+     * @param onError
      */
     public loadRuntimeAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess?: (gltfRuntime: IGLTFRuntime) => void, onError?: (message: string) => void): boolean {
         return false;
@@ -2029,6 +2100,9 @@ export abstract class GLTFLoaderExtension {
     /**
      * Defines an onverride for creating gltf runtime
      * Return true to stop further extensions from creating the runtime
+     * @param gltfRuntime
+     * @param onSuccess
+     * @param onError
      */
     public loadRuntimeExtensionsAsync(gltfRuntime: IGLTFRuntime, onSuccess: () => void, onError?: (message: string) => void): boolean {
         return false;
@@ -2037,6 +2111,11 @@ export abstract class GLTFLoaderExtension {
     /**
      * Defines an override for loading buffers
      * Return true to stop further extensions from loading this buffer
+     * @param gltfRuntime
+     * @param id
+     * @param onSuccess
+     * @param onError
+     * @param onProgress
      */
     public loadBufferAsync(
         gltfRuntime: IGLTFRuntime,
@@ -2051,6 +2130,10 @@ export abstract class GLTFLoaderExtension {
     /**
      * Defines an override for loading texture buffers
      * Return true to stop further extensions from loading this texture data
+     * @param gltfRuntime
+     * @param id
+     * @param onSuccess
+     * @param onError
      */
     public loadTextureBufferAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (buffer: ArrayBufferView) => void, onError: (message: string) => void): boolean {
         return false;
@@ -2059,6 +2142,11 @@ export abstract class GLTFLoaderExtension {
     /**
      * Defines an override for creating textures
      * Return true to stop further extensions from loading this texture
+     * @param gltfRuntime
+     * @param id
+     * @param buffer
+     * @param onSuccess
+     * @param onError
      */
     public createTextureAsync(gltfRuntime: IGLTFRuntime, id: string, buffer: ArrayBufferView, onSuccess: (texture: Texture) => void, onError: (message: string) => void): boolean {
         return false;
@@ -2067,6 +2155,10 @@ export abstract class GLTFLoaderExtension {
     /**
      * Defines an override for loading shader strings
      * Return true to stop further extensions from loading this shader data
+     * @param gltfRuntime
+     * @param id
+     * @param onSuccess
+     * @param onError
      */
     public loadShaderStringAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (shaderString: string) => void, onError: (message: string) => void): boolean {
         return false;
@@ -2075,6 +2167,10 @@ export abstract class GLTFLoaderExtension {
     /**
      * Defines an override for loading materials
      * Return true to stop further extensions from loading this material
+     * @param gltfRuntime
+     * @param id
+     * @param onSuccess
+     * @param onError
      */
     public loadMaterialAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (material: Material) => void, onError: (message: string) => void): boolean {
         return false;
@@ -2200,8 +2296,8 @@ export abstract class GLTFLoaderExtension {
     }
 
     private static ApplyExtensions(func: (loaderExtension: GLTFLoaderExtension) => boolean, defaultFunc: () => void): void {
-        for (var extensionName in GLTFLoader.Extensions) {
-            var loaderExtension = GLTFLoader.Extensions[extensionName];
+        for (const extensionName in GLTFLoader.Extensions) {
+            const loaderExtension = GLTFLoader.Extensions[extensionName];
             if (func(loaderExtension)) {
                 return;
             }

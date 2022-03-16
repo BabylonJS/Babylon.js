@@ -3,7 +3,7 @@ import { GlobalState } from "../globalState";
 
 import "../scss/qrCode.scss";
 
-declare var $: any;
+declare let $: any;
 
 interface IQRCodeComponentProps {
     globalState: GlobalState;

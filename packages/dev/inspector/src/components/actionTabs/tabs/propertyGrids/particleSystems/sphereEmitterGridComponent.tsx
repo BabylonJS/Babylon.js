@@ -21,7 +21,7 @@ export class SphereEmitterGridComponent extends React.Component<ISphereEmitterGr
     }
 
     render() {
-        let emitter = this.props.emitter;
+        const emitter = this.props.emitter;
         return (
             <>
                 <FloatLineComponent

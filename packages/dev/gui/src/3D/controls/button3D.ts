@@ -68,9 +68,9 @@ export class Button3D extends AbstractButton3D {
 
     // Mesh association
     protected _createNode(scene: Scene): TransformNode {
-        var faceUV = new Array(6);
+        const faceUV = new Array(6);
 
-        for (var i = 0; i < 6; i++) {
+        for (let i = 0; i < 6; i++) {
             faceUV[i] = new Vector4(0, 0, 0, 0);
         }
         if (scene.useRightHandedSystem) {
@@ -80,7 +80,7 @@ export class Button3D extends AbstractButton3D {
             faceUV[1].copyFromFloats(0, 0, 1, 1);
         }
 
-        let mesh = CreateBox(
+        const mesh = CreateBox(
             this.name + "_rootMesh",
             {
                 width: 1.0,
@@ -96,7 +96,7 @@ export class Button3D extends AbstractButton3D {
     }
 
     protected _affectMaterial(mesh: AbstractMesh) {
-        let material = new StandardMaterial(this.name + "Material", mesh.getScene());
+        const material = new StandardMaterial(this.name + "Material", mesh.getScene());
         material.specularColor = Color3.Black();
 
         mesh.material = material;

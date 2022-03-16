@@ -22,11 +22,11 @@ export class CommonPropertyGridComponent extends React.Component<ICommonProperty
     }
 
     renderLevel(jsonObject: any) {
-        let components = [];
+        const components = [];
 
-        for (var data in jsonObject) {
-            let value = jsonObject[data];
-            let type = Object.prototype.toString.call(value);
+        for (const data in jsonObject) {
+            const value = jsonObject[data];
+            const type = Object.prototype.toString.call(value);
 
             switch (type) {
                 case "[object String]":
@@ -41,7 +41,7 @@ export class CommonPropertyGridComponent extends React.Component<ICommonProperty
                     break;
                 case "[object Object]":
                     components.push(<TextLineComponent key={data} label={data} ignoreValue={true} />);
-                    for (var entryKey in value) {
+                    for (const entryKey in value) {
                         components.push(<TextLineComponent key={data + entry} label={entryKey} value={value[entryKey]} additionalClass="reduced-opacity" />);
                     }
                     break;

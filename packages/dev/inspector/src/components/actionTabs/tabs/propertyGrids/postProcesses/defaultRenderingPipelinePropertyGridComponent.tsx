@@ -33,12 +33,12 @@ export class DefaultRenderingPipelinePropertyGridComponent extends React.Compone
 
         const camera = renderPipeline.scene.activeCamera!;
 
-        var toneMappingOptions = [
+        const toneMappingOptions = [
             { label: "Standard", value: ImageProcessingConfiguration.TONEMAPPING_STANDARD },
             { label: "ACES", value: ImageProcessingConfiguration.TONEMAPPING_ACES },
         ];
 
-        var vignetteModeOptions = [
+        const vignetteModeOptions = [
             { label: "Multiply", value: ImageProcessingConfiguration.VIGNETTEMODE_MULTIPLY },
             { label: "Opaque", value: ImageProcessingConfiguration.VIGNETTEMODE_OPAQUE },
         ];

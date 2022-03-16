@@ -98,7 +98,7 @@ export class RadioButton extends Control {
                 if ((<any>control).group === undefined) {
                     return;
                 }
-                var childRadio = <RadioButton>control;
+                const childRadio = <RadioButton>control;
                 if (childRadio.group === this.group) {
                     childRadio.isChecked = false;
                 }
@@ -124,8 +124,8 @@ export class RadioButton extends Control {
         context.save();
 
         this._applyStates(context);
-        let actualWidth = this._currentMeasure.width - this._thickness;
-        let actualHeight = this._currentMeasure.height - this._thickness;
+        const actualWidth = this._currentMeasure.width - this._thickness;
+        const actualHeight = this._currentMeasure.height - this._thickness;
 
         if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
             context.shadowColor = this.shadowColor;
@@ -160,8 +160,8 @@ export class RadioButton extends Control {
         // Inner
         if (this._isChecked) {
             context.fillStyle = this._isEnabled ? this.color : this._disabledColor;
-            let offsetWidth = actualWidth * this._checkSizeRatio;
-            let offseHeight = actualHeight * this._checkSizeRatio;
+            const offsetWidth = actualWidth * this._checkSizeRatio;
+            const offseHeight = actualHeight * this._checkSizeRatio;
 
             Control.drawEllipse(
                 this._currentMeasure.left + this._currentMeasure.width / 2,
@@ -202,11 +202,11 @@ export class RadioButton extends Control {
      * @returns a StackPanel containing the radio button and a textBlock
      */
     public static AddRadioButtonWithHeader(title: string, group: string, isChecked: boolean, onValueChanged: (button: RadioButton, value: boolean) => void): StackPanel {
-        var panel = new StackPanel();
+        const panel = new StackPanel();
         panel.isVertical = false;
         panel.height = "30px";
 
-        var radio = new RadioButton();
+        const radio = new RadioButton();
         radio.width = "20px";
         radio.height = "20px";
         radio.isChecked = isChecked;
@@ -215,7 +215,7 @@ export class RadioButton extends Control {
         radio.onIsCheckedChangedObservable.add((value) => onValueChanged(radio, value));
         panel.addControl(radio);
 
-        var header = new TextBlock();
+        const header = new TextBlock();
         header.text = title;
         header.width = "180px";
         header.paddingLeft = "5px";

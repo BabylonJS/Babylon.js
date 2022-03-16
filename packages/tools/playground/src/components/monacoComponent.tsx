@@ -18,7 +18,7 @@ export class MonacoComponent extends React.Component<IMonacoComponentProps> {
         this._monacoManager = new MonacoManager(this.props.globalState);
 
         this.props.globalState.onEditorFullcreenRequiredObservable.add(() => {
-            let editorDiv = this.props.refObject.current! as any;
+            const editorDiv = this.props.refObject.current! as any;
             if (editorDiv.requestFullscreen) {
                 editorDiv.requestFullscreen();
             } else if (editorDiv.mozRequestFullScreen) {
@@ -30,7 +30,7 @@ export class MonacoComponent extends React.Component<IMonacoComponentProps> {
     }
 
     componentDidMount() {
-        let hostElement = this.props.refObject.current!;
+        const hostElement = this.props.refObject.current!;
         this._monacoManager.setupMonacoAsync(hostElement, true);
     }
 

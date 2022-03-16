@@ -272,11 +272,11 @@ export class SlateGizmo extends Gizmo {
     }
 
     private _assignDragBehaviorSides(handle: GizmoHandle, dragPlaneNormal: Vector3) {
-        let quaternionOrigin = new Quaternion();
-        let dragOrigin = new Vector3();
-        let directionOrigin = new Vector3();
-        let worldPivot = new Vector3();
-        let worldPlaneNormal = new Vector3();
+        const quaternionOrigin = new Quaternion();
+        const dragOrigin = new Vector3();
+        const directionOrigin = new Vector3();
+        const worldPivot = new Vector3();
+        const worldPlaneNormal = new Vector3();
 
         const dragStart = (event: { position: Vector3 }) => {
             if (this.attachedSlate && this.attachedMesh) {
@@ -301,7 +301,7 @@ export class SlateGizmo extends Gizmo {
                 this._tmpVector.subtractInPlace(worldPivot);
                 this._tmpVector.normalize();
 
-                let angle = -Vector3.GetAngleBetweenVectorsOnPlane(this._tmpVector, directionOrigin, worldPlaneNormal);
+                const angle = -Vector3.GetAngleBetweenVectorsOnPlane(this._tmpVector, directionOrigin, worldPlaneNormal);
                 Quaternion.RotationAxisToRef(dragPlaneNormal, angle, this._tmpQuaternion);
                 quaternionOrigin.multiplyToRef(this._tmpQuaternion, this.attachedMesh.rotationQuaternion!);
             }
@@ -422,7 +422,7 @@ export class SlateGizmo extends Gizmo {
         if (this._attachedSlate && this._attachedSlate.mesh) {
             if (this.fixedScreenSize) {
                 this._attachedSlate.mesh.absolutePosition.subtractToRef(this.gizmoLayer.utilityLayerScene.activeCamera.position, this._tmpVector);
-                var distanceFromCamera = (this._handleSize * this._tmpVector.length()) / this.fixedScreenSizeDistanceFactor;
+                const distanceFromCamera = (this._handleSize * this._tmpVector.length()) / this.fixedScreenSizeDistanceFactor;
                 for (let i = 0; i < this._corners.length; i++) {
                     this._corners[i].node.scaling.set(distanceFromCamera, distanceFromCamera, distanceFromCamera);
                 }

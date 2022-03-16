@@ -31,7 +31,10 @@ export class KHR_lights implements IGLTFLoaderExtension {
     private _loader: GLTFLoader;
     private _lights?: IKHRLightsPunctual_Light[];
 
-    /** @hidden */
+    /**
+     * @param loader
+     * @hidden
+     */
     constructor(loader: GLTFLoader) {
         this._loader = loader;
         this.enabled = this._loader.isExtensionUsed(NAME);
@@ -52,7 +55,12 @@ export class KHR_lights implements IGLTFLoaderExtension {
         }
     }
 
-    /** @hidden */
+    /**
+     * @param context
+     * @param node
+     * @param assign
+     * @hidden
+     */
     public loadNodeAsync(context: string, node: INode, assign: (babylonTransformNode: TransformNode) => void): Nullable<Promise<TransformNode>> {
         return GLTFLoader.LoadExtensionAsync<IKHRLightsPunctual_LightReference, TransformNode>(context, node, this.name, (extensionContext, extension) => {
             return this._loader.loadNodeAsync(context, node, (babylonMesh) => {

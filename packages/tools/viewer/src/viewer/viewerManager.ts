@@ -41,7 +41,7 @@ export class ViewerManager {
      * @param viewer the viewer to remove
      */
     public removeViewer(viewer: AbstractViewer) {
-        let id = viewer.getBaseId();
+        const id = viewer.getBaseId();
         delete this._viewers[id];
         this.onViewerRemovedObservable.notifyObservers(id);
     }
@@ -59,7 +59,7 @@ export class ViewerManager {
      * @param element the HTML element to search viewers associated with
      */
     public getViewerByHTMLElement(element: HTMLElement) {
-        for (let id in this._viewers) {
+        for (const id in this._viewers) {
             if (this._viewers[id].containerElement === element) {
                 return this.getViewerById(id);
             }
@@ -74,11 +74,11 @@ export class ViewerManager {
      */
     public getViewerPromiseById(id: string): Promise<AbstractViewer> {
         return new Promise((resolve, reject) => {
-            let localViewer = this.getViewerById(id);
+            const localViewer = this.getViewerById(id);
             if (localViewer) {
                 return resolve(localViewer);
             }
-            let viewerFunction = (viewer: AbstractViewer) => {
+            const viewerFunction = (viewer: AbstractViewer) => {
                 if (viewer.getBaseId() === id) {
                     resolve(viewer);
                     this.onViewerAddedObservable.removeCallback(viewerFunction);
@@ -97,7 +97,7 @@ export class ViewerManager {
      * dispose the manager and all of its associated viewers
      */
     public dispose() {
-        for (let id in this._viewers) {
+        for (const id in this._viewers) {
             this._viewers[id].dispose();
         }
 
@@ -106,4 +106,4 @@ export class ViewerManager {
     }
 }
 
-export let viewerManager = new ViewerManager();
+export const viewerManager = new ViewerManager();

@@ -30,7 +30,7 @@ export class AnimationSubEntryComponent extends React.Component<IAnimationSubEnt
         let isSelected = false;
 
         if (this.props.context.activeAnimations.indexOf(this.props.animation) !== -1 && this.props.context.activeKeyPoints) {
-            for (var keyPoint of this.props.context.activeKeyPoints) {
+            for (const keyPoint of this.props.context.activeKeyPoints) {
                 if (keyPoint.state.selectedState === SelectionState.Selected && keyPoint.props.channel === this.props.color) {
                     isSelected = true;
                 }
@@ -47,7 +47,7 @@ export class AnimationSubEntryComponent extends React.Component<IAnimationSubEnt
             let isSelected = false;
 
             if (this.props.context.activeKeyPoints) {
-                for (let activeKeyPoint of this.props.context.activeKeyPoints) {
+                for (const activeKeyPoint of this.props.context.activeKeyPoints) {
                     if (
                         activeKeyPoint.props.curve.animation === this.props.animation &&
                         activeKeyPoint.props.channel === this.props.color &&
@@ -93,7 +93,7 @@ export class AnimationSubEntryComponent extends React.Component<IAnimationSubEnt
     }
 
     public render() {
-        let isActive = this.props.context.activeAnimations.indexOf(this.props.animation) !== -1 && this.props.context.isChannelEnabled(this.props.animation, this.props.color);
+        const isActive = this.props.context.activeAnimations.indexOf(this.props.animation) !== -1 && this.props.context.isChannelEnabled(this.props.animation, this.props.color);
         return (
             <>
                 <div className={"animation-entry" + (isActive ? " isActive" : "")}>

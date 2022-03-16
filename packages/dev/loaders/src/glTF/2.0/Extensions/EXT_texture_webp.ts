@@ -19,7 +19,10 @@ export class EXT_texture_webp implements IGLTFLoaderExtension {
 
     private _loader: GLTFLoader;
 
-    /** @hidden */
+    /**
+     * @param loader
+     * @hidden
+     */
     constructor(loader: GLTFLoader) {
         this._loader = loader;
         this.enabled = loader.isExtensionUsed(NAME);
@@ -30,7 +33,12 @@ export class EXT_texture_webp implements IGLTFLoaderExtension {
         (this._loader as any) = null;
     }
 
-    /** @hidden */
+    /**
+     * @param context
+     * @param texture
+     * @param assign
+     * @hidden
+     */
     public _loadTextureAsync(context: string, texture: ITexture, assign: (babylonTexture: BaseTexture) => void): Nullable<Promise<BaseTexture>> {
         return GLTFLoader.LoadExtensionAsync<IEXTTextureWebP, BaseTexture>(context, texture, this.name, (extensionContext, extension) => {
             const sampler = texture.sampler == undefined ? GLTFLoader.DefaultSampler : ArrayItem.Get(`${context}/sampler`, this._loader.gltf.samplers, texture.sampler);

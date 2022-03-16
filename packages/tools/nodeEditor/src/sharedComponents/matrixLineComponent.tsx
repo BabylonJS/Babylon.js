@@ -25,15 +25,15 @@ export class MatrixLineComponent extends React.Component<IMatrixLineComponentPro
     constructor(props: IMatrixLineComponentProps) {
         super(props);
 
-        let matrix: Matrix = this.props.target[this.props.propertyName].clone();
+        const matrix: Matrix = this.props.target[this.props.propertyName].clone();
 
         let angle = 0;
 
         if (this.props.mode) {
-            let quat = new Quaternion();
+            const quat = new Quaternion();
             matrix.decompose(undefined, quat);
 
-            let euler = quat.toEulerAngles();
+            const euler = quat.toEulerAngles();
 
             switch (this.props.mode) {
                 case 1:
@@ -115,7 +115,7 @@ export class MatrixLineComponent extends React.Component<IMatrixLineComponentPro
     }
 
     render() {
-        var modeOptions = [
+        const modeOptions = [
             { label: "User-defined", value: 0 },
             { label: "Rotation over X axis", value: 1 },
             { label: "Rotation over Y axis", value: 2 },

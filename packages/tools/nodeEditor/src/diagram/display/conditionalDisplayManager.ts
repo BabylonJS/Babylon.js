@@ -12,7 +12,7 @@ export class ConditionalDisplayManager implements IDisplayManager {
     }
 
     public getHeaderText(block: NodeMaterialBlock): string {
-        let conditionBlock = block as ConditionalBlock;
+        const conditionBlock = block as ConditionalBlock;
         let desc = "";
 
         switch (conditionBlock.condition) {

@@ -1,7 +1,7 @@
 import { Effect } from "core/Materials/effect";
 
-let name = "lodCubePixelShader";
-let shader = `
+const name = "lodCubePixelShader";
+const shader = `
 precision highp float;
 
 const float GammaEncodePowerApprox = 1.0 / 2.2;

@@ -38,12 +38,12 @@ export class CommonMaterialPropertyGridComponent extends React.Component<ICommon
 
         material.depthFunction = material.depthFunction ?? 0;
 
-        var orientationOptions = [
+        const orientationOptions = [
             { label: "Clockwise", value: Material.ClockWiseSideOrientation },
             { label: "Counterclockwise", value: Material.CounterClockWiseSideOrientation },
         ];
 
-        var transparencyModeOptions = [
+        const transparencyModeOptions = [
             { label: "<Not Defined>", value: Null_Value },
             { label: "Opaque", value: PBRMaterial.PBRMATERIAL_OPAQUE },
             { label: "Alpha test", value: PBRMaterial.PBRMATERIAL_ALPHATEST },
@@ -51,7 +51,7 @@ export class CommonMaterialPropertyGridComponent extends React.Component<ICommon
             { label: "Alpha blend and test", value: PBRMaterial.PBRMATERIAL_ALPHATESTANDBLEND },
         ];
 
-        var alphaModeOptions = [
+        const alphaModeOptions = [
             { label: "Combine", value: Constants.ALPHA_COMBINE },
             { label: "One one", value: Constants.ALPHA_ONEONE },
             { label: "Add", value: Constants.ALPHA_ADD },
@@ -61,7 +61,7 @@ export class CommonMaterialPropertyGridComponent extends React.Component<ICommon
             { label: "Pre-multiplied", value: Constants.ALPHA_PREMULTIPLIED },
         ];
 
-        var depthfunctionOptions = [
+        const depthfunctionOptions = [
             { label: "<Engine Default>", value: 0 },
             { label: "Never", value: Engine.NEVER },
             { label: "Always", value: Engine.ALWAYS },
@@ -73,7 +73,7 @@ export class CommonMaterialPropertyGridComponent extends React.Component<ICommon
             { label: "Not equal", value: Engine.NOTEQUAL },
         ];
 
-        var stencilFunctionOptions = [
+        const stencilFunctionOptions = [
             { label: "Never", value: Constants.NEVER },
             { label: "Always", value: Constants.ALWAYS },
             { label: "Equal", value: Constants.EQUAL },
@@ -84,7 +84,7 @@ export class CommonMaterialPropertyGridComponent extends React.Component<ICommon
             { label: "Not equal", value: Constants.NOTEQUAL },
         ];
 
-        var stencilOperationOptions = [
+        const stencilOperationOptions = [
             { label: "Keep", value: Constants.KEEP },
             { label: "Zero", value: Constants.ZERO },
             { label: "Replace", value: Constants.REPLACE },

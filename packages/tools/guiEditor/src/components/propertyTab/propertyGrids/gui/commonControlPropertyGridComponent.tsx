@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Observable } from "core/Misc/observable";
+import { Observable , Observer } from "core/Misc/observable";
 import { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
 import { Control } from "gui/2D/controls/control";
@@ -17,7 +17,7 @@ import { ColorLineComponent } from "shared-ui-components/lines/colorLineComponen
 import { makeTargetsProxy, conflictingValuesPlaceholder } from "shared-ui-components/lines/targetsProxy";
 import { CoordinateHelper, DimensionProperties } from "../../../../diagram/coordinateHelper";
 import { Vector2 } from "core/Maths/math";
-import { Observer } from "core/Misc/observable";
+
 import { Nullable } from "core/types";
 import { IconComponent } from "shared-ui-components/lines/iconComponent";
 import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
@@ -64,7 +64,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
         super(props);
 
         const controls = this.props.controls;
-        for (let control of controls) {
+        for (const control of controls) {
             const transformed = this._getTransformedReferenceCoordinate(control);
             if (!control.metadata) {
                 control.metadata = {};
@@ -74,7 +74,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
 
         this._onPropertyChangedObserver = this.props.onPropertyChangedObservable?.add((event) => {
             const isTransformEvent = event.property === "transformCenterX" || event.property === "transformCenterY";
-            for (let control of controls) {
+            for (const control of controls) {
                 let transformed = this._getTransformedReferenceCoordinate(control);
                 if (isTransformEvent && control.metadata._previousCenter) {
                     // Calculate the difference between current center and previous center
@@ -117,7 +117,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
             let percentage = (vau as ValueAndUnit).isPercentage;
 
             // now checking if the new string contains either a px or a % sign in case we need to change the unit.
-            let negative = value.charAt(0) === "-";
+            const negative = value.charAt(0) === "-";
             if (value.charAt(value.length - 1) === "%") {
                 percentage = true;
             } else if (value.charAt(value.length - 1) === "x" && value.charAt(value.length - 2) === "p") {

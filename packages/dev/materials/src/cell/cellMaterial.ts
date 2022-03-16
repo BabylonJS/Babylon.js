@@ -105,14 +105,14 @@ export class CellMaterial extends PushMaterial {
             subMesh.materialDefines = new CellMaterialDefines();
         }
 
-        var defines = <CellMaterialDefines>subMesh.materialDefines;
-        var scene = this.getScene();
+        const defines = <CellMaterialDefines>subMesh.materialDefines;
+        const scene = this.getScene();
 
         if (this._isReadyForSubMesh(subMesh)) {
             return true;
         }
 
-        var engine = scene.getEngine();
+        const engine = scene.getEngine();
 
         // Textures
         if (defines._areTexturesDirty) {
@@ -150,7 +150,7 @@ export class CellMaterial extends PushMaterial {
             scene.resetCachedMaterial();
 
             // Fallbacks
-            var fallbacks = new EffectFallbacks();
+            const fallbacks = new EffectFallbacks();
             if (defines.FOG) {
                 fallbacks.addFallback(1, "FOG");
             }
@@ -164,7 +164,7 @@ export class CellMaterial extends PushMaterial {
             defines.IMAGEPROCESSINGPOSTPROCESS = scene.imageProcessingConfiguration.applyByPostProcess;
 
             //Attributes
-            var attribs = [VertexBuffer.PositionKind];
+            const attribs = [VertexBuffer.PositionKind];
 
             if (defines.NORMAL) {
                 attribs.push(VertexBuffer.NormalKind);
@@ -185,9 +185,9 @@ export class CellMaterial extends PushMaterial {
             MaterialHelper.PrepareAttributesForBones(attribs, mesh, defines, fallbacks);
             MaterialHelper.PrepareAttributesForInstances(attribs, defines);
 
-            var shaderName = "cell";
-            var join = defines.toString();
-            var uniforms = [
+            const shaderName = "cell";
+            const join = defines.toString();
+            const uniforms = [
                 "world",
                 "view",
                 "viewProjection",
@@ -207,8 +207,8 @@ export class CellMaterial extends PushMaterial {
                 "vClipPlane6",
                 "diffuseMatrix",
             ];
-            var samplers = ["diffuseSampler"];
-            var uniformBuffers = new Array<string>();
+            const samplers = ["diffuseSampler"];
+            const uniformBuffers = new Array<string>();
 
             MaterialHelper.PrepareUniformsAndSamplersList(<IEffectCreationOptions>{
                 uniformsNames: uniforms,
@@ -248,14 +248,14 @@ export class CellMaterial extends PushMaterial {
     }
 
     public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
-        var scene = this.getScene();
+        const scene = this.getScene();
 
-        var defines = <CellMaterialDefines>subMesh.materialDefines;
+        const defines = <CellMaterialDefines>subMesh.materialDefines;
         if (!defines) {
             return;
         }
 
-        var effect = subMesh.effect;
+        const effect = subMesh.effect;
         if (!effect) {
             return;
         }
@@ -307,7 +307,7 @@ export class CellMaterial extends PushMaterial {
     }
 
     public getAnimatables(): IAnimatable[] {
-        var results = [];
+        const results = [];
 
         if (this._diffuseTexture && this._diffuseTexture.animations && this._diffuseTexture.animations.length > 0) {
             results.push(this._diffuseTexture);
@@ -317,7 +317,7 @@ export class CellMaterial extends PushMaterial {
     }
 
     public getActiveTextures(): BaseTexture[] {
-        var activeTextures = super.getActiveTextures();
+        const activeTextures = super.getActiveTextures();
 
         if (this._diffuseTexture) {
             activeTextures.push(this._diffuseTexture);
@@ -351,7 +351,7 @@ export class CellMaterial extends PushMaterial {
     }
 
     public serialize(): any {
-        var serializationObject = super.serialize();
+        const serializationObject = super.serialize();
         serializationObject.customType = "BABYLON.CellMaterial";
         return serializationObject;
     }

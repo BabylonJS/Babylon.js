@@ -3,8 +3,8 @@ import { GlobalState } from "../globalState";
 declare type Nullable<T> = import("@dev/core").Nullable<T>;
 declare type Engine = import("@dev/core").Engine;
 
-declare var JSZip: any;
-declare var saveAs: any;
+declare let JSZip: any;
+declare let saveAs: any;
 
 export class DownloadManager {
     public constructor(public globalState: GlobalState) {}
@@ -16,7 +16,7 @@ export class DownloadManager {
                 return;
             }
 
-            var xhr = new XMLHttpRequest();
+            const xhr = new XMLHttpRequest();
 
             xhr.open("GET", url, true);
 
@@ -27,11 +27,11 @@ export class DownloadManager {
             xhr.onreadystatechange = function () {
                 if (xhr.readyState === 4) {
                     if (xhr.status === 200) {
-                        var text;
+                        let text;
                         if (!buffer) {
                             if (replace) {
-                                var splits = replace.split("\r\n");
-                                for (var index = 0; index < splits.length; index++) {
+                                const splits = replace.split("\r\n");
+                                for (let index = 0; index < splits.length; index++) {
                                     splits[index] = "        " + splits[index];
                                 }
                                 replace = splits.join("\r\n");
@@ -82,7 +82,7 @@ export class DownloadManager {
         if (folder == null) {
             folder = zip.folder("textures");
         }
-        var url;
+        let url;
 
         if (textures[index].video) {
             url = textures[index].video.currentSrc;
@@ -90,7 +90,7 @@ export class DownloadManager {
             url = textures[index].url;
         }
 
-        var name = textures[index].name.replace("textures/", "");
+        const name = textures[index].name.replace("textures/", "");
         // var name = url.substr(url.lastIndexOf("/") + 1);
 
         if (url != null) {
@@ -110,9 +110,9 @@ export class DownloadManager {
         if (!folder) {
             folder = zip.folder("scenes");
         }
-        var url = importedFiles[index];
+        const url = importedFiles[index];
 
-        var name = url.substr(url.lastIndexOf("/") + 1);
+        const name = url.substr(url.lastIndexOf("/") + 1);
 
         return this._addContentToZipAsync(folder, name, url, null, true).then(() => {
             return this._addImportedFilesToZipAsync(zip, index + 1, importedFiles, folder);
@@ -120,20 +120,20 @@ export class DownloadManager {
     }
 
     public download(engine: Engine) {
-        var zip = new JSZip();
+        const zip = new JSZip();
 
-        var scene = engine.scenes[0];
-        var textures = scene.textures as any;
-        var importedFiles = scene.importedMeshesFiles as string[];
+        const scene = engine.scenes[0];
+        const textures = scene.textures as any;
+        const importedFiles = scene.importedMeshesFiles as string[];
 
-        let zipCode = this.globalState.zipCode;
+        const zipCode = this.globalState.zipCode;
 
         this.globalState.onDisplayWaitRingObservable.notifyObservers(true);
 
-        var regex = /CreateGroundFromHeightMap\(".+", "(.+)"/g;
+        const regex = /CreateGroundFromHeightMap\(".+", "(.+)"/g;
 
         do {
-            let match = regex.exec(zipCode);
+            const match = regex.exec(zipCode);
 
             if (!match) {
                 break;
@@ -150,7 +150,7 @@ export class DownloadManager {
                 return this._addImportedFilesToZipAsync(zip, 0, importedFiles, null);
             })
             .then(() => {
-                var blob = zip.generate({ type: "blob" });
+                const blob = zip.generate({ type: "blob" });
                 saveAs(blob, "sample.zip");
                 this.globalState.onDisplayWaitRingObservable.notifyObservers(false);
             });

@@ -141,14 +141,14 @@ export class TriPlanarMaterial extends PushMaterial {
             subMesh.materialDefines = new TriPlanarMaterialDefines();
         }
 
-        var defines = <TriPlanarMaterialDefines>subMesh.materialDefines;
-        var scene = this.getScene();
+        const defines = <TriPlanarMaterialDefines>subMesh.materialDefines;
+        const scene = this.getScene();
 
         if (this._isReadyForSubMesh(subMesh)) {
             return true;
         }
 
-        var engine = scene.getEngine();
+        const engine = scene.getEngine();
 
         // Textures
         if (defines._areTexturesDirty) {
@@ -202,7 +202,7 @@ export class TriPlanarMaterial extends PushMaterial {
             scene.resetCachedMaterial();
 
             // Fallbacks
-            var fallbacks = new EffectFallbacks();
+            const fallbacks = new EffectFallbacks();
             if (defines.FOG) {
                 fallbacks.addFallback(1, "FOG");
             }
@@ -216,7 +216,7 @@ export class TriPlanarMaterial extends PushMaterial {
             defines.IMAGEPROCESSINGPOSTPROCESS = scene.imageProcessingConfiguration.applyByPostProcess;
 
             //Attributes
-            var attribs = [VertexBuffer.PositionKind];
+            const attribs = [VertexBuffer.PositionKind];
 
             if (defines.NORMAL) {
                 attribs.push(VertexBuffer.NormalKind);
@@ -230,9 +230,9 @@ export class TriPlanarMaterial extends PushMaterial {
             MaterialHelper.PrepareAttributesForInstances(attribs, defines);
 
             // Legacy browser patch
-            var shaderName = "triplanar";
-            var join = defines.toString();
-            var uniforms = [
+            const shaderName = "triplanar";
+            const join = defines.toString();
+            const uniforms = [
                 "world",
                 "view",
                 "viewProjection",
@@ -252,9 +252,9 @@ export class TriPlanarMaterial extends PushMaterial {
                 "vClipPlane6",
                 "tileSize",
             ];
-            var samplers = ["diffuseSamplerX", "diffuseSamplerY", "diffuseSamplerZ", "normalSamplerX", "normalSamplerY", "normalSamplerZ"];
+            const samplers = ["diffuseSamplerX", "diffuseSamplerY", "diffuseSamplerZ", "normalSamplerX", "normalSamplerY", "normalSamplerZ"];
 
-            var uniformBuffers = new Array<string>();
+            const uniformBuffers = new Array<string>();
 
             MaterialHelper.PrepareUniformsAndSamplersList(<IEffectCreationOptions>{
                 uniformsNames: uniforms,
@@ -295,14 +295,14 @@ export class TriPlanarMaterial extends PushMaterial {
     }
 
     public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
-        var scene = this.getScene();
+        const scene = this.getScene();
 
-        var defines = <TriPlanarMaterialDefines>subMesh.materialDefines;
+        const defines = <TriPlanarMaterialDefines>subMesh.materialDefines;
         if (!defines) {
             return;
         }
 
-        var effect = subMesh.effect;
+        const effect = subMesh.effect;
         if (!effect) {
             return;
         }
@@ -370,7 +370,7 @@ export class TriPlanarMaterial extends PushMaterial {
     }
 
     public getAnimatables(): IAnimatable[] {
-        var results = [];
+        const results = [];
 
         if (this.mixTexture && this.mixTexture.animations && this.mixTexture.animations.length > 0) {
             results.push(this.mixTexture);
@@ -380,7 +380,7 @@ export class TriPlanarMaterial extends PushMaterial {
     }
 
     public getActiveTextures(): BaseTexture[] {
-        var activeTextures = super.getActiveTextures();
+        const activeTextures = super.getActiveTextures();
 
         if (this._diffuseTextureX) {
             activeTextures.push(this._diffuseTextureX);
@@ -453,7 +453,7 @@ export class TriPlanarMaterial extends PushMaterial {
     }
 
     public serialize(): any {
-        var serializationObject = super.serialize();
+        const serializationObject = super.serialize();
         serializationObject.customType = "BABYLON.TriPlanarMaterial";
         return serializationObject;
     }

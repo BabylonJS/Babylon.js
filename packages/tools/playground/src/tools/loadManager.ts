@@ -12,7 +12,7 @@ export class LoadManager {
         globalState.onLoadRequiredObservable.add((id) => {
             globalState.onDisplayWaitRingObservable.notifyObservers(true);
 
-            let prevHash = location.hash;
+            const prevHash = location.hash;
             location.hash = id;
 
             if (location.hash === prevHash) {
@@ -22,8 +22,8 @@ export class LoadManager {
     }
 
     private _cleanHash() {
-        var substr = location.hash[1] === "#" ? 2 : 1;
-        var splits = decodeURIComponent(location.hash.substr(substr)).split("#");
+        const substr = location.hash[1] === "#" ? 2 : 1;
+        const splits = decodeURIComponent(location.hash.substr(substr)).split("#");
 
         if (splits.length > 2) {
             splits.splice(2, splits.length - 2);
@@ -35,7 +35,7 @@ export class LoadManager {
     private _checkHash() {
         let pgHash = "";
         if (location.search && (!location.pathname || location.pathname === "/") && !location.hash) {
-            var query = Utilities.ParseQuery();
+            const query = Utilities.ParseQuery();
             if (query.pg) {
                 pgHash = "#" + query.pg + "#" + (query.revision || "0");
             }
@@ -63,7 +63,7 @@ export class LoadManager {
             }
         }
         if (pgHash) {
-            var match = pgHash.match(/^(#[A-Za-z\d]*)(%23)([\d]+)$/);
+            const match = pgHash.match(/^(#[A-Za-z\d]*)(%23)([\d]+)$/);
             if (match) {
                 pgHash = match[1] + "#" + match[3];
                 parent.location.hash = pgHash;
@@ -76,7 +76,7 @@ export class LoadManager {
     private _loadPlayground(id: string) {
         this.globalState.loadingCodeInProgress = true;
         try {
-            var xmlHttp = new XMLHttpRequest();
+            const xmlHttp = new XMLHttpRequest();
             xmlHttp.onreadystatechange = () => {
                 if (xmlHttp.readyState === 4) {
                     if (xmlHttp.status === 200) {
@@ -91,7 +91,7 @@ export class LoadManager {
                             }
                         }
 
-                        var snippet = JSON.parse(xmlHttp.responseText);
+                        const snippet = JSON.parse(xmlHttp.responseText);
 
                         // Check if title / descr / tags are already set
                         if (snippet.name != null && snippet.name != "") {

@@ -70,7 +70,10 @@ export class MSFT_lod implements IGLTFLoaderExtension {
     private _materialPromiseLODs = new Array<Array<Promise<any>>>();
     private _materialBufferLODs = new Array<IBufferInfo>();
 
-    /** @hidden */
+    /**
+     * @param loader
+     * @hidden
+     */
     constructor(loader: GLTFLoader) {
         this._loader = loader;
         this.enabled = this._loader.isExtensionUsed(NAME);
@@ -139,14 +142,23 @@ export class MSFT_lod implements IGLTFLoaderExtension {
         }
     }
 
-    /** @hidden */
+    /**
+     * @param context
+     * @param scene
+     * @hidden
+     */
     public loadSceneAsync(context: string, scene: IScene): Nullable<Promise<void>> {
         const promise = this._loader.loadSceneAsync(context, scene);
         this._loadBufferLOD(this._bufferLODs, 0);
         return promise;
     }
 
-    /** @hidden */
+    /**
+     * @param context
+     * @param node
+     * @param assign
+     * @hidden
+     */
     public loadNodeAsync(context: string, node: INode, assign: (babylonTransformNode: TransformNode) => void): Nullable<Promise<TransformNode>> {
         return GLTFLoader.LoadExtensionAsync<IMSFTLOD, TransformNode>(context, node, this.name, (extensionContext, extension) => {
             let firstPromise: Promise<TransformNode>;
@@ -196,7 +208,14 @@ export class MSFT_lod implements IGLTFLoaderExtension {
         });
     }
 
-    /** @hidden */
+    /**
+     * @param context
+     * @param material
+     * @param babylonMesh
+     * @param babylonDrawMode
+     * @param assign
+     * @hidden
+     */
     public _loadMaterialAsync(
         context: string,
         material: IMaterial,
@@ -258,7 +277,12 @@ export class MSFT_lod implements IGLTFLoaderExtension {
         });
     }
 
-    /** @hidden */
+    /**
+     * @param context
+     * @param property
+     * @param uri
+     * @hidden
+     */
     public _loadUriAsync(context: string, property: IProperty, uri: string): Nullable<Promise<ArrayBufferView>> {
         // Defer the loading of uris if loading a node or material LOD.
         if (this._nodeIndexLOD !== null) {
@@ -280,7 +304,13 @@ export class MSFT_lod implements IGLTFLoaderExtension {
         return null;
     }
 
-    /** @hidden */
+    /**
+     * @param context
+     * @param buffer
+     * @param byteOffset
+     * @param byteLength
+     * @hidden
+     */
     public loadBufferAsync(context: string, buffer: IBuffer, byteOffset: number, byteLength: number): Nullable<Promise<ArrayBufferView>> {
         if (this._loader.parent.useRangeRequests && !buffer.uri) {
             if (!this._loader.bin) {
@@ -335,6 +365,10 @@ export class MSFT_lod implements IGLTFLoaderExtension {
 
     /**
      * Gets an array of LOD properties from lowest to highest.
+     * @param context
+     * @param property
+     * @param array
+     * @param ids
      */
     private _getLODs<T>(context: string, property: T, array: ArrayLike<T> | undefined, ids: number[]): T[] {
         if (this.maxLODsToLoad <= 0) {

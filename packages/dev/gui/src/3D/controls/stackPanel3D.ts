@@ -47,9 +47,9 @@ export class StackPanel3D extends Container3D {
         let width = 0;
         let height = 0;
         let controlCount = 0;
-        let extendSizes = [];
+        const extendSizes = [];
 
-        let currentInverseWorld = Matrix.Invert(this.node!.computeWorldMatrix(true));
+        const currentInverseWorld = Matrix.Invert(this.node!.computeWorldMatrix(true));
 
         // Measure
         for (var child of this._children) {
@@ -61,8 +61,8 @@ export class StackPanel3D extends Container3D {
             child.mesh.computeWorldMatrix(true);
             child.mesh.getWorldMatrix().multiplyToRef(currentInverseWorld, TmpVectors.Matrix[0]);
 
-            let boundingBox = child.mesh.getBoundingInfo().boundingBox;
-            let extendSize = Vector3.TransformNormal(boundingBox.extendSize, TmpVectors.Matrix[0]);
+            const boundingBox = child.mesh.getBoundingInfo().boundingBox;
+            const extendSize = Vector3.TransformNormal(boundingBox.extendSize, TmpVectors.Matrix[0]);
             extendSizes.push(extendSize);
 
             if (this._isVertical) {
@@ -92,7 +92,7 @@ export class StackPanel3D extends Container3D {
                 continue;
             }
             controlCount--;
-            let extendSize = extendSizes[index++];
+            const extendSize = extendSizes[index++];
 
             if (this._isVertical) {
                 child.position.y = offset + extendSize.y;

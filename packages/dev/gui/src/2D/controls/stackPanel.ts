@@ -114,9 +114,13 @@ export class StackPanel extends Container {
         return "StackPanel";
     }
 
-    /** @hidden */
+    /**
+     * @param parentMeasure
+     * @param context
+     * @hidden
+     */
     protected _preMeasure(parentMeasure: Measure, context: ICanvasRenderingContext): void {
-        for (var child of this._children) {
+        for (const child of this._children) {
             if (this._isVertical) {
                 child.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
             } else {
@@ -198,13 +202,13 @@ export class StackPanel extends Container {
 
         if (!this._manualHeight && this._isVertical) {
             // do not specify height if strictly defined by user
-            let previousHeight = this.height;
+            const previousHeight = this.height;
             this.height = stackHeight + "px";
             panelHeightChanged = previousHeight !== this.height || !this._height.ignoreAdaptiveScaling;
         }
         if (!this._manualWidth && !this._isVertical) {
             // do not specify width if strictly defined by user
-            let previousWidth = this.width;
+            const previousWidth = this.width;
             this.width = stackWidth + "px";
             panelWidthChanged = previousWidth !== this.width || !this._width.ignoreAdaptiveScaling;
         }
@@ -236,7 +240,11 @@ export class StackPanel extends Container {
         serializationObject.manualHeight = this._manualHeight;
     }
 
-    /** @hidden */
+    /**
+     * @param serializedObject
+     * @param host
+     * @hidden
+     */
     public _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture) {
         this._manualWidth = serializedObject.manualWidth;
         this._manualHeight = serializedObject.manualHeight;

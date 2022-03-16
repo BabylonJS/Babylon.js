@@ -22,7 +22,10 @@ class contrastTool implements IToolType {
         scene3D.imageProcessingConfiguration.contrast = this.computeContrast(contrast);
         updateTexture();
     }
-    /** Maps slider values to post processing values using an exponential regression */
+    /**
+     * Maps slider values to post processing values using an exponential regression
+     * @param sliderValue
+     */
     computeExposure(sliderValue: number) {
         if (sliderValue <= 0) {
             return 1 - -sliderValue / 100;
@@ -30,7 +33,10 @@ class contrastTool implements IToolType {
             return Math.pow(1.05698, sliderValue) + 0.0000392163 * sliderValue;
         }
     }
-    /** Maps slider values to post processing values using an exponential regression */
+    /**
+     * Maps slider values to post processing values using an exponential regression
+     * @param sliderValue
+     */
     computeContrast(sliderValue: number) {
         if (sliderValue <= 0) {
             return 1 - -sliderValue / 100;

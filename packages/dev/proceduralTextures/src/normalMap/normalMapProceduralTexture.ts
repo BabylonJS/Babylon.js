@@ -53,7 +53,7 @@ export class NormalMapProceduralTexture extends ProceduralTexture {
      * @returns a serialized normal map procedural texture object
      */
     public serialize(): any {
-        var serializationObject = SerializationHelper.Serialize(this, super.serialize());
+        const serializationObject = SerializationHelper.Serialize(this, super.serialize());
         serializationObject.customType = "BABYLON.NormalMapProceduralTexture";
 
         return serializationObject;
@@ -67,7 +67,7 @@ export class NormalMapProceduralTexture extends ProceduralTexture {
      * @returns a parsed Normal Map Procedural Texture
      */
     public static Parse(parsedTexture: any, scene: Scene, rootUrl: string): NormalMapProceduralTexture {
-        var texture = SerializationHelper.Parse(
+        const texture = SerializationHelper.Parse(
             () => new NormalMapProceduralTexture(parsedTexture.name, parsedTexture._size, scene, undefined, parsedTexture._generateMipMaps),
             parsedTexture,
             scene,

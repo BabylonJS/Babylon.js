@@ -136,14 +136,14 @@ export class TerrainMaterial extends PushMaterial {
             subMesh.materialDefines = new TerrainMaterialDefines();
         }
 
-        var defines = <TerrainMaterialDefines>subMesh.materialDefines;
-        var scene = this.getScene();
+        const defines = <TerrainMaterialDefines>subMesh.materialDefines;
+        const scene = this.getScene();
 
         if (this._isReadyForSubMesh(subMesh)) {
             return true;
         }
 
-        var engine = scene.getEngine();
+        const engine = scene.getEngine();
 
         // Textures
         if (scene.texturesEnabled) {
@@ -201,7 +201,7 @@ export class TerrainMaterial extends PushMaterial {
             scene.resetCachedMaterial();
 
             // Fallbacks
-            var fallbacks = new EffectFallbacks();
+            const fallbacks = new EffectFallbacks();
             if (defines.FOG) {
                 fallbacks.addFallback(1, "FOG");
             }
@@ -215,7 +215,7 @@ export class TerrainMaterial extends PushMaterial {
             defines.IMAGEPROCESSINGPOSTPROCESS = scene.imageProcessingConfiguration.applyByPostProcess;
 
             //Attributes
-            var attribs = [VertexBuffer.PositionKind];
+            const attribs = [VertexBuffer.PositionKind];
 
             if (defines.NORMAL) {
                 attribs.push(VertexBuffer.NormalKind);
@@ -237,9 +237,9 @@ export class TerrainMaterial extends PushMaterial {
             MaterialHelper.PrepareAttributesForInstances(attribs, defines);
 
             // Legacy browser patch
-            var shaderName = "terrain";
-            var join = defines.toString();
-            var uniforms = [
+            const shaderName = "terrain";
+            const join = defines.toString();
+            const uniforms = [
                 "world",
                 "view",
                 "viewProjection",
@@ -263,9 +263,9 @@ export class TerrainMaterial extends PushMaterial {
                 "diffuse2Infos",
                 "diffuse3Infos",
             ];
-            var samplers = ["textureSampler", "diffuse1Sampler", "diffuse2Sampler", "diffuse3Sampler", "bump1Sampler", "bump2Sampler", "bump3Sampler"];
+            const samplers = ["textureSampler", "diffuse1Sampler", "diffuse2Sampler", "diffuse3Sampler", "bump1Sampler", "bump2Sampler", "bump3Sampler"];
 
-            var uniformBuffers = new Array<string>();
+            const uniformBuffers = new Array<string>();
 
             MaterialHelper.PrepareUniformsAndSamplersList(<IEffectCreationOptions>{
                 uniformsNames: uniforms,
@@ -306,14 +306,14 @@ export class TerrainMaterial extends PushMaterial {
     }
 
     public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
-        var scene = this.getScene();
+        const scene = this.getScene();
 
-        var defines = <TerrainMaterialDefines>subMesh.materialDefines;
+        const defines = <TerrainMaterialDefines>subMesh.materialDefines;
         if (!defines) {
             return;
         }
 
-        var effect = subMesh.effect;
+        const effect = subMesh.effect;
         if (!effect) {
             return;
         }
@@ -393,7 +393,7 @@ export class TerrainMaterial extends PushMaterial {
     }
 
     public getAnimatables(): IAnimatable[] {
-        var results = [];
+        const results = [];
 
         if (this.mixTexture && this.mixTexture.animations && this.mixTexture.animations.length > 0) {
             results.push(this.mixTexture);
@@ -403,7 +403,7 @@ export class TerrainMaterial extends PushMaterial {
     }
 
     public getActiveTextures(): BaseTexture[] {
-        var activeTextures = super.getActiveTextures();
+        const activeTextures = super.getActiveTextures();
 
         if (this._mixTexture) {
             activeTextures.push(this._mixTexture);
@@ -485,7 +485,7 @@ export class TerrainMaterial extends PushMaterial {
     }
 
     public serialize(): any {
-        var serializationObject = super.serialize();
+        const serializationObject = super.serialize();
         serializationObject.customType = "BABYLON.TerrainMaterial";
         return serializationObject;
     }

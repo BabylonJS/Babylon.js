@@ -51,11 +51,11 @@ export class GrassProceduralTexture extends ProceduralTexture {
      * @returns a serialized grass procedural texture object
      */
     public serialize(): any {
-        var serializationObject = SerializationHelper.Serialize(this, super.serialize());
+        const serializationObject = SerializationHelper.Serialize(this, super.serialize());
         serializationObject.customType = "BABYLON.GrassProceduralTexture";
 
         serializationObject.grassColors = [];
-        for (var i = 0; i < this._grassColors.length; i++) {
+        for (let i = 0; i < this._grassColors.length; i++) {
             serializationObject.grassColors.push(this._grassColors[i].asArray());
         }
 
@@ -70,15 +70,15 @@ export class GrassProceduralTexture extends ProceduralTexture {
      * @returns a parsed Grass Procedural Texture
      */
     public static Parse(parsedTexture: any, scene: Scene, rootUrl: string): GrassProceduralTexture {
-        var texture = SerializationHelper.Parse(
+        const texture = SerializationHelper.Parse(
             () => new GrassProceduralTexture(parsedTexture.name, parsedTexture._size, scene, undefined, parsedTexture._generateMipMaps),
             parsedTexture,
             scene,
             rootUrl
         );
 
-        var colors: Color3[] = [];
-        for (var i = 0; i < parsedTexture.grassColors.length; i++) {
+        const colors: Color3[] = [];
+        for (let i = 0; i < parsedTexture.grassColors.length; i++) {
             colors.push(Color3.FromArray(parsedTexture.grassColors[i]));
         }
 

@@ -99,7 +99,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
     renderInputBlock(block: InputBlock) {
         switch (block.type) {
             case NodeMaterialBlockConnectionPointTypes.Float:
-                let cantDisplaySlider = isNaN(block.min) || isNaN(block.max) || block.min === block.max;
+                const cantDisplaySlider = isNaN(block.min) || isNaN(block.max) || block.min === block.max;
                 return (
                     <div key={block.uniqueId}>
                         {block.isBoolean && (
@@ -201,7 +201,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         Tools.ReadFile(
             file,
             (data) => {
-                let decoder = new TextDecoder("utf-8");
+                const decoder = new TextDecoder("utf-8");
                 SerializationTools.Deserialize(JSON.parse(decoder.decode(data)), this.props.globalState);
 
                 if (!this.changeMode(this.props.globalState.nodeMaterial!.mode, true, false)) {
@@ -219,7 +219,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             file,
             (data) => {
                 // get Frame Data from file
-                let decoder = new TextDecoder("utf-8");
+                const decoder = new TextDecoder("utf-8");
                 const frameData = JSON.parse(decoder.decode(data));
                 SerializationTools.AddFrameToMaterial(frameData, this.props.globalState, this.props.globalState.nodeMaterial);
             },
@@ -229,7 +229,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
     }
 
     save() {
-        let json = SerializationTools.Serialize(this.props.globalState.nodeMaterial, this.props.globalState);
+        const json = SerializationTools.Serialize(this.props.globalState.nodeMaterial, this.props.globalState);
         StringTools.DownloadAsFile(this.props.globalState.hostDocument, json, "nodeMaterial.json");
     }
 
@@ -252,12 +252,12 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         const material = this.props.globalState.nodeMaterial;
         const xmlHttp = new XMLHttpRequest();
 
-        let json = SerializationTools.Serialize(material, this.props.globalState);
+        const json = SerializationTools.Serialize(material, this.props.globalState);
 
         xmlHttp.onreadystatechange = () => {
             if (xmlHttp.readyState == 4) {
                 if (xmlHttp.status == 200) {
-                    var snippet = JSON.parse(xmlHttp.responseText);
+                    const snippet = JSON.parse(xmlHttp.responseText);
                     const oldId = material.snippetId;
                     material.snippetId = snippet.id;
                     if (snippet.version && snippet.version != "0") {
@@ -269,7 +269,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         navigator.clipboard.writeText(material.snippetId);
                     }
 
-                    let windowAsAny = window as any;
+                    const windowAsAny = window as any;
 
                     if (windowAsAny.Playground && oldId) {
                         windowAsAny.Playground.onRequestCodeChangeObservable.notifyObservers({
@@ -310,7 +310,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         const material = this.props.globalState.nodeMaterial;
         const scene = material.getScene();
 
-        let snippedId = window.prompt("Please enter the snippet ID to use");
+        const snippedId = window.prompt("Please enter the snippet ID to use");
 
         if (!snippedId) {
             return;
@@ -407,7 +407,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             return <FramePropertyTabComponent globalState={this.props.globalState} frame={this.state.currentFrame} />;
         }
 
-        let gridSize = DataStorage.ReadNumber("GridSize", 20);
+        const gridSize = DataStorage.ReadNumber("GridSize", 20);
 
         const modeList = [
             { label: "Material", value: NodeMaterialModes.Material },

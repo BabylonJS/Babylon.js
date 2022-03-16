@@ -1,9 +1,9 @@
-import { GLTFLoaderExtension } from "./glTFLoader";
+import { GLTFLoaderExtension , GLTFLoader, GLTFLoaderBase } from "./glTFLoader";
 import { GLTFUtils } from "./glTFLoaderUtils";
 import { Scene } from "core/scene";
 import { IGLTFLoaderData } from "../glTFFileLoader";
 import { IGLTFRuntime, IGLTFTexture, IGLTFImage, IGLTFBufferView, EComponentType, IGLTFShader } from "./glTFLoaderInterfaces";
-import { GLTFLoader, GLTFLoaderBase } from "./glTFLoader";
+
 import { IDataBuffer } from "core/Misc/dataReader";
 
 const BinaryExtensionBufferName = "binary_glTF";
@@ -28,7 +28,7 @@ export class GLTFBinaryExtension extends GLTFLoaderExtension {
     }
 
     public loadRuntimeAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: (gltfRuntime: IGLTFRuntime) => void, onError: (message: string) => void): boolean {
-        var extensionsUsed = (<any>data.json).extensionsUsed;
+        const extensionsUsed = (<any>data.json).extensionsUsed;
         if (!extensionsUsed || extensionsUsed.indexOf(this.name) === -1 || !data.bin) {
             return false;
         }
@@ -52,31 +52,31 @@ export class GLTFBinaryExtension extends GLTFLoaderExtension {
     }
 
     public loadTextureBufferAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (buffer: ArrayBufferView) => void, onError: (message: string) => void): boolean {
-        var texture: IGLTFTexture = gltfRuntime.textures[id];
-        var source: IGLTFImage = gltfRuntime.images[texture.source];
+        const texture: IGLTFTexture = gltfRuntime.textures[id];
+        const source: IGLTFImage = gltfRuntime.images[texture.source];
         if (!source.extensions || !(this.name in source.extensions)) {
             return false;
         }
 
-        var sourceExt: IGLTFBinaryExtensionImage = source.extensions[this.name];
-        var bufferView: IGLTFBufferView = gltfRuntime.bufferViews[sourceExt.bufferView];
-        var buffer = GLTFUtils.GetBufferFromBufferView(gltfRuntime, bufferView, 0, bufferView.byteLength, EComponentType.UNSIGNED_BYTE);
+        const sourceExt: IGLTFBinaryExtensionImage = source.extensions[this.name];
+        const bufferView: IGLTFBufferView = gltfRuntime.bufferViews[sourceExt.bufferView];
+        const buffer = GLTFUtils.GetBufferFromBufferView(gltfRuntime, bufferView, 0, bufferView.byteLength, EComponentType.UNSIGNED_BYTE);
         onSuccess(buffer);
         return true;
     }
 
     public loadShaderStringAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (shaderString: string) => void, onError: (message: string) => void): boolean {
-        var shader: IGLTFShader = gltfRuntime.shaders[id];
+        const shader: IGLTFShader = gltfRuntime.shaders[id];
         if (!shader.extensions || !(this.name in shader.extensions)) {
             return false;
         }
 
-        var binaryExtensionShader: IGLTFBinaryExtensionShader = shader.extensions[this.name];
-        var bufferView: IGLTFBufferView = gltfRuntime.bufferViews[binaryExtensionShader.bufferView];
-        var shaderBytes = GLTFUtils.GetBufferFromBufferView(gltfRuntime, bufferView, 0, bufferView.byteLength, EComponentType.UNSIGNED_BYTE);
+        const binaryExtensionShader: IGLTFBinaryExtensionShader = shader.extensions[this.name];
+        const bufferView: IGLTFBufferView = gltfRuntime.bufferViews[binaryExtensionShader.bufferView];
+        const shaderBytes = GLTFUtils.GetBufferFromBufferView(gltfRuntime, bufferView, 0, bufferView.byteLength, EComponentType.UNSIGNED_BYTE);
 
         setTimeout(() => {
-            var shaderString = GLTFUtils.DecodeBufferToText(shaderBytes);
+            const shaderString = GLTFUtils.DecodeBufferToText(shaderBytes);
             onSuccess(shaderString);
         });
 

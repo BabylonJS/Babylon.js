@@ -84,7 +84,7 @@ export class GLTFComponent extends React.Component<IGLTFComponentProps> {
         const extensionStates = this.props.globalState.glTFLoaderExtensionDefaults;
         const loaderState = this.props.globalState.glTFLoaderDefaults;
 
-        var animationStartMode =
+        const animationStartMode =
             typeof GLTFLoaderAnimationStartMode !== "undefined"
                 ? [
                       { label: "None", value: GLTFLoaderAnimationStartMode.NONE },
@@ -97,7 +97,7 @@ export class GLTFComponent extends React.Component<IGLTFComponentProps> {
                       { label: "ALL", value: 2 },
                   ];
 
-        var coordinateSystemMode =
+        const coordinateSystemMode =
             typeof GLTFLoaderCoordinateSystemMode !== "undefined"
                 ? [
                       { label: "Auto", value: GLTFLoaderCoordinateSystemMode.AUTO },

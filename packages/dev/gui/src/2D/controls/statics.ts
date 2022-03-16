@@ -16,16 +16,18 @@ export { name };
  * @param text defines the text of the header
  * @param size defines the size of the header
  * @param options defines options used to configure the header
+ * @param options.isHorizontal
+ * @param options.controlFirst
  * @returns a new StackPanel
  */
 Control.AddHeader = function (control: Control, text: string, size: string | number, options: { isHorizontal: boolean; controlFirst: boolean }): StackPanel {
-    let panel = new StackPanel("panel");
-    let isHorizontal = options ? options.isHorizontal : true;
-    let controlFirst = options ? options.controlFirst : true;
+    const panel = new StackPanel("panel");
+    const isHorizontal = options ? options.isHorizontal : true;
+    const controlFirst = options ? options.controlFirst : true;
 
     panel.isVertical = !isHorizontal;
 
-    let header = new TextBlock("header");
+    const header = new TextBlock("header");
     header.text = text;
     header.textHorizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
     if (isHorizontal) {

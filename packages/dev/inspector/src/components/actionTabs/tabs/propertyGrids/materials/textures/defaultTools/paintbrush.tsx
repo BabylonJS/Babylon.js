@@ -39,7 +39,7 @@ class paintbrushTool implements IToolType {
             const trueDistance = diffVector.length() / numSteps;
             stepVector = diffVector.normalize().multiplyByFloats(trueDistance, trueDistance);
         }
-        let paintVector = this.mousePos.clone();
+        const paintVector = this.mousePos.clone();
         for (let stepCount = 0; stepCount < numSteps; stepCount++) {
             ctx.globalAlpha = 1.0;
             ctx.globalCompositeOperation = "destination-out";
@@ -75,7 +75,7 @@ class paintbrushTool implements IToolType {
                     circleCanvas.height = this.width;
                     const circleCtx = circleCanvas.getContext("2d")!;
                     circleCtx.imageSmoothingEnabled = false;
-                    let pixels = new Array(4 * this.width * this.width);
+                    const pixels = new Array(4 * this.width * this.width);
                     const dis = (this.width * this.width) / 4;
                     const rgb = Color3.FromHexString(metadata.color)!;
                     const r = Math.floor(rgb.r * 255);

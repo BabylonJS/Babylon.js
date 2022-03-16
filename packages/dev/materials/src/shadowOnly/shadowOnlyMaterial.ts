@@ -73,7 +73,7 @@ export class ShadowOnlyMaterial extends PushMaterial {
     }
 
     private _getFirstShadowLightForMesh(mesh: AbstractMesh): Nullable<IShadowLight> {
-        for (var light of mesh.lightSources) {
+        for (const light of mesh.lightSources) {
             if (light.shadowEnabled) {
                 return light as IShadowLight;
             }
@@ -93,24 +93,24 @@ export class ShadowOnlyMaterial extends PushMaterial {
             subMesh.materialDefines = new ShadowOnlyMaterialDefines();
         }
 
-        var defines = <ShadowOnlyMaterialDefines>subMesh.materialDefines;
-        var scene = this.getScene();
+        const defines = <ShadowOnlyMaterialDefines>subMesh.materialDefines;
+        const scene = this.getScene();
 
         if (this._isReadyForSubMesh(subMesh)) {
             return true;
         }
 
-        var engine = scene.getEngine();
+        const engine = scene.getEngine();
 
         // Ensure that active light is the first shadow light
         if (this._activeLight) {
-            for (var light of mesh.lightSources) {
+            for (const light of mesh.lightSources) {
                 if (light.shadowEnabled) {
                     if (this._activeLight === light) {
                         break; // We are good
                     }
 
-                    var lightPosition = mesh.lightSources.indexOf(this._activeLight);
+                    const lightPosition = mesh.lightSources.indexOf(this._activeLight);
 
                     if (lightPosition !== -1) {
                         mesh.lightSources.splice(lightPosition, 1);
@@ -147,7 +147,7 @@ export class ShadowOnlyMaterial extends PushMaterial {
             scene.resetCachedMaterial();
 
             // Fallbacks
-            var fallbacks = new EffectFallbacks();
+            const fallbacks = new EffectFallbacks();
             if (defines.FOG) {
                 fallbacks.addFallback(1, "FOG");
             }
@@ -161,7 +161,7 @@ export class ShadowOnlyMaterial extends PushMaterial {
             defines.IMAGEPROCESSINGPOSTPROCESS = scene.imageProcessingConfiguration.applyByPostProcess;
 
             //Attributes
-            var attribs = [VertexBuffer.PositionKind];
+            const attribs = [VertexBuffer.PositionKind];
 
             if (defines.NORMAL) {
                 attribs.push(VertexBuffer.NormalKind);
@@ -170,9 +170,9 @@ export class ShadowOnlyMaterial extends PushMaterial {
             MaterialHelper.PrepareAttributesForBones(attribs, mesh, defines, fallbacks);
             MaterialHelper.PrepareAttributesForInstances(attribs, defines);
 
-            var shaderName = "shadowOnly";
-            var join = defines.toString();
-            var uniforms = [
+            const shaderName = "shadowOnly";
+            const join = defines.toString();
+            const uniforms = [
                 "world",
                 "view",
                 "viewProjection",
@@ -191,9 +191,9 @@ export class ShadowOnlyMaterial extends PushMaterial {
                 "vClipPlane5",
                 "vClipPlane6",
             ];
-            var samplers = new Array<string>();
+            const samplers = new Array<string>();
 
-            var uniformBuffers = new Array<string>();
+            const uniformBuffers = new Array<string>();
 
             MaterialHelper.PrepareUniformsAndSamplersList(<IEffectCreationOptions>{
                 uniformsNames: uniforms,
@@ -234,14 +234,14 @@ export class ShadowOnlyMaterial extends PushMaterial {
     }
 
     public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
-        var scene = this.getScene();
+        const scene = this.getScene();
 
-        var defines = <ShadowOnlyMaterialDefines>subMesh.materialDefines;
+        const defines = <ShadowOnlyMaterialDefines>subMesh.materialDefines;
         if (!defines) {
             return;
         }
 
-        var effect = subMesh.effect;
+        const effect = subMesh.effect;
         if (!effect) {
             return;
         }
@@ -301,7 +301,7 @@ export class ShadowOnlyMaterial extends PushMaterial {
     }
 
     public serialize(): any {
-        var serializationObject = super.serialize();
+        const serializationObject = super.serialize();
         serializationObject.customType = "BABYLON.ShadowOnlyMaterial";
         return serializationObject;
     }

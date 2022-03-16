@@ -32,13 +32,13 @@ export class VariantsPropertyGridComponent extends React.Component<IVariantsProp
         if (!extension) {
             return null;
         }
-        let variants: string[] = extension.getAvailableVariants(this.props.host);
+        const variants: string[] = extension.getAvailableVariants(this.props.host);
 
         if (!variants || variants.length === 0) {
             return null;
         }
 
-        let options = variants.sort().map((v: string, i: number) => {
+        const options = variants.sort().map((v: string, i: number) => {
             return { label: v, value: i + 1 };
         });
 
@@ -62,7 +62,7 @@ export class VariantsPropertyGridComponent extends React.Component<IVariantsProp
                             this.forceUpdate();
                         }}
                         extractValue={() => {
-                            let lastPickedVariant = extension.getLastSelectedVariant(this.props.host) || 0;
+                            const lastPickedVariant = extension.getLastSelectedVariant(this.props.host) || 0;
                             let index = 0;
                             if (lastPickedVariant && Object.prototype.toString.call(lastPickedVariant) === "[object String]") {
                                 index = variants.indexOf(lastPickedVariant as string);

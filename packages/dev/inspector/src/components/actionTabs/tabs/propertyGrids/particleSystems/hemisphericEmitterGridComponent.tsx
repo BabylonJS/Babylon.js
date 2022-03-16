@@ -21,7 +21,7 @@ export class HemisphericEmitterGridComponent extends React.Component<IHemispheri
     }
 
     render() {
-        let emitter = this.props.emitter;
+        const emitter = this.props.emitter;
         return (
             <>
                 <FloatLineComponent

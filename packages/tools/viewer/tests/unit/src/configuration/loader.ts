@@ -4,11 +4,11 @@ import { mapperManager, ViewerConfiguration } from "..";
 import { IMapper } from "../../../../src/configuration/mappers";
 import { ConfigurationLoader } from "../../../../src/configuration/loader";
 
-export let name = "configuration loader";
+export const name = "configuration loader";
 
 describe("Configuration loader", () => {
     it("should call callback when configuration is loaded", (done) => {
-        let configurationLoader = new ConfigurationLoader();
+        const configurationLoader = new ConfigurationLoader();
 
         configurationLoader.loadConfiguration({}, (newConfig) => {
             done();
@@ -16,7 +16,7 @@ describe("Configuration loader", () => {
     });
 
     it("should resolve the promise when configuration is loaded", (done) => {
-        let configurationLoader = new ConfigurationLoader();
+        const configurationLoader = new ConfigurationLoader();
 
         configurationLoader.loadConfiguration({}).then(() => {
             done();
@@ -24,9 +24,9 @@ describe("Configuration loader", () => {
     });
 
     it("should not change configuration is not needed initConfig", (done) => {
-        let configurationLoader = new ConfigurationLoader();
+        const configurationLoader = new ConfigurationLoader();
 
-        let config: ViewerConfiguration = {
+        const config: ViewerConfiguration = {
             version: "" + Math.random(),
             extends: "none",
         };
@@ -37,9 +37,9 @@ describe("Configuration loader", () => {
     });
 
     it("should load default configuration is no configuration extension provided", (done) => {
-        let configurationLoader = new ConfigurationLoader();
+        const configurationLoader = new ConfigurationLoader();
 
-        let config: ViewerConfiguration = {
+        const config: ViewerConfiguration = {
             version: "" + Math.random(),
         };
         configurationLoader.loadConfiguration(config, (newConfig) => {

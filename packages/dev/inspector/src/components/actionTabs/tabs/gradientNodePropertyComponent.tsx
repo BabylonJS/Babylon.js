@@ -18,7 +18,7 @@ export class GradientPropertyTabComponent extends React.Component<IPropertyCompo
     }
 
     deleteStep(step: GradientBlockColorStep) {
-        let index = this._gradientBlock.colorSteps.indexOf(step);
+        const index = this._gradientBlock.colorSteps.indexOf(step);
 
         if (index > -1) {
             this._gradientBlock.colorSteps.splice(index, 1);
@@ -27,9 +27,9 @@ export class GradientPropertyTabComponent extends React.Component<IPropertyCompo
     }
 
     copyStep(step: GradientBlockColorStep) {
-        let gradientBlock = this.props.block as GradientBlock;
+        const gradientBlock = this.props.block as GradientBlock;
 
-        let newStep = new GradientBlockColorStep(1.0, step.color);
+        const newStep = new GradientBlockColorStep(1.0, step.color);
         gradientBlock.colorSteps.push(newStep);
         gradientBlock.colorStepsUpdated();
         this.forceRebuild();
@@ -37,7 +37,7 @@ export class GradientPropertyTabComponent extends React.Component<IPropertyCompo
     }
 
     addNewStep() {
-        let newStep = new GradientBlockColorStep(1.0, Color3.White());
+        const newStep = new GradientBlockColorStep(1.0, Color3.White());
         this._gradientBlock.colorSteps.push(newStep);
         this.forceRebuild();
     }

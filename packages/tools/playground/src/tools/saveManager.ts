@@ -18,11 +18,11 @@ export class SaveManager {
     }
 
     private _saveSnippet() {
-        var xmlHttp = new XMLHttpRequest();
+        const xmlHttp = new XMLHttpRequest();
         xmlHttp.onreadystatechange = () => {
             if (xmlHttp.readyState === 4) {
                 if (xmlHttp.status === 200) {
-                    var snippet = JSON.parse(xmlHttp.responseText);
+                    const snippet = JSON.parse(xmlHttp.responseText);
                     if (location.pathname && location.pathname.indexOf("pg/") !== -1) {
                         // full path with /pg/??????
                         if (location.pathname.indexOf("revision") !== -1) {
@@ -40,8 +40,8 @@ export class SaveManager {
                         }
                     } else {
                         // default behavior!
-                        var baseUrl = location.href.replace(location.hash, "").replace(location.search, "");
-                        var newUrl = baseUrl + "#" + snippet.id;
+                        const baseUrl = location.href.replace(location.hash, "").replace(location.search, "");
+                        let newUrl = baseUrl + "#" + snippet.id;
                         newUrl = newUrl.replace("##", "#");
                         this.globalState.currentSnippetToken = snippet.id;
                         if (snippet.version && snippet.version !== "0") {
@@ -61,7 +61,7 @@ export class SaveManager {
         xmlHttp.open("POST", this.globalState.SnippetServerUrl + (this.globalState.currentSnippetToken ? "/" + this.globalState.currentSnippetToken : ""), true);
         xmlHttp.setRequestHeader("Content-Type", "application/json");
 
-        var dataToSend = {
+        const dataToSend = {
             payload: JSON.stringify({
                 code: this.globalState.currentCode,
             }),

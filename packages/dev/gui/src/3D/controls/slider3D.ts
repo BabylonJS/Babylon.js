@@ -200,31 +200,31 @@ export class Slider3D extends Control3D {
                 sliderBackplateModel.scaling.x = 1;
                 sliderBackplateModel.scaling.z = 0.2;
                 sliderBackplateModel.parent = sliderBackplate;
-                if (!!this._sliderBackplateMaterial) {
+                if (this._sliderBackplateMaterial) {
                     sliderBackplateModel.material = this._sliderBackplateMaterial;
                 }
                 this._sliderBackplate = sliderBackplateModel;
             }
 
-            if (!!sliderBarModel) {
+            if (sliderBarModel) {
                 sliderBarModel.parent = sliderBackplate;
                 sliderBarModel.position.z = -0.1;
                 sliderBarModel.scaling = new Vector3(SLIDER_SCALING - SLIDER_MARGIN, 0.04, 0.3);
                 sliderBarModel.isPickable = false;
-                if (!!this._sliderBarMaterial) {
+                if (this._sliderBarMaterial) {
                     sliderBarModel.material = this._sliderBarMaterial;
                 }
                 this._sliderBar = sliderBarModel;
             }
 
-            if (!!sliderThumbModel) {
+            if (sliderThumbModel) {
                 sliderThumbModel.parent = sliderBackplate;
                 sliderThumbModel.isPickable = true;
                 sliderThumbModel.position.z = -0.115;
                 sliderThumbModel.scaling = new Vector3(0.025, 0.3, 0.6);
                 sliderThumbModel.position.x = this._convertToPosition(this.value);
                 sliderThumbModel.addBehavior(this._createBehavior());
-                if (!!this._sliderThumbMaterial) {
+                if (this._sliderThumbMaterial) {
                     sliderThumbModel.material = this._sliderThumbMaterial;
                 }
                 this._sliderThumb = sliderThumbModel;

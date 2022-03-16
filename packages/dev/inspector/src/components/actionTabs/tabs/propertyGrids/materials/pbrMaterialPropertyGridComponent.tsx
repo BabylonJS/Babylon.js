@@ -222,7 +222,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
             { label: "Alpha", value: 87 },
         ];
 
-        var realTimeFilteringQualityOptions = [
+        const realTimeFilteringQualityOptions = [
             { label: "Low", value: Constants.TEXTURE_FILTERING_QUALITY_LOW },
             { label: "Medium", value: Constants.TEXTURE_FILTERING_QUALITY_MEDIUM },
             { label: "High", value: Constants.TEXTURE_FILTERING_QUALITY_HIGH },

@@ -7,7 +7,7 @@ import { WebGPUEngine } from "@dev/core";
 
 import "../scss/commandBar.scss";
 
-declare var Versions: any;
+declare let Versions: any;
 
 interface ICommandBarComponentProps {
     globalState: GlobalState;
@@ -62,10 +62,10 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
     }
 
     public render() {
-        let activeVersion = Utilities.ReadStringFromStore("version", "Latest", true);
-        let activeEngineVersion = Utilities.ReadStringFromStore("engineVersion", "WebGL2", true);
+        const activeVersion = Utilities.ReadStringFromStore("version", "Latest", true);
+        const activeEngineVersion = Utilities.ReadStringFromStore("engineVersion", "WebGL2", true);
 
-        var versionOptions = Object.keys(Versions).map((key) => {
+        const versionOptions = Object.keys(Versions).map((key) => {
             return {
                 label: key,
                 tooltip: `Use Babylon.js version: ${key}`,
@@ -78,7 +78,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
             };
         });
 
-        var engineOptions = [
+        const engineOptions = [
             {
                 label: "WebGL2",
                 tooltip: "Use WebGL 2 Renderer",

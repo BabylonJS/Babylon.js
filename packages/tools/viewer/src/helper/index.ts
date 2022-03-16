@@ -1,6 +1,6 @@
 import * as deepmerge from "deepmerge";
 
-let expDm = deepmerge["default"];
+const expDm = deepmerge["default"];
 export { expDm as deepmerge };
 
 /**

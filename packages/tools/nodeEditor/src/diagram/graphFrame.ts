@@ -87,7 +87,7 @@ export class GraphFrame {
     }
 
     private _createInputPort(port: NodePort, node: GraphNode) {
-        let localPort = FrameNodePort.CreateFrameNodePortElement(
+        const localPort = FrameNodePort.CreateFrameNodePortElement(
             port.connectionPoint,
             node,
             this._inputPortContainer,
@@ -180,7 +180,7 @@ export class GraphFrame {
         }
 
         for (var node of this._nodes) {
-            for (let port of node.outputPorts) {
+            for (const port of node.outputPorts) {
                 // Output
                 port.exposedPortPosition = this._exposedOutPorts.findIndex((nodePort) => nodePort === port);
                 if (port.exposedPortPosition < 0) {
@@ -202,7 +202,7 @@ export class GraphFrame {
     }
 
     private removePortFromExposedWithNode(port: NodePort, exposedPorts: NodePort[]) {
-        let index = exposedPorts.findIndex((nodePort) => nodePort === port);
+        const index = exposedPorts.findIndex((nodePort) => nodePort === port);
         if (index >= 0) {
             exposedPorts.splice(index, 1);
             if (port) {
@@ -214,8 +214,8 @@ export class GraphFrame {
     }
 
     private removePortFromExposedWithLink(nodeLink: NodeLink, exposedPorts: NodePort[]) {
-        let aPort = exposedPorts.findIndex((nodePort) => nodePort === nodeLink.portA);
-        let bPort = exposedPorts.findIndex((nodePort) => nodePort === nodeLink.portB);
+        const aPort = exposedPorts.findIndex((nodePort) => nodePort === nodeLink.portA);
+        const bPort = exposedPorts.findIndex((nodePort) => nodePort === nodeLink.portB);
         if (aPort >= 0) {
             if (!nodeLink.portA.exposedOnFrame) {
                 exposedPorts.splice(aPort, 1);
@@ -235,7 +235,7 @@ export class GraphFrame {
     private createInputPorts(port: NodePort, node: GraphNode) {
         if (port.connectionPoint.isConnected) {
             let portAdded = false;
-            for (var link of node.links) {
+            for (const link of node.links) {
                 if (link.portB === port && this.nodes.indexOf(link.nodeA) === -1) {
                     this._createInputPort(port, node);
                     link.isVisible = true;
@@ -259,7 +259,7 @@ export class GraphFrame {
     private createOutputPorts(port: NodePort, node: GraphNode) {
         if (port.connectionPoint.hasEndpoints) {
             let portAdded = false;
-            for (var link of node.links) {
+            for (const link of node.links) {
                 if (link.portA === port && this.nodes.indexOf(link.nodeB!) === -1) {
                     let localPort: FrameNodePort;
 
@@ -295,7 +295,7 @@ export class GraphFrame {
                     port.delegatedPort = localPort;
                     this._controlledPorts.push(port);
                 } else if (port.exposedPortPosition >= 0 && !portAdded) {
-                    let localPort = FrameNodePort.CreateFrameNodePortElement(
+                    const localPort = FrameNodePort.CreateFrameNodePortElement(
                         port.connectionPoint,
                         node,
                         this._outputPortContainer,
@@ -313,7 +313,7 @@ export class GraphFrame {
             }
             if (portAdded) return true;
         } else if (port.exposedOnFrame) {
-            let localPort = FrameNodePort.CreateFrameNodePortElement(
+            const localPort = FrameNodePort.CreateFrameNodePortElement(
                 port.connectionPoint,
                 node,
                 this._outputPortContainer,
@@ -397,7 +397,7 @@ export class GraphFrame {
             this._controlledPorts = [];
             this._onNodeLinkDisposedObservers = [];
 
-            for (var node of this._nodes) {
+            for (const node of this._nodes) {
                 node.isVisible = true;
             }
 
@@ -484,10 +484,10 @@ export class GraphFrame {
         if (this._width === value) {
             return;
         }
-        let viableWidth = value > this._minFrameWidth ? value : this._minFrameWidth;
+        const viableWidth = value > this._minFrameWidth ? value : this._minFrameWidth;
         this._width = viableWidth;
 
-        var gridAlignedRight = this._ownerCanvas.getGridPositionCeil(viableWidth + this._gridAlignedX);
+        const gridAlignedRight = this._ownerCanvas.getGridPositionCeil(viableWidth + this._gridAlignedX);
 
         this.element.style.width = `${gridAlignedRight - this._gridAlignedX}px`;
     }
@@ -502,7 +502,7 @@ export class GraphFrame {
         }
         this._height = value;
 
-        var gridAlignedBottom = this._ownerCanvas.getGridPositionCeil(value + this._gridAlignedY);
+        const gridAlignedBottom = this._ownerCanvas.getGridPositionCeil(value + this._gridAlignedY);
 
         this.element.style.height = `${gridAlignedBottom - this._gridAlignedY}px`;
     }
@@ -671,7 +671,7 @@ export class GraphFrame {
 
         canvas.globalState.onSelectionBoxMoved.add((rect1) => {
             const rect2 = this.element.getBoundingClientRect();
-            var overlap = !(rect1.right < rect2.left || rect1.left > rect2.right || rect1.bottom < rect2.top || rect1.top > rect2.bottom);
+            const overlap = !(rect1.right < rect2.left || rect1.left > rect2.right || rect1.bottom < rect2.top || rect1.top > rect2.bottom);
             if (overlap) {
                 canvas.globalState.onSelectionChangedObservable.notifyObservers({ selection: this, forceKeepSelection: true });
             }
@@ -699,7 +699,7 @@ export class GraphFrame {
         this._commentsElement.className = "frame-comments";
         this._commentsElement.style.color = "white";
         this._commentsElement.style.fontSize = "16px";
-        let commentSpan = document.createElement("span");
+        const commentSpan = document.createElement("span");
         commentSpan.className = "frame-comment-span";
         this._commentsElement.appendChild(commentSpan);
 
@@ -717,7 +717,7 @@ export class GraphFrame {
     }
 
     public addNode(node: GraphNode) {
-        let index = this.nodes.indexOf(node);
+        const index = this.nodes.indexOf(node);
 
         if (index === -1) {
             this.nodes.push(node);
@@ -725,7 +725,7 @@ export class GraphFrame {
     }
 
     public removeNode(node: GraphNode) {
-        let index = this.nodes.indexOf(node);
+        const index = this.nodes.indexOf(node);
         if (index > -1) {
             node.enclosingFrameId = -1;
             this.nodes.splice(index, 1);
@@ -745,7 +745,7 @@ export class GraphFrame {
     }
 
     public cleanAccumulation() {
-        for (var selectedNode of this._nodes) {
+        for (const selectedNode of this._nodes) {
             selectedNode.cleanAccumulation();
         }
 
@@ -772,13 +772,13 @@ export class GraphFrame {
     }
 
     public move(newX: number, newY: number, align = true) {
-        let oldX = this.x;
-        let oldY = this.y;
+        const oldX = this.x;
+        const oldY = this.y;
 
         this.x = newX;
         this.y = newY;
 
-        for (var selectedNode of this._nodes) {
+        for (const selectedNode of this._nodes) {
             selectedNode.x += this.x - oldX;
             selectedNode.y += this.y - oldY;
             if (align) {
@@ -802,7 +802,7 @@ export class GraphFrame {
         this.x += offsetX;
         this.y += offsetY;
 
-        for (var selectedNode of this._nodes) {
+        for (const selectedNode of this._nodes) {
             selectedNode.x += offsetX;
             selectedNode.y += offsetY;
         }
@@ -813,13 +813,13 @@ export class GraphFrame {
             return;
         }
 
-        let newX = (evt.clientX - this._mouseStartPointX) / this._ownerCanvas.zoom;
-        let newY = (evt.clientY - this._mouseStartPointY) / this._ownerCanvas.zoom;
+        const newX = (evt.clientX - this._mouseStartPointX) / this._ownerCanvas.zoom;
+        const newY = (evt.clientY - this._mouseStartPointY) / this._ownerCanvas.zoom;
 
-        for (let frame of this._ownerCanvas.selectedFrames) {
+        for (const frame of this._ownerCanvas.selectedFrames) {
             frame._moveFrame(newX, newY);
         }
-        for (let node of this._ownerCanvas.selectedNodes) {
+        for (const node of this._ownerCanvas.selectedNodes) {
             node.x += newX;
             node.y += newY;
         }
@@ -1520,8 +1520,8 @@ export class GraphFrame {
     }
 
     public adjustPorts() {
-        for (let node of this.nodes) {
-            for (let port of node.outputPorts) {
+        for (const node of this.nodes) {
+            for (const port of node.outputPorts) {
                 // Output
                 if (port.exposedOnFrame) {
                     if (port.exposedPortPosition !== -1) {
@@ -1530,7 +1530,7 @@ export class GraphFrame {
                 }
             }
 
-            for (let port of node.inputPorts) {
+            for (const port of node.inputPorts) {
                 // Imports
                 if (port.exposedOnFrame) {
                     if (port.exposedPortPosition !== -1) {
@@ -1542,7 +1542,7 @@ export class GraphFrame {
     }
 
     public static Parse(serializationData: IFrameData, canvas: GraphCanvasComponent, map?: { [key: number]: number }) {
-        let newFrame = new GraphFrame(null, canvas, true);
+        const newFrame = new GraphFrame(null, canvas, true);
         const isCollapsed = !!serializationData.isCollapsed;
 
         newFrame.x = serializationData.x;
@@ -1554,9 +1554,9 @@ export class GraphFrame {
         newFrame.comments = serializationData.comments;
 
         if (serializationData.blocks && map) {
-            for (var blockId of serializationData.blocks) {
-                let actualId = map[blockId];
-                let node = canvas.nodes.filter((n) => n.block.uniqueId === actualId);
+            for (const blockId of serializationData.blocks) {
+                const actualId = map[blockId];
+                const node = canvas.nodes.filter((n) => n.block.uniqueId === actualId);
 
                 if (node.length) {
                     newFrame.nodes.push(node[0]);
@@ -1573,11 +1573,11 @@ export class GraphFrame {
         if (isCollapsed) {
             canvas._frameIsMoving = true;
             newFrame._moveFrame(-(newFrame.width - newFrame.CollapsedWidth) / 2, 0);
-            let diff = serializationData.x - newFrame.x;
+            const diff = serializationData.x - newFrame.x;
             newFrame._moveFrame(diff, 0);
             newFrame.cleanAccumulation();
 
-            for (var selectedNode of newFrame.nodes) {
+            for (const selectedNode of newFrame.nodes) {
                 selectedNode.refresh();
             }
             canvas._frameIsMoving = false;

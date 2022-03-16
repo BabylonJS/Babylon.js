@@ -102,13 +102,17 @@ export class Checkbox extends Control {
         return "Checkbox";
     }
 
-    /** @hidden */
+    /**
+     * @param context
+     * @param invalidatedRectangle
+     * @hidden
+     */
     public _draw(context: ICanvasRenderingContext, invalidatedRectangle?: Nullable<Measure>): void {
         context.save();
 
         this._applyStates(context);
-        let actualWidth = this._currentMeasure.width - this._thickness;
-        let actualHeight = this._currentMeasure.height - this._thickness;
+        const actualWidth = this._currentMeasure.width - this._thickness;
+        const actualHeight = this._currentMeasure.height - this._thickness;
 
         if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
             context.shadowColor = this.shadowColor;
@@ -128,8 +132,8 @@ export class Checkbox extends Control {
 
         if (this._isChecked) {
             context.fillStyle = this._isEnabled ? this.color : this._disabledColorItem;
-            let offsetWidth = actualWidth * this._checkSizeRatio;
-            let offseHeight = actualHeight * this._checkSizeRatio;
+            const offsetWidth = actualWidth * this._checkSizeRatio;
+            const offseHeight = actualHeight * this._checkSizeRatio;
 
             context.fillRect(
                 this._currentMeasure.left + this._thickness / 2 + (actualWidth - offsetWidth) / 2,
@@ -149,7 +153,14 @@ export class Checkbox extends Control {
 
     // Events
 
-    /** @hidden */
+    /**
+     * @param target
+     * @param coordinates
+     * @param pointerId
+     * @param buttonIndex
+     * @param pi
+     * @hidden
+     */
     public _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, pi: PointerInfoBase): boolean {
         if (!super._onPointerDown(target, coordinates, pointerId, buttonIndex, pi)) {
             return false;
@@ -169,11 +180,11 @@ export class Checkbox extends Control {
      * @returns a StackPanel containing the checkbox and a textBlock
      */
     public static AddCheckBoxWithHeader(title: string, onValueChanged: (value: boolean) => void): StackPanel {
-        var panel = new StackPanel();
+        const panel = new StackPanel();
         panel.isVertical = false;
         panel.height = "30px";
 
-        var checkbox = new Checkbox();
+        const checkbox = new Checkbox();
         checkbox.width = "20px";
         checkbox.height = "20px";
         checkbox.isChecked = true;
@@ -181,7 +192,7 @@ export class Checkbox extends Control {
         checkbox.onIsCheckedChangedObservable.add(onValueChanged);
         panel.addControl(checkbox);
 
-        var header = new TextBlock();
+        const header = new TextBlock();
         header.text = title;
         header.width = "180px";
         header.paddingLeft = "5px";

@@ -83,9 +83,9 @@ export class GlobalState {
         this.controlCamera = DataStorage.ReadBoolean("ControlCamera", true);
 
         const defaultBrightness = 204 / 255.0;
-        let r = DataStorage.ReadNumber("BackgroundColorR", defaultBrightness);
-        let g = DataStorage.ReadNumber("BackgroundColorG", defaultBrightness);
-        let b = DataStorage.ReadNumber("BackgroundColorB", defaultBrightness);
+        const r = DataStorage.ReadNumber("BackgroundColorR", defaultBrightness);
+        const g = DataStorage.ReadNumber("BackgroundColorG", defaultBrightness);
+        const b = DataStorage.ReadNumber("BackgroundColorB", defaultBrightness);
         this.backgroundColor = new Color3(r, g, b);
         this.onBackgroundColorChangeObservable.notifyObservers();
 
@@ -147,7 +147,7 @@ export class GlobalState {
 
     public select(control: Control) {
         if (this.isMultiSelecting && this.isMultiSelectable(control)) {
-            let index = this.selectedControls.indexOf(control);
+            const index = this.selectedControls.indexOf(control);
             if (index === -1) {
                 this.setSelection([...this.selectedControls, control]);
             } else {

@@ -72,18 +72,18 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
                 TextureLineComponent.UpdatePreview(previewCanvas, texture, width, options, onReady, globalState);
             });
         }
-        var scene = texture.getScene()!;
-        var engine = scene.getEngine();
-        var size = texture.getSize();
-        var ratio = size.width / size.height;
-        var height = (width / ratio) | 1;
+        const scene = texture.getScene()!;
+        const engine = scene.getEngine();
+        const size = texture.getSize();
+        const ratio = size.width / size.height;
+        const height = (width / ratio) | 1;
 
         let passPostProcess: PostProcess;
 
         if (!texture.isCube) {
             passPostProcess = new PassPostProcess("pass", 1, null, Texture.NEAREST_SAMPLINGMODE, engine, false, Constants.TEXTURETYPE_UNSIGNED_INT);
         } else {
-            var passCubePostProcess = new PassCubePostProcess("pass", 1, null, Texture.NEAREST_SAMPLINGMODE, engine, false, Constants.TEXTURETYPE_UNSIGNED_INT);
+            const passCubePostProcess = new PassCubePostProcess("pass", 1, null, Texture.NEAREST_SAMPLINGMODE, engine, false, Constants.TEXTURETYPE_UNSIGNED_INT);
             passCubePostProcess.face = options.face;
 
             passPostProcess = passCubePostProcess;
@@ -102,21 +102,21 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
             globalState.blockMutationUpdates = true;
         }
 
-        let rtt = new RenderTargetTexture("temp", { width: width, height: height }, scene, false);
+        const rtt = new RenderTargetTexture("temp", { width: width, height: height }, scene, false);
 
         passPostProcess.externalTextureSamplerBinding = true;
         passPostProcess.onApply = function (effect) {
             effect.setTexture("textureSampler", texture);
         };
 
-        let internalTexture = rtt.renderTarget;
+        const internalTexture = rtt.renderTarget;
 
         if (internalTexture) {
             scene.postProcessManager.directRender([passPostProcess], internalTexture, true);
 
             // Read the contents of the framebuffer
-            var numberOfChannelsByLine = width * 4;
-            var halfHeight = height / 2;
+            const numberOfChannelsByLine = width * 4;
+            const halfHeight = height / 2;
 
             //Reading datas from WebGL
             const bufferView = await engine.readPixels(0, 0, width, height);
@@ -138,7 +138,7 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
                         }
 
                         if (options.displayAlpha) {
-                            var alpha = data[i + 2];
+                            const alpha = data[i + 2];
                             data[i] = alpha;
                             data[i + 1] = alpha;
                             data[i + 2] = alpha;
@@ -151,12 +151,12 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
             //To flip image on Y axis.
             if ((texture as Texture).invertY || texture.isCube) {
                 for (var i = 0; i < halfHeight; i++) {
-                    for (var j = 0; j < numberOfChannelsByLine; j++) {
-                        var currentCell = j + i * numberOfChannelsByLine;
-                        var targetLine = height - i - 1;
-                        var targetCell = j + targetLine * numberOfChannelsByLine;
+                    for (let j = 0; j < numberOfChannelsByLine; j++) {
+                        const currentCell = j + i * numberOfChannelsByLine;
+                        const targetLine = height - i - 1;
+                        const targetCell = j + targetLine * numberOfChannelsByLine;
 
-                        var temp = data[currentCell];
+                        const temp = data[currentCell];
                         data[currentCell] = data[targetCell];
                         data[targetCell] = temp;
                     }
@@ -165,12 +165,12 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
 
             previewCanvas.width = width;
             previewCanvas.height = height;
-            var context = previewCanvas.getContext("2d");
+            const context = previewCanvas.getContext("2d");
 
             if (context) {
                 // Copy the pixels to the preview canvas
-                var imageData = context.createImageData(width, height);
-                var castData = imageData.data;
+                const imageData = context.createImageData(width, height);
+                const castData = imageData.data;
                 castData.set(data);
                 context.putImageData(imageData, 0, 0);
 
@@ -193,7 +193,7 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
     }
 
     render() {
-        var texture = this.props.texture;
+        const texture = this.props.texture;
 
         return (
             <div className="textureLine">

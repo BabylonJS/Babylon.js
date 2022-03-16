@@ -51,6 +51,7 @@ export class HolographicBackplate extends Control3D {
     /**
      * Creates a new holographic backplate
      * @param name defines the control name
+     * @param _shareMaterials
      */
     constructor(name?: string, private _shareMaterials = true) {
         super(name);
@@ -75,11 +76,11 @@ export class HolographicBackplate extends Control3D {
         collisionMesh.visibility = 0;
 
         SceneLoader.ImportMeshAsync(undefined, HolographicBackplate.MODEL_BASE_URL, HolographicBackplate.MODEL_FILENAME, scene).then((result) => {
-            var importedModel = result.meshes[1];
+            const importedModel = result.meshes[1];
             importedModel.name = `${this.name}_frontPlate`;
             importedModel.isPickable = false;
             importedModel.parent = collisionMesh;
-            if (!!this._material) {
+            if (this._material) {
                 importedModel.material = this._material;
             }
             this._model = importedModel;

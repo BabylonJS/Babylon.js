@@ -75,12 +75,12 @@ export class Color3LineComponent extends React.Component<IColor3LineComponentPro
     }
 
     copyToClipboard() {
-        var element = document.createElement("div");
+        const element = document.createElement("div");
         element.textContent = this.getCurrentColor().toHexString();
         document.body.appendChild(element);
 
         if (window.getSelection) {
-            var range = document.createRange();
+            const range = document.createRange();
             range.selectNode(element);
             window.getSelection()!.removeAllRanges();
             window.getSelection()!.addRange(range);

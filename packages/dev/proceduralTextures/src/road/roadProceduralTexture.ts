@@ -34,7 +34,7 @@ export class RoadProceduralTexture extends ProceduralTexture {
      * @returns a serialized road procedural texture object
      */
     public serialize(): any {
-        var serializationObject = SerializationHelper.Serialize(this, super.serialize());
+        const serializationObject = SerializationHelper.Serialize(this, super.serialize());
         serializationObject.customType = "BABYLON.RoadProceduralTexture";
 
         return serializationObject;
@@ -48,7 +48,7 @@ export class RoadProceduralTexture extends ProceduralTexture {
      * @returns a parsed Road Procedural Texture
      */
     public static Parse(parsedTexture: any, scene: Scene, rootUrl: string): RoadProceduralTexture {
-        var texture = SerializationHelper.Parse(
+        const texture = SerializationHelper.Parse(
             () => new RoadProceduralTexture(parsedTexture.name, parsedTexture._size, scene, undefined, parsedTexture._generateMipMaps),
             parsedTexture,
             scene,

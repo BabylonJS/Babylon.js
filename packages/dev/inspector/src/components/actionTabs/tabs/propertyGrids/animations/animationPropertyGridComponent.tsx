@@ -69,7 +69,7 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
             // Extract from and to
             if (this._animations && this._animations.length) {
                 this._animations.forEach((animation) => {
-                    let keys = animation.getKeys();
+                    const keys = animation.getKeys();
 
                     if (keys && keys.length > 0) {
                         if (keys[0].frame < this._animationControl.from) {
@@ -144,7 +144,7 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
         const animatable = this.props.animatable;
         const animatableAsAny = this.props.animatable as any;
 
-        let animatablesForTarget = this.props.scene.getAllAnimatablesByTarget(animatable);
+        const animatablesForTarget = this.props.scene.getAllAnimatablesByTarget(animatable);
         this._isPlaying = animatablesForTarget.length > 0;
 
         if (this._isPlaying) {
@@ -157,7 +157,7 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
             }
         }
 
-        let animations = animatable.animations;
+        const animations = animatable.animations;
 
         if (!this._animationCurveEditorContext) {
             this._animationCurveEditorContext = new Context();

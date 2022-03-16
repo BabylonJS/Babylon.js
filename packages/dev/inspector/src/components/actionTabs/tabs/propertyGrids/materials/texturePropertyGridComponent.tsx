@@ -138,12 +138,12 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
         Tools.ReadFile(
             file,
             (data) => {
-                var blob = new Blob([data], { type: "octet/stream" });
+                const blob = new Blob([data], { type: "octet/stream" });
 
-                var reader = new FileReader();
+                const reader = new FileReader();
                 reader.readAsDataURL(blob);
                 reader.onloadend = () => {
-                    let base64data = reader.result as string;
+                    const base64data = reader.result as string;
 
                     if (texture.isCube) {
                         let extension: string | undefined = undefined;
@@ -214,7 +214,7 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
         const texture = this.props.texture;
         const textureAsRTT = texture as RenderTargetTexture;
 
-        var samplingMode = [
+        const samplingMode = [
             { label: "Nearest", value: Texture.NEAREST_NEAREST }, // 1
             { label: "Linear", value: Texture.LINEAR_LINEAR }, // 2
 
@@ -233,7 +233,7 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
             { label: "Linear/Nearest & nearest mip", value: Texture.LINEAR_NEAREST_MIPNEAREST }, // 9
         ];
 
-        var coordinatesMode = [
+        const coordinatesMode = [
             { label: "Explicit", value: Texture.EXPLICIT_MODE },
             { label: "Cubic", value: Texture.CUBIC_MODE },
             { label: "Inverse cubic", value: Texture.INVCUBIC_MODE },
@@ -257,11 +257,11 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
             texture.isRenderTarget && textureAsRTT.renderTarget?._depthStencilTexture ? this.findTextureFormat(textureAsRTT.renderTarget._depthStencilTexture.format) : null;
 
         let extension = "";
-        let url = (texture as Texture).url;
-        let textureUrl = !url || url.substring(0, 4) === "data" || url.substring(0, 4) === "blob" ? "" : url;
+        const url = (texture as Texture).url;
+        const textureUrl = !url || url.substring(0, 4) === "data" || url.substring(0, 4) === "blob" ? "" : url;
 
         if (textureUrl) {
-            for (var index = textureUrl.length - 1; index >= 0; index--) {
+            for (let index = textureUrl.length - 1; index >= 0; index--) {
                 if (textureUrl[index] === ".") {
                     break;
                 }
@@ -319,7 +319,7 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                         <ButtonLineComponent
                             label="Scale up"
                             onClick={() => {
-                                let scene = texture.getScene()!;
+                                const scene = texture.getScene()!;
                                 texture.scale(2);
                                 setTimeout(() => {
                                     this.props.globalState.onSelectionChangedObservable.notifyObservers(scene.getTextureByUniqueId(texture.uniqueId));
@@ -331,7 +331,7 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                         <ButtonLineComponent
                             label="Scale down"
                             onClick={() => {
-                                let scene = texture.getScene()!;
+                                const scene = texture.getScene()!;
                                 texture.scale(0.5);
                                 setTimeout(() => {
                                     this.props.globalState.onSelectionChangedObservable.notifyObservers(scene.getTextureByUniqueId(texture.uniqueId));

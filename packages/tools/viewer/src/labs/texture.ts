@@ -191,7 +191,7 @@ export class TextureUtils {
             throw new Error("no texture cube provided");
         }
 
-        var parameters: SamplingParameters;
+        let parameters: SamplingParameters;
         if (environment) {
             parameters = singleLod ? TextureUtils._EnvironmentSingleMipSampling : TextureUtils._EnvironmentSampling;
         } else {
@@ -203,7 +203,7 @@ export class TextureUtils {
             };
         }
 
-        let key = TextureUtils.BabylonTextureKeyPrefix + parameters.magFilter + "" + parameters.minFilter + "" + parameters.wrapS + "" + parameters.wrapT;
+        const key = TextureUtils.BabylonTextureKeyPrefix + parameters.magFilter + "" + parameters.minFilter + "" + parameters.wrapS + "" + parameters.wrapT;
 
         let babylonTexture: CubeTexture = (<any>textureCube)[key];
 
@@ -217,8 +217,8 @@ export class TextureUtils {
 
             babylonTexture.gammaSpace = false;
 
-            let internalTexture = new InternalTexture(scene.getEngine(), InternalTextureSource.CubeRaw);
-            let glTexture = internalTexture._hardwareTexture?.underlyingResource;
+            const internalTexture = new InternalTexture(scene.getEngine(), InternalTextureSource.CubeRaw);
+            const glTexture = internalTexture._hardwareTexture?.underlyingResource;
             //babylon properties
             internalTexture.isCube = true;
             internalTexture.generateMipMaps = false;
@@ -227,14 +227,14 @@ export class TextureUtils {
 
             TextureUtils.ApplySamplingParameters(babylonTexture, parameters);
 
-            let maxMipLevel = automaticMipmaps ? 0 : textureCube.source.length - 1;
+            const maxMipLevel = automaticMipmaps ? 0 : textureCube.source.length - 1;
             let texturesUploaded = 0;
 
-            var textureComplete = function () {
+            const textureComplete = function () {
                 return texturesUploaded === (maxMipLevel + 1) * 6;
             };
 
-            var uploadFace = function (i: number, level: number, face: TextureSource) {
+            const uploadFace = function (i: number, level: number, face: TextureSource) {
                 if (!glTexture) {
                     return;
                 }
@@ -244,13 +244,13 @@ export class TextureUtils {
                     internalTexture.height = face.height;
                 }
 
-                let gl = (<any>scene.getEngine())._gl;
+                const gl = (<any>scene.getEngine())._gl;
                 gl.bindTexture(gl.TEXTURE_CUBE_MAP, glTexture);
                 scene.getEngine()._unpackFlipY(false);
                 if (face instanceof HTMLElement || face instanceof ImageData) {
                     gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, level, textureCube.internalFormat, textureCube.internalFormat, textureCube.type, <any>face);
                 } else {
-                    let textureData = <TextureData>face;
+                    const textureData = <TextureData>face;
                     gl.texImage2D(
                         gl.TEXTURE_CUBE_MAP_POSITIVE_X + i,
                         level,
@@ -269,9 +269,9 @@ export class TextureUtils {
                 if (textureComplete()) {
                     //generate mipmaps
                     if (automaticMipmaps) {
-                        let w = face.width;
-                        let h = face.height;
-                        let isPot = (w !== 0 && w & (w - 1)) === 0 && (h !== 0 && h & (h - 1)) === 0;
+                        const w = face.width;
+                        const h = face.height;
+                        const isPot = (w !== 0 && w & (w - 1)) === 0 && (h !== 0 && h & (h - 1)) === 0;
                         if (isPot) {
                             gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
                         }
@@ -281,22 +281,22 @@ export class TextureUtils {
                     if (environment && !scene.getEngine().getCaps().textureLOD && !singleLod) {
                         const mipSlices = 3;
                         for (let i = 0; i < mipSlices; i++) {
-                            let lodKey = TextureUtils.BabylonTextureKeyPrefix + "lod" + i;
+                            const lodKey = TextureUtils.BabylonTextureKeyPrefix + "lod" + i;
                             let lod: CubeTexture = (<any>textureCube)[lodKey];
 
                             //initialize lod texture if it doesn't already exist
                             if (lod == null && textureCube.Width) {
                                 //compute LOD from even spacing in smoothness (matching shader calculation)
-                                let smoothness = i / (mipSlices - 1);
-                                let roughness = 1 - smoothness;
+                                const smoothness = i / (mipSlices - 1);
+                                const roughness = 1 - smoothness;
                                 const kMinimumVariance = 0.0005;
-                                let alphaG = roughness * roughness + kMinimumVariance;
-                                let microsurfaceAverageSlopeTexels = alphaG * textureCube.Width;
+                                const alphaG = roughness * roughness + kMinimumVariance;
+                                const microsurfaceAverageSlopeTexels = alphaG * textureCube.Width;
 
-                                let environmentSpecularLOD = TextureUtils.EnvironmentLODScale * Scalar.Log2(microsurfaceAverageSlopeTexels) + TextureUtils.EnvironmentLODOffset;
+                                const environmentSpecularLOD = TextureUtils.EnvironmentLODScale * Scalar.Log2(microsurfaceAverageSlopeTexels) + TextureUtils.EnvironmentLODOffset;
 
-                                let maxLODIndex = textureCube.source.length - 1;
-                                let mipmapIndex = Math.min(Math.max(Math.round(environmentSpecularLOD), 0), maxLODIndex);
+                                const maxLODIndex = textureCube.source.length - 1;
+                                const mipmapIndex = Math.min(Math.max(Math.round(environmentSpecularLOD), 0), maxLODIndex);
 
                                 lod = TextureUtils.GetBabylonCubeTexture(
                                     scene,
@@ -327,9 +327,9 @@ export class TextureUtils {
             };
 
             for (let i = 0; i <= maxMipLevel; i++) {
-                let faces = textureCube.source[i];
+                const faces = textureCube.source[i];
                 for (let j = 0; j < faces.length; j++) {
-                    let face = faces[j];
+                    const face = faces[j];
                     if (face instanceof HTMLImageElement && !face.complete) {
                         face.addEventListener(
                             "load",
@@ -362,19 +362,19 @@ export class TextureUtils {
      * @param parameters Spectre SamplingParameters to apply
      */
     public static ApplySamplingParameters(babylonTexture: BaseTexture, parameters: SamplingParameters) {
-        let scene = babylonTexture.getScene();
+        const scene = babylonTexture.getScene();
         if (!scene) {
             return;
         }
-        let gl = (<any>scene.getEngine())._gl;
+        const gl = (<any>scene.getEngine())._gl;
 
-        let target = babylonTexture.isCube ? gl.TEXTURE_CUBE_MAP : gl.TEXTURE_2D;
+        const target = babylonTexture.isCube ? gl.TEXTURE_CUBE_MAP : gl.TEXTURE_2D;
 
-        let internalTexture = babylonTexture._texture;
+        const internalTexture = babylonTexture._texture;
         if (!internalTexture) {
             return;
         }
-        let glTexture = internalTexture._hardwareTexture?.underlyingResource;
+        const glTexture = internalTexture._hardwareTexture?.underlyingResource;
         gl.bindTexture(target, glTexture);
 
         if (parameters.magFilter != null) {
@@ -420,10 +420,10 @@ export class TextureUtils {
         }
 
         if (parameters.maxAnisotropy != null && parameters.maxAnisotropy > 1) {
-            let anisotropicExt = gl.getExtension("EXT_texture_filter_anisotropic");
+            const anisotropicExt = gl.getExtension("EXT_texture_filter_anisotropic");
             if (anisotropicExt) {
-                let maxAnisotropicSamples = gl.getParameter(anisotropicExt.MAX_TEXTURE_MAX_ANISOTROPY_EXT);
-                let maxAnisotropy = Math.min(parameters.maxAnisotropy, maxAnisotropicSamples);
+                const maxAnisotropicSamples = gl.getParameter(anisotropicExt.MAX_TEXTURE_MAX_ANISOTROPY_EXT);
+                const maxAnisotropy = Math.min(parameters.maxAnisotropy, maxAnisotropicSamples);
                 gl.texParameterf(target, anisotropicExt.TEXTURE_MAX_ANISOTROPY_EXT, maxAnisotropy);
                 babylonTexture.anisotropicFilteringLevel = maxAnisotropy;
             }

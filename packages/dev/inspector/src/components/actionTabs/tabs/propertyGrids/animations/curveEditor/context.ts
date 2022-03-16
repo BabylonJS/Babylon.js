@@ -177,13 +177,13 @@ export class Context {
             }
         }
 
-        for (var animationEntry of this.animations) {
+        for (const animationEntry of this.animations) {
             const animation = this.useTargetAnimations ? (animationEntry as TargetedAnimation).animation : (animationEntry as Animation);
             if (!animation.hasRunningRuntimeAnimations) {
                 return;
             }
 
-            for (var runtimeAnimation of animation.runtimeAnimations) {
+            for (const runtimeAnimation of animation.runtimeAnimations) {
                 runtimeAnimation.goToFrame(frame);
             }
         }
@@ -233,7 +233,7 @@ export class Context {
             return -1;
         }
 
-        for (var index = 0; index < this.animations?.length; index++) {
+        for (let index = 0; index < this.animations?.length; index++) {
             if (animation === (this.useTargetAnimations ? (this.animations[0] as TargetedAnimation).animation : (this.animations[index] as Animation))) {
                 return index;
             }
@@ -249,10 +249,10 @@ export class Context {
 
         let prevKey = -Number.MAX_VALUE;
 
-        for (var animation of this.activeAnimations) {
+        for (const animation of this.activeAnimations) {
             const keys = animation.getKeys();
 
-            for (var key of keys) {
+            for (const key of keys) {
                 if (key.frame < this.activeFrame && key.frame > prevKey) {
                     prevKey = key.frame;
                 }
@@ -273,10 +273,10 @@ export class Context {
 
         let nextKey = Number.MAX_VALUE;
 
-        for (var animation of this.activeAnimations) {
+        for (const animation of this.activeAnimations) {
             const keys = animation.getKeys();
 
-            for (var key of keys) {
+            for (const key of keys) {
                 if (key.frame > this.activeFrame && key.frame < nextKey) {
                     nextKey = key.frame;
                 }
@@ -294,6 +294,7 @@ export class Context {
      * If any current active animation has a key at the received frameNumber,
      * return the index of the animation in the active animation array, and
      * the index of the frame on the animation.
+     * @param frameNumber
      */
     public getKeyAtAnyFrameIndex(frameNumber: number) {
         if (!this.animations || !this.animations.length || !this.activeAnimations || !this.activeAnimations.length) {
@@ -301,10 +302,10 @@ export class Context {
         }
 
         let animIdx = 0;
-        for (let animation of this.activeAnimations) {
+        for (const animation of this.activeAnimations) {
             const keys = animation.getKeys();
             let idx = 0;
-            for (let key of keys) {
+            for (const key of keys) {
                 if (Math.floor(frameNumber - key.frame) === 0) {
                     return { animationIndex: animIdx, keyIndex: idx };
                 }

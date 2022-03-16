@@ -22,7 +22,7 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
         const grid = this.props.grid;
         const rows = [];
 
-        for (var index = 0; index < grid.rowCount; index++) {
+        for (let index = 0; index < grid.rowCount; index++) {
             rows.push(grid.getRowDefinition(index)!);
         }
 
@@ -35,7 +35,7 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
         const grid = this.props.grid;
         const cols = [];
 
-        for (var index = 0; index < grid.columnCount; index++) {
+        for (let index = 0; index < grid.columnCount; index++) {
             cols.push(grid.getColumnDefinition(index)!);
         }
 
@@ -49,7 +49,7 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
 
         const cols = [];
 
-        for (var index = 0; index < grid.rowCount; index++) {
+        for (let index = 0; index < grid.rowCount; index++) {
             cols.push(grid.getColumnDefinition(index));
         }
 

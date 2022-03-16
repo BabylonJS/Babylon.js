@@ -22,7 +22,7 @@ export function processConfigurationCompatibility(configuration: ViewerConfigura
         //glow
         if (configuration.scene.glow) {
             setKeyInObject(configuration, "lab.defaultRenderingPipelines.glowLayerEnabled", true);
-            let enabledProcessing = getConfigurationKey("scene.imageProcessingConfiguration.isEnabled", configuration);
+            const enabledProcessing = getConfigurationKey("scene.imageProcessingConfiguration.isEnabled", configuration);
             if (enabledProcessing !== false) {
                 setKeyInObject(configuration, "scene.imageProcessingConfiguration.isEnabled", true);
             }
@@ -51,11 +51,11 @@ export function processConfigurationCompatibility(configuration: ViewerConfigura
 }
 
 function setKeyInObject(object: any, keys: string, value: any, shouldOverwrite?: boolean) {
-    let keySplit = keys.split(".");
+    const keySplit = keys.split(".");
     if (keySplit.length === 0) {
         return;
     }
-    let lastKey = keySplit.pop();
+    const lastKey = keySplit.pop();
     if (!lastKey) {
         return;
     }

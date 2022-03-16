@@ -25,7 +25,7 @@ export class RenderOnlyConfigurationLoader {
 
     private _getConfigurationTypeExcludeTemplate(types: string): ViewerConfiguration {
         let config: ViewerConfiguration = {};
-        let typesSeparated = types.split(",");
+        const typesSeparated = types.split(",");
         typesSeparated.forEach((type) => {
             switch (type.trim()) {
                 case "default":
@@ -61,7 +61,7 @@ export class RenderOnlyConfigurationLoader {
         let loadedConfig: ViewerConfiguration = deepmerge({}, initConfig);
         this._processInitialConfiguration(loadedConfig);
 
-        let extendedConfiguration = this.getExtendedConfig(loadedConfig.extends);
+        const extendedConfiguration = this.getExtendedConfig(loadedConfig.extends);
 
         if (loadedConfig.configuration) {
             let mapperType = "json";
@@ -96,9 +96,9 @@ export class RenderOnlyConfigurationLoader {
                     }
                 })
                 .then((data: any) => {
-                    let mapper = mapperManager.getMapper(mapperType);
-                    let parsed = deepmerge(mapper.map(data), loadedConfig);
-                    let merged = deepmerge(extendedConfiguration, parsed);
+                    const mapper = mapperManager.getMapper(mapperType);
+                    const parsed = deepmerge(mapper.map(data), loadedConfig);
+                    const merged = deepmerge(extendedConfiguration, parsed);
                     processConfigurationCompatibility(merged);
                     if (callback) {
                         callback(merged);
@@ -140,16 +140,16 @@ export class RenderOnlyConfigurationLoader {
     }
 
     private _loadFile(url: string): Promise<any> {
-        let cacheReference = this._configurationCache;
+        const cacheReference = this._configurationCache;
         if (this._enableCache && cacheReference[url]) {
             return Promise.resolve(cacheReference[url]);
         }
 
         return new Promise((resolve, reject) => {
-            let fileRequest = Tools.LoadFile(
+            const fileRequest = Tools.LoadFile(
                 url,
                 (result) => {
-                    let idx = this._loadRequests.indexOf(fileRequest);
+                    const idx = this._loadRequests.indexOf(fileRequest);
                     if (idx !== -1) {
                         this._loadRequests.splice(idx, 1);
                     }
@@ -162,7 +162,7 @@ export class RenderOnlyConfigurationLoader {
                 undefined,
                 false,
                 (request, error: any) => {
-                    let idx = this._loadRequests.indexOf(fileRequest);
+                    const idx = this._loadRequests.indexOf(fileRequest);
                     if (idx !== -1) {
                         this._loadRequests.splice(idx, 1);
                     }

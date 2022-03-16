@@ -317,7 +317,7 @@ export class InputText extends Control implements IFocusableControl {
     }
 
     public set text(value: string) {
-        let valueAsString = value.toString(); // Forcing convertion
+        const valueAsString = value.toString(); // Forcing convertion
 
         if (!this._textWrapper) {
             this._textWrapper = new TextWrapper();
@@ -379,7 +379,7 @@ export class InputText extends Control implements IFocusableControl {
         if (this._onClipboardObserver) {
             this._host.onClipboardObservable.remove(this._onClipboardObserver);
         }
-        let scene = this._host.getScene();
+        const scene = this._host.getScene();
         if (this._onPointerDblTapObserver && scene) {
             scene.onPointerObservable.remove(this._onPointerDblTapObserver);
         }
@@ -399,7 +399,7 @@ export class InputText extends Control implements IFocusableControl {
         this.onFocusObservable.notifyObservers(this);
 
         if (this._focusedBy === "touch" && !this.disableMobilePrompt) {
-            let value = prompt(this.promptMessage);
+            const value = prompt(this.promptMessage);
 
             if (value !== null) {
                 this.text = value;
@@ -430,7 +430,7 @@ export class InputText extends Control implements IFocusableControl {
             }
         });
 
-        let scene = this._host.getScene();
+        const scene = this._host.getScene();
         if (scene) {
             //register the pointer double tap event
             this._onPointerDblTapObserver = scene.onPointerObservable.add((pointerInfo) => {
@@ -477,7 +477,12 @@ export class InputText extends Control implements IFocusableControl {
         return [this._connectedVirtualKeyboard];
     }
 
-    /** @hidden */
+    /**
+     * @param keyCode
+     * @param key
+     * @param evt
+     * @hidden
+     */
     public processKey(keyCode: number, key?: string, evt?: IKeyboardEvent) {
         if (this.isReadOnly) {
             return;
@@ -522,7 +527,7 @@ export class InputText extends Control implements IFocusableControl {
                     if (this._cursorOffset === 0) {
                         this.text = this._textWrapper.substr(0, this._textWrapper.length - 1);
                     } else {
-                        let deletePosition = this._textWrapper.length - this._cursorOffset;
+                        const deletePosition = this._textWrapper.length - this._cursorOffset;
                         if (deletePosition > 0) {
                             this._textWrapper.removePart(deletePosition - 1, deletePosition);
                             this._textHasChanged();
@@ -545,7 +550,7 @@ export class InputText extends Control implements IFocusableControl {
                     return;
                 }
                 if (this._textWrapper.text && this._textWrapper.length > 0 && this._cursorOffset > 0) {
-                    let deletePosition = this._textWrapper.length - this._cursorOffset;
+                    const deletePosition = this._textWrapper.length - this._cursorOffset;
                     this._textWrapper.removePart(deletePosition, deletePosition + 1);
                     this._textHasChanged();
                     this._cursorOffset--;
@@ -742,7 +747,7 @@ export class InputText extends Control implements IFocusableControl {
                 } else if (this._cursorOffset === 0) {
                     this.text += key;
                 } else {
-                    let insertPosition = this._textWrapper.length - this._cursorOffset;
+                    const insertPosition = this._textWrapper.length - this._cursorOffset;
                     this._textWrapper.removePart(insertPosition, insertPosition, key);
                     this._textHasChanged();
                 }
@@ -750,7 +755,10 @@ export class InputText extends Control implements IFocusableControl {
         }
     }
 
-    /** @hidden */
+    /**
+     * @param offset
+     * @hidden
+     */
     private _updateValueFromCursorIndex(offset: number) {
         //update the cursor
         this._blinkIsEven = false;
@@ -773,7 +781,10 @@ export class InputText extends Control implements IFocusableControl {
         this._isTextHighlightOn = true;
         this._markAsDirty();
     }
-    /** @hidden */
+    /**
+     * @param evt
+     * @hidden
+     */
     private _processDblClick(evt: PointerInfo) {
         //pre-find the start and end index of the word under cursor, speeds up the rendering
         this._startHighlightIndex = this._textWrapper.length - this._cursorOffset;
@@ -816,7 +827,10 @@ export class InputText extends Control implements IFocusableControl {
         this.onKeyboardEventProcessedObservable.notifyObservers(evt);
     }
 
-    /** @hidden */
+    /**
+     * @param ev
+     * @hidden
+     */
     private _onCopyText(ev: ClipboardEvent): void {
         this._isTextHighlightOn = false;
         //when write permission to clipbaord data is denied
@@ -825,7 +839,10 @@ export class InputText extends Control implements IFocusableControl {
         } catch {} //pass
         this._host.clipboardData = this._highlightedText;
     }
-    /** @hidden */
+    /**
+     * @param ev
+     * @hidden
+     */
     private _onCutText(ev: ClipboardEvent): void {
         if (!this._highlightedText) {
             return;
@@ -842,7 +859,10 @@ export class InputText extends Control implements IFocusableControl {
         this._host.clipboardData = this._highlightedText;
         this._highlightedText = "";
     }
-    /** @hidden */
+    /**
+     * @param ev
+     * @hidden
+     */
     private _onPasteText(ev: ClipboardEvent): void {
         let data: string = "";
         if (ev.clipboardData && ev.clipboardData.types.indexOf("text/plain") !== -1) {
@@ -851,7 +871,7 @@ export class InputText extends Control implements IFocusableControl {
             //get the cached data; returns blank string by default
             data = this._host.clipboardData;
         }
-        let insertPosition = this._textWrapper.length - this._cursorOffset;
+        const insertPosition = this._textWrapper.length - this._cursorOffset;
         this._textWrapper.removePart(insertPosition, insertPosition, data);
         this._textHasChanged();
     }
@@ -891,7 +911,7 @@ export class InputText extends Control implements IFocusableControl {
         }
 
         // Text
-        let clipTextLeft = this._currentMeasure.left + this._margin.getValueInPixel(this._host, this._tempParentMeasure.width);
+        const clipTextLeft = this._currentMeasure.left + this._margin.getValueInPixel(this._host, this._tempParentMeasure.width);
         if (this.color) {
             context.fillStyle = this.color;
         }
@@ -908,14 +928,14 @@ export class InputText extends Control implements IFocusableControl {
         }
 
         this._textWidth = context.measureText(text.text).width;
-        let marginWidth = this._margin.getValueInPixel(this._host, this._tempParentMeasure.width) * 2;
+        const marginWidth = this._margin.getValueInPixel(this._host, this._tempParentMeasure.width) * 2;
         if (this._autoStretchWidth) {
             this.width = Math.min(this._maxWidth.getValueInPixel(this._host, this._tempParentMeasure.width), this._textWidth + marginWidth) + "px";
             this._autoStretchWidth = true; // setting the width will have reset _autoStretchWidth to false!
         }
 
-        let rootY = this._fontOffset.ascent + (this._currentMeasure.height - this._fontOffset.height) / 2;
-        let availableWidth = this._width.getValueInPixel(this._host, this._tempParentMeasure.width) - marginWidth;
+        const rootY = this._fontOffset.ascent + (this._currentMeasure.height - this._fontOffset.height) / 2;
+        const availableWidth = this._width.getValueInPixel(this._host, this._tempParentMeasure.width) - marginWidth;
 
         context.save();
         context.beginPath();
@@ -923,7 +943,7 @@ export class InputText extends Control implements IFocusableControl {
         context.clip();
 
         if (this._isFocused && this._textWidth > availableWidth) {
-            let textLeft = clipTextLeft - this._textWidth + availableWidth;
+            const textLeft = clipTextLeft - this._textWidth + availableWidth;
             if (!this._scrollLeft) {
                 this._scrollLeft = textLeft;
             }
@@ -937,11 +957,11 @@ export class InputText extends Control implements IFocusableControl {
         if (this._isFocused) {
             // Need to move cursor
             if (this._clickedCoordinate) {
-                var rightPosition = this._scrollLeft + this._textWidth;
-                var absoluteCursorPosition = rightPosition - this._clickedCoordinate;
-                var currentSize = 0;
+                const rightPosition = this._scrollLeft + this._textWidth;
+                const absoluteCursorPosition = rightPosition - this._clickedCoordinate;
+                let currentSize = 0;
                 this._cursorOffset = 0;
-                var previousDist = 0;
+                let previousDist = 0;
                 do {
                     if (this._cursorOffset) {
                         previousDist = Math.abs(absoluteCursorPosition - currentSize);
@@ -961,8 +981,8 @@ export class InputText extends Control implements IFocusableControl {
 
             // Render cursor
             if (!this._blinkIsEven) {
-                let cursorOffsetText = text.substr(text.length - this._cursorOffset);
-                let cursorOffsetWidth = context.measureText(cursorOffsetText).width;
+                const cursorOffsetText = text.substr(text.length - this._cursorOffset);
+                const cursorOffsetWidth = context.measureText(cursorOffsetText).width;
                 let cursorLeft = this._scrollLeft + this._textWidth - cursorOffsetWidth;
 
                 if (cursorLeft < clipTextLeft) {
@@ -988,7 +1008,7 @@ export class InputText extends Control implements IFocusableControl {
             //show the highlighted text
             if (this._isTextHighlightOn) {
                 clearTimeout(this._blinkTimeout);
-                let highlightCursorOffsetWidth = context.measureText(text.substring(this._startHighlightIndex)).width;
+                const highlightCursorOffsetWidth = context.measureText(text.substring(this._startHighlightIndex)).width;
                 let highlightCursorLeft = this._scrollLeft + this._textWidth - highlightCursorOffsetWidth;
                 this._highlightedText = text.substring(this._startHighlightIndex, this._endHighlightIndex);
                 let width = context.measureText(text.substring(this._startHighlightIndex, this._endHighlightIndex)).width;

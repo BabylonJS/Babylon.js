@@ -191,7 +191,17 @@ export class ToggleButton extends Rectangle {
     }
 
     // While being a container, the toggle button behaves like a control.
-    /** @hidden */
+    /**
+     * @param x
+     * @param y
+     * @param pi
+     * @param type
+     * @param pointerId
+     * @param buttonIndex
+     * @param deltaX
+     * @param deltaY
+     * @hidden
+     */
     public _processPicking(x: number, y: number, pi: PointerInfoBase, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean {
         if (!this._isEnabled || !this.isHitTestVisible || !this.isVisible || this.notRenderable) {
             return false;
@@ -203,8 +213,8 @@ export class ToggleButton extends Rectangle {
 
         if (this.delegatePickingToChildren) {
             let contains = false;
-            for (var index = this._children.length - 1; index >= 0; index--) {
-                var child = this._children[index];
+            for (let index = this._children.length - 1; index >= 0; index--) {
+                const child = this._children[index];
                 if (child.isEnabled && child.isHitTestVisible && child.isVisible && !child.notRenderable && child.contains(x, y)) {
                     contains = true;
                     break;
@@ -221,7 +231,11 @@ export class ToggleButton extends Rectangle {
         return true;
     }
 
-    /** @hidden */
+    /**
+     * @param target
+     * @param pi
+     * @hidden
+     */
     public _onPointerEnter(target: Control, pi: PointerInfoBase): boolean {
         if (!super._onPointerEnter(target, pi)) {
             return false;
@@ -244,7 +258,12 @@ export class ToggleButton extends Rectangle {
         return true;
     }
 
-    /** @hidden */
+    /**
+     * @param target
+     * @param pi
+     * @param force
+     * @hidden
+     */
     public _onPointerOut(target: Control, pi: PointerInfoBase, force = false): void {
         if (!this.isReadOnly) {
             if (this._isActive) {
@@ -261,7 +280,14 @@ export class ToggleButton extends Rectangle {
         super._onPointerOut(target, pi, force);
     }
 
-    /** @hidden */
+    /**
+     * @param target
+     * @param coordinates
+     * @param pointerId
+     * @param buttonIndex
+     * @param pi
+     * @hidden
+     */
     public _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, pi: PointerInfoBase): boolean {
         if (!super._onPointerDown(target, coordinates, pointerId, buttonIndex, pi)) {
             return false;
@@ -284,7 +310,15 @@ export class ToggleButton extends Rectangle {
         return true;
     }
 
-    /** @hidden */
+    /**
+     * @param target
+     * @param coordinates
+     * @param pointerId
+     * @param buttonIndex
+     * @param notifyClick
+     * @param pi
+     * @hidden
+     */
     public _onPointerUp(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean, pi: PointerInfoBase): void {
         if (!this.isReadOnly) {
             if (this._isActive) {

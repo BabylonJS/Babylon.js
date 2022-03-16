@@ -33,13 +33,13 @@ export class SpherePanel extends VolumeBasedPanel {
     }
 
     protected _mapGridNode(control: Control3D, nodePosition: Vector3) {
-        let mesh = control.mesh;
+        const mesh = control.mesh;
 
         if (!mesh) {
             return;
         }
 
-        let newPos = this._sphericalMapping(nodePosition);
+        const newPos = this._sphericalMapping(nodePosition);
         control.position = newPos;
 
         switch (this.orientation) {
@@ -58,10 +58,10 @@ export class SpherePanel extends VolumeBasedPanel {
     }
 
     private _sphericalMapping(source: Vector3) {
-        let newPos = new Vector3(0, 0, this._radius);
+        const newPos = new Vector3(0, 0, this._radius);
 
-        let xAngle = source.y / this._radius;
-        let yAngle = -(source.x / this._radius);
+        const xAngle = source.y / this._radius;
+        const yAngle = -(source.x / this._radius);
 
         Matrix.RotationYawPitchRollToRef(yAngle, xAngle, 0, TmpVectors.Matrix[0]);
 

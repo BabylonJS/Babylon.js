@@ -75,7 +75,7 @@ export class VirtualKeyboard extends StackPanel {
     }
 
     private _createKey(key: string, propertySet: Nullable<KeyPropertySet>) {
-        var button = Button.CreateSimpleButton(key, key);
+        const button = Button.CreateSimpleButton(key, key);
 
         button.width = propertySet && propertySet.width ? propertySet.width : this.defaultButtonWidth;
         button.height = propertySet && propertySet.height ? propertySet.height : this.defaultButtonHeight;
@@ -107,19 +107,19 @@ export class VirtualKeyboard extends StackPanel {
      * @param propertySets defines the associated property sets
      */
     public addKeysRow(keys: Array<string>, propertySets?: Array<KeyPropertySet>): void {
-        let panel = new StackPanel();
+        const panel = new StackPanel();
         panel.isVertical = false;
         panel.isFocusInvisible = true;
 
-        var maxKey: Nullable<Button> = null;
-        for (var i = 0; i < keys.length; i++) {
+        let maxKey: Nullable<Button> = null;
+        for (let i = 0; i < keys.length; i++) {
             let properties = null;
 
             if (propertySets && propertySets.length === keys.length) {
                 properties = propertySets[i];
             }
 
-            var key = this._createKey(keys[i], properties);
+            const key = this._createKey(keys[i], properties);
             if (!maxKey || key.heightInPixels > maxKey.heightInPixels) {
                 maxKey = key;
             }
@@ -141,21 +141,21 @@ export class VirtualKeyboard extends StackPanel {
             return;
         }
 
-        for (var i = 0; i < this.children.length; i++) {
-            let row = this.children[i];
+        for (let i = 0; i < this.children.length; i++) {
+            const row = this.children[i];
             if (!row || !(<Container>row).children) {
                 continue;
             }
 
-            let rowContainer = <Container>row;
-            for (var j = 0; j < rowContainer.children.length; j++) {
-                let button = rowContainer.children[j] as Button;
+            const rowContainer = <Container>row;
+            for (let j = 0; j < rowContainer.children.length; j++) {
+                const button = rowContainer.children[j] as Button;
 
                 if (!button || !button.children[0]) {
                     continue;
                 }
 
-                let button_tblock = button.children[0] as TextBlock;
+                const button_tblock = button.children[0] as TextBlock;
 
                 if (button_tblock.text === "\u21E7") {
                     button.color = shiftState ? this.shiftButtonColor : this.defaultButtonColor;
@@ -251,7 +251,7 @@ export class VirtualKeyboard extends StackPanel {
     public disconnect(input?: InputText): void {
         if (input) {
             // .find not available on IE
-            let filtered = this._connectedInputTexts.filter((a) => a.input === input);
+            const filtered = this._connectedInputTexts.filter((a) => a.input === input);
             if (filtered.length === 1) {
                 this._removeConnectedInputObservables(filtered[0]);
 
@@ -298,7 +298,7 @@ export class VirtualKeyboard extends StackPanel {
      * @returns a new VirtualKeyboard
      */
     public static CreateDefaultLayout(name?: string): VirtualKeyboard {
-        let returnValue = new VirtualKeyboard(name);
+        const returnValue = new VirtualKeyboard(name);
 
         returnValue.addKeysRow(["1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "\u2190"]);
         returnValue.addKeysRow(["q", "w", "e", "r", "t", "y", "u", "i", "o", "p"]);

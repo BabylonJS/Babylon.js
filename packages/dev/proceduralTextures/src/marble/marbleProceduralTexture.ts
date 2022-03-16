@@ -71,7 +71,7 @@ export class MarbleProceduralTexture extends ProceduralTexture {
      * @returns a serialized marble procedural texture object
      */
     public serialize(): any {
-        var serializationObject = SerializationHelper.Serialize(this, super.serialize());
+        const serializationObject = SerializationHelper.Serialize(this, super.serialize());
         serializationObject.customType = "BABYLON.MarbleProceduralTexture";
 
         return serializationObject;
@@ -85,7 +85,7 @@ export class MarbleProceduralTexture extends ProceduralTexture {
      * @returns a parsed Marble Procedural Texture
      */
     public static Parse(parsedTexture: any, scene: Scene, rootUrl: string): MarbleProceduralTexture {
-        var texture = SerializationHelper.Parse(
+        const texture = SerializationHelper.Parse(
             () => new MarbleProceduralTexture(parsedTexture.name, parsedTexture._size, scene, undefined, parsedTexture._generateMipMaps),
             parsedTexture,
             scene,

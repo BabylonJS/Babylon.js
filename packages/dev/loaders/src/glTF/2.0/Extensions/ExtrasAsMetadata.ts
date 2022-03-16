@@ -38,7 +38,10 @@ export class ExtrasAsMetadata implements IGLTFLoaderExtension {
         }
     }
 
-    /** @hidden */
+    /**
+     * @param loader
+     * @hidden
+     */
     public constructor(loader: GLTFLoader) {
         this._loader = loader;
     }
@@ -48,7 +51,12 @@ export class ExtrasAsMetadata implements IGLTFLoaderExtension {
         (this._loader as any) = null;
     }
 
-    /** @hidden */
+    /**
+     * @param context
+     * @param node
+     * @param assign
+     * @hidden
+     */
     public loadNodeAsync(context: string, node: INode, assign: (babylonTransformNode: TransformNode) => void): Nullable<Promise<TransformNode>> {
         return this._loader.loadNodeAsync(context, node, (babylonTransformNode): void => {
             this._assignExtras(babylonTransformNode, node);
@@ -56,7 +64,12 @@ export class ExtrasAsMetadata implements IGLTFLoaderExtension {
         });
     }
 
-    /** @hidden */
+    /**
+     * @param context
+     * @param camera
+     * @param assign
+     * @hidden
+     */
     public loadCameraAsync(context: string, camera: ICamera, assign: (babylonCamera: Camera) => void): Nullable<Promise<Camera>> {
         return this._loader.loadCameraAsync(context, camera, (babylonCamera): void => {
             this._assignExtras(babylonCamera, camera);
@@ -64,7 +77,12 @@ export class ExtrasAsMetadata implements IGLTFLoaderExtension {
         });
     }
 
-    /** @hidden */
+    /**
+     * @param context
+     * @param material
+     * @param babylonDrawMode
+     * @hidden
+     */
     public createMaterial(context: string, material: IMaterial, babylonDrawMode: number): Nullable<Material> {
         const babylonMaterial = this._loader.createMaterial(context, material, babylonDrawMode);
         this._assignExtras(babylonMaterial, material);

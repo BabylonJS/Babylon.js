@@ -123,6 +123,7 @@ export class KTX2FileReader {
 
     /**
      * Will throw an exception if the file can't be parsed
+     * @param data
      */
     constructor(data: Uint8Array) {
         this._data = data;

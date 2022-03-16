@@ -63,8 +63,8 @@ export class ScenePropertyGridComponent extends React.Component<IScenePropertyGr
     }
 
     updateEnvironmentTexture(file: File) {
-        let isFileDDS = file.name.toLowerCase().indexOf(".dds") > 0;
-        let isFileEnv = file.name.toLowerCase().indexOf(".env") > 0;
+        const isFileDDS = file.name.toLowerCase().indexOf(".dds") > 0;
+        const isFileEnv = file.name.toLowerCase().indexOf(".env") > 0;
         if (!isFileDDS && !isFileEnv) {
             console.error("Unable to update environment texture. Please select a dds or env file.");
             return;
@@ -74,8 +74,8 @@ export class ScenePropertyGridComponent extends React.Component<IScenePropertyGr
         Tools.ReadFile(
             file,
             (data) => {
-                var blob = new Blob([data], { type: "octet/stream" });
-                var url = URL.createObjectURL(blob);
+                const blob = new Blob([data], { type: "octet/stream" });
+                const url = URL.createObjectURL(blob);
                 if (isFileDDS) {
                     scene.environmentTexture = CubeTexture.CreateFromPrefilteredData(url, scene, ".dds");
                 } else {
@@ -140,12 +140,12 @@ export class ScenePropertyGridComponent extends React.Component<IScenePropertyGr
 
         const imageProcessing = scene.imageProcessingConfiguration;
 
-        var toneMappingOptions = [
+        const toneMappingOptions = [
             { label: "Standard", value: ImageProcessingConfiguration.TONEMAPPING_STANDARD },
             { label: "ACES", value: ImageProcessingConfiguration.TONEMAPPING_ACES },
         ];
 
-        var vignetteModeOptions = [
+        const vignetteModeOptions = [
             { label: "Multiply", value: ImageProcessingConfiguration.VIGNETTEMODE_MULTIPLY },
             { label: "Opaque", value: ImageProcessingConfiguration.VIGNETTEMODE_OPAQUE },
         ];

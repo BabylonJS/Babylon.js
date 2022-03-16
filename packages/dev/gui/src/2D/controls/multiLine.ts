@@ -86,7 +86,7 @@ export class MultiLine extends Control {
      * @returns the created MultiLinePoint
      */
     public push(item?: AbstractMesh | Control | { x: string | number; y: string | number }): MultiLinePoint {
-        var point: MultiLinePoint = this.getAt(this._points.length);
+        const point: MultiLinePoint = this.getAt(this._points.length);
 
         if (item == null) {
             return point;
@@ -109,7 +109,7 @@ export class MultiLine extends Control {
      * @param value defines the value or point to remove
      */
     public remove(value: number | MultiLinePoint): void {
-        var index: number;
+        let index: number;
 
         if (value instanceof MultiLinePoint) {
             index = this._points.indexOf(value);
@@ -121,7 +121,7 @@ export class MultiLine extends Control {
             index = value;
         }
 
-        var point: Nullable<MultiLinePoint> = this._points[index];
+        const point: Nullable<MultiLinePoint> = this._points[index];
 
         if (!point) {
             return;
@@ -196,8 +196,8 @@ export class MultiLine extends Control {
 
         context.beginPath();
 
-        var first: boolean = true; //first index is not necessarily 0
-        var previousPoint: Vector3;
+        let first: boolean = true; //first index is not necessarily 0
+        let previousPoint: Vector3;
 
         this._points.forEach((point) => {
             if (!point) {

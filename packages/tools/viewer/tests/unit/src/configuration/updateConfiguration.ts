@@ -2,11 +2,11 @@ import { Helper } from "../../../commons/helper";
 import { assert, expect, should } from "../viewerReference";
 import { SceneOptimizer, SceneOptimizerOptions } from "babylonjs";
 
-export let name = "configuration update";
+export const name = "configuration update";
 
 describe(name + " scene", () => {
     it("should be used as a template for the following tests", (done) => {
-        let viewer = Helper.getNewViewerInstance(undefined, { extends: "none" });
+        const viewer = Helper.getNewViewerInstance(undefined, { extends: "none" });
 
         viewer.onInitDoneObservable.add(() => {
             viewer.dispose();
@@ -15,7 +15,7 @@ describe(name + " scene", () => {
     });
 
     it("should update the image processing configuration values", (done) => {
-        let viewer = Helper.getNewViewerInstance(undefined, { extends: "none" });
+        const viewer = Helper.getNewViewerInstance(undefined, { extends: "none" });
 
         viewer.onInitDoneObservable.add(() => {
             // check babylon defaults
@@ -61,7 +61,7 @@ describe(name + " scene", () => {
                 assert.fail(viewer.sceneManager.scene.imageProcessingConfiguration.colorCurves, {}, "color curves was not initialized");
             }
 
-            let randoms = [0, 1, 2, 3, 4].map((n) => Math.random());
+            const randoms = [0, 1, 2, 3, 4].map((n) => Math.random());
 
             viewer.updateConfiguration({
                 scene: {
@@ -95,7 +95,7 @@ describe(name + " scene", () => {
     });
 
     it("should update main color and reflection color", (done) => {
-        let viewer = Helper.getNewViewerInstance(undefined, { extends: "none" });
+        const viewer = Helper.getNewViewerInstance(undefined, { extends: "none" });
 
         viewer.onInitDoneObservable.add(() => {
             assert.equal(viewer.sceneManager.mainColor.r, 1);
@@ -142,7 +142,7 @@ describe(name + " scene", () => {
             assert.equal(viewer.sceneManager.reflectionColor.g, 0);
             assert.equal(viewer.sceneManager.reflectionColor.b, 0);
 
-            let randomColor = Math.random();
+            const randomColor = Math.random();
 
             //only update red
             viewer.updateConfiguration({
@@ -163,7 +163,7 @@ describe(name + " scene", () => {
     });
 
     it("should update the flags correctly", (done) => {
-        let viewer = Helper.getNewViewerInstance(undefined, { extends: "none" });
+        const viewer = Helper.getNewViewerInstance(undefined, { extends: "none" });
 
         viewer.onInitDoneObservable.add(() => {
             viewer.updateConfiguration({
@@ -209,11 +209,11 @@ describe(name + " scene", () => {
 
 describe(name + " scene optimizer", () => {
     it("should be enabled and disabled with booleans", (done) => {
-        let viewer = Helper.getNewViewerInstance(undefined, { extends: "none" });
+        const viewer = Helper.getNewViewerInstance(undefined, { extends: "none" });
 
         let started = false;
 
-        let optimizerFunction = SceneOptimizer;
+        const optimizerFunction = SceneOptimizer;
 
         //mock!
         SceneOptimizer.prototype.start = function () {
@@ -253,7 +253,7 @@ describe(name + " scene optimizer", () => {
 
 describe(name + " camera", () => {
     it("should enable and disable camera behaviors", (done) => {
-        let viewer = Helper.getNewViewerInstance(undefined, { extends: "none" });
+        const viewer = Helper.getNewViewerInstance(undefined, { extends: "none" });
 
         viewer.onInitDoneObservable.add(() => {
             assert.isFalse(viewer.sceneManager.camera.useAutoRotationBehavior);

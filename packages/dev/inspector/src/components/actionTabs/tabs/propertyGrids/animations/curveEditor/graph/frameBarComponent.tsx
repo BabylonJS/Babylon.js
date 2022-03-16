@@ -71,30 +71,30 @@ export class FrameBarComponent extends React.Component<IFrameBarComponentProps, 
             return null;
         }
 
-        let minFrame = this.props.context.referenceMinFrame;
-        let maxFrame = this.props.context.referenceMaxFrame;
+        const minFrame = this.props.context.referenceMinFrame;
+        const maxFrame = this.props.context.referenceMaxFrame;
 
-        let range = maxFrame - minFrame;
-        let convertRatio = range / this._GraphAbsoluteWidth;
+        const range = maxFrame - minFrame;
+        const convertRatio = range / this._GraphAbsoluteWidth;
         const dist = Math.max(baseTickDistance * this._viewScale, minTickDistance); // x distance between consecutive ticks
         let offset = Math.floor(dist * convertRatio);
 
-        let steps = [];
+        const steps = [];
 
         if (offset === 0) {
             offset = 1;
         }
 
-        let startPosition = this._offsetX * convertRatio;
-        let start = minFrame - ((startPosition / offset) | 0) * offset;
-        let end = start + this._viewWidth * this._viewScale * convertRatio;
+        const startPosition = this._offsetX * convertRatio;
+        const start = minFrame - ((startPosition / offset) | 0) * offset;
+        const end = start + this._viewWidth * this._viewScale * convertRatio;
 
-        for (var step = start - offset; step <= end + offset; step += offset) {
+        for (let step = start - offset; step <= end + offset; step += offset) {
             steps.push(step);
         }
 
         return steps.map((s, i) => {
-            let x = (s - minFrame) / convertRatio;
+            const x = (s - minFrame) / convertRatio;
             return (
                 <g key={"axis" + s}>
                     <line

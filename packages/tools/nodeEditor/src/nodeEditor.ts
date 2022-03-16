@@ -43,7 +43,7 @@ export class NodeEditor {
             hostElement = Popup.CreatePopup("BABYLON.JS NODE EDITOR", "node-editor", 1000, 800)!;
         }
 
-        let globalState = new GlobalState();
+        const globalState = new GlobalState();
         globalState.nodeMaterial = options.nodeMaterial;
         globalState.mode = options.nodeMaterial.mode;
         globalState.hostElement = hostElement;
@@ -81,7 +81,7 @@ export class NodeEditor {
                 }
             });
             window.onbeforeunload = () => {
-                var popupWindow = (Popup as any)["node-editor"];
+                const popupWindow = (Popup as any)["node-editor"];
                 if (popupWindow) {
                     popupWindow.close();
                 }

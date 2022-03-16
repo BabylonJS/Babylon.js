@@ -45,8 +45,8 @@ export class CommandDropdownComponent extends React.Component<ICommandDropdownCo
                         title={this.props.tooltip}
                         onClick={() => {
                             this.setState({ isExpanded: false });
-                            let newState = !this.state.isExpanded;
-                            let pgHost = document.getElementById("embed-host");
+                            const newState = !this.state.isExpanded;
+                            const pgHost = document.getElementById("embed-host");
 
                             if (pgHost) {
                                 pgHost.style.zIndex = newState ? "0" : "10";

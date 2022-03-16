@@ -49,7 +49,7 @@ export class CameraTreeItemComponent extends React.Component<ICameraTreeItemComp
             if (this.state.isActive && scene.activeCameras && scene.activeCameras.length <= 1 && scene.activeCamera !== camera) {
                 camera.detachControl();
             }
-            let newState = scene.activeCamera === camera;
+            const newState = scene.activeCamera === camera;
 
             if (newState !== this.state.isActive) {
                 this.setState({ isActive: newState });

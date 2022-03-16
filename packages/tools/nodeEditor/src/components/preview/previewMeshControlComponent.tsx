@@ -51,9 +51,9 @@ export class PreviewMeshControlComponent extends React.Component<IPreviewMeshCon
     }
 
     useCustomMesh(evt: any) {
-        var files: File[] = evt.target.files;
+        const files: File[] = evt.target.files;
         if (files && files.length) {
-            let file = files[0];
+            const file = files[0];
 
             this.props.globalState.previewFile = file;
             this.props.globalState.previewType = PreviewType.Custom;
@@ -93,7 +93,7 @@ export class PreviewMeshControlComponent extends React.Component<IPreviewMeshCon
     }
 
     render() {
-        var meshTypeOptions = [
+        const meshTypeOptions = [
             { label: "Cube", value: PreviewType.Box },
             { label: "Cylinder", value: PreviewType.Cylinder },
             { label: "Plane", value: PreviewType.Plane },
@@ -102,7 +102,7 @@ export class PreviewMeshControlComponent extends React.Component<IPreviewMeshCon
             { label: "Load...", value: PreviewType.Custom + 1 },
         ];
 
-        var particleTypeOptions = [
+        const particleTypeOptions = [
             { label: "Default", value: PreviewType.DefaultParticleSystem },
             { label: "Bubbles", value: PreviewType.Bubbles },
             { label: "Explosion", value: PreviewType.Explosion },
@@ -124,8 +124,8 @@ export class PreviewMeshControlComponent extends React.Component<IPreviewMeshCon
             });
         }
 
-        var options = this.props.globalState.mode === NodeMaterialModes.Particle ? particleTypeOptions : meshTypeOptions;
-        var accept = this.props.globalState.mode === NodeMaterialModes.Particle ? ".json" : ".gltf, .glb, .babylon, .obj";
+        const options = this.props.globalState.mode === NodeMaterialModes.Particle ? particleTypeOptions : meshTypeOptions;
+        const accept = this.props.globalState.mode === NodeMaterialModes.Particle ? ".json" : ".gltf, .glb, .babylon, .obj";
 
         return (
             <div id="preview-mesh-bar">

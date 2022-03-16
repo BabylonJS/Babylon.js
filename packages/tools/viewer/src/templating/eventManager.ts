@@ -44,18 +44,18 @@ export class EventManager {
      * @param selector the selector from which to remove the event (optional)
      */
     public unregisterCallback(templateName: string, callback: (eventData: EventCallback) => void, eventType?: string, selector?: string) {
-        let callbackDefs = this._callbacksContainer[templateName] || [];
+        const callbackDefs = this._callbacksContainer[templateName] || [];
         this._callbacksContainer[templateName] = callbackDefs.filter(
             (callbackDef) => (!callbackDef.eventType || callbackDef.eventType === eventType) && (!callbackDef.selector || callbackDef.selector === selector)
         );
     }
 
     private _eventTriggered(data: EventCallback) {
-        let templateName = data.template.name;
-        let eventType = data.event.type;
-        let selector = data.selector;
+        const templateName = data.template.name;
+        const eventType = data.event.type;
+        const selector = data.selector;
 
-        let callbackDefs = this._callbacksContainer[templateName] || [];
+        const callbackDefs = this._callbacksContainer[templateName] || [];
         callbackDefs
             .filter((callbackDef) => (!callbackDef.eventType || callbackDef.eventType === eventType) && (!callbackDef.selector || callbackDef.selector === selector))
             .forEach((callbackDef) => {

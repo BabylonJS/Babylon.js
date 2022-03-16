@@ -108,6 +108,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
      * @param url The URL of the MTL file
      * @param rootUrl defines where to load data from
      * @param onSuccess Callback function to be called when the MTL file is loaded
+     * @param onFailure
      */
     private _loadMTL(
         url: string,
@@ -116,7 +117,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
         onFailure: (pathOfFile: string, exception?: any) => void
     ) {
         //The complete path to the mtl file
-        var pathOfFile = rootUrl + url;
+        const pathOfFile = rootUrl + url;
 
         // Loads through the babylon tools to allow fileInput search.
         Tools.LoadFile(pathOfFile, onSuccess, undefined, undefined, false, (request?: WebRequest | undefined, exception?: any) => {
@@ -206,21 +207,21 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
         onProgress?: (event: ISceneLoaderProgressEvent) => void,
         fileName?: string
     ): Promise<AssetContainer> {
-        var container = new AssetContainer(scene);
+        const container = new AssetContainer(scene);
         this._assetContainer = container;
 
         return this.importMeshAsync(null, scene, data, rootUrl)
             .then((result) => {
                 result.meshes.forEach((mesh) => container.meshes.push(mesh));
                 result.meshes.forEach((mesh) => {
-                    var material = mesh.material;
+                    const material = mesh.material;
                     if (material) {
                         // Materials
                         if (container.materials.indexOf(material) == -1) {
                             container.materials.push(material);
 
                             // Textures
-                            var textures = material.getActiveTextures();
+                            const textures = material.getActiveTextures();
                             textures.forEach((t) => {
                                 if (container.textures.indexOf(t) == -1) {
                                     container.textures.push(t);
@@ -249,10 +250,10 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
      * @returns the list of loaded meshes
      */
     private _parseSolid(meshesNames: any, scene: Scene, data: string, rootUrl: string): Promise<Array<AbstractMesh>> {
-        var fileToLoad: string = ""; //The name of the mtlFile to load
-        var materialsFromMTLFile: MTLFileLoader = new MTLFileLoader();
-        var materialToUse = new Array<string>();
-        var babylonMeshesArray: Array<Mesh> = []; //The mesh for babylon
+        let fileToLoad: string = ""; //The name of the mtlFile to load
+        const materialsFromMTLFile: MTLFileLoader = new MTLFileLoader();
+        const materialToUse = new Array<string>();
+        const babylonMeshesArray: Array<Mesh> = []; //The mesh for babylon
 
         // Main function
         const solidParser = new SolidParser(materialToUse, babylonMeshesArray, this._loadingOptions);
@@ -262,7 +263,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
         });
 
         // load the materials
-        let mtlPromises: Array<Promise<void>> = [];
+        const mtlPromises: Array<Promise<void>> = [];
         // Check if we have a file to load
         if (fileToLoad !== "" && !this._loadingOptions.skipMaterials) {
             //Load the file synchronously
@@ -276,10 +277,10 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
                                 //Create materials thanks MTLLoader function
                                 materialsFromMTLFile.parseMTL(scene, dataLoaded, rootUrl, this._assetContainer);
                                 //Look at each material loaded in the mtl file
-                                for (var n = 0; n < materialsFromMTLFile.materials.length; n++) {
+                                for (let n = 0; n < materialsFromMTLFile.materials.length; n++) {
                                     //Three variables to get all meshes with the same material
-                                    var startIndex = 0;
-                                    var _indices = [];
+                                    let startIndex = 0;
+                                    const _indices = [];
                                     var _index;
 
                                     //The material from MTL file is used in the meshes loaded
@@ -294,7 +295,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
                                         //If the material is not needed, remove it
                                         materialsFromMTLFile.materials[n].dispose();
                                     } else {
-                                        for (var o = 0; o < _indices.length; o++) {
+                                        for (let o = 0; o < _indices.length; o++) {
                                             //Apply the material to the Mesh for each mesh with the material
                                             const mesh = babylonMeshesArray[_indices[o]];
                                             const material = materialsFromMTLFile.materials[n];
