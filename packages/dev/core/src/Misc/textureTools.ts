@@ -4,8 +4,8 @@ import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { PassPostProcess } from "../PostProcesses/passPostProcess";
 import { Constants } from "../Engines/constants";
 import { Scene } from "../scene";
-import { PostProcess } from '../PostProcesses/postProcess';
-import { Engine } from '../Engines/engine';
+import { PostProcess } from "../PostProcesses/postProcess";
+import { Engine } from "../Engines/engine";
 
 /**
  * Uses the GPU to create a copy texture rescaled at a given size
@@ -16,12 +16,11 @@ import { Engine } from '../Engines/engine';
  * @return the generated texture
  */
 export function CreateResizedCopy(texture: Texture, width: number, height: number, useBilinearMode: boolean = true): Texture {
+    const scene = <Scene>texture.getScene();
+    const engine = scene.getEngine();
 
-    var scene = <Scene>texture.getScene();
-    var engine = scene.getEngine();
-
-    let rtt = new RenderTargetTexture(
-        'resized' + texture.name,
+    const rtt = new RenderTargetTexture(
+        "resized" + texture.name,
         { width: width, height: height },
         scene,
         !texture.noMipmap,
@@ -49,14 +48,22 @@ export function CreateResizedCopy(texture: Texture, width: number, height: numbe
     texture.wrapU = Texture.CLAMP_ADDRESSMODE;
     texture.wrapV = Texture.CLAMP_ADDRESSMODE;
 
-    let passPostProcess = new PassPostProcess("pass", 1, null, useBilinearMode ? Texture.BILINEAR_SAMPLINGMODE : Texture.NEAREST_SAMPLINGMODE, engine, false, Constants.TEXTURETYPE_UNSIGNED_INT);
+    const passPostProcess = new PassPostProcess(
+        "pass",
+        1,
+        null,
+        useBilinearMode ? Texture.BILINEAR_SAMPLINGMODE : Texture.NEAREST_SAMPLINGMODE,
+        engine,
+        false,
+        Constants.TEXTURETYPE_UNSIGNED_INT
+    );
     passPostProcess.externalTextureSamplerBinding = true;
     passPostProcess.getEffect().executeWhenCompiled(() => {
         passPostProcess.onApply = function (effect) {
             effect.setTexture("textureSampler", texture);
         };
 
-        let internalTexture = rtt.renderTarget;
+        const internalTexture = rtt.renderTarget;
 
         if (internalTexture) {
             scene.postProcessManager.directRender([passPostProcess], internalTexture);
@@ -82,7 +89,14 @@ export function CreateResizedCopy(texture: Texture, width: number, height: numbe
  * @param format format of the output texture. If not provided, use the one from internalTexture
  * @return a promise with the internalTexture having its texture replaced by the result of the processing
  */
-export function ApplyPostProcess(postProcessName: string, internalTexture: InternalTexture, scene: Scene, type?: number, samplingMode?: number, format?: number): Promise<InternalTexture> {
+export function ApplyPostProcess(
+    postProcessName: string,
+    internalTexture: InternalTexture,
+    scene: Scene,
+    type?: number,
+    samplingMode?: number,
+    format?: number
+): Promise<InternalTexture> {
     // Gets everything ready.
     const engine = internalTexture.getEngine() as Engine;
 
@@ -98,19 +112,21 @@ export function ApplyPostProcess(postProcessName: string, internalTexture: Inter
 
     return new Promise((resolve) => {
         // Create the post process
-        const postProcess = new PostProcess("postprocess", postProcessName, null, null, 1, null, samplingMode, engine,
-            false, undefined, type, undefined, null, false, format);
+        const postProcess = new PostProcess("postprocess", postProcessName, null, null, 1, null, samplingMode, engine, false, undefined, type, undefined, null, false, format);
         postProcess.externalTextureSamplerBinding = true;
 
         // Hold the output of the decoding.
-        const encodedTexture = engine.createRenderTargetTexture({ width: internalTexture.width, height: internalTexture.height }, {
-            generateDepthBuffer: false,
-            generateMipMaps: false,
-            generateStencilBuffer: false,
-            samplingMode,
-            type,
-            format
-        });
+        const encodedTexture = engine.createRenderTargetTexture(
+            { width: internalTexture.width, height: internalTexture.height },
+            {
+                generateDepthBuffer: false,
+                generateMipMaps: false,
+                generateStencilBuffer: false,
+                samplingMode,
+                type,
+                format,
+            }
+        );
 
         postProcess.getEffect().executeWhenCompiled(() => {
             // PP Render Pass
@@ -162,7 +178,7 @@ export function ToHalfFloat(value: number): number {
     const e = (x >> 23) & 0xff; /* Using int is faster here */
 
     /* If zero, or denormal, or exponent underflows too much for a denormal
-    * half, return signed zero. */
+     * half, return signed zero. */
     if (e < 103) {
         return bits;
     }
@@ -171,8 +187,8 @@ export function ToHalfFloat(value: number): number {
     if (e > 142) {
         bits |= 0x7c00;
         /* If exponent was 0xff and one mantissa bit was set, it means NaN,
-        * not Inf, so make sure we set one mantissa bit too. */
-        bits |= ((e == 255) ? 0 : 1) && (x & 0x007fffff);
+         * not Inf, so make sure we set one mantissa bit too. */
+        bits |= (e == 255 ? 0 : 1) && x & 0x007fffff;
         return bits;
     }
 
@@ -180,7 +196,7 @@ export function ToHalfFloat(value: number): number {
     if (e < 113) {
         m |= 0x0800;
         /* Extra rounding may overflow and set mantissa to 0 and exponent
-        * to 1, which is OK. */
+         * to 1, which is OK. */
         bits |= (m >> (114 - e)) + ((m >> (113 - e)) & 1);
         return bits;
     }
@@ -197,16 +213,16 @@ export function ToHalfFloat(value: number): number {
  */
 export function FromHalfFloat(value: number): number {
     const s = (value & 0x8000) >> 15;
-    const e = (value & 0x7C00) >> 10;
-    const f = value & 0x03FF;
+    const e = (value & 0x7c00) >> 10;
+    const f = value & 0x03ff;
 
     if (e === 0) {
         return (s ? -1 : 1) * Math.pow(2, -14) * (f / Math.pow(2, 10));
-    } else if (e == 0x1F) {
-        return f ? NaN : ((s ? -1 : 1) * Infinity);
+    } else if (e == 0x1f) {
+        return f ? NaN : (s ? -1 : 1) * Infinity;
     }
 
-    return (s ? -1 : 1) * Math.pow(2, e - 15) * (1 + (f / Math.pow(2, 10)));
+    return (s ? -1 : 1) * Math.pow(2, e - 15) * (1 + f / Math.pow(2, 10));
 }
 
 /**
@@ -246,5 +262,5 @@ export const TextureTools = {
      * @param value half float to convert
      * @returns converted half float
      */
-    FromHalfFloat
+    FromHalfFloat,
 };

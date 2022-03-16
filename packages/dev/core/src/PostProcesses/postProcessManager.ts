@@ -3,7 +3,7 @@ import { InternalTexture } from "../Materials/Textures/internalTexture";
 import { PostProcess } from "./postProcess";
 import { VertexBuffer } from "../Buffers/buffer";
 import { Constants } from "../Engines/constants";
-import { DataBuffer } from '../Buffers/dataBuffer';
+import { DataBuffer } from "../Buffers/dataBuffer";
 import { RenderTargetWrapper } from "../Engines/renderTargetWrapper";
 
 declare type Scene = import("../scene").Scene;
@@ -31,7 +31,7 @@ export class PostProcessManager {
         }
 
         // VBO
-        var vertices = [];
+        const vertices = [];
         vertices.push(1, 1);
         vertices.push(-1, 1);
         vertices.push(-1, -1);
@@ -44,7 +44,7 @@ export class PostProcessManager {
 
     private _buildIndexBuffer(): void {
         // Indices
-        var indices = [];
+        const indices = [];
         indices.push(0);
         indices.push(1);
         indices.push(2);
@@ -61,7 +61,7 @@ export class PostProcessManager {
      * @hidden
      */
     public _rebuild(): void {
-        let vb = this._vertexBuffers[VertexBuffer.PositionKind];
+        const vb = this._vertexBuffers[VertexBuffer.PositionKind];
 
         if (!vb) {
             return;
@@ -79,12 +79,14 @@ export class PostProcessManager {
      * @hidden
      */
     public _prepareFrame(sourceTexture: Nullable<InternalTexture> = null, postProcesses: Nullable<PostProcess[]> = null): boolean {
-        let camera = this._scene.activeCamera;
+        const camera = this._scene.activeCamera;
         if (!camera) {
             return false;
         }
 
-        postProcesses = postProcesses || (<Nullable<PostProcess[]>>camera._postProcesses.filter((pp) => { return pp != null; }));
+        postProcesses = postProcesses || <Nullable<PostProcess[]>>camera._postProcesses.filter((pp) => {
+                return pp != null;
+            });
 
         if (!postProcesses || postProcesses.length === 0 || !this._scene.postProcessesEnabled) {
             return false;
@@ -104,10 +106,17 @@ export class PostProcessManager {
      * @param lodLevel defines which lod of the texture to render to
      * @param doNotBindFrambuffer If set to true, assumes that the framebuffer has been bound previously
      */
-    public directRender(postProcesses: PostProcess[], targetTexture: Nullable<RenderTargetWrapper> = null, forceFullscreenViewport = false, faceIndex = 0, lodLevel = 0, doNotBindFrambuffer = false): void {
-        var engine = this._scene.getEngine();
+    public directRender(
+        postProcesses: PostProcess[],
+        targetTexture: Nullable<RenderTargetWrapper> = null,
+        forceFullscreenViewport = false,
+        faceIndex = 0,
+        lodLevel = 0,
+        doNotBindFrambuffer = false
+    ): void {
+        const engine = this._scene.getEngine();
 
-        for (var index = 0; index < postProcesses.length; index++) {
+        for (let index = 0; index < postProcesses.length; index++) {
             if (index < postProcesses.length - 1) {
                 postProcesses[index + 1].activate(this._scene.activeCamera, targetTexture?.texture);
             } else {
@@ -119,8 +128,8 @@ export class PostProcessManager {
                 engine._debugInsertMarker?.(`post process ${postProcesses[index].name} output`);
             }
 
-            var pp = postProcesses[index];
-            var effect = pp.apply();
+            const pp = postProcesses[index];
+            const effect = pp.apply();
 
             if (effect) {
                 pp.onBeforeRenderObservable.notifyObservers(effect);
@@ -150,21 +159,29 @@ export class PostProcessManager {
      * @param forceFullscreenViewport force gl.viewport to be full screen eg. 0,0,textureWidth,textureHeight (default: false)
      * @hidden
      */
-    public _finalizeFrame(doNotPresent?: boolean, targetTexture?: RenderTargetWrapper, faceIndex?: number, postProcesses?: Array<PostProcess>, forceFullscreenViewport = false): void {
-        let camera = this._scene.activeCamera;
+    public _finalizeFrame(
+        doNotPresent?: boolean,
+        targetTexture?: RenderTargetWrapper,
+        faceIndex?: number,
+        postProcesses?: Array<PostProcess>,
+        forceFullscreenViewport = false
+    ): void {
+        const camera = this._scene.activeCamera;
 
         if (!camera) {
             return;
         }
 
-        postProcesses = postProcesses || <Array<PostProcess>>camera._postProcesses.filter((pp) => { return pp != null; });
+        postProcesses = postProcesses || <Array<PostProcess>>camera._postProcesses.filter((pp) => {
+                return pp != null;
+            });
         if (postProcesses.length === 0 || !this._scene.postProcessesEnabled) {
             return;
         }
-        var engine = this._scene.getEngine();
+        const engine = this._scene.getEngine();
 
-        for (var index = 0, len = postProcesses.length; index < len; index++) {
-            var pp = postProcesses[index];
+        for (let index = 0, len = postProcesses.length; index < len; index++) {
+            const pp = postProcesses[index];
 
             if (index < len - 1) {
                 pp._outputTexture = postProcesses[index + 1].activate(camera, targetTexture?.texture);
@@ -183,7 +200,7 @@ export class PostProcessManager {
                 break;
             }
 
-            var effect = pp.apply();
+            const effect = pp.apply();
 
             if (effect) {
                 pp.onBeforeRenderObservable.notifyObservers(effect);
@@ -209,7 +226,7 @@ export class PostProcessManager {
      * Disposes of the post process manager.
      */
     public dispose(): void {
-        var buffer = this._vertexBuffers[VertexBuffer.PositionKind];
+        const buffer = this._vertexBuffers[VertexBuffer.PositionKind];
         if (buffer) {
             buffer.dispose();
             this._vertexBuffers[VertexBuffer.PositionKind] = null;

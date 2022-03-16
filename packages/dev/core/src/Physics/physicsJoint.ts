@@ -38,7 +38,6 @@ export interface PhysicsJointData {
  * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
  */
 export class PhysicsJoint {
-
     private _physicsJoint: any;
     protected _physicsPlugin: IPhysicsEnginePlugin;
 
@@ -55,7 +54,8 @@ export class PhysicsJoint {
         /**
          * The data for the physics joint
          */
-        public jointData: PhysicsJointData) {
+        public jointData: PhysicsJointData
+    ) {
         jointData.nativeParams = jointData.nativeParams || {};
     }
 
@@ -70,7 +70,6 @@ export class PhysicsJoint {
      * Sets the physics joint
      */
     public set physicsJoint(newJoint: any) {
-
         if (this._physicsJoint) {
             //remove from the world
         }
@@ -176,7 +175,6 @@ export class DistanceJoint extends PhysicsJoint {
  * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
  */
 export class MotorEnabledJoint extends PhysicsJoint implements IMotorEnabledJoint {
-
     /**
      * Initializes the Motor-Enabled Joint
      * @param type The type of the joint
@@ -212,7 +210,6 @@ export class MotorEnabledJoint extends PhysicsJoint implements IMotorEnabledJoin
  * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
  */
 export class HingeJoint extends MotorEnabledJoint {
-
     /**
      * Initializes the Hinge-Joint
      * @param jointData The joint data for the Hinge-Joint
@@ -247,7 +244,6 @@ export class HingeJoint extends MotorEnabledJoint {
  * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
  */
 export class Hinge2Joint extends MotorEnabledJoint {
-
     /**
      * Initializes the Hinge2-Joint
      * @param jointData The joint data for the Hinge2-Joint
@@ -257,12 +253,13 @@ export class Hinge2Joint extends MotorEnabledJoint {
     }
 
     /**
-    * Set the motor values.
-    * Attention, this function is plugin specific. Engines won't react 100% the same.
-    * @param {number} targetSpeed the speed the motor is to reach
-    * @param {number} maxForce max force for this motor.
-    * @param {motorIndex} the motor's index, 0 or 1.
-    */
+     * Set the motor values.
+     * Attention, this function is plugin specific. Engines won't react 100% the same.
+     * @param {number} targetSpeed the speed the motor is to reach
+     * @param {number} maxForce max force for this motor.
+     * @param {motorIndex} the motor's index, 0 or 1.
+     * @param motorIndex
+     */
     public setMotor(targetSpeed?: number, maxForce?: number, motorIndex: number = 0) {
         this._physicsPlugin.setMotor(this, targetSpeed || 0, maxForce, motorIndex);
     }
@@ -273,6 +270,7 @@ export class Hinge2Joint extends MotorEnabledJoint {
      * @param {number} upperLimit the upper limit
      * @param {number} lowerLimit lower limit
      * @param {motorIndex} the motor's index, 0 or 1.
+     * @param motorIndex
      */
     public setLimit(upperLimit: number, lowerLimit?: number, motorIndex: number = 0) {
         this._physicsPlugin.setLimit(this, upperLimit, lowerLimit, motorIndex);

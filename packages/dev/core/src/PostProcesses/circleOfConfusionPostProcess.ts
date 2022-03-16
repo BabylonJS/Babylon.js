@@ -8,8 +8,8 @@ import { Logger } from "../Misc/logger";
 import { Constants } from "../Engines/constants";
 
 import "../Shaders/circleOfConfusion.fragment";
-import { RegisterClass } from '../Misc/typeStore';
-import { serialize } from '../Misc/decorators';
+import { RegisterClass } from "../Misc/typeStore";
+import { serialize } from "../Misc/decorators";
 
 /**
  * The CircleOfConfusionPostProcess computes the circle of confusion value for each pixel given required lens parameters. See https://en.wikipedia.org/wiki/Circle_of_confusion
@@ -57,8 +57,33 @@ export class CircleOfConfusionPostProcess extends PostProcess {
      * @param textureType Type of textures used when performing the post process. (default: 0)
      * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
      */
-    constructor(name: string, depthTexture: Nullable<RenderTargetTexture>, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT, blockCompilation = false) {
-        super(name, "circleOfConfusion", ["cameraMinMaxZ", "focusDistance", "cocPrecalculation"], ["depthSampler"], options, camera, samplingMode, engine, reusable, null, textureType, undefined, null, blockCompilation);
+    constructor(
+        name: string,
+        depthTexture: Nullable<RenderTargetTexture>,
+        options: number | PostProcessOptions,
+        camera: Nullable<Camera>,
+        samplingMode?: number,
+        engine?: Engine,
+        reusable?: boolean,
+        textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT,
+        blockCompilation = false
+    ) {
+        super(
+            name,
+            "circleOfConfusion",
+            ["cameraMinMaxZ", "focusDistance", "cocPrecalculation"],
+            ["depthSampler"],
+            options,
+            camera,
+            samplingMode,
+            engine,
+            reusable,
+            null,
+            textureType,
+            undefined,
+            null,
+            blockCompilation
+        );
         this._depthTexture = depthTexture;
         this.onApplyObservable.add((effect: Effect) => {
             if (!this._depthTexture) {
@@ -68,12 +93,12 @@ export class CircleOfConfusionPostProcess extends PostProcess {
             effect.setTexture("depthSampler", this._depthTexture);
 
             // Circle of confusion calculation, See https://developer.nvidia.com/gpugems/GPUGems/gpugems_ch23.html
-            var aperture = this.lensSize / this.fStop;
-            var cocPrecalculation = ((aperture * this.focalLength) / ((this.focusDistance - this.focalLength))); // * ((this.focusDistance - pixelDistance)/pixelDistance) [This part is done in shader]
+            const aperture = this.lensSize / this.fStop;
+            const cocPrecalculation = (aperture * this.focalLength) / (this.focusDistance - this.focalLength); // * ((this.focusDistance - pixelDistance)/pixelDistance) [This part is done in shader]
 
-            effect.setFloat('focusDistance', this.focusDistance);
-            effect.setFloat('cocPrecalculation', cocPrecalculation);
-            effect.setFloat2('cameraMinMaxZ', this._depthTexture.activeCamera!.minZ, this._depthTexture.activeCamera!.maxZ);
+            effect.setFloat("focusDistance", this.focusDistance);
+            effect.setFloat("cocPrecalculation", cocPrecalculation);
+            effect.setFloat2("cameraMinMaxZ", this._depthTexture.activeCamera!.minZ, this._depthTexture.activeCamera!.maxZ);
         });
     }
 

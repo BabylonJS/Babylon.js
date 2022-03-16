@@ -9,7 +9,10 @@ export class PerformanceConfigurator {
     /** @hidden */
     public static MatrixTrackedMatrices: Array<any> | null = [];
 
-    /** @hidden */
+    /**
+     * @param use64bits
+     * @hidden
+     */
     public static SetMatrixPrecision(use64bits: boolean) {
         PerformanceConfigurator.MatrixTrackPrecisionChange = false;
 

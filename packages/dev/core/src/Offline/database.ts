@@ -82,11 +82,11 @@ export class Database implements IOfflineProvider {
     }
 
     private static _ParseURL = (url: string) => {
-        var a = document.createElement("a");
+        const a = document.createElement("a");
         a.href = url;
-        var urlWithoutHash = url.substring(0, url.lastIndexOf("#"));
-        var fileName = url.substring(urlWithoutHash.lastIndexOf("/") + 1, url.length);
-        var absLocation = url.substring(0, url.indexOf(fileName, 0));
+        const urlWithoutHash = url.substring(0, url.lastIndexOf("#"));
+        const fileName = url.substring(urlWithoutHash.lastIndexOf("/") + 1, url.length);
+        const absLocation = url.substring(0, url.indexOf(fileName, 0));
         return absLocation;
     };
 
@@ -99,18 +99,18 @@ export class Database implements IOfflineProvider {
     };
 
     private _checkManifestFile(callbackManifestChecked: (checked: boolean) => any) {
-        var noManifestFile = () => {
+        const noManifestFile = () => {
             this._enableSceneOffline = false;
             this._enableTexturesOffline = false;
             callbackManifestChecked(false);
         };
 
-        var createManifestURL = (): string => {
+        const createManifestURL = (): string => {
             try {
                 // make sure we have a valid URL.
                 if (typeof URL === "function" && this._currentSceneUrl.indexOf("http") === 0) {
                     // we don't have the base url, so the URL string must have a protocol
-                    var url = new URL(this._currentSceneUrl);
+                    const url = new URL(this._currentSceneUrl);
                     url.pathname += ".manifest";
                     return url.toString();
                 }
@@ -121,10 +121,10 @@ export class Database implements IOfflineProvider {
             return `${this._currentSceneUrl}.manifest`;
         };
 
-        var timeStampUsed = false;
-        var manifestURL = createManifestURL();
+        let timeStampUsed = false;
+        let manifestURL = createManifestURL();
 
-        var xhr = new WebRequest();
+        const xhr = new WebRequest();
 
         if (navigator.onLine) {
             // Adding a timestamp to by-pass browsers' cache
@@ -138,7 +138,7 @@ export class Database implements IOfflineProvider {
             () => {
                 if (xhr.status === 200 || Database._ValidateXHRData(xhr, 1)) {
                     try {
-                        var manifestFile = JSON.parse(xhr.response);
+                        const manifestFile = JSON.parse(xhr.response);
                         this._enableSceneOffline = manifestFile.enableSceneOffline;
                         this._enableTexturesOffline = manifestFile.enableTexturesOffline && Database.IsUASupportingBlobStorage;
                         if (manifestFile.version && !isNaN(parseInt(manifestFile.version))) {
@@ -162,7 +162,7 @@ export class Database implements IOfflineProvider {
                     timeStampUsed = false;
                     // Let's retry without the timeStamp
                     // It could fail when coupled with HTML5 Offline API
-                    var retryManifestURL = createManifestURL();
+                    const retryManifestURL = createManifestURL();
                     xhr.open("GET", retryManifestURL);
                     xhr.send();
                 } else {
@@ -186,7 +186,7 @@ export class Database implements IOfflineProvider {
      * @param errorCallback defines the callback to call on error
      */
     public open(successCallback: () => void, errorCallback: () => void): void {
-        let handleError = () => {
+        const handleError = () => {
             this._isSupported = false;
             if (errorCallback) {
                 errorCallback();
@@ -205,7 +205,7 @@ export class Database implements IOfflineProvider {
                 this._hasReachedQuota = false;
                 this._isSupported = true;
 
-                var request: IDBOpenDBRequest = this._idbFactory.open("babylonjs", 1);
+                const request: IDBOpenDBRequest = this._idbFactory.open("babylonjs", 1);
 
                 // Could occur if user is blocking the quota for the DB and/or doesn't grant access to IndexedDB
                 request.onerror = () => {
@@ -254,9 +254,9 @@ export class Database implements IOfflineProvider {
      * @param image defines the target DOM image
      */
     public loadImage(url: string, image: HTMLImageElement) {
-        var completeURL = Database._ReturnFullUrlLocation(url);
+        const completeURL = Database._ReturnFullUrlLocation(url);
 
-        var saveAndLoadImage = () => {
+        const saveAndLoadImage = () => {
             if (!this._hasReachedQuota && this._db !== null) {
                 // the texture is not yet in the DB, let's try to save it
                 this._saveImageIntoDBAsync(completeURL, image);
@@ -279,17 +279,17 @@ export class Database implements IOfflineProvider {
 
     private _loadImageFromDBAsync(url: string, image: HTMLImageElement, notInDBCallback: () => any) {
         if (this._isSupported && this._db !== null) {
-            var texture: any;
-            var transaction: IDBTransaction = this._db.transaction(["textures"]);
+            let texture: any;
+            const transaction: IDBTransaction = this._db.transaction(["textures"]);
 
             transaction.onabort = () => {
                 image.src = url;
             };
 
             transaction.oncomplete = () => {
-                var blobTextureURL: string;
+                let blobTextureURL: string;
                 if (texture) {
-                    var URL = window.URL || window.webkitURL;
+                    const URL = window.URL || window.webkitURL;
                     blobTextureURL = URL.createObjectURL(texture.data);
                     image.onerror = () => {
                         Logger.Error("Error loading image from blob URL: " + blobTextureURL + " switching back to web url: " + url);
@@ -301,7 +301,7 @@ export class Database implements IOfflineProvider {
                 }
             };
 
-            var getRequest: IDBRequest = transaction.objectStore("textures").get(url);
+            const getRequest: IDBRequest = transaction.objectStore("textures").get(url);
 
             getRequest.onsuccess = (event) => {
                 texture = (<any>event.target).result;
@@ -319,11 +319,11 @@ export class Database implements IOfflineProvider {
     private _saveImageIntoDBAsync(url: string, image: HTMLImageElement) {
         if (this._isSupported) {
             // In case of error (type not supported or quota exceeded), we're at least sending back XHR data to allow texture loading later on
-            var generateBlobUrl = () => {
-                var blobTextureURL;
+            const generateBlobUrl = () => {
+                let blobTextureURL;
 
                 if (blob) {
-                    var URL = window.URL || window.webkitURL;
+                    const URL = window.URL || window.webkitURL;
                     try {
                         blobTextureURL = URL.createObjectURL(blob);
                     } catch (ex) {
@@ -352,18 +352,18 @@ export class Database implements IOfflineProvider {
                             // Blob as response
                             blob = xhr.response;
 
-                            var transaction = this._db.transaction(["textures"], "readwrite");
+                            const transaction = this._db.transaction(["textures"], "readwrite");
 
                             // the transaction could abort because of a QuotaExceededError error
                             transaction.onabort = (event) => {
                                 try {
                                     //backwards compatibility with ts 1.0, srcElement doesn't have an "error" according to ts 1.3
-                                    let srcElement = <any>(event.srcElement || event.target);
-                                    var error = srcElement.error;
+                                    const srcElement = <any>(event.srcElement || event.target);
+                                    const error = srcElement.error;
                                     if (error && error.name === "QuotaExceededError") {
                                         this._hasReachedQuota = true;
                                     }
-                                } catch (ex) { }
+                                } catch (ex) {}
                                 generateBlobUrl();
                             };
 
@@ -371,12 +371,12 @@ export class Database implements IOfflineProvider {
                                 generateBlobUrl();
                             };
 
-                            var newTexture = { textureUrl: url, data: blob };
+                            const newTexture = { textureUrl: url, data: blob };
 
                             try {
                                 // Put the blob into the dabase
-                                var addRequest = transaction.objectStore("textures").put(newTexture);
-                                addRequest.onsuccess = () => { };
+                                const addRequest = transaction.objectStore("textures").put(newTexture);
+                                addRequest.onsuccess = () => {};
                                 addRequest.onerror = () => {
                                     generateBlobUrl();
                                 };
@@ -415,7 +415,7 @@ export class Database implements IOfflineProvider {
     }
 
     private _checkVersionFromDB(url: string, versionLoaded: (version: number) => void) {
-        var updateVersion = () => {
+        const updateVersion = () => {
             // the version is not yet in the DB or we need to update it
             this._saveVersionIntoDBAsync(url, versionLoaded);
         };
@@ -424,9 +424,9 @@ export class Database implements IOfflineProvider {
 
     private _loadVersionFromDBAsync(url: string, callback: (version: number) => void, updateInDBCallback: () => void) {
         if (this._isSupported && this._db) {
-            var version: any;
+            let version: any;
             try {
-                var transaction = this._db.transaction(["versions"]);
+                const transaction = this._db.transaction(["versions"]);
 
                 transaction.oncomplete = () => {
                     if (version) {
@@ -449,7 +449,7 @@ export class Database implements IOfflineProvider {
                     callback(-1);
                 };
 
-                var getRequest = transaction.objectStore("versions").get(url);
+                const getRequest = transaction.objectStore("versions").get(url);
 
                 getRequest.onsuccess = (event) => {
                     version = (<any>event.target).result;
@@ -472,17 +472,17 @@ export class Database implements IOfflineProvider {
         if (this._isSupported && !this._hasReachedQuota && this._db) {
             try {
                 // Open a transaction to the database
-                var transaction = this._db.transaction(["versions"], "readwrite");
+                const transaction = this._db.transaction(["versions"], "readwrite");
 
                 // the transaction could abort because of a QuotaExceededError error
                 transaction.onabort = (event) => {
                     try {
                         //backwards compatibility with ts 1.0, srcElement doesn't have an "error" according to ts 1.3
-                        var error = (<any>event.srcElement)["error"];
+                        const error = (<any>event.srcElement)["error"];
                         if (error && error.name === "QuotaExceededError") {
                             this._hasReachedQuota = true;
                         }
-                    } catch (ex) { }
+                    } catch (ex) {}
                     callback(-1);
                 };
 
@@ -490,11 +490,11 @@ export class Database implements IOfflineProvider {
                     callback(this._manifestVersionFound);
                 };
 
-                var newVersion = { sceneUrl: url, data: this._manifestVersionFound };
+                const newVersion = { sceneUrl: url, data: this._manifestVersionFound };
 
                 // Put the scene into the database
-                var addRequest = transaction.objectStore("versions").put(newVersion);
-                addRequest.onsuccess = () => { };
+                const addRequest = transaction.objectStore("versions").put(newVersion);
+                addRequest.onsuccess = () => {};
                 addRequest.onerror = () => {
                     Logger.Error("Error in DB add version request in BABYLON.Database.");
                 };
@@ -516,9 +516,9 @@ export class Database implements IOfflineProvider {
      * @param useArrayBuffer defines a boolean to use array buffer instead of text string
      */
     public loadFile(url: string, sceneLoaded: (data: any) => void, progressCallBack?: (data: any) => void, errorCallback?: () => void, useArrayBuffer?: boolean): void {
-        var completeUrl = Database._ReturnFullUrlLocation(url);
+        const completeUrl = Database._ReturnFullUrlLocation(url);
 
-        var saveAndLoadFile = () => {
+        const saveAndLoadFile = () => {
             // the scene is not yet in the DB, let's try to save it
             this._saveFileAsync(completeUrl, sceneLoaded, progressCallBack, useArrayBuffer, errorCallback);
         };
@@ -540,15 +540,15 @@ export class Database implements IOfflineProvider {
 
     private _loadFileAsync(url: string, callback: (data?: any) => void, notInDBCallback: () => void) {
         if (this._isSupported && this._db) {
-            var targetStore: string;
+            let targetStore: string;
             if (url.indexOf(".babylon") !== -1) {
                 targetStore = "scenes";
             } else {
                 targetStore = "textures";
             }
 
-            var file: any;
-            var transaction = this._db.transaction([targetStore]);
+            let file: any;
+            const transaction = this._db.transaction([targetStore]);
 
             transaction.oncomplete = () => {
                 if (file) {
@@ -564,7 +564,7 @@ export class Database implements IOfflineProvider {
                 notInDBCallback();
             };
 
-            var getRequest = transaction.objectStore(targetStore).get(url);
+            const getRequest = transaction.objectStore(targetStore).get(url);
 
             getRequest.onsuccess = (event) => {
                 file = (<any>event.target).result;
@@ -587,7 +587,7 @@ export class Database implements IOfflineProvider {
         errorCallback?: (data?: any) => void
     ) {
         if (this._isSupported) {
-            var targetStore: string;
+            let targetStore: string;
             if (url.indexOf(".babylon") !== -1) {
                 targetStore = "scenes";
             } else {
@@ -595,8 +595,8 @@ export class Database implements IOfflineProvider {
             }
 
             // Create XHR
-            var xhr = new WebRequest();
-            var fileData: any;
+            const xhr = new WebRequest();
+            let fileData: any;
             xhr.open("GET", url + (url.match(/\?/) == null ? "?" : "&") + Date.now());
 
             if (useArrayBuffer) {
@@ -616,17 +616,17 @@ export class Database implements IOfflineProvider {
 
                         if (!this._hasReachedQuota && this._db) {
                             // Open a transaction to the database
-                            var transaction = this._db.transaction([targetStore], "readwrite");
+                            const transaction = this._db.transaction([targetStore], "readwrite");
 
                             // the transaction could abort because of a QuotaExceededError error
                             transaction.onabort = (event) => {
                                 try {
                                     //backwards compatibility with ts 1.0, srcElement doesn't have an "error" according to ts 1.3
-                                    var error = (<any>event.srcElement)["error"];
+                                    const error = (<any>event.srcElement)["error"];
                                     if (error && error.name === "QuotaExceededError") {
                                         this._hasReachedQuota = true;
                                     }
-                                } catch (ex) { }
+                                } catch (ex) {}
                                 callback(fileData);
                             };
 
@@ -634,7 +634,7 @@ export class Database implements IOfflineProvider {
                                 callback(fileData);
                             };
 
-                            var newFile;
+                            let newFile;
                             if (targetStore === "scenes") {
                                 newFile = { sceneUrl: url, data: fileData, version: this._manifestVersionFound };
                             } else {
@@ -643,8 +643,8 @@ export class Database implements IOfflineProvider {
 
                             try {
                                 // Put the scene into the database
-                                var addRequest = transaction.objectStore(targetStore).put(newFile);
-                                addRequest.onsuccess = () => { };
+                                const addRequest = transaction.objectStore(targetStore).put(newFile);
+                                addRequest.onsuccess = () => {};
                                 addRequest.onerror = () => {
                                     Logger.Error("Error in DB add file request in BABYLON.Database.");
                                 };
@@ -701,7 +701,7 @@ export class Database implements IOfflineProvider {
 
             if (dataType & 2) {
                 // Check header width and height since there is no "TGA" magic number
-                var tgaHeader = GetTGAHeader(xhr.response);
+                const tgaHeader = GetTGAHeader(xhr.response);
 
                 if (tgaHeader.width && tgaHeader.height && tgaHeader.width > 0 && tgaHeader.height > 0) {
                     return true;
@@ -712,7 +712,7 @@ export class Database implements IOfflineProvider {
 
             if (dataType & 4) {
                 // Check for the "DDS" magic number
-                var ddsHeader = new Uint8Array(xhr.response, 0, 3);
+                const ddsHeader = new Uint8Array(xhr.response, 0, 3);
 
                 if (ddsHeader[0] === 68 && ddsHeader[1] === 68 && ddsHeader[2] === 83) {
                     return true;

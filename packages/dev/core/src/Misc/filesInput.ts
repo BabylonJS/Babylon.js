@@ -25,8 +25,11 @@ export class FilesInput {
 
     /**
      * Function used when loading the scene file
+     * @param sceneFile
+     * @param onProgress
      */
-    public loadAsync: (sceneFile: File, onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void>) => Promise<Scene> = (sceneFile, onProgress) => SceneLoader.LoadAsync("file:", sceneFile, this._engine, onProgress);
+    public loadAsync: (sceneFile: File, onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void>) => Promise<Scene> = (sceneFile, onProgress) =>
+        SceneLoader.LoadAsync("file:", sceneFile, this._engine, onProgress);
 
     private _engine: Engine;
     private _currentScene: Nullable<Scene>;
@@ -130,7 +133,7 @@ export class FilesInput {
 
         if (this._currentScene) {
             if (this._textureLoadingCallback) {
-                var remaining = this._currentScene.getWaitingItemsCount();
+                const remaining = this._currentScene.getWaitingItemsCount();
 
                 if (remaining > 0) {
                     this._textureLoadingCallback(remaining);
@@ -153,11 +156,11 @@ export class FilesInput {
     }
 
     private _traverseFolder(folder: any, files: Array<any>, remaining: { count: number }, callback: () => void) {
-        var reader = folder.createReader();
-        var relativePath = folder.fullPath.replace(/^\//, "").replace(/(.+?)\/?$/, "$1/");
+        const reader = folder.createReader();
+        const relativePath = folder.fullPath.replace(/^\//, "").replace(/(.+?)\/?$/, "$1/");
         reader.readEntries((entries: any) => {
             remaining.count += entries.length;
-            for (let entry of entries) {
+            for (const entry of entries) {
                 if (entry.isFile) {
                     entry.file((file: any) => {
                         file.correctName = relativePath + file.name;
@@ -179,9 +182,9 @@ export class FilesInput {
     }
 
     private _processFiles(files: Array<any>): void {
-        for (var i = 0; i < files.length; i++) {
-            var name = files[i].correctName.toLowerCase();
-            var extension = name.split(".").pop();
+        for (let i = 0; i < files.length; i++) {
+            const name = files[i].correctName.toLowerCase();
+            const extension = name.split(".").pop();
 
             if (!this.onProcessFileCallback(files[i], name, extension, (sceneFile) => (this._sceneFileToLoad = sceneFile))) {
                 continue;
@@ -219,19 +222,19 @@ export class FilesInput {
         }
 
         if (this._filesToLoad && this._filesToLoad.length > 0) {
-            let files = new Array<File>();
-            let folders = [];
-            var items = event.dataTransfer ? event.dataTransfer.items : null;
+            const files = new Array<File>();
+            const folders = [];
+            const items = event.dataTransfer ? event.dataTransfer.items : null;
 
-            for (var i = 0; i < this._filesToLoad.length; i++) {
-                let fileToLoad: any = this._filesToLoad[i];
-                let name = fileToLoad.name.toLowerCase();
+            for (let i = 0; i < this._filesToLoad.length; i++) {
+                const fileToLoad: any = this._filesToLoad[i];
+                const name = fileToLoad.name.toLowerCase();
                 let entry;
 
                 fileToLoad.correctName = name;
 
                 if (items) {
-                    let item = items[i];
+                    const item = items[i];
                     if (item.getAsEntry) {
                         entry = item.getAsEntry();
                     } else if (item.webkitGetAsEntry) {
@@ -254,8 +257,8 @@ export class FilesInput {
                 this._processFiles(files);
                 this._processReload();
             } else {
-                var remaining = { count: folders.length };
-                for (var folder of folders) {
+                const remaining = { count: folders.length };
+                for (const folder of folders) {
                     this._traverseFolder(folder, files, remaining, () => {
                         this._processFiles(files);
 

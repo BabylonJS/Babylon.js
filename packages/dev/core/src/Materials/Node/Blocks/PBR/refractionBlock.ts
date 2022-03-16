@@ -1,30 +1,29 @@
-import { NodeMaterialBlockConnectionPointTypes } from '../../Enums/nodeMaterialBlockConnectionPointTypes';
-import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
-import { NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection } from '../../nodeMaterialBlockConnectionPoint';
-import { NodeMaterialBlockTargets } from '../../Enums/nodeMaterialBlockTargets';
-import { NodeMaterial, NodeMaterialDefines } from '../../nodeMaterial';
-import { RegisterClass } from '../../../../Misc/typeStore';
-import { InputBlock } from '../Input/inputBlock';
+import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
+import { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
+import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
+import { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
+import { RegisterClass } from "../../../../Misc/typeStore";
+import { InputBlock } from "../Input/inputBlock";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
-import { AbstractMesh } from '../../../../Meshes/abstractMesh';
-import { Nullable } from '../../../../types';
-import { BaseTexture } from '../../../Textures/baseTexture';
-import { Mesh } from '../../../../Meshes/mesh';
-import { SubMesh } from '../../../../Meshes/subMesh';
-import { Effect } from '../../../effect';
+import { AbstractMesh } from "../../../../Meshes/abstractMesh";
+import { Nullable } from "../../../../types";
+import { BaseTexture } from "../../../Textures/baseTexture";
+import { Mesh } from "../../../../Meshes/mesh";
+import { SubMesh } from "../../../../Meshes/subMesh";
+import { Effect } from "../../../effect";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../nodeMaterialDecorator";
-import { Scene } from '../../../../scene';
-import { NodeMaterialBlock } from '../../nodeMaterialBlock';
-import { CubeTexture } from '../../../Textures/cubeTexture';
-import { Texture } from '../../../Textures/texture';
-import { NodeMaterialSystemValues } from '../../Enums/nodeMaterialSystemValues';
-import { Scalar } from '../../../../Maths/math.scalar';
+import { Scene } from "../../../../scene";
+import { NodeMaterialBlock } from "../../nodeMaterialBlock";
+import { CubeTexture } from "../../../Textures/cubeTexture";
+import { Texture } from "../../../Textures/texture";
+import { NodeMaterialSystemValues } from "../../Enums/nodeMaterialSystemValues";
+import { Scalar } from "../../../../Maths/math.scalar";
 
 /**
  * Block used to implement the refraction part of the sub surface module of the PBR material
  */
 export class RefractionBlock extends NodeMaterialBlock {
-
     /** @hidden */
     public _define3DName: string;
     /** @hidden */
@@ -52,7 +51,7 @@ export class RefractionBlock extends NodeMaterialBlock {
      * The properties below are set by the main PBR block prior to calling methods of this class.
      * This is to avoid having to add them as inputs here whereas they are already inputs of the main block, so already known.
      * It's less burden on the user side in the editor part.
-    */
+     */
 
     /** @hidden */
     public viewConnectionPoint: NodeMaterialConnectionPoint;
@@ -64,24 +63,24 @@ export class RefractionBlock extends NodeMaterialBlock {
      * This parameters will make the material used its opacity to control how much it is refracting against not.
      * Materials half opaque for instance using refraction could benefit from this control.
      */
-    @editableInPropertyPage("Link refraction to transparency", PropertyTypeForEdition.Boolean, "ADVANCED", { "notifiers": { "update": true } })
+    @editableInPropertyPage("Link refraction to transparency", PropertyTypeForEdition.Boolean, "ADVANCED", { notifiers: { update: true } })
     public linkRefractionWithTransparency: boolean = false;
 
     /**
      * Controls if refraction needs to be inverted on Y. This could be useful for procedural texture.
      */
-    @editableInPropertyPage("Invert refraction Y", PropertyTypeForEdition.Boolean, "ADVANCED", { "notifiers": { "update": true } })
+    @editableInPropertyPage("Invert refraction Y", PropertyTypeForEdition.Boolean, "ADVANCED", { notifiers: { update: true } })
     public invertRefractionY: boolean = false;
 
     /**
      * Controls if refraction needs to be inverted on Y. This could be useful for procedural texture.
      */
-    @editableInPropertyPage("Use thickness as depth", PropertyTypeForEdition.Boolean, "ADVANCED", { "notifiers": { "update": true } })
+    @editableInPropertyPage("Use thickness as depth", PropertyTypeForEdition.Boolean, "ADVANCED", { notifiers: { update: true } })
     public useThicknessAsDepth: boolean = false;
 
     /**
-    * Gets or sets the texture associated with the node
-    */
+     * Gets or sets the texture associated with the node
+     */
     public texture: Nullable<BaseTexture>;
 
     /**
@@ -97,8 +96,12 @@ export class RefractionBlock extends NodeMaterialBlock {
         this.registerInput("tintAtDistance", NodeMaterialBlockConnectionPointTypes.Float, true, NodeMaterialBlockTargets.Fragment);
         this.registerInput("volumeIndexOfRefraction", NodeMaterialBlockConnectionPointTypes.Float, true, NodeMaterialBlockTargets.Fragment);
 
-        this.registerOutput("refraction", NodeMaterialBlockConnectionPointTypes.Object, NodeMaterialBlockTargets.Fragment,
-            new NodeMaterialConnectionPointCustomObject("refraction", this, NodeMaterialConnectionPointDirection.Output, RefractionBlock, "RefractionBlock"));
+        this.registerOutput(
+            "refraction",
+            NodeMaterialBlockConnectionPointTypes.Object,
+            NodeMaterialBlockTargets.Fragment,
+            new NodeMaterialConnectionPointCustomObject("refraction", this, NodeMaterialConnectionPointDirection.Output, RefractionBlock, "RefractionBlock")
+        );
     }
 
     /**
@@ -170,7 +173,7 @@ export class RefractionBlock extends NodeMaterialBlock {
 
     public autoConfigure(material: NodeMaterial) {
         if (!this.intensity.isConnected) {
-            let intensityInput = new InputBlock("Refraction intensity", NodeMaterialBlockTargets.Fragment, NodeMaterialBlockConnectionPointTypes.Float);
+            const intensityInput = new InputBlock("Refraction intensity", NodeMaterialBlockTargets.Fragment, NodeMaterialBlockConnectionPointTypes.Float);
             intensityInput.value = 1;
             intensityInput.output.connectTo(this.intensity);
         }
@@ -248,14 +251,20 @@ export class RefractionBlock extends NodeMaterialBlock {
 
         effect.setFloat4(this._vRefractionInfosName, refractionTexture.level, 1 / indexOfRefraction, depth, this.invertRefractionY ? -1 : 1);
 
-        effect.setFloat4(this._vRefractionMicrosurfaceInfosName, refractionTexture.getSize().width, refractionTexture.lodGenerationScale, refractionTexture.lodGenerationOffset, 1 / indexOfRefraction);
+        effect.setFloat4(
+            this._vRefractionMicrosurfaceInfosName,
+            refractionTexture.getSize().width,
+            refractionTexture.lodGenerationScale,
+            refractionTexture.lodGenerationOffset,
+            1 / indexOfRefraction
+        );
 
         const width = refractionTexture.getSize().width;
 
         effect.setFloat2(this._vRefractionFilteringInfoName, width, Scalar.Log2(width));
 
         if ((<any>refractionTexture).boundingBoxSize) {
-            let cubeTexture = <CubeTexture>refractionTexture;
+            const cubeTexture = <CubeTexture>refractionTexture;
             effect.setVector3("vRefractionPosition", cubeTexture.boundingBoxPosition);
             effect.setVector3("vRefractionSize", cubeTexture.boundingBoxSize);
         }
@@ -267,7 +276,7 @@ export class RefractionBlock extends NodeMaterialBlock {
      * @returns the shader code
      */
     public getCode(state: NodeMaterialBuildState): string {
-        let code = "";
+        const code = "";
 
         state.sharedData.blockingBlocks.push(this);
         state.sharedData.textureBlocks.push(this);
@@ -299,19 +308,27 @@ export class RefractionBlock extends NodeMaterialBlock {
 
         state._emitUniformFromString(this._refractionMatrixName, "mat4");
 
-        state._emitFunction("sampleRefraction", `
+        state._emitFunction(
+            "sampleRefraction",
+            `
             #ifdef ${this._define3DName}
                 #define sampleRefraction(s, c) textureCube(s, c)
             #else
                 #define sampleRefraction(s, c) texture2D(s, c)
-            #endif\r\n`, `//${this.name}`);
+            #endif\r\n`,
+            `//${this.name}`
+        );
 
-        state._emitFunction("sampleRefractionLod", `
+        state._emitFunction(
+            "sampleRefractionLod",
+            `
             #ifdef ${this._define3DName}
                 #define sampleRefractionLod(s, c, l) textureCubeLodEXT(s, c, l)
             #else
                 #define sampleRefractionLod(s, c, l) texture2DLodEXT(s, c, l)
-            #endif\r\n`, `//${this.name}`);
+            #endif\r\n`,
+            `//${this.name}`
+        );
 
         this._vRefractionMicrosurfaceInfosName = state._getFreeVariableName("vRefractionMicrosurfaceInfos");
 
@@ -357,7 +374,7 @@ export class RefractionBlock extends NodeMaterialBlock {
     }
 
     public serialize(): any {
-        let serializationObject = super.serialize();
+        const serializationObject = super.serialize();
 
         if (this.texture && !this.texture.isRenderTarget) {
             serializationObject.texture = this.texture.serialize();

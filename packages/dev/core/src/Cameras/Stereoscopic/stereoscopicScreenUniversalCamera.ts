@@ -49,7 +49,7 @@ export class StereoscopicScreenUniversalCamera extends UniversalCamera {
         this._distanceBetweenEyes = distanceBetweenEyes;
         this._distanceToProjectionPlane = distanceToProjectionPlane;
         this.setCameraRigMode(Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL, {
-            stereoHalfAngle: 0
+            stereoHalfAngle: 0,
         });
         this._cameraRigParams.stereoHalfAngle = 0;
         this._cameraRigParams.interaxialDistance = distanceBetweenEyes;
@@ -64,11 +64,13 @@ export class StereoscopicScreenUniversalCamera extends UniversalCamera {
     }
 
     /**
+     * @param name
+     * @param cameraIndex
      * @hidden
      */
     public createRigCamera(name: string, cameraIndex: number): Nullable<Camera> {
         const camera = new TargetCamera(name, Vector3.Zero(), this.getScene());
-        const transform = new TransformNode('tm_' + name, this.getScene());
+        const transform = new TransformNode("tm_" + name, this.getScene());
         camera.parent = transform;
         transform.setPivotMatrix(Matrix.Identity(), false);
         camera.isRigCamera = true;
@@ -99,11 +101,11 @@ export class StereoscopicScreenUniversalCamera extends UniversalCamera {
         const b = this.distanceBetweenEyes / 2;
         const z = b / this.distanceToProjectionPlane;
         camera.position.copyFrom(this.position);
-        camera.position.addInPlaceFromFloats((cameraIndex === 0 ? -b : b), 0, -this._distanceToProjectionPlane);
+        camera.position.addInPlaceFromFloats(cameraIndex === 0 ? -b : b, 0, -this._distanceToProjectionPlane);
         const transform = camera.parent as TransformNode;
         const m = transform.getPivotMatrix();
-        m.setTranslationFromFloats((cameraIndex === 0 ? b : -b), 0, 0);
-        m.setRowFromFloats(2, (cameraIndex === 0 ? z : -z), 0, 1, 0);
+        m.setTranslationFromFloats(cameraIndex === 0 ? b : -b, 0, 0);
+        m.setRowFromFloats(2, cameraIndex === 0 ? z : -z, 0, 1, 0);
         transform.setPivotMatrix(m, false);
     }
 

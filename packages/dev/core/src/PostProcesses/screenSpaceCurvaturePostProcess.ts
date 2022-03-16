@@ -6,11 +6,11 @@ import { PostProcess, PostProcessOptions } from "./postProcess";
 import { Constants } from "../Engines/constants";
 import { GeometryBufferRenderer } from "../Rendering/geometryBufferRenderer";
 
-import '../Rendering/geometryBufferRendererSceneComponent';
+import "../Rendering/geometryBufferRendererSceneComponent";
 import "../Shaders/screenSpaceCurvature.fragment";
-import { EngineStore } from '../Engines/engineStore';
-import { RegisterClass } from '../Misc/typeStore';
-import { serialize, SerializationHelper } from '../Misc/decorators';
+import { EngineStore } from "../Engines/engineStore";
+import { RegisterClass } from "../Misc/typeStore";
+import { serialize, SerializationHelper } from "../Misc/decorators";
 
 declare type Engine = import("../Engines/engine").Engine;
 declare type Scene = import("../scene").Scene;
@@ -53,8 +53,33 @@ export class ScreenSpaceCurvaturePostProcess extends PostProcess {
      * @param textureType Type of textures used when performing the post process. (default: 0)
      * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
      */
-    constructor(name: string, scene: Scene, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT, blockCompilation = false) {
-        super(name, "screenSpaceCurvature", ["curvature_ridge", "curvature_valley"], ["textureSampler", "normalSampler"], options, camera, samplingMode, engine, reusable, undefined, textureType, undefined, null, blockCompilation);
+    constructor(
+        name: string,
+        scene: Scene,
+        options: number | PostProcessOptions,
+        camera: Nullable<Camera>,
+        samplingMode?: number,
+        engine?: Engine,
+        reusable?: boolean,
+        textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT,
+        blockCompilation = false
+    ) {
+        super(
+            name,
+            "screenSpaceCurvature",
+            ["curvature_ridge", "curvature_valley"],
+            ["textureSampler", "normalSampler"],
+            options,
+            camera,
+            samplingMode,
+            engine,
+            reusable,
+            undefined,
+            textureType,
+            undefined,
+            null,
+            blockCompilation
+        );
 
         this._geometryBufferRenderer = scene.enableGeometryBufferRenderer();
 
@@ -77,7 +102,7 @@ export class ScreenSpaceCurvaturePostProcess extends PostProcess {
      * Support test.
      */
     public static get IsSupported(): boolean {
-        var engine = EngineStore.LastCreatedEngine;
+        const engine = EngineStore.LastCreatedEngine;
         if (!engine) {
             return false;
         }
@@ -85,15 +110,31 @@ export class ScreenSpaceCurvaturePostProcess extends PostProcess {
         return engine.getCaps().drawBuffersExtension;
     }
 
-    /** @hidden */
+    /**
+     * @param parsedPostProcess
+     * @param targetCamera
+     * @param scene
+     * @param rootUrl
+     * @hidden
+     */
     public static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string) {
-        return SerializationHelper.Parse(() => {
-            return new ScreenSpaceCurvaturePostProcess(
-                parsedPostProcess.name, scene,
-                parsedPostProcess.options, targetCamera,
-                parsedPostProcess.renderTargetSamplingMode,
-                scene.getEngine(), parsedPostProcess.textureType, parsedPostProcess.reusable);
-        }, parsedPostProcess, scene, rootUrl);
+        return SerializationHelper.Parse(
+            () => {
+                return new ScreenSpaceCurvaturePostProcess(
+                    parsedPostProcess.name,
+                    scene,
+                    parsedPostProcess.options,
+                    targetCamera,
+                    parsedPostProcess.renderTargetSamplingMode,
+                    scene.getEngine(),
+                    parsedPostProcess.textureType,
+                    parsedPostProcess.reusable
+                );
+            },
+            parsedPostProcess,
+            scene,
+            rootUrl
+        );
     }
 }
 

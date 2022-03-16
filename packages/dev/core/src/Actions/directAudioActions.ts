@@ -1,6 +1,6 @@
 import { Action } from "./action";
 import { Condition } from "./condition";
-import { RegisterClass } from '../Misc/typeStore';
+import { RegisterClass } from "../Misc/typeStore";
 import { Sound } from "../Audio/sound";
 
 /**
@@ -21,8 +21,7 @@ export class PlaySoundAction extends Action {
     }
 
     /** @hidden */
-    public _prepare(): void {
-    }
+    public _prepare(): void {}
 
     /**
      * Execute the action and play the sound.
@@ -39,10 +38,13 @@ export class PlaySoundAction extends Action {
      * @returns the serialized object
      */
     public serialize(parent: any): any {
-        return super._serialize({
-            name: "PlaySoundAction",
-            properties: [{ name: "sound", value: this._sound.name }]
-        }, parent);
+        return super._serialize(
+            {
+                name: "PlaySoundAction",
+                properties: [{ name: "sound", value: this._sound.name }],
+            },
+            parent
+        );
     }
 }
 
@@ -64,8 +66,7 @@ export class StopSoundAction extends Action {
     }
 
     /** @hidden */
-    public _prepare(): void {
-    }
+    public _prepare(): void {}
 
     /**
      * Execute the action and stop the sound.
@@ -82,10 +83,13 @@ export class StopSoundAction extends Action {
      * @returns the serialized object
      */
     public serialize(parent: any): any {
-        return super._serialize({
-            name: "StopSoundAction",
-            properties: [{ name: "sound", value: this._sound.name }]
-        }, parent);
+        return super._serialize(
+            {
+                name: "StopSoundAction",
+                properties: [{ name: "sound", value: this._sound.name }],
+            },
+            parent
+        );
     }
 }
 

@@ -69,8 +69,8 @@ export class LensFlare {
         public position: number,
         color: Color3,
         imgUrl: string,
-        system: LensFlareSystem) {
-
+        system: LensFlareSystem
+    ) {
         this.color = color || new Color3(1, 1, 1);
         this.texture = imgUrl ? new Texture(imgUrl, system.getScene(), true) : null;
         this._system = system;
@@ -79,10 +79,7 @@ export class LensFlare {
 
         this._drawWrapper = new DrawWrapper(engine);
 
-        this._drawWrapper.effect = engine.createEffect("lensFlare",
-            [VertexBuffer.PositionKind],
-            ["color", "viewportMatrix"],
-            ["textureSampler"], "");
+        this._drawWrapper.effect = engine.createEffect("lensFlare", [VertexBuffer.PositionKind], ["color", "viewportMatrix"], ["textureSampler"], "");
 
         system.lensFlares.push(this);
     }
@@ -96,7 +93,7 @@ export class LensFlare {
         }
 
         // Remove from scene
-        var index = this._system.lensFlares.indexOf(this);
+        const index = this._system.lensFlares.indexOf(this);
         this._system.lensFlares.splice(index, 1);
     }
 }

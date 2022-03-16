@@ -1,5 +1,5 @@
-import { Logger } from './logger';
-import { GetClass } from './typeStore';
+import { Logger } from "./logger";
+import { GetClass } from "./typeStore";
 
 /**
  * Class used to enable instantiation of objects by class name
@@ -28,10 +28,10 @@ export class InstantiationTools {
 
         Logger.Warn(className + " not found, you may have missed an import.");
 
-        var arr = className.split(".");
+        const arr = className.split(".");
 
-        var fn: any = (window || this);
-        for (var i = 0, len = arr.length; i < len; i++) {
+        let fn: any = window || this;
+        for (let i = 0, len = arr.length; i < len; i++) {
             fn = fn[arr[i]];
         }
 

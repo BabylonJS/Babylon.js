@@ -43,6 +43,7 @@ export class Condition {
 
     /**
      * Internal only
+     * @param propertyPath
      * @hidden
      */
     public _getProperty(propertyPath: string): string {
@@ -51,6 +52,8 @@ export class Condition {
 
     /**
      * Internal only
+     * @param target
+     * @param propertyPath
      * @hidden
      */
     public _getEffectiveTarget(target: any, propertyPath: string): any {
@@ -61,11 +64,11 @@ export class Condition {
      * Serialize placeholder for child classes
      * @returns the serialized object
      */
-    public serialize(): any {
-    }
+    public serialize(): any {}
 
     /**
      * Internal only
+     * @param serializedCondition
      * @hidden
      */
     protected _serialize(serializedCondition: any): any {
@@ -73,7 +76,7 @@ export class Condition {
             type: 2, // Condition
             children: [],
             name: serializedCondition.name,
-            properties: serializedCondition.properties
+            properties: serializedCondition.properties,
         };
     }
 }
@@ -82,7 +85,6 @@ export class Condition {
  * Defines specific conditional operators as extensions of Condition
  */
 export class ValueCondition extends Condition {
-
     /**
      * Internal only
      * @hidden
@@ -167,13 +169,16 @@ export class ValueCondition extends Condition {
      * @param value the value compared by the conditional operator against the current value of the property
      * @param operator the conditional operator, default ValueCondition.IsEqual
      */
-    constructor(actionManager: ActionManager, target: any,
+    constructor(
+        actionManager: ActionManager,
+        target: any,
         /** path to specify the property of the target the conditional operator uses  */
         public propertyPath: string,
         /** the value compared by the conditional operator against the current value of the property */
         public value: any,
         /** the conditional operator, default ValueCondition.IsEqual */
-        public operator: number = ValueCondition.IsEqual) {
+        public operator: number = ValueCondition.IsEqual
+    ) {
         super(actionManager);
 
         this._target = target;
@@ -217,8 +222,8 @@ export class ValueCondition extends Condition {
                 Action._GetTargetProperty(this._target),
                 { name: "propertyPath", value: this.propertyPath },
                 { name: "value", value: Action._SerializeValueAsString(this.value) },
-                { name: "operator", value: ValueCondition.GetOperatorName(this.operator) }
-            ]
+                { name: "operator", value: ValueCondition.GetOperatorName(this.operator) },
+            ],
         });
     }
 
@@ -229,11 +234,16 @@ export class ValueCondition extends Condition {
      */
     public static GetOperatorName(operator: number): string {
         switch (operator) {
-            case ValueCondition._IsEqual: return "IsEqual";
-            case ValueCondition._IsDifferent: return "IsDifferent";
-            case ValueCondition._IsGreater: return "IsGreater";
-            case ValueCondition._IsLesser: return "IsLesser";
-            default: return "";
+            case ValueCondition._IsEqual:
+                return "IsEqual";
+            case ValueCondition._IsDifferent:
+                return "IsDifferent";
+            case ValueCondition._IsGreater:
+                return "IsGreater";
+            case ValueCondition._IsLesser:
+                return "IsLesser";
+            default:
+                return "";
         }
     }
 }
@@ -242,7 +252,6 @@ export class ValueCondition extends Condition {
  * Defines a predicate condition as an extension of Condition
  */
 export class PredicateCondition extends Condition {
-
     /**
      * Internal only - manager for action
      * @hidden
@@ -254,9 +263,11 @@ export class PredicateCondition extends Condition {
      * @param actionManager manager for the action the condition applies to
      * @param predicate defines the predicate function used to validate the condition
      */
-    constructor(actionManager: ActionManager,
+    constructor(
+        actionManager: ActionManager,
         /** defines the predicate function used to validate the condition */
-        public predicate: () => boolean) {
+        public predicate: () => boolean
+    ) {
         super(actionManager);
     }
 
@@ -272,7 +283,6 @@ export class PredicateCondition extends Condition {
  * Defines a state condition as an extension of Condition
  */
 export class StateCondition extends Condition {
-
     /**
      * Internal only - manager for action
      * @hidden
@@ -291,9 +301,12 @@ export class StateCondition extends Condition {
      * @param target of the condition
      * @param value to compare with target state
      */
-    constructor(actionManager: ActionManager, target: any,
+    constructor(
+        actionManager: ActionManager,
+        target: any,
         /** Value to compare with target state  */
-        public value: string) {
+        public value: string
+    ) {
         super(actionManager);
 
         this._target = target;
@@ -314,10 +327,7 @@ export class StateCondition extends Condition {
     public serialize(): any {
         return this._serialize({
             name: "StateCondition",
-            properties: [
-                Action._GetTargetProperty(this._target),
-                { name: "value", value: this.value }
-            ]
+            properties: [Action._GetTargetProperty(this._target), { name: "value", value: this.value }],
         });
     }
 }

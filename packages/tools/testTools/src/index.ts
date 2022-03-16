@@ -7,7 +7,7 @@ export const getGlobalConfig = (overrideConfig: { root?: string; baseUrl?: strin
         pgRoot: "https://playground.babylonjs.com",
         baseUrl: process.env.CDN_BASE_URL || (checkArgs(["--enable-https"], true) ? "https" : "http") + "://localhost:1337",
         root: "https://cdn.babylonjs.com",
-        ...overrideConfig
+        ...overrideConfig,
     };
 };
 

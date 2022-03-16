@@ -101,6 +101,7 @@ export class GeometryBufferRenderer {
     protected _cachedDefines: string;
 
     /**
+     * @param prePassRenderer
      * @hidden
      * Sets up internal structures to share outputs with PrePassRenderer
      * This method should only be called by the PrePassRenderer itself
@@ -140,6 +141,8 @@ export class GeometryBufferRenderer {
     }
 
     /**
+     * @param geometryBufferType
+     * @param index
      * @hidden
      * Replaces a texture in the geometry buffer renderer
      * Useful when linking textures of the prepass renderer
@@ -162,6 +165,7 @@ export class GeometryBufferRenderer {
     }
 
     /**
+     * @param attachments
      * @hidden
      * Sets texture attachments
      * Useful when linking textures of the prepass renderer
@@ -171,6 +175,7 @@ export class GeometryBufferRenderer {
     }
 
     /**
+     * @param internalTexture
      * @hidden
      * Replaces the first texture which is hard coded as a depth texture in the geometry buffer
      * Useful when linking textures of the prepass renderer
@@ -298,7 +303,10 @@ export class GeometryBufferRenderer {
         return this._ratio;
     }
 
-    /** @hidden */
+    /**
+     * @param _
+     * @hidden
+     */
     public static _SceneComponentInitialization: (scene: Scene) => void = (_) => {
         throw _WarnImport("GeometryBufferRendererSceneComponent");
     };
@@ -326,15 +334,15 @@ export class GeometryBufferRenderer {
      * @returns true if ready otherwise false
      */
     public isReady(subMesh: SubMesh, useInstances: boolean): boolean {
-        var material = <any>subMesh.getMaterial();
+        const material = <any>subMesh.getMaterial();
 
         if (material && material.disableDepthWrite) {
             return false;
         }
 
-        var defines = [];
-        var attribs = [VertexBuffer.PositionKind, VertexBuffer.NormalKind];
-        var mesh = subMesh.getMesh();
+        const defines = [];
+        const attribs = [VertexBuffer.PositionKind, VertexBuffer.NormalKind];
+        const mesh = subMesh.getMesh();
 
         // Alpha test
         if (material) {
@@ -459,37 +467,40 @@ export class GeometryBufferRenderer {
         const cachedDefines = drawWrapper.defines;
         const join = defines.join("\n");
         if (cachedDefines !== join) {
-            drawWrapper.setEffect(this._scene.getEngine().createEffect(
-                "geometry",
-                {
-                    attributes: attribs,
-                    uniformsNames: [
-                        "world",
-                        "mBones",
-                        "viewProjection",
-                        "diffuseMatrix",
-                        "view",
-                        "previousWorld",
-                        "previousViewProjection",
-                        "mPreviousBones",
-                        "bumpMatrix",
-                        "reflectivityMatrix",
-                        "vTangentSpaceParams",
-                        "vBumpInfos",
-                        "morphTargetInfluences",
-                        "morphTargetTextureInfo",
-                        "morphTargetTextureIndices",
-                    ],
-                    samplers: ["diffuseSampler", "bumpSampler", "reflectivitySampler", "morphTargets"],
-                    defines: join,
-                    onCompiled: null,
-                    fallbacks: null,
-                    onError: null,
-                    uniformBuffersNames: ["Scene"],
-                    indexParameters: { buffersCount: this._multiRenderTarget.textures.length - 1, maxSimultaneousMorphTargets: numMorphInfluencers },
-                },
-                this._scene.getEngine()
-            ), join);
+            drawWrapper.setEffect(
+                this._scene.getEngine().createEffect(
+                    "geometry",
+                    {
+                        attributes: attribs,
+                        uniformsNames: [
+                            "world",
+                            "mBones",
+                            "viewProjection",
+                            "diffuseMatrix",
+                            "view",
+                            "previousWorld",
+                            "previousViewProjection",
+                            "mPreviousBones",
+                            "bumpMatrix",
+                            "reflectivityMatrix",
+                            "vTangentSpaceParams",
+                            "vBumpInfos",
+                            "morphTargetInfluences",
+                            "morphTargetTextureInfo",
+                            "morphTargetTextureIndices",
+                        ],
+                        samplers: ["diffuseSampler", "bumpSampler", "reflectivitySampler", "morphTargets"],
+                        defines: join,
+                        onCompiled: null,
+                        fallbacks: null,
+                        onError: null,
+                        uniformBuffersNames: ["Scene"],
+                        indexParameters: { buffersCount: this._multiRenderTarget.textures.length - 1, maxSimultaneousMorphTargets: numMorphInfluencers },
+                    },
+                    this._scene.getEngine()
+                ),
+                join
+            );
         }
 
         return drawWrapper.effect!.isReady();
@@ -557,7 +568,7 @@ export class GeometryBufferRenderer {
     }
 
     protected _createRenderTargets(): void {
-        var engine = this._scene.getEngine();
+        const engine = this._scene.getEngine();
         const [count, textureNames] = this._assignRenderTargetIndices();
 
         let type = Constants.TEXTURETYPE_UNSIGNED_BYTE;
@@ -567,7 +578,14 @@ export class GeometryBufferRenderer {
             type = Constants.TEXTURETYPE_HALF_FLOAT;
         }
 
-        this._multiRenderTarget = new MultiRenderTarget("gBuffer", { width: engine.getRenderWidth() * this._ratio, height: engine.getRenderHeight() * this._ratio }, count, this._scene, { generateMipMaps: false, generateDepthTexture: true, defaultType: type }, textureNames.concat("gBuffer_DepthBuffer"));
+        this._multiRenderTarget = new MultiRenderTarget(
+            "gBuffer",
+            { width: engine.getRenderWidth() * this._ratio, height: engine.getRenderHeight() * this._ratio },
+            count,
+            this._scene,
+            { generateMipMaps: false, generateDepthTexture: true, defaultType: type },
+            textureNames.concat("gBuffer_DepthBuffer")
+        );
         if (!this.isSupported) {
             return;
         }
@@ -589,12 +607,12 @@ export class GeometryBufferRenderer {
         });
 
         // Custom render function
-        var renderSubMesh = (subMesh: SubMesh): void => {
-            var renderingMesh = subMesh.getRenderingMesh();
-            var effectiveMesh = subMesh.getEffectiveMesh();
-            var scene = this._scene;
-            var engine = scene.getEngine();
-            let material = <any>subMesh.getMaterial();
+        const renderSubMesh = (subMesh: SubMesh): void => {
+            const renderingMesh = subMesh.getRenderingMesh();
+            const effectiveMesh = subMesh.getEffectiveMesh();
+            const scene = this._scene;
+            const engine = scene.getEngine();
+            const material = <any>subMesh.getMaterial();
 
             if (!material) {
                 return;
@@ -611,19 +629,22 @@ export class GeometryBufferRenderer {
 
                 if (renderingMesh.skeleton) {
                     const bonesTransformations = renderingMesh.skeleton.getTransformMatrices(renderingMesh);
-                    this._previousBonesTransformationMatrices[renderingMesh.uniqueId] = this._copyBonesTransformationMatrices(bonesTransformations, new Float32Array(bonesTransformations.length));
+                    this._previousBonesTransformationMatrices[renderingMesh.uniqueId] = this._copyBonesTransformationMatrices(
+                        bonesTransformations,
+                        new Float32Array(bonesTransformations.length)
+                    );
                 }
             }
 
             // Managing instances
-            var batch = renderingMesh._getInstancesRenderList(subMesh._id, !!subMesh.getReplacementMesh());
+            const batch = renderingMesh._getInstancesRenderList(subMesh._id, !!subMesh.getReplacementMesh());
 
             if (batch.mustReturn) {
                 return;
             }
 
-            var hardwareInstancedRendering = engine.getCaps().instancedArrays && (batch.visibleInstances[subMesh._id] !== null || renderingMesh.hasThinInstances);
-            var world = effectiveMesh.getWorldMatrix();
+            const hardwareInstancedRendering = engine.getCaps().instancedArrays && (batch.visibleInstances[subMesh._id] !== null || renderingMesh.hasThinInstances);
+            const world = effectiveMesh.getWorldMatrix();
 
             if (this.isReady(subMesh, hardwareInstancedRendering)) {
                 const drawWrapper = subMesh._getDrawWrapper();
@@ -649,10 +670,10 @@ export class GeometryBufferRenderer {
 
                 if (material) {
                     let sideOrientation: Nullable<number>;
-                    let instanceDataStorage = (renderingMesh as Mesh)._instanceDataStorage;
+                    const instanceDataStorage = (renderingMesh as Mesh)._instanceDataStorage;
 
                     if (!instanceDataStorage.isFrozen && (material.backFaceCulling || renderingMesh.overrideMaterialSideOrientation !== null)) {
-                        let mainDeterminant = effectiveMesh._getWorldMatrixDeterminant();
+                        const mainDeterminant = effectiveMesh._getWorldMatrixDeterminant();
                         sideOrientation = renderingMesh.overrideMaterialSideOrientation;
                         if (sideOrientation === null) {
                             sideOrientation = material.sideOrientation;
@@ -668,7 +689,7 @@ export class GeometryBufferRenderer {
 
                     // Alpha test
                     if (material.needAlphaTesting()) {
-                        var alphaTexture = material.getAlphaTestTexture();
+                        const alphaTexture = material.getAlphaTestTexture();
                         if (alphaTexture) {
                             effect.setTexture("diffuseSampler", alphaTexture);
                             effect.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix());
@@ -732,7 +753,10 @@ export class GeometryBufferRenderer {
                 this._previousTransformationMatrices[effectiveMesh.uniqueId].world = world.clone();
                 this._previousTransformationMatrices[effectiveMesh.uniqueId].viewProjection = this._scene.getTransformMatrix().clone();
                 if (renderingMesh.skeleton) {
-                    this._copyBonesTransformationMatrices(renderingMesh.skeleton.getTransformMatrices(renderingMesh), this._previousBonesTransformationMatrices[effectiveMesh.uniqueId]);
+                    this._copyBonesTransformationMatrices(
+                        renderingMesh.skeleton.getTransformMatrices(renderingMesh),
+                        this._previousBonesTransformationMatrices[effectiveMesh.uniqueId]
+                    );
                 }
             }
         };
@@ -764,8 +788,13 @@ export class GeometryBufferRenderer {
             return true;
         };
 
-        this._multiRenderTarget.customRenderFunction = (opaqueSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, depthOnlySubMeshes: SmartArray<SubMesh>): void => {
-            var index;
+        this._multiRenderTarget.customRenderFunction = (
+            opaqueSubMeshes: SmartArray<SubMesh>,
+            alphaTestSubMeshes: SmartArray<SubMesh>,
+            transparentSubMeshes: SmartArray<SubMesh>,
+            depthOnlySubMeshes: SmartArray<SubMesh>
+        ): void => {
+            let index;
 
             if (this._linkedWithPrePass) {
                 if (!this._prePassRenderer.enabled) {

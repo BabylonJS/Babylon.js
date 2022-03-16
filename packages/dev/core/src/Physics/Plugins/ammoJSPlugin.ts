@@ -10,12 +10,12 @@ import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Mesh } from "../../Meshes/mesh";
 import { ExtrudeShape } from "../../Meshes/Builders/shapeBuilder";
 import { CreateLines } from "../../Meshes/Builders/linesBuilder";
-import { LinesMesh } from '../../Meshes/linesMesh';
+import { LinesMesh } from "../../Meshes/linesMesh";
 import { PhysicsRaycastResult } from "../physicsRaycastResult";
 import { Scalar } from "../../Maths/math.scalar";
-import { Epsilon } from '../../Maths/math.constants';
+import { Epsilon } from "../../Maths/math.constants";
 
-declare var Ammo: any;
+declare let Ammo: any;
 
 /**
  * AmmoJS Physics plugin
@@ -162,12 +162,12 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
     /**
      * The create custom mesh impostor handler function to support building custom mesh impostor vertex data
      */
-     public onCreateCustomMeshImpostor: (impostor: PhysicsImpostor) => any;
+    public onCreateCustomMeshImpostor: (impostor: PhysicsImpostor) => any;
 
     /**
      * The create custom convex hull impostor handler function to support building custom convex hull impostor vertex data
      */
-     public onCreateCustomConvexHullImpostor: (impostor: PhysicsImpostor) => any;
+    public onCreateCustomConvexHullImpostor: (impostor: PhysicsImpostor) => any;
 
     // Ammo's contactTest and contactPairTest take a callback that runs synchronously, wrap them so that they are easier to consume
     private _isImpostorInContact(impostor: PhysicsImpostor) {
@@ -215,7 +215,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
      * @param impostors array of imposters to update before/after the step
      */
     public executeStep(delta: number, impostors: Array<PhysicsImpostor>): void {
-        for (var impostor of impostors) {
+        for (const impostor of impostors) {
             // Update physics world objects to match babylon world
             if (!impostor.soft) {
                 impostor.beforeStep();
@@ -224,20 +224,19 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
 
         this._stepSimulation(this._useDeltaForWorldStep ? delta : this._timeStep, this._maxSteps, this._fixedTimeStep);
 
-        for (var mainImpostor of impostors) {
+        for (const mainImpostor of impostors) {
             // After physics update make babylon world objects match physics world objects
             if (mainImpostor.soft) {
                 this._afterSoftStep(mainImpostor);
-            }
-            else {
+            } else {
                 mainImpostor.afterStep();
             }
 
             // Handle collision event
             if (mainImpostor._onPhysicsCollideCallbacks.length > 0) {
                 if (this._isImpostorInContact(mainImpostor)) {
-                    for (var collideCallback of mainImpostor._onPhysicsCollideCallbacks) {
-                        for (var otherImpostor of collideCallback.otherImpostors) {
+                    for (const collideCallback of mainImpostor._onPhysicsCollideCallbacks) {
+                        for (const otherImpostor of collideCallback.otherImpostors) {
                             if (mainImpostor.physicsBody.isActive() || otherImpostor.physicsBody.isActive()) {
                                 if (this._isImpostorPairInContact(mainImpostor, otherImpostor)) {
                                     mainImpostor.onCollide({ body: otherImpostor.physicsBody, point: this._tmpContactPoint });
@@ -258,8 +257,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
     private _afterSoftStep(impostor: PhysicsImpostor): void {
         if (impostor.type === PhysicsImpostor.RopeImpostor) {
             this._ropeStep(impostor);
-        }
-        else {
+        } else {
             this._softbodyOrClothStep(impostor);
         }
     }
@@ -269,13 +267,13 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
      * @param impostor imposter to match
      */
     private _ropeStep(impostor: PhysicsImpostor): void {
-        var bodyVertices = impostor.physicsBody.get_m_nodes();
-        var nbVertices = bodyVertices.size();
-        var node: any;
-        var nodePositions: any;
-        var x, y, z: number;
-        var path: Array<Vector3> = new Array();
-        for (var n = 0; n < nbVertices; n++) {
+        const bodyVertices = impostor.physicsBody.get_m_nodes();
+        const nbVertices = bodyVertices.size();
+        let node: any;
+        let nodePositions: any;
+        let x, y, z: number;
+        const path: Array<Vector3> = new Array();
+        for (let n = 0; n < nbVertices; n++) {
             node = bodyVertices.at(n);
             nodePositions = node.get_m_x();
             x = nodePositions.x();
@@ -283,15 +281,13 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
             z = nodePositions.z();
             path.push(new Vector3(x, y, z));
         }
-        var object = impostor.object;
-        var shape = impostor.getParam("shape");
+        const object = impostor.object;
+        const shape = impostor.getParam("shape");
         if (impostor._isFromLine) {
             impostor.object = CreateLines("lines", { points: path, instance: <LinesMesh>object });
-        }
-        else {
+        } else {
             impostor.object = ExtrudeShape("ext", { shape: shape, path: path, instance: <Mesh>object });
         }
-
     }
 
     /**
@@ -299,25 +295,25 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
      * @param impostor imposter to match
      */
     private _softbodyOrClothStep(impostor: PhysicsImpostor): void {
-        var normalDirection = (impostor.type === PhysicsImpostor.ClothImpostor) ? 1 : -1;
-        var object = impostor.object;
-        var vertexPositions = object.getVerticesData(VertexBuffer.PositionKind);
+        const normalDirection = impostor.type === PhysicsImpostor.ClothImpostor ? 1 : -1;
+        const object = impostor.object;
+        let vertexPositions = object.getVerticesData(VertexBuffer.PositionKind);
         if (!vertexPositions) {
             vertexPositions = [];
         }
-        var vertexNormals = object.getVerticesData(VertexBuffer.NormalKind);
+        let vertexNormals = object.getVerticesData(VertexBuffer.NormalKind);
         if (!vertexNormals) {
             vertexNormals = [];
         }
 
-        var nbVertices = vertexPositions.length / 3;
-        var bodyVertices = impostor.physicsBody.get_m_nodes();
-        var node: any;
-        var nodePositions: any;
+        const nbVertices = vertexPositions.length / 3;
+        const bodyVertices = impostor.physicsBody.get_m_nodes();
+        let node: any;
+        let nodePositions: any;
         var nodeNormals: any;
-        var x, y, z: number;
-        var nx, ny, nz: number;
-        for (var n = 0; n < nbVertices; n++) {
+        let x, y, z: number;
+        let nx, ny, nz: number;
+        for (let n = 0; n < nbVertices; n++) {
             node = bodyVertices.at(n);
             nodePositions = node.get_m_x();
             x = nodePositions.x();
@@ -336,7 +332,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
             vertexNormals[3 * n + 2] = nz;
         }
 
-        var vertex_data = new VertexData();
+        const vertex_data = new VertexData();
 
         vertex_data.positions = vertexPositions;
         vertex_data.normals = vertexNormals;
@@ -359,8 +355,8 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
     public applyImpulse(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3) {
         if (!impostor.soft) {
             impostor.physicsBody.activate();
-            var worldPoint = this._tmpAmmoVectorA;
-            var impulse = this._tmpAmmoVectorB;
+            const worldPoint = this._tmpAmmoVectorA;
+            const impulse = this._tmpAmmoVectorB;
 
             // Convert contactPoint relative to center of mass
             if (impostor.object && impostor.object.getWorldMatrix) {
@@ -371,8 +367,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
             impulse.setValue(force.x, force.y, force.z);
 
             impostor.physicsBody.applyImpulse(impulse, worldPoint);
-        }
-        else {
+        } else {
             Logger.Warn("Cannot be applied to a soft body");
         }
     }
@@ -386,12 +381,12 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
     public applyForce(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3) {
         if (!impostor.soft) {
             impostor.physicsBody.activate();
-            var worldPoint = this._tmpAmmoVectorA;
-            var impulse = this._tmpAmmoVectorB;
+            const worldPoint = this._tmpAmmoVectorA;
+            const impulse = this._tmpAmmoVectorB;
 
             // Convert contactPoint relative to center of mass
             if (impostor.object && impostor.object.getWorldMatrix) {
-                var localTranslation = impostor.object.getWorldMatrix().getTranslation();
+                const localTranslation = impostor.object.getWorldMatrix().getTranslation();
                 worldPoint.setValue(contactPoint.x - localTranslation.x, contactPoint.y - localTranslation.y, contactPoint.z - localTranslation.z);
             } else {
                 worldPoint.setValue(contactPoint.x, contactPoint.y, contactPoint.z);
@@ -400,8 +395,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
             impulse.setValue(force.x, force.y, force.z);
 
             impostor.physicsBody.applyForce(impulse, worldPoint);
-        }
-        else {
+        } else {
             Logger.Warn("Cannot be applied to a soft body");
         }
     }
@@ -425,8 +419,8 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
         }
 
         if (impostor.isBodyInitRequired()) {
-            var colShape = this._createShape(impostor);
-            var mass = impostor.getParam("mass");
+            const colShape = this._createShape(impostor);
+            const mass = impostor.getParam("mass");
             impostor._pluginData.mass = mass;
             if (impostor.soft) {
                 colShape.get_m_cfg().set_collisions(0x11);
@@ -443,22 +437,26 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
                 this.setBodyStiffness(impostor, impostor.getParam("stiffness"));
                 this.setBodyVelocityIterations(impostor, impostor.getParam("velocityIterations"));
                 this.setBodyPositionIterations(impostor, impostor.getParam("positionIterations"));
-            }
-            else {
-                var localInertia = new this.bjsAMMO.btVector3(0, 0, 0);
-                var startTransform = new this.bjsAMMO.btTransform();
+            } else {
+                const localInertia = new this.bjsAMMO.btVector3(0, 0, 0);
+                const startTransform = new this.bjsAMMO.btTransform();
                 impostor.object.computeWorldMatrix(true);
                 startTransform.setIdentity();
                 if (mass !== 0) {
                     colShape.calculateLocalInertia(mass, localInertia);
                 }
                 this._tmpAmmoVectorA.setValue(impostor.object.position.x, impostor.object.position.y, impostor.object.position.z);
-                this._tmpAmmoQuaternion.setValue(impostor.object.rotationQuaternion!.x, impostor.object.rotationQuaternion!.y, impostor.object.rotationQuaternion!.z, impostor.object.rotationQuaternion!.w);
+                this._tmpAmmoQuaternion.setValue(
+                    impostor.object.rotationQuaternion!.x,
+                    impostor.object.rotationQuaternion!.y,
+                    impostor.object.rotationQuaternion!.z,
+                    impostor.object.rotationQuaternion!.w
+                );
                 startTransform.setOrigin(this._tmpAmmoVectorA);
                 startTransform.setRotation(this._tmpAmmoQuaternion);
-                var myMotionState = new this.bjsAMMO.btDefaultMotionState(startTransform);
-                var rbInfo = new this.bjsAMMO.btRigidBodyConstructionInfo(mass, myMotionState, colShape, localInertia);
-                var body = new this.bjsAMMO.btRigidBody(rbInfo);
+                const myMotionState = new this.bjsAMMO.btDefaultMotionState(startTransform);
+                const rbInfo = new this.bjsAMMO.btRigidBodyConstructionInfo(mass, myMotionState, colShape, localInertia);
+                const body = new this.bjsAMMO.btRigidBody(rbInfo);
 
                 // Make objects kinematic if it's mass is 0
                 if (mass === 0) {
@@ -482,8 +480,8 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
                     impostor.setDeltaPosition(this._tmpVec3);
                 }
 
-                let group = impostor.getParam("group");
-                let mask = impostor.getParam("mask");
+                const group = impostor.getParam("group");
+                const mask = impostor.getParam("mask");
                 if (group && mask) {
                     this.world.addRigidBody(body, group, mask);
                 } else {
@@ -523,13 +521,13 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
      * @param impostorJoint the imposter joint to create the joint with
      */
     public generateJoint(impostorJoint: PhysicsImpostorJoint) {
-        var mainBody = impostorJoint.mainImpostor.physicsBody;
-        var connectedBody = impostorJoint.connectedImpostor.physicsBody;
+        const mainBody = impostorJoint.mainImpostor.physicsBody;
+        const connectedBody = impostorJoint.connectedImpostor.physicsBody;
         if (!mainBody || !connectedBody) {
             return;
         }
 
-        var jointData = impostorJoint.joint.jointData;
+        const jointData = impostorJoint.joint.jointData;
         if (!jointData.mainPivot) {
             jointData.mainPivot = new Vector3(0, 0, 0);
         }
@@ -537,7 +535,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
             jointData.connectedPivot = new Vector3(0, 0, 0);
         }
 
-        var joint: any;
+        let joint: any;
         switch (impostorJoint.joint.type) {
             case PhysicsJoint.DistanceJoint:
                 var distance = (<DistanceJointData>jointData).maxDistance;
@@ -545,7 +543,12 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
                     jointData.mainPivot = new Vector3(0, -distance / 2, 0);
                     jointData.connectedPivot = new Vector3(0, distance / 2, 0);
                 }
-                joint = new this.bjsAMMO.btPoint2PointConstraint(mainBody, connectedBody, new this.bjsAMMO.btVector3(jointData.mainPivot.x, jointData.mainPivot.y, jointData.mainPivot.z), new this.bjsAMMO.btVector3(jointData.connectedPivot.x, jointData.connectedPivot.y, jointData.connectedPivot.z));
+                joint = new this.bjsAMMO.btPoint2PointConstraint(
+                    mainBody,
+                    connectedBody,
+                    new this.bjsAMMO.btVector3(jointData.mainPivot.x, jointData.mainPivot.y, jointData.mainPivot.z),
+                    new this.bjsAMMO.btVector3(jointData.connectedPivot.x, jointData.connectedPivot.y, jointData.connectedPivot.z)
+                );
                 break;
             case PhysicsJoint.HingeJoint:
                 if (!jointData.mainAxis) {
@@ -556,14 +559,31 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
                 }
                 var mainAxis = new this.bjsAMMO.btVector3(jointData.mainAxis.x, jointData.mainAxis.y, jointData.mainAxis.z);
                 var connectedAxis = new this.bjsAMMO.btVector3(jointData.connectedAxis.x, jointData.connectedAxis.y, jointData.connectedAxis.z);
-                joint = new this.bjsAMMO.btHingeConstraint(mainBody, connectedBody, new this.bjsAMMO.btVector3(jointData.mainPivot.x, jointData.mainPivot.y, jointData.mainPivot.z), new this.bjsAMMO.btVector3(jointData.connectedPivot.x, jointData.connectedPivot.y, jointData.connectedPivot.z), mainAxis, connectedAxis);
+                joint = new this.bjsAMMO.btHingeConstraint(
+                    mainBody,
+                    connectedBody,
+                    new this.bjsAMMO.btVector3(jointData.mainPivot.x, jointData.mainPivot.y, jointData.mainPivot.z),
+                    new this.bjsAMMO.btVector3(jointData.connectedPivot.x, jointData.connectedPivot.y, jointData.connectedPivot.z),
+                    mainAxis,
+                    connectedAxis
+                );
                 break;
             case PhysicsJoint.BallAndSocketJoint:
-                joint = new this.bjsAMMO.btPoint2PointConstraint(mainBody, connectedBody, new this.bjsAMMO.btVector3(jointData.mainPivot.x, jointData.mainPivot.y, jointData.mainPivot.z), new this.bjsAMMO.btVector3(jointData.connectedPivot.x, jointData.connectedPivot.y, jointData.connectedPivot.z));
+                joint = new this.bjsAMMO.btPoint2PointConstraint(
+                    mainBody,
+                    connectedBody,
+                    new this.bjsAMMO.btVector3(jointData.mainPivot.x, jointData.mainPivot.y, jointData.mainPivot.z),
+                    new this.bjsAMMO.btVector3(jointData.connectedPivot.x, jointData.connectedPivot.y, jointData.connectedPivot.z)
+                );
                 break;
             default:
                 Logger.Warn("JointType not currently supported by the Ammo plugin, falling back to PhysicsJoint.BallAndSocketJoint");
-                joint = new this.bjsAMMO.btPoint2PointConstraint(mainBody, connectedBody, new this.bjsAMMO.btVector3(jointData.mainPivot.x, jointData.mainPivot.y, jointData.mainPivot.z), new this.bjsAMMO.btVector3(jointData.connectedPivot.x, jointData.connectedPivot.y, jointData.connectedPivot.z));
+                joint = new this.bjsAMMO.btPoint2PointConstraint(
+                    mainBody,
+                    connectedBody,
+                    new this.bjsAMMO.btVector3(jointData.mainPivot.x, jointData.mainPivot.y, jointData.mainPivot.z),
+                    new this.bjsAMMO.btVector3(jointData.connectedPivot.x, jointData.connectedPivot.y, jointData.connectedPivot.z)
+                );
                 break;
         }
         this.world.addConstraint(joint, !impostorJoint.joint.jointData.collision);
@@ -582,13 +602,13 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
 
     // adds all verticies (including child verticies) to the triangle mesh
     private _addMeshVerts(btTriangleMesh: any, topLevelObject: IPhysicsEnabledObject, object: IPhysicsEnabledObject) {
-        var triangleCount = 0;
+        let triangleCount = 0;
         if (object && object.getIndices && object.getWorldMatrix && object.getChildMeshes) {
-            var indices = object.getIndices();
+            let indices = object.getIndices();
             if (!indices) {
                 indices = [];
             }
-            var vertexPositions = object.getVerticesData(VertexBuffer.PositionKind);
+            let vertexPositions = object.getVerticesData(VertexBuffer.PositionKind);
             if (!vertexPositions) {
                 vertexPositions = [];
             }
@@ -616,11 +636,15 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
                 Matrix.ScalingToRef(object.scaling.x, object.scaling.y, object.scaling.z, this._tmpMatrix);
                 localMatrix = this._tmpMatrix;
             }
-            var faceCount = indices.length / 3;
-            for (var i = 0; i < faceCount; i++) {
-                var triPoints = [];
-                for (var point = 0; point < 3; point++) {
-                    var v = new Vector3(vertexPositions[(indices[(i * 3) + point] * 3) + 0], vertexPositions[(indices[(i * 3) + point] * 3) + 1], vertexPositions[(indices[(i * 3) + point] * 3) + 2]);
+            const faceCount = indices.length / 3;
+            for (let i = 0; i < faceCount; i++) {
+                const triPoints = [];
+                for (let point = 0; point < 3; point++) {
+                    let v = new Vector3(
+                        vertexPositions[indices[i * 3 + point] * 3 + 0],
+                        vertexPositions[indices[i * 3 + point] * 3 + 1],
+                        vertexPositions[indices[i * 3 + point] * 3 + 2]
+                    );
 
                     v = Vector3.TransformCoordinates(v, localMatrix);
 
@@ -654,33 +678,33 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
      * @param impostor to create the softbody for
      */
     private _softVertexData(impostor: PhysicsImpostor): VertexData {
-        var object = impostor.object;
+        const object = impostor.object;
         if (object && object.getIndices && object.getWorldMatrix && object.getChildMeshes) {
-            var indices = object.getIndices();
+            let indices = object.getIndices();
             if (!indices) {
                 indices = [];
             }
-            var vertexPositions = object.getVerticesData(VertexBuffer.PositionKind);
+            let vertexPositions = object.getVerticesData(VertexBuffer.PositionKind);
             if (!vertexPositions) {
                 vertexPositions = [];
             }
-            var vertexNormals = object.getVerticesData(VertexBuffer.NormalKind);
+            let vertexNormals = object.getVerticesData(VertexBuffer.NormalKind);
             if (!vertexNormals) {
                 vertexNormals = [];
             }
             object.computeWorldMatrix(false);
-            var newPoints = [];
-            var newNorms = [];
-            for (var i = 0; i < vertexPositions.length; i += 3) {
-                var v = new Vector3(vertexPositions[i], vertexPositions[i + 1], vertexPositions[i + 2]);
-                var n = new Vector3(vertexNormals[i], vertexNormals[i + 1], vertexNormals[i + 2]);
+            const newPoints = [];
+            const newNorms = [];
+            for (let i = 0; i < vertexPositions.length; i += 3) {
+                let v = new Vector3(vertexPositions[i], vertexPositions[i + 1], vertexPositions[i + 2]);
+                let n = new Vector3(vertexNormals[i], vertexNormals[i + 1], vertexNormals[i + 2]);
                 v = Vector3.TransformCoordinates(v, object.getWorldMatrix());
                 n = Vector3.TransformNormal(n, object.getWorldMatrix());
                 newPoints.push(v.x, v.y, v.z);
                 newNorms.push(n.x, n.y, n.z);
             }
 
-            var vertex_data = new VertexData();
+            const vertex_data = new VertexData();
 
             vertex_data.positions = newPoints;
             vertex_data.normals = newNorms;
@@ -707,40 +731,33 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
      * @param impostor to create the softbody for
      */
     private _createSoftbody(impostor: PhysicsImpostor) {
-        var object = impostor.object;
+        const object = impostor.object;
         if (object && object.getIndices) {
-            var indices = object.getIndices();
+            let indices = object.getIndices();
             if (!indices) {
                 indices = [];
             }
 
-            var vertex_data = this._softVertexData(impostor);
-            var vertexPositions = vertex_data.positions;
-            var vertexNormals = vertex_data.normals;
+            const vertex_data = this._softVertexData(impostor);
+            const vertexPositions = vertex_data.positions;
+            const vertexNormals = vertex_data.normals;
 
             if (vertexPositions === null || vertexNormals === null) {
                 return new this.bjsAMMO.btCompoundShape();
-            }
-            else {
-                var triPoints = [];
-                var triNorms = [];
+            } else {
+                const triPoints = [];
+                const triNorms = [];
                 for (var i = 0; i < vertexPositions.length; i += 3) {
-                    var v = new Vector3(vertexPositions[i], vertexPositions[i + 1], vertexPositions[i + 2]);
-                    var n = new Vector3(vertexNormals[i], vertexNormals[i + 1], vertexNormals[i + 2]);
+                    const v = new Vector3(vertexPositions[i], vertexPositions[i + 1], vertexPositions[i + 2]);
+                    const n = new Vector3(vertexNormals[i], vertexNormals[i + 1], vertexNormals[i + 2]);
                     triPoints.push(v.x, v.y, -v.z);
                     triNorms.push(n.x, n.y, -n.z);
                 }
-                var softBody = new this.bjsAMMO.btSoftBodyHelpers().CreateFromTriMesh(
-                    this.world.getWorldInfo(),
-                    triPoints,
-                    object.getIndices(),
-                    indices.length / 3,
-                    true
-                );
+                const softBody = new this.bjsAMMO.btSoftBodyHelpers().CreateFromTriMesh(this.world.getWorldInfo(), triPoints, object.getIndices(), indices.length / 3, true);
 
-                var nbVertices = vertexPositions.length / 3;
-                var bodyVertices = softBody.get_m_nodes();
-                var node: any;
+                const nbVertices = vertexPositions.length / 3;
+                const bodyVertices = softBody.get_m_nodes();
+                let node: any;
                 var nodeNormals: any;
                 for (var i = 0; i < nbVertices; i++) {
                     node = bodyVertices.at(i);
@@ -759,31 +776,30 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
      * @param impostor to create the softbody for
      */
     private _createCloth(impostor: PhysicsImpostor) {
-        var object = impostor.object;
+        const object = impostor.object;
         if (object && object.getIndices) {
-            var indices = object.getIndices();
+            let indices = object.getIndices();
             if (!indices) {
                 indices = [];
             }
 
-            var vertex_data = this._softVertexData(impostor);
-            var vertexPositions = vertex_data.positions;
-            var vertexNormals = vertex_data.normals;
+            const vertex_data = this._softVertexData(impostor);
+            const vertexPositions = vertex_data.positions;
+            const vertexNormals = vertex_data.normals;
 
             if (vertexPositions === null || vertexNormals === null) {
                 return new this.bjsAMMO.btCompoundShape();
-            }
-            else {
-                var len = vertexPositions.length;
-                var segments = Math.sqrt(len / 3);
+            } else {
+                const len = vertexPositions.length;
+                const segments = Math.sqrt(len / 3);
                 impostor.segments = segments;
-                var segs = segments - 1;
+                const segs = segments - 1;
                 this._tmpAmmoVectorA.setValue(vertexPositions[0], vertexPositions[1], vertexPositions[2]);
                 this._tmpAmmoVectorB.setValue(vertexPositions[3 * segs], vertexPositions[3 * segs + 1], vertexPositions[3 * segs + 2]);
                 this._tmpAmmoVectorD.setValue(vertexPositions[len - 3], vertexPositions[len - 2], vertexPositions[len - 1]);
                 this._tmpAmmoVectorC.setValue(vertexPositions[len - 3 - 3 * segs], vertexPositions[len - 2 - 3 * segs], vertexPositions[len - 1 - 3 * segs]);
 
-                var clothBody = new this.bjsAMMO.btSoftBodyHelpers().CreatePatch(
+                const clothBody = new this.bjsAMMO.btSoftBodyHelpers().CreatePatch(
                     this.world.getWorldInfo(),
                     this._tmpAmmoVectorA,
                     this._tmpAmmoVectorB,
@@ -804,11 +820,11 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
      * @param impostor to create the softbody for
      */
     private _createRope(impostor: PhysicsImpostor) {
-        var len: number;
-        var segments: number;
-        var vertex_data = this._softVertexData(impostor);
-        var vertexPositions = vertex_data.positions;
-        var vertexNormals = vertex_data.normals;
+        let len: number;
+        let segments: number;
+        const vertex_data = this._softVertexData(impostor);
+        const vertexPositions = vertex_data.positions;
+        const vertexNormals = vertex_data.normals;
 
         if (vertexPositions === null || vertexNormals === null) {
             return new this.bjsAMMO.btCompoundShape();
@@ -820,20 +836,21 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
         impostor._isFromLine = true;
 
         // If in lines mesh all normals will be zero
-        var vertexSquared: Array<number> = <Array<number>>vertexNormals.map((x: number) => x * x);
-        var reducer = (accumulator: number, currentValue: number): number => accumulator + currentValue;
-        var reduced: number = vertexSquared.reduce(reducer);
+        const vertexSquared: Array<number> = <Array<number>>vertexNormals.map((x: number) => x * x);
+        const reducer = (accumulator: number, currentValue: number): number => accumulator + currentValue;
+        const reduced: number = vertexSquared.reduce(reducer);
 
-        if (reduced === 0) { // line mesh
+        if (reduced === 0) {
+            // line mesh
             len = vertexPositions.length;
             segments = len / 3 - 1;
             this._tmpAmmoVectorA.setValue(vertexPositions[0], vertexPositions[1], vertexPositions[2]);
             this._tmpAmmoVectorB.setValue(vertexPositions[len - 3], vertexPositions[len - 2], vertexPositions[len - 1]);
-        }
-        else { //extruded mesh
+        } else {
+            //extruded mesh
             impostor._isFromLine = false;
-            var pathVectors = impostor.getParam("path");
-            var shape = impostor.getParam("shape");
+            const pathVectors = impostor.getParam("path");
+            const shape = impostor.getParam("shape");
             if (shape === null) {
                 Logger.Warn("No shape available for extruded mesh");
                 return new this.bjsAMMO.btCompoundShape();
@@ -846,16 +863,10 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
 
         impostor.segments = segments;
 
-        var fixedPoints = impostor.getParam("fixedPoints");
-        fixedPoints = (fixedPoints > 3) ? 3 : fixedPoints;
+        let fixedPoints = impostor.getParam("fixedPoints");
+        fixedPoints = fixedPoints > 3 ? 3 : fixedPoints;
 
-        var ropeBody = new this.bjsAMMO.btSoftBodyHelpers().CreateRope(
-            this.world.getWorldInfo(),
-            this._tmpAmmoVectorA,
-            this._tmpAmmoVectorB,
-            segments - 1,
-            fixedPoints
-        );
+        const ropeBody = new this.bjsAMMO.btSoftBodyHelpers().CreateRope(this.world.getWorldInfo(), this._tmpAmmoVectorA, this._tmpAmmoVectorB, segments - 1, fixedPoints);
         ropeBody.get_m_cfg().set_collisions(0x11);
         return ropeBody;
     }
@@ -877,22 +888,26 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
 
     // adds all verticies (including child verticies) to the convex hull shape
     private _addHullVerts(btConvexHullShape: any, topLevelObject: IPhysicsEnabledObject, object: IPhysicsEnabledObject) {
-        var triangleCount = 0;
+        let triangleCount = 0;
         if (object && object.getIndices && object.getWorldMatrix && object.getChildMeshes) {
-            var indices = object.getIndices();
+            let indices = object.getIndices();
             if (!indices) {
                 indices = [];
             }
-            var vertexPositions = object.getVerticesData(VertexBuffer.PositionKind);
+            let vertexPositions = object.getVerticesData(VertexBuffer.PositionKind);
             if (!vertexPositions) {
                 vertexPositions = [];
             }
             object.computeWorldMatrix(false);
-            var faceCount = indices.length / 3;
-            for (var i = 0; i < faceCount; i++) {
-                var triPoints = [];
-                for (var point = 0; point < 3; point++) {
-                    var v = new Vector3(vertexPositions[(indices[(i * 3) + point] * 3) + 0], vertexPositions[(indices[(i * 3) + point] * 3) + 1], vertexPositions[(indices[(i * 3) + point] * 3) + 2]);
+            const faceCount = indices.length / 3;
+            for (let i = 0; i < faceCount; i++) {
+                const triPoints = [];
+                for (let point = 0; point < 3; point++) {
+                    let v = new Vector3(
+                        vertexPositions[indices[i * 3 + point] * 3 + 0],
+                        vertexPositions[indices[i * 3 + point] * 3 + 1],
+                        vertexPositions[indices[i * 3 + point] * 3 + 2]
+                    );
 
                     // Adjust for initial scaling
                     Matrix.ScalingToRef(object.scaling.x, object.scaling.y, object.scaling.z, this._tmpMatrix);
@@ -924,32 +939,37 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
     }
 
     private _createShape(impostor: PhysicsImpostor, ignoreChildren = false) {
-        var object = impostor.object;
+        const object = impostor.object;
 
-        var returnValue: any;
-        var extendSize = impostor.getObjectExtendSize();
+        let returnValue: any;
+        const extendSize = impostor.getObjectExtendSize();
 
         if (!ignoreChildren) {
-            var meshChildren = impostor.object.getChildMeshes ? impostor.object.getChildMeshes(true) : [];
+            const meshChildren = impostor.object.getChildMeshes ? impostor.object.getChildMeshes(true) : [];
             returnValue = new this.bjsAMMO.btCompoundShape();
 
             // Add shape of all children to the compound shape
-            var childrenAdded = 0;
+            let childrenAdded = 0;
             meshChildren.forEach((childMesh) => {
-                var childImpostor = childMesh.getPhysicsImpostor();
+                const childImpostor = childMesh.getPhysicsImpostor();
                 if (childImpostor) {
                     if (childImpostor.type == PhysicsImpostor.MeshImpostor) {
                         throw "A child MeshImpostor is not supported. Only primitive impostors are supported as children (eg. box or sphere)";
                     }
-                    var shape = this._createShape(childImpostor);
+                    const shape = this._createShape(childImpostor);
 
                     // Position needs to be scaled based on parent's scaling
-                    var parentMat = childMesh.parent!.getWorldMatrix().clone();
-                    var s = new Vector3();
+                    const parentMat = childMesh.parent!.getWorldMatrix().clone();
+                    const s = new Vector3();
                     parentMat.decompose(s);
                     this._tmpAmmoTransform.getOrigin().setValue(childMesh.position.x * s.x, childMesh.position.y * s.y, childMesh.position.z * s.z);
 
-                    this._tmpAmmoQuaternion.setValue(childMesh.rotationQuaternion!.x, childMesh.rotationQuaternion!.y, childMesh.rotationQuaternion!.z, childMesh.rotationQuaternion!.w);
+                    this._tmpAmmoQuaternion.setValue(
+                        childMesh.rotationQuaternion!.x,
+                        childMesh.rotationQuaternion!.y,
+                        childMesh.rotationQuaternion!.z,
+                        childMesh.rotationQuaternion!.w
+                    );
                     this._tmpAmmoTransform.setRotation(this._tmpAmmoQuaternion);
                     returnValue.addChildShape(this._tmpAmmoTransform, shape);
                     childImpostor.dispose();
@@ -960,7 +980,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
             if (childrenAdded > 0) {
                 // Add parents shape as a child if present
                 if (impostor.type != PhysicsImpostor.NoImpostor) {
-                    var shape = this._createShape(impostor, true);
+                    const shape = this._createShape(impostor, true);
                     if (shape) {
                         this._tmpAmmoTransform.getOrigin().setValue(0, 0, 0);
                         this._tmpAmmoQuaternion.setValue(0, 0, 0, 1);
@@ -984,8 +1004,8 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
                     returnValue = new this.bjsAMMO.btSphereShape(extendSize.x / 2);
                 } else {
                     // create a btMultiSphereShape because it's not possible to set a local scaling on a btSphereShape
-                    var positions = [new this.bjsAMMO.btVector3(0, 0, 0)];
-                    var radii = [1];
+                    const positions = [new this.bjsAMMO.btVector3(0, 0, 0)];
+                    const radii = [1];
                     returnValue = new this.bjsAMMO.btMultiSphereShape(positions, radii, 1);
                     returnValue.setLocalScaling(new this.bjsAMMO.btVector3(extendSize.x / 2, extendSize.y / 2, extendSize.z / 2));
                 }
@@ -1012,7 +1032,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
                     if (this.onCreateCustomMeshImpostor) {
                         returnValue = this.onCreateCustomMeshImpostor(impostor);
                     } else {
-                        var tetraMesh = new this.bjsAMMO.btTriangleMesh();
+                        const tetraMesh = new this.bjsAMMO.btTriangleMesh();
                         impostor._pluginData.toDispose.push(tetraMesh);
                         var triangeCount = this._addMeshVerts(tetraMesh, object, object);
                         if (triangeCount == 0) {
@@ -1028,7 +1048,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
                 if (this.onCreateCustomConvexHullImpostor) {
                     returnValue = this.onCreateCustomConvexHullImpostor(impostor);
                 } else {
-                    var convexMesh = new this.bjsAMMO.btConvexHullShape();
+                    const convexMesh = new this.bjsAMMO.btConvexHullShape();
                     var triangeCount = this._addHullVerts(convexMesh, object, object);
                     if (triangeCount == 0) {
                         // Cleanup Unused Convex Hull Shape
@@ -1077,11 +1097,21 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
 
         if (!impostor.object.rotationQuaternion) {
             if (impostor.object.rotation) {
-                this._tmpQuaternion.set(this._tmpAmmoTransform.getRotation().x(), this._tmpAmmoTransform.getRotation().y(), this._tmpAmmoTransform.getRotation().z(), this._tmpAmmoTransform.getRotation().w());
+                this._tmpQuaternion.set(
+                    this._tmpAmmoTransform.getRotation().x(),
+                    this._tmpAmmoTransform.getRotation().y(),
+                    this._tmpAmmoTransform.getRotation().z(),
+                    this._tmpAmmoTransform.getRotation().w()
+                );
                 this._tmpQuaternion.toEulerAnglesToRef(impostor.object.rotation);
             }
         } else {
-            impostor.object.rotationQuaternion.set(this._tmpAmmoTransform.getRotation().x(), this._tmpAmmoTransform.getRotation().y(), this._tmpAmmoTransform.getRotation().z(), this._tmpAmmoTransform.getRotation().w());
+            impostor.object.rotationQuaternion.set(
+                this._tmpAmmoTransform.getRotation().x(),
+                this._tmpAmmoTransform.getRotation().y(),
+                this._tmpAmmoTransform.getRotation().z(),
+                this._tmpAmmoTransform.getRotation().w()
+            );
         }
     }
 
@@ -1092,7 +1122,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
      * @param newRotation new rotation
      */
     public setPhysicsBodyTransformation(impostor: PhysicsImpostor, newPosition: Vector3, newRotation: Quaternion) {
-        var trans = impostor.physicsBody.getWorldTransform();
+        const trans = impostor.physicsBody.getWorldTransform();
 
         // If rotation/position has changed update and activate rigged body
         if (
@@ -1113,7 +1143,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
 
             if (impostor.mass == 0) {
                 // Kinematic objects must be updated using motion state
-                var motionState = impostor.physicsBody.getMotionState();
+                const motionState = impostor.physicsBody.getMotionState();
                 if (motionState) {
                     motionState.setWorldTransform(trans);
                 }
@@ -1140,8 +1170,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
         this._tmpAmmoVectorA.setValue(velocity.x, velocity.y, velocity.z);
         if (impostor.soft) {
             impostor.physicsBody.linearVelocity(this._tmpAmmoVectorA);
-        }
-        else {
+        } else {
             impostor.physicsBody.setLinearVelocity(this._tmpAmmoVectorA);
         }
     }
@@ -1155,8 +1184,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
         this._tmpAmmoVectorA.setValue(velocity.x, velocity.y, velocity.z);
         if (impostor.soft) {
             impostor.physicsBody.angularVelocity(this._tmpAmmoVectorA);
-        }
-        else {
+        } else {
             impostor.physicsBody.setAngularVelocity(this._tmpAmmoVectorA);
         }
     }
@@ -1169,14 +1197,13 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
     public getLinearVelocity(impostor: PhysicsImpostor): Nullable<Vector3> {
         if (impostor.soft) {
             var v = impostor.physicsBody.linearVelocity();
-        }
-        else {
+        } else {
             var v = impostor.physicsBody.getLinearVelocity();
         }
         if (!v) {
             return null;
         }
-        var result = new Vector3(v.x(), v.y(), v.z());
+        const result = new Vector3(v.x(), v.y(), v.z());
         this.bjsAMMO.destroy(v);
         return result;
     }
@@ -1189,14 +1216,13 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
     public getAngularVelocity(impostor: PhysicsImpostor): Nullable<Vector3> {
         if (impostor.soft) {
             var v = impostor.physicsBody.angularVelocity();
-        }
-        else {
+        } else {
             var v = impostor.physicsBody.getAngularVelocity();
         }
         if (!v) {
             return null;
         }
-        var result = new Vector3(v.x(), v.y(), v.z());
+        const result = new Vector3(v.x(), v.y(), v.z());
         this.bjsAMMO.destroy(v);
         return result;
     }
@@ -1209,8 +1235,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
     public setBodyMass(impostor: PhysicsImpostor, mass: number) {
         if (impostor.soft) {
             impostor.physicsBody.setTotalMass(mass, false);
-        }
-        else {
+        } else {
             impostor.physicsBody.setMassProps(mass);
         }
         impostor._pluginData.mass = mass;
@@ -1242,8 +1267,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
     public setBodyFriction(impostor: PhysicsImpostor, friction: number) {
         if (impostor.soft) {
             impostor.physicsBody.get_m_cfg().set_kDF(friction);
-        }
-        else {
+        } else {
             impostor.physicsBody.setFriction(friction);
         }
         impostor._pluginData.friction = friction;
@@ -1292,13 +1316,11 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
             if (impostor.type === PhysicsImpostor.SoftbodyImpostor) {
                 impostor.physicsBody.get_m_cfg().set_kPR(pressure);
                 impostor._pluginData.pressure = pressure;
-            }
-            else {
+            } else {
                 impostor.physicsBody.get_m_cfg().set_kPR(0);
                 impostor._pluginData.pressure = 0;
             }
-        }
-        else {
+        } else {
             Logger.Warn("Pressure can only be applied to a softbody");
         }
     }
@@ -1327,8 +1349,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
             stiffness = stiffness > 1 ? 1 : stiffness;
             impostor.physicsBody.get_m_materials().at(0).set_m_kLST(stiffness);
             impostor._pluginData.stiffness = stiffness;
-        }
-        else {
+        } else {
             Logger.Warn("Stiffness cannot be applied to a rigid body");
         }
     }
@@ -1356,8 +1377,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
             velocityIterations = velocityIterations < 0 ? 0 : velocityIterations;
             impostor.physicsBody.get_m_cfg().set_viterations(velocityIterations);
             impostor._pluginData.velocityIterations = velocityIterations;
-        }
-        else {
+        } else {
             Logger.Warn("Velocity iterations cannot be applied to a rigid body");
         }
     }
@@ -1385,27 +1405,33 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
             positionIterations = positionIterations < 0 ? 0 : positionIterations;
             impostor.physicsBody.get_m_cfg().set_piterations(positionIterations);
             impostor._pluginData.positionIterations = positionIterations;
-        }
-        else {
+        } else {
             Logger.Warn("Position iterations cannot be applied to a rigid body");
         }
     }
 
     /**
-    * Append an anchor to a cloth object
-    * @param impostor is the cloth impostor to add anchor to
-    * @param otherImpostor is the rigid impostor to anchor to
-    * @param width ratio across width from 0 to 1
-    * @param height ratio up height from 0 to 1
-    * @param influence the elasticity between cloth impostor and anchor from 0, very stretchy to 1, little stretch
-    * @param noCollisionBetweenLinkedBodies when true collisions between soft impostor and anchor are ignored; default false
-    */
-    public appendAnchor(impostor: PhysicsImpostor, otherImpostor: PhysicsImpostor, width: number, height: number, influence: number = 1, noCollisionBetweenLinkedBodies: boolean = false) {
-        var segs = impostor.segments;
-        var nbAcross = Math.round((segs - 1) * width);
-        var nbUp = Math.round((segs - 1) * height);
-        var nbDown = segs - 1 - nbUp;
-        var node = nbAcross + segs * nbDown;
+     * Append an anchor to a cloth object
+     * @param impostor is the cloth impostor to add anchor to
+     * @param otherImpostor is the rigid impostor to anchor to
+     * @param width ratio across width from 0 to 1
+     * @param height ratio up height from 0 to 1
+     * @param influence the elasticity between cloth impostor and anchor from 0, very stretchy to 1, little stretch
+     * @param noCollisionBetweenLinkedBodies when true collisions between soft impostor and anchor are ignored; default false
+     */
+    public appendAnchor(
+        impostor: PhysicsImpostor,
+        otherImpostor: PhysicsImpostor,
+        width: number,
+        height: number,
+        influence: number = 1,
+        noCollisionBetweenLinkedBodies: boolean = false
+    ) {
+        const segs = impostor.segments;
+        const nbAcross = Math.round((segs - 1) * width);
+        const nbUp = Math.round((segs - 1) * height);
+        const nbDown = segs - 1 - nbUp;
+        const node = nbAcross + segs * nbDown;
         impostor.physicsBody.appendAnchor(node, otherImpostor.physicsBody, noCollisionBetweenLinkedBodies, influence);
     }
 
@@ -1418,7 +1444,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
      * @param noCollisionBetweenLinkedBodies when true collisions between soft impostor and anchor are ignored; default false
      */
     public appendHook(impostor: PhysicsImpostor, otherImpostor: PhysicsImpostor, length: number, influence: number = 1, noCollisionBetweenLinkedBodies: boolean = false) {
-        var node = Math.round(impostor.segments * length);
+        const node = Math.round(impostor.segments * length);
         impostor.physicsBody.appendAnchor(node, otherImpostor.physicsBody, noCollisionBetweenLinkedBodies, influence);
     }
 
@@ -1475,7 +1501,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
      * @param impostor impostor to update the mesh with
      */
     public syncMeshWithImpostor(mesh: AbstractMesh, impostor: PhysicsImpostor) {
-        var body = impostor.physicsBody;
+        const body = impostor.physicsBody;
 
         body.getMotionState().getWorldTransform(this._tmpAmmoTransform);
 
@@ -1497,7 +1523,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
      * @returns the radius
      */
     public getRadius(impostor: PhysicsImpostor): number {
-        var exntend = impostor.getObjectExtendSize();
+        const exntend = impostor.getObjectExtendSize();
         return exntend.x / 2;
     }
 
@@ -1507,7 +1533,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
      * @param result the resulting box size
      */
     public getBoxSizeToRef(impostor: PhysicsImpostor, result: Vector3): void {
-        var exntend = impostor.getObjectExtendSize();
+        const exntend = impostor.getObjectExtendSize();
         result.x = exntend.x;
         result.y = exntend.y;
         result.z = exntend.z;
@@ -1545,7 +1571,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
         this._tmpAmmoVectorRCA = new this.bjsAMMO.btVector3(from.x, from.y, from.z);
         this._tmpAmmoVectorRCB = new this.bjsAMMO.btVector3(to.x, to.y, to.z);
 
-        var rayCallback = new this.bjsAMMO.ClosestRayResultCallback(this._tmpAmmoVectorRCA, this._tmpAmmoVectorRCB);
+        const rayCallback = new this.bjsAMMO.ClosestRayResultCallback(this._tmpAmmoVectorRCA, this._tmpAmmoVectorRCB);
         this.world.rayTest(this._tmpAmmoVectorRCA, this._tmpAmmoVectorRCB, rayCallback);
 
         this._raycastResult.reset(from, to);

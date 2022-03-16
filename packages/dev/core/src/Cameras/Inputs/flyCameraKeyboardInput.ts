@@ -7,7 +7,7 @@ import { Engine } from "../../Engines/engine";
 import { KeyboardInfo, KeyboardEventTypes } from "../../Events/keyboardEvents";
 import { Scene } from "../../scene";
 import { Vector3 } from "../../Maths/math.vector";
-import { Tools } from '../../Misc/tools';
+import { Tools } from "../../Misc/tools";
 
 /**
  * Listen to keyboard events to control the camera.
@@ -79,15 +79,17 @@ export class FlyCameraKeyboardInput implements ICameraInput<FlyCamera> {
         });
 
         this._onKeyboardObserver = this._scene.onKeyboardObservable.add((info) => {
-            let evt = info.event;
+            const evt = info.event;
 
             if (info.type === KeyboardEventTypes.KEYDOWN) {
-                if (this.keysForward.indexOf(evt.keyCode) !== -1 ||
+                if (
+                    this.keysForward.indexOf(evt.keyCode) !== -1 ||
                     this.keysBackward.indexOf(evt.keyCode) !== -1 ||
                     this.keysUp.indexOf(evt.keyCode) !== -1 ||
                     this.keysDown.indexOf(evt.keyCode) !== -1 ||
                     this.keysLeft.indexOf(evt.keyCode) !== -1 ||
-                    this.keysRight.indexOf(evt.keyCode) !== -1) {
+                    this.keysRight.indexOf(evt.keyCode) !== -1
+                ) {
                     var index = this._keys.indexOf(evt.keyCode);
 
                     if (index === -1) {
@@ -98,12 +100,14 @@ export class FlyCameraKeyboardInput implements ICameraInput<FlyCamera> {
                     }
                 }
             } else {
-                if (this.keysForward.indexOf(evt.keyCode) !== -1 ||
+                if (
+                    this.keysForward.indexOf(evt.keyCode) !== -1 ||
                     this.keysBackward.indexOf(evt.keyCode) !== -1 ||
                     this.keysUp.indexOf(evt.keyCode) !== -1 ||
                     this.keysDown.indexOf(evt.keyCode) !== -1 ||
                     this.keysLeft.indexOf(evt.keyCode) !== -1 ||
-                    this.keysRight.indexOf(evt.keyCode) !== -1) {
+                    this.keysRight.indexOf(evt.keyCode) !== -1
+                ) {
                     var index = this._keys.indexOf(evt.keyCode);
 
                     if (index >= 0) {
@@ -149,7 +153,10 @@ export class FlyCameraKeyboardInput implements ICameraInput<FlyCamera> {
         return "FlyCameraKeyboardInput";
     }
 
-    /** @hidden */
+    /**
+     * @param e
+     * @hidden
+     */
     public _onLostFocus(e: FocusEvent): void {
         this._keys = [];
     }
@@ -168,30 +175,25 @@ export class FlyCameraKeyboardInput implements ICameraInput<FlyCamera> {
      */
     public checkInputs(): void {
         if (this._onKeyboardObserver) {
-            var camera = this.camera;
+            const camera = this.camera;
             // Keyboard
-            for (var index = 0; index < this._keys.length; index++) {
-                var keyCode = this._keys[index];
-                var speed = camera._computeLocalCameraSpeed();
+            for (let index = 0; index < this._keys.length; index++) {
+                const keyCode = this._keys[index];
+                const speed = camera._computeLocalCameraSpeed();
 
                 if (this.keysForward.indexOf(keyCode) !== -1) {
                     camera._localDirection.copyFromFloats(0, 0, speed);
-                } else
-                    if (this.keysBackward.indexOf(keyCode) !== -1) {
-                        camera._localDirection.copyFromFloats(0, 0, -speed);
-                    } else
-                        if (this.keysUp.indexOf(keyCode) !== -1) {
-                            camera._localDirection.copyFromFloats(0, speed, 0);
-                        } else
-                            if (this.keysDown.indexOf(keyCode) !== -1) {
-                                camera._localDirection.copyFromFloats(0, -speed, 0);
-                            } else
-                                if (this.keysRight.indexOf(keyCode) !== -1) {
-                                    camera._localDirection.copyFromFloats(speed, 0, 0);
-                                } else
-                                    if (this.keysLeft.indexOf(keyCode) !== -1) {
-                                        camera._localDirection.copyFromFloats(-speed, 0, 0);
-                                    }
+                } else if (this.keysBackward.indexOf(keyCode) !== -1) {
+                    camera._localDirection.copyFromFloats(0, 0, -speed);
+                } else if (this.keysUp.indexOf(keyCode) !== -1) {
+                    camera._localDirection.copyFromFloats(0, speed, 0);
+                } else if (this.keysDown.indexOf(keyCode) !== -1) {
+                    camera._localDirection.copyFromFloats(0, -speed, 0);
+                } else if (this.keysRight.indexOf(keyCode) !== -1) {
+                    camera._localDirection.copyFromFloats(speed, 0, 0);
+                } else if (this.keysLeft.indexOf(keyCode) !== -1) {
+                    camera._localDirection.copyFromFloats(-speed, 0, 0);
+                }
 
                 if (camera.getScene().useRightHandedSystem) {
                     camera._localDirection.z *= -1;

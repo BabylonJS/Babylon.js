@@ -36,7 +36,7 @@ AbstractScene.prototype.removeReflectionProbe = function (toRemove: ReflectionPr
         return -1;
     }
 
-    var index = this.reflectionProbes.indexOf(toRemove);
+    const index = this.reflectionProbes.indexOf(toRemove);
     if (index !== -1) {
         this.reflectionProbes.splice(index, 1);
     }
@@ -89,7 +89,12 @@ export class ReflectionProbe {
     constructor(
         /** defines the name of the probe */
         public name: string,
-        size: number, scene: Scene, generateMipMaps = true, useFloat = false, linearSpace = false) {
+        size: number,
+        scene: Scene,
+        generateMipMaps = true,
+        useFloat = false,
+        linearSpace = false
+    ) {
         this._scene = scene;
 
         if (scene.getEngine().supportsUniformBuffers) {
@@ -110,8 +115,7 @@ export class ReflectionProbe {
             const caps = this._scene.getEngine().getCaps();
             if (caps.textureHalfFloatRender) {
                 textureType = Constants.TEXTURETYPE_HALF_FLOAT;
-            }
-            else if (caps.textureFloatRender) {
+            } else if (caps.textureFloatRender) {
                 textureType = Constants.TEXTURETYPE_FLOAT;
             }
         }
@@ -144,7 +148,6 @@ export class ReflectionProbe {
                 case 5:
                     this._add.copyFromFloats(0, 0, scene.useRightHandedSystem ? 1 : -1);
                     break;
-
             }
 
             if (this._attachedMesh) {
@@ -159,7 +162,13 @@ export class ReflectionProbe {
             lookAtFunction(this.position, this._target, Vector3.Up(), this._viewMatrix);
 
             if (scene.activeCamera) {
-                this._projectionMatrix = perspectiveFunction(Math.PI / 2, 1, useReverseDepthBuffer ? scene.activeCamera.maxZ : scene.activeCamera.minZ, useReverseDepthBuffer ? scene.activeCamera.minZ : scene.activeCamera.maxZ, this._scene.getEngine().isNDCHalfZRange);
+                this._projectionMatrix = perspectiveFunction(
+                    Math.PI / 2,
+                    1,
+                    useReverseDepthBuffer ? scene.activeCamera.maxZ : scene.activeCamera.minZ,
+                    useReverseDepthBuffer ? scene.activeCamera.minZ : scene.activeCamera.maxZ,
+                    this._scene.getEngine().isNDCHalfZRange
+                );
                 scene.setTransformMatrix(this._viewMatrix, this._projectionMatrix);
                 if (scene.activeCamera.isRigCamera && !this._renderTargetTexture.activeCamera) {
                     this._renderTargetTexture.activeCamera = scene.activeCamera.rigParent || null;
@@ -247,7 +256,7 @@ export class ReflectionProbe {
      * Clean all associated resources
      */
     public dispose() {
-        var index = this._scene.reflectionProbes.indexOf(this);
+        const index = this._scene.reflectionProbes.indexOf(this);
 
         if (index !== -1) {
             // Remove from the scene if found
@@ -281,7 +290,7 @@ export class ReflectionProbe {
      * @returns the human readable reflection probe info
      */
     public toString(fullDetails?: boolean): string {
-        var ret = "Name: " + this.name;
+        let ret = "Name: " + this.name;
 
         if (fullDetails) {
             ret += ", position: " + this.position.toString();
@@ -332,7 +341,12 @@ export class ReflectionProbe {
             }
         }
 
-        reflectionProbe = SerializationHelper.Parse(() => reflectionProbe || new ReflectionProbe(parsedReflectionProbe.name, parsedReflectionProbe.renderTargetSize, scene, parsedReflectionProbe._generateMipMaps), parsedReflectionProbe, scene, rootUrl);
+        reflectionProbe = SerializationHelper.Parse(
+            () => reflectionProbe || new ReflectionProbe(parsedReflectionProbe.name, parsedReflectionProbe.renderTargetSize, scene, parsedReflectionProbe._generateMipMaps),
+            parsedReflectionProbe,
+            scene,
+            rootUrl
+        );
         reflectionProbe.cubeTexture._waitingRenderList = parsedReflectionProbe.renderList;
 
         if (parsedReflectionProbe._attachedMesh) {

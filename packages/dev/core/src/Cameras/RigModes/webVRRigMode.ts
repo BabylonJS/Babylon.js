@@ -1,14 +1,16 @@
 import { Camera } from "../camera";
 import { Matrix } from "../../Maths/math.vector";
-import { Viewport } from '../../Maths/math.viewport';
+import { Viewport } from "../../Maths/math.viewport";
 
 /**
+ * @param camera
+ * @param rigParams
  * @hidden
  */
 export function setWebVRRigMode(camera: Camera, rigParams: any) {
     if (rigParams.vrDisplay) {
-        var leftEye = rigParams.vrDisplay.getEyeParameters('left');
-        var rightEye = rigParams.vrDisplay.getEyeParameters('right');
+        const leftEye = rigParams.vrDisplay.getEyeParameters("left");
+        const rightEye = rigParams.vrDisplay.getEyeParameters("right");
 
         //Left eye
         camera._rigCameras[0].viewport = new Viewport(0, 0, 0.5, 1.0);
@@ -25,7 +27,7 @@ export function setWebVRRigMode(camera: Camera, rigParams: any) {
 
         //Right eye
         camera._rigCameras[1].viewport = new Viewport(0.5, 0, 0.5, 1.0);
-        camera._rigCameras[1].setCameraRigParameter('eyeParameters', rightEye);
+        camera._rigCameras[1].setCameraRigParameter("eyeParameters", rightEye);
         camera._rigCameras[1].setCameraRigParameter("specs", rigParams.specs);
         camera._rigCameras[1].setCameraRigParameter("frameData", rigParams.frameData);
         camera._rigCameras[1].setCameraRigParameter("parentCamera", rigParams.parentCamera);

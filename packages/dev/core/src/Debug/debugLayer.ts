@@ -5,8 +5,8 @@ import { Engine } from "../Engines/engine";
 import { EngineStore } from "../Engines/engineStore";
 
 // declare INSPECTOR namespace for compilation issue
-declare var INSPECTOR: any;
-declare var BABYLON: any;
+declare let INSPECTOR: any;
+declare let BABYLON: any;
 // load the inspector using require, if not present in the global namespace.
 
 /**
@@ -110,7 +110,7 @@ Object.defineProperty(Scene.prototype, "debugLayer", {
         return this._debugLayer;
     },
     enumerable: true,
-    configurable: true
+    configurable: true,
 });
 
 /**
@@ -136,7 +136,7 @@ export enum DebugLayerTab {
     /**
      * Settings tab
      */
-    Settings = 4
+    Settings = 4,
 }
 
 /**
@@ -156,7 +156,7 @@ export class DebugLayer {
 
     private BJSINSPECTOR = this._getGlobalInspector();
 
-    private _onPropertyChangedObservable?: Observable<{ object: any, property: string, value: any, initialValue: any }>;
+    private _onPropertyChangedObservable?: Observable<{ object: any; property: string; value: any; initialValue: any }>;
     /**
      * Observable triggered when a property is changed through the inspector.
      */
@@ -166,7 +166,7 @@ export class DebugLayer {
         }
 
         if (!this._onPropertyChangedObservable) {
-            this._onPropertyChangedObservable = new Observable<{ object: any, property: string, value: any, initialValue: any }>();
+            this._onPropertyChangedObservable = new Observable<{ object: any; property: string; value: any; initialValue: any }>();
         }
 
         return this._onPropertyChangedObservable;
@@ -192,14 +192,17 @@ export class DebugLayer {
         });
     }
 
-    /** Creates the inspector window. */
+    /**
+     * Creates the inspector window.
+     * @param config
+     */
     private _createInspector(config?: Partial<IInspectorOptions>) {
         if (this.isVisible()) {
             return;
         }
 
         if (this._onPropertyChangedObservable) {
-            for (var observer of this._onPropertyChangedObservable!.observers) {
+            for (const observer of this._onPropertyChangedObservable!.observers) {
                 this.BJSINSPECTOR.Inspector.OnPropertyChangedObservable.add(observer);
             }
             this._onPropertyChangedObservable.clear();
@@ -213,7 +216,7 @@ export class DebugLayer {
             embedMode: false,
             handleResize: true,
             enablePopup: true,
-            ...config
+            ...config,
         };
 
         this.BJSINSPECTOR = this.BJSINSPECTOR || this._getGlobalInspector();
@@ -228,9 +231,8 @@ export class DebugLayer {
      */
     public select(entity: any, lineContainerTitles?: string | string[]) {
         if (this.BJSINSPECTOR) {
-
             if (lineContainerTitles) {
-                if (Object.prototype.toString.call(lineContainerTitles) == '[object String]') {
+                if (Object.prototype.toString.call(lineContainerTitles) == "[object String]") {
                     this.BJSINSPECTOR.Inspector.MarkLineContainerTitleForHighlighting(lineContainerTitles);
                 } else {
                     this.BJSINSPECTOR.Inspector.MarkMultipleLineContainerTitlesForHighlighting(lineContainerTitles);
@@ -243,12 +245,12 @@ export class DebugLayer {
     /** Get the inspector from bundle or global */
     private _getGlobalInspector(): any {
         // UMD Global name detection from Webpack Bundle UMD Name.
-        if (typeof INSPECTOR !== 'undefined') {
+        if (typeof INSPECTOR !== "undefined") {
             return INSPECTOR;
         }
 
         // In case of module let s check the global emitted from the Inspector entry point.
-        if (typeof BABYLON !== 'undefined' && typeof BABYLON.Inspector !== 'undefined') {
+        if (typeof BABYLON !== "undefined" && typeof BABYLON.Inspector !== "undefined") {
             return BABYLON;
         }
 
@@ -282,13 +284,13 @@ export class DebugLayer {
     }
 
     /**
-      * Launch the debugLayer.
-      * @param config Define the configuration of the inspector
-      * @return a promise fulfilled when the debug layer is visible
-      */
+     * Launch the debugLayer.
+     * @param config Define the configuration of the inspector
+     * @return a promise fulfilled when the debug layer is visible
+     */
     public show(config?: IInspectorOptions): Promise<DebugLayer> {
         return new Promise((resolve, reject) => {
-            if (typeof this.BJSINSPECTOR == 'undefined') {
+            if (typeof this.BJSINSPECTOR == "undefined") {
                 const inspectorUrl = config && config.inspectorURL ? config.inspectorURL : DebugLayer.InspectorURL;
 
                 // Load inspector and add it to the DOM

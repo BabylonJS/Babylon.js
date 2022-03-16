@@ -52,5 +52,5 @@ export const MeshBuilder = {
     CreateGeodesic,
     CreateGoldberg,
     CreateDecal,
-    CreateCapsule
+    CreateCapsule,
 };

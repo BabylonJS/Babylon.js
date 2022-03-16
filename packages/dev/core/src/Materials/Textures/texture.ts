@@ -4,15 +4,15 @@ import { Nullable } from "../../types";
 import { Matrix, TmpVectors, Vector3 } from "../../Maths/math.vector";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Constants } from "../../Engines/constants";
-import { GetClass, RegisterClass } from '../../Misc/typeStore';
-import { _WarnImport } from '../../Misc/devTools';
-import { IInspectable } from '../../Misc/iInspectable';
-import { ThinEngine } from '../../Engines/thinEngine';
-import { TimingTools } from '../../Misc/timingTools';
-import { InstantiationTools } from '../../Misc/instantiationTools';
-import { Plane } from '../../Maths/math.plane';
-import { EncodeArrayBufferToBase64, StartsWith } from '../../Misc/stringTools';
-import { GenerateBase64StringFromTexture, GenerateBase64StringFromTextureAsync } from '../../Misc/copyTools';
+import { GetClass, RegisterClass } from "../../Misc/typeStore";
+import { _WarnImport } from "../../Misc/devTools";
+import { IInspectable } from "../../Misc/iInspectable";
+import { ThinEngine } from "../../Engines/thinEngine";
+import { TimingTools } from "../../Misc/timingTools";
+import { InstantiationTools } from "../../Misc/instantiationTools";
+import { Plane } from "../../Maths/math.plane";
+import { EncodeArrayBufferToBase64, StartsWith } from "../../Misc/stringTools";
+import { GenerateBase64StringFromTexture, GenerateBase64StringFromTextureAsync } from "../../Misc/copyTools";
 import { CompatibilityOptions } from "../../Compat/compatibilityOptions";
 
 declare type CubeTexture = import("../../Materials/Textures/cubeTexture").CubeTexture;
@@ -82,18 +82,36 @@ export class Texture extends BaseTexture {
      */
     public static OnTextureLoadErrorObservable = new Observable<BaseTexture>();
 
-    /** @hidden */
+    /**
+     * @param jsonTexture
+     * @param scene
+     * @param rootUrl
+     * @hidden
+     */
     public static _CubeTextureParser = (jsonTexture: any, scene: Scene, rootUrl: string): CubeTexture => {
         throw _WarnImport("CubeTexture");
-    }
-    /** @hidden */
+    };
+    /**
+     * @param name
+     * @param renderTargetSize
+     * @param scene
+     * @param generateMipMaps
+     * @hidden
+     */
     public static _CreateMirror = (name: string, renderTargetSize: number, scene: Scene, generateMipMaps: boolean): MirrorTexture => {
         throw _WarnImport("MirrorTexture");
-    }
-    /** @hidden */
+    };
+    /**
+     * @param name
+     * @param renderTargetSize
+     * @param scene
+     * @param generateMipMaps
+     * @param creationFlags
+     * @hidden
+     */
     public static _CreateRenderTargetTexture = (name: string, renderTargetSize: number, scene: Scene, generateMipMaps: boolean, creationFlags?: number): RenderTargetTexture => {
         throw _WarnImport("RenderTargetTexture");
-    }
+    };
 
     /** nearest is mag = nearest and min = nearest and mip = linear */
     public static readonly NEAREST_SAMPLINGMODE = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
@@ -340,9 +358,21 @@ export class Texture extends BaseTexture {
      * @param loaderOptions options to be passed to the loader
      * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
      */
-    constructor(url: Nullable<string>, sceneOrEngine?: Nullable<Scene | ThinEngine>, noMipmapOrOptions?: boolean | ITextureCreationOptions, invertY?: boolean, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
-        onLoad: Nullable<() => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null, buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null,
-        deleteBuffer: boolean = false, format?: number, mimeType?: string, loaderOptions?: any, creationFlags?: number) {
+    constructor(
+        url: Nullable<string>,
+        sceneOrEngine?: Nullable<Scene | ThinEngine>,
+        noMipmapOrOptions?: boolean | ITextureCreationOptions,
+        invertY?: boolean,
+        samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
+        onLoad: Nullable<() => void> = null,
+        onError: Nullable<(message?: string, exception?: any) => void> = null,
+        buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null,
+        deleteBuffer: boolean = false,
+        format?: number,
+        mimeType?: string,
+        loaderOptions?: any,
+        creationFlags?: number
+    ) {
         super(sceneOrEngine);
 
         this.name = url || "";
@@ -351,7 +381,7 @@ export class Texture extends BaseTexture {
         let noMipmap: boolean;
         let useSRGBBuffer: boolean = false;
 
-        if (typeof noMipmapOrOptions === 'object' && noMipmapOrOptions !== null) {
+        if (typeof noMipmapOrOptions === "object" && noMipmapOrOptions !== null) {
             noMipmap = noMipmapOrOptions.noMipmap ?? false;
             invertY = noMipmapOrOptions.invertY ?? (CompatibilityOptions.UseOpenGLOrientationForUV ? false : true);
             samplingMode = noMipmapOrOptions.samplingMode ?? Texture.TRILINEAR_SAMPLINGMODE;
@@ -381,15 +411,15 @@ export class Texture extends BaseTexture {
             this._format = format;
         }
 
-        var scene = this.getScene();
-        var engine = this._getEngine();
+        const scene = this.getScene();
+        const engine = this._getEngine();
         if (!engine) {
             return;
         }
 
         engine.onBeforeTextureInitObservable.notifyObservers(this);
 
-        let load = () => {
+        const load = () => {
             if (this._texture) {
                 if (this._texture._invertVScale) {
                     this.vScale *= -1;
@@ -443,7 +473,23 @@ export class Texture extends BaseTexture {
         if (!this._texture) {
             if (!scene || !scene.useDelayedTextureLoading) {
                 try {
-                    this._texture = engine.createTexture(this.url, noMipmap, this._invertY, scene, samplingMode, load, errorHandler, this._buffer, undefined, this._format, null, mimeType, loaderOptions, creationFlags, useSRGBBuffer);
+                    this._texture = engine.createTexture(
+                        this.url,
+                        noMipmap,
+                        this._invertY,
+                        scene,
+                        samplingMode,
+                        load,
+                        errorHandler,
+                        this._buffer,
+                        undefined,
+                        this._format,
+                        null,
+                        mimeType,
+                        loaderOptions,
+                        creationFlags,
+                        useSRGBBuffer
+                    );
                 } catch (e) {
                     errorHandler("error loading", e);
                     throw e;
@@ -504,7 +550,7 @@ export class Texture extends BaseTexture {
             return;
         }
 
-        let scene = this.getScene();
+        const scene = this.getScene();
         if (!scene) {
             return;
         }
@@ -513,7 +559,25 @@ export class Texture extends BaseTexture {
         this._texture = this._getFromCache(this.url, this._noMipmap, this.samplingMode, this._invertY, this._useSRGBBuffer);
 
         if (!this._texture) {
-            this._texture = scene.getEngine().createTexture(this.url, this._noMipmap, this._invertY, scene, this.samplingMode, this._delayedOnLoad, this._delayedOnError, this._buffer, null, this._format, null, this._mimeType, this._loaderOptions, this._creationFlags, this._useSRGBBuffer);
+            this._texture = scene
+                .getEngine()
+                .createTexture(
+                    this.url,
+                    this._noMipmap,
+                    this._invertY,
+                    scene,
+                    this.samplingMode,
+                    this._delayedOnLoad,
+                    this._delayedOnError,
+                    this._buffer,
+                    null,
+                    this._format,
+                    null,
+                    this._mimeType,
+                    this._loaderOptions,
+                    this._creationFlags,
+                    this._useSRGBBuffer
+                );
             if (this._deleteBuffer) {
                 this._buffer = null;
             }
@@ -552,18 +616,21 @@ export class Texture extends BaseTexture {
      * @returns true if the transforms are the same, else false
      */
     public checkTransformsAreIdentical(texture: Nullable<Texture>): boolean {
-        return texture !== null &&
+        return (
+            texture !== null &&
             this.uOffset === texture.uOffset &&
             this.vOffset === texture.vOffset &&
             this.uScale === texture.uScale &&
             this.vScale === texture.vScale &&
             this.uAng === texture.uAng &&
             this.vAng === texture.vAng &&
-            this.wAng === texture.wAng;
+            this.wAng === texture.wAng
+        );
     }
 
     /**
      * Get the current texture matrix which includes the requested offsetting, tiling and rotation components.
+     * @param uBase
      * @returns the transform matrix of the texture.
      */
     public getTextureMatrix(uBase = 1): Matrix {
@@ -578,7 +645,8 @@ export class Texture extends BaseTexture {
             this.uRotationCenter === this._cachedURotationCenter &&
             this.vRotationCenter === this._cachedVRotationCenter &&
             this.wRotationCenter === this._cachedWRotationCenter &&
-            this.homogeneousRotationInUVTransform === this._cachedHomogeneousRotationInUVTransform) {
+            this.homogeneousRotationInUVTransform === this._cachedHomogeneousRotationInUVTransform
+        ) {
             return this._cachedTextureMatrix!;
         }
 
@@ -626,15 +694,27 @@ export class Texture extends BaseTexture {
             this._t2!.subtractInPlace(this._t0!);
 
             Matrix.FromValuesToRef(
-                this._t1!.x, this._t1!.y, this._t1!.z, 0.0,
-                this._t2!.x, this._t2!.y, this._t2!.z, 0.0,
-                this._t0!.x, this._t0!.y, this._t0!.z, 0.0,
-                0.0, 0.0, 0.0, 1.0,
+                this._t1!.x,
+                this._t1!.y,
+                this._t1!.z,
+                0.0,
+                this._t2!.x,
+                this._t2!.y,
+                this._t2!.z,
+                0.0,
+                this._t0!.x,
+                this._t0!.y,
+                this._t0!.z,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
                 this._cachedTextureMatrix
             );
         }
 
-        let scene = this.getScene();
+        const scene = this.getScene();
 
         if (!scene) {
             return this._cachedTextureMatrix;
@@ -654,7 +734,7 @@ export class Texture extends BaseTexture {
      * @returns The reflection texture transform
      */
     public getReflectionTextureMatrix(): Matrix {
-        let scene = this.getScene();
+        const scene = this.getScene();
 
         if (!scene) {
             return this._cachedTextureMatrix!;
@@ -665,7 +745,8 @@ export class Texture extends BaseTexture {
             this.vOffset === this._cachedVOffset &&
             this.uScale === this._cachedUScale &&
             this.vScale === this._cachedVScale &&
-            this.coordinatesMode === this._cachedCoordinatesMode) {
+            this.coordinatesMode === this._cachedCoordinatesMode
+        ) {
             if (this.coordinatesMode === Texture.PROJECTION_MODE) {
                 if (this._cachedProjectionMatrixId === scene.getProjectionMatrix().updateFlag) {
                     return this._cachedTextureMatrix!;
@@ -700,15 +781,9 @@ export class Texture extends BaseTexture {
                 (<any>this._cachedTextureMatrix)[13] = this.vOffset;
                 break;
             case Texture.PROJECTION_MODE:
-                Matrix.FromValuesToRef(
-                    0.5, 0.0, 0.0, 0.0,
-                    0.0, -0.5, 0.0, 0.0,
-                    0.0, 0.0, 0.0, 0.0,
-                    0.5, 0.5, 1.0, 1.0,
-                    this._projectionModeMatrix
-                );
+                Matrix.FromValuesToRef(0.5, 0.0, 0.0, 0.0, 0.0, -0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.5, 0.5, 1.0, 1.0, this._projectionModeMatrix);
 
-                let projectionMatrix = scene.getProjectionMatrix();
+                const projectionMatrix = scene.getProjectionMatrix();
                 this._cachedProjectionMatrixId = projectionMatrix.updateFlag;
                 projectionMatrix.multiplyToRef(this._projectionModeMatrix, this._cachedTextureMatrix);
                 break;
@@ -721,7 +796,7 @@ export class Texture extends BaseTexture {
             // We flag the materials that are using this texture as "texture dirty" if the coordinatesMode has changed.
             // Indeed, this property is used to set the value of some defines used to generate the effect (in material.isReadyForSubMesh), so we must make sure this code will be re-executed and the effect recreated if necessary
             scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
-                return (mat.getActiveTextures().indexOf(this) !== -1);
+                return mat.getActiveTextures().indexOf(this) !== -1;
             });
         }
 
@@ -758,7 +833,7 @@ export class Texture extends BaseTexture {
      * @returns The JSON representation of the texture
      */
     public serialize(): any {
-        let savedName = this.name;
+        const savedName = this.name;
 
         if (!Texture.SerializeBuffers) {
             if (StartsWith(this.name, "data:")) {
@@ -770,7 +845,7 @@ export class Texture extends BaseTexture {
             this.url = "";
         }
 
-        var serializationObject = super.serialize();
+        const serializationObject = super.serialize();
 
         if (!serializationObject) {
             return null;
@@ -783,7 +858,8 @@ export class Texture extends BaseTexture {
             } else if (this.url && StartsWith(this.url, "data:") && this._buffer instanceof Uint8Array) {
                 serializationObject.base64String = "data:image/png;base64," + EncodeArrayBufferToBase64(this._buffer);
             } else if (Texture.ForceSerializeBuffers || (this.url && StartsWith(this.url, "blob:")) || this._forceSerialize) {
-                serializationObject.base64String = !this._engine || this._engine._features.supportSyncTextureRead ? GenerateBase64StringFromTexture(this) : GenerateBase64StringFromTextureAsync(this);
+                serializationObject.base64String =
+                    !this._engine || this._engine._features.supportSyncTextureRead ? GenerateBase64StringFromTexture(this) : GenerateBase64StringFromTextureAsync(this);
             }
         }
 
@@ -826,9 +902,9 @@ export class Texture extends BaseTexture {
      */
     public static Parse(parsedTexture: any, scene: Scene, rootUrl: string): Nullable<BaseTexture> {
         if (parsedTexture.customType) {
-            var customTexture = InstantiationTools.Instantiate(parsedTexture.customType);
+            const customTexture = InstantiationTools.Instantiate(parsedTexture.customType);
             // Update Sampling Mode
-            var parsedCustomTexture: any = customTexture.Parse(parsedTexture, scene, rootUrl);
+            const parsedCustomTexture: any = customTexture.Parse(parsedTexture, scene, rootUrl);
             if (parsedTexture.samplingMode && parsedCustomTexture.updateSamplingMode && parsedCustomTexture._samplingMode) {
                 if (parsedCustomTexture._samplingMode !== parsedTexture.samplingMode) {
                     parsedCustomTexture.updateSamplingMode(parsedTexture.samplingMode);
@@ -855,15 +931,15 @@ export class Texture extends BaseTexture {
 
             // Update Sampling Mode
             if (parsedTexture.samplingMode) {
-                var sampling: number = parsedTexture.samplingMode;
+                const sampling: number = parsedTexture.samplingMode;
                 if (texture && texture.samplingMode !== sampling) {
                     texture.updateSamplingMode(sampling);
                 }
             }
             // Animations
             if (texture && parsedTexture.animations) {
-                for (var animationIndex = 0; animationIndex < parsedTexture.animations.length; animationIndex++) {
-                    var parsedAnimation = parsedTexture.animations[animationIndex];
+                for (let animationIndex = 0; animationIndex < parsedTexture.animations.length; animationIndex++) {
+                    const parsedAnimation = parsedTexture.animations[animationIndex];
                     const internalClass = GetClass("BABYLON.Animation");
                     if (internalClass) {
                         texture.animations.push(internalClass.Parse(parsedAnimation));
@@ -872,58 +948,77 @@ export class Texture extends BaseTexture {
             }
         };
 
-        var texture = SerializationHelper.Parse(() => {
-            var generateMipMaps: boolean = true;
-            if (parsedTexture.noMipmap) {
-                generateMipMaps = false;
-            }
-            if (parsedTexture.mirrorPlane) {
-                var mirrorTexture = Texture._CreateMirror(parsedTexture.name, parsedTexture.renderTargetSize, scene, generateMipMaps);
-                mirrorTexture._waitingRenderList = parsedTexture.renderList;
-                mirrorTexture.mirrorPlane = Plane.FromArray(parsedTexture.mirrorPlane);
-                onLoaded();
-                return mirrorTexture;
-            } else if (parsedTexture.isRenderTarget) {
-                let renderTargetTexture: Nullable<RenderTargetTexture> = null;
-                if (parsedTexture.isCube) {
-                    // Search for an existing reflection probe (which contains a cube render target texture)
-                    if (scene.reflectionProbes) {
-                        for (var index = 0; index < scene.reflectionProbes.length; index++) {
-                            const probe = scene.reflectionProbes[index];
-                            if (probe.name === parsedTexture.name) {
-                                return probe.cubeTexture;
+        var texture = SerializationHelper.Parse(
+            () => {
+                let generateMipMaps: boolean = true;
+                if (parsedTexture.noMipmap) {
+                    generateMipMaps = false;
+                }
+                if (parsedTexture.mirrorPlane) {
+                    const mirrorTexture = Texture._CreateMirror(parsedTexture.name, parsedTexture.renderTargetSize, scene, generateMipMaps);
+                    mirrorTexture._waitingRenderList = parsedTexture.renderList;
+                    mirrorTexture.mirrorPlane = Plane.FromArray(parsedTexture.mirrorPlane);
+                    onLoaded();
+                    return mirrorTexture;
+                } else if (parsedTexture.isRenderTarget) {
+                    let renderTargetTexture: Nullable<RenderTargetTexture> = null;
+                    if (parsedTexture.isCube) {
+                        // Search for an existing reflection probe (which contains a cube render target texture)
+                        if (scene.reflectionProbes) {
+                            for (let index = 0; index < scene.reflectionProbes.length; index++) {
+                                const probe = scene.reflectionProbes[index];
+                                if (probe.name === parsedTexture.name) {
+                                    return probe.cubeTexture;
+                                }
                             }
                         }
+                    } else {
+                        renderTargetTexture = Texture._CreateRenderTargetTexture(
+                            parsedTexture.name,
+                            parsedTexture.renderTargetSize,
+                            scene,
+                            generateMipMaps,
+                            parsedTexture._creationFlags ?? 0
+                        );
+                        renderTargetTexture._waitingRenderList = parsedTexture.renderList;
                     }
+                    onLoaded();
+                    return renderTargetTexture;
                 } else {
-                    renderTargetTexture = Texture._CreateRenderTargetTexture(parsedTexture.name, parsedTexture.renderTargetSize, scene, generateMipMaps, parsedTexture._creationFlags ?? 0);
-                    renderTargetTexture._waitingRenderList = parsedTexture.renderList;
+                    let texture: Texture;
+
+                    if (parsedTexture.base64String) {
+                        texture = Texture.CreateFromBase64String(
+                            parsedTexture.base64String,
+                            parsedTexture.name,
+                            scene,
+                            !generateMipMaps,
+                            parsedTexture.invertY,
+                            parsedTexture.samplingMode,
+                            onLoaded,
+                            parsedTexture._creationFlags ?? 0,
+                            parsedTexture._useSRGBBuffer ?? false
+                        );
+                    } else {
+                        let url: string;
+                        if (parsedTexture.name && parsedTexture.name.indexOf("://") > 0) {
+                            url = parsedTexture.name;
+                        } else {
+                            url = rootUrl + parsedTexture.name;
+                        }
+
+                        if (StartsWith(parsedTexture.url, "data:") || (Texture.UseSerializedUrlIfAny && parsedTexture.url)) {
+                            url = parsedTexture.url;
+                        }
+                        texture = new Texture(url, scene, !generateMipMaps, parsedTexture.invertY, parsedTexture.samplingMode, onLoaded);
+                    }
+
+                    return texture;
                 }
-                onLoaded();
-                return renderTargetTexture;
-            } else {
-                var texture: Texture;
-
-                if (parsedTexture.base64String) {
-                    texture = Texture.CreateFromBase64String(parsedTexture.base64String, parsedTexture.name, scene, !generateMipMaps, parsedTexture.invertY, parsedTexture.samplingMode, onLoaded, parsedTexture._creationFlags ?? 0, parsedTexture._useSRGBBuffer ?? false);
-                } else {
-                    let url: string;
-                    if (parsedTexture.name && parsedTexture.name.indexOf("://") > 0) {
-                        url = parsedTexture.name;
-                    }
-                    else {
-                        url = rootUrl + parsedTexture.name;
-                    }
-
-                    if (StartsWith(parsedTexture.url, "data:") || (Texture.UseSerializedUrlIfAny && parsedTexture.url)) {
-                        url = parsedTexture.url;
-                    }
-                    texture = new Texture(url, scene, !generateMipMaps, parsedTexture.invertY, parsedTexture.samplingMode, onLoaded);
-                }
-
-                return texture;
-            }
-        }, parsedTexture, scene);
+            },
+            parsedTexture,
+            scene
+        );
 
         return texture;
     }
@@ -942,8 +1037,18 @@ export class Texture extends BaseTexture {
      * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
      * @returns the created texture
      */
-    public static CreateFromBase64String(data: string, name: string, scene: Scene, noMipmapOrOptions?: boolean | ITextureCreationOptions, invertY?: boolean, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
-        onLoad: Nullable<() => void> = null, onError: Nullable<() => void> = null, format: number = Constants.TEXTUREFORMAT_RGBA, creationFlags?: number): Texture {
+    public static CreateFromBase64String(
+        data: string,
+        name: string,
+        scene: Scene,
+        noMipmapOrOptions?: boolean | ITextureCreationOptions,
+        invertY?: boolean,
+        samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
+        onLoad: Nullable<() => void> = null,
+        onError: Nullable<() => void> = null,
+        format: number = Constants.TEXTUREFORMAT_RGBA,
+        creationFlags?: number
+    ): Texture {
         return new Texture("data:" + name, scene, noMipmapOrOptions, invertY, samplingMode, onLoad, onError, data, false, format, undefined, undefined, creationFlags);
     }
 
@@ -963,8 +1068,19 @@ export class Texture extends BaseTexture {
      * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
      * @returns the created texture
      */
-    public static LoadFromDataString(name: string, buffer: any, scene: Scene, deleteBuffer: boolean = false, noMipmapOrOptions?: boolean | ITextureCreationOptions, invertY: boolean = true, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
-        onLoad: Nullable<() => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null, format: number = Constants.TEXTUREFORMAT_RGBA, creationFlags?: number): Texture {
+    public static LoadFromDataString(
+        name: string,
+        buffer: any,
+        scene: Scene,
+        deleteBuffer: boolean = false,
+        noMipmapOrOptions?: boolean | ITextureCreationOptions,
+        invertY: boolean = true,
+        samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
+        onLoad: Nullable<() => void> = null,
+        onError: Nullable<(message?: string, exception?: any) => void> = null,
+        format: number = Constants.TEXTUREFORMAT_RGBA,
+        creationFlags?: number
+    ): Texture {
         if (name.substr(0, 5) !== "data:") {
             name = "data:" + name;
         }

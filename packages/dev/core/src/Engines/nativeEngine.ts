@@ -8,21 +8,21 @@ import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { VideoTexture } from "../Materials/Textures/videoTexture";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { Effect } from "../Materials/effect";
-import { DataBuffer } from '../Buffers/dataBuffer';
+import { DataBuffer } from "../Buffers/dataBuffer";
 import { Tools } from "../Misc/tools";
 import { Observable, Observer } from "../Misc/observable";
 import { EnvironmentTextureSpecularInfoV1, CreateImageDataArrayBufferViews, GetEnvInfo, UploadEnvSpherical } from "../Misc/environmentTextureTools";
 import { Scene } from "../scene";
 import { RenderTargetCreationOptions, TextureSize, DepthTextureCreationOptions } from "../Materials/Textures/textureCreationOptions";
-import { IPipelineContext } from './IPipelineContext';
-import { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, IColor4Like, IViewportLike } from '../Maths/math.like';
+import { IPipelineContext } from "./IPipelineContext";
+import { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, IColor4Like, IViewportLike } from "../Maths/math.like";
 import { Logger } from "../Misc/logger";
-import { Constants } from './constants';
-import { ThinEngine, ISceneLike } from './thinEngine';
-import { IWebRequest } from '../Misc/interfaces/iWebRequest';
-import { EngineStore } from './engineStore';
+import { Constants } from "./constants";
+import { ThinEngine, ISceneLike } from "./thinEngine";
+import { IWebRequest } from "../Misc/interfaces/iWebRequest";
+import { EngineStore } from "./engineStore";
 import { ShaderCodeInliner } from "./Processors/shaderCodeInliner";
-import { WebGL2ShaderProcessor } from '../Engines/WebGL/webGL2ShaderProcessors';
+import { WebGL2ShaderProcessor } from "../Engines/WebGL/webGL2ShaderProcessors";
 import { IMaterialContext } from "./IMaterialContext";
 import { IDrawContext } from "./IDrawContext";
 import { ICanvas, IImage } from "./ICanvas";
@@ -35,7 +35,7 @@ import { RuntimeError, ErrorCodes } from "../Misc/error";
 declare const _native: INative;
 
 const onNativeObjectInitialized = new Observable<INative>();
-if (typeof self !== 'undefined' && !self.hasOwnProperty("_native")) {
+if (typeof self !== "undefined" && !self.hasOwnProperty("_native")) {
     let __native: INative;
     Object.defineProperty(self, "_native", {
         get: () => __native,
@@ -44,7 +44,7 @@ if (typeof self !== 'undefined' && !self.hasOwnProperty("_native")) {
             if (__native) {
                 onNativeObjectInitialized.notifyObservers(__native);
             }
-        }
+        },
     });
 }
 
@@ -54,7 +54,7 @@ if (typeof self !== 'undefined' && !self.hasOwnProperty("_native")) {
  */
 export function AcquireNativeObjectAsync(): Promise<INative> {
     return new Promise((resolve) => {
-        if (typeof _native === 'undefined') {
+        if (typeof _native === "undefined") {
             onNativeObjectInitialized.addOnce((nativeObject) => resolve(nativeObject));
         } else {
             resolve(_native);
@@ -64,10 +64,12 @@ export function AcquireNativeObjectAsync(): Promise<INative> {
 
 /**
  * Registers a constructor on the _native object. See NativeXRFrame for an example.
+ * @param typeName
+ * @param constructor
  * @hidden
  */
 export async function RegisterNativeTypeAsync<Type>(typeName: string, constructor: Type) {
-    (await AcquireNativeObjectAsync() as any)[typeName] = constructor;
+    ((await AcquireNativeObjectAsync()) as any)[typeName] = constructor;
 }
 
 class NativePipelineContext implements IPipelineContext {
@@ -105,10 +107,19 @@ class NativePipelineContext implements IPipelineContext {
         this.engine = engine;
     }
 
-    public _fillEffectInformation(effect: Effect, uniformBuffersNames: { [key: string]: number }, uniformsNames: string[], uniforms: { [key: string]: Nullable<WebGLUniformLocation> }, samplerList: string[], samplers: { [key: string]: number }, attributesNames: string[], attributes: number[]) {
+    public _fillEffectInformation(
+        effect: Effect,
+        uniformBuffersNames: { [key: string]: number },
+        uniformsNames: string[],
+        uniforms: { [key: string]: Nullable<WebGLUniformLocation> },
+        samplerList: string[],
+        samplers: { [key: string]: number },
+        attributesNames: string[],
+        attributes: number[]
+    ) {
         const engine = this.engine;
         if (engine.supportsUniformBuffers) {
-            for (var name in uniformBuffersNames) {
+            for (const name in uniformBuffersNames) {
                 effect.bindUniformBlock(name, uniformBuffersNames[name]);
             }
         }
@@ -142,10 +153,14 @@ class NativePipelineContext implements IPipelineContext {
         this._uniforms = {};
     }
 
-    /** @hidden */
+    /**
+     * @param uniformName
+     * @param matrix
+     * @hidden
+     */
     public _cacheMatrix(uniformName: string, matrix: IMatrixLike): boolean {
-        var cache = this._valueCache[uniformName];
-        var flag = matrix.updateFlag;
+        const cache = this._valueCache[uniformName];
+        const flag = matrix.updateFlag;
         if (cache !== undefined && cache === flag) {
             return false;
         }
@@ -155,16 +170,21 @@ class NativePipelineContext implements IPipelineContext {
         return true;
     }
 
-    /** @hidden */
+    /**
+     * @param uniformName
+     * @param x
+     * @param y
+     * @hidden
+     */
     public _cacheFloat2(uniformName: string, x: number, y: number): boolean {
-        var cache = this._valueCache[uniformName];
+        let cache = this._valueCache[uniformName];
         if (!cache) {
             cache = [x, y];
             this._valueCache[uniformName] = cache;
             return true;
         }
 
-        var changed = false;
+        let changed = false;
         if (cache[0] !== x) {
             cache[0] = x;
             changed = true;
@@ -177,16 +197,22 @@ class NativePipelineContext implements IPipelineContext {
         return changed;
     }
 
-    /** @hidden */
+    /**
+     * @param uniformName
+     * @param x
+     * @param y
+     * @param z
+     * @hidden
+     */
     public _cacheFloat3(uniformName: string, x: number, y: number, z: number): boolean {
-        var cache = this._valueCache[uniformName];
+        let cache = this._valueCache[uniformName];
         if (!cache) {
             cache = [x, y, z];
             this._valueCache[uniformName] = cache;
             return true;
         }
 
-        var changed = false;
+        let changed = false;
         if (cache[0] !== x) {
             cache[0] = x;
             changed = true;
@@ -203,16 +229,23 @@ class NativePipelineContext implements IPipelineContext {
         return changed;
     }
 
-    /** @hidden */
+    /**
+     * @param uniformName
+     * @param x
+     * @param y
+     * @param z
+     * @param w
+     * @hidden
+     */
     public _cacheFloat4(uniformName: string, x: number, y: number, z: number, w: number): boolean {
-        var cache = this._valueCache[uniformName];
+        let cache = this._valueCache[uniformName];
         if (!cache) {
             cache = [x, y, z, w];
             this._valueCache[uniformName] = cache;
             return true;
         }
 
-        var changed = false;
+        let changed = false;
         if (cache[0] !== x) {
             cache[0] = x;
             changed = true;
@@ -239,7 +272,7 @@ class NativePipelineContext implements IPipelineContext {
      * @param value Value to be set.
      */
     public setInt(uniformName: string, value: number): void {
-        var cache = this._valueCache[uniformName];
+        const cache = this._valueCache[uniformName];
         if (cache !== undefined && cache === value) {
             return;
         }
@@ -269,6 +302,7 @@ class NativePipelineContext implements IPipelineContext {
      * @param x First int in int3.
      * @param y Second int in int3.
      * @param y Third int in int3.
+     * @param z
      */
     public setInt3(uniformName: string, x: number, y: number, z: number): void {
         if (this._cacheFloat3(uniformName, x, y, z)) {
@@ -284,6 +318,7 @@ class NativePipelineContext implements IPipelineContext {
      * @param x First int in int4.
      * @param y Second int in int4.
      * @param y Third int in int4.
+     * @param z
      * @param w Fourth int in int4.
      */
     public setInt4(uniformName: string, x: number, y: number, z: number, w: number): void {
@@ -469,7 +504,7 @@ class NativePipelineContext implements IPipelineContext {
      * @returns this effect.
      */
     public setFloat(uniformName: string, value: number): void {
-        var cache = this._valueCache[uniformName];
+        const cache = this._valueCache[uniformName];
         if (cache !== undefined && cache === value) {
             return;
         }
@@ -485,7 +520,7 @@ class NativePipelineContext implements IPipelineContext {
      * @param bool value to be set.
      */
     public setBool(uniformName: string, bool: boolean): void {
-        var cache = this._valueCache[uniformName];
+        const cache = this._valueCache[uniformName];
         if (cache !== undefined && cache === bool) {
             return;
         }
@@ -681,7 +716,6 @@ class NativeDataBuffer extends DataBuffer {
  * Options to create the Native engine
  */
 export interface NativeEngineOptions {
-
     /**
      * defines whether to adapt to the device's viewport characteristics (default: false)
      */
@@ -823,7 +857,7 @@ export class NativeEngine extends Engine {
             etc1: null,
             etc2: null,
             bptc: null,
-            maxAnisotropy: 16,  // TODO: Retrieve this smartly. Currently set to D3D11 maximum allowable value.
+            maxAnisotropy: 16, // TODO: Retrieve this smartly. Currently set to D3D11 maximum allowable value.
             uintIndices: true,
             fragmentDepthSupported: false,
             highPrecisionShaderSupported: true,
@@ -848,7 +882,7 @@ export class NativeEngine extends Engine {
             supportComputeShaders: false,
             supportSRGBBuffers: true,
             supportTransformFeedbacks: false,
-            textureMaxLevel: false
+            textureMaxLevel: false,
         };
 
         this._features = {
@@ -880,34 +914,42 @@ export class NativeEngine extends Engine {
         Tools.Log("Babylon Native (v" + Engine.Version + ") launched");
 
         Tools.LoadScript = function (scriptUrl, onSuccess, onError, scriptId) {
-            Tools.LoadFile(scriptUrl, (data) => {
-                Function(data as string).apply(null);
-                if (onSuccess) {
-                    onSuccess();
-                }
-            }, undefined, undefined, false,
+            Tools.LoadFile(
+                scriptUrl,
+                (data) => {
+                    Function(data as string).apply(null);
+                    if (onSuccess) {
+                        onSuccess();
+                    }
+                },
+                undefined,
+                undefined,
+                false,
                 (request, exception) => {
                     if (onError) {
                         onError("LoadScript Error", exception);
                     }
-                });
+                }
+            );
         };
 
         // Wrappers
         if (typeof URL === "undefined") {
             (window.URL as any) = {
-                createObjectURL: function () { },
-                revokeObjectURL: function () { }
+                createObjectURL: function () {},
+                revokeObjectURL: function () {},
             };
         }
 
         if (typeof Blob === "undefined") {
-            (window.Blob as any) = function (v: any) { return v; };
+            (window.Blob as any) = function (v: any) {
+                return v;
+            };
         }
 
         // Currently we do not fully configure the ThinEngine on construction of NativeEngine.
         // Setup resolution scaling based on display settings.
-        var devicePixelRatio = window ? (window.devicePixelRatio || 1.0) : 1.0;
+        const devicePixelRatio = window ? window.devicePixelRatio || 1.0 : 1.0;
         this._hardwareScalingLevel = options.adaptToDeviceRatio ? devicePixelRatio : 1.0;
         this.resize();
 
@@ -944,6 +986,8 @@ export class NativeEngine extends Engine {
 
     /**
      * Can be used to override the current requestAnimationFrame requester.
+     * @param bindedRenderFunction
+     * @param requester
      * @hidden
      */
     protected _queueNewFrame(bindedRenderFunction: any, requester?: any): number {
@@ -962,6 +1006,7 @@ export class NativeEngine extends Engine {
      * @param backBuffer
      * @param depth
      * @param stencil
+     * @param framebuffer
      */
     public _bindUnboundFramebuffer(framebuffer: Nullable<WebGLFramebuffer>) {
         if (this._currentFramebuffer !== framebuffer) {
@@ -1011,7 +1056,7 @@ export class NativeEngine extends Engine {
         const data = this._normalizeIndexData(indices);
         const buffer = new NativeDataBuffer();
         buffer.references = 1;
-        buffer.is32Bits = (data.BYTES_PER_ELEMENT === 4);
+        buffer.is32Bits = data.BYTES_PER_ELEMENT === 4;
         if (data.byteLength) {
             buffer.nativeIndexBuffer = this._engine.createIndexBuffer(data.buffer, data.byteOffset, data.byteLength, buffer.is32Bits, updateable ?? false);
         }
@@ -1028,7 +1073,7 @@ export class NativeEngine extends Engine {
         return buffer;
     }
 
-    protected _recordVertexArrayObject(vertexArray: any, vertexBuffers: { [key: string]: VertexBuffer; }, indexBuffer: Nullable<NativeDataBuffer>, effect: Effect): void {
+    protected _recordVertexArrayObject(vertexArray: any, vertexBuffers: { [key: string]: VertexBuffer }, indexBuffer: Nullable<NativeDataBuffer>, effect: Effect): void {
         if (indexBuffer) {
             this._engine.recordIndexBuffer(vertexArray, indexBuffer.nativeIndexBuffer!);
         }
@@ -1051,14 +1096,15 @@ export class NativeEngine extends Engine {
                             vertexBuffer.getSize(),
                             this._getNativeAttribType(vertexBuffer.type),
                             vertexBuffer.normalized,
-                            vertexBuffer.getInstanceDivisor());
+                            vertexBuffer.getInstanceDivisor()
+                        );
                     }
                 }
             }
         }
     }
 
-    public bindBuffers(vertexBuffers: { [key: string]: VertexBuffer; }, indexBuffer: Nullable<NativeDataBuffer>, effect: Effect): void {
+    public bindBuffers(vertexBuffers: { [key: string]: VertexBuffer }, indexBuffer: Nullable<NativeDataBuffer>, effect: Effect): void {
         if (this._boundBuffersVertexArray) {
             this._deleteVertexArray(this._boundBuffersVertexArray);
         }
@@ -1067,7 +1113,7 @@ export class NativeEngine extends Engine {
         this.bindVertexArrayObject(this._boundBuffersVertexArray);
     }
 
-    public recordVertexArrayObject(vertexBuffers: { [key: string]: VertexBuffer; }, indexBuffer: Nullable<NativeDataBuffer>, effect: Effect): WebGLVertexArrayObject {
+    public recordVertexArrayObject(vertexBuffers: { [key: string]: VertexBuffer }, indexBuffer: Nullable<NativeDataBuffer>, effect: Effect): WebGLVertexArrayObject {
         const vertexArray = this._engine.createVertexArray();
         this._recordVertexArrayObject(vertexArray, vertexBuffers, indexBuffer, effect);
         return vertexArray;
@@ -1158,34 +1204,63 @@ export class NativeEngine extends Engine {
         return undefined;
     }
 
-    public _preparePipelineContext(pipelineContext: IPipelineContext, vertexSourceCode: string, fragmentSourceCode: string, createAsRaw: boolean, rawVertexSourceCode: string, rawFragmentSourceCode: string, rebuildRebind: any, defines: Nullable<string>, transformFeedbackVaryings: Nullable<string[]>) {
+    public _preparePipelineContext(
+        pipelineContext: IPipelineContext,
+        vertexSourceCode: string,
+        fragmentSourceCode: string,
+        createAsRaw: boolean,
+        rawVertexSourceCode: string,
+        rawFragmentSourceCode: string,
+        rebuildRebind: any,
+        defines: Nullable<string>,
+        transformFeedbackVaryings: Nullable<string[]>
+    ) {
         const nativePipelineContext = pipelineContext as NativePipelineContext;
 
         if (createAsRaw) {
             nativePipelineContext.nativeProgram = this.createRawShaderProgram(pipelineContext, vertexSourceCode, fragmentSourceCode, undefined, transformFeedbackVaryings);
-        }
-        else {
+        } else {
             nativePipelineContext.nativeProgram = this.createShaderProgram(pipelineContext, vertexSourceCode, fragmentSourceCode, defines, undefined, transformFeedbackVaryings);
         }
     }
 
-    /** @hidden */
+    /**
+     * @param pipelineContext
+     * @hidden
+     */
     public _isRenderingStateCompiled(pipelineContext: IPipelineContext): boolean {
         // TODO: support async shader compilcation
         return true;
     }
 
-    /** @hidden */
+    /**
+     * @param pipelineContext
+     * @param action
+     * @hidden
+     */
     public _executeWhenRenderingStateIsCompiled(pipelineContext: IPipelineContext, action: () => void) {
         // TODO: support async shader compilcation
         action();
     }
 
-    public createRawShaderProgram(pipelineContext: IPipelineContext, vertexCode: string, fragmentCode: string, context?: WebGLRenderingContext, transformFeedbackVaryings: Nullable<string[]> = null): any {
+    public createRawShaderProgram(
+        pipelineContext: IPipelineContext,
+        vertexCode: string,
+        fragmentCode: string,
+        context?: WebGLRenderingContext,
+        transformFeedbackVaryings: Nullable<string[]> = null
+    ): any {
         throw new Error("Not Supported");
     }
 
-    public createShaderProgram(pipelineContext: IPipelineContext, vertexCode: string, fragmentCode: string, defines: Nullable<string>, context?: WebGLRenderingContext, transformFeedbackVaryings: Nullable<string[]> = null): any {
+    public createShaderProgram(
+        pipelineContext: IPipelineContext,
+        vertexCode: string,
+        fragmentCode: string,
+        defines: Nullable<string>,
+        context?: WebGLRenderingContext,
+        transformFeedbackVaryings: Nullable<string[]> = null
+    ): any {
         this.onBeforeShaderCompilationObservable.notifyObservers(this);
 
         const vertexInliner = new ShaderCodeInliner(vertexCode);
@@ -1249,9 +1324,9 @@ export class NativeEngine extends Engine {
         this._setProgram(nativePipelineContext.nativeProgram);
 
         // TODO: share this with engine?
-        var samplers = effect.getSamplers();
-        for (var index = 0; index < samplers.length; index++) {
-            var uniform = effect.getUniform(samplers[index]);
+        const samplers = effect.getSamplers();
+        for (let index = 0; index < samplers.length; index++) {
+            const uniform = effect.getUniform(samplers[index]);
 
             if (uniform) {
                 this._boundUniforms[index] = uniform;
@@ -1301,7 +1376,7 @@ export class NativeEngine extends Engine {
         this._commandBufferEncoder.encodeCommandArgAsUInt32(culling ? 1 : 0);
         this._commandBufferEncoder.encodeCommandArgAsFloat32(zOffset);
         this._commandBufferEncoder.encodeCommandArgAsFloat32(zOffsetUnits);
-        this._commandBufferEncoder.encodeCommandArgAsUInt32((this.cullBackFaces ?? cullBackFaces ?? true) ? 1 : 0);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(this.cullBackFaces ?? cullBackFaces ?? true ? 1 : 0);
         this._commandBufferEncoder.encodeCommandArgAsUInt32(reverseSide ? 1 : 0);
         this._commandBufferEncoder.finishEncodingCommand();
     }
@@ -1320,7 +1395,7 @@ export class NativeEngine extends Engine {
             width: this.getRenderWidth(),
             x: 0,
             y: 0,
-            toJSON: () => { }
+            toJSON: () => {},
         };
         return rect;
     }
@@ -1440,7 +1515,6 @@ export class NativeEngine extends Engine {
         this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETDEPTHTEST);
         this._commandBufferEncoder.encodeCommandArgAsUInt32(this._currentDepthTest);
         this._commandBufferEncoder.finishEncodingCommand();
-
     }
 
     /**
@@ -1474,12 +1548,14 @@ export class NativeEngine extends Engine {
     }
 
     private applyStencil(): void {
-        this._setStencil(this._stencilMask,
+        this._setStencil(
+            this._stencilMask,
             this._getStencilOpFail(this._stencilOpStencilFail),
             this._getStencilDepthFail(this._stencilOpDepthFail),
             this._getStencilDepthPass(this._stencilOpStencilDepthPass),
             this._getStencilFunc(this._stencilFunc),
-            this._stencilFuncRef);
+            this._stencilFuncRef
+        );
     }
 
     private _setStencil(mask: number, stencilOpFail: number, depthOpFail: number, depthOpPass: number, func: number, ref: number) {
@@ -1502,12 +1578,14 @@ export class NativeEngine extends Engine {
         if (enable) {
             this.applyStencil();
         } else {
-            this._setStencil(255,
+            this._setStencil(
+                255,
                 _native.Engine.STENCIL_OP_FAIL_S_KEEP,
                 _native.Engine.STENCIL_OP_FAIL_Z_KEEP,
                 _native.Engine.STENCIL_OP_PASS_Z_KEEP,
                 _native.Engine.STENCIL_TEST_ALWAYS,
-                0);
+                0
+            );
         }
     }
 
@@ -1520,9 +1598,9 @@ export class NativeEngine extends Engine {
     }
 
     /**
- * Gets the current stencil operation when stencil passes
- * @returns a number defining stencil operation to use when stencil passes
- */
+     * Gets the current stencil operation when stencil passes
+     * @returns a number defining stencil operation to use when stencil passes
+     */
     public getStencilOperationPass(): number {
         return this._stencilOpStencilDepthPass;
     }
@@ -1974,8 +2052,7 @@ export class NativeEngine extends Engine {
             premulAlpha = false;
         }
 
-        if (!!texture &&
-            !!texture._hardwareTexture) {
+        if (!!texture && !!texture._hardwareTexture) {
             const source = canvas.getCanvasTexture();
             const destination = texture._hardwareTexture.underlyingResource;
             this._engine.copyTexture(destination, source);
@@ -2001,13 +2078,23 @@ export class NativeEngine extends Engine {
 
     public updateVideoTexture(texture: Nullable<InternalTexture>, video: HTMLVideoElement, invertY: boolean): void {
         if (texture && texture._hardwareTexture && this._camera) {
-            var webGLTexture = texture._hardwareTexture.underlyingResource;
+            const webGLTexture = texture._hardwareTexture.underlyingResource;
             this._camera.updateVideoTexture(webGLTexture, video, invertY);
         }
     }
 
-    public createRawTexture(data: Nullable<ArrayBufferView>, width: number, height: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: Nullable<string> = null, type: number = Constants.TEXTURETYPE_UNSIGNED_INT): InternalTexture {
-        let texture = new InternalTexture(this, InternalTextureSource.Raw);
+    public createRawTexture(
+        data: Nullable<ArrayBufferView>,
+        width: number,
+        height: number,
+        format: number,
+        generateMipMaps: boolean,
+        invertY: boolean,
+        samplingMode: number,
+        compression: Nullable<string> = null,
+        type: number = Constants.TEXTURETYPE_UNSIGNED_INT
+    ): InternalTexture {
+        const texture = new InternalTexture(this, InternalTextureSource.Raw);
 
         texture.format = format;
         texture.generateMipMaps = generateMipMaps;
@@ -2023,8 +2110,8 @@ export class NativeEngine extends Engine {
         this.updateRawTexture(texture, data, format, invertY, compression, type);
 
         if (texture._hardwareTexture) {
-            var webGLTexture = texture._hardwareTexture.underlyingResource;
-            var filter = this._getNativeSamplingMode(samplingMode);
+            const webGLTexture = texture._hardwareTexture.underlyingResource;
+            const filter = this._getNativeSamplingMode(samplingMode);
             this._setTextureSampling(webGLTexture, filter);
         }
 
@@ -2032,8 +2119,19 @@ export class NativeEngine extends Engine {
         return texture;
     }
 
-    public createRawTexture2DArray(data: Nullable<ArrayBufferView>, width: number, height: number, depth: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: Nullable<string> = null, textureType = Constants.TEXTURETYPE_UNSIGNED_INT): InternalTexture {
-        let texture = new InternalTexture(this, InternalTextureSource.Raw2DArray);
+    public createRawTexture2DArray(
+        data: Nullable<ArrayBufferView>,
+        width: number,
+        height: number,
+        depth: number,
+        format: number,
+        generateMipMaps: boolean,
+        invertY: boolean,
+        samplingMode: number,
+        compression: Nullable<string> = null,
+        textureType = Constants.TEXTURETYPE_UNSIGNED_INT
+    ): InternalTexture {
+        const texture = new InternalTexture(this, InternalTextureSource.Raw2DArray);
 
         texture.baseWidth = width;
         texture.baseHeight = height;
@@ -2048,10 +2146,10 @@ export class NativeEngine extends Engine {
         texture.is2DArray = true;
 
         if (texture._hardwareTexture) {
-            var webGLTexture = texture._hardwareTexture.underlyingResource;
+            const webGLTexture = texture._hardwareTexture.underlyingResource;
             this._engine.loadRawTexture2DArray(webGLTexture, data, width, height, depth, this._getNativeTextureFormat(format, textureType), generateMipMaps, invertY);
 
-            var filter = this._getNativeSamplingMode(samplingMode);
+            const filter = this._getNativeSamplingMode(samplingMode);
             this._setTextureSampling(webGLTexture, filter);
         }
 
@@ -2061,14 +2159,29 @@ export class NativeEngine extends Engine {
         return texture;
     }
 
-    public updateRawTexture(texture: Nullable<InternalTexture>, bufferView: Nullable<ArrayBufferView>, format: number, invertY: boolean, compression: Nullable<string> = null, type: number = Constants.TEXTURETYPE_UNSIGNED_INT): void {
+    public updateRawTexture(
+        texture: Nullable<InternalTexture>,
+        bufferView: Nullable<ArrayBufferView>,
+        format: number,
+        invertY: boolean,
+        compression: Nullable<string> = null,
+        type: number = Constants.TEXTURETYPE_UNSIGNED_INT
+    ): void {
         if (!texture) {
             return;
         }
 
         if (bufferView && texture._hardwareTexture) {
             const underlyingResource = texture._hardwareTexture.underlyingResource;
-            this._engine.loadRawTexture(underlyingResource, bufferView, texture.width, texture.height, this._getNativeTextureFormat(format, type), texture.generateMipMaps, texture.invertY);
+            this._engine.loadRawTexture(
+                underlyingResource,
+                bufferView,
+                texture.width,
+                texture.height,
+                this._getNativeTextureFormat(format, type),
+                texture.generateMipMaps,
+                texture.invertY
+            );
         }
 
         texture.isReady = true;
@@ -2094,18 +2207,33 @@ export class NativeEngine extends Engine {
      * @param forcedExtension defines the extension to use to pick the right loader
      * @param mimeType defines an optional mime type
      * @param loaderOptions options to be passed to the loader
+     * @param creationFlags
+     * @param useSRGBBuffer
      * @returns a InternalTexture for assignment back into BABYLON.Texture
      */
-    public createTexture(url: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
-        onLoad: Nullable<() => void> = null, onError: Nullable<(message: string, exception: any) => void> = null,
-        buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null, fallback: Nullable<InternalTexture> = null, format: Nullable<number> = null,
-        forcedExtension: Nullable<string> = null, mimeType?: string, loaderOptions?: any, creationFlags?: number, useSRGBBuffer = false): InternalTexture {
+    public createTexture(
+        url: Nullable<string>,
+        noMipmap: boolean,
+        invertY: boolean,
+        scene: Nullable<ISceneLike>,
+        samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
+        onLoad: Nullable<() => void> = null,
+        onError: Nullable<(message: string, exception: any) => void> = null,
+        buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null,
+        fallback: Nullable<InternalTexture> = null,
+        format: Nullable<number> = null,
+        forcedExtension: Nullable<string> = null,
+        mimeType?: string,
+        loaderOptions?: any,
+        creationFlags?: number,
+        useSRGBBuffer = false
+    ): InternalTexture {
         url = url || "";
         const fromData = url.substr(0, 5) === "data:";
         //const fromBlob = url.substr(0, 5) === "blob:";
         const isBase64 = fromData && url.indexOf(";base64,") !== -1;
 
-        let texture = fallback ? fallback : new InternalTexture(this, InternalTextureSource.Url);
+        const texture = fallback ? fallback : new InternalTexture(this, InternalTextureSource.Url);
 
         const originalUrl = url;
         if (this._transformTextureUrl && !isBase64 && !fallback && !buffer) {
@@ -2113,11 +2241,11 @@ export class NativeEngine extends Engine {
         }
 
         // establish the file extension, if possible
-        var lastDot = url.lastIndexOf('.');
-        var extension = forcedExtension ? forcedExtension : (lastDot > -1 ? url.substring(lastDot).toLowerCase() : "");
+        const lastDot = url.lastIndexOf(".");
+        const extension = forcedExtension ? forcedExtension : lastDot > -1 ? url.substring(lastDot).toLowerCase() : "";
 
         let loader: Nullable<IInternalTextureLoader> = null;
-        for (let availableLoader of Engine._TextureLoaders) {
+        for (const availableLoader of Engine._TextureLoaders) {
             if (availableLoader.canLoad(extension)) {
                 loader = availableLoader;
                 break;
@@ -2143,9 +2271,11 @@ export class NativeEngine extends Engine {
             onLoadObserver = texture.onLoadedObservable.add(onLoad);
         }
 
-        if (!fallback) { this._internalTexturesCache.push(texture); }
+        if (!fallback) {
+            this._internalTexturesCache.push(texture);
+        }
 
-        let onInternalError = (message?: string, exception?: any) => {
+        const onInternalError = (message?: string, exception?: any) => {
             if (scene) {
                 scene._removePendingData(texture);
             }
@@ -2162,8 +2292,7 @@ export class NativeEngine extends Engine {
                 if (onError) {
                     onError((message || "Unknown error") + (EngineStore.UseFallbackTexture ? " - Fallback texture was used" : ""), exception);
                 }
-            }
-            else {
+            } else {
                 // fall back to the original url if the transformed url fails to load
                 Logger.Warn(`Failed to load ${url}, falling back to ${originalUrl}`);
                 this.createTexture(originalUrl, noMipmap, texture.invertY, scene, samplingMode, onLoad, onError, buffer, texture, format, forcedExtension, mimeType, loaderOptions);
@@ -2185,25 +2314,33 @@ export class NativeEngine extends Engine {
 
                 const underlyingResource = texture._hardwareTexture.underlyingResource;
 
-                this._engine.loadTexture(underlyingResource, data, !noMipmap, invertY, useSRGBBuffer, () => {
-                    texture.baseWidth = this._engine.getTextureWidth(underlyingResource);
-                    texture.baseHeight = this._engine.getTextureHeight(underlyingResource);
-                    texture.width = texture.baseWidth;
-                    texture.height = texture.baseHeight;
-                    texture.isReady = true;
+                this._engine.loadTexture(
+                    underlyingResource,
+                    data,
+                    !noMipmap,
+                    invertY,
+                    useSRGBBuffer,
+                    () => {
+                        texture.baseWidth = this._engine.getTextureWidth(underlyingResource);
+                        texture.baseHeight = this._engine.getTextureHeight(underlyingResource);
+                        texture.width = texture.baseWidth;
+                        texture.height = texture.baseHeight;
+                        texture.isReady = true;
 
-                    var filter = this._getNativeSamplingMode(samplingMode);
-                    this._setTextureSampling(underlyingResource, filter);
+                        const filter = this._getNativeSamplingMode(samplingMode);
+                        this._setTextureSampling(underlyingResource, filter);
 
-                    if (scene) {
-                        scene._removePendingData(texture);
+                        if (scene) {
+                            scene._removePendingData(texture);
+                        }
+
+                        texture.onLoadedObservable.notifyObservers(texture);
+                        texture.onLoadedObservable.clear();
+                    },
+                    () => {
+                        throw new Error("Could not load a native texture.");
                     }
-
-                    texture.onLoadedObservable.notifyObservers(texture);
-                    texture.onLoadedObservable.clear();
-                }, () => {
-                    throw new Error("Could not load a native texture.");
-                });
+                );
             };
 
             if (fromData && buffer) {
@@ -2216,15 +2353,20 @@ export class NativeEngine extends Engine {
                 } else {
                     throw new Error("Unsupported buffer type");
                 }
-            }
-            else {
+            } else {
                 if (isBase64) {
                     onload(new Uint8Array(Tools.DecodeBase64(url)));
-                }
-                else {
-                    this._loadFile(url, (data) => onload(new Uint8Array(data as ArrayBuffer)), undefined, undefined, true, (request?: IWebRequest, exception?: any) => {
-                        onInternalError("Unable to load " + (request ? request.responseURL : url, exception));
-                    });
+                } else {
+                    this._loadFile(
+                        url,
+                        (data) => onload(new Uint8Array(data as ArrayBuffer)),
+                        undefined,
+                        undefined,
+                        true,
+                        (request?: IWebRequest, exception?: any) => {
+                            onInternalError("Unable to load " + (request ? request.responseURL : url, exception));
+                        }
+                    );
                 }
             }
         }
@@ -2236,22 +2378,18 @@ export class NativeEngine extends Engine {
         const nativeRTWrapper = rtWrapper as NativeRenderTargetWrapper;
         const texture = new InternalTexture(this, InternalTextureSource.DepthStencil);
 
-        const width = (<{ width: number, height: number, layers?: number }>size).width || <number>size;
-        const height = (<{ width: number, height: number, layers?: number }>size).height || <number>size;
+        const width = (<{ width: number; height: number; layers?: number }>size).width || <number>size;
+        const height = (<{ width: number; height: number; layers?: number }>size).height || <number>size;
 
-        const framebuffer = this._engine.createFrameBuffer(
-            texture._hardwareTexture!.underlyingResource,
-            width,
-            height,
-            _native.Engine.TEXTURE_FORMAT_RGBA8,
-            false,
-            true,
-            false);
+        const framebuffer = this._engine.createFrameBuffer(texture._hardwareTexture!.underlyingResource, width, height, _native.Engine.TEXTURE_FORMAT_RGBA8, false, true, false);
         nativeRTWrapper._framebufferDepthStencil = framebuffer;
         return texture;
     }
 
-    /** @hidden */
+    /**
+     * @param framebuffer
+     * @hidden
+     */
     public _releaseFramebufferObjects(framebuffer: Nullable<WebGLFramebuffer>): void {
         if (framebuffer) {
             this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_DELETEFRAMEBUFFER);
@@ -2267,7 +2405,7 @@ export class NativeEngine extends Engine {
      * @param options An object that sets options for the image's extraction.
      * @returns ImageBitmap
      */
-     public createImageBitmapFromSource(imageSource: string, options?: ImageBitmapOptions): Promise<ImageBitmap> {
+    public createImageBitmapFromSource(imageSource: string, options?: ImageBitmapOptions): Promise<ImageBitmap> {
         const promise = new Promise<ImageBitmap>((resolve, reject) => {
             const image = this.createCanvasImage();
             image.onload = () => {
@@ -2276,7 +2414,7 @@ export class NativeEngine extends Engine {
                     resolve(imageBitmap);
                     return;
                 } else {
-                    reject (`Error loading image ${image.src}`);
+                    reject(`Error loading image ${image.src}`);
                 }
             };
             image.onerror = () => {
@@ -2354,8 +2492,9 @@ export class NativeEngine extends Engine {
         lodOffset: number = 0,
         fallback: Nullable<InternalTexture> = null,
         loaderOptions?: any,
-        useSRGBBuffer = false): InternalTexture {
-        var texture = fallback ? fallback : new InternalTexture(this, InternalTextureSource.Cube);
+        useSRGBBuffer = false
+    ): InternalTexture {
+        const texture = fallback ? fallback : new InternalTexture(this, InternalTextureSource.Cube);
         texture.isCube = true;
         texture.url = rootUrl;
         texture.generateMipMaps = !noMipmap;
@@ -2367,19 +2506,19 @@ export class NativeEngine extends Engine {
             texture._files = files;
         }
 
-        var lastDot = rootUrl.lastIndexOf('.');
-        var extension = forcedExtension ? forcedExtension : (lastDot > -1 ? rootUrl.substring(lastDot).toLowerCase() : "");
+        const lastDot = rootUrl.lastIndexOf(".");
+        const extension = forcedExtension ? forcedExtension : lastDot > -1 ? rootUrl.substring(lastDot).toLowerCase() : "";
 
         // TODO: use texture loader to load env files?
         if (extension === ".env") {
             const onloaddata = (data: ArrayBufferView) => {
-                var info = GetEnvInfo(data)!;
+                const info = GetEnvInfo(data)!;
                 texture.width = info.width;
                 texture.height = info.width;
 
                 UploadEnvSpherical(texture, info);
 
-                let specularInfo = info.specular as EnvironmentTextureSpecularInfoV1;
+                const specularInfo = info.specular as EnvironmentTextureSpecularInfoV1;
                 if (!specularInfo) {
                     throw new Error(`Nothing else parsed so far`);
                 }
@@ -2394,21 +2533,27 @@ export class NativeEngine extends Engine {
                 texture._isRGBD = true;
                 texture.invertY = true;
 
-                this._engine.loadCubeTextureWithMips(texture._hardwareTexture!.underlyingResource, imageData, false, useSRGBBuffer, () => {
-                    texture.isReady = true;
-                    if (onLoad) {
-                        onLoad();
+                this._engine.loadCubeTextureWithMips(
+                    texture._hardwareTexture!.underlyingResource,
+                    imageData,
+                    false,
+                    useSRGBBuffer,
+                    () => {
+                        texture.isReady = true;
+                        if (onLoad) {
+                            onLoad();
+                        }
+                    },
+                    () => {
+                        throw new Error("Could not load a native cube texture.");
                     }
-                }, () => {
-                    throw new Error("Could not load a native cube texture.");
-                });
+                );
             };
 
             if (files && files.length === 6) {
                 throw new Error(`Multi-file loading not allowed on env files.`);
-            }
-            else {
-                let onInternalError = (request?: IWebRequest, exception?: any) => {
+            } else {
+                const onInternalError = (request?: IWebRequest, exception?: any) => {
                     if (onError && request) {
                         onError(request.status + " " + request.statusText, exception);
                     }
@@ -2416,28 +2561,32 @@ export class NativeEngine extends Engine {
 
                 this._loadFile(rootUrl, (data) => onloaddata(new Uint8Array(data as ArrayBuffer)), undefined, undefined, true, onInternalError);
             }
-        }
-        else {
+        } else {
             if (!files || files.length !== 6) {
                 throw new Error("Cannot load cubemap because 6 files were not defined");
             }
 
             // Reorder from [+X, +Y, +Z, -X, -Y, -Z] to [+X, -X, +Y, -Y, +Z, -Z].
             const reorderedFiles = [files[0], files[3], files[1], files[4], files[2], files[5]];
-            Promise.all(reorderedFiles.map((file) => Tools.LoadFileAsync(file).then((data) => new Uint8Array(data as ArrayBuffer)))).then((data) => {
-                return new Promise<void>((resolve, reject) => {
-                    this._engine.loadCubeTexture(texture._hardwareTexture!.underlyingResource, data, !noMipmap, true, useSRGBBuffer, resolve, reject);
-                });
-            }).then(() => {
-                texture.isReady = true;
-                if (onLoad) {
-                    onLoad();
-                }
-            }, (error) => {
-                if (onError) {
-                    onError(`Failed to load cubemap: ${error.message}`, error);
-                }
-            });
+            Promise.all(reorderedFiles.map((file) => Tools.LoadFileAsync(file).then((data) => new Uint8Array(data as ArrayBuffer))))
+                .then((data) => {
+                    return new Promise<void>((resolve, reject) => {
+                        this._engine.loadCubeTexture(texture._hardwareTexture!.underlyingResource, data, !noMipmap, true, useSRGBBuffer, resolve, reject);
+                    });
+                })
+                .then(
+                    () => {
+                        texture.isReady = true;
+                        if (onLoad) {
+                            onLoad();
+                        }
+                    },
+                    (error) => {
+                        if (onError) {
+                            onError(`Failed to load cubemap: ${error.message}`, error);
+                        }
+                    }
+                );
         }
 
         this._internalTexturesCache.push(texture);
@@ -2445,14 +2594,19 @@ export class NativeEngine extends Engine {
         return texture;
     }
 
-    /** @hidden */
+    /**
+     * @param isMulti
+     * @param isCube
+     * @param size
+     * @hidden
+     */
     public _createHardwareRenderTargetWrapper(isMulti: boolean, isCube: boolean, size: TextureSize): RenderTargetWrapper {
         const rtWrapper = new NativeRenderTargetWrapper(isMulti, isCube, size, this);
         this._renderTargetWrapperCache.push(rtWrapper);
         return rtWrapper;
     }
 
-    public createRenderTargetTexture(size: number | { width: number, height: number }, options: boolean | RenderTargetCreationOptions): RenderTargetWrapper {
+    public createRenderTargetTexture(size: number | { width: number; height: number }, options: boolean | RenderTargetCreationOptions): RenderTargetWrapper {
         const rtWrapper = this._createHardwareRenderTargetWrapper(false, false, size) as NativeRenderTargetWrapper;
 
         const fullOptions: RenderTargetCreationOptions = {};
@@ -2476,15 +2630,14 @@ export class NativeEngine extends Engine {
         if (fullOptions.type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
             // if floating point linear (gl.FLOAT) then force to NEAREST_SAMPLINGMODE
             fullOptions.samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
-        }
-        else if (fullOptions.type === Constants.TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
+        } else if (fullOptions.type === Constants.TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
             // if floating point linear (HALF_FLOAT) then force to NEAREST_SAMPLINGMODE
             fullOptions.samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
         }
         const texture = new InternalTexture(this, InternalTextureSource.RenderTarget);
 
-        const width = (<{ width: number, height: number }>size).width || <number>size;
-        const height = (<{ width: number, height: number }>size).height || <number>size;
+        const width = (<{ width: number; height: number }>size).width || <number>size;
+        const height = (<{ width: number; height: number }>size).height || <number>size;
 
         if (fullOptions.type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
             fullOptions.type = Constants.TEXTURETYPE_UNSIGNED_INT;
@@ -2498,7 +2651,8 @@ export class NativeEngine extends Engine {
             this._getNativeTextureFormat(fullOptions.format, fullOptions.type),
             fullOptions.generateStencilBuffer ? true : false,
             fullOptions.generateDepthBuffer,
-            fullOptions.generateMipMaps ? true : false);
+            fullOptions.generateMipMaps ? true : false
+        );
 
         rtWrapper._framebuffer = framebuffer;
         rtWrapper._generateDepthBuffer = fullOptions.generateDepthBuffer;
@@ -2523,7 +2677,7 @@ export class NativeEngine extends Engine {
 
     public updateTextureSamplingMode(samplingMode: number, texture: InternalTexture): void {
         if (texture._hardwareTexture) {
-            var filter = this._getNativeSamplingMode(samplingMode);
+            const filter = this._getNativeSamplingMode(samplingMode);
             this._setTextureSampling(texture._hardwareTexture.underlyingResource, filter);
         }
         texture.samplingMode = samplingMode;
@@ -2568,23 +2722,19 @@ export class NativeEngine extends Engine {
     public updateDynamicIndexBuffer(indexBuffer: DataBuffer, indices: IndicesArray, offset: number = 0): void {
         const buffer = indexBuffer as NativeDataBuffer;
         const data = this._normalizeIndexData(indices);
-        buffer.is32Bits = (data.BYTES_PER_ELEMENT === 4);
+        buffer.is32Bits = data.BYTES_PER_ELEMENT === 4;
         this._engine.updateDynamicIndexBuffer(buffer.nativeIndexBuffer!, data.buffer, data.byteOffset, data.byteLength, offset);
     }
 
     public updateDynamicVertexBuffer(vertexBuffer: DataBuffer, verticies: DataArray, byteOffset?: number, byteLength?: number): void {
         const buffer = vertexBuffer as NativeDataBuffer;
         const data = ArrayBuffer.isView(verticies) ? verticies : new Float32Array(verticies);
-        this._engine.updateDynamicVertexBuffer(
-            buffer.nativeVertexBuffer!,
-            data.buffer,
-            data.byteOffset + (byteOffset ?? 0),
-            byteLength ?? data.byteLength);
+        this._engine.updateDynamicVertexBuffer(buffer.nativeVertexBuffer!, data.buffer, data.byteOffset + (byteOffset ?? 0), byteLength ?? data.byteLength);
     }
 
     // TODO: Refactor to share more logic with base Engine implementation.
     protected _setTexture(channel: number, texture: Nullable<BaseTexture>, isPartOfTextureArray = false, depthStencilTexture = false): boolean {
-        let uniform = this._boundUniforms[channel];
+        const uniform = this._boundUniforms[channel];
         if (!uniform) {
             return false;
         }
@@ -2602,7 +2752,8 @@ export class NativeEngine extends Engine {
         if ((<VideoTexture>texture).video) {
             this._activeChannel = channel;
             (<VideoTexture>texture).update();
-        } else if (texture.delayLoadState === Constants.DELAYLOADSTATE_NOTLOADED) { // Delay loading
+        } else if (texture.delayLoadState === Constants.DELAYLOADSTATE_NOTLOADED) {
+            // Delay loading
             texture.delayLoad();
             return false;
         }
@@ -2624,8 +2775,7 @@ export class NativeEngine extends Engine {
 
         this._activeChannel = channel;
 
-        if (!internalTexture ||
-            !internalTexture._hardwareTexture) {
+        if (!internalTexture || !internalTexture._hardwareTexture) {
             return false;
         }
 
@@ -2633,7 +2783,8 @@ export class NativeEngine extends Engine {
             internalTexture._hardwareTexture.underlyingResource,
             this._getAddressMode(texture.wrapU),
             this._getAddressMode(texture.wrapV),
-            this._getAddressMode(texture.wrapR));
+            this._getAddressMode(texture.wrapR)
+        );
         this._updateAnisotropicLevel(texture);
 
         this._setTextureCore(uniform, internalTexture._hardwareTexture.underlyingResource);
@@ -2669,8 +2820,8 @@ export class NativeEngine extends Engine {
     // TODO: Share more of this logic with the base implementation.
     // TODO: Rename to match naming in base implementation once refactoring allows different parameters.
     private _updateAnisotropicLevel(texture: BaseTexture) {
-        var internalTexture = texture.getInternalTexture();
-        var value = texture.anisotropicFilteringLevel;
+        const internalTexture = texture.getInternalTexture();
+        const value = texture.anisotropicFilteringLevel;
 
         if (!internalTexture || !internalTexture._hardwareTexture) {
             return;
@@ -2699,9 +2850,13 @@ export class NativeEngine extends Engine {
         }
     }
 
-    /** @hidden */
+    /**
+     * @param channel
+     * @param texture
+     * @hidden
+     */
     public _bindTexture(channel: number, texture: InternalTexture): void {
-        let uniform = this._boundUniforms[channel];
+        const uniform = this._boundUniforms[channel];
         if (!uniform) {
             return;
         }
@@ -2755,22 +2910,57 @@ export class NativeEngine extends Engine {
         return image;
     }
 
-    /** @hidden */
-    public _uploadCompressedDataToTextureDirectly(texture: InternalTexture, internalFormat: number, width: number, height: number, data: ArrayBufferView, faceIndex: number = 0, lod: number = 0) {
+    /**
+     * @param texture
+     * @param internalFormat
+     * @param width
+     * @param height
+     * @param data
+     * @param faceIndex
+     * @param lod
+     * @hidden
+     */
+    public _uploadCompressedDataToTextureDirectly(
+        texture: InternalTexture,
+        internalFormat: number,
+        width: number,
+        height: number,
+        data: ArrayBufferView,
+        faceIndex: number = 0,
+        lod: number = 0
+    ) {
         throw new Error("_uploadCompressedDataToTextureDirectly not implemented.");
     }
 
-    /** @hidden */
+    /**
+     * @param texture
+     * @param imageData
+     * @param faceIndex
+     * @param lod
+     * @hidden
+     */
     public _uploadDataToTextureDirectly(texture: InternalTexture, imageData: ArrayBufferView, faceIndex: number = 0, lod: number = 0): void {
         throw new Error("_uploadDataToTextureDirectly not implemented.");
     }
 
-    /** @hidden */
+    /**
+     * @param texture
+     * @param imageData
+     * @param faceIndex
+     * @param lod
+     * @hidden
+     */
     public _uploadArrayBufferViewToTexture(texture: InternalTexture, imageData: ArrayBufferView, faceIndex: number = 0, lod: number = 0): void {
         throw new Error("_uploadArrayBufferViewToTexture not implemented.");
     }
 
-    /** @hidden */
+    /**
+     * @param texture
+     * @param image
+     * @param faceIndex
+     * @param lod
+     * @hidden
+     */
     public _uploadImageToTexture(texture: InternalTexture, image: HTMLImageElement, faceIndex: number = 0, lod: number = 0) {
         throw new Error("_uploadArrayBufferViewToTexture not implemented.");
     }
@@ -2903,14 +3093,11 @@ export class NativeEngine extends Engine {
     private _getNativeTextureFormat(format: number, type: number): number {
         if (format == Constants.TEXTUREFORMAT_RGB && type == Constants.TEXTURETYPE_UNSIGNED_INT) {
             return _native.Engine.TEXTURE_FORMAT_RGB8;
-        }
-        else if (format == Constants.TEXTUREFORMAT_RGBA && type == Constants.TEXTURETYPE_UNSIGNED_INT) {
+        } else if (format == Constants.TEXTUREFORMAT_RGBA && type == Constants.TEXTURETYPE_UNSIGNED_INT) {
             return _native.Engine.TEXTURE_FORMAT_RGBA8;
-        }
-        else if (format == Constants.TEXTUREFORMAT_RGBA && type == Constants.TEXTURETYPE_FLOAT) {
+        } else if (format == Constants.TEXTUREFORMAT_RGBA && type == Constants.TEXTURETYPE_FLOAT) {
             return _native.Engine.TEXTURE_FORMAT_RGBA32F;
-        }
-        else {
+        } else {
             throw new RuntimeError(`Unsupported texture format or type: format ${format}, type ${type}.`, ErrorCodes.UnsupportedTextureError);
         }
     }
@@ -2961,9 +3148,9 @@ export class NativeEngine extends Engine {
         }
     }
 
-    public getFontOffset(font: string): { ascent: number, height: number, descent: number } {
+    public getFontOffset(font: string): { ascent: number; height: number; descent: number } {
         // TODO
-        var result = { ascent: 0, height: 0, descent: 0 };
+        const result = { ascent: 0, height: 0, descent: 0 };
         return result;
     }
 }

@@ -35,7 +35,7 @@ Object.defineProperty(Scene.prototype, "gamepadManager", {
         return this._gamepadManager;
     },
     enumerable: true,
-    configurable: true
+    configurable: true,
 });
 
 declare module "../Cameras/freeCameraInputsManager" {
@@ -81,8 +81,8 @@ ArcRotateCameraInputsManager.prototype.addGamepad = function (): ArcRotateCamera
 };
 
 /**
-  * Defines the gamepad scene component responsible to manage gamepads in a given scene
-  */
+ * Defines the gamepad scene component responsible to manage gamepads in a given scene
+ */
 export class GamepadSystemSceneComponent implements ISceneComponent {
     /**
      * The component name helpfull to identify the component in the list of scene components.
@@ -121,7 +121,7 @@ export class GamepadSystemSceneComponent implements ISceneComponent {
      * Disposes the component and the associated ressources
      */
     public dispose(): void {
-        let gamepadManager = this.scene._gamepadManager;
+        const gamepadManager = this.scene._gamepadManager;
         if (gamepadManager) {
             gamepadManager.dispose();
             this.scene._gamepadManager = null;
@@ -129,7 +129,7 @@ export class GamepadSystemSceneComponent implements ISceneComponent {
     }
 
     private _beforeCameraUpdate(): void {
-        let gamepadManager = this.scene._gamepadManager;
+        const gamepadManager = this.scene._gamepadManager;
 
         if (gamepadManager && gamepadManager._isMonitoring) {
             gamepadManager._checkGamepadsStatus();

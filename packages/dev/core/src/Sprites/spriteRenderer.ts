@@ -1,12 +1,12 @@
 import { Nullable } from "../types";
 import { Constants } from "../Engines/constants";
-import { IMatrixLike } from '../Maths/math.like';
+import { IMatrixLike } from "../Maths/math.like";
 import { ThinEngine } from "../Engines/thinEngine";
 import { DataBuffer } from "../Buffers/dataBuffer";
 import { Buffer, VertexBuffer } from "../Buffers/buffer";
 import { DrawWrapper } from "../Materials/drawWrapper";
-import { ThinSprite } from './thinSprite';
-import { ISize } from '../Maths/math.size';
+import { ThinSprite } from "./thinSprite";
+import { ISize } from "../Maths/math.size";
 
 declare type ThinTexture = import("../Materials/Textures/thinTexture").ThinTexture;
 declare type Scene = import("../scene").Scene;
@@ -97,12 +97,7 @@ export class SpriteRenderer {
      * @param epsilon defines the epsilon value to align texture (0.01 by default)
      * @param scene defines the hosting scene
      */
-    constructor(
-        engine: ThinEngine,
-        capacity: number,
-        epsilon: number = 0.01,
-        scene: Nullable<Scene> = null) {
-
+    constructor(engine: ThinEngine, capacity: number, epsilon: number = 0.01, scene: Nullable<Scene> = null) {
         this._capacity = capacity;
         this._epsilon = epsilon;
 
@@ -146,7 +141,7 @@ export class SpriteRenderer {
         let offsets: VertexBuffer;
 
         if (this._useInstancing) {
-            var spriteData = new Float32Array([0, 0, 1, 0, 0, 1, 1, 1]);
+            const spriteData = new Float32Array([0, 0, 1, 0, 0, 1, 1, 1]);
             this._spriteBuffer = new Buffer(engine, spriteData, false, 2);
             offsets = this._spriteBuffer.createVertexBuffer("offsets", 0, 2);
         } else {
@@ -166,19 +161,27 @@ export class SpriteRenderer {
         this._vertexBuffers[VertexBuffer.ColorKind] = colors;
 
         // Effects
-        this._drawWrapperBase.effect = this._engine.createEffect("sprites",
+        this._drawWrapperBase.effect = this._engine.createEffect(
+            "sprites",
             [VertexBuffer.PositionKind, "options", "offsets", "inverts", "cellInfo", VertexBuffer.ColorKind],
             ["view", "projection", "textureInfos", "alphaTest"],
-            ["diffuseSampler"], "");
+            ["diffuseSampler"],
+            ""
+        );
 
         this._drawWrapperDepth.effect = this._drawWrapperBase.effect;
         this._drawWrapperDepth.materialContext = this._drawWrapperBase.materialContext;
 
         if (this._scene) {
-            this._drawWrapperFog.effect = this._scene.getEngine().createEffect("sprites",
-                [VertexBuffer.PositionKind, "options", "offsets", "inverts", "cellInfo", VertexBuffer.ColorKind],
-                ["view", "projection", "textureInfos", "alphaTest", "vFogInfos", "vFogColor"],
-                ["diffuseSampler"], "#define FOG");
+            this._drawWrapperFog.effect = this._scene
+                .getEngine()
+                .createEffect(
+                    "sprites",
+                    [VertexBuffer.PositionKind, "options", "offsets", "inverts", "cellInfo", VertexBuffer.ColorKind],
+                    ["view", "projection", "textureInfos", "alphaTest", "vFogInfos", "vFogColor"],
+                    ["diffuseSampler"],
+                    "#define FOG"
+                );
             this._drawWrapperFogDepth.effect = this._drawWrapperFog.effect;
             this._drawWrapperFogDepth.materialContext = this._drawWrapperFog.materialContext;
         }
@@ -192,7 +195,13 @@ export class SpriteRenderer {
      * @param projectionMatrix defines the projectionMatrix to use to render the sprites
      * @param customSpriteUpdate defines a custom function to update the sprites data before they render
      */
-    public render(sprites: ThinSprite[], deltaTime: number, viewMatrix: IMatrixLike, projectionMatrix: IMatrixLike, customSpriteUpdate: Nullable<(sprite: ThinSprite, baseSize: ISize) => void> = null): void {
+    public render(
+        sprites: ThinSprite[],
+        deltaTime: number,
+        viewMatrix: IMatrixLike,
+        projectionMatrix: IMatrixLike,
+        customSpriteUpdate: Nullable<(sprite: ThinSprite, baseSize: ISize) => void> = null
+    ): void {
         if (!this.texture || !this.texture.isReady() || !sprites.length) {
             return;
         }
@@ -222,7 +231,7 @@ export class SpriteRenderer {
 
         let offset = 0;
         let noSprite = true;
-        for (var index = 0; index < max; index++) {
+        for (let index = 0; index < max; index++) {
             const sprite = sprites[index];
             if (!sprite || !sprite.isVisible) {
                 continue;
@@ -272,8 +281,7 @@ export class SpriteRenderer {
                 this._vertexArrayObject = engine.recordVertexArrayObject(this._vertexBuffers, this._indexBuffer, effect);
             }
             engine.bindVertexArrayObject(this._vertexArrayObject, this._indexBuffer);
-        }
-        else {
+        } else {
             // VBOs
             engine.bindBuffers(this._vertexBuffers, this._indexBuffer, effect);
         }
@@ -313,35 +321,40 @@ export class SpriteRenderer {
         engine.unbindInstanceAttributes();
     }
 
-    private _appendSpriteVertex(index: number, sprite: ThinSprite, offsetX: number, offsetY: number, baseSize: ISize, useRightHandedSystem: boolean, customSpriteUpdate: Nullable<(sprite: ThinSprite, baseSize: ISize) => void>): void {
-        var arrayOffset = index * this._vertexBufferSize;
+    private _appendSpriteVertex(
+        index: number,
+        sprite: ThinSprite,
+        offsetX: number,
+        offsetY: number,
+        baseSize: ISize,
+        useRightHandedSystem: boolean,
+        customSpriteUpdate: Nullable<(sprite: ThinSprite, baseSize: ISize) => void>
+    ): void {
+        let arrayOffset = index * this._vertexBufferSize;
 
         if (offsetX === 0) {
             offsetX = this._epsilon;
-        }
-        else if (offsetX === 1) {
+        } else if (offsetX === 1) {
             offsetX = 1 - this._epsilon;
         }
 
         if (offsetY === 0) {
             offsetY = this._epsilon;
-        }
-        else if (offsetY === 1) {
+        } else if (offsetY === 1) {
             offsetY = 1 - this._epsilon;
         }
 
         if (customSpriteUpdate) {
             customSpriteUpdate(sprite, baseSize);
-        }
-        else {
+        } else {
             if (!sprite.cellIndex) {
                 sprite.cellIndex = 0;
             }
 
             const rowSize = baseSize.width / this.cellWidth;
             const offset = (sprite.cellIndex / rowSize) >> 0;
-            sprite._xOffset = (sprite.cellIndex - offset * rowSize) * this.cellWidth / baseSize.width;
-            sprite._yOffset = offset * this.cellHeight / baseSize.height;
+            sprite._xOffset = ((sprite.cellIndex - offset * rowSize) * this.cellWidth) / baseSize.width;
+            sprite._yOffset = (offset * this.cellHeight) / baseSize.height;
             sprite._xSize = this.cellWidth;
             sprite._ySize = this.cellHeight;
         }
@@ -365,8 +378,7 @@ export class SpriteRenderer {
         // Inverts according to Right Handed
         if (useRightHandedSystem) {
             this._vertexData[arrayOffset + 8] = sprite.invertU ? 0 : 1;
-        }
-        else {
+        } else {
             this._vertexData[arrayOffset + 8] = sprite.invertU ? 1 : 0;
         }
 

@@ -1,11 +1,11 @@
-import { NodeMaterialBlock } from '../nodeMaterialBlock';
-import { NodeMaterialBlockConnectionPointTypes } from '../Enums/nodeMaterialBlockConnectionPointTypes';
-import { NodeMaterialBuildState } from '../nodeMaterialBuildState';
-import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint';
-import { NodeMaterialBlockTargets } from '../Enums/nodeMaterialBlockTargets';
-import { RegisterClass } from '../../../Misc/typeStore';
-import { Vector2 } from '../../../Maths/math.vector';
-import { Scene } from '../../../scene';
+import { NodeMaterialBlock } from "../nodeMaterialBlock";
+import { NodeMaterialBlockConnectionPointTypes } from "../Enums/nodeMaterialBlockConnectionPointTypes";
+import { NodeMaterialBuildState } from "../nodeMaterialBuildState";
+import { NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
+import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
+import { RegisterClass } from "../../../Misc/typeStore";
+import { Vector2 } from "../../../Maths/math.vector";
+import { Scene } from "../../../scene";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../nodeMaterialDecorator";
 /**
  * Block used to remap a float from a range to a new one
@@ -94,21 +94,23 @@ export class RemapBlock extends NodeMaterialBlock {
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
-        let output = this._outputs[0];
+        const output = this._outputs[0];
 
-        let sourceMin = this.sourceMin.isConnected ? this.sourceMin.associatedVariableName : this._writeFloat(this.sourceRange.x);
-        let sourceMax = this.sourceMax.isConnected ? this.sourceMax.associatedVariableName : this._writeFloat(this.sourceRange.y);
+        const sourceMin = this.sourceMin.isConnected ? this.sourceMin.associatedVariableName : this._writeFloat(this.sourceRange.x);
+        const sourceMax = this.sourceMax.isConnected ? this.sourceMax.associatedVariableName : this._writeFloat(this.sourceRange.y);
 
-        let targetMin = this.targetMin.isConnected ? this.targetMin.associatedVariableName : this._writeFloat(this.targetRange.x);
-        let targetMax = this.targetMax.isConnected ? this.targetMax.associatedVariableName : this._writeFloat(this.targetRange.y);
+        const targetMin = this.targetMin.isConnected ? this.targetMin.associatedVariableName : this._writeFloat(this.targetRange.x);
+        const targetMax = this.targetMax.isConnected ? this.targetMax.associatedVariableName : this._writeFloat(this.targetRange.y);
 
-        state.compilationString += this._declareOutput(output, state) + ` = ${targetMin} + (${this._inputs[0].associatedVariableName} - ${sourceMin}) * (${targetMax} - ${targetMin}) / (${sourceMax} - ${sourceMin});\r\n`;
+        state.compilationString +=
+            this._declareOutput(output, state) +
+            ` = ${targetMin} + (${this._inputs[0].associatedVariableName} - ${sourceMin}) * (${targetMax} - ${targetMin}) / (${sourceMax} - ${sourceMin});\r\n`;
 
         return this;
     }
 
     protected _dumpPropertiesCode() {
-        var codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.sourceRange = new BABYLON.Vector2(${this.sourceRange.x}, ${this.sourceRange.y});\r\n`;
+        let codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.sourceRange = new BABYLON.Vector2(${this.sourceRange.x}, ${this.sourceRange.y});\r\n`;
 
         codeString += `${this._codeVariableName}.targetRange = new BABYLON.Vector2(${this.targetRange.x}, ${this.targetRange.y});\r\n`;
 
@@ -116,7 +118,7 @@ export class RemapBlock extends NodeMaterialBlock {
     }
 
     public serialize(): any {
-        let serializationObject = super.serialize();
+        const serializationObject = super.serialize();
 
         serializationObject.sourceRange = this.sourceRange.asArray();
         serializationObject.targetRange = this.targetRange.asArray();

@@ -73,7 +73,7 @@ export class StorageBuffer {
      */
     public dispose(): void {
         const storageBuffers = this._engine._storageBuffers;
-        let index = storageBuffers.indexOf(this);
+        const index = storageBuffers.indexOf(this);
 
         if (index !== -1) {
             storageBuffers[index] = storageBuffers[storageBuffers.length - 1];

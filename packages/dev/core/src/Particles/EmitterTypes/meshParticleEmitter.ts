@@ -3,10 +3,10 @@ import { Vector3, Matrix, TmpVectors } from "../../Maths/math.vector";
 import { Scalar } from "../../Maths/math.scalar";
 import { Particle } from "../../Particles/particle";
 import { IParticleEmitterType } from "./IParticleEmitterType";
-import { IndicesArray, Nullable, FloatArray } from '../../types';
-import { VertexBuffer } from '../../Buffers/buffer';
-import { Scene } from '../../scene';
-import { AbstractMesh } from '../../Meshes/abstractMesh';
+import { IndicesArray, Nullable, FloatArray } from "../../types";
+import { VertexBuffer } from "../../Buffers/buffer";
+import { Scene } from "../../scene";
+import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { UniformBufferEffectCommonAccessor } from "../../Materials/uniformBufferEffectCommonAccessor";
 import { UniformBuffer } from "../../Materials/uniformBuffer";
 /**
@@ -78,9 +78,9 @@ export class MeshParticleEmitter implements IParticleEmitterType {
             return;
         }
 
-        var randX = Scalar.RandomRange(this.direction1.x, this.direction2.x);
-        var randY = Scalar.RandomRange(this.direction1.y, this.direction2.y);
-        var randZ = Scalar.RandomRange(this.direction1.z, this.direction2.z);
+        const randX = Scalar.RandomRange(this.direction1.x, this.direction2.x);
+        const randY = Scalar.RandomRange(this.direction1.y, this.direction2.y);
+        const randZ = Scalar.RandomRange(this.direction1.z, this.direction2.z);
 
         if (isLocal) {
             directionToUpdate.copyFromFloats(randX, randY, randZ);
@@ -102,18 +102,18 @@ export class MeshParticleEmitter implements IParticleEmitterType {
             return;
         }
 
-        let randomFaceIndex = 3 * Math.random() * (this._indices.length / 3) | 0;
-        let bu = Math.random();
-        let bv = Math.random() * (1.0 - bu);
-        let bw = 1.0 - bu - bv;
+        const randomFaceIndex = (3 * Math.random() * (this._indices.length / 3)) | 0;
+        const bu = Math.random();
+        const bv = Math.random() * (1.0 - bu);
+        const bw = 1.0 - bu - bv;
 
-        let faceIndexA = this._indices[randomFaceIndex];
-        let faceIndexB = this._indices[randomFaceIndex + 1];
-        let faceIndexC = this._indices[randomFaceIndex + 2];
-        let vertexA = TmpVectors.Vector3[0];
-        let vertexB = TmpVectors.Vector3[1];
-        let vertexC = TmpVectors.Vector3[2];
-        let randomVertex = TmpVectors.Vector3[3];
+        const faceIndexA = this._indices[randomFaceIndex];
+        const faceIndexB = this._indices[randomFaceIndex + 1];
+        const faceIndexC = this._indices[randomFaceIndex + 2];
+        const vertexA = TmpVectors.Vector3[0];
+        const vertexB = TmpVectors.Vector3[1];
+        const vertexC = TmpVectors.Vector3[2];
+        const randomVertex = TmpVectors.Vector3[3];
 
         Vector3.FromArrayToRef(this._positions, faceIndexA * 3, vertexA);
         Vector3.FromArrayToRef(this._positions, faceIndexB * 3, vertexB);
@@ -145,7 +145,7 @@ export class MeshParticleEmitter implements IParticleEmitterType {
      * @returns the new emitter
      */
     public clone(): MeshParticleEmitter {
-        let newOne = new MeshParticleEmitter(this.mesh);
+        const newOne = new MeshParticleEmitter(this.mesh);
 
         DeepCopier.DeepCopy(this, newOne);
 
@@ -191,7 +191,7 @@ export class MeshParticleEmitter implements IParticleEmitterType {
      * @returns the JSON object
      */
     public serialize(): any {
-        var serializationObject: any = {};
+        const serializationObject: any = {};
 
         serializationObject.type = this.getClassName();
         serializationObject.direction1 = this.direction1.asArray();

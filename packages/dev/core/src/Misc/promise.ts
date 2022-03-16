@@ -3,7 +3,7 @@ import { Nullable } from "../types";
 enum PromiseStates {
     Pending,
     Fulfilled,
-    Rejected
+    Rejected,
 }
 
 class FulFillmentAgregator<T> {
@@ -35,21 +35,20 @@ class InternalPromise<T> {
         }
     }
 
-    public constructor(resolver?: (
-        resolve: (value?: Nullable<T>) => void,
-        reject: (reason: any) => void
-    ) => void) {
-
+    public constructor(resolver?: (resolve: (value?: Nullable<T>) => void, reject: (reason: any) => void) => void) {
         if (!resolver) {
             return;
         }
 
         try {
-            resolver((value?: Nullable<T>) => {
-                this._resolve(value);
-            }, (reason: any) => {
-                this._reject(reason);
-            });
+            resolver(
+                (value?: Nullable<T>) => {
+                    this._resolve(value);
+                },
+                (reason: any) => {
+                    this._reject(reason);
+                }
+            );
         } catch (e) {
             this._reject(e);
         }
@@ -60,7 +59,7 @@ class InternalPromise<T> {
     }
 
     public then(onFulfilled?: (fulfillment?: Nullable<T>) => Nullable<InternalPromise<T>> | T, onRejected?: (reason: any) => void): InternalPromise<T> {
-        let newPromise = new InternalPromise<T>();
+        const newPromise = new InternalPromise<T>();
         newPromise._onFulfilled = onFulfilled;
         newPromise._onRejected = onRejected;
 
@@ -111,7 +110,7 @@ class InternalPromise<T> {
             if (returnedValue !== undefined && returnedValue !== null) {
                 if ((<InternalPromise<T>>returnedValue)._state !== undefined) {
                     // Transmit children
-                    let returnedPromise = returnedValue as InternalPromise<T>;
+                    const returnedPromise = returnedValue as InternalPromise<T>;
                     returnedPromise._parent = this;
                     returnedPromise._moveChildren(this._children);
 
@@ -123,7 +122,7 @@ class InternalPromise<T> {
 
             this._result = value;
 
-            for (var child of this._children) {
+            for (const child of this._children) {
                 child._resolve(value);
             }
 
@@ -143,13 +142,12 @@ class InternalPromise<T> {
             try {
                 this._onRejected(reason);
                 this._rejectWasConsumed = true;
-            }
-            catch (e) {
+            } catch (e) {
                 reason = e;
             }
         }
 
-        for (var child of this._children) {
+        for (const child of this._children) {
             if (this._rejectWasConsumed) {
                 child._resolve(null);
             } else {
@@ -163,7 +161,7 @@ class InternalPromise<T> {
     }
 
     public static resolve<T>(value: T): InternalPromise<T> {
-        let newPromise = new InternalPromise<T>();
+        const newPromise = new InternalPromise<T>();
 
         newPromise._resolve(value);
 
@@ -171,29 +169,32 @@ class InternalPromise<T> {
     }
 
     private static _RegisterForFulfillment<T>(promise: InternalPromise<T>, agregator: FulFillmentAgregator<T[]>, index: number) {
-        promise.then((value?: Nullable<T>) => {
-            agregator.results[index] = value;
-            agregator.count++;
+        promise.then(
+            (value?: Nullable<T>) => {
+                agregator.results[index] = value;
+                agregator.count++;
 
-            if (agregator.count === agregator.target) {
-                agregator.rootPromise._resolve(agregator.results);
+                if (agregator.count === agregator.target) {
+                    agregator.rootPromise._resolve(agregator.results);
+                }
+                return null;
+            },
+            (reason: any) => {
+                if (agregator.rootPromise._state !== PromiseStates.Rejected) {
+                    agregator.rootPromise._reject(reason);
+                }
             }
-            return null;
-        }, (reason: any) => {
-            if (agregator.rootPromise._state !== PromiseStates.Rejected) {
-                agregator.rootPromise._reject(reason);
-            }
-        });
+        );
     }
 
     public static all<T>(promises: InternalPromise<T>[]): InternalPromise<T[]> {
-        let newPromise = new InternalPromise<T[]>();
-        let agregator = new FulFillmentAgregator<T[]>();
+        const newPromise = new InternalPromise<T[]>();
+        const agregator = new FulFillmentAgregator<T[]>();
         agregator.target = promises.length;
         agregator.rootPromise = newPromise;
 
         if (promises.length) {
-            for (var index = 0; index < promises.length; index++) {
+            for (let index = 0; index < promises.length; index++) {
                 InternalPromise._RegisterForFulfillment(promises[index], agregator, index);
             }
         } else {
@@ -208,18 +209,21 @@ class InternalPromise<T> {
 
         if (promises.length) {
             for (const promise of promises) {
-                promise.then((value?: Nullable<T>) => {
-                    if (newPromise) {
-                        newPromise._resolve(value);
-                        newPromise = null;
+                promise.then(
+                    (value?: Nullable<T>) => {
+                        if (newPromise) {
+                            newPromise._resolve(value);
+                            newPromise = null;
+                        }
+                        return null;
+                    },
+                    (reason: any) => {
+                        if (newPromise) {
+                            newPromise._reject(reason);
+                            newPromise = null;
+                        }
                     }
-                    return null;
-                }, (reason: any) => {
-                    if (newPromise) {
-                        newPromise._reject(reason);
-                        newPromise = null;
-                    }
-                });
+                );
             }
         }
 
@@ -237,8 +241,8 @@ export class PromisePolyfill {
      * @param force defines a boolean used to force the injection (mostly for testing purposes)
      */
     public static Apply(force = false): void {
-        if (force || typeof Promise === 'undefined') {
-            let root: any = window;
+        if (force || typeof Promise === "undefined") {
+            const root: any = window;
             root.Promise = InternalPromise;
         }
     }

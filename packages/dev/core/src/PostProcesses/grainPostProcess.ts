@@ -6,8 +6,8 @@ import { Engine } from "../Engines/engine";
 import { Constants } from "../Engines/constants";
 
 import "../Shaders/grain.fragment";
-import { RegisterClass } from '../Misc/typeStore';
-import { serialize, SerializationHelper } from '../Misc/decorators';
+import { RegisterClass } from "../Misc/typeStore";
+import { serialize, SerializationHelper } from "../Misc/decorators";
 
 declare type Scene = import("../scene").Scene;
 
@@ -45,23 +45,46 @@ export class GrainPostProcess extends PostProcess {
      * @param textureType Type of textures used when performing the post process. (default: 0)
      * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
      */
-    constructor(name: string, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT, blockCompilation = false) {
+    constructor(
+        name: string,
+        options: number | PostProcessOptions,
+        camera: Nullable<Camera>,
+        samplingMode?: number,
+        engine?: Engine,
+        reusable?: boolean,
+        textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT,
+        blockCompilation = false
+    ) {
         super(name, "grain", ["intensity", "animatedSeed"], [], options, camera, samplingMode, engine, reusable, null, textureType, undefined, null, blockCompilation);
         this.onApplyObservable.add((effect: Effect) => {
-            effect.setFloat('intensity', this.intensity);
-            effect.setFloat('animatedSeed', this.animated ? Math.random() + 1 : 1);
+            effect.setFloat("intensity", this.intensity);
+            effect.setFloat("animatedSeed", this.animated ? Math.random() + 1 : 1);
         });
     }
 
-    /** @hidden */
+    /**
+     * @param parsedPostProcess
+     * @param targetCamera
+     * @param scene
+     * @param rootUrl
+     * @hidden
+     */
     public static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string) {
-        return SerializationHelper.Parse(() => {
-            return new GrainPostProcess(
-                parsedPostProcess.name,
-                parsedPostProcess.options, targetCamera,
-                parsedPostProcess.renderTargetSamplingMode,
-                scene.getEngine(), parsedPostProcess.reusable);
-        }, parsedPostProcess, scene, rootUrl);
+        return SerializationHelper.Parse(
+            () => {
+                return new GrainPostProcess(
+                    parsedPostProcess.name,
+                    parsedPostProcess.options,
+                    targetCamera,
+                    parsedPostProcess.renderTargetSamplingMode,
+                    scene.getEngine(),
+                    parsedPostProcess.reusable
+                );
+            },
+            parsedPostProcess,
+            scene,
+            rootUrl
+        );
     }
 }
 

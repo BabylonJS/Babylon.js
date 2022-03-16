@@ -1,17 +1,16 @@
-import { NodeMaterialBlock } from '../nodeMaterialBlock';
-import { NodeMaterialBlockConnectionPointTypes } from '../Enums/nodeMaterialBlockConnectionPointTypes';
-import { NodeMaterialBuildState } from '../nodeMaterialBuildState';
-import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint';
-import { NodeMaterialBlockTargets } from '../Enums/nodeMaterialBlockTargets';
-import { RegisterClass } from '../../../Misc/typeStore';
-import { Scene } from '../../../scene';
+import { NodeMaterialBlock } from "../nodeMaterialBlock";
+import { NodeMaterialBlockConnectionPointTypes } from "../Enums/nodeMaterialBlockConnectionPointTypes";
+import { NodeMaterialBuildState } from "../nodeMaterialBuildState";
+import { NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
+import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
+import { RegisterClass } from "../../../Misc/typeStore";
+import { Scene } from "../../../scene";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../nodeMaterialDecorator";
 
 /**
  * Block used to clamp a float
  */
 export class ClampBlock extends NodeMaterialBlock {
-
     /** Gets or sets the minimum range */
     @editableInPropertyPage("Minimum", PropertyTypeForEdition.Float)
     public minimum = 0.0;
@@ -57,15 +56,16 @@ export class ClampBlock extends NodeMaterialBlock {
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
-        let output = this._outputs[0];
+        const output = this._outputs[0];
 
-        state.compilationString += this._declareOutput(output, state) + ` = clamp(${this.value.associatedVariableName}, ${this._writeFloat(this.minimum)}, ${this._writeFloat(this.maximum)});\r\n`;
+        state.compilationString +=
+            this._declareOutput(output, state) + ` = clamp(${this.value.associatedVariableName}, ${this._writeFloat(this.minimum)}, ${this._writeFloat(this.maximum)});\r\n`;
 
         return this;
     }
 
     protected _dumpPropertiesCode() {
-        var codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.minimum = ${this.minimum};\r\n`;
+        let codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.minimum = ${this.minimum};\r\n`;
 
         codeString += `${this._codeVariableName}.maximum = ${this.maximum};\r\n`;
 
@@ -73,7 +73,7 @@ export class ClampBlock extends NodeMaterialBlock {
     }
 
     public serialize(): any {
-        let serializationObject = super.serialize();
+        const serializationObject = super.serialize();
 
         serializationObject.minimum = this.minimum;
         serializationObject.maximum = this.maximum;

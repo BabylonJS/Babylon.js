@@ -3,14 +3,13 @@ import { ArrayTools } from "../Misc/arrayTools";
 import { Vector3, Quaternion, Matrix } from "../Maths/math.vector";
 import { TransformNode } from "../Meshes/transformNode";
 import { Bone } from "./bone";
-import { Space, Axis } from '../Maths/math.axis';
+import { Space, Axis } from "../Maths/math.axis";
 
 /**
  * Class used to make a bone look toward a point in space
  * @see https://doc.babylonjs.com/how_to/how_to_use_bones_and_skeletons#bonelookcontroller
  */
 export class BoneLookController {
-
     private static _tmpVecs: Vector3[] = ArrayTools.BuildArray(10, Vector3.Zero);
     private static _tmpQuat = Quaternion.Identity();
     private static _tmpMats: Matrix[] = ArrayTools.BuildArray(5, Matrix.Identity);
@@ -93,7 +92,7 @@ export class BoneLookController {
         this._minYawSin = Math.sin(value);
         this._minYawCos = Math.cos(value);
         if (this._maxYaw != null) {
-            this._midYawConstraint = this._getAngleDiff(this._minYaw, this._maxYaw) * .5 + this._minYaw;
+            this._midYawConstraint = this._getAngleDiff(this._minYaw, this._maxYaw) * 0.5 + this._minYaw;
             this._yawRange = this._maxYaw - this._minYaw;
         }
     }
@@ -110,7 +109,7 @@ export class BoneLookController {
         this._maxYawSin = Math.sin(value);
         this._maxYawCos = Math.cos(value);
         if (this._minYaw != null) {
-            this._midYawConstraint = this._getAngleDiff(this._minYaw, this._maxYaw) * .5 + this._minYaw;
+            this._midYawConstraint = this._getAngleDiff(this._minYaw, this._maxYaw) * 0.5 + this._minYaw;
             this._yawRange = this._maxYaw - this._minYaw;
         }
     }
@@ -157,31 +156,43 @@ export class BoneLookController {
      * * adjustYaw: used to make an adjustment to the yaw of the bone
      * * adjustPitch: used to make an adjustment to the pitch of the bone
      * * adjustRoll: used to make an adjustment to the roll of the bone
+     * @param options.maxYaw
+     * @param options.minYaw
+     * @param options.maxPitch
+     * @param options.minPitch
+     * @param options.slerpAmount
+     * @param options.upAxis
+     * @param options.upAxisSpace
+     * @param options.yawAxis
+     * @param options.pitchAxis
+     * @param options.adjustYaw
+     * @param options.adjustPitch
+     * @param options.adjustRoll
      **/
-    constructor(mesh: TransformNode,
+    constructor(
+        mesh: TransformNode,
         bone: Bone,
         target: Vector3,
         options?: {
-            maxYaw?: number,
-            minYaw?: number,
-            maxPitch?: number,
-            minPitch?: number,
-            slerpAmount?: number,
-            upAxis?: Vector3,
-            upAxisSpace?: Space,
-            yawAxis?: Vector3,
-            pitchAxis?: Vector3,
-            adjustYaw?: number,
-            adjustPitch?: number,
-            adjustRoll?: number,
-        }) {
-
+            maxYaw?: number;
+            minYaw?: number;
+            maxPitch?: number;
+            minPitch?: number;
+            slerpAmount?: number;
+            upAxis?: Vector3;
+            upAxisSpace?: Space;
+            yawAxis?: Vector3;
+            pitchAxis?: Vector3;
+            adjustYaw?: number;
+            adjustPitch?: number;
+            adjustRoll?: number;
+        }
+    ) {
         this.mesh = mesh;
         this.bone = bone;
         this.target = target;
 
         if (options) {
-
             if (options.adjustYaw) {
                 this.adjustYaw = options.adjustYaw;
             }
@@ -231,9 +242,8 @@ export class BoneLookController {
             }
 
             if (options.yawAxis != null || options.pitchAxis != null) {
-
-                var newYawAxis = Axis.Y;
-                var newPitchAxis = Axis.X;
+                let newYawAxis = Axis.Y;
+                let newPitchAxis = Axis.X;
 
                 if (options.yawAxis != null) {
                     newYawAxis = options.yawAxis.clone();
@@ -245,47 +255,43 @@ export class BoneLookController {
                     newPitchAxis.normalize();
                 }
 
-                var newRollAxis = Vector3.Cross(newPitchAxis, newYawAxis);
+                const newRollAxis = Vector3.Cross(newPitchAxis, newYawAxis);
 
                 this._transformYawPitch = Matrix.Identity();
                 Matrix.FromXYZAxesToRef(newPitchAxis, newYawAxis, newRollAxis, this._transformYawPitch);
 
                 this._transformYawPitchInv = this._transformYawPitch.clone();
                 this._transformYawPitch.invert();
-
             }
-
         }
 
         if (!bone.getParent() && this.upAxisSpace == Space.BONE) {
             this.upAxisSpace = Space.LOCAL;
         }
-
     }
 
     /**
      * Update the bone to look at the target.  This should be called before the scene is rendered (use scene.registerBeforeRender())
      */
     public update(): void {
-
         //skip the first frame when slerping so that the TransformNode rotation is correct
         if (this.slerpAmount < 1 && !this._firstFrameSkipped) {
             this._firstFrameSkipped = true;
             return;
         }
 
-        var bone = this.bone;
-        var bonePos = BoneLookController._tmpVecs[0];
+        const bone = this.bone;
+        const bonePos = BoneLookController._tmpVecs[0];
         bone.getAbsolutePositionToRef(this.mesh, bonePos);
 
-        var target = this.target;
-        var _tmpMat1 = BoneLookController._tmpMats[0];
-        var _tmpMat2 = BoneLookController._tmpMats[1];
+        let target = this.target;
+        const _tmpMat1 = BoneLookController._tmpMats[0];
+        const _tmpMat2 = BoneLookController._tmpMats[1];
 
-        var mesh = this.mesh;
-        var parentBone = bone.getParent();
+        const mesh = this.mesh;
+        const parentBone = bone.getParent();
 
-        var upAxis = BoneLookController._tmpVecs[1];
+        const upAxis = BoneLookController._tmpVecs[1];
         upAxis.copyFrom(this.upAxis);
 
         if (this.upAxisSpace == Space.BONE && parentBone) {
@@ -300,8 +306,8 @@ export class BoneLookController {
             }
         }
 
-        var checkYaw = false;
-        var checkPitch = false;
+        let checkYaw = false;
+        let checkPitch = false;
 
         if (this._maxYaw != Math.PI || this._minYaw != -Math.PI) {
             checkYaw = true;
@@ -311,20 +317,14 @@ export class BoneLookController {
         }
 
         if (checkYaw || checkPitch) {
-
-            var spaceMat = BoneLookController._tmpMats[2];
-            var spaceMatInv = BoneLookController._tmpMats[3];
+            const spaceMat = BoneLookController._tmpMats[2];
+            const spaceMatInv = BoneLookController._tmpMats[3];
 
             if (this.upAxisSpace == Space.BONE && upAxis.y == 1 && parentBone) {
-
                 parentBone.getRotationMatrixToRef(Space.WORLD, this.mesh, spaceMat);
-
             } else if (this.upAxisSpace == Space.LOCAL && upAxis.y == 1 && !parentBone) {
-
                 spaceMat.copyFrom(mesh.getWorldMatrix());
-
             } else {
-
                 var forwardAxis = BoneLookController._tmpVecs[2];
                 forwardAxis.copyFrom(this._fowardAxis);
 
@@ -338,17 +338,16 @@ export class BoneLookController {
                     mesh.getDirectionToRef(forwardAxis, forwardAxis);
                 }
 
-                var rightAxis = Vector3.Cross(upAxis, forwardAxis);
+                const rightAxis = Vector3.Cross(upAxis, forwardAxis);
                 rightAxis.normalize();
                 var forwardAxis = Vector3.Cross(rightAxis, upAxis);
 
                 Matrix.FromXYZAxesToRef(rightAxis, upAxis, forwardAxis, spaceMat);
-
             }
 
             spaceMat.invertToRef(spaceMatInv);
 
-            var xzlen: Nullable<number> = null;
+            let xzlen: Nullable<number> = null;
 
             if (checkPitch) {
                 var localTarget = BoneLookController._tmpVecs[3];
@@ -356,8 +355,8 @@ export class BoneLookController {
                 Vector3.TransformCoordinatesToRef(localTarget, spaceMatInv, localTarget);
 
                 xzlen = Math.sqrt(localTarget.x * localTarget.x + localTarget.z * localTarget.z);
-                var pitch = Math.atan2(localTarget.y, xzlen);
-                var newPitch = pitch;
+                const pitch = Math.atan2(localTarget.y, xzlen);
+                let newPitch = pitch;
 
                 if (pitch > this._maxPitch) {
                     localTarget.y = this._maxPitchTan * xzlen;
@@ -379,11 +378,10 @@ export class BoneLookController {
                 target.subtractToRef(bonePos, localTarget);
                 Vector3.TransformCoordinatesToRef(localTarget, spaceMatInv, localTarget);
 
-                var yaw = Math.atan2(localTarget.x, localTarget.z);
-                var newYaw = yaw;
+                const yaw = Math.atan2(localTarget.x, localTarget.z);
+                let newYaw = yaw;
 
                 if (yaw > this._maxYaw || yaw < this._minYaw) {
-
                     if (xzlen == null) {
                         xzlen = Math.sqrt(localTarget.x * localTarget.x + localTarget.z * localTarget.z);
                     }
@@ -413,37 +411,36 @@ export class BoneLookController {
 
                 if (this._slerping && this._yawRange > Math.PI) {
                     //are we going to be crossing into the min/max region?
-                    var boneFwd = BoneLookController._tmpVecs[8];
+                    const boneFwd = BoneLookController._tmpVecs[8];
                     boneFwd.copyFrom(Axis.Z);
                     if (this._transformYawPitch) {
                         Vector3.TransformCoordinatesToRef(boneFwd, this._transformYawPitchInv, boneFwd);
                     }
 
-                    var boneRotMat = BoneLookController._tmpMats[4];
+                    const boneRotMat = BoneLookController._tmpMats[4];
                     this._boneQuat.toRotationMatrix(boneRotMat);
                     this.mesh.getWorldMatrix().multiplyToRef(boneRotMat, boneRotMat);
                     Vector3.TransformCoordinatesToRef(boneFwd, boneRotMat, boneFwd);
                     Vector3.TransformCoordinatesToRef(boneFwd, spaceMatInv, boneFwd);
 
-                    var boneYaw = Math.atan2(boneFwd.x, boneFwd.z);
-                    var angBtwTar = this._getAngleBetween(boneYaw, yaw);
-                    var angBtwMidYaw = this._getAngleBetween(boneYaw, this._midYawConstraint);
+                    const boneYaw = Math.atan2(boneFwd.x, boneFwd.z);
+                    const angBtwTar = this._getAngleBetween(boneYaw, yaw);
+                    const angBtwMidYaw = this._getAngleBetween(boneYaw, this._midYawConstraint);
 
                     if (angBtwTar > angBtwMidYaw) {
-
                         if (xzlen == null) {
                             xzlen = Math.sqrt(localTarget.x * localTarget.x + localTarget.z * localTarget.z);
                         }
 
-                        var angBtwMax = this._getAngleBetween(boneYaw, this._maxYaw);
-                        var angBtwMin = this._getAngleBetween(boneYaw, this._minYaw);
+                        const angBtwMax = this._getAngleBetween(boneYaw, this._maxYaw);
+                        const angBtwMin = this._getAngleBetween(boneYaw, this._minYaw);
 
                         if (angBtwMin < angBtwMax) {
-                            newYaw = boneYaw + Math.PI * .75;
+                            newYaw = boneYaw + Math.PI * 0.75;
                             localTarget.z = Math.cos(newYaw) * xzlen;
                             localTarget.x = Math.sin(newYaw) * xzlen;
                         } else {
-                            newYaw = boneYaw - Math.PI * .75;
+                            newYaw = boneYaw - Math.PI * 0.75;
                             localTarget.z = Math.cos(newYaw) * xzlen;
                             localTarget.x = Math.sin(newYaw) * xzlen;
                         }
@@ -456,13 +453,12 @@ export class BoneLookController {
                     target = localTarget;
                 }
             }
-
         }
 
-        var zaxis = BoneLookController._tmpVecs[5];
-        var xaxis = BoneLookController._tmpVecs[6];
-        var yaxis = BoneLookController._tmpVecs[7];
-        var _tmpQuat = BoneLookController._tmpQuat;
+        const zaxis = BoneLookController._tmpVecs[5];
+        const xaxis = BoneLookController._tmpVecs[6];
+        const yaxis = BoneLookController._tmpVecs[7];
+        const _tmpQuat = BoneLookController._tmpQuat;
 
         target.subtractToRef(bonePos, zaxis);
         zaxis.normalize();
@@ -513,8 +509,7 @@ export class BoneLookController {
     }
 
     private _getAngleDiff(ang1: number, ang2: number): number {
-
-        var angDiff = ang2 - ang1;
+        let angDiff = ang2 - ang1;
         angDiff %= Math.PI * 2;
 
         if (angDiff > Math.PI) {
@@ -527,14 +522,13 @@ export class BoneLookController {
     }
 
     private _getAngleBetween(ang1: number, ang2: number): number {
+        ang1 %= 2 * Math.PI;
+        ang1 = ang1 < 0 ? ang1 + 2 * Math.PI : ang1;
 
-        ang1 %= (2 * Math.PI);
-        ang1 = (ang1 < 0) ? ang1 + (2 * Math.PI) : ang1;
+        ang2 %= 2 * Math.PI;
+        ang2 = ang2 < 0 ? ang2 + 2 * Math.PI : ang2;
 
-        ang2 %= (2 * Math.PI);
-        ang2 = (ang2 < 0) ? ang2 + (2 * Math.PI) : ang2;
-
-        var ab = 0;
+        let ab = 0;
 
         if (ang1 < ang2) {
             ab = ang2 - ang1;
@@ -550,13 +544,12 @@ export class BoneLookController {
     }
 
     private _isAngleBetween(ang: number, ang1: number, ang2: number): boolean {
-
-        ang %= (2 * Math.PI);
-        ang = (ang < 0) ? ang + (2 * Math.PI) : ang;
-        ang1 %= (2 * Math.PI);
-        ang1 = (ang1 < 0) ? ang1 + (2 * Math.PI) : ang1;
-        ang2 %= (2 * Math.PI);
-        ang2 = (ang2 < 0) ? ang2 + (2 * Math.PI) : ang2;
+        ang %= 2 * Math.PI;
+        ang = ang < 0 ? ang + 2 * Math.PI : ang;
+        ang1 %= 2 * Math.PI;
+        ang1 = ang1 < 0 ? ang1 + 2 * Math.PI : ang1;
+        ang2 %= 2 * Math.PI;
+        ang2 = ang2 < 0 ? ang2 + 2 * Math.PI : ang2;
 
         if (ang1 < ang2) {
             if (ang > ang1 && ang < ang2) {

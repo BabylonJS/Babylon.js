@@ -25,7 +25,9 @@ export class StereoscopicUniversalCamera extends UniversalCamera {
         super(name, position, scene);
         this.interaxialDistance = interaxialDistance;
         this.isStereoscopicSideBySide = isStereoscopicSideBySide;
-        this.setCameraRigMode(isStereoscopicSideBySide ? Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL : Camera.RIG_MODE_STEREOSCOPIC_OVERUNDER, { interaxialDistance: interaxialDistance });
+        this.setCameraRigMode(isStereoscopicSideBySide ? Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL : Camera.RIG_MODE_STEREOSCOPIC_OVERUNDER, {
+            interaxialDistance: interaxialDistance,
+        });
     }
 
     /**

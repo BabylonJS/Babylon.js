@@ -11,10 +11,10 @@ import { MotionBlurConfiguration } from "../Rendering/motionBlurConfiguration";
 import { PrePassRenderer } from "../Rendering/prePassRenderer";
 
 import "../Animations/animatable";
-import '../Rendering/geometryBufferRendererSceneComponent';
+import "../Rendering/geometryBufferRendererSceneComponent";
 import "../Shaders/motionBlur.fragment";
-import { serialize, SerializationHelper } from '../Misc/decorators';
-import { RegisterClass } from '../Misc/typeStore';
+import { serialize, SerializationHelper } from "../Misc/decorators";
+import { RegisterClass } from "../Misc/typeStore";
 
 declare type Engine = import("../Engines/engine").Engine;
 declare type Scene = import("../scene").Scene;
@@ -119,8 +119,34 @@ export class MotionBlurPostProcess extends PostProcess {
      * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: true)
      * @param forceGeometryBuffer If this post process should use geometry buffer instead of prepass (default: false)
      */
-    constructor(name: string, scene: Scene, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT, blockCompilation = false, forceGeometryBuffer = false) {
-        super(name, "motionBlur", ["motionStrength", "motionScale", "screenSize", "inverseViewProjection", "prevViewProjection"], ["velocitySampler"], options, camera, samplingMode, engine, reusable, "#define GEOMETRY_SUPPORTED\n#define SAMPLES 64.0\n#define OBJECT_BASED", textureType, undefined, null, blockCompilation);
+    constructor(
+        name: string,
+        scene: Scene,
+        options: number | PostProcessOptions,
+        camera: Nullable<Camera>,
+        samplingMode?: number,
+        engine?: Engine,
+        reusable?: boolean,
+        textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT,
+        blockCompilation = false,
+        forceGeometryBuffer = false
+    ) {
+        super(
+            name,
+            "motionBlur",
+            ["motionStrength", "motionScale", "screenSize", "inverseViewProjection", "prevViewProjection"],
+            ["velocitySampler"],
+            options,
+            camera,
+            samplingMode,
+            engine,
+            reusable,
+            "#define GEOMETRY_SUPPORTED\n#define SAMPLES 64.0\n#define OBJECT_BASED",
+            textureType,
+            undefined,
+            null,
+            blockCompilation
+        );
 
         this._forceGeometryBuffer = forceGeometryBuffer;
 
@@ -235,6 +261,7 @@ export class MotionBlurPostProcess extends PostProcess {
 
     /**
      * Called on the effect is applied when the motion blur post-process is in object based mode.
+     * @param effect
      */
     private _onApplyObjectBased(effect: Effect): void {
         effect.setVector2("screenSize", new Vector2(this.width, this.height));
@@ -253,6 +280,7 @@ export class MotionBlurPostProcess extends PostProcess {
 
     /**
      * Called on the effect is applied when the motion blur post-process is in screen based mode.
+     * @param effect
      */
     private _onApplyScreenBased(effect: Effect): void {
         const viewProjection = this._scene.getProjectionMatrix().multiply(this._scene.getViewMatrix());
@@ -285,22 +313,39 @@ export class MotionBlurPostProcess extends PostProcess {
             const defines: string[] = [
                 "#define GEOMETRY_SUPPORTED",
                 "#define SAMPLES " + this._motionBlurSamples.toFixed(1),
-                this._isObjectBased ? "#define OBJECT_BASED" : "#define SCREEN_BASED"
+                this._isObjectBased ? "#define OBJECT_BASED" : "#define SCREEN_BASED",
             ];
 
             this.updateEffect(defines.join("\n"));
         }
     }
 
-    /** @hidden */
+    /**
+     * @param parsedPostProcess
+     * @param targetCamera
+     * @param scene
+     * @param rootUrl
+     * @hidden
+     */
     public static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string): Nullable<MotionBlurPostProcess> {
-        return SerializationHelper.Parse(() => {
-            return new MotionBlurPostProcess(
-                parsedPostProcess.name, scene, parsedPostProcess.options,
-                targetCamera, parsedPostProcess.renderTargetSamplingMode,
-                scene.getEngine(), parsedPostProcess.reusable,
-                parsedPostProcess.textureType, false);
-        }, parsedPostProcess, scene, rootUrl);
+        return SerializationHelper.Parse(
+            () => {
+                return new MotionBlurPostProcess(
+                    parsedPostProcess.name,
+                    scene,
+                    parsedPostProcess.options,
+                    targetCamera,
+                    parsedPostProcess.renderTargetSamplingMode,
+                    scene.getEngine(),
+                    parsedPostProcess.reusable,
+                    parsedPostProcess.textureType,
+                    false
+                );
+            },
+            parsedPostProcess,
+            scene,
+            rootUrl
+        );
     }
 }
 

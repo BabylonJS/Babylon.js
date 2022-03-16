@@ -121,7 +121,7 @@ const packageMapping: {
         "gui-editor": "babylonjs-gui-editor",
         "post-processes": "babylonjs-post-process",
         "procedural-textures": "babylonjs-procedural-textures",
-        "ktx2decoder": "babylonjs-ktx2decoder",
+        ktx2decoder: "babylonjs-ktx2decoder",
     },
     es6: {
         core: "@babylonjs/core",
@@ -134,7 +134,7 @@ const packageMapping: {
         "gui-editor": "@babylonjs/gui-editor",
         "post-processes": "@babylonjs/post-processes",
         "procedural-textures": "@babylonjs/procedural-textures",
-        "ktx2decoder": "@babylonjs/ktx2decoder",
+        ktx2decoder: "@babylonjs/ktx2decoder",
     },
     esm: {
         core: "@babylonjs/esm",
@@ -147,7 +147,7 @@ const packageMapping: {
         "gui-editor": "@babylonjs/esm",
         "post-processes": "@babylonjs/esm",
         "procedural-textures": "@babylonjs/esm",
-        "ktx2decoder": "@babylonjs/esm",
+        ktx2decoder: "@babylonjs/esm",
     },
     // lts: {
     //     core: "@babylonjs/esm",
@@ -192,7 +192,7 @@ const packageMapping: {
         "gui-editor": "BABYLON.GuiEditor",
         "post-processes": "BABYLON",
         "procedural-textures": "BABYLON",
-        "ktx2decoder": "KTX2DECODER",
+        ktx2decoder: "KTX2DECODER",
     },
 };
 

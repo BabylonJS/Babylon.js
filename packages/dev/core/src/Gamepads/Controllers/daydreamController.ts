@@ -14,17 +14,17 @@ export class DaydreamController extends WebVRController {
     /**
      * Base Url for the controller model.
      */
-    public static MODEL_BASE_URL: string = 'https://controllers.babylonjs.com/generic/';
+    public static MODEL_BASE_URL: string = "https://controllers.babylonjs.com/generic/";
 
     /**
      * File name for the controller model.
      */
-    public static MODEL_FILENAME: string = 'generic.babylon';
+    public static MODEL_FILENAME: string = "generic.babylon";
 
     /**
      * Gamepad Id prefix used to identify Daydream Controller.
      */
-    public static readonly GAMEPAD_ID_PREFIX: string = 'Daydream'; // id is 'Daydream Controller'
+    public static readonly GAMEPAD_ID_PREFIX: string = "Daydream"; // id is 'Daydream Controller'
 
     /**
      * Creates a new DaydreamController from a gamepad
@@ -60,7 +60,7 @@ export class DaydreamController extends WebVRController {
     protected _handleButtonChange(buttonIdx: number, state: ExtendedGamepadButton, changes: GamepadButtonChanges) {
         // Daydream controller only has 1 GamepadButton (on the trackpad).
         if (buttonIdx === 0) {
-            let observable = this.onTriggerStateChangedObservable;
+            const observable = this.onTriggerStateChangedObservable;
             if (observable) {
                 observable.notifyObservers(state);
             }
@@ -77,5 +77,5 @@ PoseEnabledControllerHelper._ControllerFactories.push({
     },
     create: (gamepadInfo) => {
         return new DaydreamController(gamepadInfo);
-    }
+    },
 });

@@ -1,10 +1,10 @@
-import { NodeMaterialBlock } from '../nodeMaterialBlock';
-import { NodeMaterialBlockConnectionPointTypes } from '../Enums/nodeMaterialBlockConnectionPointTypes';
-import { NodeMaterialBuildState } from '../nodeMaterialBuildState';
-import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint';
-import { NodeMaterialBlockTargets } from '../Enums/nodeMaterialBlockTargets';
-import { RegisterClass } from '../../../Misc/typeStore';
-import { Scene } from '../../../scene';
+import { NodeMaterialBlock } from "../nodeMaterialBlock";
+import { NodeMaterialBlockConnectionPointTypes } from "../Enums/nodeMaterialBlockConnectionPointTypes";
+import { NodeMaterialBuildState } from "../nodeMaterialBuildState";
+import { NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
+import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
+import { RegisterClass } from "../../../Misc/typeStore";
+import { Scene } from "../../../scene";
 
 /**
  * Operations supported by the Trigonometry block
@@ -45,14 +45,13 @@ export enum TrigonometryBlockOperations {
     /** To radians (from degrees) */
     Radians,
     /** To degrees (from radians) */
-    Degrees
+    Degrees,
 }
 
 /**
  * Block used to apply trigonometry operation to floats
  */
 export class TrigonometryBlock extends NodeMaterialBlock {
-
     /**
      * Gets or sets the operation applied by the block
      */
@@ -96,7 +95,7 @@ export class TrigonometryBlock extends NodeMaterialBlock {
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
-        let output = this._outputs[0];
+        const output = this._outputs[0];
         let operation = "";
 
         switch (this.operation) {
@@ -180,7 +179,7 @@ export class TrigonometryBlock extends NodeMaterialBlock {
     }
 
     public serialize(): any {
-        let serializationObject = super.serialize();
+        const serializationObject = super.serialize();
 
         serializationObject.operation = this.operation;
 
@@ -194,7 +193,8 @@ export class TrigonometryBlock extends NodeMaterialBlock {
     }
 
     protected _dumpPropertiesCode() {
-        var codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.operation = BABYLON.TrigonometryBlockOperations.${TrigonometryBlockOperations[this.operation]};\r\n`;
+        const codeString =
+            super._dumpPropertiesCode() + `${this._codeVariableName}.operation = BABYLON.TrigonometryBlockOperations.${TrigonometryBlockOperations[this.operation]};\r\n`;
         return codeString;
     }
 }

@@ -1,9 +1,9 @@
 import { Nullable, IndicesArray } from "../types";
 import { Vector3 } from "../Maths/math.vector";
 import { AbstractMesh } from "../Meshes/abstractMesh";
-import { Plane } from '../Maths/math.plane';
+import { Plane } from "../Maths/math.plane";
 
-var intersectBoxAASphere = (boxMin: Vector3, boxMax: Vector3, sphereCenter: Vector3, sphereRadius: number): boolean => {
+const intersectBoxAASphere = (boxMin: Vector3, boxMax: Vector3, sphereCenter: Vector3, sphereRadius: number): boolean => {
     if (boxMin.x > sphereCenter.x + sphereRadius) {
         return false;
     }
@@ -31,42 +31,41 @@ var intersectBoxAASphere = (boxMin: Vector3, boxMax: Vector3, sphereCenter: Vect
     return true;
 };
 
-var getLowestRoot: (a: number, b: number, c: number, maxR: number) => { root: number, found: boolean } =
-    (function () {
-        var result = { root: 0, found: false };
-        return function (a: number, b: number, c: number, maxR: number) {
-            result.root = 0; result.found = false;
-            var determinant = b * b - 4.0 * a * c;
-            if (determinant < 0) {
-                return result;
-            }
-
-            var sqrtD = Math.sqrt(determinant);
-            var r1 = (-b - sqrtD) / (2.0 * a);
-            var r2 = (-b + sqrtD) / (2.0 * a);
-
-            if (r1 > r2) {
-                var temp = r2;
-                r2 = r1;
-                r1 = temp;
-            }
-
-            if (r1 > 0 && r1 < maxR) {
-                result.root = r1;
-                result.found = true;
-                return result;
-            }
-
-            if (r2 > 0 && r2 < maxR) {
-                result.root = r2;
-                result.found = true;
-                return result;
-            }
-
+const getLowestRoot: (a: number, b: number, c: number, maxR: number) => { root: number; found: boolean } = (function () {
+    const result = { root: 0, found: false };
+    return function (a: number, b: number, c: number, maxR: number) {
+        result.root = 0;
+        result.found = false;
+        const determinant = b * b - 4.0 * a * c;
+        if (determinant < 0) {
             return result;
-        };
-    }
-    )();
+        }
+
+        const sqrtD = Math.sqrt(determinant);
+        let r1 = (-b - sqrtD) / (2.0 * a);
+        let r2 = (-b + sqrtD) / (2.0 * a);
+
+        if (r1 > r2) {
+            const temp = r2;
+            r2 = r1;
+            r1 = temp;
+        }
+
+        if (r1 > 0 && r1 < maxR) {
+            result.root = r1;
+            result.found = true;
+            return result;
+        }
+
+        if (r2 > 0 && r2 < maxR) {
+            result.root = r2;
+            result.found = true;
+            return result;
+        }
+
+        return result;
+    };
+})();
 
 /** @hidden */
 export class Collider {
@@ -137,15 +136,19 @@ export class Collider {
     }
 
     // Methods
-    /** @hidden */
+    /**
+     * @param source
+     * @param dir
+     * @param e
+     * @hidden
+     */
     public _initialize(source: Vector3, dir: Vector3, e: number): void {
         this._velocity = dir;
         this._velocitySquaredLength = this._velocity.lengthSquared();
         const len = Math.sqrt(this._velocitySquaredLength);
         if (len === 0 || len === 1.0) {
             this._normalizedVelocity.copyFromFloats(dir._x, dir._y, dir._z);
-        }
-        else {
+        } else {
             dir.scaleToRef(1.0 / len, this._normalizedVelocity);
         }
         this._basePoint = source;
@@ -159,13 +162,20 @@ export class Collider {
         this.collisionFound = false;
     }
 
-    /** @hidden */
+    /**
+     * @param point
+     * @param pa
+     * @param pb
+     * @param pc
+     * @param n
+     * @hidden
+     */
     public _checkPointInTriangle(point: Vector3, pa: Vector3, pb: Vector3, pc: Vector3, n: Vector3): boolean {
         pa.subtractToRef(point, this._tempVector);
         pb.subtractToRef(point, this._tempVector2);
 
         Vector3.CrossToRef(this._tempVector, this._tempVector2, this._tempVector4);
-        var d = Vector3.Dot(this._tempVector4, n);
+        let d = Vector3.Dot(this._tempVector4, n);
         if (d < 0) {
             return false;
         }
@@ -182,11 +192,17 @@ export class Collider {
         return d >= 0;
     }
 
-    /** @hidden */
+    /**
+     * @param sphereCenter
+     * @param sphereRadius
+     * @param vecMin
+     * @param vecMax
+     * @hidden
+     */
     public _canDoCollision(sphereCenter: Vector3, sphereRadius: number, vecMin: Vector3, vecMax: Vector3): boolean {
-        var distance = Vector3.Distance(this._basePointWorld, sphereCenter);
+        const distance = Vector3.Distance(this._basePointWorld, sphereCenter);
 
-        var max = Math.max(this._radius.x, this._radius.y, this._radius.z);
+        const max = Math.max(this._radius.x, this._radius.y, this._radius.z);
 
         if (distance > this._velocityWorldLength + max + sphereRadius) {
             return false;
@@ -199,10 +215,19 @@ export class Collider {
         return true;
     }
 
-    /** @hidden */
+    /**
+     * @param faceIndex
+     * @param trianglePlaneArray
+     * @param p1
+     * @param p2
+     * @param p3
+     * @param hasMaterial
+     * @param hostMesh
+     * @hidden
+     */
     public _testTriangle(faceIndex: number, trianglePlaneArray: Array<Plane>, p1: Vector3, p2: Vector3, p3: Vector3, hasMaterial: boolean, hostMesh: AbstractMesh): void {
-        var t0;
-        var embeddedInPlane = false;
+        let t0;
+        let embeddedInPlane = false;
 
         //defensive programming, actually not needed.
         if (!trianglePlaneArray) {
@@ -214,14 +239,14 @@ export class Collider {
             trianglePlaneArray[faceIndex].copyFromPoints(p1, p2, p3);
         }
 
-        var trianglePlane = trianglePlaneArray[faceIndex];
+        const trianglePlane = trianglePlaneArray[faceIndex];
 
-        if ((!hasMaterial) && !trianglePlane.isFrontFacingTo(this._normalizedVelocity, 0)) {
+        if (!hasMaterial && !trianglePlane.isFrontFacingTo(this._normalizedVelocity, 0)) {
             return;
         }
 
-        var signedDistToTrianglePlane = trianglePlane.signedDistanceTo(this._basePoint);
-        var normalDotVelocity = Vector3.Dot(trianglePlane.normal, this._velocity);
+        const signedDistToTrianglePlane = trianglePlane.signedDistanceTo(this._basePoint);
+        const normalDotVelocity = Vector3.Dot(trianglePlane.normal, this._velocity);
 
         if (normalDotVelocity == 0) {
             if (Math.abs(signedDistToTrianglePlane) >= 1.0) {
@@ -229,13 +254,12 @@ export class Collider {
             }
             embeddedInPlane = true;
             t0 = 0;
-        }
-        else {
+        } else {
             t0 = (-1.0 - signedDistToTrianglePlane) / normalDotVelocity;
-            var t1 = (1.0 - signedDistToTrianglePlane) / normalDotVelocity;
+            let t1 = (1.0 - signedDistToTrianglePlane) / normalDotVelocity;
 
             if (t0 > t1) {
-                var temp = t1;
+                const temp = t1;
                 t1 = t0;
                 t0 = temp;
             }
@@ -254,8 +278,8 @@ export class Collider {
 
         this._collisionPoint.copyFromFloats(0, 0, 0);
 
-        var found = false;
-        var t = 1.0;
+        let found = false;
+        let t = 1.0;
 
         if (!embeddedInPlane) {
             this._basePoint.subtractToRef(trianglePlane.normal, this._planeIntersectionPoint);
@@ -270,13 +294,13 @@ export class Collider {
         }
 
         if (!found) {
-            var a = this._velocitySquaredLength;
+            let a = this._velocitySquaredLength;
 
             this._basePoint.subtractToRef(p1, this._tempVector);
-            var b = 2.0 * (Vector3.Dot(this._velocity, this._tempVector));
-            var c = this._tempVector.lengthSquared() - 1.0;
+            let b = 2.0 * Vector3.Dot(this._velocity, this._tempVector);
+            let c = this._tempVector.lengthSquared() - 1.0;
 
-            var lowestRoot = getLowestRoot(a, b, c, t);
+            let lowestRoot = getLowestRoot(a, b, c, t);
             if (lowestRoot.found) {
                 t = lowestRoot.root;
                 found = true;
@@ -284,7 +308,7 @@ export class Collider {
             }
 
             this._basePoint.subtractToRef(p2, this._tempVector);
-            b = 2.0 * (Vector3.Dot(this._velocity, this._tempVector));
+            b = 2.0 * Vector3.Dot(this._velocity, this._tempVector);
             c = this._tempVector.lengthSquared() - 1.0;
 
             lowestRoot = getLowestRoot(a, b, c, t);
@@ -295,7 +319,7 @@ export class Collider {
             }
 
             this._basePoint.subtractToRef(p3, this._tempVector);
-            b = 2.0 * (Vector3.Dot(this._velocity, this._tempVector));
+            b = 2.0 * Vector3.Dot(this._velocity, this._tempVector);
             c = this._tempVector.lengthSquared() - 1.0;
 
             lowestRoot = getLowestRoot(a, b, c, t);
@@ -307,11 +331,11 @@ export class Collider {
 
             p2.subtractToRef(p1, this._edge);
             p1.subtractToRef(this._basePoint, this._baseToVertex);
-            var edgeSquaredLength = this._edge.lengthSquared();
-            var edgeDotVelocity = Vector3.Dot(this._edge, this._velocity);
-            var edgeDotBaseToVertex = Vector3.Dot(this._edge, this._baseToVertex);
+            let edgeSquaredLength = this._edge.lengthSquared();
+            let edgeDotVelocity = Vector3.Dot(this._edge, this._velocity);
+            let edgeDotBaseToVertex = Vector3.Dot(this._edge, this._baseToVertex);
 
-            a = edgeSquaredLength * (-this._velocitySquaredLength) + edgeDotVelocity * edgeDotVelocity;
+            a = edgeSquaredLength * -this._velocitySquaredLength + edgeDotVelocity * edgeDotVelocity;
             b = 2 * (edgeSquaredLength * Vector3.Dot(this._velocity, this._baseToVertex) - edgeDotVelocity * edgeDotBaseToVertex);
             c = edgeSquaredLength * (1.0 - this._baseToVertex.lengthSquared()) + edgeDotBaseToVertex * edgeDotBaseToVertex;
 
@@ -333,7 +357,7 @@ export class Collider {
             edgeDotVelocity = Vector3.Dot(this._edge, this._velocity);
             edgeDotBaseToVertex = Vector3.Dot(this._edge, this._baseToVertex);
 
-            a = edgeSquaredLength * (-this._velocitySquaredLength) + edgeDotVelocity * edgeDotVelocity;
+            a = edgeSquaredLength * -this._velocitySquaredLength + edgeDotVelocity * edgeDotVelocity;
             b = 2 * (edgeSquaredLength * Vector3.Dot(this._velocity, this._baseToVertex) - edgeDotVelocity * edgeDotBaseToVertex);
             c = edgeSquaredLength * (1.0 - this._baseToVertex.lengthSquared()) + edgeDotBaseToVertex * edgeDotBaseToVertex;
             lowestRoot = getLowestRoot(a, b, c, t);
@@ -354,7 +378,7 @@ export class Collider {
             edgeDotVelocity = Vector3.Dot(this._edge, this._velocity);
             edgeDotBaseToVertex = Vector3.Dot(this._edge, this._baseToVertex);
 
-            a = edgeSquaredLength * (-this._velocitySquaredLength) + edgeDotVelocity * edgeDotVelocity;
+            a = edgeSquaredLength * -this._velocitySquaredLength + edgeDotVelocity * edgeDotVelocity;
             b = 2 * (edgeSquaredLength * Vector3.Dot(this._velocity, this._baseToVertex) - edgeDotVelocity * edgeDotBaseToVertex);
             c = edgeSquaredLength * (1.0 - this._baseToVertex.lengthSquared()) + edgeDotBaseToVertex * edgeDotBaseToVertex;
 
@@ -372,7 +396,7 @@ export class Collider {
         }
 
         if (found) {
-            var distToCollisionSquared = t * t * this._velocitySquaredLength;
+            const distToCollisionSquared = t * t * this._velocitySquaredLength;
 
             if (!this.collisionFound || distToCollisionSquared < this._nearestDistanceSquared) {
                 // if collisionResponse is false, collision is not found but the collidedMesh is set anyway.
@@ -393,8 +417,21 @@ export class Collider {
         }
     }
 
-    /** @hidden */
-    public _collide(trianglePlaneArray: Array<Plane>,
+    /**
+     * @param trianglePlaneArray
+     * @param pts
+     * @param indices
+     * @param indexStart
+     * @param indexEnd
+     * @param decal
+     * @param hasMaterial
+     * @param hostMesh
+     * @param invertTriangles
+     * @param triangleStrip
+     * @hidden
+     */
+    public _collide(
+        trianglePlaneArray: Array<Plane>,
         pts: Vector3[],
         indices: IndicesArray,
         indexStart: number,
@@ -403,8 +440,8 @@ export class Collider {
         hasMaterial: boolean,
         hostMesh: AbstractMesh,
         invertTriangles?: boolean,
-        triangleStrip: boolean = false): void {
-
+        triangleStrip: boolean = false
+    ): void {
         if (triangleStrip) {
             if (!indices || indices.length === 0) {
                 for (let i = 0; i < pts.length - 2; i += 1) {
@@ -417,10 +454,9 @@ export class Collider {
                         continue;
                     }
                     // Handles strip faces one on two is reversed
-                    if ((invertTriangles ? 1 : 0) ^ (i % 2)) {
+                    if ((invertTriangles ? 1 : 0) ^ i % 2) {
                         this._testTriangle(i, trianglePlaneArray, p1, p2, p3, hasMaterial, hostMesh);
-                    }
-                    else {
+                    } else {
                         this._testTriangle(i, trianglePlaneArray, p2, p1, p3, hasMaterial, hostMesh);
                     }
                 }
@@ -445,16 +481,14 @@ export class Collider {
                     }
 
                     // Handles strip faces one on two is reversed
-                    if ((invertTriangles ? 1 : 0) ^ (i % 2)) {
+                    if ((invertTriangles ? 1 : 0) ^ i % 2) {
                         this._testTriangle(i, trianglePlaneArray, p1, p2, p3, hasMaterial, hostMesh);
-                    }
-                    else {
+                    } else {
                         this._testTriangle(i, trianglePlaneArray, p2, p1, p3, hasMaterial, hostMesh);
                     }
                 }
             }
-        }
-        else if (!indices || indices.length === 0) {
+        } else if (!indices || indices.length === 0) {
             for (let i = 0; i < pts.length; i += 3) {
                 const p1 = pts[i];
                 const p2 = pts[i + 1];
@@ -481,10 +515,14 @@ export class Collider {
         }
     }
 
-    /** @hidden */
+    /**
+     * @param pos
+     * @param vel
+     * @hidden
+     */
     public _getResponse(pos: Vector3, vel: Vector3): void {
         pos.addToRef(vel, this._destinationPoint);
-        vel.scaleInPlace((this._nearestDistance / vel.length()));
+        vel.scaleInPlace(this._nearestDistance / vel.length());
 
         this._basePoint.addToRef(vel, pos);
         pos.subtractToRef(this.intersectionPoint, this._slidePlaneNormal);

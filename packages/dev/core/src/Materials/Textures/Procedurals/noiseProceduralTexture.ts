@@ -3,7 +3,7 @@ import { Scene } from "../../../scene";
 import { EngineStore } from "../../../Engines/engineStore";
 import { Texture } from "../../../Materials/Textures/texture";
 import { ProceduralTexture } from "./proceduralTexture";
-import { RegisterClass } from '../../../Misc/typeStore';
+import { RegisterClass } from "../../../Misc/typeStore";
 
 import "../../../Shaders/noise.fragment";
 
@@ -11,7 +11,6 @@ import "../../../Shaders/noise.fragment";
  * Class used to generate noise procedural textures
  */
 export class NoiseProceduralTexture extends ProceduralTexture {
-
     /** Gets or sets the start time (default is 0) */
     public time: number = 0.0;
 
@@ -42,7 +41,7 @@ export class NoiseProceduralTexture extends ProceduralTexture {
     }
 
     private _updateShaderUniforms() {
-        let scene = this.getScene();
+        const scene = this.getScene();
 
         if (!scene) {
             return;
@@ -59,7 +58,10 @@ export class NoiseProceduralTexture extends ProceduralTexture {
         return "#define OCTAVES " + (this.octaves | 0);
     }
 
-    /** Generate the current state of the procedural texture */
+    /**
+     * Generate the current state of the procedural texture
+     * @param useCameraPostProcess
+     */
     public render(useCameraPostProcess?: boolean) {
         this._updateShaderUniforms();
         super.render(useCameraPostProcess);
@@ -70,7 +72,7 @@ export class NoiseProceduralTexture extends ProceduralTexture {
      * @returns a serialized noise procedural texture object
      */
     public serialize(): any {
-        var serializationObject: any = {};
+        const serializationObject: any = {};
         serializationObject.customType = "BABYLON.NoiseProceduralTexture";
 
         serializationObject.brightness = this.brightness;
@@ -89,8 +91,14 @@ export class NoiseProceduralTexture extends ProceduralTexture {
      * @returns the cloned texture
      */
     public clone(): NoiseProceduralTexture {
-        var textureSize = this.getSize();
-        var newTexture = new NoiseProceduralTexture(this.name, textureSize.width, this.getScene(), this._fallbackTexture ? this._fallbackTexture : undefined, this._generateMipMaps);
+        const textureSize = this.getSize();
+        const newTexture = new NoiseProceduralTexture(
+            this.name,
+            textureSize.width,
+            this.getScene(),
+            this._fallbackTexture ? this._fallbackTexture : undefined,
+            this._generateMipMaps
+        );
 
         // Base texture
         newTexture.hasAlpha = this.hasAlpha;
@@ -117,7 +125,7 @@ export class NoiseProceduralTexture extends ProceduralTexture {
      * @returns a parsed NoiseProceduralTexture
      */
     public static Parse(parsedTexture: any, scene: Scene): NoiseProceduralTexture {
-        var texture = new NoiseProceduralTexture(parsedTexture.name, parsedTexture.size, scene, undefined, parsedTexture.generateMipMaps);
+        const texture = new NoiseProceduralTexture(parsedTexture.name, parsedTexture.size, scene, undefined, parsedTexture.generateMipMaps);
 
         texture.brightness = parsedTexture.brightness;
         texture.octaves = parsedTexture.octaves;

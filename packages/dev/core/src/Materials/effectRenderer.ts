@@ -1,11 +1,11 @@
-import { Nullable } from '../types';
-import { ThinEngine } from '../Engines/thinEngine';
-import { VertexBuffer } from '../Buffers/buffer';
-import { Viewport } from '../Maths/math.viewport';
-import { Constants } from '../Engines/constants';
-import { Observable, Observer } from '../Misc/observable';
-import { Effect } from './effect';
-import { DataBuffer } from '../Buffers/dataBuffer';
+import { Nullable } from "../types";
+import { ThinEngine } from "../Engines/thinEngine";
+import { VertexBuffer } from "../Buffers/buffer";
+import { Viewport } from "../Maths/math.viewport";
+import { Constants } from "../Engines/constants";
+import { Observable, Observer } from "../Misc/observable";
+import { Effect } from "./effect";
+import { DataBuffer } from "../Buffers/dataBuffer";
 import { DrawWrapper } from "./drawWrapper";
 import { IRenderTargetTexture, RenderTargetWrapper } from "../Engines/renderTargetWrapper";
 import { ShaderLanguage } from "./shaderLanguage";
@@ -154,7 +154,7 @@ export class EffectRenderer {
      * Disposes of the effect renderer
      */
     dispose() {
-        var vertexBuffer = this._vertexBuffers[VertexBuffer.PositionKind];
+        const vertexBuffer = this._vertexBuffers[VertexBuffer.PositionKind];
         if (vertexBuffer) {
             vertexBuffer.dispose();
             delete this._vertexBuffers[VertexBuffer.PositionKind];
@@ -204,12 +204,12 @@ interface EffectWrapperCreationOptions {
      */
     samplerNames?: Array<string>;
     /**
-      * Defines to use in the shader
-      */
+     * Defines to use in the shader
+     */
     defines?: Array<string>;
     /**
-      * Callback when effect is compiled
-      */
+     * Callback when effect is compiled
+     */
     onCompiled?: Nullable<(effect: Effect) => void>;
     /**
      * The friendly name of the effect displayed in Spector.
@@ -218,7 +218,7 @@ interface EffectWrapperCreationOptions {
     /**
      * The language the shader is written in (default: GLSL)
      */
-     shaderLanguage?: ShaderLanguage;
+    shaderLanguage?: ShaderLanguage;
 }
 
 /**
@@ -257,17 +257,16 @@ export class EffectWrapper {
             effectCreationOptions = {
                 fragmentSource: creationOptions.fragmentShader,
                 vertexSource: creationOptions.vertexShader,
-                spectorName: creationOptions.name || "effectWrapper"
+                spectorName: creationOptions.name || "effectWrapper",
             };
-        }
-        else {
+        } else {
             // Default scale to use in post process vertex shader.
             uniformNames.push("scale");
 
             effectCreationOptions = {
                 fragmentSource: creationOptions.fragmentShader,
                 vertex: "postprocess",
-                spectorName: creationOptions.name || "effectWrapper"
+                spectorName: creationOptions.name || "effectWrapper",
             };
 
             // Sets the default scale to identity for the post process vertex shader.
@@ -288,7 +287,8 @@ export class EffectWrapper {
             delete effectCreationOptions.fragmentSource;
             delete effectCreationOptions.vertexSource;
 
-            this.effect = creationOptions.engine.createEffect(effectCreationOptions,
+            this.effect = creationOptions.engine.createEffect(
+                effectCreationOptions,
                 creationOptions.attributeNames || ["position"],
                 uniformNames,
                 creationOptions.samplerNames,
@@ -297,10 +297,11 @@ export class EffectWrapper {
                 creationOptions.onCompiled,
                 undefined,
                 undefined,
-                creationOptions.shaderLanguage,
+                creationOptions.shaderLanguage
             );
         } else {
-            this.effect = new Effect(effectCreationOptions,
+            this.effect = new Effect(
+                effectCreationOptions,
                 creationOptions.attributeNames || ["position"],
                 uniformNames,
                 creationOptions.samplerNames,
@@ -311,7 +312,7 @@ export class EffectWrapper {
                 undefined,
                 undefined,
                 undefined,
-                creationOptions.shaderLanguage,
+                creationOptions.shaderLanguage
             );
 
             this._onContextRestoredObserver = creationOptions.engine.onContextRestoredObservable.add(() => {
@@ -323,8 +324,8 @@ export class EffectWrapper {
     }
 
     /**
-    * Disposes of the effect wrapper
-    */
+     * Disposes of the effect wrapper
+     */
     public dispose() {
         if (this._onContextRestoredObserver) {
             this.effect.getEngine().onContextRestoredObservable.remove(this._onContextRestoredObserver);

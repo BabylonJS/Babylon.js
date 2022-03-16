@@ -23,7 +23,7 @@ export type MotionControllerConstructor = (xrInput: XRInputSource, scene: Scene)
 const controllerCache: Array<{
     filename: string;
     path: string;
-    meshes: AbstractMesh[]
+    meshes: AbstractMesh[];
 }> = [];
 
 /**
@@ -230,7 +230,9 @@ export class WebXRMotionControllerManager {
             .then((profileToLoad: string) => {
                 // load the profile
                 if (!this._ProfileLoadingPromises[profileToLoad]) {
-                    this._ProfileLoadingPromises[profileToLoad] = Tools.LoadFileAsync(`${this.BaseRepositoryUrl}/profiles/${profileToLoad}/profile.json`, false).then((data) => <IMotionControllerProfile>JSON.parse(data as string));
+                    this._ProfileLoadingPromises[profileToLoad] = Tools.LoadFileAsync(`${this.BaseRepositoryUrl}/profiles/${profileToLoad}/profile.json`, false).then(
+                        (data) => <IMotionControllerProfile>JSON.parse(data as string)
+                    );
                 }
                 return this._ProfileLoadingPromises[profileToLoad];
             })

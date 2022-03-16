@@ -3,7 +3,7 @@ import { Scene } from "../../scene";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { PoseEnabledController, ExtendedGamepadButton, MutableGamepadButton } from "./poseEnabledController";
 import { StickValues, GamepadButtonChanges } from "../../Gamepads/gamepad";
-import { Nullable } from '../../types';
+import { Nullable } from "../../types";
 
 /**
  * Defines the WebVRController object that represents controllers tracked in 3D space
@@ -84,7 +84,7 @@ export abstract class WebVRController extends PoseEnabledController {
      */
     public update() {
         super.update();
-        for (var index = 0; index < this._buttons.length; index++) {
+        for (let index = 0; index < this._buttons.length; index++) {
             this._setButtonValue(this.browserGamepad.buttons[index], this._buttons[index], index);
         }
         if (this.leftStick.x !== this.pad.x || this.leftStick.y !== this.pad.y) {
@@ -111,14 +111,14 @@ export abstract class WebVRController extends PoseEnabledController {
             newState = {
                 pressed: false,
                 touched: false,
-                value: 0
+                value: 0,
             };
         }
         if (!currentState) {
             this._buttons[buttonIndex] = {
                 pressed: newState.pressed,
                 touched: newState.touched,
-                value: newState.value
+                value: newState.value,
             };
             return;
         }
@@ -139,7 +139,7 @@ export abstract class WebVRController extends PoseEnabledController {
         pressChanged: false,
         touchChanged: false,
         valueChanged: false,
-        changed: false
+        changed: false,
     };
 
     private _checkChanges(newState: ExtendedGamepadButton, currentState: ExtendedGamepadButton) {

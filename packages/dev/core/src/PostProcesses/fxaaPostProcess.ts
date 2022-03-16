@@ -8,8 +8,8 @@ import { Constants } from "../Engines/constants";
 
 import "../Shaders/fxaa.fragment";
 import "../Shaders/fxaa.vertex";
-import { RegisterClass } from '../Misc/typeStore';
-import { SerializationHelper } from '../Misc/decorators';
+import { RegisterClass } from "../Misc/typeStore";
+import { SerializationHelper } from "../Misc/decorators";
 
 declare type Scene = import("../scene").Scene;
 /**
@@ -25,14 +25,22 @@ export class FxaaPostProcess extends PostProcess {
         return "FxaaPostProcess";
     }
 
-    constructor(name: string, options: number | PostProcessOptions, camera: Nullable<Camera> = null, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT) {
+    constructor(
+        name: string,
+        options: number | PostProcessOptions,
+        camera: Nullable<Camera> = null,
+        samplingMode?: number,
+        engine?: Engine,
+        reusable?: boolean,
+        textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT
+    ) {
         super(name, "fxaa", ["texelSize"], null, options, camera, samplingMode || Texture.BILINEAR_SAMPLINGMODE, engine, reusable, null, textureType, "fxaa", undefined, true);
 
         const defines = this._getDefines();
         this.updateEffect(defines);
 
         this.onApplyObservable.add((effect: Effect) => {
-            var texelSize = this.texelSize;
+            const texelSize = this.texelSize;
             effect.setFloat2("texelSize", texelSize.x, texelSize.y);
         });
     }
@@ -51,15 +59,29 @@ export class FxaaPostProcess extends PostProcess {
         return null;
     }
 
-    /** @hidden */
+    /**
+     * @param parsedPostProcess
+     * @param targetCamera
+     * @param scene
+     * @param rootUrl
+     * @hidden
+     */
     public static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string) {
-        return SerializationHelper.Parse(() => {
-            return new FxaaPostProcess(
-                parsedPostProcess.name,
-                parsedPostProcess.options, targetCamera,
-                parsedPostProcess.renderTargetSamplingMode,
-                scene.getEngine(), parsedPostProcess.reusable);
-        }, parsedPostProcess, scene, rootUrl);
+        return SerializationHelper.Parse(
+            () => {
+                return new FxaaPostProcess(
+                    parsedPostProcess.name,
+                    parsedPostProcess.options,
+                    targetCamera,
+                    parsedPostProcess.renderTargetSamplingMode,
+                    scene.getEngine(),
+                    parsedPostProcess.reusable
+                );
+            },
+            parsedPostProcess,
+            scene,
+            rootUrl
+        );
     }
 }
 

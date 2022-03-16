@@ -4,21 +4,21 @@ import { WebXRSessionManager } from "./webXRSessionManager";
 
 /** Covers all supported subclasses of WebXR's XRCompositionLayer */
 // TODO (rgerd): Extend for all other subclasses of XRCompositionLayer.
-export type WebXRCompositionLayerType = 'XRProjectionLayer';
+export type WebXRCompositionLayerType = "XRProjectionLayer";
 
 /** Covers all supported subclasses of WebXR's XRLayer */
-export type WebXRLayerType = 'XRWebGLLayer' | WebXRCompositionLayerType;
+export type WebXRLayerType = "XRWebGLLayer" | WebXRCompositionLayerType;
 
 /**
  * Wrapper over subclasses of XRLayer.
  * @hidden
  */
- export class WebXRLayerWrapper {
+export class WebXRLayerWrapper {
     /**
      * Check if fixed foveation is supported on this device
      */
     public get isFixedFoveationSupported(): boolean {
-        return this.layerType == 'XRWebGLLayer' && (typeof (this.layer as XRWebGLLayer).fixedFoveation == 'number');
+        return this.layerType == "XRWebGLLayer" && typeof (this.layer as XRWebGLLayer).fixedFoveation == "number";
     }
 
     /**
@@ -53,5 +53,6 @@ export type WebXRLayerType = 'XRWebGLLayer' | WebXRCompositionLayerType;
         /** The type of XR layer that is being wrapped. */
         public readonly layerType: WebXRLayerType,
         /** Create a render target provider for the wrapped layer. */
-        public createRenderTargetTextureProvider: (xrSessionManager: WebXRSessionManager) => WebXRLayerRenderTargetTextureProvider) {}
+        public createRenderTargetTextureProvider: (xrSessionManager: WebXRSessionManager) => WebXRLayerRenderTargetTextureProvider
+    ) {}
 }

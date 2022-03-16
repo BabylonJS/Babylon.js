@@ -99,7 +99,7 @@ export abstract class AbstractScene {
      * @param rootUrl Defines the root url of the data
      */
     public static Parse(jsonData: any, scene: Scene, container: AssetContainer, rootUrl: string): void {
-        for (let parserName in this._BabylonFileParsers) {
+        for (const parserName in this._BabylonFileParsers) {
             if (this._BabylonFileParsers.hasOwnProperty(parserName)) {
                 this._BabylonFileParsers[parserName](jsonData, scene, container, rootUrl);
             }
@@ -117,14 +117,14 @@ export abstract class AbstractScene {
     public cameras = new Array<Camera>();
 
     /**
-    * All of the lights added to this scene
-    * @see https://doc.babylonjs.com/babylon101/lights
-    */
+     * All of the lights added to this scene
+     * @see https://doc.babylonjs.com/babylon101/lights
+     */
     public lights = new Array<Light>();
 
     /**
-    * All of the (abstract) meshes added to this scene
-    */
+     * All of the (abstract) meshes added to this scene
+     */
     public meshes = new Array<AbstractMesh>();
 
     /**
@@ -134,9 +134,9 @@ export abstract class AbstractScene {
     public skeletons = new Array<Skeleton>();
 
     /**
-    * All of the particle systems added to this scene
-    * @see https://doc.babylonjs.com/babylon101/particles
-    */
+     * All of the particle systems added to this scene
+     * @see https://doc.babylonjs.com/babylon101/particles
+     */
     public particleSystems = new Array<IParticleSystem>();
 
     /**
@@ -145,24 +145,24 @@ export abstract class AbstractScene {
     public animations: Animation[] = [];
 
     /**
-    * All of the animation groups added to this scene
-    * @see https://doc.babylonjs.com/divingDeeper/animation/groupAnimations
-    */
+     * All of the animation groups added to this scene
+     * @see https://doc.babylonjs.com/divingDeeper/animation/groupAnimations
+     */
     public animationGroups = new Array<AnimationGroup>();
 
     /**
-    * All of the multi-materials added to this scene
-    * @see https://doc.babylonjs.com/how_to/multi_materials
-    */
+     * All of the multi-materials added to this scene
+     * @see https://doc.babylonjs.com/how_to/multi_materials
+     */
     public multiMaterials = new Array<MultiMaterial>();
 
     /**
-    * All of the materials added to this scene
-    * In the context of a Scene, it is not supposed to be modified manually.
-    * Any addition or removal should be done using the addMaterial and removeMaterial Scene methods.
-    * Note also that the order of the Material within the array is not significant and might change.
-    * @see https://doc.babylonjs.com/babylon101/materials
-    */
+     * All of the materials added to this scene
+     * In the context of a Scene, it is not supposed to be modified manually.
+     * Any addition or removal should be done using the addMaterial and removeMaterial Scene methods.
+     * Note also that the order of the Material within the array is not significant and might change.
+     * @see https://doc.babylonjs.com/babylon101/materials
+     */
     public materials = new Array<Material>();
 
     /**
@@ -177,12 +177,12 @@ export abstract class AbstractScene {
     public geometries = new Array<Geometry>();
 
     /**
-    * All of the tranform nodes added to this scene
-    * In the context of a Scene, it is not supposed to be modified manually.
-    * Any addition or removal should be done using the addTransformNode and removeTransformNode Scene methods.
-    * Note also that the order of the TransformNode wihin the array is not significant and might change.
-    * @see https://doc.babylonjs.com/how_to/transformnode
-    */
+     * All of the tranform nodes added to this scene
+     * In the context of a Scene, it is not supposed to be modified manually.
+     * Any addition or removal should be done using the addTransformNode and removeTransformNode Scene methods.
+     * Note also that the order of the TransformNode wihin the array is not significant and might change.
+     * @see https://doc.babylonjs.com/how_to/transformnode
+     */
     public transformNodes = new Array<TransformNode>();
 
     /**
@@ -224,7 +224,7 @@ export abstract class AbstractScene {
         nodes = nodes.concat(this.lights);
         nodes = nodes.concat(this.cameras);
         nodes = nodes.concat(this.transformNodes); // dummies
-        this.skeletons.forEach((skeleton) => nodes = nodes.concat(skeleton.bones));
+        this.skeletons.forEach((skeleton) => (nodes = nodes.concat(skeleton.bones)));
         return nodes;
     }
 }

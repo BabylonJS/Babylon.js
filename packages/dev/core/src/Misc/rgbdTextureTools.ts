@@ -1,10 +1,10 @@
 import { Constants } from "../Engines/constants";
 import { PostProcess } from "../PostProcesses/postProcess";
 import "../Shaders/rgbdDecode.fragment";
-import { Engine } from '../Engines/engine';
+import { Engine } from "../Engines/engine";
 
 import "../Engines/Extensions/engine.renderTarget";
-import { ApplyPostProcess } from './textureTools';
+import { ApplyPostProcess } from "./textureTools";
 
 declare type Texture = import("../Materials/Textures/texture").Texture;
 declare type InternalTexture = import("../Materials/Textures/internalTexture").InternalTexture;
@@ -52,7 +52,22 @@ export class RGBDTextureTools {
             // Expand the texture if possible
             if (expandTexture) {
                 // Simply run through the decode PP.
-                const rgbdPostProcess = new PostProcess("rgbdDecode", "rgbdDecode", null, null, 1, null, Constants.TEXTURE_TRILINEAR_SAMPLINGMODE, engine, false, undefined, internalTexture.type, undefined, null, false);
+                const rgbdPostProcess = new PostProcess(
+                    "rgbdDecode",
+                    "rgbdDecode",
+                    null,
+                    null,
+                    1,
+                    null,
+                    Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
+                    engine,
+                    false,
+                    undefined,
+                    internalTexture.type,
+                    undefined,
+                    null,
+                    false
+                );
                 rgbdPostProcess.externalTextureSamplerBinding = true;
 
                 // Hold the output of the decoding.
@@ -62,7 +77,7 @@ export class RGBDTextureTools {
                     generateStencilBuffer: false,
                     samplingMode: internalTexture.samplingMode,
                     type: internalTexture.type,
-                    format: Constants.TEXTUREFORMAT_RGBA
+                    format: Constants.TEXTUREFORMAT_RGBA,
                 });
 
                 rgbdPostProcess.getEffect().executeWhenCompiled(() => {

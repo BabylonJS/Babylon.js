@@ -8,7 +8,11 @@ import { RenderTargetWrapper } from "../../renderTargetWrapper";
 import { WebGPUEngine } from "../../webgpuEngine";
 import { WebGPURenderTargetWrapper } from "../webgpuRenderTargetWrapper";
 
-WebGPUEngine.prototype.unBindMultiColorAttachmentFramebuffer = function (rtWrapper: RenderTargetWrapper, disableGenerateMipMaps: boolean = false, onBeforeUnbind?: () => void): void {
+WebGPUEngine.prototype.unBindMultiColorAttachmentFramebuffer = function (
+    rtWrapper: RenderTargetWrapper,
+    disableGenerateMipMaps: boolean = false,
+    onBeforeUnbind?: () => void
+): void {
     if (onBeforeUnbind) {
         onBeforeUnbind();
     }
@@ -45,8 +49,8 @@ WebGPUEngine.prototype.createMultipleRenderTarget = function (size: TextureSize,
     let depthTextureFormat = Constants.TEXTUREFORMAT_DEPTH16;
     let textureCount = 1;
 
-    let defaultType = Constants.TEXTURETYPE_UNSIGNED_INT;
-    let defaultSamplingMode = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
+    const defaultType = Constants.TEXTURETYPE_UNSIGNED_INT;
+    const defaultSamplingMode = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
 
     let types = new Array<number>();
     let samplingModes = new Array<number>();
@@ -67,11 +71,10 @@ WebGPUEngine.prototype.createMultipleRenderTarget = function (size: TextureSize,
         if (options.samplingModes) {
             samplingModes = options.samplingModes;
         }
-
     }
 
-    const width = (<{ width: number, height: number }>size).width || <number>size;
-    const height = (<{ width: number, height: number }>size).height || <number>size;
+    const width = (<{ width: number; height: number }>size).width || <number>size;
+    const height = (<{ width: number; height: number }>size).height || <number>size;
 
     let depthStencilTexture = null;
     if (generateDepthBuffer || generateStencilBuffer || generateDepthTexture) {
@@ -94,8 +97,7 @@ WebGPUEngine.prototype.createMultipleRenderTarget = function (size: TextureSize,
         if (type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
             // if floating point linear (gl.FLOAT) then force to NEAREST_SAMPLINGMODE
             samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
-        }
-        else if (type === Constants.TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
+        } else if (type === Constants.TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
             // if floating point linear (HALF_FLOAT) then force to NEAREST_SAMPLINGMODE
             samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
         }

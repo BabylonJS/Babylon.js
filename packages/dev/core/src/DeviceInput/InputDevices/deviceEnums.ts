@@ -124,13 +124,13 @@ export enum DualShockInput {
     /** RStickXAxis */
     RStickXAxis = 20,
     /** RStickYAxis */
-    RStickYAxis = 21
+    RStickYAxis = 21,
 }
 
 /**
  * Enum for Dual Sense Gamepad
  */
- export enum DualSenseInput {
+export enum DualSenseInput {
     /** Cross */
     Cross = 0,
     /** Circle */
@@ -148,7 +148,7 @@ export enum DualShockInput {
     /** R2 */
     R2 = 7,
     /** Create */
-    Create  = 8,
+    Create = 8,
     /** Options */
     Options = 9,
     /** L3 */
@@ -174,7 +174,7 @@ export enum DualShockInput {
     /** RStickXAxis */
     RStickXAxis = 20,
     /** RStickYAxis */
-    RStickYAxis = 21
+    RStickYAxis = 21,
 }
 
 /**
@@ -222,7 +222,7 @@ export enum XboxInput {
     /** RStickXAxis */
     RStickXAxis = 19,
     /** RStickYAxis */
-    RStickYAxis = 20
+    RStickYAxis = 20,
 }
 
 /**
@@ -272,5 +272,5 @@ export enum SwitchInput {
     /** RStickXAxis */
     RStickXAxis = 20,
     /** RStickYAxis */
-    RStickYAxis = 21
+    RStickYAxis = 21,
 }

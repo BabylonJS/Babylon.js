@@ -44,7 +44,7 @@ export enum InspectableType {
  * Interface used to define custom inspectable options in "Options" mode.
  * This interface is used by the inspector to display the list of options
  */
- export interface IInspectableOptions {
+export interface IInspectableOptions {
     /**
      * Defines the visible part of the option
      */
@@ -57,7 +57,7 @@ export enum InspectableType {
      * Defines if the option should be selected or not
      */
     selected?: boolean;
- }
+}
 
 /**
  * Interface used to define custom inspectable properties.
@@ -92,9 +92,9 @@ export interface IInspectable {
     /**
      * Gets the callback function when using "Button" mode
      */
-     callback?: () => void;
-     /**
-      * Gets the list of options when using "Option" mode
-      */
-     options?: [];
+    callback?: () => void;
+    /**
+     * Gets the list of options when using "Option" mode
+     */
+    options?: [];
 }

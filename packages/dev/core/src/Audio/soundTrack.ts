@@ -67,7 +67,9 @@ export class SoundTrack {
             this._outputAudioNode.connect(Engine.audioEngine.masterGain);
 
             if (this._options) {
-                if (this._options.volume) { this._outputAudioNode.gain.value = this._options.volume; }
+                if (this._options.volume) {
+                    this._outputAudioNode.gain.value = this._options.volume;
+                }
             }
 
             this._isInitialized = true;
@@ -107,8 +109,7 @@ export class SoundTrack {
         if (sound.soundTrackId) {
             if (sound.soundTrackId === -1) {
                 this._scene.mainSoundTrack.removeSound(sound);
-            }
-            else if (this._scene.soundTracks) {
+            } else if (this._scene.soundTracks) {
                 this._scene.soundTracks[sound.soundTrackId].removeSound(sound);
             }
         }
@@ -123,7 +124,7 @@ export class SoundTrack {
      * @ignoreNaming
      */
     public removeSound(sound: Sound): void {
-        var index = this.soundCollection.indexOf(sound);
+        const index = this.soundCollection.indexOf(sound);
         if (index !== -1) {
             this.soundCollection.splice(index, 1);
         }
@@ -146,7 +147,7 @@ export class SoundTrack {
      */
     public switchPanningModelToHRTF(): void {
         if (Engine.audioEngine?.canUseWebAudio) {
-            for (var i = 0; i < this.soundCollection.length; i++) {
+            for (let i = 0; i < this.soundCollection.length; i++) {
                 this.soundCollection[i].switchPanningModelToHRTF();
             }
         }
@@ -159,7 +160,7 @@ export class SoundTrack {
      */
     public switchPanningModelToEqualPower(): void {
         if (Engine.audioEngine?.canUseWebAudio) {
-            for (var i = 0; i < this.soundCollection.length; i++) {
+            for (let i = 0; i < this.soundCollection.length; i++) {
                 this.soundCollection[i].switchPanningModelToEqualPower();
             }
         }

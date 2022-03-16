@@ -154,7 +154,7 @@ export class VideoTexture extends Texture {
             autoPlay: true,
             loop: true,
             autoUpdateTexture: true,
-            ...settings
+            ...settings,
         };
 
         this._onError = onError;
@@ -184,20 +184,18 @@ export class VideoTexture extends Texture {
         this.video.addEventListener("paused", this._updateInternalTexture);
         this.video.addEventListener("seeked", this._updateInternalTexture);
         this.video.addEventListener("emptied", this.reset);
-        this._createInternalTextureOnEvent = (settings.poster && !settings.autoPlay) ? "play" : "canplay";
+        this._createInternalTextureOnEvent = settings.poster && !settings.autoPlay ? "play" : "canplay";
         this.video.addEventListener(this._createInternalTextureOnEvent, this._createInternalTexture);
 
         if (settings.autoPlay) {
             this._handlePlay();
         }
 
-        const videoHasEnoughData = (this.video.readyState >= this.video.HAVE_CURRENT_DATA);
-        if (settings.poster &&
-            (!settings.autoPlay || !videoHasEnoughData)) {
+        const videoHasEnoughData = this.video.readyState >= this.video.HAVE_CURRENT_DATA;
+        if (settings.poster && (!settings.autoPlay || !videoHasEnoughData)) {
             this._texture = this._getEngine()!.createTexture(settings.poster!, false, !this.invertY, scene);
             this._displayingPosterTexture = true;
-        }
-        else if (videoHasEnoughData) {
+        } else if (videoHasEnoughData) {
             this._createInternalTexture();
         }
     }
@@ -255,14 +253,12 @@ export class VideoTexture extends Texture {
             if (this._displayingPosterTexture) {
                 this._texture.dispose();
                 this._displayingPosterTexture = false;
-            }
-            else {
+            } else {
                 return;
             }
         }
 
-        if (!this._getEngine()!.needPOTTextures ||
-            (Tools.IsExponentOfTwo(this.video.videoWidth) && Tools.IsExponentOfTwo(this.video.videoHeight))) {
+        if (!this._getEngine()!.needPOTTextures || (Tools.IsExponentOfTwo(this.video.videoWidth) && Tools.IsExponentOfTwo(this.video.videoHeight))) {
             this.wrapU = Texture.WRAP_ADDRESSMODE;
             this.wrapV = Texture.WRAP_ADDRESSMODE;
         } else {
@@ -271,16 +267,11 @@ export class VideoTexture extends Texture {
             this._generateMipMaps = false;
         }
 
-        this._texture = this._getEngine()!.createDynamicTexture(
-            this.video.videoWidth,
-            this.video.videoHeight,
-            this._generateMipMaps,
-            this.samplingMode
-        );
+        this._texture = this._getEngine()!.createDynamicTexture(this.video.videoWidth, this.video.videoHeight, this._generateMipMaps, this.samplingMode);
 
         if (!this.video.autoplay && !this._settings.poster) {
-            let oldHandler = this.video.onplaying;
-            let oldMuted = this.video.muted;
+            const oldHandler = this.video.onplaying;
+            const oldMuted = this.video.muted;
             this.video.muted = true;
             this.video.onplaying = () => {
                 this.video.muted = oldMuted;
@@ -294,14 +285,13 @@ export class VideoTexture extends Texture {
                 }
             };
             this._handlePlay();
-        }
-        else {
+        } else {
             this._updateInternalTexture();
             if (this.onLoadObservable.hasObservers()) {
                 this.onLoadObservable.notifyObservers(this);
             }
         }
-    }
+    };
 
     private reset = (): void => {
         if (this._texture == null) {
@@ -312,7 +302,7 @@ export class VideoTexture extends Texture {
             this._texture.dispose();
             this._texture = null;
         }
-    }
+    };
 
     /**
      * @hidden Internal method to initiate `update`.
@@ -359,7 +349,7 @@ export class VideoTexture extends Texture {
             return;
         }
 
-        let frameId = this.getScene()!.getFrameId();
+        const frameId = this.getScene()!.getFrameId();
         if (this._frameId === frameId) {
             return;
         }
@@ -367,7 +357,7 @@ export class VideoTexture extends Texture {
         this._frameId = frameId;
 
         this._getEngine()!.updateVideoTexture(this._texture, this.video, this._invertY);
-    }
+    };
 
     /**
      * Change video content. Changing video instance or setting multiple urls (as in constructor) is not supported.
@@ -383,13 +373,7 @@ export class VideoTexture extends Texture {
      * @returns the cloned texture
      */
     public clone(): VideoTexture {
-        return new VideoTexture(this.name,
-            this._currentSrc!,
-            this.getScene(),
-            this._generateMipMaps,
-            this.invertY,
-            this.samplingMode,
-            this._settings);
+        return new VideoTexture(this.name, this._currentSrc!, this.getScene(), this._generateMipMaps, this.invertY, this.samplingMode, this._settings);
     }
 
     /**
@@ -421,21 +405,21 @@ export class VideoTexture extends Texture {
      * @returns The created video texture as a promise
      */
     public static CreateFromStreamAsync(scene: Scene, stream: MediaStream, constraints: any, invertY = true): Promise<VideoTexture> {
-        var video = scene.getEngine().createVideoElement(constraints);
+        const video = scene.getEngine().createVideoElement(constraints);
 
         if (scene.getEngine()._badOS) {
             // Yes... I know and I hope to remove it soon...
             document.body.appendChild(video);
-            video.style.transform = 'scale(0.0001, 0.0001)';
-            video.style.opacity = '0';
-            video.style.position = 'fixed';
-            video.style.bottom = '0px';
-            video.style.right = '0px';
+            video.style.transform = "scale(0.0001, 0.0001)";
+            video.style.opacity = "0";
+            video.style.position = "fixed";
+            video.style.bottom = "0px";
+            video.style.right = "0px";
         }
 
-        video.setAttribute('autoplay', '');
-        video.setAttribute('muted', 'true');
-        video.setAttribute('playsinline', '');
+        video.setAttribute("autoplay", "");
+        video.setAttribute("muted", "true");
+        video.setAttribute("playsinline", "");
         video.muted = true;
 
         if (video.mozSrcObject !== undefined) {
@@ -447,12 +431,12 @@ export class VideoTexture extends Texture {
             } else {
                 window.URL = window.URL || window.webkitURL || window.mozURL || window.msURL;
                 // older API. See https://developer.mozilla.org/en-US/docs/Web/API/URL/createObjectURL#using_object_urls_for_media_streams
-                video.src = (window.URL && window.URL.createObjectURL(stream as any));
+                video.src = window.URL && window.URL.createObjectURL(stream as any);
             }
         }
 
         return new Promise<VideoTexture>((resolve) => {
-            let onPlaying = () => {
+            const onPlaying = () => {
                 const videoTexture = new VideoTexture("video", video, scene, true, invertY);
                 if (scene.getEngine()._badOS) {
                     videoTexture.onDisposeObservable.addOnce(() => {
@@ -492,7 +476,7 @@ export class VideoTexture extends Texture {
         audioConstaints: boolean | MediaTrackConstraints = false,
         invertY = true
     ): Promise<VideoTexture> {
-        var constraintsDeviceId;
+        let constraintsDeviceId;
         if (constraints && constraints.deviceId) {
             constraintsDeviceId = {
                 exact: constraints.deviceId,
@@ -500,20 +484,16 @@ export class VideoTexture extends Texture {
         }
 
         if (navigator.mediaDevices) {
-            return navigator.mediaDevices.getUserMedia({
-                video: constraints,
-                audio: audioConstaints
-            })
+            return navigator.mediaDevices
+                .getUserMedia({
+                    video: constraints,
+                    audio: audioConstaints,
+                })
                 .then((stream) => {
                     return this.CreateFromStreamAsync(scene, stream, constraints, invertY);
                 });
-        }
-        else {
-            const getUserMedia =
-                (navigator as any).getUserMedia ||
-                navigator.webkitGetUserMedia ||
-                navigator.mozGetUserMedia ||
-                navigator.msGetUserMedia;
+        } else {
+            const getUserMedia = (navigator as any).getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
 
             if (getUserMedia) {
                 getUserMedia(
@@ -529,7 +509,7 @@ export class VideoTexture extends Texture {
                                 max: (constraints && constraints.maxHeight) || 480,
                             },
                         },
-                        audio: audioConstaints
+                        audio: audioConstaints,
                     },
                     (stream: any) => {
                         return this.CreateFromStreamAsync(scene, stream, constraints, invertY);

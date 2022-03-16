@@ -1,6 +1,6 @@
 import { Vector3 } from "../Maths/math.vector";
 import { Nullable } from "../types";
-import { Color3 } from '../Maths/math.color';
+import { Color3 } from "../Maths/math.color";
 import { TmpVectors } from "./math";
 
 // https://dickyjim.wordpress.com/2013/09/04/spherical-harmonics-for-beginners/
@@ -78,19 +78,7 @@ const applySH3 = (lm: number, direction: Vector3) => {
 
 // Derived from the integration of the a kernel convolution to SH.
 // Great explanation here: https://patapom.com/blog/SHPortal/#about-distant-radiance-and-irradiance-environments
-const SHCosKernelConvolution = [
-    Math.PI,
-
-    2 * Math.PI / 3,
-    2 * Math.PI / 3,
-    2 * Math.PI / 3,
-
-    Math.PI / 4,
-    Math.PI / 4,
-    Math.PI / 4,
-    Math.PI / 4,
-    Math.PI / 4,
-];
+const SHCosKernelConvolution = [Math.PI, (2 * Math.PI) / 3, (2 * Math.PI) / 3, (2 * Math.PI) / 3, Math.PI / 4, Math.PI / 4, Math.PI / 4, Math.PI / 4, Math.PI / 4];
 
 /**
  * Class representing spherical harmonics coefficients to the 3rd degree
@@ -316,7 +304,7 @@ export class SphericalHarmonics {
      * @returns the spherical harmonics
      */
     public static FromPolynomial(polynomial: SphericalPolynomial): SphericalHarmonics {
-        var result = new SphericalHarmonics();
+        const result = new SphericalHarmonics();
 
         result.l00 = polynomial.xx.scale(0.376127).add(polynomial.yy.scale(0.376127)).add(polynomial.zz.scale(0.376126));
         result.l1_1 = polynomial.y.scale(0.977204);
@@ -474,7 +462,7 @@ export class SphericalPolynomial {
      * @returns the spherical polynomial
      */
     public static FromHarmonics(harmonics: SphericalHarmonics): SphericalPolynomial {
-        var result = new SphericalPolynomial();
+        const result = new SphericalPolynomial();
         return result.updateFromHarmonics(harmonics);
     }
 

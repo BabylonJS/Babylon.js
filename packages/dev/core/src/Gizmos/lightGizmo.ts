@@ -1,21 +1,21 @@
 import { Nullable } from "../types";
 import { Vector3, Quaternion } from "../Maths/math.vector";
-import { Color3 } from '../Maths/math.color';
+import { Color3 } from "../Maths/math.color";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
 import { Gizmo } from "./gizmo";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { Node } from "../node";
-import { StandardMaterial } from '../Materials/standardMaterial';
-import { Light } from '../Lights/light';
-import { Scene } from '../scene';
-import { HemisphericLight } from '../Lights/hemisphericLight';
-import { DirectionalLight } from '../Lights/directionalLight';
-import { CreateSphere } from '../Meshes/Builders/sphereBuilder';
-import { CreateHemisphere } from '../Meshes/Builders/hemisphereBuilder';
-import { SpotLight } from '../Lights/spotLight';
-import { TransformNode } from '../Meshes/transformNode';
-import { PointerEventTypes, PointerInfo } from '../Events/pointerEvents';
+import { StandardMaterial } from "../Materials/standardMaterial";
+import { Light } from "../Lights/light";
+import { Scene } from "../scene";
+import { HemisphericLight } from "../Lights/hemisphericLight";
+import { DirectionalLight } from "../Lights/directionalLight";
+import { CreateSphere } from "../Meshes/Builders/sphereBuilder";
+import { CreateHemisphere } from "../Meshes/Builders/hemisphereBuilder";
+import { SpotLight } from "../Lights/spotLight";
+import { TransformNode } from "../Meshes/transformNode";
+import { PointerEventTypes, PointerInfo } from "../Events/pointerEvents";
 import { Observer, Observable } from "../Misc/observable";
 import { CreateCylinder } from "../Meshes/Builders/cylinderBuilder";
 
@@ -54,7 +54,7 @@ export class LightGizmo extends Gizmo {
                 return;
             }
 
-            this._isHovered = !!(pointerInfo.pickInfo && (this._rootMesh.getChildMeshes().indexOf(<Mesh>pointerInfo.pickInfo.pickedMesh) != -1));
+            this._isHovered = !!(pointerInfo.pickInfo && this._rootMesh.getChildMeshes().indexOf(<Mesh>pointerInfo.pickInfo.pickedMesh) != -1);
             if (this._isHovered && pointerInfo.event.button === 0) {
                 this.onClickedObservable.notifyObservers(this._light);
             }
@@ -100,7 +100,7 @@ export class LightGizmo extends Gizmo {
             this._lightMesh.parent = this._rootMesh;
 
             // Add lighting to the light gizmo
-            var gizmoLight = this.gizmoLayer._getSharedGizmoLight();
+            const gizmoLight = this.gizmoLayer._getSharedGizmoLight();
             gizmoLight.includedOnlyMeshes = gizmoLight.includedOnlyMeshes.concat(this._lightMesh.getChildMeshes(false));
 
             this._lightMesh.rotationQuaternion = new Quaternion();
@@ -170,7 +170,6 @@ export class LightGizmo extends Gizmo {
                 this.attachedMesh!.computeWorldMatrix(true);
                 this._cachedPosition.copyFrom(this.attachedMesh!.position);
             }
-
         }
         if ((this._light as any).direction) {
             // If the gizmo is moved update the light otherwise update the gizmo to match the light
@@ -193,24 +192,30 @@ export class LightGizmo extends Gizmo {
 
     /**
      * Creates the lines for a light mesh
+     * @param levels
+     * @param scene
      */
     private static _CreateLightLines = (levels: number, scene: Scene) => {
-        var distFromSphere = 1.2;
+        const distFromSphere = 1.2;
 
-        var root = new Mesh("root", scene);
+        const root = new Mesh("root", scene);
         root.rotation.x = Math.PI / 2;
 
         // Create the top line, this will be cloned for all other lines
-        var linePivot = new Mesh("linePivot", scene);
+        const linePivot = new Mesh("linePivot", scene);
         linePivot.parent = root;
-        var line = CreateCylinder("line", {
-            updatable: false,
-            height: 2,
-            diameterTop: 0.2,
-            diameterBottom: 0.3,
-            tessellation: 6,
-            subdivisions: 1,
-        }, scene);
+        const line = CreateCylinder(
+            "line",
+            {
+                updatable: false,
+                height: 2,
+                diameterTop: 0.2,
+                diameterBottom: 0.3,
+                tessellation: 6,
+                subdivisions: 1,
+            },
+            scene
+        );
         line.position.y = line.scaling.y / 2 + distFromSphere;
         line.parent = linePivot;
 
@@ -220,7 +225,7 @@ export class LightGizmo extends Gizmo {
         for (var i = 0; i < 4; i++) {
             var l = linePivot.clone("lineParentClone")!;
             l.rotation.z = Math.PI / 4;
-            l.rotation.y = (Math.PI / 2) + (Math.PI / 2 * i);
+            l.rotation.y = Math.PI / 2 + (Math.PI / 2) * i;
 
             l.getChildMeshes()[0].scaling.y = 0.5;
             l.getChildMeshes()[0].scaling.x = l.getChildMeshes()[0].scaling.z = 0.8;
@@ -233,7 +238,7 @@ export class LightGizmo extends Gizmo {
         for (var i = 0; i < 4; i++) {
             var l = linePivot.clone("linePivotClone");
             l.rotation.z = Math.PI / 2;
-            l.rotation.y = (Math.PI / 2 * i);
+            l.rotation.y = (Math.PI / 2) * i;
         }
 
         if (levels < 4) {
@@ -241,8 +246,8 @@ export class LightGizmo extends Gizmo {
         }
         for (var i = 0; i < 4; i++) {
             var l = linePivot.clone("linePivotClone");
-            l.rotation.z = Math.PI + (Math.PI / 4);
-            l.rotation.y = (Math.PI / 2) + (Math.PI / 2 * i);
+            l.rotation.z = Math.PI + Math.PI / 4;
+            l.rotation.y = Math.PI / 2 + (Math.PI / 2) * i;
 
             l.getChildMeshes()[0].scaling.y = 0.5;
             l.getChildMeshes()[0].scaling.x = l.getChildMeshes()[0].scaling.z = 0.8;
@@ -256,7 +261,7 @@ export class LightGizmo extends Gizmo {
         l.rotation.z = Math.PI;
 
         return root;
-    }
+    };
 
     /**
      * Disposes of the light gizmo
@@ -270,13 +275,13 @@ export class LightGizmo extends Gizmo {
     }
 
     private static _CreateHemisphericLightMesh(scene: Scene) {
-        var root = new Mesh("hemisphereLight", scene);
-        var hemisphere = CreateHemisphere(root.name, { segments: 10, diameter: 1 }, scene);
+        const root = new Mesh("hemisphereLight", scene);
+        const hemisphere = CreateHemisphere(root.name, { segments: 10, diameter: 1 }, scene);
         hemisphere.position.z = -0.15;
         hemisphere.rotation.x = Math.PI / 2;
         hemisphere.parent = root;
 
-        var lines = this._CreateLightLines(3, scene);
+        const lines = this._CreateLightLines(3, scene);
         lines.parent = root;
 
         root.scaling.scaleInPlace(LightGizmo._Scale);
@@ -286,12 +291,12 @@ export class LightGizmo extends Gizmo {
     }
 
     private static _CreatePointLightMesh(scene: Scene) {
-        var root = new Mesh("pointLight", scene);
-        var sphere = CreateSphere(root.name, { segments: 10, diameter: 1 }, scene);
+        const root = new Mesh("pointLight", scene);
+        const sphere = CreateSphere(root.name, { segments: 10, diameter: 1 }, scene);
         sphere.rotation.x = Math.PI / 2;
         sphere.parent = root;
 
-        var lines = this._CreateLightLines(5, scene);
+        const lines = this._CreateLightLines(5, scene);
         lines.parent = root;
         root.scaling.scaleInPlace(LightGizmo._Scale);
         root.rotation.x = Math.PI / 2;
@@ -300,15 +305,15 @@ export class LightGizmo extends Gizmo {
     }
 
     private static _CreateSpotLightMesh(scene: Scene) {
-        var root = new Mesh("spotLight", scene);
-        var sphere = CreateSphere(root.name, { segments: 10, diameter: 1 }, scene);
+        const root = new Mesh("spotLight", scene);
+        const sphere = CreateSphere(root.name, { segments: 10, diameter: 1 }, scene);
         sphere.parent = root;
 
-        var hemisphere = CreateHemisphere(root.name, { segments: 10, diameter: 2 }, scene);
+        const hemisphere = CreateHemisphere(root.name, { segments: 10, diameter: 2 }, scene);
         hemisphere.parent = root;
         hemisphere.rotation.x = -Math.PI / 2;
 
-        var lines = this._CreateLightLines(2, scene);
+        const lines = this._CreateLightLines(2, scene);
         lines.parent = root;
         root.scaling.scaleInPlace(LightGizmo._Scale);
         root.rotation.x = Math.PI / 2;
@@ -317,21 +322,25 @@ export class LightGizmo extends Gizmo {
     }
 
     private static _CreateDirectionalLightMesh(scene: Scene) {
-        var root = new Mesh("directionalLight", scene);
+        const root = new Mesh("directionalLight", scene);
 
-        var mesh = new Mesh(root.name, scene);
+        const mesh = new Mesh(root.name, scene);
         mesh.parent = root;
-        var sphere = CreateSphere(root.name, { diameter: 1.2, segments: 10 }, scene);
+        const sphere = CreateSphere(root.name, { diameter: 1.2, segments: 10 }, scene);
         sphere.parent = mesh;
 
-        var line = CreateCylinder(root.name, {
-            updatable: false,
-            height: 6,
-            diameterTop: 0.3,
-            diameterBottom: 0.3,
-            tessellation: 6,
-            subdivisions: 1,
-        }, scene);
+        const line = CreateCylinder(
+            root.name,
+            {
+                updatable: false,
+                height: 6,
+                diameterTop: 0.3,
+                diameterBottom: 0.3,
+                tessellation: 6,
+                subdivisions: 1,
+            },
+            scene
+        );
         line.parent = mesh;
 
         var left = line.clone(root.name)!;
@@ -342,14 +351,18 @@ export class LightGizmo extends Gizmo {
         right.scaling.y = 0.5;
         right.position.x += -1.25;
 
-        var arrowHead = CreateCylinder(root.name, {
-            updatable: false,
-            height: 1,
-            diameterTop: 0,
-            diameterBottom: 0.6,
-            tessellation: 6,
-            subdivisions: 1,
-        }, scene);
+        const arrowHead = CreateCylinder(
+            root.name,
+            {
+                updatable: false,
+                height: 1,
+                diameterTop: 0,
+                diameterBottom: 0.6,
+                tessellation: 6,
+                subdivisions: 1,
+            },
+            scene
+        );
         arrowHead.position.y += 3;
         arrowHead.parent = mesh;
 

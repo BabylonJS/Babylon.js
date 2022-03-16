@@ -208,7 +208,13 @@ export type RenderTargetsStageAction = (renderTargets: SmartArrayNoDuplicate<Ren
 /**
  * Strong typing of a pointer move action.
  */
-export type PointerMoveStageAction = (unTranslatedPointerX: number, unTranslatedPointerY: number, pickResult: Nullable<PickingInfo>, isMeshPicked: boolean, element: Nullable<HTMLElement>) => Nullable<PickingInfo>;
+export type PointerMoveStageAction = (
+    unTranslatedPointerX: number,
+    unTranslatedPointerY: number,
+    pickResult: Nullable<PickingInfo>,
+    isMeshPicked: boolean,
+    element: Nullable<HTMLElement>
+) => Nullable<PickingInfo>;
 
 /**
  * Strong typing of a pointer up/down action.
@@ -219,13 +225,13 @@ export type PointerUpDownStageAction = (unTranslatedPointerX: number, unTranslat
  * Representation of a stage in the scene (Basically a list of ordered steps)
  * @hidden
  */
-export class Stage<T extends Function> extends Array<{ index: number, component: ISceneComponent, action: T }> {
+export class Stage<T extends Function> extends Array<{ index: number; component: ISceneComponent; action: T }> {
     /**
      * Hide ctor from the rest of the world.
      * @param items The items to add.
      */
-    private constructor(items?: { index: number, component: ISceneComponent, action: T }[]) {
-        super(...<any>items);
+    private constructor(items?: { index: number; component: ISceneComponent; action: T }[]) {
+        super(...(<any>items));
     }
 
     /**
@@ -246,7 +252,7 @@ export class Stage<T extends Function> extends Array<{ index: number, component:
         let i = 0;
         let maxIndex = Number.MAX_VALUE;
         for (; i < this.length; i++) {
-            let step = this[i];
+            const step = this[i];
             maxIndex = step.index;
             if (index < maxIndex) {
                 break;

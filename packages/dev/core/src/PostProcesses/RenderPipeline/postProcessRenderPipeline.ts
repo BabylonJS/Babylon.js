@@ -4,7 +4,7 @@ import { serialize } from "../../Misc/decorators";
 import { Camera } from "../../Cameras/camera";
 import { Engine } from "../../Engines/engine";
 import { PostProcessRenderEffect } from "./postProcessRenderEffect";
-import { IInspectable } from '../../Misc/iInspectable';
+import { IInspectable } from "../../Misc/iInspectable";
 
 declare type PrePassRenderer = import("../../Rendering/prePassRenderer").PrePassRenderer;
 
@@ -13,7 +13,6 @@ declare type PrePassRenderer = import("../../Rendering/prePassRenderer").PrePass
  * @see https://doc.babylonjs.com/how_to/how_to_use_postprocessrenderpipeline
  */
 export class PostProcessRenderPipeline {
-
     private _renderEffects: { [key: string]: PostProcessRenderEffect };
     private _renderEffectsForIsolatedPass: PostProcessRenderEffect[];
 
@@ -70,7 +69,7 @@ export class PostProcessRenderPipeline {
      * If all the render effects in the pipeline are supported
      */
     public get isSupported(): boolean {
-        for (var renderEffectName in this._renderEffects) {
+        for (const renderEffectName in this._renderEffects) {
             if (this._renderEffects.hasOwnProperty(renderEffectName)) {
                 if (!this._renderEffects[renderEffectName].isSupported) {
                     return false;
@@ -92,17 +91,19 @@ export class PostProcessRenderPipeline {
     // private
 
     /** @hidden */
-    public _rebuild() {
-
-    }
+    public _rebuild() {}
 
     /** @hidden */
     public _enableEffect(renderEffectName: string, cameras: Camera): void;
     /** @hidden */
     public _enableEffect(renderEffectName: string, cameras: Camera[]): void;
-    /** @hidden */
+    /**
+     * @param renderEffectName
+     * @param cameras
+     * @hidden
+     */
     public _enableEffect(renderEffectName: string, cameras: any): void {
-        var renderEffects: PostProcessRenderEffect = (<any>this._renderEffects)[renderEffectName];
+        const renderEffects: PostProcessRenderEffect = (<any>this._renderEffects)[renderEffectName];
 
         if (!renderEffects) {
             return;
@@ -115,9 +116,13 @@ export class PostProcessRenderPipeline {
     public _disableEffect(renderEffectName: string, cameras: Nullable<Camera[]>): void;
     /** @hidden */
     public _disableEffect(renderEffectName: string, cameras: Nullable<Camera[]>): void;
-    /** @hidden */
+    /**
+     * @param renderEffectName
+     * @param cameras
+     * @hidden
+     */
     public _disableEffect(renderEffectName: string, cameras: Nullable<Camera[]>): void {
-        var renderEffects: PostProcessRenderEffect = (<any>this._renderEffects)[renderEffectName];
+        const renderEffects: PostProcessRenderEffect = (<any>this._renderEffects)[renderEffectName];
 
         if (!renderEffects) {
             return;
@@ -130,27 +135,30 @@ export class PostProcessRenderPipeline {
     public _attachCameras(cameras: Camera, unique: boolean): void;
     /** @hidden */
     public _attachCameras(cameras: Camera[], unique: boolean): void;
-    /** @hidden */
+    /**
+     * @param cameras
+     * @param unique
+     * @hidden
+     */
     public _attachCameras(cameras: any, unique: boolean): void {
-        var cams = Tools.MakeArray(cameras || this._cameras);
+        const cams = Tools.MakeArray(cameras || this._cameras);
 
         if (!cams) {
             return;
         }
 
-        var indicesToDelete = [];
-        var i: number;
+        const indicesToDelete = [];
+        let i: number;
         for (i = 0; i < cams.length; i++) {
-            var camera = cams[i];
+            const camera = cams[i];
             if (!camera) {
                 continue;
             }
-            var cameraName = camera.name;
+            const cameraName = camera.name;
 
             if (this._cameras.indexOf(camera) === -1) {
                 this._cameras[cameraName] = camera;
-            }
-            else if (unique) {
+            } else if (unique) {
                 indicesToDelete.push(i);
             }
         }
@@ -159,7 +167,7 @@ export class PostProcessRenderPipeline {
             cams.splice(indicesToDelete[i], 1);
         }
 
-        for (var renderEffectName in this._renderEffects) {
+        for (const renderEffectName in this._renderEffects) {
             if (this._renderEffects.hasOwnProperty(renderEffectName)) {
                 this._renderEffects[renderEffectName]._attachCameras(cams);
             }
@@ -170,38 +178,41 @@ export class PostProcessRenderPipeline {
     public _detachCameras(cameras: Camera): void;
     /** @hidden */
     public _detachCameras(cameras: Nullable<Camera[]>): void;
-    /** @hidden */
+    /**
+     * @param cameras
+     * @hidden
+     */
     public _detachCameras(cameras: any): void {
-        var cams = Tools.MakeArray(cameras || this._cameras);
+        const cams = Tools.MakeArray(cameras || this._cameras);
 
         if (!cams) {
             return;
         }
 
-        for (var renderEffectName in this._renderEffects) {
+        for (const renderEffectName in this._renderEffects) {
             if (this._renderEffects.hasOwnProperty(renderEffectName)) {
                 this._renderEffects[renderEffectName]._detachCameras(cams);
             }
         }
 
-        for (var i = 0; i < cams.length; i++) {
+        for (let i = 0; i < cams.length; i++) {
             this._cameras.splice(this._cameras.indexOf(cams[i]), 1);
         }
     }
 
     /** @hidden */
     public _update(): void {
-        for (var renderEffectName in this._renderEffects) {
+        for (const renderEffectName in this._renderEffects) {
             if (this._renderEffects.hasOwnProperty(renderEffectName)) {
                 this._renderEffects[renderEffectName]._update();
             }
         }
 
-        for (var i = 0; i < this._cameras.length; i++) {
+        for (let i = 0; i < this._cameras.length; i++) {
             if (!this._cameras[i]) {
                 continue;
             }
-            var cameraName = this._cameras[i].name;
+            const cameraName = this._cameras[i].name;
             if ((<any>this._renderEffectsForIsolatedPass)[cameraName]) {
                 (<any>this._renderEffectsForIsolatedPass)[cameraName]._update();
             }
@@ -220,9 +231,9 @@ export class PostProcessRenderPipeline {
         }
 
         // Set samples of the very first post process to 4 to enable native anti-aliasing in browsers that support webGL 2.0 (See: https://github.com/BabylonJS/Babylon.js/issues/3754)
-        var effectKeys = Object.keys(this._renderEffects);
+        const effectKeys = Object.keys(this._renderEffects);
         if (effectKeys.length > 0) {
-            var postProcesses = this._renderEffects[effectKeys[0]].getPostProcesses();
+            const postProcesses = this._renderEffects[effectKeys[0]].getPostProcesses();
             if (postProcesses) {
                 postProcesses[0].samples = sampleCount;
             }

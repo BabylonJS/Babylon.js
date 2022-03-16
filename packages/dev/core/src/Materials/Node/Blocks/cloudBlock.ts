@@ -1,11 +1,11 @@
-import { NodeMaterialBlock } from '../nodeMaterialBlock';
-import { NodeMaterialBlockConnectionPointTypes } from '../Enums/nodeMaterialBlockConnectionPointTypes';
-import { NodeMaterialBuildState } from '../nodeMaterialBuildState';
-import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint';
-import { NodeMaterialBlockTargets } from '../Enums/nodeMaterialBlockTargets';
-import { RegisterClass } from '../../../Misc/typeStore';
-import { editableInPropertyPage, PropertyTypeForEdition } from '../nodeMaterialDecorator';
-import { Scene } from '../../../scene';
+import { NodeMaterialBlock } from "../nodeMaterialBlock";
+import { NodeMaterialBlockConnectionPointTypes } from "../Enums/nodeMaterialBlockConnectionPointTypes";
+import { NodeMaterialBuildState } from "../nodeMaterialBuildState";
+import { NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
+import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
+import { RegisterClass } from "../../../Misc/typeStore";
+import { editableInPropertyPage, PropertyTypeForEdition } from "../nodeMaterialDecorator";
+import { Scene } from "../../../scene";
 /**
  * block used to Generate Fractal Brownian Motion Clouds
  */
@@ -50,28 +50,28 @@ export class CloudBlock extends NodeMaterialBlock {
     /**
      * Gets the chaos input component
      */
-     public get chaos(): NodeMaterialConnectionPoint {
+    public get chaos(): NodeMaterialConnectionPoint {
         return this._inputs[1];
     }
 
     /**
-    * Gets the offset X input component
-    */
+     * Gets the offset X input component
+     */
     public get offsetX(): NodeMaterialConnectionPoint {
         return this._inputs[2];
     }
 
     /**
-    * Gets the offset Y input component
-    */
-     public get offsetY(): NodeMaterialConnectionPoint {
+     * Gets the offset Y input component
+     */
+    public get offsetY(): NodeMaterialConnectionPoint {
         return this._inputs[3];
     }
 
     /**
-    * Gets the offset Z input component
-    */
-     public get offsetZ(): NodeMaterialConnectionPoint {
+     * Gets the offset Z input component
+     */
+    public get offsetZ(): NodeMaterialConnectionPoint {
         return this._inputs[4];
     }
 
@@ -93,7 +93,7 @@ export class CloudBlock extends NodeMaterialBlock {
             return;
         }
 
-        let functionString = `
+        const functionString = `
 
         float cloudRandom(in float p) { p = fract(p * 0.011); p *= p + 7.5; p *= p + p; return fract(p); }
 
@@ -130,7 +130,7 @@ export class CloudBlock extends NodeMaterialBlock {
                            mix( cloudRandom(n + dot(step, vec3(0, 1, 1))), cloudRandom(n + dot(step, vec3(1, 1, 1))), u.x), u.y), u.z);
         }`;
 
-        let fractalBrownianString = `
+        const fractalBrownianString = `
         float fbm(in vec2 st, in vec2 chaos) {
             // Initial values
             float value = 0.0;
@@ -159,8 +159,12 @@ export class CloudBlock extends NodeMaterialBlock {
         }`;
 
         const fbmNewName = `fbm${this.octaves}`;
-        state._emitFunction('CloudBlockCode', functionString, '// CloudBlockCode');
-        state._emitFunction('CloudBlockCodeFBM' + this.octaves, fractalBrownianString.replace(/fbm/gi, fbmNewName).replace(/OCTAVES/gi, (this.octaves | 0).toString()), '// CloudBlockCode FBM');
+        state._emitFunction("CloudBlockCode", functionString, "// CloudBlockCode");
+        state._emitFunction(
+            "CloudBlockCodeFBM" + this.octaves,
+            fractalBrownianString.replace(/fbm/gi, fbmNewName).replace(/OCTAVES/gi, (this.octaves | 0).toString()),
+            "// CloudBlockCode FBM"
+        );
 
         const localVariable = state._getFreeVariableName("st");
         const seedType = this.seed.connectedPoint?.type === NodeMaterialBlockConnectionPointTypes.Vector2 ? "vec2" : "vec3";
@@ -189,12 +193,12 @@ export class CloudBlock extends NodeMaterialBlock {
     }
 
     protected _dumpPropertiesCode() {
-        var codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.octaves = ${this.octaves};\r\n`;
+        const codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.octaves = ${this.octaves};\r\n`;
         return codeString;
     }
 
     public serialize(): any {
-        let serializationObject = super.serialize();
+        const serializationObject = super.serialize();
 
         serializationObject.octaves = this.octaves;
 

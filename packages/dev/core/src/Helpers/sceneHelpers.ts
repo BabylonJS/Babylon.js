@@ -17,9 +17,9 @@ import { VRExperienceHelperOptions, VRExperienceHelper } from "../Cameras/VR/vrE
 import "../Materials/Textures/Loaders/ddsTextureLoader";
 import "../Materials/Textures/Loaders/envTextureLoader";
 import "../Materials/Textures/Loaders/ktxTextureLoader";
-import "../Meshes/Builders/boxBuilder";
-import { WebXRDefaultExperience, WebXRDefaultExperienceOptions } from '../XR/webXRDefaultExperience';
 import { CreateBox } from "../Meshes/Builders/boxBuilder";
+import { WebXRDefaultExperience, WebXRDefaultExperienceOptions } from "../XR/webXRDefaultExperience";
+
 
 /** @hidden */
 export var _forceSceneHelpersToBundle = true;
@@ -94,7 +94,7 @@ Scene.prototype.createDefaultLight = function (replace = false): void {
     // Dispose existing light in replace mode.
     if (replace) {
         if (this.lights) {
-            for (var i = 0; i < this.lights.length; i++) {
+            for (let i = 0; i < this.lights.length; i++) {
                 this.lights[i].dispose();
             }
         }
@@ -117,25 +117,24 @@ Scene.prototype.createDefaultCamera = function (createArcRotateCamera = false, r
 
     // Camera
     if (!this.activeCamera) {
-        var worldExtends = this.getWorldExtends((mesh) => mesh.isVisible && mesh.isEnabled());
-        var worldSize = worldExtends.max.subtract(worldExtends.min);
-        var worldCenter = worldExtends.min.add(worldSize.scale(0.5));
+        const worldExtends = this.getWorldExtends((mesh) => mesh.isVisible && mesh.isEnabled());
+        const worldSize = worldExtends.max.subtract(worldExtends.min);
+        const worldCenter = worldExtends.min.add(worldSize.scale(0.5));
 
-        var camera: TargetCamera;
-        var radius = worldSize.length() * 1.5;
+        let camera: TargetCamera;
+        let radius = worldSize.length() * 1.5;
         // empty scene scenario!
         if (!isFinite(radius)) {
             radius = 1;
             worldCenter.copyFromFloats(0, 0, 0);
         }
         if (createArcRotateCamera) {
-            var arcRotateCamera = new ArcRotateCamera("default camera", -(Math.PI / 2), Math.PI / 2, radius, worldCenter, this);
+            const arcRotateCamera = new ArcRotateCamera("default camera", -(Math.PI / 2), Math.PI / 2, radius, worldCenter, this);
             arcRotateCamera.lowerRadiusLimit = radius * 0.01;
             arcRotateCamera.wheelPrecision = 100 / radius;
             camera = arcRotateCamera;
-        }
-        else {
-            var freeCamera = new FreeCamera("default camera", new Vector3(worldCenter.x, worldCenter.y, -radius), this);
+        } else {
+            const freeCamera = new FreeCamera("default camera", new Vector3(worldCenter.x, worldCenter.y, -radius), this);
             freeCamera.setTarget(worldCenter);
             camera = freeCamera;
         }
@@ -156,7 +155,6 @@ Scene.prototype.createDefaultCameraOrLight = function (createArcRotateCamera = f
 };
 
 Scene.prototype.createDefaultSkybox = function (environmentTexture?: BaseTexture, pbr = false, scale = 1000, blur = 0, setGlobalEnvTexture = true): Nullable<Mesh> {
-
     if (!environmentTexture) {
         Logger.Warn("Can not create default skybox without environment texture.");
         return null;
@@ -181,8 +179,7 @@ Scene.prototype.createDefaultSkybox = function (environmentTexture?: BaseTexture
         hdrSkyboxMaterial.disableLighting = true;
         hdrSkyboxMaterial.twoSidedLighting = true;
         hdrSkybox.material = hdrSkyboxMaterial;
-    }
-    else {
+    } else {
         const skyboxMaterial = new StandardMaterial("skyBox", this);
         skyboxMaterial.backFaceCulling = false;
         skyboxMaterial.reflectionTexture = environmentTexture.clone();

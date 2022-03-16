@@ -1,6 +1,6 @@
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
 import { WebXRSessionManager } from "../webXRSessionManager";
-import { WebXRFeatureName } from "../webXRFeaturesManager";
+import { WebXRFeatureName , WebXRFeaturesManager } from "../webXRFeaturesManager";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Mesh } from "../../Meshes/mesh";
 import { WebXRInput } from "../webXRInput";
@@ -8,7 +8,7 @@ import { WebXRInputSource } from "../webXRInputSource";
 import { Matrix, Quaternion } from "../../Maths/math.vector";
 import { Nullable } from "../../types";
 import { PhysicsImpostor } from "../../Physics/physicsImpostor";
-import { WebXRFeaturesManager } from "../webXRFeaturesManager";
+
 import { IDisposable, Scene } from "../../scene";
 import { Observable } from "../../Misc/observable";
 import { InstancedMesh } from "../../Meshes/instancedMesh";
@@ -89,7 +89,7 @@ export interface IWebXRHandTrackingOptions {
         customMeshes?: {
             right: AbstractMesh;
             left: AbstractMesh;
-        }
+        };
         /**
          * Are the meshes prepared for a left-handed system. Default hand meshes are right-handed.
          */
@@ -100,7 +100,7 @@ export interface IWebXRHandTrackingOptions {
         customRigMappings?: {
             right: XRHandMeshRigMapping;
             left: XRHandMeshRigMapping;
-        },
+        };
 
         /**
          * Override the colors of the hand meshes.
@@ -110,7 +110,7 @@ export interface IWebXRHandTrackingOptions {
             fresnel?: Color3;
             fingerColor?: Color3;
             tipFresnel?: Color3;
-        }
+        };
     };
 }
 
@@ -337,7 +337,7 @@ export class WebXRHand implements IDisposable {
         private readonly _jointMeshes: AbstractMesh[],
         private _handMesh: Nullable<AbstractMesh>,
         /** An optional rig mapping for the hand mesh. If not provided (but a hand mesh is provided),
-          * it will be assumed that the hand mesh's bones are named directly after the WebXR bone names. */
+         * it will be assumed that the hand mesh's bones are named directly after the WebXR bone names. */
         readonly rigMapping: Nullable<XRHandMeshRigMapping>,
         private readonly _leftHandedMeshes: boolean = false,
         private readonly _jointsInvisible: boolean = false,
@@ -347,7 +347,7 @@ export class WebXRHand implements IDisposable {
 
         // Initialize the joint transform quaternions and link the transforms to the bones.
         for (let jointIdx = 0; jointIdx < this._jointTransforms.length; jointIdx++) {
-            const jointTransform = this._jointTransforms[jointIdx] = new TransformNode(handJointReferenceArray[jointIdx], this._scene);
+            const jointTransform = (this._jointTransforms[jointIdx] = new TransformNode(handJointReferenceArray[jointIdx], this._scene));
             jointTransform.rotationQuaternion = new Quaternion();
 
             // Set the rotation quaternion so we can use it later for tracking.
@@ -425,8 +425,7 @@ export class WebXRHand implements IDisposable {
         let trackingSuccessful = false;
 
         if (xrFrame.fillPoses && xrFrame.fillJointRadii) {
-            trackingSuccessful = xrFrame.fillPoses(jointSpaces, referenceSpace, this._jointTransformMatrices) &&
-                xrFrame.fillJointRadii(jointSpaces, this._jointRadii);
+            trackingSuccessful = xrFrame.fillPoses(jointSpaces, referenceSpace, this._jointTransformMatrices) && xrFrame.fillJointRadii(jointSpaces, this._jointRadii);
         } else if (xrFrame.getJointPose) {
             trackingSuccessful = true;
             // Warning: This codepath is slow by comparison, only here for compat.
@@ -519,7 +518,7 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
     private static rightHandGLB: Nullable<ISceneLoaderAsyncResult> = null;
     private static leftHandGLB: Nullable<ISceneLoaderAsyncResult> = null;
 
-    private static _generateTrackedJointMeshes(featureOptions: IWebXRHandTrackingOptions): { left: AbstractMesh[], right: AbstractMesh[] } {
+    private static _generateTrackedJointMeshes(featureOptions: IWebXRHandTrackingOptions): { left: AbstractMesh[]; right: AbstractMesh[] } {
         const meshes: { [handedness: string]: AbstractMesh[] } = {};
         ["left" as XRHandedness, "right" as XRHandedness].map((handedness) => {
             const trackedMeshes = [];
@@ -554,7 +553,7 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
         return { left: meshes.left, right: meshes.right };
     }
 
-    private static _generateDefaultHandMeshesAsync(scene: Scene, options?: IWebXRHandTrackingOptions): Promise<{ left: AbstractMesh, right: AbstractMesh }> {
+    private static _generateDefaultHandMeshesAsync(scene: Scene, options?: IWebXRHandTrackingOptions): Promise<{ left: AbstractMesh; right: AbstractMesh }> {
         return new Promise(async (resolve) => {
             const riggedMeshes: { [handedness: string]: AbstractMesh } = {};
             // check the cache, defensive
@@ -568,8 +567,10 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
             const handsDefined = !!(WebXRHandTracking.rightHandGLB && WebXRHandTracking.leftHandGLB);
             // load them in parallel
             const handGLBs = await Promise.all([
-                WebXRHandTracking.rightHandGLB || SceneLoader.ImportMeshAsync("", WebXRHandTracking.DEFAULT_HAND_MODEL_BASE_URL, WebXRHandTracking.DEFAULT_HAND_MODEL_RIGHT_FILENAME, scene),
-                WebXRHandTracking.leftHandGLB || SceneLoader.ImportMeshAsync("", WebXRHandTracking.DEFAULT_HAND_MODEL_BASE_URL, WebXRHandTracking.DEFAULT_HAND_MODEL_LEFT_FILENAME, scene)
+                WebXRHandTracking.rightHandGLB ||
+                    SceneLoader.ImportMeshAsync("", WebXRHandTracking.DEFAULT_HAND_MODEL_BASE_URL, WebXRHandTracking.DEFAULT_HAND_MODEL_RIGHT_FILENAME, scene),
+                WebXRHandTracking.leftHandGLB ||
+                    SceneLoader.ImportMeshAsync("", WebXRHandTracking.DEFAULT_HAND_MODEL_BASE_URL, WebXRHandTracking.DEFAULT_HAND_MODEL_LEFT_FILENAME, scene),
             ]);
             WebXRHandTracking.rightHandGLB = handGLBs[0];
             WebXRHandTracking.leftHandGLB = handGLBs[1];
@@ -591,7 +592,7 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
                 fresnel: Color3.FromInts(149, 102, 229),
                 fingerColor: Color3.FromInts(177, 130, 255),
                 tipFresnel: Color3.FromInts(220, 200, 255),
-                ...options?.handMeshes?.customColors
+                ...options?.handMeshes?.customColors,
             };
 
             const handNodes = {
@@ -666,18 +667,18 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
     }
 
     private _attachedHands: {
-        [uniqueId: string]: WebXRHand
+        [uniqueId: string]: WebXRHand;
     } = {};
 
     private _trackingHands: {
-        left: Nullable<WebXRHand>,
-        right: Nullable<WebXRHand>
+        left: Nullable<WebXRHand>;
+        right: Nullable<WebXRHand>;
     } = { left: null, right: null };
 
     private _handResources: {
-        jointMeshes: Nullable<{ left: AbstractMesh[], right: AbstractMesh[] }>,
-        handMeshes: Nullable<{ left: AbstractMesh, right: AbstractMesh }>,
-        rigMappings: Nullable<{ left: XRHandMeshRigMapping, right: XRHandMeshRigMapping }>,
+        jointMeshes: Nullable<{ left: AbstractMesh[]; right: AbstractMesh[] }>;
+        handMeshes: Nullable<{ left: AbstractMesh; right: AbstractMesh }>;
+        rigMappings: Nullable<{ left: XRHandMeshRigMapping; right: XRHandMeshRigMapping }>;
     } = { jointMeshes: null, handMeshes: null, rigMappings: null };
 
     /**
@@ -749,10 +750,12 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
             }
             if (typeof anyJointMeshOptions.rigMapping !== "undefined") {
                 options.handMeshes = options.handMeshes || {};
-                let leftRigMapping = {};
-                let rightRigMapping = {};
-                [[anyJointMeshOptions.rigMapping.left, leftRigMapping],
-                [anyJointMeshOptions.rigMapping.right, rightRigMapping]].forEach((rigMappingTuple) => {
+                const leftRigMapping = {};
+                const rightRigMapping = {};
+                [
+                    [anyJointMeshOptions.rigMapping.left, leftRigMapping],
+                    [anyJointMeshOptions.rigMapping.right, rightRigMapping],
+                ].forEach((rigMappingTuple) => {
                     const legacyRigMapping = rigMappingTuple[0] as string[];
                     const rigMapping = rigMappingTuple[1] as XRHandMeshRigMapping;
                     legacyRigMapping.forEach((modelJointName, index) => {
@@ -761,7 +764,7 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
                 });
                 options.handMeshes.customRigMappings = {
                     left: leftRigMapping as XRHandMeshRigMapping,
-                    right: rightRigMapping as XRHandMeshRigMapping
+                    right: rightRigMapping as XRHandMeshRigMapping,
                 };
             }
         }
@@ -812,9 +815,7 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
     }
 
     private _attachHand = (xrController: WebXRInputSource) => {
-        if (!xrController.inputSource.hand ||
-            xrController.inputSource.handedness == "none" ||
-            !this._handResources.jointMeshes) {
+        if (!xrController.inputSource.hand || xrController.inputSource.handedness == "none" || !this._handResources.jointMeshes) {
             return;
         }
 
@@ -833,7 +834,7 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
         this._trackingHands[handedness] = webxrHand;
 
         this.onHandAddedObservable.notifyObservers(webxrHand);
-    }
+    };
 
     private _detachHandById(controllerId: string) {
         const hand = this.getHandByControllerId(controllerId);
@@ -850,7 +851,7 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
 
     private _detachHand = (xrController: WebXRInputSource) => {
         this._detachHandById(xrController.uniqueId);
-    }
+    };
 
     /**
      * Detach this feature.

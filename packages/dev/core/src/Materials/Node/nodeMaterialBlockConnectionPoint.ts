@@ -1,8 +1,8 @@
-import { NodeMaterialBlockConnectionPointTypes } from './Enums/nodeMaterialBlockConnectionPointTypes';
-import { NodeMaterialBlockTargets } from './Enums/nodeMaterialBlockTargets';
-import { Nullable } from '../../types';
-import { InputBlock } from './Blocks/Input/inputBlock';
-import { Observable } from '../../Misc/observable';
+import { NodeMaterialBlockConnectionPointTypes } from "./Enums/nodeMaterialBlockConnectionPointTypes";
+import { NodeMaterialBlockTargets } from "./Enums/nodeMaterialBlockTargets";
+import { Nullable } from "../../types";
+import { InputBlock } from "./Blocks/Input/inputBlock";
+import { Observable } from "../../Misc/observable";
 
 declare type NodeMaterialBlock = import("./nodeMaterialBlock").NodeMaterialBlock;
 
@@ -17,7 +17,7 @@ export enum NodeMaterialConnectionPointCompatibilityStates {
     /** Points are incompatible because of their targets (vertex vs fragment) */
     TargetIncompatible,
     /** Points are incompatible because they are in the same hierarchy **/
-    HierarchyIssue
+    HierarchyIssue,
 }
 
 /**
@@ -27,14 +27,13 @@ export enum NodeMaterialConnectionPointDirection {
     /** Input */
     Input,
     /** Output */
-    Output
+    Output,
 }
 
 /**
  * Defines a connection point for a block
  */
 export class NodeMaterialConnectionPoint {
-
     /**
      * Checks if two types are equivalent
      * @param type1 type 1 to check
@@ -309,7 +308,7 @@ export class NodeMaterialConnectionPoint {
             return false;
         }
 
-        for (var endpoint of this._endpoints) {
+        for (const endpoint of this._endpoints) {
             if (endpoint.ownerBlock.target === NodeMaterialBlockTargets.Vertex) {
                 return true;
             }
@@ -334,7 +333,7 @@ export class NodeMaterialConnectionPoint {
             return false;
         }
 
-        for (var endpoint of this._endpoints) {
+        for (const endpoint of this._endpoints) {
             if (endpoint.ownerBlock.target === NodeMaterialBlockTargets.Vertex) {
                 return true;
             }
@@ -363,7 +362,7 @@ export class NodeMaterialConnectionPoint {
             return false;
         }
 
-        for (var endpoint of this._endpoints) {
+        for (const endpoint of this._endpoints) {
             if (endpoint.ownerBlock.target === NodeMaterialBlockTargets.Fragment) {
                 return true;
             }
@@ -432,7 +431,7 @@ export class NodeMaterialConnectionPoint {
                 return NodeMaterialConnectionPointCompatibilityStates.TargetIncompatible;
             }
 
-            for (var output of otherBlock.outputs) {
+            for (const output of otherBlock.outputs) {
                 if (output.ownerBlock.target != NodeMaterialBlockTargets.Neutral && output.isConnectedInVertexShader) {
                     return NodeMaterialConnectionPointCompatibilityStates.TargetIncompatible;
                 }
@@ -446,8 +445,10 @@ export class NodeMaterialConnectionPoint {
             }
 
             // Accepted types
-            if (connectionPoint.acceptedConnectionPointTypes && connectionPoint.acceptedConnectionPointTypes.indexOf(this.type) !== -1 ||
-                connectionPoint._acceptedConnectionPointType && NodeMaterialConnectionPoint.AreEquivalentTypes(connectionPoint._acceptedConnectionPointType.type, this.type)) {
+            if (
+                (connectionPoint.acceptedConnectionPointTypes && connectionPoint.acceptedConnectionPointTypes.indexOf(this.type) !== -1) ||
+                (connectionPoint._acceptedConnectionPointType && NodeMaterialConnectionPoint.AreEquivalentTypes(connectionPoint._acceptedConnectionPointType.type, this.type))
+            ) {
                 return NodeMaterialConnectionPointCompatibilityStates.Compatible;
             } else {
                 return NodeMaterialConnectionPointCompatibilityStates.TypeIncompatible;
@@ -455,7 +456,7 @@ export class NodeMaterialConnectionPoint {
         }
 
         // Excluded
-        if ((connectionPoint.excludedConnectionPointTypes && connectionPoint.excludedConnectionPointTypes.indexOf(this.type) !== -1)) {
+        if (connectionPoint.excludedConnectionPointTypes && connectionPoint.excludedConnectionPointTypes.indexOf(this.type) !== -1) {
             return NodeMaterialConnectionPointCompatibilityStates.TypeIncompatible;
         }
 
@@ -502,7 +503,7 @@ export class NodeMaterialConnectionPoint {
      * @returns the current connection point
      */
     public disconnectFrom(endpoint: NodeMaterialConnectionPoint): NodeMaterialConnectionPoint {
-        let index = this._endpoints.indexOf(endpoint);
+        const index = this._endpoints.indexOf(endpoint);
 
         if (index === -1) {
             return this;
@@ -521,7 +522,7 @@ export class NodeMaterialConnectionPoint {
      * @returns the serialized point object
      */
     public serialize(isInput = true): any {
-        let serializationObject: any = {};
+        const serializationObject: any = {};
 
         serializationObject.name = this.name;
         serializationObject.displayName = this.displayName;

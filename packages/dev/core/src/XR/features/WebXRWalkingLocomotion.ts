@@ -13,7 +13,7 @@ class CircleBuffer {
     private _samples: Array<Vector2> = [];
     private _idx: number = 0;
 
-    constructor (numSamples: number, initializer?: () => Vector2) {
+    constructor(numSamples: number, initializer?: () => Vector2) {
         for (let idx = 0; idx < numSamples; ++idx) {
             this._samples.push(initializer ? initializer() : Vector2.Zero());
         }
@@ -96,10 +96,10 @@ class FirstStepDetector {
             sample = this._samples.at(idx);
             sample.subtractToRef(origin, vec);
             dot = Vector2.Dot(axis, vec);
-            sumSquaredProjectionDistances += vec.lengthSquared() - (dot * dot);
+            sumSquaredProjectionDistances += vec.lengthSquared() - dot * dot;
         }
 
-        if (sumSquaredProjectionDistances > (samePointIdx * this._squaredProjectionDistanceThreshold)) {
+        if (sumSquaredProjectionDistances > samePointIdx * this._squaredProjectionDistanceThreshold) {
             return;
         }
 
@@ -122,8 +122,8 @@ class FirstStepDetector {
             leftApex: leftApex,
             rightApex: rightApex,
             currentPosition: origin,
-            currentStepDirection: isApexLeft ? "right" : "left"
-         });
+            currentStepDirection: isApexLeft ? "right" : "left",
+        });
     }
 
     public reset() {
@@ -221,7 +221,7 @@ class WalkingTracker {
         const projDistSquared = this._currentPosition.lengthSquared() - (dot / this._axisLength) * (dot / this._axisLength);
 
         // TODO: Extricate the magic.
-        this._vitality *= (0.92 - 100 * Math.max(projDistSquared - 0.0016, 0) + Math.max(this._t - priorT, 0));
+        this._vitality *= 0.92 - 100 * Math.max(projDistSquared - 0.0016, 0) + Math.max(this._t - priorT, 0);
     }
 
     public update(x: number, y: number) {
@@ -242,7 +242,7 @@ class WalkingTracker {
         }
 
         if (this._t > priorT) {
-            this.onMovement.notifyObservers({ deltaT: (this._t - priorT) });
+            this.onMovement.notifyObservers({ deltaT: this._t - priorT });
 
             if (priorT < 0.5 && this._t >= 0.5) {
                 this.onFootfall.notifyObservers({ foot: this._steppingLeft ? "left" : "right" });
@@ -389,10 +389,10 @@ export class WebXRWalkingLocomotion extends WebXRAbstractFeature {
      * the WebXRCamera itself. Note that the WebXRCamera path will modify the position
      * of the WebXRCamera directly and is thus discouraged.
      */
-     public set locomotionTarget(locomotionTarget: WebXRCamera | TransformNode) {
-         this._locomotionTarget = locomotionTarget;
-         this._isLocomotionTargetWebXRCamera = this._locomotionTarget.getClassName() === 'WebXRCamera';
-     }
+    public set locomotionTarget(locomotionTarget: WebXRCamera | TransformNode) {
+        this._locomotionTarget = locomotionTarget;
+        this._isLocomotionTargetWebXRCamera = this._locomotionTarget.getClassName() === "WebXRCamera";
+    }
 
     /**
      * Construct a new Walking Locomotion feature.
@@ -404,7 +404,9 @@ export class WebXRWalkingLocomotion extends WebXRAbstractFeature {
         this._sessionManager = sessionManager;
         this.locomotionTarget = options.locomotionTarget;
         if (this._isLocomotionTargetWebXRCamera) {
-            Logger.Warn("Using walking locomotion directly on a WebXRCamera may have unintended interactions with other XR techniques. Using an XR space parent is highly recommended");
+            Logger.Warn(
+                "Using walking locomotion directly on a WebXRCamera may have unintended interactions with other XR techniques. Using an XR space parent is highly recommended"
+            );
         }
     }
 
@@ -414,7 +416,7 @@ export class WebXRWalkingLocomotion extends WebXRAbstractFeature {
      * @returns true if compatible, false otherwise
      */
     public isCompatible(): boolean {
-        return (this._sessionManager.sessionMode === undefined || this._sessionManager.sessionMode === "immersive-vr");
+        return this._sessionManager.sessionMode === undefined || this._sessionManager.sessionMode === "immersive-vr";
     }
 
     /**

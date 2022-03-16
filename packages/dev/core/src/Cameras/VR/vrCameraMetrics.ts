@@ -75,15 +75,15 @@ export class VRCameraMetrics {
      * Gets the aspect ratio based on the FOV, scale factors, and real screen sizes.
      */
     public get aspectRatioFov(): number {
-        return (2 * Math.atan((this.postProcessScaleFactor * this.vScreenSize) / (2 * this.eyeToScreenDistance)));
+        return 2 * Math.atan((this.postProcessScaleFactor * this.vScreenSize) / (2 * this.eyeToScreenDistance));
     }
 
     /**
      * @hidden
      */
     public get leftHMatrix(): Matrix {
-        var meters = (this.hScreenSize / 4) - (this.lensSeparationDistance / 2);
-        var h = (4 * meters) / this.hScreenSize;
+        const meters = this.hScreenSize / 4 - this.lensSeparationDistance / 2;
+        const h = (4 * meters) / this.hScreenSize;
 
         return Matrix.Translation(h, 0, 0);
     }
@@ -92,8 +92,8 @@ export class VRCameraMetrics {
      * @hidden
      */
     public get rightHMatrix(): Matrix {
-        var meters = (this.hScreenSize / 4) - (this.lensSeparationDistance / 2);
-        var h = (4 * meters) / this.hScreenSize;
+        const meters = this.hScreenSize / 4 - this.lensSeparationDistance / 2;
+        const h = (4 * meters) / this.hScreenSize;
 
         return Matrix.Translation(-h, 0, 0);
     }
@@ -117,7 +117,7 @@ export class VRCameraMetrics {
      * @returns the default vr metrics
      */
     public static GetDefault(): VRCameraMetrics {
-        var result = new VRCameraMetrics();
+        const result = new VRCameraMetrics();
 
         result.hResolution = 1280;
         result.vResolution = 800;
@@ -125,8 +125,8 @@ export class VRCameraMetrics {
         result.vScreenSize = 0.0935999975;
         result.vScreenCenter = 0.0467999987;
         result.eyeToScreenDistance = 0.0410000011;
-        result.lensSeparationDistance = 0.0635000020;
-        result.interpupillaryDistance = 0.0640000030;
+        result.lensSeparationDistance = 0.063500002;
+        result.interpupillaryDistance = 0.064000003;
         result.distortionK = [1.0, 0.219999999, 0.239999995, 0.0];
         result.chromaAbCorrection = [0.995999992, -0.00400000019, 1.01400006, 0.0];
         result.postProcessScaleFactor = 1.714605507808412;

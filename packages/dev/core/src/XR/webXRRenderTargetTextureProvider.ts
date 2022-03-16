@@ -45,17 +45,15 @@ export abstract class WebXRLayerRenderTargetTextureProvider implements IWebXRRen
     public abstract getRenderTargetTextureForView(view: XRView): Nullable<RenderTargetTexture>;
 
     protected _renderTargetTextures = new Array<RenderTargetTexture>();
-    protected _framebufferDimensions: Nullable<{ framebufferWidth: number, framebufferHeight: number }>;
+    protected _framebufferDimensions: Nullable<{ framebufferWidth: number; framebufferHeight: number }>;
 
     private _engine: Engine;
 
-    constructor(
-        private readonly _scene: Scene,
-        public readonly layerWrapper: WebXRLayerWrapper) {
+    constructor(private readonly _scene: Scene, public readonly layerWrapper: WebXRLayerWrapper) {
         this._engine = _scene.getEngine();
     }
 
-    private _createInternalTexture(textureSize: { width: number, height: number }, texture: WebGLTexture): InternalTexture {
+    private _createInternalTexture(textureSize: { width: number; height: number }, texture: WebGLTexture): InternalTexture {
         const internalTexture = new InternalTexture(this._engine, InternalTextureSource.Unknown, true);
         internalTexture.width = textureSize.width;
         internalTexture.height = textureSize.height;
@@ -70,7 +68,8 @@ export abstract class WebXRLayerRenderTargetTextureProvider implements IWebXRRen
         framebuffer: Nullable<WebGLFramebuffer>,
         colorTexture?: WebGLTexture,
         depthStencilTexture?: WebGLTexture,
-        multiview?: boolean): RenderTargetTexture {
+        multiview?: boolean
+    ): RenderTargetTexture {
         if (!this._engine) {
             throw new Error("Engine is disposed");
         }
@@ -78,9 +77,7 @@ export abstract class WebXRLayerRenderTargetTextureProvider implements IWebXRRen
         const textureSize = { width, height };
 
         // Create render target texture from the internal texture
-        const renderTargetTexture = multiview
-            ? new MultiviewRenderTarget(this._scene, textureSize)
-            : new RenderTargetTexture("XR renderTargetTexture", textureSize, this._scene);
+        const renderTargetTexture = multiview ? new MultiviewRenderTarget(this._scene, textureSize) : new RenderTargetTexture("XR renderTargetTexture", textureSize, this._scene);
         const renderTargetWrapper = renderTargetTexture.renderTarget as WebGLRenderTargetWrapper;
         // Set the framebuffer, make sure it works in all scenarios - emulator, no layers and layers
         if (framebuffer || !colorTexture) {
@@ -123,7 +120,7 @@ export abstract class WebXRLayerRenderTargetTextureProvider implements IWebXRRen
         renderTargetTexture.dispose();
     }
 
-    public getFramebufferDimensions(): Nullable<{ framebufferWidth: number, framebufferHeight: number }> {
+    public getFramebufferDimensions(): Nullable<{ framebufferWidth: number; framebufferHeight: number }> {
         return this._framebufferDimensions;
     }
 

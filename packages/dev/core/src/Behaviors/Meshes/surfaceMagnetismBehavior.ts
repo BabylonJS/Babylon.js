@@ -43,7 +43,7 @@ export class SurfaceMagnetismBehavior implements Behavior<Mesh> {
     /**
      * Function called when the behavior needs to be initialized (after attaching it to a target)
      */
-    public init(): void { }
+    public init(): void {}
 
     /**
      * Set to false if the node should strictly follow the camera without any interpolation time
@@ -156,12 +156,7 @@ export class SurfaceMagnetismBehavior implements Behavior<Mesh> {
 
         const subPicking = pickInfo.ray.intersectsMeshes(this.meshes)[0];
 
-        if (
-            this._attachedMesh &&
-            subPicking &&
-            subPicking.hit &&
-            subPicking.pickedMesh
-        ) {
+        if (this._attachedMesh && subPicking && subPicking.hit && subPicking.pickedMesh) {
             const pose = this._getTargetPose(subPicking);
             if (pose && Vector3.Distance(this._attachedMesh.position, pose.position) < this.maxStickingDistance) {
                 this._workingPosition.copyFrom(pose.position);

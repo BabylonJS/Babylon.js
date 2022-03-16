@@ -10,7 +10,6 @@ import { MinMaxReducer } from "./minMaxReducer";
  * This class is a small wrapper around the MinMaxReducer class to compute the min/max values of a depth texture
  */
 export class DepthReducer extends MinMaxReducer {
-
     private _depthRenderer: Nullable<DepthRenderer>;
     private _depthRendererId: string;
 
@@ -61,7 +60,13 @@ export class DepthReducer extends MinMaxReducer {
         super.setSourceTexture(depthRenderer.getDepthMap(), true, type, forceFullscreenViewport);
     }
 
-    /** @hidden */
+    /**
+     * @param sourceTexture
+     * @param depthRedux
+     * @param type
+     * @param forceFullscreenViewport
+     * @hidden
+     */
     public setSourceTexture(sourceTexture: RenderTargetTexture, depthRedux: boolean, type: number = Constants.TEXTURETYPE_HALF_FLOAT, forceFullscreenViewport = true): void {
         super.setSourceTexture(sourceTexture, depthRedux, type, forceFullscreenViewport);
     }
@@ -107,5 +112,4 @@ export class DepthReducer extends MinMaxReducer {
             this._depthRenderer = null;
         }
     }
-
 }

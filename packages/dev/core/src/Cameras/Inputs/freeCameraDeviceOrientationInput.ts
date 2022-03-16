@@ -58,7 +58,7 @@ export class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera
      */
     public static WaitForOrientationChangeAsync(timeout?: number): Promise<void> {
         return new Promise((res, rej) => {
-            var gotValue = false;
+            let gotValue = false;
             var eventHandler = () => {
                 window.removeEventListener("deviceorientation", eventHandler);
                 gotValue = true;
@@ -130,7 +130,7 @@ export class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera
      * Attach the input controls to a specific dom element to get the input from.
      */
     public attachControl(): void {
-        let hostWindow = this.camera.getScene().getEngine().getHostWindow();
+        const hostWindow = this.camera.getScene().getEngine().getHostWindow();
 
         if (hostWindow) {
             const eventHandler = () => {
@@ -160,7 +160,12 @@ export class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera
     }
 
     private _orientationChanged = () => {
-        this._screenOrientationAngle = <any>window.orientation !== undefined ? +(<any>window.orientation) : (<any>window.screen).orientation && (<any>window.screen).orientation["angle"] ? (<any>window.screen).orientation.angle : 0;
+        this._screenOrientationAngle =
+            <any>window.orientation !== undefined
+                ? +(<any>window.orientation)
+                : (<any>window.screen).orientation && (<any>window.screen).orientation["angle"]
+                ? (<any>window.screen).orientation.angle
+                : 0;
         this._screenOrientationAngle = -Tools.ToRadians(this._screenOrientationAngle / 2);
         this._screenQuaternion.copyFromFloats(0, Math.sin(this._screenOrientationAngle), 0, Math.cos(this._screenOrientationAngle));
     };

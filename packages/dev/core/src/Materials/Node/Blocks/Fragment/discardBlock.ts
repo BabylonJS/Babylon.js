@@ -1,9 +1,9 @@
-import { NodeMaterialBlock } from '../../nodeMaterialBlock';
-import { NodeMaterialBlockConnectionPointTypes } from '../../Enums/nodeMaterialBlockConnectionPointTypes';
-import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
-import { NodeMaterialBlockTargets } from '../../Enums/nodeMaterialBlockTargets';
-import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPoint';
-import { RegisterClass } from '../../../../Misc/typeStore';
+import { NodeMaterialBlock } from "../../nodeMaterialBlock";
+import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
+import { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
+import { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
+import { RegisterClass } from "../../../../Misc/typeStore";
 /**
  * Block used to discard a pixel if a value is smaller than a cutoff
  */

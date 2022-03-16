@@ -6,12 +6,12 @@ import { Matrix } from "../../Maths/math.vector";
 import { EngineStore } from "../../Engines/engineStore";
 import { InternalTexture } from "../../Materials/Textures/internalTexture";
 import { Constants } from "../../Engines/constants";
-import { IAnimatable } from '../../Animations/animatable.interface';
-import { RandomGUID } from '../../Misc/guid';
+import { IAnimatable } from "../../Animations/animatable.interface";
+import { RandomGUID } from "../../Misc/guid";
 
 import "../../Misc/fileTools";
-import { ThinEngine } from '../../Engines/thinEngine';
-import { ThinTexture } from './thinTexture';
+import { ThinEngine } from "../../Engines/thinEngine";
+import { ThinTexture } from "./thinTexture";
 import { AbstractScene } from "../../abstractScene";
 
 declare type Animation = import("../../Animations/animation").Animation;
@@ -88,7 +88,7 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
             });
         }
     }
-    public get getAlphaFromRGB() : boolean {
+    public get getAlphaFromRGB(): boolean {
         return this._getAlphaFromRGB;
     }
 
@@ -125,21 +125,21 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
     protected _coordinatesMode = Constants.TEXTURE_EXPLICIT_MODE;
 
     /**
-    * How a texture is mapped.
-    *
-    * | Value | Type                                | Description |
-    * | ----- | ----------------------------------- | ----------- |
-    * | 0     | EXPLICIT_MODE                       |             |
-    * | 1     | SPHERICAL_MODE                      |             |
-    * | 2     | PLANAR_MODE                         |             |
-    * | 3     | CUBIC_MODE                          |             |
-    * | 4     | PROJECTION_MODE                     |             |
-    * | 5     | SKYBOX_MODE                         |             |
-    * | 6     | INVCUBIC_MODE                       |             |
-    * | 7     | EQUIRECTANGULAR_MODE                |             |
-    * | 8     | FIXED_EQUIRECTANGULAR_MODE          |             |
-    * | 9     | FIXED_EQUIRECTANGULAR_MIRRORED_MODE |             |
-    */
+     * How a texture is mapped.
+     *
+     * | Value | Type                                | Description |
+     * | ----- | ----------------------------------- | ----------- |
+     * | 0     | EXPLICIT_MODE                       |             |
+     * | 1     | SPHERICAL_MODE                      |             |
+     * | 2     | PLANAR_MODE                         |             |
+     * | 3     | CUBIC_MODE                          |             |
+     * | 4     | PROJECTION_MODE                     |             |
+     * | 5     | SKYBOX_MODE                         |             |
+     * | 6     | INVCUBIC_MODE                       |             |
+     * | 7     | EQUIRECTANGULAR_MODE                |             |
+     * | 8     | FIXED_EQUIRECTANGULAR_MODE          |             |
+     * | 9     | FIXED_EQUIRECTANGULAR_MIRRORED_MODE |             |
+     */
     public set coordinatesMode(value: number) {
         if (this._coordinatesMode === value) {
             return;
@@ -186,12 +186,12 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
     }
 
     /**
-    * | Value | Type               | Description |
-    * | ----- | ------------------ | ----------- |
-    * | 0     | CLAMP_ADDRESSMODE  |             |
-    * | 1     | WRAP_ADDRESSMODE   |             |
-    * | 2     | MIRROR_ADDRESSMODE |             |
-    */
+     * | Value | Type               | Description |
+     * | ----- | ------------------ | ----------- |
+     * | 0     | CLAMP_ADDRESSMODE  |             |
+     * | 1     | WRAP_ADDRESSMODE   |             |
+     * | 2     | MIRROR_ADDRESSMODE |             |
+     */
     @serialize()
     public wrapR = Constants.TEXTURE_WRAP_ADDRESSMODE;
 
@@ -307,7 +307,9 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
         return this._texture != null && this._texture._isRGBD;
     }
     public set isRGBD(value: boolean) {
-        if (this._texture) { this._texture._isRGBD = value; }
+        if (this._texture) {
+            this._texture._isRGBD = value;
+        }
     }
 
     /**
@@ -334,12 +336,16 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
      */
     @serialize()
     public get lodGenerationOffset(): number {
-        if (this._texture) { return this._texture._lodGenerationOffset; }
+        if (this._texture) {
+            return this._texture._lodGenerationOffset;
+        }
 
         return 0.0;
     }
     public set lodGenerationOffset(value: number) {
-        if (this._texture) { this._texture._lodGenerationOffset = value; }
+        if (this._texture) {
+            this._texture._lodGenerationOffset = value;
+        }
     }
 
     /**
@@ -347,12 +353,16 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
      */
     @serialize()
     public get lodGenerationScale(): number {
-        if (this._texture) { return this._texture._lodGenerationScale; }
+        if (this._texture) {
+            return this._texture._lodGenerationScale;
+        }
 
         return 0.0;
     }
     public set lodGenerationScale(value: number) {
-        if (this._texture) { this._texture._lodGenerationScale = value; }
+        if (this._texture) {
+            this._texture._lodGenerationScale = value;
+        }
     }
 
     /**
@@ -362,12 +372,16 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
      */
     @serialize()
     public get linearSpecularLOD(): boolean {
-        if (this._texture) { return this._texture._linearSpecularLOD; }
+        if (this._texture) {
+            return this._texture._linearSpecularLOD;
+        }
 
         return false;
     }
     public set linearSpecularLOD(value: boolean) {
-        if (this._texture) { this._texture._linearSpecularLOD = value; }
+        if (this._texture) {
+            this._texture._linearSpecularLOD = value;
+        }
     }
 
     /**
@@ -377,12 +391,16 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
      */
     @serializeAsTexture()
     public get irradianceTexture(): Nullable<BaseTexture> {
-        if (this._texture) { return this._texture._irradianceTexture; }
+        if (this._texture) {
+            return this._texture._irradianceTexture;
+        }
 
         return null;
     }
     public set irradianceTexture(value: Nullable<BaseTexture>) {
-        if (this._texture) { this._texture._irradianceTexture = value; }
+        if (this._texture) {
+            this._texture._irradianceTexture = value;
+        }
     }
 
     /**
@@ -428,8 +446,8 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
     public animations = new Array<Animation>();
 
     /**
-    * An event triggered when the texture is disposed.
-    */
+     * An event triggered when the texture is disposed.
+     */
     public onDisposeObservable = new Observable<BaseTexture>();
 
     private _onDisposeObserver: Nullable<Observer<BaseTexture>> = null;
@@ -476,10 +494,12 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
     /**
      * If a loading error occurred this object will be populated with information about the error.
      */
-    public get errorObject(): {
-        message?: string;
-        exception?: any;
-    } | undefined {
+    public get errorObject():
+        | {
+              message?: string;
+              exception?: any;
+          }
+        | undefined {
         return this._errorObject;
     }
 
@@ -496,12 +516,10 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
         if (sceneOrEngine) {
             if (BaseTexture._isScene(sceneOrEngine)) {
                 this._scene = sceneOrEngine;
-            }
-            else {
+            } else {
                 this._engine = sceneOrEngine;
             }
-        }
-        else {
+        } else {
             this._scene = EngineStore.LastCreatedScene;
         }
 
@@ -564,8 +582,7 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
      * Scales the texture if is `canRescale()`
      * @param ratio the resize factor we want to use to rescale
      */
-    public scale(ratio: number): void {
-    }
+    public scale(ratio: number): void {}
 
     /**
      * Get if the texture can rescale.
@@ -574,18 +591,25 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
         return false;
     }
 
-    /** @hidden */
+    /**
+     * @param url
+     * @param noMipmap
+     * @param sampling
+     * @param invertY
+     * @param useSRGBBuffer
+     * @hidden
+     */
     public _getFromCache(url: Nullable<string>, noMipmap: boolean, sampling?: number, invertY?: boolean, useSRGBBuffer?: boolean): Nullable<InternalTexture> {
         const engine = this._getEngine();
         if (!engine) {
             return null;
         }
 
-        const correctedUseSRGBBuffer = engine._getUseSRGBBuffer(!!useSRGBBuffer,  noMipmap);
+        const correctedUseSRGBBuffer = engine._getUseSRGBBuffer(!!useSRGBBuffer, noMipmap);
 
-        var texturesCache = engine.getLoadedTexturesCache();
-        for (var index = 0; index < texturesCache.length; index++) {
-            var texturesCacheEntry = texturesCache[index];
+        const texturesCache = engine.getLoadedTexturesCache();
+        for (let index = 0; index < texturesCache.length; index++) {
+            const texturesCacheEntry = texturesCache[index];
 
             if (useSRGBBuffer === undefined || correctedUseSRGBBuffer === texturesCacheEntry._useSRGBBuffer) {
                 if (invertY === undefined || invertY === texturesCacheEntry.invertY) {
@@ -603,9 +627,7 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
     }
 
     /** @hidden */
-    public _rebuild(): void {
-
-    }
+    public _rebuild(): void {}
 
     /**
      * Clones the texture.
@@ -623,7 +645,7 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
             return Constants.TEXTURETYPE_UNSIGNED_INT;
         }
 
-        return (this._texture.type !== undefined) ? this._texture.type : Constants.TEXTURETYPE_UNSIGNED_INT;
+        return this._texture.type !== undefined ? this._texture.type : Constants.TEXTURETYPE_UNSIGNED_INT;
     }
 
     /**
@@ -634,14 +656,14 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
             return Constants.TEXTUREFORMAT_RGBA;
         }
 
-        return (this._texture.format !== undefined) ? this._texture.format : Constants.TEXTUREFORMAT_RGBA;
+        return this._texture.format !== undefined ? this._texture.format : Constants.TEXTUREFORMAT_RGBA;
     }
 
     /**
      * Indicates that textures need to be re-calculated for all materials
      */
     protected _markAllSubMeshesAsTexturesDirty() {
-        let scene = this.getScene();
+        const scene = this.getScene();
 
         if (!scene) {
             return;
@@ -666,9 +688,9 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
             return null;
         }
 
-        var size = this.getSize();
-        var width = size.width;
-        var height = size.height;
+        const size = this.getSize();
+        let width = size.width;
+        let height = size.height;
 
         const engine = this._getEngine();
         if (!engine) {
@@ -694,15 +716,22 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
         }
     }
 
-    /** @hidden */
+    /**
+     * @param faceIndex
+     * @param level
+     * @param buffer
+     * @param flushRenderer
+     * @param noDataConversion
+     * @hidden
+     */
     public _readPixelsSync(faceIndex = 0, level = 0, buffer: Nullable<ArrayBufferView> = null, flushRenderer = true, noDataConversion = false): Nullable<ArrayBufferView> {
         if (!this._texture) {
             return null;
         }
 
-        var size = this.getSize();
-        var width = size.width;
-        var height = size.height;
+        const size = this.getSize();
+        let width = size.width;
+        let height = size.height;
 
         const engine = this._getEngine();
         if (!engine) {
@@ -764,7 +793,7 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
 
             // Remove from scene
             this._scene._removePendingData(this);
-            var index = this._scene.textures.indexOf(this);
+            const index = this._scene.textures.indexOf(this);
 
             if (index >= 0) {
                 this._scene.textures.splice(index, 1);
@@ -799,7 +828,7 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
             return null;
         }
 
-        var serializationObject = SerializationHelper.Serialize(this);
+        const serializationObject = SerializationHelper.Serialize(this);
 
         // Animations
         SerializationHelper.AppendSerializedAnimations(this, serializationObject);
@@ -819,16 +848,15 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
             return;
         }
 
-        for (var i = 0; i < textures.length; i++) {
-            var texture = textures[i];
+        for (let i = 0; i < textures.length; i++) {
+            const texture = textures[i];
 
             if (texture.isReady()) {
                 if (--numRemaining === 0) {
                     callback();
                 }
-            }
-            else {
-                var onLoadObservable = (texture as any).onLoadObservable as Observable<BaseTexture>;
+            } else {
+                const onLoadObservable = (texture as any).onLoadObservable as Observable<BaseTexture>;
 
                 if (onLoadObservable) {
                     onLoadObservable.addOnce(() => {

@@ -2,11 +2,11 @@ import { Behavior } from "../../Behaviors/behavior";
 import { Camera } from "../../Cameras/camera";
 import { ArcRotateCamera } from "../../Cameras/arcRotateCamera";
 import { ExponentialEase, EasingFunction } from "../../Animations/easing";
-import { Observable } from "../../Misc/observable";
+import { Observable , Observer } from "../../Misc/observable";
 import { Nullable } from "../../types";
 import { PointerInfoPre, PointerEventTypes } from "../../Events/pointerEvents";
 import { PrecisionDate } from "../../Misc/precisionDate";
-import { Observer } from "../../Misc/observable";
+
 import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Vector3, Vector2 } from "../../Maths/math.vector";
 import { Animatable } from "../../Animations/animatable";
@@ -91,17 +91,17 @@ export class FramingBehavior implements Behavior<ArcRotateCamera> {
     }
 
     /**
-    * Sets the angle above/below the horizontal plane to return to when the return to default elevation idle
-    * behaviour is triggered, in radians.
-    */
+     * Sets the angle above/below the horizontal plane to return to when the return to default elevation idle
+     * behaviour is triggered, in radians.
+     */
     public set defaultElevation(elevation: number) {
         this._defaultElevation = elevation;
     }
 
     /**
-    * Gets the angle above/below the horizontal plane to return to when the return to default elevation idle
-    * behaviour is triggered, in radians.
-    */
+     * Gets the angle above/below the horizontal plane to return to when the return to default elevation idle
+     * behaviour is triggered, in radians.
+     */
     public get defaultElevation() {
         return this._defaultElevation;
     }
@@ -137,29 +137,29 @@ export class FramingBehavior implements Behavior<ArcRotateCamera> {
     }
 
     /**
-    * Sets the flag that indicates if user zooming should stop animation.
-    */
+     * Sets the flag that indicates if user zooming should stop animation.
+     */
     public set zoomStopsAnimation(flag: boolean) {
         this._zoomStopsAnimation = flag;
     }
 
     /**
-    * Gets the flag that indicates if user zooming should stop animation.
-    */
+     * Gets the flag that indicates if user zooming should stop animation.
+     */
     public get zoomStopsAnimation(): boolean {
         return this._zoomStopsAnimation;
     }
 
     /**
      * Sets the transition time when framing the mesh, in milliseconds
-    */
+     */
     public set framingTime(time: number) {
         this._framingTime = time;
     }
 
     /**
      * Gets the transition time when framing the mesh, in milliseconds
-    */
+     */
     public get framingTime() {
         return this._framingTime;
     }
@@ -191,7 +191,7 @@ export class FramingBehavior implements Behavior<ArcRotateCamera> {
      */
     public attach(camera: ArcRotateCamera): void {
         this._attachedCamera = camera;
-        let scene = this._attachedCamera.getScene();
+        const scene = this._attachedCamera.getScene();
 
         FramingBehavior.EasingFunction.setEasingMode(FramingBehavior.EasingMode);
 
@@ -232,7 +232,7 @@ export class FramingBehavior implements Behavior<ArcRotateCamera> {
             return;
         }
 
-        let scene = this._attachedCamera.getScene();
+        const scene = this._attachedCamera.getScene();
 
         if (this._onPrePointerObservableObserver) {
             scene.onPrePointerObservable.remove(this._onPrePointerObservableObserver);
@@ -265,7 +265,7 @@ export class FramingBehavior implements Behavior<ArcRotateCamera> {
     public zoomOnMesh(mesh: AbstractMesh, focusOnOriginXZ: boolean = false, onAnimationEnd: Nullable<() => void> = null): void {
         mesh.computeWorldMatrix(true);
 
-        let boundingBox = mesh.getBoundingInfo().boundingBox;
+        const boundingBox = mesh.getBoundingInfo().boundingBox;
         this.zoomOnBoundingInfo(boundingBox.minimumWorld, boundingBox.maximumWorld, focusOnOriginXZ, onAnimationEnd);
     }
 
@@ -278,7 +278,7 @@ export class FramingBehavior implements Behavior<ArcRotateCamera> {
     public zoomOnMeshHierarchy(mesh: AbstractMesh, focusOnOriginXZ: boolean = false, onAnimationEnd: Nullable<() => void> = null): void {
         mesh.computeWorldMatrix(true);
 
-        let boundingBox = mesh.getHierarchyBoundingVectors(true);
+        const boundingBox = mesh.getHierarchyBoundingVectors(true);
         this.zoomOnBoundingInfo(boundingBox.min, boundingBox.max, focusOnOriginXZ, onAnimationEnd);
     }
 
@@ -289,11 +289,11 @@ export class FramingBehavior implements Behavior<ArcRotateCamera> {
      * @param onAnimationEnd Callback triggered at the end of the framing animation
      */
     public zoomOnMeshesHierarchy(meshes: AbstractMesh[], focusOnOriginXZ: boolean = false, onAnimationEnd: Nullable<() => void> = null): void {
-        let min = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
-        let max = new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
+        const min = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
+        const max = new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
 
         for (let i = 0; i < meshes.length; i++) {
-            let boundingInfo = meshes[i].getHierarchyBoundingVectors(true);
+            const boundingInfo = meshes[i].getHierarchyBoundingVectors(true);
             Vector3.CheckExtends(boundingInfo.min, min, max);
             Vector3.CheckExtends(boundingInfo.max, min, max);
         }
@@ -316,15 +316,15 @@ export class FramingBehavior implements Behavior<ArcRotateCamera> {
         }
 
         // Find target by interpolating from bottom of bounding box in world-space to top via framingPositionY
-        let bottom = minimumWorld.y;
-        let top = maximumWorld.y;
-        let zoomTargetY = bottom + (top - bottom) * this._positionScale;
-        let radiusWorld = maximumWorld.subtract(minimumWorld).scale(0.5);
+        const bottom = minimumWorld.y;
+        const top = maximumWorld.y;
+        const zoomTargetY = bottom + (top - bottom) * this._positionScale;
+        const radiusWorld = maximumWorld.subtract(minimumWorld).scale(0.5);
 
         if (focusOnOriginXZ) {
             zoomTarget = new Vector3(0, zoomTargetY, 0);
         } else {
-            let centerWorld = minimumWorld.add(radiusWorld);
+            const centerWorld = minimumWorld.add(radiusWorld);
             zoomTarget = new Vector3(centerWorld.x, zoomTargetY, centerWorld.z);
         }
 
@@ -342,7 +342,7 @@ export class FramingBehavior implements Behavior<ArcRotateCamera> {
         // Small delta ensures camera is not always at lower zoom limit.
         let radius = 0;
         if (this._mode === FramingBehavior.FitFrustumSidesMode) {
-            let position = this._calculateLowerRadiusFromModelBoundingSphere(minimumWorld, maximumWorld);
+            const position = this._calculateLowerRadiusFromModelBoundingSphere(minimumWorld, maximumWorld);
             if (this.autoCorrectCameraLimitsAndSensibility) {
                 this._attachedCamera.lowerRadiusLimit = radiusWorld.length() + this._attachedCamera.minZ;
             }
@@ -366,17 +366,16 @@ export class FramingBehavior implements Behavior<ArcRotateCamera> {
             this._radiusTransition = Animation.CreateAnimation("radius", Animation.ANIMATIONTYPE_FLOAT, 60, FramingBehavior.EasingFunction);
         }
 
-        animatable = Animation.TransitionTo("radius", radius, this._attachedCamera, this._attachedCamera.getScene(),
-            60, this._radiusTransition, this._framingTime, () => {
-                this.stopAllAnimations();
-                if (onAnimationEnd) {
-                    onAnimationEnd();
-                }
+        animatable = Animation.TransitionTo("radius", radius, this._attachedCamera, this._attachedCamera.getScene(), 60, this._radiusTransition, this._framingTime, () => {
+            this.stopAllAnimations();
+            if (onAnimationEnd) {
+                onAnimationEnd();
+            }
 
-                if (this._attachedCamera && this._attachedCamera.useInputToRestoreState) {
-                    this._attachedCamera.storeState();
-                }
-            });
+            if (this._attachedCamera && this._attachedCamera.useInputToRestoreState) {
+                this._attachedCamera.storeState();
+            }
+        });
 
         if (animatable) {
             this._animatables.push(animatable);
@@ -387,24 +386,26 @@ export class FramingBehavior implements Behavior<ArcRotateCamera> {
      * Calculates the lowest radius for the camera based on the bounding box of the mesh.
      * @param mesh The mesh on which to base the calculation. mesh boundingInfo used to estimate necessary
      *			  frustum width.
+     * @param minimumWorld
+     * @param maximumWorld
      * @return The minimum distance from the primary mesh's center point at which the camera must be kept in order
      *		 to fully enclose the mesh in the viewing frustum.
      */
     protected _calculateLowerRadiusFromModelBoundingSphere(minimumWorld: Vector3, maximumWorld: Vector3): number {
-        let size = maximumWorld.subtract(minimumWorld);
-        let boxVectorGlobalDiagonal = size.length();
-        let frustumSlope: Vector2 = this._getFrustumSlope();
+        const size = maximumWorld.subtract(minimumWorld);
+        const boxVectorGlobalDiagonal = size.length();
+        const frustumSlope: Vector2 = this._getFrustumSlope();
 
         // Formula for setting distance
         // (Good explanation: http://stackoverflow.com/questions/2866350/move-camera-to-fit-3d-scene)
-        let radiusWithoutFraming = boxVectorGlobalDiagonal * 0.5;
+        const radiusWithoutFraming = boxVectorGlobalDiagonal * 0.5;
 
         // Horizon distance
-        let radius = radiusWithoutFraming * this._radiusScale;
-        let distanceForHorizontalFrustum = radius * Math.sqrt(1.0 + 1.0 / (frustumSlope.x * frustumSlope.x));
-        let distanceForVerticalFrustum = radius * Math.sqrt(1.0 + 1.0 / (frustumSlope.y * frustumSlope.y));
+        const radius = radiusWithoutFraming * this._radiusScale;
+        const distanceForHorizontalFrustum = radius * Math.sqrt(1.0 + 1.0 / (frustumSlope.x * frustumSlope.x));
+        const distanceForVerticalFrustum = radius * Math.sqrt(1.0 + 1.0 / (frustumSlope.y * frustumSlope.y));
         let distance = Math.max(distanceForHorizontalFrustum, distanceForVerticalFrustum);
-        let camera = this._attachedCamera;
+        const camera = this._attachedCamera;
 
         if (!camera) {
             return 0;
@@ -432,9 +433,9 @@ export class FramingBehavior implements Behavior<ArcRotateCamera> {
             return;
         }
 
-        let timeSinceInteraction = PrecisionDate.Now - this._lastInteractionTime;
-        let defaultBeta = Math.PI * 0.5 - this._defaultElevation;
-        let limitBeta = Math.PI * 0.5;
+        const timeSinceInteraction = PrecisionDate.Now - this._lastInteractionTime;
+        const defaultBeta = Math.PI * 0.5 - this._defaultElevation;
+        const limitBeta = Math.PI * 0.5;
 
         // Bring the camera back up if below the ground plane
         if (this._attachedCamera && !this._betaIsAnimating && this._attachedCamera.beta > limitBeta && timeSinceInteraction >= this._elevationReturnWaitTime) {
@@ -447,12 +448,19 @@ export class FramingBehavior implements Behavior<ArcRotateCamera> {
                 this._betaTransition = Animation.CreateAnimation("beta", Animation.ANIMATIONTYPE_FLOAT, 60, FramingBehavior.EasingFunction);
             }
 
-            let animatabe = Animation.TransitionTo("beta", defaultBeta, this._attachedCamera, this._attachedCamera.getScene(), 60,
-                this._betaTransition, this._elevationReturnTime,
+            const animatabe = Animation.TransitionTo(
+                "beta",
+                defaultBeta,
+                this._attachedCamera,
+                this._attachedCamera.getScene(),
+                60,
+                this._betaTransition,
+                this._elevationReturnTime,
                 () => {
                     this._clearAnimationLocks();
                     this.stopAllAnimations();
-                });
+                }
+            );
 
             if (animatabe) {
                 this._animatables.push(animatabe);
@@ -467,23 +475,23 @@ export class FramingBehavior implements Behavior<ArcRotateCamera> {
     private _getFrustumSlope(): Vector2 {
         // Calculate the viewport ratio
         // Aspect Ratio is Height/Width.
-        let camera = this._attachedCamera;
+        const camera = this._attachedCamera;
 
         if (!camera) {
             return Vector2.Zero();
         }
 
-        let engine = camera.getScene().getEngine();
-        var aspectRatio = engine.getAspectRatio(camera);
+        const engine = camera.getScene().getEngine();
+        const aspectRatio = engine.getAspectRatio(camera);
 
         // Camera FOV is the vertical field of view (top-bottom) in radians.
         // Slope of the frustum top/bottom planes in view space, relative to the forward vector.
-        var frustumSlopeY = Math.tan(camera.fov / 2);
+        const frustumSlopeY = Math.tan(camera.fov / 2);
 
         // Slope of the frustum left/right planes in view space, relative to the forward vector.
         // Provides the amount that one side (e.g. left) of the frustum gets wider for every unit
         // along the forward vector.
-        var frustumSlopeX = frustumSlopeY * aspectRatio;
+        const frustumSlopeX = frustumSlopeY * aspectRatio;
 
         return new Vector2(frustumSlopeX, frustumSlopeY);
     }
@@ -531,12 +539,14 @@ export class FramingBehavior implements Behavior<ArcRotateCamera> {
             return false;
         }
 
-        return this._attachedCamera.inertialAlphaOffset !== 0 ||
+        return (
+            this._attachedCamera.inertialAlphaOffset !== 0 ||
             this._attachedCamera.inertialBetaOffset !== 0 ||
             this._attachedCamera.inertialRadiusOffset !== 0 ||
             this._attachedCamera.inertialPanningX !== 0 ||
             this._attachedCamera.inertialPanningY !== 0 ||
-            this._isPointerDown;
+            this._isPointerDown
+        );
     }
 
     // Statics

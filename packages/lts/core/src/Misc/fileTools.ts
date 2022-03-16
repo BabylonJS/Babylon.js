@@ -69,7 +69,23 @@ export let FileTools: {
     ) => IFileRequest;
     SetCorsBehavior: (url: string | string[], element: { crossOrigin: string | null }) => void;
 };
-/** @hidden */
+/**
+ * @param DecodeBase64UrlToBinary
+ * @param DecodeBase64UrlToString
+ * @param FileToolsOptions
+ * @param FileToolsOptions.DefaultRetryStrategy
+ * @param FileToolsOptions.BaseUrl
+ * @param FileToolsOptions.CorsBehavior
+ * @param FileToolsOptions.PreprocessUrl
+ * @param IsBase64DataUrl
+ * @param IsFileURL
+ * @param LoadFile
+ * @param LoadImage
+ * @param ReadFile
+ * @param RequestFile
+ * @param SetCorsBehavior
+ * @hidden
+ */
 export const _injectLTSFileTools = (
     DecodeBase64UrlToBinary: (uri: string) => ArrayBuffer,
     DecodeBase64UrlToString: (uri: string) => string,

@@ -2,7 +2,7 @@ import { SmartArrayNoDuplicate } from "../../Misc/smartArray";
 import { Vector3 } from "../../Maths/math.vector";
 import { Ray } from "../../Culling/ray";
 import { BoundingBox } from "../../Culling/boundingBox";
-import { Plane } from '../../Maths/math.plane';
+import { Plane } from "../../Maths/math.plane";
 
 /**
  * Contains an array of blocks representing the octree
@@ -108,8 +108,8 @@ export class OctreeBlock<T> {
      */
     public addEntry(entry: T): void {
         if (this.blocks) {
-            for (var index = 0; index < this.blocks.length; index++) {
-                var block = this.blocks[index];
+            for (let index = 0; index < this.blocks.length; index++) {
+                const block = this.blocks[index];
                 block.addEntry(entry);
             }
             return;
@@ -128,8 +128,8 @@ export class OctreeBlock<T> {
      */
     public removeEntry(entry: T): void {
         if (this.blocks) {
-            for (var index = 0; index < this.blocks.length; index++) {
-                var block = this.blocks[index];
+            for (let index = 0; index < this.blocks.length; index++) {
+                const block = this.blocks[index];
                 block.removeEntry(entry);
             }
             return;
@@ -147,8 +147,8 @@ export class OctreeBlock<T> {
      * @param entries defines the array of elements to add
      */
     public addEntries(entries: T[]): void {
-        for (var index = 0; index < entries.length; index++) {
-            var mesh = entries[index];
+        for (let index = 0; index < entries.length; index++) {
+            const mesh = entries[index];
             this.addEntry(mesh);
         }
     }
@@ -162,8 +162,8 @@ export class OctreeBlock<T> {
     public select(frustumPlanes: Plane[], selection: SmartArrayNoDuplicate<T>, allowDuplicate?: boolean): void {
         if (BoundingBox.IsInFrustum(this._boundingVectors, frustumPlanes)) {
             if (this.blocks) {
-                for (var index = 0; index < this.blocks.length; index++) {
-                    var block = this.blocks[index];
+                for (let index = 0; index < this.blocks.length; index++) {
+                    const block = this.blocks[index];
                     block.select(frustumPlanes, selection, allowDuplicate);
                 }
                 return;
@@ -187,8 +187,8 @@ export class OctreeBlock<T> {
     public intersects(sphereCenter: Vector3, sphereRadius: number, selection: SmartArrayNoDuplicate<T>, allowDuplicate?: boolean): void {
         if (BoundingBox.IntersectsSphere(this._minPoint, this._maxPoint, sphereCenter, sphereRadius)) {
             if (this.blocks) {
-                for (var index = 0; index < this.blocks.length; index++) {
-                    var block = this.blocks[index];
+                for (let index = 0; index < this.blocks.length; index++) {
+                    const block = this.blocks[index];
                     block.intersects(sphereCenter, sphereRadius, selection, allowDuplicate);
                 }
                 return;
@@ -210,8 +210,8 @@ export class OctreeBlock<T> {
     public intersectsRay(ray: Ray, selection: SmartArrayNoDuplicate<T>): void {
         if (ray.intersectsBoxMinMax(this._minPoint, this._maxPoint)) {
             if (this.blocks) {
-                for (var index = 0; index < this.blocks.length; index++) {
-                    var block = this.blocks[index];
+                for (let index = 0; index < this.blocks.length; index++) {
+                    const block = this.blocks[index];
                     block.intersectsRay(ray, selection);
                 }
                 return;
@@ -228,20 +228,37 @@ export class OctreeBlock<T> {
     }
 
     /**
+     * @param worldMin
+     * @param worldMax
+     * @param entries
+     * @param maxBlockCapacity
+     * @param currentDepth
+     * @param maxDepth
+     * @param target
+     * @param creationFunc
      * @hidden
      */
-    public static _CreateBlocks<T>(worldMin: Vector3, worldMax: Vector3, entries: T[], maxBlockCapacity: number, currentDepth: number, maxDepth: number, target: IOctreeContainer<T>, creationFunc: (entry: T, block: OctreeBlock<T>) => void): void {
+    public static _CreateBlocks<T>(
+        worldMin: Vector3,
+        worldMax: Vector3,
+        entries: T[],
+        maxBlockCapacity: number,
+        currentDepth: number,
+        maxDepth: number,
+        target: IOctreeContainer<T>,
+        creationFunc: (entry: T, block: OctreeBlock<T>) => void
+    ): void {
         target.blocks = new Array<OctreeBlock<T>>();
-        var blockSize = new Vector3((worldMax.x - worldMin.x) / 2, (worldMax.y - worldMin.y) / 2, (worldMax.z - worldMin.z) / 2);
+        const blockSize = new Vector3((worldMax.x - worldMin.x) / 2, (worldMax.y - worldMin.y) / 2, (worldMax.z - worldMin.z) / 2);
 
         // Segmenting space
-        for (var x = 0; x < 2; x++) {
-            for (var y = 0; y < 2; y++) {
-                for (var z = 0; z < 2; z++) {
-                    var localMin = worldMin.add(blockSize.multiplyByFloats(x, y, z));
-                    var localMax = worldMin.add(blockSize.multiplyByFloats(x + 1, y + 1, z + 1));
+        for (let x = 0; x < 2; x++) {
+            for (let y = 0; y < 2; y++) {
+                for (let z = 0; z < 2; z++) {
+                    const localMin = worldMin.add(blockSize.multiplyByFloats(x, y, z));
+                    const localMax = worldMin.add(blockSize.multiplyByFloats(x + 1, y + 1, z + 1));
 
-                    var block = new OctreeBlock<T>(localMin, localMax, maxBlockCapacity, currentDepth + 1, maxDepth, creationFunc);
+                    const block = new OctreeBlock<T>(localMin, localMax, maxBlockCapacity, currentDepth + 1, maxDepth, creationFunc);
                     block.addEntries(entries);
                     target.blocks.push(block);
                 }

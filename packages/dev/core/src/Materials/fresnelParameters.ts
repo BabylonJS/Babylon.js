@@ -1,5 +1,5 @@
 import { DeepCopier } from "../Misc/deepCopier";
-import { DeepImmutable } from '../types';
+import { DeepImmutable } from "../types";
 import { Color3 } from "../Maths/math.color";
 import { Engine } from "../Engines/engine";
 import { SerializationHelper } from "../Misc/decorators";
@@ -112,8 +112,8 @@ export class FresnelParameters {
      * @param options provide your own settings to optionally to override defaults
      */
     public constructor(options: IFresnelParametersCreationOptions = {}) {
-        this.bias = (options.bias === undefined) ? 0 : options.bias;
-        this.power = (options.power === undefined) ? 1 : options.power;
+        this.bias = options.bias === undefined ? 0 : options.bias;
+        this.power = options.power === undefined ? 1 : options.power;
         this.leftColor = options.leftColor || Color3.White();
         this.rightColor = options.rightColor || Color3.Black();
         if (options.isEnabled === false) {
@@ -126,7 +126,7 @@ export class FresnelParameters {
      * @returns a clone fresnel configuration
      */
     public clone(): FresnelParameters {
-        var newFresnelParameters = new FresnelParameters();
+        const newFresnelParameters = new FresnelParameters();
 
         DeepCopier.DeepCopy(this, newFresnelParameters);
 
@@ -139,12 +139,14 @@ export class FresnelParameters {
      * @returns true if the power, bias, leftColor, rightColor and isEnabled values are equal to the given ones
      */
     public equals(otherFresnelParameters: DeepImmutable<FresnelParameters>): boolean {
-        return otherFresnelParameters &&
+        return (
+            otherFresnelParameters &&
             this.bias === otherFresnelParameters.bias &&
             this.power === otherFresnelParameters.power &&
             this.leftColor.equals(otherFresnelParameters.leftColor) &&
             this.rightColor.equals(otherFresnelParameters.rightColor) &&
-            this.isEnabled === otherFresnelParameters.isEnabled;
+            this.isEnabled === otherFresnelParameters.isEnabled
+        );
     }
 
     /**
@@ -157,7 +159,7 @@ export class FresnelParameters {
             leftColor: this.leftColor.asArray(),
             rightColor: this.rightColor.asArray(),
             bias: this.bias,
-            power: this.power
+            power: this.power,
         };
     }
 
@@ -172,7 +174,7 @@ export class FresnelParameters {
             leftColor: Color3.FromArray(parsedFresnelParameters.leftColor),
             rightColor: Color3.FromArray(parsedFresnelParameters.rightColor),
             bias: parsedFresnelParameters.bias,
-            power: parsedFresnelParameters.power || 1.0
+            power: parsedFresnelParameters.power || 1.0,
         });
     }
 }

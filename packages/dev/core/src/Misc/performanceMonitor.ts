@@ -5,7 +5,6 @@ import { PrecisionDate } from "./precisionDate";
  * Performance monitor tracks rolling average frame-time and frame-time variance over a user defined sliding-window
  */
 export class PerformanceMonitor {
-
     private _enabled: boolean = true;
     private _rollingFrameTime: RollingAverage;
     private _lastFrameTimeMs: Nullable<number>;
@@ -23,10 +22,12 @@ export class PerformanceMonitor {
      * @param timeMs A timestamp in milliseconds of the current frame to compare with other frames
      */
     public sampleFrame(timeMs: number = PrecisionDate.Now) {
-        if (!this._enabled) { return; }
+        if (!this._enabled) {
+            return;
+        }
 
         if (this._lastFrameTimeMs != null) {
-            let dt = timeMs - this._lastFrameTimeMs;
+            const dt = timeMs - this._lastFrameTimeMs;
             this._rollingFrameTime.add(dt);
         }
 
@@ -65,7 +66,7 @@ export class PerformanceMonitor {
      * Returns the average framerate in frames per second using the most recent frame time
      */
     public get instantaneousFPS(): number {
-        let history = this._rollingFrameTime.history(0);
+        const history = this._rollingFrameTime.history(0);
 
         if (history === 0) {
             return 0;
@@ -114,7 +115,6 @@ export class PerformanceMonitor {
         //wipe record
         this._rollingFrameTime.reset();
     }
-
 }
 
 /**
@@ -123,7 +123,6 @@ export class PerformanceMonitor {
  * Utility to efficiently compute the rolling average and variance over a sliding window of samples
  */
 export class RollingAverage {
-
     /**
      * Current average
      */
@@ -158,7 +157,7 @@ export class RollingAverage {
         //we need to check if we've already wrapped round
         if (this.isSaturated()) {
             //remove bottom of stack from mean
-            let bottomValue = this._samples[this._pos];
+            const bottomValue = this._samples[this._pos];
             delta = bottomValue - this.average;
             this.average -= delta / (this._sampleCount - 1);
             this._m2 -= delta * (bottomValue - this.average);
@@ -168,7 +167,7 @@ export class RollingAverage {
 
         //add new value to mean
         delta = v - this.average;
-        this.average += delta / (this._sampleCount);
+        this.average += delta / this._sampleCount;
         this._m2 += delta * (v - this.average);
 
         //set the new variance
@@ -186,11 +185,11 @@ export class RollingAverage {
      * @return Value previously recorded with add() or null if outside of range
      */
     public history(i: number): number {
-        if ((i >= this._sampleCount) || (i >= this._samples.length)) {
+        if (i >= this._sampleCount || i >= this._samples.length) {
             return 0;
         }
 
-        let i0 = this._wrapPosition(this._pos - 1.0);
+        const i0 = this._wrapPosition(this._pos - 1.0);
         return this._samples[this._wrapPosition(i0 - i)];
     }
 
@@ -219,7 +218,7 @@ export class RollingAverage {
      * @return Wrapped position in sample range
      */
     protected _wrapPosition(i: number): number {
-        let max = this._samples.length;
+        const max = this._samples.length;
         return ((i % max) + max) % max;
     }
 }

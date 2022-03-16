@@ -52,6 +52,7 @@ export class ImageProcessingPostProcess extends PostProcess {
     /**
      * Attaches a new image processing configuration to the PBR Material.
      * @param configuration
+     * @param doNotBuild
      */
     protected _attachImageProcessingConfiguration(configuration: Nullable<ImageProcessingConfiguration>, doNotBuild = false): void {
         if (configuration === this._imageProcessingConfiguration) {
@@ -65,29 +66,25 @@ export class ImageProcessingPostProcess extends PostProcess {
 
         // Pick the scene configuration if needed.
         if (!configuration) {
-            var scene = null;
-            var engine = this.getEngine();
-            var camera = this.getCamera();
+            let scene = null;
+            const engine = this.getEngine();
+            const camera = this.getCamera();
 
             if (camera) {
                 scene = camera.getScene();
-            }
-            else if (engine && engine.scenes) {
-                var scenes = engine.scenes;
+            } else if (engine && engine.scenes) {
+                const scenes = engine.scenes;
                 scene = scenes[scenes.length - 1];
-            }
-            else {
+            } else {
                 scene = EngineStore.LastCreatedScene;
             }
 
             if (scene) {
                 this._imageProcessingConfiguration = scene.imageProcessingConfiguration;
-            }
-            else {
+            } else {
                 this._imageProcessingConfiguration = new ImageProcessingConfiguration();
             }
-        }
-        else {
+        } else {
             this._imageProcessingConfiguration = configuration;
         }
 
@@ -364,9 +361,17 @@ export class ImageProcessingPostProcess extends PostProcess {
         SKIPFINALCOLORCLAMP: false,
     };
 
-    constructor(name: string, options: number | PostProcessOptions, camera: Nullable<Camera> = null, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT, imageProcessingConfiguration?: ImageProcessingConfiguration) {
-        super(name, "imageProcessing", [], [], options, camera, samplingMode, engine, reusable,
-            null, textureType, "postprocess", null, true);
+    constructor(
+        name: string,
+        options: number | PostProcessOptions,
+        camera: Nullable<Camera> = null,
+        samplingMode?: number,
+        engine?: Engine,
+        reusable?: boolean,
+        textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT,
+        imageProcessingConfiguration?: ImageProcessingConfiguration
+    ) {
+        super(name, "imageProcessing", [], [], options, camera, samplingMode, engine, reusable, null, textureType, "postprocess", null, true);
 
         // Setup the configuration as forced by the constructor. This would then not force the
         // scene materials output in linear space and let untouched the default forward pass.
@@ -400,15 +405,15 @@ export class ImageProcessingPostProcess extends PostProcess {
     public _updateParameters(): void {
         this._defines.FROMLINEARSPACE = this._fromLinearSpace;
         this.imageProcessingConfiguration.prepareDefines(this._defines, true);
-        var defines = "";
+        let defines = "";
         for (const define in this._defines) {
             if ((<any>this._defines)[define]) {
                 defines += `#define ${define};\r\n`;
             }
         }
 
-        var samplers = ["textureSampler"];
-        var uniforms = ["scale"];
+        const samplers = ["textureSampler"];
+        const uniforms = ["scale"];
 
         if (ImageProcessingConfiguration) {
             ImageProcessingConfiguration.PrepareSamplers(samplers, this._defines);

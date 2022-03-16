@@ -6,7 +6,7 @@ import { InternalTexture } from "../Materials/Textures/internalTexture";
  * for file layout see https://www.khronos.org/opengles/sdk/tools/KTX/file_format_spec/
  */
 export class KhronosTextureContainer {
-    private static HEADER_LEN = 12 + (13 * 4); // identifier + header elements (not including key value meta-data pairs)
+    private static HEADER_LEN = 12 + 13 * 4; // identifier + header elements (not including key value meta-data pairs)
 
     // load types
     private static COMPRESSED_2D = 0; // uses a gl.compressedTexImage2D()
@@ -81,7 +81,11 @@ export class KhronosTextureContainer {
      */
     public constructor(
         /** contents of the KTX container file */
-        public data: ArrayBufferView, facesExpected: number, threeDExpected?: boolean, textureArrayExpected?: boolean) {
+        public data: ArrayBufferView,
+        facesExpected: number,
+        threeDExpected?: boolean,
+        textureArrayExpected?: boolean
+    ) {
         if (!KhronosTextureContainer.IsValid(data)) {
             this.isInvalid = true;
             Logger.Error("texture missing KTX identifier");
@@ -89,10 +93,10 @@ export class KhronosTextureContainer {
         }
 
         // load the reset of the header in native 32 bit uint
-        var dataSize = Uint32Array.BYTES_PER_ELEMENT;
-        var headerDataView = new DataView(this.data.buffer, this.data.byteOffset + 12, 13 * dataSize);
-        var endianness = headerDataView.getUint32(0, true);
-        var littleEndian = endianness === 0x04030201;
+        const dataSize = Uint32Array.BYTES_PER_ELEMENT;
+        const headerDataView = new DataView(this.data.buffer, this.data.byteOffset + 12, 13 * dataSize);
+        const endianness = headerDataView.getUint32(0, true);
+        const littleEndian = endianness === 0x04030201;
 
         this.glType = headerDataView.getUint32(1 * dataSize, littleEndian); // must be 0 for compressed textures
         this.glTypeSize = headerDataView.getUint32(2 * dataSize, littleEndian); // must be 1 for compressed textures
@@ -139,6 +143,8 @@ export class KhronosTextureContainer {
     /**
      * Uploads KTX content to a Babylon Texture.
      * It is assumed that the texture has already been created & is currently bound
+     * @param texture
+     * @param loadMipmaps
      * @hidden
      */
     public uploadLevels(texture: InternalTexture, loadMipmaps: boolean): void {
@@ -155,16 +161,16 @@ export class KhronosTextureContainer {
 
     private _upload2DCompressedLevels(texture: InternalTexture, loadMipmaps: boolean): void {
         // initialize width & height for level 1
-        var dataOffset = KhronosTextureContainer.HEADER_LEN + this.bytesOfKeyValueData;
-        var width = this.pixelWidth;
-        var height = this.pixelHeight;
+        let dataOffset = KhronosTextureContainer.HEADER_LEN + this.bytesOfKeyValueData;
+        let width = this.pixelWidth;
+        let height = this.pixelHeight;
 
-        var mipmapCount = loadMipmaps ? this.numberOfMipmapLevels : 1;
-        for (var level = 0; level < mipmapCount; level++) {
-            var imageSize = new Int32Array(this.data.buffer, this.data.byteOffset + dataOffset, 1)[0]; // size per face, since not supporting array cubemaps
+        const mipmapCount = loadMipmaps ? this.numberOfMipmapLevels : 1;
+        for (let level = 0; level < mipmapCount; level++) {
+            const imageSize = new Int32Array(this.data.buffer, this.data.byteOffset + dataOffset, 1)[0]; // size per face, since not supporting array cubemaps
             dataOffset += 4; //image data starts from next multiple of 4 offset. Each face refers to same imagesize field above.
-            for (var face = 0; face < this.numberOfFaces; face++) {
-                var byteArray = new Uint8Array(this.data.buffer, this.data.byteOffset + dataOffset, imageSize);
+            for (let face = 0; face < this.numberOfFaces; face++) {
+                const byteArray = new Uint8Array(this.data.buffer, this.data.byteOffset + dataOffset, imageSize);
 
                 const engine = texture.getEngine();
                 engine._uploadCompressedDataToTextureDirectly(texture, this.glInternalFormat, width, height, byteArray, face, level);
@@ -186,8 +192,20 @@ export class KhronosTextureContainer {
         if (data.byteLength >= 12) {
             // '«', 'K', 'T', 'X', ' ', '1', '1', '»', '\r', '\n', '\x1A', '\n'
             const identifier = new Uint8Array(data.buffer, data.byteOffset, 12);
-            if (identifier[0] === 0xAB && identifier[1] === 0x4B && identifier[2] === 0x54 && identifier[3] === 0x58 && identifier[4] === 0x20 && identifier[5] === 0x31 &&
-                identifier[6] === 0x31 && identifier[7] === 0xBB && identifier[8] === 0x0D && identifier[9] === 0x0A && identifier[10] === 0x1A && identifier[11] === 0x0A) {
+            if (
+                identifier[0] === 0xab &&
+                identifier[1] === 0x4b &&
+                identifier[2] === 0x54 &&
+                identifier[3] === 0x58 &&
+                identifier[4] === 0x20 &&
+                identifier[5] === 0x31 &&
+                identifier[6] === 0x31 &&
+                identifier[7] === 0xbb &&
+                identifier[8] === 0x0d &&
+                identifier[9] === 0x0a &&
+                identifier[10] === 0x1a &&
+                identifier[11] === 0x0a
+            ) {
                 return true;
             }
         }

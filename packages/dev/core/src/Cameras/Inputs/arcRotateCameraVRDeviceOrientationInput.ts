@@ -1,7 +1,7 @@
 import { ArcRotateCamera } from "../../Cameras/arcRotateCamera";
 import { ICameraInput, CameraInputTypes } from "../../Cameras/cameraInputsManager";
 import { ArcRotateCameraInputsManager } from "../../Cameras/arcRotateCameraInputsManager";
-import { Tools } from '../../Misc/tools';
+import { Tools } from "../../Misc/tools";
 
 // Module augmentation to abstract orientation inputs from camera.
 declare module "../../Cameras/arcRotateCameraInputsManager" {
@@ -65,14 +65,15 @@ export class ArcRotateCameraVRDeviceOrientationInput implements ICameraInput<Arc
 
         this.camera.attachControl(noPreventDefault);
 
-        let hostWindow = this.camera.getScene().getEngine().getHostWindow();
+        const hostWindow = this.camera.getScene().getEngine().getHostWindow();
 
         if (hostWindow) {
             // check iOS 13+ support
-            if (typeof (DeviceOrientationEvent) !== "undefined" && typeof (<any>DeviceOrientationEvent).requestPermission === 'function') {
-                (<any>DeviceOrientationEvent).requestPermission()
+            if (typeof DeviceOrientationEvent !== "undefined" && typeof (<any>DeviceOrientationEvent).requestPermission === "function") {
+                (<any>DeviceOrientationEvent)
+                    .requestPermission()
                     .then((response: string) => {
-                        if (response === 'granted') {
+                        if (response === "granted") {
                             hostWindow!.addEventListener("deviceorientation", this._deviceOrientationHandler);
                         } else {
                             Tools.Warn("Permission not granted.");
@@ -87,7 +88,10 @@ export class ArcRotateCameraVRDeviceOrientationInput implements ICameraInput<Arc
         }
     }
 
-    /** @hidden */
+    /**
+     * @param evt
+     * @hidden
+     */
     public _onOrientationEvent(evt: DeviceOrientationEvent): void {
         if (evt.alpha !== null) {
             this._alpha = (+evt.alpha | 0) * this.alphaCorrection;
@@ -111,8 +115,8 @@ export class ArcRotateCameraVRDeviceOrientationInput implements ICameraInput<Arc
                 this._gamma = 180 + this._gamma;
             }
 
-            this.camera.alpha = (-this._alpha / 180.0 * Math.PI) % Math.PI * 2;
-            this.camera.beta = (this._gamma / 180.0 * Math.PI);
+            this.camera.alpha = (((-this._alpha / 180.0) * Math.PI) % Math.PI) * 2;
+            this.camera.beta = (this._gamma / 180.0) * Math.PI;
         }
     }
 

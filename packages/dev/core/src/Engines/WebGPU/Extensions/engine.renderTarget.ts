@@ -6,7 +6,7 @@ import { RenderTargetWrapper } from "../../renderTargetWrapper";
 import { WebGPUEngine } from "../../webgpuEngine";
 import { WebGPURenderTargetWrapper } from "../webgpuRenderTargetWrapper";
 
-WebGPUEngine.prototype._createHardwareRenderTargetWrapper = function(isMulti: boolean, isCube: boolean, size: TextureSize): WebGPURenderTargetWrapper {
+WebGPUEngine.prototype._createHardwareRenderTargetWrapper = function (isMulti: boolean, isCube: boolean, size: TextureSize): WebGPURenderTargetWrapper {
     const rtWrapper = new WebGPURenderTargetWrapper(isMulti, isCube, size, this);
     this._renderTargetWrapperCache.push(rtWrapper);
     return rtWrapper;
@@ -39,14 +39,19 @@ WebGPUEngine.prototype.createRenderTargetTexture = function (size: TextureSize, 
     rtWrapper.setTextures(texture);
 
     if (rtWrapper._generateDepthBuffer || rtWrapper._generateStencilBuffer) {
-        rtWrapper.createDepthStencilTexture(0,
-                fullOptions.samplingMode === undefined ||
-                fullOptions.samplingMode === Constants.TEXTURE_BILINEAR_SAMPLINGMODE || fullOptions.samplingMode === Constants.TEXTURE_LINEAR_LINEAR ||
-                fullOptions.samplingMode === Constants.TEXTURE_TRILINEAR_SAMPLINGMODE || fullOptions.samplingMode === Constants.TEXTURE_LINEAR_LINEAR_MIPLINEAR ||
-                fullOptions.samplingMode === Constants.TEXTURE_NEAREST_LINEAR_MIPNEAREST || fullOptions.samplingMode === Constants.TEXTURE_NEAREST_LINEAR_MIPLINEAR ||
-                fullOptions.samplingMode === Constants.TEXTURE_NEAREST_LINEAR || fullOptions.samplingMode === Constants.TEXTURE_LINEAR_LINEAR_MIPNEAREST,
-                rtWrapper._generateStencilBuffer,
-                rtWrapper.samples
+        rtWrapper.createDepthStencilTexture(
+            0,
+            fullOptions.samplingMode === undefined ||
+                fullOptions.samplingMode === Constants.TEXTURE_BILINEAR_SAMPLINGMODE ||
+                fullOptions.samplingMode === Constants.TEXTURE_LINEAR_LINEAR ||
+                fullOptions.samplingMode === Constants.TEXTURE_TRILINEAR_SAMPLINGMODE ||
+                fullOptions.samplingMode === Constants.TEXTURE_LINEAR_LINEAR_MIPLINEAR ||
+                fullOptions.samplingMode === Constants.TEXTURE_NEAREST_LINEAR_MIPNEAREST ||
+                fullOptions.samplingMode === Constants.TEXTURE_NEAREST_LINEAR_MIPLINEAR ||
+                fullOptions.samplingMode === Constants.TEXTURE_NEAREST_LINEAR ||
+                fullOptions.samplingMode === Constants.TEXTURE_LINEAR_LINEAR_MIPNEAREST,
+            rtWrapper._generateStencilBuffer,
+            rtWrapper.samples
         );
     }
 
@@ -72,13 +77,19 @@ WebGPUEngine.prototype._createDepthStencilTexture = function (size: TextureSize,
         generateStencil: false,
         samples: 1,
         depthTextureFormat: Constants.TEXTUREFORMAT_DEPTH32_FLOAT,
-        ...options
+        ...options,
     };
 
-    internalTexture.format =
-        internalOptions.generateStencil ? Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 : internalOptions.depthTextureFormat;
+    internalTexture.format = internalOptions.generateStencil ? Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 : internalOptions.depthTextureFormat;
 
-    this._setupDepthStencilTexture(internalTexture, size, internalOptions.generateStencil, internalOptions.bilinearFiltering, internalOptions.comparisonFunction, internalOptions.samples);
+    this._setupDepthStencilTexture(
+        internalTexture,
+        size,
+        internalOptions.generateStencil,
+        internalOptions.bilinearFiltering,
+        internalOptions.comparisonFunction,
+        internalOptions.samples
+    );
 
     this._textureHelper.createGPUTextureForInternalTexture(internalTexture);
 
@@ -87,10 +98,17 @@ WebGPUEngine.prototype._createDepthStencilTexture = function (size: TextureSize,
     return internalTexture;
 };
 
-WebGPUEngine.prototype._setupDepthStencilTexture = function (internalTexture: InternalTexture, size: TextureSize, generateStencil: boolean, bilinearFiltering: boolean, comparisonFunction: number, samples = 1): void {
-    const width = (<{ width: number, height: number, layers?: number }>size).width || <number>size;
-    const height = (<{ width: number, height: number, layers?: number }>size).height || <number>size;
-    const layers = (<{ width: number, height: number, layers?: number }>size).layers || 0;
+WebGPUEngine.prototype._setupDepthStencilTexture = function (
+    internalTexture: InternalTexture,
+    size: TextureSize,
+    generateStencil: boolean,
+    bilinearFiltering: boolean,
+    comparisonFunction: number,
+    samples = 1
+): void {
+    const width = (<{ width: number; height: number; layers?: number }>size).width || <number>size;
+    const height = (<{ width: number; height: number; layers?: number }>size).height || <number>size;
+    const layers = (<{ width: number; height: number; layers?: number }>size).layers || 0;
 
     internalTexture.baseWidth = width;
     internalTexture.baseHeight = height;

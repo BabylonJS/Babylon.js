@@ -1,5 +1,5 @@
-import { WebGPUBufferManager } from './webgpuBufferManager';
-import * as WebGPUConstants from './webgpuConstants';
+import { WebGPUBufferManager } from "./webgpuBufferManager";
+import * as WebGPUConstants from "./webgpuConstants";
 import { PerfCounter } from "../../Misc/perfCounter";
 import { WebGPUQuerySet } from "./webgpuQuerySet";
 
@@ -63,7 +63,6 @@ export class WebGPUTimestampQuery {
 
 /** @hidden */
 export class WebGPUDurationMeasure {
-
     private _querySet: WebGPUQuerySet;
 
     constructor(device: GPUDevice, bufferManager: WebGPUBufferManager) {

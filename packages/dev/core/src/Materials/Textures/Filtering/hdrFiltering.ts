@@ -5,12 +5,12 @@ import { ThinEngine } from "../../../Engines/thinEngine";
 import { Effect } from "../../../Materials/effect";
 import { Constants } from "../../../Engines/constants";
 import { EffectWrapper, EffectRenderer } from "../../../Materials/effectRenderer";
-import { Nullable } from '../../../types';
+import { Nullable } from "../../../types";
 import { RenderTargetWrapper } from "../../../Engines/renderTargetWrapper";
 
 import "../../../Shaders/hdrFiltering.vertex";
 import "../../../Shaders/hdrFiltering.fragment";
-import { Logger } from '../../../Misc/logger';
+import { Logger } from "../../../Misc/logger";
 
 /**
  * Options for texture filtering
@@ -31,7 +31,6 @@ interface IHDRFilteringOptions {
  * Filters HDR maps to get correct renderings of PBR reflections
  */
 export class HDRFiltering {
-
     private _engine: ThinEngine;
     private _effectRenderer: EffectRenderer;
     private _effectWrapper: EffectWrapper;
@@ -67,8 +66,7 @@ export class HDRFiltering {
         let textureType = Constants.TEXTURETYPE_UNSIGNED_BYTE;
         if (this._engine.getCaps().textureHalfFloatRender) {
             textureType = Constants.TEXTURETYPE_HALF_FLOAT;
-        }
-        else if (this._engine.getCaps().textureFloatRender) {
+        } else if (this._engine.getCaps().textureFloatRender) {
             textureType = Constants.TEXTURETYPE_FLOAT;
         }
 
@@ -79,12 +77,9 @@ export class HDRFiltering {
             generateMipMaps: false,
             generateDepthBuffer: false,
             generateStencilBuffer: false,
-            samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE
+            samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
         });
-        this._engine.updateTextureWrappingMode(rtWrapper.texture!,
-            Constants.TEXTURE_CLAMP_ADDRESSMODE,
-            Constants.TEXTURE_CLAMP_ADDRESSMODE,
-            Constants.TEXTURE_CLAMP_ADDRESSMODE);
+        this._engine.updateTextureWrappingMode(rtWrapper.texture!, Constants.TEXTURE_CLAMP_ADDRESSMODE, Constants.TEXTURE_CLAMP_ADDRESSMODE, Constants.TEXTURE_CLAMP_ADDRESSMODE);
 
         this._engine.updateTextureSamplingMode(Constants.TEXTURE_TRILINEAR_SAMPLINGMODE, rtWrapper.texture!, true);
 
@@ -126,7 +121,6 @@ export class HDRFiltering {
             effect.setVector3("front", directions[face][2]);
 
             for (let lod = 0; lod < mipmapsCount; lod++) {
-
                 this._engine.bindFramebuffer(outputTexture, face, undefined, undefined, true, lod);
                 this._effectRenderer.applyEffectWrapper(this._effectWrapper);
 
@@ -171,7 +165,7 @@ export class HDRFiltering {
             uniformNames: ["vSampleDirections", "vWeights", "up", "right", "front", "vFilteringInfo", "hdrScale", "alphaG"],
             useShaderStore: true,
             defines,
-            onCompiled: onCompiled
+            onCompiled: onCompiled,
         });
 
         return effectWrapper;
@@ -183,18 +177,18 @@ export class HDRFiltering {
      * @returns true if the filter is ready
      */
     public isReady(texture: BaseTexture) {
-        return (texture.isReady() && this._effectWrapper.effect.isReady());
+        return texture.isReady() && this._effectWrapper.effect.isReady();
     }
 
     /**
-      * Prefilters a cube texture to have mipmap levels representing roughness values.
-      * Prefiltering will be invoked at the end of next rendering pass.
-      * This has to be done once the map is loaded, and has not been prefiltered by a third party software.
-      * See http://blog.selfshadow.com/publications/s2013-shading-course/karis/s2013_pbs_epic_notes_v2.pdf for more information
-      * @param texture Texture to filter
-      * @param onFinished Callback when filtering is done
-      * @return Promise called when prefiltering is done
-      */
+     * Prefilters a cube texture to have mipmap levels representing roughness values.
+     * Prefiltering will be invoked at the end of next rendering pass.
+     * This has to be done once the map is loaded, and has not been prefiltered by a third party software.
+     * See http://blog.selfshadow.com/publications/s2013-shading-course/karis/s2013_pbs_epic_notes_v2.pdf for more information
+     * @param texture Texture to filter
+     * @param onFinished Callback when filtering is done
+     * @return Promise called when prefiltering is done
+     */
     public prefilter(texture: BaseTexture, onFinished: Nullable<() => void> = null): Promise<void> {
         if (!this._engine._features.allowTexturePrefiltering) {
             Logger.Warn("HDR prefiltering is not available in WebGL 1., you can use real time filtering instead.");

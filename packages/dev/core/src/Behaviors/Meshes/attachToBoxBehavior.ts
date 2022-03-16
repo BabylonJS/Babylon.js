@@ -10,7 +10,7 @@ import { Behavior } from "../../Behaviors/behavior";
  * @hidden
  */
 class FaceDirectionInfo {
-    constructor(public direction: Vector3, public rotatedDirection = new Vector3(), public diff = 0, public ignore = false) { }
+    constructor(public direction: Vector3, public rotatedDirection = new Vector3(), public diff = 0, public ignore = false) {}
 }
 
 /**
@@ -29,7 +29,14 @@ export class AttachToBoxBehavior implements Behavior<Mesh> {
      * The distance from the bottom of the face that the UI should be attached to (default: 0.15)
      */
     public distanceAwayFromBottomOfFace = 0.15;
-    private _faceVectors = [new FaceDirectionInfo(Vector3.Up()), new FaceDirectionInfo(Vector3.Down()), new FaceDirectionInfo(Vector3.Left()), new FaceDirectionInfo(Vector3.Right()), new FaceDirectionInfo(Vector3.Forward()), new FaceDirectionInfo(Vector3.Forward().scaleInPlace(-1))];
+    private _faceVectors = [
+        new FaceDirectionInfo(Vector3.Up()),
+        new FaceDirectionInfo(Vector3.Down()),
+        new FaceDirectionInfo(Vector3.Left()),
+        new FaceDirectionInfo(Vector3.Right()),
+        new FaceDirectionInfo(Vector3.Forward()),
+        new FaceDirectionInfo(Vector3.Forward().scaleInPlace(-1)),
+    ];
     private _target: Mesh;
     private _scene: Scene;
     private _onRenderObserver: Nullable<Observer<Scene>>;
@@ -96,11 +103,11 @@ export class AttachToBoxBehavior implements Behavior<Mesh> {
             }
 
             // Find the face closest to the cameras position
-            var cameraPos = this._scene.activeCamera.position;
+            let cameraPos = this._scene.activeCamera.position;
             if ((<any>this._scene.activeCamera).devicePosition) {
                 cameraPos = (<any>this._scene.activeCamera).devicePosition;
             }
-            var facing = this._closestFace(cameraPos.subtract(target.position));
+            const facing = this._closestFace(cameraPos.subtract(target.position));
             if (this._scene.activeCamera.leftCamera) {
                 this._scene.activeCamera.leftCamera.computeWorldMatrix().getRotationMatrixToRef(this._tmpMatrix);
             } else {
@@ -121,7 +128,7 @@ export class AttachToBoxBehavior implements Behavior<Mesh> {
                     v.ignore = true;
                 }
             });
-            var facingUp = this._closestFace(this._tmpVector);
+            const facingUp = this._closestFace(this._tmpVector);
             // Unignore faces
             this._faceVectors.forEach((v) => {
                 v.ignore = false;
@@ -130,15 +137,15 @@ export class AttachToBoxBehavior implements Behavior<Mesh> {
             // Position the app bar on that face
             this.ui.position.copyFrom(target.position);
             if (facing.direction.x) {
-                facing.rotatedDirection.scaleToRef((target.scaling.x / 2) + this.distanceAwayFromFace, this._tmpVector);
+                facing.rotatedDirection.scaleToRef(target.scaling.x / 2 + this.distanceAwayFromFace, this._tmpVector);
                 this.ui.position.addInPlace(this._tmpVector);
             }
             if (facing.direction.y) {
-                facing.rotatedDirection.scaleToRef((target.scaling.y / 2) + this.distanceAwayFromFace, this._tmpVector);
+                facing.rotatedDirection.scaleToRef(target.scaling.y / 2 + this.distanceAwayFromFace, this._tmpVector);
                 this.ui.position.addInPlace(this._tmpVector);
             }
             if (facing.direction.z) {
-                facing.rotatedDirection.scaleToRef((target.scaling.z / 2) + this.distanceAwayFromFace, this._tmpVector);
+                facing.rotatedDirection.scaleToRef(target.scaling.z / 2 + this.distanceAwayFromFace, this._tmpVector);
                 this.ui.position.addInPlace(this._tmpVector);
             }
 

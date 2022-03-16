@@ -8,8 +8,8 @@ import { BlurPostProcess } from "./blurPostProcess";
 import { Engine } from "../Engines/engine";
 import { Scene } from "../scene";
 import { Constants } from "../Engines/constants";
-import { RegisterClass } from '../Misc/typeStore';
-import { serialize } from '../Misc/decorators';
+import { RegisterClass } from "../Misc/typeStore";
+import { serialize } from "../Misc/decorators";
 
 /**
  * The DepthOfFieldBlurPostProcess applied a blur in a give direction.
@@ -48,8 +48,34 @@ export class DepthOfFieldBlurPostProcess extends BlurPostProcess {
      * @param textureType Type of textures used when performing the post process. (default: 0)
      * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
      */
-    constructor(name: string, scene: Scene, direction: Vector2, kernel: number, options: number | PostProcessOptions, camera: Nullable<Camera>, circleOfConfusion: PostProcess, imageToBlur: Nullable<PostProcess> = null, samplingMode: number = Texture.BILINEAR_SAMPLINGMODE, engine?: Engine, reusable?: boolean, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT, blockCompilation = false) {
-        super(name, direction, kernel, options, camera, samplingMode = Constants.TEXTURE_BILINEAR_SAMPLINGMODE, engine, reusable, textureType = Constants.TEXTURETYPE_UNSIGNED_INT, `#define DOF 1\r\n`, blockCompilation);
+    constructor(
+        name: string,
+        scene: Scene,
+        direction: Vector2,
+        kernel: number,
+        options: number | PostProcessOptions,
+        camera: Nullable<Camera>,
+        circleOfConfusion: PostProcess,
+        imageToBlur: Nullable<PostProcess> = null,
+        samplingMode: number = Texture.BILINEAR_SAMPLINGMODE,
+        engine?: Engine,
+        reusable?: boolean,
+        textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT,
+        blockCompilation = false
+    ) {
+        super(
+            name,
+            direction,
+            kernel,
+            options,
+            camera,
+            (samplingMode = Constants.TEXTURE_BILINEAR_SAMPLINGMODE),
+            engine,
+            reusable,
+            (textureType = Constants.TEXTURETYPE_UNSIGNED_INT),
+            `#define DOF 1\r\n`,
+            blockCompilation
+        );
 
         this.direction = direction;
         this.externalTextureSamplerBinding = !!imageToBlur;
@@ -60,7 +86,7 @@ export class DepthOfFieldBlurPostProcess extends BlurPostProcess {
             }
             effect.setTextureFromPostProcessOutput("circleOfConfusionSampler", circleOfConfusion);
             if (scene.activeCamera) {
-                effect.setFloat2('cameraMinMaxZ', scene.activeCamera.minZ, scene.activeCamera.maxZ);
+                effect.setFloat2("cameraMinMaxZ", scene.activeCamera.minZ, scene.activeCamera.maxZ);
             }
         });
     }

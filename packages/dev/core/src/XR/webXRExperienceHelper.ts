@@ -67,7 +67,7 @@ export class WebXRExperienceHelper implements IDisposable {
      * @returns a promise for the experience helper
      */
     public static CreateAsync(scene: Scene): Promise<WebXRExperienceHelper> {
-        var helper = new WebXRExperienceHelper(scene);
+        const helper = new WebXRExperienceHelper(scene);
         return helper.sessionManager
             .initializeAsync()
             .then(() => {
@@ -104,7 +104,12 @@ export class WebXRExperienceHelper implements IDisposable {
      * @param sessionCreationOptions optional XRSessionInit object to init the session with
      * @returns promise that resolves after xr mode has entered
      */
-    public async enterXRAsync(sessionMode: XRSessionMode, referenceSpaceType: XRReferenceSpaceType, renderTarget: WebXRRenderTarget = this.sessionManager.getWebXRRenderTarget(), sessionCreationOptions: XRSessionInit = {}): Promise<WebXRSessionManager> {
+    public async enterXRAsync(
+        sessionMode: XRSessionMode,
+        referenceSpaceType: XRReferenceSpaceType,
+        renderTarget: WebXRRenderTarget = this.sessionManager.getWebXRRenderTarget(),
+        sessionCreationOptions: XRSessionInit = {}
+    ): Promise<WebXRSessionManager> {
         if (!this._supported) {
             throw "WebXR not supported in this browser or environment";
         }
@@ -140,7 +145,7 @@ export class WebXRExperienceHelper implements IDisposable {
             // Cache pre xr scene settings
             this._originalSceneAutoClear = this.scene.autoClear;
             this._nonVRCamera = this.scene.activeCamera;
-            this._attachedToElement = !!(this._nonVRCamera?.inputs.attachedToElement);
+            this._attachedToElement = !!this._nonVRCamera?.inputs.attachedToElement;
             this._nonVRCamera?.detachControl();
 
             this.scene.activeCamera = this.camera;
@@ -170,7 +175,7 @@ export class WebXRExperienceHelper implements IDisposable {
                 this.scene.autoClear = this._originalSceneAutoClear;
                 this.scene.activeCamera = this._nonVRCamera;
                 if (this._attachedToElement && this._nonVRCamera) {
-                    this._nonVRCamera.attachControl(!!(this._nonVRCamera.inputs.noPreventDefault));
+                    this._nonVRCamera.attachControl(!!this._nonVRCamera.inputs.noPreventDefault);
                 }
                 if (sessionMode !== "immersive-ar" && this.camera.compensateOnFirstFrame) {
                     if ((<any>this._nonVRCamera).setPosition) {
@@ -226,7 +231,7 @@ export class WebXRExperienceHelper implements IDisposable {
             };
             const onStateChanged = () => {
                 if (this.state === WebXRState.IN_XR) {
-                    this._spectatorCamera = new UniversalCamera('webxr-spectator', Vector3.Zero(), this.scene);
+                    this._spectatorCamera = new UniversalCamera("webxr-spectator", Vector3.Zero(), this.scene);
                     this._spectatorCamera.rotationQuaternion = new Quaternion();
                     this.scene.activeCameras = [this.camera, this._spectatorCamera];
                     this.sessionManager.onXRFrameObservable.add(updateSpectatorCamera);

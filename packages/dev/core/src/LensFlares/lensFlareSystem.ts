@@ -13,10 +13,10 @@ import { Constants } from "../Engines/constants";
 
 import "../Shaders/lensFlare.fragment";
 import "../Shaders/lensFlare.vertex";
-import { _WarnImport } from '../Misc/devTools';
-import { DataBuffer } from '../Buffers/dataBuffer';
-import { Color3 } from '../Maths/math.color';
-import { Viewport } from '../Maths/math.viewport';
+import { _WarnImport } from "../Misc/devTools";
+import { DataBuffer } from "../Buffers/dataBuffer";
+import { Color3 } from "../Maths/math.color";
+import { Viewport } from "../Maths/math.viewport";
 
 /**
  * This represents a Lens Flare System or the shiny effect created by the light reflection on the  camera lenses.
@@ -47,7 +47,7 @@ export class LensFlareSystem {
     /**
      * Restricts the rendering of the effect to only the camera rendering this layer mask.
      */
-    public layerMask: number = 0x0FFFFFFF;
+    public layerMask: number = 0x0fffffff;
 
     /** Gets the scene */
     public get scene() {
@@ -68,10 +68,13 @@ export class LensFlareSystem {
     private _positionY: number;
     private _isEnabled = true;
 
-    /** @hidden */
+    /**
+     * @param _
+     * @hidden
+     */
     public static _SceneComponentInitialization: (scene: Scene) => void = (_) => {
         throw _WarnImport("LensFlareSystemSceneComponent");
-    }
+    };
 
     /**
      * Instantiates a lens flare system.
@@ -88,8 +91,8 @@ export class LensFlareSystem {
          */
         public name: string,
         emitter: any,
-        scene: Scene) {
-
+        scene: Scene
+    ) {
         this._scene = scene || EngineStore.LastCreatedScene;
         LensFlareSystem._SceneComponentInitialization(this._scene);
 
@@ -97,12 +100,13 @@ export class LensFlareSystem {
         this.id = name;
         scene.lensFlareSystems.push(this);
 
-        this.meshesSelectionPredicate = (m) => <boolean>(scene.activeCamera && m.material && m.isVisible && m.isEnabled() && m.isBlocker && ((m.layerMask & scene.activeCamera.layerMask) != 0));
+        this.meshesSelectionPredicate = (m) =>
+            <boolean>(scene.activeCamera && m.material && m.isVisible && m.isEnabled() && m.isBlocker && (m.layerMask & scene.activeCamera.layerMask) != 0);
 
-        var engine = scene.getEngine();
+        const engine = scene.getEngine();
 
         // VBO
-        var vertices = [];
+        const vertices = [];
         vertices.push(1, 1);
         vertices.push(-1, 1);
         vertices.push(-1, -1);
@@ -115,7 +119,7 @@ export class LensFlareSystem {
     }
 
     private _createIndexBuffer(): void {
-        var indices = [];
+        const indices = [];
         indices.push(0);
         indices.push(1);
         indices.push(2);
@@ -174,10 +178,11 @@ export class LensFlareSystem {
     }
 
     /**
+     * @param globalViewport
      * @hidden
      */
     public computeEffectivePosition(globalViewport: Viewport): boolean {
-        var position = this.getEmitterPosition();
+        let position = this.getEmitterPosition();
 
         position = Vector3.Project(position, Matrix.Identity(), this._scene.getTransformMatrix(), globalViewport);
 
@@ -198,11 +203,11 @@ export class LensFlareSystem {
         }
 
         const rhs = this._scene.useRightHandedSystem;
-        const okZ = position.z > 0 && !rhs || position.z < 0 && rhs;
+        const okZ = (position.z > 0 && !rhs) || (position.z < 0 && rhs);
 
         if (okZ) {
-            if ((this._positionX > globalViewport.x) && (this._positionX < globalViewport.x + globalViewport.width)) {
-                if ((this._positionY > globalViewport.y) && (this._positionY < globalViewport.y + globalViewport.height)) {
+            if (this._positionX > globalViewport.x && this._positionX < globalViewport.x + globalViewport.width) {
+                if (this._positionY > globalViewport.y && this._positionY < globalViewport.y + globalViewport.height) {
                     return true;
                 }
             }
@@ -218,13 +223,13 @@ export class LensFlareSystem {
             return false;
         }
 
-        var emitterPosition = this.getEmitterPosition();
-        var direction = emitterPosition.subtract(this._scene.activeCamera.globalPosition);
-        var distance = direction.length();
+        const emitterPosition = this.getEmitterPosition();
+        const direction = emitterPosition.subtract(this._scene.activeCamera.globalPosition);
+        const distance = direction.length();
         direction.normalize();
 
-        var ray = new Ray(this._scene.activeCamera.globalPosition, direction);
-        var pickInfo = this._scene.pickWithRay(ray, this.meshesSelectionPredicate, true);
+        const ray = new Ray(this._scene.activeCamera.globalPosition, direction);
+        const pickInfo = this._scene.pickWithRay(ray, this.meshesSelectionPredicate, true);
 
         return !pickInfo || !pickInfo.hit || pickInfo.distance > distance;
     }
@@ -237,9 +242,9 @@ export class LensFlareSystem {
             return false;
         }
 
-        var engine = this._scene.getEngine();
-        var viewport = this._scene.activeCamera.viewport;
-        var globalViewport = viewport.toGlobal(engine.getRenderWidth(true), engine.getRenderHeight(true));
+        const engine = this._scene.getEngine();
+        const viewport = this._scene.activeCamera.viewport;
+        const globalViewport = viewport.toGlobal(engine.getRenderWidth(true), engine.getRenderHeight(true));
 
         // Position
         if (!this.computeEffectivePosition(globalViewport)) {
@@ -252,8 +257,8 @@ export class LensFlareSystem {
         }
 
         // Intensity
-        var awayX;
-        var awayY;
+        let awayX;
+        let awayY;
 
         if (this._positionX < this.borderLimit + globalViewport.x) {
             awayX = this.borderLimit + globalViewport.x - this._positionX;
@@ -271,7 +276,7 @@ export class LensFlareSystem {
             awayY = 0;
         }
 
-        var away = (awayX > awayY) ? awayX : awayY;
+        let away = awayX > awayY ? awayX : awayY;
 
         away -= this.viewportBorder;
 
@@ -279,7 +284,7 @@ export class LensFlareSystem {
             away = this.borderLimit;
         }
 
-        var intensity = 1.0 - Scalar.Clamp(away / this.borderLimit, 0, 1);
+        let intensity = 1.0 - Scalar.Clamp(away / this.borderLimit, 0, 1);
         if (intensity < 0) {
             return false;
         }
@@ -298,20 +303,20 @@ export class LensFlareSystem {
         }
 
         // Position
-        var centerX = globalViewport.x + globalViewport.width / 2;
-        var centerY = globalViewport.y + globalViewport.height / 2;
-        var distX = centerX - this._positionX;
-        var distY = centerY - this._positionY;
+        const centerX = globalViewport.x + globalViewport.width / 2;
+        const centerY = globalViewport.y + globalViewport.height / 2;
+        const distX = centerX - this._positionX;
+        const distY = centerY - this._positionY;
 
         // Effects
         engine.setState(false);
         engine.setDepthBuffer(false);
 
         // Flares
-        for (var index = 0; index < this.lensFlares.length; index++) {
-            var flare = this.lensFlares[index];
+        for (let index = 0; index < this.lensFlares.length; index++) {
+            const flare = this.lensFlares[index];
 
-            if (!flare._drawWrapper.effect!.isReady() || flare.texture && !flare.texture.isReady()) {
+            if (!flare._drawWrapper.effect!.isReady() || (flare.texture && !flare.texture.isReady())) {
                 continue;
             }
 
@@ -320,19 +325,15 @@ export class LensFlareSystem {
 
             engine.setAlphaMode(flare.alphaMode);
 
-            var x = centerX - (distX * flare.position);
-            var y = centerY - (distY * flare.position);
+            const x = centerX - distX * flare.position;
+            const y = centerY - distY * flare.position;
 
-            var cw = flare.size;
-            var ch = flare.size * engine.getAspectRatio(this._scene.activeCamera, true);
-            var cx = 2 * (x / (globalViewport.width + globalViewport.x * 2)) - 1.0;
-            var cy = 1.0 - 2 * (y / (globalViewport.height + globalViewport.y * 2));
+            const cw = flare.size;
+            const ch = flare.size * engine.getAspectRatio(this._scene.activeCamera, true);
+            const cx = 2 * (x / (globalViewport.width + globalViewport.x * 2)) - 1.0;
+            const cy = 1.0 - 2 * (y / (globalViewport.height + globalViewport.y * 2));
 
-            var viewportMatrix = Matrix.FromValues(
-                cw / 2, 0, 0, 0,
-                0, ch / 2, 0, 0,
-                0, 0, 1, 0,
-                cx, cy, 0, 1);
+            const viewportMatrix = Matrix.FromValues(cw / 2, 0, 0, 0, 0, ch / 2, 0, 0, 0, 0, 1, 0, cx, cy, 0, 1);
 
             flare._drawWrapper.effect!.setMatrix("viewportMatrix", viewportMatrix);
 
@@ -366,7 +367,7 @@ export class LensFlareSystem {
      * Dispose and release the lens flare with its associated resources.
      */
     public dispose(): void {
-        var vertexBuffer = this._vertexBuffers[VertexBuffer.PositionKind];
+        const vertexBuffer = this._vertexBuffers[VertexBuffer.PositionKind];
         if (vertexBuffer) {
             vertexBuffer.dispose();
             this._vertexBuffers[VertexBuffer.PositionKind] = null;
@@ -382,7 +383,7 @@ export class LensFlareSystem {
         }
 
         // Remove from scene
-        var index = this._scene.lensFlareSystems.indexOf(this);
+        const index = this._scene.lensFlareSystems.indexOf(this);
         this._scene.lensFlareSystems.splice(index, 1);
     }
 
@@ -394,18 +395,24 @@ export class LensFlareSystem {
      * @returns the parsed system
      */
     public static Parse(parsedLensFlareSystem: any, scene: Scene, rootUrl: string): LensFlareSystem {
-        var emitter = scene.getLastEntryById(parsedLensFlareSystem.emitterId);
+        const emitter = scene.getLastEntryById(parsedLensFlareSystem.emitterId);
 
-        var name = parsedLensFlareSystem.name || "lensFlareSystem#" + parsedLensFlareSystem.emitterId;
+        const name = parsedLensFlareSystem.name || "lensFlareSystem#" + parsedLensFlareSystem.emitterId;
 
-        var lensFlareSystem = new LensFlareSystem(name, emitter, scene);
+        const lensFlareSystem = new LensFlareSystem(name, emitter, scene);
 
         lensFlareSystem.id = parsedLensFlareSystem.id || name;
         lensFlareSystem.borderLimit = parsedLensFlareSystem.borderLimit;
 
-        for (var index = 0; index < parsedLensFlareSystem.flares.length; index++) {
-            var parsedFlare = parsedLensFlareSystem.flares[index];
-            LensFlare.AddFlare(parsedFlare.size, parsedFlare.position, Color3.FromArray(parsedFlare.color), parsedFlare.textureName ? rootUrl + parsedFlare.textureName : "", lensFlareSystem);
+        for (let index = 0; index < parsedLensFlareSystem.flares.length; index++) {
+            const parsedFlare = parsedLensFlareSystem.flares[index];
+            LensFlare.AddFlare(
+                parsedFlare.size,
+                parsedFlare.position,
+                Color3.FromArray(parsedFlare.color),
+                parsedFlare.textureName ? rootUrl + parsedFlare.textureName : "",
+                lensFlareSystem
+            );
         }
 
         return lensFlareSystem;
@@ -416,7 +423,7 @@ export class LensFlareSystem {
      * @returns the serialized JSON
      */
     public serialize(): any {
-        var serializationObject: any = {};
+        const serializationObject: any = {};
 
         serializationObject.id = this.id;
         serializationObject.name = this.name;
@@ -425,14 +432,14 @@ export class LensFlareSystem {
         serializationObject.borderLimit = this.borderLimit;
 
         serializationObject.flares = [];
-        for (var index = 0; index < this.lensFlares.length; index++) {
-            var flare = this.lensFlares[index];
+        for (let index = 0; index < this.lensFlares.length; index++) {
+            const flare = this.lensFlares[index];
 
             serializationObject.flares.push({
                 size: flare.size,
                 position: flare.position,
                 color: flare.color.asArray(),
-                textureName: Tools.GetFilename(flare.texture ? flare.texture.name : "")
+                textureName: Tools.GetFilename(flare.texture ? flare.texture.name : ""),
             });
         }
 

@@ -21,8 +21,8 @@ export interface IWebXRHitTestOptions extends IWebXRLegacyHitTestOptions {
      */
     enableTransientHitTest?: boolean;
     /**
-    * Override the default transient hit test profile (generic-touchscreen).
-    */
+     * Override the default transient hit test profile (generic-touchscreen).
+     */
     transientHitTestProfile?: string;
     /**
      * Offset ray for the permanent hit test
@@ -176,15 +176,13 @@ export class WebXRHitTest extends WebXRAbstractFeature implements IWebXRHitTestF
         }
         if (this.options.enableTransientHitTest) {
             const offsetRay = new XRRay(this.options.transientOffsetRay || {});
-            this._xrSessionManager.session
-                .requestHitTestSourceForTransientInput!({
-                    profile: this.options.transientHitTestProfile || "generic-touchscreen",
-                    offsetRay,
-                    entityTypes: this.options.entityTypes,
-                })
-                .then((hitSource) => {
-                    this._transientXrHitTestSource = hitSource;
-                });
+            this._xrSessionManager.session.requestHitTestSourceForTransientInput!({
+                profile: this.options.transientHitTestProfile || "generic-touchscreen",
+                offsetRay,
+                entityTypes: this.options.entityTypes,
+            }).then((hitSource) => {
+                this._transientXrHitTestSource = hitSource;
+            });
         }
 
         return true;
@@ -231,7 +229,7 @@ export class WebXRHitTest extends WebXRAbstractFeature implements IWebXRHitTestF
             this._processWebXRHitTestResult(results);
         }
         if (this._transientXrHitTestSource) {
-            let hitTestResultsPerInputSource = frame.getHitTestResultsForTransientInput(this._transientXrHitTestSource);
+            const hitTestResultsPerInputSource = frame.getHitTestResultsForTransientInput(this._transientXrHitTestSource);
 
             hitTestResultsPerInputSource.forEach((resultsPerInputSource) => {
                 this._processWebXRHitTestResult(resultsPerInputSource.results, resultsPerInputSource.inputSource);

@@ -9,5 +9,5 @@ export enum NodeMaterialBlockTargets {
     /** Neutral */
     Neutral = 4,
     /** Vertex and Fragment */
-    VertexAndFragment = Vertex | Fragment
+    VertexAndFragment = Vertex | Fragment,
 }

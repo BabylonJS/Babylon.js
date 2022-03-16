@@ -27,15 +27,15 @@ type WebXRDomOverlayType =
     /**
      * Covers the entire physical screen for a screen-based device, for example handheld AR
      */
-    'screen' |
+    | "screen"
     /**
      * Appears as a floating rectangle in space
      */
-    'floating' |
+    | "floating"
     /**
      * Follows the user’s head movement consistently, appearing similar to a HUD
      */
-    'head-locked';
+    | "head-locked";
 
 /**
  * DOM Overlay Feature
@@ -43,7 +43,6 @@ type WebXRDomOverlayType =
  * @since 5.0.0
  */
 export class WebXRDomOverlay extends WebXRAbstractFeature {
-
     /**
      * Type of overlay - non-null when available
      */
@@ -71,10 +70,10 @@ export class WebXRDomOverlay extends WebXRAbstractFeature {
     public static readonly Version = 1;
 
     /**
-    * Creates a new instance of the dom-overlay feature
-    * @param _xrSessionManager an instance of WebXRSessionManager
-    * @param options options to use when constructing this feature
-    */
+     * Creates a new instance of the dom-overlay feature
+     * @param _xrSessionManager an instance of WebXRSessionManager
+     * @param options options to use when constructing this feature
+     */
     constructor(
         _xrSessionManager: WebXRSessionManager,
         /**
@@ -111,7 +110,7 @@ export class WebXRDomOverlay extends WebXRAbstractFeature {
             this._beforeXRSelectListener = (ev) => {
                 ev.preventDefault();
             };
-            this._element.addEventListener('beforexrselect', this._beforeXRSelectListener);
+            this._element.addEventListener("beforexrselect", this._beforeXRSelectListener);
         }
 
         return true;
@@ -130,11 +129,13 @@ export class WebXRDomOverlay extends WebXRAbstractFeature {
     public dispose(): void {
         super.dispose();
         if (this._element !== null && this._beforeXRSelectListener) {
-            this._element.removeEventListener('beforexrselect', this._beforeXRSelectListener);
+            this._element.removeEventListener("beforexrselect", this._beforeXRSelectListener);
         }
     }
 
-    protected _onXRFrame(_xrFrame: XRFrame): void { /* empty */ }
+    protected _onXRFrame(_xrFrame: XRFrame): void {
+        /* empty */
+    }
 
     /**
      * Extends the session init object if needed
@@ -144,7 +145,7 @@ export class WebXRDomOverlay extends WebXRAbstractFeature {
         if (this.options.element === undefined) {
             Tools.Warn('"element" option must be provided to attach xr-dom-overlay feature.');
             return {};
-        } else if (typeof this.options.element === 'string') {
+        } else if (typeof this.options.element === "string") {
             const selectedElement = document.querySelector(this.options.element);
             if (selectedElement === null) {
                 Tools.Warn(`element not found '${this.options.element}' (not requesting xr-dom-overlay)`);
@@ -157,8 +158,8 @@ export class WebXRDomOverlay extends WebXRAbstractFeature {
 
         return {
             domOverlay: {
-                root: this._element
-            }
+                root: this._element,
+            },
         };
     }
 }

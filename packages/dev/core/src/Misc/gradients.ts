@@ -1,4 +1,4 @@
-import { Color3, Color4 } from '../Maths/math.color';
+import { Color3, Color4 } from "../Maths/math.color";
 
 /** Interface used by value gradients (color, factor, ...) */
 export interface IValueGradient {
@@ -28,8 +28,8 @@ export class ColorGradient implements IValueGradient {
         /**
          * Gets or sets second associated color
          */
-        public color2?: Color4) {
-    }
+        public color2?: Color4
+    ) {}
 
     /**
      * Will get a color picked randomly between color1 and color2.
@@ -61,8 +61,8 @@ export class Color3Gradient implements IValueGradient {
         /**
          * Gets or sets the associated color
          */
-        public color: Color3) {
-    }
+        public color: Color3
+    ) {}
 }
 
 /** Class used to store factor gradient */
@@ -85,8 +85,8 @@ export class FactorGradient implements IValueGradient {
         /**
          * Gets or sets second associated factor
          */
-        public factor2?: number) {
-    }
+        public factor2?: number
+    ) {}
 
     /**
      * Will get a number picked randomly between factor1 and factor2.
@@ -98,7 +98,7 @@ export class FactorGradient implements IValueGradient {
             return this.factor1;
         }
 
-        return this.factor1 + ((this.factor2 - this.factor1) * Math.random());
+        return this.factor1 + (this.factor2 - this.factor1) * Math.random();
     }
 }
 
@@ -113,19 +113,18 @@ export class GradientHelper {
      * @param updateFunc defines the callback function used to get the final value from the selected gradients
      */
     public static GetCurrentGradient(ratio: number, gradients: IValueGradient[], updateFunc: (current: IValueGradient, next: IValueGradient, scale: number) => void) {
-
         // Use last index if over
         if (gradients[0].gradient > ratio) {
             updateFunc(gradients[0], gradients[0], 1.0);
             return;
         }
 
-        for (var gradientIndex = 0; gradientIndex < gradients.length - 1; gradientIndex++) {
-            let currentGradient = gradients[gradientIndex];
-            let nextGradient = gradients[gradientIndex + 1];
+        for (let gradientIndex = 0; gradientIndex < gradients.length - 1; gradientIndex++) {
+            const currentGradient = gradients[gradientIndex];
+            const nextGradient = gradients[gradientIndex + 1];
 
             if (ratio >= currentGradient.gradient && ratio <= nextGradient.gradient) {
-                let scale = (ratio - currentGradient.gradient) / (nextGradient.gradient - currentGradient.gradient);
+                const scale = (ratio - currentGradient.gradient) / (nextGradient.gradient - currentGradient.gradient);
                 updateFunc(currentGradient, nextGradient, scale);
                 return;
             }

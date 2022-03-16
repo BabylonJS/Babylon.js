@@ -33,8 +33,8 @@ export class ClipboardInfo {
         /**
          * Defines the related dom event
          */
-        public event: ClipboardEvent) {
-    }
+        public event: ClipboardEvent
+    ) {}
 
     /**
      *  Get the clipboard event's type from the keycode.
@@ -42,13 +42,17 @@ export class ClipboardInfo {
      * @return {number}
      */
     public static GetTypeFromCharacter(keyCode: number): number {
-        let charCode = keyCode;
+        const charCode = keyCode;
         //TODO: add codes for extended ASCII
         switch (charCode) {
-            case 67: return ClipboardEventTypes.COPY;
-            case 86: return ClipboardEventTypes.PASTE;
-            case 88: return ClipboardEventTypes.CUT;
-            default: return -1;
+            case 67:
+                return ClipboardEventTypes.COPY;
+            case 86:
+                return ClipboardEventTypes.PASTE;
+            case 88:
+                return ClipboardEventTypes.CUT;
+            default:
+                return -1;
         }
     }
 }

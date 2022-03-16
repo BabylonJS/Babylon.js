@@ -1,4 +1,3 @@
-
 import { Camera } from "./Cameras/camera";
 import { Nullable } from "./types";
 import { Material } from "./Materials/material";
@@ -15,9 +14,9 @@ import { Geometry } from "./Meshes/geometry";
 /**
  * @hidden
  */
-declare type TypeofScene = typeof import('./scene').Scene;
+declare type TypeofScene = typeof import("./scene").Scene;
 
-declare module './scene' {
+declare module "./scene" {
     interface Scene {
         /**
          * sets the active camera of the scene using its Id
@@ -70,18 +69,18 @@ declare module './scene' {
          */
         getBoneByID(id: string): Nullable<Bone>;
         /**
-        * Gets a light node using its Id
-        * @param id defines the light's Id
-        * @return the light or null if none found.
-        * @deprecated Please use getLightById instead
-        */
+         * Gets a light node using its Id
+         * @param id defines the light's Id
+         * @return the light or null if none found.
+         * @deprecated Please use getLightById instead
+         */
         getLightByID(id: string): Nullable<Light>;
         /**
-        * Gets a light node using its scene-generated unique Id
-        * @param uniqueId defines the light's unique Id
-        * @return the light or null if none found.
-        * @deprecated Please use getLightByUniqueId instead
-        */
+         * Gets a light node using its scene-generated unique Id
+         * @param uniqueId defines the light's unique Id
+         * @return the light or null if none found.
+         * @deprecated Please use getLightByUniqueId instead
+         */
         getLightByUniqueID(uniqueId: number): Nullable<Light>;
         /**
          * Gets a particle system by Id
@@ -170,7 +169,10 @@ declare module './scene' {
     }
 }
 
-/** @hidden */
+/**
+ * @param Scene
+ * @hidden
+ */
 export const _injectLTSScene = (Scene: TypeofScene) => {
     Scene.prototype.setActiveCameraByID = function (id: string): Nullable<Camera> {
         return this.setActiveCameraById(id);

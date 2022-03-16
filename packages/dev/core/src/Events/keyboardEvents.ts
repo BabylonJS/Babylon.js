@@ -32,8 +32,8 @@ export class KeyboardInfo {
         /**
          * Defines the related dom event
          */
-        public event: IKeyboardEvent) {
-    }
+        public event: IKeyboardEvent
+    ) {}
 }
 
 /**
@@ -50,8 +50,12 @@ export class KeyboardInfoPre extends KeyboardInfo {
      * Defines whether the engine should skip the next onKeyboardObservable associated to this pre.
      * @deprecated use skipOnKeyboardObservable property instead
      */
-    public get skipOnPointerObservable() { return this.skipOnKeyboardObservable; }
-    public set skipOnPointerObservable(value) { this.skipOnKeyboardObservable = value; }
+    public get skipOnPointerObservable() {
+        return this.skipOnKeyboardObservable;
+    }
+    public set skipOnPointerObservable(value) {
+        this.skipOnKeyboardObservable = value;
+    }
 
     /**
      * Instantiates a new keyboard pre info.
@@ -67,7 +71,8 @@ export class KeyboardInfoPre extends KeyboardInfo {
         /**
          * Defines the related dom event
          */
-        public event: IKeyboardEvent) {
+        public event: IKeyboardEvent
+    ) {
         super(type, event);
         this.skipOnKeyboardObservable = false;
     }

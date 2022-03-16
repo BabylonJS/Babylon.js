@@ -13,8 +13,8 @@ let scene: Scene;
 
 // avoid await on main level
 const createSceneResult = createScene();
-if(createSceneResult instanceof Promise) {
-    createSceneResult.then(function(result) {
+if (createSceneResult instanceof Promise) {
+    createSceneResult.then(function (result) {
         scene = result;
     });
 } else {

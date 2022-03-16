@@ -1,12 +1,12 @@
-import { NodeMaterialBlock } from '../../nodeMaterialBlock';
-import { NodeMaterialBlockConnectionPointTypes } from '../../Enums/nodeMaterialBlockConnectionPointTypes';
-import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
-import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPoint';
-import { NodeMaterialBlockTargets } from '../../Enums/nodeMaterialBlockTargets';
-import { RegisterClass } from '../../../../Misc/typeStore';
-import { NodeMaterial } from '../../nodeMaterial';
-import { InputBlock } from '../Input/inputBlock';
-import { Vector2 } from '../../../../Maths/math.vector';
+import { NodeMaterialBlock } from "../../nodeMaterialBlock";
+import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
+import { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
+import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
+import { RegisterClass } from "../../../../Misc/typeStore";
+import { NodeMaterial } from "../../nodeMaterial";
+import { InputBlock } from "../Input/inputBlock";
+import { Vector2 } from "../../../../Maths/math.vector";
 
 /**
  * Block used to generate a twirl
@@ -46,7 +46,7 @@ export class TwirlBlock extends NodeMaterialBlock {
     /**
      * Gets the strength component
      */
-     public get strength(): NodeMaterialConnectionPoint {
+    public get strength(): NodeMaterialConnectionPoint {
         return this._inputs[1];
     }
 
@@ -60,7 +60,7 @@ export class TwirlBlock extends NodeMaterialBlock {
     /**
      * Gets the offset component
      */
-     public get offset(): NodeMaterialConnectionPoint {
+    public get offset(): NodeMaterialConnectionPoint {
         return this._inputs[3];
     }
 
@@ -81,27 +81,27 @@ export class TwirlBlock extends NodeMaterialBlock {
     /**
      * Gets the y output component
      */
-     public get y(): NodeMaterialConnectionPoint {
+    public get y(): NodeMaterialConnectionPoint {
         return this._outputs[2];
     }
 
     public autoConfigure(material: NodeMaterial) {
         if (!this.center.isConnected) {
-            let centerInput = new InputBlock("center");
+            const centerInput = new InputBlock("center");
             centerInput.value = new Vector2(0.5, 0.5);
 
             centerInput.output.connectTo(this.center);
         }
 
         if (!this.strength.isConnected) {
-            let strengthInput = new InputBlock("strength");
+            const strengthInput = new InputBlock("strength");
             strengthInput.value = 1.0;
 
             strengthInput.output.connectTo(this.strength);
         }
 
         if (!this.offset.isConnected) {
-            let offsetInput = new InputBlock("offset");
+            const offsetInput = new InputBlock("offset");
             offsetInput.value = new Vector2(0, 0);
 
             offsetInput.output.connectTo(this.offset);

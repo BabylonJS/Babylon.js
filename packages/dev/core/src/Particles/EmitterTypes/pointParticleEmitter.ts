@@ -10,7 +10,6 @@ import { UniformBuffer } from "../../Materials/uniformBuffer";
  * It emits the particles randomly between 2 given directions.
  */
 export class PointParticleEmitter implements IParticleEmitterType {
-
     /**
      * Random direction of each particle after it has been emitted, between direction1 and direction2 vectors.
      */
@@ -23,9 +22,7 @@ export class PointParticleEmitter implements IParticleEmitterType {
     /**
      * Creates a new instance PointParticleEmitter
      */
-    constructor() {
-
-    }
+    constructor() {}
 
     /**
      * Called by the particle System when the direction is computed for the created particle.
@@ -35,9 +32,9 @@ export class PointParticleEmitter implements IParticleEmitterType {
      * @param isLocal defines if the direction should be set in local space
      */
     public startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle, isLocal: boolean): void {
-        var randX = Scalar.RandomRange(this.direction1.x, this.direction2.x);
-        var randY = Scalar.RandomRange(this.direction1.y, this.direction2.y);
-        var randZ = Scalar.RandomRange(this.direction1.z, this.direction2.z);
+        const randX = Scalar.RandomRange(this.direction1.x, this.direction2.x);
+        const randY = Scalar.RandomRange(this.direction1.y, this.direction2.y);
+        const randZ = Scalar.RandomRange(this.direction1.z, this.direction2.z);
 
         if (isLocal) {
             directionToUpdate.copyFromFloats(randX, randY, randZ);
@@ -67,7 +64,7 @@ export class PointParticleEmitter implements IParticleEmitterType {
      * @returns the new emitter
      */
     public clone(): PointParticleEmitter {
-        let newOne = new PointParticleEmitter();
+        const newOne = new PointParticleEmitter();
 
         DeepCopier.DeepCopy(this, newOne);
 
@@ -113,7 +110,7 @@ export class PointParticleEmitter implements IParticleEmitterType {
      * @returns the JSON object
      */
     public serialize(): any {
-        var serializationObject: any = {};
+        const serializationObject: any = {};
 
         serializationObject.type = this.getClassName();
         serializationObject.direction1 = this.direction1.asArray();

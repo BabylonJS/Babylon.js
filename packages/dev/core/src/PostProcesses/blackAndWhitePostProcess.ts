@@ -4,9 +4,9 @@ import { Effect } from "../Materials/effect";
 import { Engine } from "../Engines/engine";
 
 import "../Shaders/blackAndWhite.fragment";
-import { RegisterClass } from '../Misc/typeStore';
-import { serialize, SerializationHelper } from '../Misc/decorators';
-import { Nullable } from '../types';
+import { RegisterClass } from "../Misc/typeStore";
+import { serialize, SerializationHelper } from "../Misc/decorators";
+import { Nullable } from "../types";
 
 declare type Scene = import("../scene").Scene;
 
@@ -46,14 +46,29 @@ export class BlackAndWhitePostProcess extends PostProcess {
         });
     }
 
-    /** @hidden */
+    /**
+     * @param parsedPostProcess
+     * @param targetCamera
+     * @param scene
+     * @param rootUrl
+     * @hidden
+     */
     public static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string): Nullable<BlackAndWhitePostProcess> {
-        return SerializationHelper.Parse(() => {
-            return new BlackAndWhitePostProcess(
-                parsedPostProcess.name, parsedPostProcess.options,
-                targetCamera, parsedPostProcess.renderTargetSamplingMode,
-                scene.getEngine(), parsedPostProcess.reusable);
-        }, parsedPostProcess, scene, rootUrl);
+        return SerializationHelper.Parse(
+            () => {
+                return new BlackAndWhitePostProcess(
+                    parsedPostProcess.name,
+                    parsedPostProcess.options,
+                    targetCamera,
+                    parsedPostProcess.renderTargetSamplingMode,
+                    scene.getEngine(),
+                    parsedPostProcess.reusable
+                );
+            },
+            parsedPostProcess,
+            scene,
+            rootUrl
+        );
     }
 }
 

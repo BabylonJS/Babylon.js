@@ -4,7 +4,7 @@ import { SubMesh } from "../../Meshes/subMesh";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Ray } from "../../Culling/ray";
 import { OctreeBlock } from "./octreeBlock";
-import { Plane } from '../../Maths/math.plane';
+import { Plane } from "../../Maths/math.plane";
 
 /**
  * Octrees are a really powerful data structure that can quickly select entities based on space coordinates.
@@ -31,9 +31,8 @@ export class Octree<T> {
      * @param maxBlockCapacity defines the maximum number of meshes you want on your octree's leaves (default: 64)
      * @param maxDepth defines the maximum depth (sub-levels) for your octree. Default value is 2, which means 8 8 8 = 512 blocks :) (This parameter takes precedence over capacity.)
      */
-    constructor(creationFunc: (
-        entry: T,
-        block: OctreeBlock<T>) => void,
+    constructor(
+        creationFunc: (entry: T, block: OctreeBlock<T>) => void,
         maxBlockCapacity?: number,
         /** Defines the maximum depth (sub-levels) for your octree. Default value is 2, which means 8 8 8 = 512 blocks :) (This parameter takes precedence over capacity.) */
         public maxDepth = 2
@@ -59,8 +58,8 @@ export class Octree<T> {
      * @param entry Mesh to add to the octree
      */
     public addMesh(entry: T): void {
-        for (var index = 0; index < this.blocks.length; index++) {
-            var block = this.blocks[index];
+        for (let index = 0; index < this.blocks.length; index++) {
+            const block = this.blocks[index];
             block.addEntry(entry);
         }
     }
@@ -70,8 +69,8 @@ export class Octree<T> {
      * @param entry defines the element to remove
      */
     public removeMesh(entry: T): void {
-        for (var index = 0; index < this.blocks.length; index++) {
-            var block = this.blocks[index];
+        for (let index = 0; index < this.blocks.length; index++) {
+            const block = this.blocks[index];
             block.removeEntry(entry);
         }
     }
@@ -85,8 +84,8 @@ export class Octree<T> {
     public select(frustumPlanes: Plane[], allowDuplicate?: boolean): SmartArray<T> {
         this._selectionContent.reset();
 
-        for (var index = 0; index < this.blocks.length; index++) {
-            var block = this.blocks[index];
+        for (let index = 0; index < this.blocks.length; index++) {
+            const block = this.blocks[index];
             block.select(frustumPlanes, this._selectionContent, allowDuplicate);
         }
 
@@ -109,8 +108,8 @@ export class Octree<T> {
     public intersects(sphereCenter: Vector3, sphereRadius: number, allowDuplicate?: boolean): SmartArray<T> {
         this._selectionContent.reset();
 
-        for (var index = 0; index < this.blocks.length; index++) {
-            var block = this.blocks[index];
+        for (let index = 0; index < this.blocks.length; index++) {
+            const block = this.blocks[index];
             block.intersects(sphereCenter, sphereRadius, this._selectionContent, allowDuplicate);
         }
 
@@ -124,15 +123,15 @@ export class Octree<T> {
     }
 
     /**
-    * Test if the octree intersect with the given ray and if yes, then add its content to resulting array
+     * Test if the octree intersect with the given ray and if yes, then add its content to resulting array
      * @param ray defines the ray to test with
      * @returns array of intersected objects
      */
     public intersectsRay(ray: Ray): SmartArray<T> {
         this._selectionContent.reset();
 
-        for (var index = 0; index < this.blocks.length; index++) {
-            var block = this.blocks[index];
+        for (let index = 0; index < this.blocks.length; index++) {
+            const block = this.blocks[index];
             block.intersectsRay(ray, this._selectionContent);
         }
 
@@ -143,21 +142,25 @@ export class Octree<T> {
 
     /**
      * Adds a mesh into the octree block if it intersects the block
+     * @param entry
+     * @param block
      */
     public static CreationFuncForMeshes = (entry: AbstractMesh, block: OctreeBlock<AbstractMesh>): void => {
-        let boundingInfo = entry.getBoundingInfo();
+        const boundingInfo = entry.getBoundingInfo();
         if (!entry.isBlocked && boundingInfo.boundingBox.intersectsMinMax(block.minPoint, block.maxPoint)) {
             block.entries.push(entry);
         }
-    }
+    };
 
     /**
      * Adds a submesh into the octree block if it intersects the block
+     * @param entry
+     * @param block
      */
     public static CreationFuncForSubMeshes = (entry: SubMesh, block: OctreeBlock<SubMesh>): void => {
-        let boundingInfo = entry.getBoundingInfo();
+        const boundingInfo = entry.getBoundingInfo();
         if (boundingInfo.boundingBox.intersectsMinMax(block.minPoint, block.maxPoint)) {
             block.entries.push(entry);
         }
-    }
+    };
 }

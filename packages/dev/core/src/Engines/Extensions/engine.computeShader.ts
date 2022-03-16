@@ -7,8 +7,8 @@ import { Nullable } from "../../types";
 /**
  * Type used to locate a resource in a compute shader.
  * TODO: remove this when browsers support reflection for wgsl shaders
-*/
-export type ComputeBindingLocation = { group: number, binding: number };
+ */
+export type ComputeBindingLocation = { group: number; binding: number };
 
 /**
  * Type used to lookup a resource and retrieve its binding location
@@ -27,7 +27,7 @@ export enum ComputeBindingType {
 }
 
 /** @hidden */
-export type ComputeBindingList = { [key: string]: { type: ComputeBindingType, object: any, indexInGroupEntries?: number } };
+export type ComputeBindingList = { [key: string]: { type: ComputeBindingType; object: any; indexInGroupEntries?: number } };
 
 declare module "../../Engines/thinEngine" {
     export interface ThinEngine {
@@ -61,7 +61,15 @@ declare module "../../Engines/thinEngine" {
          * @param z The number of workgroups to execute on the Z dimension
          * @param bindingsMapping list of bindings mapping (key is property name, value is binding location)
          */
-        computeDispatch(effect: ComputeEffect, context: IComputeContext, bindings: ComputeBindingList, x: number, y?: number, z?: number, bindingsMapping?: ComputeBindingMapping): void;
+        computeDispatch(
+            effect: ComputeEffect,
+            context: IComputeContext,
+            bindings: ComputeBindingList,
+            x: number,
+            y?: number,
+            z?: number,
+            bindingsMapping?: ComputeBindingMapping
+        ): void;
 
         /**
          * Gets a boolean indicating if all created compute effects are ready
@@ -75,7 +83,13 @@ declare module "../../Engines/thinEngine" {
         releaseComputeEffects(): void;
 
         /** @hidden */
-        _prepareComputePipelineContext(pipelineContext: IComputePipelineContext, computeSourceCode: string, rawComputeSourceCode: string, defines: Nullable<string>, entryPoint: string): void;
+        _prepareComputePipelineContext(
+            pipelineContext: IComputePipelineContext,
+            computeSourceCode: string,
+            rawComputeSourceCode: string,
+            defines: Nullable<string>,
+            entryPoint: string
+        ): void;
 
         /** @hidden */
         _rebuildComputeEffects(): void;
@@ -103,7 +117,15 @@ ThinEngine.prototype.createComputeContext = function (): IComputeContext | undef
     return undefined;
 };
 
-ThinEngine.prototype.computeDispatch = function (effect: ComputeEffect, context: IComputeContext, bindings: ComputeBindingList, x: number, y?: number, z?: number, bindingsMapping?: ComputeBindingMapping): void {
+ThinEngine.prototype.computeDispatch = function (
+    effect: ComputeEffect,
+    context: IComputeContext,
+    bindings: ComputeBindingList,
+    x: number,
+    y?: number,
+    z?: number,
+    bindingsMapping?: ComputeBindingMapping
+): void {
     throw new Error("computeDispatch: This engine does not support compute shaders!");
 };
 
@@ -111,21 +133,22 @@ ThinEngine.prototype.areAllComputeEffectsReady = function (): boolean {
     return true;
 };
 
-ThinEngine.prototype.releaseComputeEffects = function (): void {
-};
+ThinEngine.prototype.releaseComputeEffects = function (): void {};
 
-ThinEngine.prototype._prepareComputePipelineContext = function (pipelineContext: IComputePipelineContext, computeSourceCode: string, rawComputeSourceCode: string, defines: Nullable<string>, entryPoint: string): void {
-};
+ThinEngine.prototype._prepareComputePipelineContext = function (
+    pipelineContext: IComputePipelineContext,
+    computeSourceCode: string,
+    rawComputeSourceCode: string,
+    defines: Nullable<string>,
+    entryPoint: string
+): void {};
 
-ThinEngine.prototype._rebuildComputeEffects = function (): void {
-};
+ThinEngine.prototype._rebuildComputeEffects = function (): void {};
 
 ThinEngine.prototype._executeWhenComputeStateIsCompiled = function (pipelineContext: IComputePipelineContext, action: () => void): void {
     action();
 };
 
-ThinEngine.prototype._releaseComputeEffect = function (effect: ComputeEffect): void {
-};
+ThinEngine.prototype._releaseComputeEffect = function (effect: ComputeEffect): void {};
 
-ThinEngine.prototype._deleteComputePipelineContext = function (pipelineContext: IComputePipelineContext): void {
-};
+ThinEngine.prototype._deleteComputePipelineContext = function (pipelineContext: IComputePipelineContext): void {};

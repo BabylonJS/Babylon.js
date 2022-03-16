@@ -60,8 +60,8 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
     private _hitPlane: Nullable<Plane>;
 
     protected computeDeltaFromMouseWheelLegacyEvent(mouseWheelDelta: number, radius: number) {
-        var delta = 0;
-        var wheelDelta = mouseWheelDelta * 0.01 * this.wheelDeltaPercentage * radius;
+        let delta = 0;
+        const wheelDelta = mouseWheelDelta * 0.01 * this.wheelDeltaPercentage * radius;
         if (mouseWheelDelta > 0) {
             delta = wheelDelta / (1.0 + this.wheelDeltaPercentage);
         } else {
@@ -82,10 +82,10 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
             if (p.type !== PointerEventTypes.POINTERWHEEL) {
                 return;
             }
-            var event = <IWheelEvent>p.event;
-            var delta = 0;
+            const event = <IWheelEvent>p.event;
+            let delta = 0;
 
-            let mouseWheelLegacyEvent = event as any;
+            const mouseWheelLegacyEvent = event as any;
             let wheelDelta = 0;
 
             const platformScale = event.deltaMode === EventConstants.DOM_DELTA_LINE ? ffMultiplier : 1; // If this happens to be set to DOM_DELTA_LINE, adjust accordingly
@@ -106,9 +106,9 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
                     // If zooming in, estimate the target radius and use that to compute the delta for inertia
                     // this will stop multiple scroll events zooming in from adding too much inertia
                     if (delta > 0) {
-                        var estimatedTargetRadius = this.camera.radius;
-                        var targetInertia = this.camera.inertialRadiusOffset + delta;
-                        for (var i = 0; i < 20 && Math.abs(targetInertia) > 0.001; i++) {
+                        let estimatedTargetRadius = this.camera.radius;
+                        let targetInertia = this.camera.inertialRadiusOffset + delta;
+                        for (let i = 0; i < 20 && Math.abs(targetInertia) > 0.001; i++) {
                             estimatedTargetRadius -= targetInertia;
                             targetInertia *= this.camera.inertia;
                         }
@@ -168,8 +168,8 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
             return;
         }
 
-        var camera = this.camera;
-        var motion = 0.0 + camera.inertialAlphaOffset + camera.inertialBetaOffset + camera.inertialRadiusOffset;
+        const camera = this.camera;
+        const motion = 0.0 + camera.inertialAlphaOffset + camera.inertialBetaOffset + camera.inertialRadiusOffset;
         if (motion) {
             // if zooming is still happening as a result of inertia, then we also need to update
             // the hit plane.
@@ -201,20 +201,20 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
     }
 
     private _updateHitPlane() {
-        var camera = this.camera;
-        var direction = camera.target.subtract(camera.position);
+        const camera = this.camera;
+        const direction = camera.target.subtract(camera.position);
         this._hitPlane = Plane.FromPositionAndNormal(camera.target, direction);
     }
 
     // Get position on the hit plane
     private _getPosition(): Vector3 {
-        var camera = this.camera;
-        var scene = camera.getScene();
+        const camera = this.camera;
+        const scene = camera.getScene();
 
         // since the _hitPlane is always updated to be orthogonal to the camera position vector
         // we don't have to worry about this ray shooting off to infinity. This ray creates
         // a vector defining where we want to zoom to.
-        var ray = scene.createPickingRay(scene.pointerX, scene.pointerY, Matrix.Identity(), camera, false);
+        const ray = scene.createPickingRay(scene.pointerX, scene.pointerY, Matrix.Identity(), camera, false);
         let distance = 0;
         if (this._hitPlane) {
             distance = ray.intersectsPlane(this._hitPlane) ?? 0;
@@ -227,16 +227,16 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
     private _inertialPanning: Vector3 = Vector3.Zero();
 
     private _zoomToMouse(delta: number) {
-        var camera = this.camera;
+        const camera = this.camera;
         const inertiaComp = 1 - camera.inertia;
         if (camera.lowerRadiusLimit) {
-            var lowerLimit = camera.lowerRadiusLimit ?? 0;
+            const lowerLimit = camera.lowerRadiusLimit ?? 0;
             if (camera.radius - (camera.inertialRadiusOffset + delta) / inertiaComp < lowerLimit) {
                 delta = (camera.radius - lowerLimit) * inertiaComp - camera.inertialRadiusOffset;
             }
         }
         if (camera.upperRadiusLimit) {
-            var upperLimit = camera.upperRadiusLimit ?? 0;
+            const upperLimit = camera.upperRadiusLimit ?? 0;
             if (camera.radius - (camera.inertialRadiusOffset + delta) / inertiaComp > upperLimit) {
                 delta = (camera.radius - upperLimit) * inertiaComp - camera.inertialRadiusOffset;
             }

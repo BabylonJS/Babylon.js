@@ -22,14 +22,41 @@ import { Path3D } from "../../Maths/math.path";
  * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
  * @param name defines the name of the mesh
  * @param options defines the options used to create the mesh
+ * @param options.shape
  * @param scene defines the hosting scene
+ * @param options.path
+ * @param options.scale
+ * @param options.rotation
+ * @param options.closeShape
+ * @param options.closePath
+ * @param options.cap
+ * @param options.updatable
+ * @param options.sideOrientation
+ * @param options.frontUVs
+ * @param options.backUVs
+ * @param options.instance
+ * @param options.invertUV
  * @returns the extruded shape mesh
  * @see https://doc.babylonjs.com/how_to/parametric_shapes
  * @see https://doc.babylonjs.com/how_to/parametric_shapes#extruded-shapes
  */
 export function ExtrudeShape(
     name: string,
-    options: { shape: Vector3[]; path: Vector3[]; scale?: number; rotation?: number; closeShape?: boolean; closePath?: boolean; cap?: number; updatable?: boolean; sideOrientation?: number; frontUVs?: Vector4; backUVs?: Vector4; instance?: Mesh; invertUV?: boolean },
+    options: {
+        shape: Vector3[];
+        path: Vector3[];
+        scale?: number;
+        rotation?: number;
+        closeShape?: boolean;
+        closePath?: boolean;
+        cap?: number;
+        updatable?: boolean;
+        sideOrientation?: number;
+        frontUVs?: Vector4;
+        backUVs?: Vector4;
+        instance?: Mesh;
+        invertUV?: boolean;
+    },
     scene: Nullable<Scene> = null
 ): Mesh {
     const path = options.path;
@@ -44,7 +71,26 @@ export function ExtrudeShape(
     const closeShape = options.closeShape || false;
     const closePath = options.closePath || false;
 
-    return _ExtrudeShapeGeneric(name, shape, path, scale, rotation, null, null, closePath, closeShape, cap, false, scene, updatable ? true : false, sideOrientation, instance, invertUV, options.frontUVs || null, options.backUVs || null);
+    return _ExtrudeShapeGeneric(
+        name,
+        shape,
+        path,
+        scale,
+        rotation,
+        null,
+        null,
+        closePath,
+        closeShape,
+        cap,
+        false,
+        scene,
+        updatable ? true : false,
+        sideOrientation,
+        instance,
+        invertUV,
+        options.frontUVs || null,
+        options.backUVs || null
+    );
 }
 
 /**
@@ -69,7 +115,22 @@ export function ExtrudeShape(
  * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
  * @param name defines the name of the mesh
  * @param options defines the options used to create the mesh
+ * @param options.shape
  * @param scene defines the hosting scene
+ * @param options.path
+ * @param options.scaleFunction
+ * @param options.rotationFunction
+ * @param options.ribbonCloseArray
+ * @param options.ribbonClosePath
+ * @param options.closeShape
+ * @param options.closePath
+ * @param options.cap
+ * @param options.updatable
+ * @param options.sideOrientation
+ * @param options.frontUVs
+ * @param options.backUVs
+ * @param options.instance
+ * @param options.invertUV
  * @returns the custom extruded shape mesh
  * @see https://doc.babylonjs.com/how_to/parametric_shapes#custom-extruded-shapes
  * @see https://doc.babylonjs.com/how_to/parametric_shapes
@@ -115,7 +176,26 @@ export function ExtrudeShapeCustom(
     const sideOrientation = Mesh._GetDefaultSideOrientation(options.sideOrientation);
     const instance = options.instance;
     const invertUV = options.invertUV || false;
-    return _ExtrudeShapeGeneric(name, shape, path, null, null, scaleFunction, rotationFunction, ribbonCloseArray, ribbonClosePath, cap, true, scene, updatable ? true : false, sideOrientation, instance || null, invertUV, options.frontUVs || null, options.backUVs || null);
+    return _ExtrudeShapeGeneric(
+        name,
+        shape,
+        path,
+        null,
+        null,
+        scaleFunction,
+        rotationFunction,
+        ribbonCloseArray,
+        ribbonClosePath,
+        cap,
+        true,
+        scene,
+        updatable ? true : false,
+        sideOrientation,
+        instance || null,
+        invertUV,
+        options.frontUVs || null,
+        options.backUVs || null
+    );
 }
 
 function _ExtrudeShapeGeneric(
@@ -224,7 +304,7 @@ function _ExtrudeShapeGeneric(
     let pathArray;
     if (instance) {
         // instance update
-        let storage = instance._creationDataStorage!;
+        const storage = instance._creationDataStorage!;
         path3D = storage.path3D.update(curve);
         pathArray = extrusionPathArray(shape, curve, storage.path3D, storage.pathArray, scale, rotation, scaleFunction, rotateFunction, storage.cap, custom);
         instance = CreateRibbon("", { pathArray, closeArray: false, closePath: false, offset: 0, updatable: false, sideOrientation: 0, instance }, scene || undefined);
@@ -236,7 +316,20 @@ function _ExtrudeShapeGeneric(
     const newShapePaths = new Array<Array<Vector3>>();
     cap = cap < 0 || cap > 3 ? 0 : cap;
     pathArray = extrusionPathArray(shape, curve, path3D, newShapePaths, scale, rotation, scaleFunction, rotateFunction, cap, custom);
-    const extrudedGeneric = CreateRibbon(name, { pathArray: pathArray, closeArray: rbCA, closePath: rbCP, updatable: updtbl, sideOrientation: side, invertUV: invertUV, frontUVs: frontUVs || undefined, backUVs: backUVs || undefined }, scene);
+    const extrudedGeneric = CreateRibbon(
+        name,
+        {
+            pathArray: pathArray,
+            closeArray: rbCA,
+            closePath: rbCP,
+            updatable: updtbl,
+            sideOrientation: side,
+            invertUV: invertUV,
+            frontUVs: frontUVs || undefined,
+            backUVs: backUVs || undefined,
+        },
+        scene
+    );
     extrudedGeneric._creationDataStorage!.pathArray = pathArray;
     extrudedGeneric._creationDataStorage!.path3D = path3D;
     extrudedGeneric._creationDataStorage!.cap = cap;
@@ -250,10 +343,21 @@ function _ExtrudeShapeGeneric(
  */
 export const ShapeBuilder = {
     ExtrudeShape,
-    ExtrudeShapeCustom
+    ExtrudeShapeCustom,
 };
 
-Mesh.ExtrudeShape = (name: string, shape: Vector3[], path: Vector3[], scale: number, rotation: number, cap: number, scene: Nullable<Scene> = null, updatable?: boolean, sideOrientation?: number, instance?: Mesh): Mesh => {
+Mesh.ExtrudeShape = (
+    name: string,
+    shape: Vector3[],
+    path: Vector3[],
+    scale: number,
+    rotation: number,
+    cap: number,
+    scene: Nullable<Scene> = null,
+    updatable?: boolean,
+    sideOrientation?: number,
+    instance?: Mesh
+): Mesh => {
     const options = {
         shape: shape,
         path: path,

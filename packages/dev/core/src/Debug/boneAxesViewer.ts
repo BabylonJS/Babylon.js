@@ -4,14 +4,13 @@ import { Vector3 } from "../Maths/math.vector";
 import { Mesh } from "../Meshes/mesh";
 import { Bone } from "../Bones/bone";
 import { Scene } from "../scene";
-import { Axis } from '../Maths/math.axis';
+import { Axis } from "../Maths/math.axis";
 
 /**
-     * The BoneAxesViewer will attach 3 axes to a specific bone of a specific mesh
-     * @see demo here: https://www.babylonjs-playground.com/#0DE8F4#8
-     */
+ * The BoneAxesViewer will attach 3 axes to a specific bone of a specific mesh
+ * @see demo here: https://www.babylonjs-playground.com/#0DE8F4#8
+ */
 export class BoneAxesViewer extends AxesViewer {
-
     /**
      * Gets or sets the target mesh where to display the axes viewer
      */
@@ -38,24 +37,21 @@ export class BoneAxesViewer extends AxesViewer {
      * @param scaleLines defines a scaling factor for line length (1 by default)
      */
     constructor(scene: Scene, bone: Bone, mesh: Mesh, scaleLines = 1) {
-
         super(scene, scaleLines);
 
         this.mesh = mesh;
         this.bone = bone;
-
     }
 
     /**
      * Force the viewer to update
      */
     public update(): void {
-
         if (!this.mesh || !this.bone) {
             return;
         }
 
-        var bone = this.bone;
+        const bone = this.bone;
         bone._markAsDirtyAndCompose();
         bone.getAbsolutePositionToRef(this.mesh, this.pos);
         bone.getDirectionToRef(Axis.X, this.mesh, this.xaxis);
@@ -63,19 +59,15 @@ export class BoneAxesViewer extends AxesViewer {
         bone.getDirectionToRef(Axis.Z, this.mesh, this.zaxis);
 
         super.update(this.pos, this.xaxis, this.yaxis, this.zaxis);
-
     }
 
     /** Releases resources */
     public dispose() {
-
         if (this.mesh) {
             this.mesh = null;
             this.bone = null;
 
             super.dispose();
-
         }
     }
-
 }

@@ -7,7 +7,7 @@ import { InternalTextureSource } from "./internalTexture";
 import { CubeTexture } from "./cubeTexture";
 import { Constants } from "../../Engines/constants";
 import "../../Engines/Extensions/engine.rawTexture";
-import { Engine } from '../../Engines/engine';
+import { Engine } from "../../Engines/engine";
 
 /**
  * Raw cube texture where the raw buffers are passed in
@@ -25,10 +25,17 @@ export class RawCubeTexture extends CubeTexture {
      * @param samplingMode defines the required sampling mode (like Texture.NEAREST_SAMPLINGMODE)
      * @param compression defines the compression used (null by default)
      */
-    constructor(scene: Scene, data: Nullable<ArrayBufferView[]>, size: number,
-        format: number = Constants.TEXTUREFORMAT_RGBA, type: number = Constants.TEXTURETYPE_UNSIGNED_INT,
-        generateMipMaps: boolean = false, invertY: boolean = false, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
-        compression: Nullable<string> = null) {
+    constructor(
+        scene: Scene,
+        data: Nullable<ArrayBufferView[]>,
+        size: number,
+        format: number = Constants.TEXTUREFORMAT_RGBA,
+        type: number = Constants.TEXTURETYPE_UNSIGNED_INT,
+        generateMipMaps: boolean = false,
+        invertY: boolean = false,
+        samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
+        compression: Nullable<string> = null
+    ) {
         super("", scene);
 
         this._texture = scene.getEngine().createRawCubeTexture(data, size, format, type, generateMipMaps, invertY, samplingMode, compression);
@@ -68,11 +75,25 @@ export class RawCubeTexture extends CubeTexture {
             const scene = this.getScene()!;
             const internalTexture = this._texture!;
 
-            const texture = new RawCubeTexture(scene, internalTexture._bufferViewArray!, internalTexture.width, internalTexture.format, internalTexture.type,
-                internalTexture.generateMipMaps, internalTexture.invertY, internalTexture.samplingMode, internalTexture._compression);
+            const texture = new RawCubeTexture(
+                scene,
+                internalTexture._bufferViewArray!,
+                internalTexture.width,
+                internalTexture.format,
+                internalTexture.type,
+                internalTexture.generateMipMaps,
+                internalTexture.invertY,
+                internalTexture.samplingMode,
+                internalTexture._compression
+            );
 
             if (internalTexture.source === InternalTextureSource.CubeRawRGBD) {
-                texture.updateRGBDAsync(internalTexture._bufferViewArrayArray!, internalTexture._sphericalPolynomial, internalTexture._lodGenerationScale, internalTexture._lodGenerationOffset);
+                texture.updateRGBDAsync(
+                    internalTexture._bufferViewArrayArray!,
+                    internalTexture._sphericalPolynomial,
+                    internalTexture._lodGenerationScale,
+                    internalTexture._lodGenerationOffset
+                );
             }
 
             return texture;

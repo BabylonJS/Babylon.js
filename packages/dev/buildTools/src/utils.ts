@@ -3,7 +3,7 @@ import * as path from "path";
 import * as dotenv from "dotenv";
 
 export function populateEnvironment() {
-    dotenv.config({ path: path.resolve(findRootDirectory(), "./.env") })
+    dotenv.config({ path: path.resolve(findRootDirectory(), "./.env") });
 }
 
 populateEnvironment();

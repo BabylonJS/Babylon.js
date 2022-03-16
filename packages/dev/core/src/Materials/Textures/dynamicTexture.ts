@@ -27,7 +27,15 @@ export class DynamicTexture extends Texture {
      * @param invertY defines if the texture needs to be inverted on the y axis during loading
      */
 
-    constructor(name: string, options: any, scene: Nullable<Scene> = null, generateMipMaps: boolean = false, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE, format: number = Constants.TEXTUREFORMAT_RGBA, invertY?: boolean) {
+    constructor(
+        name: string,
+        options: any,
+        scene: Nullable<Scene> = null,
+        generateMipMaps: boolean = false,
+        samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
+        format: number = Constants.TEXTUREFORMAT_RGBA,
+        invertY?: boolean
+    ) {
         super(null, scene, !generateMipMaps, invertY, samplingMode, undefined, undefined, undefined, undefined, format);
 
         this.name = name;
@@ -54,7 +62,7 @@ export class DynamicTexture extends Texture {
             }
         }
 
-        var textureSize = this.getSize();
+        const textureSize = this.getSize();
 
         if (this._canvas.width !== textureSize.width) {
             this._canvas.width = textureSize.width;
@@ -94,7 +102,7 @@ export class DynamicTexture extends Texture {
      * @param ratio the scale factor to apply to both width and height
      */
     public scale(ratio: number): void {
-        var textureSize = this.getSize();
+        const textureSize = this.getSize();
 
         textureSize.width *= ratio;
         textureSize.height *= ratio;
@@ -108,7 +116,7 @@ export class DynamicTexture extends Texture {
      * @param height the new height
      */
     public scaleTo(width: number, height: number): void {
-        var textureSize = this.getSize();
+        const textureSize = this.getSize();
 
         textureSize.width = width;
         textureSize.height = height;
@@ -128,7 +136,7 @@ export class DynamicTexture extends Texture {
      * Clears the texture
      */
     public clear(): void {
-        var size = this.getSize();
+        const size = this.getSize();
         this._context.fillRect(0, 0, size.width, size.height);
     }
 
@@ -139,7 +147,15 @@ export class DynamicTexture extends Texture {
      * @param allowGPUOptimization true to allow some specific GPU optimizations (subject to engine feature "allowGPUOptimizationsForGUI" being true)
      */
     public update(invertY?: boolean, premulAlpha = false, allowGPUOptimization = false): void {
-        this._getEngine()!.updateDynamicTexture(this._texture, this._canvas, invertY === undefined ? true : invertY, premulAlpha, this._format || undefined, undefined, allowGPUOptimization);
+        this._getEngine()!.updateDynamicTexture(
+            this._texture,
+            this._canvas,
+            invertY === undefined ? true : invertY,
+            premulAlpha,
+            this._format || undefined,
+            undefined,
+            allowGPUOptimization
+        );
     }
 
     /**
@@ -153,8 +169,17 @@ export class DynamicTexture extends Texture {
      * @param invertY defines the direction for the Y axis (default is true - y increases downwards)
      * @param update defines whether texture is immediately update (default is true)
      */
-    public drawText(text: string, x: number | null | undefined, y: number | null | undefined, font: string, color: string | null, clearColor: string | null, invertY?: boolean, update = true) {
-        var size = this.getSize();
+    public drawText(
+        text: string,
+        x: number | null | undefined,
+        y: number | null | undefined,
+        font: string,
+        color: string | null,
+        clearColor: string | null,
+        invertY?: boolean,
+        update = true
+    ) {
+        const size = this.getSize();
         if (clearColor) {
             this._context.fillStyle = clearColor;
             this._context.fillRect(0, 0, size.width, size.height);
@@ -162,12 +187,12 @@ export class DynamicTexture extends Texture {
 
         this._context.font = font;
         if (x === null || x === undefined) {
-            var textSize = this._context.measureText(text);
+            const textSize = this._context.measureText(text);
             x = (size.width - textSize.width) / 2;
         }
         if (y === null || y === undefined) {
-            var fontSize = parseInt((font.replace(/\D/g, '')));
-            y = (size.height / 2) + (fontSize / 3.65);
+            const fontSize = parseInt(font.replace(/\D/g, ""));
+            y = size.height / 2 + fontSize / 3.65;
         }
 
         this._context.fillStyle = color || "";
@@ -183,14 +208,14 @@ export class DynamicTexture extends Texture {
      * @returns the clone of the texture.
      */
     public clone(): DynamicTexture {
-        let scene = this.getScene();
+        const scene = this.getScene();
 
         if (!scene) {
             return this;
         }
 
-        var textureSize = this.getSize();
-        var newTexture = new DynamicTexture(this.name, textureSize, scene, this._generateMipMaps);
+        const textureSize = this.getSize();
+        const newTexture = new DynamicTexture(this.name, textureSize, scene, this._generateMipMaps);
 
         // Base texture
         newTexture.hasAlpha = this.hasAlpha;

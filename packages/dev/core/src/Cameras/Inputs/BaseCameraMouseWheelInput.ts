@@ -64,7 +64,7 @@ export abstract class BaseCameraMouseWheelInput implements ICameraInput<Camera> 
 
             const event = <IWheelEvent>pointer.event;
 
-            const platformScale = event.deltaMode === EventConstants.DOM_DELTA_LINE ? this._ffMultiplier : 1;  // If this happens to be set to DOM_DELTA_LINE, adjust accordingly
+            const platformScale = event.deltaMode === EventConstants.DOM_DELTA_LINE ? this._ffMultiplier : 1; // If this happens to be set to DOM_DELTA_LINE, adjust accordingly
 
             if (event.deltaY !== undefined) {
                 // Most recent browsers versions have delta properties.

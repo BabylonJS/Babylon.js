@@ -34,7 +34,7 @@ export class Ray {
         public direction: Vector3,
         /** length of the ray */
         public length: number = Number.MAX_VALUE
-    ) { }
+    ) {}
 
     // Methods
 
@@ -57,12 +57,12 @@ export class Ray {
     public intersectsBoxMinMax(minimum: DeepImmutable<Vector3>, maximum: DeepImmutable<Vector3>, intersectionTreshold: number = 0): boolean {
         const newMinimum = Ray._TmpVector3[0].copyFromFloats(minimum.x - intersectionTreshold, minimum.y - intersectionTreshold, minimum.z - intersectionTreshold);
         const newMaximum = Ray._TmpVector3[1].copyFromFloats(maximum.x + intersectionTreshold, maximum.y + intersectionTreshold, maximum.z + intersectionTreshold);
-        var d = 0.0;
-        var maxValue = Number.MAX_VALUE;
-        var inv: number;
-        var min: number;
-        var max: number;
-        var temp: number;
+        let d = 0.0;
+        let maxValue = Number.MAX_VALUE;
+        let inv: number;
+        let min: number;
+        let max: number;
+        let temp: number;
         if (Math.abs(this.direction.x) < 0.0000001) {
             if (this.origin.x < newMinimum.x || this.origin.x > newMaximum.x) {
                 return false;
@@ -163,23 +163,23 @@ export class Ray {
      * @returns true if it hits the sphere
      */
     public intersectsSphere(sphere: DeepImmutable<BoundingSphere>, intersectionTreshold: number = 0): boolean {
-        var x = sphere.center.x - this.origin.x;
-        var y = sphere.center.y - this.origin.y;
-        var z = sphere.center.z - this.origin.z;
-        var pyth = x * x + y * y + z * z;
+        const x = sphere.center.x - this.origin.x;
+        const y = sphere.center.y - this.origin.y;
+        const z = sphere.center.z - this.origin.z;
+        const pyth = x * x + y * y + z * z;
         const radius = sphere.radius + intersectionTreshold;
-        var rr = radius * radius;
+        const rr = radius * radius;
 
         if (pyth <= rr) {
             return true;
         }
 
-        var dot = x * this.direction.x + y * this.direction.y + z * this.direction.z;
+        const dot = x * this.direction.x + y * this.direction.y + z * this.direction.z;
         if (dot < 0.0) {
             return false;
         }
 
-        var temp = pyth - dot * dot;
+        const temp = pyth - dot * dot;
 
         return temp <= rr;
     }
@@ -201,17 +201,17 @@ export class Ray {
         vertex1.subtractToRef(vertex0, edge1);
         vertex2.subtractToRef(vertex0, edge2);
         Vector3.CrossToRef(this.direction, edge2, pvec);
-        var det = Vector3.Dot(edge1, pvec);
+        const det = Vector3.Dot(edge1, pvec);
 
         if (det === 0) {
             return null;
         }
 
-        var invdet = 1 / det;
+        const invdet = 1 / det;
 
         this.origin.subtractToRef(vertex0, tvec);
 
-        var bv = Vector3.Dot(tvec, pvec) * invdet;
+        const bv = Vector3.Dot(tvec, pvec) * invdet;
 
         if (bv < 0 || bv > 1.0) {
             return null;
@@ -219,14 +219,14 @@ export class Ray {
 
         Vector3.CrossToRef(tvec, edge1, qvec);
 
-        var bw = Vector3.Dot(this.direction, qvec) * invdet;
+        const bw = Vector3.Dot(this.direction, qvec) * invdet;
 
         if (bw < 0 || bv + bw > 1.0) {
             return null;
         }
 
         //check if the distance is longer than the predefined length.
-        var distance = Vector3.Dot(edge2, qvec) * invdet;
+        const distance = Vector3.Dot(edge2, qvec) * invdet;
         if (distance > this.length) {
             return null;
         }
@@ -240,12 +240,12 @@ export class Ray {
      * @returns the distance away it was hit
      */
     public intersectsPlane(plane: DeepImmutable<Plane>): Nullable<number> {
-        var distance: number;
-        var result1 = Vector3.Dot(plane.normal, this.direction);
+        let distance: number;
+        const result1 = Vector3.Dot(plane.normal, this.direction);
         if (Math.abs(result1) < 9.99999997475243e-7) {
             return null;
         } else {
-            var result2 = Vector3.Dot(plane.normal, this.origin);
+            const result2 = Vector3.Dot(plane.normal, this.origin);
             distance = (-plane.d - result2) / result1;
             if (distance < 0.0) {
                 if (distance < -9.99999997475243e-7) {
@@ -296,7 +296,7 @@ export class Ray {
      * @returns picking info of the intersection
      */
     public intersectsMesh(mesh: DeepImmutable<AbstractMesh>, fastCheck?: boolean): PickingInfo {
-        var tm = TmpVectors.Matrix[0];
+        const tm = TmpVectors.Matrix[0];
 
         mesh.getWorldMatrix().invertToRef(tm);
 
@@ -323,8 +323,8 @@ export class Ray {
             results = [];
         }
 
-        for (var i = 0; i < meshes.length; i++) {
-            var pickInfo = this.intersectsMesh(meshes[i], fastCheck);
+        for (let i = 0; i < meshes.length; i++) {
+            const pickInfo = this.intersectsMesh(meshes[i], fastCheck);
 
             if (pickInfo.hit) {
                 results.push(pickInfo);
@@ -370,16 +370,16 @@ export class Ray {
 
         sega.subtractToRef(o, w);
 
-        var a = Vector3.Dot(u, u); // always >= 0
-        var b = Vector3.Dot(u, v);
-        var c = Vector3.Dot(v, v); // always >= 0
-        var d = Vector3.Dot(u, w);
-        var e = Vector3.Dot(v, w);
-        var D = a * c - b * b; // always >= 0
-        var sc: number,
+        const a = Vector3.Dot(u, u); // always >= 0
+        const b = Vector3.Dot(u, v);
+        const c = Vector3.Dot(v, v); // always >= 0
+        const d = Vector3.Dot(u, w);
+        const e = Vector3.Dot(v, w);
+        const D = a * c - b * b; // always >= 0
+        let sc: number,
             sN: number,
             sD = D; // sc = sN / sD, default sD = D >= 0
-        var tc: number,
+        let tc: number,
             tN: number,
             tD = D; // tc = tN / tD, default tD = D >= 0
 
@@ -445,7 +445,7 @@ export class Ray {
         const dP = TmpVectors.Vector3[6];
         qsc.subtractToRef(qtc, dP); // = S1(sc) - S2(tc)
 
-        var isIntersected = tc > 0 && tc <= this.length && dP.lengthSquared() < threshold * threshold; // return intersection result
+        const isIntersected = tc > 0 && tc <= this.length && dP.lengthSquared() < threshold * threshold; // return intersection result
 
         if (isIntersected) {
             return qsc.length();
@@ -465,7 +465,16 @@ export class Ray {
      * @param enableDistantPicking defines if picking should handle large values for mesh position/scaling (false by default)
      * @returns this ray updated
      */
-    public update(x: number, y: number, viewportWidth: number, viewportHeight: number, world: DeepImmutable<Matrix>, view: DeepImmutable<Matrix>, projection: DeepImmutable<Matrix>, enableDistantPicking: boolean = false): Ray {
+    public update(
+        x: number,
+        y: number,
+        viewportWidth: number,
+        viewportHeight: number,
+        world: DeepImmutable<Matrix>,
+        view: DeepImmutable<Matrix>,
+        projection: DeepImmutable<Matrix>,
+        enableDistantPicking: boolean = false
+    ): Ray {
         if (enableDistantPicking) {
             // With world matrices having great values (like 8000000000 on 1 or more scaling or position axis),
             // multiplying view/projection/world and doing invert will result in loss of float precision in the matrix.
@@ -478,7 +487,7 @@ export class Ray {
 
             Ray._rayDistant.unprojectRayToRef(x, y, viewportWidth, viewportHeight, Matrix.IdentityReadOnly, view, projection);
 
-            var tm = TmpVectors.Matrix[0];
+            const tm = TmpVectors.Matrix[0];
             world.invertToRef(tm);
             Ray.TransformToRef(Ray._rayDistant, tm, this);
         } else {
@@ -508,8 +517,16 @@ export class Ray {
      * @param projection projection matrix
      * @returns new ray
      */
-    public static CreateNew(x: number, y: number, viewportWidth: number, viewportHeight: number, world: DeepImmutable<Matrix>, view: DeepImmutable<Matrix>, projection: DeepImmutable<Matrix>): Ray {
-        let result = Ray.Zero();
+    public static CreateNew(
+        x: number,
+        y: number,
+        viewportWidth: number,
+        viewportHeight: number,
+        world: DeepImmutable<Matrix>,
+        view: DeepImmutable<Matrix>,
+        projection: DeepImmutable<Matrix>
+    ): Ray {
+        const result = Ray.Zero();
 
         return result.update(x, y, viewportWidth, viewportHeight, world, view, projection);
     }
@@ -523,8 +540,8 @@ export class Ray {
      * @returns the new ray
      */
     public static CreateNewFromTo(origin: Vector3, end: Vector3, world: DeepImmutable<Matrix> = Matrix.IdentityReadOnly): Ray {
-        var direction = end.subtract(origin);
-        var length = Math.sqrt(direction.x * direction.x + direction.y * direction.y + direction.z * direction.z);
+        const direction = end.subtract(origin);
+        const length = Math.sqrt(direction.x * direction.x + direction.y * direction.y + direction.z * direction.z);
         direction.normalize();
 
         return Ray.Transform(new Ray(origin, direction, length), world);
@@ -537,7 +554,7 @@ export class Ray {
      * @returns the resulting new ray
      */
     public static Transform(ray: DeepImmutable<Ray>, matrix: DeepImmutable<Matrix>): Ray {
-        var result = new Ray(new Vector3(0, 0, 0), new Vector3(0, 0, 0));
+        const result = new Ray(new Vector3(0, 0, 0), new Vector3(0, 0, 0));
         Ray.TransformToRef(ray, matrix, result);
 
         return result;
@@ -554,11 +571,11 @@ export class Ray {
         Vector3.TransformNormalToRef(ray.direction, matrix, result.direction);
         result.length = ray.length;
 
-        var dir = result.direction;
-        var len = dir.length();
+        const dir = result.direction;
+        const len = dir.length();
 
         if (!(len === 0 || len === 1)) {
-            var num = 1.0 / len;
+            const num = 1.0 / len;
             dir.x *= num;
             dir.y *= num;
             dir.z *= num;
@@ -576,7 +593,15 @@ export class Ray {
      * @param view defines the view matrix to use
      * @param projection defines the projection matrix to use
      */
-    public unprojectRayToRef(sourceX: float, sourceY: float, viewportWidth: number, viewportHeight: number, world: DeepImmutable<Matrix>, view: DeepImmutable<Matrix>, projection: DeepImmutable<Matrix>): void {
+    public unprojectRayToRef(
+        sourceX: float,
+        sourceY: float,
+        viewportWidth: number,
+        viewportHeight: number,
+        world: DeepImmutable<Matrix>,
+        view: DeepImmutable<Matrix>,
+        projection: DeepImmutable<Matrix>
+    ): void {
         const matrix = TmpVectors.Matrix[0];
         world.multiplyToRef(view, matrix);
         matrix.multiplyToRef(projection, matrix);
@@ -618,26 +643,53 @@ declare module "../scene" {
         _pickWithRayInverseMatrix: Matrix;
 
         /** @hidden */
-        _internalPick(rayFunction: (world: Matrix, enableDistantPicking: boolean) => Ray, predicate?: (mesh: AbstractMesh) => boolean, fastCheck?: boolean, onlyBoundingInfo?: boolean, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo>;
+        _internalPick(
+            rayFunction: (world: Matrix, enableDistantPicking: boolean) => Ray,
+            predicate?: (mesh: AbstractMesh) => boolean,
+            fastCheck?: boolean,
+            onlyBoundingInfo?: boolean,
+            trianglePredicate?: TrianglePickingPredicate
+        ): Nullable<PickingInfo>;
 
         /** @hidden */
-        _internalMultiPick(rayFunction: (world: Matrix, enableDistantPicking: boolean) => Ray, predicate?: (mesh: AbstractMesh) => boolean, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo[]>;
+        _internalMultiPick(
+            rayFunction: (world: Matrix, enableDistantPicking: boolean) => Ray,
+            predicate?: (mesh: AbstractMesh) => boolean,
+            trianglePredicate?: TrianglePickingPredicate
+        ): Nullable<PickingInfo[]>;
 
         /** @hidden */
-        _internalPickForMesh(pickingInfo: Nullable<PickingInfo>, rayFunction: (world: Matrix, enableDistantPicking: boolean) => Ray, mesh: AbstractMesh, world: Matrix, fastCheck?: boolean, onlyBoundingInfo?: boolean, trianglePredicate?: TrianglePickingPredicate, skipBoundingInfo?: boolean): Nullable<PickingInfo>;
+        _internalPickForMesh(
+            pickingInfo: Nullable<PickingInfo>,
+            rayFunction: (world: Matrix, enableDistantPicking: boolean) => Ray,
+            mesh: AbstractMesh,
+            world: Matrix,
+            fastCheck?: boolean,
+            onlyBoundingInfo?: boolean,
+            trianglePredicate?: TrianglePickingPredicate,
+            skipBoundingInfo?: boolean
+        ): Nullable<PickingInfo>;
     }
 }
 
 Scene.prototype.createPickingRay = function (x: number, y: number, world: Nullable<Matrix>, camera: Nullable<Camera>, cameraViewSpace = false): Ray {
-    let result = Ray.Zero();
+    const result = Ray.Zero();
 
     this.createPickingRayToRef(x, y, world, result, camera, cameraViewSpace);
 
     return result;
 };
 
-Scene.prototype.createPickingRayToRef = function (x: number, y: number, world: Nullable<Matrix>, result: Ray, camera: Nullable<Camera>, cameraViewSpace = false, enableDistantPicking = false): Scene {
-    var engine = this.getEngine();
+Scene.prototype.createPickingRayToRef = function (
+    x: number,
+    y: number,
+    world: Nullable<Matrix>,
+    result: Ray,
+    camera: Nullable<Camera>,
+    cameraViewSpace = false,
+    enableDistantPicking = false
+): Scene {
+    const engine = this.getEngine();
 
     if (!camera) {
         if (!this.activeCamera) {
@@ -647,19 +699,28 @@ Scene.prototype.createPickingRayToRef = function (x: number, y: number, world: N
         camera = this.activeCamera;
     }
 
-    var cameraViewport = camera.viewport;
-    var viewport = cameraViewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
+    const cameraViewport = camera.viewport;
+    const viewport = cameraViewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
 
     // Moving coordinates to local viewport world
     x = x / engine.getHardwareScalingLevel() - viewport.x;
     y = y / engine.getHardwareScalingLevel() - (engine.getRenderHeight() - viewport.y - viewport.height);
 
-    result.update(x, y, viewport.width, viewport.height, world ? world : Matrix.IdentityReadOnly, cameraViewSpace ? Matrix.IdentityReadOnly : camera.getViewMatrix(), camera.getProjectionMatrix(), enableDistantPicking);
+    result.update(
+        x,
+        y,
+        viewport.width,
+        viewport.height,
+        world ? world : Matrix.IdentityReadOnly,
+        cameraViewSpace ? Matrix.IdentityReadOnly : camera.getViewMatrix(),
+        camera.getProjectionMatrix(),
+        enableDistantPicking
+    );
     return this;
 };
 
 Scene.prototype.createPickingRayInCameraSpace = function (x: number, y: number, camera?: Camera): Ray {
-    let result = Ray.Zero();
+    const result = Ray.Zero();
 
     this.createPickingRayInCameraSpaceToRef(x, y, result, camera);
 
@@ -671,7 +732,7 @@ Scene.prototype.createPickingRayInCameraSpaceToRef = function (x: number, y: num
         return this;
     }
 
-    var engine = this.getEngine();
+    const engine = this.getEngine();
 
     if (!camera) {
         if (!this.activeCamera) {
@@ -681,9 +742,9 @@ Scene.prototype.createPickingRayInCameraSpaceToRef = function (x: number, y: num
         camera = this.activeCamera;
     }
 
-    var cameraViewport = camera.viewport;
-    var viewport = cameraViewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
-    var identity = Matrix.Identity();
+    const cameraViewport = camera.viewport;
+    const viewport = cameraViewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
+    const identity = Matrix.Identity();
 
     // Moving coordinates to local viewport world
     x = x / engine.getHardwareScalingLevel() - viewport.x;
@@ -692,10 +753,19 @@ Scene.prototype.createPickingRayInCameraSpaceToRef = function (x: number, y: num
     return this;
 };
 
-Scene.prototype._internalPickForMesh = function (pickingInfo: Nullable<PickingInfo>, rayFunction: (world: Matrix, enableDistantPicking: boolean) => Ray, mesh: AbstractMesh, world: Matrix, fastCheck?: boolean, onlyBoundingInfo?: boolean, trianglePredicate?: TrianglePickingPredicate, skipBoundingInfo?: boolean) {
-    let ray = rayFunction(world, mesh.enableDistantPicking);
+Scene.prototype._internalPickForMesh = function (
+    pickingInfo: Nullable<PickingInfo>,
+    rayFunction: (world: Matrix, enableDistantPicking: boolean) => Ray,
+    mesh: AbstractMesh,
+    world: Matrix,
+    fastCheck?: boolean,
+    onlyBoundingInfo?: boolean,
+    trianglePredicate?: TrianglePickingPredicate,
+    skipBoundingInfo?: boolean
+) {
+    const ray = rayFunction(world, mesh.enableDistantPicking);
 
-    let result = mesh.intersects(ray, fastCheck, trianglePredicate, onlyBoundingInfo, world, skipBoundingInfo);
+    const result = mesh.intersects(ray, fastCheck, trianglePredicate, onlyBoundingInfo, world, skipBoundingInfo);
     if (!result || !result.hit) {
         return null;
     }
@@ -707,7 +777,13 @@ Scene.prototype._internalPickForMesh = function (pickingInfo: Nullable<PickingIn
     return result;
 };
 
-Scene.prototype._internalPick = function (rayFunction: (world: Matrix, enableDistantPicking: boolean) => Ray, predicate?: (mesh: AbstractMesh) => boolean, fastCheck?: boolean, onlyBoundingInfo?: boolean, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo> {
+Scene.prototype._internalPick = function (
+    rayFunction: (world: Matrix, enableDistantPicking: boolean) => Ray,
+    predicate?: (mesh: AbstractMesh) => boolean,
+    fastCheck?: boolean,
+    onlyBoundingInfo?: boolean,
+    trianglePredicate?: TrianglePickingPredicate
+): Nullable<PickingInfo> {
     if (!PickingInfo) {
         return null;
     }
@@ -715,7 +791,7 @@ Scene.prototype._internalPick = function (rayFunction: (world: Matrix, enableDis
     let pickingInfo = null;
 
     for (let meshIndex = 0; meshIndex < this.meshes.length; meshIndex++) {
-        let mesh = this.meshes[meshIndex];
+        const mesh = this.meshes[meshIndex];
 
         if (predicate) {
             if (!predicate(mesh)) {
@@ -725,22 +801,22 @@ Scene.prototype._internalPick = function (rayFunction: (world: Matrix, enableDis
             continue;
         }
 
-        let world = mesh.getWorldMatrix();
+        const world = mesh.getWorldMatrix();
 
         if (mesh.hasThinInstances && (mesh as Mesh).thinInstanceEnablePicking) {
             // first check if the ray intersects the whole bounding box/sphere of the mesh
-            let result = this._internalPickForMesh(pickingInfo, rayFunction, mesh, world, true, true, trianglePredicate);
+            const result = this._internalPickForMesh(pickingInfo, rayFunction, mesh, world, true, true, trianglePredicate);
             if (result) {
                 if (onlyBoundingInfo) {
                     // the user only asked for a bounding info check so we can return
                     return result;
                 }
                 const tmpMatrix = TmpVectors.Matrix[1];
-                let thinMatrices = (mesh as Mesh).thinInstanceGetWorldMatrices();
+                const thinMatrices = (mesh as Mesh).thinInstanceGetWorldMatrices();
                 for (let index = 0; index < thinMatrices.length; index++) {
-                    let thinMatrix = thinMatrices[index];
+                    const thinMatrix = thinMatrices[index];
                     thinMatrix.multiplyToRef(world, tmpMatrix);
-                    let result = this._internalPickForMesh(pickingInfo, rayFunction, mesh, tmpMatrix, fastCheck, onlyBoundingInfo, trianglePredicate, true);
+                    const result = this._internalPickForMesh(pickingInfo, rayFunction, mesh, tmpMatrix, fastCheck, onlyBoundingInfo, trianglePredicate, true);
 
                     if (result) {
                         pickingInfo = result;
@@ -753,7 +829,7 @@ Scene.prototype._internalPick = function (rayFunction: (world: Matrix, enableDis
                 }
             }
         } else {
-            let result = this._internalPickForMesh(pickingInfo, rayFunction, mesh, world, fastCheck, onlyBoundingInfo, trianglePredicate);
+            const result = this._internalPickForMesh(pickingInfo, rayFunction, mesh, world, fastCheck, onlyBoundingInfo, trianglePredicate);
 
             if (result) {
                 pickingInfo = result;
@@ -768,14 +844,18 @@ Scene.prototype._internalPick = function (rayFunction: (world: Matrix, enableDis
     return pickingInfo || new PickingInfo();
 };
 
-Scene.prototype._internalMultiPick = function (rayFunction: (world: Matrix, enableDistantPicking: boolean) => Ray, predicate?: (mesh: AbstractMesh) => boolean, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo[]> {
+Scene.prototype._internalMultiPick = function (
+    rayFunction: (world: Matrix, enableDistantPicking: boolean) => Ray,
+    predicate?: (mesh: AbstractMesh) => boolean,
+    trianglePredicate?: TrianglePickingPredicate
+): Nullable<PickingInfo[]> {
     if (!PickingInfo) {
         return null;
     }
-    let pickingInfos = new Array<PickingInfo>();
+    const pickingInfos = new Array<PickingInfo>();
 
     for (let meshIndex = 0; meshIndex < this.meshes.length; meshIndex++) {
-        let mesh = this.meshes[meshIndex];
+        const mesh = this.meshes[meshIndex];
 
         if (predicate) {
             if (!predicate(mesh)) {
@@ -785,17 +865,17 @@ Scene.prototype._internalMultiPick = function (rayFunction: (world: Matrix, enab
             continue;
         }
 
-        let world = mesh.getWorldMatrix();
+        const world = mesh.getWorldMatrix();
 
         if (mesh.hasThinInstances && (mesh as Mesh).thinInstanceEnablePicking) {
-            let result = this._internalPickForMesh(null, rayFunction, mesh, world, true, true, trianglePredicate);
+            const result = this._internalPickForMesh(null, rayFunction, mesh, world, true, true, trianglePredicate);
             if (result) {
                 const tmpMatrix = TmpVectors.Matrix[1];
-                let thinMatrices = (mesh as Mesh).thinInstanceGetWorldMatrices();
+                const thinMatrices = (mesh as Mesh).thinInstanceGetWorldMatrices();
                 for (let index = 0; index < thinMatrices.length; index++) {
-                    let thinMatrix = thinMatrices[index];
+                    const thinMatrix = thinMatrices[index];
                     thinMatrix.multiplyToRef(world, tmpMatrix);
-                    let result = this._internalPickForMesh(null, rayFunction, mesh, tmpMatrix, false, false, trianglePredicate, true);
+                    const result = this._internalPickForMesh(null, rayFunction, mesh, tmpMatrix, false, false, trianglePredicate, true);
 
                     if (result) {
                         result.thinInstanceIndex = index;
@@ -804,7 +884,7 @@ Scene.prototype._internalMultiPick = function (rayFunction: (world: Matrix, enab
                 }
             }
         } else {
-            let result = this._internalPickForMesh(null, rayFunction, mesh, world, false, false, trianglePredicate);
+            const result = this._internalPickForMesh(null, rayFunction, mesh, world, false, false, trianglePredicate);
 
             if (result) {
                 pickingInfos.push(result);
@@ -815,11 +895,17 @@ Scene.prototype._internalMultiPick = function (rayFunction: (world: Matrix, enab
     return pickingInfos;
 };
 
-Scene.prototype.pickWithBoundingInfo = function (x: number, y: number, predicate?: (mesh: AbstractMesh) => boolean, fastCheck?: boolean, camera?: Nullable<Camera>): Nullable<PickingInfo> {
+Scene.prototype.pickWithBoundingInfo = function (
+    x: number,
+    y: number,
+    predicate?: (mesh: AbstractMesh) => boolean,
+    fastCheck?: boolean,
+    camera?: Nullable<Camera>
+): Nullable<PickingInfo> {
     if (!PickingInfo) {
         return null;
     }
-    var result = this._internalPick(
+    const result = this._internalPick(
         (world, enableDistantPicking) => {
             if (!this._tempPickingRay) {
                 this._tempPickingRay = Ray.Zero();
@@ -838,11 +924,19 @@ Scene.prototype.pickWithBoundingInfo = function (x: number, y: number, predicate
     return result;
 };
 
-Scene.prototype.pick = function (x: number, y: number, predicate?: (mesh: AbstractMesh) => boolean, fastCheck?: boolean, camera?: Nullable<Camera>, trianglePredicate?: TrianglePickingPredicate, enableDistantPicking = false): Nullable<PickingInfo> {
+Scene.prototype.pick = function (
+    x: number,
+    y: number,
+    predicate?: (mesh: AbstractMesh) => boolean,
+    fastCheck?: boolean,
+    camera?: Nullable<Camera>,
+    trianglePredicate?: TrianglePickingPredicate,
+    enableDistantPicking = false
+): Nullable<PickingInfo> {
     if (!PickingInfo) {
         return null;
     }
-    var result = this._internalPick(
+    const result = this._internalPick(
         (world, enableDistantPicking) => {
             if (!this._tempPickingRay) {
                 this._tempPickingRay = Ray.Zero();
@@ -862,8 +956,13 @@ Scene.prototype.pick = function (x: number, y: number, predicate?: (mesh: Abstra
     return result;
 };
 
-Scene.prototype.pickWithRay = function (ray: Ray, predicate?: (mesh: AbstractMesh) => boolean, fastCheck?: boolean, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo> {
-    var result = this._internalPick(
+Scene.prototype.pickWithRay = function (
+    ray: Ray,
+    predicate?: (mesh: AbstractMesh) => boolean,
+    fastCheck?: boolean,
+    trianglePredicate?: TrianglePickingPredicate
+): Nullable<PickingInfo> {
+    const result = this._internalPick(
         (world) => {
             if (!this._pickWithRayInverseMatrix) {
                 this._pickWithRayInverseMatrix = Matrix.Identity();
@@ -888,7 +987,13 @@ Scene.prototype.pickWithRay = function (ray: Ray, predicate?: (mesh: AbstractMes
     return result;
 };
 
-Scene.prototype.multiPick = function (x: number, y: number, predicate?: (mesh: AbstractMesh) => boolean, camera?: Camera, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo[]> {
+Scene.prototype.multiPick = function (
+    x: number,
+    y: number,
+    predicate?: (mesh: AbstractMesh) => boolean,
+    camera?: Camera,
+    trianglePredicate?: TrianglePickingPredicate
+): Nullable<PickingInfo[]> {
     return this._internalMultiPick((world, enableDistantPicking) => this.createPickingRay(x, y, world, camera || null), predicate, trianglePredicate);
 };
 

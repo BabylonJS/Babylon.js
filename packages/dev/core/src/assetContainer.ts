@@ -1,24 +1,24 @@
 import { AbstractScene } from "./abstractScene";
 import { Scene } from "./scene";
 import { Mesh } from "./Meshes/mesh";
-import { TransformNode } from './Meshes/transformNode';
-import { Skeleton } from './Bones/skeleton';
-import { AnimationGroup } from './Animations/animationGroup';
-import { Animatable } from './Animations/animatable';
-import { AbstractMesh } from './Meshes/abstractMesh';
-import { MultiMaterial } from './Materials/multiMaterial';
-import { Material } from './Materials/material';
-import { Logger } from './Misc/logger';
-import { EngineStore } from './Engines/engineStore';
-import { Nullable } from './types';
-import { Node } from './node';
+import { TransformNode } from "./Meshes/transformNode";
+import { Skeleton } from "./Bones/skeleton";
+import { AnimationGroup } from "./Animations/animationGroup";
+import { Animatable } from "./Animations/animatable";
+import { AbstractMesh } from "./Meshes/abstractMesh";
+import { MultiMaterial } from "./Materials/multiMaterial";
+import { Material } from "./Materials/material";
+import { Logger } from "./Misc/logger";
+import { EngineStore } from "./Engines/engineStore";
+import { Nullable } from "./types";
+import { Node } from "./node";
 import { Observer } from "./Misc/observable";
 import { ThinEngine } from "./Engines/thinEngine";
 
 /**
  * Set of assets to keep when moving a scene into an asset container.
  */
-export class KeepAssets extends AbstractScene { }
+export class KeepAssets extends AbstractScene {}
 
 /**
  * Class used to store the output of the AssetContainer.instantiateAllMeshesToScene function
@@ -101,22 +101,23 @@ export class AssetContainer extends AbstractScene {
      * @param nameFunction defines an optional function used to get new names for clones
      * @param cloneMaterials defines an optional boolean that defines if materials must be cloned as well (false by default)
      * @param options defines an optional list of options to control how to instanciate / clone models
+     * @param options.doNotInstantiate
      * @returns a list of rootNodes, skeletons and aniamtion groups that were duplicated
      */
     public instantiateModelsToScene(nameFunction?: (sourceName: string) => string, cloneMaterials = false, options?: { doNotInstantiate: boolean }): InstantiatedEntries {
-        let convertionMap: { [key: number]: number } = {};
-        let storeMap: { [key: number]: any } = {};
-        let result = new InstantiatedEntries();
-        let alreadySwappedSkeletons: Skeleton[] = [];
-        let alreadySwappedMaterials: Material[] = [];
+        const convertionMap: { [key: number]: number } = {};
+        const storeMap: { [key: number]: any } = {};
+        const result = new InstantiatedEntries();
+        const alreadySwappedSkeletons: Skeleton[] = [];
+        const alreadySwappedMaterials: Material[] = [];
 
         if (!options) {
             options = {
-                doNotInstantiate: true
+                doNotInstantiate: true,
             };
         }
 
-        let onClone = (source: TransformNode, clone: TransformNode) => {
+        const onClone = (source: TransformNode, clone: TransformNode) => {
             convertionMap[source.uniqueId] = clone.uniqueId;
             storeMap[clone.uniqueId] = clone;
 
@@ -125,15 +126,15 @@ export class AssetContainer extends AbstractScene {
             }
 
             if (clone instanceof Mesh) {
-                let clonedMesh = clone as Mesh;
+                const clonedMesh = clone as Mesh;
 
                 if (clonedMesh.morphTargetManager) {
-                    let oldMorphTargetManager = (source as Mesh).morphTargetManager!;
+                    const oldMorphTargetManager = (source as Mesh).morphTargetManager!;
                     clonedMesh.morphTargetManager = oldMorphTargetManager.clone();
 
-                    for (var index = 0; index < oldMorphTargetManager.numTargets; index++) {
-                        let oldTarget = oldMorphTargetManager.getTarget(index);
-                        let newTarget = clonedMesh.morphTargetManager.getTarget(index);
+                    for (let index = 0; index < oldMorphTargetManager.numTargets; index++) {
+                        const oldTarget = oldMorphTargetManager.getTarget(index);
+                        const newTarget = clonedMesh.morphTargetManager.getTarget(index);
 
                         convertionMap[oldTarget.uniqueId] = newTarget.uniqueId;
                         storeMap[newTarget.uniqueId] = newTarget;
@@ -144,7 +145,7 @@ export class AssetContainer extends AbstractScene {
 
         this.transformNodes.forEach((o) => {
             if (!o.parent) {
-                let newOne = o.instantiateHierarchy(null, options, (source, clone) => {
+                const newOne = o.instantiateHierarchy(null, options, (source, clone) => {
                     onClone(source, clone);
                 });
 
@@ -156,15 +157,15 @@ export class AssetContainer extends AbstractScene {
 
         this.meshes.forEach((o) => {
             if (!o.parent) {
-                let newOne = o.instantiateHierarchy(null, options, (source, clone) => {
+                const newOne = o.instantiateHierarchy(null, options, (source, clone) => {
                     onClone(source, clone);
 
                     if ((clone as any).material) {
-                        let mesh = clone as AbstractMesh;
+                        const mesh = clone as AbstractMesh;
 
                         if (mesh.material) {
                             if (cloneMaterials) {
-                                let sourceMaterial = (source as AbstractMesh).material!;
+                                const sourceMaterial = (source as AbstractMesh).material!;
 
                                 if (alreadySwappedMaterials.indexOf(sourceMaterial) === -1) {
                                     let swap = sourceMaterial.clone(nameFunction ? nameFunction(sourceMaterial.name) : "Clone of " + sourceMaterial.name)!;
@@ -173,9 +174,9 @@ export class AssetContainer extends AbstractScene {
                                     storeMap[swap.uniqueId] = swap;
 
                                     if (sourceMaterial.getClassName() === "MultiMaterial") {
-                                        let multi = sourceMaterial as MultiMaterial;
+                                        const multi = sourceMaterial as MultiMaterial;
 
-                                        for (var material of multi.subMaterials) {
+                                        for (const material of multi.subMaterials) {
                                             if (!material) {
                                                 continue;
                                             }
@@ -205,7 +206,6 @@ export class AssetContainer extends AbstractScene {
                             }
                         }
                     }
-
                 });
 
                 if (newOne) {
@@ -215,11 +215,11 @@ export class AssetContainer extends AbstractScene {
         });
 
         this.skeletons.forEach((s) => {
-            let clone = s.clone(nameFunction ? nameFunction(s.name) : "Clone of " + s.name);
+            const clone = s.clone(nameFunction ? nameFunction(s.name) : "Clone of " + s.name);
 
-            for (var m of this.meshes) {
+            for (const m of this.meshes) {
                 if (m.skeleton === s && !m.isAnInstance) {
-                    let copy = storeMap[convertionMap[m.uniqueId]] as Mesh;
+                    const copy = storeMap[convertionMap[m.uniqueId]] as Mesh;
                     if (copy.isAnInstance) {
                         continue;
                     }
@@ -232,7 +232,7 @@ export class AssetContainer extends AbstractScene {
                     alreadySwappedSkeletons.push(clone);
 
                     // Check if bones are mesh linked
-                    for (var bone of clone.bones) {
+                    for (const bone of clone.bones) {
                         if (bone._linkedTransformNode) {
                             bone._linkedTransformNode = storeMap[convertionMap[bone._linkedTransformNode.uniqueId]];
                         }
@@ -244,8 +244,8 @@ export class AssetContainer extends AbstractScene {
         });
 
         this.animationGroups.forEach((o) => {
-            let clone = o.clone(nameFunction ? nameFunction(o.name) : "Clone of " + o.name, (oldTarget) => {
-                let newTarget = storeMap[convertionMap[oldTarget.uniqueId]];
+            const clone = o.clone(nameFunction ? nameFunction(o.name) : "Clone of " + o.name, (oldTarget) => {
+                const newTarget = storeMap[convertionMap[oldTarget.uniqueId]];
 
                 return newTarget || oldTarget;
             });
@@ -313,7 +313,7 @@ export class AssetContainer extends AbstractScene {
             this.scene.environmentTexture = this.environmentTexture;
         }
 
-        for (let component of this.scene._serializableComponents) {
+        for (const component of this.scene._serializableComponents) {
             component.addFromContainer(this);
         }
 
@@ -374,7 +374,7 @@ export class AssetContainer extends AbstractScene {
             this.scene.environmentTexture = null;
         }
 
-        for (let component of this.scene._serializableComponents) {
+        for (const component of this.scene._serializableComponents) {
             component.removeFromContainer(this);
         }
     }
@@ -448,7 +448,7 @@ export class AssetContainer extends AbstractScene {
             this.environmentTexture = null;
         }
 
-        for (let component of this.scene._serializableComponents) {
+        for (const component of this.scene._serializableComponents) {
             component.removeFromContainer(this, true);
         }
 
@@ -463,10 +463,10 @@ export class AssetContainer extends AbstractScene {
             return;
         }
 
-        for (let asset of sourceAssets) {
+        for (const asset of sourceAssets) {
             let move = true;
             if (keepAssets) {
-                for (let keepAsset of keepAssets) {
+                for (const keepAsset of keepAssets) {
                     if (asset === keepAsset) {
                         move = false;
                         break;
@@ -492,7 +492,7 @@ export class AssetContainer extends AbstractScene {
             keepAssets = new KeepAssets();
         }
 
-        for (let key in this) {
+        for (const key in this) {
             if (this.hasOwnProperty(key)) {
                 (<any>this)[key] = (<any>this)[key] || (key === "environmentTexture" ? null : []);
                 this._moveAssets((<any>this.scene)[key], (<any>this)[key], (<any>keepAssets)[key]);
@@ -509,7 +509,7 @@ export class AssetContainer extends AbstractScene {
      * @returns the root mesh
      */
     public createRootMesh() {
-        var rootMesh = new Mesh("assetContainerRootMesh", this.scene);
+        const rootMesh = new Mesh("assetContainerRootMesh", this.scene);
         this.meshes.forEach((m) => {
             if (!m.parent) {
                 rootMesh.addChild(m);
@@ -526,17 +526,23 @@ export class AssetContainer extends AbstractScene {
      * @param targetConverter defines a function used to convert animation targets from the asset container to the scene (default: search node by name)
      * @returns an array of the new AnimationGroup added to the scene (empty array if none)
      */
-    public mergeAnimationsTo(scene: Nullable<Scene> = EngineStore.LastCreatedScene, animatables: Animatable[], targetConverter: Nullable<(target: any) => Nullable<Node>> = null): AnimationGroup[] {
+    public mergeAnimationsTo(
+        scene: Nullable<Scene> = EngineStore.LastCreatedScene,
+        animatables: Animatable[],
+        targetConverter: Nullable<(target: any) => Nullable<Node>> = null
+    ): AnimationGroup[] {
         if (!scene) {
             Logger.Error("No scene available to merge animations to");
             return [];
         }
 
-        let _targetConverter = targetConverter ? targetConverter : (target: any) => {
-            let node = null;
+        const _targetConverter = targetConverter
+            ? targetConverter
+            : (target: any) => {
+                  let node = null;
 
-            const targetProperty = target.animations.length ? target.animations[0].targetProperty : "";
-            /*
+                  const targetProperty = target.animations.length ? target.animations[0].targetProperty : "";
+                  /*
                 BabylonJS adds special naming to targets that are children of nodes.
                 This name attempts to remove that special naming to get the parent nodes name in case the target
                 can't be found in the node tree
@@ -544,35 +550,35 @@ export class AssetContainer extends AbstractScene {
                 Ex: Torso_primitive0 likely points to a Mesh primitive. We take away primitive0 and are left with "Torso" which is the name
                 of the primitive's parent.
             */
-            const name = target.name.split(".").join("").split("_primitive")[0];
+                  const name = target.name.split(".").join("").split("_primitive")[0];
 
-            switch (targetProperty) {
-                case "position":
-                case "rotationQuaternion":
-                    node = scene.getTransformNodeByName(target.name) || scene.getTransformNodeByName(name);
-                    break;
-                case "influence":
-                    node = scene.getMorphTargetByName(target.name) || scene.getMorphTargetByName(name);
-                    break;
-                default:
-                    node = scene.getNodeByName(target.name) || scene.getNodeByName(name);
-            }
+                  switch (targetProperty) {
+                      case "position":
+                      case "rotationQuaternion":
+                          node = scene.getTransformNodeByName(target.name) || scene.getTransformNodeByName(name);
+                          break;
+                      case "influence":
+                          node = scene.getMorphTargetByName(target.name) || scene.getMorphTargetByName(name);
+                          break;
+                      default:
+                          node = scene.getNodeByName(target.name) || scene.getNodeByName(name);
+                  }
 
-            return node;
-        };
+                  return node;
+              };
 
         // Copy new node animations
-        let nodesInAC = this.getNodes();
+        const nodesInAC = this.getNodes();
         nodesInAC.forEach((nodeInAC) => {
-            let nodeInScene = _targetConverter(nodeInAC);
+            const nodeInScene = _targetConverter(nodeInAC);
             if (nodeInScene !== null) {
                 // Remove old animations with same target property as a new one
-                for (let animationInAC of nodeInAC.animations) {
+                for (const animationInAC of nodeInAC.animations) {
                     // Doing treatment on an array for safety measure
-                    let animationsWithSameProperty = nodeInScene.animations.filter((animationInScene) => {
+                    const animationsWithSameProperty = nodeInScene.animations.filter((animationInScene) => {
                         return animationInScene.targetProperty === animationInAC.targetProperty;
                     });
-                    for (let animationWithSameProperty of animationsWithSameProperty) {
+                    for (const animationWithSameProperty of animationsWithSameProperty) {
                         const index = nodeInScene.animations.indexOf(animationWithSameProperty, 0);
                         if (index > -1) {
                             nodeInScene.animations.splice(index, 1);
@@ -585,7 +591,7 @@ export class AssetContainer extends AbstractScene {
             }
         });
 
-        let newAnimationGroups = new Array<AnimationGroup>();
+        const newAnimationGroups = new Array<AnimationGroup>();
 
         // Copy new animation groups
         this.animationGroups.slice().forEach((animationGroupInAC) => {
@@ -600,11 +606,22 @@ export class AssetContainer extends AbstractScene {
 
         // Retarget animatables
         animatables.forEach((animatable) => {
-            let target = _targetConverter(animatable.target);
+            const target = _targetConverter(animatable.target);
 
             if (target) {
                 // Clone the animatable and retarget it
-                scene.beginAnimation(target, animatable.fromFrame, animatable.toFrame, animatable.loopAnimation, animatable.speedRatio, animatable.onAnimationEnd ? animatable.onAnimationEnd : undefined, undefined, true, undefined, animatable.onAnimationLoop ? animatable.onAnimationLoop : undefined);
+                scene.beginAnimation(
+                    target,
+                    animatable.fromFrame,
+                    animatable.toFrame,
+                    animatable.loopAnimation,
+                    animatable.speedRatio,
+                    animatable.onAnimationEnd ? animatable.onAnimationEnd : undefined,
+                    undefined,
+                    true,
+                    undefined,
+                    animatable.onAnimationLoop ? animatable.onAnimationLoop : undefined
+                );
 
                 // Stop animation for the target in the asset container
                 scene.stopAnimation(animatable.target);

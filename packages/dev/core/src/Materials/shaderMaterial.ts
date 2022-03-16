@@ -10,10 +10,10 @@ import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Texture } from "../Materials/Textures/texture";
 import { MaterialHelper } from "./materialHelper";
 import { Effect, IEffectCreationOptions } from "./effect";
-import { RegisterClass } from '../Misc/typeStore';
-import { Color3, Color4 } from '../Maths/math.color';
-import { EffectFallbacks } from './effectFallbacks';
-import { WebRequest } from '../Misc/webRequest';
+import { RegisterClass } from "../Misc/typeStore";
+import { Color3, Color4 } from "../Maths/math.color";
+import { EffectFallbacks } from "./effectFallbacks";
+import { WebRequest } from "../Misc/webRequest";
 import { ShaderLanguage } from "./shaderLanguage";
 import { UniformBuffer } from "./uniformBuffer";
 import { TextureSampler } from "./Textures/textureSampler";
@@ -74,7 +74,7 @@ export interface IShaderMaterialOptions {
      */
     storageBuffers: string[];
 
-     /**
+    /**
      * The list of defines used in the shader
      */
     defines: string[];
@@ -165,7 +165,7 @@ export class ShaderMaterial extends PushMaterial {
             storageBuffers: [],
             defines: [],
             useClipPlane: false,
-            ...options
+            ...options,
         };
     }
 
@@ -207,7 +207,7 @@ export class ShaderMaterial extends PushMaterial {
      * @returns a boolean specifying if alpha blending is needed
      */
     public needAlphaBlending(): boolean {
-        return (this.alpha < 1.0) || this._options.needAlphaBlending;
+        return this.alpha < 1.0 || this._options.needAlphaBlending;
     }
 
     /**
@@ -428,10 +428,10 @@ export class ShaderMaterial extends PushMaterial {
     public setMatrices(name: string, value: Matrix[]): ShaderMaterial {
         this._checkUniform(name);
 
-        let float32Array = new Float32Array(value.length * 16);
+        const float32Array = new Float32Array(value.length * 16);
 
-        for (var index = 0; index < value.length; index++) {
-            let matrix = value[index];
+        for (let index = 0; index < value.length; index++) {
+            const matrix = value[index];
 
             matrix.copyToArray(float32Array, index * 16);
         }
@@ -542,7 +542,7 @@ export class ShaderMaterial extends PushMaterial {
      * @param buffer Define the value to give to the uniform
      * @return the material itself allowing "fluent" like uniform updates
      */
-     public setStorageBuffer(name: string, buffer: StorageBuffer): ShaderMaterial {
+    public setStorageBuffer(name: string, buffer: StorageBuffer): ShaderMaterial {
         if (this._options.storageBuffers.indexOf(name) === -1) {
             this._options.storageBuffers.push(name);
         }
@@ -585,13 +585,13 @@ export class ShaderMaterial extends PushMaterial {
             }
         }
 
-        var scene = this.getScene();
-        var engine = scene.getEngine();
+        const scene = this.getScene();
+        const engine = scene.getEngine();
 
         // Instances
-        var defines = [];
-        var attribs = [];
-        var fallbacks = new EffectFallbacks();
+        const defines = [];
+        const attribs = [];
+        const fallbacks = new EffectFallbacks();
 
         let shaderName = this._shaderPath,
             uniforms = this._options.uniforms,
@@ -599,22 +599,16 @@ export class ShaderMaterial extends PushMaterial {
             samplers = this._options.samplers;
 
         // global multiview
-        if (engine.getCaps().multiview &&
-            scene.activeCamera &&
-            scene.activeCamera.outputRenderTarget &&
-            scene.activeCamera.outputRenderTarget.getViewCount() > 1) {
+        if (engine.getCaps().multiview && scene.activeCamera && scene.activeCamera.outputRenderTarget && scene.activeCamera.outputRenderTarget.getViewCount() > 1) {
             this._multiview = true;
             defines.push("#define MULTIVIEW");
-            if (this._options.uniforms.indexOf("viewProjection") !== -1 &&
-                this._options.uniforms.indexOf("viewProjectionR") === -1) {
+            if (this._options.uniforms.indexOf("viewProjection") !== -1 && this._options.uniforms.indexOf("viewProjectionR") === -1) {
                 this._options.uniforms.push("viewProjectionR");
             }
         }
 
         for (var index = 0; index < this._options.defines.length; index++) {
-            const defineToAdd = this._options.defines[index].indexOf("#define") === 0 ?
-                this._options.defines[index] :
-                `#define ${this._options.defines[index]}`;
+            const defineToAdd = this._options.defines[index].indexOf("#define") === 0 ? this._options.defines[index] : `#define ${this._options.defines[index]}`;
             defines.push(defineToAdd);
         }
 
@@ -756,7 +750,7 @@ export class ShaderMaterial extends PushMaterial {
         }
 
         // Textures
-        for (var name in this._textures) {
+        for (const name in this._textures) {
             if (!this._textures[name].isReady()) {
                 return false;
             }
@@ -824,18 +818,22 @@ export class ShaderMaterial extends PushMaterial {
 
         let effect = previousEffect;
         if (previousDefines !== join) {
-            effect = engine.createEffect(shaderName, <IEffectCreationOptions>{
-                attributes: attribs,
-                uniformsNames: uniforms,
-                uniformBuffersNames: uniformBuffers,
-                samplers: samplers,
-                defines: join,
-                fallbacks: fallbacks,
-                onCompiled: this.onCompiled,
-                onError: this.onError,
-                indexParameters: { maxSimultaneousMorphTargets: numInfluencers },
-                shaderLanguage: this._options.shaderLanguage
-            }, engine);
+            effect = engine.createEffect(
+                shaderName,
+                <IEffectCreationOptions>{
+                    attributes: attribs,
+                    uniformsNames: uniforms,
+                    uniformBuffersNames: uniformBuffers,
+                    samplers: samplers,
+                    defines: join,
+                    fallbacks: fallbacks,
+                    onCompiled: this.onCompiled,
+                    onError: this.onError,
+                    indexParameters: { maxSimultaneousMorphTargets: numInfluencers },
+                    shaderLanguage: this._options.shaderLanguage,
+                },
+                engine
+            );
 
             if (storeEffectOnSubMeshes) {
                 subMesh.setEffect(effect, join, this._materialContext);
@@ -871,7 +869,7 @@ export class ShaderMaterial extends PushMaterial {
      * @param effectOverride - If provided, use this effect instead of internal effect
      */
     public bindOnlyWorldMatrix(world: Matrix, effectOverride?: Nullable<Effect>): void {
-        var scene = this.getScene();
+        const scene = this.getScene();
 
         const effect = effectOverride ?? this.getEffect();
 
@@ -947,7 +945,7 @@ export class ShaderMaterial extends PushMaterial {
             }
         }
 
-        let mustRebind = mesh && storeEffectOnSubMeshes ? this._mustRebind(this.getScene(), effect, mesh.visibility) : this.getScene().getCachedMaterial() !== this;
+        const mustRebind = mesh && storeEffectOnSubMeshes ? this._mustRebind(this.getScene(), effect, mesh.visibility) : this.getScene().getCachedMaterial() !== this;
 
         if (effect && mustRebind) {
             if (!useSceneUBO && this._options.uniforms.indexOf("view") !== -1) {
@@ -975,7 +973,7 @@ export class ShaderMaterial extends PushMaterial {
             // Clip plane
             MaterialHelper.BindClipPlane(effect, this.getScene());
 
-            var name: string;
+            let name: string;
             // Texture
             for (name in this._textures) {
                 effect.setTexture(name, this._textures[name]);
@@ -1018,7 +1016,7 @@ export class ShaderMaterial extends PushMaterial {
 
             // Color4
             for (name in this._colors4) {
-                var color = this._colors4[name];
+                const color = this._colors4[name];
                 effect.setFloat4(name, color.r, color.g, color.b, color.a);
             }
 
@@ -1118,15 +1116,15 @@ export class ShaderMaterial extends PushMaterial {
      * @returns an array of textures
      */
     public getActiveTextures(): BaseTexture[] {
-        var activeTextures = super.getActiveTextures();
+        const activeTextures = super.getActiveTextures();
 
         for (var name in this._textures) {
             activeTextures.push(this._textures[name]);
         }
 
         for (var name in this._textureArrays) {
-            var array = this._textureArrays[name];
-            for (var index = 0; index < array.length; index++) {
+            const array = this._textureArrays[name];
+            for (let index = 0; index < array.length; index++) {
                 activeTextures.push(array[index]);
             }
         }
@@ -1151,8 +1149,8 @@ export class ShaderMaterial extends PushMaterial {
         }
 
         for (var name in this._textureArrays) {
-            var array = this._textureArrays[name];
-            for (var index = 0; index < array.length; index++) {
+            const array = this._textureArrays[name];
+            for (let index = 0; index < array.length; index++) {
                 if (array[index] === texture) {
                     return true;
                 }
@@ -1168,13 +1166,13 @@ export class ShaderMaterial extends PushMaterial {
      * @returns the cloned material
      */
     public clone(name: string): ShaderMaterial {
-        var result = SerializationHelper.Clone(() => new ShaderMaterial(name, this.getScene(), this._shaderPath, this._options, this._storeEffectOnSubMeshes), this);
+        const result = SerializationHelper.Clone(() => new ShaderMaterial(name, this.getScene(), this._shaderPath, this._options, this._storeEffectOnSubMeshes), this);
 
         result.name = name;
         result.id = name;
 
         // Shader code path
-        if (typeof result._shaderPath === 'object') {
+        if (typeof result._shaderPath === "object") {
             result._shaderPath = { ...result._shaderPath };
         }
 
@@ -1316,16 +1314,15 @@ export class ShaderMaterial extends PushMaterial {
      * @param notBoundToMesh specifies if the material that is being disposed is known to be not bound to any mesh
      */
     public dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean, notBoundToMesh?: boolean): void {
-
         if (forceDisposeTextures) {
-            var name: string;
+            let name: string;
             for (name in this._textures) {
                 this._textures[name].dispose();
             }
 
             for (name in this._textureArrays) {
-                var array = this._textureArrays[name];
-                for (var index = 0; index < array.length; index++) {
+                const array = this._textureArrays[name];
+                for (let index = 0; index < array.length; index++) {
                     array[index].dispose();
                 }
             }
@@ -1341,14 +1338,14 @@ export class ShaderMaterial extends PushMaterial {
      * @returns the serialized material object
      */
     public serialize(): any {
-        var serializationObject = SerializationHelper.Serialize(this);
+        const serializationObject = SerializationHelper.Serialize(this);
         serializationObject.customType = "BABYLON.ShaderMaterial";
 
         serializationObject.options = this._options;
         serializationObject.shaderPath = this._shaderPath;
         serializationObject.storeEffectOnSubMeshes = this._storeEffectOnSubMeshes;
 
-        var name: string;
+        let name: string;
 
         // Stencil
         serializationObject.stencil = this.stencil.serialize();
@@ -1363,8 +1360,8 @@ export class ShaderMaterial extends PushMaterial {
         serializationObject.textureArrays = {};
         for (name in this._textureArrays) {
             serializationObject.textureArrays[name] = [];
-            var array = this._textureArrays[name];
-            for (var index = 0; index < array.length; index++) {
+            const array = this._textureArrays[name];
+            for (let index = 0; index < array.length; index++) {
                 serializationObject.textureArrays[name].push(array[index].serialize());
             }
         }
@@ -1482,7 +1479,12 @@ export class ShaderMaterial extends PushMaterial {
      * @returns a new material
      */
     public static Parse(source: any, scene: Scene, rootUrl: string): ShaderMaterial {
-        const material = SerializationHelper.Parse(() => new ShaderMaterial(source.name, scene, source.shaderPath, source.options, source.storeEffectOnSubMeshes), source, scene, rootUrl);
+        const material = SerializationHelper.Parse(
+            () => new ShaderMaterial(source.name, scene, source.shaderPath, source.options, source.storeEffectOnSubMeshes),
+            source,
+            scene,
+            rootUrl
+        );
 
         let name: string;
 
@@ -1498,10 +1500,10 @@ export class ShaderMaterial extends PushMaterial {
 
         // Texture arrays
         for (name in source.textureArrays) {
-            var array = source.textureArrays[name];
-            var textureArray = new Array<Texture>();
+            const array = source.textureArrays[name];
+            const textureArray = new Array<Texture>();
 
-            for (var index = 0; index < array.length; index++) {
+            for (let index = 0; index < array.length; index++) {
                 textureArray.push(<Texture>Texture.Parse(array[index], scene, rootUrl));
             }
             material.setTextureArray(name, textureArray);
@@ -1529,14 +1531,16 @@ export class ShaderMaterial extends PushMaterial {
 
         // Color3 arrays
         for (name in source.colors3Arrays) {
-            const colors: Color3[] = source.colors3Arrays[name].reduce((arr: Array<Array<number>>, num: number, i: number) => {
-                if (i % 3 === 0) {
-                    arr.push([num]);
-                } else {
-                    arr[arr.length - 1].push(num);
-                }
-                return arr;
-            }, []).map((color: ArrayLike<number>) => Color3.FromArray(color));
+            const colors: Color3[] = source.colors3Arrays[name]
+                .reduce((arr: Array<Array<number>>, num: number, i: number) => {
+                    if (i % 3 === 0) {
+                        arr.push([num]);
+                    } else {
+                        arr[arr.length - 1].push(num);
+                    }
+                    return arr;
+                }, [])
+                .map((color: ArrayLike<number>) => Color3.FromArray(color));
             material.setColor3Array(name, colors);
         }
 
@@ -1547,14 +1551,16 @@ export class ShaderMaterial extends PushMaterial {
 
         // Color4 arrays
         for (name in source.colors4Arrays) {
-            const colors: Color4[] = source.colors4Arrays[name].reduce((arr: Array<Array<number>>, num: number, i: number) => {
-                if (i % 4 === 0) {
-                    arr.push([num]);
-                } else {
-                    arr[arr.length - 1].push(num);
-                }
-                return arr;
-            }, []).map((color: ArrayLike<number>) => Color4.FromArray(color));
+            const colors: Color4[] = source.colors4Arrays[name]
+                .reduce((arr: Array<Array<number>>, num: number, i: number) => {
+                    if (i % 4 === 0) {
+                        arr.push([num]);
+                    } else {
+                        arr[arr.length - 1].push(num);
+                    }
+                    return arr;
+                }, [])
+                .map((color: ArrayLike<number>) => Color4.FromArray(color));
             material.setColor4Array(name, colors);
         }
 
@@ -1620,14 +1626,13 @@ export class ShaderMaterial extends PushMaterial {
      * @returns a promise that will resolve to the new ShaderMaterial
      */
     public static ParseFromFileAsync(name: Nullable<string>, url: string, scene: Scene, rootUrl: string = ""): Promise<ShaderMaterial> {
-
         return new Promise((resolve, reject) => {
-            var request = new WebRequest();
+            const request = new WebRequest();
             request.addEventListener("readystatechange", () => {
                 if (request.readyState == 4) {
                     if (request.status == 200) {
-                        let serializationObject = JSON.parse(request.responseText);
-                        let output = this.Parse(serializationObject, scene || EngineStore.LastCreatedScene, rootUrl);
+                        const serializationObject = JSON.parse(request.responseText);
+                        const output = this.Parse(serializationObject, scene || EngineStore.LastCreatedScene, rootUrl);
 
                         if (name) {
                             output.name = name;
@@ -1654,13 +1659,13 @@ export class ShaderMaterial extends PushMaterial {
      */
     public static CreateFromSnippetAsync(snippetId: string, scene: Scene, rootUrl: string = ""): Promise<ShaderMaterial> {
         return new Promise((resolve, reject) => {
-            var request = new WebRequest();
+            const request = new WebRequest();
             request.addEventListener("readystatechange", () => {
                 if (request.readyState == 4) {
                     if (request.status == 200) {
-                        var snippet = JSON.parse(JSON.parse(request.responseText).jsonPayload);
-                        let serializationObject = JSON.parse(snippet.shaderMaterial);
-                        let output = this.Parse(serializationObject, scene || EngineStore.LastCreatedScene, rootUrl);
+                        const snippet = JSON.parse(JSON.parse(request.responseText).jsonPayload);
+                        const serializationObject = JSON.parse(snippet.shaderMaterial);
+                        const output = this.Parse(serializationObject, scene || EngineStore.LastCreatedScene, rootUrl);
 
                         output.snippetId = snippetId;
 

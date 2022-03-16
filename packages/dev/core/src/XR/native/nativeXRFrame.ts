@@ -11,7 +11,7 @@ export class NativeXRFrame implements XRFrame {
     private readonly _xrTransform = new XRRigidTransform();
     private readonly _xrPose: XRPose = {
         transform: this._xrTransform,
-        emulatedPosition: false
+        emulatedPosition: false,
     };
     // Enough space for position, orientation
     private readonly _xrPoseVectorData = new Float32Array(4 + 4);
@@ -20,7 +20,7 @@ export class NativeXRFrame implements XRFrame {
         return this._nativeImpl.session;
     }
 
-    constructor(private _nativeImpl: INativeXRFrame) { }
+    constructor(private _nativeImpl: INativeXRFrame) {}
 
     public getPose(space: XRSpace, baseSpace: XRReferenceSpace): XRPose | undefined {
         if (!this._nativeImpl.getPoseData(space, baseSpace, this._xrPoseVectorData.buffer, this._xrTransform.matrix.buffer)) {
@@ -48,7 +48,7 @@ export class NativeXRFrame implements XRFrame {
 
     public readonly getHitTestResultsForTransientInput = () => {
         throw new Error("XRFrame.getHitTestResultsForTransientInput not supported on native.");
-    }
+    };
 
     public get trackedAnchors(): XRAnchorSet | undefined {
         return this._nativeImpl.trackedAnchors;
@@ -70,7 +70,7 @@ export class NativeXRFrame implements XRFrame {
 
     public readonly getLightEstimate = () => {
         throw new Error("XRFrame.getLightEstimate not supported on native.");
-    }
+    };
 
     public get featurePointCloud(): number[] | undefined {
         return this._nativeImpl.featurePointCloud;

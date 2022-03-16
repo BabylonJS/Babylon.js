@@ -15,7 +15,7 @@ declare module "../../../Materials/effect" {
     }
 }
 
-Effect.prototype.setExternalTexture = function(name: string, texture: Nullable<ExternalTexture>): void {
+Effect.prototype.setExternalTexture = function (name: string, texture: Nullable<ExternalTexture>): void {
     this._engine.setExternalTexture(name, texture);
 };
 

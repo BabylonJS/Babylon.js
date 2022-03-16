@@ -4,7 +4,7 @@ import { IDisposable } from "../scene";
 interface WorkerInfo {
     workerPromise: Promise<Worker>;
     idle: boolean;
-    timeoutId?: number;
+    timeoutId?: ReturnType<typeof setTimeout>;
 }
 
 /**
@@ -21,7 +21,7 @@ export class WorkerPool implements IDisposable {
     constructor(workers: Array<Worker>) {
         this._workerInfos = workers.map((worker) => ({
             workerPromise: Promise.resolve(worker),
-            idle: true
+            idle: true,
         }));
     }
 
@@ -96,7 +96,7 @@ export class AutoReleaseWorkerPool extends WorkerPool {
      * Override to change the defaults.
      */
     public static DefaultOptions: AutoReleaseWorkerPoolOptions = {
-        idleTimeElapsedBeforeRelease: 1000
+        idleTimeElapsedBeforeRelease: 1000,
     };
 
     private readonly _maxWorkers: number;
@@ -116,7 +116,7 @@ export class AutoReleaseWorkerPool extends WorkerPool {
             if (this._workerInfos.length < this._maxWorkers) {
                 const workerInfo: WorkerInfo = {
                     workerPromise: this._createWorkerAsync(),
-                    idle: false
+                    idle: false,
                 };
                 this._workerInfos.push(workerInfo);
                 this._execute(workerInfo, action);

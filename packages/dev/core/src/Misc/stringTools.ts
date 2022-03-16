@@ -1,11 +1,10 @@
-
 /**
  * Checks for a matching suffix at the end of a string (for ES5 and lower)
  * @param str Source string
  * @param suffix Suffix to search for in the source string
  * @returns Boolean indicating whether the suffix was found (true) or not (false)
  */
- export const EndsWith = (str: string, suffix: string): boolean => {
+export const EndsWith = (str: string, suffix: string): boolean => {
     return str.indexOf(suffix, str.length - suffix.length) !== -1;
 };
 
@@ -46,11 +45,11 @@ export const Decode = (buffer: Uint8Array | Uint16Array): string => {
  * @returns the encoded string
  */
 export const EncodeArrayBufferToBase64 = (buffer: ArrayBuffer | ArrayBufferView): string => {
-    var keyStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
-    var output = "";
-    var chr1, chr2, chr3, enc1, enc2, enc3, enc4;
-    var i = 0;
-    var bytes = ArrayBuffer.isView(buffer) ? new Uint8Array(buffer.buffer, buffer.byteOffset, buffer.byteLength) : new Uint8Array(buffer);
+    const keyStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+    let output = "";
+    let chr1, chr2, chr3, enc1, enc2, enc3, enc4;
+    let i = 0;
+    const bytes = ArrayBuffer.isView(buffer) ? new Uint8Array(buffer.buffer, buffer.byteOffset, buffer.byteLength) : new Uint8Array(buffer);
 
     while (i < bytes.length) {
         chr1 = bytes[i++];
@@ -67,8 +66,7 @@ export const EncodeArrayBufferToBase64 = (buffer: ArrayBuffer | ArrayBufferView)
         } else if (isNaN(chr3)) {
             enc4 = 64;
         }
-        output += keyStr.charAt(enc1) + keyStr.charAt(enc2) +
-            keyStr.charAt(enc3) + keyStr.charAt(enc4);
+        output += keyStr.charAt(enc1) + keyStr.charAt(enc2) + keyStr.charAt(enc3) + keyStr.charAt(enc4);
     }
 
     return output;
@@ -101,14 +99,16 @@ export const DecodeBase64ToBinary = (base64Data: string): ArrayBuffer => {
 };
 
 /**
-* Converts a number to string and pads with preceding zeroes until it is of specified length.
-* @param num the number to convert and pad
-* @param length the expected length of the string
-* @returns the padded string
-*/
+ * Converts a number to string and pads with preceding zeroes until it is of specified length.
+ * @param num the number to convert and pad
+ * @param length the expected length of the string
+ * @returns the padded string
+ */
 export const PadNumber = (num: number, length: number): string => {
-    var str = String(num);
-    while (str.length < length) { str = "0" + str; }
+    let str = String(num);
+    while (str.length < length) {
+        str = "0" + str;
+    }
     return str;
 };
 /**
@@ -121,5 +121,5 @@ export const StringTools = {
     EncodeArrayBufferToBase64,
     DecodeBase64ToString,
     DecodeBase64ToBinary,
-    PadNumber
+    PadNumber,
 };

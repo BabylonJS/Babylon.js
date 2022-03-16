@@ -1,5 +1,5 @@
-import { ShaderCodeNode } from './shaderCodeNode';
-import { ShaderDefineExpression } from './Expressions/shaderDefineExpression';
+import { ShaderCodeNode } from "./shaderCodeNode";
+import { ShaderDefineExpression } from "./Expressions/shaderDefineExpression";
 
 /** @hidden */
 export class ShaderCodeTestNode extends ShaderCodeNode {

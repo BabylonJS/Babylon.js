@@ -1,9 +1,9 @@
-import { NodeMaterialBlock } from '../nodeMaterialBlock';
-import { NodeMaterialBlockConnectionPointTypes } from '../Enums/nodeMaterialBlockConnectionPointTypes';
-import { NodeMaterialBuildState } from '../nodeMaterialBuildState';
-import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint';
-import { NodeMaterialBlockTargets } from '../Enums/nodeMaterialBlockTargets';
-import { RegisterClass } from '../../../Misc/typeStore';
+import { NodeMaterialBlock } from "../nodeMaterialBlock";
+import { NodeMaterialBlockConnectionPointTypes } from "../Enums/nodeMaterialBlockConnectionPointTypes";
+import { NodeMaterialBuildState } from "../nodeMaterialBuildState";
+import { NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
+import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
+import { RegisterClass } from "../../../Misc/typeStore";
 /**
  * Block used to normalize a vector
  */
@@ -49,8 +49,8 @@ export class NormalizeBlock extends NodeMaterialBlock {
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
-        let output = this._outputs[0];
-        let input = this._inputs[0];
+        const output = this._outputs[0];
+        const input = this._inputs[0];
 
         state.compilationString += this._declareOutput(output, state) + ` = normalize(${input.associatedVariableName});\r\n`;
 

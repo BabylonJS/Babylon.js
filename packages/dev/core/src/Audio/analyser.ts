@@ -146,19 +146,19 @@ export class Analyser {
                 this._scene.registerBeforeRender(this._registerFunc);
             }
             if (this._registerFunc && this._debugCanvasContext) {
-                var workingArray = this.getByteFrequencyData();
+                const workingArray = this.getByteFrequencyData();
 
                 this._debugCanvasContext.fillStyle = "rgb(0, 0, 0)";
                 this._debugCanvasContext.fillRect(0, 0, this.DEBUGCANVASSIZE.width, this.DEBUGCANVASSIZE.height);
 
                 // Draw the frequency domain chart.
-                for (var i = 0; i < this.getFrequencyBinCount(); i++) {
-                    var value = workingArray[i];
-                    var percent = value / this.BARGRAPHAMPLITUDE;
-                    var height = this.DEBUGCANVASSIZE.height * percent;
-                    var offset = this.DEBUGCANVASSIZE.height - height - 1;
-                    var barWidth = this.DEBUGCANVASSIZE.width / this.getFrequencyBinCount();
-                    var hue = (i / this.getFrequencyBinCount()) * 360;
+                for (let i = 0; i < this.getFrequencyBinCount(); i++) {
+                    const value = workingArray[i];
+                    const percent = value / this.BARGRAPHAMPLITUDE;
+                    const height = this.DEBUGCANVASSIZE.height * percent;
+                    const offset = this.DEBUGCANVASSIZE.height - height - 1;
+                    const barWidth = this.DEBUGCANVASSIZE.width / this.getFrequencyBinCount();
+                    const hue = (i / this.getFrequencyBinCount()) * 360;
                     this._debugCanvasContext.fillStyle = "hsl(" + hue + ", 100%, 50%)";
                     this._debugCanvasContext.fillRect(i * barWidth, offset, barWidth, height);
                 }

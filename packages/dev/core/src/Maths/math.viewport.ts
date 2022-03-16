@@ -1,4 +1,3 @@
-
 /**
  * Class used to represent a viewport on screen
  */
@@ -18,8 +17,8 @@ export class Viewport {
         /**viewport width */
         public width: number,
         /** viewport height */
-        public height: number) {
-    }
+        public height: number
+    ) {}
 
     /**
      * Creates a new viewport using absolute sizing (from 0-> width, 0-> height instead of 0->1)

@@ -23,7 +23,7 @@ export class UniversalCamera extends TouchCamera {
      * This is the threshold from when rotation starts to be accounted for to prevent jittering.
      */
     public get gamepadAngularSensibility(): number {
-        var gamepad = <FreeCameraGamepadInput>this.inputs.attached["gamepad"];
+        const gamepad = <FreeCameraGamepadInput>this.inputs.attached["gamepad"];
         if (gamepad) {
             return gamepad.gamepadAngularSensibility;
         }
@@ -32,7 +32,7 @@ export class UniversalCamera extends TouchCamera {
     }
 
     public set gamepadAngularSensibility(value: number) {
-        var gamepad = <FreeCameraGamepadInput>this.inputs.attached["gamepad"];
+        const gamepad = <FreeCameraGamepadInput>this.inputs.attached["gamepad"];
         if (gamepad) {
             gamepad.gamepadAngularSensibility = value;
         }
@@ -43,7 +43,7 @@ export class UniversalCamera extends TouchCamera {
      * This is the threshold from when moving starts to be accounted for for to prevent jittering.
      */
     public get gamepadMoveSensibility(): number {
-        var gamepad = <FreeCameraGamepadInput>this.inputs.attached["gamepad"];
+        const gamepad = <FreeCameraGamepadInput>this.inputs.attached["gamepad"];
         if (gamepad) {
             return gamepad.gamepadMoveSensibility;
         }
@@ -52,7 +52,7 @@ export class UniversalCamera extends TouchCamera {
     }
 
     public set gamepadMoveSensibility(value: number) {
-        var gamepad = <FreeCameraGamepadInput>this.inputs.attached["gamepad"];
+        const gamepad = <FreeCameraGamepadInput>this.inputs.attached["gamepad"];
         if (gamepad) {
             gamepad.gamepadMoveSensibility = value;
         }

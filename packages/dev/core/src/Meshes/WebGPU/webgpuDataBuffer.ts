@@ -1,5 +1,5 @@
-import { DataBuffer } from '../../Buffers/dataBuffer';
-import { Nullable } from '../../types';
+import { DataBuffer } from "../../Buffers/dataBuffer";
+import { Nullable } from "../../types";
 
 /** @hidden */
 export class WebGPUDataBuffer extends DataBuffer {

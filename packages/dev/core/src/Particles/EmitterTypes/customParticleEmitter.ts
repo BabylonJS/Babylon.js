@@ -2,32 +2,29 @@ import { DeepCopier } from "../../Misc/deepCopier";
 import { Vector3, Matrix, TmpVectors } from "../../Maths/math.vector";
 import { Particle } from "../particle";
 import { IParticleEmitterType } from "./IParticleEmitterType";
-import { Nullable } from '../../types';
+import { Nullable } from "../../types";
 import { UniformBufferEffectCommonAccessor } from "../../Materials/uniformBufferEffectCommonAccessor";
 import { UniformBuffer } from "../../Materials/uniformBuffer";
 /**
  * Particle emitter emitting particles from a custom list of positions.
  */
 export class CustomParticleEmitter implements IParticleEmitterType {
-
     /**
      * Gets or sets the position generator that will create the initial position of each particle.
      * Index will be provided when used with GPU particle. Particle will be provided when used with CPU particles
      */
-    public particlePositionGenerator: (index: number, particle: Nullable<Particle>, outPosition: Vector3) => void = () => { };
+    public particlePositionGenerator: (index: number, particle: Nullable<Particle>, outPosition: Vector3) => void = () => {};
 
     /**
      * Gets or sets the destination generator that will create the final destination of each particle.
      *  * Index will be provided when used with GPU particle. Particle will be provided when used with CPU particles
      */
-    public particleDestinationGenerator: (index: number, particle: Nullable<Particle>, outDestination: Vector3) => void = () => { };
+    public particleDestinationGenerator: (index: number, particle: Nullable<Particle>, outDestination: Vector3) => void = () => {};
 
     /**
      * Creates a new instance CustomParticleEmitter
      */
-    constructor() {
-
-    }
+    constructor() {}
 
     /**
      * Called by the particle System when the direction is computed for the created particle.
@@ -37,13 +34,13 @@ export class CustomParticleEmitter implements IParticleEmitterType {
      * @param isLocal defines if the direction should be set in local space
      */
     public startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle, isLocal: boolean): void {
-        let tmpVector = TmpVectors.Vector3[0];
+        const tmpVector = TmpVectors.Vector3[0];
 
         if (this.particleDestinationGenerator) {
             this.particleDestinationGenerator(-1, particle, tmpVector);
 
             // Get direction
-            let diffVector = TmpVectors.Vector3[1];
+            const diffVector = TmpVectors.Vector3[1];
             tmpVector.subtractToRef(particle.position, diffVector);
 
             diffVector.scaleToRef(1 / particle.lifeTime, tmpVector);
@@ -67,7 +64,7 @@ export class CustomParticleEmitter implements IParticleEmitterType {
      * @param isLocal defines if the position should be set in local space
      */
     public startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle, isLocal: boolean): void {
-        let tmpVector = TmpVectors.Vector3[0];
+        const tmpVector = TmpVectors.Vector3[0];
 
         if (this.particlePositionGenerator) {
             this.particlePositionGenerator(-1, particle, tmpVector);
@@ -88,7 +85,7 @@ export class CustomParticleEmitter implements IParticleEmitterType {
      * @returns the new emitter
      */
     public clone(): CustomParticleEmitter {
-        let newOne = new CustomParticleEmitter();
+        const newOne = new CustomParticleEmitter();
 
         DeepCopier.DeepCopy(this, newOne);
 
@@ -99,15 +96,13 @@ export class CustomParticleEmitter implements IParticleEmitterType {
      * Called by the GPUParticleSystem to setup the update shader
      * @param uboOrEffect defines the update shader
      */
-    public applyToShader(uboOrEffect: UniformBufferEffectCommonAccessor): void {
-    }
+    public applyToShader(uboOrEffect: UniformBufferEffectCommonAccessor): void {}
 
     /**
      * Creates the structure of the ubo for this particle emitter
      * @param ubo ubo to create the structure for
      */
-    public buildUniformLayout(ubo: UniformBuffer): void {
-    }
+    public buildUniformLayout(ubo: UniformBuffer): void {}
 
     /**
      * Returns a string to use to update the GPU particles update shader
@@ -130,7 +125,7 @@ export class CustomParticleEmitter implements IParticleEmitterType {
      * @returns the JSON object
      */
     public serialize(): any {
-        var serializationObject: any = {};
+        const serializationObject: any = {};
 
         serializationObject.type = this.getClassName();
 
@@ -141,6 +136,5 @@ export class CustomParticleEmitter implements IParticleEmitterType {
      * Parse properties from a JSON object
      * @param serializationObject defines the JSON object
      */
-    public parse(serializationObject: any): void {
-    }
+    public parse(serializationObject: any): void {}
 }

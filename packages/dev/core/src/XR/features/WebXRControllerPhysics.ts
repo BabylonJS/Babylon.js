@@ -89,13 +89,10 @@ export class WebXRControllerPhysics extends WebXRAbstractFeature {
             xrController.onMotionControllerInitObservable.addOnce((motionController) => {
                 if (!motionController._doNotLoadControllerMesh) {
                     motionController.onModelLoadedObservable.addOnce(() => {
-                        const impostor = new PhysicsImpostor(
-                            motionController.rootMesh!,
-                            PhysicsImpostor.MeshImpostor,
-                            {
-                                mass: 0,
-                                ...this._options.physicsProperties,
-                            });
+                        const impostor = new PhysicsImpostor(motionController.rootMesh!, PhysicsImpostor.MeshImpostor, {
+                            mass: 0,
+                            ...this._options.physicsProperties,
+                        });
 
                         const controllerMesh = xrController.grip || xrController.pointer;
                         this._controllers[xrController.uniqueId] = {
@@ -282,7 +279,7 @@ export class WebXRControllerPhysics extends WebXRAbstractFeature {
      * @returns the impostor or null
      */
     public getImpostorForController(controller: WebXRInputSource | string): Nullable<PhysicsImpostor> {
-        let id = typeof controller === "string" ? controller : controller.uniqueId;
+        const id = typeof controller === "string" ? controller : controller.uniqueId;
         if (this._controllers[id]) {
             return this._controllers[id].impostor;
         } else {
@@ -293,8 +290,17 @@ export class WebXRControllerPhysics extends WebXRAbstractFeature {
     /**
      * Update the physics properties provided in the constructor
      * @param newProperties the new properties object
+     * @param newProperties.impostorType
+     * @param newProperties.impostorSize
+     * @param newProperties.friction
+     * @param newProperties.restitution
      */
-    public setPhysicsProperties(newProperties: { impostorType?: number; impostorSize?: number | { width: number; height: number; depth: number }; friction?: number; restitution?: number }) {
+    public setPhysicsProperties(newProperties: {
+        impostorType?: number;
+        impostorSize?: number | { width: number; height: number; depth: number };
+        friction?: number;
+        restitution?: number;
+    }) {
         this._options.physicsProperties = {
             ...this._options.physicsProperties,
             ...newProperties,
@@ -345,7 +351,9 @@ export class WebXRControllerPhysics extends WebXRAbstractFeature {
                 if (!comparedQuaternion.equalsWithEpsilon(controllerMesh.rotationQuaternion!)) {
                     // roughly based on this - https://www.gamedev.net/forums/topic/347752-quaternion-and-angular-velocity/
                     comparedQuaternion.conjugateInPlace().multiplyToRef(controllerMesh.rotationQuaternion!, this._tmpQuaternion);
-                    const len = Math.sqrt(this._tmpQuaternion.x * this._tmpQuaternion.x + this._tmpQuaternion.y * this._tmpQuaternion.y + this._tmpQuaternion.z * this._tmpQuaternion.z);
+                    const len = Math.sqrt(
+                        this._tmpQuaternion.x * this._tmpQuaternion.x + this._tmpQuaternion.y * this._tmpQuaternion.y + this._tmpQuaternion.z * this._tmpQuaternion.z
+                    );
                     this._tmpVector.set(this._tmpQuaternion.x, this._tmpQuaternion.y, this._tmpQuaternion.z);
                     // define a better epsilon
                     if (len < 0.001) {

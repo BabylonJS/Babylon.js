@@ -1,9 +1,9 @@
-import { NodeMaterialBlock } from '../../nodeMaterialBlock';
-import { NodeMaterialBlockConnectionPointTypes } from '../../Enums/nodeMaterialBlockConnectionPointTypes';
-import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
-import { NodeMaterialBlockTargets } from '../../Enums/nodeMaterialBlockTargets';
-import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPoint';
-import { RegisterClass } from '../../../../Misc/typeStore';
+import { NodeMaterialBlock } from "../../nodeMaterialBlock";
+import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
+import { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
+import { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
+import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
  * Block used to get the derivative value on x and y of a given input
@@ -56,8 +56,8 @@ export class DerivativeBlock extends NodeMaterialBlock {
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
-        let dx = this._outputs[0];
-        let dy = this._outputs[1];
+        const dx = this._outputs[0];
+        const dy = this._outputs[1];
 
         state._emitExtension("derivatives", "#extension GL_OES_standard_derivatives : enable");
 

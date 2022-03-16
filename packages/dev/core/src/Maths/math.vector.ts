@@ -1,17 +1,17 @@
 import { Scalar } from "./math.scalar";
-import { Epsilon } from './math.constants';
-import { Viewport } from './math.viewport';
+import { Epsilon } from "./math.constants";
+import { Viewport } from "./math.viewport";
 import { DeepImmutable, Nullable, FloatArray, float } from "../types";
-import { ArrayTools } from '../Misc/arrayTools';
-import { IPlaneLike } from './math.like';
-import { RegisterClass } from '../Misc/typeStore';
-import { Plane } from './math.plane';
-import { PerformanceConfigurator } from '../Engines/performanceConfigurator';
+import { ArrayTools } from "../Misc/arrayTools";
+import { IPlaneLike } from "./math.like";
+import { RegisterClass } from "../Misc/typeStore";
+import { Plane } from "./math.plane";
+import { PerformanceConfigurator } from "../Engines/performanceConfigurator";
 import { EngineStore } from "../Engines/engineStore";
 
-type TransformNode = import('../Meshes/transformNode').TransformNode;
+type TransformNode = import("../Meshes/transformNode").TransformNode;
 
-var _ExtractAsInt = (value: number) => {
+const _ExtractAsInt = (value: number) => {
     return parseInt(value.toString().replace(/\W/g, ""));
 };
 
@@ -28,8 +28,8 @@ export class Vector2 {
         /** defines the first coordinate */
         public x: number = 0,
         /** defines the second coordinate */
-        public y: number = 0) {
-    }
+        public y: number = 0
+    ) {}
 
     /**
      * Gets a string with the Vector2 coordinates
@@ -89,7 +89,7 @@ export class Vector2 {
      * @returns a new array with 2 elements: the Vector2 coordinates.
      */
     public asArray(): number[] {
-        var result = new Array<number>();
+        const result = new Array<number>();
         this.toArray(result, 0);
         return result;
     }
@@ -314,7 +314,7 @@ export class Vector2 {
      * @returns a new Vector2
      */
     public scale(scale: number): Vector2 {
-        let result = new Vector2(0, 0);
+        const result = new Vector2(0, 0);
         this.scaleToRef(scale, result);
         return result;
     }
@@ -410,7 +410,7 @@ export class Vector2 {
      * @returns the vector squared length (float)
      */
     public lengthSquared(): number {
-        return (this.x * this.x + this.y * this.y);
+        return this.x * this.x + this.y * this.y;
     }
 
     // Methods
@@ -480,17 +480,29 @@ export class Vector2 {
      * @param amount defines the interpolation factor
      * @returns a new Vector2
      */
-    public static CatmullRom(value1: DeepImmutable<Vector2>, value2: DeepImmutable<Vector2>, value3: DeepImmutable<Vector2>, value4: DeepImmutable<Vector2>, amount: number): Vector2 {
-        var squared = amount * amount;
-        var cubed = amount * squared;
+    public static CatmullRom(
+        value1: DeepImmutable<Vector2>,
+        value2: DeepImmutable<Vector2>,
+        value3: DeepImmutable<Vector2>,
+        value4: DeepImmutable<Vector2>,
+        amount: number
+    ): Vector2 {
+        const squared = amount * amount;
+        const cubed = amount * squared;
 
-        var x = 0.5 * ((((2.0 * value2.x) + ((-value1.x + value3.x) * amount)) +
-            (((((2.0 * value1.x) - (5.0 * value2.x)) + (4.0 * value3.x)) - value4.x) * squared)) +
-            ((((-value1.x + (3.0 * value2.x)) - (3.0 * value3.x)) + value4.x) * cubed));
+        const x =
+            0.5 *
+            (2.0 * value2.x +
+                (-value1.x + value3.x) * amount +
+                (2.0 * value1.x - 5.0 * value2.x + 4.0 * value3.x - value4.x) * squared +
+                (-value1.x + 3.0 * value2.x - 3.0 * value3.x + value4.x) * cubed);
 
-        var y = 0.5 * ((((2.0 * value2.y) + ((-value1.y + value3.y) * amount)) +
-            (((((2.0 * value1.y) - (5.0 * value2.y)) + (4.0 * value3.y)) - value4.y) * squared)) +
-            ((((-value1.y + (3.0 * value2.y)) - (3.0 * value3.y)) + value4.y) * cubed));
+        const y =
+            0.5 *
+            (2.0 * value2.y +
+                (-value1.y + value3.y) * amount +
+                (2.0 * value1.y - 5.0 * value2.y + 4.0 * value3.y - value4.y) * squared +
+                (-value1.y + 3.0 * value2.y - 3.0 * value3.y + value4.y) * cubed);
 
         return new Vector2(x, y);
     }
@@ -505,13 +517,13 @@ export class Vector2 {
      * @returns a new Vector2
      */
     public static Clamp(value: DeepImmutable<Vector2>, min: DeepImmutable<Vector2>, max: DeepImmutable<Vector2>): Vector2 {
-        var x = value.x;
-        x = (x > max.x) ? max.x : x;
-        x = (x < min.x) ? min.x : x;
+        let x = value.x;
+        x = x > max.x ? max.x : x;
+        x = x < min.x ? min.x : x;
 
-        var y = value.y;
-        y = (y > max.y) ? max.y : y;
-        y = (y < min.y) ? min.y : y;
+        let y = value.y;
+        y = y > max.y ? max.y : y;
+        y = y < min.y ? min.y : y;
 
         return new Vector2(x, y);
     }
@@ -525,16 +537,22 @@ export class Vector2 {
      * @param amount defines the interpolation factor
      * @returns a new Vector2
      */
-    public static Hermite(value1: DeepImmutable<Vector2>, tangent1: DeepImmutable<Vector2>, value2: DeepImmutable<Vector2>, tangent2: DeepImmutable<Vector2>, amount: number): Vector2 {
-        var squared = amount * amount;
-        var cubed = amount * squared;
-        var part1 = ((2.0 * cubed) - (3.0 * squared)) + 1.0;
-        var part2 = (-2.0 * cubed) + (3.0 * squared);
-        var part3 = (cubed - (2.0 * squared)) + amount;
-        var part4 = cubed - squared;
+    public static Hermite(
+        value1: DeepImmutable<Vector2>,
+        tangent1: DeepImmutable<Vector2>,
+        value2: DeepImmutable<Vector2>,
+        tangent2: DeepImmutable<Vector2>,
+        amount: number
+    ): Vector2 {
+        const squared = amount * amount;
+        const cubed = amount * squared;
+        const part1 = 2.0 * cubed - 3.0 * squared + 1.0;
+        const part2 = -2.0 * cubed + 3.0 * squared;
+        const part3 = cubed - 2.0 * squared + amount;
+        const part4 = cubed - squared;
 
-        var x = (((value1.x * part1) + (value2.x * part2)) + (tangent1.x * part3)) + (tangent2.x * part4);
-        var y = (((value1.y * part1) + (value2.y * part2)) + (tangent1.y * part3)) + (tangent2.y * part4);
+        const x = value1.x * part1 + value2.x * part2 + tangent1.x * part3 + tangent2.x * part4;
+        const y = value1.y * part1 + value2.y * part2 + tangent1.y * part3 + tangent2.y * part4;
 
         return new Vector2(x, y);
     }
@@ -548,8 +566,14 @@ export class Vector2 {
      * @param time define where the derivative must be done
      * @returns 1st derivative
      */
-    public static Hermite1stDerivative(value1: DeepImmutable<Vector2>, tangent1: DeepImmutable<Vector2>, value2: DeepImmutable<Vector2>, tangent2: DeepImmutable<Vector2>, time: number): Vector2 {
-        let result = Vector2.Zero();
+    public static Hermite1stDerivative(
+        value1: DeepImmutable<Vector2>,
+        tangent1: DeepImmutable<Vector2>,
+        value2: DeepImmutable<Vector2>,
+        tangent2: DeepImmutable<Vector2>,
+        time: number
+    ): Vector2 {
+        const result = Vector2.Zero();
 
         this.Hermite1stDerivativeToRef(value1, tangent1, value2, tangent2, time, result);
 
@@ -565,7 +589,14 @@ export class Vector2 {
      * @param time define where the derivative must be done
      * @param result define where the derivative will be stored
      */
-    public static Hermite1stDerivativeToRef(value1: DeepImmutable<Vector2>, tangent1: DeepImmutable<Vector2>, value2: DeepImmutable<Vector2>, tangent2: DeepImmutable<Vector2>, time: number, result: Vector2) {
+    public static Hermite1stDerivativeToRef(
+        value1: DeepImmutable<Vector2>,
+        tangent1: DeepImmutable<Vector2>,
+        value2: DeepImmutable<Vector2>,
+        tangent2: DeepImmutable<Vector2>,
+        time: number,
+        result: Vector2
+    ) {
         const t2 = time * time;
 
         result.x = (t2 - time) * 6 * value1.x + (3 * t2 - 4 * time + 1) * tangent1.x + (-t2 + time) * 6 * value2.x + (3 * t2 - 2 * time) * tangent2.x;
@@ -580,8 +611,8 @@ export class Vector2 {
      * @returns a new Vector2
      */
     public static Lerp(start: DeepImmutable<Vector2>, end: DeepImmutable<Vector2>, amount: number): Vector2 {
-        var x = start.x + ((end.x - start.x) * amount);
-        var y = start.y + ((end.y - start.y) * amount);
+        const x = start.x + (end.x - start.x) * amount;
+        const y = start.y + (end.y - start.y) * amount;
         return new Vector2(x, y);
     }
 
@@ -601,7 +632,7 @@ export class Vector2 {
      * @returns a new Vector2
      */
     public static Normalize(vector: DeepImmutable<Vector2>): Vector2 {
-        var newVector = Vector2.Zero();
+        const newVector = Vector2.Zero();
         this.NormalizeToRef(vector, newVector);
         return newVector;
     }
@@ -612,7 +643,7 @@ export class Vector2 {
      * @param result defines the vector where to store the result
      */
     public static NormalizeToRef(vector: DeepImmutable<Vector2>, result: Vector2) {
-        var len = vector.length();
+        const len = vector.length();
 
         if (len === 0) {
             return;
@@ -629,8 +660,8 @@ export class Vector2 {
      * @returns a new Vector2
      */
     public static Minimize(left: DeepImmutable<Vector2>, right: DeepImmutable<Vector2>): Vector2 {
-        var x = (left.x < right.x) ? left.x : right.x;
-        var y = (left.y < right.y) ? left.y : right.y;
+        const x = left.x < right.x ? left.x : right.x;
+        const y = left.y < right.y ? left.y : right.y;
         return new Vector2(x, y);
     }
 
@@ -641,8 +672,8 @@ export class Vector2 {
      * @returns a new Vector2
      */
     public static Maximize(left: DeepImmutable<Vector2>, right: DeepImmutable<Vector2>): Vector2 {
-        var x = (left.x > right.x) ? left.x : right.x;
-        var y = (left.y > right.y) ? left.y : right.y;
+        const x = left.x > right.x ? left.x : right.x;
+        const y = left.y > right.y ? left.y : right.y;
         return new Vector2(x, y);
     }
 
@@ -653,7 +684,7 @@ export class Vector2 {
      * @returns a new Vector2
      */
     public static Transform(vector: DeepImmutable<Vector2>, transformation: DeepImmutable<Matrix>): Vector2 {
-        let r = Vector2.Zero();
+        const r = Vector2.Zero();
         Vector2.TransformToRef(vector, transformation, r);
         return r;
     }
@@ -666,8 +697,8 @@ export class Vector2 {
      */
     public static TransformToRef(vector: DeepImmutable<Vector2>, transformation: DeepImmutable<Matrix>, result: Vector2) {
         const m = transformation.m;
-        var x = (vector.x * m[0]) + (vector.y * m[4]) + m[12];
-        var y = (vector.x * m[1]) + (vector.y * m[5]) + m[13];
+        const x = vector.x * m[0] + vector.y * m[4] + m[12];
+        const y = vector.x * m[1] + vector.y * m[5] + m[13];
         result.x = x;
         result.y = y;
     }
@@ -681,12 +712,12 @@ export class Vector2 {
      * @returns true if the point "p" is in the triangle defined by the vertors "p0", "p1", "p2"
      */
     public static PointInTriangle(p: DeepImmutable<Vector2>, p0: DeepImmutable<Vector2>, p1: DeepImmutable<Vector2>, p2: DeepImmutable<Vector2>) {
-        let a = 1 / 2 * (-p1.y * p2.x + p0.y * (-p1.x + p2.x) + p0.x * (p1.y - p2.y) + p1.x * p2.y);
-        let sign = a < 0 ? -1 : 1;
-        let s = (p0.y * p2.x - p0.x * p2.y + (p2.y - p0.y) * p.x + (p0.x - p2.x) * p.y) * sign;
-        let t = (p0.x * p1.y - p0.y * p1.x + (p0.y - p1.y) * p.x + (p1.x - p0.x) * p.y) * sign;
+        const a = (1 / 2) * (-p1.y * p2.x + p0.y * (-p1.x + p2.x) + p0.x * (p1.y - p2.y) + p1.x * p2.y);
+        const sign = a < 0 ? -1 : 1;
+        const s = (p0.y * p2.x - p0.x * p2.y + (p2.y - p0.y) * p.x + (p0.x - p2.x) * p.y) * sign;
+        const t = (p0.x * p1.y - p0.y * p1.x + (p0.y - p1.y) * p.x + (p1.x - p0.x) * p.y) * sign;
 
-        return s > 0 && t > 0 && (s + t) < 2 * a * sign;
+        return s > 0 && t > 0 && s + t < 2 * a * sign;
     }
 
     /**
@@ -706,9 +737,9 @@ export class Vector2 {
      * @returns the squared distance between vectors
      */
     public static DistanceSquared(value1: DeepImmutable<Vector2>, value2: DeepImmutable<Vector2>): number {
-        var x = value1.x - value2.x;
-        var y = value1.y - value2.y;
-        return (x * x) + (y * y);
+        const x = value1.x - value2.x;
+        const y = value1.y - value2.y;
+        return x * x + y * y;
     }
 
     /**
@@ -740,13 +771,13 @@ export class Vector2 {
      * @returns the shortest distance
      */
     public static DistanceOfPointFromSegment(p: DeepImmutable<Vector2>, segA: DeepImmutable<Vector2>, segB: DeepImmutable<Vector2>): number {
-        let l2 = Vector2.DistanceSquared(segA, segB);
+        const l2 = Vector2.DistanceSquared(segA, segB);
         if (l2 === 0.0) {
             return Vector2.Distance(p, segA);
         }
-        let v = segB.subtract(segA);
-        let t = Math.max(0, Math.min(1, Vector2.Dot(p.subtract(segA), v) / l2));
-        let proj = segA.add(v.multiplyByFloats(t, t));
+        const v = segB.subtract(segA);
+        const t = Math.max(0, Math.min(1, Vector2.Dot(p.subtract(segA), v) / l2));
+        const proj = segA.add(v.multiplyByFloats(t, t));
         return Vector2.Distance(p, proj);
     }
 }
@@ -813,11 +844,7 @@ export class Vector3 {
      * @param y defines the second coordinates (on Y axis)
      * @param z defines the third coordinates (on Z axis)
      */
-    constructor(
-        x: number = 0,
-        y: number = 0,
-        z: number = 0
-    ) {
+    constructor(x: number = 0, y: number = 0, z: number = 0) {
         this._x = x;
         this._y = y;
         this._z = z;
@@ -861,7 +888,7 @@ export class Vector3 {
      * @returns a new array of numbers
      */
     public asArray(): number[] {
-        var result: number[] = [];
+        const result: number[] = [];
         this.toArray(result, 0);
         return result;
     }
@@ -1070,7 +1097,7 @@ export class Vector3 {
      * @returns the projected vector3
      */
     public projectOnPlane(plane: Plane, origin: Vector3): Vector3 {
-        let result = Vector3.Zero();
+        const result = Vector3.Zero();
 
         this.projectOnPlaneToRef(plane, origin, result);
 
@@ -1084,21 +1111,21 @@ export class Vector3 {
      * @param result defines the Vector3 where to store the result
      */
     public projectOnPlaneToRef(plane: Plane, origin: Vector3, result: Vector3): void {
-        let n = plane.normal;
-        let d = plane.d;
+        const n = plane.normal;
+        const d = plane.d;
 
-        let V = MathTmp.Vector3[0];
+        const V = MathTmp.Vector3[0];
 
         // ray direction
         this.subtractToRef(origin, V);
 
         V.normalize();
 
-        let denom = Vector3.Dot(V, n);
-        let t = -(Vector3.Dot(origin, n) + d) / denom;
+        const denom = Vector3.Dot(V, n);
+        const t = -(Vector3.Dot(origin, n) + d) / denom;
 
         // P = P0 + t*V
-        let scaledV = V.scaleInPlace(t);
+        const scaledV = V.scaleInPlace(t);
         origin.addToRef(scaledV, result);
     }
 
@@ -1118,7 +1145,12 @@ export class Vector3 {
      * @returns true if both vectors are distant less than epsilon
      */
     public equalsWithEpsilon(otherVector: DeepImmutable<Vector3>, epsilon: number = Epsilon): boolean {
-        return otherVector && Scalar.WithinEpsilon(this._x, otherVector._x, epsilon) && Scalar.WithinEpsilon(this._y, otherVector._y, epsilon) && Scalar.WithinEpsilon(this._z, otherVector._z, epsilon);
+        return (
+            otherVector &&
+            Scalar.WithinEpsilon(this._x, otherVector._x, epsilon) &&
+            Scalar.WithinEpsilon(this._y, otherVector._y, epsilon) &&
+            Scalar.WithinEpsilon(this._z, otherVector._z, epsilon)
+        );
     }
 
     /**
@@ -1228,9 +1260,15 @@ export class Vector3 {
      * @returns the current updated Vector3
      */
     public minimizeInPlaceFromFloats(x: number, y: number, z: number): Vector3 {
-        if (x < this._x) { this.x = x; }
-        if (y < this._y) { this.y = y; }
-        if (z < this._z) { this.z = z; }
+        if (x < this._x) {
+            this.x = x;
+        }
+        if (y < this._y) {
+            this.y = y;
+        }
+        if (z < this._z) {
+            this.z = z;
+        }
         return this;
     }
 
@@ -1242,9 +1280,15 @@ export class Vector3 {
      * @returns the current updated Vector3
      */
     public maximizeInPlaceFromFloats(x: number, y: number, z: number): Vector3 {
-        if (x > this._x) { this.x = x; }
-        if (y > this._y) { this.y = y; }
-        if (z > this._z) { this.z = z; }
+        if (x > this._x) {
+            this.x = x;
+        }
+        if (y > this._y) {
+            this.y = y;
+        }
+        if (z > this._z) {
+            this.z = z;
+        }
         return this;
     }
 
@@ -1255,13 +1299,13 @@ export class Vector3 {
      * @returns if the the vector is non uniform to a certain number of decimal places
      */
     public isNonUniformWithinEpsilon(epsilon: number) {
-        let absX = Math.abs(this._x);
-        let absY = Math.abs(this._y);
+        const absX = Math.abs(this._x);
+        const absY = Math.abs(this._y);
         if (!Scalar.WithinEpsilon(absX, absY, epsilon)) {
             return true;
         }
 
-        let absZ = Math.abs(this._z);
+        const absZ = Math.abs(this._z);
         if (!Scalar.WithinEpsilon(absX, absZ, epsilon)) {
             return true;
         }
@@ -1277,13 +1321,13 @@ export class Vector3 {
      * Gets a boolean indicating that the vector is non uniform meaning x, y or z are not all the same
      */
     public get isNonUniform(): boolean {
-        let absX = Math.abs(this._x);
-        let absY = Math.abs(this._y);
+        const absX = Math.abs(this._x);
+        const absY = Math.abs(this._y);
         if (absX !== absY) {
             return true;
         }
 
-        let absZ = Math.abs(this._z);
+        const absZ = Math.abs(this._z);
         if (absX !== absZ) {
             return true;
         }
@@ -1321,7 +1365,7 @@ export class Vector3 {
      * @returns squared length of the Vector3
      */
     public lengthSquared(): number {
-        return (this._x * this._x + this._y * this._y + this._z * this._z);
+        return this._x * this._x + this._y * this._y + this._z * this._z;
     }
 
     /**
@@ -1416,7 +1460,7 @@ export class Vector3 {
      * @returns the updated Vector3
      */
     public normalizeToRef(reference: Vector3): Vector3 {
-        var len = this.length();
+        const len = this.length();
         if (len === 0 || len === 1.0) {
             return reference.copyFromFloats(this._x, this._y, this._z);
         }
@@ -1487,10 +1531,10 @@ export class Vector3 {
      * @returns the clip factor
      */
     public static GetClipFactor(vector0: DeepImmutable<Vector3>, vector1: DeepImmutable<Vector3>, axis: DeepImmutable<Vector3>, size: number) {
-        var d0 = Vector3.Dot(vector0, axis) - size;
-        var d1 = Vector3.Dot(vector1, axis) - size;
+        const d0 = Vector3.Dot(vector0, axis) - size;
+        const d1 = Vector3.Dot(vector1, axis) - size;
 
-        var s = d0 / (d0 - d1);
+        const s = d0 / (d0 - d1);
 
         return s;
     }
@@ -1694,7 +1738,7 @@ export class Vector3 {
     /**
      * Gets a left Vector3 that must not be updated
      */
-     public static get LeftReadOnly(): DeepImmutable<Vector3> {
+    public static get LeftReadOnly(): DeepImmutable<Vector3> {
         return Vector3._LeftReadOnly;
     }
 
@@ -1732,7 +1776,7 @@ export class Vector3 {
      * @returns a new forward Vector3
      */
     public static Forward(rightHandedSystem: boolean = false): Vector3 {
-        return new Vector3(0.0, 0.0, (rightHandedSystem ? -1.0 : 1.0));
+        return new Vector3(0.0, 0.0, rightHandedSystem ? -1.0 : 1.0);
     }
     /**
      * Returns a new Vector3 set to (0.0, 0.0, -1.0)
@@ -1740,7 +1784,7 @@ export class Vector3 {
      * @returns a new forward Vector3
      */
     public static Backward(rightHandedSystem: boolean = false): Vector3 {
-        return new Vector3(0.0, 0.0, (rightHandedSystem ? 1.0 : -1.0));
+        return new Vector3(0.0, 0.0, rightHandedSystem ? 1.0 : -1.0);
     }
     /**
      * Returns a new Vector3 set to (1.0, 0.0, 0.0)
@@ -1765,7 +1809,7 @@ export class Vector3 {
      * @returns the transformed Vector3
      */
     public static TransformCoordinates(vector: DeepImmutable<Vector3>, transformation: DeepImmutable<Matrix>): Vector3 {
-        var result = Vector3.Zero();
+        const result = Vector3.Zero();
         Vector3.TransformCoordinatesToRef(vector, transformation, result);
         return result;
     }
@@ -1792,10 +1836,10 @@ export class Vector3 {
      */
     public static TransformCoordinatesFromFloatsToRef(x: number, y: number, z: number, transformation: DeepImmutable<Matrix>, result: Vector3): void {
         const m = transformation.m;
-        var rx = x * m[0] + y * m[4] + z * m[8] + m[12];
-        var ry = x * m[1] + y * m[5] + z * m[9] + m[13];
-        var rz = x * m[2] + y * m[6] + z * m[10] + m[14];
-        var rw = 1 / (x * m[3] + y * m[7] + z * m[11] + m[15]);
+        const rx = x * m[0] + y * m[4] + z * m[8] + m[12];
+        const ry = x * m[1] + y * m[5] + z * m[9] + m[13];
+        const rz = x * m[2] + y * m[6] + z * m[10] + m[14];
+        const rw = 1 / (x * m[3] + y * m[7] + z * m[11] + m[15]);
 
         result.x = rx * rw;
         result.y = ry * rw;
@@ -1810,7 +1854,7 @@ export class Vector3 {
      * @returns the new Vector3
      */
     public static TransformNormal(vector: DeepImmutable<Vector3>, transformation: DeepImmutable<Matrix>): Vector3 {
-        var result = Vector3.Zero();
+        const result = Vector3.Zero();
         Vector3.TransformNormalToRef(vector, transformation, result);
         return result;
     }
@@ -1851,21 +1895,36 @@ export class Vector3 {
      * @param amount defines the amount on the spline to use
      * @returns the new Vector3
      */
-    public static CatmullRom(value1: DeepImmutable<Vector3>, value2: DeepImmutable<Vector3>, value3: DeepImmutable<Vector3>, value4: DeepImmutable<Vector3>, amount: number): Vector3 {
-        var squared = amount * amount;
-        var cubed = amount * squared;
+    public static CatmullRom(
+        value1: DeepImmutable<Vector3>,
+        value2: DeepImmutable<Vector3>,
+        value3: DeepImmutable<Vector3>,
+        value4: DeepImmutable<Vector3>,
+        amount: number
+    ): Vector3 {
+        const squared = amount * amount;
+        const cubed = amount * squared;
 
-        var x = 0.5 * ((((2.0 * value2._x) + ((-value1._x + value3._x) * amount)) +
-            (((((2.0 * value1._x) - (5.0 * value2._x)) + (4.0 * value3._x)) - value4._x) * squared)) +
-            ((((-value1._x + (3.0 * value2._x)) - (3.0 * value3._x)) + value4._x) * cubed));
+        const x =
+            0.5 *
+            (2.0 * value2._x +
+                (-value1._x + value3._x) * amount +
+                (2.0 * value1._x - 5.0 * value2._x + 4.0 * value3._x - value4._x) * squared +
+                (-value1._x + 3.0 * value2._x - 3.0 * value3._x + value4._x) * cubed);
 
-        var y = 0.5 * ((((2.0 * value2._y) + ((-value1._y + value3._y) * amount)) +
-            (((((2.0 * value1._y) - (5.0 * value2._y)) + (4.0 * value3._y)) - value4._y) * squared)) +
-            ((((-value1._y + (3.0 * value2._y)) - (3.0 * value3._y)) + value4._y) * cubed));
+        const y =
+            0.5 *
+            (2.0 * value2._y +
+                (-value1._y + value3._y) * amount +
+                (2.0 * value1._y - 5.0 * value2._y + 4.0 * value3._y - value4._y) * squared +
+                (-value1._y + 3.0 * value2._y - 3.0 * value3._y + value4._y) * cubed);
 
-        var z = 0.5 * ((((2.0 * value2._z) + ((-value1._z + value3._z) * amount)) +
-            (((((2.0 * value1._z) - (5.0 * value2._z)) + (4.0 * value3._z)) - value4._z) * squared)) +
-            ((((-value1._z + (3.0 * value2._z)) - (3.0 * value3._z)) + value4._z) * cubed));
+        const z =
+            0.5 *
+            (2.0 * value2._z +
+                (-value1._z + value3._z) * amount +
+                (2.0 * value1._z - 5.0 * value2._z + 4.0 * value3._z - value4._z) * squared +
+                (-value1._z + 3.0 * value2._z - 3.0 * value3._z + value4._z) * cubed);
 
         return new Vector3(x, y, z);
     }
@@ -1894,17 +1953,17 @@ export class Vector3 {
      * @param result defines the Vector3 where to store the result
      */
     public static ClampToRef(value: DeepImmutable<Vector3>, min: DeepImmutable<Vector3>, max: DeepImmutable<Vector3>, result: Vector3): void {
-        var x = value._x;
-        x = (x > max._x) ? max._x : x;
-        x = (x < min._x) ? min._x : x;
+        let x = value._x;
+        x = x > max._x ? max._x : x;
+        x = x < min._x ? min._x : x;
 
-        var y = value._y;
-        y = (y > max._y) ? max._y : y;
-        y = (y < min._y) ? min._y : y;
+        let y = value._y;
+        y = y > max._y ? max._y : y;
+        y = y < min._y ? min._y : y;
 
-        var z = value._z;
-        z = (z > max._z) ? max._z : z;
-        z = (z < min._z) ? min._z : z;
+        let z = value._z;
+        z = z > max._z ? max._z : z;
+        z = z < min._z ? min._z : z;
 
         result.copyFromFloats(x, y, z);
     }
@@ -1929,17 +1988,23 @@ export class Vector3 {
      * @param amount defines the amount on the interpolation spline (between 0 and 1)
      * @returns the new Vector3
      */
-    public static Hermite(value1: DeepImmutable<Vector3>, tangent1: DeepImmutable<Vector3>, value2: DeepImmutable<Vector3>, tangent2: DeepImmutable<Vector3>, amount: number): Vector3 {
-        var squared = amount * amount;
-        var cubed = amount * squared;
-        var part1 = ((2.0 * cubed) - (3.0 * squared)) + 1.0;
-        var part2 = (-2.0 * cubed) + (3.0 * squared);
-        var part3 = (cubed - (2.0 * squared)) + amount;
-        var part4 = cubed - squared;
+    public static Hermite(
+        value1: DeepImmutable<Vector3>,
+        tangent1: DeepImmutable<Vector3>,
+        value2: DeepImmutable<Vector3>,
+        tangent2: DeepImmutable<Vector3>,
+        amount: number
+    ): Vector3 {
+        const squared = amount * amount;
+        const cubed = amount * squared;
+        const part1 = 2.0 * cubed - 3.0 * squared + 1.0;
+        const part2 = -2.0 * cubed + 3.0 * squared;
+        const part3 = cubed - 2.0 * squared + amount;
+        const part4 = cubed - squared;
 
-        var x = (((value1._x * part1) + (value2._x * part2)) + (tangent1._x * part3)) + (tangent2._x * part4);
-        var y = (((value1._y * part1) + (value2._y * part2)) + (tangent1._y * part3)) + (tangent2._y * part4);
-        var z = (((value1._z * part1) + (value2._z * part2)) + (tangent1._z * part3)) + (tangent2._z * part4);
+        const x = value1._x * part1 + value2._x * part2 + tangent1._x * part3 + tangent2._x * part4;
+        const y = value1._y * part1 + value2._y * part2 + tangent1._y * part3 + tangent2._y * part4;
+        const z = value1._z * part1 + value2._z * part2 + tangent1._z * part3 + tangent2._z * part4;
         return new Vector3(x, y, z);
     }
 
@@ -1952,8 +2017,14 @@ export class Vector3 {
      * @param time define where the derivative must be done
      * @returns 1st derivative
      */
-    public static Hermite1stDerivative(value1: DeepImmutable<Vector3>, tangent1: DeepImmutable<Vector3>, value2: DeepImmutable<Vector3>, tangent2: DeepImmutable<Vector3>, time: number): Vector3 {
-        let result = Vector3.Zero();
+    public static Hermite1stDerivative(
+        value1: DeepImmutable<Vector3>,
+        tangent1: DeepImmutable<Vector3>,
+        value2: DeepImmutable<Vector3>,
+        tangent2: DeepImmutable<Vector3>,
+        time: number
+    ): Vector3 {
+        const result = Vector3.Zero();
 
         this.Hermite1stDerivativeToRef(value1, tangent1, value2, tangent2, time, result);
 
@@ -1969,7 +2040,14 @@ export class Vector3 {
      * @param time define where the derivative must be done
      * @param result define where to store the derivative
      */
-    public static Hermite1stDerivativeToRef(value1: DeepImmutable<Vector3>, tangent1: DeepImmutable<Vector3>, value2: DeepImmutable<Vector3>, tangent2: DeepImmutable<Vector3>, time: number, result: Vector3) {
+    public static Hermite1stDerivativeToRef(
+        value1: DeepImmutable<Vector3>,
+        tangent1: DeepImmutable<Vector3>,
+        value2: DeepImmutable<Vector3>,
+        tangent2: DeepImmutable<Vector3>,
+        time: number,
+        result: Vector3
+    ) {
         const t2 = time * time;
 
         result.x = (t2 - time) * 6 * value1.x + (3 * t2 - 4 * time + 1) * tangent1.x + (-t2 + time) * 6 * value2.x + (3 * t2 - 2 * time) * tangent2.x;
@@ -1985,7 +2063,7 @@ export class Vector3 {
      * @returns the new Vector3
      */
     public static Lerp(start: DeepImmutable<Vector3>, end: DeepImmutable<Vector3>, amount: number): Vector3 {
-        var result = new Vector3(0, 0, 0);
+        const result = new Vector3(0, 0, 0);
         Vector3.LerpToRef(start, end, amount, result);
         return result;
     }
@@ -1998,9 +2076,9 @@ export class Vector3 {
      * @param result defines the Vector3 where to store the result
      */
     public static LerpToRef(start: DeepImmutable<Vector3>, end: DeepImmutable<Vector3>, amount: number, result: Vector3): void {
-        result.x = start._x + ((end._x - start._x) * amount);
-        result.y = start._y + ((end._y - start._y) * amount);
-        result.z = start._z + ((end._z - start._z) * amount);
+        result.x = start._x + (end._x - start._x) * amount;
+        result.y = start._y + (end._y - start._y) * amount;
+        result.z = start._z + (end._z - start._z) * amount;
     }
 
     /**
@@ -2010,7 +2088,7 @@ export class Vector3 {
      * @returns the dot product
      */
     public static Dot(left: DeepImmutable<Vector3>, right: DeepImmutable<Vector3>): number {
-        return (left._x * right._x + left._y * right._y + left._z * right._z);
+        return left._x * right._x + left._y * right._y + left._z * right._z;
     }
 
     /**
@@ -2021,7 +2099,7 @@ export class Vector3 {
      * @returns the cross product
      */
     public static Cross(left: DeepImmutable<Vector3>, right: DeepImmutable<Vector3>): Vector3 {
-        var result = Vector3.Zero();
+        const result = Vector3.Zero();
         Vector3.CrossToRef(left, right, result);
         return result;
     }
@@ -2046,7 +2124,7 @@ export class Vector3 {
      * @returns the new Vector3
      */
     public static Normalize(vector: DeepImmutable<Vector3>): Vector3 {
-        var result = Vector3.Zero();
+        const result = Vector3.Zero();
         Vector3.NormalizeToRef(vector, result);
         return result;
     }
@@ -2083,21 +2161,23 @@ export class Vector3 {
      * @param result the vector in which the screen space will be stored
      * @returns the new Vector3
      */
-    public static ProjectToRef(vector: DeepImmutable<Vector3>, world: DeepImmutable<Matrix>, transform: DeepImmutable<Matrix>, viewport: DeepImmutable<Viewport>, result: DeepImmutable<Vector3>): Vector3 {
-        var cw = viewport.width;
-        var ch = viewport.height;
-        var cx = viewport.x;
-        var cy = viewport.y;
+    public static ProjectToRef(
+        vector: DeepImmutable<Vector3>,
+        world: DeepImmutable<Matrix>,
+        transform: DeepImmutable<Matrix>,
+        viewport: DeepImmutable<Viewport>,
+        result: DeepImmutable<Vector3>
+    ): Vector3 {
+        const cw = viewport.width;
+        const ch = viewport.height;
+        const cx = viewport.x;
+        const cy = viewport.y;
 
-        var viewportMatrix = MathTmp.Matrix[1];
+        const viewportMatrix = MathTmp.Matrix[1];
 
-        Matrix.FromValuesToRef(
-            cw / 2.0, 0, 0, 0,
-            0, -ch / 2.0, 0, 0,
-            0, 0, 0.5, 0,
-            cx + cw / 2.0, ch / 2.0 + cy, 0.5, 1, viewportMatrix);
+        Matrix.FromValuesToRef(cw / 2.0, 0, 0, 0, 0, -ch / 2.0, 0, 0, 0, 0, 0.5, 0, cx + cw / 2.0, ch / 2.0 + cy, 0.5, 1, viewportMatrix);
 
-        var matrix = MathTmp.Matrix[0];
+        const matrix = MathTmp.Matrix[0];
         world.multiplyToRef(transform, matrix);
         matrix.multiplyToRef(viewportMatrix, matrix);
 
@@ -2105,11 +2185,16 @@ export class Vector3 {
         return result;
     }
 
-    /** @hidden */
+    /**
+     * @param source
+     * @param matrix
+     * @param result
+     * @hidden
+     */
     public static _UnprojectFromInvertedMatrixToRef(source: DeepImmutable<Vector3>, matrix: DeepImmutable<Matrix>, result: Vector3) {
         Vector3.TransformCoordinatesToRef(source, matrix, result);
         const m = matrix.m;
-        var num = source._x * m[3] + source._y * m[7] + source._z * m[11] + m[15];
+        const num = source._x * m[3] + source._y * m[7] + source._z * m[11] + m[15];
         if (Scalar.WithinEpsilon(num, 1.0)) {
             result.scaleInPlace(1.0 / num);
         }
@@ -2138,8 +2223,15 @@ export class Vector3 {
      * @param projection defines the projection matrix to use
      * @returns the new Vector3
      */
-    public static Unproject(source: DeepImmutable<Vector3>, viewportWidth: number, viewportHeight: number, world: DeepImmutable<Matrix>, view: DeepImmutable<Matrix>, projection: DeepImmutable<Matrix>): Vector3 {
-        let result = Vector3.Zero();
+    public static Unproject(
+        source: DeepImmutable<Vector3>,
+        viewportWidth: number,
+        viewportHeight: number,
+        world: DeepImmutable<Matrix>,
+        view: DeepImmutable<Matrix>,
+        projection: DeepImmutable<Matrix>
+    ): Vector3 {
+        const result = Vector3.Zero();
 
         Vector3.UnprojectToRef(source, viewportWidth, viewportHeight, world, view, projection, result);
 
@@ -2156,7 +2248,15 @@ export class Vector3 {
      * @param projection defines the projection matrix to use
      * @param result defines the Vector3 where to store the result
      */
-    public static UnprojectToRef(source: DeepImmutable<Vector3>, viewportWidth: number, viewportHeight: number, world: DeepImmutable<Matrix>, view: DeepImmutable<Matrix>, projection: DeepImmutable<Matrix>, result: Vector3): void {
+    public static UnprojectToRef(
+        source: DeepImmutable<Vector3>,
+        viewportWidth: number,
+        viewportHeight: number,
+        world: DeepImmutable<Matrix>,
+        view: DeepImmutable<Matrix>,
+        projection: DeepImmutable<Matrix>,
+        result: Vector3
+    ): void {
         Vector3.UnprojectFloatsToRef(source._x, source._y, source._z, viewportWidth, viewportHeight, world, view, projection, result);
     }
 
@@ -2172,19 +2272,28 @@ export class Vector3 {
      * @param projection defines the projection matrix to use
      * @param result defines the Vector3 where to store the result
      */
-    public static UnprojectFloatsToRef(sourceX: float, sourceY: float, sourceZ: float, viewportWidth: number, viewportHeight: number, world: DeepImmutable<Matrix>, view: DeepImmutable<Matrix>, projection: DeepImmutable<Matrix>, result: Vector3): void {
+    public static UnprojectFloatsToRef(
+        sourceX: float,
+        sourceY: float,
+        sourceZ: float,
+        viewportWidth: number,
+        viewportHeight: number,
+        world: DeepImmutable<Matrix>,
+        view: DeepImmutable<Matrix>,
+        projection: DeepImmutable<Matrix>,
+        result: Vector3
+    ): void {
         const matrix = MathTmp.Matrix[0];
         world.multiplyToRef(view, matrix);
         matrix.multiplyToRef(projection, matrix);
         matrix.invert();
 
         const screenSource = MathTmp.Vector3[0];
-        screenSource.x = sourceX / viewportWidth * 2 - 1;
-        screenSource.y = -(sourceY / viewportHeight * 2 - 1);
+        screenSource.x = (sourceX / viewportWidth) * 2 - 1;
+        screenSource.y = -((sourceY / viewportHeight) * 2 - 1);
         if (EngineStore.LastCreatedEngine?.isNDCHalfZRange) {
             screenSource.z = sourceZ;
-        }
-        else {
+        } else {
             screenSource.z = 2 * sourceZ - 1.0;
         }
 
@@ -2198,7 +2307,7 @@ export class Vector3 {
      * @returns the new Vector3
      */
     public static Minimize(left: DeepImmutable<Vector3>, right: DeepImmutable<Vector3>): Vector3 {
-        var min = left.clone();
+        const min = left.clone();
         min.minimizeInPlace(right);
         return min;
     }
@@ -2210,7 +2319,7 @@ export class Vector3 {
      * @returns the new Vector3
      */
     public static Maximize(left: DeepImmutable<Vector3>, right: DeepImmutable<Vector3>): Vector3 {
-        var max = left.clone();
+        const max = left.clone();
         max.maximizeInPlace(right);
         return max;
     }
@@ -2232,11 +2341,11 @@ export class Vector3 {
      * @returns the squared distance
      */
     public static DistanceSquared(value1: DeepImmutable<Vector3>, value2: DeepImmutable<Vector3>): number {
-        var x = value1._x - value2._x;
-        var y = value1._y - value2._y;
-        var z = value1._z - value2._z;
+        const x = value1._x - value2._x;
+        const y = value1._y - value2._y;
+        const z = value1._z - value2._z;
 
-        return (x * x) + (y * y) + (z * z);
+        return x * x + y * y + z * z;
     }
 
     /**
@@ -2267,9 +2376,7 @@ export class Vector3 {
         const p2p0L = p2p0.length();
         const p2p1L = p2p1.length();
 
-        if (p1p0L < Epsilon ||
-            p2p0L < Epsilon ||
-            p2p1L < Epsilon) {
+        if (p1p0L < Epsilon || p2p0L < Epsilon || p2p1L < Epsilon) {
             // This is a degenerate triangle. As we assume this is part of a non-degenerate mesh,
             // we will find a better intersection later.
             // Let's just return one of the extremities
@@ -2299,7 +2406,7 @@ export class Vector3 {
         const cosA = Vector3.Dot(normal, vectorp0);
         const projVector = MathTmp.Vector3[5];
         const proj = MathTmp.Vector3[6];
-        projVector.copyFrom(normal).scaleInPlace(- l * cosA);
+        projVector.copyFrom(normal).scaleInPlace(-l * cosA);
         proj.copyFrom(vector).addInPlace(projVector);
 
         // Compute barycentric coordinates (v0, v1 and v2 are axis from barycenter to extremities)
@@ -2312,12 +2419,12 @@ export class Vector3 {
         tmp.copyFrom(p2p0).scaleInPlace(1 / p2p0L);
         v0.addInPlace(tmp).scaleInPlace(-1);
 
-        v1.copyFrom(p1p0).scaleInPlace(- 1 / p1p0L);
+        v1.copyFrom(p1p0).scaleInPlace(-1 / p1p0L);
         tmp.copyFrom(p2p1).scaleInPlace(1 / p2p1L);
         v1.addInPlace(tmp).scaleInPlace(-1);
 
-        v2.copyFrom(p2p1).scaleInPlace(- 1 / p2p1L);
-        tmp.copyFrom(p2p0).scaleInPlace(- 1 / p2p0L);
+        v2.copyFrom(p2p1).scaleInPlace(-1 / p2p1L);
+        tmp.copyFrom(p2p0).scaleInPlace(-1 / p2p0L);
         v2.addInPlace(tmp).scaleInPlace(-1);
 
         // Determines which edge of the triangle is closest to "proj"
@@ -2431,7 +2538,7 @@ export class Vector3 {
      * @see https://doc.babylonjs.com/divingDeeper/mesh/transforms/center_origin/target_align
      */
     public static RotationFromAxis(axis1: DeepImmutable<Vector3>, axis2: DeepImmutable<Vector3>, axis3: DeepImmutable<Vector3>): Vector3 {
-        var rotation = Vector3.Zero();
+        const rotation = Vector3.Zero();
         Vector3.RotationFromAxisToRef(axis1, axis2, axis3, rotation);
         return rotation;
     }
@@ -2444,7 +2551,7 @@ export class Vector3 {
      * @param ref defines the Vector3 where to store the result
      */
     public static RotationFromAxisToRef(axis1: DeepImmutable<Vector3>, axis2: DeepImmutable<Vector3>, axis3: DeepImmutable<Vector3>, ref: Vector3): void {
-        var quat = MathTmp.Quaternion[0];
+        const quat = MathTmp.Quaternion[0];
         Quaternion.RotationQuaternionFromAxisToRef(axis1, axis2, axis3, quat);
         quat.toEulerAnglesToRef(ref);
     }
@@ -2470,7 +2577,7 @@ export class Vector4 {
         public z: number,
         /** w value of the vector */
         public w: number
-    ) { }
+    ) {}
 
     /**
      * Returns the string with the Vector4 coordinates.
@@ -2511,7 +2618,7 @@ export class Vector4 {
      * @returns the resulting array
      */
     public asArray(): number[] {
-        var result = new Array<number>();
+        const result = new Array<number>();
 
         this.toArray(result, 0);
 
@@ -2745,11 +2852,13 @@ export class Vector4 {
      * @returns true if they are equal
      */
     public equalsWithEpsilon(otherVector: DeepImmutable<Vector4>, epsilon: number = Epsilon): boolean {
-        return otherVector
-            && Scalar.WithinEpsilon(this.x, otherVector.x, epsilon)
-            && Scalar.WithinEpsilon(this.y, otherVector.y, epsilon)
-            && Scalar.WithinEpsilon(this.z, otherVector.z, epsilon)
-            && Scalar.WithinEpsilon(this.w, otherVector.w, epsilon);
+        return (
+            otherVector &&
+            Scalar.WithinEpsilon(this.x, otherVector.x, epsilon) &&
+            Scalar.WithinEpsilon(this.y, otherVector.y, epsilon) &&
+            Scalar.WithinEpsilon(this.z, otherVector.z, epsilon) &&
+            Scalar.WithinEpsilon(this.w, otherVector.w, epsilon)
+        );
     }
 
     /**
@@ -2846,10 +2955,18 @@ export class Vector4 {
      * @returns the current updated Vector4
      */
     public minimizeInPlace(other: DeepImmutable<Vector4>): Vector4 {
-        if (other.x < this.x) { this.x = other.x; }
-        if (other.y < this.y) { this.y = other.y; }
-        if (other.z < this.z) { this.z = other.z; }
-        if (other.w < this.w) { this.w = other.w; }
+        if (other.x < this.x) {
+            this.x = other.x;
+        }
+        if (other.y < this.y) {
+            this.y = other.y;
+        }
+        if (other.z < this.z) {
+            this.z = other.z;
+        }
+        if (other.w < this.w) {
+            this.w = other.w;
+        }
         return this;
     }
     /**
@@ -2858,10 +2975,18 @@ export class Vector4 {
      * @returns the current updated Vector4
      */
     public maximizeInPlace(other: DeepImmutable<Vector4>): Vector4 {
-        if (other.x > this.x) { this.x = other.x; }
-        if (other.y > this.y) { this.y = other.y; }
-        if (other.z > this.z) { this.z = other.z; }
-        if (other.w > this.w) { this.w = other.w; }
+        if (other.x > this.x) {
+            this.x = other.x;
+        }
+        if (other.y > this.y) {
+            this.y = other.y;
+        }
+        if (other.z > this.z) {
+            this.z = other.z;
+        }
+        if (other.w > this.w) {
+            this.w = other.w;
+        }
         return this;
     }
 
@@ -2894,7 +3019,7 @@ export class Vector4 {
      * @returns the length squared
      */
     public lengthSquared(): number {
-        return (this.x * this.x + this.y * this.y + this.z * this.z + this.w * this.w);
+        return this.x * this.x + this.y * this.y + this.z * this.z + this.w * this.w;
     }
 
     // Methods
@@ -2903,7 +3028,7 @@ export class Vector4 {
      * @returns the updated Vector4.
      */
     public normalize(): Vector4 {
-        var len = this.length();
+        const len = this.length();
 
         if (len === 0) {
             return this;
@@ -3043,7 +3168,7 @@ export class Vector4 {
      * @returns the vector
      */
     public static Normalize(vector: DeepImmutable<Vector4>): Vector4 {
-        var result = Vector4.Zero();
+        const result = Vector4.Zero();
         Vector4.NormalizeToRef(vector, result);
         return result;
     }
@@ -3064,7 +3189,7 @@ export class Vector4 {
      * @returns a new vector with the minimum of the left and right vector values
      */
     public static Minimize(left: DeepImmutable<Vector4>, right: DeepImmutable<Vector4>): Vector4 {
-        var min = left.clone();
+        const min = left.clone();
         min.minimizeInPlace(right);
         return min;
     }
@@ -3076,7 +3201,7 @@ export class Vector4 {
      * @returns a new vector with the maximum of the left and right vector values
      */
     public static Maximize(left: DeepImmutable<Vector4>, right: DeepImmutable<Vector4>): Vector4 {
-        var max = left.clone();
+        const max = left.clone();
         max.maximizeInPlace(right);
         return max;
     }
@@ -3096,12 +3221,12 @@ export class Vector4 {
      * @return the distance between the two vectors squared
      */
     public static DistanceSquared(value1: DeepImmutable<Vector4>, value2: DeepImmutable<Vector4>): number {
-        var x = value1.x - value2.x;
-        var y = value1.y - value2.y;
-        var z = value1.z - value2.z;
-        var w = value1.w - value2.w;
+        const x = value1.x - value2.x;
+        const y = value1.y - value2.y;
+        const z = value1.z - value2.z;
+        const w = value1.w - value2.w;
 
-        return (x * x) + (y * y) + (z * z) + (w * w);
+        return x * x + y * y + z * z + w * w;
     }
     /**
      * Returns a new Vector4 located at the center between the vectors "value1" and "value2".
@@ -3133,7 +3258,7 @@ export class Vector4 {
      * @returns the transformed Vector4
      */
     public static TransformCoordinates(vector: DeepImmutable<Vector3>, transformation: DeepImmutable<Matrix>): Vector4 {
-        var result = Vector4.Zero();
+        const result = Vector4.Zero();
         Vector4.TransformCoordinatesToRef(vector, transformation, result);
         return result;
     }
@@ -3162,10 +3287,10 @@ export class Vector4 {
      */
     public static TransformCoordinatesFromFloatsToRef(x: number, y: number, z: number, transformation: DeepImmutable<Matrix>, result: Vector4): void {
         const m = transformation.m;
-        var rx = x * m[0] + y * m[4] + z * m[8] + m[12];
-        var ry = x * m[1] + y * m[5] + z * m[9] + m[13];
-        var rz = x * m[2] + y * m[6] + z * m[10] + m[14];
-        var rw = x * m[3] + y * m[7] + z * m[11] + m[15];
+        const rx = x * m[0] + y * m[4] + z * m[8] + m[12];
+        const ry = x * m[1] + y * m[5] + z * m[9] + m[13];
+        const rz = x * m[2] + y * m[6] + z * m[10] + m[14];
+        const rw = x * m[3] + y * m[7] + z * m[11] + m[15];
 
         result.x = rx;
         result.y = ry;
@@ -3181,7 +3306,7 @@ export class Vector4 {
      * @returns the new vector
      */
     public static TransformNormal(vector: DeepImmutable<Vector4>, transformation: DeepImmutable<Matrix>): Vector4 {
-        var result = Vector4.Zero();
+        const result = Vector4.Zero();
         Vector4.TransformNormalToRef(vector, transformation, result);
         return result;
     }
@@ -3195,9 +3320,9 @@ export class Vector4 {
      */
     public static TransformNormalToRef(vector: DeepImmutable<Vector4>, transformation: DeepImmutable<Matrix>, result: Vector4): void {
         const m = transformation.m;
-        var x = (vector.x * m[0]) + (vector.y * m[4]) + (vector.z * m[8]);
-        var y = (vector.x * m[1]) + (vector.y * m[5]) + (vector.z * m[9]);
-        var z = (vector.x * m[2]) + (vector.y * m[6]) + (vector.z * m[10]);
+        const x = vector.x * m[0] + vector.y * m[4] + vector.z * m[8];
+        const y = vector.x * m[1] + vector.y * m[5] + vector.z * m[9];
+        const z = vector.x * m[2] + vector.y * m[6] + vector.z * m[10];
         result.x = x;
         result.y = y;
         result.z = z;
@@ -3216,9 +3341,9 @@ export class Vector4 {
      */
     public static TransformNormalFromFloatsToRef(x: number, y: number, z: number, w: number, transformation: DeepImmutable<Matrix>, result: Vector4): void {
         const m = transformation.m;
-        result.x = (x * m[0]) + (y * m[4]) + (z * m[8]);
-        result.y = (x * m[1]) + (y * m[5]) + (z * m[9]);
-        result.z = (x * m[2]) + (y * m[6]) + (z * m[10]);
+        result.x = x * m[0] + y * m[4] + z * m[8];
+        result.y = x * m[1] + y * m[5] + z * m[9];
+        result.z = x * m[2] + y * m[6] + z * m[10];
         result.w = w;
     }
 
@@ -3300,11 +3425,7 @@ export class Quaternion {
      * @param z defines the third component (0 by default)
      * @param w defines the fourth component (1.0 by default)
      */
-    constructor(
-        x: number = 0.0,
-        y: number = 0.0,
-        z: number = 0.0,
-        w: number = 1.0) {
+    constructor(x: number = 0.0, y: number = 0.0, z: number = 0.0, w: number = 1.0) {
         this._x = x;
         this._y = y;
         this._z = z;
@@ -3367,11 +3488,13 @@ export class Quaternion {
      * @returns true if the given quaternion coordinates are close to the current ones by a distance of epsilon.
      */
     public equalsWithEpsilon(otherQuaternion: DeepImmutable<Quaternion>, epsilon: number = Epsilon): boolean {
-        return otherQuaternion
-            && Scalar.WithinEpsilon(this._x, otherQuaternion._x, epsilon)
-            && Scalar.WithinEpsilon(this._y, otherQuaternion._y, epsilon)
-            && Scalar.WithinEpsilon(this._z, otherQuaternion._z, epsilon)
-            && Scalar.WithinEpsilon(this._w, otherQuaternion._w, epsilon);
+        return (
+            otherQuaternion &&
+            Scalar.WithinEpsilon(this._x, otherQuaternion._x, epsilon) &&
+            Scalar.WithinEpsilon(this._y, otherQuaternion._y, epsilon) &&
+            Scalar.WithinEpsilon(this._z, otherQuaternion._z, epsilon) &&
+            Scalar.WithinEpsilon(this._w, otherQuaternion._w, epsilon)
+        );
     }
 
     /**
@@ -3510,7 +3633,7 @@ export class Quaternion {
      * @returns a new quaternion set as the multiplication result of the current one with the given one "q1"
      */
     public multiply(q1: DeepImmutable<Quaternion>): Quaternion {
-        var result = new Quaternion(0, 0, 0, 1.0);
+        const result = new Quaternion(0, 0, 0, 1.0);
         this.multiplyToRef(q1, result);
         return result;
     }
@@ -3521,10 +3644,10 @@ export class Quaternion {
      * @returns the current quaternion
      */
     public multiplyToRef(q1: DeepImmutable<Quaternion>, result: Quaternion): Quaternion {
-        var x = this._x * q1._w + this._y * q1._z - this._z * q1._y + this._w * q1._x;
-        var y = -this._x * q1._z + this._y * q1._w + this._z * q1._x + this._w * q1._y;
-        var z = this._x * q1._y - this._y * q1._x + this._z * q1._w + this._w * q1._z;
-        var w = -this._x * q1._x - this._y * q1._y - this._z * q1._z + this._w * q1._w;
+        const x = this._x * q1._w + this._y * q1._z - this._z * q1._y + this._w * q1._x;
+        const y = -this._x * q1._z + this._y * q1._w + this._z * q1._x + this._w * q1._y;
+        const z = this._x * q1._y - this._y * q1._x + this._z * q1._w + this._w * q1._z;
+        const w = -this._x * q1._x - this._y * q1._y - this._z * q1._z + this._w * q1._w;
         result.copyFromFloats(x, y, z, w);
         return this;
     }
@@ -3565,7 +3688,7 @@ export class Quaternion {
      * @returns a new quaternion
      */
     public conjugate(): Quaternion {
-        var result = new Quaternion(-this._x, -this._y, -this._z, this._w);
+        const result = new Quaternion(-this._x, -this._y, -this._z, this._w);
         return result;
     }
 
@@ -3574,7 +3697,7 @@ export class Quaternion {
      * @returns the quaternion length (float)
      */
     public length(): number {
-        return Math.sqrt((this._x * this._x) + (this._y * this._y) + (this._z * this._z) + (this._w * this._w));
+        return Math.sqrt(this._x * this._x + this._y * this._y + this._z * this._z + this._w * this._w);
     }
 
     /**
@@ -3582,13 +3705,13 @@ export class Quaternion {
      * @returns the current updated quaternion
      */
     public normalize(): Quaternion {
-        var len = this.length();
+        const len = this.length();
 
         if (len === 0) {
             return this;
         }
 
-        var inv = 1.0 / len;
+        const inv = 1.0 / len;
         this.x *= inv;
         this.y *= inv;
         this.z *= inv;
@@ -3602,7 +3725,7 @@ export class Quaternion {
      * @see https://doc.babylonjs.com/divingDeeper/mesh/transforms/center_origin/rotation_conventions
      */
     public toEulerAngles(): Vector3 {
-        var result = Vector3.Zero();
+        const result = Vector3.Zero();
         this.toEulerAnglesToRef(result);
         return result;
     }
@@ -3614,19 +3737,18 @@ export class Quaternion {
      * @see https://doc.babylonjs.com/divingDeeper/mesh/transforms/center_origin/rotation_conventions
      */
     public toEulerAnglesToRef(result: Vector3): Quaternion {
+        const qz = this._z;
+        const qx = this._x;
+        const qy = this._y;
+        const qw = this._w;
 
-        var qz = this._z;
-        var qx = this._x;
-        var qy = this._y;
-        var qw = this._w;
+        const sqw = qw * qw;
+        const sqz = qz * qz;
+        const sqx = qx * qx;
+        const sqy = qy * qy;
 
-        var sqw = qw * qw;
-        var sqz = qz * qz;
-        var sqx = qx * qx;
-        var sqy = qy * qy;
-
-        var zAxisY = qy * qz - qx * qw;
-        var limit = .4999999;
+        const zAxisY = qy * qz - qx * qw;
+        const limit = 0.4999999;
 
         if (zAxisY < -limit) {
             result.y = 2 * Math.atan2(qy, qw);
@@ -3637,13 +3759,12 @@ export class Quaternion {
             result.x = -Math.PI / 2;
             result.z = 0;
         } else {
-            result.z = Math.atan2(2.0 * (qx * qy + qz * qw), (-sqz - sqx + sqy + sqw));
+            result.z = Math.atan2(2.0 * (qx * qy + qz * qw), -sqz - sqx + sqy + sqw);
             result.x = Math.asin(-2.0 * (qz * qy - qx * qw));
-            result.y = Math.atan2(2.0 * (qz * qx + qy * qw), (sqz - sqx - sqy + sqw));
+            result.y = Math.atan2(2.0 * (qz * qx + qy * qw), sqz - sqx - sqy + sqw);
         }
 
         return this;
-
     }
 
     /**
@@ -3674,7 +3795,7 @@ export class Quaternion {
      * @returns a new quaternion created from the given rotation matrix values
      */
     public static FromRotationMatrix(matrix: DeepImmutable<Matrix>): Quaternion {
-        var result = new Quaternion();
+        const result = new Quaternion();
         Quaternion.FromRotationMatrixToRef(matrix, result);
         return result;
     }
@@ -3685,15 +3806,20 @@ export class Quaternion {
      * @param result defines the target quaternion
      */
     public static FromRotationMatrixToRef(matrix: DeepImmutable<Matrix>, result: Quaternion): void {
-        var data = matrix.m;
-        var m11 = data[0], m12 = data[4], m13 = data[8];
-        var m21 = data[1], m22 = data[5], m23 = data[9];
-        var m31 = data[2], m32 = data[6], m33 = data[10];
-        var trace = m11 + m22 + m33;
-        var s;
+        const data = matrix.m;
+        const m11 = data[0],
+            m12 = data[4],
+            m13 = data[8];
+        const m21 = data[1],
+            m22 = data[5],
+            m23 = data[9];
+        const m31 = data[2],
+            m32 = data[6],
+            m33 = data[10];
+        const trace = m11 + m22 + m33;
+        let s;
 
         if (trace > 0) {
-
             s = 0.5 / Math.sqrt(trace + 1.0);
 
             result.w = 0.25 / s;
@@ -3701,7 +3827,6 @@ export class Quaternion {
             result.y = (m13 - m31) * s;
             result.z = (m21 - m12) * s;
         } else if (m11 > m22 && m11 > m33) {
-
             s = 2.0 * Math.sqrt(1.0 + m11 - m22 - m33);
 
             result.w = (m32 - m23) / s;
@@ -3709,7 +3834,6 @@ export class Quaternion {
             result.y = (m12 + m21) / s;
             result.z = (m13 + m31) / s;
         } else if (m22 > m33) {
-
             s = 2.0 * Math.sqrt(1.0 + m22 - m11 - m33);
 
             result.w = (m13 - m31) / s;
@@ -3717,7 +3841,6 @@ export class Quaternion {
             result.y = 0.25 * s;
             result.z = (m23 + m32) / s;
         } else {
-
             s = 2.0 * Math.sqrt(1.0 + m33 - m11 - m22);
 
             result.w = (m21 - m12) / s;
@@ -3734,7 +3857,7 @@ export class Quaternion {
      * @returns the dot product
      */
     public static Dot(left: DeepImmutable<Quaternion>, right: DeepImmutable<Quaternion>): number {
-        return (left._x * right._x + left._y * right._y + left._z * right._z + left._w * right._w);
+        return left._x * right._x + left._y * right._y + left._z * right._z + left._w * right._w;
     }
 
     /**
@@ -3744,7 +3867,7 @@ export class Quaternion {
      * @returns true if the two quaternions are close to each other
      */
     public static AreClose(quat0: DeepImmutable<Quaternion>, quat1: DeepImmutable<Quaternion>): boolean {
-        let dot = Quaternion.Dot(quat0, quat1);
+        const dot = Quaternion.Dot(quat0, quat1);
 
         return dot >= 0;
     }
@@ -3828,7 +3951,7 @@ export class Quaternion {
      * @returns the target quaternion
      */
     public static RotationAxisToRef(axis: DeepImmutable<Vector3>, angle: number, result: Quaternion): Quaternion {
-        var sin = Math.sin(angle / 2);
+        const sin = Math.sin(angle / 2);
         axis.normalize();
         result.w = Math.cos(angle / 2);
         result.x = axis._x * sin;
@@ -3871,7 +3994,7 @@ export class Quaternion {
      * @returns the new Quaternion
      */
     public static FromEulerAngles(x: number, y: number, z: number): Quaternion {
-        var q = new Quaternion();
+        const q = new Quaternion();
         Quaternion.RotationYawPitchRollToRef(y, x, z, q);
         return q;
     }
@@ -3895,7 +4018,7 @@ export class Quaternion {
      * @returns the new Quaternion
      */
     public static FromEulerVector(vec: DeepImmutable<Vector3>): Quaternion {
-        var q = new Quaternion();
+        const q = new Quaternion();
         Quaternion.RotationYawPitchRollToRef(vec._y, vec._x, vec._z, q);
         return q;
     }
@@ -3925,16 +4048,11 @@ export class Quaternion {
             if (Math.abs(vecFrom.x) > Math.abs(vecFrom.z)) {
                 result.set(-vecFrom.y, vecFrom.x, 0, 0);
             } else {
-                result.set(0, - vecFrom.z, vecFrom.y, 0);
+                result.set(0, -vecFrom.z, vecFrom.y, 0);
             }
         } else {
             Vector3.CrossToRef(vecFrom, vecTo, TmpVectors.Vector3[0]);
-            result.set(
-                TmpVectors.Vector3[0].x,
-                TmpVectors.Vector3[0].y,
-                TmpVectors.Vector3[0].z,
-                r
-            );
+            result.set(TmpVectors.Vector3[0].x, TmpVectors.Vector3[0].y, TmpVectors.Vector3[0].z, r);
         }
 
         return result.normalize();
@@ -3948,7 +4066,7 @@ export class Quaternion {
      * @returns the new quaternion
      */
     public static RotationYawPitchRoll(yaw: number, pitch: number, roll: number): Quaternion {
-        var q = new Quaternion();
+        const q = new Quaternion();
         Quaternion.RotationYawPitchRollToRef(yaw, pitch, roll, q);
         return q;
     }
@@ -3962,21 +4080,21 @@ export class Quaternion {
      */
     public static RotationYawPitchRollToRef(yaw: number, pitch: number, roll: number, result: Quaternion): void {
         // Produces a quaternion from Euler angles in the z-y-x orientation (Tait-Bryan angles)
-        var halfRoll = roll * 0.5;
-        var halfPitch = pitch * 0.5;
-        var halfYaw = yaw * 0.5;
+        const halfRoll = roll * 0.5;
+        const halfPitch = pitch * 0.5;
+        const halfYaw = yaw * 0.5;
 
-        var sinRoll = Math.sin(halfRoll);
-        var cosRoll = Math.cos(halfRoll);
-        var sinPitch = Math.sin(halfPitch);
-        var cosPitch = Math.cos(halfPitch);
-        var sinYaw = Math.sin(halfYaw);
-        var cosYaw = Math.cos(halfYaw);
+        const sinRoll = Math.sin(halfRoll);
+        const cosRoll = Math.cos(halfRoll);
+        const sinPitch = Math.sin(halfPitch);
+        const cosPitch = Math.cos(halfPitch);
+        const sinYaw = Math.sin(halfYaw);
+        const cosYaw = Math.cos(halfYaw);
 
-        result.x = (cosYaw * sinPitch * cosRoll) + (sinYaw * cosPitch * sinRoll);
-        result.y = (sinYaw * cosPitch * cosRoll) - (cosYaw * sinPitch * sinRoll);
-        result.z = (cosYaw * cosPitch * sinRoll) - (sinYaw * sinPitch * cosRoll);
-        result.w = (cosYaw * cosPitch * cosRoll) + (sinYaw * sinPitch * sinRoll);
+        result.x = cosYaw * sinPitch * cosRoll + sinYaw * cosPitch * sinRoll;
+        result.y = sinYaw * cosPitch * cosRoll - cosYaw * sinPitch * sinRoll;
+        result.z = cosYaw * cosPitch * sinRoll - sinYaw * sinPitch * cosRoll;
+        result.w = cosYaw * cosPitch * cosRoll + sinYaw * sinPitch * sinRoll;
     }
 
     /**
@@ -3987,7 +4105,7 @@ export class Quaternion {
      * @returns the new quaternion
      */
     public static RotationAlphaBetaGamma(alpha: number, beta: number, gamma: number): Quaternion {
-        var result = new Quaternion();
+        const result = new Quaternion();
         Quaternion.RotationAlphaBetaGammaToRef(alpha, beta, gamma, result);
         return result;
     }
@@ -4001,9 +4119,9 @@ export class Quaternion {
      */
     public static RotationAlphaBetaGammaToRef(alpha: number, beta: number, gamma: number, result: Quaternion): void {
         // Produces a quaternion from Euler angles in the z-x-z orientation
-        var halfGammaPlusAlpha = (gamma + alpha) * 0.5;
-        var halfGammaMinusAlpha = (gamma - alpha) * 0.5;
-        var halfBeta = beta * 0.5;
+        const halfGammaPlusAlpha = (gamma + alpha) * 0.5;
+        const halfGammaMinusAlpha = (gamma - alpha) * 0.5;
+        const halfBeta = beta * 0.5;
 
         result.x = Math.cos(halfGammaMinusAlpha) * Math.sin(halfBeta);
         result.y = Math.sin(halfGammaMinusAlpha) * Math.sin(halfBeta);
@@ -4019,7 +4137,7 @@ export class Quaternion {
      * @returns the new quaternion
      */
     public static RotationQuaternionFromAxis(axis1: DeepImmutable<Vector3>, axis2: DeepImmutable<Vector3>, axis3: DeepImmutable<Vector3>): Quaternion {
-        var quat = new Quaternion(0.0, 0.0, 0.0, 0.0);
+        const quat = new Quaternion(0.0, 0.0, 0.0, 0.0);
         Quaternion.RotationQuaternionFromAxisToRef(axis1, axis2, axis3, quat);
         return quat;
     }
@@ -4032,7 +4150,7 @@ export class Quaternion {
      * @param ref defines the target quaternion
      */
     public static RotationQuaternionFromAxisToRef(axis1: DeepImmutable<Vector3>, axis2: DeepImmutable<Vector3>, axis3: DeepImmutable<Vector3>, ref: Quaternion): void {
-        var rotMat = MathTmp.Matrix[0];
+        const rotMat = MathTmp.Matrix[0];
         Matrix.FromXYZAxesToRef(axis1.normalize(), axis2.normalize(), axis3.normalize(), rotMat);
         Quaternion.FromRotationMatrixToRef(rotMat, ref);
     }
@@ -4045,7 +4163,7 @@ export class Quaternion {
      * @returns A new quaternion oriented toward the specified forward and up.
      */
     public static FromLookDirectionLH(forward: DeepImmutable<Vector3>, up: DeepImmutable<Vector3>): Quaternion {
-        var quat = new Quaternion();
+        const quat = new Quaternion();
         Quaternion.FromLookDirectionLHToRef(forward, up, quat);
         return quat;
     }
@@ -4058,7 +4176,7 @@ export class Quaternion {
      * @param ref defines the target quaternion.
      */
     public static FromLookDirectionLHToRef(forward: DeepImmutable<Vector3>, up: DeepImmutable<Vector3>, ref: Quaternion): void {
-        var rotMat = MathTmp.Matrix[0];
+        const rotMat = MathTmp.Matrix[0];
         Matrix.LookDirectionLHToRef(forward, up, rotMat);
         Quaternion.FromRotationMatrixToRef(rotMat, ref);
     }
@@ -4071,7 +4189,7 @@ export class Quaternion {
      * @returns A new quaternion oriented toward the specified forward and up.
      */
     public static FromLookDirectionRH(forward: DeepImmutable<Vector3>, up: DeepImmutable<Vector3>): Quaternion {
-        var quat = new Quaternion();
+        const quat = new Quaternion();
         Quaternion.FromLookDirectionRHToRef(forward, up, quat);
         return quat;
     }
@@ -4084,7 +4202,7 @@ export class Quaternion {
      * @param ref defines the target quaternion.
      */
     public static FromLookDirectionRHToRef(forward: DeepImmutable<Vector3>, up: DeepImmutable<Vector3>, ref: Quaternion): void {
-        var rotMat = MathTmp.Matrix[0];
+        const rotMat = MathTmp.Matrix[0];
         Matrix.LookDirectionRHToRef(forward, up, rotMat);
         return Quaternion.FromRotationMatrixToRef(rotMat, ref);
     }
@@ -4097,7 +4215,7 @@ export class Quaternion {
      * @returns the new interpolated quaternion
      */
     public static Slerp(left: DeepImmutable<Quaternion>, right: DeepImmutable<Quaternion>, amount: number): Quaternion {
-        var result = Quaternion.Identity();
+        const result = Quaternion.Identity();
 
         Quaternion.SlerpToRef(left, right, amount, result);
 
@@ -4112,10 +4230,10 @@ export class Quaternion {
      * @param result defines the target quaternion
      */
     public static SlerpToRef(left: DeepImmutable<Quaternion>, right: DeepImmutable<Quaternion>, amount: number, result: Quaternion): void {
-        var num2;
-        var num3;
-        var num4 = (((left._x * right._x) + (left._y * right._y)) + (left._z * right._z)) + (left._w * right._w);
-        var flag = false;
+        let num2;
+        let num3;
+        let num4 = left._x * right._x + left._y * right._y + left._z * right._z + left._w * right._w;
+        let flag = false;
 
         if (num4 < 0) {
             flag = true;
@@ -4125,18 +4243,17 @@ export class Quaternion {
         if (num4 > 0.999999) {
             num3 = 1 - amount;
             num2 = flag ? -amount : amount;
-        }
-        else {
-            var num5 = Math.acos(num4);
-            var num6 = (1.0 / Math.sin(num5));
-            num3 = (Math.sin((1.0 - amount) * num5)) * num6;
-            num2 = flag ? ((-Math.sin(amount * num5)) * num6) : ((Math.sin(amount * num5)) * num6);
+        } else {
+            const num5 = Math.acos(num4);
+            const num6 = 1.0 / Math.sin(num5);
+            num3 = Math.sin((1.0 - amount) * num5) * num6;
+            num2 = flag ? -Math.sin(amount * num5) * num6 : Math.sin(amount * num5) * num6;
         }
 
-        result.x = (num3 * left._x) + (num2 * right._x);
-        result.y = (num3 * left._y) + (num2 * right._y);
-        result.z = (num3 * left._z) + (num2 * right._z);
-        result.w = (num3 * left._w) + (num2 * right._w);
+        result.x = num3 * left._x + num2 * right._x;
+        result.y = num3 * left._y + num2 * right._y;
+        result.z = num3 * left._z + num2 * right._z;
+        result.w = num3 * left._w + num2 * right._w;
     }
 
     /**
@@ -4148,18 +4265,24 @@ export class Quaternion {
      * @param amount defines the target quaternion
      * @returns the new interpolated quaternion
      */
-    public static Hermite(value1: DeepImmutable<Quaternion>, tangent1: DeepImmutable<Quaternion>, value2: DeepImmutable<Quaternion>, tangent2: DeepImmutable<Quaternion>, amount: number): Quaternion {
-        var squared = amount * amount;
-        var cubed = amount * squared;
-        var part1 = ((2.0 * cubed) - (3.0 * squared)) + 1.0;
-        var part2 = (-2.0 * cubed) + (3.0 * squared);
-        var part3 = (cubed - (2.0 * squared)) + amount;
-        var part4 = cubed - squared;
+    public static Hermite(
+        value1: DeepImmutable<Quaternion>,
+        tangent1: DeepImmutable<Quaternion>,
+        value2: DeepImmutable<Quaternion>,
+        tangent2: DeepImmutable<Quaternion>,
+        amount: number
+    ): Quaternion {
+        const squared = amount * amount;
+        const cubed = amount * squared;
+        const part1 = 2.0 * cubed - 3.0 * squared + 1.0;
+        const part2 = -2.0 * cubed + 3.0 * squared;
+        const part3 = cubed - 2.0 * squared + amount;
+        const part4 = cubed - squared;
 
-        var x = (((value1._x * part1) + (value2._x * part2)) + (tangent1._x * part3)) + (tangent2._x * part4);
-        var y = (((value1._y * part1) + (value2._y * part2)) + (tangent1._y * part3)) + (tangent2._y * part4);
-        var z = (((value1._z * part1) + (value2._z * part2)) + (tangent1._z * part3)) + (tangent2._z * part4);
-        var w = (((value1._w * part1) + (value2._w * part2)) + (tangent1._w * part3)) + (tangent2._w * part4);
+        const x = value1._x * part1 + value2._x * part2 + tangent1._x * part3 + tangent2._x * part4;
+        const y = value1._y * part1 + value2._y * part2 + tangent1._y * part3 + tangent2._y * part4;
+        const z = value1._z * part1 + value2._z * part2 + tangent1._z * part3 + tangent2._z * part4;
+        const w = value1._w * part1 + value2._w * part2 + tangent1._w * part3 + tangent2._w * part4;
         return new Quaternion(x, y, z, w);
     }
 
@@ -4172,8 +4295,14 @@ export class Quaternion {
      * @param time define where the derivative must be done
      * @returns 1st derivative
      */
-    public static Hermite1stDerivative(value1: DeepImmutable<Quaternion>, tangent1: DeepImmutable<Quaternion>, value2: DeepImmutable<Quaternion>, tangent2: DeepImmutable<Quaternion>, time: number): Quaternion {
-        let result = Quaternion.Zero();
+    public static Hermite1stDerivative(
+        value1: DeepImmutable<Quaternion>,
+        tangent1: DeepImmutable<Quaternion>,
+        value2: DeepImmutable<Quaternion>,
+        tangent2: DeepImmutable<Quaternion>,
+        time: number
+    ): Quaternion {
+        const result = Quaternion.Zero();
 
         this.Hermite1stDerivativeToRef(value1, tangent1, value2, tangent2, time, result);
 
@@ -4189,7 +4318,14 @@ export class Quaternion {
      * @param time define where the derivative must be done
      * @param result define where to store the derivative
      */
-    public static Hermite1stDerivativeToRef(value1: DeepImmutable<Quaternion>, tangent1: DeepImmutable<Quaternion>, value2: DeepImmutable<Quaternion>, tangent2: DeepImmutable<Quaternion>, time: number, result: Quaternion) {
+    public static Hermite1stDerivativeToRef(
+        value1: DeepImmutable<Quaternion>,
+        tangent1: DeepImmutable<Quaternion>,
+        value2: DeepImmutable<Quaternion>,
+        tangent2: DeepImmutable<Quaternion>,
+        time: number,
+        result: Quaternion
+    ) {
         const t2 = time * time;
 
         result.x = (t2 - time) * 6 * value1.x + (3 * t2 - 4 * time + 1) * tangent1.x + (-t2 + time) * 6 * value2.x + (3 * t2 - 2 * time) * tangent2.x;
@@ -4203,7 +4339,6 @@ export class Quaternion {
  * Class used to store matrix data (4x4)
  */
 export class Matrix {
-
     /**
      * Gets the precision of matrix computations
      */
@@ -4230,7 +4365,9 @@ export class Matrix {
     /**
      * Gets the internal data of the matrix
      */
-    public get m(): DeepImmutable<Float32Array | Array<number>> { return this._m; }
+    public get m(): DeepImmutable<Float32Array | Array<number>> {
+        return this._m;
+    }
 
     /**
      * Update the updateFlag to indicate that the matrix has been updated
@@ -4273,12 +4410,23 @@ export class Matrix {
         if (this._isIdentityDirty) {
             this._isIdentityDirty = false;
             const m = this._m;
-            this._isIdentity = (
-                m[0] === 1.0 && m[1] === 0.0 && m[2] === 0.0 && m[3] === 0.0 &&
-                m[4] === 0.0 && m[5] === 1.0 && m[6] === 0.0 && m[7] === 0.0 &&
-                m[8] === 0.0 && m[9] === 0.0 && m[10] === 1.0 && m[11] === 0.0 &&
-                m[12] === 0.0 && m[13] === 0.0 && m[14] === 0.0 && m[15] === 1.0
-            );
+            this._isIdentity =
+                m[0] === 1.0 &&
+                m[1] === 0.0 &&
+                m[2] === 0.0 &&
+                m[3] === 0.0 &&
+                m[4] === 0.0 &&
+                m[5] === 1.0 &&
+                m[6] === 0.0 &&
+                m[7] === 0.0 &&
+                m[8] === 0.0 &&
+                m[9] === 0.0 &&
+                m[10] === 1.0 &&
+                m[11] === 0.0 &&
+                m[12] === 0.0 &&
+                m[13] === 0.0 &&
+                m[14] === 0.0 &&
+                m[15] === 1.0;
         }
 
         return this._isIdentity;
@@ -4293,10 +4441,21 @@ export class Matrix {
             this._isIdentity3x2Dirty = false;
             if (this._m[0] !== 1.0 || this._m[5] !== 1.0 || this._m[15] !== 1.0) {
                 this._isIdentity3x2 = false;
-            } else if (this._m[1] !== 0.0 || this._m[2] !== 0.0 || this._m[3] !== 0.0 ||
-                this._m[4] !== 0.0 || this._m[6] !== 0.0 || this._m[7] !== 0.0 ||
-                this._m[8] !== 0.0 || this._m[9] !== 0.0 || this._m[10] !== 0.0 || this._m[11] !== 0.0 ||
-                this._m[12] !== 0.0 || this._m[13] !== 0.0 || this._m[14] !== 0.0) {
+            } else if (
+                this._m[1] !== 0.0 ||
+                this._m[2] !== 0.0 ||
+                this._m[3] !== 0.0 ||
+                this._m[4] !== 0.0 ||
+                this._m[6] !== 0.0 ||
+                this._m[7] !== 0.0 ||
+                this._m[8] !== 0.0 ||
+                this._m[9] !== 0.0 ||
+                this._m[10] !== 0.0 ||
+                this._m[11] !== 0.0 ||
+                this._m[12] !== 0.0 ||
+                this._m[13] !== 0.0 ||
+                this._m[14] !== 0.0
+            ) {
                 this._isIdentity3x2 = false;
             } else {
                 this._isIdentity3x2 = true;
@@ -4316,10 +4475,22 @@ export class Matrix {
         }
 
         const m = this._m;
-        const m00 = m[0], m01 = m[1], m02 = m[2], m03 = m[3];
-        const m10 = m[4], m11 = m[5], m12 = m[6], m13 = m[7];
-        const m20 = m[8], m21 = m[9], m22 = m[10], m23 = m[11];
-        const m30 = m[12], m31 = m[13], m32 = m[14], m33 = m[15];
+        const m00 = m[0],
+            m01 = m[1],
+            m02 = m[2],
+            m03 = m[3];
+        const m10 = m[4],
+            m11 = m[5],
+            m12 = m[6],
+            m13 = m[7];
+        const m20 = m[8],
+            m21 = m[9],
+            m22 = m[10],
+            m23 = m[11];
+        const m30 = m[12],
+            m31 = m[13],
+            m32 = m[14],
+            m33 = m[15];
         // https://en.wikipedia.org/wiki/Laplace_expansion
         // to compute the deterrminant of a 4x4 Matrix we compute the cofactors of any row or column,
         // then we multiply each Cofactor by its corresponding matrix value and sum them all to get the determinant
@@ -4354,8 +4525,8 @@ export class Matrix {
     }
     /**
      * Returns the matrix as a Float32Array or Array<number>
-    * @returns the matrix underlying array.
-    */
+     * @returns the matrix underlying array.
+     */
     public asArray(): DeepImmutable<Float32Array | Array<number>> {
         return this._m;
     }
@@ -4373,13 +4544,7 @@ export class Matrix {
      * @returns the current matrix
      */
     public reset(): Matrix {
-        Matrix.FromValuesToRef(
-            0.0, 0.0, 0.0, 0.0,
-            0.0, 0.0, 0.0, 0.0,
-            0.0, 0.0, 0.0, 0.0,
-            0.0, 0.0, 0.0, 0.0,
-            this
-        );
+        Matrix.FromValuesToRef(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, this);
         this._updateIdentityStatus(false);
         return this;
     }
@@ -4390,7 +4555,7 @@ export class Matrix {
      * @returns a new matrix as the addition of the current matrix and the given one
      */
     public add(other: DeepImmutable<Matrix>): Matrix {
-        var result = new Matrix();
+        const result = new Matrix();
         this.addToRef(other, result);
         return result;
     }
@@ -4405,7 +4570,7 @@ export class Matrix {
         const m = this._m;
         const resultM = result._m;
         const otherM = other.m;
-        for (var index = 0; index < 16; index++) {
+        for (let index = 0; index < 16; index++) {
             resultM[index] = m[index] + otherM[index];
         }
         result.markAsUpdated();
@@ -4420,7 +4585,7 @@ export class Matrix {
     public addToSelf(other: DeepImmutable<Matrix>): Matrix {
         const m = this._m;
         const otherM = other.m;
-        for (var index = 0; index < 16; index++) {
+        for (let index = 0; index < 16; index++) {
             m[index] += otherM[index];
         }
         this.markAsUpdated();
@@ -4440,10 +4605,22 @@ export class Matrix {
 
         // the inverse of a Matrix is the transpose of cofactor matrix divided by the determinant
         const m = this._m;
-        const m00 = m[0], m01 = m[1], m02 = m[2], m03 = m[3];
-        const m10 = m[4], m11 = m[5], m12 = m[6], m13 = m[7];
-        const m20 = m[8], m21 = m[9], m22 = m[10], m23 = m[11];
-        const m30 = m[12], m31 = m[13], m32 = m[14], m33 = m[15];
+        const m00 = m[0],
+            m01 = m[1],
+            m02 = m[2],
+            m03 = m[3];
+        const m10 = m[4],
+            m11 = m[5],
+            m12 = m[6],
+            m13 = m[7];
+        const m20 = m[8],
+            m21 = m[9],
+            m22 = m[10],
+            m23 = m[11];
+        const m30 = m[12],
+            m31 = m[13],
+            m32 = m[14],
+            m33 = m[15];
 
         const det_22_33 = m22 * m33 - m32 * m23;
         const det_21_33 = m21 * m33 - m31 * m23;
@@ -4495,10 +4672,22 @@ export class Matrix {
         const cofact_33 = +(m00 * det_11_22 - m01 * det_10_22 + m02 * det_10_21);
 
         Matrix.FromValuesToRef(
-            cofact_00 * detInv, cofact_10 * detInv, cofact_20 * detInv, cofact_30 * detInv,
-            cofact_01 * detInv, cofact_11 * detInv, cofact_21 * detInv, cofact_31 * detInv,
-            cofact_02 * detInv, cofact_12 * detInv, cofact_22 * detInv, cofact_32 * detInv,
-            cofact_03 * detInv, cofact_13 * detInv, cofact_23 * detInv, cofact_33 * detInv,
+            cofact_00 * detInv,
+            cofact_10 * detInv,
+            cofact_20 * detInv,
+            cofact_30 * detInv,
+            cofact_01 * detInv,
+            cofact_11 * detInv,
+            cofact_21 * detInv,
+            cofact_31 * detInv,
+            cofact_02 * detInv,
+            cofact_12 * detInv,
+            cofact_22 * detInv,
+            cofact_32 * detInv,
+            cofact_03 * detInv,
+            cofact_13 * detInv,
+            cofact_23 * detInv,
+            cofact_33 * detInv,
             other
         );
 
@@ -4594,13 +4783,7 @@ export class Matrix {
      */
     public removeRotationAndScaling(): Matrix {
         const m = this.m;
-        Matrix.FromValuesToRef(
-            1.0, 0.0, 0.0, 0.0,
-            0.0, 1.0, 0.0, 0.0,
-            0.0, 0.0, 1.0, 0.0,
-            m[12], m[13], m[14], m[15],
-            this
-        );
+        Matrix.FromValuesToRef(1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, m[12], m[13], m[14], m[15], this);
         this._updateIdentityStatus(m[12] === 0 && m[13] === 0 && m[14] === 0 && m[15] === 1);
         return this;
     }
@@ -4611,7 +4794,7 @@ export class Matrix {
      * @returns a new matrix set with the multiplication result of the current Matrix and the given one
      */
     public multiply(other: DeepImmutable<Matrix>): Matrix {
-        var result = new Matrix();
+        const result = new Matrix();
         this.multiplyToRef(other, result);
         return result;
     }
@@ -4623,7 +4806,7 @@ export class Matrix {
      */
     public copyFrom(other: DeepImmutable<Matrix>): Matrix {
         other.copyToArray(this._m);
-        const o = (other as Matrix);
+        const o = other as Matrix;
         this.updateFlag = o.updateFlag;
         this._updateIdentityStatus(o._isIdentity, o._isIdentityDirty, o._isIdentity3x2, o._isIdentity3x2Dirty);
         return this;
@@ -4636,7 +4819,7 @@ export class Matrix {
      * @returns the current matrix
      */
     public copyToArray(array: Float32Array | Array<number>, offset: number = 0): Matrix {
-        let source = this._m;
+        const source = this._m;
         array[offset] = source[0];
         array[offset + 1] = source[1];
         array[offset + 2] = source[2];
@@ -4688,15 +4871,39 @@ export class Matrix {
     public multiplyToArray(other: DeepImmutable<Matrix>, result: Float32Array | Array<number>, offset: number): Matrix {
         const m = this._m;
         const otherM = other.m;
-        var tm0 = m[0], tm1 = m[1], tm2 = m[2], tm3 = m[3];
-        var tm4 = m[4], tm5 = m[5], tm6 = m[6], tm7 = m[7];
-        var tm8 = m[8], tm9 = m[9], tm10 = m[10], tm11 = m[11];
-        var tm12 = m[12], tm13 = m[13], tm14 = m[14], tm15 = m[15];
+        const tm0 = m[0],
+            tm1 = m[1],
+            tm2 = m[2],
+            tm3 = m[3];
+        const tm4 = m[4],
+            tm5 = m[5],
+            tm6 = m[6],
+            tm7 = m[7];
+        const tm8 = m[8],
+            tm9 = m[9],
+            tm10 = m[10],
+            tm11 = m[11];
+        const tm12 = m[12],
+            tm13 = m[13],
+            tm14 = m[14],
+            tm15 = m[15];
 
-        var om0 = otherM[0], om1 = otherM[1], om2 = otherM[2], om3 = otherM[3];
-        var om4 = otherM[4], om5 = otherM[5], om6 = otherM[6], om7 = otherM[7];
-        var om8 = otherM[8], om9 = otherM[9], om10 = otherM[10], om11 = otherM[11];
-        var om12 = otherM[12], om13 = otherM[13], om14 = otherM[14], om15 = otherM[15];
+        const om0 = otherM[0],
+            om1 = otherM[1],
+            om2 = otherM[2],
+            om3 = otherM[3];
+        const om4 = otherM[4],
+            om5 = otherM[5],
+            om6 = otherM[6],
+            om7 = otherM[7];
+        const om8 = otherM[8],
+            om9 = otherM[9],
+            om10 = otherM[10],
+            om11 = otherM[11];
+        const om12 = otherM[12],
+            om13 = otherM[13],
+            om14 = otherM[14],
+            om15 = otherM[15];
 
         result[offset] = tm0 * om0 + tm1 * om4 + tm2 * om8 + tm3 * om12;
         result[offset + 1] = tm0 * om1 + tm1 * om5 + tm2 * om9 + tm3 * om13;
@@ -4726,7 +4933,7 @@ export class Matrix {
      * @returns true is the current matrix and the given one values are strictly equal
      */
     public equals(value: DeepImmutable<Matrix>): boolean {
-        const other = (value as Matrix);
+        const other = value as Matrix;
         if (!other) {
             return false;
         }
@@ -4740,10 +4947,22 @@ export class Matrix {
         const m = this.m;
         const om = other.m;
         return (
-            m[0] === om[0] && m[1] === om[1] && m[2] === om[2] && m[3] === om[3] &&
-            m[4] === om[4] && m[5] === om[5] && m[6] === om[6] && m[7] === om[7] &&
-            m[8] === om[8] && m[9] === om[9] && m[10] === om[10] && m[11] === om[11] &&
-            m[12] === om[12] && m[13] === om[13] && m[14] === om[14] && m[15] === om[15]
+            m[0] === om[0] &&
+            m[1] === om[1] &&
+            m[2] === om[2] &&
+            m[3] === om[3] &&
+            m[4] === om[4] &&
+            m[5] === om[5] &&
+            m[6] === om[6] &&
+            m[7] === om[7] &&
+            m[8] === om[8] &&
+            m[9] === om[9] &&
+            m[10] === om[10] &&
+            m[11] === om[11] &&
+            m[12] === om[12] &&
+            m[13] === om[13] &&
+            m[14] === om[14] &&
+            m[15] === om[15]
         );
     }
 
@@ -4842,12 +5061,26 @@ export class Matrix {
         }
 
         if (rotation) {
-            const sx = 1 / scale._x, sy = 1 / scale._y, sz = 1 / scale._z;
+            const sx = 1 / scale._x,
+                sy = 1 / scale._y,
+                sz = 1 / scale._z;
             Matrix.FromValuesToRef(
-                m[0] * sx, m[1] * sx, m[2] * sx, 0.0,
-                m[4] * sy, m[5] * sy, m[6] * sy, 0.0,
-                m[8] * sz, m[9] * sz, m[10] * sz, 0.0,
-                0.0, 0.0, 0.0, 1.0,
+                m[0] * sx,
+                m[1] * sx,
+                m[2] * sx,
+                0.0,
+                m[4] * sy,
+                m[5] * sy,
+                m[6] * sy,
+                0.0,
+                m[8] * sz,
+                m[9] * sz,
+                m[10] * sz,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
                 MathTmp.Matrix[0]
             );
 
@@ -4866,7 +5099,7 @@ export class Matrix {
         if (index < 0 || index > 3) {
             return null;
         }
-        var i = index * 4;
+        const i = index * 4;
         return new Vector4(this._m[i + 0], this._m[i + 1], this._m[i + 2], this._m[i + 3]);
     }
 
@@ -4911,7 +5144,7 @@ export class Matrix {
         if (index < 0 || index > 3) {
             return this;
         }
-        var i = index * 4;
+        const i = index * 4;
         this._m[i + 0] = x;
         this._m[i + 1] = y;
         this._m[i + 2] = z;
@@ -4927,7 +5160,7 @@ export class Matrix {
      * @returns a new matrix
      */
     public scale(scale: number): Matrix {
-        var result = new Matrix();
+        const result = new Matrix();
         this.scaleToRef(scale, result);
         return result;
     }
@@ -4939,7 +5172,7 @@ export class Matrix {
      * @returns the current matrix
      */
     public scaleToRef(scale: number, result: Matrix): Matrix {
-        for (var index = 0; index < 16; index++) {
+        for (let index = 0; index < 16; index++) {
             result._m[index] = this._m[index] * scale;
         }
         result.markAsUpdated();
@@ -4953,7 +5186,7 @@ export class Matrix {
      * @returns the current matrix
      */
     public scaleAndAddToRef(scale: number, result: Matrix): Matrix {
-        for (var index = 0; index < 16; index++) {
+        for (let index = 0; index < 16; index++) {
             result._m[index] += this._m[index] * scale;
         }
         result.markAsUpdated();
@@ -4968,14 +5201,8 @@ export class Matrix {
         const tmp = MathTmp.Matrix[0];
         this.invertToRef(tmp);
         tmp.transposeToRef(ref);
-        var m = ref._m;
-        Matrix.FromValuesToRef(
-            m[0], m[1], m[2], 0.0,
-            m[4], m[5], m[6], 0.0,
-            m[8], m[9], m[10], 0.0,
-            0.0, 0.0, 0.0, 1.0,
-            ref
-        );
+        const m = ref._m;
+        Matrix.FromValuesToRef(m[0], m[1], m[2], 0.0, m[4], m[5], m[6], 0.0, m[8], m[9], m[10], 0.0, 0.0, 0.0, 0.0, 1.0, ref);
     }
 
     /**
@@ -4983,7 +5210,7 @@ export class Matrix {
      * @returns a new matrix sets to the extracted rotation matrix from the current one
      */
     public getRotationMatrix(): Matrix {
-        var result = new Matrix();
+        const result = new Matrix();
         this.getRotationMatrixToRef(result);
         return result;
     }
@@ -5001,14 +5228,10 @@ export class Matrix {
         }
 
         const m = this._m;
-        const sx = 1 / scale._x, sy = 1 / scale._y, sz = 1 / scale._z;
-        Matrix.FromValuesToRef(
-            m[0] * sx, m[1] * sx, m[2] * sx, 0.0,
-            m[4] * sy, m[5] * sy, m[6] * sy, 0.0,
-            m[8] * sz, m[9] * sz, m[10] * sz, 0.0,
-            0.0, 0.0, 0.0, 1.0,
-            result
-        );
+        const sx = 1 / scale._x,
+            sy = 1 / scale._y,
+            sz = 1 / scale._z;
+        Matrix.FromValuesToRef(m[0] * sx, m[1] * sx, m[2] * sx, 0.0, m[4] * sy, m[5] * sy, m[6] * sy, 0.0, m[8] * sz, m[9] * sz, m[10] * sz, 0.0, 0.0, 0.0, 0.0, 1.0, result);
         return this;
     }
 
@@ -5029,7 +5252,7 @@ export class Matrix {
      * Toggles projection matrix from being right handed to left handed in place and vice versa
      */
     public toggleProjectionMatrixHandInPlace() {
-        var m = this._m;
+        const m = this._m;
         m[8] *= -1;
         m[9] *= -1;
         m[10] *= -1;
@@ -5045,7 +5268,7 @@ export class Matrix {
      * @returns a new Matrix set from the starting index of the given array
      */
     public static FromArray(array: DeepImmutable<ArrayLike<number>>, offset: number = 0): Matrix {
-        var result = new Matrix();
+        const result = new Matrix();
         Matrix.FromArrayToRef(array, offset, result);
         return result;
     }
@@ -5057,7 +5280,7 @@ export class Matrix {
      * @param result defines the target matrix
      */
     public static FromArrayToRef(array: DeepImmutable<ArrayLike<number>>, offset: number, result: Matrix) {
-        for (var index = 0; index < 16; index++) {
+        for (let index = 0; index < 16; index++) {
             result._m[index] = array[index + offset];
         }
         result.markAsUpdated();
@@ -5071,7 +5294,7 @@ export class Matrix {
      * @param result defines the target matrix
      */
     public static FromFloat32ArrayToRefScaled(array: DeepImmutable<Float32Array | Array<number>>, offset: number, scale: number, result: Matrix) {
-        for (var index = 0; index < 16; index++) {
+        for (let index = 0; index < 16; index++) {
             result._m[index] = array[index + offset] * scale;
         }
         result.markAsUpdated();
@@ -5104,16 +5327,42 @@ export class Matrix {
      * @param initialM44 defines 4th value of 4th row
      * @param result defines the target matrix
      */
-    public static FromValuesToRef(initialM11: number, initialM12: number, initialM13: number, initialM14: number,
-        initialM21: number, initialM22: number, initialM23: number, initialM24: number,
-        initialM31: number, initialM32: number, initialM33: number, initialM34: number,
-        initialM41: number, initialM42: number, initialM43: number, initialM44: number, result: Matrix): void {
-
+    public static FromValuesToRef(
+        initialM11: number,
+        initialM12: number,
+        initialM13: number,
+        initialM14: number,
+        initialM21: number,
+        initialM22: number,
+        initialM23: number,
+        initialM24: number,
+        initialM31: number,
+        initialM32: number,
+        initialM33: number,
+        initialM34: number,
+        initialM41: number,
+        initialM42: number,
+        initialM43: number,
+        initialM44: number,
+        result: Matrix
+    ): void {
         const m = result._m;
-        m[0] = initialM11; m[1] = initialM12; m[2] = initialM13; m[3] = initialM14;
-        m[4] = initialM21; m[5] = initialM22; m[6] = initialM23; m[7] = initialM24;
-        m[8] = initialM31; m[9] = initialM32; m[10] = initialM33; m[11] = initialM34;
-        m[12] = initialM41; m[13] = initialM42; m[14] = initialM43; m[15] = initialM44;
+        m[0] = initialM11;
+        m[1] = initialM12;
+        m[2] = initialM13;
+        m[3] = initialM14;
+        m[4] = initialM21;
+        m[5] = initialM22;
+        m[6] = initialM23;
+        m[7] = initialM24;
+        m[8] = initialM31;
+        m[9] = initialM32;
+        m[10] = initialM33;
+        m[11] = initialM34;
+        m[12] = initialM41;
+        m[13] = initialM42;
+        m[14] = initialM43;
+        m[15] = initialM44;
 
         result.markAsUpdated();
     }
@@ -5138,17 +5387,42 @@ export class Matrix {
      * @param initialM44 defines 4th value of 4th row
      * @returns the new matrix
      */
-    public static FromValues(initialM11: number, initialM12: number, initialM13: number, initialM14: number,
-        initialM21: number, initialM22: number, initialM23: number, initialM24: number,
-        initialM31: number, initialM32: number, initialM33: number, initialM34: number,
-        initialM41: number, initialM42: number, initialM43: number, initialM44: number): Matrix {
-
-        var result = new Matrix();
+    public static FromValues(
+        initialM11: number,
+        initialM12: number,
+        initialM13: number,
+        initialM14: number,
+        initialM21: number,
+        initialM22: number,
+        initialM23: number,
+        initialM24: number,
+        initialM31: number,
+        initialM32: number,
+        initialM33: number,
+        initialM34: number,
+        initialM41: number,
+        initialM42: number,
+        initialM43: number,
+        initialM44: number
+    ): Matrix {
+        const result = new Matrix();
         const m = result._m;
-        m[0] = initialM11; m[1] = initialM12; m[2] = initialM13; m[3] = initialM14;
-        m[4] = initialM21; m[5] = initialM22; m[6] = initialM23; m[7] = initialM24;
-        m[8] = initialM31; m[9] = initialM32; m[10] = initialM33; m[11] = initialM34;
-        m[12] = initialM41; m[13] = initialM42; m[14] = initialM43; m[15] = initialM44;
+        m[0] = initialM11;
+        m[1] = initialM12;
+        m[2] = initialM13;
+        m[3] = initialM14;
+        m[4] = initialM21;
+        m[5] = initialM22;
+        m[6] = initialM23;
+        m[7] = initialM24;
+        m[8] = initialM31;
+        m[9] = initialM32;
+        m[10] = initialM33;
+        m[11] = initialM34;
+        m[12] = initialM41;
+        m[13] = initialM42;
+        m[14] = initialM43;
+        m[15] = initialM44;
         result.markAsUpdated();
         return result;
     }
@@ -5161,7 +5435,7 @@ export class Matrix {
      * @returns a new matrix
      */
     public static Compose(scale: DeepImmutable<Vector3>, rotation: DeepImmutable<Quaternion>, translation: DeepImmutable<Vector3>): Matrix {
-        var result = new Matrix();
+        const result = new Matrix();
         Matrix.ComposeToRef(scale, rotation, translation, result);
         return result;
     }
@@ -5174,14 +5448,27 @@ export class Matrix {
      * @param result defines the target matrix
      */
     public static ComposeToRef(scale: DeepImmutable<Vector3>, rotation: DeepImmutable<Quaternion>, translation: DeepImmutable<Vector3>, result: Matrix): void {
-        let m = result._m;
-        var x = rotation._x, y = rotation._y, z = rotation._z, w = rotation._w;
-        var x2 = x + x, y2 = y + y, z2 = z + z;
-        var xx = x * x2, xy = x * y2, xz = x * z2;
-        var yy = y * y2, yz = y * z2, zz = z * z2;
-        var wx = w * x2, wy = w * y2, wz = w * z2;
+        const m = result._m;
+        const x = rotation._x,
+            y = rotation._y,
+            z = rotation._z,
+            w = rotation._w;
+        const x2 = x + x,
+            y2 = y + y,
+            z2 = z + z;
+        const xx = x * x2,
+            xy = x * y2,
+            xz = x * z2;
+        const yy = y * y2,
+            yz = y * z2,
+            zz = z * z2;
+        const wx = w * x2,
+            wy = w * y2,
+            wz = w * z2;
 
-        var sx = scale._x, sy = scale._y, sz = scale._z;
+        const sx = scale._x,
+            sy = scale._y,
+            sz = scale._z;
 
         m[0] = (1 - (yy + zz)) * sx;
         m[1] = (xy + wz) * sx;
@@ -5211,11 +5498,7 @@ export class Matrix {
      * @returns a new identity matrix
      */
     public static Identity(): Matrix {
-        const identity = Matrix.FromValues(
-            1.0, 0.0, 0.0, 0.0,
-            0.0, 1.0, 0.0, 0.0,
-            0.0, 0.0, 1.0, 0.0,
-            0.0, 0.0, 0.0, 1.0);
+        const identity = Matrix.FromValues(1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0);
         identity._updateIdentityStatus(true);
         return identity;
     }
@@ -5225,13 +5508,7 @@ export class Matrix {
      * @param result defines the target matrix
      */
     public static IdentityToRef(result: Matrix): void {
-        Matrix.FromValuesToRef(
-            1.0, 0.0, 0.0, 0.0,
-            0.0, 1.0, 0.0, 0.0,
-            0.0, 0.0, 1.0, 0.0,
-            0.0, 0.0, 0.0, 1.0,
-            result
-        );
+        Matrix.FromValuesToRef(1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, result);
         result._updateIdentityStatus(true);
     }
 
@@ -5240,11 +5517,7 @@ export class Matrix {
      * @returns a new zero matrix
      */
     public static Zero(): Matrix {
-        const zero = Matrix.FromValues(
-            0.0, 0.0, 0.0, 0.0,
-            0.0, 0.0, 0.0, 0.0,
-            0.0, 0.0, 0.0, 0.0,
-            0.0, 0.0, 0.0, 0.0);
+        const zero = Matrix.FromValues(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
         zero._updateIdentityStatus(false);
         return zero;
     }
@@ -5255,7 +5528,7 @@ export class Matrix {
      * @return the new matrix
      */
     public static RotationX(angle: number): Matrix {
-        var result = new Matrix();
+        const result = new Matrix();
         Matrix.RotationXToRef(angle, result);
         return result;
     }
@@ -5266,7 +5539,7 @@ export class Matrix {
      * @returns the new matrix
      */
     public static Invert(source: DeepImmutable<Matrix>): Matrix {
-        var result = new Matrix();
+        const result = new Matrix();
         source.invertToRef(result);
         return result;
     }
@@ -5277,15 +5550,9 @@ export class Matrix {
      * @param result defines the target matrix
      */
     public static RotationXToRef(angle: number, result: Matrix): void {
-        var s = Math.sin(angle);
-        var c = Math.cos(angle);
-        Matrix.FromValuesToRef(
-            1.0, 0.0, 0.0, 0.0,
-            0.0, c, s, 0.0,
-            0.0, -s, c, 0.0,
-            0.0, 0.0, 0.0, 1.0,
-            result
-        );
+        const s = Math.sin(angle);
+        const c = Math.cos(angle);
+        Matrix.FromValuesToRef(1.0, 0.0, 0.0, 0.0, 0.0, c, s, 0.0, 0.0, -s, c, 0.0, 0.0, 0.0, 0.0, 1.0, result);
 
         result._updateIdentityStatus(c === 1 && s === 0);
     }
@@ -5296,7 +5563,7 @@ export class Matrix {
      * @return the new matrix
      */
     public static RotationY(angle: number): Matrix {
-        var result = new Matrix();
+        const result = new Matrix();
         Matrix.RotationYToRef(angle, result);
         return result;
     }
@@ -5307,15 +5574,9 @@ export class Matrix {
      * @param result defines the target matrix
      */
     public static RotationYToRef(angle: number, result: Matrix): void {
-        var s = Math.sin(angle);
-        var c = Math.cos(angle);
-        Matrix.FromValuesToRef(
-            c, 0.0, -s, 0.0,
-            0.0, 1.0, 0.0, 0.0,
-            s, 0.0, c, 0.0,
-            0.0, 0.0, 0.0, 1.0,
-            result
-        );
+        const s = Math.sin(angle);
+        const c = Math.cos(angle);
+        Matrix.FromValuesToRef(c, 0.0, -s, 0.0, 0.0, 1.0, 0.0, 0.0, s, 0.0, c, 0.0, 0.0, 0.0, 0.0, 1.0, result);
 
         result._updateIdentityStatus(c === 1 && s === 0);
     }
@@ -5326,7 +5587,7 @@ export class Matrix {
      * @return the new matrix
      */
     public static RotationZ(angle: number): Matrix {
-        var result = new Matrix();
+        const result = new Matrix();
         Matrix.RotationZToRef(angle, result);
         return result;
     }
@@ -5337,15 +5598,9 @@ export class Matrix {
      * @param result defines the target matrix
      */
     public static RotationZToRef(angle: number, result: Matrix): void {
-        var s = Math.sin(angle);
-        var c = Math.cos(angle);
-        Matrix.FromValuesToRef(
-            c, s, 0.0, 0.0,
-            -s, c, 0.0, 0.0,
-            0.0, 0.0, 1.0, 0.0,
-            0.0, 0.0, 0.0, 1.0,
-            result
-        );
+        const s = Math.sin(angle);
+        const c = Math.cos(angle);
+        Matrix.FromValuesToRef(c, s, 0.0, 0.0, -s, c, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, result);
 
         result._updateIdentityStatus(c === 1 && s === 0);
     }
@@ -5357,7 +5612,7 @@ export class Matrix {
      * @return the new matrix
      */
     public static RotationAxis(axis: DeepImmutable<Vector3>, angle: number): Matrix {
-        var result = new Matrix();
+        const result = new Matrix();
         Matrix.RotationAxisToRef(axis, angle, result);
         return result;
     }
@@ -5369,25 +5624,25 @@ export class Matrix {
      * @param result defines the target matrix
      */
     public static RotationAxisToRef(axis: DeepImmutable<Vector3>, angle: number, result: Matrix): void {
-        var s = Math.sin(-angle);
-        var c = Math.cos(-angle);
-        var c1 = 1 - c;
+        const s = Math.sin(-angle);
+        const c = Math.cos(-angle);
+        const c1 = 1 - c;
 
         axis.normalize();
         const m = result._m;
-        m[0] = (axis._x * axis._x) * c1 + c;
-        m[1] = (axis._x * axis._y) * c1 - (axis._z * s);
-        m[2] = (axis._x * axis._z) * c1 + (axis._y * s);
+        m[0] = axis._x * axis._x * c1 + c;
+        m[1] = axis._x * axis._y * c1 - axis._z * s;
+        m[2] = axis._x * axis._z * c1 + axis._y * s;
         m[3] = 0.0;
 
-        m[4] = (axis._y * axis._x) * c1 + (axis._z * s);
-        m[5] = (axis._y * axis._y) * c1 + c;
-        m[6] = (axis._y * axis._z) * c1 - (axis._x * s);
+        m[4] = axis._y * axis._x * c1 + axis._z * s;
+        m[5] = axis._y * axis._y * c1 + c;
+        m[6] = axis._y * axis._z * c1 - axis._x * s;
         m[7] = 0.0;
 
-        m[8] = (axis._z * axis._x) * c1 - (axis._y * s);
-        m[9] = (axis._z * axis._y) * c1 + (axis._x * s);
-        m[10] = (axis._z * axis._z) * c1 + c;
+        m[8] = axis._z * axis._x * c1 - axis._y * s;
+        m[9] = axis._z * axis._y * c1 + axis._x * s;
+        m[10] = axis._z * axis._z * c1 + c;
         m[11] = 0.0;
 
         m[12] = 0.0;
@@ -5408,22 +5663,42 @@ export class Matrix {
     public static RotationAlignToRef(from: DeepImmutable<Vector3>, to: DeepImmutable<Vector3>, result: Matrix): void {
         const c = Vector3.Dot(to, from);
         const m = result._m;
-        if (c < (-1 + Epsilon)) {
+        if (c < -1 + Epsilon) {
             // from and to are colinear and opposite direction.
             // compute a PI rotation on Z axis
-            m[0] = -1; m[1] = 0; m[2] = 0; m[3] = 0;
-            m[4] = 0; m[5] = -1; m[6] = 0; m[7] = 0;
-            m[8] = 0; m[9] = 0; m[10] = 1; m[11] = 0;
-        }
-        else {
+            m[0] = -1;
+            m[1] = 0;
+            m[2] = 0;
+            m[3] = 0;
+            m[4] = 0;
+            m[5] = -1;
+            m[6] = 0;
+            m[7] = 0;
+            m[8] = 0;
+            m[9] = 0;
+            m[10] = 1;
+            m[11] = 0;
+        } else {
             const v = Vector3.Cross(to, from);
             const k = 1 / (1 + c);
 
-            m[0] = v._x * v._x * k + c; m[1] = v._y * v._x * k - v._z; m[2] = v._z * v._x * k + v._y; m[3] = 0;
-            m[4] = v._x * v._y * k + v._z; m[5] = v._y * v._y * k + c; m[6] = v._z * v._y * k - v._x; m[7] = 0;
-            m[8] = v._x * v._z * k - v._y; m[9] = v._y * v._z * k + v._x; m[10] = v._z * v._z * k + c; m[11] = 0;
+            m[0] = v._x * v._x * k + c;
+            m[1] = v._y * v._x * k - v._z;
+            m[2] = v._z * v._x * k + v._y;
+            m[3] = 0;
+            m[4] = v._x * v._y * k + v._z;
+            m[5] = v._y * v._y * k + c;
+            m[6] = v._z * v._y * k - v._x;
+            m[7] = 0;
+            m[8] = v._x * v._z * k - v._y;
+            m[9] = v._y * v._z * k + v._x;
+            m[10] = v._z * v._z * k + c;
+            m[11] = 0;
         }
-        m[12] = 0; m[13] = 0; m[14] = 0; m[15] = 1;
+        m[12] = 0;
+        m[13] = 0;
+        m[14] = 0;
+        m[15] = 1;
         result.markAsUpdated();
     }
 
@@ -5435,7 +5710,7 @@ export class Matrix {
      * @returns the new rotation matrix
      */
     public static RotationYawPitchRoll(yaw: number, pitch: number, roll: number): Matrix {
-        var result = new Matrix();
+        const result = new Matrix();
         Matrix.RotationYawPitchRollToRef(yaw, pitch, roll, result);
         return result;
     }
@@ -5460,7 +5735,7 @@ export class Matrix {
      * @returns the new matrix
      */
     public static Scaling(x: number, y: number, z: number): Matrix {
-        var result = new Matrix();
+        const result = new Matrix();
         Matrix.ScalingToRef(x, y, z, result);
         return result;
     }
@@ -5473,13 +5748,7 @@ export class Matrix {
      * @param result defines the target matrix
      */
     public static ScalingToRef(x: number, y: number, z: number, result: Matrix): void {
-        Matrix.FromValuesToRef(
-            x, 0.0, 0.0, 0.0,
-            0.0, y, 0.0, 0.0,
-            0.0, 0.0, z, 0.0,
-            0.0, 0.0, 0.0, 1.0,
-            result
-        );
+        Matrix.FromValuesToRef(x, 0.0, 0.0, 0.0, 0.0, y, 0.0, 0.0, 0.0, 0.0, z, 0.0, 0.0, 0.0, 0.0, 1.0, result);
 
         result._updateIdentityStatus(x === 1 && y === 1 && z === 1);
     }
@@ -5492,7 +5761,7 @@ export class Matrix {
      * @returns the new matrix
      */
     public static Translation(x: number, y: number, z: number): Matrix {
-        var result = new Matrix();
+        const result = new Matrix();
         Matrix.TranslationToRef(x, y, z, result);
         return result;
     }
@@ -5505,13 +5774,7 @@ export class Matrix {
      * @param result defines the target matrix
      */
     public static TranslationToRef(x: number, y: number, z: number, result: Matrix): void {
-        Matrix.FromValuesToRef(
-            1.0, 0.0, 0.0, 0.0,
-            0.0, 1.0, 0.0, 0.0,
-            0.0, 0.0, 1.0, 0.0,
-            x, y, z, 1.0,
-            result
-        );
+        Matrix.FromValuesToRef(1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, x, y, z, 1.0, result);
         result._updateIdentityStatus(x === 0 && y === 0 && z === 0);
     }
 
@@ -5523,7 +5786,7 @@ export class Matrix {
      * @returns the new matrix
      */
     public static Lerp(startValue: DeepImmutable<Matrix>, endValue: DeepImmutable<Matrix>, gradient: number): Matrix {
-        var result = new Matrix();
+        const result = new Matrix();
         Matrix.LerpToRef(startValue, endValue, gradient, result);
         return result;
     }
@@ -5539,7 +5802,7 @@ export class Matrix {
         const resultM = result._m;
         const startM = startValue.m;
         const endM = endValue.m;
-        for (var index = 0; index < 16; index++) {
+        for (let index = 0; index < 16; index++) {
             resultM[index] = startM[index] * (1.0 - gradient) + endM[index] * gradient;
         }
         result.markAsUpdated();
@@ -5556,7 +5819,7 @@ export class Matrix {
      * @returns the new matrix
      */
     public static DecomposeLerp(startValue: DeepImmutable<Matrix>, endValue: DeepImmutable<Matrix>, gradient: number): Matrix {
-        var result = new Matrix();
+        const result = new Matrix();
         Matrix.DecomposeLerpToRef(startValue, endValue, gradient, result);
         return result;
     }
@@ -5572,22 +5835,22 @@ export class Matrix {
      * @param result defines the target matrix
      */
     public static DecomposeLerpToRef(startValue: DeepImmutable<Matrix>, endValue: DeepImmutable<Matrix>, gradient: number, result: Matrix) {
-        var startScale = MathTmp.Vector3[0];
-        var startRotation = MathTmp.Quaternion[0];
-        var startTranslation = MathTmp.Vector3[1];
+        const startScale = MathTmp.Vector3[0];
+        const startRotation = MathTmp.Quaternion[0];
+        const startTranslation = MathTmp.Vector3[1];
         startValue.decompose(startScale, startRotation, startTranslation);
 
-        var endScale = MathTmp.Vector3[2];
-        var endRotation = MathTmp.Quaternion[1];
-        var endTranslation = MathTmp.Vector3[3];
+        const endScale = MathTmp.Vector3[2];
+        const endRotation = MathTmp.Quaternion[1];
+        const endTranslation = MathTmp.Vector3[3];
         endValue.decompose(endScale, endRotation, endTranslation);
 
-        var resultScale = MathTmp.Vector3[4];
+        const resultScale = MathTmp.Vector3[4];
         Vector3.LerpToRef(startScale, endScale, gradient, resultScale);
-        var resultRotation = MathTmp.Quaternion[2];
+        const resultRotation = MathTmp.Quaternion[2];
         Quaternion.SlerpToRef(startRotation, endRotation, gradient, resultRotation);
 
-        var resultTranslation = MathTmp.Vector3[5];
+        const resultTranslation = MathTmp.Vector3[5];
         Vector3.LerpToRef(startTranslation, endTranslation, gradient, resultTranslation);
 
         Matrix.ComposeToRef(resultScale, resultRotation, resultTranslation, result);
@@ -5602,7 +5865,7 @@ export class Matrix {
      * @returns the new matrix
      */
     public static LookAtLH(eye: DeepImmutable<Vector3>, target: DeepImmutable<Vector3>, up: DeepImmutable<Vector3>): Matrix {
-        var result = new Matrix();
+        const result = new Matrix();
         Matrix.LookAtLHToRef(eye, target, up, result);
         return result;
     }
@@ -5639,17 +5902,11 @@ export class Matrix {
         yAxis.normalize();
 
         // Eye angles
-        var ex = -Vector3.Dot(xAxis, eye);
-        var ey = -Vector3.Dot(yAxis, eye);
-        var ez = -Vector3.Dot(zAxis, eye);
+        const ex = -Vector3.Dot(xAxis, eye);
+        const ey = -Vector3.Dot(yAxis, eye);
+        const ez = -Vector3.Dot(zAxis, eye);
 
-        Matrix.FromValuesToRef(
-            xAxis._x, yAxis._x, zAxis._x, 0.0,
-            xAxis._y, yAxis._y, zAxis._y, 0.0,
-            xAxis._z, yAxis._z, zAxis._z, 0.0,
-            ex, ey, ez, 1.0,
-            result
-        );
+        Matrix.FromValuesToRef(xAxis._x, yAxis._x, zAxis._x, 0.0, xAxis._y, yAxis._y, zAxis._y, 0.0, xAxis._z, yAxis._z, zAxis._z, 0.0, ex, ey, ez, 1.0, result);
     }
 
     /**
@@ -5661,7 +5918,7 @@ export class Matrix {
      * @returns the new matrix
      */
     public static LookAtRH(eye: DeepImmutable<Vector3>, target: DeepImmutable<Vector3>, up: DeepImmutable<Vector3>): Matrix {
-        var result = new Matrix();
+        const result = new Matrix();
         Matrix.LookAtRHToRef(eye, target, up, result);
         return result;
     }
@@ -5698,17 +5955,11 @@ export class Matrix {
         yAxis.normalize();
 
         // Eye angles
-        var ex = -Vector3.Dot(xAxis, eye);
-        var ey = -Vector3.Dot(yAxis, eye);
-        var ez = -Vector3.Dot(zAxis, eye);
+        const ex = -Vector3.Dot(xAxis, eye);
+        const ey = -Vector3.Dot(yAxis, eye);
+        const ez = -Vector3.Dot(zAxis, eye);
 
-        Matrix.FromValuesToRef(
-            xAxis._x, yAxis._x, zAxis._x, 0.0,
-            xAxis._y, yAxis._y, zAxis._y, 0.0,
-            xAxis._z, yAxis._z, zAxis._z, 0.0,
-            ex, ey, ez, 1.0,
-            result
-        );
+        Matrix.FromValuesToRef(xAxis._x, yAxis._x, zAxis._x, 0.0, xAxis._y, yAxis._y, zAxis._y, 0.0, xAxis._z, yAxis._z, zAxis._z, 0.0, ex, ey, ez, 1.0, result);
     }
 
     /**
@@ -5719,7 +5970,7 @@ export class Matrix {
      * @returns the new matrix
      */
     public static LookDirectionLH(forward: DeepImmutable<Vector3>, up: DeepImmutable<Vector3>): Matrix {
-        var result = new Matrix();
+        const result = new Matrix();
         Matrix.LookDirectionLHToRef(forward, up, result);
         return result;
     }
@@ -5739,13 +5990,7 @@ export class Matrix {
         Vector3.CrossToRef(up, back, left);
 
         // Generate the rotation matrix.
-        Matrix.FromValuesToRef(
-            left._x, left._y, left._z, 0.0,
-            up._x, up._y, up._z, 0.0,
-            back._x, back._y, back._z, 0.0,
-            0, 0, 0, 1.0,
-            result
-        );
+        Matrix.FromValuesToRef(left._x, left._y, left._z, 0.0, up._x, up._y, up._z, 0.0, back._x, back._y, back._z, 0.0, 0, 0, 0, 1.0, result);
     }
 
     /**
@@ -5756,7 +6001,7 @@ export class Matrix {
      * @returns the new matrix
      */
     public static LookDirectionRH(forward: DeepImmutable<Vector3>, up: DeepImmutable<Vector3>): Matrix {
-        var result = new Matrix();
+        const result = new Matrix();
         Matrix.LookDirectionRHToRef(forward, up, result);
         return result;
     }
@@ -5773,13 +6018,7 @@ export class Matrix {
         Vector3.CrossToRef(up, forward, right);
 
         // Generate the rotation matrix.
-        Matrix.FromValuesToRef(
-            right._x, right._y, right._z, 0.0,
-            up._x, up._y, up._z, 0.0,
-            forward._x, forward._y, forward._z, 0.0,
-            0, 0, 0, 1.0,
-            result
-        );
+        Matrix.FromValuesToRef(right._x, right._y, right._z, 0.0, up._x, up._y, up._z, 0.0, forward._x, forward._y, forward._z, 0.0, 0, 0, 0, 1.0, result);
     }
 
     /**
@@ -5792,7 +6031,7 @@ export class Matrix {
      * @returns a new matrix as a left-handed orthographic projection matrix
      */
     public static OrthoLH(width: number, height: number, znear: number, zfar: number, halfZRange?: boolean): Matrix {
-        var matrix = new Matrix();
+        const matrix = new Matrix();
         Matrix.OrthoLHToRef(width, height, znear, zfar, matrix, halfZRange);
         return matrix;
     }
@@ -5807,21 +6046,15 @@ export class Matrix {
      * @param halfZRange true to generate NDC coordinates between 0 and 1 instead of -1 and 1 (default: false)
      */
     public static OrthoLHToRef(width: number, height: number, znear: number, zfar: number, result: Matrix, halfZRange?: boolean): void {
-        let n = znear;
-        let f = zfar;
+        const n = znear;
+        const f = zfar;
 
-        let a = 2.0 / width;
-        let b = 2.0 / height;
-        let c = 2.0 / (f - n);
-        let d = -(f + n) / (f - n);
+        const a = 2.0 / width;
+        const b = 2.0 / height;
+        const c = 2.0 / (f - n);
+        const d = -(f + n) / (f - n);
 
-        Matrix.FromValuesToRef(
-            a, 0.0, 0.0, 0.0,
-            0.0, b, 0.0, 0.0,
-            0.0, 0.0, c, 0.0,
-            0.0, 0.0, d, 1.0,
-            result
-        );
+        Matrix.FromValuesToRef(a, 0.0, 0.0, 0.0, 0.0, b, 0.0, 0.0, 0.0, 0.0, c, 0.0, 0.0, 0.0, d, 1.0, result);
 
         if (halfZRange) {
             result.multiplyToRef(mtxConvertNDCToHalfZRange, result);
@@ -5842,7 +6075,7 @@ export class Matrix {
      * @returns a new matrix as a left-handed orthographic projection matrix
      */
     public static OrthoOffCenterLH(left: number, right: number, bottom: number, top: number, znear: number, zfar: number, halfZRange?: boolean): Matrix {
-        var matrix = new Matrix();
+        const matrix = new Matrix();
         Matrix.OrthoOffCenterLHToRef(left, right, bottom, top, znear, zfar, matrix, halfZRange);
         return matrix;
     }
@@ -5859,23 +6092,17 @@ export class Matrix {
      * @param halfZRange true to generate NDC coordinates between 0 and 1 instead of -1 and 1 (default: false)
      */
     public static OrthoOffCenterLHToRef(left: number, right: number, bottom: number, top: number, znear: number, zfar: number, result: Matrix, halfZRange?: boolean): void {
-        let n = znear;
-        let f = zfar;
+        const n = znear;
+        const f = zfar;
 
-        let a = 2.0 / (right - left);
-        let b = 2.0 / (top - bottom);
-        let c = 2.0 / (f - n);
-        let d = -(f + n) / (f - n);
-        let i0 = (left + right) / (left - right);
-        let i1 = (top + bottom) / (bottom - top);
+        const a = 2.0 / (right - left);
+        const b = 2.0 / (top - bottom);
+        const c = 2.0 / (f - n);
+        const d = -(f + n) / (f - n);
+        const i0 = (left + right) / (left - right);
+        const i1 = (top + bottom) / (bottom - top);
 
-        Matrix.FromValuesToRef(
-            a, 0.0, 0.0, 0.0,
-            0.0, b, 0.0, 0.0,
-            0.0, 0.0, c, 0.0,
-            i0, i1, d, 1.0,
-            result
-        );
+        Matrix.FromValuesToRef(a, 0.0, 0.0, 0.0, 0.0, b, 0.0, 0.0, 0.0, 0.0, c, 0.0, i0, i1, d, 1.0, result);
 
         if (halfZRange) {
             result.multiplyToRef(mtxConvertNDCToHalfZRange, result);
@@ -5896,7 +6123,7 @@ export class Matrix {
      * @returns a new matrix as a right-handed orthographic projection matrix
      */
     public static OrthoOffCenterRH(left: number, right: number, bottom: number, top: number, znear: number, zfar: number, halfZRange?: boolean): Matrix {
-        var matrix = new Matrix();
+        const matrix = new Matrix();
         Matrix.OrthoOffCenterRHToRef(left, right, bottom, top, znear, zfar, matrix, halfZRange);
         return matrix;
     }
@@ -5928,24 +6155,18 @@ export class Matrix {
      * @returns a new matrix as a left-handed perspective projection matrix
      */
     public static PerspectiveLH(width: number, height: number, znear: number, zfar: number, halfZRange?: boolean, projectionPlaneTilt: number = 0): Matrix {
-        var matrix = new Matrix();
+        const matrix = new Matrix();
 
-        let n = znear;
-        let f = zfar;
+        const n = znear;
+        const f = zfar;
 
-        let a = 2.0 * n / width;
-        let b = 2.0 * n / height;
-        let c = (f + n) / (f - n);
-        let d = -2.0 * f * n / (f - n);
-        let rot = Math.tan(projectionPlaneTilt);
+        const a = (2.0 * n) / width;
+        const b = (2.0 * n) / height;
+        const c = (f + n) / (f - n);
+        const d = (-2.0 * f * n) / (f - n);
+        const rot = Math.tan(projectionPlaneTilt);
 
-        Matrix.FromValuesToRef(
-            a, 0.0, 0.0, 0.0,
-            0.0, b, 0.0, rot,
-            0.0, 0.0, c, 1.0,
-            0.0, 0.0, d, 0.0,
-            matrix
-        );
+        Matrix.FromValuesToRef(a, 0.0, 0.0, 0.0, 0.0, b, 0.0, rot, 0.0, 0.0, c, 1.0, 0.0, 0.0, d, 0.0, matrix);
 
         if (halfZRange) {
             matrix.multiplyToRef(mtxConvertNDCToHalfZRange, matrix);
@@ -5966,8 +6187,16 @@ export class Matrix {
      * @param reverseDepthBufferMode true to indicate that we are in a reverse depth buffer mode (meaning znear and zfar have been inverted when calling the function)
      * @returns a new matrix as a left-handed perspective projection matrix
      */
-    public static PerspectiveFovLH(fov: number, aspect: number, znear: number, zfar: number, halfZRange?: boolean, projectionPlaneTilt: number = 0, reverseDepthBufferMode: boolean = false): Matrix {
-        var matrix = new Matrix();
+    public static PerspectiveFovLH(
+        fov: number,
+        aspect: number,
+        znear: number,
+        zfar: number,
+        halfZRange?: boolean,
+        projectionPlaneTilt: number = 0,
+        reverseDepthBufferMode: boolean = false
+    ): Matrix {
+        const matrix = new Matrix();
         Matrix.PerspectiveFovLHToRef(fov, aspect, znear, zfar, matrix, true, halfZRange, projectionPlaneTilt, reverseDepthBufferMode);
         return matrix;
     }
@@ -5984,24 +6213,28 @@ export class Matrix {
      * @param projectionPlaneTilt optional tilt angle of the projection plane around the X axis (horizontal)
      * @param reverseDepthBufferMode true to indicate that we are in a reverse depth buffer mode (meaning znear and zfar have been inverted when calling the function)
      */
-    public static PerspectiveFovLHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed = true, halfZRange?: boolean, projectionPlaneTilt: number = 0, reverseDepthBufferMode: boolean = false): void {
-        let n = znear;
-        let f = zfar;
+    public static PerspectiveFovLHToRef(
+        fov: number,
+        aspect: number,
+        znear: number,
+        zfar: number,
+        result: Matrix,
+        isVerticalFovFixed = true,
+        halfZRange?: boolean,
+        projectionPlaneTilt: number = 0,
+        reverseDepthBufferMode: boolean = false
+    ): void {
+        const n = znear;
+        const f = zfar;
 
-        let t = 1.0 / (Math.tan(fov * 0.5));
-        let a = isVerticalFovFixed ? (t / aspect) : t;
-        let b = isVerticalFovFixed ? t : (t * aspect);
-        let c = reverseDepthBufferMode && n === 0 ? -1 : f !== 0 ? (f + n) / (f - n) : 1;
-        let d = reverseDepthBufferMode && n === 0 ? 2 * f : f !== 0 ? -2.0 * f * n / (f - n) : -2 * n;
-        let rot = Math.tan(projectionPlaneTilt);
+        const t = 1.0 / Math.tan(fov * 0.5);
+        const a = isVerticalFovFixed ? t / aspect : t;
+        const b = isVerticalFovFixed ? t : t * aspect;
+        const c = reverseDepthBufferMode && n === 0 ? -1 : f !== 0 ? (f + n) / (f - n) : 1;
+        const d = reverseDepthBufferMode && n === 0 ? 2 * f : f !== 0 ? (-2.0 * f * n) / (f - n) : -2 * n;
+        const rot = Math.tan(projectionPlaneTilt);
 
-        Matrix.FromValuesToRef(
-            a, 0.0, 0.0, 0.0,
-            0.0, b, 0.0, rot,
-            0.0, 0.0, c, 1.0,
-            0.0, 0.0, d, 0.0,
-            result
-        );
+        Matrix.FromValuesToRef(a, 0.0, 0.0, 0.0, 0.0, b, 0.0, rot, 0.0, 0.0, c, 1.0, 0.0, 0.0, d, 0.0, result);
 
         if (halfZRange) {
             result.multiplyToRef(mtxConvertNDCToHalfZRange, result);
@@ -6021,19 +6254,22 @@ export class Matrix {
      * @param halfZRange true to generate NDC coordinates between 0 and 1 instead of -1 and 1 (default: false)
      * @param projectionPlaneTilt optional tilt angle of the projection plane around the X axis (horizontal)
      */
-    public static PerspectiveFovReverseLHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed = true, halfZRange?: boolean, projectionPlaneTilt: number = 0): void {
-        let t = 1.0 / (Math.tan(fov * 0.5));
-        let a = isVerticalFovFixed ? (t / aspect) : t;
-        let b = isVerticalFovFixed ? t : (t * aspect);
-        let rot = Math.tan(projectionPlaneTilt);
+    public static PerspectiveFovReverseLHToRef(
+        fov: number,
+        aspect: number,
+        znear: number,
+        zfar: number,
+        result: Matrix,
+        isVerticalFovFixed = true,
+        halfZRange?: boolean,
+        projectionPlaneTilt: number = 0
+    ): void {
+        const t = 1.0 / Math.tan(fov * 0.5);
+        const a = isVerticalFovFixed ? t / aspect : t;
+        const b = isVerticalFovFixed ? t : t * aspect;
+        const rot = Math.tan(projectionPlaneTilt);
 
-        Matrix.FromValuesToRef(
-            a, 0.0, 0.0, 0.0,
-            0.0, b, 0.0, rot,
-            0.0, 0.0, -znear, 1.0,
-            0.0, 0.0, 1.0, 0.0,
-            result
-        );
+        Matrix.FromValuesToRef(a, 0.0, 0.0, 0.0, 0.0, b, 0.0, rot, 0.0, 0.0, -znear, 1.0, 0.0, 0.0, 1.0, 0.0, result);
         if (halfZRange) {
             result.multiplyToRef(mtxConvertNDCToHalfZRange, result);
         }
@@ -6051,8 +6287,16 @@ export class Matrix {
      * @param reverseDepthBufferMode true to indicate that we are in a reverse depth buffer mode (meaning znear and zfar have been inverted when calling the function)
      * @returns a new matrix as a right-handed perspective projection matrix
      */
-    public static PerspectiveFovRH(fov: number, aspect: number, znear: number, zfar: number, halfZRange?: boolean, projectionPlaneTilt: number = 0, reverseDepthBufferMode: boolean = false): Matrix {
-        var matrix = new Matrix();
+    public static PerspectiveFovRH(
+        fov: number,
+        aspect: number,
+        znear: number,
+        zfar: number,
+        halfZRange?: boolean,
+        projectionPlaneTilt: number = 0,
+        reverseDepthBufferMode: boolean = false
+    ): Matrix {
+        const matrix = new Matrix();
         Matrix.PerspectiveFovRHToRef(fov, aspect, znear, zfar, matrix, true, halfZRange, projectionPlaneTilt, reverseDepthBufferMode);
         return matrix;
     }
@@ -6069,29 +6313,33 @@ export class Matrix {
      * @param projectionPlaneTilt optional tilt angle of the projection plane around the X axis (horizontal)
      * @param reverseDepthBufferMode true to indicate that we are in a reverse depth buffer mode (meaning znear and zfar have been inverted when calling the function)
      */
-    public static PerspectiveFovRHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed = true, halfZRange?: boolean, projectionPlaneTilt: number = 0, reverseDepthBufferMode: boolean = false): void {
+    public static PerspectiveFovRHToRef(
+        fov: number,
+        aspect: number,
+        znear: number,
+        zfar: number,
+        result: Matrix,
+        isVerticalFovFixed = true,
+        halfZRange?: boolean,
+        projectionPlaneTilt: number = 0,
+        reverseDepthBufferMode: boolean = false
+    ): void {
         //alternatively this could be expressed as:
         //    m = PerspectiveFovLHToRef
         //    m[10] *= -1.0;
         //    m[11] *= -1.0;
 
-        let n = znear;
-        let f = zfar;
+        const n = znear;
+        const f = zfar;
 
-        let t = 1.0 / (Math.tan(fov * 0.5));
-        let a = isVerticalFovFixed ? (t / aspect) : t;
-        let b = isVerticalFovFixed ? t : (t * aspect);
-        let c = reverseDepthBufferMode && n === 0 ? 1 : f !== 0 ? -(f + n) / (f - n) : -1;
-        let d = reverseDepthBufferMode && n === 0 ? 2 * f : f !== 0 ? -2 * f * n / (f - n) : -2 * n;
-        let rot = Math.tan(projectionPlaneTilt);
+        const t = 1.0 / Math.tan(fov * 0.5);
+        const a = isVerticalFovFixed ? t / aspect : t;
+        const b = isVerticalFovFixed ? t : t * aspect;
+        const c = reverseDepthBufferMode && n === 0 ? 1 : f !== 0 ? -(f + n) / (f - n) : -1;
+        const d = reverseDepthBufferMode && n === 0 ? 2 * f : f !== 0 ? (-2 * f * n) / (f - n) : -2 * n;
+        const rot = Math.tan(projectionPlaneTilt);
 
-        Matrix.FromValuesToRef(
-            a, 0.0, 0.0, 0.0,
-            0.0, b, 0.0, rot,
-            0.0, 0.0, c, -1.0,
-            0.0, 0.0, d, 0.0,
-            result
-        );
+        Matrix.FromValuesToRef(a, 0.0, 0.0, 0.0, 0.0, b, 0.0, rot, 0.0, 0.0, c, -1.0, 0.0, 0.0, d, 0.0, result);
 
         if (halfZRange) {
             result.multiplyToRef(mtxConvertNDCToHalfZRange, result);
@@ -6111,19 +6359,22 @@ export class Matrix {
      * @param halfZRange true to generate NDC coordinates between 0 and 1 instead of -1 and 1 (default: false)
      * @param projectionPlaneTilt optional tilt angle of the projection plane around the X axis (horizontal)
      */
-    public static PerspectiveFovReverseRHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed = true, halfZRange?: boolean, projectionPlaneTilt: number = 0): void {
-        let t = 1.0 / (Math.tan(fov * 0.5));
-        let a = isVerticalFovFixed ? (t / aspect) : t;
-        let b = isVerticalFovFixed ? t : (t * aspect);
-        let rot = Math.tan(projectionPlaneTilt);
+    public static PerspectiveFovReverseRHToRef(
+        fov: number,
+        aspect: number,
+        znear: number,
+        zfar: number,
+        result: Matrix,
+        isVerticalFovFixed = true,
+        halfZRange?: boolean,
+        projectionPlaneTilt: number = 0
+    ): void {
+        const t = 1.0 / Math.tan(fov * 0.5);
+        const a = isVerticalFovFixed ? t / aspect : t;
+        const b = isVerticalFovFixed ? t : t * aspect;
+        const rot = Math.tan(projectionPlaneTilt);
 
-        Matrix.FromValuesToRef(
-            a, 0.0, 0.0, 0.0,
-            0.0, b, 0.0, rot,
-            0.0, 0.0, -znear, -1.0,
-            0.0, 0.0, -1.0, 0.0,
-            result
-        );
+        Matrix.FromValuesToRef(a, 0.0, 0.0, 0.0, 0.0, b, 0.0, rot, 0.0, 0.0, -znear, -1.0, 0.0, 0.0, -1.0, 0.0, result);
 
         if (halfZRange) {
             result.multiplyToRef(mtxConvertNDCToHalfZRange, result);
@@ -6135,24 +6386,35 @@ export class Matrix {
     /**
      * Stores a perspective projection for WebVR info a given matrix
      * @param fov defines the field of view
+     * @param fov.upDegrees
      * @param znear defines the near clip plane
+     * @param fov.downDegrees
      * @param zfar defines the far clip plane
+     * @param fov.leftDegrees
      * @param result defines the target matrix
+     * @param fov.rightDegrees
      * @param rightHanded defines if the matrix must be in right-handed mode (false by default)
      * @param halfZRange true to generate NDC coordinates between 0 and 1 instead of -1 and 1 (default: false)
      * @param projectionPlaneTilt optional tilt angle of the projection plane around the X axis (horizontal)
      */
-    public static PerspectiveFovWebVRToRef(fov: { upDegrees: number, downDegrees: number, leftDegrees: number, rightDegrees: number }, znear: number, zfar: number, result: Matrix, rightHanded = false, halfZRange?: boolean, projectionPlaneTilt: number = 0): void {
+    public static PerspectiveFovWebVRToRef(
+        fov: { upDegrees: number; downDegrees: number; leftDegrees: number; rightDegrees: number },
+        znear: number,
+        zfar: number,
+        result: Matrix,
+        rightHanded = false,
+        halfZRange?: boolean,
+        projectionPlaneTilt: number = 0
+    ): void {
+        const rightHandedFactor = rightHanded ? -1 : 1;
 
-        var rightHandedFactor = rightHanded ? -1 : 1;
-
-        var upTan = Math.tan(fov.upDegrees * Math.PI / 180.0);
-        var downTan = Math.tan(fov.downDegrees * Math.PI / 180.0);
-        var leftTan = Math.tan(fov.leftDegrees * Math.PI / 180.0);
-        var rightTan = Math.tan(fov.rightDegrees * Math.PI / 180.0);
-        var xScale = 2.0 / (leftTan + rightTan);
-        var yScale = 2.0 / (upTan + downTan);
-        let rot = Math.tan(projectionPlaneTilt);
+        const upTan = Math.tan((fov.upDegrees * Math.PI) / 180.0);
+        const downTan = Math.tan((fov.downDegrees * Math.PI) / 180.0);
+        const leftTan = Math.tan((fov.leftDegrees * Math.PI) / 180.0);
+        const rightTan = Math.tan((fov.rightDegrees * Math.PI) / 180.0);
+        const xScale = 2.0 / (leftTan + rightTan);
+        const yScale = 2.0 / (upTan + downTan);
+        const rot = Math.tan(projectionPlaneTilt);
 
         const m = result._m;
         m[0] = xScale;
@@ -6160,7 +6422,7 @@ export class Matrix {
         m[5] = yScale;
         m[6] = 0.0;
         m[7] = rot;
-        m[8] = ((leftTan - rightTan) * xScale * 0.5);
+        m[8] = (leftTan - rightTan) * xScale * 0.5;
         m[9] = -((upTan - downTan) * yScale * 0.5);
         m[10] = -zfar / (znear - zfar);
         m[11] = 1.0 * rightHandedFactor;
@@ -6184,19 +6446,22 @@ export class Matrix {
      * @param zmax defines the far clip plane
      * @returns the transformation matrix
      */
-    public static GetFinalMatrix(viewport: DeepImmutable<Viewport>, world: DeepImmutable<Matrix>, view: DeepImmutable<Matrix>, projection: DeepImmutable<Matrix>, zmin: number, zmax: number): Matrix {
-        var cw = viewport.width;
-        var ch = viewport.height;
-        var cx = viewport.x;
-        var cy = viewport.y;
+    public static GetFinalMatrix(
+        viewport: DeepImmutable<Viewport>,
+        world: DeepImmutable<Matrix>,
+        view: DeepImmutable<Matrix>,
+        projection: DeepImmutable<Matrix>,
+        zmin: number,
+        zmax: number
+    ): Matrix {
+        const cw = viewport.width;
+        const ch = viewport.height;
+        const cx = viewport.x;
+        const cy = viewport.y;
 
-        var viewportMatrix = Matrix.FromValues(
-            cw / 2.0, 0.0, 0.0, 0.0,
-            0.0, -ch / 2.0, 0.0, 0.0,
-            0.0, 0.0, zmax - zmin, 0.0,
-            cx + cw / 2.0, ch / 2.0 + cy, zmin, 1.0);
+        const viewportMatrix = Matrix.FromValues(cw / 2.0, 0.0, 0.0, 0.0, 0.0, -ch / 2.0, 0.0, 0.0, 0.0, 0.0, zmax - zmin, 0.0, cx + cw / 2.0, ch / 2.0 + cy, zmin, 1.0);
 
-        var matrix = MathTmp.Matrix[0];
+        const matrix = MathTmp.Matrix[0];
         world.multiplyToRef(view, matrix);
         matrix.multiplyToRef(projection, matrix);
         return matrix.multiply(viewportMatrix);
@@ -6219,11 +6484,7 @@ export class Matrix {
      */
     public static GetAsMatrix3x3(matrix: DeepImmutable<Matrix>): Float32Array | Array<number> {
         const m = matrix.m;
-        const arr = [
-            m[0], m[1], m[2],
-            m[4], m[5], m[6],
-            m[8], m[9], m[10]
-        ];
+        const arr = [m[0], m[1], m[2], m[4], m[5], m[6], m[8], m[9], m[10]];
         return PerformanceConfigurator.MatrixUse64Bits ? arr : new Float32Array(arr);
     }
 
@@ -6233,7 +6494,7 @@ export class Matrix {
      * @returns the new matrix
      */
     public static Transpose(matrix: DeepImmutable<Matrix>): Matrix {
-        var result = new Matrix();
+        const result = new Matrix();
         Matrix.TransposeToRef(matrix, result);
         return result;
     }
@@ -6278,7 +6539,7 @@ export class Matrix {
      * @returns a new matrix
      */
     public static Reflection(plane: DeepImmutable<IPlaneLike>): Matrix {
-        var matrix = new Matrix();
+        const matrix = new Matrix();
         Matrix.ReflectionToRef(plane, matrix);
         return matrix;
     }
@@ -6290,17 +6551,29 @@ export class Matrix {
      */
     public static ReflectionToRef(plane: DeepImmutable<IPlaneLike>, result: Matrix): void {
         plane.normalize();
-        var x = plane.normal.x;
-        var y = plane.normal.y;
-        var z = plane.normal.z;
-        var temp = -2 * x;
-        var temp2 = -2 * y;
-        var temp3 = -2 * z;
+        const x = plane.normal.x;
+        const y = plane.normal.y;
+        const z = plane.normal.z;
+        const temp = -2 * x;
+        const temp2 = -2 * y;
+        const temp3 = -2 * z;
         Matrix.FromValuesToRef(
-            temp * x + 1, temp2 * x, temp3 * x, 0.0,
-            temp * y, temp2 * y + 1, temp3 * y, 0.0,
-            temp * z, temp2 * z, temp3 * z + 1, 0.0,
-            temp * plane.d, temp2 * plane.d, temp3 * plane.d, 1.0,
+            temp * x + 1,
+            temp2 * x,
+            temp3 * x,
+            0.0,
+            temp * y,
+            temp2 * y + 1,
+            temp3 * y,
+            0.0,
+            temp * z,
+            temp2 * z,
+            temp3 * z + 1,
+            0.0,
+            temp * plane.d,
+            temp2 * plane.d,
+            temp3 * plane.d,
+            1.0,
             result
         );
     }
@@ -6313,13 +6586,7 @@ export class Matrix {
      * @param result defines the target matrix
      */
     public static FromXYZAxesToRef(xaxis: DeepImmutable<Vector3>, yaxis: DeepImmutable<Vector3>, zaxis: DeepImmutable<Vector3>, result: Matrix) {
-        Matrix.FromValuesToRef(
-            xaxis._x, xaxis._y, xaxis._z, 0.0,
-            yaxis._x, yaxis._y, yaxis._z, 0.0,
-            zaxis._x, zaxis._y, zaxis._z, 0.0,
-            0.0, 0.0, 0.0, 1.0,
-            result
-        );
+        Matrix.FromValuesToRef(xaxis._x, xaxis._y, xaxis._z, 0.0, yaxis._x, yaxis._y, yaxis._z, 0.0, zaxis._x, zaxis._y, zaxis._z, 0.0, 0.0, 0.0, 0.0, 1.0, result);
     }
 
     /**
@@ -6328,29 +6595,29 @@ export class Matrix {
      * @param result defines the target matrix
      */
     public static FromQuaternionToRef(quat: DeepImmutable<Quaternion>, result: Matrix) {
-        var xx = quat._x * quat._x;
-        var yy = quat._y * quat._y;
-        var zz = quat._z * quat._z;
-        var xy = quat._x * quat._y;
-        var zw = quat._z * quat._w;
-        var zx = quat._z * quat._x;
-        var yw = quat._y * quat._w;
-        var yz = quat._y * quat._z;
-        var xw = quat._x * quat._w;
+        const xx = quat._x * quat._x;
+        const yy = quat._y * quat._y;
+        const zz = quat._z * quat._z;
+        const xy = quat._x * quat._y;
+        const zw = quat._z * quat._w;
+        const zx = quat._z * quat._x;
+        const yw = quat._y * quat._w;
+        const yz = quat._y * quat._z;
+        const xw = quat._x * quat._w;
 
-        result._m[0] = 1.0 - (2.0 * (yy + zz));
+        result._m[0] = 1.0 - 2.0 * (yy + zz);
         result._m[1] = 2.0 * (xy + zw);
         result._m[2] = 2.0 * (zx - yw);
         result._m[3] = 0.0;
 
         result._m[4] = 2.0 * (xy - zw);
-        result._m[5] = 1.0 - (2.0 * (zz + xx));
+        result._m[5] = 1.0 - 2.0 * (zz + xx);
         result._m[6] = 2.0 * (yz + xw);
         result._m[7] = 0.0;
 
         result._m[8] = 2.0 * (zx + yw);
         result._m[9] = 2.0 * (yz - xw);
-        result._m[10] = 1.0 - (2.0 * (yy + xx));
+        result._m[10] = 1.0 - 2.0 * (yy + xx);
         result._m[11] = 0.0;
 
         result._m[12] = 0.0;
@@ -6388,9 +6655,4 @@ RegisterClass("BABYLON.Vector3", Vector3);
 RegisterClass("BABYLON.Vector4", Vector4);
 RegisterClass("BABYLON.Matrix", Matrix);
 
-const mtxConvertNDCToHalfZRange = Matrix.FromValues(
-    1, 0, 0, 0,
-    0, 1, 0, 0,
-    0, 0, 0.5, 0,
-    0, 0, 0.5, 1
-);
+const mtxConvertNDCToHalfZRange = Matrix.FromValues(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0.5, 0, 0, 0, 0.5, 1);

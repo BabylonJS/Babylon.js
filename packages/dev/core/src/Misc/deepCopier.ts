@@ -1,5 +1,5 @@
-import { EndsWith } from './stringTools';
-import { Logger } from './logger';
+import { EndsWith } from "./stringTools";
+import { Logger } from "./logger";
 
 const cloneValue = (source: any, destinationObject: any) => {
     if (!source) {
@@ -27,7 +27,7 @@ function getAllPropertyNames(obj: any): string[] {
                 props.push(prop);
             }
         });
-    } while (obj = Object.getPrototypeOf(obj));
+    } while ((obj = Object.getPrototypeOf(obj)));
 
     return props;
 }
@@ -45,8 +45,7 @@ export class DeepCopier {
      */
     public static DeepCopy(source: any, destination: any, doNotCopyList?: string[], mustCopyList?: string[]): void {
         const properties = getAllPropertyNames(source);
-        for (var prop of properties) {
-
+        for (const prop of properties) {
             if (prop[0] === "_" && (!mustCopyList || mustCopyList.indexOf(prop) === -1)) {
                 continue;
             }
@@ -59,8 +58,8 @@ export class DeepCopier {
                 continue;
             }
 
-            var sourceValue = source[prop];
-            var typeOfSourceValue = typeof sourceValue;
+            const sourceValue = source[prop];
+            const typeOfSourceValue = typeof sourceValue;
 
             if (typeOfSourceValue === "function") {
                 continue;
@@ -73,10 +72,11 @@ export class DeepCopier {
 
                         if (sourceValue.length > 0) {
                             if (typeof sourceValue[0] == "object") {
-                                for (var index = 0; index < sourceValue.length; index++) {
-                                    var clonedValue = cloneValue(sourceValue[index], destination);
+                                for (let index = 0; index < sourceValue.length; index++) {
+                                    const clonedValue = cloneValue(sourceValue[index], destination);
 
-                                    if (destination[prop].indexOf(clonedValue) === -1) { // Test if auto inject was not done
+                                    if (destination[prop].indexOf(clonedValue) === -1) {
+                                        // Test if auto inject was not done
                                         destination[prop].push(clonedValue);
                                     }
                                 }
@@ -90,8 +90,7 @@ export class DeepCopier {
                 } else {
                     destination[prop] = sourceValue;
                 }
-            }
-            catch (e) {
+            } catch (e) {
                 // Log a warning (it could be because of a read-only property)
                 Logger.Warn(e.message);
             }

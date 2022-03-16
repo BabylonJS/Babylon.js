@@ -9,7 +9,7 @@ import { Coordinate } from "../../Maths/math.axis";
 enum _CameraProperty {
     MoveRelative,
     RotateRelative,
-    MoveScene
+    MoveScene,
 }
 
 /**
@@ -17,7 +17,6 @@ enum _CameraProperty {
  * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
  */
 export class FreeCameraMouseWheelInput extends BaseCameraMouseWheelInput {
-
     /**
      * Defines the camera the input is attached to.
      */
@@ -278,9 +277,7 @@ export class FreeCameraMouseWheelInput extends BaseCameraMouseWheelInput {
      * Called for each rendered frame.
      */
     public checkInputs(): void {
-        if (this._wheelDeltaX === 0 &&
-            this._wheelDeltaY === 0 &&
-            this._wheelDeltaZ == 0) {
+        if (this._wheelDeltaX === 0 && this._wheelDeltaY === 0 && this._wheelDeltaZ == 0) {
             return;
         }
 
@@ -302,8 +299,7 @@ export class FreeCameraMouseWheelInput extends BaseCameraMouseWheelInput {
         this.camera.getViewMatrix().invertToRef(cameraTransformMatrix);
 
         const transformedDirection = Vector3.Zero();
-        Vector3.TransformNormalToRef(
-            this._moveRelative, cameraTransformMatrix, transformedDirection);
+        Vector3.TransformNormalToRef(this._moveRelative, cameraTransformMatrix, transformedDirection);
 
         // Apply updates to camera position.
         this.camera.cameraRotation.x += this._rotateRelative.x / 200;
@@ -335,16 +331,16 @@ export class FreeCameraMouseWheelInput extends BaseCameraMouseWheelInput {
      */
     private _updateCamera(): void {
         // Do the camera updates for each of the 3 touch-wheel axis.
-        this._updateCameraProperty(
-            this._wheelDeltaX, this._wheelXAction, this._wheelXActionCoordinate);
-        this._updateCameraProperty(
-            this._wheelDeltaY, this._wheelYAction, this._wheelYActionCoordinate);
-        this._updateCameraProperty(
-            this._wheelDeltaZ, this._wheelZAction, this._wheelZActionCoordinate);
+        this._updateCameraProperty(this._wheelDeltaX, this._wheelXAction, this._wheelXActionCoordinate);
+        this._updateCameraProperty(this._wheelDeltaY, this._wheelYAction, this._wheelYActionCoordinate);
+        this._updateCameraProperty(this._wheelDeltaZ, this._wheelZAction, this._wheelZActionCoordinate);
     }
 
     /**
      * Update one property of the camera.
+     * @param value
+     * @param cameraProperty
+     * @param coordinate
      */
     private _updateCameraProperty(
         /* Mouse-wheel delta. */

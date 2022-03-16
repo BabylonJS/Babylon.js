@@ -7,7 +7,6 @@ import { WebGPUEngine } from "./webgpuEngine";
  * Helper class to create the best engine depending on the current hardware
  */
 export class EngineFactory {
-
     /**
      * Creates an engine based on the capabilities of the underlying hardware
      * @param canvas Defines the canvas to use to display the result

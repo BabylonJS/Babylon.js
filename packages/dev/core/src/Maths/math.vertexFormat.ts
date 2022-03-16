@@ -1,4 +1,4 @@
-import { Vector3, Vector2 } from './math.vector';
+import { Vector3, Vector2 } from "./math.vector";
 
 /**
  * Contains position and normal vectors for a vertex
@@ -14,9 +14,7 @@ export class PositionNormalVertex {
         public position: Vector3 = Vector3.Zero(),
         /** the normal of the vertex (defaut: 0,1,0) */
         public normal: Vector3 = Vector3.Up()
-    ) {
-
-    }
+    ) {}
 
     /**
      * Clones the PositionNormalVertex
@@ -44,9 +42,7 @@ export class PositionNormalTextureVertex {
         public normal: Vector3 = Vector3.Up(),
         /** the uv of the vertex (default: 0,0) */
         public uv: Vector2 = Vector2.Zero()
-    ) {
-
-    }
+    ) {}
     /**
      * Clones the PositionNormalTextureVertex
      * @returns the cloned PositionNormalTextureVertex

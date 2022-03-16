@@ -1,6 +1,6 @@
 import { ThinEngine } from "../../Engines/thinEngine";
-import { InternalTexture, InternalTextureSource } from '../../Materials/Textures/internalTexture';
-import { Nullable } from '../../types';
+import { InternalTexture, InternalTextureSource } from "../../Materials/Textures/internalTexture";
+import { Nullable } from "../../types";
 import { ICanvas } from "../ICanvas";
 
 declare module "../../Engines/thinEngine" {
@@ -25,14 +25,20 @@ declare module "../../Engines/thinEngine" {
          * @param forceBindTexture if the texture should be forced to be bound eg. after a graphics context loss (Default: false)
          * @param allowGPUOptimization true to allow some specific GPU optimizations (subject to engine feature "allowGPUOptimizationsForGUI" being true)
          */
-        updateDynamicTexture(texture: Nullable<InternalTexture>,
+        updateDynamicTexture(
+            texture: Nullable<InternalTexture>,
             source: ImageBitmap | ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | OffscreenCanvas | ICanvas,
-            invertY?: boolean, premulAlpha?: boolean, format?: number, forceBindTexture?: boolean, allowGPUOptimization?: boolean): void;
+            invertY?: boolean,
+            premulAlpha?: boolean,
+            format?: number,
+            forceBindTexture?: boolean,
+            allowGPUOptimization?: boolean
+        ): void;
     }
 }
 
 ThinEngine.prototype.createDynamicTexture = function (width: number, height: number, generateMipMaps: boolean, samplingMode: number): InternalTexture {
-    var texture = new InternalTexture(this, InternalTextureSource.Dynamic);
+    const texture = new InternalTexture(this, InternalTextureSource.Dynamic);
     texture.baseWidth = width;
     texture.baseHeight = height;
 
@@ -55,14 +61,15 @@ ThinEngine.prototype.createDynamicTexture = function (width: number, height: num
     return texture;
 };
 
-ThinEngine.prototype.updateDynamicTexture = function (texture: Nullable<InternalTexture>,
+ThinEngine.prototype.updateDynamicTexture = function (
+    texture: Nullable<InternalTexture>,
     source: ImageBitmap | ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | OffscreenCanvas,
     invertY?: boolean,
     premulAlpha: boolean = false,
     format?: number,
     forceBindTexture: boolean = false,
-    allowGPUOptimization: boolean = false,
-    ): void {
+    allowGPUOptimization: boolean = false
+): void {
     if (!texture) {
         return;
     }

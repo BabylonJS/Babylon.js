@@ -29,7 +29,11 @@ declare global {
         classesConstructed: { [id: string]: StacktracedObject };
         // sourcemapping
         sourceMappedStackTrace: {
-            mapStackTrace: (stackTrace: string, callback: (stacked: string[]) => void, opts?: { sync?: boolean; cacheGlobally?: boolean; filter?: (line: string) => boolean }) => string;
+            mapStackTrace: (
+                stackTrace: string,
+                callback: (stacked: string[]) => void,
+                opts?: { sync?: boolean; cacheGlobally?: boolean; filter?: (line: string) => boolean }
+            ) => string;
         };
         sourcemapPromises: Promise<?StacktracedObject>[];
     }

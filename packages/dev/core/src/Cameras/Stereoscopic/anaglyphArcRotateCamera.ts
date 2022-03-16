@@ -14,7 +14,6 @@ Node.AddNodeConstructor("AnaglyphArcRotateCamera", (name, scene, options) => {
  * @see https://doc.babylonjs.com/features/cameras#anaglyph-cameras
  */
 export class AnaglyphArcRotateCamera extends ArcRotateCamera {
-
     /**
      * Creates a new AnaglyphArcRotateCamera
      * @param name defines camera name

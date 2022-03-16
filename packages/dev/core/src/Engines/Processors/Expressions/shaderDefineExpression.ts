@@ -11,12 +11,12 @@ export class ShaderDefineExpression {
         "&&": 3,
     };
 
-    private static _Stack = ['', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''];
+    private static _Stack = ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""];
 
     public static postfixToInfix(postfix: string[]): string {
         const stack: string[] = [];
 
-        for (let c of postfix) {
+        for (const c of postfix) {
             if (ShaderDefineExpression._OperatorPriority[c] === undefined) {
                 stack.push(c);
             } else {
@@ -38,9 +38,9 @@ export class ShaderDefineExpression {
 
         const pushOperand = () => {
             operand = operand.trim();
-            if (operand !== '') {
+            if (operand !== "") {
                 result.push(operand);
-                operand = '';
+                operand = "";
             }
         };
 
@@ -52,21 +52,21 @@ export class ShaderDefineExpression {
 
         const peek = () => ShaderDefineExpression._Stack[stackIdx];
 
-        const pop = () => stackIdx === -1 ? '!!INVALID EXPRESSION!!' : ShaderDefineExpression._Stack[stackIdx--];
+        const pop = () => (stackIdx === -1 ? "!!INVALID EXPRESSION!!" : ShaderDefineExpression._Stack[stackIdx--]);
 
         let idx = 0,
-            operand = '';
+            operand = "";
 
         while (idx < infix.length) {
             const c = infix.charAt(idx),
-                token = idx < infix.length - 1 ? infix.substr(idx, 2) : '';
+                token = idx < infix.length - 1 ? infix.substr(idx, 2) : "";
 
-            if (c === '(') {
-                operand = '';
+            if (c === "(") {
+                operand = "";
                 push(c);
-            } else if (c === ')') {
+            } else if (c === ")") {
                 pushOperand();
-                while (stackIdx !== -1 && peek() !== '(') {
+                while (stackIdx !== -1 && peek() !== "(") {
                     result.push(pop());
                 }
                 pop();
@@ -86,7 +86,7 @@ export class ShaderDefineExpression {
         pushOperand();
 
         while (stackIdx !== -1) {
-            if (peek() === '(') {
+            if (peek() === "(") {
                 pop();
             } else {
                 result.push(pop());

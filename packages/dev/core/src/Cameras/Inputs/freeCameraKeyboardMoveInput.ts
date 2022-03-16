@@ -67,8 +67,8 @@ export class FreeCameraKeyboardMoveInput implements ICameraInput<FreeCamera> {
     public keysRotateLeft: number[] = [];
 
     /**
-    * Gets or Set the list of keyboard keys used to control the right rotation move of the camera.
-    */
+     * Gets or Set the list of keyboard keys used to control the right rotation move of the camera.
+     */
     @serialize()
     public keysRotateRight: number[] = [];
 
@@ -96,17 +96,19 @@ export class FreeCameraKeyboardMoveInput implements ICameraInput<FreeCamera> {
         });
 
         this._onKeyboardObserver = this._scene.onKeyboardObservable.add((info) => {
-            let evt = info.event;
+            const evt = info.event;
             if (!evt.metaKey) {
                 if (info.type === KeyboardEventTypes.KEYDOWN) {
-                    if (this.keysUp.indexOf(evt.keyCode) !== -1
-                        || this.keysDown.indexOf(evt.keyCode) !== -1
-                        || this.keysLeft.indexOf(evt.keyCode) !== -1
-                        || this.keysRight.indexOf(evt.keyCode) !== -1
-                        || this.keysUpward.indexOf(evt.keyCode) !== -1
-                        || this.keysDownward.indexOf(evt.keyCode) !== -1
-                        || this.keysRotateLeft.indexOf(evt.keyCode) !== -1
-                        || this.keysRotateRight.indexOf(evt.keyCode) !== -1) {
+                    if (
+                        this.keysUp.indexOf(evt.keyCode) !== -1 ||
+                        this.keysDown.indexOf(evt.keyCode) !== -1 ||
+                        this.keysLeft.indexOf(evt.keyCode) !== -1 ||
+                        this.keysRight.indexOf(evt.keyCode) !== -1 ||
+                        this.keysUpward.indexOf(evt.keyCode) !== -1 ||
+                        this.keysDownward.indexOf(evt.keyCode) !== -1 ||
+                        this.keysRotateLeft.indexOf(evt.keyCode) !== -1 ||
+                        this.keysRotateRight.indexOf(evt.keyCode) !== -1
+                    ) {
                         var index = this._keys.indexOf(evt.keyCode);
 
                         if (index === -1) {
@@ -117,14 +119,16 @@ export class FreeCameraKeyboardMoveInput implements ICameraInput<FreeCamera> {
                         }
                     }
                 } else {
-                    if (this.keysUp.indexOf(evt.keyCode) !== -1
-                        || this.keysDown.indexOf(evt.keyCode) !== -1
-                        || this.keysLeft.indexOf(evt.keyCode) !== -1
-                        || this.keysRight.indexOf(evt.keyCode) !== -1
-                        || this.keysUpward.indexOf(evt.keyCode) !== -1
-                        || this.keysDownward.indexOf(evt.keyCode) !== -1
-                        || this.keysRotateLeft.indexOf(evt.keyCode) !== -1
-                        || this.keysRotateRight.indexOf(evt.keyCode) !== -1) {
+                    if (
+                        this.keysUp.indexOf(evt.keyCode) !== -1 ||
+                        this.keysDown.indexOf(evt.keyCode) !== -1 ||
+                        this.keysLeft.indexOf(evt.keyCode) !== -1 ||
+                        this.keysRight.indexOf(evt.keyCode) !== -1 ||
+                        this.keysUpward.indexOf(evt.keyCode) !== -1 ||
+                        this.keysDownward.indexOf(evt.keyCode) !== -1 ||
+                        this.keysRotateLeft.indexOf(evt.keyCode) !== -1 ||
+                        this.keysRotateRight.indexOf(evt.keyCode) !== -1
+                    ) {
                         var index = this._keys.indexOf(evt.keyCode);
 
                         if (index >= 0) {
@@ -169,11 +173,11 @@ export class FreeCameraKeyboardMoveInput implements ICameraInput<FreeCamera> {
      */
     public checkInputs(): void {
         if (this._onKeyboardObserver) {
-            var camera = this.camera;
+            const camera = this.camera;
             // Keyboard
-            for (var index = 0; index < this._keys.length; index++) {
-                var keyCode = this._keys[index];
-                var speed = camera._computeLocalCameraSpeed();
+            for (let index = 0; index < this._keys.length; index++) {
+                const keyCode = this._keys[index];
+                const speed = camera._computeLocalCameraSpeed();
 
                 if (this.keysLeft.indexOf(keyCode) !== -1) {
                     camera._localDirection.copyFromFloats(-speed, 0, 0);
@@ -228,7 +232,7 @@ export class FreeCameraKeyboardMoveInput implements ICameraInput<FreeCamera> {
     }
 
     private _getLocalRotation(): number {
-        let rotation = this.rotationSpeed * this._engine.getDeltaTime() / 1000;
+        let rotation = (this.rotationSpeed * this._engine.getDeltaTime()) / 1000;
         if (this.camera.getScene().useRightHandedSystem) {
             rotation *= -1;
         }

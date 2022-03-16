@@ -5,7 +5,6 @@ import { IStencilState } from "./IStencilState";
  * @hidden
  **/
 export class StencilState implements IStencilState {
-
     /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will always pass. i.e. Pixels will be drawn in the order they are drawn */
     public static readonly ALWAYS = Constants.ALWAYS;
     /** Passed to stencilOperation to specify that stencil value must be kept */
@@ -19,11 +18,11 @@ export class StencilState implements IStencilState {
 
     public reset() {
         this.enabled = false;
-        this.mask = 0xFF;
+        this.mask = 0xff;
 
         this.func = StencilState.ALWAYS;
         this.funcRef = 1;
-        this.funcMask = 0xFF;
+        this.funcMask = 0xff;
 
         this.opStencilFail = StencilState.KEEP;
         this.opDepthFail = StencilState.KEEP;

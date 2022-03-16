@@ -1,5 +1,5 @@
-import { Nullable } from '../types';
-import { IEffectFallbacks } from './iEffectFallbacks';
+import { Nullable } from "../types";
+import { IEffectFallbacks } from "./iEffectFallbacks";
 
 declare type Effect = import("./effect").Effect;
 declare type AbstractMesh = import("../Meshes/abstractMesh").AbstractMesh;
@@ -80,9 +80,9 @@ export class EffectFallbacks implements IEffectFallbacks {
             currentDefines = currentDefines.replace("#define NUM_BONE_INFLUENCERS " + this._mesh.numBoneInfluencers, "#define NUM_BONE_INFLUENCERS 0");
             effect._bonesComputationForcedToCPU = true;
 
-            var scene = this._mesh.getScene();
+            const scene = this._mesh.getScene();
             for (var index = 0; index < scene.meshes.length; index++) {
-                var otherMesh = scene.meshes[index];
+                const otherMesh = scene.meshes[index];
 
                 if (!otherMesh.material) {
                     if (!this._mesh.material && otherMesh.computeBonesUsingShaders && otherMesh.numBoneInfluencers > 0) {
@@ -98,8 +98,8 @@ export class EffectFallbacks implements IEffectFallbacks {
                 if (otherMesh.material.getEffect() === effect) {
                     otherMesh.computeBonesUsingShaders = false;
                 } else if (otherMesh.subMeshes) {
-                    for (var subMesh of otherMesh.subMeshes) {
-                        let subMeshEffect = subMesh.effect;
+                    for (const subMesh of otherMesh.subMeshes) {
+                        const subMeshEffect = subMesh.effect;
 
                         if (subMeshEffect === effect) {
                             otherMesh.computeBonesUsingShaders = false;
@@ -108,9 +108,8 @@ export class EffectFallbacks implements IEffectFallbacks {
                     }
                 }
             }
-        }
-        else {
-            var currentFallbacks = this._defines[this._currentRank];
+        } else {
+            const currentFallbacks = this._defines[this._currentRank];
             if (currentFallbacks) {
                 for (var index = 0; index < currentFallbacks.length; index++) {
                     currentDefines = currentDefines.replace("#define " + currentFallbacks[index], "");

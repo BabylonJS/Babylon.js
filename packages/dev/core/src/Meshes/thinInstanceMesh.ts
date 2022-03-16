@@ -117,7 +117,7 @@ Mesh.prototype.thinInstanceAdd = function (matrix: DeepImmutableObject<Matrix> |
 
     if (Array.isArray(matrix)) {
         for (let i = 0; i < matrix.length; ++i) {
-            this.thinInstanceSetMatrixAt(this._thinInstanceDataStorage.instancesCount++, matrix[i], (i === matrix.length - 1) && refresh);
+            this.thinInstanceSetMatrixAt(this._thinInstanceDataStorage.instancesCount++, matrix[i], i === matrix.length - 1 && refresh);
         }
     } else {
         this.thinInstanceSetMatrixAt(this._thinInstanceDataStorage.instancesCount++, matrix, refresh);

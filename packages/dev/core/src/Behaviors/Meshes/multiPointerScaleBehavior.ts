@@ -38,7 +38,7 @@ export class MultiPointerScaleBehavior implements Behavior<Mesh> {
     /**
      *  Initializes the behavior
      */
-    public init() { }
+    public init() {}
 
     private _getCurrentDistance() {
         return this._dragBehaviorA.lastDragPosition.subtract(this._dragBehaviorB.lastDragPosition).length();
@@ -77,7 +77,7 @@ export class MultiPointerScaleBehavior implements Behavior<Mesh> {
         [this._dragBehaviorA, this._dragBehaviorB].forEach((behavior) => {
             behavior.onDragObservable.add(() => {
                 if (this._dragBehaviorA.dragging && this._dragBehaviorB.dragging) {
-                    var ratio = this._getCurrentDistance() / this._startDistance;
+                    const ratio = this._getCurrentDistance() / this._startDistance;
                     this._initialScale.scaleToRef(ratio, this._targetScale);
                 }
             });
@@ -89,7 +89,7 @@ export class MultiPointerScaleBehavior implements Behavior<Mesh> {
         // On every frame move towards target scaling to avoid jitter caused by vr controllers
         this._sceneRenderObserver = ownerNode.getScene().onBeforeRenderObservable.add(() => {
             if (this._dragBehaviorA.dragging && this._dragBehaviorB.dragging) {
-                var change = this._targetScale.subtract(ownerNode.scaling).scaleInPlace(0.1);
+                const change = this._targetScale.subtract(ownerNode.scaling).scaleInPlace(0.1);
                 if (change.length() > 0.01) {
                     ownerNode.scaling.addInPlace(change);
                 }

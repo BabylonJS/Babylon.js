@@ -1,17 +1,17 @@
-import { NodeMaterialBlock } from '../../nodeMaterialBlock';
-import { NodeMaterialBlockConnectionPointTypes } from '../../Enums/nodeMaterialBlockConnectionPointTypes';
-import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
-import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPoint';
-import { NodeMaterialBlockTargets } from '../../Enums/nodeMaterialBlockTargets';
-import { RegisterClass } from '../../../../Misc/typeStore';
-import { Nullable } from '../../../../types';
-import { Scene } from '../../../../scene';
-import { Effect } from '../../../effect';
-import { NodeMaterial, NodeMaterialDefines } from '../../nodeMaterial';
-import { Mesh } from '../../../../Meshes/mesh';
-import { Light } from '../../../../Lights/light';
-import { PointLight } from '../../../../Lights/pointLight';
-import { AbstractMesh } from '../../../../Meshes/abstractMesh';
+import { NodeMaterialBlock } from "../../nodeMaterialBlock";
+import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
+import { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
+import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
+import { RegisterClass } from "../../../../Misc/typeStore";
+import { Nullable } from "../../../../types";
+import { Scene } from "../../../../scene";
+import { Effect } from "../../../effect";
+import { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
+import { Mesh } from "../../../../Meshes/mesh";
+import { Light } from "../../../../Lights/light";
+import { PointLight } from "../../../../Lights/pointLight";
+import { AbstractMesh } from "../../../../Meshes/abstractMesh";
 /**
  * Block used to get data information from a light
  */
@@ -69,8 +69,8 @@ export class LightInformationBlock extends NodeMaterialBlock {
     }
 
     /**
- * Gets the direction output component
- */
+     * Gets the direction output component
+     */
     public get intensity(): NodeMaterialConnectionPoint {
         return this._outputs[2];
     }
@@ -85,7 +85,7 @@ export class LightInformationBlock extends NodeMaterialBlock {
         }
 
         let light = this.light;
-        let scene = nodeMaterial.getScene();
+        const scene = nodeMaterial.getScene();
 
         if (!light && scene.lights.length) {
             light = this.light = scene.lights[0];
@@ -110,7 +110,7 @@ export class LightInformationBlock extends NodeMaterialBlock {
 
         this._forcePrepareDefines = false;
 
-        let light = this.light;
+        const light = this.light;
         defines.setValue(this._lightTypeDefineName, light && light instanceof PointLight ? true : false, true);
     }
 
@@ -120,9 +120,9 @@ export class LightInformationBlock extends NodeMaterialBlock {
         state.sharedData.bindableBlocks.push(this);
         state.sharedData.blocksWithDefines.push(this);
 
-        let direction = this.direction;
-        let color = this.color;
-        let intensity = this.intensity;
+        const direction = this.direction;
+        const color = this.color;
+        const intensity = this.intensity;
 
         this._lightDataUniformName = state._getFreeVariableName("lightData");
         this._lightColorUniformName = state._getFreeVariableName("lightColor");
@@ -144,7 +144,7 @@ export class LightInformationBlock extends NodeMaterialBlock {
     }
 
     public serialize(): any {
-        let serializationObject = super.serialize();
+        const serializationObject = super.serialize();
 
         if (this.light) {
             serializationObject.lightId = this.light.id;

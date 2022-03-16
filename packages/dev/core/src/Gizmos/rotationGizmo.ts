@@ -2,7 +2,7 @@ import { Logger } from "../Misc/logger";
 import { Observable, Observer } from "../Misc/observable";
 import { Nullable } from "../types";
 import { Vector3 } from "../Maths/math.vector";
-import { Color3 } from '../Maths/math.color';
+import { Color3 } from "../Maths/math.color";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
 import { Gizmo, GizmoAxisCache } from "./gizmo";
@@ -11,7 +11,7 @@ import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { Node } from "../node";
 import { PointerInfo } from "../Events/pointerEvents";
 import { TransformNode } from "../Meshes/transformNode";
-import { GizmoManager } from './gizmoManager';
+import { GizmoManager } from "./gizmoManager";
 
 /**
  * Options for each individual plane rotation gizmo contained within RotationGizmo
@@ -88,8 +88,7 @@ export class RotationGizmo extends Gizmo {
         [this.xGizmo, this.yGizmo, this.zGizmo].forEach((gizmo) => {
             if (gizmo.isEnabled) {
                 gizmo.attachedMesh = mesh;
-            }
-            else {
+            } else {
                 gizmo.attachedMesh = null;
             }
         });
@@ -105,8 +104,7 @@ export class RotationGizmo extends Gizmo {
         [this.xGizmo, this.yGizmo, this.zGizmo].forEach((gizmo) => {
             if (gizmo.isEnabled) {
                 gizmo.attachedNode = node;
-            }
-            else {
+            } else {
                 gizmo.attachedNode = null;
             }
         });
@@ -122,7 +120,7 @@ export class RotationGizmo extends Gizmo {
      * True when the mouse pointer is hovering a gizmo mesh
      */
     public get isHovered() {
-        var hovered = false;
+        let hovered = false;
         [this.xGizmo, this.yGizmo, this.zGizmo].forEach((gizmo) => {
             hovered = hovered || gizmo.isHovered;
         });
@@ -138,7 +136,14 @@ export class RotationGizmo extends Gizmo {
      * @param gizmoManager Gizmo manager
      * @param options More options
      */
-    constructor(gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer, tessellation = 32, useEulerRotation = false, thickness: number = 1, gizmoManager?: GizmoManager, options?: RotationGizmoOptions) {
+    constructor(
+        gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer,
+        tessellation = 32,
+        useEulerRotation = false,
+        thickness: number = 1,
+        gizmoManager?: GizmoManager,
+        options?: RotationGizmoOptions
+    ) {
         super(gizmoLayer);
         const xColor = options && options.xOptions && options.xOptions.color ? options.xOptions.color : Color3.Red().scale(0.5);
         const yColor = options && options.yOptions && options.yOptions.color ? options.yOptions.color : Color3.Green().scale(0.5);
@@ -239,6 +244,8 @@ export class RotationGizmo extends Gizmo {
      * @param mesh The mesh to replace the default mesh of the gizmo
      */
     public setCustomMesh(mesh: Mesh) {
-        Logger.Error("Custom meshes are not supported on this gizmo, please set the custom meshes on the gizmos contained within this one (gizmo.xGizmo, gizmo.yGizmo, gizmo.zGizmo)");
+        Logger.Error(
+            "Custom meshes are not supported on this gizmo, please set the custom meshes on the gizmos contained within this one (gizmo.xGizmo, gizmo.yGizmo, gizmo.zGizmo)"
+        );
     }
 }

@@ -6,8 +6,8 @@ import { Engine } from "../Engines/engine";
 
 import "../Shaders/pass.fragment";
 import "../Shaders/passCube.fragment";
-import { RegisterClass } from '../Misc/typeStore';
-import { SerializationHelper } from '../Misc/decorators';
+import { RegisterClass } from "../Misc/typeStore";
+import { SerializationHelper } from "../Misc/decorators";
 
 declare type Scene = import("../scene").Scene;
 
@@ -34,19 +34,42 @@ export class PassPostProcess extends PostProcess {
      * @param textureType The type of texture to be used when performing the post processing.
      * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
      */
-    constructor(name: string, options: number | PostProcessOptions, camera: Nullable<Camera> = null, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT, blockCompilation = false) {
+    constructor(
+        name: string,
+        options: number | PostProcessOptions,
+        camera: Nullable<Camera> = null,
+        samplingMode?: number,
+        engine?: Engine,
+        reusable?: boolean,
+        textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT,
+        blockCompilation = false
+    ) {
         super(name, "pass", null, null, options, camera, samplingMode, engine, reusable, undefined, textureType, undefined, null, blockCompilation);
     }
 
-    /** @hidden */
+    /**
+     * @param parsedPostProcess
+     * @param targetCamera
+     * @param scene
+     * @param rootUrl
+     * @hidden
+     */
     public static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string) {
-        return SerializationHelper.Parse(() => {
-            return new PassPostProcess(
-                parsedPostProcess.name,
-                parsedPostProcess.options, targetCamera,
-                parsedPostProcess.renderTargetSamplingMode,
-                parsedPostProcess._engine, parsedPostProcess.reusable);
-        }, parsedPostProcess, scene, rootUrl);
+        return SerializationHelper.Parse(
+            () => {
+                return new PassPostProcess(
+                    parsedPostProcess.name,
+                    parsedPostProcess.options,
+                    targetCamera,
+                    parsedPostProcess.renderTargetSamplingMode,
+                    parsedPostProcess._engine,
+                    parsedPostProcess.reusable
+                );
+            },
+            parsedPostProcess,
+            scene,
+            rootUrl
+        );
     }
 }
 
@@ -118,19 +141,42 @@ export class PassCubePostProcess extends PostProcess {
      * @param textureType The type of texture to be used when performing the post processing.
      * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
      */
-    constructor(name: string, options: number | PostProcessOptions, camera: Nullable<Camera> = null, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT, blockCompilation = false) {
+    constructor(
+        name: string,
+        options: number | PostProcessOptions,
+        camera: Nullable<Camera> = null,
+        samplingMode?: number,
+        engine?: Engine,
+        reusable?: boolean,
+        textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT,
+        blockCompilation = false
+    ) {
         super(name, "passCube", null, null, options, camera, samplingMode, engine, reusable, "#define POSITIVEX", textureType, undefined, null, blockCompilation);
     }
 
-    /** @hidden */
+    /**
+     * @param parsedPostProcess
+     * @param targetCamera
+     * @param scene
+     * @param rootUrl
+     * @hidden
+     */
     public static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string) {
-        return SerializationHelper.Parse(() => {
-            return new PassCubePostProcess(
-                parsedPostProcess.name,
-                parsedPostProcess.options, targetCamera,
-                parsedPostProcess.renderTargetSamplingMode,
-                parsedPostProcess._engine, parsedPostProcess.reusable);
-        }, parsedPostProcess, scene, rootUrl);
+        return SerializationHelper.Parse(
+            () => {
+                return new PassCubePostProcess(
+                    parsedPostProcess.name,
+                    parsedPostProcess.options,
+                    targetCamera,
+                    parsedPostProcess.renderTargetSamplingMode,
+                    parsedPostProcess._engine,
+                    parsedPostProcess.reusable
+                );
+            },
+            parsedPostProcess,
+            scene,
+            rootUrl
+        );
     }
 }
 

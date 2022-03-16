@@ -61,12 +61,10 @@ export class ColorGradingTexture extends BaseTexture {
                 } else {
                     this.delayLoadState = Constants.DELAYLOADSTATE_NOTLOADED;
                 }
-            }
-            else {
+            } else {
                 this.loadTexture();
             }
-        }
-        else {
+        } else {
             this._triggerOnLoad();
         }
     }
@@ -92,13 +90,33 @@ export class ColorGradingTexture extends BaseTexture {
      * Occurs when the file being loaded is a .3dl LUT file.
      */
     private load3dlTexture() {
-        var engine = this._getEngine()!;
-        var texture: InternalTexture;
+        const engine = this._getEngine()!;
+        let texture: InternalTexture;
         if (!engine._features.support3DTextures) {
-            texture = engine.createRawTexture(null, 1, 1, Constants.TEXTUREFORMAT_RGBA, false, false, Constants.TEXTURE_BILINEAR_SAMPLINGMODE, null, Constants.TEXTURETYPE_UNSIGNED_INT);
-        }
-        else {
-            texture = engine.createRawTexture3D(null, 1, 1, 1, Constants.TEXTUREFORMAT_RGBA, false, false, Constants.TEXTURE_BILINEAR_SAMPLINGMODE, null, Constants.TEXTURETYPE_UNSIGNED_INT);
+            texture = engine.createRawTexture(
+                null,
+                1,
+                1,
+                Constants.TEXTUREFORMAT_RGBA,
+                false,
+                false,
+                Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
+                null,
+                Constants.TEXTURETYPE_UNSIGNED_INT
+            );
+        } else {
+            texture = engine.createRawTexture3D(
+                null,
+                1,
+                1,
+                1,
+                Constants.TEXTUREFORMAT_RGBA,
+                false,
+                false,
+                Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
+                null,
+                Constants.TEXTURETYPE_UNSIGNED_INT
+            );
         }
 
         this._texture = texture;
@@ -111,19 +129,21 @@ export class ColorGradingTexture extends BaseTexture {
         this.wrapR = Constants.TEXTURE_CLAMP_ADDRESSMODE;
         this.anisotropicFilteringLevel = 1;
 
-        var callback = (text: string | ArrayBuffer) => {
-
+        const callback = (text: string | ArrayBuffer) => {
             if (typeof text !== "string") {
                 return;
             }
 
-            var data: Nullable<Uint8Array> = null;
-            var tempData: Nullable<Float32Array> = null;
+            let data: Nullable<Uint8Array> = null;
+            let tempData: Nullable<Float32Array> = null;
 
-            var line: string;
-            var lines = text.split('\n');
-            var size = 0, pixelIndexW = 0, pixelIndexH = 0, pixelIndexSlice = 0;
-            var maxColor = 0;
+            let line: string;
+            const lines = text.split("\n");
+            let size = 0,
+                pixelIndexW = 0,
+                pixelIndexH = 0,
+                pixelIndexSlice = 0;
+            let maxColor = 0;
 
             for (let i = 0; i < lines.length; i++) {
                 line = lines[i];
@@ -132,11 +152,11 @@ export class ColorGradingTexture extends BaseTexture {
                     continue;
                 }
 
-                if (line.indexOf('#') === 0) {
+                if (line.indexOf("#") === 0) {
                     continue;
                 }
 
-                var words = line.split(" ");
+                const words = line.split(" ");
                 if (size === 0) {
                     // Number of space + one
                     size = words.length;
@@ -146,15 +166,15 @@ export class ColorGradingTexture extends BaseTexture {
                 }
 
                 if (size != 0) {
-                    var r = Math.max(parseInt(words[0]), 0);
-                    var g = Math.max(parseInt(words[1]), 0);
-                    var b = Math.max(parseInt(words[2]), 0);
+                    const r = Math.max(parseInt(words[0]), 0);
+                    const g = Math.max(parseInt(words[1]), 0);
+                    const b = Math.max(parseInt(words[2]), 0);
 
                     maxColor = Math.max(r, maxColor);
                     maxColor = Math.max(g, maxColor);
                     maxColor = Math.max(b, maxColor);
 
-                    var pixelStorageIndex = (pixelIndexW + pixelIndexSlice * size + pixelIndexH * size * size) * 4;
+                    const pixelStorageIndex = (pixelIndexW + pixelIndexSlice * size + pixelIndexH * size * size) * 4;
 
                     if (tempData) {
                         tempData[pixelStorageIndex + 0] = r;
@@ -189,10 +209,9 @@ export class ColorGradingTexture extends BaseTexture {
                 for (let i = 0; i < tempData.length; i++) {
                     if (i > 0 && (i + 1) % 4 === 0) {
                         data[i] = 255;
-                    }
-                    else {
-                        var value = tempData[i];
-                        data[i] = (value / maxColor * 255);
+                    } else {
+                        const value = tempData[i];
+                        data[i] = (value / maxColor) * 255;
                     }
                 }
             }
@@ -200,8 +219,7 @@ export class ColorGradingTexture extends BaseTexture {
             if (texture.is3D) {
                 texture.updateSize(size, size, size);
                 engine.updateRawTexture3D(texture, data, Constants.TEXTUREFORMAT_RGBA, false);
-            }
-            else {
+            } else {
                 texture.updateSize(size * size, size);
                 engine.updateRawTexture(texture, data, Constants.TEXTUREFORMAT_RGBA, false);
             }
@@ -210,11 +228,10 @@ export class ColorGradingTexture extends BaseTexture {
             this._triggerOnLoad();
         };
 
-        let scene = this.getScene();
+        const scene = this.getScene();
         if (scene) {
             scene._loadFile(this.url, callback);
-        }
-        else {
+        } else {
             engine._loadFile(this.url, callback);
         }
 
@@ -225,7 +242,7 @@ export class ColorGradingTexture extends BaseTexture {
      * Starts the loading process of the texture.
      */
     private loadTexture() {
-        if (this.url && this.url.toLocaleLowerCase().indexOf(".3dl") == (this.url.length - 4)) {
+        if (this.url && this.url.toLocaleLowerCase().indexOf(".3dl") == this.url.length - 4) {
             this.load3dlTexture();
         }
     }
@@ -234,7 +251,7 @@ export class ColorGradingTexture extends BaseTexture {
      * Clones the color grading texture.
      */
     public clone(): ColorGradingTexture {
-        var newTexture = new ColorGradingTexture(this.url, this.getScene() || this._getEngine()!);
+        const newTexture = new ColorGradingTexture(this.url, this.getScene() || this._getEngine()!);
 
         // Base texture
         newTexture.level = this.level;
@@ -266,7 +283,7 @@ export class ColorGradingTexture extends BaseTexture {
      * @return A color grading texture
      */
     public static Parse(parsedTexture: any, scene: Scene): Nullable<ColorGradingTexture> {
-        var texture = null;
+        let texture = null;
         if (parsedTexture.name && !parsedTexture.isRenderTarget) {
             texture = new ColorGradingTexture(parsedTexture.name, scene);
             texture.name = parsedTexture.name;
@@ -283,7 +300,7 @@ export class ColorGradingTexture extends BaseTexture {
             return null;
         }
 
-        var serializationObject: any = {};
+        const serializationObject: any = {};
         serializationObject.name = this.name;
         serializationObject.level = this.level;
         serializationObject.customType = "BABYLON.ColorGradingTexture";

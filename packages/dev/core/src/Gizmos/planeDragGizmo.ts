@@ -2,7 +2,7 @@ import { Observer, Observable } from "../Misc/observable";
 import { Nullable } from "../types";
 import { PointerInfo } from "../Events/pointerEvents";
 import { Vector3 } from "../Maths/math.vector";
-import { Color3 } from '../Maths/math.color';
+import { Color3 } from "../Maths/math.color";
 import { TransformNode } from "../Meshes/transformNode";
 import { Node } from "../node";
 import { Mesh } from "../Meshes/mesh";
@@ -41,12 +41,16 @@ export class PlaneDragGizmo extends Gizmo {
     private _parent: Nullable<PositionGizmo> = null;
     private _dragging: boolean = false;
 
-    /** @hidden */
+    /**
+     * @param scene
+     * @param material
+     * @hidden
+     */
     public static _CreatePlane(scene: Scene, material: StandardMaterial): TransformNode {
-        var plane = new TransformNode("plane", scene);
+        const plane = new TransformNode("plane", scene);
 
         //make sure plane is double sided
-        var dragPlane = CreatePlane("dragPlane", { width: .1375, height: .1375, sideOrientation: 2 }, scene);
+        const dragPlane = CreatePlane("dragPlane", { width: 0.1375, height: 0.1375, sideOrientation: 2 }, scene);
         dragPlane.material = material;
         dragPlane.parent = plane;
         return plane;
@@ -57,8 +61,14 @@ export class PlaneDragGizmo extends Gizmo {
      * @param gizmoLayer The utility layer the gizmo will be added to
      * @param dragPlaneNormal The axis normal to which the gizmo will be able to drag on
      * @param color The color of the gizmo
+     * @param parent
      */
-    constructor(dragPlaneNormal: Vector3, color: Color3 = Color3.Gray(), gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer, parent: Nullable<PositionGizmo> = null) {
+    constructor(
+        dragPlaneNormal: Vector3,
+        color: Color3 = Color3.Gray(),
+        gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer,
+        parent: Nullable<PositionGizmo> = null
+    ) {
         super(gizmoLayer);
         this._parent = parent;
         // Create Material
@@ -80,9 +90,9 @@ export class PlaneDragGizmo extends Gizmo {
         this._gizmoMesh.scaling.scaleInPlace(1 / 3);
         this._gizmoMesh.parent = this._rootMesh;
 
-        var currentSnapDragDistance = 0;
-        var tmpVector = new Vector3();
-        var tmpSnapEvent = { snapDistance: 0 };
+        let currentSnapDragDistance = 0;
+        const tmpVector = new Vector3();
+        const tmpSnapEvent = { snapDistance: 0 };
         // Add dragPlaneNormal drag behavior to handle events when the gizmo is dragged
         this.dragBehavior = new PointerDragBehavior({ dragPlaneNormal: dragPlaneNormal });
         this.dragBehavior.moveAttached = false;
@@ -101,7 +111,7 @@ export class PlaneDragGizmo extends Gizmo {
                 } else {
                     currentSnapDragDistance += event.dragDistance;
                     if (Math.abs(currentSnapDragDistance) > this.snapDistance) {
-                        var dragSteps = Math.floor(Math.abs(currentSnapDragDistance) / this.snapDistance);
+                        const dragSteps = Math.floor(Math.abs(currentSnapDragDistance) / this.snapDistance);
                         currentSnapDragDistance = currentSnapDragDistance % this.snapDistance;
                         event.delta.normalizeToRef(tmpVector);
                         tmpVector.scaleInPlace(this.snapDistance * dragSteps);
@@ -113,10 +123,14 @@ export class PlaneDragGizmo extends Gizmo {
                 this._matrixChanged();
             }
         });
-        this.dragBehavior.onDragStartObservable.add(() => { this._dragging = true; });
-        this.dragBehavior.onDragEndObservable.add(() => { this._dragging = false; });
+        this.dragBehavior.onDragStartObservable.add(() => {
+            this._dragging = true;
+        });
+        this.dragBehavior.onDragEndObservable.add(() => {
+            this._dragging = false;
+        });
 
-        var light = gizmoLayer._getSharedGizmoLight();
+        const light = gizmoLayer._getSharedGizmoLight();
         light.includedOnlyMeshes = light.includedOnlyMeshes.concat(this._rootMesh.getChildMeshes(false));
 
         const cache: GizmoAxisCache = {
@@ -126,9 +140,9 @@ export class PlaneDragGizmo extends Gizmo {
             hoverMaterial: this._hoverMaterial,
             disableMaterial: this._disableMaterial,
             active: false,
-            dragBehavior: this.dragBehavior
+            dragBehavior: this.dragBehavior,
         };
-        this._parent?.addToAxisCache((this._gizmoMesh as Mesh), cache);
+        this._parent?.addToAxisCache(this._gizmoMesh as Mesh, cache);
 
         this._pointerObserver = gizmoLayer.utilityLayerScene.onPointerObservable.add((pointerInfo) => {
             if (this._customMeshSet) {
@@ -158,8 +172,7 @@ export class PlaneDragGizmo extends Gizmo {
         this._isEnabled = value;
         if (!value) {
             this.attachedNode = null;
-        }
-        else {
+        } else {
             if (this._parent) {
                 this.attachedNode = this._parent.attachedNode;
             }

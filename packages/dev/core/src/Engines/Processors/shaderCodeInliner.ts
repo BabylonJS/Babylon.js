@@ -10,9 +10,8 @@ interface IInlineFunctionDescr {
 
 /**
  * Class used to inline functions in shader code
-*/
+ */
 export class ShaderCodeInliner {
-
     private static readonly _RegexpFindFunctionNameAndType = /((\s+?)(\w+)\s+(\w+)\s*?)$/;
 
     private _sourceCode: string;
@@ -75,10 +74,14 @@ export class ShaderCodeInliner {
                 continue;
             }
 
-            const funcNameMatch = ShaderCodeInliner._RegexpFindFunctionNameAndType.exec(this._sourceCode.substring(inlineTokenIndex + this.inlineToken.length, funcParamsStartIndex));
+            const funcNameMatch = ShaderCodeInliner._RegexpFindFunctionNameAndType.exec(
+                this._sourceCode.substring(inlineTokenIndex + this.inlineToken.length, funcParamsStartIndex)
+            );
             if (!funcNameMatch) {
                 if (this.debug) {
-                    console.warn(`Could not extract the name/type of the function from: ${this._sourceCode.substring(inlineTokenIndex + this.inlineToken.length, funcParamsStartIndex)}`);
+                    console.warn(
+                        `Could not extract the name/type of the function from: ${this._sourceCode.substring(inlineTokenIndex + this.inlineToken.length, funcParamsStartIndex)}`
+                    );
                 }
                 startIndex = inlineTokenIndex + this.inlineToken.length;
                 continue;
@@ -86,7 +89,7 @@ export class ShaderCodeInliner {
             const [funcType, funcName] = [funcNameMatch[3], funcNameMatch[4]];
 
             // extract the parameters of the function as a whole string (without the leading / trailing parenthesis)
-            const funcParamsEndIndex = ExtractBetweenMarkers('(', ')', this._sourceCode, funcParamsStartIndex);
+            const funcParamsEndIndex = ExtractBetweenMarkers("(", ")", this._sourceCode, funcParamsStartIndex);
             if (funcParamsEndIndex < 0) {
                 if (this.debug) {
                     console.warn(`Could not extract the parameters the function '${funcName}' (type=${funcType}). funcParamsStartIndex=${funcParamsStartIndex}`);
@@ -106,7 +109,7 @@ export class ShaderCodeInliner {
                 continue;
             }
 
-            const funcBodyEndIndex = ExtractBetweenMarkers('{', '}', this._sourceCode, funcBodyStartIndex);
+            const funcBodyEndIndex = ExtractBetweenMarkers("{", "}", this._sourceCode, funcBodyStartIndex);
             if (funcBodyEndIndex < 0) {
                 if (this.debug) {
                     console.warn(`Could not extract the body of the function '${funcName}' (type=${funcType}). funcBodyStartIndex=${funcBodyStartIndex}`);
@@ -129,18 +132,18 @@ export class ShaderCodeInliner {
                 }
             }
 
-            if (funcType !== 'void') {
+            if (funcType !== "void") {
                 // for functions that return a value, we will replace "return" by "tempvarname = ", tempvarname being a unique generated name
-                paramNames.push('return');
+                paramNames.push("return");
             }
 
             // collect the function
             this._functionDescr.push({
-                "name": funcName,
-                "type": funcType,
-                "parameters": paramNames,
-                "body": funcBody,
-                "callIndex": 0,
+                name: funcName,
+                type: funcType,
+                parameters: paramNames,
+                body: funcBody,
+                callIndex: 0,
             });
 
             startIndex = funcBodyEndIndex + 1;
@@ -197,13 +200,13 @@ export class ShaderCodeInliner {
 
                 // Find the opening parenthesis
                 const callParamsStartIndex = SkipWhitespaces(this._sourceCode, functionCallIndex + name.length);
-                if (callParamsStartIndex === this._sourceCode.length || this._sourceCode.charAt(callParamsStartIndex) !== '(') {
+                if (callParamsStartIndex === this._sourceCode.length || this._sourceCode.charAt(callParamsStartIndex) !== "(") {
                     startIndex = functionCallIndex + name.length;
                     continue;
                 }
 
                 // extract the parameters of the function call as a whole string (without the leading / trailing parenthesis)
-                const callParamsEndIndex = ExtractBetweenMarkers('(', ')', this._sourceCode, callParamsStartIndex);
+                const callParamsEndIndex = ExtractBetweenMarkers("(", ")", this._sourceCode, callParamsStartIndex);
                 if (callParamsEndIndex < 0) {
                     if (this.debug) {
                         console.warn(`Could not extract the parameters of the function call. Function '${name}' (type=${type}). callParamsStartIndex=${callParamsStartIndex}`);
@@ -219,15 +222,16 @@ export class ShaderCodeInliner {
                 //      myfunc(a, vec2(1., 0.), 4.)
                 const splitParameterCall = (s: string) => {
                     const parameters = [];
-                    let curIdx = 0, startParamIdx = 0;
+                    let curIdx = 0,
+                        startParamIdx = 0;
                     while (curIdx < s.length) {
-                        if (s.charAt(curIdx) === '(') {
-                            const idx2 = ExtractBetweenMarkers('(', ')', s, curIdx);
+                        if (s.charAt(curIdx) === "(") {
+                            const idx2 = ExtractBetweenMarkers("(", ")", s, curIdx);
                             if (idx2 < 0) {
                                 return null;
                             }
                             curIdx = idx2;
-                        } else if (s.charAt(curIdx) === ',') {
+                        } else if (s.charAt(curIdx) === ",") {
                             parameters.push(s.substring(startParamIdx, curIdx));
                             startParamIdx = curIdx + 1;
                         }
@@ -243,7 +247,10 @@ export class ShaderCodeInliner {
 
                 if (params === null) {
                     if (this.debug) {
-                        console.warn(`Invalid function call: can't extract the parameters of the function call. Function '${name}' (type=${type}). callParamsStartIndex=${callParamsStartIndex}, callParams=` + callParams);
+                        console.warn(
+                            `Invalid function call: can't extract the parameters of the function call. Function '${name}' (type=${type}). callParamsStartIndex=${callParamsStartIndex}, callParams=` +
+                                callParams
+                        );
                     }
                     startIndex = functionCallIndex + name.length;
                     continue;
@@ -256,15 +263,17 @@ export class ShaderCodeInliner {
                     paramNames.push(param);
                 }
 
-                const retParamName = type !== 'void' ? name + '_' + (func.callIndex++) : null;
+                const retParamName = type !== "void" ? name + "_" + func.callIndex++ : null;
 
                 if (retParamName) {
-                    paramNames.push(retParamName + ' =');
+                    paramNames.push(retParamName + " =");
                 }
 
                 if (paramNames.length !== parameters.length) {
                     if (this.debug) {
-                        console.warn(`Invalid function call: not the same number of parameters for the call than the number expected by the function. Function '${name}' (type=${type}). function parameters=${parameters}, call parameters=${paramNames}`);
+                        console.warn(
+                            `Invalid function call: not the same number of parameters for the call than the number expected by the function. Function '${name}' (type=${type}). function parameters=${parameters}, call parameters=${paramNames}`
+                        );
                     }
                     startIndex = functionCallIndex + name.length;
                     continue;
@@ -276,22 +285,24 @@ export class ShaderCodeInliner {
                 const funcBody = this._replaceNames(body, parameters, paramNames);
 
                 let partBefore = functionCallIndex > 0 ? this._sourceCode.substring(0, functionCallIndex) : "";
-                let partAfter = callParamsEndIndex + 1 < this._sourceCode.length - 1 ? this._sourceCode.substring(callParamsEndIndex + 1) : "";
+                const partAfter = callParamsEndIndex + 1 < this._sourceCode.length - 1 ? this._sourceCode.substring(callParamsEndIndex + 1) : "";
 
                 if (retParamName) {
                     // case where the function returns a value. We generate:
                     // FUNCTYPE retParamName;
                     // {function body}
                     // and replace the function call by retParamName
-                    const injectDeclarationIndex = FindBackward(this._sourceCode, functionCallIndex - 1, '\n');
+                    const injectDeclarationIndex = FindBackward(this._sourceCode, functionCallIndex - 1, "\n");
 
                     partBefore = this._sourceCode.substring(0, injectDeclarationIndex + 1);
-                    let partBetween = this._sourceCode.substring(injectDeclarationIndex + 1, functionCallIndex);
+                    const partBetween = this._sourceCode.substring(injectDeclarationIndex + 1, functionCallIndex);
 
                     this._sourceCode = partBefore + type + " " + retParamName + ";\n" + funcBody + "\n" + partBetween + retParamName + partAfter;
 
                     if (this.debug) {
-                        console.log(`Replace function call by code. Function '${name}' (type=${type}). injectDeclarationIndex=${injectDeclarationIndex}, call parameters=${paramNames}`);
+                        console.log(
+                            `Replace function call by code. Function '${name}' (type=${type}). injectDeclarationIndex=${injectDeclarationIndex}, call parameters=${paramNames}`
+                        );
                     }
                 } else {
                     // simple case where the return value of the function is "void"
@@ -313,7 +324,7 @@ export class ShaderCodeInliner {
 
     private _replaceNames(code: string, sources: string[], destinations: string[]): string {
         for (let i = 0; i < sources.length; ++i) {
-            const source = new RegExp(EscapeRegExp(sources[i]), 'g'),
+            const source = new RegExp(EscapeRegExp(sources[i]), "g"),
                 sourceLen = sources[i].length,
                 destination = destinations[i];
 

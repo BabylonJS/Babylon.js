@@ -8,37 +8,43 @@ import { CompatibilityOptions } from "../../Compat/compatibilityOptions";
 /**
  * Creates the VertexData of the Disc or regular Polygon
  * @param options an object used to set the following optional parameters for the disc, required but can be empty
-  * * radius the radius of the disc, optional default 0.5
-  * * tessellation the number of polygon sides, optional, default 64
-  * * arc a number from 0 to 1, to create an unclosed polygon based on the fraction of the circumference given by the arc value, optional, default 1
-  * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
-  * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
-  * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
+ * * radius the radius of the disc, optional default 0.5
+ * * tessellation the number of polygon sides, optional, default 64
+ * * arc a number from 0 to 1, to create an unclosed polygon based on the fraction of the circumference given by the arc value, optional, default 1
+ * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
+ * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
+ * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
+ * @param options.radius
+ * @param options.tessellation
+ * @param options.arc
+ * @param options.sideOrientation
+ * @param options.frontUVs
+ * @param options.backUVs
  * @returns the VertexData of the box
  */
-function CreateDiscVertexData(options: { radius?: number, tessellation?: number, arc?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
-    var positions = new Array<number>();
-    var indices = new Array<number>();
-    var normals = new Array<number>();
-    var uvs = new Array<number>();
+function CreateDiscVertexData(options: { radius?: number; tessellation?: number; arc?: number; sideOrientation?: number; frontUVs?: Vector4; backUVs?: Vector4 }): VertexData {
+    const positions = new Array<number>();
+    const indices = new Array<number>();
+    const normals = new Array<number>();
+    const uvs = new Array<number>();
 
-    var radius = options.radius || 0.5;
-    var tessellation = options.tessellation || 64;
-    var arc: number = options.arc && (options.arc <= 0 || options.arc > 1) ? 1.0 : options.arc || 1.0;
-    var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || VertexData.DEFAULTSIDE;
+    const radius = options.radius || 0.5;
+    const tessellation = options.tessellation || 64;
+    const arc: number = options.arc && (options.arc <= 0 || options.arc > 1) ? 1.0 : options.arc || 1.0;
+    const sideOrientation = options.sideOrientation === 0 ? 0 : options.sideOrientation || VertexData.DEFAULTSIDE;
 
     // positions and uvs
-    positions.push(0, 0, 0);    // disc center first
+    positions.push(0, 0, 0); // disc center first
     uvs.push(0.5, 0.5);
 
-    var theta = Math.PI * 2 * arc;
-    var step = arc === 1 ? theta / tessellation : theta / (tessellation - 1);
-    var a = 0;
-    for (var t = 0; t < tessellation; t++) {
-        var x = Math.cos(a);
-        var y = Math.sin(a);
-        var u = (x + 1) / 2;
-        var v = (1 - y) / 2;
+    const theta = Math.PI * 2 * arc;
+    const step = arc === 1 ? theta / tessellation : theta / (tessellation - 1);
+    let a = 0;
+    for (let t = 0; t < tessellation; t++) {
+        const x = Math.cos(a);
+        const y = Math.sin(a);
+        const u = (x + 1) / 2;
+        const v = (1 - y) / 2;
         positions.push(radius * x, radius * y, 0);
         uvs.push(u, CompatibilityOptions.UseOpenGLOrientationForUV ? 1 - v : v);
         a += step;
@@ -49,8 +55,8 @@ function CreateDiscVertexData(options: { radius?: number, tessellation?: number,
     }
 
     //indices
-    var vertexNb = positions.length / 3;
-    for (var i = 1; i < vertexNb - 1; i++) {
+    const vertexNb = positions.length / 3;
+    for (let i = 1; i < vertexNb - 1; i++) {
         indices.push(i + 1, 0, i);
     }
 
@@ -58,7 +64,7 @@ function CreateDiscVertexData(options: { radius?: number, tessellation?: number,
     VertexData.ComputeNormals(positions, indices, normals);
     VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs, options.frontUVs, options.backUVs);
 
-    var vertexData = new VertexData();
+    const vertexData = new VertexData();
 
     vertexData.indices = indices;
     vertexData.positions = positions;
@@ -78,17 +84,28 @@ function CreateDiscVertexData(options: { radius?: number, tessellation?: number,
  * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
  * @param name defines the name of the mesh
  * @param options defines the options used to create the mesh
+ * @param options.radius
  * @param scene defines the hosting scene
+ * @param options.tessellation
+ * @param options.arc
+ * @param options.updatable
+ * @param options.sideOrientation
+ * @param options.frontUVs
+ * @param options.backUVs
  * @returns the plane polygonal mesh
  * @see https://doc.babylonjs.com/how_to/set_shapes#disc-or-regular-polygon
  */
-export function CreateDisc(name: string, options: { radius?: number, tessellation?: number, arc?: number, updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 } = {}, scene: Nullable<Scene> = null): Mesh {
-    var disc = new Mesh(name, scene);
+export function CreateDisc(
+    name: string,
+    options: { radius?: number; tessellation?: number; arc?: number; updatable?: boolean; sideOrientation?: number; frontUVs?: Vector4; backUVs?: Vector4 } = {},
+    scene: Nullable<Scene> = null
+): Mesh {
+    const disc = new Mesh(name, scene);
 
     options.sideOrientation = Mesh._GetDefaultSideOrientation(options.sideOrientation);
     disc._originalBuilderSideOrientation = options.sideOrientation;
 
-    var vertexData = CreateDiscVertexData(options);
+    const vertexData = CreateDiscVertexData(options);
 
     vertexData.applyToMesh(disc, options.updatable);
 
@@ -99,7 +116,7 @@ export function CreateDisc(name: string, options: { radius?: number, tessellatio
  * @deprecated please use CreateDisc directly
  */
 export const DiscBuilder = {
-    CreateDisc
+    CreateDisc,
 };
 
 VertexData.CreateDisc = CreateDiscVertexData;
@@ -109,7 +126,7 @@ Mesh.CreateDisc = (name: string, radius: number, tessellation: number, scene: Nu
         radius,
         tessellation,
         sideOrientation,
-        updatable
+        updatable,
     };
 
     return CreateDisc(name, options, scene);

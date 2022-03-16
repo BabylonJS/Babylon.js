@@ -1,5 +1,5 @@
 import { Scene } from "../scene";
-import { Vector3, Vector2, } from "../Maths/math.vector";
+import { Vector3, Vector2 } from "../Maths/math.vector";
 import { VertexBuffer } from "../Buffers/buffer";
 import { Mesh } from "../Meshes/mesh";
 import { Color4 } from "../Maths/math.color";
@@ -13,7 +13,7 @@ Mesh._GoldbergMeshParser = (parsedMesh: any, scene: Scene): GoldbergMesh => {
 /**
  * Defines the set of goldberg data used to create the polygon
  */
- export type GoldbergData = {
+export type GoldbergData = {
     /**
      * The list of Goldberg faces colors
      */
@@ -158,8 +158,8 @@ export class GoldbergMesh extends Mesh {
             let u: number;
             let v: number;
             for (let p = 0; p < 5; p++) {
-                u = center.x + radius * Math.cos(angle + p * Math.PI / 2.5);
-                v = center.y + radius * Math.sin(angle + p * Math.PI / 2.5);
+                u = center.x + radius * Math.cos(angle + (p * Math.PI) / 2.5);
+                v = center.y + radius * Math.sin(angle + (p * Math.PI) / 2.5);
                 if (u < 0) {
                     u = 0;
                 }
@@ -169,8 +169,8 @@ export class GoldbergMesh extends Mesh {
                 points5.push(u, v);
             }
             for (let p = 0; p < 6; p++) {
-                u = center.x + radius * Math.cos(angle + p * Math.PI / 3);
-                v = center.y + radius * Math.sin(angle + p * Math.PI / 3);
+                u = center.x + radius * Math.cos(angle + (p * Math.PI) / 3);
+                v = center.y + radius * Math.sin(angle + (p * Math.PI) / 3);
                 if (u < 0) {
                     u = 0;
                 }
@@ -223,7 +223,10 @@ export class GoldbergMesh extends Mesh {
     public placeOnGoldbergFaceAt(mesh: Mesh, face: number, position: Vector3) {
         const orientation = Vector3.RotationFromAxis(this.goldbergData.faceXaxis[face], this.goldbergData.faceYaxis[face], this.goldbergData.faceZaxis[face]);
         mesh.rotation = orientation;
-        mesh.position = this.goldbergData.faceCenters[face].add(this.goldbergData.faceXaxis[face].scale(position.x)).add(this.goldbergData.faceYaxis[face].scale(position.y)).add(this.goldbergData.faceZaxis[face].scale(position.z));
+        mesh.position = this.goldbergData.faceCenters[face]
+            .add(this.goldbergData.faceXaxis[face].scale(position.x))
+            .add(this.goldbergData.faceYaxis[face].scale(position.y))
+            .add(this.goldbergData.faceZaxis[face].scale(position.z));
     }
 
     /**
@@ -275,13 +278,13 @@ export class GoldbergMesh extends Mesh {
         serializationObject.goldbergData = goldbergData;
     }
 
-     /**
+    /**
      * Parses a serialized goldberg mesh
      * @param parsedMesh the serialized mesh
      * @param scene the scene to create the goldberg mesh in
      * @returns the created goldberg mesh
      */
-      public static Parse(parsedMesh: any, scene: Scene): GoldbergMesh {
+    public static Parse(parsedMesh: any, scene: Scene): GoldbergMesh {
         const goldbergData = parsedMesh.goldbergData;
         goldbergData.faceColors = goldbergData.faceColors.map((el: number[]) => Color4.FromArray(el));
         goldbergData.faceCenters = goldbergData.faceCenters.map((el: number[]) => Vector3.FromArray(el));

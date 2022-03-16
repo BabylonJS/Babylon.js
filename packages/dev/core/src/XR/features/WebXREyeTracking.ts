@@ -1,6 +1,6 @@
-import { WebXRFeaturesManager, WebXRFeatureName } from '../webXRFeaturesManager';
-import { WebXRAbstractFeature } from './WebXRAbstractFeature';
-import { WebXRSessionManager } from '../webXRSessionManager';
+import { WebXRFeaturesManager, WebXRFeatureName } from "../webXRFeaturesManager";
+import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
+import { WebXRSessionManager } from "../webXRSessionManager";
 import { Observable } from "../../Misc/observable";
 import { Vector3, TmpVectors } from "../../Maths/math.vector";
 import { Ray } from "../../Culling/ray";
@@ -90,7 +90,7 @@ export class WebXREyeTracking extends WebXRAbstractFeature {
         }
 
         if (this._latestEyeSpace && this._gazeRay) {
-            let pose = frame.getPose(this._latestEyeSpace, this._xrSessionManager.referenceSpace);
+            const pose = frame.getPose(this._latestEyeSpace, this._xrSessionManager.referenceSpace);
             if (pose) {
                 this._gazeRay.origin.set(pose.transform.position.x, pose.transform.position.y, pose.transform.position.z);
                 const quat = pose.transform.orientation;
@@ -102,8 +102,7 @@ export class WebXREyeTracking extends WebXRAbstractFeature {
                     TmpVectors.Quaternion[0].w *= -1;
 
                     Vector3.LeftHandedForwardReadOnly.rotateByQuaternionToRef(TmpVectors.Quaternion[0], this._gazeRay.direction);
-                }
-                else {
+                } else {
                     Vector3.RightHandedForwardReadOnly.rotateByQuaternionToRef(TmpVectors.Quaternion[0], this._gazeRay.direction);
                 }
 
@@ -126,7 +125,7 @@ export class WebXREyeTracking extends WebXRAbstractFeature {
 
     private _init() {
         // Only supported by BabylonNative
-        if (!!this._xrSessionManager.isNative) {
+        if (this._xrSessionManager.isNative) {
             this._xrSessionManager.session.addEventListener("eyetrackingstart", this._eyeTrackingStartListener);
             this._xrSessionManager.session.addEventListener("eyetrackingend", this._eyeTrackingEndListener);
         }

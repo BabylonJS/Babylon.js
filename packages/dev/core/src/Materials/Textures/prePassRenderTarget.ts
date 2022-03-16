@@ -1,6 +1,6 @@
 import { MultiRenderTarget, IMultiRenderTargetOptions } from "./multiRenderTarget";
 import { Engine } from "../../Engines/engine";
-import { RenderTargetTexture } from './renderTargetTexture';
+import { RenderTargetTexture } from "./renderTargetTexture";
 import { Scene } from "../../scene";
 import { PostProcess } from "../../PostProcesses/postProcess";
 import { ImageProcessingPostProcess } from "../../PostProcesses/imageProcessingPostProcess";
@@ -46,14 +46,14 @@ export class PrePassRenderTarget extends MultiRenderTarget {
     public _internalTextureDirty = false;
 
     /**
-      * Is this render target enabled for prepass rendering
-      */
+     * Is this render target enabled for prepass rendering
+     */
     public enabled: boolean = false;
 
     /**
-      * Render target associated with this prePassRenderTarget
-      * If this is `null`, it means this prePassRenderTarget is associated with the scene
-      */
+     * Render target associated with this prePassRenderTarget
+     * If this is `null`, it means this prePassRenderTarget is associated with the scene
+     */
     public renderTargetTexture: Nullable<RenderTargetTexture> = null;
 
     public constructor(name: string, renderTargetTexture: Nullable<RenderTargetTexture>, size: any, count: number, scene?: Scene, options?: IMultiRenderTargetOptions | undefined) {
@@ -76,11 +76,11 @@ export class PrePassRenderTarget extends MultiRenderTarget {
      * @hidden
      */
     public _checkSize() {
-        var requiredWidth = this._engine.getRenderWidth(true);
-        var requiredHeight = this._engine.getRenderHeight(true);
+        const requiredWidth = this._engine.getRenderWidth(true);
+        const requiredHeight = this._engine.getRenderHeight(true);
 
-        var width = this.getRenderWidth();
-        var height = this.getRenderHeight();
+        const width = this.getRenderWidth();
+        const height = this.getRenderHeight();
 
         if (width !== requiredWidth || height !== requiredHeight) {
             this.resize({ width: requiredWidth, height: requiredHeight });
@@ -113,7 +113,7 @@ export class PrePassRenderTarget extends MultiRenderTarget {
      * Diposes this render target
      */
     public dispose() {
-        var scene = this._scene;
+        const scene = this._scene;
 
         super.dispose();
 

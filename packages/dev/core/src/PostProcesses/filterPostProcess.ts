@@ -6,8 +6,8 @@ import { PostProcess, PostProcessOptions } from "./postProcess";
 import { Engine } from "../Engines/engine";
 
 import "../Shaders/filter.fragment";
-import { RegisterClass } from '../Misc/typeStore';
-import { serializeAsMatrix, SerializationHelper } from '../Misc/decorators';
+import { RegisterClass } from "../Misc/typeStore";
+import { serializeAsMatrix, SerializationHelper } from "../Misc/decorators";
 
 declare type Scene = import("../scene").Scene;
 
@@ -37,14 +37,7 @@ export class FilterPostProcess extends PostProcess {
      * @param engine The engine which the post process will be applied. (default: current engine)
      * @param reusable If the post process can be reused on the same frame. (default: false)
      */
-    constructor(name: string,
-        kernelMatrix: Matrix,
-        options: number | PostProcessOptions,
-        camera: Nullable<Camera>,
-        samplingMode?: number,
-        engine?: Engine,
-        reusable?: boolean
-    ) {
+    constructor(name: string, kernelMatrix: Matrix, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean) {
         super(name, "filter", ["kernelMatrix"], null, options, camera, samplingMode, engine, reusable);
         this.kernelMatrix = kernelMatrix;
 
@@ -53,15 +46,30 @@ export class FilterPostProcess extends PostProcess {
         };
     }
 
-    /** @hidden */
+    /**
+     * @param parsedPostProcess
+     * @param targetCamera
+     * @param scene
+     * @param rootUrl
+     * @hidden
+     */
     public static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string): Nullable<FilterPostProcess> {
-        return SerializationHelper.Parse(() => {
-            return new FilterPostProcess(
-                parsedPostProcess.name, parsedPostProcess.kernelMatrix,
-                parsedPostProcess.options, targetCamera,
-                parsedPostProcess.renderTargetSamplingMode,
-                scene.getEngine(), parsedPostProcess.reusable);
-        }, parsedPostProcess, scene, rootUrl);
+        return SerializationHelper.Parse(
+            () => {
+                return new FilterPostProcess(
+                    parsedPostProcess.name,
+                    parsedPostProcess.kernelMatrix,
+                    parsedPostProcess.options,
+                    targetCamera,
+                    parsedPostProcess.renderTargetSamplingMode,
+                    scene.getEngine(),
+                    parsedPostProcess.reusable
+                );
+            },
+            parsedPostProcess,
+            scene,
+            rootUrl
+        );
     }
 }
 

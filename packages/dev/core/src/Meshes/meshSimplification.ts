@@ -4,7 +4,7 @@ import { VertexBuffer } from "../Buffers/buffer";
 import { SubMesh } from "../Meshes/subMesh";
 import { Mesh } from "../Meshes/mesh";
 import { AsyncLoop } from "../Misc/tools";
-import { Epsilon } from '../Maths/math.constants';
+import { Epsilon } from "../Maths/math.constants";
 /**
  * A simplifier interface for future simplification implementations
  * @see https://doc.babylonjs.com/how_to/in-browser_mesh_simplification
@@ -57,8 +57,8 @@ export class SimplificationSettings implements ISimplificationSettings {
         /** distance when this optimized version should be used */
         public distance: number,
         /** already optimized mesh  */
-        public optimizeMesh?: boolean) {
-    }
+        public optimizeMesh?: boolean
+    ) {}
 }
 
 /**
@@ -119,7 +119,7 @@ export class SimplificationQueue {
      * Execute next task
      */
     public executeNext() {
-        var task = this._simplificationArray.pop();
+        const task = this._simplificationArray.pop();
         if (task) {
             this.running = true;
             this.runSimplification(task);
@@ -136,7 +136,7 @@ export class SimplificationQueue {
         if (task.parallelProcessing) {
             //parallel simplifier
             task.settings.forEach((setting) => {
-                var simplifier = this.getSimplifier(task);
+                const simplifier = this.getSimplifier(task);
                 simplifier.simplify(setting, (newMesh) => {
                     if (setting.distance !== undefined) {
                         task.mesh.addLODLevel(setting.distance, newMesh);
@@ -152,9 +152,9 @@ export class SimplificationQueue {
             });
         } else {
             //single simplifier.
-            var simplifier = this.getSimplifier(task);
+            const simplifier = this.getSimplifier(task);
 
-            var runDecimation = (setting: ISimplificationSettings, callback: () => void) => {
+            const runDecimation = (setting: ISimplificationSettings, callback: () => void) => {
                 simplifier.simplify(setting, (newMesh) => {
                     if (setting.distance !== undefined) {
                         task.mesh.addLODLevel(setting.distance, newMesh);
@@ -165,17 +165,21 @@ export class SimplificationQueue {
                 });
             };
 
-            AsyncLoop.Run(task.settings.length, (loop: AsyncLoop) => {
-                runDecimation(task.settings[loop.index], () => {
-                    loop.executeNext();
-                });
-            }, () => {
-                //execution ended, run the success callback.
-                if (task.successCallback) {
-                    task.successCallback();
+            AsyncLoop.Run(
+                task.settings.length,
+                (loop: AsyncLoop) => {
+                    runDecimation(task.settings[loop.index], () => {
+                        loop.executeNext();
+                    });
+                },
+                () => {
+                    //execution ended, run the success callback.
+                    if (task.successCallback) {
+                        task.successCallback();
+                    }
+                    this.executeNext();
                 }
-                this.executeNext();
-            });
+            );
         }
     }
 
@@ -195,7 +199,7 @@ export class SimplificationQueue {
  */
 export enum SimplificationType {
     /** Quadratic error decimation */
-    QUADRATIC
+    QUADRATIC,
 }
 
 class DecimationTriangle {
@@ -244,7 +248,7 @@ class QuadraticMatrix {
 
     constructor(data?: Array<number>) {
         this.data = new Array(10);
-        for (var i = 0; i < 10; ++i) {
+        for (let i = 0; i < 10; ++i) {
             if (data && data[i]) {
                 this.data[i] = data[i];
             } else {
@@ -254,27 +258,31 @@ class QuadraticMatrix {
     }
 
     public det(a11: number, a12: number, a13: number, a21: number, a22: number, a23: number, a31: number, a32: number, a33: number): number {
-        var det = this.data[a11] * this.data[a22] * this.data[a33] + this.data[a13] * this.data[a21] * this.data[a32] +
-            this.data[a12] * this.data[a23] * this.data[a31] - this.data[a13] * this.data[a22] * this.data[a31] -
-            this.data[a11] * this.data[a23] * this.data[a32] - this.data[a12] * this.data[a21] * this.data[a33];
+        const det =
+            this.data[a11] * this.data[a22] * this.data[a33] +
+            this.data[a13] * this.data[a21] * this.data[a32] +
+            this.data[a12] * this.data[a23] * this.data[a31] -
+            this.data[a13] * this.data[a22] * this.data[a31] -
+            this.data[a11] * this.data[a23] * this.data[a32] -
+            this.data[a12] * this.data[a21] * this.data[a33];
         return det;
     }
 
     public addInPlace(matrix: QuadraticMatrix) {
-        for (var i = 0; i < 10; ++i) {
+        for (let i = 0; i < 10; ++i) {
             this.data[i] += matrix.data[i];
         }
     }
 
     public addArrayInPlace(data: Array<number>) {
-        for (var i = 0; i < 10; ++i) {
+        for (let i = 0; i < 10; ++i) {
             this.data[i] += data[i];
         }
     }
 
     public add(matrix: QuadraticMatrix): QuadraticMatrix {
-        var m = new QuadraticMatrix();
-        for (var i = 0; i < 10; ++i) {
+        const m = new QuadraticMatrix();
+        for (let i = 0; i < 10; ++i) {
             m.data[i] = this.data[i] + matrix.data[i];
         }
         return m;
@@ -291,7 +299,7 @@ class QuadraticMatrix {
 }
 
 class Reference {
-    constructor(public vertexId: number, public triangleId: number) { }
+    constructor(public vertexId: number, public triangleId: number) {}
 }
 
 /**
@@ -302,7 +310,6 @@ class Reference {
  * @see https://doc.babylonjs.com/how_to/in-browser_mesh_simplification
  */
 export class QuadraticErrorSimplification implements ISimplifier {
-
     private triangles: Array<DecimationTriangle>;
     private vertices: Array<DecimationVertex>;
     private references: Array<Reference>;
@@ -340,63 +347,81 @@ export class QuadraticErrorSimplification implements ISimplifier {
     public simplify(settings: ISimplificationSettings, successCallback: (simplifiedMesh: Mesh) => void) {
         this.initDecimatedMesh();
         //iterating through the submeshes array, one after the other.
-        AsyncLoop.Run(this._mesh.subMeshes.length, (loop: AsyncLoop) => {
-            this.initWithMesh(loop.index, () => {
-                this.runDecimation(settings, loop.index, () => {
-                    loop.executeNext();
-                });
-            }, settings.optimizeMesh);
-        }, () => {
-            setTimeout(() => {
-                successCallback(this._reconstructedMesh);
-            }, 0);
-        });
+        AsyncLoop.Run(
+            this._mesh.subMeshes.length,
+            (loop: AsyncLoop) => {
+                this.initWithMesh(
+                    loop.index,
+                    () => {
+                        this.runDecimation(settings, loop.index, () => {
+                            loop.executeNext();
+                        });
+                    },
+                    settings.optimizeMesh
+                );
+            },
+            () => {
+                setTimeout(() => {
+                    successCallback(this._reconstructedMesh);
+                }, 0);
+            }
+        );
     }
 
     private runDecimation(settings: ISimplificationSettings, submeshIndex: number, successCallback: () => void) {
-        var targetCount = ~~(this.triangles.length * settings.quality);
-        var deletedTriangles = 0;
+        const targetCount = ~~(this.triangles.length * settings.quality);
+        let deletedTriangles = 0;
 
-        var triangleCount = this.triangles.length;
+        const triangleCount = this.triangles.length;
 
-        var iterationFunction = (iteration: number, callback: () => void) => {
+        const iterationFunction = (iteration: number, callback: () => void) => {
             setTimeout(() => {
                 if (iteration % 5 === 0) {
                     this.updateMesh(iteration === 0);
                 }
 
-                for (var i = 0; i < this.triangles.length; ++i) {
+                for (let i = 0; i < this.triangles.length; ++i) {
                     this.triangles[i].isDirty = false;
                 }
 
-                var threshold = 0.000000001 * Math.pow((iteration + 3), this.aggressiveness);
+                const threshold = 0.000000001 * Math.pow(iteration + 3, this.aggressiveness);
 
-                var trianglesIterator = (i: number) => {
-                    var tIdx = ~~(((this.triangles.length / 2) + i) % this.triangles.length);
-                    var t = this.triangles[tIdx];
-                    if (!t) { return; }
-                    if (t.error[3] > threshold || t.deleted || t.isDirty) { return; }
-                    for (var j = 0; j < 3; ++j) {
+                const trianglesIterator = (i: number) => {
+                    const tIdx = ~~((this.triangles.length / 2 + i) % this.triangles.length);
+                    const t = this.triangles[tIdx];
+                    if (!t) {
+                        return;
+                    }
+                    if (t.error[3] > threshold || t.deleted || t.isDirty) {
+                        return;
+                    }
+                    for (let j = 0; j < 3; ++j) {
                         if (t.error[j] < threshold) {
-                            var deleted0: Array<boolean> = [];
-                            var deleted1: Array<boolean> = [];
+                            const deleted0: Array<boolean> = [];
+                            const deleted1: Array<boolean> = [];
 
-                            var v0 = t.vertices[j];
-                            var v1 = t.vertices[(j + 1) % 3];
+                            const v0 = t.vertices[j];
+                            const v1 = t.vertices[(j + 1) % 3];
 
-                            if (v0.isBorder || v1.isBorder) { continue; }
+                            if (v0.isBorder || v1.isBorder) {
+                                continue;
+                            }
 
-                            var p = Vector3.Zero();
+                            const p = Vector3.Zero();
                             // var n = Vector3.Zero();
                             // var uv = Vector2.Zero();
                             // var color = new Color4(0, 0, 0, 1);
 
                             this.calculateError(v0, v1, p);
 
-                            var delTr = new Array<DecimationTriangle>();
+                            const delTr = new Array<DecimationTriangle>();
 
-                            if (this.isFlipped(v0, v1, p, deleted0, delTr)) { continue; }
-                            if (this.isFlipped(v1, v0, p, deleted1, delTr)) { continue; }
+                            if (this.isFlipped(v0, v1, p, deleted0, delTr)) {
+                                continue;
+                            }
+                            if (this.isFlipped(v1, v0, p, deleted1, delTr)) {
+                                continue;
+                            }
 
                             if (deleted0.indexOf(true) < 0 || deleted1.indexOf(true) < 0) {
                                 continue;
@@ -418,16 +443,16 @@ export class QuadraticErrorSimplification implements ISimplifier {
 
                             v0.updatePosition(p);
 
-                            var tStart = this.references.length;
+                            const tStart = this.references.length;
 
                             deletedTriangles = this.updateTriangles(v0, v0, deleted0, deletedTriangles);
                             deletedTriangles = this.updateTriangles(v0, v1, deleted1, deletedTriangles);
 
-                            var tCount = this.references.length - tStart;
+                            const tCount = this.references.length - tStart;
 
                             if (tCount <= v0.triangleCount) {
                                 if (tCount) {
-                                    for (var c = 0; c < tCount; c++) {
+                                    for (let c = 0; c < tCount; c++) {
                                         this.references[v0.triangleStart + c] = this.references[tStart + c];
                                     }
                                 }
@@ -440,39 +465,45 @@ export class QuadraticErrorSimplification implements ISimplifier {
                         }
                     }
                 };
-                AsyncLoop.SyncAsyncForLoop(this.triangles.length, this.syncIterations, trianglesIterator, callback, () => { return (triangleCount - deletedTriangles <= targetCount); });
+                AsyncLoop.SyncAsyncForLoop(this.triangles.length, this.syncIterations, trianglesIterator, callback, () => {
+                    return triangleCount - deletedTriangles <= targetCount;
+                });
             }, 0);
         };
 
-        AsyncLoop.Run(this.decimationIterations, (loop: AsyncLoop) => {
-            if (triangleCount - deletedTriangles <= targetCount) { loop.breakLoop(); }
-            else {
-                iterationFunction(loop.index, () => {
-                    loop.executeNext();
-                });
+        AsyncLoop.Run(
+            this.decimationIterations,
+            (loop: AsyncLoop) => {
+                if (triangleCount - deletedTriangles <= targetCount) {
+                    loop.breakLoop();
+                } else {
+                    iterationFunction(loop.index, () => {
+                        loop.executeNext();
+                    });
+                }
+            },
+            () => {
+                setTimeout(() => {
+                    //reconstruct this part of the mesh
+                    this.reconstructMesh(submeshIndex);
+                    successCallback();
+                }, 0);
             }
-        }, () => {
-            setTimeout(() => {
-                //reconstruct this part of the mesh
-                this.reconstructMesh(submeshIndex);
-                successCallback();
-            }, 0);
-        });
+        );
     }
 
     private initWithMesh(submeshIndex: number, callback: Function, optimizeMesh?: boolean) {
-
         this.vertices = [];
         this.triangles = [];
 
-        var positionData = this._mesh.getVerticesData(VertexBuffer.PositionKind);
+        const positionData = this._mesh.getVerticesData(VertexBuffer.PositionKind);
 
-        var indices = this._mesh.getIndices();
-        var submesh = this._mesh.subMeshes[submeshIndex];
+        const indices = this._mesh.getIndices();
+        const submesh = this._mesh.subMeshes[submeshIndex];
 
-        var findInVertices = (positionToSearch: Vector3) => {
+        const findInVertices = (positionToSearch: Vector3) => {
             if (optimizeMesh) {
-                for (var ii = 0; ii < this.vertices.length; ++ii) {
+                for (let ii = 0; ii < this.vertices.length; ++ii) {
                     if (this.vertices[ii].position.equalsWithEpsilon(positionToSearch, 0.0001)) {
                         return this.vertices[ii];
                     }
@@ -481,17 +512,17 @@ export class QuadraticErrorSimplification implements ISimplifier {
             return null;
         };
 
-        var vertexReferences: Array<number> = [];
+        const vertexReferences: Array<number> = [];
 
-        var vertexInit = (i: number) => {
+        const vertexInit = (i: number) => {
             if (!positionData) {
                 return;
             }
 
-            var offset = i + submesh.verticesStart;
-            var position = Vector3.FromArray(positionData, offset * 3);
+            const offset = i + submesh.verticesStart;
+            const position = Vector3.FromArray(positionData, offset * 3);
 
-            var vertex = findInVertices(position) || new DecimationVertex(position, this.vertices.length);
+            const vertex = findInVertices(position) || new DecimationVertex(position, this.vertices.length);
             vertex.originalOffsets.push(offset);
             if (vertex.id === this.vertices.length) {
                 this.vertices.push(vertex);
@@ -499,23 +530,22 @@ export class QuadraticErrorSimplification implements ISimplifier {
             vertexReferences.push(vertex.id);
         };
         //var totalVertices = mesh.getTotalVertices();
-        var totalVertices = submesh.verticesCount;
+        const totalVertices = submesh.verticesCount;
         AsyncLoop.SyncAsyncForLoop(totalVertices, (this.syncIterations / 4) >> 0, vertexInit, () => {
-
-            var indicesInit = (i: number) => {
+            const indicesInit = (i: number) => {
                 if (!indices) {
                     return;
                 }
 
-                var offset = (submesh.indexStart / 3) + i;
-                var pos = (offset * 3);
-                var i0 = indices[pos + 0];
-                var i1 = indices[pos + 1];
-                var i2 = indices[pos + 2];
-                var v0: DecimationVertex = this.vertices[vertexReferences[i0 - submesh.verticesStart]];
-                var v1: DecimationVertex = this.vertices[vertexReferences[i1 - submesh.verticesStart]];
-                var v2: DecimationVertex = this.vertices[vertexReferences[i2 - submesh.verticesStart]];
-                var triangle = new DecimationTriangle([v0, v1, v2]);
+                const offset = submesh.indexStart / 3 + i;
+                const pos = offset * 3;
+                const i0 = indices[pos + 0];
+                const i1 = indices[pos + 1];
+                const i2 = indices[pos + 2];
+                const v0: DecimationVertex = this.vertices[vertexReferences[i0 - submesh.verticesStart]];
+                const v1: DecimationVertex = this.vertices[vertexReferences[i1 - submesh.verticesStart]];
+                const v2: DecimationVertex = this.vertices[vertexReferences[i2 - submesh.verticesStart]];
+                const triangle = new DecimationTriangle([v0, v1, v2]);
                 triangle.originalOffset = pos;
                 this.triangles.push(triangle);
             };
@@ -526,18 +556,17 @@ export class QuadraticErrorSimplification implements ISimplifier {
     }
 
     private init(callback: Function) {
-        var triangleInit1 = (i: number) => {
-            var t = this.triangles[i];
+        const triangleInit1 = (i: number) => {
+            const t = this.triangles[i];
             t.normal = Vector3.Cross(t.vertices[1].position.subtract(t.vertices[0].position), t.vertices[2].position.subtract(t.vertices[0].position)).normalize();
-            for (var j = 0; j < 3; j++) {
-                t.vertices[j].q.addArrayInPlace(QuadraticMatrix.DataFromNumbers(t.normal.x, t.normal.y, t.normal.z, -(Vector3.Dot(t.normal, t.vertices[0].position))));
+            for (let j = 0; j < 3; j++) {
+                t.vertices[j].q.addArrayInPlace(QuadraticMatrix.DataFromNumbers(t.normal.x, t.normal.y, t.normal.z, -Vector3.Dot(t.normal, t.vertices[0].position)));
             }
         };
         AsyncLoop.SyncAsyncForLoop(this.triangles.length, this.syncIterations, triangleInit1, () => {
-
-            var triangleInit2 = (i: number) => {
-                var t = this.triangles[i];
-                for (var j = 0; j < 3; ++j) {
+            const triangleInit2 = (i: number) => {
+                const t = this.triangles[i];
+                for (let j = 0; j < 3; ++j) {
                     t.error[j] = this.calculateError(t.vertices[j], t.vertices[(j + 1) % 3]);
                 }
                 t.error[3] = Math.min(t.error[0], t.error[1], t.error[2]);
@@ -549,14 +578,13 @@ export class QuadraticErrorSimplification implements ISimplifier {
     }
 
     private reconstructMesh(submeshIndex: number) {
-
-        var newTriangles: Array<DecimationTriangle> = [];
-        var i: number;
+        const newTriangles: Array<DecimationTriangle> = [];
+        let i: number;
         for (i = 0; i < this.vertices.length; ++i) {
             this.vertices[i].triangleCount = 0;
         }
-        var t: DecimationTriangle;
-        var j: number;
+        let t: DecimationTriangle;
+        let j: number;
         for (i = 0; i < this.triangles.length; ++i) {
             if (!this.triangles[i].deleted) {
                 t = this.triangles[i];
@@ -567,60 +595,61 @@ export class QuadraticErrorSimplification implements ISimplifier {
             }
         }
 
-        var newPositionData = <number[]>(this._reconstructedMesh.getVerticesData(VertexBuffer.PositionKind) || []);
-        var newNormalData = <number[]>(this._reconstructedMesh.getVerticesData(VertexBuffer.NormalKind) || []);
-        var newUVsData = <number[]>(this._reconstructedMesh.getVerticesData(VertexBuffer.UVKind) || []);
-        var newColorsData = <number[]>(this._reconstructedMesh.getVerticesData(VertexBuffer.ColorKind) || []);
+        const newPositionData = <number[]>(this._reconstructedMesh.getVerticesData(VertexBuffer.PositionKind) || []);
+        const newNormalData = <number[]>(this._reconstructedMesh.getVerticesData(VertexBuffer.NormalKind) || []);
+        const newUVsData = <number[]>(this._reconstructedMesh.getVerticesData(VertexBuffer.UVKind) || []);
+        const newColorsData = <number[]>(this._reconstructedMesh.getVerticesData(VertexBuffer.ColorKind) || []);
 
-        var normalData = this._mesh.getVerticesData(VertexBuffer.NormalKind);
-        var uvs = this._mesh.getVerticesData(VertexBuffer.UVKind);
-        var colorsData = this._mesh.getVerticesData(VertexBuffer.ColorKind);
+        const normalData = this._mesh.getVerticesData(VertexBuffer.NormalKind);
+        const uvs = this._mesh.getVerticesData(VertexBuffer.UVKind);
+        const colorsData = this._mesh.getVerticesData(VertexBuffer.ColorKind);
 
-        var vertexCount = 0;
+        let vertexCount = 0;
         for (i = 0; i < this.vertices.length; ++i) {
             var vertex = this.vertices[i];
             vertex.id = vertexCount;
             if (vertex.triangleCount) {
                 vertex.originalOffsets.forEach((originalOffset) => {
-
                     newPositionData.push(vertex.position.x);
                     newPositionData.push(vertex.position.y);
                     newPositionData.push(vertex.position.z);
 
                     if (normalData && normalData.length) {
                         newNormalData.push(normalData[originalOffset * 3]);
-                        newNormalData.push(normalData[(originalOffset * 3) + 1]);
-                        newNormalData.push(normalData[(originalOffset * 3) + 2]);
+                        newNormalData.push(normalData[originalOffset * 3 + 1]);
+                        newNormalData.push(normalData[originalOffset * 3 + 2]);
                     }
                     if (uvs && uvs.length) {
-                        newUVsData.push(uvs[(originalOffset * 2)]);
-                        newUVsData.push(uvs[(originalOffset * 2) + 1]);
+                        newUVsData.push(uvs[originalOffset * 2]);
+                        newUVsData.push(uvs[originalOffset * 2 + 1]);
                     }
                     if (colorsData && colorsData.length) {
-                        newColorsData.push(colorsData[(originalOffset * 4)]);
-                        newColorsData.push(colorsData[(originalOffset * 4) + 1]);
-                        newColorsData.push(colorsData[(originalOffset * 4) + 2]);
-                        newColorsData.push(colorsData[(originalOffset * 4) + 3]);
+                        newColorsData.push(colorsData[originalOffset * 4]);
+                        newColorsData.push(colorsData[originalOffset * 4 + 1]);
+                        newColorsData.push(colorsData[originalOffset * 4 + 2]);
+                        newColorsData.push(colorsData[originalOffset * 4 + 3]);
                     }
                     ++vertexCount;
                 });
             }
         }
 
-        var startingIndex = this._reconstructedMesh.getTotalIndices();
-        var startingVertex = this._reconstructedMesh.getTotalVertices();
+        const startingIndex = this._reconstructedMesh.getTotalIndices();
+        const startingVertex = this._reconstructedMesh.getTotalVertices();
 
-        var submeshesArray = this._reconstructedMesh.subMeshes;
+        const submeshesArray = this._reconstructedMesh.subMeshes;
         this._reconstructedMesh.subMeshes = [];
 
-        var newIndicesArray: number[] = <number[]>this._reconstructedMesh.getIndices(); //[];
-        var originalIndices = <IndicesArray>this._mesh.getIndices();
+        const newIndicesArray: number[] = <number[]>this._reconstructedMesh.getIndices(); //[];
+        const originalIndices = <IndicesArray>this._mesh.getIndices();
         for (i = 0; i < newTriangles.length; ++i) {
             t = newTriangles[i]; //now get the new referencing point for each vertex
             [0, 1, 2].forEach((idx) => {
-                var id = originalIndices[t.originalOffset + idx];
-                var offset = t.vertices[idx].originalOffsets.indexOf(id);
-                if (offset < 0) { offset = 0; }
+                const id = originalIndices[t.originalOffset + idx];
+                let offset = t.vertices[idx].originalOffsets.indexOf(id);
+                if (offset < 0) {
+                    offset = 0;
+                }
                 newIndicesArray.push(t.vertices[idx].id + offset + startingVertex);
             });
         }
@@ -640,13 +669,27 @@ export class QuadraticErrorSimplification implements ISimplifier {
         }
 
         //create submesh
-        var originalSubmesh = this._mesh.subMeshes[submeshIndex];
+        const originalSubmesh = this._mesh.subMeshes[submeshIndex];
         if (submeshIndex > 0) {
             this._reconstructedMesh.subMeshes = [];
             submeshesArray.forEach((submesh) => {
-                SubMesh.AddToMesh(submesh.materialIndex, submesh.verticesStart, submesh.verticesCount, /* 0, newPositionData.length/3, */submesh.indexStart, submesh.indexCount, submesh.getMesh());
+                SubMesh.AddToMesh(
+                    submesh.materialIndex,
+                    submesh.verticesStart,
+                    submesh.verticesCount,
+                    /* 0, newPositionData.length/3, */ submesh.indexStart,
+                    submesh.indexCount,
+                    submesh.getMesh()
+                );
             });
-            SubMesh.AddToMesh(originalSubmesh.materialIndex, startingVertex, vertexCount, /* 0, newPositionData.length / 3, */startingIndex, newTriangles.length * 3, this._reconstructedMesh);
+            SubMesh.AddToMesh(
+                originalSubmesh.materialIndex,
+                startingVertex,
+                vertexCount,
+                /* 0, newPositionData.length / 3, */ startingIndex,
+                newTriangles.length * 3,
+                this._reconstructedMesh
+            );
         }
     }
 
@@ -659,41 +702,48 @@ export class QuadraticErrorSimplification implements ISimplifier {
     }
 
     private isFlipped(vertex1: DecimationVertex, vertex2: DecimationVertex, point: Vector3, deletedArray: Array<boolean>, delTr: Array<DecimationTriangle>): boolean {
+        for (let i = 0; i < vertex1.triangleCount; ++i) {
+            const t = this.triangles[this.references[vertex1.triangleStart + i].triangleId];
+            if (t.deleted) {
+                continue;
+            }
 
-        for (var i = 0; i < vertex1.triangleCount; ++i) {
-            var t = this.triangles[this.references[vertex1.triangleStart + i].triangleId];
-            if (t.deleted) { continue; }
+            const s = this.references[vertex1.triangleStart + i].vertexId;
 
-            var s = this.references[vertex1.triangleStart + i].vertexId;
+            const v1 = t.vertices[(s + 1) % 3];
+            const v2 = t.vertices[(s + 2) % 3];
 
-            var v1 = t.vertices[(s + 1) % 3];
-            var v2 = t.vertices[(s + 2) % 3];
-
-            if ((v1 === vertex2 || v2 === vertex2)) {
+            if (v1 === vertex2 || v2 === vertex2) {
                 deletedArray[i] = true;
                 delTr.push(t);
                 continue;
             }
 
-            var d1 = v1.position.subtract(point);
+            let d1 = v1.position.subtract(point);
             d1 = d1.normalize();
-            var d2 = v2.position.subtract(point);
+            let d2 = v2.position.subtract(point);
             d2 = d2.normalize();
-            if (Math.abs(Vector3.Dot(d1, d2)) > 0.999) { return true; }
-            var normal = Vector3.Cross(d1, d2).normalize();
+            if (Math.abs(Vector3.Dot(d1, d2)) > 0.999) {
+                return true;
+            }
+            const normal = Vector3.Cross(d1, d2).normalize();
             deletedArray[i] = false;
-            if (Vector3.Dot(normal, t.normal) < 0.2) { return true; }
+            if (Vector3.Dot(normal, t.normal) < 0.2) {
+                return true;
+            }
         }
 
         return false;
     }
 
     private updateTriangles(origVertex: DecimationVertex, vertex: DecimationVertex, deletedArray: Array<boolean>, deletedTriangles: number): number {
-        var newDeleted = deletedTriangles;
-        for (var i = 0; i < vertex.triangleCount; ++i) {
-            var ref = this.references[vertex.triangleStart + i];
-            var t = this.triangles[ref.triangleId];
-            if (t.deleted) { continue; }
+        let newDeleted = deletedTriangles;
+        for (let i = 0; i < vertex.triangleCount; ++i) {
+            const ref = this.references[vertex.triangleStart + i];
+            const t = this.triangles[ref.triangleId];
+            if (t.deleted) {
+                continue;
+            }
             if (deletedArray[i] && t.deletePending) {
                 t.deleted = true;
                 newDeleted++;
@@ -701,9 +751,9 @@ export class QuadraticErrorSimplification implements ISimplifier {
             }
             t.vertices[ref.vertexId] = origVertex;
             t.isDirty = true;
-            t.error[0] = this.calculateError(t.vertices[0], t.vertices[1]) + (t.borderFactor / 2);
-            t.error[1] = this.calculateError(t.vertices[1], t.vertices[2]) + (t.borderFactor / 2);
-            t.error[2] = this.calculateError(t.vertices[2], t.vertices[0]) + (t.borderFactor / 2);
+            t.error[0] = this.calculateError(t.vertices[0], t.vertices[1]) + t.borderFactor / 2;
+            t.error[1] = this.calculateError(t.vertices[1], t.vertices[2]) + t.borderFactor / 2;
+            t.error[2] = this.calculateError(t.vertices[2], t.vertices[0]) + t.borderFactor / 2;
             t.error[3] = Math.min(t.error[0], t.error[1], t.error[2]);
             this.references.push(ref);
         }
@@ -711,19 +761,20 @@ export class QuadraticErrorSimplification implements ISimplifier {
     }
 
     private identifyBorder() {
-
-        for (var i = 0; i < this.vertices.length; ++i) {
-            var vCount: Array<number> = [];
-            var vId: Array<number> = [];
-            var v = this.vertices[i];
+        for (let i = 0; i < this.vertices.length; ++i) {
+            const vCount: Array<number> = [];
+            const vId: Array<number> = [];
+            const v = this.vertices[i];
             var j: number;
             for (j = 0; j < v.triangleCount; ++j) {
-                var triangle = this.triangles[this.references[v.triangleStart + j].triangleId];
-                for (var ii = 0; ii < 3; ii++) {
-                    var ofs = 0;
-                    var vv = triangle.vertices[ii];
+                const triangle = this.triangles[this.references[v.triangleStart + j].triangleId];
+                for (let ii = 0; ii < 3; ii++) {
+                    let ofs = 0;
+                    const vv = triangle.vertices[ii];
                     while (ofs < vCount.length) {
-                        if (vId[ofs] === vv.id) { break; }
+                        if (vId[ofs] === vv.id) {
+                            break;
+                        }
                         ++ofs;
                     }
                     if (ofs === vCount.length) {
@@ -742,14 +793,13 @@ export class QuadraticErrorSimplification implements ISimplifier {
                     this.vertices[vId[j]].isBorder = false;
                 }
             }
-
         }
     }
 
     private updateMesh(identifyBorders: boolean = false) {
-        var i: number;
+        let i: number;
         if (!identifyBorders) {
-            var newTrianglesVector: Array<DecimationTriangle> = [];
+            const newTrianglesVector: Array<DecimationTriangle> = [];
             for (i = 0; i < this.triangles.length; ++i) {
                 if (!this.triangles[i].deleted) {
                     newTrianglesVector.push(this.triangles[i]);
@@ -762,9 +812,9 @@ export class QuadraticErrorSimplification implements ISimplifier {
             this.vertices[i].triangleCount = 0;
             this.vertices[i].triangleStart = 0;
         }
-        var t: DecimationTriangle;
-        var j: number;
-        var v: DecimationVertex;
+        let t: DecimationTriangle;
+        let j: number;
+        let v: DecimationVertex;
         for (i = 0; i < this.triangles.length; ++i) {
             t = this.triangles[i];
             for (j = 0; j < 3; ++j) {
@@ -773,7 +823,7 @@ export class QuadraticErrorSimplification implements ISimplifier {
             }
         }
 
-        var tStart = 0;
+        let tStart = 0;
 
         for (i = 0; i < this.vertices.length; ++i) {
             this.vertices[i].triangleStart = tStart;
@@ -781,7 +831,7 @@ export class QuadraticErrorSimplification implements ISimplifier {
             this.vertices[i].triangleCount = 0;
         }
 
-        var newReferences: Array<Reference> = new Array(this.triangles.length * 3);
+        const newReferences: Array<Reference> = new Array(this.triangles.length * 3);
         for (i = 0; i < this.triangles.length; ++i) {
             t = this.triangles[i];
             for (j = 0; j < 3; ++j) {
@@ -798,33 +848,43 @@ export class QuadraticErrorSimplification implements ISimplifier {
     }
 
     private vertexError(q: QuadraticMatrix, point: Vector3): number {
-        var x = point.x;
-        var y = point.y;
-        var z = point.z;
-        return q.data[0] * x * x + 2 * q.data[1] * x * y + 2 * q.data[2] * x * z + 2 * q.data[3] * x + q.data[4] * y * y
-            + 2 * q.data[5] * y * z + 2 * q.data[6] * y + q.data[7] * z * z + 2 * q.data[8] * z + q.data[9];
+        const x = point.x;
+        const y = point.y;
+        const z = point.z;
+        return (
+            q.data[0] * x * x +
+            2 * q.data[1] * x * y +
+            2 * q.data[2] * x * z +
+            2 * q.data[3] * x +
+            q.data[4] * y * y +
+            2 * q.data[5] * y * z +
+            2 * q.data[6] * y +
+            q.data[7] * z * z +
+            2 * q.data[8] * z +
+            q.data[9]
+        );
     }
 
     private calculateError(vertex1: DecimationVertex, vertex2: DecimationVertex, pointResult?: Vector3): number {
-        var q = vertex1.q.add(vertex2.q);
-        var border = vertex1.isBorder && vertex2.isBorder;
-        var error: number = 0;
-        var qDet = q.det(0, 1, 2, 1, 4, 5, 2, 5, 7);
+        const q = vertex1.q.add(vertex2.q);
+        const border = vertex1.isBorder && vertex2.isBorder;
+        let error: number = 0;
+        const qDet = q.det(0, 1, 2, 1, 4, 5, 2, 5, 7);
 
         if (qDet !== 0 && !border) {
             if (!pointResult) {
                 pointResult = Vector3.Zero();
             }
-            pointResult.x = -1 / qDet * (q.det(1, 2, 3, 4, 5, 6, 5, 7, 8));
-            pointResult.y = 1 / qDet * (q.det(0, 2, 3, 1, 5, 6, 2, 7, 8));
-            pointResult.z = -1 / qDet * (q.det(0, 1, 3, 1, 4, 6, 2, 5, 8));
+            pointResult.x = (-1 / qDet) * q.det(1, 2, 3, 4, 5, 6, 5, 7, 8);
+            pointResult.y = (1 / qDet) * q.det(0, 2, 3, 1, 5, 6, 2, 7, 8);
+            pointResult.z = (-1 / qDet) * q.det(0, 1, 3, 1, 4, 6, 2, 5, 8);
             error = this.vertexError(q, pointResult);
         } else {
-            var p3 = (vertex1.position.add(vertex2.position)).divide(new Vector3(2, 2, 2));
+            const p3 = vertex1.position.add(vertex2.position).divide(new Vector3(2, 2, 2));
             //var norm3 = (vertex1.normal.add(vertex2.normal)).divide(new Vector3(2, 2, 2)).normalize();
-            var error1 = this.vertexError(q, vertex1.position);
-            var error2 = this.vertexError(q, vertex2.position);
-            var error3 = this.vertexError(q, p3);
+            const error1 = this.vertexError(q, vertex1.position);
+            const error2 = this.vertexError(q, vertex2.position);
+            const error3 = this.vertexError(q, p3);
             error = Math.min(error1, error2, error3);
             if (error === error1) {
                 if (pointResult) {

@@ -1,14 +1,13 @@
-import { DeepImmutable, FloatArray } from '../types';
-import { Scalar } from './math.scalar';
-import { ToLinearSpace, ToGammaSpace } from './math.constants';
-import { ArrayTools } from '../Misc/arrayTools';
-import { RegisterClass } from '../Misc/typeStore';
+import { DeepImmutable, FloatArray } from "../types";
+import { Scalar } from "./math.scalar";
+import { ToLinearSpace, ToGammaSpace } from "./math.constants";
+import { ArrayTools } from "../Misc/arrayTools";
+import { RegisterClass } from "../Misc/typeStore";
 
 /**
  * Class used to hold a RGB color
  */
 export class Color3 {
-
     /**
      * Creates a new Color3 object from red, green, blue values, all between 0 and 1
      * @param r defines the red component (between 0 and 1, default is 0)
@@ -27,8 +26,8 @@ export class Color3 {
         /**
          * Defines the blue component (between 0 and 1, default is 0)
          */
-        public b: number = 0) {
-    }
+        public b: number = 0
+    ) {}
 
     /**
      * Creates a string with the Color3 current values
@@ -98,7 +97,7 @@ export class Color3 {
      * @returns the new array
      */
     public asArray(): number[] {
-        var result = new Array<number>();
+        const result = new Array<number>();
         this.toArray(result, 0);
         return result;
     }
@@ -296,9 +295,9 @@ export class Color3 {
      * @returns a string containing the hexadecimal representation of the Color3 object
      */
     public toHexString(): string {
-        var intR = Math.round(this.r * 255);
-        var intG = Math.round(this.g * 255);
-        var intB = Math.round(this.b * 255);
+        const intR = Math.round(this.r * 255);
+        const intG = Math.round(this.g * 255);
+        const intB = Math.round(this.b * 255);
         return "#" + Scalar.ToHex(intR) + Scalar.ToHex(intG) + Scalar.ToHex(intB);
     }
 
@@ -307,7 +306,7 @@ export class Color3 {
      * @returns a new Color3 object
      */
     public toLinearSpace(): Color3 {
-        var convertedColor = new Color3();
+        const convertedColor = new Color3();
         this.toLinearSpaceToRef(convertedColor);
         return convertedColor;
     }
@@ -317,7 +316,7 @@ export class Color3 {
      * @returns a new color3 representing the HSV values
      */
     public toHSV(): Color3 {
-        let result = new Color3();
+        const result = new Color3();
 
         this.toHSVToRef(result);
 
@@ -329,17 +328,17 @@ export class Color3 {
      * @param result defines the Color3 where to store the HSV values
      */
     public toHSVToRef(result: Color3) {
-        var r = this.r;
-        var g = this.g;
-        var b = this.b;
+        const r = this.r;
+        const g = this.g;
+        const b = this.b;
 
-        var max = Math.max(r, g, b);
-        var min = Math.min(r, g, b);
-        var h = 0;
-        var s = 0;
-        var v = max;
+        const max = Math.max(r, g, b);
+        const min = Math.min(r, g, b);
+        let h = 0;
+        let s = 0;
+        const v = max;
 
-        var dm = max - min;
+        const dm = max - min;
 
         if (max !== 0) {
             s = dm / max;
@@ -381,7 +380,7 @@ export class Color3 {
      * @returns a new Color3 object
      */
     public toGammaSpace(): Color3 {
-        var convertedColor = new Color3();
+        const convertedColor = new Color3();
         this.toGammaSpaceToRef(convertedColor);
         return convertedColor;
     }
@@ -410,12 +409,12 @@ export class Color3 {
      * @param result defines the Color3 where to store the RGB values
      */
     public static HSVtoRGBToRef(hue: number, saturation: number, value: number, result: Color3) {
-        var chroma = value * saturation;
-        var h = hue / 60;
-        var x = chroma * (1 - Math.abs((h % 2) - 1));
-        var r = 0;
-        var g = 0;
-        var b = 0;
+        const chroma = value * saturation;
+        const h = hue / 60;
+        const x = chroma * (1 - Math.abs((h % 2) - 1));
+        let r = 0;
+        let g = 0;
+        let b = 0;
 
         if (h >= 0 && h <= 1) {
             r = chroma;
@@ -437,8 +436,8 @@ export class Color3 {
             b = x;
         }
 
-        var m = value - chroma;
-        result.set((r + m), (g + m), (b + m));
+        const m = value - chroma;
+        result.set(r + m, g + m, b + m);
     }
 
     /**
@@ -451,9 +450,9 @@ export class Color3 {
             return new Color3(0, 0, 0);
         }
 
-        var r = parseInt(hex.substring(1, 3), 16);
-        var g = parseInt(hex.substring(3, 5), 16);
-        var b = parseInt(hex.substring(5, 7), 16);
+        const r = parseInt(hex.substring(1, 3), 16);
+        const g = parseInt(hex.substring(3, 5), 16);
+        const b = parseInt(hex.substring(5, 7), 16);
 
         return Color3.FromInts(r, g, b);
     }
@@ -499,7 +498,7 @@ export class Color3 {
      * @returns a new Color3 object
      */
     public static Lerp(start: DeepImmutable<Color3>, end: DeepImmutable<Color3>, amount: number): Color3 {
-        var result = new Color3(0.0, 0.0, 0.0);
+        const result = new Color3(0.0, 0.0, 0.0);
         Color3.LerpToRef(start, end, amount, result);
         return result;
     }
@@ -512,9 +511,9 @@ export class Color3 {
      * @param result defines the Color3 object where to store the result
      */
     public static LerpToRef(left: DeepImmutable<Color3>, right: DeepImmutable<Color3>, amount: number, result: Color3): void {
-        result.r = left.r + ((right.r - left.r) * amount);
-        result.g = left.g + ((right.g - left.g) * amount);
-        result.b = left.b + ((right.b - left.b) * amount);
+        result.r = left.r + (right.r - left.r) * amount;
+        result.g = left.g + (right.g - left.g) * amount;
+        result.b = left.b + (right.b - left.b) * amount;
     }
 
     /**
@@ -526,17 +525,17 @@ export class Color3 {
      * @param amount defines the amount on the interpolation spline (between 0 and 1)
      * @returns the new Color3
      */
-     public static Hermite(value1: DeepImmutable<Color3>, tangent1: DeepImmutable<Color3>, value2: DeepImmutable<Color3>, tangent2: DeepImmutable<Color3>, amount: number): Color3 {
+    public static Hermite(value1: DeepImmutable<Color3>, tangent1: DeepImmutable<Color3>, value2: DeepImmutable<Color3>, tangent2: DeepImmutable<Color3>, amount: number): Color3 {
         const squared = amount * amount;
         const cubed = amount * squared;
-        const part1 = ((2.0 * cubed) - (3.0 * squared)) + 1.0;
-        const part2 = (-2.0 * cubed) + (3.0 * squared);
-        const part3 = (cubed - (2.0 * squared)) + amount;
+        const part1 = 2.0 * cubed - 3.0 * squared + 1.0;
+        const part2 = -2.0 * cubed + 3.0 * squared;
+        const part3 = cubed - 2.0 * squared + amount;
         const part4 = cubed - squared;
 
-        const r = (((value1.r * part1) + (value2.r * part2)) + (tangent1.r * part3)) + (tangent2.r * part4);
-        const g = (((value1.g * part1) + (value2.g * part2)) + (tangent1.g * part3)) + (tangent2.g * part4);
-        const b = (((value1.b * part1) + (value2.b * part2)) + (tangent1.b * part3)) + (tangent2.b * part4);
+        const r = value1.r * part1 + value2.r * part2 + tangent1.r * part3 + tangent2.r * part4;
+        const g = value1.g * part1 + value2.g * part2 + tangent1.g * part3 + tangent2.g * part4;
+        const b = value1.b * part1 + value2.b * part2 + tangent1.b * part3 + tangent2.b * part4;
         return new Color3(r, g, b);
     }
 
@@ -549,8 +548,14 @@ export class Color3 {
      * @param time define where the derivative must be done
      * @returns 1st derivative
      */
-    public static Hermite1stDerivative(value1: DeepImmutable<Color3>, tangent1: DeepImmutable<Color3>, value2: DeepImmutable<Color3>, tangent2: DeepImmutable<Color3>, time: number): Color3 {
-        let result = Color3.Black();
+    public static Hermite1stDerivative(
+        value1: DeepImmutable<Color3>,
+        tangent1: DeepImmutable<Color3>,
+        value2: DeepImmutable<Color3>,
+        tangent2: DeepImmutable<Color3>,
+        time: number
+    ): Color3 {
+        const result = Color3.Black();
 
         this.Hermite1stDerivativeToRef(value1, tangent1, value2, tangent2, time, result);
 
@@ -566,7 +571,14 @@ export class Color3 {
      * @param time define where the derivative must be done
      * @param result define where to store the derivative
      */
-    public static Hermite1stDerivativeToRef(value1: DeepImmutable<Color3>, tangent1: DeepImmutable<Color3>, value2: DeepImmutable<Color3>, tangent2: DeepImmutable<Color3>, time: number, result: Color3) {
+    public static Hermite1stDerivativeToRef(
+        value1: DeepImmutable<Color3>,
+        tangent1: DeepImmutable<Color3>,
+        value2: DeepImmutable<Color3>,
+        tangent2: DeepImmutable<Color3>,
+        time: number,
+        result: Color3
+    ) {
         const t2 = time * time;
 
         result.r = (t2 - time) * 6 * value1.r + (3 * t2 - 4 * time + 1) * tangent1.r + (-t2 + time) * 6 * value2.r + (3 * t2 - 2 * time) * tangent2.r;
@@ -578,26 +590,34 @@ export class Color3 {
      * Returns a Color3 value containing a red color
      * @returns a new Color3 object
      */
-    public static Red(): Color3 { return new Color3(1, 0, 0); }
+    public static Red(): Color3 {
+        return new Color3(1, 0, 0);
+    }
     /**
      * Returns a Color3 value containing a green color
      * @returns a new Color3 object
      */
-    public static Green(): Color3 { return new Color3(0, 1, 0); }
+    public static Green(): Color3 {
+        return new Color3(0, 1, 0);
+    }
     /**
      * Returns a Color3 value containing a blue color
      * @returns a new Color3 object
      */
-    public static Blue(): Color3 { return new Color3(0, 0, 1); }
+    public static Blue(): Color3 {
+        return new Color3(0, 0, 1);
+    }
     /**
      * Returns a Color3 value containing a black color
      * @returns a new Color3 object
      */
-    public static Black(): Color3 { return new Color3(0, 0, 0); }
+    public static Black(): Color3 {
+        return new Color3(0, 0, 0);
+    }
 
     /**
-      * Gets a Color3 value containing a black color that must not be updated
-      */
+     * Gets a Color3 value containing a black color that must not be updated
+     */
     public static get BlackReadOnly(): DeepImmutable<Color3> {
         return Color3._BlackReadOnly;
     }
@@ -606,37 +626,51 @@ export class Color3 {
      * Returns a Color3 value containing a white color
      * @returns a new Color3 object
      */
-    public static White(): Color3 { return new Color3(1, 1, 1); }
+    public static White(): Color3 {
+        return new Color3(1, 1, 1);
+    }
     /**
      * Returns a Color3 value containing a purple color
      * @returns a new Color3 object
      */
-    public static Purple(): Color3 { return new Color3(0.5, 0, 0.5); }
+    public static Purple(): Color3 {
+        return new Color3(0.5, 0, 0.5);
+    }
     /**
      * Returns a Color3 value containing a magenta color
      * @returns a new Color3 object
      */
-    public static Magenta(): Color3 { return new Color3(1, 0, 1); }
+    public static Magenta(): Color3 {
+        return new Color3(1, 0, 1);
+    }
     /**
      * Returns a Color3 value containing a yellow color
      * @returns a new Color3 object
      */
-    public static Yellow(): Color3 { return new Color3(1, 1, 0); }
+    public static Yellow(): Color3 {
+        return new Color3(1, 1, 0);
+    }
     /**
      * Returns a Color3 value containing a gray color
      * @returns a new Color3 object
      */
-    public static Gray(): Color3 { return new Color3(0.5, 0.5, 0.5); }
+    public static Gray(): Color3 {
+        return new Color3(0.5, 0.5, 0.5);
+    }
     /**
      * Returns a Color3 value containing a teal color
      * @returns a new Color3 object
      */
-    public static Teal(): Color3 { return new Color3(0, 1.0, 1.0); }
+    public static Teal(): Color3 {
+        return new Color3(0, 1.0, 1.0);
+    }
     /**
      * Returns a Color3 value containing a random color
      * @returns a new Color3 object
      */
-    public static Random(): Color3 { return new Color3(Math.random(), Math.random(), Math.random()); }
+    public static Random(): Color3 {
+        return new Color3(Math.random(), Math.random(), Math.random());
+    }
 }
 
 /**
@@ -666,8 +700,8 @@ export class Color4 {
         /**
          * Defines the alpha component (between 0 and 1, default is 1)
          */
-        public a: number = 1) {
-    }
+        public a: number = 1
+    ) {}
 
     // Operators
 
@@ -689,7 +723,7 @@ export class Color4 {
      * @returns the new array
      */
     public asArray(): number[] {
-        var result = new Array<number>();
+        const result = new Array<number>();
         this.toArray(result, 0);
         return result;
     }
@@ -813,10 +847,10 @@ export class Color4 {
     }
 
     /**
-      * Multipy an Color4 value by another and return a new Color4 object
-      * @param color defines the Color4 value to multiply by
-      * @returns a new Color4 object
-      */
+     * Multipy an Color4 value by another and return a new Color4 object
+     * @param color defines the Color4 value to multiply by
+     * @returns a new Color4 object
+     */
     public multiply(color: Color4): Color4 {
         return new Color4(this.r * color.r, this.g * color.g, this.b * color.b, this.a * color.a);
     }
@@ -918,15 +952,15 @@ export class Color4 {
      * @returns a string containing the hexadecimal representation of the Color4 object
      */
     public toHexString(returnAsColor3 = false): string {
-        var intR = Math.round(this.r * 255);
-        var intG = Math.round(this.g * 255);
-        var intB = Math.round(this.b * 255);
+        const intR = Math.round(this.r * 255);
+        const intG = Math.round(this.g * 255);
+        const intB = Math.round(this.b * 255);
 
         if (returnAsColor3) {
             return "#" + Scalar.ToHex(intR) + Scalar.ToHex(intG) + Scalar.ToHex(intB);
         }
 
-        var intA = Math.round(this.a * 255);
+        const intA = Math.round(this.a * 255);
         return "#" + Scalar.ToHex(intR) + Scalar.ToHex(intG) + Scalar.ToHex(intB) + Scalar.ToHex(intA);
     }
 
@@ -935,7 +969,7 @@ export class Color4 {
      * @returns a new Color4 object
      */
     public toLinearSpace(): Color4 {
-        var convertedColor = new Color4();
+        const convertedColor = new Color4();
         this.toLinearSpaceToRef(convertedColor);
         return convertedColor;
     }
@@ -958,7 +992,7 @@ export class Color4 {
      * @returns a new Color4 object
      */
     public toGammaSpace(): Color4 {
-        var convertedColor = new Color4();
+        const convertedColor = new Color4();
         this.toGammaSpaceToRef(convertedColor);
         return convertedColor;
     }
@@ -988,10 +1022,10 @@ export class Color4 {
             return new Color4(0.0, 0.0, 0.0, 0.0);
         }
 
-        var r = parseInt(hex.substring(1, 3), 16);
-        var g = parseInt(hex.substring(3, 5), 16);
-        var b = parseInt(hex.substring(5, 7), 16);
-        var a = hex.length === 9 ? parseInt(hex.substring(7, 9), 16) : 255;
+        const r = parseInt(hex.substring(1, 3), 16);
+        const g = parseInt(hex.substring(3, 5), 16);
+        const b = parseInt(hex.substring(5, 7), 16);
+        const a = hex.length === 9 ? parseInt(hex.substring(7, 9), 16) : 255;
 
         return Color4.FromInts(r, g, b, a);
     }
@@ -1004,7 +1038,7 @@ export class Color4 {
      * @returns a new Color4 object
      */
     public static Lerp(left: DeepImmutable<Color4>, right: DeepImmutable<Color4>, amount: number): Color4 {
-        var result = new Color4(0.0, 0.0, 0.0, 0.0);
+        const result = new Color4(0.0, 0.0, 0.0, 0.0);
         Color4.LerpToRef(left, right, amount, result);
         return result;
     }
@@ -1032,18 +1066,18 @@ export class Color4 {
      * @param amount defines the target Color4
      * @returns the new interpolated Color4
      */
-     public static Hermite(value1: DeepImmutable<Color4>, tangent1: DeepImmutable<Color4>, value2: DeepImmutable<Color4>, tangent2: DeepImmutable<Color4>, amount: number): Color4 {
+    public static Hermite(value1: DeepImmutable<Color4>, tangent1: DeepImmutable<Color4>, value2: DeepImmutable<Color4>, tangent2: DeepImmutable<Color4>, amount: number): Color4 {
         const squared = amount * amount;
         const cubed = amount * squared;
-        const part1 = ((2.0 * cubed) - (3.0 * squared)) + 1.0;
-        const part2 = (-2.0 * cubed) + (3.0 * squared);
-        const part3 = (cubed - (2.0 * squared)) + amount;
+        const part1 = 2.0 * cubed - 3.0 * squared + 1.0;
+        const part2 = -2.0 * cubed + 3.0 * squared;
+        const part3 = cubed - 2.0 * squared + amount;
         const part4 = cubed - squared;
 
-        const r = (((value1.r * part1) + (value2.r * part2)) + (tangent1.r * part3)) + (tangent2.r * part4);
-        const g = (((value1.g * part1) + (value2.g * part2)) + (tangent1.g * part3)) + (tangent2.g * part4);
-        const b = (((value1.b * part1) + (value2.b * part2)) + (tangent1.b * part3)) + (tangent2.b * part4);
-        const a = (((value1.a * part1) + (value2.a * part2)) + (tangent1.a * part3)) + (tangent2.a * part4);
+        const r = value1.r * part1 + value2.r * part2 + tangent1.r * part3 + tangent2.r * part4;
+        const g = value1.g * part1 + value2.g * part2 + tangent1.g * part3 + tangent2.g * part4;
+        const b = value1.b * part1 + value2.b * part2 + tangent1.b * part3 + tangent2.b * part4;
+        const a = value1.a * part1 + value2.a * part2 + tangent1.a * part3 + tangent2.a * part4;
         return new Color4(r, g, b, a);
     }
 
@@ -1056,8 +1090,14 @@ export class Color4 {
      * @param time define where the derivative must be done
      * @returns 1st derivative
      */
-    public static Hermite1stDerivative(value1: DeepImmutable<Color4>, tangent1: DeepImmutable<Color4>, value2: DeepImmutable<Color4>, tangent2: DeepImmutable<Color4>, time: number): Color4 {
-        let result = new Color4();
+    public static Hermite1stDerivative(
+        value1: DeepImmutable<Color4>,
+        tangent1: DeepImmutable<Color4>,
+        value2: DeepImmutable<Color4>,
+        tangent2: DeepImmutable<Color4>,
+        time: number
+    ): Color4 {
+        const result = new Color4();
 
         this.Hermite1stDerivativeToRef(value1, tangent1, value2, tangent2, time, result);
 
@@ -1073,7 +1113,14 @@ export class Color4 {
      * @param time define where the derivative must be done
      * @param result define where to store the derivative
      */
-    public static Hermite1stDerivativeToRef(value1: DeepImmutable<Color4>, tangent1: DeepImmutable<Color4>, value2: DeepImmutable<Color4>, tangent2: DeepImmutable<Color4>, time: number, result: Color4) {
+    public static Hermite1stDerivativeToRef(
+        value1: DeepImmutable<Color4>,
+        tangent1: DeepImmutable<Color4>,
+        value2: DeepImmutable<Color4>,
+        tangent2: DeepImmutable<Color4>,
+        time: number,
+        result: Color4
+    ) {
         const t2 = time * time;
 
         result.r = (t2 - time) * 6 * value1.r + (3 * t2 - 4 * time + 1) * tangent1.r + (-t2 + time) * 6 * value2.r + (3 * t2 - 2 * time) * tangent2.r;
@@ -1137,9 +1184,9 @@ export class Color4 {
     public static CheckColors4(colors: number[], count: number): number[] {
         // Check if color3 was used
         if (colors.length === count * 3) {
-            var colors4 = [];
-            for (var index = 0; index < colors.length; index += 3) {
-                var newIndex = (index / 3) * 4;
+            const colors4 = [];
+            for (let index = 0; index < colors.length; index += 3) {
+                const newIndex = (index / 3) * 4;
                 colors4[newIndex] = colors[index];
                 colors4[newIndex + 1] = colors[index + 1];
                 colors4[newIndex + 2] = colors[index + 2];

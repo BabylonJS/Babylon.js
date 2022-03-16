@@ -2,7 +2,7 @@ import { Scene } from "../../scene";
 import { Vector3, Vector4 } from "../../Maths/math.vector";
 import { Mesh, _CreationDataStorage } from "../mesh";
 import { CreateRibbon } from "./ribbonBuilder";
-import { Nullable } from '../../types';
+import { Nullable } from "../../types";
 
 /**
  * Creates lathe mesh.
@@ -20,28 +20,57 @@ import { Nullable } from '../../types';
  * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
  * @param name defines the name of the mesh
  * @param options defines the options used to create the mesh
+ * @param options.shape
  * @param scene defines the hosting scene
+ * @param options.radius
+ * @param options.tessellation
+ * @param options.clip
+ * @param options.arc
+ * @param options.closed
+ * @param options.updatable
+ * @param options.sideOrientation
+ * @param options.frontUVs
+ * @param options.backUVs
+ * @param options.cap
+ * @param options.invertUV
  * @returns the lathe mesh
  * @see https://doc.babylonjs.com/how_to/parametric_shapes#lathe
  */
-export function CreateLathe(name: string, options: { shape: Vector3[], radius?: number, tessellation?: number, clip?: number, arc?: number, closed?: boolean, updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, cap?: number, invertUV?: boolean }, scene: Nullable<Scene> = null): Mesh {
-    var arc: number = options.arc ? ((options.arc <= 0 || options.arc > 1) ? 1.0 : options.arc) : 1.0;
-    var closed: boolean = (options.closed === undefined) ? true : options.closed;
-    var shape = options.shape;
-    var radius = options.radius || 1;
-    var tessellation = options.tessellation || 64;
-    var clip = options.clip || 0;
-    var updatable = options.updatable;
-    var sideOrientation = Mesh._GetDefaultSideOrientation(options.sideOrientation);
-    var cap = options.cap || Mesh.NO_CAP;
-    var pi2 = Math.PI * 2;
-    var paths = new Array();
-    var invertUV = options.invertUV || false;
+export function CreateLathe(
+    name: string,
+    options: {
+        shape: Vector3[];
+        radius?: number;
+        tessellation?: number;
+        clip?: number;
+        arc?: number;
+        closed?: boolean;
+        updatable?: boolean;
+        sideOrientation?: number;
+        frontUVs?: Vector4;
+        backUVs?: Vector4;
+        cap?: number;
+        invertUV?: boolean;
+    },
+    scene: Nullable<Scene> = null
+): Mesh {
+    const arc: number = options.arc ? (options.arc <= 0 || options.arc > 1 ? 1.0 : options.arc) : 1.0;
+    const closed: boolean = options.closed === undefined ? true : options.closed;
+    const shape = options.shape;
+    const radius = options.radius || 1;
+    const tessellation = options.tessellation || 64;
+    const clip = options.clip || 0;
+    const updatable = options.updatable;
+    const sideOrientation = Mesh._GetDefaultSideOrientation(options.sideOrientation);
+    const cap = options.cap || Mesh.NO_CAP;
+    const pi2 = Math.PI * 2;
+    const paths = new Array();
+    const invertUV = options.invertUV || false;
 
-    var i = 0;
-    var p = 0;
-    var step = pi2 / tessellation * arc;
-    var rotated;
+    let i = 0;
+    let p = 0;
+    const step = (pi2 / tessellation) * arc;
+    let rotated;
     var path = new Array<Vector3>();
     for (i = 0; i <= tessellation - clip; i++) {
         var path: Vector3[] = [];
@@ -61,7 +90,11 @@ export function CreateLathe(name: string, options: { shape: Vector3[], radius?: 
     }
 
     // lathe ribbon
-    var lathe = CreateRibbon(name, { pathArray: paths, closeArray: closed, sideOrientation: sideOrientation, updatable: updatable, invertUV: invertUV, frontUVs: options.frontUVs, backUVs: options.backUVs }, scene);
+    const lathe = CreateRibbon(
+        name,
+        { pathArray: paths, closeArray: closed, sideOrientation: sideOrientation, updatable: updatable, invertUV: invertUV, frontUVs: options.frontUVs, backUVs: options.backUVs },
+        scene
+    );
     return lathe;
 }
 
@@ -70,16 +103,16 @@ export function CreateLathe(name: string, options: { shape: Vector3[], radius?: 
  * @deprecated use the function direction from the module
  */
 export const LatheBuilder = {
-    CreateLathe
+    CreateLathe,
 };
 
 Mesh.CreateLathe = (name: string, shape: Vector3[], radius: number, tessellation: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh => {
-    var options = {
+    const options = {
         shape: shape,
         radius: radius,
         tessellation: tessellation,
         sideOrientation: sideOrientation,
-        updatable: updatable
+        updatable: updatable,
     };
 
     return CreateLathe(name, options, scene);

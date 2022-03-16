@@ -37,8 +37,8 @@ export class SceneOptimization {
         /**
          * Defines the priority of this optimization (0 by default which means first in the list)
          */
-        public priority: number = 0) {
-    }
+        public priority: number = 0
+    ) {}
 }
 
 /**
@@ -72,7 +72,8 @@ export class TextureOptimization extends SceneOptimization {
         /**
          * Defines the factor (0.5 by default) used to scale down textures bigger than maximum sized allowed.
          */
-        public step = 0.5) {
+        public step = 0.5
+    ) {
         super(priority);
     }
 
@@ -83,17 +84,16 @@ export class TextureOptimization extends SceneOptimization {
      * @returns true if everything that can be done was applied
      */
     public apply(scene: Scene, optimizer: SceneOptimizer): boolean {
-
-        var allDone = true;
-        for (var index = 0; index < scene.textures.length; index++) {
-            var texture = scene.textures[index];
+        let allDone = true;
+        for (let index = 0; index < scene.textures.length; index++) {
+            const texture = scene.textures[index];
 
             if (!texture.canRescale || (<any>texture).getContext) {
                 continue;
             }
 
-            var currentSize = texture.getSize();
-            var maxDimension = Math.max(currentSize.width, currentSize.height);
+            const currentSize = texture.getSize();
+            const maxDimension = Math.max(currentSize.width, currentSize.height);
 
             if (maxDimension > this.maximumSize) {
                 texture.scale(this.step);
@@ -139,7 +139,8 @@ export class HardwareScalingOptimization extends SceneOptimization {
         /**
          * Defines the step to use between two passes (0.5 by default)
          */
-        public step: number = 0.25) {
+        public step: number = 0.25
+    ) {
         super(priority);
     }
 
@@ -365,7 +366,7 @@ export class MergeMeshesOptimization extends SceneOptimization {
             return false;
         }
 
-        var mesh = <Mesh>abstractMesh;
+        const mesh = <Mesh>abstractMesh;
 
         if (mesh.isDisposed()) {
             return false;
@@ -384,7 +385,7 @@ export class MergeMeshesOptimization extends SceneOptimization {
         }
 
         return true;
-    }
+    };
 
     /**
      * This function will be called by the SceneOptimizer when its priority is reached in order to apply the change required by the current optimization
@@ -394,13 +395,12 @@ export class MergeMeshesOptimization extends SceneOptimization {
      * @returns true if everything that can be done was applied
      */
     public apply(scene: Scene, optimizer: SceneOptimizer, updateSelectionTree?: boolean): boolean {
+        const globalPool = scene.meshes.slice(0);
+        let globalLength = globalPool.length;
 
-        var globalPool = scene.meshes.slice(0);
-        var globalLength = globalPool.length;
-
-        for (var index = 0; index < globalLength; index++) {
-            var currentPool = new Array<Mesh>();
-            var current = globalPool[index];
+        for (let index = 0; index < globalLength; index++) {
+            const currentPool = new Array<Mesh>();
+            const current = globalPool[index];
 
             // Checks
             if (!this._canBeMerged(current)) {
@@ -410,8 +410,8 @@ export class MergeMeshesOptimization extends SceneOptimization {
             currentPool.push(<Mesh>current);
 
             // Find compatible meshes
-            for (var subIndex = index + 1; subIndex < globalLength; subIndex++) {
-                var otherMesh = globalPool[subIndex];
+            for (let subIndex = index + 1; subIndex < globalLength; subIndex++) {
+                const otherMesh = globalPool[subIndex];
 
                 if (!this._canBeMerged(otherMesh)) {
                     continue;
@@ -448,8 +448,7 @@ export class MergeMeshesOptimization extends SceneOptimization {
                 if (updateSelectionTree) {
                     sceneAsAny.createOrUpdateSelectionOctree();
                 }
-            }
-            else if (MergeMeshesOptimization.UpdateSelectionTree) {
+            } else if (MergeMeshesOptimization.UpdateSelectionTree) {
                 sceneAsAny.createOrUpdateSelectionOctree();
             }
         }
@@ -481,8 +480,8 @@ export class SceneOptimizerOptions {
         /**
          * Defines the interval between two checks (2000ms by default)
          */
-        public trackerDuration: number = 2000) {
-    }
+        public trackerDuration: number = 2000
+    ) {}
 
     /**
      * Add a new optimization
@@ -502,7 +501,7 @@ export class SceneOptimizerOptions {
      * @returns the current SceneOptimizerOptions
      */
     public addCustomOptimization(onApply: (scene: Scene) => boolean, onGetDescription: () => string, priority: number = 0): SceneOptimizerOptions {
-        let optimization = new CustomOptimization(priority);
+        const optimization = new CustomOptimization(priority);
         optimization.onApply = onApply;
         optimization.onGetDescription = onGetDescription;
 
@@ -516,9 +515,9 @@ export class SceneOptimizerOptions {
      * @returns a SceneOptimizerOptions object
      */
     public static LowDegradationAllowed(targetFrameRate?: number): SceneOptimizerOptions {
-        var result = new SceneOptimizerOptions(targetFrameRate);
+        const result = new SceneOptimizerOptions(targetFrameRate);
 
-        var priority = 0;
+        let priority = 0;
         result.addOptimization(new MergeMeshesOptimization(priority));
         result.addOptimization(new ShadowsOptimization(priority));
         result.addOptimization(new LensFlaresOptimization(priority));
@@ -541,9 +540,9 @@ export class SceneOptimizerOptions {
      * @returns a SceneOptimizerOptions object
      */
     public static ModerateDegradationAllowed(targetFrameRate?: number): SceneOptimizerOptions {
-        var result = new SceneOptimizerOptions(targetFrameRate);
+        const result = new SceneOptimizerOptions(targetFrameRate);
 
-        var priority = 0;
+        let priority = 0;
         result.addOptimization(new MergeMeshesOptimization(priority));
         result.addOptimization(new ShadowsOptimization(priority));
         result.addOptimization(new LensFlaresOptimization(priority));
@@ -574,9 +573,9 @@ export class SceneOptimizerOptions {
      * @returns a SceneOptimizerOptions object
      */
     public static HighDegradationAllowed(targetFrameRate?: number): SceneOptimizerOptions {
-        var result = new SceneOptimizerOptions(targetFrameRate);
+        const result = new SceneOptimizerOptions(targetFrameRate);
 
-        var priority = 0;
+        let priority = 0;
         result.addOptimization(new MergeMeshesOptimization(priority));
         result.addOptimization(new ShadowsOptimization(priority));
         result.addOptimization(new LensFlaresOptimization(priority));
@@ -710,7 +709,7 @@ export class SceneOptimizer implements IDisposable {
 
         if (autoGeneratePriorities) {
             let priority = 0;
-            for (var optim of this._options.optimizations) {
+            for (const optim of this._options.optimizations) {
                 optim.priority = priority++;
             }
         }
@@ -761,23 +760,22 @@ export class SceneOptimizer implements IDisposable {
             return;
         }
 
-        let scene = this._scene;
-        let options = this._options;
+        const scene = this._scene;
+        const options = this._options;
 
         this._currentFrameRate = Math.round(scene.getEngine().getFps());
 
-        if (this._improvementMode && this._currentFrameRate <= this._targetFrameRate ||
-            !this._improvementMode && this._currentFrameRate >= this._targetFrameRate) {
+        if ((this._improvementMode && this._currentFrameRate <= this._targetFrameRate) || (!this._improvementMode && this._currentFrameRate >= this._targetFrameRate)) {
             this._isRunning = false;
             this.onSuccessObservable.notifyObservers(this);
             return;
         }
 
         // Apply current level of optimizations
-        var allDone = true;
-        var noOptimizationApplied = true;
-        for (var index = 0; index < options.optimizations.length; index++) {
-            var optimization = options.optimizations[index];
+        let allDone = true;
+        let noOptimizationApplied = true;
+        for (let index = 0; index < options.optimizations.length; index++) {
+            const optimization = options.optimizations[index];
 
             if (optimization.priority === this._currentPriorityLevel) {
                 noOptimizationApplied = false;
@@ -829,7 +827,7 @@ export class SceneOptimizer implements IDisposable {
      * @returns the new SceneOptimizer object
      */
     public static OptimizeAsync(scene: Scene, options?: SceneOptimizerOptions, onSuccess?: () => void, onFailure?: () => void): SceneOptimizer {
-        let optimizer = new SceneOptimizer(scene, options || SceneOptimizerOptions.ModerateDegradationAllowed(), false);
+        const optimizer = new SceneOptimizer(scene, options || SceneOptimizerOptions.ModerateDegradationAllowed(), false);
 
         if (onSuccess) {
             optimizer.onSuccessObservable.add(() => {

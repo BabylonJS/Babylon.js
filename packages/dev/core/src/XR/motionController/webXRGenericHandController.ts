@@ -7,7 +7,6 @@ import { WebXRMotionControllerManager } from "./webXRMotionControllerManager";
  * A generic hand controller class that supports select and a secondary grasp
  */
 export class WebXRGenericHandController extends WebXRAbstractMotionController {
-
     public profileId = "generic-hand-select-grasp";
 
     /**
@@ -63,7 +62,7 @@ const GenericHandSelectGraspProfile: IMotionControllerLayoutMap = {
                 rootNodeName: "xr-standard-trigger",
                 visualResponses: {},
             },
-            "grasp": {
+            grasp: {
                 type: "trigger",
                 gamepadIndices: {
                     button: 4,
@@ -87,7 +86,7 @@ const GenericHandSelectGraspProfile: IMotionControllerLayoutMap = {
                 rootNodeName: "xr-standard-trigger",
                 visualResponses: {},
             },
-            "grasp": {
+            grasp: {
                 type: "trigger",
                 gamepadIndices: {
                     button: 4,
@@ -111,7 +110,7 @@ const GenericHandSelectGraspProfile: IMotionControllerLayoutMap = {
                 rootNodeName: "xr-standard-trigger",
                 visualResponses: {},
             },
-            "grasp": {
+            grasp: {
                 type: "trigger",
                 gamepadIndices: {
                     button: 4,

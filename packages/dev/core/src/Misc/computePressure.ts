@@ -20,7 +20,7 @@ export class ComputePressureObserverWrapper {
      * Returns true if ComputePressureObserver is available for use, false otherwise.
      */
     public static get IsAvailable() {
-        return IsWindowObjectExist() && 'ComputePressureObserver' in window;
+        return IsWindowObjectExist() && "ComputePressureObserver" in window;
     }
 
     /**

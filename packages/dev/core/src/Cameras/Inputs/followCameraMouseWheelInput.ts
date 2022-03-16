@@ -4,7 +4,7 @@ import { EventState, Observer } from "../../Misc/observable";
 import { FollowCamera } from "../../Cameras/followCamera";
 import { ICameraInput, CameraInputTypes } from "../../Cameras/cameraInputsManager";
 import { PointerInfo, PointerEventTypes } from "../../Events/pointerEvents";
-import { Tools } from '../../Misc/tools';
+import { Tools } from "../../Misc/tools";
 import { IWheelEvent } from "../../Events/deviceInputEvents";
 
 /**
@@ -60,38 +60,36 @@ export class FollowCameraMouseWheelInput implements ICameraInput<FollowCamera> {
         noPreventDefault = Tools.BackCompatCameraNoPreventDefault(arguments);
         this._wheel = (p, s) => {
             // sanity check - this should be a PointerWheel event.
-            if (p.type !== PointerEventTypes.POINTERWHEEL) { return; }
-            var event = <IWheelEvent>p.event;
-            var delta = 0;
+            if (p.type !== PointerEventTypes.POINTERWHEEL) {
+                return;
+            }
+            const event = <IWheelEvent>p.event;
+            let delta = 0;
 
             // Chrome, Safari: event.deltaY
             // IE: event.wheelDelta
             // Firefox: event.detail (inverted)
-            var wheelDelta = Math.max(-1, Math.min(1,
-                (event.deltaY || (<any>event).wheelDelta || -(<any>event).detail)));
+            const wheelDelta = Math.max(-1, Math.min(1, event.deltaY || (<any>event).wheelDelta || -(<any>event).detail));
             if (this.wheelDeltaPercentage) {
-                console.assert((<number>(<unknown>this.axisControlRadius) +
-                    <number>(<unknown>this.axisControlHeight) +
-                    <number>(<unknown>this.axisControlRotation)) <= 1,
+                console.assert(
+                    <number>(<unknown>this.axisControlRadius) + <number>(<unknown>this.axisControlHeight) + <number>(<unknown>this.axisControlRotation) <= 1,
                     "wheelDeltaPercentage only usable when mouse wheel " +
-                    "controls ONE axis. " +
-                    "Currently enabled: " +
-                    "axisControlRadius: " + this.axisControlRadius +
-                    ", axisControlHeightOffset: " + this.axisControlHeight +
-                    ", axisControlRotationOffset: " + this.axisControlRotation);
+                        "controls ONE axis. " +
+                        "Currently enabled: " +
+                        "axisControlRadius: " +
+                        this.axisControlRadius +
+                        ", axisControlHeightOffset: " +
+                        this.axisControlHeight +
+                        ", axisControlRotationOffset: " +
+                        this.axisControlRotation
+                );
 
                 if (this.axisControlRadius) {
-                    delta =
-                        wheelDelta * 0.01 * this.wheelDeltaPercentage *
-                        this.camera.radius;
+                    delta = wheelDelta * 0.01 * this.wheelDeltaPercentage * this.camera.radius;
                 } else if (this.axisControlHeight) {
-                    delta =
-                        wheelDelta * 0.01 * this.wheelDeltaPercentage *
-                        this.camera.heightOffset;
+                    delta = wheelDelta * 0.01 * this.wheelDeltaPercentage * this.camera.heightOffset;
                 } else if (this.axisControlRotation) {
-                    delta =
-                        wheelDelta * 0.01 * this.wheelDeltaPercentage *
-                        this.camera.rotationOffset;
+                    delta = wheelDelta * 0.01 * this.wheelDeltaPercentage * this.camera.rotationOffset;
                 }
             } else {
                 delta = wheelDelta * this.wheelPrecision;

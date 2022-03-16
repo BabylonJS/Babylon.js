@@ -4,7 +4,7 @@ import { SceneLoader } from "../../Loading/sceneLoader";
 import { WebVRController } from "./webVRController";
 import { PoseEnabledControllerType, ExtendedGamepadButton, PoseEnabledControllerHelper } from "./poseEnabledController";
 import { GamepadButtonChanges } from "../../Gamepads/gamepad";
-import { Observable } from '../../Misc/observable';
+import { Observable } from "../../Misc/observable";
 
 /**
  * Vive Controller
@@ -13,11 +13,11 @@ export class ViveController extends WebVRController {
     /**
      * Base Url for the controller model.
      */
-    public static MODEL_BASE_URL: string = 'https://controllers.babylonjs.com/vive/';
+    public static MODEL_BASE_URL: string = "https://controllers.babylonjs.com/vive/";
     /**
      * File name for the controller model.
      */
-    public static MODEL_FILENAME: string = 'wand.babylon';
+    public static MODEL_FILENAME: string = "wand.babylon";
 
     /**
      * Creates a new ViveController from a gamepad
@@ -88,27 +88,26 @@ export class ViveController extends WebVRController {
      * @param changes Which properties on the state changed since last frame
      */
     protected _handleButtonChange(buttonIdx: number, state: ExtendedGamepadButton, changes: GamepadButtonChanges) {
-        let notifyObject = state; //{ state: state, changes: changes };
+        const notifyObject = state; //{ state: state, changes: changes };
         switch (buttonIdx) {
             case 0:
                 this.onPadStateChangedObservable.notifyObservers(notifyObject);
                 return;
             case 1: // index trigger
                 if (this._defaultModel) {
-                    (<AbstractMesh>(this._defaultModel.getChildren()[6])).rotation.x = -notifyObject.value * 0.15;
+                    (<AbstractMesh>this._defaultModel.getChildren()[6]).rotation.x = -notifyObject.value * 0.15;
                 }
                 this.onTriggerStateChangedObservable.notifyObservers(notifyObject);
                 return;
-            case 2:  // left AND right button
+            case 2: // left AND right button
                 this.onMainButtonStateChangedObservable.notifyObservers(notifyObject);
                 return;
             case 3:
                 if (this._defaultModel) {
                     if (notifyObject.pressed) {
-                        (<AbstractMesh>(this._defaultModel.getChildren()[2])).position.y = -0.001;
-                    }
-                    else {
-                        (<AbstractMesh>(this._defaultModel.getChildren()[2])).position.y = 0;
+                        (<AbstractMesh>this._defaultModel.getChildren()[2]).position.y = -0.001;
+                    } else {
+                        (<AbstractMesh>this._defaultModel.getChildren()[2]).position.y = 0;
                     }
                 }
                 this.onSecondaryButtonStateChangedObservable.notifyObservers(notifyObject);
@@ -119,9 +118,9 @@ export class ViveController extends WebVRController {
 
 PoseEnabledControllerHelper._ControllerFactories.push({
     canCreate: (gamepadInfo) => {
-        return gamepadInfo.id.toLowerCase().indexOf('openvr') !== -1;
+        return gamepadInfo.id.toLowerCase().indexOf("openvr") !== -1;
     },
     create: (gamepadInfo) => {
         return new ViveController(gamepadInfo);
-    }
+    },
 });

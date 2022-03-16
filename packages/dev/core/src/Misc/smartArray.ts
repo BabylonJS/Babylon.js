@@ -55,7 +55,7 @@ export class SmartArray<T> implements ISmartArrayLike<T> {
      * @param func defines the action to apply on each value.
      */
     public forEach(func: (content: T) => void): void {
-        for (var index = 0; index < this.length; index++) {
+        for (let index = 0; index < this.length; index++) {
             func(this.data[index]);
         }
     }
@@ -99,7 +99,7 @@ export class SmartArray<T> implements ISmartArrayLike<T> {
             this.data.length = (this.length + array.length) * 2;
         }
 
-        for (var index = 0; index < array.length; index++) {
+        for (let index = 0; index < array.length; index++) {
             this.data[this.length++] = (array.data || array)[index];
         }
     }
@@ -110,7 +110,7 @@ export class SmartArray<T> implements ISmartArrayLike<T> {
      * @returns the index if found in the active data otherwise -1
      */
     public indexOf(value: T): number {
-        var position = this.data.indexOf(value);
+        const position = this.data.indexOf(value);
 
         if (position >= this.length) {
             return -1;
@@ -189,8 +189,8 @@ export class SmartArrayNoDuplicate<T> extends SmartArray<T> {
             this.data.length = (this.length + array.length) * 2;
         }
 
-        for (var index = 0; index < array.length; index++) {
-            var item = (array.data || array)[index];
+        for (let index = 0; index < array.length; index++) {
+            const item = (array.data || array)[index];
             this.pushNoDuplicate(item);
         }
     }

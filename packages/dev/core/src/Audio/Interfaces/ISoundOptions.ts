@@ -1,4 +1,3 @@
-
 /**
  * Interface used to define options for Sound class
  */

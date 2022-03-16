@@ -5,13 +5,12 @@ import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
 import { Material } from "../Materials/material";
 import { Effect } from "../Materials/effect";
-import { SubMesh } from '../Meshes/subMesh';
+import { SubMesh } from "../Meshes/subMesh";
 /**
  * Base class of materials working in push mode in babylon JS
  * @hidden
  */
 export class PushMaterial extends Material {
-
     protected _activeEffect: Effect;
 
     protected _normalMatrix: Matrix = new Matrix();
@@ -53,10 +52,10 @@ export class PushMaterial extends Material {
     }
 
     /**
-    * Binds the given world matrix to the active effect
-    *
-    * @param world the matrix to bind
-    */
+     * Binds the given world matrix to the active effect
+     *
+     * @param world the matrix to bind
+     */
     public bindOnlyWorldMatrix(world: Matrix): void {
         this._activeEffect.setMatrix("world", world);
     }

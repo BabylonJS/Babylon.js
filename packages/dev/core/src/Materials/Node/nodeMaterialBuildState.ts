@@ -1,8 +1,8 @@
-import { NodeMaterialBlockConnectionPointTypes } from './Enums/nodeMaterialBlockConnectionPointTypes';
-import { NodeMaterialBlockTargets } from './Enums/nodeMaterialBlockTargets';
-import { NodeMaterialBuildStateSharedData } from './nodeMaterialBuildStateSharedData';
-import { Effect } from '../effect';
-import { StartsWith } from '../../Misc/stringTools';
+import { NodeMaterialBlockConnectionPointTypes } from "./Enums/nodeMaterialBlockConnectionPointTypes";
+import { NodeMaterialBlockTargets } from "./Enums/nodeMaterialBlockTargets";
+import { NodeMaterialBuildStateSharedData } from "./nodeMaterialBuildStateSharedData";
+import { Effect } from "../effect";
+import { StartsWith } from "../../Misc/stringTools";
 
 /**
  * Class used to store node based material build state
@@ -19,8 +19,8 @@ export class NodeMaterialBuildState {
      */
     public uniforms = new Array<string>();
     /**
-    * Gets the list of emitted constants
-    */
+     * Gets the list of emitted constants
+     */
     public constants = new Array<string>();
     /**
      * Gets the list of emitted samplers
@@ -79,8 +79,8 @@ export class NodeMaterialBuildState {
      * @param state defines the current compilation state
      */
     public finalize(state: NodeMaterialBuildState) {
-        let emitComments = state.sharedData.emitComments;
-        let isFragmentMode = (this.target === NodeMaterialBlockTargets.Fragment);
+        const emitComments = state.sharedData.emitComments;
+        const isFragmentMode = this.target === NodeMaterialBlockTargets.Fragment;
 
         this.compilationString = `\r\n${emitComments ? "//Entry point\r\n" : ""}void main(void) {\r\n${this.compilationString}`;
 
@@ -89,7 +89,7 @@ export class NodeMaterialBuildState {
         }
 
         let functionCode = "";
-        for (var functionName in this.functions) {
+        for (const functionName in this.functions) {
             functionCode += this.functions[functionName] + `\r\n`;
         }
         this.compilationString = `\r\n${functionCode}\r\n${this.compilationString}`;
@@ -122,8 +122,8 @@ export class NodeMaterialBuildState {
 
         this.compilationString = "precision highp float;\r\n" + this.compilationString;
 
-        for (var extensionName in this.extensions) {
-            let extension = this.extensions[extensionName];
+        for (const extensionName in this.extensions) {
+            const extension = this.extensions[extensionName];
             this.compilationString = `\r\n${extension}\r\n${this.compilationString}`;
         }
 
@@ -135,7 +135,10 @@ export class NodeMaterialBuildState {
         return `###___ANCHOR${this._repeatableContentAnchorIndex++}___###`;
     }
 
-    /** @hidden */
+    /**
+     * @param prefix
+     * @hidden
+     */
     public _getFreeVariableName(prefix: string): string {
         prefix = prefix.replace(/[^a-zA-Z_]+/g, "");
 
@@ -155,7 +158,10 @@ export class NodeMaterialBuildState {
         return prefix + this.sharedData.variableNames[prefix];
     }
 
-    /** @hidden */
+    /**
+     * @param prefix
+     * @hidden
+     */
     public _getFreeDefineName(prefix: string): string {
         if (this.sharedData.defineNames[prefix] === undefined) {
             this.sharedData.defineNames[prefix] = 0;
@@ -166,12 +172,18 @@ export class NodeMaterialBuildState {
         return prefix + this.sharedData.defineNames[prefix];
     }
 
-    /** @hidden */
+    /**
+     * @param name
+     * @hidden
+     */
     public _excludeVariableName(name: string) {
         this.sharedData.variableNames[name] = 0;
     }
 
-    /** @hidden */
+    /**
+     * @param name
+     * @hidden
+     */
     public _emit2DSampler(name: string) {
         if (this.samplers.indexOf(name) < 0) {
             this._samplerDeclaration += `uniform sampler2D ${name};\r\n`;
@@ -179,7 +191,10 @@ export class NodeMaterialBuildState {
         }
     }
 
-    /** @hidden */
+    /**
+     * @param type
+     * @hidden
+     */
     public _getGLType(type: NodeMaterialBlockConnectionPointTypes): string {
         switch (type) {
             case NodeMaterialBlockConnectionPointTypes.Float:
@@ -201,7 +216,12 @@ export class NodeMaterialBuildState {
         return "";
     }
 
-    /** @hidden */
+    /**
+     * @param name
+     * @param extension
+     * @param define
+     * @hidden
+     */
     public _emitExtension(name: string, extension: string, define: string = "") {
         if (this.extensions[name]) {
             return;
@@ -213,7 +233,12 @@ export class NodeMaterialBuildState {
         this.extensions[name] = extension;
     }
 
-    /** @hidden */
+    /**
+     * @param name
+     * @param code
+     * @param comments
+     * @hidden
+     */
     public _emitFunction(name: string, code: string, comments: string) {
         if (this.functions[name]) {
             return;
@@ -226,11 +251,22 @@ export class NodeMaterialBuildState {
         this.functions[name] = code;
     }
 
-    /** @hidden */
-    public _emitCodeFromInclude(includeName: string, comments: string, options?: {
-        replaceStrings?: { search: RegExp, replace: string }[],
-        repeatKey?: string
-    }) {
+    /**
+     * @param includeName
+     * @param comments
+     * @param options
+     * @param options.replaceStrings
+     * @param options.repeatKey
+     * @hidden
+     */
+    public _emitCodeFromInclude(
+        includeName: string,
+        comments: string,
+        options?: {
+            replaceStrings?: { search: RegExp; replace: string }[];
+            repeatKey?: string;
+        }
+    ) {
         if (options && options.repeatKey) {
             return `#include<${includeName}>[0..${options.repeatKey}]\r\n`;
         }
@@ -246,8 +282,8 @@ export class NodeMaterialBuildState {
         }
 
         if (options.replaceStrings) {
-            for (var index = 0; index < options.replaceStrings.length; index++) {
-                let replaceString = options.replaceStrings[index];
+            for (let index = 0; index < options.replaceStrings.length; index++) {
+                const replaceString = options.replaceStrings[index];
                 code = code.replace(replaceString.search, replaceString.replace);
             }
         }
@@ -255,22 +291,38 @@ export class NodeMaterialBuildState {
         return code;
     }
 
-    /** @hidden */
-    public _emitFunctionFromInclude(includeName: string, comments: string, options?: {
-        repeatKey?: string,
-        removeAttributes?: boolean,
-        removeUniforms?: boolean,
-        removeVaryings?: boolean,
-        removeIfDef?: boolean,
-        replaceStrings?: { search: RegExp, replace: string }[],
-    }, storeKey: string = "") {
-        let key = includeName + storeKey;
+    /**
+     * @param includeName
+     * @param comments
+     * @param options
+     * @param options.repeatKey
+     * @param options.removeAttributes
+     * @param options.removeUniforms
+     * @param options.removeVaryings
+     * @param options.removeIfDef
+     * @param options.replaceStrings
+     * @param storeKey
+     * @hidden
+     */
+    public _emitFunctionFromInclude(
+        includeName: string,
+        comments: string,
+        options?: {
+            repeatKey?: string;
+            removeAttributes?: boolean;
+            removeUniforms?: boolean;
+            removeVaryings?: boolean;
+            removeIfDef?: boolean;
+            replaceStrings?: { search: RegExp; replace: string }[];
+        },
+        storeKey: string = ""
+    ) {
+        const key = includeName + storeKey;
         if (this.functions[key]) {
             return;
         }
 
         if (!options || (!options.removeAttributes && !options.removeUniforms && !options.removeVaryings && !options.removeIfDef && !options.replaceStrings)) {
-
             if (options && options.repeatKey) {
                 this.functions[key] = `#include<${includeName}>[0..${options.repeatKey}]\r\n`;
             } else {
@@ -310,14 +362,17 @@ export class NodeMaterialBuildState {
         }
 
         if (options.replaceStrings) {
-            for (var index = 0; index < options.replaceStrings.length; index++) {
-                let replaceString = options.replaceStrings[index];
+            for (let index = 0; index < options.replaceStrings.length; index++) {
+                const replaceString = options.replaceStrings[index];
                 this.functions[key] = this.functions[key].replace(replaceString.search, replaceString.replace);
             }
         }
     }
 
-    /** @hidden */
+    /**
+     * @param name
+     * @hidden
+     */
     public _registerTempVariable(name: string) {
         if (this.sharedData.temps.indexOf(name) !== -1) {
             return false;
@@ -327,7 +382,13 @@ export class NodeMaterialBuildState {
         return true;
     }
 
-    /** @hidden */
+    /**
+     * @param name
+     * @param type
+     * @param define
+     * @param notDefine
+     * @hidden
+     */
     public _emitVaryingFromString(name: string, type: string, define: string = "", notDefine = false) {
         if (this.sharedData.varyings.indexOf(name) !== -1) {
             return false;
@@ -350,7 +411,13 @@ export class NodeMaterialBuildState {
         return true;
     }
 
-    /** @hidden */
+    /**
+     * @param name
+     * @param type
+     * @param define
+     * @param notDefine
+     * @hidden
+     */
     public _emitUniformFromString(name: string, type: string, define: string = "", notDefine = false) {
         if (this.uniforms.indexOf(name) !== -1) {
             return;
@@ -371,7 +438,10 @@ export class NodeMaterialBuildState {
         }
     }
 
-    /** @hidden */
+    /**
+     * @param value
+     * @hidden
+     */
     public _emitFloat(value: number) {
         if (value.toString() === value.toFixed(0)) {
             return `${value}.0`;

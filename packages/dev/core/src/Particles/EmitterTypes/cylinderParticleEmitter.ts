@@ -13,12 +13,12 @@ export class CylinderParticleEmitter implements IParticleEmitterType {
     private _tempVector = Vector3.Zero();
 
     /**
-    * Creates a new instance CylinderParticleEmitter
-    * @param radius the radius of the emission cylinder (1 by default)
-    * @param height the height of the emission cylinder (1 by default)
-    * @param radiusRange the range of the emission cylinder [0-1] 0 Surface only, 1 Entire Radius (1 by default)
-    * @param directionRandomizer defines how much to randomize the particle direction [0-1]
-    */
+     * Creates a new instance CylinderParticleEmitter
+     * @param radius the radius of the emission cylinder (1 by default)
+     * @param height the height of the emission cylinder (1 by default)
+     * @param radiusRange the range of the emission cylinder [0-1] 0 Surface only, 1 Entire Radius (1 by default)
+     * @param directionRandomizer defines how much to randomize the particle direction [0-1]
+     */
     constructor(
         /**
          * The radius of the emission cylinder.
@@ -35,8 +35,8 @@ export class CylinderParticleEmitter implements IParticleEmitterType {
         /**
          * How much to randomize the particle direction [0-1].
          */
-        public directionRandomizer = 0) {
-    }
+        public directionRandomizer = 0
+    ) {}
 
     /**
      * Called by the particle System when the direction is computed for the created particle.
@@ -53,9 +53,9 @@ export class CylinderParticleEmitter implements IParticleEmitterType {
 
         Vector3.TransformNormalToRef(this._tempVector, inverseWorldMatrix, this._tempVector);
 
-        var randY = Scalar.RandomRange(-this.directionRandomizer / 2, this.directionRandomizer / 2);
+        const randY = Scalar.RandomRange(-this.directionRandomizer / 2, this.directionRandomizer / 2);
 
-        var angle = Math.atan2(this._tempVector.x, this._tempVector.z);
+        let angle = Math.atan2(this._tempVector.x, this._tempVector.z);
         angle += Scalar.RandomRange(-Math.PI / 2, Math.PI / 2) * this.directionRandomizer;
 
         this._tempVector.y = randY; // set direction y to rand y to mirror normal of cylinder surface
@@ -79,14 +79,14 @@ export class CylinderParticleEmitter implements IParticleEmitterType {
      * @param isLocal defines if the position should be set in local space
      */
     public startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle, isLocal: boolean): void {
-        var yPos = Scalar.RandomRange(-this.height / 2, this.height / 2);
-        var angle = Scalar.RandomRange(0, 2 * Math.PI);
+        const yPos = Scalar.RandomRange(-this.height / 2, this.height / 2);
+        const angle = Scalar.RandomRange(0, 2 * Math.PI);
 
         // Pick a properly distributed point within the circle https://programming.guide/random-point-within-circle.html
-        var radiusDistribution = Scalar.RandomRange((1 - this.radiusRange) * (1 - this.radiusRange), 1);
-        var positionRadius = Math.sqrt(radiusDistribution) * this.radius;
-        var xPos = positionRadius * Math.cos(angle);
-        var zPos = positionRadius * Math.sin(angle);
+        const radiusDistribution = Scalar.RandomRange((1 - this.radiusRange) * (1 - this.radiusRange), 1);
+        const positionRadius = Math.sqrt(radiusDistribution) * this.radius;
+        const xPos = positionRadius * Math.cos(angle);
+        const zPos = positionRadius * Math.sin(angle);
 
         if (isLocal) {
             positionToUpdate.copyFromFloats(xPos, yPos, zPos);
@@ -101,7 +101,7 @@ export class CylinderParticleEmitter implements IParticleEmitterType {
      * @returns the new emitter
      */
     public clone(): CylinderParticleEmitter {
-        let newOne = new CylinderParticleEmitter(this.radius, this.directionRandomizer);
+        const newOne = new CylinderParticleEmitter(this.radius, this.directionRandomizer);
 
         DeepCopier.DeepCopy(this, newOne);
 
@@ -151,7 +151,7 @@ export class CylinderParticleEmitter implements IParticleEmitterType {
      * @returns the JSON object
      */
     public serialize(): any {
-        var serializationObject: any = {};
+        const serializationObject: any = {};
         serializationObject.type = this.getClassName();
         serializationObject.radius = this.radius;
         serializationObject.height = this.height;
@@ -178,7 +178,6 @@ export class CylinderParticleEmitter implements IParticleEmitterType {
  * It emits the particles randomly between two vectors.
  */
 export class CylinderDirectedParticleEmitter extends CylinderParticleEmitter {
-
     /**
      * Creates a new instance CylinderDirectedParticleEmitter
      * @param radius the radius of the emission cylinder (1 by default)
@@ -198,7 +197,8 @@ export class CylinderDirectedParticleEmitter extends CylinderParticleEmitter {
         /**
          * The max limit of the emission direction.
          */
-        public direction2 = new Vector3(0, 1, 0)) {
+        public direction2 = new Vector3(0, 1, 0)
+    ) {
         super(radius, height, radiusRange);
     }
 
@@ -209,9 +209,9 @@ export class CylinderDirectedParticleEmitter extends CylinderParticleEmitter {
      * @param particle is the particle we are computed the direction for
      */
     public startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void {
-        var randX = Scalar.RandomRange(this.direction1.x, this.direction2.x);
-        var randY = Scalar.RandomRange(this.direction1.y, this.direction2.y);
-        var randZ = Scalar.RandomRange(this.direction1.z, this.direction2.z);
+        const randX = Scalar.RandomRange(this.direction1.x, this.direction2.x);
+        const randY = Scalar.RandomRange(this.direction1.y, this.direction2.y);
+        const randZ = Scalar.RandomRange(this.direction1.z, this.direction2.z);
         Vector3.TransformNormalFromFloatsToRef(randX, randY, randZ, worldMatrix, directionToUpdate);
     }
 
@@ -220,7 +220,7 @@ export class CylinderDirectedParticleEmitter extends CylinderParticleEmitter {
      * @returns the new emitter
      */
     public clone(): CylinderDirectedParticleEmitter {
-        let newOne = new CylinderDirectedParticleEmitter(this.radius, this.height, this.radiusRange, this.direction1, this.direction2);
+        const newOne = new CylinderDirectedParticleEmitter(this.radius, this.height, this.radiusRange, this.direction1, this.direction2);
 
         DeepCopier.DeepCopy(this, newOne);
 
@@ -272,7 +272,7 @@ export class CylinderDirectedParticleEmitter extends CylinderParticleEmitter {
      * @returns the JSON object
      */
     public serialize(): any {
-        var serializationObject = super.serialize();
+        const serializationObject = super.serialize();
 
         serializationObject.direction1 = this.direction1.asArray();
         serializationObject.direction2 = this.direction2.asArray();

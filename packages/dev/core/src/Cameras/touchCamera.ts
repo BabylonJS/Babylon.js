@@ -20,7 +20,7 @@ export class TouchCamera extends FreeCamera {
      * The higher the faster.
      */
     public get touchAngularSensibility(): number {
-        var touch = <FreeCameraTouchInput>this.inputs.attached["touch"];
+        const touch = <FreeCameraTouchInput>this.inputs.attached["touch"];
         if (touch) {
             return touch.touchAngularSensibility;
         }
@@ -29,7 +29,7 @@ export class TouchCamera extends FreeCamera {
     }
 
     public set touchAngularSensibility(value: number) {
-        var touch = <FreeCameraTouchInput>this.inputs.attached["touch"];
+        const touch = <FreeCameraTouchInput>this.inputs.attached["touch"];
         if (touch) {
             touch.touchAngularSensibility = value;
         }
@@ -40,7 +40,7 @@ export class TouchCamera extends FreeCamera {
      * The higher the faster.
      */
     public get touchMoveSensibility(): number {
-        var touch = <FreeCameraTouchInput>this.inputs.attached["touch"];
+        const touch = <FreeCameraTouchInput>this.inputs.attached["touch"];
         if (touch) {
             return touch.touchMoveSensibility;
         }
@@ -49,7 +49,7 @@ export class TouchCamera extends FreeCamera {
     }
 
     public set touchMoveSensibility(value: number) {
-        var touch = <FreeCameraTouchInput>this.inputs.attached["touch"];
+        const touch = <FreeCameraTouchInput>this.inputs.attached["touch"];
         if (touch) {
             touch.touchMoveSensibility = value;
         }
@@ -81,8 +81,8 @@ export class TouchCamera extends FreeCamera {
 
     /** @hidden */
     public _setupInputs() {
-        var touch = <FreeCameraTouchInput>this.inputs.attached["touch"];
-        var mouse = <FreeCameraMouseInput>this.inputs.attached["mouse"];
+        const touch = <FreeCameraTouchInput>this.inputs.attached["touch"];
+        const mouse = <FreeCameraMouseInput>this.inputs.attached["mouse"];
         if (mouse) {
             mouse.touchEnabled = false;
         } else {

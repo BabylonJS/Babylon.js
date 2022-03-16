@@ -1,6 +1,6 @@
 import { Nullable } from "../../../types";
 import { serialize, serializeAsTexture, SerializationHelper } from "../../../Misc/decorators";
-import { IAnimatable } from '../../../Animations/animatable.interface';
+import { IAnimatable } from "../../../Animations/animatable.interface";
 import { Logger } from "../../../Misc/logger";
 import { Vector2, Vector3, Matrix, Vector4 } from "../../../Maths/math.vector";
 import { Scalar } from "../../../Maths/math.scalar";
@@ -12,13 +12,13 @@ import { PostProcessRenderPipeline } from "../../../PostProcesses/RenderPipeline
 import { PostProcessRenderEffect } from "../../../PostProcesses/RenderPipeline/postProcessRenderEffect";
 import { BlurPostProcess } from "../../../PostProcesses/blurPostProcess";
 import { FxaaPostProcess } from "../../../PostProcesses/fxaaPostProcess";
-import { IDisposable } from "../../../scene";
+import { IDisposable , Scene } from "../../../scene";
 import { SpotLight } from "../../../Lights/spotLight";
 import { DirectionalLight } from "../../../Lights/directionalLight";
 import { GeometryBufferRenderer } from "../../../Rendering/geometryBufferRenderer";
-import { Scene } from "../../../scene";
+
 import { Constants } from "../../../Engines/constants";
-import { RegisterClass } from '../../../Misc/typeStore';
+import { RegisterClass } from "../../../Misc/typeStore";
 import { MotionBlurPostProcess } from "../../motionBlurPostProcess";
 import { ScreenSpaceReflectionPostProcess } from "../../screenSpaceReflectionPostProcess";
 
@@ -34,8 +34,8 @@ import "../../../Shaders/standard.fragment";
  */
 export class StandardRenderingPipeline extends PostProcessRenderPipeline implements IDisposable, IAnimatable {
     /**
-    * Public members
-    */
+     * Public members
+     */
     // Post-processes
     /**
      * Post-process which contains the original scene color before the pipeline applies all the effects
@@ -330,8 +330,8 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
     public animations: Animation[] = [];
 
     /**
-    * Private members
-    */
+     * Private members
+     */
     private _scene: Scene;
     private _currentDepthOfFieldSource: Nullable<PostProcess> = null;
     private _basePostProcess: Nullable<PostProcess>;
@@ -451,7 +451,7 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
         }
 
         if (enabled) {
-            var geometry = this._scene.enableGeometryBufferRenderer();
+            const geometry = this._scene.enableGeometryBufferRenderer();
             if (!geometry) {
                 Logger.Warn("Geometry renderer is not supported, cannot create volumetric lights in Standard Rendering Pipeline");
                 return;
@@ -598,8 +598,8 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
     }
 
     private _buildPipeline(): void {
-        var ratio = this._ratio;
-        var scene = this._scene;
+        const ratio = this._ratio;
+        const scene = this._scene;
 
         this._disposePostProcesses();
         if (this._cameras !== null) {
@@ -611,7 +611,16 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
 
         // Create pass post-process
         if (this._screenSpaceReflectionsEnabled) {
-            this.screenSpaceReflectionPostProcess = new ScreenSpaceReflectionPostProcess("HDRPass", scene, ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, this._floatTextureType);
+            this.screenSpaceReflectionPostProcess = new ScreenSpaceReflectionPostProcess(
+                "HDRPass",
+                scene,
+                ratio,
+                null,
+                Texture.BILINEAR_SAMPLINGMODE,
+                scene.getEngine(),
+                false,
+                this._floatTextureType
+            );
             this.screenSpaceReflectionPostProcess.onApplyObservable.add(() => {
                 this._currentDepthOfFieldSource = this.screenSpaceReflectionPostProcess;
             });
@@ -619,9 +628,20 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
         }
 
         if (!this._basePostProcess) {
-            this.originalPostProcess = new PostProcess("HDRPass", "standard", [], [], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define PASS_POST_PROCESS", this._floatTextureType);
-        }
-        else {
+            this.originalPostProcess = new PostProcess(
+                "HDRPass",
+                "standard",
+                [],
+                [],
+                ratio,
+                null,
+                Texture.BILINEAR_SAMPLINGMODE,
+                scene.getEngine(),
+                false,
+                "#define PASS_POST_PROCESS",
+                this._floatTextureType
+            );
+        } else {
             this.originalPostProcess = this._basePostProcess;
         }
 
@@ -646,8 +666,29 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
             this._createTextureAdderPostProcess(scene, ratio);
 
             // Create depth-of-field source post-process
-            this.textureAdderFinalPostProcess = new PostProcess("HDRDepthOfFieldSource", "standard", [], [], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define PASS_POST_PROCESS", Constants.TEXTURETYPE_UNSIGNED_INT);
-            this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRBaseDepthOfFieldSource", () => { return this.textureAdderFinalPostProcess; }, true));
+            this.textureAdderFinalPostProcess = new PostProcess(
+                "HDRDepthOfFieldSource",
+                "standard",
+                [],
+                [],
+                ratio,
+                null,
+                Texture.BILINEAR_SAMPLINGMODE,
+                scene.getEngine(),
+                false,
+                "#define PASS_POST_PROCESS",
+                Constants.TEXTURETYPE_UNSIGNED_INT
+            );
+            this.addEffect(
+                new PostProcessRenderEffect(
+                    scene.getEngine(),
+                    "HDRBaseDepthOfFieldSource",
+                    () => {
+                        return this.textureAdderFinalPostProcess;
+                    },
+                    true
+                )
+            );
         }
 
         if (this._vlsEnabled) {
@@ -655,8 +696,29 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
             this._createVolumetricLightPostProcess(scene, ratio);
 
             // Create volumetric light final post-process
-            this.volumetricLightFinalPostProcess = new PostProcess("HDRVLSFinal", "standard", [], [], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define PASS_POST_PROCESS", Constants.TEXTURETYPE_UNSIGNED_INT);
-            this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRVLSFinal", () => { return this.volumetricLightFinalPostProcess; }, true));
+            this.volumetricLightFinalPostProcess = new PostProcess(
+                "HDRVLSFinal",
+                "standard",
+                [],
+                [],
+                ratio,
+                null,
+                Texture.BILINEAR_SAMPLINGMODE,
+                scene.getEngine(),
+                false,
+                "#define PASS_POST_PROCESS",
+                Constants.TEXTURETYPE_UNSIGNED_INT
+            );
+            this.addEffect(
+                new PostProcessRenderEffect(
+                    scene.getEngine(),
+                    "HDRVLSFinal",
+                    () => {
+                        return this.volumetricLightFinalPostProcess;
+                    },
+                    true
+                )
+            );
         }
 
         if (this._lensFlareEnabled) {
@@ -664,8 +726,29 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
             this._createLensFlarePostProcess(scene, ratio);
 
             // Create depth-of-field source post-process post lens-flare and disable it now
-            this.lensFlareFinalPostProcess = new PostProcess("HDRPostLensFlareDepthOfFieldSource", "standard", [], [], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define PASS_POST_PROCESS", Constants.TEXTURETYPE_UNSIGNED_INT);
-            this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRPostLensFlareDepthOfFieldSource", () => { return this.lensFlareFinalPostProcess; }, true));
+            this.lensFlareFinalPostProcess = new PostProcess(
+                "HDRPostLensFlareDepthOfFieldSource",
+                "standard",
+                [],
+                [],
+                ratio,
+                null,
+                Texture.BILINEAR_SAMPLINGMODE,
+                scene.getEngine(),
+                false,
+                "#define PASS_POST_PROCESS",
+                Constants.TEXTURETYPE_UNSIGNED_INT
+            );
+            this.addEffect(
+                new PostProcessRenderEffect(
+                    scene.getEngine(),
+                    "HDRPostLensFlareDepthOfFieldSource",
+                    () => {
+                        return this.lensFlareFinalPostProcess;
+                    },
+                    true
+                )
+            );
         }
 
         if (this._hdrEnabled) {
@@ -676,8 +759,29 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
             this._createHdrPostProcess(scene, ratio);
 
             // Create depth-of-field source post-process post hdr and disable it now
-            this.hdrFinalPostProcess = new PostProcess("HDRPostHDReDepthOfFieldSource", "standard", [], [], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define PASS_POST_PROCESS", Constants.TEXTURETYPE_UNSIGNED_INT);
-            this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRPostHDReDepthOfFieldSource", () => { return this.hdrFinalPostProcess; }, true));
+            this.hdrFinalPostProcess = new PostProcess(
+                "HDRPostHDReDepthOfFieldSource",
+                "standard",
+                [],
+                [],
+                ratio,
+                null,
+                Texture.BILINEAR_SAMPLINGMODE,
+                scene.getEngine(),
+                false,
+                "#define PASS_POST_PROCESS",
+                Constants.TEXTURETYPE_UNSIGNED_INT
+            );
+            this.addEffect(
+                new PostProcessRenderEffect(
+                    scene.getEngine(),
+                    "HDRPostHDReDepthOfFieldSource",
+                    () => {
+                        return this.hdrFinalPostProcess;
+                    },
+                    true
+                )
+            );
         }
 
         if (this._depthOfFieldEnabled) {
@@ -696,7 +800,16 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
         if (this._fxaaEnabled) {
             // Create fxaa post-process
             this.fxaaPostProcess = new FxaaPostProcess("fxaa", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, Constants.TEXTURETYPE_UNSIGNED_INT);
-            this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRFxaa", () => { return this.fxaaPostProcess; }, true));
+            this.addEffect(
+                new PostProcessRenderEffect(
+                    scene.getEngine(),
+                    "HDRFxaa",
+                    () => {
+                        return this.fxaaPostProcess;
+                    },
+                    true
+                )
+            );
         }
 
         if (this._cameras !== null) {
@@ -710,16 +823,28 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
 
     // Down Sample X4 Post-Processs
     private _createDownSampleX4PostProcess(scene: Scene, ratio: number): void {
-        var downSampleX4Offsets = new Array<number>(32);
-        this.downSampleX4PostProcess = new PostProcess("HDRDownSampleX4", "standard", ["dsOffsets"], [], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define DOWN_SAMPLE_X4", this._floatTextureType);
+        const downSampleX4Offsets = new Array<number>(32);
+        this.downSampleX4PostProcess = new PostProcess(
+            "HDRDownSampleX4",
+            "standard",
+            ["dsOffsets"],
+            [],
+            ratio,
+            null,
+            Texture.BILINEAR_SAMPLINGMODE,
+            scene.getEngine(),
+            false,
+            "#define DOWN_SAMPLE_X4",
+            this._floatTextureType
+        );
 
         this.downSampleX4PostProcess.onApply = (effect: Effect) => {
-            var id = 0;
-            let width = (<PostProcess>this.downSampleX4PostProcess).width;
-            let height = (<PostProcess>this.downSampleX4PostProcess).height;
+            let id = 0;
+            const width = (<PostProcess>this.downSampleX4PostProcess).width;
+            const height = (<PostProcess>this.downSampleX4PostProcess).height;
 
-            for (var i = -2; i < 2; i++) {
-                for (var j = -2; j < 2; j++) {
+            for (let i = -2; i < 2; i++) {
+                for (let j = -2; j < 2; j++) {
                     downSampleX4Offsets[id] = (i + 0.5) * (1.0 / width);
                     downSampleX4Offsets[id + 1] = (j + 0.5) * (1.0 / height);
                     id += 2;
@@ -730,17 +855,38 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
         };
 
         // Add to pipeline
-        this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRDownSampleX4", () => { return this.downSampleX4PostProcess; }, true));
+        this.addEffect(
+            new PostProcessRenderEffect(
+                scene.getEngine(),
+                "HDRDownSampleX4",
+                () => {
+                    return this.downSampleX4PostProcess;
+                },
+                true
+            )
+        );
     }
 
     // Brightpass Post-Process
     private _createBrightPassPostProcess(scene: Scene, ratio: number): void {
-        var brightOffsets = new Array<number>(8);
-        this.brightPassPostProcess = new PostProcess("HDRBrightPass", "standard", ["dsOffsets", "brightThreshold"], [], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define BRIGHT_PASS", this._floatTextureType);
+        const brightOffsets = new Array<number>(8);
+        this.brightPassPostProcess = new PostProcess(
+            "HDRBrightPass",
+            "standard",
+            ["dsOffsets", "brightThreshold"],
+            [],
+            ratio,
+            null,
+            Texture.BILINEAR_SAMPLINGMODE,
+            scene.getEngine(),
+            false,
+            "#define BRIGHT_PASS",
+            this._floatTextureType
+        );
 
         this.brightPassPostProcess.onApply = (effect: Effect) => {
-            var sU = (1.0 / (<PostProcess>this.brightPassPostProcess).width);
-            var sV = (1.0 / (<PostProcess>this.brightPassPostProcess).height);
+            const sU = 1.0 / (<PostProcess>this.brightPassPostProcess).width;
+            const sV = 1.0 / (<PostProcess>this.brightPassPostProcess).height;
 
             brightOffsets[0] = -0.5 * sU;
             brightOffsets[1] = 0.5 * sV;
@@ -756,28 +902,75 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
         };
 
         // Add to pipeline
-        this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRBrightPass", () => { return this.brightPassPostProcess; }, true));
+        this.addEffect(
+            new PostProcessRenderEffect(
+                scene.getEngine(),
+                "HDRBrightPass",
+                () => {
+                    return this.brightPassPostProcess;
+                },
+                true
+            )
+        );
     }
 
     // Create blur H&V post-processes
     private _createBlurPostProcesses(scene: Scene, ratio: number, indice: number, blurWidthKey: string = "blurWidth"): void {
-        var engine = scene.getEngine();
+        const engine = scene.getEngine();
 
-        var blurX = new BlurPostProcess("HDRBlurH" + "_" + indice, new Vector2(1, 0), (<any>this)[blurWidthKey], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, this._floatTextureType);
-        var blurY = new BlurPostProcess("HDRBlurV" + "_" + indice, new Vector2(0, 1), (<any>this)[blurWidthKey], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, this._floatTextureType);
+        const blurX = new BlurPostProcess(
+            "HDRBlurH" + "_" + indice,
+            new Vector2(1, 0),
+            (<any>this)[blurWidthKey],
+            ratio,
+            null,
+            Texture.BILINEAR_SAMPLINGMODE,
+            scene.getEngine(),
+            false,
+            this._floatTextureType
+        );
+        const blurY = new BlurPostProcess(
+            "HDRBlurV" + "_" + indice,
+            new Vector2(0, 1),
+            (<any>this)[blurWidthKey],
+            ratio,
+            null,
+            Texture.BILINEAR_SAMPLINGMODE,
+            scene.getEngine(),
+            false,
+            this._floatTextureType
+        );
 
         blurX.onActivateObservable.add(() => {
-            let dw = blurX.width / engine.getRenderWidth();
+            const dw = blurX.width / engine.getRenderWidth();
             blurX.kernel = (<any>this)[blurWidthKey] * dw;
         });
 
         blurY.onActivateObservable.add(() => {
-            let dw = blurY.height / engine.getRenderHeight();
+            const dw = blurY.height / engine.getRenderHeight();
             blurY.kernel = this.horizontalBlur ? 64 * dw : (<any>this)[blurWidthKey] * dw;
         });
 
-        this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRBlurH" + indice, () => { return blurX; }, true));
-        this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRBlurV" + indice, () => { return blurY; }, true));
+        this.addEffect(
+            new PostProcessRenderEffect(
+                scene.getEngine(),
+                "HDRBlurH" + indice,
+                () => {
+                    return blurX;
+                },
+                true
+            )
+        );
+        this.addEffect(
+            new PostProcessRenderEffect(
+                scene.getEngine(),
+                "HDRBlurV" + indice,
+                () => {
+                    return blurY;
+                },
+                true
+            )
+        );
 
         this.blurHPostProcesses.push(blurX);
         this.blurVPostProcesses.push(blurY);
@@ -785,7 +978,19 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
 
     // Create texture adder post-process
     private _createTextureAdderPostProcess(scene: Scene, ratio: number): void {
-        this.textureAdderPostProcess = new PostProcess("HDRTextureAdder", "standard", ["exposure"], ["otherSampler", "lensSampler"], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define TEXTURE_ADDER", this._floatTextureType);
+        this.textureAdderPostProcess = new PostProcess(
+            "HDRTextureAdder",
+            "standard",
+            ["exposure"],
+            ["otherSampler", "lensSampler"],
+            ratio,
+            null,
+            Texture.BILINEAR_SAMPLINGMODE,
+            scene.getEngine(),
+            false,
+            "#define TEXTURE_ADDER",
+            this._floatTextureType
+        );
         this.textureAdderPostProcess.onApply = (effect: Effect) => {
             effect.setTextureFromPostProcess("otherSampler", this._vlsEnabled ? this._currentDepthOfFieldSource : this.originalPostProcess);
             effect.setTexture("lensSampler", this.lensTexture);
@@ -796,30 +1001,43 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
         };
 
         // Add to pipeline
-        this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRTextureAdder", () => { return this.textureAdderPostProcess; }, true));
+        this.addEffect(
+            new PostProcessRenderEffect(
+                scene.getEngine(),
+                "HDRTextureAdder",
+                () => {
+                    return this.textureAdderPostProcess;
+                },
+                true
+            )
+        );
     }
 
     private _createVolumetricLightPostProcess(scene: Scene, ratio: number): void {
-        var geometryRenderer = <GeometryBufferRenderer>scene.enableGeometryBufferRenderer();
+        const geometryRenderer = <GeometryBufferRenderer>scene.enableGeometryBufferRenderer();
         geometryRenderer.enablePosition = true;
 
-        var geometry = geometryRenderer.getGBuffer();
+        const geometry = geometryRenderer.getGBuffer();
 
         // Base post-process
-        this.volumetricLightPostProcess = new PostProcess("HDRVLS", "standard",
+        this.volumetricLightPostProcess = new PostProcess(
+            "HDRVLS",
+            "standard",
             ["shadowViewProjection", "cameraPosition", "sunDirection", "sunColor", "scatteringCoefficient", "scatteringPower", "depthValues"],
             ["shadowMapSampler", "positionSampler"],
             ratio / 8,
             null,
             Texture.BILINEAR_SAMPLINGMODE,
             scene.getEngine(),
-            false, "#define VLS\n#define NB_STEPS " + this._volumetricLightStepsCount.toFixed(1));
+            false,
+            "#define VLS\n#define NB_STEPS " + this._volumetricLightStepsCount.toFixed(1)
+        );
 
-        var depthValues = Vector2.Zero();
+        const depthValues = Vector2.Zero();
 
         this.volumetricLightPostProcess.onApply = (effect: Effect) => {
             if (this.sourceLight && this.sourceLight.getShadowGenerator() && this._scene.activeCamera) {
-                var generator = this.sourceLight.getShadowGenerator()!;
+                const generator = this.sourceLight.getShadowGenerator()!;
 
                 effect.setTexture("shadowMapSampler", generator.getShadowMap());
                 effect.setTexture("positionSampler", geometry.textures[2]);
@@ -839,13 +1057,33 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
             }
         };
 
-        this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRVLS", () => { return this.volumetricLightPostProcess; }, true));
+        this.addEffect(
+            new PostProcessRenderEffect(
+                scene.getEngine(),
+                "HDRVLS",
+                () => {
+                    return this.volumetricLightPostProcess;
+                },
+                true
+            )
+        );
 
         // Smooth
         this._createBlurPostProcesses(scene, ratio / 4, 0, "volumetricLightBlurScale");
 
         // Merge
-        this.volumetricLightMergePostProces = new PostProcess("HDRVLSMerge", "standard", [], ["originalSampler"], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define VLSMERGE");
+        this.volumetricLightMergePostProces = new PostProcess(
+            "HDRVLSMerge",
+            "standard",
+            [],
+            ["originalSampler"],
+            ratio,
+            null,
+            Texture.BILINEAR_SAMPLINGMODE,
+            scene.getEngine(),
+            false,
+            "#define VLSMERGE"
+        );
 
         this.volumetricLightMergePostProces.onApply = (effect: Effect) => {
             effect.setTextureFromPostProcess("originalSampler", this._bloomEnabled ? this.textureAdderFinalPostProcess : this.originalPostProcess);
@@ -853,19 +1091,40 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
             this._currentDepthOfFieldSource = this.volumetricLightFinalPostProcess;
         };
 
-        this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRVLSMerge", () => { return this.volumetricLightMergePostProces; }, true));
+        this.addEffect(
+            new PostProcessRenderEffect(
+                scene.getEngine(),
+                "HDRVLSMerge",
+                () => {
+                    return this.volumetricLightMergePostProces;
+                },
+                true
+            )
+        );
     }
 
     // Create luminance
     private _createLuminancePostProcesses(scene: Scene, textureType: number): void {
         // Create luminance
         var size = Math.pow(3, StandardRenderingPipeline.LuminanceSteps);
-        this.luminancePostProcess = new PostProcess("HDRLuminance", "standard", ["lumOffsets"], [], { width: size, height: size }, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define LUMINANCE", textureType);
+        this.luminancePostProcess = new PostProcess(
+            "HDRLuminance",
+            "standard",
+            ["lumOffsets"],
+            [],
+            { width: size, height: size },
+            null,
+            Texture.BILINEAR_SAMPLINGMODE,
+            scene.getEngine(),
+            false,
+            "#define LUMINANCE",
+            textureType
+        );
 
-        var offsets: number[] = [];
+        const offsets: number[] = [];
         this.luminancePostProcess.onApply = (effect: Effect) => {
-            var sU = (1.0 / (<PostProcess>this.luminancePostProcess).width);
-            var sV = (1.0 / (<PostProcess>this.luminancePostProcess).height);
+            const sU = 1.0 / (<PostProcess>this.luminancePostProcess).width;
+            const sV = 1.0 / (<PostProcess>this.luminancePostProcess).height;
 
             offsets[0] = -0.5 * sU;
             offsets[1] = 0.5 * sV;
@@ -880,35 +1139,56 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
         };
 
         // Add to pipeline
-        this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRLuminance", () => { return this.luminancePostProcess; }, true));
+        this.addEffect(
+            new PostProcessRenderEffect(
+                scene.getEngine(),
+                "HDRLuminance",
+                () => {
+                    return this.luminancePostProcess;
+                },
+                true
+            )
+        );
 
         // Create down sample luminance
-        for (var i = StandardRenderingPipeline.LuminanceSteps - 1; i >= 0; i--) {
+        for (let i = StandardRenderingPipeline.LuminanceSteps - 1; i >= 0; i--) {
             var size = Math.pow(3, i);
 
-            var defines = "#define LUMINANCE_DOWN_SAMPLE\n";
+            let defines = "#define LUMINANCE_DOWN_SAMPLE\n";
             if (i === 0) {
                 defines += "#define FINAL_DOWN_SAMPLER";
             }
 
-            var postProcess = new PostProcess("HDRLuminanceDownSample" + i, "standard", ["dsOffsets", "halfDestPixelSize"], [], { width: size, height: size }, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, defines, textureType);
+            const postProcess = new PostProcess(
+                "HDRLuminanceDownSample" + i,
+                "standard",
+                ["dsOffsets", "halfDestPixelSize"],
+                [],
+                { width: size, height: size },
+                null,
+                Texture.BILINEAR_SAMPLINGMODE,
+                scene.getEngine(),
+                false,
+                defines,
+                textureType
+            );
             this.luminanceDownSamplePostProcesses.push(postProcess);
         }
 
         // Create callbacks and add effects
-        var lastLuminance: Nullable<PostProcess> = this.luminancePostProcess;
+        let lastLuminance: Nullable<PostProcess> = this.luminancePostProcess;
 
         this.luminanceDownSamplePostProcesses.forEach((pp, index) => {
-            var downSampleOffsets = new Array<number>(18);
+            const downSampleOffsets = new Array<number>(18);
 
             pp.onApply = (effect: Effect) => {
                 if (!lastLuminance) {
                     return;
                 }
 
-                var id = 0;
-                for (var x = -1; x < 2; x++) {
-                    for (var y = -1; y < 2; y++) {
+                let id = 0;
+                for (let x = -1; x < 2; x++) {
+                    for (let y = -1; y < 2; y++) {
                         downSampleOffsets[id] = x / lastLuminance.width;
                         downSampleOffsets[id + 1] = y / lastLuminance.height;
                         id += 2;
@@ -927,8 +1207,8 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
 
             if (index === this.luminanceDownSamplePostProcesses.length - 1) {
                 pp.onAfterRender = () => {
-                    var pixel = scene.getEngine().readPixels(0, 0, 1, 1);
-                    var bit_shift = new Vector4(1.0 / (255.0 * 255.0 * 255.0), 1.0 / (255.0 * 255.0), 1.0 / 255.0, 1.0);
+                    const pixel = scene.getEngine().readPixels(0, 0, 1, 1);
+                    const bit_shift = new Vector4(1.0 / (255.0 * 255.0 * 255.0), 1.0 / (255.0 * 255.0), 1.0 / 255.0, 1.0);
                     pixel.then((pixel) => {
                         const data = new Uint8Array(pixel.buffer);
                         this._hdrCurrentLuminance = (data[0] * bit_shift.x + data[1] * bit_shift.y + data[2] * bit_shift.z + data[3] * bit_shift.w) / 100.0;
@@ -936,7 +1216,16 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
                 };
             }
 
-            this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRLuminanceDownSample" + index, () => { return pp; }, true));
+            this.addEffect(
+                new PostProcessRenderEffect(
+                    scene.getEngine(),
+                    "HDRLuminanceDownSample" + index,
+                    () => {
+                        return pp;
+                    },
+                    true
+                )
+            );
         });
     }
 
@@ -946,11 +1235,23 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
         if (this._hdrAutoExposure) {
             defines.push("#define AUTO_EXPOSURE");
         }
-        this.hdrPostProcess = new PostProcess("HDR", "standard", ["averageLuminance"], ["textureAdderSampler"], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, defines.join("\n"), Constants.TEXTURETYPE_UNSIGNED_INT);
+        this.hdrPostProcess = new PostProcess(
+            "HDR",
+            "standard",
+            ["averageLuminance"],
+            ["textureAdderSampler"],
+            ratio,
+            null,
+            Texture.BILINEAR_SAMPLINGMODE,
+            scene.getEngine(),
+            false,
+            defines.join("\n"),
+            Constants.TEXTURETYPE_UNSIGNED_INT
+        );
 
-        var outputLiminance = 1;
-        var time = 0;
-        var lastTime = 0;
+        let outputLiminance = 1;
+        let time = 0;
+        let lastTime = 0;
 
         this.hdrPostProcess.onApply = (effect: Effect) => {
             effect.setTextureFromPostProcess("textureAdderSampler", this._currentDepthOfFieldSource);
@@ -960,15 +1261,13 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
             if (outputLiminance < 0) {
                 outputLiminance = this._hdrCurrentLuminance;
             } else {
-                var dt = (lastTime - time) / 1000.0;
+                const dt = (lastTime - time) / 1000.0;
 
                 if (this._hdrCurrentLuminance < outputLiminance + this.hdrDecreaseRate * dt) {
                     outputLiminance += this.hdrDecreaseRate * dt;
-                }
-                else if (this._hdrCurrentLuminance > outputLiminance - this.hdrIncreaseRate * dt) {
+                } else if (this._hdrCurrentLuminance > outputLiminance - this.hdrIncreaseRate * dt) {
                     outputLiminance -= this.hdrIncreaseRate * dt;
-                }
-                else {
+                } else {
                     outputLiminance = this._hdrCurrentLuminance;
                 }
             }
@@ -985,20 +1284,71 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
             this._currentDepthOfFieldSource = this.hdrFinalPostProcess;
         };
 
-        this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDR", () => { return this.hdrPostProcess; }, true));
+        this.addEffect(
+            new PostProcessRenderEffect(
+                scene.getEngine(),
+                "HDR",
+                () => {
+                    return this.hdrPostProcess;
+                },
+                true
+            )
+        );
     }
 
     // Create lens flare post-process
     private _createLensFlarePostProcess(scene: Scene, ratio: number): void {
-        this.lensFlarePostProcess = new PostProcess("HDRLensFlare", "standard", ["strength", "ghostDispersal", "haloWidth", "resolution", "distortionStrength"], ["lensColorSampler"], ratio / 2, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define LENS_FLARE", Constants.TEXTURETYPE_UNSIGNED_INT);
-        this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRLensFlare", () => { return this.lensFlarePostProcess; }, true));
+        this.lensFlarePostProcess = new PostProcess(
+            "HDRLensFlare",
+            "standard",
+            ["strength", "ghostDispersal", "haloWidth", "resolution", "distortionStrength"],
+            ["lensColorSampler"],
+            ratio / 2,
+            null,
+            Texture.BILINEAR_SAMPLINGMODE,
+            scene.getEngine(),
+            false,
+            "#define LENS_FLARE",
+            Constants.TEXTURETYPE_UNSIGNED_INT
+        );
+        this.addEffect(
+            new PostProcessRenderEffect(
+                scene.getEngine(),
+                "HDRLensFlare",
+                () => {
+                    return this.lensFlarePostProcess;
+                },
+                true
+            )
+        );
 
         this._createBlurPostProcesses(scene, ratio / 4, 2, "lensFlareBlurWidth");
 
-        this.lensFlareComposePostProcess = new PostProcess("HDRLensFlareCompose", "standard", ["lensStarMatrix"], ["otherSampler", "lensDirtSampler", "lensStarSampler"], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define LENS_FLARE_COMPOSE", Constants.TEXTURETYPE_UNSIGNED_INT);
-        this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRLensFlareCompose", () => { return this.lensFlareComposePostProcess; }, true));
+        this.lensFlareComposePostProcess = new PostProcess(
+            "HDRLensFlareCompose",
+            "standard",
+            ["lensStarMatrix"],
+            ["otherSampler", "lensDirtSampler", "lensStarSampler"],
+            ratio,
+            null,
+            Texture.BILINEAR_SAMPLINGMODE,
+            scene.getEngine(),
+            false,
+            "#define LENS_FLARE_COMPOSE",
+            Constants.TEXTURETYPE_UNSIGNED_INT
+        );
+        this.addEffect(
+            new PostProcessRenderEffect(
+                scene.getEngine(),
+                "HDRLensFlareCompose",
+                () => {
+                    return this.lensFlareComposePostProcess;
+                },
+                true
+            )
+        );
 
-        var resolution = new Vector2(0, 0);
+        const resolution = new Vector2(0, 0);
 
         // Lens flare
         this.lensFlarePostProcess.externalTextureSamplerBinding = true;
@@ -1018,19 +1368,9 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
         };
 
         // Compose
-        var scaleBias1 = Matrix.FromValues(
-            2.0, 0.0, -1.0, 0.0,
-            0.0, 2.0, -1.0, 0.0,
-            0.0, 0.0, 1.0, 0.0,
-            0.0, 0.0, 0.0, 1.0
-        );
+        const scaleBias1 = Matrix.FromValues(2.0, 0.0, -1.0, 0.0, 0.0, 2.0, -1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0);
 
-        var scaleBias2 = Matrix.FromValues(
-            0.5, 0.0, 0.5, 0.0,
-            0.0, 0.5, 0.5, 0.0,
-            0.0, 0.0, 1.0, 0.0,
-            0.0, 0.0, 0.0, 1.0
-        );
+        const scaleBias2 = Matrix.FromValues(0.5, 0.0, 0.5, 0.0, 0.0, 0.5, 0.5, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0);
 
         this.lensFlareComposePostProcess.onApply = (effect: Effect) => {
             if (!this._scene.activeCamera) {
@@ -1042,19 +1382,31 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
             effect.setTexture("lensStarSampler", this.lensStarTexture);
 
             // Lens start rotation matrix
-            var camerax = (<Vector4>this._scene.activeCamera.getViewMatrix().getRow(0));
-            var cameraz = (<Vector4>this._scene.activeCamera.getViewMatrix().getRow(2));
-            var camRot = Vector3.Dot(camerax.toVector3(), new Vector3(1.0, 0.0, 0.0)) + Vector3.Dot(cameraz.toVector3(), new Vector3(0.0, 0.0, 1.0));
+            const camerax = <Vector4>this._scene.activeCamera.getViewMatrix().getRow(0);
+            const cameraz = <Vector4>this._scene.activeCamera.getViewMatrix().getRow(2);
+            let camRot = Vector3.Dot(camerax.toVector3(), new Vector3(1.0, 0.0, 0.0)) + Vector3.Dot(cameraz.toVector3(), new Vector3(0.0, 0.0, 1.0));
             camRot *= 4.0;
 
-            var starRotation = Matrix.FromValues(
-                Math.cos(camRot) * 0.5, -Math.sin(camRot), 0.0, 0.0,
-                Math.sin(camRot), Math.cos(camRot) * 0.5, 0.0, 0.0,
-                0.0, 0.0, 1.0, 0.0,
-                0.0, 0.0, 0.0, 1.0
+            const starRotation = Matrix.FromValues(
+                Math.cos(camRot) * 0.5,
+                -Math.sin(camRot),
+                0.0,
+                0.0,
+                Math.sin(camRot),
+                Math.cos(camRot) * 0.5,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0
             );
 
-            var lensStarMatrix = scaleBias2.multiply(starRotation).multiply(scaleBias1);
+            const lensStarMatrix = scaleBias2.multiply(starRotation).multiply(scaleBias1);
 
             effect.setMatrix("lensStarMatrix", lensStarMatrix);
 
@@ -1064,7 +1416,19 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
 
     // Create depth-of-field post-process
     private _createDepthOfFieldPostProcess(scene: Scene, ratio: number): void {
-        this.depthOfFieldPostProcess = new PostProcess("HDRDepthOfField", "standard", ["distance"], ["otherSampler", "depthSampler"], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define DEPTH_OF_FIELD", Constants.TEXTURETYPE_UNSIGNED_INT);
+        this.depthOfFieldPostProcess = new PostProcess(
+            "HDRDepthOfField",
+            "standard",
+            ["distance"],
+            ["otherSampler", "depthSampler"],
+            ratio,
+            null,
+            Texture.BILINEAR_SAMPLINGMODE,
+            scene.getEngine(),
+            false,
+            "#define DEPTH_OF_FIELD",
+            Constants.TEXTURETYPE_UNSIGNED_INT
+        );
         this.depthOfFieldPostProcess.onApply = (effect: Effect) => {
             effect.setTextureFromPostProcess("otherSampler", this._currentDepthOfFieldSource);
             effect.setTexture("depthSampler", this._getDepthTexture());
@@ -1073,7 +1437,16 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
         };
 
         // Add to pipeline
-        this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRDepthOfField", () => { return this.depthOfFieldPostProcess; }, true));
+        this.addEffect(
+            new PostProcessRenderEffect(
+                scene.getEngine(),
+                "HDRDepthOfField",
+                () => {
+                    return this.depthOfFieldPostProcess;
+                },
+                true
+            )
+        );
     }
 
     // Create motion blur post-process
@@ -1084,16 +1457,25 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
             mb.motionBlurSamples = this.motionBlurSamples;
             this.motionBlurPostProcess = mb;
         } else {
-            this.motionBlurPostProcess = new PostProcess("HDRMotionBlur", "standard",
+            this.motionBlurPostProcess = new PostProcess(
+                "HDRMotionBlur",
+                "standard",
                 ["inverseViewProjection", "prevViewProjection", "screenSize", "motionScale", "motionStrength"],
                 ["depthSampler"],
-                ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define MOTION_BLUR\n#define MAX_MOTION_SAMPLES " + this.motionBlurSamples.toFixed(1), Constants.TEXTURETYPE_UNSIGNED_INT);
+                ratio,
+                null,
+                Texture.BILINEAR_SAMPLINGMODE,
+                scene.getEngine(),
+                false,
+                "#define MOTION_BLUR\n#define MAX_MOTION_SAMPLES " + this.motionBlurSamples.toFixed(1),
+                Constants.TEXTURETYPE_UNSIGNED_INT
+            );
 
-            var motionScale: number = 0;
-            var prevViewProjection = Matrix.Identity();
-            var invViewProjection = Matrix.Identity();
-            var viewProjection = Matrix.Identity();
-            var screenSize = Vector2.Zero();
+            let motionScale: number = 0;
+            let prevViewProjection = Matrix.Identity();
+            const invViewProjection = Matrix.Identity();
+            let viewProjection = Matrix.Identity();
+            const screenSize = Vector2.Zero();
 
             this.motionBlurPostProcess.onApply = (effect: Effect) => {
                 viewProjection = scene.getProjectionMatrix().multiply(scene.getViewMatrix());
@@ -1116,12 +1498,21 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
             };
         }
 
-        this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRMotionBlur", () => { return this.motionBlurPostProcess; }, true));
+        this.addEffect(
+            new PostProcessRenderEffect(
+                scene.getEngine(),
+                "HDRMotionBlur",
+                () => {
+                    return this.motionBlurPostProcess;
+                },
+                true
+            )
+        );
     }
 
     private _getDepthTexture(): Texture {
         if (this._scene.getEngine().getCaps().drawBuffersExtension) {
-            let renderer = <GeometryBufferRenderer>this._scene.enableGeometryBufferRenderer();
+            const renderer = <GeometryBufferRenderer>this._scene.enableGeometryBufferRenderer();
             return renderer.getGBuffer().textures[0];
         }
 
@@ -1129,38 +1520,74 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
     }
 
     private _disposePostProcesses(): void {
-        for (var i = 0; i < this._cameras.length; i++) {
-            var camera = this._cameras[i];
+        for (let i = 0; i < this._cameras.length; i++) {
+            const camera = this._cameras[i];
 
-            if (this.originalPostProcess) { this.originalPostProcess.dispose(camera); }
-            if (this.screenSpaceReflectionPostProcess) { this.screenSpaceReflectionPostProcess.dispose(camera); }
+            if (this.originalPostProcess) {
+                this.originalPostProcess.dispose(camera);
+            }
+            if (this.screenSpaceReflectionPostProcess) {
+                this.screenSpaceReflectionPostProcess.dispose(camera);
+            }
 
-            if (this.downSampleX4PostProcess) { this.downSampleX4PostProcess.dispose(camera); }
-            if (this.brightPassPostProcess) { this.brightPassPostProcess.dispose(camera); }
-            if (this.textureAdderPostProcess) { this.textureAdderPostProcess.dispose(camera); }
+            if (this.downSampleX4PostProcess) {
+                this.downSampleX4PostProcess.dispose(camera);
+            }
+            if (this.brightPassPostProcess) {
+                this.brightPassPostProcess.dispose(camera);
+            }
+            if (this.textureAdderPostProcess) {
+                this.textureAdderPostProcess.dispose(camera);
+            }
 
-            if (this.volumetricLightPostProcess) { this.volumetricLightPostProcess.dispose(camera); }
-            if (this.volumetricLightSmoothXPostProcess) { this.volumetricLightSmoothXPostProcess.dispose(camera); }
-            if (this.volumetricLightSmoothYPostProcess) { this.volumetricLightSmoothYPostProcess.dispose(camera); }
-            if (this.volumetricLightMergePostProces) { this.volumetricLightMergePostProces.dispose(camera); }
-            if (this.volumetricLightFinalPostProcess) { this.volumetricLightFinalPostProcess.dispose(camera); }
+            if (this.volumetricLightPostProcess) {
+                this.volumetricLightPostProcess.dispose(camera);
+            }
+            if (this.volumetricLightSmoothXPostProcess) {
+                this.volumetricLightSmoothXPostProcess.dispose(camera);
+            }
+            if (this.volumetricLightSmoothYPostProcess) {
+                this.volumetricLightSmoothYPostProcess.dispose(camera);
+            }
+            if (this.volumetricLightMergePostProces) {
+                this.volumetricLightMergePostProces.dispose(camera);
+            }
+            if (this.volumetricLightFinalPostProcess) {
+                this.volumetricLightFinalPostProcess.dispose(camera);
+            }
 
-            if (this.lensFlarePostProcess) { this.lensFlarePostProcess.dispose(camera); }
-            if (this.lensFlareComposePostProcess) { this.lensFlareComposePostProcess.dispose(camera); }
+            if (this.lensFlarePostProcess) {
+                this.lensFlarePostProcess.dispose(camera);
+            }
+            if (this.lensFlareComposePostProcess) {
+                this.lensFlareComposePostProcess.dispose(camera);
+            }
 
             for (var j = 0; j < this.luminanceDownSamplePostProcesses.length; j++) {
                 this.luminanceDownSamplePostProcesses[j].dispose(camera);
             }
 
-            if (this.luminancePostProcess) { this.luminancePostProcess.dispose(camera); }
-            if (this.hdrPostProcess) { this.hdrPostProcess.dispose(camera); }
-            if (this.hdrFinalPostProcess) { this.hdrFinalPostProcess.dispose(camera); }
+            if (this.luminancePostProcess) {
+                this.luminancePostProcess.dispose(camera);
+            }
+            if (this.hdrPostProcess) {
+                this.hdrPostProcess.dispose(camera);
+            }
+            if (this.hdrFinalPostProcess) {
+                this.hdrFinalPostProcess.dispose(camera);
+            }
 
-            if (this.depthOfFieldPostProcess) { this.depthOfFieldPostProcess.dispose(camera); }
+            if (this.depthOfFieldPostProcess) {
+                this.depthOfFieldPostProcess.dispose(camera);
+            }
 
-            if (this.motionBlurPostProcess) { this.motionBlurPostProcess.dispose(camera); }
+            if (this.motionBlurPostProcess) {
+                this.motionBlurPostProcess.dispose(camera);
+            }
 
-            if (this.fxaaPostProcess) { this.fxaaPostProcess.dispose(camera); }
+            if (this.fxaaPostProcess) {
+                this.fxaaPostProcess.dispose(camera);
+            }
 
             for (var j = 0; j < this.blurHPostProcesses.length; j++) {
                 this.blurHPostProcesses[j].dispose(camera);
@@ -1212,7 +1639,7 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
      * @returns the serialized object
      */
     public serialize(): any {
-        var serializationObject = SerializationHelper.Serialize(this);
+        const serializationObject = SerializationHelper.Serialize(this);
 
         if (this.sourceLight) {
             serializationObject.sourceLightId = this.sourceLight.id;
@@ -1235,7 +1662,7 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
      * @returns An instantiated pipeline from the serialized object.
      */
     public static Parse(source: any, scene: Scene, rootUrl: string): StandardRenderingPipeline {
-        var p = SerializationHelper.Parse(() => new StandardRenderingPipeline(source._name, scene, source._ratio), source, scene, rootUrl);
+        const p = SerializationHelper.Parse(() => new StandardRenderingPipeline(source._name, scene, source._ratio), source, scene, rootUrl);
 
         if (source.sourceLightId) {
             p.sourceLight = <SpotLight | DirectionalLight>scene.getLightById(source.sourceLightId);

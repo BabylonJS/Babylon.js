@@ -1,12 +1,12 @@
-import { NodeMaterialBlock } from '../../nodeMaterialBlock';
-import { NodeMaterialBlockConnectionPointTypes } from '../../Enums/nodeMaterialBlockConnectionPointTypes';
-import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
-import { NodeMaterialBlockTargets } from '../../Enums/nodeMaterialBlockTargets';
-import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPoint';
-import { RegisterClass } from '../../../../Misc/typeStore';
-import { Scene } from '../../../../scene';
-import { AbstractMesh } from '../../../../Meshes/abstractMesh';
-import { NodeMaterialDefines } from '../../nodeMaterial';
+import { NodeMaterialBlock } from "../../nodeMaterialBlock";
+import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
+import { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
+import { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
+import { RegisterClass } from "../../../../Misc/typeStore";
+import { Scene } from "../../../../scene";
+import { AbstractMesh } from "../../../../Meshes/abstractMesh";
+import { NodeMaterialDefines } from "../../nodeMaterial";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../nodeMaterialDecorator";
 import { MaterialHelper } from "../../../materialHelper";
 
@@ -18,7 +18,6 @@ declare type Mesh = import("../../../../Meshes/mesh").Mesh;
  * Block used to output the final color
  */
 export class FragmentOutputBlock extends NodeMaterialBlock {
-
     private _linearDefineName: string;
     private _gammaDefineName: string;
 
@@ -37,11 +36,11 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
     }
 
     /** Gets or sets a boolean indicating if content needs to be converted to gamma space */
-    @editableInPropertyPage("Convert to gamma space", PropertyTypeForEdition.Boolean, "PROPERTIES", { "notifiers": { "update": true } })
+    @editableInPropertyPage("Convert to gamma space", PropertyTypeForEdition.Boolean, "PROPERTIES", { notifiers: { update: true } })
     public convertToGammaSpace = false;
 
     /** Gets or sets a boolean indicating if content needs to be converted to linear space */
-    @editableInPropertyPage("Convert to linear space", PropertyTypeForEdition.Boolean, "PROPERTIES", { "notifiers": { "update": true } })
+    @editableInPropertyPage("Convert to linear space", PropertyTypeForEdition.Boolean, "PROPERTIES", { notifiers: { update: true } })
     public convertToLinearSpace = false;
 
     /** Gets or sets a boolean indicating if logarithmic depth should be used */
@@ -60,7 +59,7 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
      * Initialize the block and prepare the context for build
      * @param state defines the state that will be used for the build
      */
-     public initialize(state: NodeMaterialBuildState) {
+    public initialize(state: NodeMaterialBuildState) {
         state._excludeVariableName("logarithmicDepthConstant");
         state._excludeVariableName("vFragmentDepth");
     }
@@ -100,9 +99,9 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
-        let rgba = this.rgba;
-        let rgb = this.rgb;
-        let a = this.a;
+        const rgba = this.rgba;
+        const rgb = this.rgb;
+        const a = this.a;
 
         state.sharedData.hints.needAlphaBlending = rgba.isConnected || a.isConnected;
         state.sharedData.blocksWithDefines.push(this);
@@ -114,7 +113,7 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
         this._linearDefineName = state._getFreeDefineName("CONVERTTOLINEAR");
         this._gammaDefineName = state._getFreeDefineName("CONVERTTOGAMMA");
 
-        let comments = `//${this.name}`;
+        const comments = `//${this.name}`;
         state._emitFunctionFromInclude("helperFunctions", comments);
 
         if (rgba.connectedPoint) {
@@ -155,7 +154,7 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
     }
 
     protected _dumpPropertiesCode() {
-        var codeString = super._dumpPropertiesCode();
+        let codeString = super._dumpPropertiesCode();
         codeString += `${this._codeVariableName}.convertToGammaSpace = ${this.convertToGammaSpace};\r\n`;
         codeString += `${this._codeVariableName}.convertToLinearSpace = ${this.convertToLinearSpace};\r\n`;
         codeString += `${this._codeVariableName}.useLogarithmicDepth = ${this.useLogarithmicDepth};\r\n`;
@@ -164,7 +163,7 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
     }
 
     public serialize(): any {
-        let serializationObject = super.serialize();
+        const serializationObject = super.serialize();
 
         serializationObject.convertToGammaSpace = this.convertToGammaSpace;
         serializationObject.convertToLinearSpace = this.convertToLinearSpace;

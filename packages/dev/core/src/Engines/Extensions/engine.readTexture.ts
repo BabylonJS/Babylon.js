@@ -1,15 +1,33 @@
 import { ThinEngine } from "../../Engines/thinEngine";
-import { InternalTexture } from '../../Materials/Textures/internalTexture';
-import { Nullable } from '../../types';
+import { InternalTexture } from "../../Materials/Textures/internalTexture";
+import { Nullable } from "../../types";
 import { Constants } from "../constants";
 
 declare module "../../Engines/thinEngine" {
     export interface ThinEngine {
         /** @hidden */
-        _readTexturePixels(texture: InternalTexture, width: number, height: number, faceIndex?: number, level?: number, buffer?: Nullable<ArrayBufferView>, flushRenderer?: boolean, noDataConversion?: boolean): Promise<ArrayBufferView>;
+        _readTexturePixels(
+            texture: InternalTexture,
+            width: number,
+            height: number,
+            faceIndex?: number,
+            level?: number,
+            buffer?: Nullable<ArrayBufferView>,
+            flushRenderer?: boolean,
+            noDataConversion?: boolean
+        ): Promise<ArrayBufferView>;
 
         /** @hidden */
-        _readTexturePixelsSync(texture: InternalTexture, width: number, height: number, faceIndex?: number, level?: number, buffer?: Nullable<ArrayBufferView>, flushRenderer?: boolean, noDataConversion?: boolean): ArrayBufferView;
+        _readTexturePixelsSync(
+            texture: InternalTexture,
+            width: number,
+            height: number,
+            faceIndex?: number,
+            level?: number,
+            buffer?: Nullable<ArrayBufferView>,
+            flushRenderer?: boolean,
+            noDataConversion?: boolean
+        ): ArrayBufferView;
     }
 }
 
@@ -90,13 +108,22 @@ export function allocateAndCopyTypedBuffer(type: number, sizeOrDstBuffer: number
     return buffer;
 }
 
-ThinEngine.prototype._readTexturePixelsSync = function (texture: InternalTexture, width: number, height: number, faceIndex = -1, level = 0, buffer: Nullable<ArrayBufferView> = null, flushRenderer = true, noDataConversion = false): ArrayBufferView {
-    let gl = this._gl;
+ThinEngine.prototype._readTexturePixelsSync = function (
+    texture: InternalTexture,
+    width: number,
+    height: number,
+    faceIndex = -1,
+    level = 0,
+    buffer: Nullable<ArrayBufferView> = null,
+    flushRenderer = true,
+    noDataConversion = false
+): ArrayBufferView {
+    const gl = this._gl;
     if (!gl) {
         throw new Error("Engine does not have gl rendering context.");
     }
     if (!this._dummyFramebuffer) {
-        let dummy = gl.createFramebuffer();
+        const dummy = gl.createFramebuffer();
 
         if (!dummy) {
             throw new Error("Unable to create dummy framebuffer");
@@ -112,7 +139,7 @@ ThinEngine.prototype._readTexturePixelsSync = function (texture: InternalTexture
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture._hardwareTexture?.underlyingResource, level);
     }
 
-    let readType = (texture.type !== undefined) ? this._getWebGLTextureType(texture.type) : gl.UNSIGNED_BYTE;
+    let readType = texture.type !== undefined ? this._getWebGLTextureType(texture.type) : gl.UNSIGNED_BYTE;
 
     if (!noDataConversion) {
         switch (readType) {
@@ -143,6 +170,15 @@ ThinEngine.prototype._readTexturePixelsSync = function (texture: InternalTexture
     return buffer;
 };
 
-ThinEngine.prototype._readTexturePixels = function (texture: InternalTexture, width: number, height: number, faceIndex = -1, level = 0, buffer: Nullable<ArrayBufferView> = null, flushRenderer = true, noDataConversion = false): Promise<ArrayBufferView> {
+ThinEngine.prototype._readTexturePixels = function (
+    texture: InternalTexture,
+    width: number,
+    height: number,
+    faceIndex = -1,
+    level = 0,
+    buffer: Nullable<ArrayBufferView> = null,
+    flushRenderer = true,
+    noDataConversion = false
+): Promise<ArrayBufferView> {
     return Promise.resolve(this._readTexturePixelsSync(texture, width, height, faceIndex, level, buffer, flushRenderer, noDataConversion));
 };

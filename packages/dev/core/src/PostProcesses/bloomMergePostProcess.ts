@@ -6,8 +6,8 @@ import { Camera } from "../Cameras/camera";
 import { Constants } from "../Engines/constants";
 
 import "../Shaders/bloomMerge.fragment";
-import { RegisterClass } from '../Misc/typeStore';
-import { serialize } from '../Misc/decorators';
+import { RegisterClass } from "../Misc/typeStore";
+import { serialize } from "../Misc/decorators";
 
 /**
  * The BloomMergePostProcess merges blurred images with the original based on the values of the circle of confusion.
@@ -39,11 +39,20 @@ export class BloomMergePostProcess extends PostProcess {
      * @param textureType Type of textures used when performing the post process. (default: 0)
      * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
      */
-    constructor(name: string, originalFromInput: PostProcess, blurred: PostProcess,
+    constructor(
+        name: string,
+        originalFromInput: PostProcess,
+        blurred: PostProcess,
         /** Weight of the bloom to be added to the original input. */
         weight: number,
         options: number | PostProcessOptions,
-        camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT, blockCompilation = false) {
+        camera: Nullable<Camera>,
+        samplingMode?: number,
+        engine?: Engine,
+        reusable?: boolean,
+        textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT,
+        blockCompilation = false
+    ) {
         super(name, "bloomMerge", ["bloomWeight"], ["bloomBlur"], options, camera, samplingMode, engine, reusable, null, textureType, undefined, null, true);
         this.weight = weight;
         this.externalTextureSamplerBinding = true;

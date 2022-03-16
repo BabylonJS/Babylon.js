@@ -114,9 +114,7 @@ export class FollowCameraPointersInput extends BaseCameraPointersInput {
      */
     public warningEnable: boolean = true;
 
-    protected onTouch(pointA: Nullable<PointerTouch>,
-        offsetX: number,
-        offsetY: number): void {
+    protected onTouch(pointA: Nullable<PointerTouch>, offsetX: number, offsetY: number): void {
         this._warning();
 
         if (this.axisXControlRotation) {
@@ -138,12 +136,14 @@ export class FollowCameraPointersInput extends BaseCameraPointersInput {
         }
     }
 
-    protected onMultiTouch(pointA: Nullable<PointerTouch>,
+    protected onMultiTouch(
+        pointA: Nullable<PointerTouch>,
         pointB: Nullable<PointerTouch>,
         previousPinchSquaredDistance: number,
         pinchSquaredDistance: number,
         previousMultiTouchPanPosition: Nullable<PointerTouch>,
-        multiTouchPanPosition: Nullable<PointerTouch>): void {
+        multiTouchPanPosition: Nullable<PointerTouch>
+    ): void {
         if (previousPinchSquaredDistance === 0 && previousMultiTouchPanPosition === null) {
             // First time this method is called for new pinch.
             // Next time this is called there will be a
@@ -154,9 +154,7 @@ export class FollowCameraPointersInput extends BaseCameraPointersInput {
             // Last time this method is called at the end of a pinch.
             return;
         }
-        var pinchDelta =
-            (pinchSquaredDistance - previousPinchSquaredDistance) /
-            (this.pinchPrecision * (this.angularSensibilityX + this.angularSensibilityY) / 2);
+        let pinchDelta = (pinchSquaredDistance - previousPinchSquaredDistance) / ((this.pinchPrecision * (this.angularSensibilityX + this.angularSensibilityY)) / 2);
 
         if (this.pinchDeltaPercentage) {
             pinchDelta *= 0.01 * this.pinchDeltaPercentage;
@@ -190,31 +188,26 @@ export class FollowCameraPointersInput extends BaseCameraPointersInput {
         if (!this.warningEnable || this._warningCounter++ % 100 !== 0) {
             return;
         }
-        let warn = "It probably only makes sense to control ONE camera " +
-            "property with each pointer axis. Set 'warningEnable = false' " +
-            "if you are sure. Currently enabled: ";
+        const warn = "It probably only makes sense to control ONE camera " + "property with each pointer axis. Set 'warningEnable = false' " + "if you are sure. Currently enabled: ";
 
-        console.assert((<number>(<unknown>this.axisXControlRotation) +
-            <number>(<unknown>this.axisXControlHeight) +
-            <number>(<unknown>this.axisXControlRadius)) <= 1,
+        console.assert(
+            <number>(<unknown>this.axisXControlRotation) + <number>(<unknown>this.axisXControlHeight) + <number>(<unknown>this.axisXControlRadius) <= 1,
+            warn + "axisXControlRotation: " + this.axisXControlRotation + ", axisXControlHeight: " + this.axisXControlHeight + ", axisXControlRadius: " + this.axisXControlRadius
+        );
+        console.assert(
+            <number>(<unknown>this.axisYControlRotation) + <number>(<unknown>this.axisYControlHeight) + <number>(<unknown>this.axisYControlRadius) <= 1,
+            warn + "axisYControlRotation: " + this.axisYControlRotation + ", axisYControlHeight: " + this.axisYControlHeight + ", axisYControlRadius: " + this.axisYControlRadius
+        );
+        console.assert(
+            <number>(<unknown>this.axisPinchControlRotation) + <number>(<unknown>this.axisPinchControlHeight) + <number>(<unknown>this.axisPinchControlRadius) <= 1,
             warn +
-            "axisXControlRotation: " + this.axisXControlRotation +
-            ", axisXControlHeight: " + this.axisXControlHeight +
-            ", axisXControlRadius: " + this.axisXControlRadius);
-        console.assert((<number>(<unknown>this.axisYControlRotation) +
-            <number>(<unknown>this.axisYControlHeight) +
-            <number>(<unknown>this.axisYControlRadius)) <= 1,
-            warn +
-            "axisYControlRotation: " + this.axisYControlRotation +
-            ", axisYControlHeight: " + this.axisYControlHeight +
-            ", axisYControlRadius: " + this.axisYControlRadius);
-        console.assert((<number>(<unknown>this.axisPinchControlRotation) +
-            <number>(<unknown>this.axisPinchControlHeight) +
-            <number>(<unknown>this.axisPinchControlRadius)) <= 1,
-            warn +
-            "axisPinchControlRotation: " + this.axisPinchControlRotation +
-            ", axisPinchControlHeight: " + this.axisPinchControlHeight +
-            ", axisPinchControlRadius: " + this.axisPinchControlRadius);
+                "axisPinchControlRotation: " +
+                this.axisPinchControlRotation +
+                ", axisPinchControlHeight: " +
+                this.axisPinchControlHeight +
+                ", axisPinchControlRadius: " +
+                this.axisPinchControlRadius
+        );
     }
 }
 (<any>CameraInputTypes)["FollowCameraPointersInput"] = FollowCameraPointersInput;

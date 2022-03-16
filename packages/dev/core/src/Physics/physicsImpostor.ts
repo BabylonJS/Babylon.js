@@ -222,7 +222,10 @@ export class PhysicsImpostor {
     private _onBeforePhysicsStepCallbacks = new Array<(impostor: PhysicsImpostor) => void>();
     private _onAfterPhysicsStepCallbacks = new Array<(impostor: PhysicsImpostor) => void>();
     /** @hidden */
-    public _onPhysicsCollideCallbacks: Array<{ callback: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor, point: Nullable<Vector3>) => void; otherImpostors: Array<PhysicsImpostor> }> = [];
+    public _onPhysicsCollideCallbacks: Array<{
+        callback: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor, point: Nullable<Vector3>) => void;
+        otherImpostors: Array<PhysicsImpostor>;
+    }> = [];
 
     private _deltaPosition: Vector3 = Vector3.Zero();
     private _deltaRotation: Quaternion;
@@ -526,7 +529,7 @@ export class PhysicsImpostor {
 
     private _getPhysicsParent(): Nullable<PhysicsImpostor> {
         if (this.object.parent instanceof AbstractMesh) {
-            var parentMesh: AbstractMesh = <AbstractMesh>this.object.parent;
+            const parentMesh: AbstractMesh = <AbstractMesh>this.object.parent;
             return parentMesh.physicsImpostor;
         }
         return null;
@@ -609,7 +612,7 @@ export class PhysicsImpostor {
      */
     public getObjectExtendSize(): Vector3 {
         if (this.object.getBoundingInfo) {
-            let q = this.object.rotationQuaternion;
+            const q = this.object.rotationQuaternion;
             const scaling = this.object.scaling.clone();
             //reset rotation
             this.object.rotationQuaternion = PhysicsImpostor.IDENTITY_QUATERNION;
@@ -640,7 +643,7 @@ export class PhysicsImpostor {
      */
     public getObjectCenter(): Vector3 {
         if (this.object.getBoundingInfo) {
-            let boundingInfo = this.object.getBoundingInfo();
+            const boundingInfo = this.object.getBoundingInfo();
             return boundingInfo.boundingBox.centerWorld;
         } else {
             return this.object.position;
@@ -740,7 +743,7 @@ export class PhysicsImpostor {
      * @param func The function to execute before the physics world is stepped forward
      */
     public unregisterBeforePhysicsStep(func: (impostor: PhysicsImpostor) => void): void {
-        var index = this._onBeforePhysicsStepCallbacks.indexOf(func);
+        const index = this._onBeforePhysicsStepCallbacks.indexOf(func);
 
         if (index > -1) {
             this._onBeforePhysicsStepCallbacks.splice(index, 1);
@@ -762,7 +765,7 @@ export class PhysicsImpostor {
      * @param func The function to execute after physics step
      */
     public unregisterAfterPhysicsStep(func: (impostor: PhysicsImpostor) => void): void {
-        var index = this._onAfterPhysicsStepCallbacks.indexOf(func);
+        const index = this._onAfterPhysicsStepCallbacks.indexOf(func);
 
         if (index > -1) {
             this._onAfterPhysicsStepCallbacks.splice(index, 1);
@@ -776,8 +779,11 @@ export class PhysicsImpostor {
      * @param collideAgainst Physics imposter, or array of physics imposters to collide against
      * @param func Callback that is executed on collision
      */
-    public registerOnPhysicsCollide(collideAgainst: PhysicsImpostor | Array<PhysicsImpostor>, func: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor, point: Nullable<Vector3>) => void): void {
-        var collidedAgainstList: Array<PhysicsImpostor> = collideAgainst instanceof Array ? <Array<PhysicsImpostor>>collideAgainst : [<PhysicsImpostor>collideAgainst];
+    public registerOnPhysicsCollide(
+        collideAgainst: PhysicsImpostor | Array<PhysicsImpostor>,
+        func: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor, point: Nullable<Vector3>) => void
+    ): void {
+        const collidedAgainstList: Array<PhysicsImpostor> = collideAgainst instanceof Array ? <Array<PhysicsImpostor>>collideAgainst : [<PhysicsImpostor>collideAgainst];
         this._onPhysicsCollideCallbacks.push({ callback: func, otherImpostors: collidedAgainstList });
     }
 
@@ -786,13 +792,16 @@ export class PhysicsImpostor {
      * @param collideAgainst The physics object to collide against
      * @param func Callback to execute on collision
      */
-    public unregisterOnPhysicsCollide(collideAgainst: PhysicsImpostor | Array<PhysicsImpostor>, func: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor | Array<PhysicsImpostor>, point: Nullable<Vector3>) => void): void {
-        var collidedAgainstList: Array<PhysicsImpostor> = collideAgainst instanceof Array ? <Array<PhysicsImpostor>>collideAgainst : [<PhysicsImpostor>collideAgainst];
-        var index = -1;
-        let found = this._onPhysicsCollideCallbacks.some((cbDef, idx) => {
+    public unregisterOnPhysicsCollide(
+        collideAgainst: PhysicsImpostor | Array<PhysicsImpostor>,
+        func: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor | Array<PhysicsImpostor>, point: Nullable<Vector3>) => void
+    ): void {
+        const collidedAgainstList: Array<PhysicsImpostor> = collideAgainst instanceof Array ? <Array<PhysicsImpostor>>collideAgainst : [<PhysicsImpostor>collideAgainst];
+        let index = -1;
+        const found = this._onPhysicsCollideCallbacks.some((cbDef, idx) => {
             if (cbDef.callback === func && cbDef.otherImpostors.length === collidedAgainstList.length) {
                 // chcek the arrays match
-                let sameList = cbDef.otherImpostors.every((impostor) => {
+                const sameList = cbDef.otherImpostors.every((impostor) => {
                     return collidedAgainstList.indexOf(impostor) > -1;
                 });
                 if (sameList) {
@@ -843,7 +852,9 @@ export class PhysicsImpostor {
         }
 
         this.object.translate(this._deltaPosition, -1);
-        this._deltaRotationConjugated && this.object.rotationQuaternion && this.object.rotationQuaternion.multiplyToRef(this._deltaRotationConjugated, this.object.rotationQuaternion);
+        this._deltaRotationConjugated &&
+            this.object.rotationQuaternion &&
+            this.object.rotationQuaternion.multiplyToRef(this._deltaRotationConjugated, this.object.rotationQuaternion);
         this.object.computeWorldMatrix(false);
         if (this.object.parent && this.object.rotationQuaternion) {
             this.getParentsRotation();
@@ -852,7 +863,8 @@ export class PhysicsImpostor {
             this._tmpQuat.copyFrom(this.object.rotationQuaternion || new Quaternion());
         }
         if (!this._options.disableBidirectionalTransformation) {
-            this.object.rotationQuaternion && this._physicsEngine.getPhysicsPlugin().setPhysicsBodyTransformation(this, /*bInfo.boundingBox.centerWorld*/ this.object.getAbsolutePosition(), this._tmpQuat);
+            this.object.rotationQuaternion &&
+                this._physicsEngine.getPhysicsPlugin().setPhysicsBodyTransformation(this, /*bInfo.boundingBox.centerWorld*/ this.object.getAbsolutePosition(), this._tmpQuat);
         }
 
         this._onBeforePhysicsStepCallbacks.forEach((func) => {
@@ -892,6 +904,9 @@ export class PhysicsImpostor {
 
     /**
      * event and body object due to cannon's event-based architecture.
+     * @param e
+     * @param e.body
+     * @param e.point
      */
     public onCollide = (e: { body: any; point: Nullable<Vector3> }) => {
         if (!this._onPhysicsCollideCallbacks.length && !this.onCollideEvent) {
@@ -901,7 +916,7 @@ export class PhysicsImpostor {
         if (!this._physicsEngine) {
             return;
         }
-        var otherImpostor = this._physicsEngine.getImpostorWithPhysicsBody(e.body);
+        const otherImpostor = this._physicsEngine.getImpostorWithPhysicsBody(e.body);
         if (otherImpostor) {
             // Legacy collision detection event support
             if (this.onCollideEvent) {
@@ -952,7 +967,7 @@ export class PhysicsImpostor {
      * @returns The physics imposter
      */
     public createJoint(otherImpostor: PhysicsImpostor, jointType: number, jointData: PhysicsJointData): PhysicsImpostor {
-        var joint = new PhysicsJoint(jointType, jointData);
+        const joint = new PhysicsJoint(jointType, jointData);
         this.addJoint(otherImpostor, joint);
 
         return this;
@@ -1140,12 +1155,12 @@ export class PhysicsImpostor {
      * @param adjustRotation Optional quaternion for adjusting the local rotation of the bone.
      */
     public syncBoneWithImpostor(bone: Bone, boneMesh: AbstractMesh, jointPivot: Vector3, distToJoint?: number, adjustRotation?: Quaternion) {
-        var tempVec = PhysicsImpostor._tmpVecs[0];
-        var mesh = <AbstractMesh>this.object;
+        const tempVec = PhysicsImpostor._tmpVecs[0];
+        const mesh = <AbstractMesh>this.object;
 
         if (mesh.rotationQuaternion) {
             if (adjustRotation) {
-                var tempQuat = PhysicsImpostor._tmpQuat;
+                const tempQuat = PhysicsImpostor._tmpQuat;
                 mesh.rotationQuaternion.multiplyToRef(adjustRotation, tempQuat);
                 bone.setRotationQuaternion(tempQuat, Space.WORLD, boneMesh);
             } else {
@@ -1194,11 +1209,11 @@ export class PhysicsImpostor {
      * @param boneAxis Optional vector3 axis the bone is aligned with
      */
     public syncImpostorWithBone(bone: Bone, boneMesh: AbstractMesh, jointPivot: Vector3, distToJoint?: number, adjustRotation?: Quaternion, boneAxis?: Vector3) {
-        var mesh = <AbstractMesh>this.object;
+        const mesh = <AbstractMesh>this.object;
 
         if (mesh.rotationQuaternion) {
             if (adjustRotation) {
-                var tempQuat = PhysicsImpostor._tmpQuat;
+                const tempQuat = PhysicsImpostor._tmpQuat;
                 bone.getRotationQuaternionToRef(Space.WORLD, boneMesh, tempQuat);
                 tempQuat.multiplyToRef(adjustRotation, mesh.rotationQuaternion);
             } else {
@@ -1206,8 +1221,8 @@ export class PhysicsImpostor {
             }
         }
 
-        var pos = PhysicsImpostor._tmpVecs[0];
-        var boneDir = PhysicsImpostor._tmpVecs[1];
+        const pos = PhysicsImpostor._tmpVecs[0];
+        const boneDir = PhysicsImpostor._tmpVecs[1];
 
         if (!boneAxis) {
             boneAxis = PhysicsImpostor._tmpVecs[2];

@@ -5,7 +5,6 @@ import { Vector3 } from "../Maths/math.vector";
  * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
  */
 export class PhysicsRaycastResult {
-
     private _hasHit: boolean = false;
 
     private _hitDistance: number = 0;
@@ -97,7 +96,6 @@ export class PhysicsRaycastResult {
         this._hitNormalWorld = Vector3.Zero();
         this._hitPointWorld = Vector3.Zero();
     }
-
 }
 
 /**

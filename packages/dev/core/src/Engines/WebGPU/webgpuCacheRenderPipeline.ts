@@ -1,5 +1,5 @@
 import { Constants } from "../constants";
-import * as WebGPUConstants from './webgpuConstants';
+import * as WebGPUConstants from "./webgpuConstants";
 import { Effect } from "../../Materials/effect";
 import { InternalTexture } from "../../Materials/Textures/internalTexture";
 import { VertexBuffer } from "../../Buffers/buffer";
@@ -25,7 +25,7 @@ enum StatePosition {
     TextureStage = 10,
     VertexState = 11, // vertex state will consume positions 11, 12, ... depending on the number of vertex inputs
 
-    NumStates = 12
+    NumStates = 12,
 }
 
 const alphaBlendFactorToIndex: { [name: number]: number } = {
@@ -48,18 +48,17 @@ const alphaBlendFactorToIndex: { [name: number]: number } = {
 
 const stencilOpToIndex: { [name: number]: number } = {
     0x0000: 0, // ZERO
-    0x1E00: 1, // KEEP
-    0x1E01: 2, // REPLACE
-    0x1E02: 3, // INCR
-    0x1E03: 4, // DECR
-    0x150A: 5, // INVERT
+    0x1e00: 1, // KEEP
+    0x1e01: 2, // REPLACE
+    0x1e02: 3, // INCR
+    0x1e03: 4, // DECR
+    0x150a: 5, // INVERT
     0x8507: 6, // INCR_WRAP
     0x8508: 7, // DECR_WRAP
 };
 
 /** @hidden */
 export abstract class WebGPUCacheRenderPipeline {
-
     public static NumCacheHitWithoutHash = 0;
     public static NumCacheHitWithHash = 0;
     public static NumCacheMiss = 0;
@@ -77,7 +76,7 @@ export abstract class WebGPUCacheRenderPipeline {
     private _device: GPUDevice;
     private _isDirty: boolean;
     private _emptyVertexBuffer: VertexBuffer;
-    private _parameter: { token: any, pipeline: Nullable<GPURenderPipeline> };
+    private _parameter: { token: any; pipeline: Nullable<GPURenderPipeline> };
     private _kMaxVertexBufferStride;
 
     private _shaderId: number;
@@ -148,7 +147,7 @@ export abstract class WebGPUCacheRenderPipeline {
         this.setMRT([]);
         this.setAlphaBlendEnabled(false);
         this.setAlphaBlendFactors([null, null, null, null], [null, null]);
-        this.setWriteMask(0xF);
+        this.setWriteMask(0xf);
         this.setDepthStencilFormat(WebGPUConstants.TextureFormat.Depth24PlusStencil8);
         this.setStencilEnabled(false);
         this.resetStencilState();
@@ -156,8 +155,8 @@ export abstract class WebGPUCacheRenderPipeline {
         this._setTextureState(0);
     }
 
-    protected abstract _getRenderPipeline(param: { token: any, pipeline: Nullable<GPURenderPipeline> }): void;
-    protected abstract _setRenderPipeline(param: { token: any, pipeline: Nullable<GPURenderPipeline> }): void;
+    protected abstract _getRenderPipeline(param: { token: any; pipeline: Nullable<GPURenderPipeline> }): void;
+    protected abstract _setRenderPipeline(param: { token: any; pipeline: Nullable<GPURenderPipeline> }): void;
 
     public readonly vertexBuffers: VertexBuffer[];
 
@@ -252,7 +251,16 @@ export abstract class WebGPUCacheRenderPipeline {
         this.setDepthCullingState(false, 2, 1, 0, 0, true, true, Constants.ALWAYS);
     }
 
-    public setDepthCullingState(cullEnabled: boolean, frontFace: number, cullFace: number, zOffset: number, zOffsetUnits: number, depthTestEnabled: boolean, depthWriteEnabled: boolean, depthCompare: Nullable<number>): void {
+    public setDepthCullingState(
+        cullEnabled: boolean,
+        frontFace: number,
+        cullFace: number,
+        zOffset: number,
+        zOffsetUnits: number,
+        depthTestEnabled: boolean,
+        depthWriteEnabled: boolean,
+        depthCompare: Nullable<number>
+    ): void {
         this._depthWriteEnabled = depthWriteEnabled;
         this._depthTestEnabled = depthTestEnabled;
         this._depthCompare = (depthCompare ?? Constants.ALWAYS) - 0x0200;
@@ -320,9 +328,12 @@ export abstract class WebGPUCacheRenderPipeline {
         (this.mrtTextureArray as any) = textureArray;
         (this.mrtTextureCount as any) = textureCount;
 
-        this._mrtEnabledMask = 0xFFFF; // all textures are enabled at start (meaning we can write to them). Calls to setMRTAttachments may disable some
+        this._mrtEnabledMask = 0xffff; // all textures are enabled at start (meaning we can write to them). Calls to setMRTAttachments may disable some
 
-        let bits: number[] = [0, 0], indexBits = 0, mask = 0, numRT = 0;
+        let bits: number[] = [0, 0],
+            indexBits = 0,
+            mask = 0,
+            numRT = 0;
         for (let i = 0; i < textureCount; ++i) {
             const texture = textureArray[i];
             const gpuWrapper = texture?._hardwareTexture as Nullable<WebGPUHardwareTexture>;
@@ -418,10 +429,18 @@ export abstract class WebGPUCacheRenderPipeline {
     }
 
     public resetStencilState(): void {
-        this.setStencilState(false, Constants.ALWAYS, Constants.KEEP, Constants.REPLACE, Constants.KEEP, 0xFF, 0xFF);
+        this.setStencilState(false, Constants.ALWAYS, Constants.KEEP, Constants.REPLACE, Constants.KEEP, 0xff, 0xff);
     }
 
-    public setStencilState(stencilEnabled: boolean, compare: Nullable<number>, depthFailOp: Nullable<number>, passOp: Nullable<number>, failOp: Nullable<number>, readMask: number, writeMask: number): void {
+    public setStencilState(
+        stencilEnabled: boolean,
+        compare: Nullable<number>,
+        depthFailOp: Nullable<number>,
+        passOp: Nullable<number>,
+        failOp: Nullable<number>,
+        readMask: number,
+        writeMask: number
+    ): void {
         this._stencilEnabled = stencilEnabled;
         this._stencilFrontCompare = (compare ?? Constants.ALWAYS) - 0x0200;
         this._stencilFrontDepthFailOp = depthFailOp === null ? 1 /* KEEP */ : stencilOpToIndex[depthFailOp];
@@ -431,7 +450,11 @@ export abstract class WebGPUCacheRenderPipeline {
         this.setStencilWriteMask(writeMask);
     }
 
-    public setBuffers(vertexBuffers: Nullable<{ [key: string]: Nullable<VertexBuffer> }>, indexBuffer: Nullable<DataBuffer>, overrideVertexBuffers: Nullable<{ [key: string]: Nullable<VertexBuffer> }>): void {
+    public setBuffers(
+        vertexBuffers: Nullable<{ [key: string]: Nullable<VertexBuffer> }>,
+        indexBuffer: Nullable<DataBuffer>,
+        overrideVertexBuffers: Nullable<{ [key: string]: Nullable<VertexBuffer> }>
+    ): void {
         this._vertexBuffers = vertexBuffers;
         this._overrideVertexBuffers = overrideVertexBuffers;
         this._indexBuffer = indexBuffer;
@@ -691,13 +714,7 @@ export abstract class WebGPUCacheRenderPipeline {
         const cullMode = this._cullEnabled ? this._cullFace : 0;
         const clampDepth = this._clampDepth ? 1 : 0;
         const alphaToCoverage = this._alphaToCoverageEnabled ? 1 : 0;
-        const rasterizationState =
-            (frontFace - 1) +
-            (cullMode << 1) +
-            (clampDepth << 3) +
-            (alphaToCoverage << 4) +
-            (topology << 5) +
-            (sampleCount << 8);
+        const rasterizationState = frontFace - 1 + (cullMode << 1) + (clampDepth << 3) + (alphaToCoverage << 4) + (topology << 5) + (sampleCount << 8);
 
         if (this._rasterizationState !== rasterizationState) {
             this._rasterizationState = rasterizationState;
@@ -708,9 +725,7 @@ export abstract class WebGPUCacheRenderPipeline {
     }
 
     private _setColorStates(): void {
-        let colorStates =
-            ((this._writeMask ? 1 : 0) << 22) + (this._colorFormat << 23) +
-            ((this._depthWriteEnabled ? 1 : 0) << 29); // this state has been moved from depthStencilState here because alpha and depth are related (generally when alpha is on, depth write is off and the other way around)
+        let colorStates = ((this._writeMask ? 1 : 0) << 22) + (this._colorFormat << 23) + ((this._depthWriteEnabled ? 1 : 0) << 29); // this state has been moved from depthStencilState here because alpha and depth are related (generally when alpha is on, depth write is off and the other way around)
 
         if (this._alphaBlendEnabled) {
             colorStates +=
@@ -731,14 +746,11 @@ export abstract class WebGPUCacheRenderPipeline {
     }
 
     private _setDepthStencilState(): void {
-        let stencilState = !this._stencilEnabled ?
-            7 /* ALWAYS */ + (1 /* KEEP */ << 3) + (1 /* KEEP */ << 6) + (1 /* KEEP */ << 9) :
-            this._stencilFrontCompare + (this._stencilFrontDepthFailOp << 3) + (this._stencilFrontPassOp << 6) + (this._stencilFrontFailOp << 9);
+        const stencilState = !this._stencilEnabled
+            ? 7 /* ALWAYS */ + (1 /* KEEP */ << 3) + (1 /* KEEP */ << 6) + (1 /* KEEP */ << 9)
+            : this._stencilFrontCompare + (this._stencilFrontDepthFailOp << 3) + (this._stencilFrontPassOp << 6) + (this._stencilFrontFailOp << 9);
 
-        const depthStencilState =
-            this._depthStencilFormat +
-            ((this._depthTestEnabled ? this._depthCompare : 7 /* ALWAYS */) << 6) +
-            (stencilState << 10); // stencil front - stencil back is the same
+        const depthStencilState = this._depthStencilFormat + ((this._depthTestEnabled ? this._depthCompare : 7) /* ALWAYS */ << 6) + (stencilState << 10); // stencil front - stencil back is the same
 
         if (this._depthStencilState !== depthStencilState) {
             this._depthStencilState = depthStencilState;
@@ -758,7 +770,7 @@ export abstract class WebGPUCacheRenderPipeline {
 
         let currentGPUBuffer;
         let numVertexBuffers = 0;
-        for (var index = 0; index < attributes.length; index++) {
+        for (let index = 0; index < attributes.length; index++) {
             const location = locations[index];
             let vertexBuffer = (this._overrideVertexBuffers && this._overrideVertexBuffers[attributes[index]]) ?? this._vertexBuffers![attributes[index]];
             if (!vertexBuffer) {
@@ -776,7 +788,7 @@ export abstract class WebGPUCacheRenderPipeline {
                 const offset = vertexBuffer.byteOffset;
                 const formatSize = vertexBuffer.getSize(true);
                 const byteStride = vertexBuffer.byteStride;
-                vertexBuffer._validOffsetRange = offset <= (this._kMaxVertexBufferStride - formatSize) && (byteStride === 0 || (offset + formatSize) <= byteStride);
+                vertexBuffer._validOffsetRange = offset <= this._kMaxVertexBufferStride - formatSize && (byteStride === 0 || offset + formatSize <= byteStride);
             }
 
             if (!(currentGPUBuffer && currentGPUBuffer === buffer && vertexBuffer._validOffsetRange)) {
@@ -849,7 +861,7 @@ export abstract class WebGPUCacheRenderPipeline {
                     let sampleType = textureInfo.sampleType;
                     let samplerType = samplerInfo?.type ?? WebGPUConstants.SamplerBindingType.Filtering;
 
-                    if ((this._textureState & bitVal) && sampleType !== WebGPUConstants.TextureSampleType.Depth) {
+                    if (this._textureState & bitVal && sampleType !== WebGPUConstants.TextureSampleType.Depth) {
                         // The texture is a 32 bits float texture but the system does not support linear filtering for them:
                         // we set the sampler to "non-filtering" and the texture sample type to "unfilterable-float"
                         if (textureInfo.autoBindSampler) {
@@ -891,7 +903,7 @@ export abstract class WebGPUCacheRenderPipeline {
 
         let currentGPUBuffer;
         let currentGPUAttributes: GPUVertexAttribute[] | undefined;
-        for (var index = 0; index < attributes.length; index++) {
+        for (let index = 0; index < attributes.length; index++) {
             const location = locations[index];
             let vertexBuffer = (this._overrideVertexBuffers && this._overrideVertexBuffers[attributes[index]]) ?? this._vertexBuffers![attributes[index]];
             if (!vertexBuffer) {
@@ -909,7 +921,7 @@ export abstract class WebGPUCacheRenderPipeline {
                 const vertexBufferDescriptor: GPUVertexBufferLayout = {
                     arrayStride: vertexBuffer.byteStride,
                     stepMode: vertexBuffer.getIsInstanced() ? WebGPUConstants.InputStepMode.Instance : WebGPUConstants.InputStepMode.Vertex,
-                    attributes: []
+                    attributes: [],
                 };
 
                 descriptors.push(vertexBufferDescriptor);
@@ -973,7 +985,7 @@ export abstract class WebGPUCacheRenderPipeline {
             compare: WebGPUCacheRenderPipeline._GetCompareFunction(this._stencilEnabled ? this._stencilFrontCompare : 7 /* ALWAYS */),
             depthFailOp: WebGPUCacheRenderPipeline._GetStencilOpFunction(this._stencilEnabled ? this._stencilFrontDepthFailOp : 1 /* KEEP */),
             failOp: WebGPUCacheRenderPipeline._GetStencilOpFunction(this._stencilEnabled ? this._stencilFrontFailOp : 1 /* KEEP */),
-            passOp: WebGPUCacheRenderPipeline._GetStencilOpFunction(this._stencilEnabled ? this._stencilFrontPassOp : 1 /* KEEP */)
+            passOp: WebGPUCacheRenderPipeline._GetStencilOpFunction(this._stencilEnabled ? this._stencilFrontPassOp : 1 /* KEEP */),
         };
 
         let stripIndexFormat: GPUIndexFormat | undefined = undefined;
@@ -996,30 +1008,34 @@ export abstract class WebGPUCacheRenderPipeline {
                 frontFace: this._frontFace === 1 ? WebGPUConstants.FrontFace.CCW : WebGPUConstants.FrontFace.CW,
                 cullMode: !this._cullEnabled ? WebGPUConstants.CullMode.None : this._cullFace === 2 ? WebGPUConstants.CullMode.Front : WebGPUConstants.CullMode.Back,
             },
-            fragment: !webgpuPipelineContext.stages!.fragmentStage ? undefined : {
-                module: webgpuPipelineContext.stages!.fragmentStage.module,
-                entryPoint: webgpuPipelineContext.stages!.fragmentStage.entryPoint,
-                targets: colorStates,
-            },
+            fragment: !webgpuPipelineContext.stages!.fragmentStage
+                ? undefined
+                : {
+                      module: webgpuPipelineContext.stages!.fragmentStage.module,
+                      entryPoint: webgpuPipelineContext.stages!.fragmentStage.entryPoint,
+                      targets: colorStates,
+                  },
 
             multisample: {
                 count: sampleCount,
                 /*mask,
                 alphaToCoverageEnabled,*/
             },
-            depthStencil: this._webgpuDepthStencilFormat === undefined ? undefined : {
-                depthWriteEnabled: this._depthWriteEnabled,
-                depthCompare: this._depthTestEnabled ? WebGPUCacheRenderPipeline._GetCompareFunction(this._depthCompare) : WebGPUConstants.CompareFunction.Always,
-                format: this._webgpuDepthStencilFormat,
-                stencilFront: this._stencilEnabled && depthStencilFormatHasStencil ? stencilFrontBack : undefined,
-                stencilBack: this._stencilEnabled && depthStencilFormatHasStencil ? stencilFrontBack : undefined,
-                stencilReadMask: this._stencilEnabled && depthStencilFormatHasStencil ? this._stencilReadMask : undefined,
-                stencilWriteMask: this._stencilEnabled && depthStencilFormatHasStencil ? this._stencilWriteMask : undefined,
-                depthBias: this._depthBias,
-                depthBiasClamp: this._depthBiasClamp,
-                depthBiasSlopeScale: this._depthBiasSlopeScale,
-            },
+            depthStencil:
+                this._webgpuDepthStencilFormat === undefined
+                    ? undefined
+                    : {
+                          depthWriteEnabled: this._depthWriteEnabled,
+                          depthCompare: this._depthTestEnabled ? WebGPUCacheRenderPipeline._GetCompareFunction(this._depthCompare) : WebGPUConstants.CompareFunction.Always,
+                          format: this._webgpuDepthStencilFormat,
+                          stencilFront: this._stencilEnabled && depthStencilFormatHasStencil ? stencilFrontBack : undefined,
+                          stencilBack: this._stencilEnabled && depthStencilFormatHasStencil ? stencilFrontBack : undefined,
+                          stencilReadMask: this._stencilEnabled && depthStencilFormatHasStencil ? this._stencilReadMask : undefined,
+                          stencilWriteMask: this._stencilEnabled && depthStencilFormatHasStencil ? this._stencilWriteMask : undefined,
+                          depthBias: this._depthBias,
+                          depthBiasClamp: this._depthBiasClamp,
+                          depthBiasSlopeScale: this._depthBiasSlopeScale,
+                      },
         });
     }
-
 }

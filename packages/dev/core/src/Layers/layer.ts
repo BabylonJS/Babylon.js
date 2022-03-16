@@ -2,7 +2,7 @@ import { Observer, Observable } from "../Misc/observable";
 import { Nullable } from "../types";
 import { Scene } from "../scene";
 import { Vector2 } from "../Maths/math.vector";
-import { Color4 } from '../Maths/math.color';
+import { Color4 } from "../Maths/math.color";
 import { EngineStore } from "../Engines/engineStore";
 import { VertexBuffer } from "../Buffers/buffer";
 import { Material } from "../Materials/material";
@@ -12,7 +12,7 @@ import { SceneComponentConstants } from "../sceneComponent";
 import { LayerSceneComponent } from "./layerSceneComponent";
 import { Constants } from "../Engines/constants";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
-import { DataBuffer } from '../Buffers/dataBuffer';
+import { DataBuffer } from "../Buffers/dataBuffer";
 import { DrawWrapper } from "../Materials/drawWrapper";
 
 import "../Shaders/layer.fragment";
@@ -64,7 +64,7 @@ export class Layer {
     /**
      * Define a mask to restrict the layer to only some of the scene cameras.
      */
-    public layerMask: number = 0x0FFFFFFF;
+    public layerMask: number = 0x0fffffff;
 
     /**
      * Define the list of render target the layer is visible into.
@@ -106,8 +106,8 @@ export class Layer {
     }
 
     /**
-    * An event triggered before rendering the scene
-    */
+     * An event triggered before rendering the scene
+     */
     public onBeforeRenderObservable = new Observable<Layer>();
 
     private _onBeforeRenderObserver: Nullable<Observer<Layer>>;
@@ -123,8 +123,8 @@ export class Layer {
     }
 
     /**
-    * An event triggered after rendering the scene
-    */
+     * An event triggered after rendering the scene
+     */
     public onAfterRenderObservable = new Observable<Layer>();
 
     private _onAfterRenderObserver: Nullable<Observer<Layer>>;
@@ -157,8 +157,9 @@ export class Layer {
         public name: string,
         imgUrl: Nullable<string>,
         scene: Nullable<Scene>,
-        isBackground?: boolean, color?: Color4) {
-
+        isBackground?: boolean,
+        color?: Color4
+    ) {
         this.texture = imgUrl ? new Texture(imgUrl, scene, true) : null;
         this.isBackground = isBackground === undefined ? true : isBackground;
         this.color = color === undefined ? new Color4(1, 1, 1, 1) : color;
@@ -171,28 +172,28 @@ export class Layer {
         }
         this._scene.layers.push(this);
 
-        var engine = this._scene.getEngine();
+        const engine = this._scene.getEngine();
 
         this._drawWrapper = new DrawWrapper(engine);
 
         // VBO
-        var vertices = [];
+        const vertices = [];
         vertices.push(1, 1);
         vertices.push(-1, 1);
         vertices.push(-1, -1);
         vertices.push(1, -1);
 
-        var vertexBuffer = new VertexBuffer(engine, vertices, VertexBuffer.PositionKind, false, false, 2);
+        const vertexBuffer = new VertexBuffer(engine, vertices, VertexBuffer.PositionKind, false, false, 2);
         this._vertexBuffers[VertexBuffer.PositionKind] = vertexBuffer;
 
         this._createIndexBuffer();
     }
 
     private _createIndexBuffer(): void {
-        var engine = this._scene.getEngine();
+        const engine = this._scene.getEngine();
 
         // Indices
-        var indices = [];
+        const indices = [];
         indices.push(0);
         indices.push(1);
         indices.push(2);
@@ -206,7 +207,7 @@ export class Layer {
 
     /** @hidden */
     public _rebuild(): void {
-        let vb = this._vertexBuffers[VertexBuffer.PositionKind];
+        const vb = this._vertexBuffers[VertexBuffer.PositionKind];
 
         if (vb) {
             vb._rebuild();
@@ -225,7 +226,7 @@ export class Layer {
 
         var engine = this._scene.getEngine();
 
-        var defines = "";
+        let defines = "";
 
         if (this.alphaTest) {
             defines = "#define ALPHATEST";
@@ -237,12 +238,9 @@ export class Layer {
 
         if (this._previousDefines !== defines) {
             this._previousDefines = defines;
-            this._drawWrapper.effect = engine.createEffect("layer",
-                [VertexBuffer.PositionKind],
-                ["textureMatrix", "color", "scale", "offset"],
-                ["textureSampler"], defines);
+            this._drawWrapper.effect = engine.createEffect("layer", [VertexBuffer.PositionKind], ["textureMatrix", "color", "scale", "offset"], ["textureSampler"], defines);
         }
-        var currentEffect = this._drawWrapper.effect;
+        const currentEffect = this._drawWrapper.effect;
 
         // Check
         if (!currentEffect || !currentEffect.isReady() || !this.texture || !this.texture.isReady()) {
@@ -276,8 +274,7 @@ export class Layer {
             engine.setAlphaMode(this.alphaBlendingMode);
             engine.drawElementsType(Material.TriangleFillMode, 0, 6);
             engine.setAlphaMode(Constants.ALPHA_DISABLE);
-        }
-        else {
+        } else {
             engine.drawElementsType(Material.TriangleFillMode, 0, 6);
         }
 
@@ -288,7 +285,7 @@ export class Layer {
      * Disposes and releases the associated resources.
      */
     public dispose(): void {
-        var vertexBuffer = this._vertexBuffers[VertexBuffer.PositionKind];
+        const vertexBuffer = this._vertexBuffers[VertexBuffer.PositionKind];
         if (vertexBuffer) {
             vertexBuffer.dispose();
             this._vertexBuffers[VertexBuffer.PositionKind] = null;
@@ -308,7 +305,7 @@ export class Layer {
         this.renderTargetTextures = [];
 
         // Remove from scene
-        var index = this._scene.layers.indexOf(this);
+        const index = this._scene.layers.indexOf(this);
         this._scene.layers.splice(index, 1);
 
         // Callback

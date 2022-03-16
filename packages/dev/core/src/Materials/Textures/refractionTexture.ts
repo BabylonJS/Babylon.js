@@ -45,14 +45,14 @@ export class RefractionTexture extends RenderTargetTexture {
      * @returns the cloned texture
      */
     public clone(): RefractionTexture {
-        let scene = this.getScene();
+        const scene = this.getScene();
 
         if (!scene) {
             return this;
         }
 
-        var textureSize = this.getSize();
-        var newTexture = new RefractionTexture(this.name, textureSize.width, scene, this._generateMipMaps);
+        const textureSize = this.getSize();
+        const newTexture = new RefractionTexture(this.name, textureSize.width, scene, this._generateMipMaps);
 
         // Base texture
         newTexture.hasAlpha = this.hasAlpha;
@@ -77,7 +77,7 @@ export class RefractionTexture extends RenderTargetTexture {
             return null;
         }
 
-        var serializationObject = super.serialize();
+        const serializationObject = super.serialize();
 
         serializationObject.mirrorPlane = this.refractionPlane.asArray();
         serializationObject.depth = this.depth;

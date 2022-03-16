@@ -27,7 +27,7 @@ export class WeightedSound {
      */
     constructor(loop: boolean, sounds: Sound[], weights: number[]) {
         if (sounds.length !== weights.length) {
-            throw new Error('Sounds length does not equal weights length');
+            throw new Error("Sounds length does not equal weights length");
         }
 
         this.loop = loop;
@@ -42,8 +42,10 @@ export class WeightedSound {
             this._weights[i] *= invWeightSum;
         }
         this._sounds = sounds;
-        for (let sound of this._sounds) {
-            sound.onEndedObservable.add(() => { this._onended(); });
+        for (const sound of this._sounds) {
+            sound.onEndedObservable.add(() => {
+                this._onended();
+            });
         }
     }
 
@@ -65,7 +67,7 @@ export class WeightedSound {
             }
 
             this._coneInnerAngle = value;
-            for (let sound of this._sounds) {
+            for (const sound of this._sounds) {
                 sound.directionalConeInnerAngle = value;
             }
         }
@@ -91,7 +93,7 @@ export class WeightedSound {
             }
 
             this._coneOuterAngle = value;
-            for (let sound of this._sounds) {
+            for (const sound of this._sounds) {
                 sound.directionalConeOuterAngle = value;
             }
         }
@@ -109,7 +111,7 @@ export class WeightedSound {
      */
     public set volume(value: number) {
         if (value !== this._volume) {
-            for (let sound of this._sounds) {
+            for (const sound of this._sounds) {
                 sound.setVolume(value);
             }
         }
@@ -153,7 +155,7 @@ export class WeightedSound {
     public play(startOffset?: number) {
         if (!this.isPaused) {
             this.stop();
-            let randomValue = Math.random();
+            const randomValue = Math.random();
             let total = 0;
             for (let i = 0; i < this._weights.length; i++) {
                 total += this._weights[i];

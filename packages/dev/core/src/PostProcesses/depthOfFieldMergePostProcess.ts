@@ -57,8 +57,35 @@ export class DepthOfFieldMergePostProcess extends PostProcess {
      * @param textureType Type of textures used when performing the post process. (default: 0)
      * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
      */
-    constructor(name: string, originalFromInput: PostProcess, circleOfConfusion: PostProcess, private blurSteps: Array<PostProcess>, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT, blockCompilation = false) {
-        super(name, "depthOfFieldMerge", [], ["circleOfConfusionSampler", "blurStep0", "blurStep1", "blurStep2"], options, camera, samplingMode, engine, reusable, null, textureType, undefined, null, true);
+    constructor(
+        name: string,
+        originalFromInput: PostProcess,
+        circleOfConfusion: PostProcess,
+        private blurSteps: Array<PostProcess>,
+        options: number | PostProcessOptions,
+        camera: Nullable<Camera>,
+        samplingMode?: number,
+        engine?: Engine,
+        reusable?: boolean,
+        textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT,
+        blockCompilation = false
+    ) {
+        super(
+            name,
+            "depthOfFieldMerge",
+            [],
+            ["circleOfConfusionSampler", "blurStep0", "blurStep1", "blurStep2"],
+            options,
+            camera,
+            samplingMode,
+            engine,
+            reusable,
+            null,
+            textureType,
+            undefined,
+            null,
+            true
+        );
         this.externalTextureSamplerBinding = true;
         this.onApplyObservable.add((effect: Effect) => {
             effect.setTextureFromPostProcess("textureSampler", originalFromInput);
@@ -82,8 +109,14 @@ export class DepthOfFieldMergePostProcess extends PostProcess {
      * @param onCompiled Called when the shader has been compiled.
      * @param onError Called if there is an error when compiling a shader.
      */
-    public updateEffect(defines: Nullable<string> = null, uniforms: Nullable<string[]> = null, samplers: Nullable<string[]> = null, indexParameters?: any,
-        onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void) {
+    public updateEffect(
+        defines: Nullable<string> = null,
+        uniforms: Nullable<string[]> = null,
+        samplers: Nullable<string[]> = null,
+        indexParameters?: any,
+        onCompiled?: (effect: Effect) => void,
+        onError?: (effect: Effect, errors: string) => void
+    ) {
         if (!defines) {
             defines = "";
             defines += "#define BLUR_LEVEL " + (this.blurSteps.length - 1) + "\n";

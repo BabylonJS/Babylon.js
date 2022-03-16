@@ -4,7 +4,7 @@ import { FreeCameraKeyboardMoveInput } from "../Cameras/Inputs/freeCameraKeyboar
 import { FreeCameraMouseInput } from "../Cameras/Inputs/freeCameraMouseInput";
 import { FreeCameraMouseWheelInput } from "../Cameras/Inputs/freeCameraMouseWheelInput";
 import { FreeCameraTouchInput } from "../Cameras/Inputs/freeCameraTouchInput";
-import { Nullable } from '../types';
+import { Nullable } from "../types";
 
 /**
  * Default Inputs manager for the FreeCamera.

@@ -4,13 +4,13 @@ import { Matrix, Vector3 } from "../Maths/math.vector";
 import { Constants } from "../Engines/constants";
 import { BoundingBox } from "./boundingBox";
 import { BoundingSphere } from "./boundingSphere";
-import { Plane } from '../Maths/math.plane';
+import { Plane } from "../Maths/math.plane";
 
 declare type Collider = import("../Collisions/collider").Collider;
 
 const _result0 = { min: 0, max: 0 };
 const _result1 = { min: 0, max: 0 };
-const computeBoxExtents = (axis: DeepImmutable<Vector3>, box: DeepImmutable<BoundingBox>, result: { min: number, max: number }) => {
+const computeBoxExtents = (axis: DeepImmutable<Vector3>, box: DeepImmutable<BoundingBox>, result: { min: number; max: number }) => {
     const p = Vector3.Dot(box.centerWorld, axis);
 
     const r0 = Math.abs(Vector3.Dot(box.directions[0], axis)) * box.extendSize.x;
@@ -132,7 +132,6 @@ export class BoundingInfo implements ICullable {
      * @returns the current bounding info
      */
     public centerOn(center: DeepImmutable<Vector3>, extend: DeepImmutable<Vector3>): BoundingInfo {
-
         const minimum = BoundingInfo.TmpVector3[0].copyFrom(center).subtractInPlace(extend);
         const maximum = BoundingInfo.TmpVector3[1].copyFrom(center).addInPlace(extend);
 
@@ -186,7 +185,8 @@ export class BoundingInfo implements ICullable {
      * @returns true if the bounding info is in the frustum planes
      */
     public isInFrustum(frustumPlanes: Array<DeepImmutable<Plane>>, strategy: number = Constants.MESHES_CULLINGSTRATEGY_STANDARD): boolean {
-        let inclusionTest = (strategy === Constants.MESHES_CULLINGSTRATEGY_OPTIMISTIC_INCLUSION || strategy === Constants.MESHES_CULLINGSTRATEGY_OPTIMISTIC_INCLUSION_THEN_BSPHERE_ONLY);
+        const inclusionTest =
+            strategy === Constants.MESHES_CULLINGSTRATEGY_OPTIMISTIC_INCLUSION || strategy === Constants.MESHES_CULLINGSTRATEGY_OPTIMISTIC_INCLUSION_THEN_BSPHERE_ONLY;
         if (inclusionTest) {
             if (this.boundingSphere.isCenterInFrustum(frustumPlanes)) {
                 return true;
@@ -197,7 +197,8 @@ export class BoundingInfo implements ICullable {
             return false;
         }
 
-        let bSphereOnlyTest = (strategy === Constants.MESHES_CULLINGSTRATEGY_BOUNDINGSPHERE_ONLY || strategy === Constants.MESHES_CULLINGSTRATEGY_OPTIMISTIC_INCLUSION_THEN_BSPHERE_ONLY);
+        const bSphereOnlyTest =
+            strategy === Constants.MESHES_CULLINGSTRATEGY_BOUNDINGSPHERE_ONLY || strategy === Constants.MESHES_CULLINGSTRATEGY_OPTIMISTIC_INCLUSION_THEN_BSPHERE_ONLY;
         if (bSphereOnlyTest) {
             return true;
         }
@@ -223,7 +224,10 @@ export class BoundingInfo implements ICullable {
     public isCompletelyInFrustum(frustumPlanes: Array<DeepImmutable<Plane>>): boolean {
         return this.boundingBox.isCompletelyInFrustum(frustumPlanes);
     }
-    /** @hidden */
+    /**
+     * @param collider
+     * @hidden
+     */
     public _checkCollision(collider: Collider): boolean {
         return collider._canDoCollision(this.boundingSphere.centerWorld, this.boundingSphere.radiusWorld, this.boundingBox.minimumWorld, this.boundingBox.maximumWorld);
     }
@@ -270,24 +274,54 @@ export class BoundingInfo implements ICullable {
             return true;
         }
 
-        var box0 = this.boundingBox;
-        var box1 = boundingInfo.boundingBox;
+        const box0 = this.boundingBox;
+        const box1 = boundingInfo.boundingBox;
 
-        if (!axisOverlap(box0.directions[0], box0, box1)) { return false; }
-        if (!axisOverlap(box0.directions[1], box0, box1)) { return false; }
-        if (!axisOverlap(box0.directions[2], box0, box1)) { return false; }
-        if (!axisOverlap(box1.directions[0], box0, box1)) { return false; }
-        if (!axisOverlap(box1.directions[1], box0, box1)) { return false; }
-        if (!axisOverlap(box1.directions[2], box0, box1)) { return false; }
-        if (!axisOverlap(Vector3.Cross(box0.directions[0], box1.directions[0]), box0, box1)) { return false; }
-        if (!axisOverlap(Vector3.Cross(box0.directions[0], box1.directions[1]), box0, box1)) { return false; }
-        if (!axisOverlap(Vector3.Cross(box0.directions[0], box1.directions[2]), box0, box1)) { return false; }
-        if (!axisOverlap(Vector3.Cross(box0.directions[1], box1.directions[0]), box0, box1)) { return false; }
-        if (!axisOverlap(Vector3.Cross(box0.directions[1], box1.directions[1]), box0, box1)) { return false; }
-        if (!axisOverlap(Vector3.Cross(box0.directions[1], box1.directions[2]), box0, box1)) { return false; }
-        if (!axisOverlap(Vector3.Cross(box0.directions[2], box1.directions[0]), box0, box1)) { return false; }
-        if (!axisOverlap(Vector3.Cross(box0.directions[2], box1.directions[1]), box0, box1)) { return false; }
-        if (!axisOverlap(Vector3.Cross(box0.directions[2], box1.directions[2]), box0, box1)) { return false; }
+        if (!axisOverlap(box0.directions[0], box0, box1)) {
+            return false;
+        }
+        if (!axisOverlap(box0.directions[1], box0, box1)) {
+            return false;
+        }
+        if (!axisOverlap(box0.directions[2], box0, box1)) {
+            return false;
+        }
+        if (!axisOverlap(box1.directions[0], box0, box1)) {
+            return false;
+        }
+        if (!axisOverlap(box1.directions[1], box0, box1)) {
+            return false;
+        }
+        if (!axisOverlap(box1.directions[2], box0, box1)) {
+            return false;
+        }
+        if (!axisOverlap(Vector3.Cross(box0.directions[0], box1.directions[0]), box0, box1)) {
+            return false;
+        }
+        if (!axisOverlap(Vector3.Cross(box0.directions[0], box1.directions[1]), box0, box1)) {
+            return false;
+        }
+        if (!axisOverlap(Vector3.Cross(box0.directions[0], box1.directions[2]), box0, box1)) {
+            return false;
+        }
+        if (!axisOverlap(Vector3.Cross(box0.directions[1], box1.directions[0]), box0, box1)) {
+            return false;
+        }
+        if (!axisOverlap(Vector3.Cross(box0.directions[1], box1.directions[1]), box0, box1)) {
+            return false;
+        }
+        if (!axisOverlap(Vector3.Cross(box0.directions[1], box1.directions[2]), box0, box1)) {
+            return false;
+        }
+        if (!axisOverlap(Vector3.Cross(box0.directions[2], box1.directions[0]), box0, box1)) {
+            return false;
+        }
+        if (!axisOverlap(Vector3.Cross(box0.directions[2], box1.directions[1]), box0, box1)) {
+            return false;
+        }
+        if (!axisOverlap(Vector3.Cross(box0.directions[2], box1.directions[2]), box0, box1)) {
+            return false;
+        }
 
         return true;
     }

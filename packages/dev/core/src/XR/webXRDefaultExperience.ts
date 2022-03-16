@@ -109,7 +109,7 @@ export class WebXRDefaultExperience {
      */
     public nearInteraction: WebXRNearInteraction;
 
-    private constructor() { }
+    private constructor() {}
 
     /**
      * Creates the default xr experience
@@ -118,7 +118,7 @@ export class WebXRDefaultExperience {
      * @returns resulting WebXRDefaultExperience
      */
     public static CreateAsync(scene: Scene, options: WebXRDefaultExperienceOptions = {}) {
-        var result = new WebXRDefaultExperience();
+        const result = new WebXRDefaultExperience();
         scene.onDisposeObservable.addOnce(() => {
             result.dispose();
         });
@@ -188,13 +188,17 @@ export class WebXRDefaultExperience {
 
                 if (!options.disableNearInteraction) {
                     // Add default pointer selection
-                    result.nearInteraction = <WebXRNearInteraction>result.baseExperience.featuresManager.enableFeature(WebXRNearInteraction.Name, options.useStablePlugins ? "stable" : "latest", <IWebXRNearInteractionOptions>{
-                        xrInput: result.input,
-                        farInteractionFeature: result.pointerSelection,
-                        renderingGroupId: options.renderingGroupId,
-                        useUtilityLayer: true,
-                        enableNearInteractionOnAllControllers: true,
-                    });
+                    result.nearInteraction = <WebXRNearInteraction>result.baseExperience.featuresManager.enableFeature(
+                        WebXRNearInteraction.Name,
+                        options.useStablePlugins ? "stable" : "latest",
+                        <IWebXRNearInteractionOptions>{
+                            xrInput: result.input,
+                            farInteractionFeature: result.pointerSelection,
+                            renderingGroupId: options.renderingGroupId,
+                            useUtilityLayer: true,
+                            enableNearInteractionOnAllControllers: true,
+                        }
+                    );
                 }
 
                 // Create the WebXR output target

@@ -1,19 +1,19 @@
-import { Scene } from '../scene';
-import { Nullable } from '../types';
-import { SceneSerializer } from './sceneSerializer';
-import { Mesh } from '../Meshes/mesh';
-import { Light } from '../Lights/light';
-import { Camera } from '../Cameras/camera';
-import { Skeleton } from '../Bones/skeleton';
-import { Material } from '../Materials/material';
-import { MultiMaterial } from '../Materials/multiMaterial';
-import { TransformNode } from '../Meshes/transformNode';
-import { ParticleSystem } from '../Particles/particleSystem';
-import { MorphTargetManager } from '../Morph/morphTargetManager';
-import { ShadowGenerator } from '../Lights/Shadows/shadowGenerator';
-import { PostProcess } from '../PostProcesses/postProcess';
+import { Scene } from "../scene";
+import { Nullable } from "../types";
+import { SceneSerializer } from "./sceneSerializer";
+import { Mesh } from "../Meshes/mesh";
+import { Light } from "../Lights/light";
+import { Camera } from "../Cameras/camera";
+import { Skeleton } from "../Bones/skeleton";
+import { Material } from "../Materials/material";
+import { MultiMaterial } from "../Materials/multiMaterial";
+import { TransformNode } from "../Meshes/transformNode";
+import { ParticleSystem } from "../Particles/particleSystem";
+import { MorphTargetManager } from "../Morph/morphTargetManager";
+import { ShadowGenerator } from "../Lights/Shadows/shadowGenerator";
+import { PostProcess } from "../PostProcesses/postProcess";
 import { Texture } from "../Materials/Textures/texture";
-import { SerializationHelper } from './decorators';
+import { SerializationHelper } from "./decorators";
 
 /**
  * Class used to record delta files between 2 scene states
@@ -47,11 +47,11 @@ export class SceneRecorder {
         Texture.ForceSerializeBuffers = false;
 
         SerializationHelper.AllowLoadingUniqueId = true;
-        let newJSON = SceneSerializer.Serialize(this._trackedScene);
+        const newJSON = SceneSerializer.Serialize(this._trackedScene);
         SerializationHelper.AllowLoadingUniqueId = false;
-        let deltaJSON: any = {};
+        const deltaJSON: any = {};
 
-        for (var node in newJSON) {
+        for (const node in newJSON) {
             this._compareCollections(node, this._savedJSON[node], newJSON[node], deltaJSON);
         }
 
@@ -66,7 +66,7 @@ export class SceneRecorder {
         }
 
         // Numbers?
-        if (original.length && !isNaN(original[0]) || current.length && !isNaN(current[0])) {
+        if ((original.length && !isNaN(original[0])) || (current.length && !isNaN(current[0]))) {
             if (original.length !== current.length) {
                 return false;
             }
@@ -84,33 +84,34 @@ export class SceneRecorder {
         }
 
         // let's use uniqueId to find similar objects
-        let originalUniqueIds: number[] = [];
+        const originalUniqueIds: number[] = [];
         for (var index = 0; index < original.length; index++) {
-            let originalObject = original[index];
-            let originalUniqueId = originalObject.uniqueId;
+            const originalObject = original[index];
+            const originalUniqueId = originalObject.uniqueId;
 
             originalUniqueIds.push(originalUniqueId);
             // Look for that object in current state
-            let currentObjects = current.filter((c) => c.uniqueId === originalUniqueId);
-            if (currentObjects.length) { // We have a candidate
-                let currentObject = currentObjects[0];
+            const currentObjects = current.filter((c) => c.uniqueId === originalUniqueId);
+            if (currentObjects.length) {
+                // We have a candidate
+                const currentObject = currentObjects[0];
 
-                let newObject: any = {};
+                const newObject: any = {};
                 if (!this._compareObjects(originalObject, currentObject, newObject)) {
                     if (!deltaJSON[key]) {
                         deltaJSON[key] = [];
                     }
                     newObject.__state = {
-                        id: currentObject.id || currentObject.name
+                        id: currentObject.id || currentObject.name,
                     };
                     deltaJSON[key].push(newObject);
                 }
             } else {
                 // We need to delete
-                let newObject: any = {
+                const newObject: any = {
                     __state: {
-                        deleteId: originalObject.id || originalObject.name
-                    }
+                        deleteId: originalObject.id || originalObject.name,
+                    },
                 };
                 deltaJSON[key].push(newObject);
             }
@@ -118,8 +119,8 @@ export class SceneRecorder {
 
         // Checking for new objects
         for (var index = 0; index < current.length; index++) {
-            let currentObject = current[index];
-            let currentUniqueId = currentObject.uniqueId;
+            const currentObject = current[index];
+            const currentUniqueId = currentObject.uniqueId;
 
             // Object was added
             if (originalUniqueIds.indexOf(currentUniqueId) === -1) {
@@ -137,20 +138,20 @@ export class SceneRecorder {
     private _compareObjects(originalObjet: any, currentObject: any, deltaJSON: any) {
         let aDifferenceWasFound = false;
 
-        for (var prop in originalObjet) {
+        for (const prop in originalObjet) {
             if (!originalObjet.hasOwnProperty(prop)) {
                 continue;
             }
-            var originalValue = originalObjet[prop];
-            var currentValue = currentObject[prop];
-            var diffFound = false;
+            const originalValue = originalObjet[prop];
+            const currentValue = currentObject[prop];
+            let diffFound = false;
 
             if (Array.isArray(originalValue)) {
-                diffFound = (JSON.stringify(originalValue) !== JSON.stringify(currentValue));
-            } else if (!isNaN(originalValue) || Object.prototype.toString.call(originalValue) == '[object String]') {
-                diffFound = (originalValue !== currentValue);
+                diffFound = JSON.stringify(originalValue) !== JSON.stringify(currentValue);
+            } else if (!isNaN(originalValue) || Object.prototype.toString.call(originalValue) == "[object String]") {
+                diffFound = originalValue !== currentValue;
             } else if (typeof originalValue === "object" && typeof currentValue === "object") {
-                let newObject = {};
+                const newObject = {};
                 if (!this._compareObjects(originalValue, currentValue, newObject)) {
                     deltaJSON[prop] = newObject;
                     aDifferenceWasFound = true;
@@ -178,8 +179,9 @@ export class SceneRecorder {
                 if (this._compareArray(key, original, current, deltaJSON)) {
                     return;
                 }
-            } else if (typeof original === "object" && typeof current === "object") { // Object
-                let newObject = {};
+            } else if (typeof original === "object" && typeof current === "object") {
+                // Object
+                const newObject = {};
                 if (!this._compareObjects(original, current, newObject)) {
                     deltaJSON[key] = newObject;
                 }
@@ -189,9 +191,9 @@ export class SceneRecorder {
     }
 
     private static GetShadowGeneratorById(scene: Scene, id: string) {
-        var generators = scene.lights.map((l) => l.getShadowGenerator());
+        const generators = scene.lights.map((l) => l.getShadowGenerator());
 
-        for (var generator of generators) {
+        for (const generator of generators) {
             if (generator && generator.id === id) {
                 return generator;
             }
@@ -206,18 +208,18 @@ export class SceneRecorder {
      * @param scene defines the scene to apply the delta to
      */
     public static ApplyDelta(deltaJSON: any | string, scene: Scene) {
-
-        if (typeof deltaJSON === 'string') {
+        if (typeof deltaJSON === "string") {
             deltaJSON = JSON.parse(deltaJSON);
         }
 
         // Scene
-        let anyScene = scene as any;
-        for (var prop in deltaJSON) {
-            var source = deltaJSON[prop];
-            var property = anyScene[prop];
+        const anyScene = scene as any;
+        for (const prop in deltaJSON) {
+            const source = deltaJSON[prop];
+            const property = anyScene[prop];
 
-            if (Array.isArray(property) || prop === "shadowGenerators") { // Restore array
+            if (Array.isArray(property) || prop === "shadowGenerators") {
+                // Restore array
                 switch (prop) {
                     case "cameras":
                         this._ApplyDeltaForEntity(source, scene, scene.getCameraById.bind(scene), (data) => Camera.Parse(data, scene));
@@ -226,7 +228,12 @@ export class SceneRecorder {
                         this._ApplyDeltaForEntity(source, scene, scene.getLightById.bind(scene), (data) => Light.Parse(data, scene));
                         break;
                     case "shadowGenerators":
-                        this._ApplyDeltaForEntity(source, scene, (id) => this.GetShadowGeneratorById(scene, id), (data) => ShadowGenerator.Parse(data, scene));
+                        this._ApplyDeltaForEntity(
+                            source,
+                            scene,
+                            (id) => this.GetShadowGeneratorById(scene, id),
+                            (data) => ShadowGenerator.Parse(data, scene)
+                        );
                         break;
                     case "meshes":
                         this._ApplyDeltaForEntity(source, scene, scene.getMeshById.bind(scene), (data) => Mesh.Parse(data, scene, ""));
@@ -262,9 +269,9 @@ export class SceneRecorder {
     }
 
     private static _ApplyPropertiesToEntity(deltaJSON: any, entity: any) {
-        for (var prop in deltaJSON) {
-            var source = deltaJSON[prop];
-            var property = entity[prop];
+        for (const prop in deltaJSON) {
+            const source = deltaJSON[prop];
+            const property = entity[prop];
 
             if (property === undefined) {
                 continue;
@@ -281,23 +288,21 @@ export class SceneRecorder {
     }
 
     private static _ApplyDeltaForEntity(sources: any[], scene: Scene, finder: (id: string) => any, addNew: (data: any) => void) {
-        for (var source of sources) {
-
+        for (const source of sources) {
             // Update
             if (source.__state && source.__state.id !== undefined) {
-                let targetEntity = finder(source.__state.id);
+                const targetEntity = finder(source.__state.id);
 
                 if (targetEntity) {
                     this._ApplyPropertiesToEntity(source, targetEntity);
                 }
             } else if (source.__state && source.__state.deleteId !== undefined) {
-                let target = finder(source.__state.deleteId);
+                const target = finder(source.__state.deleteId);
                 target?.dispose();
             } else {
                 // New
                 addNew(source);
             }
-
         }
     }
 }

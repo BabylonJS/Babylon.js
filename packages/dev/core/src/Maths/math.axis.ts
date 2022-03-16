@@ -1,4 +1,4 @@
-import { Vector3 } from './math.vector';
+import { Vector3 } from "./math.vector";
 
 /** Defines supported spaces */
 export enum Space {
@@ -7,7 +7,7 @@ export enum Space {
     /** World space */
     WORLD = 1,
     /** Bone space */
-    BONE = 2
+    BONE = 2,
 }
 
 /** Defines the 3 main axes */
@@ -29,5 +29,5 @@ export enum Coordinate {
     /** Y axis */
     Y,
     /** Z axis */
-    Z
+    Z,
 }

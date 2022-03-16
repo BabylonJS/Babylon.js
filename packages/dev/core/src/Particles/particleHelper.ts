@@ -2,7 +2,7 @@ import { Nullable } from "../types";
 import { Scene } from "../scene";
 import { Tools } from "../Misc/tools";
 import { Vector3 } from "../Maths/math.vector";
-import { Color4 } from '../Maths/math.color';
+import { Color4 } from "../Maths/math.color";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Texture } from "../Materials/Textures/texture";
 import { EngineStore } from "../Engines/engineStore";
@@ -10,7 +10,7 @@ import { IParticleSystem } from "./IParticleSystem";
 import { GPUParticleSystem } from "./gpuParticleSystem";
 import { ParticleSystemSet } from "./particleSystemSet";
 import { ParticleSystem } from "./particleSystem";
-import { WebRequest } from '../Misc/webRequest';
+import { WebRequest } from "../Misc/webRequest";
 /**
  * This class is made for on one-liner static method to help creating particle system set.
  */
@@ -32,7 +32,7 @@ export class ParticleHelper {
      * @returns the new Particle system
      */
     public static CreateDefault(emitter: Nullable<AbstractMesh | Vector3>, capacity = 500, scene?: Scene, useGPU = false): IParticleSystem {
-        var system: IParticleSystem;
+        let system: IParticleSystem;
 
         if (useGPU) {
             system = new GPUParticleSystem("default system", { capacity: capacity }, scene!);
@@ -74,12 +74,11 @@ export class ParticleHelper {
      * @returns the ParticleSystemSet created
      */
     public static CreateAsync(type: string, scene: Nullable<Scene>, gpu: boolean = false, capacity?: number): Promise<ParticleSystemSet> {
-
         if (!scene) {
             scene = EngineStore.LastCreatedScene;
         }
 
-        let token = {};
+        const token = {};
 
         scene!._addPendingData(token);
 
@@ -89,15 +88,21 @@ export class ParticleHelper {
                 return reject("Particle system with GPU is not supported.");
             }
 
-            Tools.LoadFile(`${ParticleHelper.BaseAssetsUrl}/systems/${type}.json`, (data) => {
-                scene!._removePendingData(token);
-                const newData = JSON.parse(data.toString());
-                return resolve(ParticleSystemSet.Parse(newData, scene!, gpu, capacity));
-            }, undefined, undefined, undefined, () => {
-                scene!._removePendingData(token);
-                return reject(`An error occurred with the creation of your particle system. Check if your type '${type}' exists.`);
-            });
-
+            Tools.LoadFile(
+                `${ParticleHelper.BaseAssetsUrl}/systems/${type}.json`,
+                (data) => {
+                    scene!._removePendingData(token);
+                    const newData = JSON.parse(data.toString());
+                    return resolve(ParticleSystemSet.Parse(newData, scene!, gpu, capacity));
+                },
+                undefined,
+                undefined,
+                undefined,
+                () => {
+                    scene!._removePendingData(token);
+                    return reject(`An error occurred with the creation of your particle system. Check if your type '${type}' exists.`);
+                }
+            );
         });
     }
 
@@ -108,9 +113,9 @@ export class ParticleHelper {
      * @returns the created particle system set
      */
     public static ExportSet(systems: IParticleSystem[]): ParticleSystemSet {
-        var set = new ParticleSystemSet();
+        const set = new ParticleSystemSet();
 
-        for (var system of systems) {
+        for (const system of systems) {
             set.systems.push(system);
         }
 
@@ -128,13 +133,12 @@ export class ParticleHelper {
      * @returns a promise that will resolve to the new particle system
      */
     public static ParseFromFileAsync(name: Nullable<string>, url: string, scene: Scene, gpu: boolean = false, rootUrl: string = "", capacity?: number): Promise<IParticleSystem> {
-
         return new Promise((resolve, reject) => {
-            var request = new WebRequest();
+            const request = new WebRequest();
             request.addEventListener("readystatechange", () => {
                 if (request.readyState == 4) {
                     if (request.status == 200) {
-                        let serializationObject = JSON.parse(request.responseText);
+                        const serializationObject = JSON.parse(request.responseText);
                         let output: IParticleSystem;
 
                         if (gpu) {
@@ -170,18 +174,18 @@ export class ParticleHelper {
      */
     public static CreateFromSnippetAsync(snippetId: string, scene: Scene, gpu: boolean = false, rootUrl: string = "", capacity?: number): Promise<IParticleSystem> {
         if (snippetId === "_BLANK") {
-            let system = this.CreateDefault(null);
+            const system = this.CreateDefault(null);
             system.start();
             return Promise.resolve(system);
         }
 
         return new Promise((resolve, reject) => {
-            var request = new WebRequest();
+            const request = new WebRequest();
             request.addEventListener("readystatechange", () => {
                 if (request.readyState == 4) {
                     if (request.status == 200) {
-                        var snippet = JSON.parse(JSON.parse(request.responseText).jsonPayload);
-                        let serializationObject = JSON.parse(snippet.particleSystem);
+                        const snippet = JSON.parse(JSON.parse(request.responseText).jsonPayload);
+                        const serializationObject = JSON.parse(snippet.particleSystem);
                         let output: IParticleSystem;
 
                         if (gpu) {

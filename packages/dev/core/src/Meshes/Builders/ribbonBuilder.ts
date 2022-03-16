@@ -1,7 +1,7 @@
 import { Nullable, FloatArray } from "../../types";
 import { Scene } from "../../scene";
 import { Vector3, Vector2, TmpVectors, Vector4 } from "../../Maths/math.vector";
-import { Color4 } from '../../Maths/math.color';
+import { Color4 } from "../../Maths/math.color";
 import { Mesh, _CreationDataStorage } from "../mesh";
 import { VertexBuffer } from "../../Buffers/buffer";
 import { VertexData } from "../mesh.vertexData";
@@ -10,50 +10,71 @@ import { CompatibilityOptions } from "../../Compat/compatibilityOptions";
 /**
  * Creates the VertexData for a Ribbon
  * @param options an object used to set the following optional parameters for the ribbon, required but can be empty
-  * * pathArray array of paths, each of which an array of successive Vector3
-  * * closeArray creates a seam between the first and the last paths of the pathArray, optional, default false
-  * * closePath creates a seam between the first and the last points of each path of the path array, optional, default false
-  * * offset a positive integer, only used when pathArray contains a single path (offset = 10 means the point 1 is joined to the point 11), default rounded half size of the pathArray length
-  * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
-  * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
-  * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
-  * * invertUV swaps in the U and V coordinates when applying a texture, optional, default false
-  * * uvs a linear array, of length 2 * number of vertices, of custom UV values, optional
-  * * colors a linear array, of length 4 * number of vertices, of custom color values, optional
+ * * pathArray array of paths, each of which an array of successive Vector3
+ * * closeArray creates a seam between the first and the last paths of the pathArray, optional, default false
+ * * closePath creates a seam between the first and the last points of each path of the path array, optional, default false
+ * * offset a positive integer, only used when pathArray contains a single path (offset = 10 means the point 1 is joined to the point 11), default rounded half size of the pathArray length
+ * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
+ * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
+ * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
+ * * invertUV swaps in the U and V coordinates when applying a texture, optional, default false
+ * * uvs a linear array, of length 2 * number of vertices, of custom UV values, optional
+ * * colors a linear array, of length 4 * number of vertices, of custom color values, optional
+ * @param options.pathArray
+ * @param options.closeArray
+ * @param options.closePath
+ * @param options.offset
+ * @param options.sideOrientation
+ * @param options.frontUVs
+ * @param options.backUVs
+ * @param options.invertUV
+ * @param options.uvs
+ * @param options.colors
  * @returns the VertexData of the ribbon
  */
-export function CreateRibbonVertexData(options: { pathArray: Vector3[][], closeArray?: boolean, closePath?: boolean, offset?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, invertUV?: boolean, uvs?: Vector2[], colors?: Color4[] }): VertexData {
-    var pathArray: Vector3[][] = options.pathArray;
-    var closeArray: boolean = options.closeArray || false;
-    var closePath: boolean = options.closePath || false;
-    var invertUV: boolean = options.invertUV || false;
-    var defaultOffset: number = Math.floor(pathArray[0].length / 2);
-    var offset: number = options.offset || defaultOffset;
+export function CreateRibbonVertexData(options: {
+    pathArray: Vector3[][];
+    closeArray?: boolean;
+    closePath?: boolean;
+    offset?: number;
+    sideOrientation?: number;
+    frontUVs?: Vector4;
+    backUVs?: Vector4;
+    invertUV?: boolean;
+    uvs?: Vector2[];
+    colors?: Color4[];
+}): VertexData {
+    let pathArray: Vector3[][] = options.pathArray;
+    const closeArray: boolean = options.closeArray || false;
+    const closePath: boolean = options.closePath || false;
+    const invertUV: boolean = options.invertUV || false;
+    const defaultOffset: number = Math.floor(pathArray[0].length / 2);
+    let offset: number = options.offset || defaultOffset;
     offset = offset > defaultOffset ? defaultOffset : Math.floor(offset); // offset max allowed : defaultOffset
-    var sideOrientation: number = (options.sideOrientation === 0) ? 0 : options.sideOrientation || VertexData.DEFAULTSIDE;
-    var customUV = options.uvs;
-    var customColors = options.colors;
+    const sideOrientation: number = options.sideOrientation === 0 ? 0 : options.sideOrientation || VertexData.DEFAULTSIDE;
+    const customUV = options.uvs;
+    const customColors = options.colors;
 
-    var positions: number[] = [];
-    var indices: number[] = [];
-    var normals: number[] = [];
-    var uvs: number[] = [];
+    const positions: number[] = [];
+    const indices: number[] = [];
+    const normals: number[] = [];
+    const uvs: number[] = [];
 
-    var us: number[][] = [];        		// us[path_id] = [uDist1, uDist2, uDist3 ... ] distances between points on path path_id
-    var vs: number[][] = [];        		// vs[i] = [vDist1, vDist2, vDist3, ... ] distances between points i of consecutive paths from pathArray
-    var uTotalDistance: number[] = []; 		// uTotalDistance[p] : total distance of path p
-    var vTotalDistance: number[] = []; 		//  vTotalDistance[i] : total distance between points i of first and last path from pathArray
-    var minlg: number;          	        // minimal length among all paths from pathArray
-    var lg: number[] = [];        		    // array of path lengths : nb of vertex per path
-    var idx: number[] = [];       		    // array of path indexes : index of each path (first vertex) in the total vertex number
-    var p: number;							// path iterator
-    var i: number;							// point iterator
-    var j: number;							// point iterator
+    const us: number[][] = []; // us[path_id] = [uDist1, uDist2, uDist3 ... ] distances between points on path path_id
+    const vs: number[][] = []; // vs[i] = [vDist1, vDist2, vDist3, ... ] distances between points i of consecutive paths from pathArray
+    const uTotalDistance: number[] = []; // uTotalDistance[p] : total distance of path p
+    const vTotalDistance: number[] = []; //  vTotalDistance[i] : total distance between points i of first and last path from pathArray
+    let minlg: number; // minimal length among all paths from pathArray
+    const lg: number[] = []; // array of path lengths : nb of vertex per path
+    const idx: number[] = []; // array of path indexes : index of each path (first vertex) in the total vertex number
+    let p: number; // path iterator
+    let i: number; // point iterator
+    let j: number; // point iterator
 
     // if single path in pathArray
     if (pathArray.length < 2) {
-        var ar1: Vector3[] = [];
-        var ar2: Vector3[] = [];
+        const ar1: Vector3[] = [];
+        const ar2: Vector3[] = [];
         for (i = 0; i < pathArray[0].length - offset; i++) {
             ar1.push(pathArray[0][i]);
             ar2.push(pathArray[0][i + offset]);
@@ -62,19 +83,19 @@ export function CreateRibbonVertexData(options: { pathArray: Vector3[][], closeA
     }
 
     // positions and horizontal distances (u)
-    var idc: number = 0;
-    var closePathCorr: number = (closePath) ? 1 : 0;    // the final index will be +1 if closePath
-    var path: Vector3[];
-    var l: number;
+    let idc: number = 0;
+    const closePathCorr: number = closePath ? 1 : 0; // the final index will be +1 if closePath
+    let path: Vector3[];
+    let l: number;
     minlg = pathArray[0].length;
-    var vectlg: number;
-    var dist: number;
+    let vectlg: number;
+    let dist: number;
     for (p = 0; p < pathArray.length; p++) {
         uTotalDistance[p] = 0;
         us[p] = [0];
         path = pathArray[p];
         l = path.length;
-        minlg = (minlg < l) ? minlg : l;
+        minlg = minlg < l ? minlg : l;
 
         j = 0;
         while (j < l) {
@@ -88,7 +109,8 @@ export function CreateRibbonVertexData(options: { pathArray: Vector3[][], closeA
             j++;
         }
 
-        if (closePath) {        // an extra hidden vertex is added in the "positions" array
+        if (closePath) {
+            // an extra hidden vertex is added in the "positions" array
             j--;
             positions.push(path[0].x, path[0].y, path[0].z);
             vectlg = path[j].subtract(path[0]).length();
@@ -99,25 +121,25 @@ export function CreateRibbonVertexData(options: { pathArray: Vector3[][], closeA
 
         lg[p] = l + closePathCorr;
         idx[p] = idc;
-        idc += (l + closePathCorr);
+        idc += l + closePathCorr;
     }
 
     // vertical distances (v)
-    var path1: Vector3[];
-    var path2: Vector3[];
-    var vertex1: Nullable<Vector3> = null;
-    var vertex2: Nullable<Vector3> = null;
+    let path1: Vector3[];
+    let path2: Vector3[];
+    let vertex1: Nullable<Vector3> = null;
+    let vertex2: Nullable<Vector3> = null;
     for (i = 0; i < minlg + closePathCorr; i++) {
         vTotalDistance[i] = 0;
         vs[i] = [0];
         for (p = 0; p < pathArray.length - 1; p++) {
             path1 = pathArray[p];
             path2 = pathArray[p + 1];
-            if (i === minlg) {   // closePath
+            if (i === minlg) {
+                // closePath
                 vertex1 = path1[0];
                 vertex2 = path2[0];
-            }
-            else {
+            } else {
                 vertex1 = path1[i];
                 vertex2 = path2[i];
             }
@@ -130,7 +152,8 @@ export function CreateRibbonVertexData(options: { pathArray: Vector3[][], closeA
         if (closeArray && vertex2 && vertex1) {
             path1 = pathArray[p];
             path2 = pathArray[0];
-            if (i === minlg) {   // closePath
+            if (i === minlg) {
+                // closePath
                 vertex2 = path2[0];
             }
             vectlg = vertex2.subtract(vertex1).length();
@@ -140,18 +163,17 @@ export function CreateRibbonVertexData(options: { pathArray: Vector3[][], closeA
     }
 
     // uvs
-    var u: number;
-    var v: number;
+    let u: number;
+    let v: number;
     if (customUV) {
         for (p = 0; p < customUV.length; p++) {
             uvs.push(customUV[p].x, CompatibilityOptions.UseOpenGLOrientationForUV ? 1.0 - customUV[p].y : customUV[p].y);
         }
-    }
-    else {
+    } else {
         for (p = 0; p < pathArray.length; p++) {
             for (i = 0; i < minlg + closePathCorr; i++) {
-                u = (uTotalDistance[p] != 0.0) ? us[p][i] / uTotalDistance[p] : 0.0;
-                v = (vTotalDistance[i] != 0.0) ? vs[i][p] / vTotalDistance[i] : 0.0;
+                u = uTotalDistance[p] != 0.0 ? us[p][i] / uTotalDistance[p] : 0.0;
+                v = vTotalDistance[i] != 0.0 ? vs[i][p] / vTotalDistance[i] : 0.0;
                 if (invertUV) {
                     uvs.push(v, u);
                 } else {
@@ -162,49 +184,51 @@ export function CreateRibbonVertexData(options: { pathArray: Vector3[][], closeA
     }
 
     // indices
-    p = 0;                    					// path index
-    var pi: number = 0;                    		// positions array index
-    var l1: number = lg[p] - 1;           		// path1 length
-    var l2: number = lg[p + 1] - 1;         	// path2 length
-    var min: number = (l1 < l2) ? l1 : l2;   	// current path stop index
-    var shft: number = idx[1] - idx[0];         // shift
-    var path1nb: number = closeArray ? lg.length : lg.length - 1;     // number of path1 to iterate	on
+    p = 0; // path index
+    let pi: number = 0; // positions array index
+    let l1: number = lg[p] - 1; // path1 length
+    let l2: number = lg[p + 1] - 1; // path2 length
+    let min: number = l1 < l2 ? l1 : l2; // current path stop index
+    let shft: number = idx[1] - idx[0]; // shift
+    const path1nb: number = closeArray ? lg.length : lg.length - 1; // number of path1 to iterate	on
 
-    while (pi <= min && p < path1nb) {       	//  stay under min and don't go over next to last path
+    while (pi <= min && p < path1nb) {
+        //  stay under min and don't go over next to last path
         // draw two triangles between path1 (p1) and path2 (p2) : (p1.pi, p2.pi, p1.pi+1) and (p2.pi+1, p1.pi+1, p2.pi) clockwise
 
         indices.push(pi, pi + shft, pi + 1);
         indices.push(pi + shft + 1, pi + 1, pi + shft);
         pi += 1;
-        if (pi === min) {                   			// if end of one of two consecutive paths reached, go to next existing path
+        if (pi === min) {
+            // if end of one of two consecutive paths reached, go to next existing path
             p++;
-            if (p === lg.length - 1) {                 // last path of pathArray reached <=> closeArray == true
+            if (p === lg.length - 1) {
+                // last path of pathArray reached <=> closeArray == true
                 shft = idx[0] - idx[p];
                 l1 = lg[p] - 1;
                 l2 = lg[0] - 1;
-            }
-            else {
+            } else {
                 shft = idx[p + 1] - idx[p];
                 l1 = lg[p] - 1;
                 l2 = lg[p + 1] - 1;
             }
             pi = idx[p];
-            min = (l1 < l2) ? l1 + pi : l2 + pi;
+            min = l1 < l2 ? l1 + pi : l2 + pi;
         }
     }
 
     // normals
     VertexData.ComputeNormals(positions, indices, normals);
 
-    if (closePath) {        // update both the first and last vertex normals to their average value
-        var indexFirst: number = 0;
-        var indexLast: number = 0;
+    if (closePath) {
+        // update both the first and last vertex normals to their average value
+        let indexFirst: number = 0;
+        let indexLast: number = 0;
         for (p = 0; p < pathArray.length; p++) {
             indexFirst = idx[p] * 3;
             if (p + 1 < pathArray.length) {
                 indexLast = (idx[p + 1] - 1) * 3;
-            }
-            else {
+            } else {
                 indexLast = normals.length - 3;
             }
             normals[indexFirst] = (normals[indexFirst] + normals[indexLast]) * 0.5;
@@ -223,7 +247,7 @@ export function CreateRibbonVertexData(options: { pathArray: Vector3[][], closeA
     let colors: Nullable<Float32Array> = null;
     if (customColors) {
         colors = new Float32Array(customColors.length * 4);
-        for (var c = 0; c < customColors.length; c++) {
+        for (let c = 0; c < customColors.length; c++) {
             colors[c * 4] = customColors[c].r;
             colors[c * 4 + 1] = customColors[c].g;
             colors[c * 4 + 2] = customColors[c].b;
@@ -232,10 +256,10 @@ export function CreateRibbonVertexData(options: { pathArray: Vector3[][], closeA
     }
 
     // Result
-    var vertexData = new VertexData();
-    var positions32 = new Float32Array(positions);
-    var normals32 = new Float32Array(normals);
-    var uvs32 = new Float32Array(uvs);
+    const vertexData = new VertexData();
+    const positions32 = new Float32Array(positions);
+    const normals32 = new Float32Array(normals);
+    const uvs32 = new Float32Array(uvs);
 
     vertexData.indices = indices;
     vertexData.positions = positions32;
@@ -270,34 +294,64 @@ export function CreateRibbonVertexData(options: { pathArray: Vector3[][], closeA
  * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
  * @param name defines the name of the mesh
  * @param options defines the options used to create the mesh
+ * @param options.pathArray
  * @param scene defines the hosting scene
+ * @param options.closeArray
+ * @param options.closePath
+ * @param options.offset
+ * @param options.updatable
+ * @param options.sideOrientation
+ * @param options.frontUVs
+ * @param options.backUVs
+ * @param options.instance
+ * @param options.invertUV
+ * @param options.uvs
+ * @param options.colors
  * @returns the ribbon mesh
  * @see https://doc.babylonjs.com/how_to/ribbon_tutorial
  * @see https://doc.babylonjs.com/how_to/parametric_shapes
  */
-export function CreateRibbon(name: string, options: { pathArray: Vector3[][], closeArray?: boolean, closePath?: boolean, offset?: number, updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, instance?: Mesh, invertUV?: boolean, uvs?: Vector2[], colors?: Color4[] }, scene: Nullable<Scene> = null): Mesh {
-    var pathArray = options.pathArray;
-    var closeArray = options.closeArray;
-    var closePath = options.closePath;
-    var sideOrientation = Mesh._GetDefaultSideOrientation(options.sideOrientation);
-    var instance = options.instance;
-    var updatable = options.updatable;
+export function CreateRibbon(
+    name: string,
+    options: {
+        pathArray: Vector3[][];
+        closeArray?: boolean;
+        closePath?: boolean;
+        offset?: number;
+        updatable?: boolean;
+        sideOrientation?: number;
+        frontUVs?: Vector4;
+        backUVs?: Vector4;
+        instance?: Mesh;
+        invertUV?: boolean;
+        uvs?: Vector2[];
+        colors?: Color4[];
+    },
+    scene: Nullable<Scene> = null
+): Mesh {
+    const pathArray = options.pathArray;
+    const closeArray = options.closeArray;
+    const closePath = options.closePath;
+    const sideOrientation = Mesh._GetDefaultSideOrientation(options.sideOrientation);
+    const instance = options.instance;
+    const updatable = options.updatable;
 
-    if (instance) {   // existing ribbon instance update
+    if (instance) {
+        // existing ribbon instance update
         // positionFunction : ribbon case
         // only pathArray and sideOrientation parameters are taken into account for positions update
         const minimum = TmpVectors.Vector3[0].setAll(Number.MAX_VALUE);
         const maximum = TmpVectors.Vector3[1].setAll(-Number.MAX_VALUE);
-        var positionFunction = (positions: FloatArray) => {
-            var minlg = pathArray[0].length;
-            var mesh = (<Mesh>instance);
-            var i = 0;
-            var ns = (mesh._originalBuilderSideOrientation === Mesh.DOUBLESIDE) ? 2 : 1;
-            for (var si = 1; si <= ns; ++si) {
-                for (var p = 0; p < pathArray.length; ++p) {
-                    var path = pathArray[p];
-                    var l = path.length;
-                    minlg = (minlg < l) ? minlg : l;
+        const positionFunction = (positions: FloatArray) => {
+            let minlg = pathArray[0].length;
+            const mesh = <Mesh>instance;
+            let i = 0;
+            const ns = mesh._originalBuilderSideOrientation === Mesh.DOUBLESIDE ? 2 : 1;
+            for (let si = 1; si <= ns; ++si) {
+                for (let p = 0; p < pathArray.length; ++p) {
+                    const path = pathArray[p];
+                    const l = path.length;
+                    minlg = minlg < l ? minlg : l;
                     for (let j = 0; j < minlg; ++j) {
                         const pathPoint = path[j];
                         positions[i] = pathPoint.x;
@@ -317,18 +371,17 @@ export function CreateRibbon(name: string, options: { pathArray: Vector3[][], cl
                 }
             }
         };
-        var positions = <FloatArray>instance.getVerticesData(VertexBuffer.PositionKind);
+        const positions = <FloatArray>instance.getVerticesData(VertexBuffer.PositionKind);
         positionFunction(positions);
         if (instance.hasBoundingInfo) {
             instance.getBoundingInfo().reConstruct(minimum, maximum, instance._worldMatrix);
-        }
-        else {
+        } else {
             instance.buildBoundingInfo(minimum, maximum, instance._worldMatrix);
         }
         instance.updateVerticesData(VertexBuffer.PositionKind, positions, false, false);
         if (options.colors) {
-            var colors = <FloatArray>instance.getVerticesData(VertexBuffer.ColorKind);
-            for (var c = 0, colorIndex = 0; c < options.colors.length; c++, colorIndex += 4) {
+            const colors = <FloatArray>instance.getVerticesData(VertexBuffer.ColorKind);
+            for (let c = 0, colorIndex = 0; c < options.colors.length; c++, colorIndex += 4) {
                 const color = options.colors[c];
                 colors[colorIndex] = color.r;
                 colors[colorIndex + 1] = color.g;
@@ -338,28 +391,27 @@ export function CreateRibbon(name: string, options: { pathArray: Vector3[][], cl
             instance.updateVerticesData(VertexBuffer.ColorKind, colors, false, false);
         }
         if (options.uvs) {
-            var uvs = <FloatArray>instance.getVerticesData(VertexBuffer.UVKind);
-            for (var i = 0; i < options.uvs.length; i++) {
+            const uvs = <FloatArray>instance.getVerticesData(VertexBuffer.UVKind);
+            for (let i = 0; i < options.uvs.length; i++) {
                 uvs[i * 2] = options.uvs[i].x;
                 uvs[i * 2 + 1] = CompatibilityOptions.UseOpenGLOrientationForUV ? 1.0 - options.uvs[i].y : options.uvs[i].y;
             }
             instance.updateVerticesData(VertexBuffer.UVKind, uvs, false, false);
         }
         if (!instance.areNormalsFrozen || instance.isFacetDataEnabled) {
-            var indices = instance.getIndices();
-            var normals = <FloatArray>instance.getVerticesData(VertexBuffer.NormalKind);
-            var params = instance.isFacetDataEnabled ? instance.getFacetDataParameters() : null;
+            const indices = instance.getIndices();
+            const normals = <FloatArray>instance.getVerticesData(VertexBuffer.NormalKind);
+            const params = instance.isFacetDataEnabled ? instance.getFacetDataParameters() : null;
             VertexData.ComputeNormals(positions, indices, normals, params);
 
             if (instance._creationDataStorage && instance._creationDataStorage.closePath) {
-                var indexFirst: number = 0;
-                var indexLast: number = 0;
-                for (var p = 0; p < pathArray.length; p++) {
+                let indexFirst: number = 0;
+                let indexLast: number = 0;
+                for (let p = 0; p < pathArray.length; p++) {
                     indexFirst = instance._creationDataStorage!.idx[p] * 3;
                     if (p + 1 < pathArray.length) {
                         indexLast = (instance._creationDataStorage!.idx[p + 1] - 1) * 3;
-                    }
-                    else {
+                    } else {
                         indexLast = normals.length - 3;
                     }
                     normals[indexFirst] = (normals[indexFirst] + normals[indexLast]) * 0.5;
@@ -370,20 +422,20 @@ export function CreateRibbon(name: string, options: { pathArray: Vector3[][], cl
                     normals[indexLast + 2] = normals[indexFirst + 2];
                 }
             }
-            if (!(instance.areNormalsFrozen)) {
+            if (!instance.areNormalsFrozen) {
                 instance.updateVerticesData(VertexBuffer.NormalKind, normals, false, false);
             }
         }
 
         return instance;
-    }
-    else {  // new ribbon creation
+    } else {
+        // new ribbon creation
 
-        var ribbon = new Mesh(name, scene);
+        const ribbon = new Mesh(name, scene);
         ribbon._originalBuilderSideOrientation = sideOrientation;
         ribbon._creationDataStorage = new _CreationDataStorage();
 
-        var vertexData = CreateRibbonVertexData(options);
+        const vertexData = CreateRibbonVertexData(options);
         if (closePath) {
             ribbon._creationDataStorage.idx = (<any>vertexData)._idx;
         }
@@ -400,19 +452,33 @@ export function CreateRibbon(name: string, options: { pathArray: Vector3[][], cl
  * @deprecated use CreateRibbon directly
  */
 export const RibbonBuilder = {
-    CreateRibbon
+    CreateRibbon,
 };
 
 VertexData.CreateRibbon = CreateRibbonVertexData;
 
-Mesh.CreateRibbon = (name: string, pathArray: Vector3[][], closeArray: boolean = false, closePath: boolean, offset: number, scene?: Scene, updatable: boolean = false, sideOrientation?: number, instance?: Mesh) => {
-    return CreateRibbon(name, {
-        pathArray: pathArray,
-        closeArray: closeArray,
-        closePath: closePath,
-        offset: offset,
-        updatable: updatable,
-        sideOrientation: sideOrientation,
-        instance: instance
-    }, scene);
+Mesh.CreateRibbon = (
+    name: string,
+    pathArray: Vector3[][],
+    closeArray: boolean = false,
+    closePath: boolean,
+    offset: number,
+    scene?: Scene,
+    updatable: boolean = false,
+    sideOrientation?: number,
+    instance?: Mesh
+) => {
+    return CreateRibbon(
+        name,
+        {
+            pathArray: pathArray,
+            closeArray: closeArray,
+            closePath: closePath,
+            offset: offset,
+            updatable: updatable,
+            sideOrientation: sideOrientation,
+            instance: instance,
+        },
+        scene
+    );
 };

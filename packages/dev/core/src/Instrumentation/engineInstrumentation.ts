@@ -97,8 +97,8 @@ export class EngineInstrumentation implements IDisposable {
         /**
          * Define the instrumented engine.
          */
-        public engine: Engine) {
-    }
+        public engine: Engine
+    ) {}
 
     /**
      * Dispose and release associated resources.

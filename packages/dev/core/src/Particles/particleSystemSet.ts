@@ -1,5 +1,5 @@
 import { Nullable } from "../types";
-import { Color3 } from '../Maths/math.color';
+import { Color3 } from "../Maths/math.color";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { CreateSphere } from "../Meshes/Builders/sphereBuilder";
 import { IParticleSystem } from "./IParticleSystem";
@@ -50,7 +50,7 @@ export class ParticleSystemSet implements IDisposable {
             this._emitterNodeIsOwned = false;
         }
 
-        for (var system of this.systems) {
+        for (const system of this.systems) {
             system.emitter = value;
         }
 
@@ -60,10 +60,13 @@ export class ParticleSystemSet implements IDisposable {
     /**
      * Creates a new emitter mesh as a sphere
      * @param options defines the options used to create the sphere
+     * @param options.diameter
      * @param renderingGroupId defines the renderingGroupId to use for the sphere
+     * @param options.segments
      * @param scene defines the hosting scene
+     * @param options.color
      */
-    public setEmitterAsSphere(options: { diameter: number, segments: number, color: Color3 }, renderingGroupId: number, scene: Scene) {
+    public setEmitterAsSphere(options: { diameter: number; segments: number; color: Color3 }, renderingGroupId: number, scene: Scene) {
         if (this._emitterNodeIsOwned && this._emitterNode) {
             if ((this._emitterNode as AbstractMesh).dispose) {
                 (this._emitterNode as AbstractMesh).dispose();
@@ -75,17 +78,17 @@ export class ParticleSystemSet implements IDisposable {
         this._emitterCreationOptions = {
             kind: "Sphere",
             options: options,
-            renderingGroupId: renderingGroupId
+            renderingGroupId: renderingGroupId,
         };
 
-        let emitterMesh = CreateSphere("emitterSphere", { diameter: options.diameter, segments: options.segments }, scene);
+        const emitterMesh = CreateSphere("emitterSphere", { diameter: options.diameter, segments: options.segments }, scene);
         emitterMesh.renderingGroupId = renderingGroupId;
 
-        var material = new StandardMaterial("emitterSphereMaterial", scene);
+        const material = new StandardMaterial("emitterSphereMaterial", scene);
         material.emissiveColor = options.color;
         emitterMesh.material = material;
 
-        for (var system of this.systems) {
+        for (const system of this.systems) {
             system.emitter = emitterMesh;
         }
 
@@ -97,7 +100,7 @@ export class ParticleSystemSet implements IDisposable {
      * @param emitter defines an optional mesh to use as emitter for the particle systems
      */
     public start(emitter?: AbstractMesh): void {
-        for (var system of this.systems) {
+        for (const system of this.systems) {
             if (emitter) {
                 system.emitter = emitter;
             }
@@ -109,7 +112,7 @@ export class ParticleSystemSet implements IDisposable {
      * Release all associated resources
      */
     public dispose(): void {
-        for (var system of this.systems) {
+        for (const system of this.systems) {
             system.dispose();
         }
 
@@ -129,10 +132,10 @@ export class ParticleSystemSet implements IDisposable {
      * @returns a JSON compatible representation of the set
      */
     public serialize(serializeTexture = false): any {
-        var result: any = {};
+        const result: any = {};
 
         result.systems = [];
-        for (var system of this.systems) {
+        for (const system of this.systems) {
             result.systems.push(system.serialize(serializeTexture));
         }
 
@@ -152,24 +155,28 @@ export class ParticleSystemSet implements IDisposable {
      * @returns a new ParticleSystemSet
      */
     public static Parse(data: any, scene: Scene, gpu = false, capacity?: number): ParticleSystemSet {
-        var result = new ParticleSystemSet();
-        var rootUrl = this.BaseAssetsUrl + "/textures/";
+        const result = new ParticleSystemSet();
+        const rootUrl = this.BaseAssetsUrl + "/textures/";
 
         scene = scene || EngineStore.LastCreatedScene;
 
-        for (var system of data.systems) {
+        for (const system of data.systems) {
             result.systems.push(gpu ? GPUParticleSystem.Parse(system, scene, rootUrl, true, capacity) : ParticleSystem.Parse(system, scene, rootUrl, true, capacity));
         }
 
         if (data.emitter) {
-            let options = data.emitter.options;
+            const options = data.emitter.options;
             switch (data.emitter.kind) {
                 case "Sphere":
-                    result.setEmitterAsSphere({
-                        diameter: options.diameter,
-                        segments: options.segments,
-                        color: Color3.FromArray(options.color)
-                    }, data.emitter.renderingGroupId, scene);
+                    result.setEmitterAsSphere(
+                        {
+                            diameter: options.diameter,
+                            segments: options.segments,
+                            color: Color3.FromArray(options.color),
+                        },
+                        data.emitter.renderingGroupId,
+                        scene
+                    );
                     break;
             }
         }

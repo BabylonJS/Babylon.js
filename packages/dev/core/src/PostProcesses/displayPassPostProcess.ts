@@ -4,8 +4,8 @@ import { PostProcess, PostProcessOptions } from "./postProcess";
 import { Engine } from "../Engines/engine";
 
 import "../Shaders/displayPass.fragment";
-import { RegisterClass } from '../Misc/typeStore';
-import { SerializationHelper } from '../Misc/decorators';
+import { RegisterClass } from "../Misc/typeStore";
+import { SerializationHelper } from "../Misc/decorators";
 
 declare type Scene = import("../scene").Scene;
 
@@ -34,15 +34,29 @@ export class DisplayPassPostProcess extends PostProcess {
         super(name, "displayPass", ["passSampler"], ["passSampler"], options, camera, samplingMode, engine, reusable);
     }
 
-    /** @hidden */
+    /**
+     * @param parsedPostProcess
+     * @param targetCamera
+     * @param scene
+     * @param rootUrl
+     * @hidden
+     */
     public static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string): Nullable<DisplayPassPostProcess> {
-        return SerializationHelper.Parse(() => {
-            return new DisplayPassPostProcess(
-                parsedPostProcess.name,
-                parsedPostProcess.options, targetCamera,
-                parsedPostProcess.renderTargetSamplingMode,
-                scene.getEngine(), parsedPostProcess.reusable);
-        }, parsedPostProcess, scene, rootUrl);
+        return SerializationHelper.Parse(
+            () => {
+                return new DisplayPassPostProcess(
+                    parsedPostProcess.name,
+                    parsedPostProcess.options,
+                    targetCamera,
+                    parsedPostProcess.renderTargetSamplingMode,
+                    scene.getEngine(),
+                    parsedPostProcess.reusable
+                );
+            },
+            parsedPostProcess,
+            scene,
+            rootUrl
+        );
     }
 }
 

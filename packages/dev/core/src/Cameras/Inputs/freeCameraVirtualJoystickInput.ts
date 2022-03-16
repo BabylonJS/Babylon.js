@@ -16,9 +16,9 @@ declare module "../../Cameras/freeCameraInputsManager" {
 }
 
 /**
-* Add virtual joystick input support to the input manager.
-* @returns the current input manager
-*/
+ * Add virtual joystick input support to the input manager.
+ * @returns the current input manager
+ */
 FreeCameraInputsManager.prototype.addVirtualJoystick = function (): FreeCameraInputsManager {
     this.add(new FreeCameraVirtualJoystickInput());
     return this;
@@ -59,10 +59,13 @@ export class FreeCameraVirtualJoystickInput implements ICameraInput<FreeCamera> 
      */
     public checkInputs() {
         if (this._leftjoystick) {
-            var camera = this.camera;
-            var speed = camera._computeLocalCameraSpeed() * 50;
-            var cameraTransform = Matrix.RotationYawPitchRoll(camera.rotation.y, camera.rotation.x, 0);
-            var deltaTransform = Vector3.TransformCoordinates(new Vector3(this._leftjoystick.deltaPosition.x * speed, this._leftjoystick.deltaPosition.y * speed, this._leftjoystick.deltaPosition.z * speed), cameraTransform);
+            const camera = this.camera;
+            const speed = camera._computeLocalCameraSpeed() * 50;
+            const cameraTransform = Matrix.RotationYawPitchRoll(camera.rotation.y, camera.rotation.x, 0);
+            const deltaTransform = Vector3.TransformCoordinates(
+                new Vector3(this._leftjoystick.deltaPosition.x * speed, this._leftjoystick.deltaPosition.y * speed, this._leftjoystick.deltaPosition.z * speed),
+                cameraTransform
+            );
             camera.cameraDirection = camera.cameraDirection.add(deltaTransform);
             camera.cameraRotation = camera.cameraRotation.addVector3(this._rightjoystick.deltaPosition);
 

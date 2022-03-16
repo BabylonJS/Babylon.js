@@ -10,26 +10,27 @@ import { AbstractScene } from "../abstractScene";
 import { AssetContainer } from "../assetContainer";
 
 import "./audioEngine";
-import { PrecisionDate } from '../Misc/precisionDate';
+import { PrecisionDate } from "../Misc/precisionDate";
 import { EngineStore } from "../Engines/engineStore";
 
 // Adds the parser to the scene parsers.
 AbstractScene.AddParser(SceneComponentConstants.NAME_AUDIO, (parsedData: any, scene: Scene, container: AssetContainer, rootUrl: string) => {
     // TODO: add sound
-    var loadedSounds: Sound[] = [];
-    var loadedSound: Sound;
+    let loadedSounds: Sound[] = [];
+    let loadedSound: Sound;
     container.sounds = container.sounds || [];
     if (parsedData.sounds !== undefined && parsedData.sounds !== null) {
         for (let index = 0, cache = parsedData.sounds.length; index < cache; index++) {
-            var parsedSound = parsedData.sounds[index];
+            const parsedSound = parsedData.sounds[index];
             if (Engine.audioEngine?.canUseWebAudio) {
-                if (!parsedSound.url) { parsedSound.url = parsedSound.name; }
+                if (!parsedSound.url) {
+                    parsedSound.url = parsedSound.name;
+                }
                 if (!loadedSounds[parsedSound.url]) {
                     loadedSound = Sound.Parse(parsedSound, scene, rootUrl);
                     loadedSounds[parsedSound.url] = loadedSound;
                     container.sounds.push(loadedSound);
-                }
-                else {
+                } else {
                     container.sounds.push(Sound.Parse(parsedSound, scene, rootUrl, loadedSounds[parsedSound.url]));
                 }
             } else {
@@ -115,11 +116,11 @@ Object.defineProperty(Scene.prototype, "mainSoundTrack", {
         return this._mainSoundTrack;
     },
     enumerable: true,
-    configurable: true
+    configurable: true,
 });
 
 Scene.prototype.getSoundByName = function (name: string): Nullable<Sound> {
-    var index: number;
+    let index: number;
     for (index = 0; index < this.mainSoundTrack.soundCollection.length; index++) {
         if (this.mainSoundTrack.soundCollection[index].name === name) {
             return this.mainSoundTrack.soundCollection[index];
@@ -127,7 +128,7 @@ Scene.prototype.getSoundByName = function (name: string): Nullable<Sound> {
     }
 
     if (this.soundTracks) {
-        for (var sdIndex = 0; sdIndex < this.soundTracks.length; sdIndex++) {
+        for (let sdIndex = 0; sdIndex < this.soundTracks.length; sdIndex++) {
             for (index = 0; index < this.soundTracks[sdIndex].soundCollection.length; index++) {
                 if (this.soundTracks[sdIndex].soundCollection[index].name === name) {
                     return this.soundTracks[sdIndex].soundCollection[index];
@@ -158,13 +159,12 @@ Object.defineProperty(Scene.prototype, "audioEnabled", {
 
         if (value) {
             compo.enableAudio();
-        }
-        else {
+        } else {
             compo.disableAudio();
         }
     },
     enumerable: true,
-    configurable: true
+    configurable: true,
 });
 
 Object.defineProperty(Scene.prototype, "headphone", {
@@ -186,13 +186,12 @@ Object.defineProperty(Scene.prototype, "headphone", {
 
         if (value) {
             compo.switchAudioModeForHeadphones();
-        }
-        else {
+        } else {
             compo.switchAudioModeForNormalSpeakers();
         }
     },
     enumerable: true,
-    configurable: true
+    configurable: true,
 });
 
 Object.defineProperty(Scene.prototype, "audioListenerPositionProvider", {
@@ -212,14 +211,14 @@ Object.defineProperty(Scene.prototype, "audioListenerPositionProvider", {
             this._addComponent(compo);
         }
 
-        if (typeof value !== 'function') {
-            throw new Error('The value passed to [Scene.audioListenerPositionProvider] must be a function that returns a Vector3');
+        if (typeof value !== "function") {
+            throw new Error("The value passed to [Scene.audioListenerPositionProvider] must be a function that returns a Vector3");
         } else {
             compo.audioListenerPositionProvider = value;
         }
     },
     enumerable: true,
-    configurable: true
+    configurable: true,
 });
 
 Object.defineProperty(Scene.prototype, "audioPositioningRefreshRate", {
@@ -242,7 +241,7 @@ Object.defineProperty(Scene.prototype, "audioPositioningRefreshRate", {
         compo.audioPositioningRefreshRate = value;
     },
     enumerable: true,
-    configurable: true
+    configurable: true,
 });
 
 /**
@@ -338,10 +337,10 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
         serializationObject.sounds = [];
 
         if (this.scene.soundTracks) {
-            for (var index = 0; index < this.scene.soundTracks.length; index++) {
-                var soundtrack = this.scene.soundTracks[index];
+            for (let index = 0; index < this.scene.soundTracks.length; index++) {
+                const soundtrack = this.scene.soundTracks[index];
 
-                for (var soundId = 0; soundId < soundtrack.soundCollection.length; soundId++) {
+                for (let soundId = 0; soundId < soundtrack.soundCollection.length; soundId++) {
                     serializationObject.sounds.push(soundtrack.soundCollection[soundId].serialize());
                 }
             }
@@ -392,7 +391,7 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
         }
 
         if (scene.soundTracks) {
-            for (var scIndex = 0; scIndex < scene.soundTracks.length; scIndex++) {
+            for (let scIndex = 0; scIndex < scene.soundTracks.length; scIndex++) {
                 scene.soundTracks[scIndex].dispose();
             }
         }
@@ -415,7 +414,7 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
         }
         if (scene.soundTracks) {
             for (i = 0; i < scene.soundTracks.length; i++) {
-                for (var j = 0; j < scene.soundTracks[i].soundCollection.length; j++) {
+                for (let j = 0; j < scene.soundTracks[i].soundCollection.length; j++) {
                     scene.soundTracks[i].soundCollection[j].pause();
                 }
             }
@@ -441,7 +440,7 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
         }
         if (scene.soundTracks) {
             for (i = 0; i < scene.soundTracks.length; i++) {
-                for (var j = 0; j < scene.soundTracks[i].soundCollection.length; j++) {
+                for (let j = 0; j < scene.soundTracks[i].soundCollection.length; j++) {
                     if (scene.soundTracks[i].soundCollection[j].isPaused) {
                         scene.soundTracks[i].soundCollection[j].play();
                     }
@@ -459,7 +458,7 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
 
         scene.mainSoundTrack.switchPanningModelToHRTF();
         if (scene.soundTracks) {
-            for (var i = 0; i < scene.soundTracks.length; i++) {
+            for (let i = 0; i < scene.soundTracks.length; i++) {
                 scene.soundTracks[i].switchPanningModelToHRTF();
             }
         }
@@ -475,7 +474,7 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
         scene.mainSoundTrack.switchPanningModelToEqualPower();
 
         if (scene.soundTracks) {
-            for (var i = 0; i < scene.soundTracks.length; i++) {
+            for (let i = 0; i < scene.soundTracks.length; i++) {
                 scene.soundTracks[i].switchPanningModelToEqualPower();
             }
         }
@@ -486,7 +485,7 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
     private _lastCheck = 0;
 
     private _afterRender() {
-        var now = PrecisionDate.Now;
+        const now = PrecisionDate.Now;
         if (this._lastCheck && now - this._lastCheck < this.audioPositioningRefreshRate) {
             return;
         }
@@ -498,7 +497,7 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
             return;
         }
 
-        var audioEngine = Engine.audioEngine;
+        const audioEngine = Engine.audioEngine;
 
         if (!audioEngine) {
             return;
@@ -508,7 +507,7 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
             // A custom listener position provider was set
             // Use the users provided position instead of camera's
             if (this._audioListenerPositionProvider) {
-                var position: Vector3 = this._audioListenerPositionProvider();
+                const position: Vector3 = this._audioListenerPositionProvider();
                 // Make sure all coordinates were provided
                 position.x = position.x || 0;
                 position.y = position.y || 0;
@@ -516,7 +515,7 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
                 // Set the listener position
                 audioEngine.audioContext.listener.setPosition(position.x, position.y, position.z);
             } else {
-                var listeningCamera: Nullable<Camera>;
+                let listeningCamera: Nullable<Camera>;
 
                 if (scene.activeCameras && scene.activeCameras.length > 0) {
                     listeningCamera = scene.activeCameras[0];
@@ -536,8 +535,8 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
                     if (listeningCamera.rigCameras && listeningCamera.rigCameras.length > 0) {
                         listeningCamera = listeningCamera.rigCameras[0];
                     }
-                    var mat = Matrix.Invert(listeningCamera.getViewMatrix());
-                    var cameraDirection = Vector3.TransformNormal(AudioSceneComponent._CameraDirection, mat);
+                    const mat = Matrix.Invert(listeningCamera.getViewMatrix());
+                    const cameraDirection = Vector3.TransformNormal(AudioSceneComponent._CameraDirection, mat);
                     cameraDirection.normalize();
                     // To avoid some errors on GearVR
                     if (!isNaN(cameraDirection.x) && !isNaN(cameraDirection.y) && !isNaN(cameraDirection.z)) {
@@ -554,7 +553,7 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
                 }
             }
 
-            var i: number;
+            let i: number;
             for (i = 0; i < scene.mainSoundTrack.soundCollection.length; i++) {
                 var sound = scene.mainSoundTrack.soundCollection[i];
                 if (sound.useCustomAttenuation) {
@@ -563,7 +562,7 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
             }
             if (scene.soundTracks) {
                 for (i = 0; i < scene.soundTracks.length; i++) {
-                    for (var j = 0; j < scene.soundTracks[i].soundCollection.length; j++) {
+                    for (let j = 0; j < scene.soundTracks[i].soundCollection.length; j++) {
                         sound = scene.soundTracks[i].soundCollection[j];
                         if (sound.useCustomAttenuation) {
                             sound.updateDistanceFromListener();

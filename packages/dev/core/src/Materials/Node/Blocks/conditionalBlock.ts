@@ -1,10 +1,10 @@
-import { NodeMaterialBlock } from '../nodeMaterialBlock';
-import { NodeMaterialBlockConnectionPointTypes } from '../Enums/nodeMaterialBlockConnectionPointTypes';
-import { NodeMaterialBuildState } from '../nodeMaterialBuildState';
-import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint';
-import { NodeMaterialBlockTargets } from '../Enums/nodeMaterialBlockTargets';
-import { RegisterClass } from '../../../Misc/typeStore';
-import { Scene } from '../../../scene';
+import { NodeMaterialBlock } from "../nodeMaterialBlock";
+import { NodeMaterialBlockConnectionPointTypes } from "../Enums/nodeMaterialBlockConnectionPointTypes";
+import { NodeMaterialBuildState } from "../nodeMaterialBuildState";
+import { NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
+import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
+import { RegisterClass } from "../../../Misc/typeStore";
+import { Scene } from "../../../scene";
 
 /**
  * Operations supported by the ConditionalBlock block
@@ -27,7 +27,7 @@ export enum ConditionalBlockConditions {
     /** Logical Or */
     Or,
     /** Logical And */
-    And
+    And,
 }
 
 /**
@@ -35,7 +35,6 @@ export enum ConditionalBlockConditions {
  * @since 5.0.0
  */
 export class ConditionalBlock extends NodeMaterialBlock {
-
     /**
      * Gets or sets the condition applied by the block
      */
@@ -105,46 +104,58 @@ export class ConditionalBlock extends NodeMaterialBlock {
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
-        let output = this._outputs[0];
+        const output = this._outputs[0];
 
-        let trueStatement = this.true.isConnected ? this.true.associatedVariableName : "1.0";
-        let falseStatement = this.false.isConnected ? this.false.associatedVariableName : "0.0";
+        const trueStatement = this.true.isConnected ? this.true.associatedVariableName : "1.0";
+        const falseStatement = this.false.isConnected ? this.false.associatedVariableName : "0.0";
 
         switch (this.condition) {
             case ConditionalBlockConditions.Equal: {
-                state.compilationString += this._declareOutput(output, state) + ` = ${this.a.associatedVariableName} == ${this.b.associatedVariableName} ? ${trueStatement} : ${falseStatement};\r\n`;
+                state.compilationString +=
+                    this._declareOutput(output, state) + ` = ${this.a.associatedVariableName} == ${this.b.associatedVariableName} ? ${trueStatement} : ${falseStatement};\r\n`;
                 break;
             }
             case ConditionalBlockConditions.NotEqual: {
-                state.compilationString += this._declareOutput(output, state) + ` = ${this.a.associatedVariableName} != ${this.b.associatedVariableName} ? ${trueStatement} : ${falseStatement};\r\n`;
+                state.compilationString +=
+                    this._declareOutput(output, state) + ` = ${this.a.associatedVariableName} != ${this.b.associatedVariableName} ? ${trueStatement} : ${falseStatement};\r\n`;
                 break;
             }
             case ConditionalBlockConditions.LessThan: {
-                state.compilationString += this._declareOutput(output, state) + ` = ${this.a.associatedVariableName} < ${this.b.associatedVariableName} ? ${trueStatement} : ${falseStatement};\r\n`;
+                state.compilationString +=
+                    this._declareOutput(output, state) + ` = ${this.a.associatedVariableName} < ${this.b.associatedVariableName} ? ${trueStatement} : ${falseStatement};\r\n`;
                 break;
             }
             case ConditionalBlockConditions.LessOrEqual: {
-                state.compilationString += this._declareOutput(output, state) + ` = ${this.a.associatedVariableName} <= ${this.b.associatedVariableName} ? ${trueStatement} : ${falseStatement};\r\n`;
+                state.compilationString +=
+                    this._declareOutput(output, state) + ` = ${this.a.associatedVariableName} <= ${this.b.associatedVariableName} ? ${trueStatement} : ${falseStatement};\r\n`;
                 break;
             }
             case ConditionalBlockConditions.GreaterThan: {
-                state.compilationString += this._declareOutput(output, state) + ` = ${this.a.associatedVariableName} > ${this.b.associatedVariableName} ? ${trueStatement} : ${falseStatement};\r\n`;
+                state.compilationString +=
+                    this._declareOutput(output, state) + ` = ${this.a.associatedVariableName} > ${this.b.associatedVariableName} ? ${trueStatement} : ${falseStatement};\r\n`;
                 break;
             }
             case ConditionalBlockConditions.GreaterOrEqual: {
-                state.compilationString += this._declareOutput(output, state) + ` = ${this.a.associatedVariableName} >= ${this.b.associatedVariableName} ? ${trueStatement} : ${falseStatement};\r\n`;
+                state.compilationString +=
+                    this._declareOutput(output, state) + ` = ${this.a.associatedVariableName} >= ${this.b.associatedVariableName} ? ${trueStatement} : ${falseStatement};\r\n`;
                 break;
             }
             case ConditionalBlockConditions.Xor: {
-                state.compilationString += this._declareOutput(output, state) + ` = (mod(${this.a.associatedVariableName} + ${this.b.associatedVariableName}, 2.0) > 0.0) ? ${trueStatement} : ${falseStatement};\r\n`;
+                state.compilationString +=
+                    this._declareOutput(output, state) +
+                    ` = (mod(${this.a.associatedVariableName} + ${this.b.associatedVariableName}, 2.0) > 0.0) ? ${trueStatement} : ${falseStatement};\r\n`;
                 break;
             }
             case ConditionalBlockConditions.Or: {
-                state.compilationString += this._declareOutput(output, state) + ` = (min(${this.a.associatedVariableName} + ${this.b.associatedVariableName}, 1.0) > 0.0) ? ${trueStatement} : ${falseStatement};\r\n`;
+                state.compilationString +=
+                    this._declareOutput(output, state) +
+                    ` = (min(${this.a.associatedVariableName} + ${this.b.associatedVariableName}, 1.0) > 0.0) ? ${trueStatement} : ${falseStatement};\r\n`;
                 break;
             }
             case ConditionalBlockConditions.And: {
-                state.compilationString += this._declareOutput(output, state) + ` = (${this.a.associatedVariableName} * ${this.b.associatedVariableName} > 0.0)  ? ${trueStatement} : ${falseStatement};\r\n`;
+                state.compilationString +=
+                    this._declareOutput(output, state) +
+                    ` = (${this.a.associatedVariableName} * ${this.b.associatedVariableName} > 0.0)  ? ${trueStatement} : ${falseStatement};\r\n`;
                 break;
             }
         }
@@ -153,7 +164,7 @@ export class ConditionalBlock extends NodeMaterialBlock {
     }
 
     public serialize(): any {
-        let serializationObject = super.serialize();
+        const serializationObject = super.serialize();
 
         serializationObject.condition = this.condition;
 
@@ -167,7 +178,8 @@ export class ConditionalBlock extends NodeMaterialBlock {
     }
 
     protected _dumpPropertiesCode() {
-        var codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.condition = BABYLON.ConditionalBlockConditions.${ConditionalBlockConditions[this.condition]};\r\n`;
+        const codeString =
+            super._dumpPropertiesCode() + `${this._codeVariableName}.condition = BABYLON.ConditionalBlockConditions.${ConditionalBlockConditions[this.condition]};\r\n`;
         return codeString;
     }
 }

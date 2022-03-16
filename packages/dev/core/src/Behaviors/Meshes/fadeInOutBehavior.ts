@@ -24,8 +24,7 @@ export class FadeInOutBehavior implements Behavior<Mesh> {
     /**
      * Instantiates the FadeInOutBehavior
      */
-    constructor() {
-    }
+    constructor() {}
 
     /**
      *  The name of the behavior
@@ -37,8 +36,7 @@ export class FadeInOutBehavior implements Behavior<Mesh> {
     /**
      *  Initializes the behavior
      */
-    public init() {
-    }
+    public init() {}
 
     /**
      * Attaches the fade behavior on the passed in mesh
@@ -83,7 +81,7 @@ export class FadeInOutBehavior implements Behavior<Mesh> {
             }
             setTimeout(this._update, this._millisecondsPerFrame);
         }
-    }
+    };
 
     private _setAllVisibility(mesh: AbstractMesh, value: number) {
         mesh.visibility = value;
@@ -91,5 +89,4 @@ export class FadeInOutBehavior implements Behavior<Mesh> {
             this._setAllVisibility(c, value);
         });
     }
-
 }

@@ -16,7 +16,7 @@ AbstractScene.AddParser(SceneComponentConstants.NAME_EFFECTLAYER, (parsedData: a
         }
 
         for (let index = 0; index < parsedData.effectLayers.length; index++) {
-            var effectLayer = EffectLayer.Parse(parsedData.effectLayers[index], scene, rootUrl);
+            const effectLayer = EffectLayer.Parse(parsedData.effectLayers[index], scene, rootUrl);
             container.effectLayers.push(effectLayer);
         }
     }
@@ -47,7 +47,7 @@ declare module "../abstractScene" {
 }
 
 AbstractScene.prototype.removeEffectLayer = function (toRemove: EffectLayer): number {
-    var index = this.effectLayers.indexOf(toRemove);
+    const index = this.effectLayers.indexOf(toRemove);
     if (index !== -1) {
         this.effectLayers.splice(index, 1);
     }
@@ -113,8 +113,8 @@ export class EffectLayerSceneComponent implements ISceneSerializableComponent {
      * context lost for instance.
      */
     public rebuild(): void {
-        let layers = this.scene.effectLayers;
-        for (let effectLayer of layers) {
+        const layers = this.scene.effectLayers;
+        for (const effectLayer of layers) {
             effectLayer._rebuild();
         }
     }
@@ -127,8 +127,8 @@ export class EffectLayerSceneComponent implements ISceneSerializableComponent {
         // Effect layers
         serializationObject.effectLayers = [];
 
-        let layers = this.scene.effectLayers;
-        for (let effectLayer of layers) {
+        const layers = this.scene.effectLayers;
+        for (const effectLayer of layers) {
             if (effectLayer.serialize) {
                 serializationObject.effectLayers.push(effectLayer.serialize());
             }
@@ -169,7 +169,7 @@ export class EffectLayerSceneComponent implements ISceneSerializableComponent {
      * Disposes the component and the associated resources.
      */
     public dispose(): void {
-        let layers = this.scene.effectLayers;
+        const layers = this.scene.effectLayers;
         while (layers.length) {
             layers[0].dispose();
         }
@@ -177,16 +177,16 @@ export class EffectLayerSceneComponent implements ISceneSerializableComponent {
 
     private _isReadyForMesh(mesh: AbstractMesh, hardwareInstancedRendering: boolean): boolean {
         const currentRenderPassId = this._engine.currentRenderPassId;
-        let layers = this.scene.effectLayers;
-        for (let layer of layers) {
+        const layers = this.scene.effectLayers;
+        for (const layer of layers) {
             if (!layer.hasMesh(mesh)) {
                 continue;
             }
 
-            const renderTarget = (<RenderTargetTexture>(<any>layer)._mainTexture);
+            const renderTarget = <RenderTargetTexture>(<any>layer)._mainTexture;
             this._engine.currentRenderPassId = renderTarget.renderPassId;
 
-            for (var subMesh of mesh.subMeshes) {
+            for (const subMesh of mesh.subMeshes) {
                 if (!layer.isReady(subMesh, hardwareInstancedRendering)) {
                     this._engine.currentRenderPassId = currentRenderPassId;
                     return false;
@@ -203,19 +203,20 @@ export class EffectLayerSceneComponent implements ISceneSerializableComponent {
 
         let needRebind = false;
 
-        let layers = this.scene.effectLayers;
+        const layers = this.scene.effectLayers;
         if (layers && layers.length > 0) {
             this._previousStencilState = this._engine.getStencilBuffer();
-            for (let effectLayer of layers) {
-                if (effectLayer.shouldRender() &&
+            for (const effectLayer of layers) {
+                if (
+                    effectLayer.shouldRender() &&
                     (!effectLayer.camera ||
                         (effectLayer.camera.cameraRigMode === Camera.RIG_MODE_NONE && camera === effectLayer.camera) ||
-                        (effectLayer.camera.cameraRigMode !== Camera.RIG_MODE_NONE && effectLayer.camera._rigCameras.indexOf(camera) > -1))) {
-
+                        (effectLayer.camera.cameraRigMode !== Camera.RIG_MODE_NONE && effectLayer.camera._rigCameras.indexOf(camera) > -1))
+                ) {
                     this._renderEffects = true;
                     this._needStencil = this._needStencil || effectLayer.needStencil();
 
-                    let renderTarget = (<RenderTargetTexture>(<any>effectLayer)._mainTexture);
+                    const renderTarget = <RenderTargetTexture>(<any>effectLayer)._mainTexture;
                     if (renderTarget._shouldRender()) {
                         this.scene.incrementRenderId();
                         renderTarget.render(false, false);
@@ -248,7 +249,7 @@ export class EffectLayerSceneComponent implements ISceneSerializableComponent {
         if (this._renderEffects) {
             this._engine.setDepthBuffer(false);
 
-            let layers = this.scene.effectLayers;
+            const layers = this.scene.effectLayers;
             for (let i = 0; i < layers.length; i++) {
                 const effectLayer = layers[i];
                 if (effectLayer.renderingGroupId === renderingGroupId) {

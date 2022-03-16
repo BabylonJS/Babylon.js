@@ -1,4 +1,4 @@
-import { IsWindowObjectExist } from './domManagement';
+import { IsWindowObjectExist } from "./domManagement";
 
 /**
  * Class used to provide helper for timing

@@ -1,5 +1,5 @@
-import { Mesh } from './mesh';
-import { Nullable } from '../types';
+import { Mesh } from "./mesh";
+import { Nullable } from "../types";
 
 /**
  * Class used to represent a specific level of detail of a mesh
@@ -15,6 +15,6 @@ export class MeshLODLevel {
         /** Either distance from the center of the object to show this level or the screen coverage if `useLODScreenCoverage` is set to `true` on the mesh*/
         public distanceOrScreenCoverage: number,
         /** Defines the mesh to use to render this level */
-        public mesh: Nullable<Mesh>) {
-    }
+        public mesh: Nullable<Mesh>
+    ) {}
 }

@@ -9,8 +9,8 @@ export class ShaderStore {
      */
     public static ShadersRepository = "src/Shaders/";
     /**
-    * Store of each shader (The can be looked up using effect.key)
-    */
+     * Store of each shader (The can be looked up using effect.key)
+     */
     public static ShadersStore: { [key: string]: string } = {};
     /**
      * Store of each included file for a shader (The can be looked up using effect.key)

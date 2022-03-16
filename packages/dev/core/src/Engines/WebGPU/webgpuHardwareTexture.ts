@@ -1,19 +1,18 @@
-import { HardwareTextureWrapper } from '../../Materials/Textures/hardwareTextureWrapper';
-import { InternalTextureSource } from '../../Materials/Textures/internalTexture';
-import { Scalar } from '../../Maths/math.scalar';
-import { Nullable } from '../../types';
-import * as WebGPUConstants from './webgpuConstants';
+import { HardwareTextureWrapper } from "../../Materials/Textures/hardwareTextureWrapper";
+import { InternalTextureSource } from "../../Materials/Textures/internalTexture";
+import { Scalar } from "../../Maths/math.scalar";
+import { Nullable } from "../../types";
+import * as WebGPUConstants from "./webgpuConstants";
 
 declare type WebGPUBundleList = import("./webgpuBundleList").WebGPUBundleList;
 
 /** @hidden */
 export class WebGPUHardwareTexture implements HardwareTextureWrapper {
-
     /**
      * List of bundles collected in the snapshot rendering mode when the texture is a render target texture
      * The index in this array is the current layer we are rendering into
      * @hidden
-    */
+     */
     public _bundleLists: WebGPUBundleList[];
     /**
      * Current layer we are rendering into when in snapshot rendering mode (if the texture is a render target texture)
@@ -83,7 +82,7 @@ export class WebGPUHardwareTexture implements HardwareTextureWrapper {
             baseArrayLayer: 0,
             baseMipLevel: 0,
             arrayLayerCount: isCube ? 6 : 1,
-            aspect: WebGPUConstants.TextureAspect.All
+            aspect: WebGPUConstants.TextureAspect.All,
         });
     }
 

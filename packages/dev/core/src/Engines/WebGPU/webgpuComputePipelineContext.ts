@@ -7,8 +7,8 @@ export class WebGPUComputePipelineContext implements IComputePipelineContext {
     public engine: WebGPUEngine;
 
     public sources: {
-        compute: string,
-        rawCompute: string,
+        compute: string;
+        rawCompute: string;
     };
 
     public stage: Nullable<GPUProgrammableStage>;
@@ -39,6 +39,5 @@ export class WebGPUComputePipelineContext implements IComputePipelineContext {
         return this.sources?.compute;
     }
 
-    public dispose(): void {
-    }
+    public dispose(): void {}
 }

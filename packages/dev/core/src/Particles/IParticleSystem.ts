@@ -1,8 +1,17 @@
 import { Nullable } from "../types";
 import { Vector2, Vector3, Matrix } from "../Maths/math.vector";
-import { Color3, Color4 } from '../Maths/math.color';
+import { Color3, Color4 } from "../Maths/math.color";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
-import { BoxParticleEmitter, IParticleEmitterType, PointParticleEmitter, HemisphericParticleEmitter, SphereParticleEmitter, SphereDirectedParticleEmitter, CylinderParticleEmitter, ConeParticleEmitter } from "../Particles/EmitterTypes/index";
+import {
+    BoxParticleEmitter,
+    IParticleEmitterType,
+    PointParticleEmitter,
+    HemisphericParticleEmitter,
+    SphereParticleEmitter,
+    SphereDirectedParticleEmitter,
+    CylinderParticleEmitter,
+    ConeParticleEmitter,
+} from "../Particles/EmitterTypes/index";
 import { Scene } from "../scene";
 import { ColorGradient, FactorGradient, Color3Gradient } from "../Misc/gradients";
 import { Effect } from "../Materials/effect";
@@ -47,8 +56,8 @@ export interface IParticleSystem {
     layerMask: number;
 
     /**
-    * The overall motion speed (0.01 is default update speed, faster updates = faster animation)
-    */
+     * The overall motion speed (0.01 is default update speed, faster updates = faster animation)
+     */
     updateSpeed: number;
 
     /**
@@ -296,12 +305,12 @@ export interface IParticleSystem {
      */
     dispose(disposeTexture?: boolean): void;
     /**
-    * An event triggered when the system is disposed
-    */
+     * An event triggered when the system is disposed
+     */
     onDisposeObservable: Observable<IParticleSystem>;
     /**
-    * An event triggered when the system is stopped
-    */
+     * An event triggered when the system is stopped
+     */
     onStoppedObservable: Observable<IParticleSystem>;
     /**
      * Clones the particle system.

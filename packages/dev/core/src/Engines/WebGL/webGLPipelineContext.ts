@@ -1,7 +1,7 @@
-import { IPipelineContext } from '../IPipelineContext';
-import { Nullable } from '../../types';
-import { Effect } from '../../Materials/effect';
-import { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, IColor4Like } from '../../Maths/math.like';
+import { IPipelineContext } from "../IPipelineContext";
+import { Nullable } from "../../types";
+import { Effect } from "../../Materials/effect";
+import { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, IColor4Like } from "../../Maths/math.like";
 import { ThinEngine } from "../thinEngine";
 
 /** @hidden */
@@ -44,10 +44,19 @@ export class WebGLPipelineContext implements IPipelineContext {
         }
     }
 
-    public _fillEffectInformation(effect: Effect, uniformBuffersNames: { [key: string]: number }, uniformsNames: string[], uniforms: { [key: string]: Nullable<WebGLUniformLocation> }, samplerList: string[], samplers: { [key: string]: number }, attributesNames: string[], attributes: number[]) {
+    public _fillEffectInformation(
+        effect: Effect,
+        uniformBuffersNames: { [key: string]: number },
+        uniformsNames: string[],
+        uniforms: { [key: string]: Nullable<WebGLUniformLocation> },
+        samplerList: string[],
+        samplers: { [key: string]: number },
+        attributesNames: string[],
+        attributes: number[]
+    ) {
         const engine = this.engine;
         if (engine.supportsUniformBuffers) {
-            for (var name in uniformBuffersNames) {
+            for (const name in uniformBuffersNames) {
                 effect.bindUniformBlock(name, uniformBuffersNames[name]);
             }
         }
@@ -71,7 +80,7 @@ export class WebGLPipelineContext implements IPipelineContext {
             samplers[name] = index;
         });
 
-        for (let attr of engine.getAttributes(this, attributesNames)) {
+        for (const attr of engine.getAttributes(this, attributesNames)) {
             attributes.push(attr);
         }
     }
@@ -83,10 +92,14 @@ export class WebGLPipelineContext implements IPipelineContext {
         this._uniforms = {};
     }
 
-    /** @hidden */
+    /**
+     * @param uniformName
+     * @param matrix
+     * @hidden
+     */
     public _cacheMatrix(uniformName: string, matrix: IMatrixLike): boolean {
-        var cache = this._valueCache[uniformName];
-        var flag = matrix.updateFlag;
+        const cache = this._valueCache[uniformName];
+        const flag = matrix.updateFlag;
         if (cache !== undefined && cache === flag) {
             return false;
         }
@@ -96,16 +109,21 @@ export class WebGLPipelineContext implements IPipelineContext {
         return true;
     }
 
-    /** @hidden */
+    /**
+     * @param uniformName
+     * @param x
+     * @param y
+     * @hidden
+     */
     public _cacheFloat2(uniformName: string, x: number, y: number): boolean {
-        var cache = this._valueCache[uniformName];
+        let cache = this._valueCache[uniformName];
         if (!cache || cache.length !== 2) {
             cache = [x, y];
             this._valueCache[uniformName] = cache;
             return true;
         }
 
-        var changed = false;
+        let changed = false;
         if (cache[0] !== x) {
             cache[0] = x;
             changed = true;
@@ -118,16 +136,22 @@ export class WebGLPipelineContext implements IPipelineContext {
         return changed;
     }
 
-    /** @hidden */
+    /**
+     * @param uniformName
+     * @param x
+     * @param y
+     * @param z
+     * @hidden
+     */
     public _cacheFloat3(uniformName: string, x: number, y: number, z: number): boolean {
-        var cache = this._valueCache[uniformName];
+        let cache = this._valueCache[uniformName];
         if (!cache || cache.length !== 3) {
             cache = [x, y, z];
             this._valueCache[uniformName] = cache;
             return true;
         }
 
-        var changed = false;
+        let changed = false;
         if (cache[0] !== x) {
             cache[0] = x;
             changed = true;
@@ -144,16 +168,23 @@ export class WebGLPipelineContext implements IPipelineContext {
         return changed;
     }
 
-    /** @hidden */
+    /**
+     * @param uniformName
+     * @param x
+     * @param y
+     * @param z
+     * @param w
+     * @hidden
+     */
     public _cacheFloat4(uniformName: string, x: number, y: number, z: number, w: number): boolean {
-        var cache = this._valueCache[uniformName];
+        let cache = this._valueCache[uniformName];
         if (!cache || cache.length !== 4) {
             cache = [x, y, z, w];
             this._valueCache[uniformName] = cache;
             return true;
         }
 
-        var changed = false;
+        let changed = false;
         if (cache[0] !== x) {
             cache[0] = x;
             changed = true;
@@ -180,7 +211,7 @@ export class WebGLPipelineContext implements IPipelineContext {
      * @param value Value to be set.
      */
     public setInt(uniformName: string, value: number): void {
-        var cache = this._valueCache[uniformName];
+        const cache = this._valueCache[uniformName];
         if (cache !== undefined && cache === value) {
             return;
         }
@@ -210,6 +241,7 @@ export class WebGLPipelineContext implements IPipelineContext {
      * @param x First int in int3.
      * @param y Second int in int3.
      * @param y Third int in int3.
+     * @param z
      */
     public setInt3(uniformName: string, x: number, y: number, z: number): void {
         if (this._cacheFloat3(uniformName, x, y, z)) {
@@ -225,6 +257,7 @@ export class WebGLPipelineContext implements IPipelineContext {
      * @param x First int in int4.
      * @param y Second int in int4.
      * @param y Third int in int4.
+     * @param z
      * @param w Fourth int in int4.
      */
     public setInt4(uniformName: string, x: number, y: number, z: number, w: number): void {
@@ -370,7 +403,7 @@ export class WebGLPipelineContext implements IPipelineContext {
      * @returns this effect.
      */
     public setFloat(uniformName: string, value: number): void {
-        var cache = this._valueCache[uniformName];
+        const cache = this._valueCache[uniformName];
         if (cache !== undefined && cache === value) {
             return;
         }

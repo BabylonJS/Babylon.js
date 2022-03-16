@@ -1,5 +1,5 @@
-import { Vector3 } from '../Maths/math.vector';
-import { Path2 } from '../Maths/math.path';
+import { Vector3 } from "../Maths/math.vector";
+import { Path2 } from "../Maths/math.path";
 
 /**
  * A cursor which tracks a point on a path
@@ -24,15 +24,14 @@ export class PathCursor {
      * Initializes the path cursor
      * @param path The path to track
      */
-    constructor(private path: Path2) {
-    }
+    constructor(private path: Path2) {}
 
     /**
      * Gets the cursor point on the path
      * @returns A point on the path cursor at the cursor location
      */
     public getPoint(): Vector3 {
-        var point = this.path.getPointAtLengthPosition(this.value);
+        const point = this.path.getPointAtLengthPosition(this.value);
         return new Vector3(point.x, 0, point.y);
     }
 
@@ -65,7 +64,6 @@ export class PathCursor {
      * @returns This path cursor
      */
     public move(step: number): PathCursor {
-
         if (Math.abs(step) > 1) {
             throw "step size should be less than 1.";
         }

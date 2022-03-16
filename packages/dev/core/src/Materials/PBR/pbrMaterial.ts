@@ -7,7 +7,7 @@ import { ImageProcessingConfiguration } from "../../Materials/imageProcessingCon
 import { ColorCurves } from "../../Materials/colorCurves";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { PBRBaseMaterial } from "./pbrBaseMaterial";
-import { RegisterClass } from '../../Misc/typeStore';
+import { RegisterClass } from "../../Misc/typeStore";
 
 /**
  * The Physically based material of BJS.
@@ -199,10 +199,10 @@ export class PBRMaterial extends PBRBaseMaterial {
     public useOnlyMetallicFromMetallicReflectanceTexture = false;
 
     /**
-    * Defines to store metallicReflectanceColor in RGB and metallicF0Factor in A
-    * This is multiplied against the scalar values defined in the material.
-    * If useOnlyMetallicFromMetallicReflectanceTexture is true, don't use the RGB channels, only A
-    */
+     * Defines to store metallicReflectanceColor in RGB and metallicF0Factor in A
+     * This is multiplied against the scalar values defined in the material.
+     * If useOnlyMetallicFromMetallicReflectanceTexture is true, don't use the RGB channels, only A
+     */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public metallicReflectanceTexture: Nullable<BaseTexture>;
@@ -218,9 +218,9 @@ export class PBRMaterial extends PBRBaseMaterial {
     public reflectanceTexture: Nullable<BaseTexture>;
 
     /**
-    * Used to enable roughness/glossiness fetch from a separate channel depending on the current mode.
-    * Gray Scale represents roughness in metallic mode and glossiness in specular mode.
-    */
+     * Used to enable roughness/glossiness fetch from a separate channel depending on the current mode.
+     * Gray Scale represents roughness in metallic mode and glossiness in specular mode.
+     */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public microSurfaceTexture: BaseTexture;
@@ -249,8 +249,7 @@ export class PBRMaterial extends PBRBaseMaterial {
         this.subSurface.refractionTexture = value;
         if (value) {
             this.subSurface.isRefractionEnabled = true;
-        }
-        else if (!this.subSurface.linkRefractionWithTransparency) {
+        } else if (!this.subSurface.linkRefractionWithTransparency) {
             this.subSurface.isRefractionEnabled = false;
         }
     }
@@ -444,8 +443,7 @@ export class PBRMaterial extends PBRBaseMaterial {
 
             if (value) {
                 this._lightFalloff = PBRBaseMaterial.LIGHTFALLOFF_PHYSICAL;
-            }
-            else {
+            } else {
                 this._lightFalloff = PBRBaseMaterial.LIGHTFALLOFF_STANDARD;
             }
         }
@@ -471,8 +469,7 @@ export class PBRMaterial extends PBRBaseMaterial {
 
             if (value) {
                 this._lightFalloff = PBRBaseMaterial.LIGHTFALLOFF_GLTF;
-            }
-            else {
+            } else {
                 this._lightFalloff = PBRBaseMaterial.LIGHTFALLOFF_STANDARD;
             }
         }
@@ -767,7 +764,7 @@ export class PBRMaterial extends PBRBaseMaterial {
      * @param name - name to use for the new material.
      */
     public clone(name: string): PBRMaterial {
-        var clone = SerializationHelper.Clone(() => new PBRMaterial(name, this.getScene()), this);
+        const clone = SerializationHelper.Clone(() => new PBRMaterial(name, this.getScene()), this);
 
         clone.id = name;
         clone.name = name;
@@ -787,7 +784,7 @@ export class PBRMaterial extends PBRBaseMaterial {
      * @returns - An object with the serialized material.
      */
     public serialize(): any {
-        var serializationObject = super.serialize();
+        const serializationObject = super.serialize();
         serializationObject.customType = "BABYLON.PBRMaterial";
 
         serializationObject.clearCoat = this.clearCoat.serialize();

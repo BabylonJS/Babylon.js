@@ -3,32 +3,43 @@ import { FactorGradient, ColorGradient, Color3Gradient, GradientHelper } from ".
 import { Observable, Observer } from "../Misc/observable";
 import { Vector3, Matrix, TmpVectors, Vector4 } from "../Maths/math.vector";
 import { Scalar } from "../Maths/math.scalar";
-import { VertexBuffer } from "../Buffers/buffer";
-import { Buffer } from "../Buffers/buffer";
+import { VertexBuffer , Buffer } from "../Buffers/buffer";
+
 import { Effect } from "../Materials/effect";
 import { ImageProcessingConfiguration } from "../Materials/imageProcessingConfiguration";
 import { RawTexture } from "../Materials/Textures/rawTexture";
 import { EngineStore } from "../Engines/engineStore";
 import { IDisposable } from "../scene";
-import { BoxParticleEmitter, IParticleEmitterType, HemisphericParticleEmitter, SphereParticleEmitter, SphereDirectedParticleEmitter, CylinderParticleEmitter, ConeParticleEmitter, PointParticleEmitter, MeshParticleEmitter, CylinderDirectedParticleEmitter } from "../Particles/EmitterTypes/index";
+import {
+    BoxParticleEmitter,
+    IParticleEmitterType,
+    HemisphericParticleEmitter,
+    SphereParticleEmitter,
+    SphereDirectedParticleEmitter,
+    CylinderParticleEmitter,
+    ConeParticleEmitter,
+    PointParticleEmitter,
+    MeshParticleEmitter,
+    CylinderDirectedParticleEmitter,
+} from "../Particles/EmitterTypes/index";
 import { IParticleSystem } from "./IParticleSystem";
 import { BaseParticleSystem } from "./baseParticleSystem";
 import { Particle } from "./particle";
 import { SubEmitter, SubEmitterType } from "./subEmitter";
 import { Constants } from "../Engines/constants";
 import { SerializationHelper } from "../Misc/decorators";
-import { GetClass } from '../Misc/typeStore';
-import { IAnimatable } from '../Animations/animatable.interface';
+import { GetClass } from "../Misc/typeStore";
+import { IAnimatable } from "../Animations/animatable.interface";
 import { DrawWrapper } from "../Materials/drawWrapper";
 
 import "../Shaders/particles.fragment";
 import "../Shaders/particles.vertex";
-import { DataBuffer } from '../Buffers/dataBuffer';
-import { Color4, Color3, TmpColors } from '../Maths/math.color';
-import { ISize } from '../Maths/math.size';
-import { BaseTexture } from '../Materials/Textures/baseTexture';
-import { ThinEngine } from '../Engines/thinEngine';
-import { ThinMaterialHelper } from '../Materials/thinMaterialHelper';
+import { DataBuffer } from "../Buffers/dataBuffer";
+import { Color4, Color3, TmpColors } from "../Maths/math.color";
+import { ISize } from "../Maths/math.size";
+import { BaseTexture } from "../Materials/Textures/baseTexture";
+import { ThinEngine } from "../Engines/thinEngine";
+import { ThinMaterialHelper } from "../Materials/thinMaterialHelper";
 
 import "../Engines/Extensions/engine.alpha";
 
@@ -44,7 +55,6 @@ declare type Engine = import("../Engines/engine").Engine;
  * @example https://doc.babylonjs.com/babylon101/particles
  */
 export class ParticleSystem extends BaseParticleSystem implements IDisposable, IAnimatable, IParticleSystem {
-
     /**
      * Billboard mode will only apply to Y axis
      */
@@ -84,12 +94,12 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
      */
     public _inheritedVelocityOffset = new Vector3();
     /**
-    * An event triggered when the system is disposed
-    */
+     * An event triggered when the system is disposed
+     */
     public onDisposeObservable = new Observable<IParticleSystem>();
     /**
-    * An event triggered when the system is stopped
-    */
+     * An event triggered when the system is stopped
+     */
     public onStoppedObservable = new Observable<IParticleSystem>();
 
     private _onDisposeObserver: Nullable<Observer<IParticleSystem>>;
@@ -185,8 +195,8 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
      */
     public _disposeEmitterOnDispose = false;
     /**
-    * The current active Sub-systems, this property is used by the root particle system only.
-    */
+     * The current active Sub-systems, this property is used by the root particle system only.
+     */
     public activeSubSystems: Array<ParticleSystem>;
 
     /**
@@ -299,7 +309,14 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
      * @param isAnimationSheetEnabled Must be true if using a spritesheet to animate the particles texture
      * @param epsilon Offset used to render the particles
      */
-    constructor(name: string, capacity: number, sceneOrEngine: Scene | ThinEngine, customEffect: Nullable<Effect> = null, isAnimationSheetEnabled: boolean = false, epsilon: number = 0.01) {
+    constructor(
+        name: string,
+        capacity: number,
+        sceneOrEngine: Scene | ThinEngine,
+        customEffect: Nullable<Effect> = null,
+        isAnimationSheetEnabled: boolean = false,
+        epsilon: number = 0.01
+    ) {
         super(name);
 
         this._capacity = capacity;
@@ -313,7 +330,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
             this.uniqueId = this._scene.getUniqueId();
             this._scene.particleSystems.push(this);
         } else {
-            this._engine = (sceneOrEngine as ThinEngine);
+            this._engine = sceneOrEngine as ThinEngine;
             this.defaultProjectionMatrix = Matrix.PerspectiveFovLH(0.8, 1, 0.1, 100, this._engine.isNDCHalfZRange);
         }
 
@@ -341,31 +358,32 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         this.updateFunction = (particles: Particle[]): void => {
             let noiseTextureSize: Nullable<ISize> = null;
 
-            if (this.noiseTexture) { // We need to get texture data back to CPU
+            if (this.noiseTexture) {
+                // We need to get texture data back to CPU
                 noiseTextureSize = this.noiseTexture.getSize();
                 this.noiseTexture.getContent()?.then((data) => {
                     noiseTextureData = data as Uint8Array;
                 });
             }
 
-            for (var index = 0; index < particles.length; index++) {
+            for (let index = 0; index < particles.length; index++) {
                 var particle = particles[index];
 
                 let scaledUpdateSpeed = this._scaledUpdateSpeed;
-                let previousAge = particle.age;
+                const previousAge = particle.age;
                 particle.age += scaledUpdateSpeed;
 
                 // Evaluate step to death
                 if (particle.age > particle.lifeTime) {
-                    let diff = particle.age - previousAge;
-                    let oldDiff = particle.lifeTime - previousAge;
+                    const diff = particle.age - previousAge;
+                    const oldDiff = particle.lifeTime - previousAge;
 
                     scaledUpdateSpeed = (oldDiff * scaledUpdateSpeed) / diff;
 
                     particle.age = particle.lifeTime;
                 }
 
-                let ratio = particle.age / particle.lifeTime;
+                const ratio = particle.age / particle.lifeTime;
 
                 // Color
                 if (this._colorGradients && this._colorGradients.length > 0) {
@@ -373,12 +391,11 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
                         if (currentGradient !== particle._currentColorGradient) {
                             particle._currentColor1.copyFrom(particle._currentColor2);
                             (<ColorGradient>nextGradient).getColorToRef(particle._currentColor2);
-                            particle._currentColorGradient = (<ColorGradient>currentGradient);
+                            particle._currentColorGradient = <ColorGradient>currentGradient;
                         }
                         Color4.LerpToRef(particle._currentColor1, particle._currentColor2, scale, particle.color);
                     });
-                }
-                else {
+                } else {
                     particle.colorStep.scaleToRef(scaledUpdateSpeed, this._scaledColorStep);
                     particle.color.addInPlace(this._scaledColorStep);
 
@@ -393,7 +410,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
                         if (currentGradient !== particle._currentAngularSpeedGradient) {
                             particle._currentAngularSpeed1 = particle._currentAngularSpeed2;
                             particle._currentAngularSpeed2 = (<FactorGradient>nextGradient).getFactor();
-                            particle._currentAngularSpeedGradient = (<FactorGradient>currentGradient);
+                            particle._currentAngularSpeedGradient = <FactorGradient>currentGradient;
                         }
                         particle.angularSpeed = Scalar.Lerp(particle._currentAngularSpeed1, particle._currentAngularSpeed2, scale);
                     });
@@ -409,7 +426,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
                         if (currentGradient !== particle._currentVelocityGradient) {
                             particle._currentVelocity1 = particle._currentVelocity2;
                             particle._currentVelocity2 = (<FactorGradient>nextGradient).getFactor();
-                            particle._currentVelocityGradient = (<FactorGradient>currentGradient);
+                            particle._currentVelocityGradient = <FactorGradient>currentGradient;
                         }
                         directionScale *= Scalar.Lerp(particle._currentVelocity1, particle._currentVelocity2, scale);
                     });
@@ -423,11 +440,11 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
                         if (currentGradient !== particle._currentLimitVelocityGradient) {
                             particle._currentLimitVelocity1 = particle._currentLimitVelocity2;
                             particle._currentLimitVelocity2 = (<FactorGradient>nextGradient).getFactor();
-                            particle._currentLimitVelocityGradient = (<FactorGradient>currentGradient);
+                            particle._currentLimitVelocityGradient = <FactorGradient>currentGradient;
                         }
 
-                        let limitVelocity = Scalar.Lerp(particle._currentLimitVelocity1, particle._currentLimitVelocity2, scale);
-                        let currentVelocity = particle.direction.length();
+                        const limitVelocity = Scalar.Lerp(particle._currentLimitVelocity1, particle._currentLimitVelocity2, scale);
+                        const currentVelocity = particle.direction.length();
 
                         if (currentVelocity > limitVelocity) {
                             particle.direction.scaleInPlace(this.limitVelocityDamping);
@@ -441,10 +458,10 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
                         if (currentGradient !== particle._currentDragGradient) {
                             particle._currentDrag1 = particle._currentDrag2;
                             particle._currentDrag2 = (<FactorGradient>nextGradient).getFactor();
-                            particle._currentDragGradient = (<FactorGradient>currentGradient);
+                            particle._currentDragGradient = <FactorGradient>currentGradient;
                         }
 
-                        let drag = Scalar.Lerp(particle._currentDrag1, particle._currentDrag2, scale);
+                        const drag = Scalar.Lerp(particle._currentDrag1, particle._currentDrag2, scale);
 
                         this._scaledDirection.scaleInPlace(1.0 - drag);
                     });
@@ -459,14 +476,36 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
                 // Noise
                 if (noiseTextureData && noiseTextureSize && particle._randomNoiseCoordinates1) {
-                    let fetchedColorR = this._fetchR(particle._randomNoiseCoordinates1.x, particle._randomNoiseCoordinates1.y, noiseTextureSize.width, noiseTextureSize.height, noiseTextureData);
-                    let fetchedColorG = this._fetchR(particle._randomNoiseCoordinates1.z, particle._randomNoiseCoordinates2.x, noiseTextureSize.width, noiseTextureSize.height, noiseTextureData);
-                    let fetchedColorB = this._fetchR(particle._randomNoiseCoordinates2.y, particle._randomNoiseCoordinates2.z, noiseTextureSize.width, noiseTextureSize.height, noiseTextureData);
+                    const fetchedColorR = this._fetchR(
+                        particle._randomNoiseCoordinates1.x,
+                        particle._randomNoiseCoordinates1.y,
+                        noiseTextureSize.width,
+                        noiseTextureSize.height,
+                        noiseTextureData
+                    );
+                    const fetchedColorG = this._fetchR(
+                        particle._randomNoiseCoordinates1.z,
+                        particle._randomNoiseCoordinates2.x,
+                        noiseTextureSize.width,
+                        noiseTextureSize.height,
+                        noiseTextureData
+                    );
+                    const fetchedColorB = this._fetchR(
+                        particle._randomNoiseCoordinates2.y,
+                        particle._randomNoiseCoordinates2.z,
+                        noiseTextureSize.width,
+                        noiseTextureSize.height,
+                        noiseTextureData
+                    );
 
-                    let force = TmpVectors.Vector3[0];
-                    let scaledForce = TmpVectors.Vector3[1];
+                    const force = TmpVectors.Vector3[0];
+                    const scaledForce = TmpVectors.Vector3[1];
 
-                    force.copyFromFloats((2 * fetchedColorR - 1) * this.noiseStrength.x, (2 * fetchedColorG - 1) * this.noiseStrength.y, (2 * fetchedColorB - 1) * this.noiseStrength.z);
+                    force.copyFromFloats(
+                        (2 * fetchedColorR - 1) * this.noiseStrength.x,
+                        (2 * fetchedColorG - 1) * this.noiseStrength.y,
+                        (2 * fetchedColorB - 1) * this.noiseStrength.z
+                    );
 
                     force.scaleToRef(scaledUpdateSpeed, scaledForce);
                     particle.direction.addInPlace(scaledForce);
@@ -482,7 +521,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
                         if (currentGradient !== particle._currentSizeGradient) {
                             particle._currentSize1 = particle._currentSize2;
                             particle._currentSize2 = (<FactorGradient>nextGradient).getFactor();
-                            particle._currentSizeGradient = (<FactorGradient>currentGradient);
+                            particle._currentSizeGradient = <FactorGradient>currentGradient;
                         }
                         particle.size = Scalar.Lerp(particle._currentSize1, particle._currentSize2, scale);
                     });
@@ -492,8 +531,8 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
                 if (this._useRampGradients) {
                     if (this._colorRemapGradients && this._colorRemapGradients.length > 0) {
                         GradientHelper.GetCurrentGradient(ratio, this._colorRemapGradients, (currentGradient, nextGradient, scale) => {
-                            let min = Scalar.Lerp((<FactorGradient>currentGradient).factor1, (<FactorGradient>nextGradient).factor1, scale);
-                            let max = Scalar.Lerp((<FactorGradient>currentGradient).factor2!, (<FactorGradient>nextGradient).factor2!, scale);
+                            const min = Scalar.Lerp((<FactorGradient>currentGradient).factor1, (<FactorGradient>nextGradient).factor1, scale);
+                            const max = Scalar.Lerp((<FactorGradient>currentGradient).factor2!, (<FactorGradient>nextGradient).factor2!, scale);
 
                             particle.remapData.x = min;
                             particle.remapData.y = max - min;
@@ -502,8 +541,8 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
                     if (this._alphaRemapGradients && this._alphaRemapGradients.length > 0) {
                         GradientHelper.GetCurrentGradient(ratio, this._alphaRemapGradients, (currentGradient, nextGradient, scale) => {
-                            let min = Scalar.Lerp((<FactorGradient>currentGradient).factor1, (<FactorGradient>nextGradient).factor1, scale);
-                            let max = Scalar.Lerp((<FactorGradient>currentGradient).factor2!, (<FactorGradient>nextGradient).factor2!, scale);
+                            const min = Scalar.Lerp((<FactorGradient>currentGradient).factor1, (<FactorGradient>nextGradient).factor1, scale);
+                            const max = Scalar.Lerp((<FactorGradient>currentGradient).factor2!, (<FactorGradient>nextGradient).factor2!, scale);
 
                             particle.remapData.z = min;
                             particle.remapData.w = max - min;
@@ -518,7 +557,8 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
                 // Update the position of the attached sub-emitters to match their attached particle
                 particle._inheritParticleInfoToSubEmitters();
 
-                if (particle.age >= particle.lifeTime) { // Recycle by swapping with last particle
+                if (particle.age >= particle.lifeTime) {
+                    // Recycle by swapping with last particle
                     this._emitFromParticle(particle);
                     if (particle._attachedSubEmitters) {
                         particle._attachedSubEmitters.forEach((subEmitter) => {
@@ -536,7 +576,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
     }
 
     private _addFactorGradient(factorGradients: FactorGradient[], gradient: number, factor: number, factor2?: number) {
-        let newGradient = new FactorGradient(gradient, factor, factor2);
+        const newGradient = new FactorGradient(gradient, factor, factor2);
         factorGradients.push(newGradient);
 
         factorGradients.sort((a, b) => {
@@ -556,7 +596,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         }
 
         let index = 0;
-        for (var factorGradient of factorGradients) {
+        for (const factorGradient of factorGradients) {
             if (factorGradient.gradient === gradient) {
                 factorGradients.splice(index, 1);
                 break;
@@ -848,21 +888,19 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
             return;
         }
 
-        let data = new Uint8Array(this._rawTextureWidth * 4);
-        let tmpColor = TmpColors.Color3[0];
+        const data = new Uint8Array(this._rawTextureWidth * 4);
+        const tmpColor = TmpColors.Color3[0];
 
         for (var x = 0; x < this._rawTextureWidth; x++) {
-            var ratio = x / this._rawTextureWidth;
+            const ratio = x / this._rawTextureWidth;
 
             GradientHelper.GetCurrentGradient(ratio, this._rampGradients, (currentGradient, nextGradient, scale) => {
-
                 Color3.LerpToRef((<Color3Gradient>currentGradient).color, (<Color3Gradient>nextGradient).color, scale, tmpColor);
                 data[x * 4] = tmpColor.r * 255;
                 data[x * 4 + 1] = tmpColor.g * 255;
                 data[x * 4 + 2] = tmpColor.b * 255;
                 data[x * 4 + 3] = 255;
             });
-
         }
 
         this._rampGradientsTexture = RawTexture.CreateRGBATexture(data, this._rawTextureWidth, 1, this._scene, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE);
@@ -916,7 +954,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
             this._rampGradients = [];
         }
 
-        let rampGradient = new Color3Gradient(gradient, color);
+        const rampGradient = new Color3Gradient(gradient, color);
         this._rampGradients.push(rampGradient);
 
         this._syncRampGradientTexture();
@@ -952,7 +990,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
             this._colorGradients = [];
         }
 
-        let colorGradient = new ColorGradient(gradient, color1, color2);
+        const colorGradient = new ColorGradient(gradient, color1, color2);
         this._colorGradients.push(colorGradient);
 
         this._colorGradients.sort((a, b) => {
@@ -979,7 +1017,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         }
 
         let index = 0;
-        for (var colorGradient of this._colorGradients) {
+        for (const colorGradient of this._colorGradients) {
             if (colorGradient.gradient === gradient) {
                 this._colorGradients.splice(index, 1);
                 break;
@@ -1009,10 +1047,10 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         u = Math.abs(u) * 0.5 + 0.5;
         v = Math.abs(v) * 0.5 + 0.5;
 
-        let wrappedU = ((u * width) % width) | 0;
-        let wrappedV = ((v * height) % height) | 0;
+        const wrappedU = (u * width) % width | 0;
+        const wrappedV = (v * height) % height | 0;
 
-        let position = (wrappedU + wrappedV * width) * 4;
+        const position = (wrappedU + wrappedV * width) * 4;
         return pixels[position] / 255;
     }
 
@@ -1053,48 +1091,48 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
             this._vertexBufferSize += 4;
         }
 
-        let engine = this._engine;
+        const engine = this._engine;
         this._vertexData = new Float32Array(this._capacity * this._vertexBufferSize * (this._useInstancing ? 1 : 4));
         this._vertexBuffer = new Buffer(engine, this._vertexData, true, this._vertexBufferSize);
 
         let dataOffset = 0;
-        var positions = this._vertexBuffer.createVertexBuffer(VertexBuffer.PositionKind, dataOffset, 3, this._vertexBufferSize, this._useInstancing);
+        const positions = this._vertexBuffer.createVertexBuffer(VertexBuffer.PositionKind, dataOffset, 3, this._vertexBufferSize, this._useInstancing);
         this._vertexBuffers[VertexBuffer.PositionKind] = positions;
         dataOffset += 3;
 
-        var colors = this._vertexBuffer.createVertexBuffer(VertexBuffer.ColorKind, dataOffset, 4, this._vertexBufferSize, this._useInstancing);
+        const colors = this._vertexBuffer.createVertexBuffer(VertexBuffer.ColorKind, dataOffset, 4, this._vertexBufferSize, this._useInstancing);
         this._vertexBuffers[VertexBuffer.ColorKind] = colors;
         dataOffset += 4;
 
-        var options = this._vertexBuffer.createVertexBuffer("angle", dataOffset, 1, this._vertexBufferSize, this._useInstancing);
+        const options = this._vertexBuffer.createVertexBuffer("angle", dataOffset, 1, this._vertexBufferSize, this._useInstancing);
         this._vertexBuffers["angle"] = options;
         dataOffset += 1;
 
-        var size = this._vertexBuffer.createVertexBuffer("size", dataOffset, 2, this._vertexBufferSize, this._useInstancing);
+        const size = this._vertexBuffer.createVertexBuffer("size", dataOffset, 2, this._vertexBufferSize, this._useInstancing);
         this._vertexBuffers["size"] = size;
         dataOffset += 2;
 
         if (this._isAnimationSheetEnabled) {
-            var cellIndexBuffer = this._vertexBuffer.createVertexBuffer("cellIndex", dataOffset, 1, this._vertexBufferSize, this._useInstancing);
+            const cellIndexBuffer = this._vertexBuffer.createVertexBuffer("cellIndex", dataOffset, 1, this._vertexBufferSize, this._useInstancing);
             this._vertexBuffers["cellIndex"] = cellIndexBuffer;
             dataOffset += 1;
         }
 
         if (!this._isBillboardBased || this.billboardMode === ParticleSystem.BILLBOARDMODE_STRETCHED) {
-            var directionBuffer = this._vertexBuffer.createVertexBuffer("direction", dataOffset, 3, this._vertexBufferSize, this._useInstancing);
+            const directionBuffer = this._vertexBuffer.createVertexBuffer("direction", dataOffset, 3, this._vertexBufferSize, this._useInstancing);
             this._vertexBuffers["direction"] = directionBuffer;
             dataOffset += 3;
         }
 
         if (this._useRampGradients) {
-            var rampDataBuffer = this._vertexBuffer.createVertexBuffer("remapData", dataOffset, 4, this._vertexBufferSize, this._useInstancing);
+            const rampDataBuffer = this._vertexBuffer.createVertexBuffer("remapData", dataOffset, 4, this._vertexBufferSize, this._useInstancing);
             this._vertexBuffers["remapData"] = rampDataBuffer;
             dataOffset += 4;
         }
 
-        var offsets: VertexBuffer;
+        let offsets: VertexBuffer;
         if (this._useInstancing) {
-            var spriteData = new Float32Array([0, 0, 1, 0, 0, 1, 1, 1]);
+            const spriteData = new Float32Array([0, 0, 1, 0, 0, 1, 1, 1]);
             this._spriteBuffer = new Buffer(engine, spriteData, false, 2);
             offsets = this._spriteBuffer.createVertexBuffer("offset", 0, 2);
         } else {
@@ -1110,9 +1148,9 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         if (this._useInstancing) {
             return;
         }
-        var indices = [];
-        var index = 0;
-        for (var count = 0; count < this._capacity; count++) {
+        const indices = [];
+        let index = 0;
+        for (let count = 0; count < this._capacity; count++) {
             indices.push(index);
             indices.push(index + 1);
             indices.push(index + 2);
@@ -1216,19 +1254,19 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
                 (this.emitter as any).computeWorldMatrix(true);
             }
 
-            let noiseTextureAsProcedural = this.noiseTexture as ProceduralTexture;
+            const noiseTextureAsProcedural = this.noiseTexture as ProceduralTexture;
 
             if (noiseTextureAsProcedural && noiseTextureAsProcedural.onGeneratedObservable) {
                 noiseTextureAsProcedural.onGeneratedObservable.addOnce(() => {
                     setTimeout(() => {
-                        for (var index = 0; index < this.preWarmCycles; index++) {
+                        for (let index = 0; index < this.preWarmCycles; index++) {
                             this.animate(true);
                             noiseTextureAsProcedural.render();
                         }
                     });
                 });
             } else {
-                for (var index = 0; index < this.preWarmCycles; index++) {
+                for (let index = 0; index < this.preWarmCycles; index++) {
                     this.animate(true);
                 }
             }
@@ -1269,10 +1307,14 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
     }
 
     /**
+     * @param index
+     * @param particle
+     * @param offsetX
+     * @param offsetY
      * @hidden (for internal use only)
      */
     public _appendParticleVertex(index: number, particle: Particle, offsetX: number, offsetY: number): void {
-        var offset = index * this._vertexBufferSize;
+        let offset = index * this._vertexBufferSize;
 
         this._vertexData[offset++] = particle.position.x + this.worldOffset.x;
         this._vertexData[offset++] = particle.position.y + this.worldOffset.y;
@@ -1317,7 +1359,6 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
                 this._vertexData[offset++] = direction.x;
                 this._vertexData[offset++] = direction.y;
                 this._vertexData[offset++] = direction.z;
-
             }
         } else if (this.billboardMode === ParticleSystem.BILLBOARDMODE_STRETCHED) {
             this._vertexData[offset++] = particle.direction.x;
@@ -1336,15 +1377,13 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
             if (this._isAnimationSheetEnabled) {
                 if (offsetX === 0) {
                     offsetX = this._epsilon;
-                }
-                else if (offsetX === 1) {
+                } else if (offsetX === 1) {
                     offsetX = 1 - this._epsilon;
                 }
 
                 if (offsetY === 0) {
                     offsetY = this._epsilon;
-                }
-                else if (offsetY === 1) {
+                } else if (offsetY === 1) {
                     offsetY = 1 - this._epsilon;
                 }
             }
@@ -1359,15 +1398,16 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
     /**
      * "Recycles" one of the particle by copying it back to the "stock" of particles and removing it from the active list.
      * Its lifetime will start back at 0.
+     * @param particle
      */
     public recycleParticle: (particle: Particle) => void = (particle) => {
         // move particle from activeParticle list to stock particles
-        var lastParticle = <Particle>this._particles.pop();
+        const lastParticle = <Particle>this._particles.pop();
         if (lastParticle !== particle) {
             lastParticle.copyTo(particle);
         }
         this._stockParticles.push(lastParticle);
-    }
+    };
 
     private _stopSubEmitters(): void {
         if (!this.activeSubSystems) {
@@ -1380,7 +1420,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
     }
 
     private _createParticle: () => Particle = () => {
-        var particle: Particle;
+        let particle: Particle;
         if (this._stockParticles.length !== 0) {
             particle = <Particle>this._stockParticles.pop();
             particle._reset();
@@ -1390,25 +1430,25 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
         // Attach emitters
         if (this._subEmitters && this._subEmitters.length > 0) {
-            var subEmitters = this._subEmitters[Math.floor(Math.random() * this._subEmitters.length)];
+            const subEmitters = this._subEmitters[Math.floor(Math.random() * this._subEmitters.length)];
             particle._attachedSubEmitters = [];
             subEmitters.forEach((subEmitter) => {
                 if (subEmitter.type === SubEmitterType.ATTACHED) {
-                    var newEmitter = subEmitter.clone();
+                    const newEmitter = subEmitter.clone();
                     (<Array<SubEmitter>>particle._attachedSubEmitters).push(newEmitter);
                     newEmitter.particleSystem.start();
                 }
             });
         }
         return particle;
-    }
+    };
 
     private _removeFromRoot(): void {
         if (!this._rootParticleSystem) {
             return;
         }
 
-        let index = this._rootParticleSystem.activeSubSystems.indexOf(this);
+        const index = this._rootParticleSystem.activeSubSystems.indexOf(this);
         if (index !== -1) {
             this._rootParticleSystem.activeSubSystems.splice(index, 1);
         }
@@ -1420,18 +1460,18 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         if (!this._subEmitters || this._subEmitters.length === 0) {
             return;
         }
-        var templateIndex = Math.floor(Math.random() * this._subEmitters.length);
+        const templateIndex = Math.floor(Math.random() * this._subEmitters.length);
 
         this._subEmitters[templateIndex].forEach((subEmitter) => {
             if (subEmitter.type === SubEmitterType.END) {
-                var subSystem = subEmitter.clone();
+                const subSystem = subEmitter.clone();
                 particle._inheritParticleInfoToSubEmitter(subSystem);
                 subSystem.particleSystem._rootParticleSystem = this;
                 this.activeSubSystems.push(subSystem.particleSystem);
                 subSystem.particleSystem.start();
             }
         });
-    }
+    };
 
     // End of sub system methods
 
@@ -1440,10 +1480,10 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         this._alive = this._particles.length > 0;
 
         if ((<AbstractMesh>this.emitter).position) {
-            var emitterMesh = (<AbstractMesh>this.emitter);
+            const emitterMesh = <AbstractMesh>this.emitter;
             this._emitterWorldMatrix = emitterMesh.getWorldMatrix();
         } else {
-            var emitterPosition = (<Vector3>this.emitter);
+            const emitterPosition = <Vector3>this.emitter;
             this._emitterWorldMatrix = Matrix.Translation(emitterPosition.x, emitterPosition.y, emitterPosition.z);
         }
 
@@ -1451,8 +1491,8 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         this.updateFunction(this._particles);
 
         // Add new ones
-        var particle: Particle;
-        for (var index = 0; index < newParticles; index++) {
+        let particle: Particle;
+        for (let index = 0; index < newParticles; index++) {
             if (this._particles.length === this._capacity) {
                 break;
             }
@@ -1463,13 +1503,13 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
             // Life time
             if (this.targetStopDuration && this._lifeTimeGradients && this._lifeTimeGradients.length > 0) {
-                let ratio = Scalar.Clamp(this._actualFrame / this.targetStopDuration);
+                const ratio = Scalar.Clamp(this._actualFrame / this.targetStopDuration);
                 GradientHelper.GetCurrentGradient(ratio, this._lifeTimeGradients, (currentGradient, nextGradient) => {
-                    let factorGradient1 = (<FactorGradient>currentGradient);
-                    let factorGradient2 = (<FactorGradient>nextGradient);
-                    let lifeTime1 = factorGradient1.getFactor();
-                    let lifeTime2 = factorGradient2.getFactor();
-                    let gradient = (ratio - factorGradient1.gradient) / (factorGradient2.gradient - factorGradient1.gradient);
+                    const factorGradient1 = <FactorGradient>currentGradient;
+                    const factorGradient2 = <FactorGradient>nextGradient;
+                    const lifeTime1 = factorGradient1.getFactor();
+                    const lifeTime2 = factorGradient2.getFactor();
+                    const gradient = (ratio - factorGradient1.gradient) / (factorGradient2.gradient - factorGradient1.gradient);
                     particle.lifeTime = Scalar.Lerp(lifeTime1, lifeTime2, gradient);
                 });
             } else {
@@ -1477,12 +1517,11 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
             }
 
             // Emitter
-            let emitPower = Scalar.RandomRange(this.minEmitPower, this.maxEmitPower);
+            const emitPower = Scalar.RandomRange(this.minEmitPower, this.maxEmitPower);
 
             if (this.startPositionFunction) {
                 this.startPositionFunction(this._emitterWorldMatrix, particle.position, particle, this.isLocal);
-            }
-            else {
+            } else {
                 this.particleEmitterType.startPositionFunction(this._emitterWorldMatrix, particle.position, particle, this.isLocal);
             }
 
@@ -1497,8 +1536,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
             if (this.startDirectionFunction) {
                 this.startDirectionFunction(this._emitterWorldMatrix, particle.direction, particle, this.isLocal);
-            }
-            else {
+            } else {
                 this.particleEmitterType.startDirectionFunction(this._emitterWorldMatrix, particle.direction, particle, this.isLocal, this._emitterInverseWorldMatrix);
             }
 
@@ -1538,10 +1576,10 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
                     if (currentGradient !== this._currentStartSizeGradient) {
                         this._currentStartSize1 = this._currentStartSize2;
                         this._currentStartSize2 = (<FactorGradient>nextGradient).getFactor();
-                        this._currentStartSizeGradient = (<FactorGradient>currentGradient);
+                        this._currentStartSizeGradient = <FactorGradient>currentGradient;
                     }
 
-                    var value = Scalar.Lerp(this._currentStartSize1, this._currentStartSize2, scale);
+                    const value = Scalar.Lerp(this._currentStartSize1, this._currentStartSize2, scale);
                     particle.scale.scaleInPlace(value);
                 });
             }
@@ -1600,7 +1638,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
             // Color
             if (!this._colorGradients || this._colorGradients.length === 0) {
-                var step = Scalar.RandomRange(0, 1.0);
+                const step = Scalar.RandomRange(0, 1.0);
 
                 Color4.LerpToRef(this.color1, this.color2, step, particle.color);
 
@@ -1646,13 +1684,17 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
             // Update the position of the attached sub-emitters to match their attached particle
             particle._inheritParticleInfoToSubEmitters();
-
         }
     }
 
-    /** @hidden */
+    /**
+     * @param isAnimationSheetEnabled
+     * @param isBillboardBased
+     * @param useRampGradients
+     * @hidden
+     */
     public static _GetAttributeNamesOrOptions(isAnimationSheetEnabled = false, isBillboardBased = false, useRampGradients = false): string[] {
-        var attributeNamesOrOptions = [VertexBuffer.PositionKind, VertexBuffer.ColorKind, "angle", "offset", "size"];
+        const attributeNamesOrOptions = [VertexBuffer.PositionKind, VertexBuffer.ColorKind, "angle", "offset", "size"];
 
         if (isAnimationSheetEnabled) {
             attributeNamesOrOptions.push("cellIndex");
@@ -1669,9 +1711,25 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         return attributeNamesOrOptions;
     }
 
-    /** @hidden */
+    /**
+     * @param isAnimationSheetEnabled
+     * @hidden
+     */
     public static _GetEffectCreationOptions(isAnimationSheetEnabled = false): string[] {
-        var effectCreationOption = ["invView", "view", "projection", "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "vClipPlane5", "vClipPlane6", "textureMask", "translationPivot", "eyePosition"];
+        const effectCreationOption = [
+            "invView",
+            "view",
+            "projection",
+            "vClipPlane",
+            "vClipPlane2",
+            "vClipPlane3",
+            "vClipPlane4",
+            "vClipPlane5",
+            "vClipPlane6",
+            "textureMask",
+            "translationPivot",
+            "eyePosition",
+        ];
 
         if (isAnimationSheetEnabled) {
             effectCreationOption.push("particlesInfos");
@@ -1755,7 +1813,13 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
      * @param samplers Samplers array to fill
      */
     public fillUniformsAttributesAndSamplerNames(uniforms: Array<string>, attributes: Array<string>, samplers: Array<string>) {
-        attributes.push(...ParticleSystem._GetAttributeNamesOrOptions(this._isAnimationSheetEnabled, this._isBillboardBased && this.billboardMode !== ParticleSystem.BILLBOARDMODE_STRETCHED, this._useRampGradients));
+        attributes.push(
+            ...ParticleSystem._GetAttributeNamesOrOptions(
+                this._isAnimationSheetEnabled,
+                this._isBillboardBased && this.billboardMode !== ParticleSystem.BILLBOARDMODE_STRETCHED,
+                this._useRampGradients
+            )
+        );
 
         uniforms.push(...ParticleSystem._GetEffectCreationOptions(this._isAnimationSheetEnabled));
 
@@ -1767,7 +1831,10 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         }
     }
 
-    /** @hidden */
+    /**
+     * @param blendMode
+     * @hidden
+     */
     private _getWrapper(blendMode: number): DrawWrapper {
         const customWrapper = this._getCustomDrawWrapper(blendMode);
 
@@ -1775,7 +1842,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
             return customWrapper;
         }
 
-        var defines: Array<string> = [];
+        const defines: Array<string> = [];
 
         this.fillDefines(defines, blendMode);
 
@@ -1794,22 +1861,15 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
             drawWrappers[blendMode] = drawWrapper;
         }
 
-        var join = defines.join("\n");
+        const join = defines.join("\n");
         if (drawWrapper.defines !== join) {
-            var attributesNamesOrOptions: Array<string> = [];
-            var effectCreationOption: Array<string> = [];
-            var samplers: Array<string> = [];
+            const attributesNamesOrOptions: Array<string> = [];
+            const effectCreationOption: Array<string> = [];
+            const samplers: Array<string> = [];
 
             this.fillUniformsAttributesAndSamplerNames(effectCreationOption, attributesNamesOrOptions, samplers);
 
-            drawWrapper.setEffect(
-                this._engine.createEffect(
-                    "particles",
-                    attributesNamesOrOptions,
-                    effectCreationOption,
-                    samplers, join
-                ),
-                join);
+            drawWrapper.setEffect(this._engine.createEffect("particles", attributesNamesOrOptions, effectCreationOption, samplers, join), join);
         }
 
         return drawWrapper;
@@ -1839,7 +1899,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         this._scaledUpdateSpeed = this.updateSpeed * (preWarmOnly ? this.preWarmStepOffset : this._scene?.getAnimationRatio() || 1);
 
         // Determine the number of particles we need to create
-        var newParticles;
+        let newParticles;
 
         if (this.manualEmitCount > -1) {
             newParticles = this.manualEmitCount;
@@ -1854,14 +1914,14 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
                     if (currentGradient !== this._currentEmitRateGradient) {
                         this._currentEmitRate1 = this._currentEmitRate2;
                         this._currentEmitRate2 = (<FactorGradient>nextGradient).getFactor();
-                        this._currentEmitRateGradient = (<FactorGradient>currentGradient);
+                        this._currentEmitRateGradient = <FactorGradient>currentGradient;
                     }
 
                     rate = Scalar.Lerp(this._currentEmitRate1, this._currentEmitRate2, scale);
                 });
             }
 
-            newParticles = ((rate * this._scaledUpdateSpeed) >> 0);
+            newParticles = (rate * this._scaledUpdateSpeed) >> 0;
             this._newPartsExcess += rate * this._scaledUpdateSpeed - newParticles;
         }
 
@@ -1898,9 +1958,9 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
         if (!preWarmOnly) {
             // Update VBO
-            var offset = 0;
-            for (var index = 0; index < this._particles.length; index++) {
-                var particle = this._particles[index];
+            let offset = 0;
+            for (let index = 0; index < this._particles.length; index++) {
+                const particle = this._particles[index];
                 this._appendParticleVertices(offset, particle);
                 offset += this._useInstancing ? 1 : 4;
             }
@@ -1938,7 +1998,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
         this._vertexBuffer?._rebuild();
 
-        for (var key in this._vertexBuffers) {
+        for (const key in this._vertexBuffers) {
             this._vertexBuffers[key]._rebuild();
         }
 
@@ -1950,7 +2010,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
      * @return true if the system is ready
      */
     public isReady(): boolean {
-        if (!this.emitter || this._imageProcessingConfiguration && !this._imageProcessingConfiguration.isReady() || !this.particleTexture || !this.particleTexture.isReady()) {
+        if (!this.emitter || (this._imageProcessingConfiguration && !this._imageProcessingConfiguration.isReady()) || !this.particleTexture || !this.particleTexture.isReady()) {
             return false;
         }
 
@@ -1972,20 +2032,20 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
     private _render(blendMode: number) {
         const drawWrapper = this._getWrapper(blendMode);
-        var effect = drawWrapper.effect!;
+        const effect = drawWrapper.effect!;
 
-        var engine = this._engine;
+        const engine = this._engine;
 
         // Render
         engine.enableEffect(drawWrapper);
 
-        var viewMatrix = this.defaultViewMatrix ?? this._scene!.getViewMatrix();
+        const viewMatrix = this.defaultViewMatrix ?? this._scene!.getViewMatrix();
         effect.setTexture("diffuseSampler", this.particleTexture);
         effect.setMatrix("view", viewMatrix);
         effect.setMatrix("projection", this.defaultProjectionMatrix ?? this._scene!.getProjectionMatrix());
 
         if (this._isAnimationSheetEnabled && this.particleTexture) {
-            var baseSize = this.particleTexture.getBaseSize();
+            const baseSize = this.particleTexture.getBaseSize();
             effect.setFloat3("particlesInfos", this.spriteCellWidth / baseSize.width, this.spriteCellHeight / baseSize.height, this.spriteCellWidth / baseSize.width);
         }
 
@@ -1993,7 +2053,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         effect.setFloat4("textureMask", this.textureMask.r, this.textureMask.g, this.textureMask.b, this.textureMask.a);
 
         if (this._isBillboardBased && this._scene) {
-            var camera = this._scene.activeCamera!;
+            const camera = this._scene.activeCamera!;
             effect.setVector3("eyePosition", camera.globalPosition);
         }
 
@@ -2072,7 +2132,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
             return 0;
         }
 
-        var engine = this._engine as any;
+        const engine = this._engine as any;
         if (engine.setState) {
             engine.setState(false);
 
@@ -2085,8 +2145,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
         if (this.blendMode === ParticleSystem.BLENDMODE_MULTIPLYADD) {
             outparticles = this._render(ParticleSystem.BLENDMODE_MULTIPLY) + this._render(ParticleSystem.BLENDMODE_ADD);
-        }
-        else {
+        } else {
             outparticles = this._render(this.blendMode);
         }
 
@@ -2146,7 +2205,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
         if (this._subEmitters && this._subEmitters.length) {
             for (var index = 0; index < this._subEmitters.length; index++) {
-                for (var subEmitter of this._subEmitters[index]) {
+                for (const subEmitter of this._subEmitters[index]) {
                     subEmitter.dispose();
                 }
             }
@@ -2189,13 +2248,13 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
      * @returns the cloned particle system
      */
     public clone(name: string, newEmitter: any): ParticleSystem {
-        var custom = { ...this._customWrappers };
-        var program: any = null;
-        var engine = this._engine as Engine;
+        const custom = { ...this._customWrappers };
+        let program: any = null;
+        const engine = this._engine as Engine;
         if (engine.createEffectForParticles) {
             if (this.customShader != null) {
                 program = this.customShader;
-                const defines: string = (program.shaderOptions.defines.length > 0) ? program.shaderOptions.defines.join("\n") : "";
+                const defines: string = program.shaderOptions.defines.length > 0 ? program.shaderOptions.defines.join("\n") : "";
                 const effect = engine.createEffectForParticles(program.shaderPath.fragmentElement, program.shaderOptions.uniforms, program.shaderOptions.samplers, defines);
                 if (!custom[0]) {
                     this.setCustomEffect(effect, 0);
@@ -2205,8 +2264,8 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
             }
         }
 
-        let serialization = this.serialize();
-        var result = ParticleSystem.Parse(serialization, this._scene || this._engine, this._rootUrl);
+        const serialization = this.serialize();
+        const result = ParticleSystem.Parse(serialization, this._scene || this._engine, this._rootUrl);
         result.name = name;
         result.customShader = program;
         result._customWrappers = custom;
@@ -2233,7 +2292,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
      * @returns the JSON object
      */
     public serialize(serializeTexture = false): any {
-        var serializationObject: any = {};
+        const serializationObject: any = {};
 
         ParticleSystem._Serialize(serializationObject, this, serializeTexture);
 
@@ -2249,9 +2308,9 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
                 this._prepareSubEmitterInternalArray();
             }
 
-            for (var subs of this._subEmitters) {
-                let cell = [];
-                for (var sub of subs) {
+            for (const subs of this._subEmitters) {
+                const cell = [];
+                for (const sub of subs) {
                     cell.push(sub.serialize(serializeTexture));
                 }
 
@@ -2262,7 +2321,12 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         return serializationObject;
     }
 
-    /** @hidden */
+    /**
+     * @param serializationObject
+     * @param particleSystem
+     * @param serializeTexture
+     * @hidden
+     */
     public static _Serialize(serializationObject: any, particleSystem: IParticleSystem, serializeTexture: boolean) {
         serializationObject.name = particleSystem.name;
         serializationObject.id = particleSystem.id;
@@ -2274,10 +2338,10 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
         // Emitter
         if ((<AbstractMesh>particleSystem.emitter).position) {
-            var emitterMesh = (<AbstractMesh>particleSystem.emitter);
+            const emitterMesh = <AbstractMesh>particleSystem.emitter;
             serializationObject.emitterId = emitterMesh.id;
         } else {
-            var emitterPosition = (<Vector3>particleSystem.emitter);
+            const emitterPosition = <Vector3>particleSystem.emitter;
             serializationObject.emitter = emitterPosition.asArray();
         }
 
@@ -2343,13 +2407,13 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         serializationObject.spriteRandomStartCell = particleSystem.spriteRandomStartCell;
         serializationObject.isAnimationSheetEnabled = particleSystem.isAnimationSheetEnabled;
 
-        let colorGradients = particleSystem.getColorGradients();
+        const colorGradients = particleSystem.getColorGradients();
         if (colorGradients) {
             serializationObject.colorGradients = [];
-            for (var colorGradient of colorGradients) {
+            for (const colorGradient of colorGradients) {
                 var serializedGradient: any = {
                     gradient: colorGradient.gradient,
-                    color1: colorGradient.color1.asArray()
+                    color1: colorGradient.color1.asArray(),
                 };
 
                 if (colorGradient.color2) {
@@ -2362,13 +2426,13 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
             }
         }
 
-        let rampGradients = particleSystem.getRampGradients();
+        const rampGradients = particleSystem.getRampGradients();
         if (rampGradients) {
             serializationObject.rampGradients = [];
-            for (var rampGradient of rampGradients) {
+            for (const rampGradient of rampGradients) {
                 var serializedGradient: any = {
                     gradient: rampGradient.gradient,
-                    color: rampGradient.color.asArray()
+                    color: rampGradient.color.asArray(),
                 };
 
                 serializationObject.rampGradients.push(serializedGradient);
@@ -2376,14 +2440,13 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
             serializationObject.useRampGradients = particleSystem.useRampGradients;
         }
 
-        let colorRemapGradients = particleSystem.getColorRemapGradients();
+        const colorRemapGradients = particleSystem.getColorRemapGradients();
         if (colorRemapGradients) {
             serializationObject.colorRemapGradients = [];
-            for (var colorRemapGradient of colorRemapGradients) {
-
+            for (const colorRemapGradient of colorRemapGradients) {
                 var serializedGradient: any = {
                     gradient: colorRemapGradient.gradient,
-                    factor1: colorRemapGradient.factor1
+                    factor1: colorRemapGradient.factor1,
                 };
 
                 if (colorRemapGradient.factor2 !== undefined) {
@@ -2396,14 +2459,13 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
             }
         }
 
-        let alphaRemapGradients = particleSystem.getAlphaRemapGradients();
+        const alphaRemapGradients = particleSystem.getAlphaRemapGradients();
         if (alphaRemapGradients) {
             serializationObject.alphaRemapGradients = [];
-            for (var alphaRemapGradient of alphaRemapGradients) {
-
+            for (const alphaRemapGradient of alphaRemapGradients) {
                 var serializedGradient: any = {
                     gradient: alphaRemapGradient.gradient,
-                    factor1: alphaRemapGradient.factor1
+                    factor1: alphaRemapGradient.factor1,
                 };
 
                 if (alphaRemapGradient.factor2 !== undefined) {
@@ -2416,14 +2478,13 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
             }
         }
 
-        let sizeGradients = particleSystem.getSizeGradients();
+        const sizeGradients = particleSystem.getSizeGradients();
         if (sizeGradients) {
             serializationObject.sizeGradients = [];
-            for (var sizeGradient of sizeGradients) {
-
+            for (const sizeGradient of sizeGradients) {
                 var serializedGradient: any = {
                     gradient: sizeGradient.gradient,
-                    factor1: sizeGradient.factor1
+                    factor1: sizeGradient.factor1,
                 };
 
                 if (sizeGradient.factor2 !== undefined) {
@@ -2436,14 +2497,13 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
             }
         }
 
-        let angularSpeedGradients = particleSystem.getAngularSpeedGradients();
+        const angularSpeedGradients = particleSystem.getAngularSpeedGradients();
         if (angularSpeedGradients) {
             serializationObject.angularSpeedGradients = [];
-            for (var angularSpeedGradient of angularSpeedGradients) {
-
+            for (const angularSpeedGradient of angularSpeedGradients) {
                 var serializedGradient: any = {
                     gradient: angularSpeedGradient.gradient,
-                    factor1: angularSpeedGradient.factor1
+                    factor1: angularSpeedGradient.factor1,
                 };
 
                 if (angularSpeedGradient.factor2 !== undefined) {
@@ -2456,14 +2516,13 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
             }
         }
 
-        let velocityGradients = particleSystem.getVelocityGradients();
+        const velocityGradients = particleSystem.getVelocityGradients();
         if (velocityGradients) {
             serializationObject.velocityGradients = [];
-            for (var velocityGradient of velocityGradients) {
-
+            for (const velocityGradient of velocityGradients) {
                 var serializedGradient: any = {
                     gradient: velocityGradient.gradient,
-                    factor1: velocityGradient.factor1
+                    factor1: velocityGradient.factor1,
                 };
 
                 if (velocityGradient.factor2 !== undefined) {
@@ -2476,14 +2535,13 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
             }
         }
 
-        let dragGradients = particleSystem.getDragGradients();
+        const dragGradients = particleSystem.getDragGradients();
         if (dragGradients) {
             serializationObject.dragGradients = [];
-            for (var dragGradient of dragGradients) {
-
+            for (const dragGradient of dragGradients) {
                 var serializedGradient: any = {
                     gradient: dragGradient.gradient,
-                    factor1: dragGradient.factor1
+                    factor1: dragGradient.factor1,
                 };
 
                 if (dragGradient.factor2 !== undefined) {
@@ -2496,14 +2554,13 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
             }
         }
 
-        let emitRateGradients = particleSystem.getEmitRateGradients();
+        const emitRateGradients = particleSystem.getEmitRateGradients();
         if (emitRateGradients) {
             serializationObject.emitRateGradients = [];
-            for (var emitRateGradient of emitRateGradients) {
-
+            for (const emitRateGradient of emitRateGradients) {
                 var serializedGradient: any = {
                     gradient: emitRateGradient.gradient,
-                    factor1: emitRateGradient.factor1
+                    factor1: emitRateGradient.factor1,
                 };
 
                 if (emitRateGradient.factor2 !== undefined) {
@@ -2516,14 +2573,13 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
             }
         }
 
-        let startSizeGradients = particleSystem.getStartSizeGradients();
+        const startSizeGradients = particleSystem.getStartSizeGradients();
         if (startSizeGradients) {
             serializationObject.startSizeGradients = [];
-            for (var startSizeGradient of startSizeGradients) {
-
+            for (const startSizeGradient of startSizeGradients) {
                 var serializedGradient: any = {
                     gradient: startSizeGradient.gradient,
-                    factor1: startSizeGradient.factor1
+                    factor1: startSizeGradient.factor1,
                 };
 
                 if (startSizeGradient.factor2 !== undefined) {
@@ -2536,14 +2592,13 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
             }
         }
 
-        let lifeTimeGradients = particleSystem.getLifeTimeGradients();
+        const lifeTimeGradients = particleSystem.getLifeTimeGradients();
         if (lifeTimeGradients) {
             serializationObject.lifeTimeGradients = [];
-            for (var lifeTimeGradient of lifeTimeGradients) {
-
+            for (const lifeTimeGradient of lifeTimeGradients) {
                 var serializedGradient: any = {
                     gradient: lifeTimeGradient.gradient,
-                    factor1: lifeTimeGradient.factor1
+                    factor1: lifeTimeGradient.factor1,
                 };
 
                 if (lifeTimeGradient.factor2 !== undefined) {
@@ -2556,14 +2611,13 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
             }
         }
 
-        let limitVelocityGradients = particleSystem.getLimitVelocityGradients();
+        const limitVelocityGradients = particleSystem.getLimitVelocityGradients();
         if (limitVelocityGradients) {
             serializationObject.limitVelocityGradients = [];
-            for (var limitVelocityGradient of limitVelocityGradients) {
-
+            for (const limitVelocityGradient of limitVelocityGradients) {
                 var serializedGradient: any = {
                     gradient: limitVelocityGradient.gradient,
-                    factor1: limitVelocityGradient.factor1
+                    factor1: limitVelocityGradient.factor1,
                 };
 
                 if (limitVelocityGradient.factor2 !== undefined) {
@@ -2583,7 +2637,13 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         }
     }
 
-    /** @hidden */
+    /**
+     * @param parsedParticleSystem
+     * @param particleSystem
+     * @param sceneOrEngine
+     * @param rootUrl
+     * @hidden
+     */
     public static _Parse(parsedParticleSystem: any, particleSystem: IParticleSystem, sceneOrEngine: Scene | ThinEngine, rootUrl: string) {
         let scene: Nullable<Scene>;
 
@@ -2599,7 +2659,12 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
             if (parsedParticleSystem.texture) {
                 particleSystem.particleTexture = internalClass.Parse(parsedParticleSystem.texture, scene, rootUrl) as BaseTexture;
             } else if (parsedParticleSystem.textureName) {
-                particleSystem.particleTexture = new internalClass(rootUrl + parsedParticleSystem.textureName, scene, false, parsedParticleSystem.invertY !== undefined ? parsedParticleSystem.invertY : true);
+                particleSystem.particleTexture = new internalClass(
+                    rootUrl + parsedParticleSystem.textureName,
+                    scene,
+                    false,
+                    parsedParticleSystem.invertY !== undefined ? parsedParticleSystem.invertY : true
+                );
                 particleSystem.particleTexture!.name = parsedParticleSystem.textureName;
             }
         }
@@ -2607,8 +2672,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         // Emitter
         if (!parsedParticleSystem.emitterId && parsedParticleSystem.emitterId !== 0 && parsedParticleSystem.emitter === undefined) {
             particleSystem.emitter = Vector3.Zero();
-        }
-        else if (parsedParticleSystem.emitterId && scene) {
+        } else if (parsedParticleSystem.emitterId && scene) {
             particleSystem.emitter = scene.getLastMeshById(parsedParticleSystem.emitterId);
         } else {
             particleSystem.emitter = Vector3.FromArray(parsedParticleSystem.emitter);
@@ -2631,8 +2695,8 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
         // Animations
         if (parsedParticleSystem.animations) {
-            for (var animationIndex = 0; animationIndex < parsedParticleSystem.animations.length; animationIndex++) {
-                var parsedAnimation = parsedParticleSystem.animations[animationIndex];
+            for (let animationIndex = 0; animationIndex < parsedParticleSystem.animations.length; animationIndex++) {
+                const parsedAnimation = parsedParticleSystem.animations[animationIndex];
                 const internalClass = GetClass("BABYLON.Animation");
                 if (internalClass) {
                     particleSystem.animations.push(internalClass.Parse(parsedAnimation));
@@ -2645,7 +2709,13 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         }
 
         if (parsedParticleSystem.autoAnimate && scene) {
-            scene.beginAnimation(particleSystem, parsedParticleSystem.autoAnimateFrom, parsedParticleSystem.autoAnimateTo, parsedParticleSystem.autoAnimateLoop, parsedParticleSystem.autoAnimateSpeed || 1.0);
+            scene.beginAnimation(
+                particleSystem,
+                parsedParticleSystem.autoAnimateFrom,
+                parsedParticleSystem.autoAnimateTo,
+                parsedParticleSystem.autoAnimateLoop,
+                parsedParticleSystem.autoAnimateSpeed || 1.0
+            );
         }
 
         // Particle system
@@ -2689,75 +2759,111 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         particleSystem.blendMode = parsedParticleSystem.blendMode;
 
         if (parsedParticleSystem.colorGradients) {
-            for (var colorGradient of parsedParticleSystem.colorGradients) {
-                particleSystem.addColorGradient(colorGradient.gradient, Color4.FromArray(colorGradient.color1), colorGradient.color2 ? Color4.FromArray(colorGradient.color2) : undefined);
+            for (const colorGradient of parsedParticleSystem.colorGradients) {
+                particleSystem.addColorGradient(
+                    colorGradient.gradient,
+                    Color4.FromArray(colorGradient.color1),
+                    colorGradient.color2 ? Color4.FromArray(colorGradient.color2) : undefined
+                );
             }
         }
 
         if (parsedParticleSystem.rampGradients) {
-            for (var rampGradient of parsedParticleSystem.rampGradients) {
+            for (const rampGradient of parsedParticleSystem.rampGradients) {
                 particleSystem.addRampGradient(rampGradient.gradient, Color3.FromArray(rampGradient.color));
             }
             particleSystem.useRampGradients = parsedParticleSystem.useRampGradients;
         }
 
         if (parsedParticleSystem.colorRemapGradients) {
-            for (var colorRemapGradient of parsedParticleSystem.colorRemapGradients) {
-                particleSystem.addColorRemapGradient(colorRemapGradient.gradient, colorRemapGradient.factor1 !== undefined ? colorRemapGradient.factor1 : colorRemapGradient.factor, colorRemapGradient.factor2);
+            for (const colorRemapGradient of parsedParticleSystem.colorRemapGradients) {
+                particleSystem.addColorRemapGradient(
+                    colorRemapGradient.gradient,
+                    colorRemapGradient.factor1 !== undefined ? colorRemapGradient.factor1 : colorRemapGradient.factor,
+                    colorRemapGradient.factor2
+                );
             }
         }
 
         if (parsedParticleSystem.alphaRemapGradients) {
-            for (var alphaRemapGradient of parsedParticleSystem.alphaRemapGradients) {
-                particleSystem.addAlphaRemapGradient(alphaRemapGradient.gradient, alphaRemapGradient.factor1 !== undefined ? alphaRemapGradient.factor1 : alphaRemapGradient.factor, alphaRemapGradient.factor2);
+            for (const alphaRemapGradient of parsedParticleSystem.alphaRemapGradients) {
+                particleSystem.addAlphaRemapGradient(
+                    alphaRemapGradient.gradient,
+                    alphaRemapGradient.factor1 !== undefined ? alphaRemapGradient.factor1 : alphaRemapGradient.factor,
+                    alphaRemapGradient.factor2
+                );
             }
         }
 
         if (parsedParticleSystem.sizeGradients) {
-            for (var sizeGradient of parsedParticleSystem.sizeGradients) {
+            for (const sizeGradient of parsedParticleSystem.sizeGradients) {
                 particleSystem.addSizeGradient(sizeGradient.gradient, sizeGradient.factor1 !== undefined ? sizeGradient.factor1 : sizeGradient.factor, sizeGradient.factor2);
             }
         }
 
         if (parsedParticleSystem.angularSpeedGradients) {
-            for (var angularSpeedGradient of parsedParticleSystem.angularSpeedGradients) {
-                particleSystem.addAngularSpeedGradient(angularSpeedGradient.gradient, angularSpeedGradient.factor1 !== undefined ? angularSpeedGradient.factor1 : angularSpeedGradient.factor, angularSpeedGradient.factor2);
+            for (const angularSpeedGradient of parsedParticleSystem.angularSpeedGradients) {
+                particleSystem.addAngularSpeedGradient(
+                    angularSpeedGradient.gradient,
+                    angularSpeedGradient.factor1 !== undefined ? angularSpeedGradient.factor1 : angularSpeedGradient.factor,
+                    angularSpeedGradient.factor2
+                );
             }
         }
 
         if (parsedParticleSystem.velocityGradients) {
-            for (var velocityGradient of parsedParticleSystem.velocityGradients) {
-                particleSystem.addVelocityGradient(velocityGradient.gradient, velocityGradient.factor1 !== undefined ? velocityGradient.factor1 : velocityGradient.factor, velocityGradient.factor2);
+            for (const velocityGradient of parsedParticleSystem.velocityGradients) {
+                particleSystem.addVelocityGradient(
+                    velocityGradient.gradient,
+                    velocityGradient.factor1 !== undefined ? velocityGradient.factor1 : velocityGradient.factor,
+                    velocityGradient.factor2
+                );
             }
         }
 
         if (parsedParticleSystem.dragGradients) {
-            for (var dragGradient of parsedParticleSystem.dragGradients) {
+            for (const dragGradient of parsedParticleSystem.dragGradients) {
                 particleSystem.addDragGradient(dragGradient.gradient, dragGradient.factor1 !== undefined ? dragGradient.factor1 : dragGradient.factor, dragGradient.factor2);
             }
         }
 
         if (parsedParticleSystem.emitRateGradients) {
-            for (var emitRateGradient of parsedParticleSystem.emitRateGradients) {
-                particleSystem.addEmitRateGradient(emitRateGradient.gradient, emitRateGradient.factor1 !== undefined ? emitRateGradient.factor1 : emitRateGradient.factor, emitRateGradient.factor2);
+            for (const emitRateGradient of parsedParticleSystem.emitRateGradients) {
+                particleSystem.addEmitRateGradient(
+                    emitRateGradient.gradient,
+                    emitRateGradient.factor1 !== undefined ? emitRateGradient.factor1 : emitRateGradient.factor,
+                    emitRateGradient.factor2
+                );
             }
         }
 
         if (parsedParticleSystem.startSizeGradients) {
-            for (var startSizeGradient of parsedParticleSystem.startSizeGradients) {
-                particleSystem.addStartSizeGradient(startSizeGradient.gradient, startSizeGradient.factor1 !== undefined ? startSizeGradient.factor1 : startSizeGradient.factor, startSizeGradient.factor2);
+            for (const startSizeGradient of parsedParticleSystem.startSizeGradients) {
+                particleSystem.addStartSizeGradient(
+                    startSizeGradient.gradient,
+                    startSizeGradient.factor1 !== undefined ? startSizeGradient.factor1 : startSizeGradient.factor,
+                    startSizeGradient.factor2
+                );
             }
         }
 
         if (parsedParticleSystem.lifeTimeGradients) {
-            for (var lifeTimeGradient of parsedParticleSystem.lifeTimeGradients) {
-                particleSystem.addLifeTimeGradient(lifeTimeGradient.gradient, lifeTimeGradient.factor1 !== undefined ? lifeTimeGradient.factor1 : lifeTimeGradient.factor, lifeTimeGradient.factor2);
+            for (const lifeTimeGradient of parsedParticleSystem.lifeTimeGradients) {
+                particleSystem.addLifeTimeGradient(
+                    lifeTimeGradient.gradient,
+                    lifeTimeGradient.factor1 !== undefined ? lifeTimeGradient.factor1 : lifeTimeGradient.factor,
+                    lifeTimeGradient.factor2
+                );
             }
         }
 
         if (parsedParticleSystem.limitVelocityGradients) {
-            for (var limitVelocityGradient of parsedParticleSystem.limitVelocityGradients) {
-                particleSystem.addLimitVelocityGradient(limitVelocityGradient.gradient, limitVelocityGradient.factor1 !== undefined ? limitVelocityGradient.factor1 : limitVelocityGradient.factor, limitVelocityGradient.factor2);
+            for (const limitVelocityGradient of parsedParticleSystem.limitVelocityGradients) {
+                particleSystem.addLimitVelocityGradient(
+                    limitVelocityGradient.gradient,
+                    limitVelocityGradient.factor1 !== undefined ? limitVelocityGradient.factor1 : limitVelocityGradient.factor,
+                    limitVelocityGradient.factor2
+                );
             }
             particleSystem.limitVelocityDamping = parsedParticleSystem.limitVelocityDamping;
         }
@@ -2833,9 +2939,9 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
      * @returns the Parsed particle system
      */
     public static Parse(parsedParticleSystem: any, sceneOrEngine: Scene | ThinEngine, rootUrl: string, doNotStart = false, capacity?: number): ParticleSystem {
-        var name = parsedParticleSystem.name;
-        var custom: Nullable<Effect> = null;
-        var program: any = null;
+        const name = parsedParticleSystem.name;
+        let custom: Nullable<Effect> = null;
+        let program: any = null;
         let engine: ThinEngine;
         let scene: Nullable<Scene>;
 
@@ -2848,10 +2954,10 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
         if (parsedParticleSystem.customShader && (engine as any).createEffectForParticles) {
             program = parsedParticleSystem.customShader;
-            var defines: string = (program.shaderOptions.defines.length > 0) ? program.shaderOptions.defines.join("\n") : "";
+            const defines: string = program.shaderOptions.defines.length > 0 ? program.shaderOptions.defines.join("\n") : "";
             custom = (engine as any).createEffectForParticles(program.shaderPath.fragmentElement, program.shaderOptions.uniforms, program.shaderOptions.samplers, defines);
         }
-        var particleSystem = new ParticleSystem(name, capacity || parsedParticleSystem.capacity, sceneOrEngine, custom, parsedParticleSystem.isAnimationSheetEnabled);
+        const particleSystem = new ParticleSystem(name, capacity || parsedParticleSystem.capacity, sceneOrEngine, custom, parsedParticleSystem.isAnimationSheetEnabled);
         particleSystem.customShader = program;
         particleSystem._rootUrl = rootUrl;
 
@@ -2862,9 +2968,9 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         // SubEmitters
         if (parsedParticleSystem.subEmitters) {
             particleSystem.subEmitters = [];
-            for (var cell of parsedParticleSystem.subEmitters) {
-                let cellArray = [];
-                for (var sub of cell) {
+            for (const cell of parsedParticleSystem.subEmitters) {
+                const cellArray = [];
+                for (const sub of cell) {
                     cellArray.push(SubEmitter.Parse(sub, sceneOrEngine, rootUrl));
                 }
 

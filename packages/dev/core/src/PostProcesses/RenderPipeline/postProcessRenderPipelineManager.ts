@@ -19,11 +19,11 @@ export class PostProcessRenderPipelineManager {
      * Gets the list of supported render pipelines
      */
     public get supportedPipelines(): PostProcessRenderPipeline[] {
-        let result = [];
+        const result = [];
 
-        for (var renderPipelineName in this._renderPipelines) {
+        for (const renderPipelineName in this._renderPipelines) {
             if (this._renderPipelines.hasOwnProperty(renderPipelineName)) {
-                var pipeline = this._renderPipelines[renderPipelineName];
+                const pipeline = this._renderPipelines[renderPipelineName];
                 if (pipeline.isSupported) {
                     result.push(pipeline);
                 }
@@ -48,7 +48,7 @@ export class PostProcessRenderPipelineManager {
      * @param unique if the camera can be attached multiple times to the pipeline
      */
     public attachCamerasToRenderPipeline(renderPipelineName: string, cameras: any | Camera[] | Camera, unique: boolean = false): void {
-        var renderPipeline: PostProcessRenderPipeline = this._renderPipelines[renderPipelineName];
+        const renderPipeline: PostProcessRenderPipeline = this._renderPipelines[renderPipelineName];
 
         if (!renderPipeline) {
             return;
@@ -63,7 +63,7 @@ export class PostProcessRenderPipelineManager {
      * @param cameras the camera to detach
      */
     public detachCamerasFromRenderPipeline(renderPipelineName: string, cameras: any | Camera[] | Camera): void {
-        var renderPipeline: PostProcessRenderPipeline = this._renderPipelines[renderPipelineName];
+        const renderPipeline: PostProcessRenderPipeline = this._renderPipelines[renderPipelineName];
 
         if (!renderPipeline) {
             return;
@@ -79,7 +79,7 @@ export class PostProcessRenderPipelineManager {
      * @param cameras the cameras that the effect should be enabled on
      */
     public enableEffectInPipeline(renderPipelineName: string, renderEffectName: string, cameras: any | Camera[] | Camera): void {
-        var renderPipeline: PostProcessRenderPipeline = this._renderPipelines[renderPipelineName];
+        const renderPipeline: PostProcessRenderPipeline = this._renderPipelines[renderPipelineName];
 
         if (!renderPipeline) {
             return;
@@ -95,7 +95,7 @@ export class PostProcessRenderPipelineManager {
      * @param cameras the cameras that the effect should be disabled on
      */
     public disableEffectInPipeline(renderPipelineName: string, renderEffectName: string, cameras: any | Camera[] | Camera): void {
-        var renderPipeline: PostProcessRenderPipeline = this._renderPipelines[renderPipelineName];
+        const renderPipeline: PostProcessRenderPipeline = this._renderPipelines[renderPipelineName];
 
         if (!renderPipeline) {
             return;
@@ -108,9 +108,9 @@ export class PostProcessRenderPipelineManager {
      * Updates the state of all contained render pipelines and disposes of any non supported pipelines
      */
     public update(): void {
-        for (var renderPipelineName in this._renderPipelines) {
+        for (const renderPipelineName in this._renderPipelines) {
             if (this._renderPipelines.hasOwnProperty(renderPipelineName)) {
-                var pipeline = this._renderPipelines[renderPipelineName];
+                const pipeline = this._renderPipelines[renderPipelineName];
                 if (!pipeline.isSupported) {
                     pipeline.dispose();
                     delete this._renderPipelines[renderPipelineName];
@@ -123,9 +123,9 @@ export class PostProcessRenderPipelineManager {
 
     /** @hidden */
     public _rebuild(): void {
-        for (var renderPipelineName in this._renderPipelines) {
+        for (const renderPipelineName in this._renderPipelines) {
             if (this._renderPipelines.hasOwnProperty(renderPipelineName)) {
-                var pipeline = this._renderPipelines[renderPipelineName];
+                const pipeline = this._renderPipelines[renderPipelineName];
                 pipeline._rebuild();
             }
         }
@@ -135,9 +135,9 @@ export class PostProcessRenderPipelineManager {
      * Disposes of the manager and pipelines
      */
     public dispose(): void {
-        for (var renderPipelineName in this._renderPipelines) {
+        for (const renderPipelineName in this._renderPipelines) {
             if (this._renderPipelines.hasOwnProperty(renderPipelineName)) {
-                var pipeline = this._renderPipelines[renderPipelineName];
+                const pipeline = this._renderPipelines[renderPipelineName];
                 pipeline.dispose();
             }
         }

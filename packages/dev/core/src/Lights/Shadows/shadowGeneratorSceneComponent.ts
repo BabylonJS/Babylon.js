@@ -9,8 +9,8 @@ import { AbstractScene } from "../../abstractScene";
 AbstractScene.AddParser(SceneComponentConstants.NAME_SHADOWGENERATOR, (parsedData: any, scene: Scene) => {
     // Shadows
     if (parsedData.shadowGenerators !== undefined && parsedData.shadowGenerators !== null) {
-        for (var index = 0, cache = parsedData.shadowGenerators.length; index < cache; index++) {
-            var parsedShadowGenerator = parsedData.shadowGenerators[index];
+        for (let index = 0, cache = parsedData.shadowGenerators.length; index < cache; index++) {
+            const parsedShadowGenerator = parsedData.shadowGenerators[index];
             if (parsedShadowGenerator.className === CascadedShadowGenerator.CLASSNAME) {
                 CascadedShadowGenerator.Parse(parsedShadowGenerator, scene);
             } else {
@@ -66,9 +66,9 @@ export class ShadowGeneratorSceneComponent implements ISceneSerializableComponen
     public serialize(serializationObject: any): void {
         // Shadows
         serializationObject.shadowGenerators = [];
-        var lights = this.scene.lights;
-        for (let light of lights) {
-            let shadowGenerator = light.getShadowGenerator();
+        const lights = this.scene.lights;
+        for (const light of lights) {
+            const shadowGenerator = light.getShadowGenerator();
             if (shadowGenerator) {
                 serializationObject.shadowGenerators.push(shadowGenerator.serialize());
             }
@@ -102,14 +102,14 @@ export class ShadowGeneratorSceneComponent implements ISceneSerializableComponen
 
     private _gatherRenderTargets(renderTargets: SmartArrayNoDuplicate<RenderTargetTexture>): void {
         // Shadows
-        var scene = this.scene;
+        const scene = this.scene;
         if (this.scene.shadowsEnabled) {
-            for (var lightIndex = 0; lightIndex < scene.lights.length; lightIndex++) {
-                var light = scene.lights[lightIndex];
-                var shadowGenerator = light.getShadowGenerator();
+            for (let lightIndex = 0; lightIndex < scene.lights.length; lightIndex++) {
+                const light = scene.lights[lightIndex];
+                const shadowGenerator = light.getShadowGenerator();
 
                 if (light.isEnabled() && light.shadowEnabled && shadowGenerator) {
-                    var shadowMap = <RenderTargetTexture>(shadowGenerator.getShadowMap());
+                    const shadowMap = <RenderTargetTexture>shadowGenerator.getShadowMap();
                     if (scene.textures.indexOf(shadowMap) !== -1) {
                         renderTargets.push(shadowMap);
                     }

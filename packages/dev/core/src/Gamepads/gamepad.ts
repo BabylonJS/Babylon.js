@@ -18,8 +18,7 @@ export class StickValues {
          * The y component of the control stick
          */
         public y: number
-    ) {
-    }
+    ) {}
 }
 
 /**
@@ -48,7 +47,6 @@ export interface GamepadButtonChanges {
  * Represents a gamepad
  */
 export class Gamepad {
-
     /**
      * Specifies what type of gamepad this represents
      */
@@ -131,7 +129,11 @@ export class Gamepad {
          * The browser gamepad
          */
         public browserGamepad: any,
-        leftStickX: number = 0, leftStickY: number = 1, rightStickX: number = 2, rightStickY: number = 3) {
+        leftStickX: number = 0,
+        leftStickY: number = 1,
+        rightStickX: number = 2,
+        rightStickY: number = 3
+    ) {
         this.type = Gamepad.GAMEPAD;
         this._leftStickAxisX = leftStickX;
         this._leftStickAxisY = leftStickY;
@@ -211,8 +213,7 @@ export class Gamepad {
     /**
      * Disposes the gamepad
      */
-    public dispose() {
-    }
+    public dispose() {}
 }
 
 /**
@@ -284,7 +285,7 @@ export class GenericPad extends Gamepad {
      */
     public update() {
         super.update();
-        for (var index = 0; index < this._buttons.length; index++) {
+        for (let index = 0; index < this._buttons.length; index++) {
             this._buttons[index] = this._setButtonValue(this.browserGamepad.buttons[index].value, this._buttons[index], index);
         }
     }

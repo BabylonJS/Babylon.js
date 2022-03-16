@@ -6,7 +6,7 @@ import { Observable } from "../Misc/observable";
 import { Color3 } from "../Maths/math.color";
 import { Vector3, Matrix, Quaternion } from "../Maths/math.vector";
 import { Animation } from "../Animations/animation";
-import { RegisterClass } from '../Misc/typeStore';
+import { RegisterClass } from "../Misc/typeStore";
 
 /**
  * This defines an action responsible to change the value of a property
@@ -59,7 +59,16 @@ export class InterpolateValueAction extends Action {
      * @param stopOtherAnimations defines if the other scene animations should be stopped when the action has been triggered
      * @param onInterpolationDone defines a callback raised once the interpolation animation has been done
      */
-    constructor(triggerOptions: any, target: any, propertyPath: string, value: any, duration: number = 1000, condition?: Condition, stopOtherAnimations?: boolean, onInterpolationDone?: () => void) {
+    constructor(
+        triggerOptions: any,
+        target: any,
+        propertyPath: string,
+        value: any,
+        duration: number = 1000,
+        condition?: Condition,
+        stopOtherAnimations?: boolean,
+        onInterpolationDone?: () => void
+    ) {
         super(triggerOptions, condition);
 
         this.propertyPath = propertyPath;
@@ -80,18 +89,19 @@ export class InterpolateValueAction extends Action {
      * Execute the action starts the value interpolation.
      */
     public execute(): void {
-        var scene = this._actionManager.getScene();
-        var keys = [
+        const scene = this._actionManager.getScene();
+        const keys = [
             {
                 frame: 0,
-                value: this._effectiveTarget[this._property]
-            }, {
+                value: this._effectiveTarget[this._property],
+            },
+            {
                 frame: 100,
-                value: this.value
-            }
+                value: this.value,
+            },
         ];
 
-        var dataType: number;
+        let dataType: number;
 
         if (typeof this.value === "number") {
             dataType = Animation.ANIMATIONTYPE_FLOAT;
@@ -108,7 +118,7 @@ export class InterpolateValueAction extends Action {
             return;
         }
 
-        var animation = new Animation("InterpolateValueAction", this._property, 100 * (1000.0 / this.duration), dataType, Animation.ANIMATIONLOOPMODE_CONSTANT);
+        const animation = new Animation("InterpolateValueAction", this._property, 100 * (1000.0 / this.duration), dataType, Animation.ANIMATIONLOOPMODE_CONSTANT);
 
         animation.setKeys(keys);
 
@@ -116,7 +126,7 @@ export class InterpolateValueAction extends Action {
             scene.stopAnimation(this._effectiveTarget);
         }
 
-        let wrapper = () => {
+        const wrapper = () => {
             this.onInterpolationDoneObservable.notifyObservers(this);
             if (this.onInterpolationDone) {
                 this.onInterpolationDone();
@@ -132,16 +142,19 @@ export class InterpolateValueAction extends Action {
      * @returns the serialized object
      */
     public serialize(parent: any): any {
-        return super._serialize({
-            name: "InterpolateValueAction",
-            properties: [
-                Action._GetTargetProperty(this._target),
-                { name: "propertyPath", value: this.propertyPath },
-                { name: "value", value: Action._SerializeValueAsString(this.value) },
-                { name: "duration", value: Action._SerializeValueAsString(this.duration) },
-                { name: "stopOtherAnimations", value: Action._SerializeValueAsString(this.stopOtherAnimations) || false }
-            ]
-        }, parent);
+        return super._serialize(
+            {
+                name: "InterpolateValueAction",
+                properties: [
+                    Action._GetTargetProperty(this._target),
+                    { name: "propertyPath", value: this.propertyPath },
+                    { name: "value", value: Action._SerializeValueAsString(this.value) },
+                    { name: "duration", value: Action._SerializeValueAsString(this.duration) },
+                    { name: "stopOtherAnimations", value: Action._SerializeValueAsString(this.stopOtherAnimations) || false },
+                ],
+            },
+            parent
+        );
     }
 }
 

@@ -1,12 +1,12 @@
 import { serialize, SerializationHelper, serializeAsColor3, expandToProperty, serializeAsFresnelParameters, serializeAsTexture } from "../Misc/decorators";
 import { Observer } from "../Misc/observable";
 import { SmartArray } from "../Misc/smartArray";
-import { IAnimatable } from '../Animations/animatable.interface';
+import { IAnimatable } from "../Animations/animatable.interface";
 
 import { Nullable } from "../types";
 import { Scene } from "../scene";
 import { Matrix } from "../Maths/math.vector";
-import { Color3 } from '../Maths/math.color';
+import { Color3 } from "../Maths/math.color";
 import { VertexBuffer } from "../Buffers/buffer";
 import { SubMesh } from "../Meshes/subMesh";
 import { AbstractMesh } from "../Meshes/abstractMesh";
@@ -32,15 +32,14 @@ import { MaterialFlags } from "./materialFlags";
 import "../Shaders/default.fragment";
 import "../Shaders/default.vertex";
 import { Constants } from "../Engines/constants";
-import { EffectFallbacks } from './effectFallbacks';
-import { Effect, IEffectCreationOptions } from './effect';
+import { EffectFallbacks } from "./effectFallbacks";
+import { Effect, IEffectCreationOptions } from "./effect";
 import { DetailMapConfiguration } from "./material.detailMapConfiguration";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
 /** @hidden */
-export class StandardMaterialDefines extends MaterialDefines
-    implements IImageProcessingConfigurationDefines {
+export class StandardMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {
     public MAINUV1 = false;
     public MAINUV2 = false;
     public MAINUV3 = false;
@@ -195,21 +194,27 @@ export class StandardMaterialDefines extends MaterialDefines
      * Initializes the Standard Material defines.
      * @param externalProperties The external properties
      */
-    constructor(externalProperties?: { [name: string]: { type: string, default: any } }) {
+    constructor(externalProperties?: { [name: string]: { type: string; default: any } }) {
         super(externalProperties);
         this.rebuild();
     }
 
     public setReflectionMode(modeToEnable: string) {
-        var modes = [
-            "REFLECTIONMAP_CUBIC", "REFLECTIONMAP_EXPLICIT", "REFLECTIONMAP_PLANAR",
-            "REFLECTIONMAP_PROJECTION", "REFLECTIONMAP_PROJECTION", "REFLECTIONMAP_SKYBOX",
-            "REFLECTIONMAP_SPHERICAL", "REFLECTIONMAP_EQUIRECTANGULAR", "REFLECTIONMAP_EQUIRECTANGULAR_FIXED",
-            "REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED"
+        const modes = [
+            "REFLECTIONMAP_CUBIC",
+            "REFLECTIONMAP_EXPLICIT",
+            "REFLECTIONMAP_PLANAR",
+            "REFLECTIONMAP_PROJECTION",
+            "REFLECTIONMAP_PROJECTION",
+            "REFLECTIONMAP_SKYBOX",
+            "REFLECTIONMAP_SPHERICAL",
+            "REFLECTIONMAP_EQUIRECTANGULAR",
+            "REFLECTIONMAP_EQUIRECTANGULAR_FIXED",
+            "REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED",
         ];
 
-        for (var mode of modes) {
-            (<any>this)[mode] = (mode === modeToEnable);
+        for (const mode of modes) {
+            (<any>this)[mode] = mode === modeToEnable;
         }
     }
 }
@@ -598,8 +603,7 @@ export class StandardMaterial extends PushMaterial {
         // Pick the scene configuration if needed
         if (!configuration) {
             this._imageProcessingConfiguration = this.getScene().imageProcessingConfiguration;
-        }
-        else {
+        } else {
             this._imageProcessingConfiguration = configuration;
         }
 
@@ -827,7 +831,12 @@ export class StandardMaterial extends PushMaterial {
             return false;
         }
 
-        return (this.alpha < 1.0) || (this._opacityTexture != null) || this._shouldUseAlphaFromDiffuseTexture() || this._opacityFresnelParameters && this._opacityFresnelParameters.isEnabled;
+        return (
+            this.alpha < 1.0 ||
+            this._opacityTexture != null ||
+            this._shouldUseAlphaFromDiffuseTexture() ||
+            (this._opacityFresnelParameters && this._opacityFresnelParameters.isEnabled)
+        );
     }
 
     /**
@@ -888,13 +897,13 @@ export class StandardMaterial extends PushMaterial {
             subMesh.materialDefines = new StandardMaterialDefines(this._eventInfo.defineNames);
         }
 
-        var scene = this.getScene();
-        var defines = <StandardMaterialDefines>subMesh.materialDefines;
+        const scene = this.getScene();
+        const defines = <StandardMaterialDefines>subMesh.materialDefines;
         if (this._isReadyForSubMesh(subMesh)) {
             return true;
         }
 
-        var engine = scene.getEngine();
+        const engine = scene.getEngine();
 
         // Lights
         defines._needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, true, this._maxSimultaneousLights, this._disableLighting);
@@ -957,9 +966,9 @@ export class StandardMaterial extends PushMaterial {
                         defines._needNormals = true;
                         defines.REFLECTION = true;
 
-                        defines.ROUGHNESS = (this._roughness > 0);
+                        defines.ROUGHNESS = this._roughness > 0;
                         defines.REFLECTIONOVERALPHA = this._useReflectionOverAlpha;
-                        defines.INVERTCUBICMAP = (this._reflectionTexture.coordinatesMode === Texture.INVCUBIC_MODE);
+                        defines.INVERTCUBICMAP = this._reflectionTexture.coordinatesMode === Texture.INVCUBIC_MODE;
                         defines.REFLECTIONMAP_3D = this._reflectionTexture.isCube;
                         defines.RGBDREFLECTION = this._reflectionTexture.isRGBD;
                         defines.REFLECTIONMAP_OPPOSITEZ = this.getScene().useRightHandedSystem ? !this._reflectionTexture.invertZ : this._reflectionTexture.invertZ;
@@ -1087,7 +1096,7 @@ export class StandardMaterial extends PushMaterial {
 
             defines.SPECULAROVERALPHA = this._useSpecularOverAlpha;
 
-            defines.PREMULTIPLYALPHA = (this.alphaMode === Constants.ALPHA_PREMULTIPLIED || this.alphaMode === Constants.ALPHA_PREMULTIPLIED_PORTERDUFF);
+            defines.PREMULTIPLYALPHA = this.alphaMode === Constants.ALPHA_PREMULTIPLIED || this.alphaMode === Constants.ALPHA_PREMULTIPLIED_PORTERDUFF;
 
             defines.ALPHATEST_AFTERALLALPHACOMPUTATIONS = this.transparencyMode !== null;
 
@@ -1109,28 +1118,31 @@ export class StandardMaterial extends PushMaterial {
 
             this._imageProcessingConfiguration.prepareDefines(defines);
 
-            defines.IS_REFLECTION_LINEAR = (this.reflectionTexture != null && !this.reflectionTexture.gammaSpace);
-            defines.IS_REFRACTION_LINEAR = (this.refractionTexture != null && !this.refractionTexture.gammaSpace);
+            defines.IS_REFLECTION_LINEAR = this.reflectionTexture != null && !this.reflectionTexture.gammaSpace;
+            defines.IS_REFRACTION_LINEAR = this.refractionTexture != null && !this.refractionTexture.gammaSpace;
         }
 
         if (defines._areFresnelDirty) {
             if (StandardMaterial.FresnelEnabled) {
                 // Fresnel
-                if (this._diffuseFresnelParameters || this._opacityFresnelParameters ||
-                    this._emissiveFresnelParameters || this._refractionFresnelParameters ||
-                    this._reflectionFresnelParameters) {
+                if (
+                    this._diffuseFresnelParameters ||
+                    this._opacityFresnelParameters ||
+                    this._emissiveFresnelParameters ||
+                    this._refractionFresnelParameters ||
+                    this._reflectionFresnelParameters
+                ) {
+                    defines.DIFFUSEFRESNEL = this._diffuseFresnelParameters && this._diffuseFresnelParameters.isEnabled;
 
-                    defines.DIFFUSEFRESNEL = (this._diffuseFresnelParameters && this._diffuseFresnelParameters.isEnabled);
+                    defines.OPACITYFRESNEL = this._opacityFresnelParameters && this._opacityFresnelParameters.isEnabled;
 
-                    defines.OPACITYFRESNEL = (this._opacityFresnelParameters && this._opacityFresnelParameters.isEnabled);
-
-                    defines.REFLECTIONFRESNEL = (this._reflectionFresnelParameters && this._reflectionFresnelParameters.isEnabled);
+                    defines.REFLECTIONFRESNEL = this._reflectionFresnelParameters && this._reflectionFresnelParameters.isEnabled;
 
                     defines.REFLECTIONFRESNELFROMSPECULAR = this._useReflectionFresnelFromSpecular;
 
-                    defines.REFRACTIONFRESNEL = (this._refractionFresnelParameters && this._refractionFresnelParameters.isEnabled);
+                    defines.REFRACTIONFRESNEL = this._refractionFresnelParameters && this._refractionFresnelParameters.isEnabled;
 
-                    defines.EMISSIVEFRESNEL = (this._emissiveFresnelParameters && this._emissiveFresnelParameters.isEnabled);
+                    defines.EMISSIVEFRESNEL = this._emissiveFresnelParameters && this._emissiveFresnelParameters.isEnabled;
 
                     defines._needNormals = true;
                     defines.FRESNEL = true;
@@ -1141,7 +1153,15 @@ export class StandardMaterial extends PushMaterial {
         }
 
         // Misc.
-        MaterialHelper.PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh) || this._forceAlphaTest, defines);
+        MaterialHelper.PrepareDefinesForMisc(
+            mesh,
+            scene,
+            this._useLogarithmicDepth,
+            this.pointsCloud,
+            this.fogEnabled,
+            this._shouldTurnAlphaTestOn(mesh) || this._forceAlphaTest,
+            defines
+        );
 
         // Attribs
         MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true, true);
@@ -1160,7 +1180,7 @@ export class StandardMaterial extends PushMaterial {
             defines.markAsProcessed();
 
             // Fallbacks
-            var fallbacks = new EffectFallbacks();
+            const fallbacks = new EffectFallbacks();
             if (defines.REFLECTION) {
                 fallbacks.addFallback(0, "REFLECTION");
             }
@@ -1228,7 +1248,7 @@ export class StandardMaterial extends PushMaterial {
             }
 
             //Attributes
-            var attribs = [VertexBuffer.PositionKind];
+            const attribs = [VertexBuffer.PositionKind];
 
             if (defines.NORMAL) {
                 attribs.push(VertexBuffer.NormalKind);
@@ -1257,25 +1277,88 @@ export class StandardMaterial extends PushMaterial {
             MaterialHelper.PrepareAttributesForMorphTargets(attribs, mesh, defines);
             MaterialHelper.PrepareAttributesForBakedVertexAnimation(attribs, mesh, defines);
 
-            var shaderName = "default";
+            let shaderName = "default";
 
-            var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vAmbientColor", "vDiffuseColor", "vSpecularColor", "vEmissiveColor", "visibility",
-                "vFogInfos", "vFogColor", "pointSize",
-                "vDiffuseInfos", "vAmbientInfos", "vOpacityInfos", "vReflectionInfos", "vEmissiveInfos", "vSpecularInfos", "vBumpInfos", "vLightmapInfos", "vRefractionInfos",
+            const uniforms = [
+                "world",
+                "view",
+                "viewProjection",
+                "vEyePosition",
+                "vLightsType",
+                "vAmbientColor",
+                "vDiffuseColor",
+                "vSpecularColor",
+                "vEmissiveColor",
+                "visibility",
+                "vFogInfos",
+                "vFogColor",
+                "pointSize",
+                "vDiffuseInfos",
+                "vAmbientInfos",
+                "vOpacityInfos",
+                "vReflectionInfos",
+                "vEmissiveInfos",
+                "vSpecularInfos",
+                "vBumpInfos",
+                "vLightmapInfos",
+                "vRefractionInfos",
                 "mBones",
-                "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "vClipPlane5", "vClipPlane6", "diffuseMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "specularMatrix", "bumpMatrix", "normalMatrix", "lightmapMatrix", "refractionMatrix",
-                "diffuseLeftColor", "diffuseRightColor", "opacityParts", "reflectionLeftColor", "reflectionRightColor", "emissiveLeftColor", "emissiveRightColor", "refractionLeftColor", "refractionRightColor",
-                "vReflectionPosition", "vReflectionSize", "vRefractionPosition", "vRefractionSize",
-                "logarithmicDepthConstant", "vTangentSpaceParams", "alphaCutOff", "boneTextureWidth",
-                "morphTargetTextureInfo", "morphTargetTextureIndices"
+                "vClipPlane",
+                "vClipPlane2",
+                "vClipPlane3",
+                "vClipPlane4",
+                "vClipPlane5",
+                "vClipPlane6",
+                "diffuseMatrix",
+                "ambientMatrix",
+                "opacityMatrix",
+                "reflectionMatrix",
+                "emissiveMatrix",
+                "specularMatrix",
+                "bumpMatrix",
+                "normalMatrix",
+                "lightmapMatrix",
+                "refractionMatrix",
+                "diffuseLeftColor",
+                "diffuseRightColor",
+                "opacityParts",
+                "reflectionLeftColor",
+                "reflectionRightColor",
+                "emissiveLeftColor",
+                "emissiveRightColor",
+                "refractionLeftColor",
+                "refractionRightColor",
+                "vReflectionPosition",
+                "vReflectionSize",
+                "vRefractionPosition",
+                "vRefractionSize",
+                "logarithmicDepthConstant",
+                "vTangentSpaceParams",
+                "alphaCutOff",
+                "boneTextureWidth",
+                "morphTargetTextureInfo",
+                "morphTargetTextureIndices",
             ];
 
-            var samplers = ["diffuseSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler",
-                "reflection2DSampler", "emissiveSampler", "specularSampler", "bumpSampler", "lightmapSampler",
-                "refractionCubeSampler", "refraction2DSampler", "boneSampler", "morphTargets", "oitDepthSampler",
-                "oitFrontColorSampler"];
+            const samplers = [
+                "diffuseSampler",
+                "ambientSampler",
+                "opacitySampler",
+                "reflectionCubeSampler",
+                "reflection2DSampler",
+                "emissiveSampler",
+                "specularSampler",
+                "bumpSampler",
+                "lightmapSampler",
+                "refractionCubeSampler",
+                "refraction2DSampler",
+                "boneSampler",
+                "morphTargets",
+                "oitDepthSampler",
+                "oitFrontColorSampler",
+            ];
 
-            var uniformBuffers = ["Material", "Scene", "Mesh"];
+            const uniformBuffers = ["Material", "Scene", "Mesh"];
 
             this._eventInfo.fallbacks = fallbacks;
             this._eventInfo.fallbackRank = 0;
@@ -1299,7 +1382,7 @@ export class StandardMaterial extends PushMaterial {
                 uniformBuffersNames: uniformBuffers,
                 samplers: samplers,
                 defines: defines,
-                maxSimultaneousLights: this._maxSimultaneousLights
+                maxSimultaneousLights: this._maxSimultaneousLights,
             });
 
             const csnrOptions: ICustomShaderNameResolveOptions = {};
@@ -1308,23 +1391,27 @@ export class StandardMaterial extends PushMaterial {
                 shaderName = this.customShaderNameResolve(shaderName, uniforms, uniformBuffers, samplers, defines, attribs, csnrOptions);
             }
 
-            var join = defines.toString();
+            const join = defines.toString();
 
-            let previousEffect = subMesh.effect;
-            let effect = scene.getEngine().createEffect(shaderName, <IEffectCreationOptions>{
-                attributes: attribs,
-                uniformsNames: uniforms,
-                uniformBuffersNames: uniformBuffers,
-                samplers: samplers,
-                defines: join,
-                fallbacks: fallbacks,
-                onCompiled: this.onCompiled,
-                onError: this.onError,
-                indexParameters: { maxSimultaneousLights: this._maxSimultaneousLights, maxSimultaneousMorphTargets: defines.NUM_MORPH_INFLUENCERS },
-                processFinalCode: csnrOptions.processFinalCode,
-                processCodeAfterIncludes: this._eventInfo.customCode,
-                multiTarget: defines.PREPASS
-            }, engine);
+            const previousEffect = subMesh.effect;
+            let effect = scene.getEngine().createEffect(
+                shaderName,
+                <IEffectCreationOptions>{
+                    attributes: attribs,
+                    uniformsNames: uniforms,
+                    uniformBuffersNames: uniformBuffers,
+                    samplers: samplers,
+                    defines: join,
+                    fallbacks: fallbacks,
+                    onCompiled: this.onCompiled,
+                    onError: this.onError,
+                    indexParameters: { maxSimultaneousLights: this._maxSimultaneousLights, maxSimultaneousMorphTargets: defines.NUM_MORPH_INFLUENCERS },
+                    processFinalCode: csnrOptions.processFinalCode,
+                    processCodeAfterIncludes: this._eventInfo.customCode,
+                    multiTarget: defines.PREPASS,
+                },
+                engine
+            );
 
             if (effect) {
                 if (this._onEffectCreatedObservable) {
@@ -1418,14 +1505,14 @@ export class StandardMaterial extends PushMaterial {
      * @param subMesh defines the submesh to bind the material to
      */
     public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
-        var scene = this.getScene();
+        const scene = this.getScene();
 
-        var defines = <StandardMaterialDefines>subMesh.materialDefines;
+        const defines = <StandardMaterialDefines>subMesh.materialDefines;
         if (!defines) {
             return;
         }
 
-        var effect = subMesh.effect;
+        const effect = subMesh.effect;
         if (!effect) {
             return;
         }
@@ -1449,15 +1536,14 @@ export class StandardMaterial extends PushMaterial {
             this.bindOnlyNormalMatrix(this._normalMatrix);
         }
 
-        let mustRebind = this._mustRebind(scene, effect, mesh.visibility);
+        const mustRebind = this._mustRebind(scene, effect, mesh.visibility);
 
         // Bones
         MaterialHelper.BindBonesParameters(mesh, effect);
-        let ubo = this._uniformBuffer;
+        const ubo = this._uniformBuffer;
         if (mustRebind) {
             this.bindViewProjection(effect);
             if (!ubo.useUbo || !this.isFrozen || !ubo.isSync) {
-
                 if (StandardMaterial.FresnelEnabled && defines.FRESNEL) {
                     // Fresnel
                     if (this.diffuseFresnelParameters && this.diffuseFresnelParameters.isEnabled) {
@@ -1466,7 +1552,15 @@ export class StandardMaterial extends PushMaterial {
                     }
 
                     if (this.opacityFresnelParameters && this.opacityFresnelParameters.isEnabled) {
-                        ubo.updateColor4("opacityParts", new Color3(this.opacityFresnelParameters.leftColor.toLuminance(), this.opacityFresnelParameters.rightColor.toLuminance(), this.opacityFresnelParameters.bias), this.opacityFresnelParameters.power);
+                        ubo.updateColor4(
+                            "opacityParts",
+                            new Color3(
+                                this.opacityFresnelParameters.leftColor.toLuminance(),
+                                this.opacityFresnelParameters.rightColor.toLuminance(),
+                                this.opacityFresnelParameters.bias
+                            ),
+                            this.opacityFresnelParameters.power
+                        );
                     }
 
                     if (this.reflectionFresnelParameters && this.reflectionFresnelParameters.isEnabled) {
@@ -1490,7 +1584,6 @@ export class StandardMaterial extends PushMaterial {
                     if (this._diffuseTexture && StandardMaterial.DiffuseTextureEnabled) {
                         ubo.updateFloat2("vDiffuseInfos", this._diffuseTexture.coordinatesIndex, this._diffuseTexture.level);
                         MaterialHelper.BindTextureMatrix(this._diffuseTexture, ubo, "diffuse");
-
                     }
 
                     if (this._ambientTexture && StandardMaterial.AmbientTextureEnabled) {
@@ -1512,7 +1605,7 @@ export class StandardMaterial extends PushMaterial {
                         ubo.updateMatrix("reflectionMatrix", this._reflectionTexture.getReflectionTextureMatrix());
 
                         if ((<any>this._reflectionTexture).boundingBoxSize) {
-                            let cubeTexture = <CubeTexture>this._reflectionTexture;
+                            const cubeTexture = <CubeTexture>this._reflectionTexture;
 
                             ubo.updateVector3("vReflectionPosition", cubeTexture.boundingBoxPosition);
                             ubo.updateVector3("vReflectionSize", cubeTexture.boundingBoxSize);
@@ -1557,7 +1650,7 @@ export class StandardMaterial extends PushMaterial {
                         ubo.updateFloat4("vRefractionInfos", this._refractionTexture.level, this.indexOfRefraction, depth, this.invertRefractionY ? -1 : 1);
 
                         if ((<any>this._refractionTexture).boundingBoxSize) {
-                            let cubeTexture = <CubeTexture>this._refractionTexture;
+                            const cubeTexture = <CubeTexture>this._refractionTexture;
 
                             ubo.updateVector3("vRefractionPosition", cubeTexture.boundingBoxPosition);
                             ubo.updateVector3("vRefractionSize", cubeTexture.boundingBoxSize);
@@ -1653,7 +1746,7 @@ export class StandardMaterial extends PushMaterial {
             }
 
             // View
-            if (scene.fogEnabled && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE || this._reflectionTexture || this._refractionTexture || mesh.receiveShadows) {
+            if ((scene.fogEnabled && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE) || this._reflectionTexture || this._refractionTexture || mesh.receiveShadows) {
                 this.bindView(effect);
             }
 
@@ -1689,7 +1782,7 @@ export class StandardMaterial extends PushMaterial {
      * @returns the list of animatables object used in the material
      */
     public getAnimatables(): IAnimatable[] {
-        var results = super.getAnimatables();
+        const results = super.getAnimatables();
 
         if (this._diffuseTexture && this._diffuseTexture.animations && this._diffuseTexture.animations.length > 0) {
             results.push(this._diffuseTexture);
@@ -1735,7 +1828,7 @@ export class StandardMaterial extends PushMaterial {
      * @returns an array of textures
      */
     public getActiveTextures(): BaseTexture[] {
-        var activeTextures = super.getActiveTextures();
+        const activeTextures = super.getActiveTextures();
 
         if (this._diffuseTexture) {
             activeTextures.push(this._diffuseTexture);
@@ -1856,7 +1949,7 @@ export class StandardMaterial extends PushMaterial {
      * @returns the cloned material
      */
     public clone(name: string): StandardMaterial {
-        var result = SerializationHelper.Clone(() => new StandardMaterial(name, this.getScene()), this);
+        const result = SerializationHelper.Clone(() => new StandardMaterial(name, this.getScene()), this);
 
         result.name = name;
         result.id = name;

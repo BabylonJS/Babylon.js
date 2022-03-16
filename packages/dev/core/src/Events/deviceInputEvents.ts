@@ -8,7 +8,7 @@ export enum DeviceInputEventType {
     /** PointerDown */
     PointerDown,
     /** PointerUp */
-    PointerUp
+    PointerUp,
 }
 
 /**

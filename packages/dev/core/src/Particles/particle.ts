@@ -1,6 +1,6 @@
 import { Nullable } from "../types";
 import { Vector2, Vector3, TmpVectors, Vector4 } from "../Maths/math.vector";
-import { Color4 } from '../Maths/math.color';
+import { Color4 } from "../Maths/math.color";
 import { Scalar } from "../Maths/math.scalar";
 import { ParticleSystem } from "./particleSystem";
 import { SubEmitter } from "./subEmitter";
@@ -152,7 +152,8 @@ export class Particle {
         /**
          * The particle system the particle belongs to.
          */
-        public particleSystem: ParticleSystem) {
+        public particleSystem: ParticleSystem
+    ) {
         this.id = Particle._Count++;
         if (!this.particleSystem.isAnimationSheetEnabled) {
             return;
@@ -177,7 +178,8 @@ export class Particle {
                 this._randomCellOffset = Math.random() * this.lifeTime;
             }
 
-            if (changeSpeed === 0) { // Special case when speed = 0 meaning we want to stay on initial cell
+            if (changeSpeed === 0) {
+                // Special case when speed = 0 meaning we want to stay on initial cell
                 changeSpeed = 1;
                 offsetAge = this._randomCellOffset;
             } else {
@@ -185,29 +187,31 @@ export class Particle {
             }
         }
 
-        let dist = (this._initialEndSpriteCellID - this._initialStartSpriteCellID);
+        const dist = this._initialEndSpriteCellID - this._initialStartSpriteCellID;
         let ratio: number;
         if (this._initialSpriteCellLoop) {
             ratio = Scalar.Clamp(((offsetAge * changeSpeed) % this.lifeTime) / this.lifeTime);
-        }
-        else {
+        } else {
             ratio = Scalar.Clamp((offsetAge * changeSpeed) / this.lifeTime);
         }
-        this.cellIndex = this._initialStartSpriteCellID + (ratio * dist) | 0;
+        this.cellIndex = (this._initialStartSpriteCellID + ratio * dist) | 0;
     }
 
-    /** @hidden */
+    /**
+     * @param subEmitter
+     * @hidden
+     */
     public _inheritParticleInfoToSubEmitter(subEmitter: SubEmitter) {
         if ((<AbstractMesh>subEmitter.particleSystem.emitter).position) {
-            var emitterMesh = (<AbstractMesh>subEmitter.particleSystem.emitter);
+            const emitterMesh = <AbstractMesh>subEmitter.particleSystem.emitter;
             emitterMesh.position.copyFrom(this.position);
             if (subEmitter.inheritDirection) {
-                let temp = TmpVectors.Vector3[0];
+                const temp = TmpVectors.Vector3[0];
                 this.direction.normalizeToRef(temp);
                 emitterMesh.setDirection(temp, 0, Math.PI / 2);
             }
         } else {
-            var emitterPosition = (<Vector3>subEmitter.particleSystem.emitter);
+            const emitterPosition = <Vector3>subEmitter.particleSystem.emitter;
             emitterPosition.copyFrom(this.position);
         }
         // Set inheritedVelocityOffset to be used when new particles are created

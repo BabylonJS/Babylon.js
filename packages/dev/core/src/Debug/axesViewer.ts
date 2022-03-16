@@ -4,13 +4,13 @@ import { Scene } from "../scene";
 import { TransformNode } from "../Meshes/transformNode";
 import { StandardMaterial } from "../Materials/standardMaterial";
 import { AxisDragGizmo } from "../Gizmos/axisDragGizmo";
-import { Color3 } from '../Maths/math.color';
+import { Color3 } from "../Maths/math.color";
 import { EngineStore } from "../Engines/engineStore";
 
 /**
-     * The Axes viewer will show 3 axes in a specific point in space
-     * @see https://doc.babylonjs.com/toolsAndResources/utilities/World_Axes
-     */
+ * The Axes viewer will show 3 axes in a specific point in space
+ * @see https://doc.babylonjs.com/toolsAndResources/utilities/World_Axes
+ */
 export class AxesViewer {
     private _xAxis: TransformNode;
     private _yAxis: TransformNode;
@@ -61,21 +61,21 @@ export class AxesViewer {
         this.scaleLines = scaleLines;
 
         if (!xAxis) {
-            var redColoredMaterial = new StandardMaterial("", scene);
+            const redColoredMaterial = new StandardMaterial("", scene);
             redColoredMaterial.disableLighting = true;
             redColoredMaterial.emissiveColor = Color3.Red().scale(0.5);
             xAxis = AxisDragGizmo._CreateArrow(scene, redColoredMaterial, lineThickness);
         }
 
         if (!yAxis) {
-            var greenColoredMaterial = new StandardMaterial("", scene);
+            const greenColoredMaterial = new StandardMaterial("", scene);
             greenColoredMaterial.disableLighting = true;
             greenColoredMaterial.emissiveColor = Color3.Green().scale(0.5);
             yAxis = AxisDragGizmo._CreateArrow(scene, greenColoredMaterial, lineThickness);
         }
 
         if (!zAxis) {
-            var blueColoredMaterial = new StandardMaterial("", scene);
+            const blueColoredMaterial = new StandardMaterial("", scene);
             blueColoredMaterial.disableLighting = true;
             blueColoredMaterial.emissiveColor = Color3.Blue().scale(0.5);
             zAxis = AxisDragGizmo._CreateArrow(scene, blueColoredMaterial, lineThickness);

@@ -1,13 +1,13 @@
-import { IWebRequest } from './interfaces/iWebRequest';
-import { Nullable } from '../types';
-import { INative } from '../Engines/Native/nativeInterfaces';
+import { IWebRequest } from "./interfaces/iWebRequest";
+import { Nullable } from "../types";
+import { INative } from "../Engines/Native/nativeInterfaces";
 
 declare const _native: INative;
 
 /** @hidden */
 function createXMLHttpRequest(): XMLHttpRequest {
     // If running in Babylon Native, then defer to the native XMLHttpRequest, which has the same public contract
-    if (typeof _native !== 'undefined' && _native.XMLHttpRequest) {
+    if (typeof _native !== "undefined" && _native.XMLHttpRequest) {
         return new _native.XMLHttpRequest();
     } else {
         return new XMLHttpRequest();
@@ -32,7 +32,7 @@ export class WebRequest implements IWebRequest {
     public static CustomRequestModifiers = new Array<(request: XMLHttpRequest, url: string) => void>();
 
     private _injectCustomRequestHeaders(): void {
-        for (let key in WebRequest.CustomRequestHeaders) {
+        for (const key in WebRequest.CustomRequestHeaders) {
             const val = WebRequest.CustomRequestHeaders[key];
             if (val) {
                 this._xhr.setRequestHeader(key, val);
@@ -116,13 +116,21 @@ export class WebRequest implements IWebRequest {
     }
 
     /** @hidden */
-    public addEventListener<K extends keyof XMLHttpRequestEventMap>(type: K, listener: (this: XMLHttpRequest, ev: XMLHttpRequestEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    public addEventListener<K extends keyof XMLHttpRequestEventMap>(
+        type: K,
+        listener: (this: XMLHttpRequest, ev: XMLHttpRequestEventMap[K]) => any,
+        options?: boolean | AddEventListenerOptions
+    ): void;
     public addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void {
         this._xhr.addEventListener(type, listener, options);
     }
 
     /** @hidden */
-    public removeEventListener<K extends keyof XMLHttpRequestEventMap>(type: K, listener: (this: XMLHttpRequest, ev: XMLHttpRequestEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    public removeEventListener<K extends keyof XMLHttpRequestEventMap>(
+        type: K,
+        listener: (this: XMLHttpRequest, ev: XMLHttpRequestEventMap[K]) => any,
+        options?: boolean | EventListenerOptions
+    ): void;
     public removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void {
         this._xhr.removeEventListener(type, listener, options);
     }
@@ -152,7 +160,7 @@ export class WebRequest implements IWebRequest {
      * @param url defines the url to connect with
      */
     public open(method: string, url: string): void {
-        for (var update of WebRequest.CustomRequestModifiers) {
+        for (const update of WebRequest.CustomRequestModifiers) {
             update(this._xhr, url);
         }
 

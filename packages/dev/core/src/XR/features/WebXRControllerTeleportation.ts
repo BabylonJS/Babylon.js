@@ -447,7 +447,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
                 if (this.straightRayEnabled) {
                     // first check if direct ray possible
                     // pick grounds that are LOWER only. upper will use parabolic path
-                    let pick = scene.pickWithRay(this._tmpRay, (o) => {
+                    const pick = scene.pickWithRay(this._tmpRay, (o) => {
                         // check for mesh-blockers
                         if (this._options.pickBlockerMeshes && this._options.pickBlockerMeshes.indexOf(o) !== -1) {
                             return true;
@@ -480,7 +480,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
                     this._tmpVector.subtractToRef(this._tmpRay.origin, this._tmpRay.direction);
                     this._tmpRay.direction.normalize();
 
-                    let pick = scene.pickWithRay(this._tmpRay, (o) => {
+                    const pick = scene.pickWithRay(this._tmpRay, (o) => {
                         // check for mesh-blockers
                         if (this._options.pickBlockerMeshes && this._options.pickBlockerMeshes.indexOf(o) !== -1) {
                             return true;
@@ -597,7 +597,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
                                     this._tmpRay.length = this._options.xrInput.xrCamera.realWorldHeight + 0.1;
                                     // Right handed system had here "1" instead of -1. This is unneeded.
                                     this._tmpRay.direction.set(0, -1, 0);
-                                    let pick = this._xrSessionManager.scene.pickWithRay(this._tmpRay, (o) => {
+                                    const pick = this._xrSessionManager.scene.pickWithRay(this._tmpRay, (o) => {
                                         return this._floorMeshes.indexOf(o) !== -1;
                                     });
 

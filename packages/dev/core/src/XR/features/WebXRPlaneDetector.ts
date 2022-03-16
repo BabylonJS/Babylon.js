@@ -176,7 +176,7 @@ export class WebXRPlaneDetector extends WebXRAbstractFeature {
                 } else {
                     // updated?
                     if (xrPlane.lastChangedTime === this._xrSessionManager.currentTimestamp) {
-                        let index = this._findIndexInPlaneArray(xrPlane);
+                        const index = this._findIndexInPlaneArray(xrPlane);
                         const plane = this._detectedPlanes[index];
                         this._updatePlaneWithXRPlane(xrPlane, plane, frame);
                         this.onPlaneUpdatedObservable.notifyObservers(plane);

@@ -1,11 +1,11 @@
 import { InternalTexture } from "../Materials/Textures/internalTexture";
 import { ThinEngine } from "../Engines/thinEngine";
-import { Constants } from '../Engines/constants';
-import { AutoReleaseWorkerPool } from './workerPool';
+import { Constants } from "../Engines/constants";
+import { AutoReleaseWorkerPool } from "./workerPool";
 import { Tools } from "./tools";
 import { Nullable } from "../types";
 
-declare var KTX2DECODER: any;
+declare let KTX2DECODER: any;
 
 /**
  * Class for loading KTX2 files
@@ -74,33 +74,39 @@ export class KhronosTextureContainer2 {
             KhronosTextureContainer2._WorkerPoolPromise = new Promise((resolve) => {
                 const workerContent = `(${workerFunc})()`;
                 const workerBlobUrl = URL.createObjectURL(new Blob([workerContent], { type: "application/javascript" }));
-                resolve(new AutoReleaseWorkerPool(numWorkers, () => new Promise((resolve, reject) => {
-                    const worker = new Worker(workerBlobUrl);
+                resolve(
+                    new AutoReleaseWorkerPool(
+                        numWorkers,
+                        () =>
+                            new Promise((resolve, reject) => {
+                                const worker = new Worker(workerBlobUrl);
 
-                    const onError = (error: ErrorEvent) => {
-                        worker.removeEventListener("error", onError);
-                        worker.removeEventListener("message", onMessage);
-                        reject(error);
-                    };
+                                const onError = (error: ErrorEvent) => {
+                                    worker.removeEventListener("error", onError);
+                                    worker.removeEventListener("message", onMessage);
+                                    reject(error);
+                                };
 
-                    const onMessage = (message: MessageEvent) => {
-                        if (message.data.action === "init") {
-                            worker.removeEventListener("error", onError);
-                            worker.removeEventListener("message", onMessage);
-                            resolve(worker);
-                        }
-                    };
+                                const onMessage = (message: MessageEvent) => {
+                                    if (message.data.action === "init") {
+                                        worker.removeEventListener("error", onError);
+                                        worker.removeEventListener("message", onMessage);
+                                        resolve(worker);
+                                    }
+                                };
 
-                    worker.addEventListener("error", onError);
-                    worker.addEventListener("message", onMessage);
+                                worker.addEventListener("error", onError);
+                                worker.addEventListener("message", onMessage);
 
-                    worker.postMessage({
-                        action: "init",
-                        urls: KhronosTextureContainer2.URLConfig
-                    });
-                })));
+                                worker.postMessage({
+                                    action: "init",
+                                    urls: KhronosTextureContainer2.URLConfig,
+                                });
+                            })
+                    )
+                );
             });
-        } else if (typeof(KTX2DECODER) === "undefined") {
+        } else if (typeof KTX2DECODER === "undefined") {
             KhronosTextureContainer2._DecoderModulePromise = Tools.LoadScriptAsync(KhronosTextureContainer2.URLConfig.jsDecoderModule).then(() => {
                 KTX2DECODER.MSCTranscoder.UseFromWorkerThread = false;
                 KTX2DECODER.WASMMemoryManager.LoadBinariesFromCurrentThread = true;
@@ -148,7 +154,12 @@ export class KhronosTextureContainer2 {
         KhronosTextureContainer2._Initialize(numWorkers);
     }
 
-    /** @hidden */
+    /**
+     * @param data
+     * @param internalTexture
+     * @param options
+     * @hidden
+     */
     public uploadAsync(data: ArrayBufferView, internalTexture: InternalTexture, options?: any): Promise<void> {
         const caps = this._engine.getCaps();
 
@@ -203,12 +214,15 @@ export class KhronosTextureContainer2 {
         } else if (KhronosTextureContainer2._DecoderModulePromise) {
             return KhronosTextureContainer2._DecoderModulePromise.then((decoder) => {
                 return new Promise((resolve, reject) => {
-                    decoder.decode(data, caps).then((data: any) => {
-                        this._createTexture(data, internalTexture);
-                        resolve();
-                    }).catch((reason: any) => {
-                        reject({ message: reason });
-                    });
+                    decoder
+                        .decode(data, caps)
+                        .then((data: any) => {
+                            this._createTexture(data, internalTexture);
+                            resolve();
+                        })
+                        .catch((reason: any) => {
+                            reject({ message: reason });
+                        });
                 });
             });
         }
@@ -244,7 +258,7 @@ export class KhronosTextureContainer2 {
         }
 
         for (let t = 0; t < data.mipmaps.length; ++t) {
-            let mipmap = data.mipmaps[t];
+            const mipmap = data.mipmaps[t];
 
             if (!mipmap || !mipmap.data) {
                 throw new Error("KTX2 container - could not transcode one of the image");
@@ -278,8 +292,20 @@ export class KhronosTextureContainer2 {
         if (data.byteLength >= 12) {
             // '«', 'K', 'T', 'X', ' ', '2', '0', '»', '\r', '\n', '\x1A', '\n'
             const identifier = new Uint8Array(data.buffer, data.byteOffset, 12);
-            if (identifier[0] === 0xAB && identifier[1] === 0x4B && identifier[2] === 0x54 && identifier[3] === 0x58 && identifier[4] === 0x20 && identifier[5] === 0x32 &&
-                identifier[6] === 0x30 && identifier[7] === 0xBB && identifier[8] === 0x0D && identifier[9] === 0x0A && identifier[10] === 0x1A && identifier[11] === 0x0A) {
+            if (
+                identifier[0] === 0xab &&
+                identifier[1] === 0x4b &&
+                identifier[2] === 0x54 &&
+                identifier[3] === 0x58 &&
+                identifier[4] === 0x20 &&
+                identifier[5] === 0x32 &&
+                identifier[6] === 0x30 &&
+                identifier[7] === 0xbb &&
+                identifier[8] === 0x0d &&
+                identifier[9] === 0x0a &&
+                identifier[10] === 0x1a &&
+                identifier[11] === 0x0a
+            ) {
                 return true;
             }
         }
@@ -327,18 +353,21 @@ function workerFunc(): void {
                 postMessage({ action: "init" });
                 break;
             case "decode":
-                ktx2Decoder.decode(event.data.data, event.data.caps, event.data.options).then((data: any) => {
-                    const buffers = [];
-                    for (let mip = 0; mip < data.mipmaps.length; ++mip) {
-                        const mipmap = data.mipmaps[mip];
-                        if (mipmap && mipmap.data) {
-                            buffers.push(mipmap.data.buffer);
+                ktx2Decoder
+                    .decode(event.data.data, event.data.caps, event.data.options)
+                    .then((data: any) => {
+                        const buffers = [];
+                        for (let mip = 0; mip < data.mipmaps.length; ++mip) {
+                            const mipmap = data.mipmaps[mip];
+                            if (mipmap && mipmap.data) {
+                                buffers.push(mipmap.data.buffer);
+                            }
                         }
-                    }
-                    postMessage({ action: "decoded", success: true, decodedData: data }, buffers);
-                }).catch((reason: any) => {
-                    postMessage({ action: "decoded", success: false, msg: reason });
-                });
+                        postMessage({ action: "decoded", success: true, decodedData: data }, buffers);
+                    })
+                    .catch((reason: any) => {
+                        postMessage({ action: "decoded", success: false, msg: reason });
+                    });
                 break;
         }
     };

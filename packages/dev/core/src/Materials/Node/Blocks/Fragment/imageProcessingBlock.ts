@@ -1,14 +1,14 @@
-import { NodeMaterialBlock } from '../../nodeMaterialBlock';
-import { NodeMaterialBlockConnectionPointTypes } from '../../Enums/nodeMaterialBlockConnectionPointTypes';
-import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
-import { NodeMaterialBlockTargets } from '../../Enums/nodeMaterialBlockTargets';
-import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPoint';
-import { AbstractMesh } from '../../../../Meshes/abstractMesh';
-import { NodeMaterial, NodeMaterialDefines } from '../../nodeMaterial';
-import { Effect } from '../../../effect';
-import { Mesh } from '../../../../Meshes/mesh';
-import { RegisterClass } from '../../../../Misc/typeStore';
-import { Scene } from '../../../../scene';
+import { NodeMaterialBlock } from "../../nodeMaterialBlock";
+import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
+import { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
+import { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
+import { AbstractMesh } from "../../../../Meshes/abstractMesh";
+import { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
+import { Effect } from "../../../effect";
+import { Mesh } from "../../../../Meshes/mesh";
+import { RegisterClass } from "../../../../Misc/typeStore";
+import { Scene } from "../../../../scene";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../nodeMaterialDecorator";
 
 import "../../../../Shaders/ShadersInclude/helperFunctions";
@@ -39,9 +39,9 @@ export class ImageProcessingBlock extends NodeMaterialBlock {
     public convertInputToLinearSpace: boolean = true;
 
     /**
-    * Gets the current class name
-    * @returns the class name
-    */
+     * Gets the current class name
+     * @returns the class name
+     */
     public getClassName() {
         return "ImageProcessingBlock";
     }
@@ -129,15 +129,15 @@ export class ImageProcessingBlock extends NodeMaterialBlock {
         state.uniforms.push("colorTransformSettings");
 
         // Emit code
-        let color = this.color;
-        let output = this._outputs[0];
-        let comments = `//${this.name}`;
+        const color = this.color;
+        const output = this._outputs[0];
+        const comments = `//${this.name}`;
 
         state._emitFunctionFromInclude("helperFunctions", comments);
         state._emitFunctionFromInclude("imageProcessingDeclaration", comments);
         state._emitFunctionFromInclude("imageProcessingFunctions", comments);
 
-        if (color.connectedPoint!.type === NodeMaterialBlockConnectionPointTypes.Color4 || (color.connectedPoint!.type === NodeMaterialBlockConnectionPointTypes.Vector4)) {
+        if (color.connectedPoint!.type === NodeMaterialBlockConnectionPointTypes.Color4 || color.connectedPoint!.type === NodeMaterialBlockConnectionPointTypes.Vector4) {
             state.compilationString += `${this._declareOutput(output, state)} = ${color.associatedVariableName};\r\n`;
         } else {
             state.compilationString += `${this._declareOutput(output, state)} = vec4(${color.associatedVariableName}, 1.0);\r\n`;
@@ -167,7 +167,7 @@ export class ImageProcessingBlock extends NodeMaterialBlock {
     }
 
     public serialize(): any {
-        let serializationObject = super.serialize();
+        const serializationObject = super.serialize();
 
         serializationObject.convertInputToLinearSpace = this.convertInputToLinearSpace;
 

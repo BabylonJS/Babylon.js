@@ -1,23 +1,22 @@
-import { NodeMaterial, NodeMaterialDefines } from '../../nodeMaterial';
-import { NodeMaterialBlock } from '../../nodeMaterialBlock';
-import { NodeMaterialBlockConnectionPointTypes } from '../../Enums/nodeMaterialBlockConnectionPointTypes';
-import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
-import { NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection } from '../../nodeMaterialBlockConnectionPoint';
-import { NodeMaterialBlockTargets } from '../../Enums/nodeMaterialBlockTargets';
-import { RegisterClass } from '../../../../Misc/typeStore';
-import { AbstractMesh } from '../../../../Meshes/abstractMesh';
+import { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
+import { NodeMaterialBlock } from "../../nodeMaterialBlock";
+import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
+import { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
+import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
+import { RegisterClass } from "../../../../Misc/typeStore";
+import { AbstractMesh } from "../../../../Meshes/abstractMesh";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
 
 /**
  * Block used to implement the anisotropy module of the PBR material
  */
 export class AnisotropyBlock extends NodeMaterialBlock {
-
     /**
      * The two properties below are set by the main PBR block prior to calling methods of this class.
      * This is to avoid having to add them as inputs here whereas they are already inputs of the main block, so already known.
      * It's less burden on the user side in the editor part.
-    */
+     */
 
     /** @hidden */
     public worldPositionConnectionPoint: NodeMaterialConnectionPoint;
@@ -38,8 +37,12 @@ export class AnisotropyBlock extends NodeMaterialBlock {
         this.registerInput("uv", NodeMaterialBlockConnectionPointTypes.Vector2, true); // need this property and the next one in case there's no PerturbNormal block connected to the main PBR block
         this.registerInput("worldTangent", NodeMaterialBlockConnectionPointTypes.Vector4, true);
 
-        this.registerOutput("anisotropy", NodeMaterialBlockConnectionPointTypes.Object, NodeMaterialBlockTargets.Fragment,
-            new NodeMaterialConnectionPointCustomObject("anisotropy", this, NodeMaterialConnectionPointDirection.Output, AnisotropyBlock, "AnisotropyBlock"));
+        this.registerOutput(
+            "anisotropy",
+            NodeMaterialBlockConnectionPointTypes.Object,
+            NodeMaterialBlockTargets.Fragment,
+            new NodeMaterialConnectionPointCustomObject("anisotropy", this, NodeMaterialConnectionPointDirection.Output, AnisotropyBlock, "AnisotropyBlock")
+        );
     }
 
     /**
@@ -97,11 +100,11 @@ export class AnisotropyBlock extends NodeMaterialBlock {
     private _generateTBNSpace(state: NodeMaterialBuildState) {
         let code = "";
 
-        let comments = `//${this.name}`;
-        let uv = this.uv;
-        let worldPosition = this.worldPositionConnectionPoint;
-        let worldNormal = this.worldNormalConnectionPoint;
-        let worldTangent = this.worldTangent;
+        const comments = `//${this.name}`;
+        const uv = this.uv;
+        const worldPosition = this.worldPositionConnectionPoint;
+        const worldNormal = this.worldNormalConnectionPoint;
+        const worldTangent = this.worldTangent;
 
         if (!uv.isConnected) {
             // we must set the uv input as optional because we may not end up in this method (in case a PerturbNormal block is linked to the PBR material)
@@ -112,7 +115,7 @@ export class AnisotropyBlock extends NodeMaterialBlock {
 
         state._emitExtension("derivatives", "#extension GL_OES_standard_derivatives : enable");
 
-        let tangentReplaceString = { search: /defined\(TANGENT\)/g, replace: worldTangent.isConnected ? "defined(TANGENT)" : "defined(IGNORE)" };
+        const tangentReplaceString = { search: /defined\(TANGENT\)/g, replace: worldTangent.isConnected ? "defined(TANGENT)" : "defined(IGNORE)" };
 
         if (worldTangent.isConnected) {
             code += `vec3 tbnNormal = normalize(${worldNormal.associatedVariableName}.xyz);\r\n`;
@@ -125,13 +128,13 @@ export class AnisotropyBlock extends NodeMaterialBlock {
             #if defined(${worldTangent.isConnected ? "TANGENT" : "IGNORE"}) && defined(NORMAL)
                 mat3 TBN = vTBN;
             #else
-                mat3 TBN = cotangent_frame(${worldNormal.associatedVariableName + ".xyz"}, ${"v_" + worldPosition.associatedVariableName + ".xyz"}, ${uv.isConnected ? uv.associatedVariableName : "vec2(0.)"}, vec2(1., 1.));
+                mat3 TBN = cotangent_frame(${worldNormal.associatedVariableName + ".xyz"}, ${"v_" + worldPosition.associatedVariableName + ".xyz"}, ${
+            uv.isConnected ? uv.associatedVariableName : "vec2(0.)"
+        }, vec2(1., 1.));
             #endif\r\n`;
 
         state._emitFunctionFromInclude("bumpFragmentMainFunctions", comments, {
-            replaceStrings: [
-                tangentReplaceString,
-            ]
+            replaceStrings: [tangentReplaceString],
         });
 
         return code;

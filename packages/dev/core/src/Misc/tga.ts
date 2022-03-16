@@ -21,23 +21,20 @@ const _ORIGIN_UR = 0x03;
  * @returns the header
  */
 export function GetTGAHeader(data: Uint8Array): any {
-    var offset = 0;
+    let offset = 0;
 
-    var header = {
+    const header = {
         id_length: data[offset++],
         colormap_type: data[offset++],
         image_type: data[offset++],
-        colormap_index: data[offset++] | data[offset++] << 8,
-        colormap_length: data[offset++] | data[offset++] << 8,
+        colormap_index: data[offset++] | (data[offset++] << 8),
+        colormap_length: data[offset++] | (data[offset++] << 8),
         colormap_size: data[offset++],
-        origin: [
-            data[offset++] | data[offset++] << 8,
-            data[offset++] | data[offset++] << 8
-        ],
-        width: data[offset++] | data[offset++] << 8,
-        height: data[offset++] | data[offset++] << 8,
+        origin: [data[offset++] | (data[offset++] << 8), data[offset++] | (data[offset++] << 8)],
+        width: data[offset++] | (data[offset++] << 8),
+        height: data[offset++] | (data[offset++] << 8),
         pixel_size: data[offset++],
-        flags: data[offset++]
+        flags: data[offset++],
     };
 
     return header;
@@ -45,6 +42,8 @@ export function GetTGAHeader(data: Uint8Array): any {
 
 /**
  * Uploads TGA content to a Babylon Texture
+ * @param texture
+ * @param data
  * @hidden
  */
 export function UploadContent(texture: InternalTexture, data: Uint8Array): void {
@@ -55,8 +54,8 @@ export function UploadContent(texture: InternalTexture, data: Uint8Array): void 
     }
 
     // Read Header
-    var offset = 18;
-    var header = GetTGAHeader(data);
+    let offset = 18;
+    const header = GetTGAHeader(data);
 
     // Assume it's a valid Targa file.
     if (header.id_length + offset > data.length) {
@@ -67,9 +66,9 @@ export function UploadContent(texture: InternalTexture, data: Uint8Array): void 
     // Skip not needed data
     offset += header.id_length;
 
-    var use_rle = false;
-    var use_pal = false;
-    var use_grey = false;
+    let use_rle = false;
+    let use_pal = false;
+    let use_grey = false;
 
     // Get some informations.
     switch (header.image_type) {
@@ -92,26 +91,26 @@ export function UploadContent(texture: InternalTexture, data: Uint8Array): void 
             break;
     }
 
-    var pixel_data;
+    let pixel_data;
 
     // var numAlphaBits = header.flags & 0xf;
-    var pixel_size = header.pixel_size >> 3;
-    var pixel_total = header.width * header.height * pixel_size;
+    const pixel_size = header.pixel_size >> 3;
+    const pixel_total = header.width * header.height * pixel_size;
 
     // Read palettes
-    var palettes;
+    let palettes;
 
     if (use_pal) {
-        palettes = data.subarray(offset, offset += header.colormap_length * (header.colormap_size >> 3));
+        palettes = data.subarray(offset, (offset += header.colormap_length * (header.colormap_size >> 3)));
     }
 
     // Read LRE
     if (use_rle) {
         pixel_data = new Uint8Array(pixel_total);
 
-        var c, count, i;
-        var localOffset = 0;
-        var pixels = new Uint8Array(pixel_size);
+        let c, count, i;
+        let localOffset = 0;
+        const pixels = new Uint8Array(pixel_size);
 
         while (offset < pixel_total && localOffset < pixel_total) {
             c = data[offset++];
@@ -143,14 +142,11 @@ export function UploadContent(texture: InternalTexture, data: Uint8Array): void 
     }
     // RAW Pixels
     else {
-        pixel_data = data.subarray(
-            offset,
-            offset += (use_pal ? header.width * header.height : pixel_total)
-        );
+        pixel_data = data.subarray(offset, (offset += use_pal ? header.width * header.height : pixel_total));
     }
 
     // Load to texture
-    var x_start, y_start, x_step, y_step, y_end, x_end;
+    let x_start, y_start, x_step, y_step, y_end, x_end;
 
     switch ((header.flags & _ORIGIN_MASK) >> _ORIGIN_SHIFT) {
         default:
@@ -192,66 +188,141 @@ export function UploadContent(texture: InternalTexture, data: Uint8Array): void 
     }
 
     // Load the specify method
-    var func = '_getImageData' + (use_grey ? 'Grey' : '') + (header.pixel_size) + 'bits';
-    var imageData = (<any>TGATools)[func](header, palettes, pixel_data, y_start, y_step, y_end, x_start, x_step, x_end);
+    const func = "_getImageData" + (use_grey ? "Grey" : "") + header.pixel_size + "bits";
+    const imageData = (<any>TGATools)[func](header, palettes, pixel_data, y_start, y_step, y_end, x_start, x_step, x_end);
 
     const engine = texture.getEngine();
     engine._uploadDataToTextureDirectly(texture, imageData);
 }
 
-/** @hidden */
-function _getImageData8bits(header: any, palettes: Uint8Array, pixel_data: Uint8Array, y_start: number, y_step: number, y_end: number, x_start: number, x_step: number, x_end: number): Uint8Array {
-    var image = pixel_data, colormap = palettes;
-    var width = header.width, height = header.height;
-    var color, i = 0, x, y;
+/**
+ * @param header
+ * @param palettes
+ * @param pixel_data
+ * @param y_start
+ * @param y_step
+ * @param y_end
+ * @param x_start
+ * @param x_step
+ * @param x_end
+ * @hidden
+ */
+function _getImageData8bits(
+    header: any,
+    palettes: Uint8Array,
+    pixel_data: Uint8Array,
+    y_start: number,
+    y_step: number,
+    y_end: number,
+    x_start: number,
+    x_step: number,
+    x_end: number
+): Uint8Array {
+    const image = pixel_data,
+        colormap = palettes;
+    const width = header.width,
+        height = header.height;
+    let color,
+        i = 0,
+        x,
+        y;
 
-    var imageData = new Uint8Array(width * height * 4);
+    const imageData = new Uint8Array(width * height * 4);
 
     for (y = y_start; y !== y_end; y += y_step) {
         for (x = x_start; x !== x_end; x += x_step, i++) {
             color = image[i];
             imageData[(x + width * y) * 4 + 3] = 255;
-            imageData[(x + width * y) * 4 + 2] = colormap[(color * 3) + 0];
-            imageData[(x + width * y) * 4 + 1] = colormap[(color * 3) + 1];
-            imageData[(x + width * y) * 4 + 0] = colormap[(color * 3) + 2];
+            imageData[(x + width * y) * 4 + 2] = colormap[color * 3 + 0];
+            imageData[(x + width * y) * 4 + 1] = colormap[color * 3 + 1];
+            imageData[(x + width * y) * 4 + 0] = colormap[color * 3 + 2];
         }
     }
 
     return imageData;
 }
 
-/** @hidden */
-function _getImageData16bits(header: any, palettes: Uint8Array, pixel_data: Uint8Array, y_start: number, y_step: number, y_end: number, x_start: number, x_step: number, x_end: number): Uint8Array {
-    var image = pixel_data;
-    var width = header.width, height = header.height;
-    var color, i = 0, x, y;
+/**
+ * @param header
+ * @param palettes
+ * @param pixel_data
+ * @param y_start
+ * @param y_step
+ * @param y_end
+ * @param x_start
+ * @param x_step
+ * @param x_end
+ * @hidden
+ */
+function _getImageData16bits(
+    header: any,
+    palettes: Uint8Array,
+    pixel_data: Uint8Array,
+    y_start: number,
+    y_step: number,
+    y_end: number,
+    x_start: number,
+    x_step: number,
+    x_end: number
+): Uint8Array {
+    const image = pixel_data;
+    const width = header.width,
+        height = header.height;
+    let color,
+        i = 0,
+        x,
+        y;
 
-    var imageData = new Uint8Array(width * height * 4);
+    const imageData = new Uint8Array(width * height * 4);
 
     for (y = y_start; y !== y_end; y += y_step) {
         for (x = x_start; x !== x_end; x += x_step, i += 2) {
             color = image[i + 0] + (image[i + 1] << 8); // Inversed ?
-            let r = (((color & 0x7C00) >> 10) * 255) / 0x1F | 0;
-            let g = (((color & 0x03E0) >> 5) * 255) / 0x1F | 0;
-            let b = ((color & 0x001F) * 255) / 0x1F | 0;
+            const r = ((((color & 0x7c00) >> 10) * 255) / 0x1f) | 0;
+            const g = ((((color & 0x03e0) >> 5) * 255) / 0x1f) | 0;
+            const b = (((color & 0x001f) * 255) / 0x1f) | 0;
 
             imageData[(x + width * y) * 4 + 0] = r;
             imageData[(x + width * y) * 4 + 1] = g;
             imageData[(x + width * y) * 4 + 2] = b;
-            imageData[(x + width * y) * 4 + 3] = (color & 0x8000) ? 0 : 255;
+            imageData[(x + width * y) * 4 + 3] = color & 0x8000 ? 0 : 255;
         }
     }
 
     return imageData;
 }
 
-/** @hidden */
-function _getImageData24bits(header: any, palettes: Uint8Array, pixel_data: Uint8Array, y_start: number, y_step: number, y_end: number, x_start: number, x_step: number, x_end: number): Uint8Array {
-    var image = pixel_data;
-    var width = header.width, height = header.height;
-    var i = 0, x, y;
+/**
+ * @param header
+ * @param palettes
+ * @param pixel_data
+ * @param y_start
+ * @param y_step
+ * @param y_end
+ * @param x_start
+ * @param x_step
+ * @param x_end
+ * @hidden
+ */
+function _getImageData24bits(
+    header: any,
+    palettes: Uint8Array,
+    pixel_data: Uint8Array,
+    y_start: number,
+    y_step: number,
+    y_end: number,
+    x_start: number,
+    x_step: number,
+    x_end: number
+): Uint8Array {
+    const image = pixel_data;
+    const width = header.width,
+        height = header.height;
+    let i = 0,
+        x,
+        y;
 
-    var imageData = new Uint8Array(width * height * 4);
+    const imageData = new Uint8Array(width * height * 4);
 
     for (y = y_start; y !== y_end; y += y_step) {
         for (x = x_start; x !== x_end; x += x_step, i += 3) {
@@ -265,13 +336,37 @@ function _getImageData24bits(header: any, palettes: Uint8Array, pixel_data: Uint
     return imageData;
 }
 
-/** @hidden */
-function _getImageData32bits(header: any, palettes: Uint8Array, pixel_data: Uint8Array, y_start: number, y_step: number, y_end: number, x_start: number, x_step: number, x_end: number): Uint8Array {
-    var image = pixel_data;
-    var width = header.width, height = header.height;
-    var i = 0, x, y;
+/**
+ * @param header
+ * @param palettes
+ * @param pixel_data
+ * @param y_start
+ * @param y_step
+ * @param y_end
+ * @param x_start
+ * @param x_step
+ * @param x_end
+ * @hidden
+ */
+function _getImageData32bits(
+    header: any,
+    palettes: Uint8Array,
+    pixel_data: Uint8Array,
+    y_start: number,
+    y_step: number,
+    y_end: number,
+    x_start: number,
+    x_step: number,
+    x_end: number
+): Uint8Array {
+    const image = pixel_data;
+    const width = header.width,
+        height = header.height;
+    let i = 0,
+        x,
+        y;
 
-    var imageData = new Uint8Array(width * height * 4);
+    const imageData = new Uint8Array(width * height * 4);
 
     for (y = y_start; y !== y_end; y += y_step) {
         for (x = x_start; x !== x_end; x += x_step, i += 4) {
@@ -285,13 +380,38 @@ function _getImageData32bits(header: any, palettes: Uint8Array, pixel_data: Uint
     return imageData;
 }
 
-/** @hidden */
-function _getImageDataGrey8bits(header: any, palettes: Uint8Array, pixel_data: Uint8Array, y_start: number, y_step: number, y_end: number, x_start: number, x_step: number, x_end: number): Uint8Array {
-    var image = pixel_data;
-    var width = header.width, height = header.height;
-    var color, i = 0, x, y;
+/**
+ * @param header
+ * @param palettes
+ * @param pixel_data
+ * @param y_start
+ * @param y_step
+ * @param y_end
+ * @param x_start
+ * @param x_step
+ * @param x_end
+ * @hidden
+ */
+function _getImageDataGrey8bits(
+    header: any,
+    palettes: Uint8Array,
+    pixel_data: Uint8Array,
+    y_start: number,
+    y_step: number,
+    y_end: number,
+    x_start: number,
+    x_step: number,
+    x_end: number
+): Uint8Array {
+    const image = pixel_data;
+    const width = header.width,
+        height = header.height;
+    let color,
+        i = 0,
+        x,
+        y;
 
-    var imageData = new Uint8Array(width * height * 4);
+    const imageData = new Uint8Array(width * height * 4);
 
     for (y = y_start; y !== y_end; y += y_step) {
         for (x = x_start; x !== x_end; x += x_step, i++) {
@@ -306,13 +426,37 @@ function _getImageDataGrey8bits(header: any, palettes: Uint8Array, pixel_data: U
     return imageData;
 }
 
-/** @hidden */
-function _getImageDataGrey16bits(header: any, palettes: Uint8Array, pixel_data: Uint8Array, y_start: number, y_step: number, y_end: number, x_start: number, x_step: number, x_end: number): Uint8Array {
-    var image = pixel_data;
-    var width = header.width, height = header.height;
-    var i = 0, x, y;
+/**
+ * @param header
+ * @param palettes
+ * @param pixel_data
+ * @param y_start
+ * @param y_step
+ * @param y_end
+ * @param x_start
+ * @param x_step
+ * @param x_end
+ * @hidden
+ */
+function _getImageDataGrey16bits(
+    header: any,
+    palettes: Uint8Array,
+    pixel_data: Uint8Array,
+    y_start: number,
+    y_step: number,
+    y_end: number,
+    x_start: number,
+    x_step: number,
+    x_end: number
+): Uint8Array {
+    const image = pixel_data;
+    const width = header.width,
+        height = header.height;
+    let i = 0,
+        x,
+        y;
 
-    var imageData = new Uint8Array(width * height * 4);
+    const imageData = new Uint8Array(width * height * 4);
 
     for (y = y_start; y !== y_end; y += y_step) {
         for (x = x_start; x !== x_end; x += x_step, i += 2) {
@@ -332,7 +476,6 @@ function _getImageDataGrey16bits(header: any, palettes: Uint8Array, pixel_data: 
  * @see http://blog.robrowser.com/javascript-tga-loader.html
  */
 export const TGATools = {
-
     /**
      * Gets the header of a TGA file
      * @param data defines the TGA data
@@ -360,5 +503,5 @@ export const TGATools = {
     /** @hidden */
     _getImageDataGrey8bits,
     /** @hidden */
-    _getImageDataGrey16bits
+    _getImageDataGrey16bits,
 };

@@ -204,12 +204,16 @@ export class MorphTargetManager implements IDisposable {
      */
     public addTarget(target: MorphTarget): void {
         this._targets.push(target);
-        this._targetInfluenceChangedObservers.push(target.onInfluenceChanged.add((needUpdate) => {
-            this._syncActiveTargets(needUpdate);
-        }));
-        this._targetDataLayoutChangedObservers.push(target._onDataLayoutChanged.add(() => {
-            this._syncActiveTargets(true);
-        }));
+        this._targetInfluenceChangedObservers.push(
+            target.onInfluenceChanged.add((needUpdate) => {
+                this._syncActiveTargets(needUpdate);
+            })
+        );
+        this._targetDataLayoutChangedObservers.push(
+            target._onDataLayoutChanged.add(() => {
+                this._syncActiveTargets(true);
+            })
+        );
         this._syncActiveTargets(true);
     }
 
@@ -218,7 +222,7 @@ export class MorphTargetManager implements IDisposable {
      * @param target defines the target to remove
      */
     public removeTarget(target: MorphTarget): void {
-        var index = this._targets.indexOf(target);
+        const index = this._targets.indexOf(target);
         if (index >= 0) {
             this._targets.splice(index, 1);
 
@@ -228,7 +232,10 @@ export class MorphTargetManager implements IDisposable {
         }
     }
 
-    /** @hidden */
+    /**
+     * @param effect
+     * @hidden
+     */
     public _bind(effect: Effect) {
         effect.setFloat3("morphTargetTextureInfo", this._textureVertexStride, this._textureWidth, this._textureHeight);
         effect.setFloatArray("morphTargetTextureIndices", this._morphTargetTextureIndices);
@@ -240,9 +247,9 @@ export class MorphTargetManager implements IDisposable {
      * @returns a new MorphTargetManager
      */
     public clone(): MorphTargetManager {
-        let copy = new MorphTargetManager(this._scene);
+        const copy = new MorphTargetManager(this._scene);
 
-        for (var target of this._targets) {
+        for (const target of this._targets) {
             copy.addTarget(target.clone());
         }
 
@@ -258,12 +265,12 @@ export class MorphTargetManager implements IDisposable {
      * @returns the serialized object
      */
     public serialize(): any {
-        var serializationObject: any = {};
+        const serializationObject: any = {};
 
         serializationObject.id = this.uniqueId;
 
         serializationObject.targets = [];
-        for (var target of this._targets) {
+        for (const target of this._targets) {
             serializationObject.targets.push(target.serialize());
         }
 
@@ -286,8 +293,8 @@ export class MorphTargetManager implements IDisposable {
             this._morphTargetTextureIndices = new Float32Array(this._targets.length);
         }
 
-        var targetIndex = -1;
-        for (var target of this._targets) {
+        let targetIndex = -1;
+        for (const target of this._targets) {
             targetIndex++;
             if (target.influence === 0 && this.optimizeInfluencers) {
                 continue;
@@ -306,8 +313,7 @@ export class MorphTargetManager implements IDisposable {
                 const vertexCount = positions.length / 3;
                 if (this._vertexCount === 0) {
                     this._vertexCount = vertexCount;
-                }
-                else if (this._vertexCount !== vertexCount) {
+                } else if (this._vertexCount !== vertexCount) {
                     Logger.Error("Incompatible target. Targets must all have the same vertices count.");
                     return;
                 }
@@ -318,7 +324,7 @@ export class MorphTargetManager implements IDisposable {
             this._influences = new Float32Array(influenceCount);
         }
 
-        for (var index = 0; index < influenceCount; index++) {
+        for (let index = 0; index < influenceCount; index++) {
             this._influences[index] = this._tempInfluences[index];
         }
 
@@ -361,10 +367,8 @@ export class MorphTargetManager implements IDisposable {
 
             let mustUpdateTexture = true;
             if (this._targetStoreTexture) {
-                let textureSize = this._targetStoreTexture.getSize();
-                if (textureSize.width === this._textureWidth
-                    && textureSize.height === this._textureHeight
-                    && this._targetStoreTexture.depth === this._targets.length) {
+                const textureSize = this._targetStoreTexture.getSize();
+                if (textureSize.width === this._textureWidth && textureSize.height === this._textureHeight && this._targetStoreTexture.depth === this._targets.length) {
                     mustUpdateTexture = false;
                 }
             }
@@ -374,12 +378,12 @@ export class MorphTargetManager implements IDisposable {
                     this._targetStoreTexture.dispose();
                 }
 
-                let targetCount = this._targets.length;
-                let data = new Float32Array(targetCount * this._textureWidth * this._textureHeight * 4);
+                const targetCount = this._targets.length;
+                const data = new Float32Array(targetCount * this._textureWidth * this._textureHeight * 4);
 
                 let offset = 0;
-                for (var index = 0; index < targetCount; index++) {
-                    let target = this._targets[index];
+                for (let index = 0; index < targetCount; index++) {
+                    const target = this._targets[index];
 
                     const positions = target.getPositions();
                     const normals = target.getNormals();
@@ -394,7 +398,7 @@ export class MorphTargetManager implements IDisposable {
                     }
 
                     offset = index * this._textureWidth * this._textureHeight * 4;
-                    for (var vertex = 0; vertex < this._vertexCount; vertex++) {
+                    for (let vertex = 0; vertex < this._vertexCount; vertex++) {
                         data[offset] = positions[vertex * 3];
                         data[offset + 1] = positions[vertex * 3 + 1];
                         data[offset + 2] = positions[vertex * 3 + 2];
@@ -423,13 +427,22 @@ export class MorphTargetManager implements IDisposable {
                     }
                 }
 
-                this._targetStoreTexture = RawTexture2DArray.CreateRGBATexture(data, this._textureWidth, this._textureHeight, targetCount,
-                    this._scene, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE, Constants.TEXTURETYPE_FLOAT);
+                this._targetStoreTexture = RawTexture2DArray.CreateRGBATexture(
+                    data,
+                    this._textureWidth,
+                    this._textureHeight,
+                    targetCount,
+                    this._scene,
+                    false,
+                    false,
+                    Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+                    Constants.TEXTURETYPE_FLOAT
+                );
             }
         }
 
         // Flag meshes as dirty to resync with the active targets
-        for (var mesh of this._scene.meshes) {
+        for (const mesh of this._scene.meshes) {
             if ((<any>mesh).morphTargetManager === this) {
                 (<Mesh>mesh)._syncGeometryWithMorphTargetManager();
             }
@@ -469,11 +482,11 @@ export class MorphTargetManager implements IDisposable {
      * @returns the new MorphTargetManager
      */
     public static Parse(serializationObject: any, scene: Scene): MorphTargetManager {
-        var result = new MorphTargetManager(scene);
+        const result = new MorphTargetManager(scene);
 
         result._uniqueId = serializationObject.id;
 
-        for (var targetData of serializationObject.targets) {
+        for (const targetData of serializationObject.targets) {
             result.addTarget(MorphTarget.Parse(targetData, scene));
         }
 

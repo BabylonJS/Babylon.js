@@ -23,9 +23,9 @@ namespace Levenshtein {
          * @returns JSON serialization
          */
         public serialize(): string {
-            let jsonObject: any = {};
+            const jsonObject: any = {};
 
-            let characters = new Array<T>(this._characterToIdx.size);
+            const characters = new Array<T>(this._characterToIdx.size);
             this._characterToIdx.forEach((v, k) => {
                 characters[v] = k;
             });
@@ -44,8 +44,8 @@ namespace Levenshtein {
          * @returns deserialized Alphabet
          */
         public static Deserialize<T>(json: string): Alphabet<T> {
-            let jsonObject = JSON.parse(json);
-            let alphabet = new Alphabet(jsonObject["characters"] as T[]);
+            const jsonObject = JSON.parse(json);
+            const alphabet = new Alphabet(jsonObject["characters"] as T[]);
             alphabet._insertionCosts = jsonObject["insertionCosts"];
             alphabet._deletionCosts = jsonObject["deletionCosts"];
             alphabet._substitutionCosts = jsonObject["substitutionCosts"];
@@ -63,11 +63,11 @@ namespace Levenshtein {
             characters: Array<T>,
             charToInsertionCost: Nullable<(char: T) => number> = null,
             charToDeletionCost: Nullable<(char: T) => number> = null,
-            charsToSubstitutionCost: Nullable<(outChar: T, inChar: T) => number> = null) {
-
+            charsToSubstitutionCost: Nullable<(outChar: T, inChar: T) => number> = null
+        ) {
             charToInsertionCost = charToInsertionCost ?? (() => 1);
             charToDeletionCost = charToDeletionCost ?? (() => 1);
-            charsToSubstitutionCost = charsToSubstitutionCost ?? ((a: T, b: T) => a === b ? 0 : 1);
+            charsToSubstitutionCost = charsToSubstitutionCost ?? ((a: T, b: T) => (a === b ? 0 : 1));
 
             this._characterToIdx = new Map<T, number>();
             this._insertionCosts = new Array<number>(characters.length);
@@ -124,8 +124,8 @@ namespace Levenshtein {
          * @returns substitution cost
          */
         public getSubstitutionCost(idx1: number, idx2: number): number {
-            let min = Math.min(idx1, idx2);
-            let max = Math.max(idx1, idx2);
+            const min = Math.min(idx1, idx2);
+            const max = Math.max(idx1, idx2);
 
             return this._substitutionCosts[min][max];
         }
@@ -141,8 +141,7 @@ namespace Levenshtein {
 
         // Scratch values
         private static readonly MAX_SEQUENCE_LENGTH = 256;
-        private static _costMatrix =
-            [...Array(Sequence.MAX_SEQUENCE_LENGTH + 1)].map((n) => new Array<number>(Sequence.MAX_SEQUENCE_LENGTH + 1));
+        private static _costMatrix = [...Array(Sequence.MAX_SEQUENCE_LENGTH + 1)].map((n) => new Array<number>(Sequence.MAX_SEQUENCE_LENGTH + 1));
         private static _insertionCost: number;
         private static _deletionCost: number;
         private static _substitutionCost: number;
@@ -166,7 +165,7 @@ namespace Levenshtein {
          * @returns Sequence
          */
         public static Deserialize<T>(json: string, alphabet: Alphabet<T>): Sequence<T> {
-            let sequence = new Sequence([], alphabet);
+            const sequence = new Sequence([], alphabet);
             sequence._characters = JSON.parse(json);
             return sequence;
         }
@@ -209,7 +208,7 @@ namespace Levenshtein {
             const aLength = aChars.length;
             const bLength = bChars.length;
 
-            let costMatrix = Sequence._costMatrix;
+            const costMatrix = Sequence._costMatrix;
             costMatrix[0][0] = 0;
             for (let idx = 0; idx < aLength; ++idx) {
                 costMatrix[idx + 1][0] = costMatrix[idx][0] + alphabet.getInsertionCost(aChars[idx]);
@@ -224,10 +223,7 @@ namespace Levenshtein {
                     Sequence._deletionCost = costMatrix[aIdx][bIdx + 1] + alphabet.getDeletionCost(aChars[aIdx]);
                     Sequence._substitutionCost = costMatrix[aIdx][bIdx] + alphabet.getSubstitutionCost(aChars[aIdx], bChars[bIdx]);
 
-                    costMatrix[aIdx + 1][bIdx + 1] = Math.min(
-                        Sequence._insertionCost,
-                        Sequence._deletionCost,
-                        Sequence._substitutionCost);
+                    costMatrix[aIdx + 1][bIdx + 1] = Math.min(Sequence._insertionCost, Sequence._deletionCost, Sequence._substitutionCost);
                 }
             }
 
@@ -258,8 +254,8 @@ export class Trajectory {
      * @returns deserialized Trajectory
      */
     public static Deserialize(json: string): Trajectory {
-        let jsonObject = JSON.parse(json);
-        let trajectory = new Trajectory(jsonObject["_segmentLength"]);
+        const jsonObject = JSON.parse(json);
+        const trajectory = new Trajectory(jsonObject["_segmentLength"]);
         trajectory._points = jsonObject["_points"].map((pt: any) => {
             return new Vector3(pt["_x"], pt["_y"], pt["_z"]);
         });
@@ -293,10 +289,9 @@ export class Trajectory {
         if (numPoints === 0) {
             this._points.push(point.clone());
         } else {
-            const getT = () =>
-                this._segmentLength / Vector3.Distance(this._points[numPoints - 1], point);
+            const getT = () => this._segmentLength / Vector3.Distance(this._points[numPoints - 1], point);
             for (let t = getT(); t <= 1.0; t = getT()) {
-                let newPoint = this._points[numPoints - 1].scale(1.0 - t);
+                const newPoint = this._points[numPoints - 1].scale(1.0 - t);
                 point.scaleAndAddToRef(t, newPoint);
                 this._points.push(newPoint);
                 ++numPoints;
@@ -312,7 +307,7 @@ export class Trajectory {
      * @returns new Trajectory with approximately the requested number of segments
      */
     public resampleAtTargetResolution(targetResolution: number): Trajectory {
-        var resampled = new Trajectory(this.getLength() / targetResolution);
+        const resampled = new Trajectory(this.getLength() / targetResolution);
         this._points.forEach((pt) => {
             resampled.add(pt);
         });
@@ -328,16 +323,11 @@ export class Trajectory {
      * @returns list of indices of most similar token per segment
      */
     public tokenize(tokens: DeepImmutable<Vector3[]>): number[] {
-        let tokenization: number[] = [];
+        const tokenization: number[] = [];
 
-        let segmentDir = new Vector3();
+        const segmentDir = new Vector3();
         for (let idx = 2; idx < this._points.length; ++idx) {
-            if (Trajectory._transformSegmentDirToRef(
-                this._points[idx - 2],
-                this._points[idx - 1],
-                this._points[idx],
-                segmentDir)) {
-
+            if (Trajectory._transformSegmentDirToRef(this._points[idx - 2], this._points[idx - 1], this._points[idx], segmentDir)) {
                 tokenization.push(Trajectory._tokenizeSegment(segmentDir, tokens));
             }
         }
@@ -362,12 +352,7 @@ export class Trajectory {
      * @param result reference to output variable
      * @returns whether or not transformation was successful
      */
-    private static _transformSegmentDirToRef(
-        priorVec: DeepImmutable<Vector3>,
-        fromVec: DeepImmutable<Vector3>,
-        toVec: DeepImmutable<Vector3>,
-        result: Vector3): boolean {
-
+    private static _transformSegmentDirToRef(priorVec: DeepImmutable<Vector3>, fromVec: DeepImmutable<Vector3>, toVec: DeepImmutable<Vector3>, result: Vector3): boolean {
         const DOT_PRODUCT_SAMPLE_REJECTION_THRESHOLD = 0.98;
 
         fromVec.subtractToRef(priorVec, Trajectory._forwardDir);
@@ -399,10 +384,7 @@ export class Trajectory {
      * @param tokens token vector list
      * @returns index of the most similar token to the segment
      */
-    private static _tokenizeSegment(
-        segment: DeepImmutable<Vector3>,
-        tokens: DeepImmutable<Vector3[]>): number {
-
+    private static _tokenizeSegment(segment: DeepImmutable<Vector3>, tokens: DeepImmutable<Vector3[]>): number {
         Trajectory._bestMatch = 0;
         Trajectory._score = Vector3.Dot(segment, tokens[0]);
         Trajectory._bestScore = Trajectory._score;
@@ -425,7 +407,6 @@ export class Trajectory {
  * roughly evenly over the surface of the unit sphere.
  */
 class Vector3Alphabet {
-
     /**
      * Characters in the alphabet.
      * NOTE: There is no reason for this property to exist and this class should just extend
@@ -451,17 +432,14 @@ class Vector3Alphabet {
         iterations: number = 256,
         startingStepSize: number = 0.1,
         endingStepSize: number = 0.001,
-        fixedValues: DeepImmutable<Vector3[]> = []): Vector3Alphabet {
-
+        fixedValues: DeepImmutable<Vector3[]> = []
+    ): Vector3Alphabet {
         const EPSILON = 0.001;
         const EPSILON_SQUARED = EPSILON * EPSILON;
 
-        let alphabet = new Vector3Alphabet(alphabetSize);
+        const alphabet = new Vector3Alphabet(alphabetSize);
         for (let idx = 0; idx < alphabetSize; ++idx) {
-            alphabet.chars[idx] = new Vector3(
-                Math.random() - 0.5,
-                Math.random() - 0.5,
-                Math.random() - 0.5);
+            alphabet.chars[idx] = new Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5);
             alphabet.chars[idx].normalize();
         }
 
@@ -471,8 +449,8 @@ class Vector3Alphabet {
 
         let stepSize: number;
         let distSq: number;
-        let force = new Vector3();
-        let scratch = new Vector3();
+        const force = new Vector3();
+        const scratch = new Vector3();
         const lerp = (l: number, r: number, t: number) => (1.0 - t) * l + t * r;
         for (let iteration = 0; iteration < iterations; ++iteration) {
             stepSize = lerp(startingStepSize, endingStepSize, iteration / (iterations - 1));
@@ -508,13 +486,10 @@ class Vector3Alphabet {
      * @returns deserialized Vector3Alphabet
      */
     public static Deserialize(json: string): Vector3Alphabet {
-        let jsonObject = JSON.parse(json);
-        let alphabet = new Vector3Alphabet(jsonObject.length);
+        const jsonObject = JSON.parse(json);
+        const alphabet = new Vector3Alphabet(jsonObject.length);
         for (let idx = 0; idx < jsonObject.length; ++idx) {
-            alphabet.chars[idx] = new Vector3(
-                jsonObject[idx]["_x"],
-                jsonObject[idx]["_y"],
-                jsonObject[idx]["_z"]);
+            alphabet.chars[idx] = new Vector3(jsonObject[idx]["_x"], jsonObject[idx]["_y"], jsonObject[idx]["_z"]);
         }
         return alphabet;
     }
@@ -551,10 +526,8 @@ class TrajectoryDescriptor {
      * @returns deserialized TrajectoryDescriptor
      */
     public static Deserialize(json: string, alphabet: Levenshtein.Alphabet<number>): TrajectoryDescriptor {
-        let descriptor = new TrajectoryDescriptor();
-        descriptor._sequences =
-            (JSON.parse(json) as string[]).map(
-                (s) => Levenshtein.Sequence.Deserialize(s, alphabet));
+        const descriptor = new TrajectoryDescriptor();
+        descriptor._sequences = (JSON.parse(json) as string[]).map((s) => Levenshtein.Sequence.Deserialize(s, alphabet));
         return descriptor;
     }
 
@@ -566,14 +539,8 @@ class TrajectoryDescriptor {
      * @param levenshteinAlphabet Levenshtein.Alphabet to be used as basis for comparison with other descriptors
      * @returns TrajectoryDescriptor describing provided Trajectory
      */
-    public static CreateFromTrajectory(
-        trajectory: Trajectory,
-        vector3Alphabet: Vector3Alphabet,
-        levenshteinAlphabet: Levenshtein.Alphabet<number>): TrajectoryDescriptor {
-
-        return TrajectoryDescriptor.CreateFromTokenizationPyramid(
-            TrajectoryDescriptor._getTokenizationPyramid(trajectory, vector3Alphabet),
-            levenshteinAlphabet);
+    public static CreateFromTrajectory(trajectory: Trajectory, vector3Alphabet: Vector3Alphabet, levenshteinAlphabet: Levenshtein.Alphabet<number>): TrajectoryDescriptor {
+        return TrajectoryDescriptor.CreateFromTokenizationPyramid(TrajectoryDescriptor._getTokenizationPyramid(trajectory, vector3Alphabet), levenshteinAlphabet);
     }
 
     /**
@@ -584,11 +551,8 @@ class TrajectoryDescriptor {
      * @param levenshteinAlphabet Levenshtein.Alphabet to be uses as basis for comparison with other descriptors
      * @returns TrajectoryDescriptor describing the Trajectory from which the pyramid was built
      */
-    public static CreateFromTokenizationPyramid(
-        pyramid: number[][],
-        levenshteinAlphabet: Levenshtein.Alphabet<number>): TrajectoryDescriptor {
-
-        let descriptor = new TrajectoryDescriptor();
+    public static CreateFromTokenizationPyramid(pyramid: number[][], levenshteinAlphabet: Levenshtein.Alphabet<number>): TrajectoryDescriptor {
+        const descriptor = new TrajectoryDescriptor();
         descriptor._sequences = pyramid.map((tokens) => new Levenshtein.Sequence<number>(tokens, levenshteinAlphabet));
         return descriptor;
     }
@@ -608,9 +572,9 @@ class TrajectoryDescriptor {
     private static _getTokenizationPyramid(
         trajectory: Trajectory,
         alphabet: Vector3Alphabet,
-        targetResolution: number = TrajectoryDescriptor.FINEST_DESCRIPTOR_RESOLUTION): number[][] {
-
-        let pyramid: number[][] = [];
+        targetResolution: number = TrajectoryDescriptor.FINEST_DESCRIPTOR_RESOLUTION
+    ): number[][] {
+        const pyramid: number[][] = [];
         for (let res = targetResolution; res > 4; res = Math.floor(res / 2)) {
             pyramid.push(trajectory.resampleAtTargetResolution(res).tokenize(alphabet.chars));
         }
@@ -629,7 +593,7 @@ class TrajectoryDescriptor {
         let weight: number;
         for (let idx = 0; idx < this._sequences.length; ++idx) {
             weight = Math.pow(2, idx);
-            totalDistance += (weight * this._sequences[idx].distance(other._sequences[idx]));
+            totalDistance += weight * this._sequences[idx].distance(other._sequences[idx]);
         }
         return totalDistance;
     }
@@ -651,7 +615,7 @@ class TrajectoryClass {
      * @returns JSON serialization
      */
     public serialize(): string {
-        let jsonObject: any = {};
+        const jsonObject: any = {};
         jsonObject.descriptors = this._descriptors.map((desc) => desc.serialize());
         jsonObject.centroidIdx = this._centroidIdx;
         jsonObject.averageDistance = this._averageDistance;
@@ -667,8 +631,8 @@ class TrajectoryClass {
      * @returns deserialized TrajectoryDescriptor
      */
     public static Deserialize(json: string, alphabet: Levenshtein.Alphabet<number>): TrajectoryClass {
-        let jsonObject = JSON.parse(json);
-        let described = new TrajectoryClass();
+        const jsonObject = JSON.parse(json);
+        const described = new TrajectoryClass();
         described._descriptors = jsonObject.descriptors.map((s: string) => TrajectoryDescriptor.Deserialize(s, alphabet));
         described._centroidIdx = jsonObject.centroidIdx;
         described._averageDistance = jsonObject.averageDistance;
@@ -723,10 +687,9 @@ class TrajectoryClass {
      * Refreshes the internal representation of this DescribedTrajectory.
      */
     private _refreshDescription(): void {
-
         this._centroidIdx = -1;
         let sum: number;
-        let distances = this._descriptors.map((a) => {
+        const distances = this._descriptors.map((a) => {
             sum = 0;
             this._descriptors.forEach((b) => {
                 sum += a.distance(b);
@@ -764,7 +727,7 @@ export class TrajectoryClassifier {
      * @returns JSON serialization
      */
     public serialize(): string {
-        let jsonObject: any = {};
+        const jsonObject: any = {};
         jsonObject.maximumAllowableMatchCost = this._maximumAllowableMatchCost;
         jsonObject.vector3Alphabet = this._vector3Alphabet.serialize();
         jsonObject.levenshteinAlphabet = this._levenshteinAlphabet.serialize();
@@ -782,15 +745,16 @@ export class TrajectoryClassifier {
      * @returns deserialized TrajectorySet
      */
     public static Deserialize(json: string): TrajectoryClassifier {
-        let jsonObject = JSON.parse(json);
-        let classifier = new TrajectoryClassifier();
+        const jsonObject = JSON.parse(json);
+        const classifier = new TrajectoryClassifier();
         classifier._maximumAllowableMatchCost = jsonObject.maximumAllowableMatchCost;
         classifier._vector3Alphabet = Vector3Alphabet.Deserialize(jsonObject.vector3Alphabet);
         classifier._levenshteinAlphabet = Levenshtein.Alphabet.Deserialize<number>(jsonObject.levenshteinAlphabet);
         for (let idx = 0; idx < jsonObject.nameToDescribedTrajectory.length; idx += 2) {
             classifier._nameToDescribedTrajectory.set(
                 jsonObject.nameToDescribedTrajectory[idx],
-                TrajectoryClass.Deserialize(jsonObject.nameToDescribedTrajectory[idx + 1], classifier._levenshteinAlphabet));
+                TrajectoryClass.Deserialize(jsonObject.nameToDescribedTrajectory[idx + 1], classifier._levenshteinAlphabet)
+            );
         }
         return classifier;
     }
@@ -802,20 +766,21 @@ export class TrajectoryClassifier {
      * @returns auto-generated TrajectorySet
      */
     public static Generate(): TrajectoryClassifier {
-        let vecs = Vector3Alphabet.Generate(64, 256, 0.1, 0.001, [Vector3.Forward()]);
+        const vecs = Vector3Alphabet.Generate(64, 256, 0.1, 0.001, [Vector3.Forward()]);
 
         const charIdxs = new Array(vecs.chars.length);
         for (let idx = 0; idx < charIdxs.length; ++idx) {
             charIdxs[idx] = idx;
         }
 
-        let alphabet = new Levenshtein.Alphabet<number>(
+        const alphabet = new Levenshtein.Alphabet<number>(
             charIdxs,
-            (idx) => idx === 0 ? 0 : 1,
-            (idx) => idx === 0 ? 0 : 1,
-            (a, b) => Math.min(1 - Vector3.Dot(vecs.chars[a], vecs.chars[b]), 1));
+            (idx) => (idx === 0 ? 0 : 1),
+            (idx) => (idx === 0 ? 0 : 1),
+            (a, b) => Math.min(1 - Vector3.Dot(vecs.chars[a], vecs.chars[b]), 1)
+        );
 
-        let trajectorySet = new TrajectoryClassifier();
+        const trajectorySet = new TrajectoryClassifier();
         trajectorySet._vector3Alphabet = vecs;
         trajectorySet._levenshteinAlphabet = alphabet;
         return trajectorySet;
@@ -835,11 +800,7 @@ export class TrajectoryClassifier {
             this._nameToDescribedTrajectory.set(classification, new TrajectoryClass());
         }
 
-        this._nameToDescribedTrajectory.get(classification)!.add(
-            TrajectoryDescriptor.CreateFromTrajectory(
-                trajectory,
-                this._vector3Alphabet,
-                this._levenshteinAlphabet));
+        this._nameToDescribedTrajectory.get(classification)!.add(TrajectoryDescriptor.CreateFromTrajectory(trajectory, this._vector3Alphabet, this._levenshteinAlphabet));
     }
 
     /**
@@ -858,12 +819,9 @@ export class TrajectoryClassifier {
      * @returns classification of Trajectory if recognized, null otherwise
      */
     public classifyTrajectory(trajectory: Trajectory): Nullable<string> {
-        let descriptor = TrajectoryDescriptor.CreateFromTrajectory(
-            trajectory,
-            this._vector3Alphabet,
-            this._levenshteinAlphabet);
+        const descriptor = TrajectoryDescriptor.CreateFromTrajectory(trajectory, this._vector3Alphabet, this._levenshteinAlphabet);
 
-        let allowableMatches: string[] = [];
+        const allowableMatches: string[] = [];
         this._nameToDescribedTrajectory.forEach((trajectoryClass, classification) => {
             if (trajectoryClass.getMatchCost(descriptor) < this._maximumAllowableMatchCost) {
                 allowableMatches.push(classification);
@@ -871,7 +829,6 @@ export class TrajectoryClassifier {
         });
 
         if (allowableMatches.length === 0) {
-
             return null;
         }
 

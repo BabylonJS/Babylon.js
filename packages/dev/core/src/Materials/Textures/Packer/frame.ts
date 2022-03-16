@@ -4,7 +4,6 @@ import { Vector2 } from "../../../Maths/math.vector";
  * Defines the basic options interface of a TexturePacker Frame
  */
 export interface ITexturePackerFrame {
-
     /**
      * The frame ID
      */
@@ -16,10 +15,9 @@ export interface ITexturePackerFrame {
     scale: Vector2;
 
     /**
-    * The Frames offset
-    */
+     * The Frames offset
+     */
     offset: Vector2;
-
 }
 
 /**

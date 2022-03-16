@@ -1,5 +1,5 @@
-import { Nullable } from '../../types';
-import { WebGPUHardwareTexture } from './webgpuHardwareTexture';
+import { Nullable } from "../../types";
+import { WebGPUHardwareTexture } from "./webgpuHardwareTexture";
 
 /** @hidden */
 export class WebGPURenderPassWrapper {

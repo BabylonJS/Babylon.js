@@ -1,17 +1,17 @@
 import { Nullable } from "../types";
 import { Vector3 } from "../Maths/math.vector";
-import { Color3 } from '../Maths/math.color';
+import { Color3 } from "../Maths/math.color";
 import { Mesh } from "../Meshes/mesh";
 import { Gizmo } from "./gizmo";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
-import { StandardMaterial } from '../Materials/standardMaterial';
-import { Scene } from '../scene';
-import { Camera } from '../Cameras/camera';
+import { StandardMaterial } from "../Materials/standardMaterial";
+import { Scene } from "../scene";
+import { Camera } from "../Cameras/camera";
 import { CreateBox } from "../Meshes/Builders/boxBuilder";
-import { CreateCylinder } from '../Meshes/Builders/cylinderBuilder';
-import { Matrix } from '../Maths/math';
+import { CreateCylinder } from "../Meshes/Builders/cylinderBuilder";
+import { Matrix } from "../Maths/math";
 import { CreateLines } from "../Meshes/Builders/linesBuilder";
-import { PointerEventTypes, PointerInfo } from '../Events/pointerEvents';
+import { PointerEventTypes, PointerInfo } from "../Events/pointerEvents";
 import { Observer, Observable } from "../Misc/observable";
 
 /**
@@ -44,7 +44,7 @@ export class CameraGizmo extends Gizmo {
                 return;
             }
 
-            this._isHovered = !!(pointerInfo.pickInfo && (this._rootMesh.getChildMeshes().indexOf(<Mesh>pointerInfo.pickInfo.pickedMesh) != -1));
+            this._isHovered = !!(pointerInfo.pickInfo && this._rootMesh.getChildMeshes().indexOf(<Mesh>pointerInfo.pickInfo.pickedMesh) != -1);
             if (this._isHovered && pointerInfo.event.button === 0) {
                 this.onClickedObservable.notifyObservers(this._camera);
             }
@@ -94,7 +94,7 @@ export class CameraGizmo extends Gizmo {
             this.attachedNode!.reservedDataStore.cameraGizmo = this;
 
             // Add lighting to the camera gizmo
-            var gizmoLight = this.gizmoLayer._getSharedGizmoLight();
+            const gizmoLight = this.gizmoLayer._getSharedGizmoLight();
             gizmoLight.includedOnlyMeshes = gizmoLight.includedOnlyMeshes.concat(this._cameraMesh.getChildMeshes(false));
 
             this._update();
@@ -157,27 +157,27 @@ export class CameraGizmo extends Gizmo {
     }
 
     private static _CreateCameraMesh(scene: Scene) {
-        var root = new Mesh("rootCameraGizmo", scene);
+        const root = new Mesh("rootCameraGizmo", scene);
 
-        var mesh = new Mesh(root.name, scene);
+        const mesh = new Mesh(root.name, scene);
         mesh.parent = root;
 
-        var box = CreateBox(root.name, { width: 1.0, height: 0.8, depth: 0.5 }, scene);
+        const box = CreateBox(root.name, { width: 1.0, height: 0.8, depth: 0.5 }, scene);
         box.parent = mesh;
 
-        var cyl1 = CreateCylinder(root.name, { height: 0.5, diameterTop: 0.8, diameterBottom: 0.8 }, scene);
+        const cyl1 = CreateCylinder(root.name, { height: 0.5, diameterTop: 0.8, diameterBottom: 0.8 }, scene);
         cyl1.parent = mesh;
         cyl1.position.y = 0.3;
         cyl1.position.x = -0.6;
         cyl1.rotation.x = Math.PI * 0.5;
 
-        var cyl2 = CreateCylinder(root.name, { height: 0.5, diameterTop: 0.6, diameterBottom: 0.6 }, scene);
+        const cyl2 = CreateCylinder(root.name, { height: 0.5, diameterTop: 0.6, diameterBottom: 0.6 }, scene);
         cyl2.parent = mesh;
         cyl2.position.y = 0.5;
         cyl2.position.x = 0.4;
         cyl2.rotation.x = Math.PI * 0.5;
 
-        var cyl3 = CreateCylinder(root.name, { height: 0.5, diameterTop: 0.5, diameterBottom: 0.5 }, scene);
+        const cyl3 = CreateCylinder(root.name, { height: 0.5, diameterTop: 0.5, diameterBottom: 0.5 }, scene);
         cyl3.parent = mesh;
         cyl3.position.y = 0.0;
         cyl3.position.x = 0.6;
@@ -190,12 +190,12 @@ export class CameraGizmo extends Gizmo {
     }
 
     private static _CreateCameraFrustum(scene: Scene) {
-        var root = new Mesh("rootCameraGizmo", scene);
-        var mesh = new Mesh(root.name, scene);
+        const root = new Mesh("rootCameraGizmo", scene);
+        const mesh = new Mesh(root.name, scene);
         mesh.parent = root;
 
-        for (var y = 0; y < 4; y += 2) {
-            for (var x = 0; x < 4; x += 2) {
+        for (let y = 0; y < 4; y += 2) {
+            for (let x = 0; x < 4; x += 2) {
                 var line = CreateLines("lines", { points: [new Vector3(-1 + x, -1 + y, -1), new Vector3(-1 + x, -1 + y, 1)] }, scene);
                 line.parent = mesh;
                 line.alwaysSelectAsActiveMesh = true;

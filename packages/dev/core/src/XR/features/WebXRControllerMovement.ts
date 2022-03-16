@@ -4,11 +4,7 @@ import { WebXRSessionManager } from "../webXRSessionManager";
 import { Nullable } from "../../types";
 import { WebXRInput } from "../webXRInput";
 import { WebXRInputSource } from "../webXRInputSource";
-import {
-    WebXRControllerComponent,
-    IWebXRMotionControllerAxesValue,
-    IWebXRMotionControllerComponentChangesValues,
-} from "../motionController/webXRControllerComponent";
+import { WebXRControllerComponent, IWebXRMotionControllerAxesValue, IWebXRMotionControllerComponentChangesValues } from "../motionController/webXRControllerComponent";
 import { Matrix, Quaternion, Vector3 } from "../../Maths/math.vector";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
 import { MotionControllerComponentType } from "../motionController/webXRAbstractMotionController";
@@ -100,29 +96,29 @@ export type WebXRControllerMovementRegistrationConfiguration = {
      */
     componentSelectionPredicate?: (xrController: WebXRInputSource) => Nullable<WebXRControllerComponent>;
 } & (
-        | {
-            /**
-             * Called when axis changes occur.
-             */
-            axisChangedHandler: (
-                axes: IWebXRMotionControllerAxesValue,
-                movementState: WebXRControllerMovementState,
-                featureContext: WebXRControllerMovementFeatureContext,
-                xrInput: WebXRInput
-            ) => void;
-        }
-        | {
-            /**
-             * Called when the button state changes.
-             */
-            buttonChangedhandler: (
-                pressed: IWebXRMotionControllerComponentChangesValues<boolean>,
-                movementState: WebXRControllerMovementState,
-                featureContext: WebXRControllerMovementFeatureContext,
-                xrInput: WebXRInput
-            ) => void;
-        }
-    );
+    | {
+          /**
+           * Called when axis changes occur.
+           */
+          axisChangedHandler: (
+              axes: IWebXRMotionControllerAxesValue,
+              movementState: WebXRControllerMovementState,
+              featureContext: WebXRControllerMovementFeatureContext,
+              xrInput: WebXRInput
+          ) => void;
+      }
+    | {
+          /**
+           * Called when the button state changes.
+           */
+          buttonChangedhandler: (
+              pressed: IWebXRMotionControllerComponentChangesValues<boolean>,
+              movementState: WebXRControllerMovementState,
+              featureContext: WebXRControllerMovementFeatureContext,
+              xrInput: WebXRInput
+          ) => void;
+      }
+);
 
 type RegisteredComponent = {
     registrationConfiguration: WebXRControllerMovementRegistrationConfiguration;
@@ -385,6 +381,7 @@ export class WebXRControllerMovement extends WebXRAbstractFeature {
 
     /**
      * Occurs on every XR frame.
+     * @param _xrFrame
      */
     protected _onXRFrame(_xrFrame: XRFrame) {
         if (!this.attach) {
@@ -414,11 +411,7 @@ export class WebXRControllerMovement extends WebXRAbstractFeature {
 
         if ((this._movementState.moveX !== 0 || this._movementState.moveY !== 0) && this._featureContext.movementEnabled) {
             Matrix.FromQuaternionToRef(this._movementDirection, this._tmpRotationMatrix);
-            this._tmpTranslationDirection.set(
-                this._movementState.moveX,
-                0,
-                this._movementState.moveY * (this._xrSessionManager.scene.useRightHandedSystem ? 1.0 : -1.0)
-            );
+            this._tmpTranslationDirection.set(this._movementState.moveX, 0, this._movementState.moveY * (this._xrSessionManager.scene.useRightHandedSystem ? 1.0 : -1.0));
             // move according to forward direction based on camera speed
             Vector3.TransformCoordinatesToRef(this._tmpTranslationDirection, this._tmpRotationMatrix, this._tmpMovementTranslation);
             this._tmpMovementTranslation.scaleInPlace(this._xrInput.xrCamera._computeLocalCameraSpeed() * this._featureContext.movementSpeed);

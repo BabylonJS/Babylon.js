@@ -9,7 +9,7 @@ export const prepareSnapshot = () => {
     Object.keys(umdPackageMapping).forEach((packageName) => {
         const metadata = umdPackageMapping[packageName as UMDPackageName];
         const corePath = path.join(baseDirectory, "packages", "public", "umd", packageName, "dist");
-        const coreUmd = glob.sync(`${corePath}/*.*`,);
+        const coreUmd = glob.sync(`${corePath}/*.*`);
         for (const file of coreUmd) {
             copyFile(file, path.join(snapshotDirectory, metadata.baseDir, path.basename(file)), true);
         }
@@ -33,4 +33,4 @@ export const prepareSnapshot = () => {
         const relative = path.relative(baseLocationDist, file);
         copyFile(file, path.join(snapshotDirectory, relative), true);
     }
-}
+};

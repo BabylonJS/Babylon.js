@@ -1,19 +1,19 @@
-import { PanoramaToCubeMapTools } from '../../Misc/HighDynamicRange/panoramaToCubemap';
-import { BaseTexture } from './baseTexture';
-import { Texture } from './texture';
+import { PanoramaToCubeMapTools } from "../../Misc/HighDynamicRange/panoramaToCubemap";
+import { BaseTexture } from "./baseTexture";
+import { Texture } from "./texture";
 import { Scene } from "../../scene";
 import { Nullable } from "../../types";
-import { Tools } from '../../Misc/tools';
+import { Tools } from "../../Misc/tools";
 import "../../Engines/Extensions/engine.rawTexture";
-import { Constants } from '../../Engines/constants';
-import { LoadImage } from '../../Misc/fileTools';
+import { Constants } from "../../Engines/constants";
+import { LoadImage } from "../../Misc/fileTools";
 
 /**
  * This represents a texture coming from an equirectangular image supported by the web browser canvas.
  */
 export class EquiRectangularCubeTexture extends BaseTexture {
     /** The six faces of the cube. */
-    private static _FacesMapping = ['right', 'left', 'up', 'down', 'front', 'back'];
+    private static _FacesMapping = ["right", "left", "up", "down", "front", "back"];
 
     private _noMipmap: boolean;
     private _onLoad: Nullable<() => void> = null;
@@ -57,7 +57,7 @@ export class EquiRectangularCubeTexture extends BaseTexture {
         super(scene);
 
         if (!url) {
-            throw new Error('Image url is not set');
+            throw new Error("Image url is not set");
         }
 
         this._coordinatesMode = Texture.CUBIC_MODE;
@@ -91,28 +91,35 @@ export class EquiRectangularCubeTexture extends BaseTexture {
 
     /**
      * Load the image data, by putting the image on a canvas and extracting its buffer.
+     * @param loadTextureCallback
+     * @param onError
      */
     private loadImage(loadTextureCallback: () => void, onError: Nullable<(message?: string, exception?: any) => void>): void {
-        const canvas = document.createElement('canvas');
-        LoadImage(this.url, (image) => {
-            this._width = image.width;
-            this._height = image.height;
-            canvas.width = this._width;
-            canvas.height = this._height;
+        const canvas = document.createElement("canvas");
+        LoadImage(
+            this.url,
+            (image) => {
+                this._width = image.width;
+                this._height = image.height;
+                canvas.width = this._width;
+                canvas.height = this._height;
 
-            const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
-            ctx.drawImage(image, 0, 0);
+                const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
+                ctx.drawImage(image, 0, 0);
 
-            const imageData = ctx.getImageData(0, 0, image.width, image.height);
-            this._buffer = imageData.data.buffer as ArrayBuffer;
+                const imageData = ctx.getImageData(0, 0, image.width, image.height);
+                this._buffer = imageData.data.buffer as ArrayBuffer;
 
-            canvas.remove();
-            loadTextureCallback();
-        }, (_, e) => {
-            if (onError) {
-                onError(`${this.getClassName()} could not be loaded`, e);
-            }
-        }, null);
+                canvas.remove();
+                loadTextureCallback();
+            },
+            (_, e) => {
+                if (onError) {
+                    onError(`${this.getClassName()} could not be loaded`, e);
+                }
+            },
+            null
+        );
     }
 
     /**
@@ -147,9 +154,7 @@ export class EquiRectangularCubeTexture extends BaseTexture {
                 scene,
                 this._size,
                 Constants.TEXTUREFORMAT_RGB,
-                scene.getEngine().getCaps().textureFloat
-                    ? Constants.TEXTURETYPE_FLOAT
-                    : Constants.TEXTURETYPE_UNSIGNED_INTEGER,
+                scene.getEngine().getCaps().textureFloat ? Constants.TEXTURETYPE_FLOAT : Constants.TEXTURETYPE_UNSIGNED_INTEGER,
                 this._noMipmap,
                 callback,
                 null,

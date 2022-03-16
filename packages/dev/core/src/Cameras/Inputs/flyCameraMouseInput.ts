@@ -6,8 +6,8 @@ import { FlyCamera } from "../../Cameras/flyCamera";
 import { PointerInfo, PointerEventTypes } from "../../Events/pointerEvents";
 import { Scene } from "../../scene";
 import { Quaternion } from "../../Maths/math.vector";
-import { Axis } from '../../Maths/math.axis';
-import { Tools } from '../../Misc/tools';
+import { Axis } from "../../Maths/math.axis";
+import { Tools } from "../../Misc/tools";
 import { IPointerEvent } from "../../Events/deviceInputEvents";
 /**
  * Listen to mouse events to control the camera.
@@ -36,13 +36,13 @@ export class FlyCameraMouseInput implements ICameraInput<FlyCamera> {
     public buttonsYaw: number[] = [-1, 0, 1];
 
     /**
-    * Assign buttons for Pitch control.
-    */
+     * Assign buttons for Pitch control.
+     */
     public buttonsPitch: number[] = [-1, 0, 1];
 
     /**
-    * Assign buttons for Roll control.
-    */
+     * Assign buttons for Roll control.
+     */
     public buttonsRoll: number[] = [2];
 
     /**
@@ -63,7 +63,7 @@ export class FlyCameraMouseInput implements ICameraInput<FlyCamera> {
 
     private _observer: Nullable<Observer<PointerInfo>>;
     private _rollObserver: Nullable<Observer<Scene>>;
-    private previousPosition: Nullable<{ x: number, y: number }> = null;
+    private previousPosition: Nullable<{ x: number; y: number }> = null;
     private noPreventDefault: boolean | undefined;
     private element: HTMLElement;
 
@@ -72,8 +72,7 @@ export class FlyCameraMouseInput implements ICameraInput<FlyCamera> {
      * @param touchEnabled Define if touch is enabled. (Default is true.)
      * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
      */
-    constructor(touchEnabled = true) {
-    }
+    constructor(touchEnabled = true) {}
 
     /**
      * Attach the mouse control to the HTML DOM element.
@@ -83,21 +82,16 @@ export class FlyCameraMouseInput implements ICameraInput<FlyCamera> {
         noPreventDefault = Tools.BackCompatCameraNoPreventDefault(arguments);
         this.noPreventDefault = noPreventDefault;
 
-        this._observer = this.camera.getScene().onPointerObservable.add(
-            (p: any, s: any) => {
-                this._pointerInput(p, s);
-            },
-            PointerEventTypes.POINTERDOWN | PointerEventTypes.POINTERUP | PointerEventTypes.POINTERMOVE
-        );
+        this._observer = this.camera.getScene().onPointerObservable.add((p: any, s: any) => {
+            this._pointerInput(p, s);
+        }, PointerEventTypes.POINTERDOWN | PointerEventTypes.POINTERUP | PointerEventTypes.POINTERMOVE);
 
         // Correct Roll by rate, if enabled.
-        this._rollObserver = this.camera.getScene().onBeforeRenderObservable.add(
-            () => {
-                if (this.camera.rollCorrect) {
-                    this.camera.restoreRoll(this.camera.rollCorrect);
-                }
+        this._rollObserver = this.camera.getScene().onBeforeRenderObservable.add(() => {
+            if (this.camera.rollCorrect) {
+                this.camera.restoreRoll(this.camera.rollCorrect);
             }
-        );
+        });
     }
 
     /**
@@ -140,10 +134,10 @@ export class FlyCameraMouseInput implements ICameraInput<FlyCamera> {
 
     // Track mouse movement, when the pointer is not locked.
     private _pointerInput(p: any, s: any): void {
-        var e = <IPointerEvent>p.event;
+        const e = <IPointerEvent>p.event;
 
-        let camera = this.camera;
-        let engine = camera.getEngine();
+        const camera = this.camera;
+        const engine = camera.getEngine();
 
         if (engine.isInVRExclusivePointerMode) {
             return;
@@ -158,7 +152,7 @@ export class FlyCameraMouseInput implements ICameraInput<FlyCamera> {
             return;
         }
 
-        var srcElement = <HTMLElement>(e.srcElement || e.target);
+        const srcElement = <HTMLElement>(e.srcElement || e.target);
 
         // Mouse down.
         if (p.type === PointerEventTypes.POINTERDOWN) {
@@ -170,7 +164,7 @@ export class FlyCameraMouseInput implements ICameraInput<FlyCamera> {
 
             this.previousPosition = {
                 x: e.clientX,
-                y: e.clientY
+                y: e.clientY,
             };
 
             this.activeButton = e.button;
@@ -184,59 +178,59 @@ export class FlyCameraMouseInput implements ICameraInput<FlyCamera> {
             if (engine.isPointerLock) {
                 this._onMouseMove(p.event);
             }
-        } else
-            // Mouse up.
-            if (p.type === PointerEventTypes.POINTERUP) {
-                try {
-                    srcElement?.releasePointerCapture(e.pointerId);
-                } catch (e) {
-                    // Nothing to do with the error. Execution continues.
+        }
+        // Mouse up.
+        else if (p.type === PointerEventTypes.POINTERUP) {
+            try {
+                srcElement?.releasePointerCapture(e.pointerId);
+            } catch (e) {
+                // Nothing to do with the error. Execution continues.
+            }
+
+            this.activeButton = -1;
+
+            this.previousPosition = null;
+            if (!this.noPreventDefault) {
+                e.preventDefault();
+            }
+        }
+        // Mouse move.
+        else if (p.type === PointerEventTypes.POINTERMOVE) {
+            if (!this.previousPosition) {
+                if (engine.isPointerLock) {
+                    this._onMouseMove(p.event);
                 }
 
-                this.activeButton = -1;
+                return;
+            }
 
-                this.previousPosition = null;
-                if (!this.noPreventDefault) {
-                    e.preventDefault();
-                }
-            } else
-                // Mouse move.
-                if (p.type === PointerEventTypes.POINTERMOVE) {
-                    if (!this.previousPosition) {
-                        if (engine.isPointerLock) {
-                            this._onMouseMove(p.event);
-                        }
+            const offsetX = e.clientX - this.previousPosition.x;
+            const offsetY = e.clientY - this.previousPosition.y;
 
-                        return;
-                    }
+            this.rotateCamera(offsetX, offsetY);
 
-                    var offsetX = e.clientX - this.previousPosition.x;
-                    var offsetY = e.clientY - this.previousPosition.y;
+            this.previousPosition = {
+                x: e.clientX,
+                y: e.clientY,
+            };
 
-                    this.rotateCamera(offsetX, offsetY);
-
-                    this.previousPosition = {
-                        x: e.clientX,
-                        y: e.clientY
-                    };
-
-                    if (!this.noPreventDefault) {
-                        e.preventDefault();
-                    }
-                }
+            if (!this.noPreventDefault) {
+                e.preventDefault();
+            }
+        }
     }
 
     // Track mouse movement, when pointer is locked.
     private _onMouseMove(e: any): void {
-        let camera = this.camera;
-        let engine = camera.getEngine();
+        const camera = this.camera;
+        const engine = camera.getEngine();
 
         if (!engine.isPointerLock || engine.isInVRExclusivePointerMode) {
             return;
         }
 
-        var offsetX = e.movementX || e.mozMovementX || e.webkitMovementX || e.msMovementX || 0;
-        var offsetY = e.movementY || e.mozMovementY || e.webkitMovementY || e.msMovementY || 0;
+        const offsetX = e.movementX || e.mozMovementX || e.webkitMovementX || e.msMovementX || 0;
+        const offsetY = e.movementY || e.mozMovementY || e.webkitMovementY || e.msMovementY || 0;
 
         this.rotateCamera(offsetX, offsetY);
 
@@ -249,10 +243,12 @@ export class FlyCameraMouseInput implements ICameraInput<FlyCamera> {
 
     /**
      * Rotate camera by mouse offset.
+     * @param offsetX
+     * @param offsetY
      */
     private rotateCamera(offsetX: number, offsetY: number): void {
-        let camera = this.camera;
-        let scene = this.camera.getScene();
+        const camera = this.camera;
+        const scene = this.camera.getScene();
 
         if (scene.useRightHandedSystem) {
             offsetX *= -1;
@@ -262,19 +258,19 @@ export class FlyCameraMouseInput implements ICameraInput<FlyCamera> {
             offsetX *= -1;
         }
 
-        var x = offsetX / this.angularSensibility;
-        var y = offsetY / this.angularSensibility;
+        const x = offsetX / this.angularSensibility;
+        const y = offsetY / this.angularSensibility;
 
         // Initialize to current rotation.
-        var currentRotation = Quaternion.RotationYawPitchRoll(
-            camera.rotation.y,
-            camera.rotation.x,
-            camera.rotation.z
-        );
-        var rotationChange: Quaternion;
+        const currentRotation = Quaternion.RotationYawPitchRoll(camera.rotation.y, camera.rotation.x, camera.rotation.z);
+        let rotationChange: Quaternion;
 
         // Pitch.
-        if (this.buttonsPitch.some((v) => { return v === this.activeButton; })) {
+        if (
+            this.buttonsPitch.some((v) => {
+                return v === this.activeButton;
+            })
+        ) {
             // Apply change in Radians to vector Angle.
             rotationChange = Quaternion.RotationAxis(Axis.X, y);
             // Apply Pitch to quaternion.
@@ -282,16 +278,20 @@ export class FlyCameraMouseInput implements ICameraInput<FlyCamera> {
         }
 
         // Yaw.
-        if (this.buttonsYaw.some((v) => { return v === this.activeButton; })) {
+        if (
+            this.buttonsYaw.some((v) => {
+                return v === this.activeButton;
+            })
+        ) {
             // Apply change in Radians to vector Angle.
             rotationChange = Quaternion.RotationAxis(Axis.Y, x);
             // Apply Yaw to quaternion.
             currentRotation.multiplyInPlace(rotationChange);
 
             // Add Roll, if banked turning is enabled, within Roll limit.
-            let limit = (camera.bankedTurnLimit) + camera._trackRoll; // Defaults to 90° plus manual roll.
+            const limit = camera.bankedTurnLimit + camera._trackRoll; // Defaults to 90° plus manual roll.
             if (camera.bankedTurn && -limit < camera.rotation.z && camera.rotation.z < limit) {
-                let bankingDelta = camera.bankedTurnMultiplier * -x;
+                const bankingDelta = camera.bankedTurnMultiplier * -x;
                 // Apply change in Radians to vector Angle.
                 rotationChange = Quaternion.RotationAxis(Axis.Z, bankingDelta);
                 // Apply Yaw to quaternion.
@@ -300,7 +300,11 @@ export class FlyCameraMouseInput implements ICameraInput<FlyCamera> {
         }
 
         // Roll.
-        if (this.buttonsRoll.some((v) => { return v === this.activeButton; })) {
+        if (
+            this.buttonsRoll.some((v) => {
+                return v === this.activeButton;
+            })
+        ) {
             // Apply change in Radians to vector Angle.
             rotationChange = Quaternion.RotationAxis(Axis.Z, -x);
             // Track Rolling.

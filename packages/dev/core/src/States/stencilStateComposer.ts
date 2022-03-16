@@ -4,7 +4,6 @@ import { IStencilState } from "./IStencilState";
  * @hidden
  **/
 export class StencilStateComposer {
-
     protected _isStencilTestDirty = false;
     protected _isStencilMaskDirty = false;
     protected _isStencilFuncDirty = false;

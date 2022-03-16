@@ -8,7 +8,7 @@ import { Nullable } from "../../types";
 import { Logger } from "../../Misc/logger";
 import { PhysicsRaycastResult } from "../physicsRaycastResult";
 
-declare var OIMO: any;
+declare let OIMO: any;
 
 /** @hidden */
 export class OimoJSPlugin implements IPhysicsEnginePlugin {
@@ -56,7 +56,7 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
         });
 
         //check for collisions
-        var contact = this.world.contacts;
+        let contact = this.world.contacts;
 
         while (contact !== null) {
             if (contact.touching && !contact.body1.sleeping && !contact.body2.sleeping) {
@@ -64,8 +64,8 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
                 continue;
             }
             //is this body colliding with any other? get the impostor
-            var mainImpostor = this._tmpImpostorsArray[+contact.body1.name];
-            var collidingImpostor = this._tmpImpostorsArray[+contact.body2.name];
+            const mainImpostor = this._tmpImpostorsArray[+contact.body1.name];
+            const collidingImpostor = this._tmpImpostorsArray[+contact.body2.name];
 
             if (!mainImpostor || !collidingImpostor) {
                 contact = contact.next;
@@ -79,7 +79,7 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
     }
 
     public applyImpulse(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3) {
-        var mass = impostor.physicsBody.mass;
+        const mass = impostor.physicsBody.mass;
         impostor.physicsBody.applyImpulse(contactPoint.scale(this.world.invScale), force.scale(this.world.invScale * mass));
     }
     public applyForce(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3) {
@@ -98,7 +98,7 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
         }
 
         if (impostor.isBodyInitRequired()) {
-            var bodyConfig: any = {
+            const bodyConfig: any = {
                 name: impostor.uniqueId,
                 //Oimo must have mass, also for static objects.
                 config: [impostor.getParam("mass") || 0.001, impostor.getParam("friction"), impostor.getParam("restitution")],
@@ -116,8 +116,8 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
                 world: this.world,
             };
 
-            var impostors = [impostor];
-            let addToArray = (parent: IPhysicsEnabledObject) => {
+            const impostors = [impostor];
+            const addToArray = (parent: IPhysicsEnabledObject) => {
                 if (!parent.getChildMeshes) {
                     return;
                 }
@@ -130,7 +130,7 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
             };
             addToArray(impostor.object);
 
-            let checkWithEpsilon = (value: number): number => {
+            const checkWithEpsilon = (value: number): number => {
                 return Math.max(value, PhysicsEngine.Epsilon);
             };
 
@@ -141,19 +141,19 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
                     return;
                 }
                 //get the correct bounding box
-                var oldQuaternion = i.object.rotationQuaternion;
+                const oldQuaternion = i.object.rotationQuaternion;
                 globalQuaternion.copyFrom(oldQuaternion);
 
                 i.object.rotationQuaternion.set(0, 0, 0, 1);
                 i.object.computeWorldMatrix(true);
 
-                var rot = globalQuaternion.toEulerAngles();
-                var extendSize = i.getObjectExtendSize();
+                const rot = globalQuaternion.toEulerAngles();
+                const extendSize = i.getObjectExtendSize();
 
                 const radToDeg = 57.295779513082320876;
 
                 if (i === impostor) {
-                    var center = impostor.getObjectCenter();
+                    const center = impostor.getObjectCenter();
 
                     impostor.object.getAbsolutePivotPoint().subtractToRef(center, this._tmpPositionVector);
                     this._tmpPositionVector.divideInPlace(impostor.object.scaling);
@@ -166,7 +166,7 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
 
                     bodyConfig.rotShape.push(0, 0, 0);
                 } else {
-                    let localPosition = i.object.position.clone();
+                    const localPosition = i.object.position.clone();
                     bodyConfig.posShape.push(localPosition.x);
                     bodyConfig.posShape.push(localPosition.y);
                     bodyConfig.posShape.push(localPosition.z);
@@ -251,16 +251,16 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
     }
 
     public generateJoint(impostorJoint: PhysicsImpostorJoint) {
-        var mainBody = impostorJoint.mainImpostor.physicsBody;
-        var connectedBody = impostorJoint.connectedImpostor.physicsBody;
+        const mainBody = impostorJoint.mainImpostor.physicsBody;
+        const connectedBody = impostorJoint.connectedImpostor.physicsBody;
 
         if (!mainBody || !connectedBody) {
             return;
         }
-        var jointData = impostorJoint.joint.jointData;
-        var options = jointData.nativeParams || {};
-        var type;
-        var nativeJointData: any = {
+        const jointData = impostorJoint.joint.jointData;
+        const options = jointData.nativeParams || {};
+        let type;
+        const nativeJointData: any = {
             body1: mainBody,
             body2: connectedBody,
 
@@ -346,7 +346,7 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
     }
 
     public setPhysicsBodyTransformation(impostor: PhysicsImpostor, newPosition: Vector3, newRotation: Quaternion) {
-        var body = impostor.physicsBody;
+        const body = impostor.physicsBody;
         // disable bidirectional for compound meshes
         if (impostor.physicsBody.shapes.next) {
             return;
@@ -374,14 +374,14 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
     }
 
     public getLinearVelocity(impostor: PhysicsImpostor): Nullable<Vector3> {
-        var v = impostor.physicsBody.linearVelocity;
+        const v = impostor.physicsBody.linearVelocity;
         if (!v) {
             return null;
         }
         return new Vector3(v.x, v.y, v.z);
     }
     public getAngularVelocity(impostor: PhysicsImpostor): Nullable<Vector3> {
-        var v = impostor.physicsBody.angularVelocity;
+        const v = impostor.physicsBody.angularVelocity;
         if (!v) {
             return null;
         }
@@ -389,7 +389,7 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
     }
 
     public setBodyMass(impostor: PhysicsImpostor, mass: number) {
-        var staticBody: boolean = mass === 0;
+        const staticBody: boolean = mass === 0;
         //this will actually set the body's density and not its mass.
         //But this is how oimo treats the mass variable.
         impostor.physicsBody.shapes.density = staticBody ? 1 : mass;
@@ -440,7 +440,9 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
         speed *= -1;
 
         //TODO separate rotational and transational motors.
-        var motor = motorIndex ? joint.physicsJoint.rotationalLimitMotor2 : joint.physicsJoint.rotationalLimitMotor1 || joint.physicsJoint.rotationalLimitMotor || joint.physicsJoint.limitMotor;
+        const motor = motorIndex
+            ? joint.physicsJoint.rotationalLimitMotor2
+            : joint.physicsJoint.rotationalLimitMotor1 || joint.physicsJoint.rotationalLimitMotor || joint.physicsJoint.limitMotor;
         if (motor) {
             motor.setMotor(speed, force);
         }
@@ -448,14 +450,16 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
 
     public setLimit(joint: IMotorEnabledJoint, upperLimit: number, lowerLimit?: number, motorIndex?: number) {
         //TODO separate rotational and transational motors.
-        var motor = motorIndex ? joint.physicsJoint.rotationalLimitMotor2 : joint.physicsJoint.rotationalLimitMotor1 || joint.physicsJoint.rotationalLimitMotor || joint.physicsJoint.limitMotor;
+        const motor = motorIndex
+            ? joint.physicsJoint.rotationalLimitMotor2
+            : joint.physicsJoint.rotationalLimitMotor1 || joint.physicsJoint.rotationalLimitMotor || joint.physicsJoint.limitMotor;
         if (motor) {
             motor.setLimit(upperLimit, lowerLimit === void 0 ? -upperLimit : lowerLimit);
         }
     }
 
     public syncMeshWithImpostor(mesh: AbstractMesh, impostor: PhysicsImpostor) {
-        var body = impostor.physicsBody;
+        const body = impostor.physicsBody;
 
         mesh.position.x = body.position.x;
         mesh.position.y = body.position.y;
@@ -474,7 +478,7 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
     }
 
     public getBoxSizeToRef(impostor: PhysicsImpostor, result: Vector3): void {
-        var shape = impostor.physicsBody.shapes;
+        const shape = impostor.physicsBody.shapes;
         result.x = shape.halfWidth * 2;
         result.y = shape.halfHeight * 2;
         result.z = shape.halfDepth * 2;

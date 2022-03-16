@@ -35,7 +35,7 @@ export class MaterialDefines {
     /** @hidden */
     public _needUVs = false;
 
-    protected _externalProperties?: { [name: string]: { type: string, default: any } };
+    protected _externalProperties?: { [name: string]: { type: string; default: any } };
 
     [id: string]: any;
 
@@ -43,7 +43,7 @@ export class MaterialDefines {
      * Creates a new instance
      * @param externalProperties list of external properties to inject into the object
      */
-    constructor(externalProperties?: { [name: string]: { type: string, default: any } }) {
+    constructor(externalProperties?: { [name: string]: { type: string; default: any } }) {
         this._externalProperties = externalProperties;
 
         // Initialize External Properties
@@ -162,7 +162,7 @@ export class MaterialDefines {
     public rebuild() {
         this._keys = [];
 
-        for (var key of Object.keys(this)) {
+        for (const key of Object.keys(this)) {
             if (key[0] === "_") {
                 continue;
             }
@@ -187,8 +187,8 @@ export class MaterialDefines {
             return false;
         }
 
-        for (var index = 0; index < this._keys.length; index++) {
-            var prop = this._keys[index];
+        for (let index = 0; index < this._keys.length; index++) {
+            const prop = this._keys[index];
 
             if ((<any>this)[prop] !== (<any>other)[prop]) {
                 return false;
@@ -207,8 +207,8 @@ export class MaterialDefines {
             other._keys = this._keys.slice(0);
         }
 
-        for (var index = 0; index < this._keys.length; index++) {
-            var prop = this._keys[index];
+        for (let index = 0; index < this._keys.length; index++) {
+            const prop = this._keys[index];
 
             (<any>other)[prop] = (<any>this)[prop];
         }
@@ -243,11 +243,11 @@ export class MaterialDefines {
      * @returns - String of material define information
      */
     public toString(): string {
-        var result = "";
-        for (var index = 0; index < this._keys.length; index++) {
-            var prop = this._keys[index];
-            var value = (<any>this)[prop];
-            var type = typeof value;
+        let result = "";
+        for (let index = 0; index < this._keys.length; index++) {
+            const prop = this._keys[index];
+            const value = (<any>this)[prop];
+            const type = typeof value;
 
             switch (type) {
                 case "number":

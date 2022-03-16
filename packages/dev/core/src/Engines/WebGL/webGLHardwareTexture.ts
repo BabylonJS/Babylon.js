@@ -1,9 +1,8 @@
-import { HardwareTextureWrapper } from '../../Materials/Textures/hardwareTextureWrapper';
-import { Nullable } from '../../types';
+import { HardwareTextureWrapper } from "../../Materials/Textures/hardwareTextureWrapper";
+import { Nullable } from "../../types";
 
 /** @hidden */
 export class WebGLHardwareTexture implements HardwareTextureWrapper {
-
     private _webGLTexture: WebGLTexture;
     private _context: WebGLRenderingContext;
 
@@ -24,8 +23,7 @@ export class WebGLHardwareTexture implements HardwareTextureWrapper {
         this.set(existingTexture);
     }
 
-    public setUsage(textureSource: number, generateMipMaps: boolean, isCube: boolean, width: number, height: number): void {
-    }
+    public setUsage(textureSource: number, generateMipMaps: boolean, isCube: boolean, width: number, height: number): void {}
 
     public set(hardwareTexture: WebGLTexture) {
         this._webGLTexture = hardwareTexture;

@@ -1,10 +1,10 @@
-import { NodeMaterialBlock } from '../nodeMaterialBlock';
-import { NodeMaterialBlockConnectionPointTypes } from '../Enums/nodeMaterialBlockConnectionPointTypes';
-import { NodeMaterialBuildState } from '../nodeMaterialBuildState';
-import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint';
-import { NodeMaterialBlockTargets } from '../Enums/nodeMaterialBlockTargets';
-import { RegisterClass } from '../../../Misc/typeStore';
-import { Scene } from '../../../scene';
+import { NodeMaterialBlock } from "../nodeMaterialBlock";
+import { NodeMaterialBlockConnectionPointTypes } from "../Enums/nodeMaterialBlockConnectionPointTypes";
+import { NodeMaterialBuildState } from "../nodeMaterialBuildState";
+import { NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
+import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
+import { RegisterClass } from "../../../Misc/typeStore";
+import { Scene } from "../../../scene";
 
 /**
  * Operations supported by the Wave block
@@ -15,14 +15,13 @@ export enum WaveBlockKind {
     /** Square */
     Square,
     /** Triangle */
-    Triangle
+    Triangle,
 }
 
 /**
  * Block used to apply wave operation to floats
  */
 export class WaveBlock extends NodeMaterialBlock {
-
     /**
      * Gets or sets the kibnd of wave to be applied by the block
      */
@@ -68,7 +67,7 @@ export class WaveBlock extends NodeMaterialBlock {
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
-        let output = this._outputs[0];
+        const output = this._outputs[0];
 
         switch (this.kind) {
             case WaveBlockKind.SawTooth: {
@@ -80,7 +79,9 @@ export class WaveBlock extends NodeMaterialBlock {
                 break;
             }
             case WaveBlockKind.Triangle: {
-                state.compilationString += this._declareOutput(output, state) + ` = 2.0 * abs(2.0 * (${this.input.associatedVariableName} - floor(0.5 + ${this.input.associatedVariableName}))) - 1.0;\r\n`;
+                state.compilationString +=
+                    this._declareOutput(output, state) +
+                    ` = 2.0 * abs(2.0 * (${this.input.associatedVariableName} - floor(0.5 + ${this.input.associatedVariableName}))) - 1.0;\r\n`;
                 break;
             }
         }
@@ -89,7 +90,7 @@ export class WaveBlock extends NodeMaterialBlock {
     }
 
     public serialize(): any {
-        let serializationObject = super.serialize();
+        const serializationObject = super.serialize();
 
         serializationObject.kind = this.kind;
 

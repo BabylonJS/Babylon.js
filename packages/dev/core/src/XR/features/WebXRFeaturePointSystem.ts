@@ -39,9 +39,9 @@ export class WebXRFeaturePointSystem extends WebXRAbstractFeature {
      */
     public static readonly Version = 1;
     /**
-    * Observers registered here will be executed whenever new feature points are added (on XRFrame while the session is tracking).
-    * Will notify the observers about which feature points have been added.
-    */
+     * Observers registered here will be executed whenever new feature points are added (on XRFrame while the session is tracking).
+     * Will notify the observers about which feature points have been added.
+     */
     public readonly onFeaturePointsAddedObservable: Observable<number[]> = new Observable();
     /**
      * Observers registered here will be executed whenever a feature point has been updated (on XRFrame while the session is tracking).
@@ -99,6 +99,7 @@ export class WebXRFeaturePointSystem extends WebXRAbstractFeature {
 
     /**
      * On receiving a new XR frame if this feature is attached notify observers new feature point data is available.
+     * @param frame
      */
     protected _onXRFrame(frame: XRFrame) {
         if (!this.attached || !this._enabled || !frame) {
@@ -114,9 +115,9 @@ export class WebXRFeaturePointSystem extends WebXRAbstractFeature {
             }
 
             const numberOfFeaturePoints: number = featurePointRawData.length / 5;
-            let updatedFeaturePoints = new Array();
-            let addedFeaturePoints = new Array();
-            for (var i = 0; i < numberOfFeaturePoints; i++) {
+            const updatedFeaturePoints = new Array();
+            const addedFeaturePoints = new Array();
+            for (let i = 0; i < numberOfFeaturePoints; i++) {
                 const rawIndex: number = i * 5;
                 const id = featurePointRawData[rawIndex + 4];
 

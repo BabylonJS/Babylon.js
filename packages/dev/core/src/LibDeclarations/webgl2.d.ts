@@ -57,13 +57,58 @@ interface WebGLRenderingContext {
     readonly FLOAT_32_UNSIGNED_INT_24_8_REV: number;
     readonly DEPTH_COMPONENT32F: number;
 
-    texImage3D(target: number, level: number, internalformat: number, width: number, height: number, depth: number, border: number, format: number, type: number, pixels: ArrayBufferView | null): void;
-    texImage3D(target: number, level: number, internalformat: number, width: number, height: number, depth: number, border: number, format: number, type: number, pixels: ArrayBufferView, offset: number): void;
-    texImage3D(target: number, level: number, internalformat: number, width: number, height: number, depth: number, border: number, format: number, type: number, pixels: ImageBitmap | ImageData | HTMLVideoElement | HTMLImageElement | HTMLCanvasElement): void;
+    texImage3D(
+        target: number,
+        level: number,
+        internalformat: number,
+        width: number,
+        height: number,
+        depth: number,
+        border: number,
+        format: number,
+        type: number,
+        pixels: ArrayBufferView | null
+    ): void;
+    texImage3D(
+        target: number,
+        level: number,
+        internalformat: number,
+        width: number,
+        height: number,
+        depth: number,
+        border: number,
+        format: number,
+        type: number,
+        pixels: ArrayBufferView,
+        offset: number
+    ): void;
+    texImage3D(
+        target: number,
+        level: number,
+        internalformat: number,
+        width: number,
+        height: number,
+        depth: number,
+        border: number,
+        format: number,
+        type: number,
+        pixels: ImageBitmap | ImageData | HTMLVideoElement | HTMLImageElement | HTMLCanvasElement
+    ): void;
 
     framebufferTextureLayer(target: number, attachment: number, texture: WebGLTexture | null, level: number, layer: number): void;
 
-    compressedTexImage3D(target: number, level: number, internalformat: number, width: number, height: number, depth: number, border: number, data: ArrayBufferView, offset?: number, length?: number): void;
+    compressedTexImage3D(
+        target: number,
+        level: number,
+        internalformat: number,
+        width: number,
+        height: number,
+        depth: number,
+        border: number,
+        data: ArrayBufferView,
+        offset?: number,
+        length?: number
+    ): void;
 
     readonly TRANSFORM_FEEDBACK: number;
     readonly INTERLEAVED_ATTRIBS: number;
@@ -87,42 +132,37 @@ interface ImageBitmap {
     close(): void;
 }
 
-interface WebGLQuery {
-}
+interface WebGLQuery {}
 
 declare var WebGLQuery: {
     prototype: WebGLQuery;
-    new(): WebGLQuery;
+    new (): WebGLQuery;
 };
 
-interface WebGLSampler {
-}
+interface WebGLSampler {}
 
 declare var WebGLSampler: {
     prototype: WebGLSampler;
-    new(): WebGLSampler;
+    new (): WebGLSampler;
 };
 
-interface WebGLSync {
-}
+interface WebGLSync {}
 
 declare var WebGLSync: {
     prototype: WebGLSync;
-    new(): WebGLSync;
+    new (): WebGLSync;
 };
 
-interface WebGLTransformFeedback {
-}
+interface WebGLTransformFeedback {}
 
 declare var WebGLTransformFeedback: {
     prototype: WebGLTransformFeedback;
-    new(): WebGLTransformFeedback;
+    new (): WebGLTransformFeedback;
 };
 
-interface WebGLVertexArrayObject {
-}
+interface WebGLVertexArrayObject {}
 
 declare var WebGLVertexArrayObject: {
     prototype: WebGLVertexArrayObject;
-    new(): WebGLVertexArrayObject;
+    new (): WebGLVertexArrayObject;
 };

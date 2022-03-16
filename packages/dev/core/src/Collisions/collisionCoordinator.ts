@@ -8,13 +8,20 @@ import { AbstractMesh } from "../Meshes/abstractMesh";
 /** @hidden */
 export interface ICollisionCoordinator {
     createCollider(): Collider;
-    getNewPosition(position: Vector3, displacement: Vector3, collider: Collider, maximumRetry: number, excludedMesh: Nullable<AbstractMesh>, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh>) => void, collisionIndex: number): void;
+    getNewPosition(
+        position: Vector3,
+        displacement: Vector3,
+        collider: Collider,
+        maximumRetry: number,
+        excludedMesh: Nullable<AbstractMesh>,
+        onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh>) => void,
+        collisionIndex: number
+    ): void;
     init(scene: Scene): void;
 }
 
 /** @hidden */
 export class DefaultCollisionCoordinator implements ICollisionCoordinator {
-
     private _scene: Scene;
 
     private _scaledPosition = Vector3.Zero();
@@ -22,7 +29,15 @@ export class DefaultCollisionCoordinator implements ICollisionCoordinator {
 
     private _finalPosition = Vector3.Zero();
 
-    public getNewPosition(position: Vector3, displacement: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh>) => void, collisionIndex: number): void {
+    public getNewPosition(
+        position: Vector3,
+        displacement: Vector3,
+        collider: Collider,
+        maximumRetry: number,
+        excludedMesh: AbstractMesh,
+        onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh>) => void,
+        collisionIndex: number
+    ): void {
         position.divideToRef(collider._radius, this._scaledPosition);
         displacement.divideToRef(collider._radius, this._scaledVelocity);
         collider.collidedMesh = null;
@@ -44,8 +59,15 @@ export class DefaultCollisionCoordinator implements ICollisionCoordinator {
         this._scene = scene;
     }
 
-    private _collideWithWorld(position: Vector3, velocity: Vector3, collider: Collider, maximumRetry: number, finalPosition: Vector3, excludedMesh: Nullable<AbstractMesh> = null): void {
-        var closeDistance = Engine.CollisionsEpsilon * 10.0;
+    private _collideWithWorld(
+        position: Vector3,
+        velocity: Vector3,
+        collider: Collider,
+        maximumRetry: number,
+        finalPosition: Vector3,
+        excludedMesh: Nullable<AbstractMesh> = null
+    ): void {
+        const closeDistance = Engine.CollisionsEpsilon * 10.0;
 
         if (collider._retry >= maximumRetry) {
             finalPosition.copyFrom(position);
@@ -53,17 +75,17 @@ export class DefaultCollisionCoordinator implements ICollisionCoordinator {
         }
 
         // Check if this is a mesh else camera or -1
-        var collisionMask = (excludedMesh ? excludedMesh.collisionMask : collider.collisionMask);
+        const collisionMask = excludedMesh ? excludedMesh.collisionMask : collider.collisionMask;
 
         collider._initialize(position, velocity, closeDistance);
 
         // Check if collision detection should happen against specified list of meshes or,
         // if not specified, against all meshes in the scene
-        var meshes = (excludedMesh && excludedMesh.surroundingMeshes) || this._scene.meshes;
+        const meshes = (excludedMesh && excludedMesh.surroundingMeshes) || this._scene.meshes;
 
-        for (var index = 0; index < meshes.length; index++) {
-            var mesh = meshes[index];
-            if (mesh.isEnabled() && mesh.checkCollisions && mesh.subMeshes && mesh !== excludedMesh && ((collisionMask & mesh.collisionGroup) !== 0)) {
+        for (let index = 0; index < meshes.length; index++) {
+            const mesh = meshes[index];
+            if (mesh.isEnabled() && mesh.checkCollisions && mesh.subMeshes && mesh !== excludedMesh && (collisionMask & mesh.collisionGroup) !== 0) {
                 mesh._checkCollision(collider);
             }
         }

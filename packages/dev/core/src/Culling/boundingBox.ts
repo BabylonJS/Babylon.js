@@ -4,8 +4,8 @@ import { Matrix, Vector3 } from "../Maths/math.vector";
 import { BoundingSphere } from "../Culling/boundingSphere";
 
 import { ICullable } from "./boundingInfo";
-import { Epsilon } from '../Maths/math.constants';
-import { Plane } from '../Maths/math.plane';
+import { Epsilon } from "../Maths/math.constants";
+import { Plane } from "../Maths/math.plane";
 
 declare type DrawWrapper = import("../Materials/drawWrapper").DrawWrapper;
 
@@ -90,7 +90,12 @@ export class BoundingBox implements ICullable {
      * @param worldMatrix defines the new world matrix
      */
     public reConstruct(min: DeepImmutable<Vector3>, max: DeepImmutable<Vector3>, worldMatrix?: DeepImmutable<Matrix>) {
-        const minX = min.x, minY = min.y, minZ = min.z, maxX = max.x, maxY = max.y, maxZ = max.z;
+        const minX = min.x,
+            minY = min.y,
+            minZ = min.z,
+            maxX = max.x,
+            maxY = max.y,
+            maxZ = max.z;
         const vectors = this.vectors;
 
         this.minimum.copyFromFloats(minX, minY, minZ);
@@ -142,7 +147,10 @@ export class BoundingBox implements ICullable {
         return this._worldMatrix;
     }
 
-    /** @hidden */
+    /**
+     * @param world
+     * @hidden
+     */
     public _update(world: DeepImmutable<Matrix>): void {
         const minWorld = this.minimumWorld;
         const maxWorld = this.maximumWorld;
@@ -164,8 +172,7 @@ export class BoundingBox implements ICullable {
             // Extend
             maxWorld.subtractToRef(minWorld, this.extendSizeWorld).scaleInPlace(0.5);
             maxWorld.addToRef(minWorld, this.centerWorld).scaleInPlace(0.5);
-        }
-        else {
+        } else {
             minWorld.copyFrom(this.minimum);
             maxWorld.copyFrom(this.maximum);
             for (let index = 0; index < 8; ++index) {
@@ -210,9 +217,16 @@ export class BoundingBox implements ICullable {
     public intersectsPoint(point: DeepImmutable<Vector3>): boolean {
         const min = this.minimumWorld;
         const max = this.maximumWorld;
-        const minX = min.x, minY = min.y, minZ = min.z, maxX = max.x, maxY = max.y, maxZ = max.z;
-        const pointX = point.x, pointY = point.y, pointZ = point.z;
-        var delta = -Epsilon;
+        const minX = min.x,
+            minY = min.y,
+            minZ = min.z,
+            maxX = max.x,
+            maxY = max.y,
+            maxZ = max.z;
+        const pointX = point.x,
+            pointY = point.y,
+            pointZ = point.z;
+        const delta = -Epsilon;
 
         if (maxX - pointX < delta || delta > pointX - minX) {
             return false;
@@ -247,8 +261,18 @@ export class BoundingBox implements ICullable {
     public intersectsMinMax(min: DeepImmutable<Vector3>, max: DeepImmutable<Vector3>): boolean {
         const myMin = this.minimumWorld;
         const myMax = this.maximumWorld;
-        const myMinX = myMin.x, myMinY = myMin.y, myMinZ = myMin.z, myMaxX = myMax.x, myMaxY = myMax.y, myMaxZ = myMax.z;
-        const minX = min.x, minY = min.y, minZ = min.z, maxX = max.x, maxY = max.y, maxZ = max.z;
+        const myMinX = myMin.x,
+            myMinY = myMin.y,
+            myMinZ = myMin.z,
+            myMaxX = myMax.x,
+            myMaxY = myMax.y,
+            myMaxZ = myMax.z;
+        const minX = min.x,
+            minY = min.y,
+            minZ = min.z,
+            maxX = max.x,
+            maxY = max.y,
+            maxZ = max.z;
         if (myMaxX < minX || myMinX > maxX) {
             return false;
         }
@@ -295,8 +319,8 @@ export class BoundingBox implements ICullable {
     public static IntersectsSphere(minPoint: DeepImmutable<Vector3>, maxPoint: DeepImmutable<Vector3>, sphereCenter: DeepImmutable<Vector3>, sphereRadius: number): boolean {
         const vector = BoundingBox.TmpVector3[0];
         Vector3.ClampToRef(sphereCenter, minPoint, maxPoint, vector);
-        var num = Vector3.DistanceSquared(sphereCenter, vector);
-        return (num <= (sphereRadius * sphereRadius));
+        const num = Vector3.DistanceSquared(sphereCenter, vector);
+        return num <= sphereRadius * sphereRadius;
     }
 
     /**
@@ -306,9 +330,9 @@ export class BoundingBox implements ICullable {
      * @return true if there is an inclusion
      */
     public static IsCompletelyInFrustum(boundingVectors: Array<DeepImmutable<Vector3>>, frustumPlanes: Array<DeepImmutable<Plane>>): boolean {
-        for (var p = 0; p < 6; ++p) {
+        for (let p = 0; p < 6; ++p) {
             const frustumPlane = frustumPlanes[p];
-            for (var i = 0; i < 8; ++i) {
+            for (let i = 0; i < 8; ++i) {
                 if (frustumPlane.dotCoordinate(boundingVectors[i]) < 0) {
                     return false;
                 }
@@ -324,10 +348,10 @@ export class BoundingBox implements ICullable {
      * @return true if there is an intersection
      */
     public static IsInFrustum(boundingVectors: Array<DeepImmutable<Vector3>>, frustumPlanes: Array<DeepImmutable<Plane>>): boolean {
-        for (var p = 0; p < 6; ++p) {
+        for (let p = 0; p < 6; ++p) {
             let canReturnFalse = true;
             const frustumPlane = frustumPlanes[p];
-            for (var i = 0; i < 8; ++i) {
+            for (let i = 0; i < 8; ++i) {
                 if (frustumPlane.dotCoordinate(boundingVectors[i]) >= 0) {
                     canReturnFalse = false;
                     break;

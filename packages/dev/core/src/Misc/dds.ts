@@ -5,9 +5,9 @@ import { InternalTexture, InternalTextureSource } from "../Materials/Textures/in
 import { Nullable } from "../types";
 import { Logger } from "../Misc/logger";
 import { CubeMapToSphericalPolynomialTools } from "../Misc/HighDynamicRange/cubemapToSphericalPolynomial";
-import { Scene } from '../scene';
-import { BaseTexture } from '../Materials/Textures/baseTexture';
-import { ThinEngine } from '../Engines/thinEngine';
+import { Scene } from "../scene";
+import { BaseTexture } from "../Materials/Textures/baseTexture";
+import { ThinEngine } from "../Engines/thinEngine";
 import { FromHalfFloat, ToHalfFloat } from "./textureTools";
 
 import "../Engines/Extensions/engine.cubeTexture";
@@ -17,8 +17,7 @@ import "../Engines/Extensions/engine.cubeTexture";
 // http://msdn.microsoft.com/en-us/library/bb943991.aspx/
 const DDS_MAGIC = 0x20534444;
 
-const
-    //DDSD_CAPS = 0x1,
+const //DDSD_CAPS = 0x1,
     //DDSD_HEIGHT = 0x2,
     //DDSD_WIDTH = 0x4,
     //DDSD_PITCH = 0x8,
@@ -40,8 +39,7 @@ const DDSCAPS2_CUBEMAP = 0x200;
 // DDSCAPS2_CUBEMAP_NEGATIVEZ = 0x8000,
 // DDSCAPS2_VOLUME = 0x200000;
 
-const
-    //DDPF_ALPHAPIXELS = 0x1,
+const //DDPF_ALPHAPIXELS = 0x1,
     //DDPF_ALPHA = 0x2,
     DDPF_FOURCC = 0x4,
     DDPF_RGB = 0x40,
@@ -49,56 +47,48 @@ const
     DDPF_LUMINANCE = 0x20000;
 
 function FourCCToInt32(value: string) {
-    return value.charCodeAt(0) +
-        (value.charCodeAt(1) << 8) +
-        (value.charCodeAt(2) << 16) +
-        (value.charCodeAt(3) << 24);
+    return value.charCodeAt(0) + (value.charCodeAt(1) << 8) + (value.charCodeAt(2) << 16) + (value.charCodeAt(3) << 24);
 }
 
 function Int32ToFourCC(value: number) {
-    return String.fromCharCode(
-        value & 0xff,
-        (value >> 8) & 0xff,
-        (value >> 16) & 0xff,
-        (value >> 24) & 0xff
-    );
+    return String.fromCharCode(value & 0xff, (value >> 8) & 0xff, (value >> 16) & 0xff, (value >> 24) & 0xff);
 }
 
-var FOURCC_DXT1 = FourCCToInt32("DXT1");
-var FOURCC_DXT3 = FourCCToInt32("DXT3");
-var FOURCC_DXT5 = FourCCToInt32("DXT5");
-var FOURCC_DX10 = FourCCToInt32("DX10");
-var FOURCC_D3DFMT_R16G16B16A16F = 113;
-var FOURCC_D3DFMT_R32G32B32A32F = 116;
+const FOURCC_DXT1 = FourCCToInt32("DXT1");
+const FOURCC_DXT3 = FourCCToInt32("DXT3");
+const FOURCC_DXT5 = FourCCToInt32("DXT5");
+const FOURCC_DX10 = FourCCToInt32("DX10");
+const FOURCC_D3DFMT_R16G16B16A16F = 113;
+const FOURCC_D3DFMT_R32G32B32A32F = 116;
 
-var DXGI_FORMAT_R32G32B32A32_FLOAT = 2;
-var DXGI_FORMAT_R16G16B16A16_FLOAT = 10;
-var DXGI_FORMAT_B8G8R8X8_UNORM = 88;
+const DXGI_FORMAT_R32G32B32A32_FLOAT = 2;
+const DXGI_FORMAT_R16G16B16A16_FLOAT = 10;
+const DXGI_FORMAT_B8G8R8X8_UNORM = 88;
 
-var headerLengthInt = 31; // The header length in 32 bit ints
+const headerLengthInt = 31; // The header length in 32 bit ints
 
 // Offsets into the header array
-var off_magic = 0;
+const off_magic = 0;
 
-var off_size = 1;
-var off_flags = 2;
-var off_height = 3;
-var off_width = 4;
+const off_size = 1;
+const off_flags = 2;
+const off_height = 3;
+const off_width = 4;
 
-var off_mipmapCount = 7;
+const off_mipmapCount = 7;
 
-var off_pfFlags = 20;
-var off_pfFourCC = 21;
-var off_RGBbpp = 22;
-var off_RMask = 23;
-var off_GMask = 24;
-var off_BMask = 25;
-var off_AMask = 26;
+const off_pfFlags = 20;
+const off_pfFourCC = 21;
+const off_RGBbpp = 22;
+const off_RMask = 23;
+const off_GMask = 24;
+const off_BMask = 25;
+const off_AMask = 26;
 // var off_caps1 = 27;
-var off_caps2 = 28;
+const off_caps2 = 28;
 // var off_caps3 = 29;
 // var off_caps4 = 30;
-var off_dxgiFormat = 32;
+const off_dxgiFormat = 32;
 
 /**
  * Direct draw surface info
@@ -170,17 +160,17 @@ export class DDSTools {
      * @returns the DDS information
      */
     public static GetDDSInfo(data: ArrayBufferView): DDSInfo {
-        var header = new Int32Array(data.buffer, data.byteOffset, headerLengthInt);
-        var extendedHeader = new Int32Array(data.buffer, data.byteOffset, headerLengthInt + 4);
+        const header = new Int32Array(data.buffer, data.byteOffset, headerLengthInt);
+        const extendedHeader = new Int32Array(data.buffer, data.byteOffset, headerLengthInt + 4);
 
-        var mipmapCount = 1;
+        let mipmapCount = 1;
         if (header[off_flags] & DDSD_MIPMAPCOUNT) {
             mipmapCount = Math.max(1, header[off_mipmapCount]);
         }
 
-        var fourCC = header[off_pfFourCC];
-        var dxgiFormat = (fourCC === FOURCC_DX10) ? extendedHeader[off_dxgiFormat] : 0;
-        var textureType = Constants.TEXTURETYPE_UNSIGNED_INT;
+        const fourCC = header[off_pfFourCC];
+        const dxgiFormat = fourCC === FOURCC_DX10 ? extendedHeader[off_dxgiFormat] : 0;
+        let textureType = Constants.TEXTURETYPE_UNSIGNED_INT;
 
         switch (fourCC) {
             case FOURCC_D3DFMT_R16G16B16A16F:
@@ -208,19 +198,19 @@ export class DDSTools {
             isRGB: (header[off_pfFlags] & DDPF_RGB) === DDPF_RGB,
             isLuminance: (header[off_pfFlags] & DDPF_LUMINANCE) === DDPF_LUMINANCE,
             isCube: (header[off_caps2] & DDSCAPS2_CUBEMAP) === DDSCAPS2_CUBEMAP,
-            isCompressed: (fourCC === FOURCC_DXT1 || fourCC === FOURCC_DXT3 || fourCC === FOURCC_DXT5),
+            isCompressed: fourCC === FOURCC_DXT1 || fourCC === FOURCC_DXT3 || fourCC === FOURCC_DXT5,
             dxgiFormat: dxgiFormat,
-            textureType: textureType
+            textureType: textureType,
         };
     }
 
     private static _GetHalfFloatAsFloatRGBAArrayBuffer(width: number, height: number, dataOffset: number, dataLength: number, arrayBuffer: ArrayBuffer, lod: number): Float32Array {
-        var destArray = new Float32Array(dataLength);
-        var srcData = new Uint16Array(arrayBuffer, dataOffset);
-        var index = 0;
-        for (var y = 0; y < height; y++) {
-            for (var x = 0; x < width; x++) {
-                var srcPos = (x + y * width) * 4;
+        const destArray = new Float32Array(dataLength);
+        const srcData = new Uint16Array(arrayBuffer, dataOffset);
+        let index = 0;
+        for (let y = 0; y < height; y++) {
+            for (let x = 0; x < width; x++) {
+                const srcPos = (x + y * width) * 4;
                 destArray[index] = FromHalfFloat(srcData[srcPos]);
                 destArray[index + 1] = FromHalfFloat(srcData[srcPos + 1]);
                 destArray[index + 2] = FromHalfFloat(srcData[srcPos + 2]);
@@ -238,12 +228,12 @@ export class DDSTools {
 
     private static _GetHalfFloatRGBAArrayBuffer(width: number, height: number, dataOffset: number, dataLength: number, arrayBuffer: ArrayBuffer, lod: number): Uint16Array {
         if (DDSTools.StoreLODInAlphaChannel) {
-            var destArray = new Uint16Array(dataLength);
-            var srcData = new Uint16Array(arrayBuffer, dataOffset);
-            var index = 0;
-            for (var y = 0; y < height; y++) {
-                for (var x = 0; x < width; x++) {
-                    var srcPos = (x + y * width) * 4;
+            const destArray = new Uint16Array(dataLength);
+            const srcData = new Uint16Array(arrayBuffer, dataOffset);
+            let index = 0;
+            for (let y = 0; y < height; y++) {
+                for (let x = 0; x < width; x++) {
+                    const srcPos = (x + y * width) * 4;
                     destArray[index] = srcData[srcPos];
                     destArray[index + 1] = srcData[srcPos + 1];
                     destArray[index + 2] = srcData[srcPos + 2];
@@ -260,12 +250,12 @@ export class DDSTools {
 
     private static _GetFloatRGBAArrayBuffer(width: number, height: number, dataOffset: number, dataLength: number, arrayBuffer: ArrayBuffer, lod: number): Float32Array {
         if (DDSTools.StoreLODInAlphaChannel) {
-            var destArray = new Float32Array(dataLength);
-            var srcData = new Float32Array(arrayBuffer, dataOffset);
-            var index = 0;
-            for (var y = 0; y < height; y++) {
-                for (var x = 0; x < width; x++) {
-                    var srcPos = (x + y * width) * 4;
+            const destArray = new Float32Array(dataLength);
+            const srcData = new Float32Array(arrayBuffer, dataOffset);
+            let index = 0;
+            for (let y = 0; y < height; y++) {
+                for (let x = 0; x < width; x++) {
+                    const srcPos = (x + y * width) * 4;
                     destArray[index] = srcData[srcPos];
                     destArray[index + 1] = srcData[srcPos + 1];
                     destArray[index + 2] = srcData[srcPos + 2];
@@ -280,11 +270,11 @@ export class DDSTools {
     }
 
     private static _GetFloatAsHalfFloatRGBAArrayBuffer(width: number, height: number, dataOffset: number, dataLength: number, arrayBuffer: ArrayBuffer, lod: number): Uint16Array {
-        var destArray = new Uint16Array(dataLength);
-        var srcData = new Float32Array(arrayBuffer, dataOffset);
-        var index = 0;
-        for (var y = 0; y < height; y++) {
-            for (var x = 0; x < width; x++) {
+        const destArray = new Uint16Array(dataLength);
+        const srcData = new Float32Array(arrayBuffer, dataOffset);
+        let index = 0;
+        for (let y = 0; y < height; y++) {
+            for (let x = 0; x < width; x++) {
                 destArray[index] = ToHalfFloat(srcData[index]);
                 destArray[index + 1] = ToHalfFloat(srcData[index + 1]);
                 destArray[index + 2] = ToHalfFloat(srcData[index + 2]);
@@ -301,12 +291,12 @@ export class DDSTools {
     }
 
     private static _GetFloatAsUIntRGBAArrayBuffer(width: number, height: number, dataOffset: number, dataLength: number, arrayBuffer: ArrayBuffer, lod: number): Uint8Array {
-        var destArray = new Uint8Array(dataLength);
-        var srcData = new Float32Array(arrayBuffer, dataOffset);
-        var index = 0;
-        for (var y = 0; y < height; y++) {
-            for (var x = 0; x < width; x++) {
-                var srcPos = (x + y * width) * 4;
+        const destArray = new Uint8Array(dataLength);
+        const srcData = new Float32Array(arrayBuffer, dataOffset);
+        let index = 0;
+        for (let y = 0; y < height; y++) {
+            for (let x = 0; x < width; x++) {
+                const srcPos = (x + y * width) * 4;
                 destArray[index] = Scalar.Clamp(srcData[srcPos]) * 255;
                 destArray[index + 1] = Scalar.Clamp(srcData[srcPos + 1]) * 255;
                 destArray[index + 2] = Scalar.Clamp(srcData[srcPos + 2]) * 255;
@@ -323,12 +313,12 @@ export class DDSTools {
     }
 
     private static _GetHalfFloatAsUIntRGBAArrayBuffer(width: number, height: number, dataOffset: number, dataLength: number, arrayBuffer: ArrayBuffer, lod: number): Uint8Array {
-        var destArray = new Uint8Array(dataLength);
-        var srcData = new Uint16Array(arrayBuffer, dataOffset);
-        var index = 0;
-        for (var y = 0; y < height; y++) {
-            for (var x = 0; x < width; x++) {
-                var srcPos = (x + y * width) * 4;
+        const destArray = new Uint8Array(dataLength);
+        const srcData = new Uint16Array(arrayBuffer, dataOffset);
+        let index = 0;
+        for (let y = 0; y < height; y++) {
+            for (let x = 0; x < width; x++) {
+                const srcPos = (x + y * width) * 4;
                 destArray[index] = Scalar.Clamp(FromHalfFloat(srcData[srcPos])) * 255;
                 destArray[index + 1] = Scalar.Clamp(FromHalfFloat(srcData[srcPos + 1])) * 255;
                 destArray[index + 2] = Scalar.Clamp(FromHalfFloat(srcData[srcPos + 2])) * 255;
@@ -344,13 +334,23 @@ export class DDSTools {
         return destArray;
     }
 
-    private static _GetRGBAArrayBuffer(width: number, height: number, dataOffset: number, dataLength: number, arrayBuffer: ArrayBuffer, rOffset: number, gOffset: number, bOffset: number, aOffset: number): Uint8Array {
-        var byteArray = new Uint8Array(dataLength);
-        var srcData = new Uint8Array(arrayBuffer, dataOffset);
-        var index = 0;
-        for (var y = 0; y < height; y++) {
-            for (var x = 0; x < width; x++) {
-                var srcPos = (x + y * width) * 4;
+    private static _GetRGBAArrayBuffer(
+        width: number,
+        height: number,
+        dataOffset: number,
+        dataLength: number,
+        arrayBuffer: ArrayBuffer,
+        rOffset: number,
+        gOffset: number,
+        bOffset: number,
+        aOffset: number
+    ): Uint8Array {
+        const byteArray = new Uint8Array(dataLength);
+        const srcData = new Uint8Array(arrayBuffer, dataOffset);
+        let index = 0;
+        for (let y = 0; y < height; y++) {
+            for (let x = 0; x < width; x++) {
+                const srcPos = (x + y * width) * 4;
 
                 byteArray[index] = srcData[srcPos + rOffset];
                 byteArray[index + 1] = srcData[srcPos + gOffset];
@@ -371,13 +371,22 @@ export class DDSTools {
         return 1 + DDSTools._ExtractLongWordOrder(value >> 8);
     }
 
-    private static _GetRGBArrayBuffer(width: number, height: number, dataOffset: number, dataLength: number, arrayBuffer: ArrayBuffer, rOffset: number, gOffset: number, bOffset: number): Uint8Array {
-        var byteArray = new Uint8Array(dataLength);
-        var srcData = new Uint8Array(arrayBuffer, dataOffset);
-        var index = 0;
-        for (var y = 0; y < height; y++) {
-            for (var x = 0; x < width; x++) {
-                var srcPos = (x + y * width) * 3;
+    private static _GetRGBArrayBuffer(
+        width: number,
+        height: number,
+        dataOffset: number,
+        dataLength: number,
+        arrayBuffer: ArrayBuffer,
+        rOffset: number,
+        gOffset: number,
+        bOffset: number
+    ): Uint8Array {
+        const byteArray = new Uint8Array(dataLength);
+        const srcData = new Uint8Array(arrayBuffer, dataOffset);
+        let index = 0;
+        for (let y = 0; y < height; y++) {
+            for (let x = 0; x < width; x++) {
+                const srcPos = (x + y * width) * 3;
 
                 byteArray[index] = srcData[srcPos + rOffset];
                 byteArray[index + 1] = srcData[srcPos + gOffset];
@@ -390,12 +399,12 @@ export class DDSTools {
     }
 
     private static _GetLuminanceArrayBuffer(width: number, height: number, dataOffset: number, dataLength: number, arrayBuffer: ArrayBuffer): Uint8Array {
-        var byteArray = new Uint8Array(dataLength);
-        var srcData = new Uint8Array(arrayBuffer, dataOffset);
-        var index = 0;
-        for (var y = 0; y < height; y++) {
-            for (var x = 0; x < width; x++) {
-                var srcPos = (x + y * width);
+        const byteArray = new Uint8Array(dataLength);
+        const srcData = new Uint8Array(arrayBuffer, dataOffset);
+        let index = 0;
+        for (let y = 0; y < height; y++) {
+            for (let x = 0; x < width; x++) {
+                const srcPos = x + y * width;
                 byteArray[index] = srcData[srcPos];
                 index++;
             }
@@ -406,21 +415,44 @@ export class DDSTools {
 
     /**
      * Uploads DDS Levels to a Babylon Texture
+     * @param engine
+     * @param texture
+     * @param data
+     * @param info
+     * @param loadMipmaps
+     * @param faces
+     * @param lodIndex
+     * @param currentFace
+     * @param destTypeMustBeFilterable
      * @hidden
      */
-    public static UploadDDSLevels(engine: ThinEngine, texture: InternalTexture, data: ArrayBufferView, info: DDSInfo, loadMipmaps: boolean, faces: number, lodIndex = -1, currentFace?: number, destTypeMustBeFilterable = true) {
-        var sphericalPolynomialFaces: Nullable<Array<ArrayBufferView>> = null;
+    public static UploadDDSLevels(
+        engine: ThinEngine,
+        texture: InternalTexture,
+        data: ArrayBufferView,
+        info: DDSInfo,
+        loadMipmaps: boolean,
+        faces: number,
+        lodIndex = -1,
+        currentFace?: number,
+        destTypeMustBeFilterable = true
+    ) {
+        let sphericalPolynomialFaces: Nullable<Array<ArrayBufferView>> = null;
         if (info.sphericalPolynomial) {
             sphericalPolynomialFaces = new Array<ArrayBufferView>();
         }
-        var ext = !!engine.getCaps().s3tc;
+        const ext = !!engine.getCaps().s3tc;
 
         // TODO WEBGPU Once generateMipMaps is split into generateMipMaps + hasMipMaps in InternalTexture this line can be removed
         texture.generateMipMaps = loadMipmaps;
 
-        var header = new Int32Array(data.buffer, data.byteOffset, headerLengthInt);
-        var fourCC: number, width: number, height: number, dataLength: number = 0, dataOffset: number;
-        var byteArray: Uint8Array, mipmapCount: number, mip: number;
+        const header = new Int32Array(data.buffer, data.byteOffset, headerLengthInt);
+        let fourCC: number,
+            width: number,
+            height: number,
+            dataLength: number = 0,
+            dataOffset: number;
+        let byteArray: Uint8Array, mipmapCount: number, mip: number;
         let internalCompressedFormat = 0;
         let blockBytes = 1;
 
@@ -439,7 +471,7 @@ export class DDSTools {
             return;
         }
 
-        var bpp = header[off_RGBbpp];
+        let bpp = header[off_RGBbpp];
         dataOffset = header[off_size] + 4;
 
         let computeFormats = false;
@@ -500,10 +532,10 @@ export class DDSTools {
             }
         }
 
-        let rOffset = DDSTools._ExtractLongWordOrder(header[off_RMask]);
-        let gOffset = DDSTools._ExtractLongWordOrder(header[off_GMask]);
-        let bOffset = DDSTools._ExtractLongWordOrder(header[off_BMask]);
-        let aOffset = DDSTools._ExtractLongWordOrder(header[off_AMask]);
+        const rOffset = DDSTools._ExtractLongWordOrder(header[off_RMask]);
+        const gOffset = DDSTools._ExtractLongWordOrder(header[off_GMask]);
+        const bOffset = DDSTools._ExtractLongWordOrder(header[off_BMask]);
+        const aOffset = DDSTools._ExtractLongWordOrder(header[off_AMask]);
 
         if (computeFormats) {
             internalCompressedFormat = engine._getRGBABufferInternalSizedFormat(info.textureType);
@@ -516,46 +548,52 @@ export class DDSTools {
 
         const startFace = currentFace || 0;
         const caps = engine.getCaps();
-        for (var face = startFace; face < faces; face++) {
+        for (let face = startFace; face < faces; face++) {
             width = header[off_width];
             height = header[off_height];
 
             for (mip = 0; mip < mipmapCount; ++mip) {
                 if (lodIndex === -1 || lodIndex === mip) {
                     // In case of fixed LOD, if the lod has just been uploaded, early exit.
-                    const i = (lodIndex === -1) ? mip : 0;
+                    const i = lodIndex === -1 ? mip : 0;
 
                     if (!info.isCompressed && info.isFourCC) {
                         texture.format = Constants.TEXTUREFORMAT_RGBA;
                         dataLength = width * height * 4;
-                        var floatArray: Nullable<ArrayBufferView> = null;
+                        let floatArray: Nullable<ArrayBufferView> = null;
 
-                        if (engine._badOS || engine._badDesktopOS || (!caps.textureHalfFloat && !caps.textureFloat)) { // Required because iOS has many issues with float and half float generation
+                        if (engine._badOS || engine._badDesktopOS || (!caps.textureHalfFloat && !caps.textureFloat)) {
+                            // Required because iOS has many issues with float and half float generation
                             if (bpp === 128) {
                                 floatArray = DDSTools._GetFloatAsUIntRGBAArrayBuffer(width, height, data.byteOffset + dataOffset, dataLength, data.buffer, i);
                                 if (sphericalPolynomialFaces && i == 0) {
                                     sphericalPolynomialFaces.push(DDSTools._GetFloatRGBAArrayBuffer(width, height, data.byteOffset + dataOffset, dataLength, data.buffer, i));
                                 }
-                            }
-                            else if (bpp === 64) {
+                            } else if (bpp === 64) {
                                 floatArray = DDSTools._GetHalfFloatAsUIntRGBAArrayBuffer(width, height, data.byteOffset + dataOffset, dataLength, data.buffer, i);
                                 if (sphericalPolynomialFaces && i == 0) {
-                                    sphericalPolynomialFaces.push(DDSTools._GetHalfFloatAsFloatRGBAArrayBuffer(width, height, data.byteOffset + dataOffset, dataLength, data.buffer, i));
+                                    sphericalPolynomialFaces.push(
+                                        DDSTools._GetHalfFloatAsFloatRGBAArrayBuffer(width, height, data.byteOffset + dataOffset, dataLength, data.buffer, i)
+                                    );
                                 }
                             }
 
                             texture.type = Constants.TEXTURETYPE_UNSIGNED_INT;
-                        }
-                        else {
-                            const floatAvailable = caps.textureFloat && (destTypeMustBeFilterable && caps.textureFloatLinearFiltering || !destTypeMustBeFilterable);
-                            const halfFloatAvailable = caps.textureHalfFloat && (destTypeMustBeFilterable && caps.textureHalfFloatLinearFiltering || !destTypeMustBeFilterable);
+                        } else {
+                            const floatAvailable = caps.textureFloat && ((destTypeMustBeFilterable && caps.textureFloatLinearFiltering) || !destTypeMustBeFilterable);
+                            const halfFloatAvailable = caps.textureHalfFloat && ((destTypeMustBeFilterable && caps.textureHalfFloatLinearFiltering) || !destTypeMustBeFilterable);
 
                             const destType =
-                                (bpp === 128 || bpp === 64 && !halfFloatAvailable) && floatAvailable ? Constants.TEXTURETYPE_FLOAT :
-                                    (bpp === 64 || bpp === 128 && !floatAvailable) && halfFloatAvailable ? Constants.TEXTURETYPE_HALF_FLOAT : Constants.TEXTURETYPE_UNSIGNED_BYTE;
+                                (bpp === 128 || (bpp === 64 && !halfFloatAvailable)) && floatAvailable
+                                    ? Constants.TEXTURETYPE_FLOAT
+                                    : (bpp === 64 || (bpp === 128 && !floatAvailable)) && halfFloatAvailable
+                                    ? Constants.TEXTURETYPE_HALF_FLOAT
+                                    : Constants.TEXTURETYPE_UNSIGNED_BYTE;
 
                             let dataGetter: (width: number, height: number, dataOffset: number, dataLength: number, arrayBuffer: ArrayBuffer, lod: number) => ArrayBufferView;
-                            let dataGetterPolynomial: Nullable<(width: number, height: number, dataOffset: number, dataLength: number, arrayBuffer: ArrayBuffer, lod: number) => ArrayBufferView> = null;
+                            let dataGetterPolynomial: Nullable<
+                                (width: number, height: number, dataOffset: number, dataLength: number, arrayBuffer: ArrayBuffer, lod: number) => ArrayBufferView
+                            > = null;
 
                             switch (bpp) {
                                 case 128: {
@@ -575,7 +613,8 @@ export class DDSTools {
                                     }
                                     break;
                                 }
-                                default: { // 64 bpp
+                                default: {
+                                    // 64 bpp
                                     switch (destType) {
                                         case Constants.TEXTURETYPE_FLOAT:
                                             dataGetter = DDSTools._GetHalfFloatAsFloatRGBAArrayBuffer;
@@ -599,7 +638,9 @@ export class DDSTools {
                             floatArray = dataGetter(width, height, data.byteOffset + dataOffset, dataLength, data.buffer, i);
 
                             if (sphericalPolynomialFaces && i == 0) {
-                                sphericalPolynomialFaces.push(dataGetterPolynomial ? dataGetterPolynomial(width, height, data.byteOffset + dataOffset, dataLength, data.buffer, i) : floatArray);
+                                sphericalPolynomialFaces.push(
+                                    dataGetterPolynomial ? dataGetterPolynomial(width, height, data.byteOffset + dataOffset, dataLength, data.buffer, i) : floatArray
+                                );
                             }
                         }
 
@@ -613,16 +654,17 @@ export class DDSTools {
                             dataLength = width * height * 3;
                             byteArray = DDSTools._GetRGBArrayBuffer(width, height, data.byteOffset + dataOffset, dataLength, data.buffer, rOffset, gOffset, bOffset);
                             engine._uploadDataToTextureDirectly(texture, byteArray, face, i);
-                        } else { // 32
+                        } else {
+                            // 32
                             texture.format = Constants.TEXTUREFORMAT_RGBA;
                             dataLength = width * height * 4;
                             byteArray = DDSTools._GetRGBAArrayBuffer(width, height, data.byteOffset + dataOffset, dataLength, data.buffer, rOffset, gOffset, bOffset, aOffset);
                             engine._uploadDataToTextureDirectly(texture, byteArray, face, i);
                         }
                     } else if (info.isLuminance) {
-                        var unpackAlignment = engine._getUnpackAlignement();
-                        var unpaddedRowSize = width;
-                        var paddedRowSize = Math.floor((width + unpackAlignment - 1) / unpackAlignment) * unpackAlignment;
+                        const unpackAlignment = engine._getUnpackAlignement();
+                        const unpaddedRowSize = width;
+                        const paddedRowSize = Math.floor((width + unpackAlignment - 1) / unpackAlignment) * unpackAlignment;
                         dataLength = paddedRowSize * (height - 1) + unpaddedRowSize;
 
                         byteArray = DDSTools._GetLuminanceArrayBuffer(width, height, data.byteOffset + dataOffset, dataLength, data.buffer);
@@ -631,14 +673,14 @@ export class DDSTools {
 
                         engine._uploadDataToTextureDirectly(texture, byteArray, face, i);
                     } else {
-                        dataLength = Math.max(4, width) / 4 * Math.max(4, height) / 4 * blockBytes;
+                        dataLength = (((Math.max(4, width) / 4) * Math.max(4, height)) / 4) * blockBytes;
                         byteArray = new Uint8Array(data.buffer, data.byteOffset + dataOffset, dataLength);
 
                         texture.type = Constants.TEXTURETYPE_UNSIGNED_INT;
                         engine._uploadCompressedDataToTextureDirectly(texture, internalCompressedFormat, width, height, byteArray, face, i);
                     }
                 }
-                dataOffset += bpp ? (width * height * (bpp / 8)) : dataLength;
+                dataOffset += bpp ? width * height * (bpp / 8) : dataLength;
                 width *= 0.5;
                 height *= 0.5;
 
@@ -685,11 +727,17 @@ declare module "../Engines/thinEngine" {
          * @param createPolynomials defines wheter or not to create polynomails harmonics for the texture
          * @returns the cube texture as an InternalTexture
          */
-        createPrefilteredCubeTexture(rootUrl: string, scene: Nullable<Scene>, lodScale: number, lodOffset: number,
+        createPrefilteredCubeTexture(
+            rootUrl: string,
+            scene: Nullable<Scene>,
+            lodScale: number,
+            lodOffset: number,
             onLoad?: Nullable<(internalTexture: Nullable<InternalTexture>) => void>,
             onError?: Nullable<(message?: string, exception?: any) => void>,
-            format?: number, forcedExtension?: any,
-            createPolynomials?: boolean): InternalTexture;
+            format?: number,
+            forcedExtension?: any,
+            createPolynomials?: boolean
+        ): InternalTexture;
     }
 }
 
@@ -706,12 +754,18 @@ declare module "../Engines/thinEngine" {
  * @param createPolynomials defines wheter or not to create polynomails harmonics for the texture
  * @returns the cube texture as an InternalTexture
  */
-ThinEngine.prototype.createPrefilteredCubeTexture = function (rootUrl: string, scene: Nullable<Scene>, lodScale: number, lodOffset: number,
+ThinEngine.prototype.createPrefilteredCubeTexture = function (
+    rootUrl: string,
+    scene: Nullable<Scene>,
+    lodScale: number,
+    lodOffset: number,
     onLoad: Nullable<(internalTexture: Nullable<InternalTexture>) => void> = null,
     onError: Nullable<(message?: string, exception?: any) => void> = null,
-    format?: number, forcedExtension: any = null,
-    createPolynomials: boolean = true): InternalTexture {
-    var callback = (loadData: any) => {
+    format?: number,
+    forcedExtension: any = null,
+    createPolynomials: boolean = true
+): InternalTexture {
+    const callback = (loadData: any) => {
         if (!loadData) {
             if (onLoad) {
                 onLoad(null);
@@ -719,11 +773,10 @@ ThinEngine.prototype.createPrefilteredCubeTexture = function (rootUrl: string, s
             return;
         }
 
-        let texture = loadData.texture as InternalTexture;
+        const texture = loadData.texture as InternalTexture;
         if (!createPolynomials) {
             texture._sphericalPolynomial = new SphericalPolynomial();
-        }
-        else if (loadData.info.sphericalPolynomial) {
+        } else if (loadData.info.sphericalPolynomial) {
             texture._sphericalPolynomial = loadData.info.sphericalPolynomial;
         }
         texture._source = InternalTextureSource.CubePrefiltered;
@@ -738,7 +791,7 @@ ThinEngine.prototype.createPrefilteredCubeTexture = function (rootUrl: string, s
 
         const mipSlices = 3;
 
-        var gl = this._gl;
+        const gl = this._gl;
         const width = loadData.width;
         if (!width) {
             return;
@@ -747,16 +800,16 @@ ThinEngine.prototype.createPrefilteredCubeTexture = function (rootUrl: string, s
         const textures: BaseTexture[] = [];
         for (let i = 0; i < mipSlices; i++) {
             //compute LOD from even spacing in smoothness (matching shader calculation)
-            let smoothness = i / (mipSlices - 1);
-            let roughness = 1 - smoothness;
+            const smoothness = i / (mipSlices - 1);
+            const roughness = 1 - smoothness;
 
-            let minLODIndex = lodOffset; // roughness = 0
-            let maxLODIndex = Scalar.Log2(width) * lodScale + lodOffset; // roughness = 1
+            const minLODIndex = lodOffset; // roughness = 0
+            const maxLODIndex = Scalar.Log2(width) * lodScale + lodOffset; // roughness = 1
 
-            let lodIndex = minLODIndex + (maxLODIndex - minLODIndex) * roughness;
-            let mipmapIndex = Math.round(Math.min(Math.max(lodIndex, 0), maxLODIndex));
+            const lodIndex = minLODIndex + (maxLODIndex - minLODIndex) * roughness;
+            const mipmapIndex = Math.round(Math.min(Math.max(lodIndex, 0), maxLODIndex));
 
-            var glTextureFromLod = new InternalTexture(this, InternalTextureSource.Temp);
+            const glTextureFromLod = new InternalTexture(this, InternalTextureSource.Temp);
             glTextureFromLod.type = texture.type;
             glTextureFromLod.format = texture.format;
             glTextureFromLod.width = Math.pow(2, Math.max(Scalar.Log2(width) - mipmapIndex, 0));
@@ -773,13 +826,12 @@ ThinEngine.prototype.createPrefilteredCubeTexture = function (rootUrl: string, s
             gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
             if (loadData.isDDS) {
-                var info: DDSInfo = loadData.info;
-                var data: any = loadData.data;
+                const info: DDSInfo = loadData.info;
+                const data: any = loadData.data;
                 this._unpackFlipY(info.isCompressed);
 
                 DDSTools.UploadDDSLevels(this, glTextureFromLod, data, info, true, 6, mipmapIndex);
-            }
-            else {
+            } else {
                 Logger.Warn("DDS is the only prefiltered cube map supported so far.");
             }
 

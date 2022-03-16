@@ -1,77 +1,76 @@
 import { ShaderLanguage } from "../../Materials/shaderLanguage";
 import { Nullable } from "../../types";
 import { IShaderProcessor } from "../Processors/iShaderProcessor";
-import * as WebGPUConstants from './webgpuConstants';
+import * as WebGPUConstants from "./webgpuConstants";
 import { WebGPUSamplerDescription, WebGPUShaderProcessingContext, WebGPUTextureDescription, WebGPUBufferDescription } from "./webgpuShaderProcessingContext";
 
 /** @hidden */
 export abstract class WebGPUShaderProcessor implements IShaderProcessor {
-
     public static readonly AutoSamplerSuffix = "Sampler";
     public static readonly LeftOvertUBOName = "LeftOver";
     public static readonly InternalsUBOName = "Internals";
 
     public static UniformSizes: { [type: string]: number } = {
         // GLSL types
-        "bool": 1,
-        "int": 1,
-        "float": 1,
-        "vec2": 2,
-        "ivec2": 2,
-        "vec3": 3,
-        "ivec3": 3,
-        "vec4": 4,
-        "ivec4": 4,
-        "mat2": 4,
-        "mat3": 12,
-        "mat4": 16,
+        bool: 1,
+        int: 1,
+        float: 1,
+        vec2: 2,
+        ivec2: 2,
+        vec3: 3,
+        ivec3: 3,
+        vec4: 4,
+        ivec4: 4,
+        mat2: 4,
+        mat3: 12,
+        mat4: 16,
 
         // WGSL types
-        "i32": 1,
-        "u32": 1,
-        "f32": 1,
-        "mat2x2": 4,
-        "mat3x3": 12,
-        "mat4x4": 16
+        i32: 1,
+        u32: 1,
+        f32: 1,
+        mat2x2: 4,
+        mat3x3: 12,
+        mat4x4: 16,
     };
 
     protected static _SamplerFunctionByWebGLSamplerType: { [key: string]: string } = {
-        "sampler2D": "sampler2D",
-        "sampler2DArray": "sampler2DArray",
-        "sampler2DShadow": "sampler2DShadow",
-        "sampler2DArrayShadow": "sampler2DArrayShadow",
-        "samplerCube": "samplerCube",
-        "sampler3D": "sampler3D",
+        sampler2D: "sampler2D",
+        sampler2DArray: "sampler2DArray",
+        sampler2DShadow: "sampler2DShadow",
+        sampler2DArrayShadow: "sampler2DArrayShadow",
+        samplerCube: "samplerCube",
+        sampler3D: "sampler3D",
     };
 
     protected static _TextureTypeByWebGLSamplerType: { [key: string]: string } = {
-        "sampler2D": "texture2D",
-        "sampler2DArray": "texture2DArray",
-        "sampler2DShadow": "texture2D",
-        "sampler2DArrayShadow": "texture2DArray",
-        "samplerCube": "textureCube",
-        "samplerCubeArray": "textureCubeArray",
-        "sampler3D": "texture3D",
+        sampler2D: "texture2D",
+        sampler2DArray: "texture2DArray",
+        sampler2DShadow: "texture2D",
+        sampler2DArrayShadow: "texture2DArray",
+        samplerCube: "textureCube",
+        samplerCubeArray: "textureCubeArray",
+        sampler3D: "texture3D",
     };
 
     protected static _GpuTextureViewDimensionByWebGPUTextureType: { [key: string]: GPUTextureViewDimension } = {
-        "textureCube": WebGPUConstants.TextureViewDimension.Cube,
-        "textureCubeArray": WebGPUConstants.TextureViewDimension.CubeArray,
-        "texture2D": WebGPUConstants.TextureViewDimension.E2d,
-        "texture2DArray": WebGPUConstants.TextureViewDimension.E2dArray,
-        "texture3D": WebGPUConstants.TextureViewDimension.E3d,
+        textureCube: WebGPUConstants.TextureViewDimension.Cube,
+        textureCubeArray: WebGPUConstants.TextureViewDimension.CubeArray,
+        texture2D: WebGPUConstants.TextureViewDimension.E2d,
+        texture2DArray: WebGPUConstants.TextureViewDimension.E2dArray,
+        texture3D: WebGPUConstants.TextureViewDimension.E3d,
     };
 
     // if the webgl sampler type is not listed in this array, "sampler" is taken by default
     protected static _SamplerTypeByWebGLSamplerType: { [key: string]: string } = {
-        "sampler2DShadow": "samplerShadow",
-        "sampler2DArrayShadow": "samplerShadow",
+        sampler2DShadow: "samplerShadow",
+        sampler2DArrayShadow: "samplerShadow",
     };
 
     protected static _IsComparisonSamplerByWebGPUSamplerType: { [key: string]: boolean } = {
-        "samplerShadow": true,
-        "samplerArrayShadow": true,
-        "sampler": false,
+        samplerShadow: true,
+        samplerArrayShadow: true,
+        sampler: false,
     };
 
     public shaderLanguage = ShaderLanguage.GLSL;
@@ -95,7 +94,7 @@ export abstract class WebGPUShaderProcessor implements IShaderProcessor {
         this.webgpuProcessingContext.leftOverUniforms.push({
             name,
             type: uniformType,
-            length
+            length,
         });
     }
 
@@ -134,7 +133,7 @@ export abstract class WebGPUShaderProcessor implements IShaderProcessor {
                         this.webgpuProcessingContext.textureNames.push(nameInArrayOfTexture!);
                     } else if (entry.sampler) {
                         this.webgpuProcessingContext.samplerNames.push(name);
-                    } else  if (entry.buffer) {
+                    } else if (entry.buffer) {
                         this.webgpuProcessingContext.bufferNames.push(name);
                     }
                 }
@@ -173,7 +172,14 @@ export abstract class WebGPUShaderProcessor implements IShaderProcessor {
         }
     }
 
-    protected _addTextureBindingDescription(name: string, textureInfo: WebGPUTextureDescription, textureIndex: number, dimension: Nullable<GPUTextureViewDimension>, format: Nullable<GPUTextureFormat>, isVertex: boolean): void {
+    protected _addTextureBindingDescription(
+        name: string,
+        textureInfo: WebGPUTextureDescription,
+        textureIndex: number,
+        dimension: Nullable<GPUTextureViewDimension>,
+        format: Nullable<GPUTextureFormat>,
+        isVertex: boolean
+    ): void {
         let { groupIndex, bindingIndex } = textureInfo.textures[textureIndex];
         if (!this.webgpuProcessingContext.bindGroupLayoutEntries[groupIndex]) {
             this.webgpuProcessingContext.bindGroupLayoutEntries[groupIndex] = [];
@@ -274,9 +280,9 @@ export abstract class WebGPUShaderProcessor implements IShaderProcessor {
         if (startingCode) {
             let idx = code.indexOf(mainFuncDecl);
             if (idx >= 0) {
-                while (idx++ < code.length && code.charAt(idx) != '{') { }
+                while (idx++ < code.length && code.charAt(idx) != "{") {}
                 if (idx < code.length) {
-                    while (idx++ < code.length && code.charAt(idx) != '\n') { }
+                    while (idx++ < code.length && code.charAt(idx) != "\n") {}
                     if (idx < code.length) {
                         const part1 = code.substring(0, idx + 1);
                         const part2 = code.substring(idx + 1);

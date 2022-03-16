@@ -3,7 +3,7 @@ import { ThinEngine } from "../Engines/thinEngine";
 import { Scene } from "../scene";
 import { Nullable } from "../types";
 import { SerializationHelper, serialize } from "../Misc/decorators";
-import { RegisterClass } from '../Misc/typeStore';
+import { RegisterClass } from "../Misc/typeStore";
 import { ComputeEffect, IComputeEffectCreationOptions } from "./computeEffect";
 import { ComputeBindingList, ComputeBindingMapping, ComputeBindingType } from "../Engines/Extensions/engine.computeShader";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
@@ -120,7 +120,7 @@ export class ComputeShader {
         this._options = {
             bindingsMapping: {},
             defines: [],
-            ...options
+            ...options,
         };
     }
 
@@ -207,7 +207,7 @@ export class ComputeShader {
      * @param name Binding name of the sampler
      * @param sampler Sampler to bind
      */
-     public setTextureSampler(name: string, sampler: TextureSampler): void {
+    public setTextureSampler(name: string, sampler: TextureSampler): void {
         const current = this._bindings[name];
 
         this._contextIsDirty ||= !current || !sampler.compareSampler(current.object);
@@ -310,7 +310,7 @@ export class ComputeShader {
                     texture.wrapR,
                     texture.anisotropicFilteringLevel,
                     texture._texture!.samplingMode,
-                    texture._texture?._comparisonFunction,
+                    texture._texture?._comparisonFunction
                 );
                 this._contextIsDirty = true;
             }
@@ -412,7 +412,6 @@ export class ComputeShader {
 
         return compute;
     }
-
 }
 
 RegisterClass("BABYLON.ComputeShader", ComputeShader);

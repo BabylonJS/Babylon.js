@@ -1,10 +1,10 @@
-import { IPipelineContext } from '../IPipelineContext';
-import { Nullable } from '../../types';
-import { WebGPUEngine } from '../webgpuEngine';
-import { Effect } from '../../Materials/effect';
-import { WebGPUShaderProcessingContext } from './webgpuShaderProcessingContext';
+import { IPipelineContext } from "../IPipelineContext";
+import { Nullable } from "../../types";
+import { WebGPUEngine } from "../webgpuEngine";
+import { Effect } from "../../Materials/effect";
+import { WebGPUShaderProcessingContext } from "./webgpuShaderProcessingContext";
 import { UniformBuffer } from "../../Materials/uniformBuffer";
-import { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, IColor4Like } from '../../Maths/math.like';
+import { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, IColor4Like } from "../../Maths/math.like";
 import { WebGPUShaderProcessor } from "./webgpuShaderProcessor";
 
 /** @hidden */
@@ -22,10 +22,10 @@ export class WebGPUPipelineContext implements IPipelineContext {
     protected _leftOverUniformsByName: { [name: string]: string };
 
     public sources: {
-        vertex: string,
-        fragment: string,
-        rawVertex: string,
-        rawFragment: string,
+        vertex: string;
+        fragment: string;
+        rawVertex: string;
+        rawFragment: string;
     };
 
     public stages: Nullable<IWebGPURenderPipelineStageDescriptor>;
@@ -66,7 +66,16 @@ export class WebGPUPipelineContext implements IPipelineContext {
         // Nothing to do yet for spector.
     }
 
-    public _fillEffectInformation(effect: Effect, uniformBuffersNames: { [key: string]: number }, uniformsNames: string[], uniforms: { [key: string]: Nullable<WebGLUniformLocation> }, samplerList: string[], samplers: { [key: string]: number }, attributesNames: string[], attributes: number[]) {
+    public _fillEffectInformation(
+        effect: Effect,
+        uniformBuffersNames: { [key: string]: number },
+        uniformsNames: string[],
+        uniforms: { [key: string]: Nullable<WebGLUniformLocation> },
+        samplerList: string[],
+        samplers: { [key: string]: number },
+        attributesNames: string[],
+        attributes: number[]
+    ) {
         const engine = this.engine;
 
         // Prevent Memory Leak by reducing the number of string, refer to the string instead of copy.
@@ -84,21 +93,20 @@ export class WebGPUPipelineContext implements IPipelineContext {
             if (sampler == null || sampler == undefined) {
                 samplerList.splice(index, 1);
                 index--;
-            }
-            else {
+            } else {
                 samplers[name] = index;
             }
         }
 
-        for (let attr of engine.getAttributes(this, attributesNames)) {
+        for (const attr of engine.getAttributes(this, attributesNames)) {
             attributes.push(attr);
         }
 
         // Build the uniform layout for the left over uniforms.
         this.buildUniformLayout();
 
-        let attributeNamesFromEffect: string[] = [];
-        let attributeLocationsFromEffect: number[] = [];
+        const attributeNamesFromEffect: string[] = [];
+        const attributeLocationsFromEffect: number[] = [];
         for (index = 0; index < attributesNames.length; index++) {
             const location = attributes[index];
             if (location >= 0) {
@@ -121,7 +129,7 @@ export class WebGPUPipelineContext implements IPipelineContext {
 
         this.uniformBuffer = new UniformBuffer(this.engine, undefined, undefined, "leftOver-" + this._name);
 
-        for (let leftOverUniform of this.shaderProcessingContext.leftOverUniforms) {
+        for (const leftOverUniform of this.shaderProcessingContext.leftOverUniforms) {
             const type = leftOverUniform.type.replace(/^(.*?)(<.*>)?$/, "$1");
             const size = WebGPUShaderProcessor.UniformSizes[type];
             this.uniformBuffer.addUniform(leftOverUniform.name, size, leftOverUniform.length);

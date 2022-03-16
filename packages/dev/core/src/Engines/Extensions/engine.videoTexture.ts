@@ -1,6 +1,6 @@
 import { ThinEngine } from "../../Engines/thinEngine";
-import { InternalTexture } from '../../Materials/Textures/internalTexture';
-import { Nullable } from '../../types';
+import { InternalTexture } from "../../Materials/Textures/internalTexture";
+import { Nullable } from "../../types";
 
 declare module "../../Engines/thinEngine" {
     export interface ThinEngine {
@@ -19,7 +19,7 @@ ThinEngine.prototype.updateVideoTexture = function (texture: Nullable<InternalTe
         return;
     }
 
-    var wasPreviouslyBound = this._bindTextureDirectly(this._gl.TEXTURE_2D, texture, true);
+    const wasPreviouslyBound = this._bindTextureDirectly(this._gl.TEXTURE_2D, texture, true);
     this._unpackFlipY(!invertY); // Video are upside down by default
 
     try {
@@ -41,7 +41,7 @@ ThinEngine.prototype.updateVideoTexture = function (texture: Nullable<InternalTe
         if (!this._videoTextureSupported) {
             if (!texture._workingCanvas) {
                 texture._workingCanvas = this.createCanvas(texture.width, texture.height);
-                let context = texture._workingCanvas.getContext("2d");
+                const context = texture._workingCanvas.getContext("2d");
 
                 if (!context) {
                     throw new Error("Unable to get 2d context");
@@ -69,7 +69,6 @@ ThinEngine.prototype.updateVideoTexture = function (texture: Nullable<InternalTe
         }
         //    this.resetTextureCache();
         texture.isReady = true;
-
     } catch (ex) {
         // Something unexpected
         // Let's disable the texture

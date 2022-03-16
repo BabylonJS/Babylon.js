@@ -32,11 +32,20 @@ export class Buffer {
      * @param useBytes set to true if the stride in in bytes (optional)
      * @param divisor sets an optional divisor for instances (1 by default)
      */
-    constructor(engine: any, data: DataArray | DataBuffer, updatable: boolean, stride = 0, postponeInternalCreation = false, instanced = false, useBytes = false, divisor?: number) {
-        if (engine.getScene) { // old versions of VertexBuffer accepted 'mesh' instead of 'engine'
+    constructor(
+        engine: any,
+        data: DataArray | DataBuffer,
+        updatable: boolean,
+        stride = 0,
+        postponeInternalCreation = false,
+        instanced = false,
+        useBytes = false,
+        divisor?: number
+    ) {
+        if (engine.getScene) {
+            // old versions of VertexBuffer accepted 'mesh' instead of 'engine'
             this._engine = engine.getScene().getEngine();
-        }
-        else {
+        } else {
             this._engine = engine;
         }
 
@@ -54,7 +63,8 @@ export class Buffer {
 
         this.byteStride = useBytes ? stride : stride * Float32Array.BYTES_PER_ELEMENT;
 
-        if (!postponeInternalCreation) { // by default
+        if (!postponeInternalCreation) {
+            // by default
             this.create();
         }
     }
@@ -75,7 +85,21 @@ export class Buffer {
         const byteStride = stride ? (useBytes ? stride : stride * Float32Array.BYTES_PER_ELEMENT) : this.byteStride;
 
         // a lot of these parameters are ignored as they are overridden by the buffer
-        return new VertexBuffer(this._engine, this, kind, this._updatable, true, byteStride, instanced === undefined ? this._instanced : instanced, byteOffset, size, undefined, undefined, true, this._divisor || divisor);
+        return new VertexBuffer(
+            this._engine,
+            this,
+            kind,
+            this._updatable,
+            true,
+            byteStride,
+            instanced === undefined ? this._instanced : instanced,
+            byteOffset,
+            size,
+            undefined,
+            undefined,
+            true,
+            this._divisor || divisor
+        );
     }
 
     // Properties
@@ -132,14 +156,16 @@ export class Buffer {
             return;
         }
 
-        if (!this._buffer) { // create buffer
+        if (!this._buffer) {
+            // create buffer
             if (this._updatable) {
                 this._buffer = this._engine.createDynamicVertexBuffer(data);
                 this._data = data;
             } else {
                 this._buffer = this._engine.createVertexBuffer(data);
             }
-        } else if (this._updatable) { // update buffer
+        } else if (this._updatable) {
+            // update buffer
             this._engine.updateDynamicVertexBuffer(this._buffer, data);
             this._data = data;
         }
@@ -171,13 +197,18 @@ export class Buffer {
             return;
         }
 
-        if (this._updatable) { // update buffer
-            this._engine.updateDynamicVertexBuffer(this._buffer, data, useBytes ? offset : offset * Float32Array.BYTES_PER_ELEMENT, (vertexCount ? vertexCount * this.byteStride : undefined));
+        if (this._updatable) {
+            // update buffer
+            this._engine.updateDynamicVertexBuffer(
+                this._buffer,
+                data,
+                useBytes ? offset : offset * Float32Array.BYTES_PER_ELEMENT,
+                vertexCount ? vertexCount * this.byteStride : undefined
+            );
             if (offset === 0 && vertexCount === undefined) {
                 // Keep the data if we easily can
                 this._data = data;
-            }
-            else {
+            } else {
                 this._data = null;
             }
         }
@@ -212,10 +243,9 @@ export class Buffer {
 }
 
 /**
-     * Specialized buffer used to store vertex data
-     */
+ * Specialized buffer used to store vertex data
+ */
 export class VertexBuffer {
-
     private static _Counter = 0;
 
     /** @hidden */
@@ -328,12 +358,25 @@ export class VertexBuffer {
      * @param divisor defines the instance divisor to use (1 by default)
      * @param takeBufferOwnership defines if the buffer should be released when the vertex buffer is disposed
      */
-    constructor(engine: any, data: DataArray | Buffer | DataBuffer, kind: string, updatable: boolean, postponeInternalCreation?: boolean, stride?: number,
-        instanced?: boolean, offset?: number, size?: number, type?: number, normalized = false, useBytes = false, divisor = 1, takeBufferOwnership = false) {
+    constructor(
+        engine: any,
+        data: DataArray | Buffer | DataBuffer,
+        kind: string,
+        updatable: boolean,
+        postponeInternalCreation?: boolean,
+        stride?: number,
+        instanced?: boolean,
+        offset?: number,
+        size?: number,
+        type?: number,
+        normalized = false,
+        useBytes = false,
+        divisor = 1,
+        takeBufferOwnership = false
+    ) {
         if (data instanceof Buffer) {
             this._buffer = data;
             this._ownsBuffer = takeBufferOwnership;
-
         } else {
             this._buffer = new Buffer(engine, data, updatable, stride, postponeInternalCreation, instanced, useBytes);
             this._ownsBuffer = true;
@@ -345,27 +388,32 @@ export class VertexBuffer {
         if (type == undefined) {
             const data = this.getData();
             this.type = VertexBuffer.FLOAT;
-            if (data instanceof Int8Array) { this.type = VertexBuffer.BYTE; }
-            else if (data instanceof Uint8Array) { this.type = VertexBuffer.UNSIGNED_BYTE; }
-            else if (data instanceof Int16Array) { this.type = VertexBuffer.SHORT; }
-            else if (data instanceof Uint16Array) { this.type = VertexBuffer.UNSIGNED_SHORT; }
-            else if (data instanceof Int32Array) { this.type = VertexBuffer.INT; }
-            else if (data instanceof Uint32Array) { this.type = VertexBuffer.UNSIGNED_INT; }
-        }
-        else {
+            if (data instanceof Int8Array) {
+                this.type = VertexBuffer.BYTE;
+            } else if (data instanceof Uint8Array) {
+                this.type = VertexBuffer.UNSIGNED_BYTE;
+            } else if (data instanceof Int16Array) {
+                this.type = VertexBuffer.SHORT;
+            } else if (data instanceof Uint16Array) {
+                this.type = VertexBuffer.UNSIGNED_SHORT;
+            } else if (data instanceof Int32Array) {
+                this.type = VertexBuffer.INT;
+            } else if (data instanceof Uint32Array) {
+                this.type = VertexBuffer.UNSIGNED_INT;
+            }
+        } else {
             this.type = type;
         }
 
         const typeByteLength = VertexBuffer.GetTypeByteLength(this.type);
 
         if (useBytes) {
-            this._size = size || (stride ? (stride / typeByteLength) : VertexBuffer.DeduceStride(kind));
-            this.byteStride = stride || this._buffer.byteStride || (this._size * typeByteLength);
+            this._size = size || (stride ? stride / typeByteLength : VertexBuffer.DeduceStride(kind));
+            this.byteStride = stride || this._buffer.byteStride || this._size * typeByteLength;
             this.byteOffset = offset || 0;
-        }
-        else {
+        } else {
             this._size = size || stride || VertexBuffer.DeduceStride(kind);
-            this.byteStride = stride ? (stride * typeByteLength) : (this._buffer.byteStride || (this._size * typeByteLength));
+            this.byteStride = stride ? stride * typeByteLength : this._buffer.byteStride || this._size * typeByteLength;
             this.byteOffset = (offset || 0) * typeByteLength;
         }
 
@@ -380,12 +428,12 @@ export class VertexBuffer {
     private _computeHashCode(): void {
         // note: cast to any because the property is declared readonly
         (this.hashCode as any) =
-            (((this.type - 5120) << 0) +
-                ((this.normalized ? 1 : 0) << 3) +
-                (this._size << 4) +
-                ((this._instanced ? 1 : 0) << 6) +
-                /* keep 5 bits free */
-                (this.byteStride << 12));
+            ((this.type - 5120) << 0) +
+            ((this.normalized ? 1 : 0) << 3) +
+            (this._size << 4) +
+            ((this._instanced ? 1 : 0) << 6) +
+            /* keep 5 bits free */
+            (this.byteStride << 12);
     }
 
     /** @hidden */
@@ -430,7 +478,7 @@ export class VertexBuffer {
      * @returns a float array containing vertex data
      */
     public getFloatData(totalVertices: number, forceCopy?: boolean): Nullable<FloatArray> {
-        let data = this.getData();
+        const data = this.getData();
         if (!data) {
             return null;
         }
@@ -440,7 +488,7 @@ export class VertexBuffer {
 
         if (this.type !== VertexBuffer.FLOAT || this.byteStride !== tightlyPackedByteStride) {
             const copy = new Float32Array(count);
-            this.forEach(count, (value, index) => copy[index] = value);
+            this.forEach(count, (value, index) => (copy[index] = value));
             return copy;
         }
 
@@ -453,8 +501,8 @@ export class VertexBuffer {
             } else {
                 let offset = data.byteOffset + this.byteOffset;
                 if (forceCopy) {
-                    let result = new Float32Array(count);
-                    let source = new Float32Array(data.buffer, offset, count);
+                    const result = new Float32Array(count);
+                    const source = new Float32Array(data.buffer, offset, count);
 
                     result.set(source);
 
@@ -462,7 +510,7 @@ export class VertexBuffer {
                 }
 
                 // Protect against bad data
-                let remainder = offset % 4;
+                const remainder = offset % 4;
 
                 if (remainder) {
                     offset = Math.max(0, offset - remainder);
@@ -623,7 +671,7 @@ export class VertexBuffer {
     /**
      * Instance Colors
      */
-     public static readonly ColorInstanceKind = "instanceColor";
+    public static readonly ColorInstanceKind = "instanceColor";
     /**
      * Matrix indices (for bones)
      */
@@ -703,7 +751,16 @@ export class VertexBuffer {
      * @param normalized whether the data is normalized
      * @param callback the callback function called for each value
      */
-    public static ForEach(data: DataArray, byteOffset: number, byteStride: number, componentCount: number, componentType: number, count: number, normalized: boolean, callback: (value: number, index: number) => void): void {
+    public static ForEach(
+        data: DataArray,
+        byteOffset: number,
+        byteStride: number,
+        componentCount: number,
+        componentType: number,
+        count: number,
+        normalized: boolean,
+        callback: (value: number, index: number) => void
+    ): void {
         if (data instanceof Array) {
             let offset = byteOffset / 4;
             const stride = byteStride / 4;
@@ -713,8 +770,7 @@ export class VertexBuffer {
                 }
                 offset += stride;
             }
-        }
-        else {
+        } else {
             const dataView = data instanceof ArrayBuffer ? new DataView(data) : new DataView(data.buffer, data.byteOffset, data.byteLength);
             const componentByteLength = VertexBuffer.GetTypeByteLength(componentType);
             for (let index = 0; index < count; index += componentCount) {

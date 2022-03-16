@@ -2,7 +2,7 @@ import { Logger } from "../Misc/logger";
 import { Observable, Observer } from "../Misc/observable";
 import { Nullable } from "../types";
 import { Vector3 } from "../Maths/math.vector";
-import { Color3 } from '../Maths/math.color';
+import { Color3 } from "../Maths/math.color";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { CreatePolyhedron } from "../Meshes/Builders/polyhedronBuilder";
 import { Gizmo, GizmoAxisCache } from "./gizmo";
@@ -12,7 +12,7 @@ import { Mesh } from "../Meshes/mesh";
 import { Node } from "../node";
 import { PointerInfo } from "../Events/pointerEvents";
 import { StandardMaterial } from "../Materials/standardMaterial";
-import { GizmoManager } from './gizmoManager';
+import { GizmoManager } from "./gizmoManager";
 /**
  * Gizmo that enables scaling a mesh along 3 axis
  */
@@ -63,8 +63,7 @@ export class ScaleGizmo extends Gizmo {
         [this.xGizmo, this.yGizmo, this.zGizmo, this.uniformScaleGizmo].forEach((gizmo) => {
             if (gizmo.isEnabled) {
                 gizmo.attachedMesh = mesh;
-            }
-            else {
+            } else {
                 gizmo.attachedMesh = null;
             }
         });
@@ -79,8 +78,7 @@ export class ScaleGizmo extends Gizmo {
         [this.xGizmo, this.yGizmo, this.zGizmo, this.uniformScaleGizmo].forEach((gizmo) => {
             if (gizmo.isEnabled) {
                 gizmo.attachedNode = node;
-            }
-            else {
+            } else {
                 gizmo.attachedNode = null;
             }
         });
@@ -90,7 +88,7 @@ export class ScaleGizmo extends Gizmo {
      * True when the mouse pointer is hovering a gizmo mesh
      */
     public get isHovered() {
-        var hovered = false;
+        let hovered = false;
         [this.xGizmo, this.yGizmo, this.zGizmo].forEach((gizmo) => {
             hovered = hovered || gizmo.isHovered;
         });
@@ -101,6 +99,7 @@ export class ScaleGizmo extends Gizmo {
      * Creates a ScaleGizmo
      * @param gizmoLayer The utility layer the gizmo will be added to
      * @param thickness display gizmo axis thickness
+     * @param gizmoManager
      */
     constructor(gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer, thickness: number = 1, gizmoManager?: GizmoManager) {
         super(gizmoLayer);
@@ -152,7 +151,7 @@ export class ScaleGizmo extends Gizmo {
         this._octahedron.scaling.scaleInPlace(0.007);
         this._uniformScalingMesh.addChild(this._octahedron);
         uniformScaleGizmo.setCustomMesh(this._uniformScalingMesh, true);
-        var light = this.gizmoLayer._getSharedGizmoLight();
+        const light = this.gizmoLayer._getSharedGizmoLight();
         light.includedOnlyMeshes = light.includedOnlyMeshes.concat(this._octahedron);
 
         const cache: GizmoAxisCache = {
@@ -162,7 +161,7 @@ export class ScaleGizmo extends Gizmo {
             hoverMaterial: this._hoverMaterial,
             disableMaterial: this._disableMaterial,
             active: false,
-            dragBehavior: uniformScaleGizmo.dragBehavior
+            dragBehavior: uniformScaleGizmo.dragBehavior,
         };
 
         this.addToAxisCache(uniformScaleGizmo._rootMesh, cache);
@@ -173,8 +172,7 @@ export class ScaleGizmo extends Gizmo {
     public set updateGizmoRotationToMatchAttachedMesh(value: boolean) {
         if (!value) {
             Logger.Warn("Setting updateGizmoRotationToMatchAttachedMesh = false on scaling gizmo is not supported.");
-        }
-        else {
+        } else {
             this._updateGizmoRotationToMatchAttachedMesh = value;
             [this.xGizmo, this.yGizmo, this.zGizmo, this.uniformScaleGizmo].forEach((gizmo) => {
                 if (gizmo) {

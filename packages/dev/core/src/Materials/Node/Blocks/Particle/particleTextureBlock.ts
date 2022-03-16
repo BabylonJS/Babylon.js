@@ -1,16 +1,16 @@
-import { NodeMaterialBlock } from '../../nodeMaterialBlock';
-import { NodeMaterialBlockConnectionPointTypes } from '../../Enums/nodeMaterialBlockConnectionPointTypes';
-import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
-import { NodeMaterialBlockTargets } from '../../Enums/nodeMaterialBlockTargets';
-import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPoint';
-import { AbstractMesh } from '../../../../Meshes/abstractMesh';
-import { NodeMaterialDefines } from '../../nodeMaterial';
-import { InputBlock } from '../Input/inputBlock';
-import { BaseTexture } from '../../../Textures/baseTexture';
-import { Nullable } from '../../../../types';
-import { RegisterClass } from '../../../../Misc/typeStore';
-import { Texture } from '../../../Textures/texture';
-import { Scene } from '../../../../scene';
+import { NodeMaterialBlock } from "../../nodeMaterialBlock";
+import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
+import { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
+import { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
+import { AbstractMesh } from "../../../../Meshes/abstractMesh";
+import { NodeMaterialDefines } from "../../nodeMaterial";
+import { InputBlock } from "../Input/inputBlock";
+import { BaseTexture } from "../../../Textures/baseTexture";
+import { Nullable } from "../../../../types";
+import { RegisterClass } from "../../../../Misc/typeStore";
+import { Texture } from "../../../Textures/texture";
+import { Scene } from "../../../../scene";
 
 declare type NodeMaterial = import("../../nodeMaterial").NodeMaterial;
 
@@ -18,7 +18,6 @@ declare type NodeMaterial = import("../../nodeMaterial").NodeMaterial;
  * Base block used for the particle texture
  */
 export class ParticleTextureBlock extends NodeMaterialBlock {
-
     private _samplerName = "diffuseSampler";
     private _linearDefineName: string;
     private _gammaDefineName: string;
@@ -181,12 +180,12 @@ export class ParticleTextureBlock extends NodeMaterialBlock {
         this._linearDefineName = state._getFreeDefineName("ISLINEAR");
         this._gammaDefineName = state._getFreeDefineName("ISGAMMA");
 
-        let comments = `//${this.name}`;
+        const comments = `//${this.name}`;
         state._emitFunctionFromInclude("helperFunctions", comments);
 
         state.compilationString += `vec4 ${this._tempTextureRead} = texture2D(${this._samplerName}, ${this.uv.associatedVariableName});\r\n`;
 
-        for (var output of this._outputs) {
+        for (const output of this._outputs) {
             if (output.hasEndpoints) {
                 this._writeOutput(state, output, output.name);
             }
@@ -196,7 +195,7 @@ export class ParticleTextureBlock extends NodeMaterialBlock {
     }
 
     public serialize(): any {
-        let serializationObject = super.serialize();
+        const serializationObject = super.serialize();
 
         serializationObject.convertToGammaSpace = this.convertToGammaSpace;
         serializationObject.convertToLinearSpace = this.convertToLinearSpace;

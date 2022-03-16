@@ -3,8 +3,8 @@ import { Nullable } from "../types";
 import { Camera } from "./camera";
 import { Scene } from "../scene";
 import { Quaternion, Matrix, Vector3, Vector2, TmpVectors } from "../Maths/math.vector";
-import { Epsilon } from '../Maths/math.constants';
-import { Axis } from '../Maths/math.axis';
+import { Epsilon } from "../Maths/math.constants";
+import { Axis } from "../Maths/math.axis";
 /**
  * A target camera takes a mesh or position as a target and continues to look at it while it moves.
  * This is the base of the follow, arc rotate cameras and Free camera
@@ -120,7 +120,7 @@ export class TargetCamera extends Camera {
      */
     public getFrontPosition(distance: number): Vector3 {
         this.getWorldMatrix();
-        var direction = this.getTarget().subtract(this.position);
+        const direction = this.getTarget().subtract(this.position);
         direction.normalize();
         direction.scaleInPlace(distance);
         return this.globalPosition.add(direction);
@@ -188,21 +188,22 @@ export class TargetCamera extends Camera {
         this._cache.rotationQuaternion = new Quaternion(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
     }
 
-    /** @hidden */
+    /**
+     * @param ignoreParentClass
+     * @hidden
+     */
     public _updateCache(ignoreParentClass?: boolean): void {
         if (!ignoreParentClass) {
             super._updateCache();
         }
 
-        var lockedTargetPosition = this._getLockedTargetPosition();
+        const lockedTargetPosition = this._getLockedTargetPosition();
         if (!lockedTargetPosition) {
             this._cache.lockedTarget = null;
-        }
-        else {
+        } else {
             if (!this._cache.lockedTarget) {
                 this._cache.lockedTarget = lockedTargetPosition.clone();
-            }
-            else {
+            } else {
                 this._cache.lockedTarget.copyFrom(lockedTargetPosition);
             }
         }
@@ -220,17 +221,19 @@ export class TargetCamera extends Camera {
             return false;
         }
 
-        var lockedTargetPosition = this._getLockedTargetPosition();
+        const lockedTargetPosition = this._getLockedTargetPosition();
 
-        return (this._cache.lockedTarget ? this._cache.lockedTarget.equals(lockedTargetPosition) : !lockedTargetPosition)
-            && (this.rotationQuaternion ? this.rotationQuaternion.equals(this._cache.rotationQuaternion) : this._cache.rotation.equals(this.rotation));
+        return (
+            (this._cache.lockedTarget ? this._cache.lockedTarget.equals(lockedTargetPosition) : !lockedTargetPosition) &&
+            (this.rotationQuaternion ? this.rotationQuaternion.equals(this._cache.rotationQuaternion) : this._cache.rotation.equals(this.rotation))
+        );
     }
 
     // Methods
     /** @hidden */
     public _computeLocalCameraSpeed(): number {
-        var engine = this.getEngine();
-        return this.speed * Math.sqrt((engine.getDeltaTime() / (engine.getFps() * 100.0)));
+        const engine = this.getEngine();
+        return this.speed * Math.sqrt(engine.getDeltaTime() / (engine.getFps() * 100.0));
     }
 
     // Target
@@ -255,12 +258,12 @@ export class TargetCamera extends Camera {
 
         this.rotation.x = Math.atan(this._camMatrix.m[6] / this._camMatrix.m[10]);
 
-        var vDir = target.subtract(this.position);
+        const vDir = target.subtract(this.position);
 
         if (vDir.x >= 0.0) {
-            this.rotation.y = (-Math.atan(vDir.z / vDir.x) + Math.PI / 2.0);
+            this.rotation.y = -Math.atan(vDir.z / vDir.x) + Math.PI / 2.0;
         } else {
-            this.rotation.y = (-Math.atan(vDir.z / vDir.x) - Math.PI / 2.0);
+            this.rotation.y = -Math.atan(vDir.z / vDir.x) - Math.PI / 2.0;
         }
 
         this.rotation.z = 0;
@@ -319,9 +322,9 @@ export class TargetCamera extends Camera {
 
     /** @hidden */
     public _checkInputs(): void {
-        var directionMultiplier = this.invertRotation ? -this.inverseRotationSpeed : 1.0;
-        var needToMove = this._decideIfNeedsToMove();
-        var needToRotate = Math.abs(this.cameraRotation.x) > 0 || Math.abs(this.cameraRotation.y) > 0;
+        const directionMultiplier = this.invertRotation ? -this.inverseRotationSpeed : 1.0;
+        const needToMove = this._decideIfNeedsToMove();
+        const needToRotate = Math.abs(this.cameraRotation.x) > 0 || Math.abs(this.cameraRotation.y) > 0;
 
         // Move
         if (needToMove) {
@@ -340,7 +343,7 @@ export class TargetCamera extends Camera {
 
             // Apply constraints
             if (!this.noRotationConstraint) {
-                var limit = 1.570796;
+                const limit = 1.570796;
 
                 if (this.rotation.x > limit) {
                     this.rotation.x = limit;
@@ -352,7 +355,7 @@ export class TargetCamera extends Camera {
 
             //rotate, if quaternion is set and rotation was used
             if (this.rotationQuaternion) {
-                var len = this.rotation.lengthSquared();
+                const len = this.rotation.lengthSquared();
                 if (len) {
                     Quaternion.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, this.rotation.z, this.rotationQuaternion);
                 }
@@ -483,11 +486,13 @@ export class TargetCamera extends Camera {
     }
 
     /**
+     * @param name
+     * @param cameraIndex
      * @hidden
      */
     public createRigCamera(name: string, cameraIndex: number): Nullable<Camera> {
         if (this.cameraRigMode !== Camera.RIG_MODE_NONE) {
-            var rigCamera = new TargetCamera(name, this.position.clone(), this.getScene());
+            const rigCamera = new TargetCamera(name, this.position.clone(), this.getScene());
             rigCamera.isRigCamera = true;
             rigCamera.rigParent = this;
             if (this.cameraRigMode === Camera.RIG_MODE_VR || this.cameraRigMode === Camera.RIG_MODE_WEBVR) {
@@ -506,8 +511,8 @@ export class TargetCamera extends Camera {
      * @hidden
      */
     public _updateRigCameras() {
-        var camLeft = <TargetCamera>this._rigCameras[0];
-        var camRight = <TargetCamera>this._rigCameras[1];
+        const camLeft = <TargetCamera>this._rigCameras[0];
+        const camRight = <TargetCamera>this._rigCameras[1];
 
         this.computeWorldMatrix();
 
@@ -518,8 +523,8 @@ export class TargetCamera extends Camera {
             case Camera.RIG_MODE_STEREOSCOPIC_OVERUNDER:
             case Camera.RIG_MODE_STEREOSCOPIC_INTERLACED:
                 //provisionnaly using _cameraRigParams.stereoHalfAngle instead of calculations based on _cameraRigParams.interaxialDistance:
-                var leftSign = (this.cameraRigMode === Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED) ? 1 : -1;
-                var rightSign = (this.cameraRigMode === Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED) ? -1 : 1;
+                var leftSign = this.cameraRigMode === Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED ? 1 : -1;
+                var rightSign = this.cameraRigMode === Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED ? -1 : 1;
                 this._getRigCamPositionAndTarget(this._cameraRigParams.stereoHalfAngle * leftSign, camLeft);
                 this._getRigCamPositionAndTarget(this._cameraRigParams.stereoHalfAngle * rightSign, camRight);
                 break;
@@ -541,11 +546,11 @@ export class TargetCamera extends Camera {
     }
 
     private _getRigCamPositionAndTarget(halfSpace: number, rigCamera: TargetCamera) {
-        var target = this.getTarget();
+        const target = this.getTarget();
         target.subtractToRef(this.position, TargetCamera._TargetFocalPoint);
 
         TargetCamera._TargetFocalPoint.normalize().scaleInPlace(this._initialFocalDistance);
-        var newFocalTarget = TargetCamera._TargetFocalPoint.addInPlace(this.position);
+        const newFocalTarget = TargetCamera._TargetFocalPoint.addInPlace(this.position);
 
         Matrix.TranslationToRef(-newFocalTarget.x, -newFocalTarget.y, -newFocalTarget.z, TargetCamera._TargetTransformMatrix);
         TargetCamera._TargetTransformMatrix.multiplyToRef(Matrix.RotationAxis(rigCamera.upVector, halfSpace), TargetCamera._RigCamTransformMatrix);

@@ -117,7 +117,7 @@ export class DirectionalLightFrustumViewer {
      */
     public show() {
         this._lightHelperFrustumMeshes.forEach((mesh, index) => {
-            mesh.setEnabled(index < 6 && this._showLines || index >= 6 && this._showPlanes);
+            mesh.setEnabled((index < 6 && this._showLines) || (index >= 6 && this._showPlanes));
         });
         this._oldPosition.set(Number.NaN, Number.NaN, Number.NaN);
         this._visible = true;
@@ -142,11 +142,12 @@ export class DirectionalLightFrustumViewer {
             return;
         }
 
-        if (this._oldPosition.equals(this._light.position)
-            && this._oldDirection.equals(this._light.direction)
-            && this._oldAutoCalc === this._light.autoCalcShadowZBounds
-            && this._oldMinZ === this._light.shadowMinZ
-            && this._oldMaxZ === this._light.shadowMaxZ
+        if (
+            this._oldPosition.equals(this._light.position) &&
+            this._oldDirection.equals(this._light.direction) &&
+            this._oldAutoCalc === this._light.autoCalcShadowZBounds &&
+            this._oldMinZ === this._light.shadowMinZ &&
+            this._oldMaxZ === this._light.shadowMaxZ
         ) {
             return;
         }

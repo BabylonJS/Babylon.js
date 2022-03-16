@@ -14,8 +14,7 @@ export class DataStorage {
             localStorage.setItem("test", "");
             localStorage.removeItem("test");
             return localStorage;
-        }
-        catch {
+        } catch {
             const inMemoryStorage: { [key: string]: string } = {};
             return {
                 getItem: (key) => {
@@ -24,7 +23,7 @@ export class DataStorage {
                 },
                 setItem: (key, value) => {
                     inMemoryStorage[key] = value;
-                }
+                },
             };
         }
     }
@@ -37,7 +36,7 @@ export class DataStorage {
      */
     public static ReadString(key: string, defaultValue: string): string {
         const value = this._Storage.getItem(key);
-        return (value !== null ? value : defaultValue);
+        return value !== null ? value : defaultValue;
     }
 
     /**
@@ -57,7 +56,7 @@ export class DataStorage {
      */
     public static ReadBoolean(key: string, defaultValue: boolean): boolean {
         const value = this._Storage.getItem(key);
-        return (value !== null ? (value === "true") : defaultValue);
+        return value !== null ? value === "true" : defaultValue;
     }
 
     /**
@@ -77,7 +76,7 @@ export class DataStorage {
      */
     public static ReadNumber(key: string, defaultValue: number): number {
         const value = this._Storage.getItem(key);
-        return (value !== null ? parseFloat(value) : defaultValue);
+        return value !== null ? parseFloat(value) : defaultValue;
     }
 
     /**

@@ -364,7 +364,10 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
         return Promise.resolve(this.session.updateRenderState(state));
     }
 
-    /** @hidden */
+    /**
+     * @param baseLayerWrapper
+     * @hidden
+     */
     public _setBaseLayerWrapper(baseLayerWrapper: Nullable<WebXRLayerWrapper>): void {
         if (this.isNative) {
             this._baseLayerRTTProvider?.dispose();
@@ -379,10 +382,7 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
      */
     public updateRenderState(state: XRRenderStateInit): void {
         if (state.baseLayer) {
-            this._setBaseLayerWrapper(
-                this.isNative
-                    ? new NativeXRLayerWrapper(state.baseLayer)
-                    : new WebXRWebGLLayerWrapper(state.baseLayer));
+            this._setBaseLayerWrapper(this.isNative ? new NativeXRLayerWrapper(state.baseLayer) : new WebXRWebGLLayerWrapper(state.baseLayer));
         }
 
         this.session.updateRenderState(state);

@@ -169,7 +169,7 @@ export class InputManager {
     }
 
     private _updatePointerPosition(evt: IPointerEvent): void {
-        var canvasRect = this._scene.getEngine().getInputElementClientRect();
+        const canvasRect = this._scene.getEngine().getInputElementClientRect();
 
         if (!canvasRect) {
             return;
@@ -196,7 +196,7 @@ export class InputManager {
             }
         }
 
-        var isMeshPicked = pickResult && pickResult.hit && pickResult.pickedMesh ? true : false;
+        const isMeshPicked = pickResult && pickResult.hit && pickResult.pickedMesh ? true : false;
         if (isMeshPicked) {
             scene.setPointerOverMesh(pickResult!.pickedMesh, evt.pointerId, pickResult);
 
@@ -213,19 +213,19 @@ export class InputManager {
             scene.setPointerOverMesh(null, evt.pointerId, pickResult);
         }
 
-        for (let step of scene._pointerMoveStage) {
+        for (const step of scene._pointerMoveStage) {
             pickResult = step.action(this._unTranslatedPointerX, this._unTranslatedPointerY, pickResult, isMeshPicked, canvas);
         }
 
         if (pickResult) {
-            let type = evt.type === "wheel" || evt.type === "mousewheel" || evt.type === "DOMMouseScroll" ? PointerEventTypes.POINTERWHEEL : PointerEventTypes.POINTERMOVE;
+            const type = evt.type === "wheel" || evt.type === "mousewheel" || evt.type === "DOMMouseScroll" ? PointerEventTypes.POINTERWHEEL : PointerEventTypes.POINTERMOVE;
 
             if (scene.onPointerMove) {
                 scene.onPointerMove(evt, pickResult, type);
             }
 
             if (scene.onPointerObservable.hasObservers()) {
-                let pi = new PointerInfo(type, evt, pickResult);
+                const pi = new PointerInfo(type, evt, pickResult);
                 this._setRayOnPointerInfo(pi);
                 scene.onPointerObservable.notifyObservers(pi, type);
             }
@@ -234,7 +234,7 @@ export class InputManager {
 
     // Pointers handling
     private _setRayOnPointerInfo(pointerInfo: PointerInfo) {
-        let scene = this._scene;
+        const scene = this._scene;
         if (pointerInfo.pickInfo && !pointerInfo.pickInfo._pickingUnavailable) {
             if (!pointerInfo.pickInfo.ray) {
                 pointerInfo.pickInfo.ray = scene.createPickingRay(pointerInfo.event.offsetX, pointerInfo.event.offsetY, Matrix.Identity(), scene.activeCamera);
@@ -243,8 +243,8 @@ export class InputManager {
     }
 
     private _checkPrePointerObservable(pickResult: Nullable<PickingInfo>, evt: IPointerEvent, type: number) {
-        let scene = this._scene;
-        let pi = new PointerInfoPre(type, evt, this._unTranslatedPointerX, this._unTranslatedPointerY);
+        const scene = this._scene;
+        const pi = new PointerInfoPre(type, evt, this._unTranslatedPointerX, this._unTranslatedPointerY);
         if (pickResult) {
             pi.ray = pickResult.ray;
             if (pickResult.originMesh) {
@@ -294,10 +294,10 @@ export class InputManager {
     }
 
     private _processPointerDown(pickResult: Nullable<PickingInfo>, evt: IPointerEvent): void {
-        let scene = this._scene;
+        const scene = this._scene;
         if (pickResult && pickResult.hit && pickResult.pickedMesh) {
             this._pickedDownMesh = pickResult.pickedMesh;
-            var actionManager = pickResult.pickedMesh._getActionManagerForTrigger();
+            const actionManager = pickResult.pickedMesh._getActionManagerForTrigger();
             if (actionManager) {
                 if (actionManager.hasPickTriggers) {
                     actionManager.processTrigger(Constants.ACTION_OnPickDownTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
@@ -316,7 +316,7 @@ export class InputManager {
 
                 if (actionManager.hasSpecificTrigger(Constants.ACTION_OnLongPressTrigger)) {
                     window.setTimeout(() => {
-                        var pickResult = scene.pick(
+                        const pickResult = scene.pick(
                             this._unTranslatedPointerX,
                             this._unTranslatedPointerY,
                             (mesh: AbstractMesh): boolean =>
@@ -342,20 +342,20 @@ export class InputManager {
                 }
             }
         } else {
-            for (let step of scene._pointerDownStage) {
+            for (const step of scene._pointerDownStage) {
                 pickResult = step.action(this._unTranslatedPointerX, this._unTranslatedPointerY, pickResult, evt);
             }
         }
 
         if (pickResult) {
-            let type = PointerEventTypes.POINTERDOWN;
+            const type = PointerEventTypes.POINTERDOWN;
 
             if (scene.onPointerDown) {
                 scene.onPointerDown(evt, pickResult, type);
             }
 
             if (scene.onPointerObservable.hasObservers()) {
-                let pi = new PointerInfo(type, evt, pickResult);
+                const pi = new PointerInfo(type, evt, pickResult);
                 this._setRayOnPointerInfo(pi);
                 scene.onPointerObservable.notifyObservers(pi, type);
             }
@@ -378,9 +378,9 @@ export class InputManager {
      * @param doubleTap indicates that the pointer up event should be considered as part of a double click (false by default)
      */
     public simulatePointerUp(pickResult: PickingInfo, pointerEventInit?: PointerEventInit, doubleTap?: boolean): void {
-        let evt = new PointerEvent("pointerup", pointerEventInit);
+        const evt = new PointerEvent("pointerup", pointerEventInit);
         evt.inputIndex = PointerInput.Move;
-        let clickInfo = new _ClickInfo();
+        const clickInfo = new _ClickInfo();
 
         if (doubleTap) {
             clickInfo.doubleClick = true;
@@ -396,7 +396,7 @@ export class InputManager {
     }
 
     private _processPointerUp(pickResult: Nullable<PickingInfo>, evt: IPointerEvent, clickInfo: _ClickInfo): void {
-        let scene = this._scene;
+        const scene = this._scene;
         if (pickResult && pickResult && pickResult.pickedMesh) {
             this._pickedUpMesh = pickResult.pickedMesh;
             if (this._pickedDownMesh === this._pickedUpMesh) {
@@ -404,13 +404,13 @@ export class InputManager {
                     scene.onPointerPick(evt, pickResult);
                 }
                 if (clickInfo.singleClick && !clickInfo.ignore && scene.onPointerObservable.hasObservers()) {
-                    let type = PointerEventTypes.POINTERPICK;
-                    let pi = new PointerInfo(type, evt, pickResult);
+                    const type = PointerEventTypes.POINTERPICK;
+                    const pi = new PointerInfo(type, evt, pickResult);
                     this._setRayOnPointerInfo(pi);
                     scene.onPointerObservable.notifyObservers(pi, type);
                 }
             }
-            let actionManager = pickResult.pickedMesh._getActionManagerForTrigger();
+            const actionManager = pickResult.pickedMesh._getActionManagerForTrigger();
             if (actionManager && !clickInfo.ignore) {
                 actionManager.processTrigger(Constants.ACTION_OnPickUpTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt, pickResult));
 
@@ -418,21 +418,21 @@ export class InputManager {
                     actionManager.processTrigger(Constants.ACTION_OnPickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt, pickResult));
                 }
 
-                let doubleClickActionManager = pickResult.pickedMesh._getActionManagerForTrigger(Constants.ACTION_OnDoublePickTrigger);
+                const doubleClickActionManager = pickResult.pickedMesh._getActionManagerForTrigger(Constants.ACTION_OnDoublePickTrigger);
                 if (clickInfo.doubleClick && doubleClickActionManager) {
                     doubleClickActionManager.processTrigger(Constants.ACTION_OnDoublePickTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt, pickResult));
                 }
             }
         } else {
             if (!clickInfo.ignore) {
-                for (let step of scene._pointerUpStage) {
+                for (const step of scene._pointerUpStage) {
                     pickResult = step.action(this._unTranslatedPointerX, this._unTranslatedPointerY, pickResult, evt);
                 }
             }
         }
 
         if (this._pickedDownMesh && this._pickedDownMesh !== this._pickedUpMesh) {
-            let pickedDownActionManager = this._pickedDownMesh._getActionManagerForTrigger(Constants.ACTION_OnPickOutTrigger);
+            const pickedDownActionManager = this._pickedDownMesh._getActionManagerForTrigger(Constants.ACTION_OnPickOutTrigger);
             if (pickedDownActionManager) {
                 pickedDownActionManager.processTrigger(Constants.ACTION_OnPickOutTrigger, ActionEvent.CreateNew(this._pickedDownMesh, evt));
             }
@@ -447,7 +447,7 @@ export class InputManager {
                     type = PointerEventTypes.POINTERDOUBLETAP;
                 }
                 if (type) {
-                    let pi = new PointerInfo(type, evt, pickResult);
+                    const pi = new PointerInfo(type, evt, pickResult);
                     this._setRayOnPointerInfo(pi);
                     scene.onPointerObservable.notifyObservers(pi, type);
                 }
@@ -456,7 +456,7 @@ export class InputManager {
             if (!clickInfo.ignore) {
                 type = PointerEventTypes.POINTERUP;
 
-                let pi = new PointerInfo(type, evt, pickResult);
+                const pi = new PointerInfo(type, evt, pickResult);
                 this._setRayOnPointerInfo(pi);
                 scene.onPointerObservable.notifyObservers(pi, type);
             }
@@ -495,12 +495,14 @@ export class InputManager {
             this.detachControl();
         }
 
-        if (elementToAttachTo) { this._alreadyAttachedTo = elementToAttachTo; }
+        if (elementToAttachTo) {
+            this._alreadyAttachedTo = elementToAttachTo;
+        }
         this._deviceSourceManager = new DeviceSourceManager(engine);
 
         this._initActionManager = (act: Nullable<AbstractActionManager>, clickInfo: _ClickInfo): Nullable<AbstractActionManager> => {
             if (!this._meshPickProceed) {
-                let pickResult = scene.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, scene.pointerDownPredicate, false, scene.cameraToUseForPointers);
+                const pickResult = scene.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, scene.pointerDownPredicate, false, scene.cameraToUseForPointers);
                 this._currentPickResult = pickResult;
                 if (pickResult) {
                     act = pickResult.hit && pickResult.pickedMesh ? pickResult.pickedMesh._getActionManagerForTrigger() : null;
@@ -526,7 +528,7 @@ export class InputManager {
             evt: IPointerEvent,
             cb: (clickInfo: _ClickInfo, pickResult: Nullable<PickingInfo>) => void
         ): void => {
-            let clickInfo = new _ClickInfo();
+            const clickInfo = new _ClickInfo();
             this._currentPickResult = null;
             let act: Nullable<AbstractActionManager> = null;
 
@@ -547,7 +549,7 @@ export class InputManager {
             let needToIgnoreNext = false;
 
             if (checkPicking) {
-                let btn = evt.button;
+                const btn = evt.button;
                 clickInfo.hasSwiped = this._isPointerSwiping();
 
                 if (!clickInfo.hasSwiped) {
@@ -641,7 +643,7 @@ export class InputManager {
         this._onPointerMove = (evt: IMouseEvent) => {
             // preserve compatibility with Safari when pointerId is not present
             if ((evt as IPointerEvent).pointerId === undefined) {
-                ((evt as IPointerEvent) as any).pointerId = 0;
+                (evt as IPointerEvent as any).pointerId = 0;
             }
 
             this._updatePointerPosition(evt as IPointerEvent);
@@ -677,7 +679,14 @@ export class InputManager {
             }
 
             // Meshes
-            var pickResult = scene.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, scene.pointerMovePredicate, false, scene.cameraToUseForPointers, scene.pointerMoveTrianglePredicate);
+            const pickResult = scene.pick(
+                this._unTranslatedPointerX,
+                this._unTranslatedPointerY,
+                scene.pointerMovePredicate,
+                false,
+                scene.cameraToUseForPointers,
+                scene.pointerMoveTrianglePredicate
+            );
 
             this._processPointerMove(pickResult, evt as IPointerEvent);
         };
@@ -728,7 +737,7 @@ export class InputManager {
 
             // Meshes
             this._pickedDownMesh = null;
-            var pickResult = scene.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, scene.pointerDownPredicate, false, scene.cameraToUseForPointers);
+            const pickResult = scene.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, scene.pointerDownPredicate, false, scene.cameraToUseForPointers);
 
             this._processPointerDown(pickResult, evt);
         };
@@ -813,9 +822,9 @@ export class InputManager {
         };
 
         this._onKeyDown = (evt: IKeyboardEvent) => {
-            let type = KeyboardEventTypes.KEYDOWN;
+            const type = KeyboardEventTypes.KEYDOWN;
             if (scene.onPreKeyboardObservable.hasObservers()) {
-                let pi = new KeyboardInfoPre(type, evt);
+                const pi = new KeyboardInfoPre(type, evt);
                 scene.onPreKeyboardObservable.notifyObservers(pi, type);
                 if (pi.skipOnKeyboardObservable) {
                     return;
@@ -823,7 +832,7 @@ export class InputManager {
             }
 
             if (scene.onKeyboardObservable.hasObservers()) {
-                let pi = new KeyboardInfo(type, evt);
+                const pi = new KeyboardInfo(type, evt);
                 scene.onKeyboardObservable.notifyObservers(pi, type);
             }
 
@@ -833,9 +842,9 @@ export class InputManager {
         };
 
         this._onKeyUp = (evt: IKeyboardEvent) => {
-            let type = KeyboardEventTypes.KEYUP;
+            const type = KeyboardEventTypes.KEYUP;
             if (scene.onPreKeyboardObservable.hasObservers()) {
-                let pi = new KeyboardInfoPre(type, evt);
+                const pi = new KeyboardInfoPre(type, evt);
                 scene.onPreKeyboardObservable.notifyObservers(pi, type);
                 if (pi.skipOnKeyboardObservable) {
                     return;
@@ -843,7 +852,7 @@ export class InputManager {
             }
 
             if (scene.onKeyboardObservable.hasObservers()) {
-                let pi = new KeyboardInfo(type, evt);
+                const pi = new KeyboardInfo(type, evt);
                 scene.onKeyboardObservable.notifyObservers(pi, type);
             }
 
@@ -856,35 +865,32 @@ export class InputManager {
         this._deviceSourceManager.onDeviceConnectedObservable.add((deviceSource) => {
             if (deviceSource.deviceType === DeviceType.Mouse) {
                 deviceSource.onInputChangedObservable.add((eventData) => {
-                    if ((eventData.inputIndex === PointerInput.LeftClick || eventData.inputIndex === PointerInput.MiddleClick || eventData.inputIndex === PointerInput.RightClick)) {
+                    if (eventData.inputIndex === PointerInput.LeftClick || eventData.inputIndex === PointerInput.MiddleClick || eventData.inputIndex === PointerInput.RightClick) {
                         const evt = eventData as IPointerEvent;
                         if (attachDown && deviceSource.getInput(evt.inputIndex) === 1) {
                             this._onPointerDown(evt);
-
-                        }
-                        else if (attachUp && deviceSource.getInput(evt.inputIndex) === 0) {
+                        } else if (attachUp && deviceSource.getInput(evt.inputIndex) === 0) {
                             this._onPointerUp(evt);
                         }
-                    }
-
-                    else if (attachMove) {
+                    } else if (attachMove) {
                         if (eventData.inputIndex === PointerInput.Move) {
                             this._onPointerMove(eventData as IPointerEvent);
-                        } else if (eventData.inputIndex === PointerInput.MouseWheelX || eventData.inputIndex === PointerInput.MouseWheelY || eventData.inputIndex === PointerInput.MouseWheelZ) {
+                        } else if (
+                            eventData.inputIndex === PointerInput.MouseWheelX ||
+                            eventData.inputIndex === PointerInput.MouseWheelY ||
+                            eventData.inputIndex === PointerInput.MouseWheelZ
+                        ) {
                             this._onPointerMove(eventData as IWheelEvent);
                         }
                     }
                 });
-            }
-            else if (deviceSource.deviceType === DeviceType.Touch) {
+            } else if (deviceSource.deviceType === DeviceType.Touch) {
                 deviceSource.onInputChangedObservable.add((eventData) => {
                     const evt = eventData as IPointerEvent;
-                    if ((eventData.inputIndex === PointerInput.LeftClick)) {
+                    if (eventData.inputIndex === PointerInput.LeftClick) {
                         if (attachDown && deviceSource.getInput(evt.inputIndex) === 1) {
                             this._onPointerDown(eventData as IPointerEvent);
-
-                        }
-                        else if (attachUp && deviceSource.getInput(evt.inputIndex) === 0) {
+                        } else if (attachUp && deviceSource.getInput(evt.inputIndex) === 0) {
                             this._onPointerUp(eventData as IPointerEvent);
                         }
                     }
@@ -893,14 +899,12 @@ export class InputManager {
                         this._onPointerMove(eventData as IPointerEvent);
                     }
                 });
-            }
-            else if (deviceSource.deviceType === DeviceType.Keyboard) {
+            } else if (deviceSource.deviceType === DeviceType.Keyboard) {
                 deviceSource.onInputChangedObservable.add((eventData) => {
                     const evt = eventData as IKeyboardEvent;
                     if (evt.type === "keydown") {
                         this._onKeyDown(evt);
-                    }
-                    else if (evt.type === "keyup") {
+                    } else if (evt.type === "keyup") {
                         this._onKeyUp(evt);
                     }
                 });
@@ -939,7 +943,7 @@ export class InputManager {
             return;
         }
 
-        let underPointerMesh = this._meshUnderPointerId[pointerId];
+        const underPointerMesh = this._meshUnderPointerId[pointerId];
 
         let actionManager: Nullable<AbstractActionManager>;
         if (underPointerMesh) {
@@ -971,7 +975,10 @@ export class InputManager {
         return this._pointerOverMesh;
     }
 
-    /** @hidden */
+    /**
+     * @param mesh
+     * @hidden
+     */
     public _invalidateMesh(mesh: AbstractMesh) {
         if (this._pointerOverMesh === mesh) {
             this._pointerOverMesh = null;

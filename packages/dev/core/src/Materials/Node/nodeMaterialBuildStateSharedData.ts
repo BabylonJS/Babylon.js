@@ -1,13 +1,13 @@
-import { NodeMaterialConnectionPoint } from './nodeMaterialBlockConnectionPoint';
-import { NodeMaterialBlock } from './nodeMaterialBlock';
-import { InputBlock } from './Blocks/Input/inputBlock';
-import { TextureBlock } from './Blocks/Dual/textureBlock';
-import { ReflectionTextureBaseBlock } from './Blocks/Dual/reflectionTextureBaseBlock';
-import { RefractionBlock } from './Blocks/PBR/refractionBlock';
-import { CurrentScreenBlock } from './Blocks/Dual/currentScreenBlock';
-import { ParticleTextureBlock } from './Blocks/Particle/particleTextureBlock';
-import { Scene } from '../../scene';
-import { ImageSourceBlock } from './Blocks/Dual/imageSourceBlock';
+import { NodeMaterialConnectionPoint } from "./nodeMaterialBlockConnectionPoint";
+import { NodeMaterialBlock } from "./nodeMaterialBlock";
+import { InputBlock } from "./Blocks/Input/inputBlock";
+import { TextureBlock } from "./Blocks/Dual/textureBlock";
+import { ReflectionTextureBaseBlock } from "./Blocks/Dual/reflectionTextureBaseBlock";
+import { RefractionBlock } from "./Blocks/PBR/refractionBlock";
+import { CurrentScreenBlock } from "./Blocks/Dual/currentScreenBlock";
+import { ParticleTextureBlock } from "./Blocks/Particle/particleTextureBlock";
+import { Scene } from "../../scene";
+import { ImageSourceBlock } from "./Blocks/Dual/imageSourceBlock";
 import { Immutable } from "../../types";
 
 /**
@@ -15,8 +15,8 @@ import { Immutable } from "../../types";
  */
 export class NodeMaterialBuildStateSharedData {
     /**
-    * Gets the list of emitted varyings
-    */
+     * Gets the list of emitted varyings
+     */
     public temps = new Array<string>();
 
     /**
@@ -54,7 +54,7 @@ export class NodeMaterialBuildStateSharedData {
      */
     public forcedBindableBlocks = new Array<NodeMaterialBlock>();
 
-     /**
+    /**
      * List of blocks that can provide a compilation fallback
      */
     public blocksWithFallbacks = new Array<NodeMaterialBlock>();
@@ -65,13 +65,13 @@ export class NodeMaterialBuildStateSharedData {
     public blocksWithDefines = new Array<NodeMaterialBlock>();
 
     /**
-    * List of blocks that can provide a repeatable content
-    */
+     * List of blocks that can provide a repeatable content
+     */
     public repeatableContentBlocks = new Array<NodeMaterialBlock>();
 
     /**
-    * List of blocks that can provide a dynamic list of uniforms
-    */
+     * List of blocks that can provide a dynamic list of uniforms
+     */
     public dynamicUniformBlocks = new Array<NodeMaterialBlock>();
 
     /**
@@ -111,7 +111,7 @@ export class NodeMaterialBuildStateSharedData {
         needWorldViewMatrix: false,
         needWorldViewProjectionMatrix: false,
         needAlphaBlending: false,
-        needAlphaTesting: false
+        needAlphaTesting: false,
     };
 
     /**
@@ -120,7 +120,7 @@ export class NodeMaterialBuildStateSharedData {
     public checks = {
         emitVertex: false,
         emitFragment: false,
-        notConnectedNonOptionalInputs: new Array<NodeMaterialConnectionPoint>()
+        notConnectedNonOptionalInputs: new Array<NodeMaterialConnectionPoint>(),
     };
 
     /**
@@ -177,8 +177,10 @@ export class NodeMaterialBuildStateSharedData {
         if (!this.checks.emitFragment) {
             errorMessage += "NodeMaterial does not have a fragment output. You need to at least add a block that generates a glFragColor value.\r\n";
         }
-        for (var notConnectedInput of this.checks.notConnectedNonOptionalInputs) {
-            errorMessage += `input ${notConnectedInput.name} from block ${notConnectedInput.ownerBlock.name}[${notConnectedInput.ownerBlock.getClassName()}] is not connected and is not optional.\r\n`;
+        for (const notConnectedInput of this.checks.notConnectedNonOptionalInputs) {
+            errorMessage += `input ${notConnectedInput.name} from block ${
+                notConnectedInput.ownerBlock.name
+            }[${notConnectedInput.ownerBlock.getClassName()}] is not connected and is not optional.\r\n`;
         }
 
         if (errorMessage) {

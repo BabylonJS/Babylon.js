@@ -6,11 +6,11 @@ import { VertexBuffer } from "../Buffers/buffer";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
 import { Effect } from "../Materials/effect";
 import { Constants } from "./constants";
-import { IPipelineContext } from './IPipelineContext';
-import { DataBuffer } from '../Buffers/dataBuffer';
-import { IColor4Like, IViewportLike } from '../Maths/math.like';
-import { ISceneLike } from './thinEngine';
-import { PerformanceConfigurator } from './performanceConfigurator';
+import { IPipelineContext } from "./IPipelineContext";
+import { DataBuffer } from "../Buffers/dataBuffer";
+import { IColor4Like, IViewportLike } from "../Maths/math.like";
+import { ISceneLike } from "./thinEngine";
+import { PerformanceConfigurator } from "./performanceConfigurator";
 import { DrawWrapper } from "../Materials/drawWrapper";
 import { RenderTargetWrapper } from "./renderTargetWrapper";
 import { IStencilState } from "../States/IStencilState";
@@ -150,7 +150,7 @@ export class NullEngine extends Engine {
             supportComputeShaders: false,
             supportSRGBBuffers: false,
             supportTransformFeedbacks: false,
-            textureMaxLevel: false
+            textureMaxLevel: false,
         };
 
         this._features = {
@@ -182,15 +182,15 @@ export class NullEngine extends Engine {
         Logger.Log(`Babylon.js v${Engine.Version} - Null engine`);
 
         // Wrappers
-        const theCurrentGlobal = (typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : window);
+        const theCurrentGlobal = typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : window;
         if (typeof URL === "undefined") {
             theCurrentGlobal.URL = {
-                createObjectURL: function () { },
-                revokeObjectURL: function () { }
+                createObjectURL: function () {},
+                revokeObjectURL: function () {},
             };
         }
         if (typeof Blob === "undefined") {
-            theCurrentGlobal.Blob = function () { };
+            theCurrentGlobal.Blob = function () {};
         }
     }
 
@@ -200,7 +200,7 @@ export class NullEngine extends Engine {
      * @returns the new WebGL static buffer
      */
     public createVertexBuffer(vertices: FloatArray): DataBuffer {
-        let buffer = new DataBuffer();
+        const buffer = new DataBuffer();
         buffer.references = 1;
         return buffer;
     }
@@ -212,7 +212,7 @@ export class NullEngine extends Engine {
      * @returns a new webGL buffer
      */
     public createIndexBuffer(indices: IndicesArray): DataBuffer {
-        let buffer = new DataBuffer();
+        const buffer = new DataBuffer();
         buffer.references = 1;
         return buffer;
     }
@@ -224,8 +224,7 @@ export class NullEngine extends Engine {
      * @param depth defines if the depth buffer must be cleared
      * @param stencil defines if the stencil buffer must be cleared
      */
-    public clear(color: IColor4Like, backBuffer: boolean, depth: boolean, stencil: boolean = false): void {
-    }
+    public clear(color: IColor4Like, backBuffer: boolean, depth: boolean, stencil: boolean = false): void {}
 
     /**
      * Gets the current render width
@@ -327,8 +326,15 @@ export class NullEngine extends Engine {
      * @param stencil stencil states to set
      * @param zOffsetUnits defines the value to apply to zOffsetUnits (0 by default)
      */
-    public setState(culling: boolean, zOffset: number = 0, force?: boolean, reverseSide = false, cullBackFaces?: boolean, stencil?: IStencilState, zOffsetUnits: number = 0): void {
-    }
+    public setState(
+        culling: boolean,
+        zOffset: number = 0,
+        force?: boolean,
+        reverseSide = false,
+        cullBackFaces?: boolean,
+        stencil?: IStencilState,
+        zOffsetUnits: number = 0
+    ): void {}
 
     /**
      * Set the value of an uniform to an array of int32
@@ -547,7 +553,7 @@ export class NullEngine extends Engine {
             return;
         }
 
-        this.alphaState.alphaBlend = (mode !== Constants.ALPHA_DISABLE);
+        this.alphaState.alphaBlend = mode !== Constants.ALPHA_DISABLE;
 
         if (!noDepthWriteChange) {
             this.setDepthWrite(mode === Constants.ALPHA_DISABLE);
@@ -563,8 +569,7 @@ export class NullEngine extends Engine {
      * @param vertexStrideSize defines the vertex stride of the vertex buffer
      * @param effect defines the effect associated with the vertex buffer
      */
-    public bindBuffers(vertexBuffers: { [key: string]: VertexBuffer; }, indexBuffer: DataBuffer, effect: Effect): void {
-    }
+    public bindBuffers(vertexBuffers: { [key: string]: VertexBuffer }, indexBuffer: DataBuffer, effect: Effect): void {}
 
     /**
      * Force the entire cache to be cleared
@@ -598,8 +603,7 @@ export class NullEngine extends Engine {
      * @param indexCount defines the number of index to draw
      * @param instancesCount defines the number of instances to draw (if instanciation is enabled)
      */
-    public draw(useTriangles: boolean, indexStart: number, indexCount: number, instancesCount?: number): void {
-    }
+    public draw(useTriangles: boolean, indexStart: number, indexCount: number, instancesCount?: number): void {}
 
     /**
      * Draw a list of indexed primitives
@@ -608,8 +612,7 @@ export class NullEngine extends Engine {
      * @param indexCount defines the number of index to draw
      * @param instancesCount defines the number of instances to draw (if instanciation is enabled)
      */
-    public drawElementsType(fillMode: number, indexStart: number, indexCount: number, instancesCount?: number): void {
-    }
+    public drawElementsType(fillMode: number, indexStart: number, indexCount: number, instancesCount?: number): void {}
 
     /**
      * Draw a list of unindexed primitives
@@ -618,17 +621,18 @@ export class NullEngine extends Engine {
      * @param verticesCount defines the count of vertices to draw
      * @param instancesCount defines the number of instances to draw (if instanciation is enabled)
      */
-    public drawArraysType(fillMode: number, verticesStart: number, verticesCount: number, instancesCount?: number): void {
-    }
+    public drawArraysType(fillMode: number, verticesStart: number, verticesCount: number, instancesCount?: number): void {}
 
     /** @hidden */
     protected _createTexture(): WebGLTexture {
         return {};
     }
 
-    /** @hidden */
-    public _releaseTexture(texture: InternalTexture): void {
-    }
+    /**
+     * @param texture
+     * @hidden
+     */
+    public _releaseTexture(texture: InternalTexture): void {}
 
     /**
      * Usually called from Texture.ts.
@@ -650,12 +654,22 @@ export class NullEngine extends Engine {
      * @param mimeType defines an optional mime type
      * @returns a InternalTexture for assignment back into BABYLON.Texture
      */
-    public createTexture(urlArg: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
-        onLoad: Nullable<() => void> = null, onError: Nullable<(message: string, exception: any) => void> = null,
-        buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null, fallback: Nullable<InternalTexture> = null, format: Nullable<number> = null,
-        forcedExtension: Nullable<string> = null, mimeType?: string): InternalTexture {
-        var texture = new InternalTexture(this, InternalTextureSource.Url);
-        var url = String(urlArg);
+    public createTexture(
+        urlArg: Nullable<string>,
+        noMipmap: boolean,
+        invertY: boolean,
+        scene: Nullable<ISceneLike>,
+        samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
+        onLoad: Nullable<() => void> = null,
+        onError: Nullable<(message: string, exception: any) => void> = null,
+        buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null,
+        fallback: Nullable<InternalTexture> = null,
+        format: Nullable<number> = null,
+        forcedExtension: Nullable<string> = null,
+        mimeType?: string
+    ): InternalTexture {
+        const texture = new InternalTexture(this, InternalTextureSource.Url);
+        const url = String(urlArg);
 
         texture.url = url;
         texture.generateMipMaps = !noMipmap;
@@ -680,8 +694,13 @@ export class NullEngine extends Engine {
         return texture;
     }
 
-    /** @hidden */
-    public _createHardwareRenderTargetWrapper(isMulti: boolean, isCube: boolean, size: number | { width: number, height: number, layers?: number }): RenderTargetWrapper {
+    /**
+     * @param isMulti
+     * @param isCube
+     * @param size
+     * @hidden
+     */
+    public _createHardwareRenderTargetWrapper(isMulti: boolean, isCube: boolean, size: number | { width: number; height: number; layers?: number }): RenderTargetWrapper {
         const rtWrapper = new RenderTargetWrapper(isMulti, isCube, size, this);
         this._renderTargetWrapperCache.push(rtWrapper);
         return rtWrapper;
@@ -711,10 +730,10 @@ export class NullEngine extends Engine {
             fullOptions.type = Constants.TEXTURETYPE_UNSIGNED_INT;
             fullOptions.samplingMode = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
         }
-        var texture = new InternalTexture(this, InternalTextureSource.RenderTarget);
+        const texture = new InternalTexture(this, InternalTextureSource.RenderTarget);
 
-        var width = size.width || size;
-        var height = size.height || size;
+        const width = size.width || size;
+        const height = size.height || size;
 
         rtWrapper._generateDepthBuffer = fullOptions.generateDepthBuffer;
         rtWrapper._generateStencilBuffer = fullOptions.generateStencilBuffer ? true : false;
@@ -757,9 +776,19 @@ export class NullEngine extends Engine {
      * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
      * @returns the raw texture inside an InternalTexture
      */
-    public createRawTexture(data: Nullable<ArrayBufferView>, width: number, height: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number,
-        compression: Nullable<string> = null, type: number = Constants.TEXTURETYPE_UNSIGNED_INT, creationFlags = 0): InternalTexture {
-        var texture = new InternalTexture(this, InternalTextureSource.Raw);
+    public createRawTexture(
+        data: Nullable<ArrayBufferView>,
+        width: number,
+        height: number,
+        format: number,
+        generateMipMaps: boolean,
+        invertY: boolean,
+        samplingMode: number,
+        compression: Nullable<string> = null,
+        type: number = Constants.TEXTURETYPE_UNSIGNED_INT,
+        creationFlags = 0
+    ): InternalTexture {
+        const texture = new InternalTexture(this, InternalTextureSource.Raw);
         texture.baseWidth = width;
         texture.baseHeight = height;
         texture.width = width;
@@ -787,7 +816,14 @@ export class NullEngine extends Engine {
      * @param compression defines the compression used (null by default)
      * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
      */
-    public updateRawTexture(texture: Nullable<InternalTexture>, data: Nullable<ArrayBufferView>, format: number, invertY: boolean, compression: Nullable<string> = null, type: number = Constants.TEXTURETYPE_UNSIGNED_INT): void {
+    public updateRawTexture(
+        texture: Nullable<InternalTexture>,
+        data: Nullable<ArrayBufferView>,
+        format: number,
+        invertY: boolean,
+        compression: Nullable<string> = null,
+        type: number = Constants.TEXTURETYPE_UNSIGNED_INT
+    ): void {
         if (texture) {
             texture._bufferView = data;
             texture.format = format;
@@ -838,7 +874,7 @@ export class NullEngine extends Engine {
      * @returns the new WebGL dynamic buffer
      */
     public createDynamicVertexBuffer(vertices: FloatArray): DataBuffer {
-        let buffer = new DataBuffer();
+        const buffer = new DataBuffer();
         buffer.references = 1;
         buffer.capacity = 1;
         return buffer;
@@ -853,9 +889,7 @@ export class NullEngine extends Engine {
      * @param format defines the format of the data
      * @param forceBindTexture if the texture should be forced to be bound eg. after a graphics context loss (Default: false)
      */
-    public updateDynamicTexture(texture: Nullable<InternalTexture>, canvas: HTMLCanvasElement, invertY: boolean, premulAlpha: boolean = false, format?: number): void {
-
-    }
+    public updateDynamicTexture(texture: Nullable<InternalTexture>, canvas: HTMLCanvasElement, invertY: boolean, premulAlpha: boolean = false, format?: number): void {}
 
     /**
      * Gets a boolean indicating if all created effects are ready
@@ -880,9 +914,11 @@ export class NullEngine extends Engine {
         return 1;
     }
 
-    /** @hidden */
-    public _unpackFlipY(value: boolean) {
-    }
+    /**
+     * @param value
+     * @hidden
+     */
+    public _unpackFlipY(value: boolean) {}
 
     /**
      * Update a dynamic index buffer
@@ -890,8 +926,7 @@ export class NullEngine extends Engine {
      * @param indices defines the data to update
      * @param offset defines the offset in the target index buffer where update should start
      */
-    public updateDynamicIndexBuffer(indexBuffer: WebGLBuffer, indices: IndicesArray, offset: number = 0): void {
-    }
+    public updateDynamicIndexBuffer(indexBuffer: WebGLBuffer, indices: IndicesArray, offset: number = 0): void {}
 
     /**
      * Updates a dynamic vertex buffer.
@@ -900,10 +935,13 @@ export class NullEngine extends Engine {
      * @param byteOffset the byte offset of the data (optional)
      * @param byteLength the byte length of the data (optional)
      */
-    public updateDynamicVertexBuffer(vertexBuffer: WebGLBuffer, vertices: FloatArray, byteOffset?: number, byteLength?: number): void {
-    }
+    public updateDynamicVertexBuffer(vertexBuffer: WebGLBuffer, vertices: FloatArray, byteOffset?: number, byteLength?: number): void {}
 
-    /** @hidden */
+    /**
+     * @param target
+     * @param texture
+     * @hidden
+     */
     public _bindTextureDirectly(target: number, texture: InternalTexture): boolean {
         if (this._boundTexturesCache[this._activeChannel] !== texture) {
             this._boundTexturesCache[this._activeChannel] = texture;
@@ -912,7 +950,11 @@ export class NullEngine extends Engine {
         return false;
     }
 
-    /** @hidden */
+    /**
+     * @param channel
+     * @param texture
+     * @hidden
+     */
     public _bindTexture(channel: number, texture: InternalTexture): void {
         if (channel < 0) {
             return;
@@ -921,34 +963,61 @@ export class NullEngine extends Engine {
         this._bindTextureDirectly(0, texture);
     }
 
-    protected _deleteBuffer(buffer: WebGLBuffer): void {
-    }
+    protected _deleteBuffer(buffer: WebGLBuffer): void {}
 
     /**
      * Force the engine to release all cached effects. This means that next effect compilation will have to be done completely even if a similar effect was already compiled
      */
-    public releaseEffects() {
-    }
+    public releaseEffects() {}
 
-    public displayLoadingUI(): void {
-    }
+    public displayLoadingUI(): void {}
 
-    public hideLoadingUI(): void {
-    }
+    public hideLoadingUI(): void {}
 
-    /** @hidden */
-    public _uploadCompressedDataToTextureDirectly(texture: InternalTexture, internalFormat: number, width: number, height: number, data: ArrayBufferView, faceIndex: number = 0, lod: number = 0) {
-    }
+    /**
+     * @param texture
+     * @param internalFormat
+     * @param width
+     * @param height
+     * @param data
+     * @param faceIndex
+     * @param lod
+     * @hidden
+     */
+    public _uploadCompressedDataToTextureDirectly(
+        texture: InternalTexture,
+        internalFormat: number,
+        width: number,
+        height: number,
+        data: ArrayBufferView,
+        faceIndex: number = 0,
+        lod: number = 0
+    ) {}
 
-    /** @hidden */
-    public _uploadDataToTextureDirectly(texture: InternalTexture, imageData: ArrayBufferView, faceIndex: number = 0, lod: number = 0): void {
-    }
+    /**
+     * @param texture
+     * @param imageData
+     * @param faceIndex
+     * @param lod
+     * @hidden
+     */
+    public _uploadDataToTextureDirectly(texture: InternalTexture, imageData: ArrayBufferView, faceIndex: number = 0, lod: number = 0): void {}
 
-    /** @hidden */
-    public _uploadArrayBufferViewToTexture(texture: InternalTexture, imageData: ArrayBufferView, faceIndex: number = 0, lod: number = 0): void {
-    }
+    /**
+     * @param texture
+     * @param imageData
+     * @param faceIndex
+     * @param lod
+     * @hidden
+     */
+    public _uploadArrayBufferViewToTexture(texture: InternalTexture, imageData: ArrayBufferView, faceIndex: number = 0, lod: number = 0): void {}
 
-    /** @hidden */
-    public _uploadImageToTexture(texture: InternalTexture, image: HTMLImageElement, faceIndex: number = 0, lod: number = 0) {
-    }
+    /**
+     * @param texture
+     * @param image
+     * @param faceIndex
+     * @param lod
+     * @hidden
+     */
+    public _uploadImageToTexture(texture: InternalTexture, image: HTMLImageElement, faceIndex: number = 0, lod: number = 0) {}
 }

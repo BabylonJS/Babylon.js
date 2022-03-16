@@ -137,7 +137,7 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
     /**
      *  Initializes the behavior
      */
-    public init() { }
+    public init() {}
 
     /**
      * In the case of multiple active cameras, the cameraToUseForPointers should be used if set instead of active camera
@@ -193,12 +193,7 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
     }
 
     private _pointerUpdate2D(ray: Ray, pointerId: number, zDragFactor: number) {
-        if (
-            this._pointerCamera &&
-            this._pointerCamera.cameraRigMode == Camera.RIG_MODE_NONE &&
-            !this._pointerCamera._isLeftCamera &&
-            !this._pointerCamera._isRightCamera
-        ) {
+        if (this._pointerCamera && this._pointerCamera.cameraRigMode == Camera.RIG_MODE_NONE && !this._pointerCamera._isLeftCamera && !this._pointerCamera._isRightCamera) {
             ray.origin.copyFrom(this._pointerCamera!.globalPosition);
             zDragFactor = 0;
         }
@@ -232,8 +227,7 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
         virtualMeshesInfo.originMesh.position.copyFrom(controllerAimTransform.position);
         if (this._dragging === this._dragType.NEAR_DRAG && controllerGripTransform) {
             virtualMeshesInfo.originMesh.rotationQuaternion!.copyFrom(controllerGripTransform.rotationQuaternion!);
-        }
-        else {
+        } else {
             virtualMeshesInfo.originMesh.rotationQuaternion!.copyFrom(controllerAimTransform.rotationQuaternion!);
         }
 
@@ -264,7 +258,7 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
 
             // Prevent pulling the mesh through the controller
             const minDistanceFromControllerToDragMesh = 0.01;
-            if (zOffsetScaling < 0 && (minDistanceFromControllerToDragMesh - controllerToDragDistance > zOffsetScaling)) {
+            if (zOffsetScaling < 0 && minDistanceFromControllerToDragMesh - controllerToDragDistance > zOffsetScaling) {
                 zOffsetScaling = Math.min(minDistanceFromControllerToDragMesh - controllerToDragDistance, 0);
             }
             controllerToDrag.scaleInPlace(zOffsetScaling);
@@ -332,12 +326,10 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
                         virtualMeshesInfo.originMesh.position.copyFrom(pointerInfo.pickInfo.aimTransform!.position);
                         if (this._dragging === this._dragType.NEAR_DRAG && pointerInfo.pickInfo.gripTransform) {
                             virtualMeshesInfo.originMesh.rotationQuaternion!.copyFrom(pointerInfo.pickInfo.gripTransform.rotationQuaternion!);
-                        }
-                        else {
+                        } else {
                             virtualMeshesInfo.originMesh.rotationQuaternion!.copyFrom(pointerInfo.pickInfo.aimTransform!.rotationQuaternion!);
                         }
-                    }
-                    else {
+                    } else {
                         this._dragging = this._dragType.DRAG;
                         virtualMeshesInfo.originMesh.position.copyFrom(pointerInfo.pickInfo.ray.origin);
                     }
@@ -358,8 +350,7 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
                     if (isXRPointer) {
                         virtualMeshesInfo.originMesh.addChild(virtualMeshesInfo.dragMesh);
                         virtualMeshesInfo.originMesh.addChild(virtualMeshesInfo.pivotMesh);
-                    }
-                    else {
+                    } else {
                         virtualMeshesInfo.originMesh.lookAt(virtualMeshesInfo.dragMesh.position);
                     }
 
@@ -410,11 +401,7 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
             } else if (pointerInfo.type == PointerEventTypes.POINTERMOVE) {
                 const registeredPointerIndex = this.currentDraggingPointerIds.indexOf(pointerId);
 
-                if (registeredPointerIndex !== -1 &&
-                    virtualMeshesInfo.dragging &&
-                    pointerInfo.pickInfo &&
-                    (pointerInfo.pickInfo.ray || pointerInfo.pickInfo.aimTransform))
-                {
+                if (registeredPointerIndex !== -1 && virtualMeshesInfo.dragging && pointerInfo.pickInfo && (pointerInfo.pickInfo.ray || pointerInfo.pickInfo.aimTransform)) {
                     let zDragFactor = this.zDragFactor;
 
                     // 2 pointer interaction should not have a z axis drag factor
@@ -426,8 +413,7 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
                     this._ownerNode.computeWorldMatrix(true);
                     if (!isXRPointer) {
                         this._pointerUpdate2D(pointerInfo.pickInfo.ray!, pointerId, zDragFactor);
-                    }
-                    else {
+                    } else {
                         this._pointerUpdateXR(pointerInfo.pickInfo.aimTransform!, pointerInfo.pickInfo.gripTransform, pointerId, zDragFactor);
                     }
 
@@ -483,7 +469,7 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
             this._scene.onPointerObservable.remove(this._pointerObserver);
         }
 
-        for (let pointerId in this._virtualMeshesInfo) {
+        for (const pointerId in this._virtualMeshesInfo) {
             this._virtualMeshesInfo[pointerId].originMesh.dispose();
             this._virtualMeshesInfo[pointerId].dragMesh.dispose();
         }

@@ -3,7 +3,7 @@ import { Engine } from "../../engine";
 import { WebGPUEngine } from "../../webgpuEngine";
 
 WebGPUEngine.prototype.setAlphaMode = function (mode: number, noDepthWriteChange: boolean = false): void {
-    if (this._alphaMode === mode && (mode === Constants.ALPHA_DISABLE && !this._alphaState.alphaBlend || mode !== Constants.ALPHA_DISABLE && this._alphaState.alphaBlend)) {
+    if (this._alphaMode === mode && ((mode === Constants.ALPHA_DISABLE && !this._alphaState.alphaBlend) || (mode !== Constants.ALPHA_DISABLE && this._alphaState.alphaBlend))) {
         return;
     }
 
@@ -44,7 +44,12 @@ WebGPUEngine.prototype.setAlphaMode = function (mode: number, noDepthWriteChange
             this._alphaState.alphaBlend = true;
             break;
         case Constants.ALPHA_INTERPOLATE:
-            this._alphaState.setAlphaBlendFunctionParameters(Constants.GL_ALPHA_FUNCTION_CONSTANT_COLOR, Constants.GL_ALPHA_FUNCTION_ONE_MINUS_CONSTANT_COLOR, Constants.GL_ALPHA_FUNCTION_CONSTANT_ALPHA, Constants.GL_ALPHA_FUNCTION_ONE_MINUS_CONSTANT_ALPHA);
+            this._alphaState.setAlphaBlendFunctionParameters(
+                Constants.GL_ALPHA_FUNCTION_CONSTANT_COLOR,
+                Constants.GL_ALPHA_FUNCTION_ONE_MINUS_CONSTANT_COLOR,
+                Constants.GL_ALPHA_FUNCTION_CONSTANT_ALPHA,
+                Constants.GL_ALPHA_FUNCTION_ONE_MINUS_CONSTANT_ALPHA
+            );
             this._alphaState.alphaBlend = true;
             break;
         case Constants.ALPHA_SCREENMODE:
@@ -60,7 +65,12 @@ WebGPUEngine.prototype.setAlphaMode = function (mode: number, noDepthWriteChange
             this._alphaState.alphaBlend = true;
             break;
         case Constants.ALPHA_REVERSEONEMINUS:
-            this._alphaState.setAlphaBlendFunctionParameters(Constants.GL_ALPHA_FUNCTION_ONE_MINUS_DST_COLOR, Constants.GL_ALPHA_FUNCTION_ONE_MINUS_SRC_COLOR, Constants.GL_ALPHA_FUNCTION_ONE_MINUS_DST_ALPHA, Constants.GL_ALPHA_FUNCTION_ONE_MINUS_SRC_ALPHA);
+            this._alphaState.setAlphaBlendFunctionParameters(
+                Constants.GL_ALPHA_FUNCTION_ONE_MINUS_DST_COLOR,
+                Constants.GL_ALPHA_FUNCTION_ONE_MINUS_SRC_COLOR,
+                Constants.GL_ALPHA_FUNCTION_ONE_MINUS_DST_ALPHA,
+                Constants.GL_ALPHA_FUNCTION_ONE_MINUS_SRC_ALPHA
+            );
             this._alphaState.alphaBlend = true;
             break;
         case Constants.ALPHA_SRC_DSTONEMINUSSRCALPHA:
@@ -77,7 +87,12 @@ WebGPUEngine.prototype.setAlphaMode = function (mode: number, noDepthWriteChange
             break;
         case Constants.ALPHA_LAYER_ACCUMULATE:
             // Same as ALPHA_COMBINE but accumulates (1 - alpha) values in the alpha channel for a later readout in order independant transparency
-            this._alphaState.setAlphaBlendFunctionParameters(Constants.GL_ALPHA_FUNCTION_SRC_ALPHA, Constants.GL_ALPHA_FUNCTION_ONE_MINUS_SRC_ALPHA, 1, Constants.GL_ALPHA_FUNCTION_ONE_MINUS_SRC_ALPHA);
+            this._alphaState.setAlphaBlendFunctionParameters(
+                Constants.GL_ALPHA_FUNCTION_SRC_ALPHA,
+                Constants.GL_ALPHA_FUNCTION_ONE_MINUS_SRC_ALPHA,
+                1,
+                Constants.GL_ALPHA_FUNCTION_ONE_MINUS_SRC_ALPHA
+            );
             this._alphaState.alphaBlend = true;
             break;
     }

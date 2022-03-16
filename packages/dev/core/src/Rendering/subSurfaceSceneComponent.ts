@@ -11,8 +11,8 @@ AbstractScene.AddParser(SceneComponentConstants.NAME_SUBSURFACE, (parsedData: an
     if (parsedData.ssDiffusionProfileColors !== undefined && parsedData.ssDiffusionProfileColors !== null) {
         scene.enableSubSurfaceForPrePass();
         if (scene.subSurfaceConfiguration) {
-            for (var index = 0, cache = parsedData.ssDiffusionProfileColors.length; index < cache; index++) {
-                var color = parsedData.ssDiffusionProfileColors[index];
+            for (let index = 0, cache = parsedData.ssDiffusionProfileColors.length; index < cache; index++) {
+                const color = parsedData.ssDiffusionProfileColors[index];
                 scene.subSurfaceConfiguration.addDiffusionProfile(new Color3(color.r, color.g, color.b));
             }
         }
@@ -54,7 +54,7 @@ Object.defineProperty(Scene.prototype, "subSurfaceConfiguration", {
         }
     },
     enumerable: true,
-    configurable: true
+    configurable: true,
 });
 
 Scene.prototype.enableSubSurfaceForPrePass = function (): Nullable<SubSurfaceConfiguration> {
@@ -70,7 +70,6 @@ Scene.prototype.enableSubSurfaceForPrePass = function (): Nullable<SubSurfaceCon
     }
 
     return null;
-
 };
 
 Scene.prototype.disableSubSurfaceForPrePass = function (): void {
@@ -108,8 +107,7 @@ export class SubSurfaceSceneComponent implements ISceneSerializableComponent {
     /**
      * Registers the component in a given scene
      */
-    public register(): void {
-    }
+    public register(): void {}
 
     /**
      * Serializes the component data to the specified json object
@@ -127,7 +125,7 @@ export class SubSurfaceSceneComponent implements ISceneSerializableComponent {
             serializationObject.ssDiffusionProfileColors.push({
                 r: ssDiffusionProfileColors[i].r,
                 g: ssDiffusionProfileColors[i].g,
-                b: ssDiffusionProfileColors[i].b
+                b: ssDiffusionProfileColors[i].b,
             });
         }
     }
@@ -170,7 +168,6 @@ export class SubSurfaceSceneComponent implements ISceneSerializableComponent {
     public dispose(): void {
         // Nothing to do for this component
     }
-
 }
 
 SubSurfaceConfiguration._SceneComponentInitialization = (scene: Scene) => {

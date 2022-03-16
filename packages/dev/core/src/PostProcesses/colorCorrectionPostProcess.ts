@@ -5,9 +5,9 @@ import { Engine } from "../Engines/engine";
 import { Camera } from "../Cameras/camera";
 
 import "../Shaders/colorCorrection.fragment";
-import { RegisterClass } from '../Misc/typeStore';
-import { SerializationHelper, serialize } from '../Misc/decorators';
-import { Nullable } from '../types';
+import { RegisterClass } from "../Misc/typeStore";
+import { SerializationHelper, serialize } from "../Misc/decorators";
+import { Nullable } from "../types";
 
 declare type Scene = import("../scene").Scene;
 
@@ -27,7 +27,6 @@ declare type Scene = import("../scene").Scene;
  *
  */
 export class ColorCorrectionPostProcess extends PostProcess {
-
     private _colorTableTexture: Texture;
 
     /**
@@ -45,7 +44,7 @@ export class ColorCorrectionPostProcess extends PostProcess {
     }
 
     constructor(name: string, colorTableUrl: string, options: number | PostProcessOptions, camera: Camera, samplingMode?: number, engine?: Engine, reusable?: boolean) {
-        super(name, 'colorCorrection', null, ['colorTable'], options, camera, samplingMode, engine, reusable);
+        super(name, "colorCorrection", null, ["colorTable"], options, camera, samplingMode, engine, reusable);
 
         this._colorTableTexture = new Texture(colorTableUrl, camera.getScene(), true, false, Texture.TRILINEAR_SAMPLINGMODE);
         this._colorTableTexture.anisotropicFilteringLevel = 1;
@@ -59,15 +58,30 @@ export class ColorCorrectionPostProcess extends PostProcess {
         };
     }
 
-    /** @hidden */
+    /**
+     * @param parsedPostProcess
+     * @param targetCamera
+     * @param scene
+     * @param rootUrl
+     * @hidden
+     */
     public static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string): Nullable<ColorCorrectionPostProcess> {
-        return SerializationHelper.Parse(() => {
-            return new ColorCorrectionPostProcess(
-                parsedPostProcess.name, parsedPostProcess.colorTableUrl,
-                parsedPostProcess.options, targetCamera,
-                parsedPostProcess.renderTargetSamplingMode,
-                scene.getEngine(), parsedPostProcess.reusable);
-        }, parsedPostProcess, scene, rootUrl);
+        return SerializationHelper.Parse(
+            () => {
+                return new ColorCorrectionPostProcess(
+                    parsedPostProcess.name,
+                    parsedPostProcess.colorTableUrl,
+                    parsedPostProcess.options,
+                    targetCamera,
+                    parsedPostProcess.renderTargetSamplingMode,
+                    scene.getEngine(),
+                    parsedPostProcess.reusable
+                );
+            },
+            parsedPostProcess,
+            scene,
+            rootUrl
+        );
     }
 }
 

@@ -1,12 +1,11 @@
 import { Nullable } from "../../types";
 import { WebGPUEngine } from "../webgpuEngine";
-import { WebGPUBufferManager } from './webgpuBufferManager';
-import * as WebGPUConstants from './webgpuConstants';
+import { WebGPUBufferManager } from "./webgpuBufferManager";
+import * as WebGPUConstants from "./webgpuConstants";
 import { WebGPUQuerySet } from "./webgpuQuerySet";
 
 /** @hidden */
 export class WebGPUOcclusionQuery {
-
     private _engine: WebGPUEngine;
     private _device: GPUDevice;
     private _bufferManager: WebGPUBufferManager;

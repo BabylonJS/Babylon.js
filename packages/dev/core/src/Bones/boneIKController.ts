@@ -2,14 +2,13 @@ import { Bone } from "./bone";
 import { Vector3, Quaternion, Matrix } from "../Maths/math.vector";
 import { TransformNode } from "../Meshes/transformNode";
 import { Nullable } from "../types";
-import { Space } from '../Maths/math.axis';
+import { Space } from "../Maths/math.axis";
 
 /**
  * Class used to apply inverse kinematics to bones
  * @see https://doc.babylonjs.com/how_to/how_to_use_bones_and_skeletons#boneikcontroller
  */
 export class BoneIKController {
-
     private static _tmpVecs: Vector3[] = [Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero()];
     private static _tmpQuat = Quaternion.Identity();
     private static _tmpMats: Matrix[] = [Matrix.Identity(), Matrix.Identity()];
@@ -93,20 +92,29 @@ export class BoneIKController {
      * @param mesh defines the TransformNode to control
      * @param bone defines the bone to control
      * @param options defines options to set up the controller
+     * @param options.targetMesh
+     * @param options.poleTargetMesh
+     * @param options.poleTargetBone
+     * @param options.poleTargetLocalOffset
+     * @param options.poleAngle
+     * @param options.bendAxis
+     * @param options.maxAngle
+     * @param options.slerpAmount
      */
-    constructor(mesh: TransformNode,
+    constructor(
+        mesh: TransformNode,
         bone: Bone,
         options?: {
-            targetMesh?: TransformNode,
-            poleTargetMesh?: TransformNode,
-            poleTargetBone?: Bone,
-            poleTargetLocalOffset?: Vector3,
-            poleAngle?: number,
-            bendAxis?: Vector3,
-            maxAngle?: number,
-            slerpAmount?: number
-        }) {
-
+            targetMesh?: TransformNode;
+            poleTargetMesh?: TransformNode;
+            poleTargetBone?: Bone;
+            poleTargetLocalOffset?: Vector3;
+            poleAngle?: number;
+            bendAxis?: Vector3;
+            maxAngle?: number;
+            slerpAmount?: number;
+        }
+    ) {
         this._bone2 = bone;
         this._bone1 = bone.getParent();
 
@@ -116,7 +124,7 @@ export class BoneIKController {
 
         this.mesh = mesh;
 
-        var bonePos = bone.getPosition();
+        const bonePos = bone.getPosition();
 
         if (bone.getAbsoluteTransform().determinant() > 0) {
             this._rightHandedSystem = true;
@@ -125,26 +133,23 @@ export class BoneIKController {
             this._bendAxis.z = -1;
 
             if (bonePos.x > bonePos.y && bonePos.x > bonePos.z) {
-                this._adjustRoll = Math.PI * .5;
+                this._adjustRoll = Math.PI * 0.5;
                 this._bendAxis.z = 1;
             }
         }
 
         if (this._bone1.length) {
-
-            var boneScale1 = this._bone1.getScale();
-            var boneScale2 = this._bone2.getScale();
+            const boneScale1 = this._bone1.getScale();
+            const boneScale2 = this._bone2.getScale();
 
             this._bone1Length = this._bone1.length * boneScale1.y * this.mesh.scaling.y;
             this._bone2Length = this._bone2.length * boneScale2.y * this.mesh.scaling.y;
-
         } else if (this._bone1.children[0]) {
-
             mesh.computeWorldMatrix(true);
 
-            var pos1 = this._bone2.children[0].getAbsolutePosition(mesh);
-            var pos2 = this._bone2.getAbsolutePosition(mesh);
-            var pos3 = this._bone1.getAbsolutePosition(mesh);
+            const pos1 = this._bone2.children[0].getAbsolutePosition(mesh);
+            const pos2 = this._bone2.getAbsolutePosition(mesh);
+            const pos3 = this._bone1.getAbsolutePosition(mesh);
 
             this._bone1Length = Vector3.Distance(pos1, pos2);
             this._bone2Length = Vector3.Distance(pos2, pos3);
@@ -154,17 +159,14 @@ export class BoneIKController {
         this.maxAngle = Math.PI;
 
         if (options) {
-
             if (options.targetMesh) {
                 this.targetMesh = options.targetMesh;
                 this.targetMesh.computeWorldMatrix(true);
             }
 
             if (options.poleTargetMesh) {
-
                 this.poleTargetMesh = options.poleTargetMesh;
                 this.poleTargetMesh.computeWorldMatrix(true);
-
             } else if (options.poleTargetBone) {
                 this.poleTargetBone = options.poleTargetBone;
             } else if (this._bone1.getParent()) {
@@ -190,13 +192,10 @@ export class BoneIKController {
             if (options.slerpAmount) {
                 this.slerpAmount = options.slerpAmount;
             }
-
         }
-
     }
 
     private _setMaxAngle(ang: number): void {
-
         if (ang < 0) {
             ang = 0;
         }
@@ -207,28 +206,27 @@ export class BoneIKController {
 
         this._maxAngle = ang;
 
-        var a = this._bone1Length;
-        var b = this._bone2Length;
+        const a = this._bone1Length;
+        const b = this._bone2Length;
 
         this._maxReach = Math.sqrt(a * a + b * b - 2 * a * b * Math.cos(ang));
-
     }
 
     /**
      * Force the controller to update the bones
      */
     public update(): void {
-        var bone1 = this._bone1;
+        const bone1 = this._bone1;
 
         if (!bone1) {
             return;
         }
 
-        var target = this.targetPosition;
-        var poleTarget = this.poleTargetPosition;
+        const target = this.targetPosition;
+        const poleTarget = this.poleTargetPosition;
 
-        var mat1 = BoneIKController._tmpMats[0];
-        var mat2 = BoneIKController._tmpMats[1];
+        const mat1 = BoneIKController._tmpMats[0];
+        const mat2 = BoneIKController._tmpMats[1];
 
         if (this.targetMesh) {
             target.copyFrom(this.targetMesh.getAbsolutePosition());
@@ -240,13 +238,13 @@ export class BoneIKController {
             Vector3.TransformCoordinatesToRef(this.poleTargetLocalOffset, this.poleTargetMesh.getWorldMatrix(), poleTarget);
         }
 
-        var bonePos = BoneIKController._tmpVecs[0];
-        var zaxis = BoneIKController._tmpVecs[1];
-        var xaxis = BoneIKController._tmpVecs[2];
-        var yaxis = BoneIKController._tmpVecs[3];
-        var upAxis = BoneIKController._tmpVecs[4];
+        const bonePos = BoneIKController._tmpVecs[0];
+        const zaxis = BoneIKController._tmpVecs[1];
+        const xaxis = BoneIKController._tmpVecs[2];
+        const yaxis = BoneIKController._tmpVecs[3];
+        const upAxis = BoneIKController._tmpVecs[4];
 
-        var _tmpQuat = BoneIKController._tmpQuat;
+        const _tmpQuat = BoneIKController._tmpQuat;
 
         bone1.getAbsolutePositionToRef(this.mesh, bonePos);
 
@@ -269,17 +267,17 @@ export class BoneIKController {
 
         Matrix.FromXYZAxesToRef(xaxis, yaxis, zaxis, mat1);
 
-        var a = this._bone1Length;
-        var b = this._bone2Length;
+        const a = this._bone1Length;
+        const b = this._bone2Length;
 
-        var c = Vector3.Distance(bonePos, target);
+        let c = Vector3.Distance(bonePos, target);
 
         if (this._maxReach > 0) {
             c = Math.min(this._maxReach, c);
         }
 
-        var acosa = (b * b + c * c - a * a) / (2 * b * c);
-        var acosb = (c * c + a * a - b * b) / (2 * c * a);
+        let acosa = (b * b + c * c - a * a) / (2 * b * c);
+        let acosb = (c * c + a * a - b * b) / (2 * c * a);
 
         if (acosa > 1) {
             acosa = 1;
@@ -297,29 +295,25 @@ export class BoneIKController {
             acosb = -1;
         }
 
-        var angA = Math.acos(acosa);
-        var angB = Math.acos(acosb);
+        const angA = Math.acos(acosa);
+        const angB = Math.acos(acosb);
 
-        var angC = -angA - angB;
+        let angC = -angA - angB;
 
         if (this._rightHandedSystem) {
-
             Matrix.RotationYawPitchRollToRef(0, 0, this._adjustRoll, mat2);
             mat2.multiplyToRef(mat1, mat1);
 
             Matrix.RotationAxisToRef(this._bendAxis, angB, mat2);
             mat2.multiplyToRef(mat1, mat1);
-
         } else {
-
-            var _tmpVec = BoneIKController._tmpVecs[5];
+            const _tmpVec = BoneIKController._tmpVecs[5];
 
             _tmpVec.copyFrom(this._bendAxis);
             _tmpVec.x *= -1;
 
             Matrix.RotationAxisToRef(_tmpVec, -angB, mat2);
             mat2.multiplyToRef(mat1, mat1);
-
         }
 
         if (this.poleAngle) {

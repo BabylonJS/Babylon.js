@@ -23,7 +23,7 @@ export enum Xbox360Button {
     /** Left stick */
     LeftStick = 10,
     /** Right stick */
-    RightStick = 11
+    RightStick = 11,
 }
 
 /** Defines values for XBox360 DPad  */
@@ -35,7 +35,7 @@ export enum Xbox360Dpad {
     /** Left */
     Left = 14,
     /** Right */
-    Right = 15
+    Right = 15,
 }
 
 /**
@@ -183,7 +183,6 @@ export class Xbox360Pad extends Gamepad {
                 this.onButtonDownObservable.notifyObservers(buttonType);
             }
             if (newValue === 0) {
-
                 if (this._onbuttonup) {
                     this._onbuttonup(buttonType);
                 }

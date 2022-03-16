@@ -14,8 +14,8 @@ import { EngineStore } from "../Engines/engineStore";
 import { Constants } from "../Engines/constants";
 import { Logger } from "../Misc/logger";
 import { DeepCopier } from "../Misc/deepCopier";
-import { IInspectable } from '../Misc/iInspectable';
-import { IAnimatable } from '../Animations/animatable.interface';
+import { IInspectable } from "../Misc/iInspectable";
+import { IAnimatable } from "../Animations/animatable.interface";
 import { AbstractScene } from "../abstractScene";
 
 /**
@@ -138,7 +138,9 @@ export class Skeleton implements IAnimatable {
         /** defines the skeleton name */
         public name: string,
         /** defines the skeleton Id */
-        public id: string, scene: Scene) {
+        public id: string,
+        scene: Scene
+    ) {
         this.bones = [];
 
         this._scene = scene || EngineStore.LastCreatedScene;
@@ -220,12 +222,12 @@ export class Skeleton implements IAnimatable {
      * @returns a string representing the current skeleton data
      */
     public toString(fullDetails?: boolean): string {
-        var ret = `Name: ${this.name}, nBones: ${this.bones.length}`;
+        let ret = `Name: ${this.name}, nBones: ${this.bones.length}`;
         ret += `, nAnimationRanges: ${this._ranges ? Object.keys(this._ranges).length : "none"}`;
         if (fullDetails) {
             ret += ", Ranges: {";
             let first = true;
-            for (let name in this._ranges) {
+            for (const name in this._ranges) {
                 if (first) {
                     ret += ", ";
                     first = false;
@@ -238,12 +240,12 @@ export class Skeleton implements IAnimatable {
     }
 
     /**
-    * Get bone's index searching by name
-    * @param name defines bone's name to search for
-    * @return the indice of the bone. Returns -1 if not found
-    */
+     * Get bone's index searching by name
+     * @param name defines bone's name to search for
+     * @return the indice of the bone. Returns -1 if not found
+     */
     public getBoneIndexByName(name: string): number {
-        for (var boneIndex = 0, cache = this.bones.length; boneIndex < cache; boneIndex++) {
+        for (let boneIndex = 0, cache = this.bones.length; boneIndex < cache; boneIndex++) {
             if (this.bones[boneIndex].name === name) {
                 return boneIndex;
             }
@@ -261,7 +263,7 @@ export class Skeleton implements IAnimatable {
         // check name not already in use
         if (!this._ranges[name]) {
             this._ranges[name] = new AnimationRange(name, from, to);
-            for (var i = 0, nBones = this.bones.length; i < nBones; i++) {
+            for (let i = 0, nBones = this.bones.length; i < nBones; i++) {
                 if (this.bones[i].animations[0]) {
                     this.bones[i].animations[0].createRange(name, from, to);
                 }
@@ -275,7 +277,7 @@ export class Skeleton implements IAnimatable {
      * @param deleteFrames defines if frames must be removed as well
      */
     public deleteAnimationRange(name: string, deleteFrames = true): void {
-        for (var i = 0, nBones = this.bones.length; i < nBones; i++) {
+        for (let i = 0, nBones = this.bones.length; i < nBones; i++) {
             if (this.bones[i].animations[0]) {
                 this.bones[i].animations[0].deleteRange(name, deleteFrames);
             }
@@ -297,8 +299,8 @@ export class Skeleton implements IAnimatable {
      * @returns an array
      */
     public getAnimationRanges(): Nullable<AnimationRange>[] {
-        var animationRanges: Nullable<AnimationRange>[] = [];
-        var name: string;
+        const animationRanges: Nullable<AnimationRange>[] = [];
+        let name: string;
         for (name in this._ranges) {
             animationRanges.push(this._ranges[name]);
         }
@@ -317,14 +319,14 @@ export class Skeleton implements IAnimatable {
         if (this._ranges[name] || !source.getAnimationRange(name)) {
             return false;
         }
-        var ret = true;
-        var frameOffset = this._getHighestAnimationFrame() + 1;
+        let ret = true;
+        const frameOffset = this._getHighestAnimationFrame() + 1;
 
         // make a dictionary of source skeleton's bones, so exact same order or doubly nested loop is not required
-        var boneDict: { [key: string]: Bone } = {};
-        var sourceBones = source.bones;
-        var nBones: number;
-        var i: number;
+        const boneDict: { [key: string]: Bone } = {};
+        const sourceBones = source.bones;
+        let nBones: number;
+        let i: number;
         for (i = 0, nBones = sourceBones.length; i < nBones; i++) {
             boneDict[sourceBones[i].name] = sourceBones[i];
         }
@@ -334,11 +336,11 @@ export class Skeleton implements IAnimatable {
             ret = false;
         }
 
-        var skelDimensionsRatio = (rescaleAsRequired && this.dimensionsAtRest && source.dimensionsAtRest) ? this.dimensionsAtRest.divide(source.dimensionsAtRest) : null;
+        const skelDimensionsRatio = rescaleAsRequired && this.dimensionsAtRest && source.dimensionsAtRest ? this.dimensionsAtRest.divide(source.dimensionsAtRest) : null;
 
         for (i = 0, nBones = this.bones.length; i < nBones; i++) {
-            var boneName = this.bones[i].name;
-            var sourceBone = boneDict[boneName];
+            const boneName = this.bones[i].name;
+            const sourceBone = boneDict[boneName];
             if (sourceBone) {
                 ret = ret && this.bones[i].copyAnimationRange(sourceBone, name, frameOffset, rescaleAsRequired, skelDimensionsRatio);
             } else {
@@ -347,7 +349,7 @@ export class Skeleton implements IAnimatable {
             }
         }
         // do not call createAnimationRange(), since it also is done to bones, which was already done
-        var range = source.getAnimationRange(name);
+        const range = source.getAnimationRange(name);
         if (range) {
             this._ranges[name] = new AnimationRange(name, range.from + frameOffset, range.to + frameOffset);
         }
@@ -366,10 +368,10 @@ export class Skeleton implements IAnimatable {
     }
 
     private _getHighestAnimationFrame(): number {
-        var ret = 0;
-        for (var i = 0, nBones = this.bones.length; i < nBones; i++) {
+        let ret = 0;
+        for (let i = 0, nBones = this.bones.length; i < nBones; i++) {
             if (this.bones[i].animations[0]) {
-                var highest = this.bones[i].animations[0].getHighestFrame();
+                const highest = this.bones[i].animations[0].getHighestFrame();
                 if (ret < highest) {
                     ret = highest;
                 }
@@ -387,7 +389,7 @@ export class Skeleton implements IAnimatable {
      * @returns a new animatable
      */
     public beginAnimation(name: string, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void): Nullable<Animatable> {
-        var range = this.getAnimationRange(name);
+        const range = this.getAnimationRange(name);
 
         if (!range) {
             return null;
@@ -404,7 +406,7 @@ export class Skeleton implements IAnimatable {
      * @returns the original skeleton
      */
     public static MakeAnimationAdditive(skeleton: Skeleton, referenceFrame = 0, range: string): Nullable<Skeleton> {
-        var rangeValue = skeleton.getAnimationRange(range);
+        const rangeValue = skeleton.getAnimationRange(range);
 
         // We can't make a range additive if it doesn't exist
         if (!rangeValue) {
@@ -412,11 +414,11 @@ export class Skeleton implements IAnimatable {
         }
 
         // Find any current scene-level animatable belonging to the target that matches the range
-        var sceneAnimatables = skeleton._scene.getAllAnimatablesByTarget(skeleton);
-        var rangeAnimatable: Nullable<Animatable> = null;
+        const sceneAnimatables = skeleton._scene.getAllAnimatablesByTarget(skeleton);
+        let rangeAnimatable: Nullable<Animatable> = null;
 
         for (let index = 0; index < sceneAnimatables.length; index++) {
-            let sceneAnimatable = sceneAnimatables[index];
+            const sceneAnimatable = sceneAnimatables[index];
 
             if (sceneAnimatable.fromFrame === rangeValue?.from && sceneAnimatable.toFrame === rangeValue?.to) {
                 rangeAnimatable = sceneAnimatable;
@@ -425,17 +427,17 @@ export class Skeleton implements IAnimatable {
         }
 
         // Convert the animations belonging to the skeleton to additive keyframes
-        var animatables = skeleton.getAnimatables();
+        const animatables = skeleton.getAnimatables();
 
         for (let index = 0; index < animatables.length; index++) {
-            let animatable = animatables[index];
-            let animations = animatable.animations;
+            const animatable = animatables[index];
+            const animations = animatable.animations;
 
             if (!animations) {
                 continue;
             }
 
-            for (var animIndex = 0; animIndex < animations.length; animIndex++) {
+            for (let animIndex = 0; animIndex < animations.length; animIndex++) {
                 Animation.MakeAnimationAdditive(animations[animIndex], referenceFrame, range);
             }
         }
@@ -453,14 +455,20 @@ export class Skeleton implements IAnimatable {
         this._isDirty = true;
     }
 
-    /** @hidden */
+    /**
+     * @param mesh
+     * @hidden
+     */
     public _registerMeshWithPoseMatrix(mesh: AbstractMesh): void {
         this._meshesWithPoseMatrix.push(mesh);
     }
 
-    /** @hidden */
+    /**
+     * @param mesh
+     * @hidden
+     */
     public _unregisterMeshWithPoseMatrix(mesh: AbstractMesh): void {
-        var index = this._meshesWithPoseMatrix.indexOf(mesh);
+        const index = this._meshesWithPoseMatrix.indexOf(mesh);
 
         if (index > -1) {
             this._meshesWithPoseMatrix.splice(index, 1);
@@ -468,13 +476,12 @@ export class Skeleton implements IAnimatable {
     }
 
     private _computeTransformMatrices(targetMatrix: Float32Array, initialSkinMatrix: Nullable<Matrix>): void {
-
         this.onBeforeComputeObservable.notifyObservers(this);
 
-        for (var index = 0; index < this.bones.length; index++) {
-            var bone = this.bones[index];
+        for (let index = 0; index < this.bones.length; index++) {
+            const bone = this.bones[index];
             bone._childUpdateId++;
-            var parentBone = bone.getParent();
+            const parentBone = bone.getParent();
 
             if (parentBone) {
                 bone.getLocalMatrix().multiplyToRef(parentBone.getWorldMatrix(), bone.getWorldMatrix());
@@ -487,7 +494,7 @@ export class Skeleton implements IAnimatable {
             }
 
             if (bone._index !== -1) {
-                var mappedIndex = bone._index === null ? index : bone._index;
+                const mappedIndex = bone._index === null ? index : bone._index;
                 bone.getInvertedAbsoluteTransform().multiplyToArray(bone.getWorldMatrix(), targetMatrix, mappedIndex * 16);
             }
         }
@@ -539,12 +546,20 @@ export class Skeleton implements IAnimatable {
                     if (this.isUsingTextureForMatrices) {
                         const textureWidth = (this.bones.length + 1) * 4;
                         if (!mesh._transformMatrixTexture || mesh._transformMatrixTexture.getSize().width !== textureWidth) {
-
                             if (mesh._transformMatrixTexture) {
                                 mesh._transformMatrixTexture.dispose();
                             }
 
-                            mesh._transformMatrixTexture = RawTexture.CreateRGBATexture(mesh._bonesTransformMatrices, (this.bones.length + 1) * 4, 1, this._scene, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE, Constants.TEXTURETYPE_FLOAT);
+                            mesh._transformMatrixTexture = RawTexture.CreateRGBATexture(
+                                mesh._bonesTransformMatrices,
+                                (this.bones.length + 1) * 4,
+                                1,
+                                this._scene,
+                                false,
+                                false,
+                                Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+                                Constants.TEXTURETYPE_FLOAT
+                            );
                         }
                     }
                 }
@@ -568,7 +583,16 @@ export class Skeleton implements IAnimatable {
                         this._transformMatrixTexture.dispose();
                     }
 
-                    this._transformMatrixTexture = RawTexture.CreateRGBATexture(this._transformMatrices, (this.bones.length + 1) * 4, 1, this._scene, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE, Constants.TEXTURETYPE_FLOAT);
+                    this._transformMatrixTexture = RawTexture.CreateRGBATexture(
+                        this._transformMatrices,
+                        (this.bones.length + 1) * 4,
+                        1,
+                        this._scene,
+                        false,
+                        false,
+                        Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+                        Constants.TEXTURETYPE_FLOAT
+                    );
                 }
             }
 
@@ -590,7 +614,7 @@ export class Skeleton implements IAnimatable {
         if (!this._animatables || this._animatables.length !== this.bones.length) {
             this._animatables = [];
 
-            for (var index = 0; index < this.bones.length; index++) {
+            for (let index = 0; index < this.bones.length; index++) {
                 this._animatables.push(this.bones[index]);
             }
         }
@@ -605,21 +629,21 @@ export class Skeleton implements IAnimatable {
      * @returns the new skeleton
      */
     public clone(name: string, id?: string): Skeleton {
-        var result = new Skeleton(name, id || name, this._scene);
+        const result = new Skeleton(name, id || name, this._scene);
 
         result.needInitialSkinMatrix = this.needInitialSkinMatrix;
 
-        for (var index = 0; index < this.bones.length; index++) {
-            var source = this.bones[index];
-            var parentBone = null;
+        for (let index = 0; index < this.bones.length; index++) {
+            const source = this.bones[index];
+            let parentBone = null;
 
-            let parent = source.getParent();
+            const parent = source.getParent();
             if (parent) {
-                var parentIndex = this.bones.indexOf(parent);
+                const parentIndex = this.bones.indexOf(parent);
                 parentBone = result.bones[parentIndex];
             }
 
-            var bone = new Bone(source.name, result, parentBone, source.getBaseMatrix().clone(), source.getRestPose().clone());
+            const bone = new Bone(source.name, result, parentBone, source.getBaseMatrix().clone(), source.getRestPose().clone());
             bone._index = source._index;
 
             if (source._linkedTransformNode) {
@@ -631,8 +655,8 @@ export class Skeleton implements IAnimatable {
 
         if (this._ranges) {
             result._ranges = {};
-            for (var rangeName in this._ranges) {
-                let range = this._ranges[rangeName];
+            for (const rangeName in this._ranges) {
+                const range = this._ranges[rangeName];
 
                 if (range) {
                     result._ranges[rangeName] = range.clone();
@@ -690,7 +714,7 @@ export class Skeleton implements IAnimatable {
      * @returns a JSON object
      */
     public serialize(): any {
-        var serializationObject: any = {};
+        const serializationObject: any = {};
 
         serializationObject.name = this.name;
         serializationObject.id = this.id;
@@ -703,18 +727,18 @@ export class Skeleton implements IAnimatable {
 
         serializationObject.needInitialSkinMatrix = this.needInitialSkinMatrix;
 
-        for (var index = 0; index < this.bones.length; index++) {
-            var bone = this.bones[index];
-            let parent = bone.getParent();
+        for (let index = 0; index < this.bones.length; index++) {
+            const bone = this.bones[index];
+            const parent = bone.getParent();
 
-            var serializedBone: any = {
+            const serializedBone: any = {
                 parentBoneIndex: parent ? this.bones.indexOf(parent) : -1,
                 index: bone.getIndex(),
                 name: bone.name,
                 id: bone.id,
                 matrix: bone.getBaseMatrix().toArray(),
                 rest: bone.getRestPose().toArray(),
-                linkedTransformNodeId: bone.getTransformNode()?.id
+                linkedTransformNodeId: bone.getTransformNode()?.id,
             };
 
             serializationObject.bones.push(serializedBone);
@@ -732,14 +756,14 @@ export class Skeleton implements IAnimatable {
             }
 
             serializationObject.ranges = [];
-            for (var name in this._ranges) {
-                let source = this._ranges[name];
+            for (const name in this._ranges) {
+                const source = this._ranges[name];
 
                 if (!source) {
                     continue;
                 }
 
-                var range: any = {};
+                const range: any = {};
                 range.name = name;
                 range.from = source.from;
                 range.to = source.to;
@@ -756,7 +780,7 @@ export class Skeleton implements IAnimatable {
      * @returns a new skeleton
      */
     public static Parse(parsedSkeleton: any, scene: Scene): Skeleton {
-        var skeleton = new Skeleton(parsedSkeleton.name, parsedSkeleton.id, scene);
+        const skeleton = new Skeleton(parsedSkeleton.name, parsedSkeleton.id, scene);
         if (parsedSkeleton.dimensionsAtRest) {
             skeleton.dimensionsAtRest = Vector3.FromArray(parsedSkeleton.dimensionsAtRest);
         }
@@ -765,15 +789,15 @@ export class Skeleton implements IAnimatable {
 
         let index: number;
         for (index = 0; index < parsedSkeleton.bones.length; index++) {
-            var parsedBone = parsedSkeleton.bones[index];
-            var parsedBoneIndex = parsedSkeleton.bones[index].index;
-            var parentBone = null;
+            const parsedBone = parsedSkeleton.bones[index];
+            const parsedBoneIndex = parsedSkeleton.bones[index].index;
+            let parentBone = null;
             if (parsedBone.parentBoneIndex > -1) {
                 parentBone = skeleton.bones[parsedBone.parentBoneIndex];
             }
 
-            var rest: Nullable<Matrix> = parsedBone.rest ? Matrix.FromArray(parsedBone.rest) : null;
-            var bone = new Bone(parsedBone.name, skeleton, parentBone, Matrix.FromArray(parsedBone.matrix), rest, null, parsedBoneIndex);
+            const rest: Nullable<Matrix> = parsedBone.rest ? Matrix.FromArray(parsedBone.rest) : null;
+            const bone = new Bone(parsedBone.name, skeleton, parentBone, Matrix.FromArray(parsedBone.matrix), rest, null, parsedBoneIndex);
 
             if (parsedBone.id !== undefined && parsedBone.id !== null) {
                 bone.id = parsedBone.id;
@@ -800,7 +824,7 @@ export class Skeleton implements IAnimatable {
         // placed after bones, so createAnimationRange can cascade down
         if (parsedSkeleton.ranges) {
             for (index = 0; index < parsedSkeleton.ranges.length; index++) {
-                var data = parsedSkeleton.ranges[index];
+                const data = parsedSkeleton.ranges[index];
                 skeleton.createAnimationRange(data.name, data.from, data.to);
             }
         }
@@ -812,14 +836,12 @@ export class Skeleton implements IAnimatable {
      * @param forceUpdate defines if computation must be done even if cache is up to date
      */
     public computeAbsoluteTransforms(forceUpdate = false): void {
-
-        var renderId = this._scene.getRenderId();
+        const renderId = this._scene.getRenderId();
 
         if (this._lastAbsoluteTransformsUpdateId != renderId || forceUpdate) {
             this.bones[0].computeAbsoluteTransforms();
             this._lastAbsoluteTransformsUpdateId = renderId;
         }
-
     }
 
     /**
@@ -827,7 +849,7 @@ export class Skeleton implements IAnimatable {
      * @returns a matrix
      */
     public getPoseMatrix(): Nullable<Matrix> {
-        var poseMatrix: Nullable<Matrix> = null;
+        let poseMatrix: Nullable<Matrix> = null;
 
         if (this._meshesWithPoseMatrix.length > 0) {
             poseMatrix = this._meshesWithPoseMatrix[0].getPoseMatrix();
@@ -840,9 +862,9 @@ export class Skeleton implements IAnimatable {
      * Sorts bones per internal index
      */
     public sortBones(): void {
-        var bones = new Array<Bone>();
-        var visited = new Array<boolean>(this.bones.length);
-        for (var index = 0; index < this.bones.length; index++) {
+        const bones = new Array<Bone>();
+        const visited = new Array<boolean>(this.bones.length);
+        for (let index = 0; index < this.bones.length; index++) {
             this._sortBones(index, bones, visited);
         }
 
@@ -856,12 +878,12 @@ export class Skeleton implements IAnimatable {
 
         visited[index] = true;
 
-        var bone = this.bones[index];
+        const bone = this.bones[index];
         if (bone._index === undefined) {
             bone._index = index;
         }
 
-        var parentBone = bone.getParent();
+        const parentBone = bone.getParent();
         if (parentBone) {
             this._sortBones(this.bones.indexOf(parentBone), bones, visited);
         }

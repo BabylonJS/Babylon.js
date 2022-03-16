@@ -1,7 +1,7 @@
 import * as Babylon from "../index";
 import * as DebugImport from "../Debug/index";
 
-declare var global: any;
+declare let global: any;
 
 /**
  * Legacy support, defining window.BABYLON (global variable).
@@ -9,7 +9,7 @@ declare var global: any;
  * This is the entry point for the UMD module.
  * The entry point for a future ESM package should be index.ts
  */
-var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : undefined);
+const globalObject = typeof global !== "undefined" ? global : typeof window !== "undefined" ? window : undefined;
 if (typeof globalObject !== "undefined") {
     (<any>globalObject).BABYLON = BABYLON;
     (<any>globalObject).BABYLON = (<any>globalObject).BABYLON || {};

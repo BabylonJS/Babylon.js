@@ -4,7 +4,7 @@ import { IPhysicsEngine, PhysicsImpostorJoint, IPhysicsEnginePlugin } from "./IP
 import { PhysicsImpostor, IPhysicsEnabledObject } from "./physicsImpostor";
 import { PhysicsJoint } from "./physicsJoint";
 import { PhysicsRaycastResult } from "./physicsRaycastResult";
-import { _WarnImport } from '../Misc/devTools';
+import { _WarnImport } from "../Misc/devTools";
 
 /**
  * Class used to control physics engine
@@ -41,8 +41,7 @@ export class PhysicsEngine implements IPhysicsEngine {
      */
     constructor(gravity: Nullable<Vector3>, private _physicsPlugin: IPhysicsEnginePlugin = PhysicsEngine.DefaultPluginFactory()) {
         if (!this._physicsPlugin.isSupported()) {
-            throw new Error("Physics Engine " + this._physicsPlugin.name + " cannot be found. "
-                + "Please make sure it is included.");
+            throw new Error("Physics Engine " + this._physicsPlugin.name + " cannot be found. " + "Please make sure it is included.");
         }
         gravity = gravity || new Vector3(0, -9.807, 0);
         this.setGravity(gravity);
@@ -133,9 +132,9 @@ export class PhysicsEngine implements IPhysicsEngine {
      * @param impostor the impostor to remove
      */
     public removeImpostor(impostor: PhysicsImpostor) {
-        var index = this._impostors.indexOf(impostor);
+        const index = this._impostors.indexOf(impostor);
         if (index > -1) {
-            var removed = this._impostors.splice(index, 1);
+            const removed = this._impostors.splice(index, 1);
             //Is it needed?
             if (removed.length) {
                 this.getPhysicsPlugin().removePhysicsBody(impostor);
@@ -150,10 +149,10 @@ export class PhysicsEngine implements IPhysicsEngine {
      * @param joint defines the joint that will connect both impostors.
      */
     public addJoint(mainImpostor: PhysicsImpostor, connectedImpostor: PhysicsImpostor, joint: PhysicsJoint) {
-        var impostorJoint = {
+        const impostorJoint = {
             mainImpostor: mainImpostor,
             connectedImpostor: connectedImpostor,
-            joint: joint
+            joint: joint,
         };
         joint.physicsPlugin = this._physicsPlugin;
         this._joints.push(impostorJoint);
@@ -167,15 +166,12 @@ export class PhysicsEngine implements IPhysicsEngine {
      * @param joint defines the joint to remove
      */
     public removeJoint(mainImpostor: PhysicsImpostor, connectedImpostor: PhysicsImpostor, joint: PhysicsJoint) {
-        var matchingJoints = this._joints.filter(function (impostorJoint) {
-            return (impostorJoint.connectedImpostor === connectedImpostor
-                && impostorJoint.joint === joint
-                && impostorJoint.mainImpostor === mainImpostor);
+        const matchingJoints = this._joints.filter(function (impostorJoint) {
+            return impostorJoint.connectedImpostor === connectedImpostor && impostorJoint.joint === joint && impostorJoint.mainImpostor === mainImpostor;
         });
         if (matchingJoints.length) {
             this._physicsPlugin.removeJoint(matchingJoints[0]);
             //TODO remove it from the list as well
-
         }
     }
 
@@ -186,7 +182,6 @@ export class PhysicsEngine implements IPhysicsEngine {
     public _step(delta: number) {
         //check if any mesh has no body / requires an update
         this._impostors.forEach((impostor) => {
-
             if (impostor.isBodyInitRequired()) {
                 this._physicsPlugin.generatePhysicsBody(impostor);
             }
@@ -223,7 +218,7 @@ export class PhysicsEngine implements IPhysicsEngine {
      * @returns the PhysicsImpostor or null if not found
      */
     public getImpostorForPhysicsObject(object: IPhysicsEnabledObject): Nullable<PhysicsImpostor> {
-        for (var i = 0; i < this._impostors.length; ++i) {
+        for (let i = 0; i < this._impostors.length; ++i) {
             if (this._impostors[i].object === object) {
                 return this._impostors[i];
             }
@@ -238,7 +233,7 @@ export class PhysicsEngine implements IPhysicsEngine {
      * @returns the PhysicsImpostor or null if not found
      */
     public getImpostorWithPhysicsBody(body: any): Nullable<PhysicsImpostor> {
-        for (var i = 0; i < this._impostors.length; ++i) {
+        for (let i = 0; i < this._impostors.length; ++i) {
             if (this._impostors[i].physicsBody === body) {
                 return this._impostors[i];
             }

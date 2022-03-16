@@ -3,7 +3,7 @@ import { Observable } from "../../../Misc/observable";
 import { Nullable } from "../../../types";
 import { Scene } from "../../../scene";
 import { Matrix, Vector3, Vector2 } from "../../../Maths/math.vector";
-import { Color4, Color3 } from '../../../Maths/math.color';
+import { Color4, Color3 } from "../../../Maths/math.color";
 import { Engine } from "../../../Engines/engine";
 import { VertexBuffer } from "../../../Buffers/buffer";
 import { SceneComponentConstants } from "../../../sceneComponent";
@@ -17,12 +17,12 @@ import { ProceduralTextureSceneComponent } from "./proceduralTextureSceneCompone
 import "../../../Engines/Extensions/engine.renderTarget";
 import "../../../Engines/Extensions/engine.renderTargetCube";
 import "../../../Shaders/procedural.vertex";
-import { DataBuffer } from '../../../Buffers/dataBuffer';
-import { RegisterClass } from '../../../Misc/typeStore';
-import { NodeMaterial } from '../../Node/nodeMaterial';
-import { TextureSize } from '../../../Materials/Textures/textureCreationOptions';
-import { EngineStore } from '../../../Engines/engineStore';
-import { Constants } from '../../../Engines/constants';
+import { DataBuffer } from "../../../Buffers/dataBuffer";
+import { RegisterClass } from "../../../Misc/typeStore";
+import { NodeMaterial } from "../../Node/nodeMaterial";
+import { TextureSize } from "../../../Materials/Textures/textureCreationOptions";
+import { EngineStore } from "../../../Engines/engineStore";
+import { Constants } from "../../../Engines/constants";
 import { DrawWrapper } from "../../drawWrapper";
 import { RenderTargetWrapper } from "../../../Engines/renderTargetWrapper";
 
@@ -121,7 +121,16 @@ export class ProceduralTexture extends Texture {
      * @param isCube Define if the texture is a cube texture or not (this will render each faces of the cube)
      * @param textureType The FBO internal texture type
      */
-    constructor(name: string, size: TextureSize, fragment: any, scene: Nullable<Scene>, fallbackTexture: Nullable<Texture> = null, generateMipMaps = true, isCube = false, textureType = Constants.TEXTURETYPE_UNSIGNED_INT) {
+    constructor(
+        name: string,
+        size: TextureSize,
+        fragment: any,
+        scene: Nullable<Scene>,
+        fallbackTexture: Nullable<Texture> = null,
+        generateMipMaps = true,
+        isCube = false,
+        textureType = Constants.TEXTURETYPE_UNSIGNED_INT
+    ) {
         super(null, scene, !generateMipMaps);
 
         scene = this.getScene() || EngineStore.LastCreatedScene!;
@@ -149,7 +158,7 @@ export class ProceduralTexture extends Texture {
         this._texture = rtWrapper.texture;
 
         // VBO
-        var vertices = [];
+        const vertices = [];
         vertices.push(1, 1);
         vertices.push(-1, 1);
         vertices.push(-1, -1);
@@ -162,11 +171,20 @@ export class ProceduralTexture extends Texture {
 
     private _createRtWrapper(isCube: boolean, size: TextureSize, generateMipMaps: boolean, textureType: number) {
         if (isCube) {
-            this._rtWrapper = this._fullEngine.createRenderTargetCubeTexture(size as number, { generateMipMaps: generateMipMaps, generateDepthBuffer: false, generateStencilBuffer: false, type: textureType });
+            this._rtWrapper = this._fullEngine.createRenderTargetCubeTexture(size as number, {
+                generateMipMaps: generateMipMaps,
+                generateDepthBuffer: false,
+                generateStencilBuffer: false,
+                type: textureType,
+            });
             this.setFloat("face", 0);
-        }
-        else {
-            this._rtWrapper = this._fullEngine.createRenderTargetTexture(size, { generateMipMaps: generateMipMaps, generateDepthBuffer: false, generateStencilBuffer: false, type: textureType });
+        } else {
+            this._rtWrapper = this._fullEngine.createRenderTargetTexture(size, {
+                generateMipMaps: generateMipMaps,
+                generateDepthBuffer: false,
+                generateStencilBuffer: false,
+                type: textureType,
+            });
         }
         return this._rtWrapper;
     }
@@ -179,7 +197,10 @@ export class ProceduralTexture extends Texture {
         return this._drawWrapper.effect!;
     }
 
-    /** @hidden **/
+    /**
+     * @param effect
+     * @hidden*
+     */
     public _setEffect(effect: Effect) {
         this._drawWrapper.effect = effect;
     }
@@ -207,10 +228,10 @@ export class ProceduralTexture extends Texture {
     }
 
     private _createIndexBuffer(): void {
-        var engine = this._fullEngine;
+        const engine = this._fullEngine;
 
         // Indices
-        var indices = [];
+        const indices = [];
         indices.push(0);
         indices.push(1);
         indices.push(2);
@@ -224,7 +245,7 @@ export class ProceduralTexture extends Texture {
 
     /** @hidden */
     public _rebuild(): void {
-        let vb = this._vertexBuffers[VertexBuffer.PositionKind];
+        const vb = this._vertexBuffers[VertexBuffer.PositionKind];
 
         if (vb) {
             vb._rebuild();
@@ -254,8 +275,8 @@ export class ProceduralTexture extends Texture {
      * @returns true if ready, otherwise, false.
      */
     public isReady(): boolean {
-        var engine = this._fullEngine;
-        var shaders;
+        const engine = this._fullEngine;
+        let shaders;
 
         if (this.nodeMaterialSource) {
             return this._drawWrapper.effect!.isReady();
@@ -273,40 +294,34 @@ export class ProceduralTexture extends Texture {
             return false;
         }
 
-        let defines = this._getDefines();
+        const defines = this._getDefines();
         if (this._drawWrapper.effect && defines === this._cachedDefines && this._drawWrapper.effect.isReady()) {
             return true;
         }
 
         if (this._fragment.fragmentElement !== undefined) {
             shaders = { vertex: "procedural", fragmentElement: this._fragment.fragmentElement };
-        }
-        else {
+        } else {
             shaders = { vertex: "procedural", fragment: this._fragment };
         }
 
         if (this._cachedDefines !== defines) {
             this._cachedDefines = defines;
 
-            this._drawWrapper.effect = engine.createEffect(shaders,
-                [VertexBuffer.PositionKind],
-                this._uniforms,
-                this._samplers,
-                defines, undefined, undefined, () => {
-                    this._rtWrapper?.dispose();
-                    this._rtWrapper = this._texture = null;
+            this._drawWrapper.effect = engine.createEffect(shaders, [VertexBuffer.PositionKind], this._uniforms, this._samplers, defines, undefined, undefined, () => {
+                this._rtWrapper?.dispose();
+                this._rtWrapper = this._texture = null;
 
-                    if (this._fallbackTexture) {
-                        this._texture = this._fallbackTexture._texture;
+                if (this._fallbackTexture) {
+                    this._texture = this._fallbackTexture._texture;
 
-                        if (this._texture) {
-                            this._texture.incrementReferences();
-                        }
+                    if (this._texture) {
+                        this._texture.incrementReferences();
                     }
-
-                    this._fallbackTextureUsed = true;
                 }
-            );
+
+                this._fallbackTextureUsed = true;
+            });
         }
 
         return this._drawWrapper.effect!.isReady();
@@ -355,7 +370,8 @@ export class ProceduralTexture extends Texture {
             return false;
         }
 
-        if (this._currentRefreshId === -1) { // At least render once
+        if (this._currentRefreshId === -1) {
+            // At least render once
             this._currentRefreshId = 1;
             this._frameId++;
             return true;
@@ -530,13 +546,13 @@ export class ProceduralTexture extends Texture {
      * @param useCameraPostProcess Define if camera post process should be applied to the texture
      */
     public render(useCameraPostProcess?: boolean): void {
-        var scene = this.getScene();
+        const scene = this.getScene();
 
         if (!scene) {
             return;
         }
 
-        var engine = this._fullEngine;
+        const engine = this._fullEngine;
 
         // Render
         engine.enableEffect(this._drawWrapper);
@@ -571,7 +587,7 @@ export class ProceduralTexture extends Texture {
 
             // Color4
             for (name in this._colors4) {
-                var color = this._colors4[name];
+                const color = this._colors4[name];
                 this._drawWrapper.effect!.setFloat4(name, color.r, color.g, color.b, color.a);
             }
 
@@ -598,7 +614,7 @@ export class ProceduralTexture extends Texture {
         engine._debugPushGroup?.(`procedural texture generation for ${this.name}`, 1);
 
         if (this.isCube) {
-            for (var face = 0; face < 6; face++) {
+            for (let face = 0; face < 6; face++) {
                 engine.bindFramebuffer(this._rtWrapper, face, undefined, undefined, true);
 
                 // VBOs
@@ -651,8 +667,8 @@ export class ProceduralTexture extends Texture {
      * @returns the cloned texture
      */
     public clone(): ProceduralTexture {
-        var textureSize = this.getSize();
-        var newTexture = new ProceduralTexture(this.name, textureSize.width, this._fragment, <Scene>this.getScene(), this._fallbackTexture, this._generateMipMaps);
+        const textureSize = this.getSize();
+        const newTexture = new ProceduralTexture(this.name, textureSize.width, this._fragment, <Scene>this.getScene(), this._fallbackTexture, this._generateMipMaps);
 
         // Base texture
         newTexture.hasAlpha = this.hasAlpha;
@@ -668,19 +684,19 @@ export class ProceduralTexture extends Texture {
      * Dispose the texture and release its associated resources.
      */
     public dispose(): void {
-        let scene = this.getScene();
+        const scene = this.getScene();
 
         if (!scene) {
             return;
         }
 
-        var index = scene.proceduralTextures.indexOf(this);
+        const index = scene.proceduralTextures.indexOf(this);
 
         if (index >= 0) {
             scene.proceduralTextures.splice(index, 1);
         }
 
-        var vertexBuffer = this._vertexBuffers[VertexBuffer.PositionKind];
+        const vertexBuffer = this._vertexBuffers[VertexBuffer.PositionKind];
         if (vertexBuffer) {
             vertexBuffer.dispose();
             this._vertexBuffers[VertexBuffer.PositionKind] = null;

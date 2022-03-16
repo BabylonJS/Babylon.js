@@ -3,12 +3,12 @@ import { TransformNode } from "../Meshes/transformNode";
 import { Mesh } from "../Meshes/mesh";
 import { Texture } from "../Materials/Textures/texture";
 import { BackgroundMaterial } from "../Materials/Background/backgroundMaterial";
-import "../Meshes/Builders/sphereBuilder";
+import { CreateSphere } from "../Meshes/Builders/sphereBuilder";
 import { Nullable } from "../types";
 import { Observer, Observable } from "../Misc/observable";
 import { Vector3 } from "../Maths/math.vector";
 import { Axis } from "../Maths/math";
-import { CreateSphere } from "../Meshes/Builders/sphereBuilder";
+
 
 declare type Camera = import("../Cameras/camera").Camera;
 
@@ -179,6 +179,20 @@ export abstract class TextureDome<T extends Texture> extends TransformNode {
      * @param name Element's name, child elements will append suffixes for their own names.
      * @param textureUrlOrElement defines the url(s) or the (video) HTML element to use
      * @param options An object containing optional or exposed sub element properties
+     * @param options.resolution
+     * @param options.clickToPlay
+     * @param options.autoPlay
+     * @param options.loop
+     * @param options.size
+     * @param options.poster
+     * @param options.faceForward
+     * @param options.useDirectMapping
+     * @param options.halfDomeMode
+     * @param options.crossEyeMode
+     * @param options.generateMipMaps
+     * @param options.mesh
+     * @param scene
+     * @param onError
      */
     constructor(
         name: string,
@@ -229,7 +243,7 @@ export abstract class TextureDome<T extends Texture> extends TransformNode {
             this._mesh = options.mesh;
         }
         // configure material
-        let material = (this._material = new BackgroundMaterial(name + "_material", scene));
+        const material = (this._material = new BackgroundMaterial(name + "_material", scene));
         material.useEquirectangularFOV = true;
         material.fovMultiplier = 1.0;
         material.opacityFresnel = false;
@@ -259,10 +273,10 @@ export abstract class TextureDome<T extends Texture> extends TransformNode {
 
         // Initial rotation
         if (options.faceForward && scene.activeCamera) {
-            let camera = scene.activeCamera;
+            const camera = scene.activeCamera;
 
-            let forward = Vector3.Forward();
-            var direction = Vector3.TransformNormal(forward, camera.getViewMatrix());
+            const forward = Vector3.Forward();
+            const direction = Vector3.TransformNormal(forward, camera.getViewMatrix());
             direction.normalize();
 
             this.rotation.y = Math.acos(Vector3.Dot(forward, direction));

@@ -6,8 +6,8 @@ import { PostProcess, PostProcessOptions } from "./postProcess";
 import { Engine } from "../Engines/engine";
 
 import "../Shaders/refraction.fragment";
-import { RegisterClass } from '../Misc/typeStore';
-import { SerializationHelper, serialize } from '../Misc/decorators';
+import { RegisterClass } from "../Misc/typeStore";
+import { SerializationHelper, serialize } from "../Misc/decorators";
 
 declare type Scene = import("../scene").Scene;
 
@@ -120,17 +120,33 @@ export class RefractionPostProcess extends PostProcess {
         super.dispose(camera);
     }
 
-    /** @hidden */
+    /**
+     * @param parsedPostProcess
+     * @param targetCamera
+     * @param scene
+     * @param rootUrl
+     * @hidden
+     */
     public static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string) {
-        return SerializationHelper.Parse(() => {
-            return new RefractionPostProcess(
-                parsedPostProcess.name, parsedPostProcess.refractionTextureUrl,
-                parsedPostProcess.color, parsedPostProcess.depth,
-                parsedPostProcess.colorLevel,
-                parsedPostProcess.options, targetCamera,
-                parsedPostProcess.renderTargetSamplingMode,
-                scene.getEngine(), parsedPostProcess.reusable);
-        }, parsedPostProcess, scene, rootUrl);
+        return SerializationHelper.Parse(
+            () => {
+                return new RefractionPostProcess(
+                    parsedPostProcess.name,
+                    parsedPostProcess.refractionTextureUrl,
+                    parsedPostProcess.color,
+                    parsedPostProcess.depth,
+                    parsedPostProcess.colorLevel,
+                    parsedPostProcess.options,
+                    targetCamera,
+                    parsedPostProcess.renderTargetSamplingMode,
+                    scene.getEngine(),
+                    parsedPostProcess.reusable
+                );
+            },
+            parsedPostProcess,
+            scene,
+            rootUrl
+        );
     }
 }
 

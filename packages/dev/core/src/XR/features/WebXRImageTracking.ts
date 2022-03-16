@@ -180,8 +180,7 @@ export class WebXRImageTracking extends WebXRAbstractFeature {
             }
         });
 
-        try
-        {
+        try {
             const images = await Promise.all(promises);
 
             this._originalTrackingRequest = images.map((image, idx) => {

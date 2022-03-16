@@ -6,7 +6,7 @@ import { Nullable } from "../types";
 import { Camera } from "../Cameras/camera";
 import { Scene } from "../scene";
 import { ISize } from "../Maths/math.size";
-import { Color4 } from '../Maths/math.color';
+import { Color4 } from "../Maths/math.color";
 import { Engine } from "../Engines/engine";
 import { EngineStore } from "../Engines/engineStore";
 import { VertexBuffer } from "../Buffers/buffer";
@@ -24,9 +24,9 @@ import { Constants } from "../Engines/constants";
 
 import "../Shaders/glowMapGeneration.fragment";
 import "../Shaders/glowMapGeneration.vertex";
-import { _WarnImport } from '../Misc/devTools';
-import { DataBuffer } from '../Buffers/dataBuffer';
-import { EffectFallbacks } from '../Materials/effectFallbacks';
+import { _WarnImport } from "../Misc/devTools";
+import { DataBuffer } from "../Buffers/dataBuffer";
+import { EffectFallbacks } from "../Materials/effectFallbacks";
 import { DrawWrapper } from "../Materials/drawWrapper";
 
 /**
@@ -70,7 +70,6 @@ export interface IEffectLayerOptions {
  * customized per effects.
  */
 export abstract class EffectLayer {
-
     private _vertexBuffers: { [key: string]: Nullable<VertexBuffer> } = {};
     private _indexBuffer: Nullable<DataBuffer>;
     private _effectLayerOptions: IEffectLayerOptions;
@@ -84,7 +83,7 @@ export abstract class EffectLayer {
     protected _shouldRender = true;
     protected _postProcesses: PostProcess[] = [];
     protected _textures: BaseTexture[] = [];
-    protected _emissiveTextureAndColor: { texture: Nullable<BaseTexture>, color: Color4 } = { texture: null, color: new Color4() };
+    protected _emissiveTextureAndColor: { texture: Nullable<BaseTexture>; color: Color4 } = { texture: null, color: new Color4() };
 
     /**
      * The name of the layer
@@ -171,10 +170,13 @@ export abstract class EffectLayer {
         return this._mainTexture;
     }
 
-    /** @hidden */
+    /**
+     * @param _
+     * @hidden
+     */
     public static _SceneComponentInitialization: (scene: Scene) => void = (_) => {
         throw _WarnImport("EffectLayerSceneComponent");
-    }
+    };
 
     private _materialForRendering: { [id: string]: [AbstractMesh, Material] } = {};
 
@@ -186,7 +188,7 @@ export abstract class EffectLayer {
     public setMaterialForRendering(mesh: AbstractMesh | AbstractMesh[], material?: Material): void {
         this._mainTexture.setMaterialForRendering(mesh, material);
         if (Array.isArray(mesh)) {
-            for (let i = 0; i <  mesh.length; ++i) {
+            for (let i = 0; i < mesh.length; ++i) {
                 const mesh_ = mesh[i];
                 if (!material) {
                     delete this._materialForRendering[mesh_.uniqueId];
@@ -211,7 +213,8 @@ export abstract class EffectLayer {
     constructor(
         /** The Friendly of the effect in the scene */
         name: string,
-        scene?: Scene) {
+        scene?: Scene
+    ) {
         this.name = name;
 
         this._scene = scene || <Scene>EngineStore.LastCreatedScene;
@@ -317,7 +320,7 @@ export abstract class EffectLayer {
      */
     private _generateIndexBuffer(): void {
         // Indices
-        var indices = [];
+        const indices = [];
         indices.push(0);
         indices.push(1);
         indices.push(2);
@@ -334,13 +337,13 @@ export abstract class EffectLayer {
      */
     private _generateVertexBuffer(): void {
         // VBO
-        var vertices = [];
+        const vertices = [];
         vertices.push(1, 1);
         vertices.push(-1, 1);
         vertices.push(-1, -1);
         vertices.push(1, -1);
 
-        var vertexBuffer = new VertexBuffer(this._engine, vertices, VertexBuffer.PositionKind, false, false, 2);
+        const vertexBuffer = new VertexBuffer(this._engine, vertices, VertexBuffer.PositionKind, false, false, 2);
         this._vertexBuffers[VertexBuffer.PositionKind] = vertexBuffer;
     }
 
@@ -352,13 +355,16 @@ export abstract class EffectLayer {
         if (this._effectLayerOptions.mainTextureFixedSize) {
             this._mainTextureDesiredSize.width = this._effectLayerOptions.mainTextureFixedSize;
             this._mainTextureDesiredSize.height = this._effectLayerOptions.mainTextureFixedSize;
-        }
-        else {
+        } else {
             this._mainTextureDesiredSize.width = this._engine.getRenderWidth() * this._effectLayerOptions.mainTextureRatio;
             this._mainTextureDesiredSize.height = this._engine.getRenderHeight() * this._effectLayerOptions.mainTextureRatio;
 
-            this._mainTextureDesiredSize.width = this._engine.needPOTTextures ? Engine.GetExponentOfTwo(this._mainTextureDesiredSize.width, this._maxSize) : this._mainTextureDesiredSize.width;
-            this._mainTextureDesiredSize.height = this._engine.needPOTTextures ? Engine.GetExponentOfTwo(this._mainTextureDesiredSize.height, this._maxSize) : this._mainTextureDesiredSize.height;
+            this._mainTextureDesiredSize.width = this._engine.needPOTTextures
+                ? Engine.GetExponentOfTwo(this._mainTextureDesiredSize.width, this._maxSize)
+                : this._mainTextureDesiredSize.width;
+            this._mainTextureDesiredSize.height = this._engine.needPOTTextures
+                ? Engine.GetExponentOfTwo(this._mainTextureDesiredSize.height, this._maxSize)
+                : this._mainTextureDesiredSize.height;
         }
 
         this._mainTextureDesiredSize.width = Math.floor(this._mainTextureDesiredSize.width);
@@ -369,15 +375,17 @@ export abstract class EffectLayer {
      * Creates the main texture for the effect layer.
      */
     protected _createMainTexture(): void {
-        this._mainTexture = new RenderTargetTexture("EffectLayerMainRTT",
+        this._mainTexture = new RenderTargetTexture(
+            "EffectLayerMainRTT",
             {
                 width: this._mainTextureDesiredSize.width,
-                height: this._mainTextureDesiredSize.height
+                height: this._mainTextureDesiredSize.height,
             },
             this._scene,
             false,
             true,
-            Constants.TEXTURETYPE_UNSIGNED_INT);
+            Constants.TEXTURETYPE_UNSIGNED_INT
+        );
         this._mainTexture.activeCamera = this._effectLayerOptions.camera;
         this._mainTexture.wrapU = Texture.CLAMP_ADDRESSMODE;
         this._mainTexture.wrapV = Texture.CLAMP_ADDRESSMODE;
@@ -422,12 +430,17 @@ export abstract class EffectLayer {
         };
 
         // Custom render function
-        this._mainTexture.customRenderFunction = (opaqueSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, depthOnlySubMeshes: SmartArray<SubMesh>): void => {
+        this._mainTexture.customRenderFunction = (
+            opaqueSubMeshes: SmartArray<SubMesh>,
+            alphaTestSubMeshes: SmartArray<SubMesh>,
+            transparentSubMeshes: SmartArray<SubMesh>,
+            depthOnlySubMeshes: SmartArray<SubMesh>
+        ): void => {
             this.onBeforeRenderMainTextureObservable.notifyObservers(this);
 
-            var index: number;
+            let index: number;
 
-            let engine = this._scene.getEngine();
+            const engine = this._scene.getEngine();
 
             if (depthOnlySubMeshes.length) {
                 engine.setColorWrite(false);
@@ -497,7 +510,7 @@ export abstract class EffectLayer {
             return renderingMaterial.isReadyForSubMesh(mesh, subMesh, useInstances);
         }
 
-        let material = subMesh.getMaterial();
+        const material = subMesh.getMaterial();
 
         if (!material) {
             return false;
@@ -507,29 +520,27 @@ export abstract class EffectLayer {
             return material.isReadyForSubMesh(subMesh.getMesh(), subMesh, useInstances);
         }
 
-        var defines: string[] = [];
+        const defines: string[] = [];
 
-        var attribs = [VertexBuffer.PositionKind];
+        const attribs = [VertexBuffer.PositionKind];
 
-        var uv1 = false;
-        var uv2 = false;
+        let uv1 = false;
+        let uv2 = false;
 
         // Diffuse
         if (material) {
             const needAlphaTest = material.needAlphaTesting();
 
             const diffuseTexture = material.getAlphaTestTexture();
-            const needAlphaBlendFromDiffuse = diffuseTexture && diffuseTexture.hasAlpha &&
-                ((material as any).useAlphaFromDiffuseTexture || (material as any)._useAlphaFromAlbedoTexture);
+            const needAlphaBlendFromDiffuse =
+                diffuseTexture && diffuseTexture.hasAlpha && ((material as any).useAlphaFromDiffuseTexture || (material as any)._useAlphaFromAlbedoTexture);
 
             if (diffuseTexture && (needAlphaTest || needAlphaBlendFromDiffuse)) {
                 defines.push("#define DIFFUSE");
-                if (mesh.isVerticesDataPresent(VertexBuffer.UV2Kind) &&
-                    diffuseTexture.coordinatesIndex === 1) {
+                if (mesh.isVerticesDataPresent(VertexBuffer.UV2Kind) && diffuseTexture.coordinatesIndex === 1) {
                     defines.push("#define DIFFUSEUV2");
                     uv2 = true;
-                }
-                else if (mesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
+                } else if (mesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
                     defines.push("#define DIFFUSEUV1");
                     uv1 = true;
                 }
@@ -543,15 +554,13 @@ export abstract class EffectLayer {
                 }
             }
 
-            var opacityTexture = (material as any).opacityTexture;
+            const opacityTexture = (material as any).opacityTexture;
             if (opacityTexture) {
                 defines.push("#define OPACITY");
-                if (mesh.isVerticesDataPresent(VertexBuffer.UV2Kind) &&
-                    opacityTexture.coordinatesIndex === 1) {
+                if (mesh.isVerticesDataPresent(VertexBuffer.UV2Kind) && opacityTexture.coordinatesIndex === 1) {
                     defines.push("#define OPACITYUV2");
                     uv2 = true;
-                }
-                else if (mesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
+                } else if (mesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
                     defines.push("#define OPACITYUV1");
                     uv1 = true;
                 }
@@ -561,12 +570,10 @@ export abstract class EffectLayer {
         // Emissive
         if (emissiveTexture) {
             defines.push("#define EMISSIVE");
-            if (mesh.isVerticesDataPresent(VertexBuffer.UV2Kind) &&
-                emissiveTexture.coordinatesIndex === 1) {
+            if (mesh.isVerticesDataPresent(VertexBuffer.UV2Kind) && emissiveTexture.coordinatesIndex === 1) {
                 defines.push("#define EMISSIVEUV2");
                 uv2 = true;
-            }
-            else if (mesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
+            } else if (mesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
                 defines.push("#define EMISSIVEUV1");
                 uv1 = true;
             }
@@ -602,11 +609,11 @@ export abstract class EffectLayer {
 
             defines.push("#define NUM_BONE_INFLUENCERS " + mesh.numBoneInfluencers);
 
-            let skeleton = mesh.skeleton;
+            const skeleton = mesh.skeleton;
             if (skeleton && skeleton.isUsingTextureForMatrices) {
                 defines.push("#define BONETEXTURE");
             } else {
-                defines.push("#define BonesPerMesh " + (skeleton ? (skeleton.bones.length + 1) : 0));
+                defines.push("#define BonesPerMesh " + (skeleton ? skeleton.bones.length + 1 : 0));
             }
 
             if (mesh.numBoneInfluencers > 0) {
@@ -617,7 +624,7 @@ export abstract class EffectLayer {
         }
 
         // Morph targets
-        var manager = (<Mesh>mesh).morphTargetManager;
+        const manager = (<Mesh>mesh).morphTargetManager;
         let morphInfluencers = 0;
         if (manager) {
             if (manager.numInfluencers > 0) {
@@ -647,14 +654,31 @@ export abstract class EffectLayer {
         const cachedDefines = drawWrapper.defines as string;
         const join = defines.join("\n");
         if (cachedDefines !== join) {
-            drawWrapper.setEffect(this._engine.createEffect("glowMapGeneration",
-                attribs,
-                ["world", "mBones", "viewProjection",
-                    "glowColor", "morphTargetInfluences", "boneTextureWidth",
-                    "diffuseMatrix", "emissiveMatrix", "opacityMatrix", "opacityIntensity",
-                    "morphTargetTextureInfo", "morphTargetTextureIndices"],
-                ["diffuseSampler", "emissiveSampler", "opacitySampler", "boneSampler", "morphTargets"], join,
-                fallbacks, undefined, undefined, { maxSimultaneousMorphTargets: morphInfluencers }),
+            drawWrapper.setEffect(
+                this._engine.createEffect(
+                    "glowMapGeneration",
+                    attribs,
+                    [
+                        "world",
+                        "mBones",
+                        "viewProjection",
+                        "glowColor",
+                        "morphTargetInfluences",
+                        "boneTextureWidth",
+                        "diffuseMatrix",
+                        "emissiveMatrix",
+                        "opacityMatrix",
+                        "opacityIntensity",
+                        "morphTargetTextureInfo",
+                        "morphTargetTextureIndices",
+                    ],
+                    ["diffuseSampler", "emissiveSampler", "opacitySampler", "boneSampler", "morphTargets"],
+                    join,
+                    fallbacks,
+                    undefined,
+                    undefined,
+                    { maxSimultaneousMorphTargets: morphInfluencers }
+                ),
                 join
             );
         }
@@ -666,7 +690,7 @@ export abstract class EffectLayer {
      * Renders the glowing part of the scene by blending the blurred glowing meshes on top of the rendered scene.
      */
     public render(): void {
-        for (var i = 0; i < this._postProcesses.length; i++) {
+        for (let i = 0; i < this._postProcesses.length; i++) {
             if (!this._postProcesses[i].isReady()) {
                 return;
             }
@@ -717,9 +741,13 @@ export abstract class EffectLayer {
         this.onAfterComposeObservable.notifyObservers(this);
 
         // Handle size changes.
-        var size = this._mainTexture.getSize();
+        const size = this._mainTexture.getSize();
         this._setMainTextureSize();
-        if ((size.width !== this._mainTextureDesiredSize.width || size.height !== this._mainTextureDesiredSize.height) && this._mainTextureDesiredSize.width !== 0 && this._mainTextureDesiredSize.height !== 0) {
+        if (
+            (size.width !== this._mainTextureDesiredSize.width || size.height !== this._mainTextureDesiredSize.height) &&
+            this._mainTextureDesiredSize.width !== 0 &&
+            this._mainTextureDesiredSize.height !== 0
+        ) {
             // Recreate RTT and post processes on size change.
             this.onSizeChangedObservable.notifyObservers(this);
             this._disposeTextureAndPostProcesses();
@@ -778,19 +806,21 @@ export abstract class EffectLayer {
 
     /**
      * Renders the submesh passed in parameter to the generation map.
+     * @param subMesh
+     * @param enableAlphaMode
      */
     protected _renderSubMesh(subMesh: SubMesh, enableAlphaMode: boolean = false): void {
         if (!this.shouldRender()) {
             return;
         }
 
-        var material = subMesh.getMaterial();
-        var ownerMesh = subMesh.getMesh();
-        var replacementMesh = subMesh.getReplacementMesh();
-        var renderingMesh = subMesh.getRenderingMesh();
-        var effectiveMesh = subMesh.getEffectiveMesh();
-        var scene = this._scene;
-        var engine = scene.getEngine();
+        const material = subMesh.getMaterial();
+        const ownerMesh = subMesh.getMesh();
+        const replacementMesh = subMesh.getReplacementMesh();
+        const renderingMesh = subMesh.getRenderingMesh();
+        const effectiveMesh = subMesh.getEffectiveMesh();
+        const scene = this._scene;
+        const engine = scene.getEngine();
 
         effectiveMesh._internalAbstractMeshDataInfo._isActiveIntermediate = false;
 
@@ -807,14 +837,14 @@ export abstract class EffectLayer {
         let sideOrientation = renderingMesh.overrideMaterialSideOrientation ?? material.sideOrientation;
         const mainDeterminant = effectiveMesh._getWorldMatrixDeterminant();
         if (mainDeterminant < 0) {
-            sideOrientation = (sideOrientation === Material.ClockWiseSideOrientation ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation);
+            sideOrientation = sideOrientation === Material.ClockWiseSideOrientation ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation;
         }
 
         const reverse = sideOrientation === Material.ClockWiseSideOrientation;
         engine.setState(material.backFaceCulling, material.zOffset, undefined, reverse, material.cullBackFaces, undefined, material.zOffsetUnits);
 
         // Managing instances
-        var batch = renderingMesh._getInstancesRenderList(subMesh._id, !!replacementMesh);
+        const batch = renderingMesh._getInstancesRenderList(subMesh._id, !!replacementMesh);
         if (batch.mustReturn) {
             return;
         }
@@ -824,7 +854,7 @@ export abstract class EffectLayer {
             return;
         }
 
-        var hardwareInstancedRendering = batch.hardwareInstancedRendering[subMesh._id] || renderingMesh.hasThinInstances;
+        const hardwareInstancedRendering = batch.hardwareInstancedRendering[subMesh._id] || renderingMesh.hasThinInstances;
 
         this._setEmissiveTextureAndColor(renderingMesh, subMesh, material);
 
@@ -832,8 +862,7 @@ export abstract class EffectLayer {
 
         if (this._useMeshMaterial(renderingMesh)) {
             renderingMesh.render(subMesh, hardwareInstancedRendering, replacementMesh || undefined);
-        }
-        else if (this._isReady(subMesh, hardwareInstancedRendering, this._emissiveTextureAndColor.texture)) {
+        } else if (this._isReady(subMesh, hardwareInstancedRendering, this._emissiveTextureAndColor.texture)) {
             const renderingMaterial = effectiveMesh._internalAbstractMeshDataInfo._materialForRenderPass?.[engine.currentRenderPassId];
 
             let drawWrapper = subMesh._getDrawWrapper();
@@ -856,11 +885,13 @@ export abstract class EffectLayer {
             if (!renderingMaterial) {
                 effect.setMatrix("viewProjection", scene.getTransformMatrix());
                 effect.setMatrix("world", effectiveMesh.getWorldMatrix());
-                effect.setFloat4("glowColor",
+                effect.setFloat4(
+                    "glowColor",
                     this._emissiveTextureAndColor.color.r,
                     this._emissiveTextureAndColor.color.g,
                     this._emissiveTextureAndColor.color.b,
-                    this._emissiveTextureAndColor.color.a);
+                    this._emissiveTextureAndColor.color.a
+                );
             } else {
                 renderingMaterial.bindForSubMesh(effectiveMesh.getWorldMatrix(), effectiveMesh as Mesh, subMesh);
             }
@@ -869,8 +900,8 @@ export abstract class EffectLayer {
                 const needAlphaTest = material.needAlphaTesting();
 
                 const diffuseTexture = material.getAlphaTestTexture();
-                const needAlphaBlendFromDiffuse = diffuseTexture && diffuseTexture.hasAlpha &&
-                    ((material as any).useAlphaFromDiffuseTexture || (material as any)._useAlphaFromAlbedoTexture);
+                const needAlphaBlendFromDiffuse =
+                    diffuseTexture && diffuseTexture.hasAlpha && ((material as any).useAlphaFromDiffuseTexture || (material as any)._useAlphaFromAlbedoTexture);
 
                 if (diffuseTexture && (needAlphaTest || needAlphaBlendFromDiffuse)) {
                     effect.setTexture("diffuseSampler", diffuseTexture);
@@ -910,7 +941,7 @@ export abstract class EffectLayer {
                         effect.setTexture("boneSampler", boneTexture);
                         effect.setFloat("boneTextureWidth", 4.0 * (skeleton.bones.length + 1));
                     } else {
-                        effect.setMatrices("mBones", skeleton.getTransformMatrices((renderingMesh)));
+                        effect.setMatrices("mBones", skeleton.getTransformMatrices(renderingMesh));
                     }
                 }
 
@@ -927,8 +958,9 @@ export abstract class EffectLayer {
             }
 
             // Draw
-            renderingMesh._processRendering(effectiveMesh, subMesh, effect, material.fillMode, batch, hardwareInstancedRendering,
-                (isInstance, world) => effect.setMatrix("world", world));
+            renderingMesh._processRendering(effectiveMesh, subMesh, effect, material.fillMode, batch, hardwareInstancedRendering, (isInstance, world) =>
+                effect.setMatrix("world", world)
+            );
         } else {
             // Need to reset refresh rate of the main map
             this._mainTexture.resetRefreshCounter();
@@ -950,7 +982,7 @@ export abstract class EffectLayer {
      * @hidden Internal use only.
      */
     public _rebuild(): void {
-        let vb = this._vertexBuffers[VertexBuffer.PositionKind];
+        const vb = this._vertexBuffers[VertexBuffer.PositionKind];
 
         if (vb) {
             vb._rebuild();
@@ -984,7 +1016,7 @@ export abstract class EffectLayer {
      * Dispose the highlight layer and free resources.
      */
     public dispose(): void {
-        var vertexBuffer = this._vertexBuffers[VertexBuffer.PositionKind];
+        const vertexBuffer = this._vertexBuffers[VertexBuffer.PositionKind];
         if (vertexBuffer) {
             vertexBuffer.dispose();
             this._vertexBuffers[VertexBuffer.PositionKind] = null;
@@ -1004,7 +1036,7 @@ export abstract class EffectLayer {
         this._disposeTextureAndPostProcesses();
 
         // Remove from scene
-        var index = this._scene.effectLayers.indexOf(this, 0);
+        const index = this._scene.effectLayers.indexOf(this, 0);
         if (index > -1) {
             this._scene.effectLayers.splice(index, 1);
         }
@@ -1022,9 +1054,9 @@ export abstract class EffectLayer {
     }
 
     /**
-      * Gets the class name of the effect layer
-      * @returns the string with the class name of the effect layer
-      */
+     * Gets the class name of the effect layer
+     * @returns the string with the class name of the effect layer
+     */
     public getClassName(): string {
         return "EffectLayer";
     }
@@ -1037,7 +1069,7 @@ export abstract class EffectLayer {
      * @returns a parsed effect Layer
      */
     public static Parse(parsedEffectLayer: any, scene: Scene, rootUrl: string): EffectLayer {
-        var effectLayerType = Tools.Instantiate(parsedEffectLayer.customType);
+        const effectLayerType = Tools.Instantiate(parsedEffectLayer.customType);
 
         return effectLayerType.Parse(parsedEffectLayer, scene, rootUrl);
     }

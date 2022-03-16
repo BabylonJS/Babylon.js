@@ -80,7 +80,7 @@ export class SixDofDragBehavior extends BaseSixDofDragBehavior {
         this._sceneRenderObserver = ownerNode.getScene().onBeforeRenderObservable.add(() => {
             if (this.currentDraggingPointerIds.length === 1 && this._moving && !this.disableMovement) {
                 // 1 pointer only drags mesh
-                var oldParent = ownerNode.parent;
+                const oldParent = ownerNode.parent;
                 ownerNode.setParent(null);
                 ownerNode.position.addInPlace(this._targetPosition.subtract(ownerNode.position).scale(this.dragDeltaRatio));
 
@@ -115,7 +115,7 @@ export class SixDofDragBehavior extends BaseSixDofDragBehavior {
     }
 
     private _onePointerPositionUpdated(worldDeltaPosition: Vector3, worldDeltaRotation: Quaternion) {
-        let pointerDelta = TmpVectors.Vector3[0];
+        const pointerDelta = TmpVectors.Vector3[0];
         pointerDelta.setAll(0);
 
         if (this._dragging === this._dragType.DRAG) {
@@ -128,10 +128,7 @@ export class SixDofDragBehavior extends BaseSixDofDragBehavior {
                 }
                 TmpVectors.Quaternion[0].multiplyToRef(this._startingOrientation, this._targetOrientation);
             }
-        }
-        else if (this._dragging === this._dragType.NEAR_DRAG ||
-                 (this._dragging === this._dragType.DRAG_WITH_CONTROLLER &&
-                  this.rotateWithMotionController)) {
+        } else if (this._dragging === this._dragType.NEAR_DRAG || (this._dragging === this._dragType.DRAG_WITH_CONTROLLER && this.rotateWithMotionController)) {
             worldDeltaRotation.multiplyToRef(this._startingOrientation, this._targetOrientation);
         }
 

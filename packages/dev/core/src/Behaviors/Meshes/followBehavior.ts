@@ -134,7 +134,7 @@ export class FollowBehavior implements Behavior<TransformNode> {
     /**
      *  Initializes the behavior
      */
-    public init() { }
+    public init() {}
 
     /**
      * Attaches the follow behavior
@@ -345,7 +345,7 @@ export class FollowBehavior implements Behavior<TransformNode> {
 
     private _updateLeashing(camera: Camera) {
         if (this.attachedNode && this._enabled) {
-            let oldParent = this.attachedNode.parent;
+            const oldParent = this.attachedNode.parent;
             this.attachedNode.setParent(null);
 
             const worldMatrix = this.attachedNode.getWorldMatrix();

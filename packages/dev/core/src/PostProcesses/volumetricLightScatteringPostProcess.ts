@@ -17,17 +17,17 @@ import { PostProcess } from "./postProcess";
 import { Constants } from "../Engines/constants";
 import { Scene } from "../scene";
 
-import "../Meshes/Builders/planeBuilder";
+import { CreatePlane } from "../Meshes/Builders/planeBuilder";
 
 import "../Shaders/depth.vertex";
 import "../Shaders/volumetricLightScattering.fragment";
 import "../Shaders/volumetricLightScatteringPass.vertex";
 import "../Shaders/volumetricLightScatteringPass.fragment";
-import { Color4, Color3 } from '../Maths/math.color';
-import { Viewport } from '../Maths/math.viewport';
-import { RegisterClass } from '../Misc/typeStore';
+import { Color4, Color3 } from "../Maths/math.color";
+import { Viewport } from "../Maths/math.viewport";
+import { RegisterClass } from "../Misc/typeStore";
 import { DrawWrapper } from "../Materials/drawWrapper";
-import { CreatePlane } from "../Meshes/Builders/planeBuilder";
+
 
 declare type Engine = import("../Engines/engine").Engine;
 
@@ -43,31 +43,31 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
     private _cachedDefines: string;
 
     /**
-    * If not undefined, the mesh position is computed from the attached node position
-    */
+     * If not undefined, the mesh position is computed from the attached node position
+     */
     public attachedNode: { position: Vector3 };
 
     /**
-    * Custom position of the mesh. Used if "useCustomMeshPosition" is set to "true"
-    */
+     * Custom position of the mesh. Used if "useCustomMeshPosition" is set to "true"
+     */
     @serializeAsVector3()
     public customMeshPosition: Vector3 = Vector3.Zero();
 
     /**
-    * Set if the post-process should use a custom position for the light source (true) or the internal mesh position (false)
-    */
+     * Set if the post-process should use a custom position for the light source (true) or the internal mesh position (false)
+     */
     @serialize()
     public useCustomMeshPosition: boolean = false;
 
     /**
-    * If the post-process should inverse the light scattering direction
-    */
+     * If the post-process should inverse the light scattering direction
+     */
     @serialize()
     public invert: boolean = true;
 
     /**
-    * The internal mesh used by the post-process
-    */
+     * The internal mesh used by the post-process
+     */
     @serializeAsMeshReference()
     public mesh: Mesh;
 
@@ -85,32 +85,32 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
     }
 
     /**
-    * Array containing the excluded meshes not rendered in the internal pass
-    */
+     * Array containing the excluded meshes not rendered in the internal pass
+     */
     @serialize()
     public excludedMeshes = new Array<AbstractMesh>();
 
     /**
-    * Controls the overall intensity of the post-process
-    */
+     * Controls the overall intensity of the post-process
+     */
     @serialize()
     public exposure = 0.3;
 
     /**
-    * Dissipates each sample's contribution in range [0, 1]
-    */
+     * Dissipates each sample's contribution in range [0, 1]
+     */
     @serialize()
     public decay = 0.96815;
 
     /**
-    * Controls the overall intensity of each sample
-    */
+     * Controls the overall intensity of each sample
+     */
     @serialize()
     public weight = 0.58767;
 
     /**
-    * Controls the density of each sample
-    */
+     * Controls the density of each sample
+     */
     @serialize()
     public density = 0.926;
 
@@ -122,12 +122,34 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
      * @param mesh The mesh used to create the light scattering
      * @param samples The post-process quality, default 100
      * @param samplingModeThe post-process filtering mode
+     * @param samplingMode
      * @param engine The babylon engine
      * @param reusable If the post-process is reusable
      * @param scene The constructor needs a scene reference to initialize internal components. If "camera" is null a "scene" must be provided
      */
-    constructor(name: string, ratio: any, camera: Camera, mesh?: Mesh, samples: number = 100, samplingMode: number = Texture.BILINEAR_SAMPLINGMODE, engine?: Engine, reusable?: boolean, scene?: Scene) {
-        super(name, "volumetricLightScattering", ["decay", "exposure", "weight", "meshPositionOnScreen", "density"], ["lightScatteringSampler"], ratio.postProcessRatio || ratio, camera, samplingMode, engine, reusable, "#define NUM_SAMPLES " + samples);
+    constructor(
+        name: string,
+        ratio: any,
+        camera: Camera,
+        mesh?: Mesh,
+        samples: number = 100,
+        samplingMode: number = Texture.BILINEAR_SAMPLINGMODE,
+        engine?: Engine,
+        reusable?: boolean,
+        scene?: Scene
+    ) {
+        super(
+            name,
+            "volumetricLightScattering",
+            ["decay", "exposure", "weight", "meshPositionOnScreen", "density"],
+            ["lightScatteringSampler"],
+            ratio.postProcessRatio || ratio,
+            camera,
+            samplingMode,
+            engine,
+            reusable,
+            "#define NUM_SAMPLES " + samples
+        );
         scene = camera?.getScene() ?? scene; // parameter "scene" can be null.
 
         engine = scene.getEngine();
@@ -169,16 +191,16 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
     }
 
     private _isReady(subMesh: SubMesh, useInstances: boolean): boolean {
-        var mesh = subMesh.getMesh();
+        const mesh = subMesh.getMesh();
 
         // Render this.mesh as default
         if (mesh === this.mesh && mesh.material) {
             return mesh.material.isReady(mesh);
         }
 
-        var defines = [];
-        var attribs = [VertexBuffer.PositionKind];
-        var material: any = subMesh.getMaterial();
+        const defines = [];
+        const attribs = [VertexBuffer.PositionKind];
+        const material: any = subMesh.getMaterial();
 
         // Alpha test
         if (material) {
@@ -201,7 +223,7 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
             attribs.push(VertexBuffer.MatricesIndicesKind);
             attribs.push(VertexBuffer.MatricesWeightsKind);
             defines.push("#define NUM_BONE_INFLUENCERS " + mesh.numBoneInfluencers);
-            defines.push("#define BonesPerMesh " + (mesh.skeleton ? (mesh.skeleton.bones.length + 1) : 0));
+            defines.push("#define BonesPerMesh " + (mesh.skeleton ? mesh.skeleton.bones.length + 1 : 0));
         } else {
             defines.push("#define NUM_BONE_INFLUENCERS 0");
         }
@@ -216,18 +238,23 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
         }
 
         // Get correct effect
-        var join = defines.join("\n");
+        const join = defines.join("\n");
         if (this._cachedDefines !== join) {
             this._cachedDefines = join;
-            this._volumetricLightScatteringPass.effect = mesh.getScene().getEngine().createEffect(
-                "volumetricLightScatteringPass",
-                attribs,
-                ["world", "mBones", "viewProjection", "diffuseMatrix"],
-                ["diffuseSampler"],
-                join,
-                undefined, undefined, undefined,
-                { maxSimultaneousMorphTargets: mesh.numBoneInfluencers }
-            );
+            this._volumetricLightScatteringPass.effect = mesh
+                .getScene()
+                .getEngine()
+                .createEffect(
+                    "volumetricLightScatteringPass",
+                    attribs,
+                    ["world", "mBones", "viewProjection", "diffuseMatrix"],
+                    ["diffuseSampler"],
+                    join,
+                    undefined,
+                    undefined,
+                    undefined,
+                    { maxSimultaneousMorphTargets: mesh.numBoneInfluencers }
+                );
         }
 
         return this._volumetricLightScatteringPass.effect!.isReady();
@@ -251,9 +278,10 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
 
     /**
      * Disposes the internal assets and detaches the post-process from the camera
+     * @param camera
      */
     public dispose(camera: Camera): void {
-        var rttIndex = camera.getScene().customRenderTargets.indexOf(this._volumetricLightScatteringRTT);
+        const rttIndex = camera.getScene().customRenderTargets.indexOf(this._volumetricLightScatteringRTT);
         if (rttIndex !== -1) {
             camera.getScene().customRenderTargets.splice(rttIndex, 1);
         }
@@ -280,16 +308,23 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
     }
 
     private _createPass(scene: Scene, ratio: number): void {
-        var engine = scene.getEngine();
+        const engine = scene.getEngine();
 
-        this._volumetricLightScatteringRTT = new RenderTargetTexture("volumetricLightScatteringMap", { width: engine.getRenderWidth() * ratio, height: engine.getRenderHeight() * ratio }, scene, false, true, Constants.TEXTURETYPE_UNSIGNED_INT);
+        this._volumetricLightScatteringRTT = new RenderTargetTexture(
+            "volumetricLightScatteringMap",
+            { width: engine.getRenderWidth() * ratio, height: engine.getRenderHeight() * ratio },
+            scene,
+            false,
+            true,
+            Constants.TEXTURETYPE_UNSIGNED_INT
+        );
         this._volumetricLightScatteringRTT.wrapU = Texture.CLAMP_ADDRESSMODE;
         this._volumetricLightScatteringRTT.wrapV = Texture.CLAMP_ADDRESSMODE;
         this._volumetricLightScatteringRTT.renderList = null;
         this._volumetricLightScatteringRTT.renderParticles = false;
         this._volumetricLightScatteringRTT.ignoreCameraViewport = true;
 
-        var camera = this.getCamera();
+        const camera = this.getCamera();
         if (camera) {
             camera.customRenderTargets.push(this._volumetricLightScatteringRTT);
         } else {
@@ -297,38 +332,38 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
         }
 
         // Custom render function for submeshes
-        var renderSubMesh = (subMesh: SubMesh): void => {
-            var renderingMesh = subMesh.getRenderingMesh();
-            var effectiveMesh = subMesh.getEffectiveMesh();
+        const renderSubMesh = (subMesh: SubMesh): void => {
+            const renderingMesh = subMesh.getRenderingMesh();
+            const effectiveMesh = subMesh.getEffectiveMesh();
             if (this._meshExcluded(renderingMesh)) {
                 return;
             }
 
             effectiveMesh._internalAbstractMeshDataInfo._isActiveIntermediate = false;
 
-            let material = subMesh.getMaterial();
+            const material = subMesh.getMaterial();
 
             if (!material) {
                 return;
             }
 
-            var scene = renderingMesh.getScene();
-            var engine = scene.getEngine();
+            const scene = renderingMesh.getScene();
+            const engine = scene.getEngine();
 
             // Culling
             engine.setState(material.backFaceCulling, undefined, undefined, undefined, material.cullBackFaces);
 
             // Managing instances
-            var batch = renderingMesh._getInstancesRenderList(subMesh._id, !!subMesh.getReplacementMesh());
+            const batch = renderingMesh._getInstancesRenderList(subMesh._id, !!subMesh.getReplacementMesh());
 
             if (batch.mustReturn) {
                 return;
             }
 
-            var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null || renderingMesh.hasThinInstances);
+            const hardwareInstancedRendering = engine.getCaps().instancedArrays && (batch.visibleInstances[subMesh._id] !== null || renderingMesh.hasThinInstances);
 
             if (this._isReady(subMesh, hardwareInstancedRendering)) {
-                var drawWrapper: DrawWrapper = this._volumetricLightScatteringPass;
+                let drawWrapper: DrawWrapper = this._volumetricLightScatteringPass;
                 if (renderingMesh === this.mesh) {
                     if (subMesh.effect) {
                         drawWrapper = subMesh._drawWrapper;
@@ -346,13 +381,12 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
 
                 if (renderingMesh === this.mesh) {
                     material.bind(effectiveMesh.getWorldMatrix(), renderingMesh);
-                }
-                else {
+                } else {
                     effect.setMatrix("viewProjection", scene.getTransformMatrix());
 
                     // Alpha test
                     if (material && material.needAlphaTesting()) {
-                        var alphaTexture = material.getAlphaTestTexture();
+                        const alphaTexture = material.getAlphaTestTexture();
 
                         effect.setTexture("diffuseSampler", alphaTexture);
 
@@ -368,14 +402,15 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
                 }
 
                 // Draw
-                renderingMesh._processRendering(effectiveMesh, subMesh, effect, Material.TriangleFillMode, batch, hardwareInstancedRendering,
-                    (isInstance, world) => effect.setMatrix("world", world));
+                renderingMesh._processRendering(effectiveMesh, subMesh, effect, Material.TriangleFillMode, batch, hardwareInstancedRendering, (isInstance, world) =>
+                    effect.setMatrix("world", world)
+                );
             }
         };
 
         // Render target texture callbacks
-        var savedSceneClearColor: Color4;
-        var sceneClearColor = new Color4(0.0, 0.0, 0.0, 1.0);
+        let savedSceneClearColor: Color4;
+        const sceneClearColor = new Color4(0.0, 0.0, 0.0, 1.0);
 
         this._volumetricLightScatteringRTT.onBeforeRenderObservable.add((): void => {
             savedSceneClearColor = scene.clearColor;
@@ -413,9 +448,14 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
             return true;
         };
 
-        this._volumetricLightScatteringRTT.customRenderFunction = (opaqueSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, depthOnlySubMeshes: SmartArray<SubMesh>): void => {
-            var engine = scene.getEngine();
-            var index: number;
+        this._volumetricLightScatteringRTT.customRenderFunction = (
+            opaqueSubMeshes: SmartArray<SubMesh>,
+            alphaTestSubMeshes: SmartArray<SubMesh>,
+            transparentSubMeshes: SmartArray<SubMesh>,
+            depthOnlySubMeshes: SmartArray<SubMesh>
+        ): void => {
+            const engine = scene.getEngine();
+            let index: number;
 
             if (depthOnlySubMeshes.length) {
                 engine.setColorWrite(false);
@@ -436,8 +476,8 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
             if (transparentSubMeshes.length) {
                 // Sort sub meshes
                 for (index = 0; index < transparentSubMeshes.length; index++) {
-                    var submesh = transparentSubMeshes.data[index];
-                    let boundingInfo = submesh.getBoundingInfo();
+                    const submesh = transparentSubMeshes.data[index];
+                    const boundingInfo = submesh.getBoundingInfo();
 
                     if (boundingInfo && scene.activeCamera) {
                         submesh._alphaIndex = submesh.getMesh().alphaIndex;
@@ -445,7 +485,7 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
                     }
                 }
 
-                var sortedArray = transparentSubMeshes.data.slice(0, transparentSubMeshes.length);
+                const sortedArray = transparentSubMeshes.data.slice(0, transparentSubMeshes.length);
                 sortedArray.sort((a, b) => {
                     // Alpha index first
                     if (a._alphaIndex > b._alphaIndex) {
@@ -477,20 +517,18 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
     }
 
     private _updateMeshScreenCoordinates(scene: Scene): void {
-        var transform = scene.getTransformMatrix();
-        var meshPosition: Vector3;
+        const transform = scene.getTransformMatrix();
+        let meshPosition: Vector3;
 
         if (this.useCustomMeshPosition) {
             meshPosition = this.customMeshPosition;
-        }
-        else if (this.attachedNode) {
+        } else if (this.attachedNode) {
             meshPosition = this.attachedNode.position;
-        }
-        else {
+        } else {
             meshPosition = this.mesh.parent ? this.mesh.getAbsolutePosition() : this.mesh.position;
         }
 
-        var pos = Vector3.Project(meshPosition, Matrix.Identity(), transform, this._viewPort);
+        const pos = Vector3.Project(meshPosition, Matrix.Identity(), transform, this._viewPort);
 
         this._screenCoordinates.x = pos.x / this._viewPort.width;
         this._screenCoordinates.y = pos.y / this._viewPort.height;
@@ -502,16 +540,16 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
 
     // Static methods
     /**
-    * Creates a default mesh for the Volumeric Light Scattering post-process
-    * @param name The mesh name
-    * @param scene The scene where to create the mesh
-    * @return the default mesh
-    */
+     * Creates a default mesh for the Volumeric Light Scattering post-process
+     * @param name The mesh name
+     * @param scene The scene where to create the mesh
+     * @return the default mesh
+     */
     public static CreateDefaultMesh(name: string, scene: Scene): Mesh {
-        var mesh = CreatePlane(name, { size: 1 }, scene);
+        const mesh = CreatePlane(name, { size: 1 }, scene);
         mesh.billboardMode = AbstractMesh.BILLBOARDMODE_ALL;
 
-        var material = new StandardMaterial(name + "Material", scene);
+        const material = new StandardMaterial(name + "Material", scene);
         material.emissiveColor = new Color3(1, 1, 1);
 
         mesh.material = material;

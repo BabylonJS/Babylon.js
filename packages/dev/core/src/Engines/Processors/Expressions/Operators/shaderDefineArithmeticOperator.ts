@@ -1,4 +1,4 @@
-import { ShaderDefineExpression } from '../shaderDefineExpression';
+import { ShaderDefineExpression } from "../shaderDefineExpression";
 
 /** @hidden */
 export class ShaderDefineArithmeticOperator extends ShaderDefineExpression {
@@ -14,8 +14,8 @@ export class ShaderDefineArithmeticOperator extends ShaderDefineExpression {
         }
 
         let condition = false;
-        let left = parseInt(value);
-        let right = parseInt(this.testValue);
+        const left = parseInt(value);
+        const right = parseInt(this.testValue);
 
         switch (this.operand) {
             case ">":

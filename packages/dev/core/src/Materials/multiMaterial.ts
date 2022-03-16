@@ -5,7 +5,7 @@ import { SubMesh } from "../Meshes/subMesh";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Material } from "../Materials/material";
 import { Tags } from "../Misc/tags";
-import { RegisterClass } from '../Misc/typeStore';
+import { RegisterClass } from "../Misc/typeStore";
 
 /**
  * A multi-material is used to apply different materials to different parts of the same object without the need of
@@ -57,18 +57,18 @@ export class MultiMaterial extends Material {
     }
 
     private _hookArray(array: Nullable<Material>[]): void {
-        var oldPush = array.push;
+        const oldPush = array.push;
         array.push = (...items: Nullable<Material>[]) => {
-            var result = oldPush.apply(array, items);
+            const result = oldPush.apply(array, items);
 
             this._markAllSubMeshesAsTexturesDirty();
 
             return result;
         };
 
-        var oldSplice = array.splice;
+        const oldSplice = array.splice;
         array.splice = (index: number, deleteCount?: number) => {
-            var deleted = oldSplice.apply(array, [index, deleteCount]);
+            const deleted = oldSplice.apply(array, [index, deleteCount]);
 
             this._markAllSubMeshesAsTexturesDirty();
 
@@ -94,13 +94,15 @@ export class MultiMaterial extends Material {
      * @returns All the textures that will be used during the rendering
      */
     public getActiveTextures(): BaseTexture[] {
-        return super.getActiveTextures().concat(...this.subMaterials.map((subMaterial) => {
-            if (subMaterial) {
-                return subMaterial.getActiveTextures();
-            } else {
-                return [];
-            }
-        }));
+        return super.getActiveTextures().concat(
+            ...this.subMaterials.map((subMaterial) => {
+                if (subMaterial) {
+                    return subMaterial.getActiveTextures();
+                } else {
+                    return [];
+                }
+            })
+        );
     }
 
     /**
@@ -139,8 +141,8 @@ export class MultiMaterial extends Material {
      * @returns true if ready, otherwise false
      */
     public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
-        for (var index = 0; index < this.subMaterials.length; index++) {
-            var subMaterial = this.subMaterials[index];
+        for (let index = 0; index < this.subMaterials.length; index++) {
+            const subMaterial = this.subMaterials[index];
             if (subMaterial) {
                 if (subMaterial._storeEffectOnSubMeshes) {
                     if (!subMaterial.isReadyForSubMesh(mesh, subMesh, useInstances)) {
@@ -165,11 +167,11 @@ export class MultiMaterial extends Material {
      * @returns the cloned material
      */
     public clone(name: string, cloneChildren?: boolean): MultiMaterial {
-        var newMultiMaterial = new MultiMaterial(name, this.getScene());
+        const newMultiMaterial = new MultiMaterial(name, this.getScene());
 
-        for (var index = 0; index < this.subMaterials.length; index++) {
-            var subMaterial: Nullable<Material> = null;
-            let current = this.subMaterials[index];
+        for (let index = 0; index < this.subMaterials.length; index++) {
+            let subMaterial: Nullable<Material> = null;
+            const current = this.subMaterials[index];
             if (cloneChildren && current) {
                 subMaterial = current.clone(name + "-" + current.name);
             } else {
@@ -186,7 +188,7 @@ export class MultiMaterial extends Material {
      * @returns the JSON representation
      */
     public serialize(): any {
-        var serializationObject: any = {};
+        const serializationObject: any = {};
 
         serializationObject.name = this.name;
         serializationObject.id = this.id;
@@ -197,8 +199,8 @@ export class MultiMaterial extends Material {
         serializationObject.materialsUniqueIds = [];
         serializationObject.materials = [];
 
-        for (var matIndex = 0; matIndex < this.subMaterials.length; matIndex++) {
-            var subMat = this.subMaterials[matIndex];
+        for (let matIndex = 0; matIndex < this.subMaterials.length; matIndex++) {
+            const subMat = this.subMaterials[matIndex];
 
             if (subMat) {
                 serializationObject.materialsUniqueIds.push(subMat.uniqueId);
@@ -219,14 +221,14 @@ export class MultiMaterial extends Material {
      * @param forceDisposeChildren Define if we want to force disposing the associated submaterials (if false, they will not be disposed and can still be use elsewhere in the app)
      */
     public dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean, forceDisposeChildren?: boolean): void {
-        var scene = this.getScene();
+        const scene = this.getScene();
         if (!scene) {
             return;
         }
 
         if (forceDisposeChildren) {
             for (var index = 0; index < this.subMaterials.length; index++) {
-                var subMaterial = this.subMaterials[index];
+                const subMaterial = this.subMaterials[index];
                 if (subMaterial) {
                     subMaterial.dispose(forceDisposeEffect, forceDisposeTextures);
                 }
@@ -248,7 +250,7 @@ export class MultiMaterial extends Material {
      * @returns a new MultiMaterial
      */
     public static ParseMultiMaterial(parsedMultiMaterial: any, scene: Scene): MultiMaterial {
-        var multiMaterial = new MultiMaterial(parsedMultiMaterial.name, scene);
+        const multiMaterial = new MultiMaterial(parsedMultiMaterial.name, scene);
 
         multiMaterial.id = parsedMultiMaterial.id;
         multiMaterial._loadedUniqueId = parsedMultiMaterial.uniqueId;
