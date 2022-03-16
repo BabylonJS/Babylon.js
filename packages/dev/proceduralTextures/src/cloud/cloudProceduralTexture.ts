@@ -1,10 +1,10 @@
-import { serialize, serializeAsColor4, SerializationHelper } from "babylonjs/Misc/decorators";
-import { Color4 } from "babylonjs/Maths/math.color";
-import { Texture } from "babylonjs/Materials/Textures/texture";
-import { ProceduralTexture } from "babylonjs/Materials/Textures/Procedurals/proceduralTexture";
-import { Scene } from "babylonjs/scene";
-import { RegisterClass } from 'babylonjs/Misc/typeStore';
-import { Nullable } from "babylonjs/types";
+import { serialize, serializeAsColor4, SerializationHelper } from "core/Misc/decorators";
+import { Color4 } from "core/Maths/math.color";
+import { Texture } from "core/Materials/Textures/texture";
+import { ProceduralTexture } from "core/Materials/Textures/Procedurals/proceduralTexture";
+import { Scene } from "core/scene";
+import { RegisterClass } from "core/Misc/typeStore";
+import { Nullable } from "core/types";
 
 import "./cloudProceduralTexture.fragment";
 
@@ -85,7 +85,12 @@ export class CloudProceduralTexture extends ProceduralTexture {
      * @returns a parsed Cloud Procedural Texture
      */
     public static Parse(parsedTexture: any, scene: Scene, rootUrl: string): CloudProceduralTexture {
-        var texture = SerializationHelper.Parse(() => new CloudProceduralTexture(parsedTexture.name, parsedTexture._size, scene, undefined, parsedTexture._generateMipMaps), parsedTexture, scene, rootUrl);
+        var texture = SerializationHelper.Parse(
+            () => new CloudProceduralTexture(parsedTexture.name, parsedTexture._size, scene, undefined, parsedTexture._generateMipMaps),
+            parsedTexture,
+            scene,
+            rootUrl
+        );
 
         return texture;
     }

@@ -1,11 +1,11 @@
-import { serialize, serializeAsVector2, SerializationHelper } from "babylonjs/Misc/decorators";
-import { Vector2 } from "babylonjs/Maths/math.vector";
-import { Color3 } from 'babylonjs/Maths/math.color';
-import { Texture } from "babylonjs/Materials/Textures/texture";
-import { ProceduralTexture } from "babylonjs/Materials/Textures/Procedurals/proceduralTexture";
-import { Scene } from "babylonjs/scene";
-import { RegisterClass } from 'babylonjs/Misc/typeStore';
-import { Nullable } from "babylonjs/types";
+import { serialize, serializeAsVector2, SerializationHelper } from "core/Misc/decorators";
+import { Vector2 } from "core/Maths/math.vector";
+import { Color3 } from "core/Maths/math.color";
+import { Texture } from "core/Materials/Textures/texture";
+import { ProceduralTexture } from "core/Materials/Textures/Procedurals/proceduralTexture";
+import { Scene } from "core/scene";
+import { RegisterClass } from "core/Misc/typeStore";
+import { Nullable } from "core/types";
 
 import "./fireProceduralTexture.fragment";
 
@@ -44,47 +44,19 @@ export class FireProceduralTexture extends ProceduralTexture {
     }
 
     public static get PurpleFireColors(): Color3[] {
-        return [
-            new Color3(0.5, 0.0, 1.0),
-            new Color3(0.9, 0.0, 1.0),
-            new Color3(0.2, 0.0, 1.0),
-            new Color3(1.0, 0.9, 1.0),
-            new Color3(0.1, 0.1, 1.0),
-            new Color3(0.9, 0.9, 1.0)
-        ];
+        return [new Color3(0.5, 0.0, 1.0), new Color3(0.9, 0.0, 1.0), new Color3(0.2, 0.0, 1.0), new Color3(1.0, 0.9, 1.0), new Color3(0.1, 0.1, 1.0), new Color3(0.9, 0.9, 1.0)];
     }
 
     public static get GreenFireColors(): Color3[] {
-        return [
-            new Color3(0.5, 1.0, 0.0),
-            new Color3(0.5, 1.0, 0.0),
-            new Color3(0.3, 0.4, 0.0),
-            new Color3(0.5, 1.0, 0.0),
-            new Color3(0.2, 0.0, 0.0),
-            new Color3(0.5, 1.0, 0.0)
-        ];
+        return [new Color3(0.5, 1.0, 0.0), new Color3(0.5, 1.0, 0.0), new Color3(0.3, 0.4, 0.0), new Color3(0.5, 1.0, 0.0), new Color3(0.2, 0.0, 0.0), new Color3(0.5, 1.0, 0.0)];
     }
 
     public static get RedFireColors(): Color3[] {
-        return [
-            new Color3(0.5, 0.0, 0.1),
-            new Color3(0.9, 0.0, 0.0),
-            new Color3(0.2, 0.0, 0.0),
-            new Color3(1.0, 0.9, 0.0),
-            new Color3(0.1, 0.1, 0.1),
-            new Color3(0.9, 0.9, 0.9)
-        ];
+        return [new Color3(0.5, 0.0, 0.1), new Color3(0.9, 0.0, 0.0), new Color3(0.2, 0.0, 0.0), new Color3(1.0, 0.9, 0.0), new Color3(0.1, 0.1, 0.1), new Color3(0.9, 0.9, 0.9)];
     }
 
     public static get BlueFireColors(): Color3[] {
-        return [
-            new Color3(0.1, 0.0, 0.5),
-            new Color3(0.0, 0.0, 0.5),
-            new Color3(0.1, 0.0, 0.2),
-            new Color3(0.0, 0.0, 1.0),
-            new Color3(0.1, 0.2, 0.3),
-            new Color3(0.0, 0.2, 0.9)
-        ];
+        return [new Color3(0.1, 0.0, 0.5), new Color3(0.0, 0.0, 0.5), new Color3(0.1, 0.0, 0.2), new Color3(0.0, 0.0, 1.0), new Color3(0.1, 0.2, 0.3), new Color3(0.0, 0.2, 0.9)];
     }
 
     @serialize()
@@ -159,7 +131,12 @@ export class FireProceduralTexture extends ProceduralTexture {
      * @returns a parsed Fire Procedural Texture
      */
     public static Parse(parsedTexture: any, scene: Scene, rootUrl: string): FireProceduralTexture {
-        var texture = SerializationHelper.Parse(() => new FireProceduralTexture(parsedTexture.name, parsedTexture._size, scene, undefined, parsedTexture._generateMipMaps), parsedTexture, scene, rootUrl);
+        var texture = SerializationHelper.Parse(
+            () => new FireProceduralTexture(parsedTexture.name, parsedTexture._size, scene, undefined, parsedTexture._generateMipMaps),
+            parsedTexture,
+            scene,
+            rootUrl
+        );
 
         var colors: Color3[] = [];
         for (var i = 0; i < parsedTexture.fireColors.length; i++) {

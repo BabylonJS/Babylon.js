@@ -1,9 +1,9 @@
-import { serializeAsTexture, SerializationHelper } from "babylonjs/Misc/decorators";
-import { Texture } from "babylonjs/Materials/Textures/texture";
-import { ProceduralTexture } from "babylonjs/Materials/Textures/Procedurals/proceduralTexture";
-import { Scene } from "babylonjs/scene";
-import { RegisterClass } from 'babylonjs/Misc/typeStore';
-import { Nullable } from "babylonjs/types";
+import { serializeAsTexture, SerializationHelper } from "core/Misc/decorators";
+import { Texture } from "core/Materials/Textures/texture";
+import { ProceduralTexture } from "core/Materials/Textures/Procedurals/proceduralTexture";
+import { Scene } from "core/scene";
+import { RegisterClass } from "core/Misc/typeStore";
+import { Nullable } from "core/types";
 import "./normalMapProceduralTexture.fragment";
 
 export class NormalMapProceduralTexture extends ProceduralTexture {
@@ -67,7 +67,12 @@ export class NormalMapProceduralTexture extends ProceduralTexture {
      * @returns a parsed Normal Map Procedural Texture
      */
     public static Parse(parsedTexture: any, scene: Scene, rootUrl: string): NormalMapProceduralTexture {
-        var texture = SerializationHelper.Parse(() => new NormalMapProceduralTexture(parsedTexture.name, parsedTexture._size, scene, undefined, parsedTexture._generateMipMaps), parsedTexture, scene, rootUrl);
+        var texture = SerializationHelper.Parse(
+            () => new NormalMapProceduralTexture(parsedTexture.name, parsedTexture._size, scene, undefined, parsedTexture._generateMipMaps),
+            parsedTexture,
+            scene,
+            rootUrl
+        );
 
         return texture;
     }

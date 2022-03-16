@@ -1,10 +1,10 @@
-import { serialize, serializeAsColor3, SerializationHelper } from "babylonjs/Misc/decorators";
-import { Color3 } from "babylonjs/Maths/math.color";
-import { Texture } from "babylonjs/Materials/Textures/texture";
-import { ProceduralTexture } from "babylonjs/Materials/Textures/Procedurals/proceduralTexture";
-import { Scene } from "babylonjs/scene";
-import { RegisterClass } from 'babylonjs/Misc/typeStore';
-import { Nullable } from "babylonjs/types";
+import { serialize, serializeAsColor3, SerializationHelper } from "core/Misc/decorators";
+import { Color3 } from "core/Maths/math.color";
+import { Texture } from "core/Materials/Textures/texture";
+import { ProceduralTexture } from "core/Materials/Textures/Procedurals/proceduralTexture";
+import { Scene } from "core/scene";
+import { RegisterClass } from "core/Misc/typeStore";
+import { Nullable } from "core/types";
 
 import "./brickProceduralTexture.fragment";
 
@@ -12,7 +12,7 @@ export class BrickProceduralTexture extends ProceduralTexture {
     private _numberOfBricksHeight: number = 15;
     private _numberOfBricksWidth: number = 5;
     private _jointColor = new Color3(0.72, 0.72, 0.72);
-    private _brickColor = new Color3(0.77, 0.47, 0.40);
+    private _brickColor = new Color3(0.77, 0.47, 0.4);
 
     constructor(name: string, size: number, scene: Nullable<Scene> = null, fallbackTexture?: Texture, generateMipMaps?: boolean) {
         super(name, size, "brickProceduralTexture", scene, fallbackTexture, generateMipMaps);
@@ -85,7 +85,12 @@ export class BrickProceduralTexture extends ProceduralTexture {
      * @returns a parsed Brick Procedural Texture
      */
     public static Parse(parsedTexture: any, scene: Scene, rootUrl: string): BrickProceduralTexture {
-        var texture = SerializationHelper.Parse(() => new BrickProceduralTexture(parsedTexture.name, parsedTexture._size, scene, undefined, parsedTexture._generateMipMaps), parsedTexture, scene, rootUrl);
+        var texture = SerializationHelper.Parse(
+            () => new BrickProceduralTexture(parsedTexture.name, parsedTexture._size, scene, undefined, parsedTexture._generateMipMaps),
+            parsedTexture,
+            scene,
+            rootUrl
+        );
 
         return texture;
     }

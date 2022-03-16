@@ -1,9 +1,9 @@
-import { serialize, SerializationHelper } from "babylonjs/Misc/decorators";
-import { Texture } from "babylonjs/Materials/Textures/texture";
-import { ProceduralTexture } from "babylonjs/Materials/Textures/Procedurals/proceduralTexture";
-import { Scene } from "babylonjs/scene";
-import { RegisterClass } from 'babylonjs/Misc/typeStore';
-import { Nullable } from "babylonjs/types";
+import { serialize, SerializationHelper } from "core/Misc/decorators";
+import { Texture } from "core/Materials/Textures/texture";
+import { ProceduralTexture } from "core/Materials/Textures/Procedurals/proceduralTexture";
+import { Scene } from "core/scene";
+import { RegisterClass } from "core/Misc/typeStore";
+import { Nullable } from "core/types";
 import "./perlinNoiseProceduralTexture.fragment";
 
 export class PerlinNoiseProceduralTexture extends ProceduralTexture {
@@ -34,9 +34,9 @@ export class PerlinNoiseProceduralTexture extends ProceduralTexture {
         var deltaTime = scene.getEngine().getDeltaTime();
 
         this.time += deltaTime;
-        this.setFloat("time", this.time * this.timeScale / 1000);
+        this.setFloat("time", (this.time * this.timeScale) / 1000);
 
-        this._currentTranslation += deltaTime * this.translationSpeed / 1000.0;
+        this._currentTranslation += (deltaTime * this.translationSpeed) / 1000.0;
         this.setFloat("translationSpeed", this._currentTranslation);
     }
 
@@ -68,7 +68,12 @@ export class PerlinNoiseProceduralTexture extends ProceduralTexture {
      * @returns a parsed Perlin Noise Procedural Texture
      */
     public static Parse(parsedTexture: any, scene: Scene, rootUrl: string): PerlinNoiseProceduralTexture {
-        var texture = SerializationHelper.Parse(() => new PerlinNoiseProceduralTexture(parsedTexture.name, parsedTexture._size, scene, undefined, parsedTexture._generateMipMaps), parsedTexture, scene, rootUrl);
+        var texture = SerializationHelper.Parse(
+            () => new PerlinNoiseProceduralTexture(parsedTexture.name, parsedTexture._size, scene, undefined, parsedTexture._generateMipMaps),
+            parsedTexture,
+            scene,
+            rootUrl
+        );
 
         return texture;
     }
