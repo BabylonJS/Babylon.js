@@ -1,10 +1,9 @@
-
-import { Nullable } from "babylonjs/types";
-import { Matrix } from "babylonjs/Maths/math.vector";
-import { Tools } from "babylonjs/Misc/tools";
-import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
-import { Geometry } from "babylonjs/Meshes/geometry";
-import { Mesh } from "babylonjs/Meshes/mesh";
+import { Nullable } from "core/types";
+import { Matrix } from "core/Maths/math.vector";
+import { Tools } from "core/Misc/tools";
+import { StandardMaterial } from "core/Materials/standardMaterial";
+import { Geometry } from "core/Meshes/geometry";
+import { Mesh } from "core/Meshes/mesh";
 
 /**
  * Class for generating OBJ data from a Babylon scene.
@@ -26,7 +25,7 @@ export class OBJExport {
 
         if (materials) {
             if (!matlibname) {
-                matlibname = 'mat';
+                matlibname = "mat";
             }
             output.push("mtllib " + matlibname + ".mtl");
         }
@@ -60,9 +59,9 @@ export class OBJExport {
                 continue;
             }
 
-            const trunkVerts = g.getVerticesData('position');
-            const trunkNormals = g.getVerticesData('normal');
-            const trunkUV = g.getVerticesData('uv');
+            const trunkVerts = g.getVerticesData("position");
+            const trunkNormals = g.getVerticesData("normal");
+            const trunkUV = g.getVerticesData("uv");
             const trunkFaces = g.getIndices();
             let currentV = 0;
             let currentTextureV = 0;
@@ -89,7 +88,6 @@ export class OBJExport {
                 }
             }
             if (trunkUV != null) {
-
                 for (i = 0; i < trunkUV.length; i += 2) {
                     output.push("vt " + trunkUV[i] + " " + trunkUV[i + 1]);
                     currentTextureV++;
@@ -106,9 +104,24 @@ export class OBJExport {
                 const faceNormals = trunkNormals != null ? indices : blanks;
 
                 output.push(
-                    "f " + facePositions[0] + "/" + faceUVs[0] + "/" + faceNormals[0] +
-                    " " + facePositions[1] + "/" + faceUVs[1] + "/" + faceNormals[1] +
-                    " " + facePositions[2] + "/" + faceUVs[2] + "/" + faceNormals[2]
+                    "f " +
+                        facePositions[0] +
+                        "/" +
+                        faceUVs[0] +
+                        "/" +
+                        faceNormals[0] +
+                        " " +
+                        facePositions[1] +
+                        "/" +
+                        faceUVs[1] +
+                        "/" +
+                        faceNormals[1] +
+                        " " +
+                        facePositions[2] +
+                        "/" +
+                        faceUVs[2] +
+                        "/" +
+                        faceNormals[2]
                 );
             }
             //back de previous matrix, to not change the original mesh in the scene
@@ -119,7 +132,7 @@ export class OBJExport {
             textureV += currentTextureV;
         }
         const text: string = output.join("\n");
-        return (text);
+        return text;
     }
 
     /**
@@ -180,6 +193,6 @@ export class OBJExport {
         }
 
         var text = output.join("\n");
-        return (text);
+        return text;
     }
 }

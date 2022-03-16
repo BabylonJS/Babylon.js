@@ -1,9 +1,9 @@
 import { IMaterial } from "babylonjs-gltf2interface";
 import { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
 import { _Exporter } from "../glTFExporter";
-import { Material } from "babylonjs/Materials/material";
-import { PBRMaterial } from "babylonjs/Materials/PBR/pbrMaterial";
-import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
+import { Material } from "core/Materials/material";
+import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
+import { BaseTexture } from "core/Materials/Textures/baseTexture";
 import { IKHRMaterialsSheen } from "babylonjs-gltf2interface";
 
 const NAME = "KHR_materials_sheen";
@@ -29,8 +29,7 @@ export class KHR_materials_sheen implements IGLTFExporterExtensionV2 {
         this._exporter = exporter;
     }
 
-    public dispose() {
-    }
+    public dispose() {}
 
     /** @hidden */
     public get wasUsed() {
@@ -65,7 +64,7 @@ export class KHR_materials_sheen implements IGLTFExporterExtensionV2 {
                     sheenRoughnessFactor: babylonMaterial.sheen.roughness ?? 0,
                     hasTextures: () => {
                         return sheenInfo.sheenColorTexture !== null || sheenInfo.sheenRoughnessTexture !== null;
-                    }
+                    },
                 };
 
                 if (babylonMaterial.sheen.texture) {

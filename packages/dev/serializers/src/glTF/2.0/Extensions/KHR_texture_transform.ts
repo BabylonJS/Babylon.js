@@ -1,12 +1,12 @@
 import { ImageMimeType, ITextureInfo } from "babylonjs-gltf2interface";
-import { Tools } from "babylonjs/Misc/tools";
-import { Texture } from "babylonjs/Materials/Textures/texture";
-import { ProceduralTexture } from "babylonjs/Materials/Textures/Procedurals/proceduralTexture";
-import { Scene } from "babylonjs/scene";
+import { Tools } from "core/Misc/tools";
+import { Texture } from "core/Materials/Textures/texture";
+import { ProceduralTexture } from "core/Materials/Textures/Procedurals/proceduralTexture";
+import { Scene } from "core/scene";
 
 import { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
 import { _Exporter } from "../glTFExporter";
-import { IKHRTextureTransform } from 'babylonjs-gltf2interface';
+import { IKHRTextureTransform } from "babylonjs-gltf2interface";
 
 const NAME = "KHR_texture_transform";
 
@@ -30,8 +30,7 @@ export class KHR_texture_transform implements IGLTFExporterExtensionV2 {
     /** Reference to the glTF exporter */
     private _wasUsed = false;
 
-    constructor(exporter: _Exporter) {
-    }
+    constructor(exporter: _Exporter) {}
 
     public dispose() {
         for (var texture of this._recordedTextures) {
@@ -45,7 +44,10 @@ export class KHR_texture_transform implements IGLTFExporterExtensionV2 {
     }
 
     public postExportTexture?(context: string, textureInfo: ITextureInfo, babylonTexture: Texture): void {
-        const canUseExtension = babylonTexture && ((babylonTexture.uAng === 0 && babylonTexture.wAng === 0 && babylonTexture.vAng === 0) || (babylonTexture.uRotationCenter === 0 && babylonTexture.vRotationCenter === 0));
+        const canUseExtension =
+            babylonTexture &&
+            ((babylonTexture.uAng === 0 && babylonTexture.wAng === 0 && babylonTexture.vAng === 0) ||
+                (babylonTexture.uRotationCenter === 0 && babylonTexture.vRotationCenter === 0));
 
         if (canUseExtension) {
             let textureTransform: IKHRTextureTransform = {};
@@ -94,11 +96,14 @@ export class KHR_texture_transform implements IGLTFExporterExtensionV2 {
             let bakeTextureTransform = false;
 
             /*
-            * The KHR_texture_transform schema only supports rotation around the origin.
-            * the texture must be baked to preserve appearance.
-            * see: https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_texture_transform#gltf-schema-updates
-            */
-            if ((babylonTexture.uAng !== 0 || babylonTexture.wAng !== 0 || babylonTexture.vAng !== 0) && (babylonTexture.uRotationCenter !== 0 || babylonTexture.vRotationCenter !== 0)) {
+             * The KHR_texture_transform schema only supports rotation around the origin.
+             * the texture must be baked to preserve appearance.
+             * see: https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_texture_transform#gltf-schema-updates
+             */
+            if (
+                (babylonTexture.uAng !== 0 || babylonTexture.wAng !== 0 || babylonTexture.vAng !== 0) &&
+                (babylonTexture.uRotationCenter !== 0 || babylonTexture.vRotationCenter !== 0)
+            ) {
                 bakeTextureTransform = true;
             }
 
@@ -135,7 +140,7 @@ export class KHR_texture_transform implements IGLTFExporterExtensionV2 {
 
             proceduralTexture.reservedDataStore = {
                 hidden: true,
-                source: babylonTexture
+                source: babylonTexture,
             };
 
             this._recordedTextures.push(proceduralTexture);

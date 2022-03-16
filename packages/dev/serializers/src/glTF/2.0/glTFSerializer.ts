@@ -1,5 +1,5 @@
-import { Node } from "babylonjs/node";
-import { Scene } from "babylonjs/scene";
+import { Node } from "core/node";
+import { Scene } from "core/scene";
 import { GLTFData } from "./glTFData";
 import { _Exporter } from "./glTFExporter";
 
@@ -66,8 +66,7 @@ export class GLTF2Export {
         return Promise.resolve().then(() => {
             if (options && options.exportWithoutWaitingForScene) {
                 return Promise.resolve();
-            }
-            else {
+            } else {
                 return scene.whenReadyAsync();
             }
         });
@@ -77,8 +76,7 @@ export class GLTF2Export {
         return Promise.resolve().then(() => {
             if (options && options.exportWithoutWaitingForScene) {
                 return glTFData;
-            }
-            else {
+            } else {
                 return glTFData;
             }
         });
