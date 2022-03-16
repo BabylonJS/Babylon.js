@@ -1,0 +1,6 @@
+{
+    "declarationLibs": ["@dev/inspector"],
+    "devPackageName": "inspector",
+    "filename": "babylon.inspector.module.d.ts",
+    "buildType": "es6"
+}

@@ -1,0 +1,673 @@
+import { PaneComponent, IPaneComponentProps } from "../paneComponent";
+
+import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
+import { FreeCamera } from "core/Cameras/freeCamera";
+import { AnimationGroup, TargetedAnimation } from "core/Animations/animationGroup";
+import { Material } from "core/Materials/material";
+import { BackgroundMaterial } from "core/Materials/Background/backgroundMaterial";
+import { StandardMaterial } from "core/Materials/standardMaterial";
+import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
+import { PBRMetallicRoughnessMaterial } from "core/Materials/PBR/pbrMetallicRoughnessMaterial";
+import { PBRSpecularGlossinessMaterial } from "core/Materials/PBR/pbrSpecularGlossinessMaterial";
+import { Texture } from "core/Materials/Textures/texture";
+import { TransformNode } from "core/Meshes/transformNode";
+import { Mesh } from "core/Meshes/mesh";
+import { HemisphericLight } from "core/Lights/hemisphericLight";
+import { PointLight } from "core/Lights/pointLight";
+import { Scene } from "core/scene";
+
+import { MaterialPropertyGridComponent } from "./propertyGrids/materials/materialPropertyGridComponent";
+import { StandardMaterialPropertyGridComponent } from "./propertyGrids/materials/standardMaterialPropertyGridComponent";
+import { TexturePropertyGridComponent } from "./propertyGrids/materials/texturePropertyGridComponent";
+import { PBRMaterialPropertyGridComponent } from "./propertyGrids/materials/pbrMaterialPropertyGridComponent";
+import { ScenePropertyGridComponent } from "./propertyGrids/scenePropertyGridComponent";
+import { HemisphericLightPropertyGridComponent } from "./propertyGrids/lights/hemisphericLightPropertyGridComponent";
+import { PointLightPropertyGridComponent } from "./propertyGrids/lights/pointLightPropertyGridComponent";
+import { FreeCameraPropertyGridComponent } from "./propertyGrids/cameras/freeCameraPropertyGridComponent";
+import { ArcRotateCameraPropertyGridComponent } from "./propertyGrids/cameras/arcRotateCameraPropertyGridComponent";
+import { MeshPropertyGridComponent } from "./propertyGrids/meshes/meshPropertyGridComponent";
+import { TransformNodePropertyGridComponent } from "./propertyGrids/meshes/transformNodePropertyGridComponent";
+import { BackgroundMaterialPropertyGridComponent } from "./propertyGrids/materials/backgroundMaterialPropertyGridComponent";
+import { Control } from "gui/2D/controls/control";
+import { ControlPropertyGridComponent } from "shared-ui-components/tabs/propertyGrids/gui/controlPropertyGridComponent";
+import { TextBlockPropertyGridComponent } from "shared-ui-components/tabs/propertyGrids/gui/textBlockPropertyGridComponent";
+import { TextBlock } from "gui/2D/controls/textBlock";
+import { InputText } from "gui/2D/controls/inputText";
+import { InputTextPropertyGridComponent } from "shared-ui-components/tabs/propertyGrids/gui/inputTextPropertyGridComponent";
+
+import { ColorPicker } from "gui/2D/controls/colorpicker";
+import { Image } from "gui/2D/controls/image";
+import { Slider } from "gui/2D/controls/sliders/slider";
+import { ImageBasedSlider } from "gui/2D/controls/sliders/imageBasedSlider";
+import { Rectangle } from "gui/2D/controls/rectangle";
+import { Ellipse } from "gui/2D/controls/ellipse";
+import { Checkbox } from "gui/2D/controls/checkbox";
+import { RadioButton } from "gui/2D/controls/radioButton";
+import { Line } from "gui/2D/controls/line";
+import { ScrollViewer } from "gui/2D/controls/scrollViewers/scrollViewer";
+import { Grid } from "gui/2D/controls/grid";
+import { StackPanel } from "gui/2D/controls/stackPanel";
+
+import { ColorPickerPropertyGridComponent } from "shared-ui-components/tabs/propertyGrids/gui/colorPickerPropertyGridComponent";
+import { AnimationGroupGridComponent } from "./propertyGrids/animations/animationGroupPropertyGridComponent";
+import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import { ImagePropertyGridComponent } from "shared-ui-components/tabs/propertyGrids/gui/imagePropertyGridComponent";
+import { SliderPropertyGridComponent } from "shared-ui-components/tabs/propertyGrids/gui/sliderPropertyGridComponent";
+import { ImageBasedSliderPropertyGridComponent } from "shared-ui-components/tabs/propertyGrids/gui/imageBasedSliderPropertyGridComponent";
+import { RectanglePropertyGridComponent } from "shared-ui-components/tabs/propertyGrids/gui/rectanglePropertyGridComponent";
+import { EllipsePropertyGridComponent } from "shared-ui-components/tabs/propertyGrids/gui/ellipsePropertyGridComponent";
+import { CheckboxPropertyGridComponent } from "shared-ui-components/tabs/propertyGrids/gui/checkboxPropertyGridComponent";
+import { RadioButtonPropertyGridComponent } from "shared-ui-components/tabs/propertyGrids/gui/radioButtonPropertyGridComponent";
+import { LinePropertyGridComponent } from "shared-ui-components/tabs/propertyGrids/gui/linePropertyGridComponent";
+import { ScrollViewerPropertyGridComponent } from "shared-ui-components/tabs/propertyGrids/gui/scrollViewerPropertyGridComponent";
+import { GridPropertyGridComponent } from "shared-ui-components/tabs/propertyGrids/gui/gridPropertyGridComponent";
+import { PBRMetallicRoughnessMaterialPropertyGridComponent } from "./propertyGrids/materials/pbrMetallicRoughnessMaterialPropertyGridComponent";
+import { PBRSpecularGlossinessMaterialPropertyGridComponent } from "./propertyGrids/materials/pbrSpecularGlossinessMaterialPropertyGridComponent";
+import { StackPanelPropertyGridComponent } from "shared-ui-components/tabs/propertyGrids/gui/stackPanelPropertyGridComponent";
+import { PostProcess } from "core/PostProcesses/postProcess";
+import { PostProcessPropertyGridComponent } from "./propertyGrids/postProcesses/postProcessPropertyGridComponent";
+import { RenderingPipelinePropertyGridComponent } from "./propertyGrids/postProcesses/renderingPipelinePropertyGridComponent";
+import { PostProcessRenderPipeline } from "core/PostProcesses/RenderPipeline/postProcessRenderPipeline";
+import { DefaultRenderingPipelinePropertyGridComponent } from "./propertyGrids/postProcesses/defaultRenderingPipelinePropertyGridComponent";
+import { DefaultRenderingPipeline } from "core/PostProcesses/RenderPipeline/Pipelines/defaultRenderingPipeline";
+import { SSAORenderingPipeline } from "core/PostProcesses/RenderPipeline/Pipelines/ssaoRenderingPipeline";
+import { SSAORenderingPipelinePropertyGridComponent } from "./propertyGrids/postProcesses/ssaoRenderingPipelinePropertyGridComponent";
+import { SSAO2RenderingPipeline } from "core/PostProcesses/RenderPipeline/Pipelines/ssao2RenderingPipeline";
+import { SSAO2RenderingPipelinePropertyGridComponent } from "./propertyGrids/postProcesses/ssao2RenderingPipelinePropertyGridComponent";
+import { Skeleton } from "core/Bones/skeleton";
+import { SkeletonPropertyGridComponent } from "./propertyGrids/meshes/skeletonPropertyGridComponent";
+import { Bone } from "core/Bones/bone";
+import { BonePropertyGridComponent } from "./propertyGrids/meshes/bonePropertyGridComponent";
+import { DirectionalLightPropertyGridComponent } from "./propertyGrids/lights/directionalLightPropertyGridComponent";
+import { DirectionalLight } from "core/Lights/directionalLight";
+import { SpotLight } from "core/Lights/spotLight";
+import { SpotLightPropertyGridComponent } from "./propertyGrids/lights/spotLightPropertyGridComponent";
+import { LensRenderingPipeline } from "core/PostProcesses/RenderPipeline/Pipelines/lensRenderingPipeline";
+import { LensRenderingPipelinePropertyGridComponent } from "./propertyGrids/postProcesses/lensRenderingPipelinePropertyGridComponent";
+import { NodeMaterial } from "core/Materials/Node/nodeMaterial";
+import { NodeMaterialPropertyGridComponent } from "./propertyGrids/materials/nodeMaterialPropertyGridComponent";
+import { MultiMaterial } from "core/Materials/multiMaterial";
+import { MultiMaterialPropertyGridComponent } from "./propertyGrids/materials/multiMaterialPropertyGridComponent";
+import { ParticleSystemPropertyGridComponent } from "./propertyGrids/particleSystems/particleSystemPropertyGridComponent";
+import { IParticleSystem } from "core/Particles/IParticleSystem";
+import { SpriteManagerPropertyGridComponent } from "./propertyGrids/sprites/spriteManagerPropertyGridComponent";
+import { SpriteManager } from "core/Sprites/spriteManager";
+import { SpritePropertyGridComponent } from "./propertyGrids/sprites/spritePropertyGridComponent";
+import { Sprite } from "core/Sprites/sprite";
+import { TargetedAnimationGridComponent } from "./propertyGrids/animations/targetedAnimationPropertyGridComponent";
+import { FollowCamera } from "core/Cameras/followCamera";
+import { FollowCameraPropertyGridComponent } from "./propertyGrids/cameras/followCameraPropertyGridComponent";
+import { Sound } from "core/Audio/sound";
+import { SoundPropertyGridComponent } from "./propertyGrids/sounds/soundPropertyGridComponent";
+import { LayerPropertyGridComponent } from "./propertyGrids/layers/layerPropertyGridComponent";
+import { EffectLayer } from "core/Layers/effectLayer";
+
+export class PropertyGridTabComponent extends PaneComponent {
+    private _timerIntervalId: number;
+    private _lockObject = new LockObject();
+
+    constructor(props: IPaneComponentProps) {
+        super(props);
+    }
+
+    timerRefresh() {
+        if (!this._lockObject.lock) {
+            this.forceUpdate();
+        }
+    }
+
+    componentDidMount() {
+        this._timerIntervalId = window.setInterval(() => this.timerRefresh(), 500);
+    }
+
+    componentWillUnmount() {
+        window.clearInterval(this._timerIntervalId);
+    }
+
+    render() {
+        const entity = this.props.selectedEntity;
+
+        if (!entity) {
+            return <div className="infoMessage">Please select an entity in the scene explorer.</div>;
+        }
+
+        if (entity.getClassName) {
+            const className = entity.getClassName();
+
+            if (className === "Scene") {
+                const scene = entity as Scene;
+                return (
+                    <ScenePropertyGridComponent
+                        scene={scene}
+                        globalState={this.props.globalState}
+                        lockObject={this._lockObject}
+                        onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                );
+            }
+
+            if (className === "Sound") {
+                const sound = entity as Sound;
+                return (
+                    <SoundPropertyGridComponent
+                        sound={sound}
+                        globalState={this.props.globalState}
+                        lockObject={this._lockObject}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                );
+            }
+
+            if (className === "Sprite") {
+                const sprite = entity as Sprite;
+                return (
+                    <SpritePropertyGridComponent
+                        sprite={sprite}
+                        globalState={this.props.globalState}
+                        lockObject={this._lockObject}
+                        onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                );
+            }
+
+            if (className === "SpriteManager") {
+                const spriteManager = entity as SpriteManager;
+                return (
+                    <SpriteManagerPropertyGridComponent
+                        spriteManager={spriteManager}
+                        globalState={this.props.globalState}
+                        lockObject={this._lockObject}
+                        onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                );
+            }
+
+            if (className.indexOf("Mesh") !== -1) {
+                const mesh = entity as Mesh;
+                if (mesh.getTotalVertices() > 0) {
+                    return (
+                        <div>
+                            <MeshPropertyGridComponent
+                                globalState={this.props.globalState}
+                                mesh={mesh}
+                                lockObject={this._lockObject}
+                                onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                            />
+                        </div>
+                    );
+                }
+            }
+
+            if (className.indexOf("ParticleSystem") !== -1) {
+                const particleSystem = entity as IParticleSystem;
+                return (
+                    <ParticleSystemPropertyGridComponent
+                        globalState={this.props.globalState}
+                        system={particleSystem}
+                        lockObject={this._lockObject}
+                        onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                );
+            }
+
+            if (
+                className.indexOf("FreeCamera") !== -1 ||
+                className.indexOf("UniversalCamera") !== -1 ||
+                className.indexOf("WebXRCamera") !== -1 ||
+                className.indexOf("DeviceOrientationCamera") !== -1
+            ) {
+                const freeCamera = entity as FreeCamera;
+                return (
+                    <FreeCameraPropertyGridComponent
+                        globalState={this.props.globalState}
+                        camera={freeCamera}
+                        lockObject={this._lockObject}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                );
+            }
+
+            if (className.indexOf("ArcRotateCamera") !== -1) {
+                const arcRotateCamera = entity as ArcRotateCamera;
+                return (
+                    <ArcRotateCameraPropertyGridComponent
+                        globalState={this.props.globalState}
+                        camera={arcRotateCamera}
+                        lockObject={this._lockObject}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                );
+            }
+
+            if (className.indexOf("FollowCamera") !== -1) {
+                const followCamera = entity as FollowCamera;
+                return (
+                    <FollowCameraPropertyGridComponent
+                        globalState={this.props.globalState}
+                        camera={followCamera}
+                        lockObject={this._lockObject}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                );
+            }
+
+            if (className === "HemisphericLight") {
+                const hemisphericLight = entity as HemisphericLight;
+                return (
+                    <HemisphericLightPropertyGridComponent
+                        globalState={this.props.globalState}
+                        light={hemisphericLight}
+                        lockObject={this._lockObject}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                );
+            }
+
+            if (className === "PointLight") {
+                const pointLight = entity as PointLight;
+                return (
+                    <PointLightPropertyGridComponent
+                        globalState={this.props.globalState}
+                        light={pointLight}
+                        lockObject={this._lockObject}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                );
+            }
+
+            if (className === "DirectionalLight") {
+                const pointLight = entity as DirectionalLight;
+                return (
+                    <DirectionalLightPropertyGridComponent
+                        globalState={this.props.globalState}
+                        light={pointLight}
+                        lockObject={this._lockObject}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                );
+            }
+
+            if (className === "SpotLight") {
+                const pointLight = entity as SpotLight;
+                return (
+                    <SpotLightPropertyGridComponent
+                        globalState={this.props.globalState}
+                        light={pointLight}
+                        lockObject={this._lockObject}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                );
+            }
+
+            if (className.indexOf("TransformNode") !== -1 || className.indexOf("Mesh") !== -1) {
+                const transformNode = entity as TransformNode;
+                return (
+                    <TransformNodePropertyGridComponent
+                        transformNode={transformNode}
+                        globalState={this.props.globalState}
+                        lockObject={this._lockObject}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                );
+            }
+
+            if (className === "MultiMaterial") {
+                const material = entity as MultiMaterial;
+                return (
+                    <MultiMaterialPropertyGridComponent
+                        globalState={this.props.globalState}
+                        material={material}
+                        lockObject={this._lockObject}
+                        onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                );
+            }
+
+            if (className === "StandardMaterial") {
+                const material = entity as StandardMaterial;
+                return (
+                    <StandardMaterialPropertyGridComponent
+                        globalState={this.props.globalState}
+                        material={material}
+                        lockObject={this._lockObject}
+                        onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                );
+            }
+
+            if (className === "NodeMaterial") {
+                const material = entity as NodeMaterial;
+                return (
+                    <NodeMaterialPropertyGridComponent
+                        globalState={this.props.globalState}
+                        material={material}
+                        lockObject={this._lockObject}
+                        onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                );
+            }
+
+            if (className === "PBRMaterial") {
+                const material = entity as PBRMaterial;
+                return (
+                    <PBRMaterialPropertyGridComponent
+                        globalState={this.props.globalState}
+                        material={material}
+                        lockObject={this._lockObject}
+                        onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                );
+            }
+
+            if (className === "PBRMetallicRoughnessMaterial") {
+                const material = entity as PBRMetallicRoughnessMaterial;
+                return (
+                    <PBRMetallicRoughnessMaterialPropertyGridComponent
+                        globalState={this.props.globalState}
+                        material={material}
+                        lockObject={this._lockObject}
+                        onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                );
+            }
+
+            if (className === "PBRSpecularGlossinessMaterial") {
+                const material = entity as PBRSpecularGlossinessMaterial;
+                return (
+                    <PBRSpecularGlossinessMaterialPropertyGridComponent
+                        globalState={this.props.globalState}
+                        material={material}
+                        lockObject={this._lockObject}
+                        onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                );
+            }
+
+            if (className === "BackgroundMaterial") {
+                const material = entity as BackgroundMaterial;
+                return (
+                    <BackgroundMaterialPropertyGridComponent
+                        globalState={this.props.globalState}
+                        material={material}
+                        lockObject={this._lockObject}
+                        onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                );
+            }
+
+            if (className === "AnimationGroup") {
+                const animationGroup = entity as AnimationGroup;
+                return (
+                    <AnimationGroupGridComponent
+                        globalState={this.props.globalState}
+                        animationGroup={animationGroup}
+                        scene={this.props.scene}
+                        lockObject={this._lockObject}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                );
+            }
+
+            if (className === "TargetedAnimation") {
+                const targetedAnimation = entity as TargetedAnimation;
+                return (
+                    <TargetedAnimationGridComponent
+                        globalState={this.props.globalState}
+                        targetedAnimation={targetedAnimation}
+                        scene={this.props.scene}
+                        lockObject={this._lockObject}
+                        onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                );
+            }
+
+            if (className.indexOf("Material") !== -1) {
+                const material = entity as Material;
+                return (
+                    <MaterialPropertyGridComponent
+                        material={material}
+                        globalState={this.props.globalState}
+                        lockObject={this._lockObject}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                );
+            }
+
+            if (className.indexOf("DefaultRenderingPipeline") !== -1) {
+                const renderPipeline = entity as DefaultRenderingPipeline;
+                return (
+                    <DefaultRenderingPipelinePropertyGridComponent
+                        renderPipeline={renderPipeline}
+                        globalState={this.props.globalState}
+                        lockObject={this._lockObject}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                );
+            }
+
+            if (className.indexOf("LensRenderingPipeline") !== -1) {
+                const renderPipeline = entity as LensRenderingPipeline;
+                return (
+                    <LensRenderingPipelinePropertyGridComponent
+                        renderPipeline={renderPipeline}
+                        globalState={this.props.globalState}
+                        lockObject={this._lockObject}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                );
+            }
+
+            if (className.indexOf("SSAORenderingPipeline") !== -1) {
+                const renderPipeline = entity as SSAORenderingPipeline;
+                return (
+                    <SSAORenderingPipelinePropertyGridComponent
+                        renderPipeline={renderPipeline}
+                        globalState={this.props.globalState}
+                        lockObject={this._lockObject}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                );
+            }
+
+            if (className.indexOf("SSAO2RenderingPipeline") !== -1) {
+                const renderPipeline = entity as SSAO2RenderingPipeline;
+                return (
+                    <SSAO2RenderingPipelinePropertyGridComponent
+                        renderPipeline={renderPipeline}
+                        globalState={this.props.globalState}
+                        lockObject={this._lockObject}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                );
+            }
+
+            if (className.indexOf("RenderingPipeline") !== -1) {
+                const renderPipeline = entity as PostProcessRenderPipeline;
+                return (
+                    <RenderingPipelinePropertyGridComponent
+                        renderPipeline={renderPipeline}
+                        globalState={this.props.globalState}
+                        lockObject={this._lockObject}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                );
+            }
+
+            if (className.indexOf("PostProcess") !== -1) {
+                const postProcess = entity as PostProcess;
+                return (
+                    <PostProcessPropertyGridComponent
+                        postProcess={postProcess}
+                        globalState={this.props.globalState}
+                        lockObject={this._lockObject}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                );
+            }
+
+            if (className.indexOf("Layer") !== -1) {
+                const layer = entity as EffectLayer;
+                return (
+                    <LayerPropertyGridComponent
+                        layer={layer}
+                        globalState={this.props.globalState}
+                        lockObject={this._lockObject}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                );
+            }
+
+            if (className.indexOf("Texture") !== -1) {
+                const texture = entity as Texture;
+                return (
+                    <TexturePropertyGridComponent
+                        texture={texture}
+                        globalState={this.props.globalState}
+                        lockObject={this._lockObject}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                );
+            }
+
+            if (className.indexOf("Skeleton") !== -1) {
+                const skeleton = entity as Skeleton;
+                return (
+                    <SkeletonPropertyGridComponent
+                        skeleton={skeleton}
+                        globalState={this.props.globalState}
+                        lockObject={this._lockObject}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                );
+            }
+
+            if (className.indexOf("Bone") !== -1) {
+                const bone = entity as Bone;
+                return (
+                    <BonePropertyGridComponent
+                        bone={bone}
+                        globalState={this.props.globalState}
+                        lockObject={this._lockObject}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                );
+            }
+
+            if (className === "TextBlock") {
+                const textBlock = entity as TextBlock;
+                return <TextBlockPropertyGridComponent textBlock={textBlock} lockObject={this._lockObject} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />;
+            }
+
+            if (className === "InputText") {
+                const inputText = entity as InputText;
+                return <InputTextPropertyGridComponent inputText={inputText} lockObject={this._lockObject} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />;
+            }
+
+            if (className === "ColorPicker") {
+                const colorPicker = entity as ColorPicker;
+                return (
+                    <ColorPickerPropertyGridComponent
+                        colorPicker={colorPicker}
+                        lockObject={this._lockObject}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                );
+            }
+
+            if (className === "Image") {
+                const image = entity as Image;
+                return <ImagePropertyGridComponent image={image} lockObject={this._lockObject} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />;
+            }
+
+            if (className === "Slider") {
+                const slider = entity as Slider;
+                return <SliderPropertyGridComponent slider={slider} lockObject={this._lockObject} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />;
+            }
+
+            if (className === "ImageBasedSlider") {
+                const imageBasedSlider = entity as ImageBasedSlider;
+                return (
+                    <ImageBasedSliderPropertyGridComponent
+                        imageBasedSlider={imageBasedSlider}
+                        lockObject={this._lockObject}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                );
+            }
+
+            if (className === "Rectangle") {
+                const rectangle = entity as Rectangle;
+                return <RectanglePropertyGridComponent rectangle={rectangle} lockObject={this._lockObject} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />;
+            }
+
+            if (className === "StackPanel") {
+                const stackPanel = entity as StackPanel;
+                return (
+                    <StackPanelPropertyGridComponent stackPanel={stackPanel} lockObject={this._lockObject} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                );
+            }
+
+            if (className === "Grid") {
+                const grid = entity as Grid;
+                return <GridPropertyGridComponent grid={grid} lockObject={this._lockObject} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />;
+            }
+
+            if (className === "ScrollViewer") {
+                const scrollViewer = entity as ScrollViewer;
+                return (
+                    <ScrollViewerPropertyGridComponent
+                        scrollViewer={scrollViewer}
+                        lockObject={this._lockObject}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                );
+            }
+
+            if (className === "Ellipse") {
+                const ellipse = entity as Ellipse;
+                return <EllipsePropertyGridComponent ellipse={ellipse} lockObject={this._lockObject} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />;
+            }
+
+            if (className === "Checkbox") {
+                const checkbox = entity as Checkbox;
+                return <CheckboxPropertyGridComponent checkbox={checkbox} lockObject={this._lockObject} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />;
+            }
+
+            if (className === "RadioButton") {
+                const radioButton = entity as RadioButton;
+                return (
+                    <RadioButtonPropertyGridComponent
+                        radioButtons={[radioButton]}
+                        lockObject={this._lockObject}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                );
+            }
+
+            if (className === "Line") {
+                const line = entity as Line;
+                return <LinePropertyGridComponent line={line} lockObject={this._lockObject} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />;
+            }
+
+            if (entity._host) {
+                const control = entity as Control;
+                return <ControlPropertyGridComponent control={control} lockObject={this._lockObject} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />;
+            }
+        }
+
+        return null;
+    }
+}

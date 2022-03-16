@@ -1,0 +1,12 @@
+{
+    "extends": "../../../tsconfig.json",
+
+    // "references": [
+    //     {
+    //         "path": "../core/tsconfig.build.json",
+    //     }
+    // ],
+    "compilerOptions": {
+    },
+    "exclude": ["generated"]
+}
