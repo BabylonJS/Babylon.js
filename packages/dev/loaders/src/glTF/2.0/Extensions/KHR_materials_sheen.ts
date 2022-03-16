@@ -1,12 +1,12 @@
-import { Nullable } from "babylonjs/types";
-import { PBRMaterial } from "babylonjs/Materials/PBR/pbrMaterial";
-import { Material } from "babylonjs/Materials/material";
+import { Nullable } from "core/types";
+import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
+import { Material } from "core/Materials/material";
 
 import { IMaterial, ITextureInfo } from "../glTFLoaderInterfaces";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
-import { Color3 } from 'babylonjs/Maths/math.color';
-import { IKHRMaterialsSheen } from 'babylonjs-gltf2interface';
+import { Color3 } from "core/Maths/math.color";
+import { IKHRMaterialsSheen } from "babylonjs-gltf2interface";
 
 const NAME = "KHR_materials_sheen";
 
@@ -49,7 +49,7 @@ export class KHR_materials_sheen implements IGLTFLoaderExtension {
             const promises = new Array<Promise<any>>();
             promises.push(this._loader.loadMaterialPropertiesAsync(context, material, babylonMaterial));
             promises.push(this._loadSheenPropertiesAsync(extensionContext, extension, babylonMaterial));
-            return Promise.all(promises).then(() => { });
+            return Promise.all(promises).then(() => {});
         });
     }
 
@@ -65,16 +65,17 @@ export class KHR_materials_sheen implements IGLTFLoaderExtension {
 
         if (properties.sheenColorFactor != undefined) {
             babylonMaterial.sheen.color = Color3.FromArray(properties.sheenColorFactor);
-        }
-        else {
+        } else {
             babylonMaterial.sheen.color = Color3.Black();
         }
 
         if (properties.sheenColorTexture) {
-            promises.push(this._loader.loadTextureInfoAsync(`${context}/sheenColorTexture`, properties.sheenColorTexture, (texture) => {
-                texture.name = `${babylonMaterial.name} (Sheen Color)`;
-                babylonMaterial.sheen.texture = texture;
-            }));
+            promises.push(
+                this._loader.loadTextureInfoAsync(`${context}/sheenColorTexture`, properties.sheenColorTexture, (texture) => {
+                    texture.name = `${babylonMaterial.name} (Sheen Color)`;
+                    babylonMaterial.sheen.texture = texture;
+                })
+            );
         }
 
         if (properties.sheenRoughnessFactor !== undefined) {
@@ -85,16 +86,18 @@ export class KHR_materials_sheen implements IGLTFLoaderExtension {
 
         if (properties.sheenRoughnessTexture) {
             (properties.sheenRoughnessTexture as ITextureInfo).nonColorData = true;
-            promises.push(this._loader.loadTextureInfoAsync(`${context}/sheenRoughnessTexture`, properties.sheenRoughnessTexture, (texture) => {
-                texture.name = `${babylonMaterial.name} (Sheen Roughness)`;
-                babylonMaterial.sheen.textureRoughness = texture;
-            }));
+            promises.push(
+                this._loader.loadTextureInfoAsync(`${context}/sheenRoughnessTexture`, properties.sheenRoughnessTexture, (texture) => {
+                    texture.name = `${babylonMaterial.name} (Sheen Roughness)`;
+                    babylonMaterial.sheen.textureRoughness = texture;
+                })
+            );
         }
 
         babylonMaterial.sheen.albedoScaling = true;
         babylonMaterial.sheen.useRoughnessFromMainTexture = false;
 
-        return Promise.all(promises).then(() => { });
+        return Promise.all(promises).then(() => {});
     }
 }
 

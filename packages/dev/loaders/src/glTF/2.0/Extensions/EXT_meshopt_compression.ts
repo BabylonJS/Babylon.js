@@ -1,9 +1,9 @@
-import { Nullable } from "babylonjs/types";
+import { Nullable } from "core/types";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { ArrayItem, GLTFLoader } from "../glTFLoader";
 import { IBufferView } from "../glTFLoaderInterfaces";
 import { IEXTMeshoptCompression } from "babylonjs-gltf2interface";
-import { MeshoptCompression } from "babylonjs/Meshes/Compression/meshoptCompression";
+import { MeshoptCompression } from "core/Meshes/Compression/meshoptCompression";
 
 const NAME = "EXT_meshopt_compression";
 
@@ -50,7 +50,7 @@ export class EXT_meshopt_compression implements IGLTFLoaderExtension {
             }
 
             const buffer = ArrayItem.Get(`${context}/buffer`, this._loader.gltf.buffers, extension.buffer);
-            bufferViewMeshopt._meshOptData = this._loader.loadBufferAsync(`/buffers/${buffer.index}`, buffer, (extension.byteOffset || 0), extension.byteLength).then((buffer) => {
+            bufferViewMeshopt._meshOptData = this._loader.loadBufferAsync(`/buffers/${buffer.index}`, buffer, extension.byteOffset || 0, extension.byteLength).then((buffer) => {
                 return MeshoptCompression.Default.decodeGltfBufferAsync(buffer as Uint8Array, extension.count, extension.byteStride, extension.mode, extension.filter);
             });
 

@@ -1,8 +1,8 @@
-import { DracoCompression } from "babylonjs/Meshes/Compression/dracoCompression";
-import { Nullable } from "babylonjs/types";
-import { VertexBuffer } from "babylonjs/Buffers/buffer";
-import { Geometry } from "babylonjs/Meshes/geometry";
-import { Mesh } from "babylonjs/Meshes/mesh";
+import { DracoCompression } from "core/Meshes/Compression/dracoCompression";
+import { Nullable } from "core/types";
+import { VertexBuffer } from "core/Buffers/buffer";
+import { Geometry } from "core/Meshes/geometry";
+import { Mesh } from "core/Meshes/mesh";
 
 import { MeshPrimitiveMode, IKHRDracoMeshCompression, AccessorComponentType } from "babylonjs-gltf2interface";
 import { IMeshPrimitive, IBufferView } from "../glTFLoaderInterfaces";
@@ -52,8 +52,7 @@ export class KHR_draco_mesh_compression implements IGLTFLoaderExtension {
     public _loadVertexDataAsync(context: string, primitive: IMeshPrimitive, babylonMesh: Mesh): Nullable<Promise<Geometry>> {
         return GLTFLoader.LoadExtensionAsync<IKHRDracoMeshCompression, Geometry>(context, primitive, this.name, (extensionContext, extension) => {
             if (primitive.mode != undefined) {
-                if (primitive.mode !== MeshPrimitiveMode.TRIANGLE_STRIP &&
-                    primitive.mode !== MeshPrimitiveMode.TRIANGLES) {
+                if (primitive.mode !== MeshPrimitiveMode.TRIANGLE_STRIP && primitive.mode !== MeshPrimitiveMode.TRIANGLES) {
                     throw new Error(`${context}: Unsupported mode ${primitive.mode}`);
                 }
 
@@ -64,10 +63,10 @@ export class KHR_draco_mesh_compression implements IGLTFLoaderExtension {
             }
 
             const attributes: {
-                [kind: string]: number
+                [kind: string]: number;
             } = {};
             const dividers: {
-                [kind: string]: number
+                [kind: string]: number;
             } = {};
             const loadAttribute = (name: string, kind: string) => {
                 const uniqueId = extension.attributes[name];
@@ -100,7 +99,6 @@ export class KHR_draco_mesh_compression implements IGLTFLoaderExtension {
                 if (babylonMesh._delayInfo.indexOf(kind) === -1) {
                     babylonMesh._delayInfo.push(kind);
                 }
-
             };
 
             loadAttribute("POSITION", VertexBuffer.PositionKind);
@@ -120,13 +118,16 @@ export class KHR_draco_mesh_compression implements IGLTFLoaderExtension {
             if (!bufferView._dracoBabylonGeometry) {
                 bufferView._dracoBabylonGeometry = this._loader.loadBufferViewAsync(`/bufferViews/${bufferView.index}`, bufferView).then((data) => {
                     const dracoCompression = this.dracoCompression || DracoCompression.Default;
-                    return dracoCompression.decodeMeshAsync(data, attributes, dividers).then((babylonVertexData) => {
-                        const babylonGeometry = new Geometry(babylonMesh.name, this._loader.babylonScene);
-                        babylonVertexData.applyToGeometry(babylonGeometry);
-                        return babylonGeometry;
-                    }).catch((error) => {
-                        throw new Error(`${context}: ${error.message}`);
-                    });
+                    return dracoCompression
+                        .decodeMeshAsync(data, attributes, dividers)
+                        .then((babylonVertexData) => {
+                            const babylonGeometry = new Geometry(babylonMesh.name, this._loader.babylonScene);
+                            babylonVertexData.applyToGeometry(babylonGeometry);
+                            return babylonGeometry;
+                        })
+                        .catch((error) => {
+                            throw new Error(`${context}: ${error.message}`);
+                        });
                 });
             }
 

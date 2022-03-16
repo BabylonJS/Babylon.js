@@ -1,7 +1,7 @@
-import { Nullable } from "babylonjs/types";
-import { PBRMaterial } from "babylonjs/Materials/PBR/pbrMaterial";
-import { Material } from "babylonjs/Materials/material";
-import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
+import { Nullable } from "core/types";
+import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
+import { Material } from "core/Materials/material";
+import { BaseTexture } from "core/Materials/Textures/baseTexture";
 import { IMaterial, ITextureInfo } from "../glTFLoaderInterfaces";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
@@ -62,7 +62,7 @@ export class KHR_materials_volume implements IGLTFLoaderExtension {
             promises.push(this._loader.loadMaterialBasePropertiesAsync(context, material, babylonMaterial));
             promises.push(this._loader.loadMaterialPropertiesAsync(context, material, babylonMaterial));
             promises.push(this._loadVolumePropertiesAsync(extensionContext, material, babylonMaterial, extension));
-            return Promise.all(promises).then(() => { });
+            return Promise.all(promises).then(() => {});
         });
     }
 
@@ -73,7 +73,7 @@ export class KHR_materials_volume implements IGLTFLoaderExtension {
 
         // If transparency isn't enabled already, this extension shouldn't do anything.
         // i.e. it requires either the KHR_materials_transmission or KHR_materials_translucency extensions.
-        if (!babylonMaterial.subSurface.isRefractionEnabled && !babylonMaterial.subSurface.isTranslucencyEnabled || !extension.thicknessFactor) {
+        if ((!babylonMaterial.subSurface.isRefractionEnabled && !babylonMaterial.subSurface.isTranslucencyEnabled) || !extension.thicknessFactor) {
             return Promise.resolve();
         }
 
@@ -90,11 +90,10 @@ export class KHR_materials_volume implements IGLTFLoaderExtension {
         babylonMaterial.subSurface.useThicknessAsDepth = true;
         if (extension.thicknessTexture) {
             (extension.thicknessTexture as ITextureInfo).nonColorData = true;
-            return this._loader.loadTextureInfoAsync(`${context}/thicknessTexture`, extension.thicknessTexture)
-                .then((texture: BaseTexture) => {
-                    babylonMaterial.subSurface.thicknessTexture = texture;
-                    babylonMaterial.subSurface.useGltfStyleTextures = true;
-                });
+            return this._loader.loadTextureInfoAsync(`${context}/thicknessTexture`, extension.thicknessTexture).then((texture: BaseTexture) => {
+                babylonMaterial.subSurface.thicknessTexture = texture;
+                babylonMaterial.subSurface.useGltfStyleTextures = true;
+            });
         } else {
             return Promise.resolve();
         }

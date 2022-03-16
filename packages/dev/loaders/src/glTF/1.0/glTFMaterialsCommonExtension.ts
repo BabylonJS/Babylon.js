@@ -3,15 +3,15 @@ import { GLTFLoaderBase } from "./glTFLoader";
 
 import { IGLTFRuntime, IGLTFMaterial } from "./glTFLoaderInterfaces";
 
-import { Vector3 } from "babylonjs/Maths/math.vector";
-import { Color3 } from 'babylonjs/Maths/math.color';
-import { Tools } from "babylonjs/Misc/tools";
-import { Material } from "babylonjs/Materials/material";
-import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
-import { HemisphericLight } from "babylonjs/Lights/hemisphericLight";
-import { DirectionalLight } from "babylonjs/Lights/directionalLight";
-import { PointLight } from "babylonjs/Lights/pointLight";
-import { SpotLight } from "babylonjs/Lights/spotLight";
+import { Vector3 } from "core/Maths/math.vector";
+import { Color3 } from "core/Maths/math.color";
+import { Tools } from "core/Misc/tools";
+import { Material } from "core/Materials/material";
+import { StandardMaterial } from "core/Materials/standardMaterial";
+import { HemisphericLight } from "core/Lights/hemisphericLight";
+import { DirectionalLight } from "core/Lights/directionalLight";
+import { PointLight } from "core/Lights/pointLight";
+import { SpotLight } from "core/Lights/spotLight";
 
 import { GLTFLoader } from "./glTFLoader";
 
@@ -71,16 +71,19 @@ interface IGLTFSpotLightCommonExtension {
 
 /** @hidden */
 export class GLTFMaterialsCommonExtension extends GLTFLoaderExtension {
-
     constructor() {
         super("KHR_materials_common");
     }
 
     public loadRuntimeExtensionsAsync(gltfRuntime: IGLTFRuntime, onSuccess: () => void, onError: (message: string) => void): boolean {
-        if (!gltfRuntime.extensions) { return false; }
+        if (!gltfRuntime.extensions) {
+            return false;
+        }
 
         var extension: IGLTFRuntimeCommonExtension = gltfRuntime.extensions[this.name];
-        if (!extension) { return false; }
+        if (!extension) {
+            return false;
+        }
 
         // Create lights
         var lights = extension.lights;
@@ -113,14 +116,20 @@ export class GLTFMaterialsCommonExtension extends GLTFLoaderExtension {
                     case "spot":
                         var spot = light.spot;
                         if (spot) {
-                            var spotLight = new SpotLight(light.name, new Vector3(0, 10, 0), new Vector3(0, -1, 0),
+                            var spotLight = new SpotLight(
+                                light.name,
+                                new Vector3(0, 10, 0),
+                                new Vector3(0, -1, 0),
                                 spot.fallOffAngle || Math.PI,
                                 spot.fallOffExponent || 0.0,
-                                gltfRuntime.scene);
+                                gltfRuntime.scene
+                            );
                             spotLight.diffuse = Color3.FromArray(spot.color || [1, 1, 1]);
                         }
                         break;
-                    default: Tools.Warn("GLTF Material Common extension: light type \"" + light.type + "\” not supported"); break;
+                    default:
+                        Tools.Warn('GLTF Material Common extension: light type "' + light.type + "” not supported");
+                        break;
                 }
             }
         }
@@ -130,10 +139,14 @@ export class GLTFMaterialsCommonExtension extends GLTFLoaderExtension {
 
     public loadMaterialAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (material: Material) => void, onError: (message: string) => void): boolean {
         var material: IGLTFMaterial = gltfRuntime.materials[id];
-        if (!material || !material.extensions) { return false; }
+        if (!material || !material.extensions) {
+            return false;
+        }
 
         var extension: IGLTFMaterialsCommonExtension = material.extensions[this.name];
-        if (!extension) { return false; }
+        if (!extension) {
+            return false;
+        }
 
         var standardMaterial = new StandardMaterial(id, gltfRuntime.scene);
         standardMaterial.sideOrientation = Material.CounterClockWiseSideOrientation;
@@ -149,32 +162,28 @@ export class GLTFMaterialsCommonExtension extends GLTFLoaderExtension {
         // Ambient
         if (typeof extension.values.ambient === "string") {
             this._loadTexture(gltfRuntime, extension.values.ambient, standardMaterial, "ambientTexture", onError);
-        }
-        else {
+        } else {
             standardMaterial.ambientColor = Color3.FromArray(extension.values.ambient || [0, 0, 0]);
         }
 
         // Diffuse
         if (typeof extension.values.diffuse === "string") {
             this._loadTexture(gltfRuntime, extension.values.diffuse, standardMaterial, "diffuseTexture", onError);
-        }
-        else {
+        } else {
             standardMaterial.diffuseColor = Color3.FromArray(extension.values.diffuse || [0, 0, 0]);
         }
 
         // Emission
         if (typeof extension.values.emission === "string") {
             this._loadTexture(gltfRuntime, extension.values.emission, standardMaterial, "emissiveTexture", onError);
-        }
-        else {
+        } else {
             standardMaterial.emissiveColor = Color3.FromArray(extension.values.emission || [0, 0, 0]);
         }
 
         // Specular
         if (typeof extension.values.specular === "string") {
             this._loadTexture(gltfRuntime, extension.values.specular, standardMaterial, "specularTexture", onError);
-        }
-        else {
+        } else {
             standardMaterial.specularColor = Color3.FromArray(extension.values.specular || [0, 0, 0]);
         }
 
@@ -183,10 +192,15 @@ export class GLTFMaterialsCommonExtension extends GLTFLoaderExtension {
 
     private _loadTexture(gltfRuntime: IGLTFRuntime, id: string, material: StandardMaterial, propertyPath: string, onError: (message: string) => void): void {
         // Create buffer from texture url
-        GLTFLoaderBase.LoadTextureBufferAsync(gltfRuntime, id, (buffer) => {
-            // Create texture from buffer
-            GLTFLoaderBase.CreateTextureAsync(gltfRuntime, id, buffer, (texture) => (<any>material)[propertyPath] = texture, onError);
-        }, onError);
+        GLTFLoaderBase.LoadTextureBufferAsync(
+            gltfRuntime,
+            id,
+            (buffer) => {
+                // Create texture from buffer
+                GLTFLoaderBase.CreateTextureAsync(gltfRuntime, id, buffer, (texture) => ((<any>material)[propertyPath] = texture), onError);
+            },
+            onError
+        );
     }
 }
 

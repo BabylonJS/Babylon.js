@@ -1,29 +1,30 @@
-import { Nullable } from "babylonjs/types";
-import { Tools } from "babylonjs/Misc/tools";
-import { VertexBuffer } from "babylonjs/Buffers/buffer";
-import { Skeleton } from "babylonjs/Bones/skeleton";
-import { IParticleSystem } from "babylonjs/Particles/IParticleSystem";
-import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
-import { Mesh } from "babylonjs/Meshes/mesh";
-import { SceneLoader, ISceneLoaderPlugin, ISceneLoaderPluginExtensions } from "babylonjs/Loading/sceneLoader";
-import { AssetContainer } from "babylonjs/assetContainer";
-import { Scene } from "babylonjs/scene";
+import { Nullable } from "core/types";
+import { Tools } from "core/Misc/tools";
+import { VertexBuffer } from "core/Buffers/buffer";
+import { Skeleton } from "core/Bones/skeleton";
+import { IParticleSystem } from "core/Particles/IParticleSystem";
+import { AbstractMesh } from "core/Meshes/abstractMesh";
+import { Mesh } from "core/Meshes/mesh";
+import { SceneLoader, ISceneLoaderPlugin, ISceneLoaderPluginExtensions } from "core/Loading/sceneLoader";
+import { AssetContainer } from "core/assetContainer";
+import { Scene } from "core/scene";
 
 /**
  * STL file type loader.
  * This is a babylon scene loader plugin.
  */
 export class STLFileLoader implements ISceneLoaderPlugin {
-
     /** @hidden */
     public solidPattern = /solid (\S*)([\S\s]*?)endsolid[ ]*(\S*)/g;
 
     /** @hidden */
     public facetsPattern = /facet([\s\S]*?)endfacet/g;
     /** @hidden */
-    public normalPattern = /normal[\s]+([\-+]?[0-9]+\.?[0-9]*([eE][\-+]?[0-9]+)?)+[\s]+([\-+]?[0-9]*\.?[0-9]+([eE][\-+]?[0-9]+)?)+[\s]+([\-+]?[0-9]*\.?[0-9]+([eE][\-+]?[0-9]+)?)+/g;
+    public normalPattern =
+        /normal[\s]+([\-+]?[0-9]+\.?[0-9]*([eE][\-+]?[0-9]+)?)+[\s]+([\-+]?[0-9]*\.?[0-9]+([eE][\-+]?[0-9]+)?)+[\s]+([\-+]?[0-9]*\.?[0-9]+([eE][\-+]?[0-9]+)?)+/g;
     /** @hidden */
-    public vertexPattern = /vertex[\s]+([\-+]?[0-9]+\.?[0-9]*([eE][\-+]?[0-9]+)?)+[\s]+([\-+]?[0-9]*\.?[0-9]+([eE][\-+]?[0-9]+)?)+[\s]+([\-+]?[0-9]*\.?[0-9]+([eE][\-+]?[0-9]+)?)+/g;
+    public vertexPattern =
+        /vertex[\s]+([\-+]?[0-9]+\.?[0-9]*([eE][\-+]?[0-9]+)?)+[\s]+([\-+]?[0-9]*\.?[0-9]+([eE][\-+]?[0-9]+)?)+[\s]+([\-+]?[0-9]*\.?[0-9]+([eE][\-+]?[0-9]+)?)+/g;
 
     /**
      * Defines the name of the plugin.
@@ -58,11 +59,18 @@ export class STLFileLoader implements ISceneLoaderPlugin {
      * @param onError The callback when import fails
      * @returns True if successful or false otherwise
      */
-    public importMesh(meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: Nullable<AbstractMesh[]>, particleSystems: Nullable<IParticleSystem[]>, skeletons: Nullable<Skeleton[]>): boolean {
+    public importMesh(
+        meshesNames: any,
+        scene: Scene,
+        data: any,
+        rootUrl: string,
+        meshes: Nullable<AbstractMesh[]>,
+        particleSystems: Nullable<IParticleSystem[]>,
+        skeletons: Nullable<Skeleton[]>
+    ): boolean {
         var matches;
 
         if (typeof data !== "string") {
-
             if (this._isBinary(data)) {
                 // binary .stl
                 var babylonMesh = new Mesh("stlmesh", scene);
@@ -77,7 +85,7 @@ export class STLFileLoader implements ISceneLoaderPlugin {
 
             // convert to string
             var array_buffer = new Uint8Array(data);
-            var str = '';
+            var str = "";
             for (var i = 0; i < data.byteLength; i++) {
                 str += String.fromCharCode(array_buffer[i]); // implicitly assumes little-endian
             }
@@ -86,7 +94,7 @@ export class STLFileLoader implements ISceneLoaderPlugin {
 
         //if arrived here, data is a string, containing the STLA data.
 
-        while (matches = this.solidPattern.exec(data)) {
+        while ((matches = this.solidPattern.exec(data))) {
             var meshName = matches[1];
             var meshNameFromEnd = matches[3];
             if (meshName != meshNameFromEnd) {
@@ -118,7 +126,6 @@ export class STLFileLoader implements ISceneLoaderPlugin {
         }
 
         return true;
-
     }
 
     /**
@@ -151,7 +158,6 @@ export class STLFileLoader implements ISceneLoaderPlugin {
     }
 
     private _isBinary(data: any) {
-
         // check if file size is correct for binary stl
         var faceSize, nFaces, reader;
         reader = new DataView(data);
@@ -162,10 +168,10 @@ export class STLFileLoader implements ISceneLoaderPlugin {
             return false;
         }
 
-        faceSize = (32 / 8 * 3) + ((32 / 8 * 3) * 3) + (16 / 8);
+        faceSize = (32 / 8) * 3 + (32 / 8) * 3 * 3 + 16 / 8;
         nFaces = reader.getUint32(80, true);
 
-        if (80 + (32 / 8) + (nFaces * faceSize) === reader.byteLength) {
+        if (80 + 32 / 8 + nFaces * faceSize === reader.byteLength) {
             return true;
         }
 
@@ -181,7 +187,6 @@ export class STLFileLoader implements ISceneLoaderPlugin {
     }
 
     private _parseBinary(mesh: Mesh, data: ArrayBuffer) {
-
         var reader = new DataView(data);
         var faces = reader.getUint32(80, true);
 
@@ -196,14 +201,12 @@ export class STLFileLoader implements ISceneLoaderPlugin {
         var indicesCount = 0;
 
         for (var face = 0; face < faces; face++) {
-
             var start = dataOffset + face * faceLength;
             var normalX = reader.getFloat32(start, true);
             var normalY = reader.getFloat32(start + 4, true);
             var normalZ = reader.getFloat32(start + 8, true);
 
             for (var i = 1; i <= 3; i++) {
-
                 var vertexstart = start + i * 12;
 
                 // ordering is intentional to match ascii import
@@ -211,15 +214,12 @@ export class STLFileLoader implements ISceneLoaderPlugin {
                 normals[offset] = normalX;
 
                 if (!STLFileLoader.DO_NOT_ALTER_FILE_COORDINATES) {
-
                     positions[offset + 2] = reader.getFloat32(vertexstart + 4, true);
                     positions[offset + 1] = reader.getFloat32(vertexstart + 8, true);
 
                     normals[offset + 2] = normalY;
                     normals[offset + 1] = normalZ;
-                }
-                else {
-
+                } else {
                     positions[offset + 1] = reader.getFloat32(vertexstart + 4, true);
                     positions[offset + 2] = reader.getFloat32(vertexstart + 8, true);
 
@@ -241,7 +241,6 @@ export class STLFileLoader implements ISceneLoaderPlugin {
     }
 
     private _parseASCII(mesh: Mesh, solidData: string) {
-
         var positions = [];
         var normals = [];
         var indices = [];
@@ -249,7 +248,7 @@ export class STLFileLoader implements ISceneLoaderPlugin {
 
         //load facets, ignoring loop as the standard doesn't define it can contain more than vertices
         var matches;
-        while (matches = this.facetsPattern.exec(solidData)) {
+        while ((matches = this.facetsPattern.exec(solidData))) {
             var facet = matches[1];
             //one normal per face
             var normalMatches = this.normalPattern.exec(facet);
@@ -260,15 +259,11 @@ export class STLFileLoader implements ISceneLoaderPlugin {
             var normal = [Number(normalMatches[1]), Number(normalMatches[5]), Number(normalMatches[3])];
 
             var vertexMatch;
-            while (vertexMatch = this.vertexPattern.exec(facet)) {
-
+            while ((vertexMatch = this.vertexPattern.exec(facet))) {
                 if (!STLFileLoader.DO_NOT_ALTER_FILE_COORDINATES) {
-
                     positions.push(Number(vertexMatch[1]), Number(vertexMatch[5]), Number(vertexMatch[3]));
                     normals.push(normal[0], normal[1], normal[2]);
-                }
-                else {
-
+                } else {
                     positions.push(Number(vertexMatch[1]), Number(vertexMatch[3]), Number(vertexMatch[5]));
 
                     // Flipping the second and third component because inverted

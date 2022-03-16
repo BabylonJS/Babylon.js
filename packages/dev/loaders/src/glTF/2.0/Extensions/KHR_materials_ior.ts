@@ -1,11 +1,11 @@
-import { Nullable } from "babylonjs/types";
-import { PBRMaterial } from "babylonjs/Materials/PBR/pbrMaterial";
-import { Material } from "babylonjs/Materials/material";
+import { Nullable } from "core/types";
+import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
+import { Material } from "core/Materials/material";
 
 import { IMaterial } from "../glTFLoaderInterfaces";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
-import { IKHRMaterialsIor } from 'babylonjs-gltf2interface';
+import { IKHRMaterialsIor } from "babylonjs-gltf2interface";
 
 const NAME = "KHR_materials_ior";
 
@@ -52,7 +52,7 @@ export class KHR_materials_ior implements IGLTFLoaderExtension {
             const promises = new Array<Promise<any>>();
             promises.push(this._loader.loadMaterialPropertiesAsync(context, material, babylonMaterial));
             promises.push(this._loadIorPropertiesAsync(extensionContext, extension, babylonMaterial));
-            return Promise.all(promises).then(() => { });
+            return Promise.all(promises).then(() => {});
         });
     }
 
@@ -63,8 +63,7 @@ export class KHR_materials_ior implements IGLTFLoaderExtension {
 
         if (properties.ior !== undefined) {
             babylonMaterial.indexOfRefraction = properties.ior;
-        }
-        else {
+        } else {
             babylonMaterial.indexOfRefraction = KHR_materials_ior._DEFAULT_IOR;
         }
 

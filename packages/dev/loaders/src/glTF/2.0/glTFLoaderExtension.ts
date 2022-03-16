@@ -1,16 +1,16 @@
-﻿import { Nullable } from "babylonjs/types";
-import { AnimationGroup } from "babylonjs/Animations/animationGroup";
-import { Material } from "babylonjs/Materials/material";
-import { Camera } from "babylonjs/Cameras/camera";
-import { Geometry } from "babylonjs/Meshes/geometry";
-import { TransformNode } from "babylonjs/Meshes/transformNode";
-import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
-import { Mesh } from "babylonjs/Meshes/mesh";
-import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
-import { IDisposable } from "babylonjs/scene";
+﻿import { Nullable } from "core/types";
+import { AnimationGroup } from "core/Animations/animationGroup";
+import { Material } from "core/Materials/material";
+import { Camera } from "core/Cameras/camera";
+import { Geometry } from "core/Meshes/geometry";
+import { TransformNode } from "core/Meshes/transformNode";
+import { BaseTexture } from "core/Materials/Textures/baseTexture";
+import { Mesh } from "core/Meshes/mesh";
+import { AbstractMesh } from "core/Meshes/abstractMesh";
+import { IDisposable } from "core/scene";
 import { IScene, INode, IMesh, ISkin, ICamera, IMeshPrimitive, IMaterial, ITextureInfo, IAnimation, ITexture, IBufferView, IBuffer } from "./glTFLoaderInterfaces";
 import { IGLTFLoaderExtension as IGLTFBaseLoaderExtension } from "../glTFFileLoader";
-import { IProperty } from 'babylonjs-gltf2interface';
+import { IProperty } from "babylonjs-gltf2interface";
 
 /**
  * Interface for a glTF loader extension.
@@ -72,7 +72,14 @@ export interface IGLTFLoaderExtension extends IGLTFBaseLoaderExtension, IDisposa
      * @param assign A function called synchronously after parsing the glTF properties
      * @returns A promise that resolves with the loaded mesh when the load is complete or null if not handled
      */
-    _loadMeshPrimitiveAsync?(context: string, name: string, node: INode, mesh: IMesh, primitive: IMeshPrimitive, assign: (babylonMesh: AbstractMesh) => void): Nullable<Promise<AbstractMesh>>;
+    _loadMeshPrimitiveAsync?(
+        context: string,
+        name: string,
+        node: INode,
+        mesh: IMesh,
+        primitive: IMeshPrimitive,
+        assign: (babylonMesh: AbstractMesh) => void
+    ): Nullable<Promise<AbstractMesh>>;
 
     /**
      * @hidden
@@ -82,7 +89,13 @@ export interface IGLTFLoaderExtension extends IGLTFBaseLoaderExtension, IDisposa
      * @param assign A function called synchronously after parsing the glTF properties
      * @returns A promise that resolves with the loaded Babylon material when the load is complete or null if not handled
      */
-    _loadMaterialAsync?(context: string, material: IMaterial, babylonMesh: Nullable<Mesh>, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Nullable<Promise<Material>>;
+    _loadMaterialAsync?(
+        context: string,
+        material: IMaterial,
+        babylonMesh: Nullable<Mesh>,
+        babylonDrawMode: number,
+        assign: (babylonMaterial: Material) => void
+    ): Nullable<Promise<Material>>;
 
     /**
      * Define this method to modify the default behavior when creating materials.

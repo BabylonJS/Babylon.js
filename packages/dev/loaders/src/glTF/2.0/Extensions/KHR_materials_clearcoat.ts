@@ -1,11 +1,11 @@
-import { Nullable } from "babylonjs/types";
-import { PBRMaterial } from "babylonjs/Materials/PBR/pbrMaterial";
-import { Material } from "babylonjs/Materials/material";
+import { Nullable } from "core/types";
+import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
+import { Material } from "core/Materials/material";
 
 import { IMaterial, ITextureInfo } from "../glTFLoaderInterfaces";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
-import { IKHRMaterialsClearcoat } from 'babylonjs-gltf2interface';
+import { IKHRMaterialsClearcoat } from "babylonjs-gltf2interface";
 
 const NAME = "KHR_materials_clearcoat";
 
@@ -48,7 +48,7 @@ export class KHR_materials_clearcoat implements IGLTFLoaderExtension {
             const promises = new Array<Promise<any>>();
             promises.push(this._loader.loadMaterialPropertiesAsync(context, material, babylonMaterial));
             promises.push(this._loadClearCoatPropertiesAsync(extensionContext, extension, babylonMaterial));
-            return Promise.all(promises).then(() => { });
+            return Promise.all(promises).then(() => {});
         });
     }
 
@@ -65,39 +65,43 @@ export class KHR_materials_clearcoat implements IGLTFLoaderExtension {
 
         if (properties.clearcoatFactor != undefined) {
             babylonMaterial.clearCoat.intensity = properties.clearcoatFactor;
-        }
-        else {
+        } else {
             babylonMaterial.clearCoat.intensity = 0;
         }
 
         if (properties.clearcoatTexture) {
-            promises.push(this._loader.loadTextureInfoAsync(`${context}/clearcoatTexture`, properties.clearcoatTexture, (texture) => {
-                texture.name = `${babylonMaterial.name} (ClearCoat Intensity)`;
-                babylonMaterial.clearCoat.texture = texture;
-            }));
+            promises.push(
+                this._loader.loadTextureInfoAsync(`${context}/clearcoatTexture`, properties.clearcoatTexture, (texture) => {
+                    texture.name = `${babylonMaterial.name} (ClearCoat Intensity)`;
+                    babylonMaterial.clearCoat.texture = texture;
+                })
+            );
         }
 
         if (properties.clearcoatRoughnessFactor != undefined) {
             babylonMaterial.clearCoat.roughness = properties.clearcoatRoughnessFactor;
-        }
-        else {
+        } else {
             babylonMaterial.clearCoat.roughness = 0;
         }
 
         if (properties.clearcoatRoughnessTexture) {
             (properties.clearcoatRoughnessTexture as ITextureInfo).nonColorData = true;
-            promises.push(this._loader.loadTextureInfoAsync(`${context}/clearcoatRoughnessTexture`, properties.clearcoatRoughnessTexture, (texture) => {
-                texture.name = `${babylonMaterial.name} (ClearCoat Roughness)`;
-                babylonMaterial.clearCoat.textureRoughness = texture;
-            }));
+            promises.push(
+                this._loader.loadTextureInfoAsync(`${context}/clearcoatRoughnessTexture`, properties.clearcoatRoughnessTexture, (texture) => {
+                    texture.name = `${babylonMaterial.name} (ClearCoat Roughness)`;
+                    babylonMaterial.clearCoat.textureRoughness = texture;
+                })
+            );
         }
 
         if (properties.clearcoatNormalTexture) {
             (properties.clearcoatNormalTexture as ITextureInfo).nonColorData = true;
-            promises.push(this._loader.loadTextureInfoAsync(`${context}/clearcoatNormalTexture`, properties.clearcoatNormalTexture, (texture) => {
-                texture.name = `${babylonMaterial.name} (ClearCoat Normal)`;
-                babylonMaterial.clearCoat.bumpTexture = texture;
-            }));
+            promises.push(
+                this._loader.loadTextureInfoAsync(`${context}/clearcoatNormalTexture`, properties.clearcoatNormalTexture, (texture) => {
+                    texture.name = `${babylonMaterial.name} (ClearCoat Normal)`;
+                    babylonMaterial.clearCoat.bumpTexture = texture;
+                })
+            );
 
             babylonMaterial.invertNormalMapX = !babylonMaterial.getScene().useRightHandedSystem;
             babylonMaterial.invertNormalMapY = babylonMaterial.getScene().useRightHandedSystem;
@@ -106,7 +110,7 @@ export class KHR_materials_clearcoat implements IGLTFLoaderExtension {
             }
         }
 
-        return Promise.all(promises).then(() => { });
+        return Promise.all(promises).then(() => {});
     }
 }
 

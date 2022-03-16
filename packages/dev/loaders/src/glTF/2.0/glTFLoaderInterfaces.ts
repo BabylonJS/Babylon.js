@@ -1,10 +1,10 @@
-﻿import { AnimationGroup } from "babylonjs/Animations/animationGroup";
-import { Skeleton } from "babylonjs/Bones/skeleton";
-import { Material } from "babylonjs/Materials/material";
-import { TransformNode } from "babylonjs/Meshes/transformNode";
-import { Buffer, VertexBuffer } from "babylonjs/Buffers/buffer";
-import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
-import { Mesh } from "babylonjs/Meshes/mesh";
+﻿import { AnimationGroup } from "core/Animations/animationGroup";
+import { Skeleton } from "core/Bones/skeleton";
+import { Material } from "core/Materials/material";
+import { TransformNode } from "core/Meshes/transformNode";
+import { Buffer, VertexBuffer } from "core/Buffers/buffer";
+import { AbstractMesh } from "core/Meshes/abstractMesh";
+import { Mesh } from "core/Meshes/mesh";
 
 import * as GLTF2 from "babylonjs-gltf2interface";
 
@@ -26,14 +26,13 @@ export interface IAccessor extends GLTF2.IAccessor, IArrayItem {
     _data?: Promise<ArrayBufferView>;
 
     /** @hidden */
-    _babylonVertexBuffer?: { [kind: string]: Promise<VertexBuffer>; };
+    _babylonVertexBuffer?: { [kind: string]: Promise<VertexBuffer> };
 }
 
 /**
  * Loader interface with additional members.
  */
-export interface IAnimationChannel extends GLTF2.IAnimationChannel, IArrayItem {
-}
+export interface IAnimationChannel extends GLTF2.IAnimationChannel, IArrayItem {}
 
 /** @hidden */
 export interface _IAnimationSamplerData {
@@ -83,8 +82,7 @@ export interface IBufferView extends GLTF2.IBufferView, IArrayItem {
 /**
  * Loader interface with additional members.
  */
-export interface ICamera extends GLTF2.ICamera, IArrayItem {
-}
+export interface ICamera extends GLTF2.ICamera, IArrayItem {}
 
 /**
  * Loader interface with additional members.
@@ -97,14 +95,12 @@ export interface IImage extends GLTF2.IImage, IArrayItem {
 /**
  * Loader interface with additional members.
  */
-export interface IMaterialNormalTextureInfo extends GLTF2.IMaterialNormalTextureInfo, ITextureInfo {
-}
+export interface IMaterialNormalTextureInfo extends GLTF2.IMaterialNormalTextureInfo, ITextureInfo {}
 
 /**
  * Loader interface with additional members.
  */
-export interface IMaterialOcclusionTextureInfo extends GLTF2.IMaterialOcclusionTextureInfo, ITextureInfo {
-}
+export interface IMaterialOcclusionTextureInfo extends GLTF2.IMaterialOcclusionTextureInfo, ITextureInfo {}
 
 /**
  * Loader interface with additional members.
@@ -129,7 +125,7 @@ export interface IMaterial extends GLTF2.IMaterial, IArrayItem {
             babylonMaterial: Material;
             babylonMeshes: AbstractMesh[];
             promise: Promise<void>;
-        }
+        };
     };
 }
 
@@ -192,8 +188,7 @@ export interface ISampler extends GLTF2.ISampler, IArrayItem {
 /**
  * Loader interface with additional members.
  */
-export interface IScene extends GLTF2.IScene, IArrayItem {
-}
+export interface IScene extends GLTF2.IScene, IArrayItem {}
 
 /**
  * Loader interface with additional members.

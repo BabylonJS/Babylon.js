@@ -1,19 +1,19 @@
-import { Nullable } from "babylonjs/types";
-import { PBRMaterial } from "babylonjs/Materials/PBR/pbrMaterial";
-import { Material } from "babylonjs/Materials/material";
-import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
+import { Nullable } from "core/types";
+import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
+import { Material } from "core/Materials/material";
+import { BaseTexture } from "core/Materials/Textures/baseTexture";
 import { IMaterial, ITextureInfo } from "../glTFLoaderInterfaces";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
-import { IKHRMaterialsTransmission } from 'babylonjs-gltf2interface';
-import { Scene } from "babylonjs/scene";
-import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
-import { Texture } from "babylonjs/Materials/Textures/texture";
-import { RenderTargetTexture } from "babylonjs/Materials/Textures/renderTargetTexture";
-import { Observable, Observer } from "babylonjs/Misc/observable";
-import { Constants } from "babylonjs/Engines/constants";
-import { Tools } from "babylonjs/Misc/tools";
-import { Color4 } from "babylonjs/Maths/math.color";
+import { IKHRMaterialsTransmission } from "babylonjs-gltf2interface";
+import { Scene } from "core/scene";
+import { AbstractMesh } from "core/Meshes/abstractMesh";
+import { Texture } from "core/Materials/Textures/texture";
+import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
+import { Observable, Observer } from "core/Misc/observable";
+import { Constants } from "core/Engines/constants";
+import { Tools } from "core/Misc/tools";
+import { Color4 } from "core/Maths/math.color";
 
 interface ITransmissionHelperHolder {
     /**
@@ -64,7 +64,6 @@ interface ITransmissionHelperOptions {
  * A class to handle setting up the rendering of opaque objects to be shown through transmissive objects.
  */
 class TransmissionHelper {
-
     /**
      * Creates the default options for the helper.
      */
@@ -95,7 +94,7 @@ class TransmissionHelper {
      * This observable will be notified with any error during the creation of the environment,
      * mainly texture creation errors.
      */
-    public onErrorObservable: Observable<{ message?: string, exception?: any }>;
+    public onErrorObservable: Observable<{ message?: string; exception?: any }>;
 
     /**
      * constructor
@@ -105,7 +104,7 @@ class TransmissionHelper {
     constructor(options: Partial<ITransmissionHelperOptions>, scene: Scene) {
         this._options = {
             ...TransmissionHelper._getDefaultOptions(),
-            ...options
+            ...options,
         };
         this._scene = scene as any;
         this._scene._transmissionHelper = this;
@@ -132,14 +131,19 @@ class TransmissionHelper {
 
         const newOptions = {
             ...this._options,
-            ...options
+            ...options,
         };
 
         const oldOptions = this._options;
         this._options = newOptions;
 
         // If size changes, recreate everything
-        if (newOptions.renderSize !== oldOptions.renderSize || newOptions.renderTargetTextureType !== oldOptions.renderTargetTextureType || newOptions.generateMipmaps !== oldOptions.generateMipmaps || !this._opaqueRenderTarget) {
+        if (
+            newOptions.renderSize !== oldOptions.renderSize ||
+            newOptions.renderTargetTextureType !== oldOptions.renderTargetTextureType ||
+            newOptions.generateMipmaps !== oldOptions.generateMipmaps ||
+            !this._opaqueRenderTarget
+        ) {
             this._setupRenderTargets();
         } else {
             this._opaqueRenderTarget.samples = newOptions.samples;
@@ -156,7 +160,7 @@ class TransmissionHelper {
         if (!material) {
             return false;
         }
-        if (material instanceof PBRMaterial && (material.subSurface.isRefractionEnabled)) {
+        if (material instanceof PBRMaterial && material.subSurface.isRefractionEnabled) {
             return true;
         }
         return false;
@@ -233,7 +237,14 @@ class TransmissionHelper {
         if (this._opaqueRenderTarget) {
             this._opaqueRenderTarget.dispose();
         }
-        this._opaqueRenderTarget = new RenderTargetTexture("opaqueSceneTexture", this._options.renderSize, this._scene, this._options.generateMipmaps, undefined, this._options.renderTargetTextureType);
+        this._opaqueRenderTarget = new RenderTargetTexture(
+            "opaqueSceneTexture",
+            this._options.renderSize,
+            this._scene,
+            this._options.generateMipmaps,
+            undefined,
+            this._options.renderTargetTextureType
+        );
         this._opaqueRenderTarget.ignoreCameraViewport = true;
         this._opaqueRenderTarget.renderList = this._opaqueMeshesCache;
         this._opaqueRenderTarget.clearColor = this._options.clearColor?.clone() ?? this._scene.clearColor.clone();
@@ -327,7 +338,7 @@ export class KHR_materials_transmission implements IGLTFLoaderExtension {
             promises.push(this._loader.loadMaterialBasePropertiesAsync(context, material, babylonMaterial));
             promises.push(this._loader.loadMaterialPropertiesAsync(context, material, babylonMaterial));
             promises.push(this._loadTransparentPropertiesAsync(extensionContext, material, babylonMaterial, extension));
-            return Promise.all(promises).then(() => { });
+            return Promise.all(promises).then(() => {});
         });
     }
 
@@ -362,11 +373,10 @@ export class KHR_materials_transmission implements IGLTFLoaderExtension {
         pbrMaterial.subSurface.maximumThickness = 0.0;
         if (extension.transmissionTexture) {
             (extension.transmissionTexture as ITextureInfo).nonColorData = true;
-            return this._loader.loadTextureInfoAsync(`${context}/transmissionTexture`, extension.transmissionTexture, undefined)
-                .then((texture: BaseTexture) => {
-                    pbrMaterial.subSurface.refractionIntensityTexture = texture;
-                    pbrMaterial.subSurface.useGltfStyleTextures = true;
-                });
+            return this._loader.loadTextureInfoAsync(`${context}/transmissionTexture`, extension.transmissionTexture, undefined).then((texture: BaseTexture) => {
+                pbrMaterial.subSurface.refractionIntensityTexture = texture;
+                pbrMaterial.subSurface.useGltfStyleTextures = true;
+            });
         } else {
             return Promise.resolve();
         }

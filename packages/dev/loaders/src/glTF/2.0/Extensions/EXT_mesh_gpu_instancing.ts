@@ -1,14 +1,14 @@
-import { Vector3, Quaternion, Matrix } from 'babylonjs/Maths/math.vector';
-import { Mesh } from 'babylonjs/Meshes/mesh';
-import { TransformNode } from "babylonjs/Meshes/transformNode";
-import { Nullable } from "babylonjs/types";
+import { Vector3, Quaternion, Matrix } from "core/Maths/math.vector";
+import { Mesh } from "core/Meshes/mesh";
+import { TransformNode } from "core/Meshes/transformNode";
+import { Nullable } from "core/types";
 import { GLTFLoader, ArrayItem } from "../glTFLoader";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { INode } from "../glTFLoaderInterfaces";
-import { TmpVectors } from 'babylonjs/Maths/math.vector';
+import { TmpVectors } from "core/Maths/math.vector";
 import { IEXTMeshGpuInstancing } from "babylonjs-gltf2interface";
 
-import "babylonjs/Meshes/thinInstanceMesh";
+import "core/Meshes/thinInstanceMesh";
 
 const NAME = "EXT_mesh_gpu_instancing";
 

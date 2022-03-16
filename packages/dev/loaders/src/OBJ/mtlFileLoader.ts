@@ -1,10 +1,10 @@
-import { Nullable } from "babylonjs/types";
-import { Color3 } from 'babylonjs/Maths/math.color';
-import { Texture } from "babylonjs/Materials/Textures/texture";
-import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
+import { Nullable } from "core/types";
+import { Color3 } from "core/Maths/math.color";
+import { Texture } from "core/Materials/Textures/texture";
+import { StandardMaterial } from "core/Materials/standardMaterial";
 
-import { Scene } from "babylonjs/scene";
-import { AssetContainer } from "babylonjs/assetContainer";
+import { Scene } from "core/scene";
+import { AssetContainer } from "core/assetContainer";
 /**
  * Class reading and parsing the MTL file bundled with the obj file.
  */
@@ -36,7 +36,7 @@ export class MTLFileLoader {
         }
 
         //Split the lines from the file
-        var lines = data.split('\n');
+        var lines = data.split("\n");
         // whitespace char ie: [ \t\r\n\f]
         var delimiter_pattern = /\s+/;
         //Array with RGB colors
@@ -49,17 +49,17 @@ export class MTLFileLoader {
             var line = lines[i].trim();
 
             // Blank line or comment
-            if (line.length === 0 || line.charAt(0) === '#') {
+            if (line.length === 0 || line.charAt(0) === "#") {
                 continue;
             }
 
             //Get the first parameter (keyword)
-            var pos = line.indexOf(' ');
-            var key = (pos >= 0) ? line.substring(0, pos) : line;
+            var pos = line.indexOf(" ");
+            var key = pos >= 0 ? line.substring(0, pos) : line;
             key = key.toLowerCase();
 
             //Get the data following the key
-            var value: string = (pos >= 0) ? line.substring(pos + 1).trim() : "";
+            var value: string = pos >= 0 ? line.substring(pos + 1).trim() : "";
 
             //This mtl keyword will create the new material
             if (key === "newmtl") {
@@ -105,7 +105,6 @@ export class MTLFileLoader {
                 color = value.split(delimiter_pattern, 3).map(parseFloat);
                 material.emissiveColor = Color3.FromArray(color);
             } else if (key === "ns" && material) {
-
                 //value = "Integer"
                 material.specularPower = parseFloat(value);
             } else if (key === "d" && material) {
@@ -136,7 +135,7 @@ export class MTLFileLoader {
             } else if (key === "map_bump" && material) {
                 //The bump texture
                 const values = value.split(delimiter_pattern);
-                const bumpMultiplierIndex = values.indexOf('-bm');
+                const bumpMultiplierIndex = values.indexOf("-bm");
                 let bumpMultiplier: Nullable<string> = null;
 
                 if (bumpMultiplierIndex >= 0) {
@@ -144,7 +143,7 @@ export class MTLFileLoader {
                     values.splice(bumpMultiplierIndex, 2); // remove
                 }
 
-                material.bumpTexture = MTLFileLoader._getTexture(rootUrl, values.join(' '), scene);
+                material.bumpTexture = MTLFileLoader._getTexture(rootUrl, values.join(" "), scene);
                 if (material.bumpTexture && bumpMultiplier !== null) {
                     material.bumpTexture.level = parseFloat(bumpMultiplier);
                 }
@@ -213,8 +212,7 @@ export class MTLFileLoader {
 
             if (lastDelimiter > -1) {
                 url += value.substr(lastDelimiter + 1);
-            }
-            else {
+            } else {
                 url += value;
             }
         }

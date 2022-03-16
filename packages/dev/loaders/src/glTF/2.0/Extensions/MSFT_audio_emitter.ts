@@ -1,16 +1,22 @@
-import { Nullable } from "babylonjs/types";
-import { Vector3 } from "babylonjs/Maths/math.vector";
-import { Tools } from "babylonjs/Misc/tools";
-import { AnimationGroup } from "babylonjs/Animations/animationGroup";
-import { AnimationEvent } from "babylonjs/Animations/animationEvent";
-import { TransformNode } from "babylonjs/Meshes/transformNode";
-import { Sound } from "babylonjs/Audio/sound";
-import { WeightedSound } from "babylonjs/Audio/weightedsound";
+import { Nullable } from "core/types";
+import { Vector3 } from "core/Maths/math.vector";
+import { Tools } from "core/Misc/tools";
+import { AnimationGroup } from "core/Animations/animationGroup";
+import { AnimationEvent } from "core/Animations/animationEvent";
+import { TransformNode } from "core/Meshes/transformNode";
+import { Sound } from "core/Audio/sound";
+import { WeightedSound } from "core/Audio/weightedsound";
 
 import { IArrayItem, IScene, INode, IAnimation } from "../glTFLoaderInterfaces";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader, ArrayItem } from "../glTFLoader";
-import { IMSFTAudioEmitter_Clip, IMSFTAudioEmitter_Emitter, IMSFTAudioEmitter_EmittersReference, IMSFTAudioEmitter_AnimationEvent, IMSFTAudioEmitter_AnimationEventAction } from 'babylonjs-gltf2interface';
+import {
+    IMSFTAudioEmitter_Clip,
+    IMSFTAudioEmitter_Emitter,
+    IMSFTAudioEmitter_EmittersReference,
+    IMSFTAudioEmitter_AnimationEvent,
+    IMSFTAudioEmitter_AnimationEventAction,
+} from "babylonjs-gltf2interface";
 
 const NAME = "MSFT_audio_emitter";
 
@@ -31,8 +37,7 @@ interface IMSFTAudioEmitter {
     emitters: ILoaderEmitter[];
 }
 
-interface ILoaderAnimationEvent extends IMSFTAudioEmitter_AnimationEvent, IArrayItem {
-}
+interface ILoaderAnimationEvent extends IMSFTAudioEmitter_AnimationEvent, IArrayItem {}
 
 interface ILoaderAnimationEvents {
     events: ILoaderAnimationEvent[];
@@ -92,15 +97,21 @@ export class MSFT_audio_emitter implements IGLTFLoaderExtension {
 
             for (const emitterIndex of extension.emitters) {
                 const emitter = ArrayItem.Get(`${extensionContext}/emitters`, this._emitters, emitterIndex);
-                if (emitter.refDistance != undefined || emitter.maxDistance != undefined || emitter.rolloffFactor != undefined ||
-                    emitter.distanceModel != undefined || emitter.innerAngle != undefined || emitter.outerAngle != undefined) {
+                if (
+                    emitter.refDistance != undefined ||
+                    emitter.maxDistance != undefined ||
+                    emitter.rolloffFactor != undefined ||
+                    emitter.distanceModel != undefined ||
+                    emitter.innerAngle != undefined ||
+                    emitter.outerAngle != undefined
+                ) {
                     throw new Error(`${extensionContext}: Direction or Distance properties are not allowed on emitters attached to a scene`);
                 }
 
                 promises.push(this._loadEmitterAsync(`${extensionContext}/emitters/${emitter.index}`, emitter));
             }
 
-            return Promise.all(promises).then(() => { });
+            return Promise.all(promises).then(() => {});
         });
     }
 
@@ -109,29 +120,34 @@ export class MSFT_audio_emitter implements IGLTFLoaderExtension {
         return GLTFLoader.LoadExtensionAsync<IMSFTAudioEmitter_EmittersReference, TransformNode>(context, node, this.name, (extensionContext, extension) => {
             const promises = new Array<Promise<any>>();
 
-            return this._loader.loadNodeAsync(extensionContext, node, (babylonMesh) => {
-                for (const emitterIndex of extension.emitters) {
-                    const emitter = ArrayItem.Get(`${extensionContext}/emitters`, this._emitters, emitterIndex);
-                    promises.push(this._loadEmitterAsync(`${extensionContext}/emitters/${emitter.index}`, emitter).then(() => {
-                        for (const sound of emitter._babylonSounds) {
-                            sound.attachToMesh(babylonMesh);
-                            if (emitter.innerAngle != undefined || emitter.outerAngle != undefined) {
-                                sound.setLocalDirectionToMesh(Vector3.Forward());
-                                sound.setDirectionalCone(
-                                    2 * Tools.ToDegrees(emitter.innerAngle == undefined ? Math.PI : emitter.innerAngle),
-                                    2 * Tools.ToDegrees(emitter.outerAngle == undefined ? Math.PI : emitter.outerAngle),
-                                    0);
-                            }
-                        }
-                    }));
-                }
+            return this._loader
+                .loadNodeAsync(extensionContext, node, (babylonMesh) => {
+                    for (const emitterIndex of extension.emitters) {
+                        const emitter = ArrayItem.Get(`${extensionContext}/emitters`, this._emitters, emitterIndex);
+                        promises.push(
+                            this._loadEmitterAsync(`${extensionContext}/emitters/${emitter.index}`, emitter).then(() => {
+                                for (const sound of emitter._babylonSounds) {
+                                    sound.attachToMesh(babylonMesh);
+                                    if (emitter.innerAngle != undefined || emitter.outerAngle != undefined) {
+                                        sound.setLocalDirectionToMesh(Vector3.Forward());
+                                        sound.setDirectionalCone(
+                                            2 * Tools.ToDegrees(emitter.innerAngle == undefined ? Math.PI : emitter.innerAngle),
+                                            2 * Tools.ToDegrees(emitter.outerAngle == undefined ? Math.PI : emitter.outerAngle),
+                                            0
+                                        );
+                                    }
+                                }
+                            })
+                        );
+                    }
 
-                assign(babylonMesh);
-            }).then((babylonMesh) => {
-                return Promise.all(promises).then(() => {
-                    return babylonMesh;
+                    assign(babylonMesh);
+                })
+                .then((babylonMesh) => {
+                    return Promise.all(promises).then(() => {
+                        return babylonMesh;
+                    });
                 });
-            });
         });
     }
 
@@ -161,8 +177,7 @@ export class MSFT_audio_emitter implements IGLTFLoaderExtension {
         let promise: Promise<ArrayBufferView>;
         if (clip.uri) {
             promise = this._loader.loadUriAsync(context, clip, clip.uri);
-        }
-        else {
+        } else {
             const bufferView = ArrayItem.Get(`${context}/bufferView`, this._loader.gltf.bufferViews, clip.bufferView);
             promise = this._loader.loadBufferViewAsync(`/bufferViews/${bufferView.index}`, bufferView);
         }
@@ -188,33 +203,49 @@ export class MSFT_audio_emitter implements IGLTFLoaderExtension {
             for (let i = 0; i < emitter.clips.length; i++) {
                 const clipContext = `/extensions/${this.name}/clips`;
                 const clip = ArrayItem.Get(clipContext, this._clips, emitter.clips[i].clip);
-                clipPromises.push(this._loadClipAsync(`${clipContext}/${emitter.clips[i].clip}`, clip).then((objectURL: string) => {
-                    const sound = emitter._babylonSounds[i] = new Sound(name, objectURL, this._loader.babylonScene, null, options);
-                    sound.refDistance = emitter.refDistance || 1;
-                    sound.maxDistance = emitter.maxDistance || 256;
-                    sound.rolloffFactor = emitter.rolloffFactor || 1;
-                    sound.distanceModel = emitter.distanceModel || 'exponential';
-                }));
+                clipPromises.push(
+                    this._loadClipAsync(`${clipContext}/${emitter.clips[i].clip}`, clip).then((objectURL: string) => {
+                        const sound = (emitter._babylonSounds[i] = new Sound(name, objectURL, this._loader.babylonScene, null, options));
+                        sound.refDistance = emitter.refDistance || 1;
+                        sound.maxDistance = emitter.maxDistance || 256;
+                        sound.rolloffFactor = emitter.rolloffFactor || 1;
+                        sound.distanceModel = emitter.distanceModel || "exponential";
+                    })
+                );
             }
 
             const promise = Promise.all(clipPromises).then(() => {
-                const weights = emitter.clips.map((clip) => { return clip.weight || 1; });
+                const weights = emitter.clips.map((clip) => {
+                    return clip.weight || 1;
+                });
                 const weightedSound = new WeightedSound(emitter.loop || false, emitter._babylonSounds, weights);
-                if (emitter.innerAngle) { weightedSound.directionalConeInnerAngle = 2 * Tools.ToDegrees(emitter.innerAngle); }
-                if (emitter.outerAngle) { weightedSound.directionalConeOuterAngle = 2 * Tools.ToDegrees(emitter.outerAngle); }
-                if (emitter.volume) { weightedSound.volume = emitter.volume; }
+                if (emitter.innerAngle) {
+                    weightedSound.directionalConeInnerAngle = 2 * Tools.ToDegrees(emitter.innerAngle);
+                }
+                if (emitter.outerAngle) {
+                    weightedSound.directionalConeOuterAngle = 2 * Tools.ToDegrees(emitter.outerAngle);
+                }
+                if (emitter.volume) {
+                    weightedSound.volume = emitter.volume;
+                }
                 emitter._babylonData!.sound = weightedSound;
             });
 
             emitter._babylonData = {
-                loaded: promise
+                loaded: promise,
             };
         }
 
         return emitter._babylonData.loaded;
     }
 
-    private _getEventAction(context: string, sound: WeightedSound, action: IMSFTAudioEmitter_AnimationEventAction, time: number, startOffset?: number): (currentFrame: number) => void {
+    private _getEventAction(
+        context: string,
+        sound: WeightedSound,
+        action: IMSFTAudioEmitter_AnimationEventAction,
+        time: number,
+        startOffset?: number
+    ): (currentFrame: number) => void {
         switch (action) {
             case IMSFTAudioEmitter_AnimationEventAction.play: {
                 return (currentFrame: number) => {
@@ -238,7 +269,13 @@ export class MSFT_audio_emitter implements IGLTFLoaderExtension {
         }
     }
 
-    private _loadAnimationEventAsync(context: string, animationContext: string, animation: IAnimation, event: ILoaderAnimationEvent, babylonAnimationGroup: AnimationGroup): Promise<void> {
+    private _loadAnimationEventAsync(
+        context: string,
+        animationContext: string,
+        animation: IAnimation,
+        event: ILoaderAnimationEvent,
+        babylonAnimationGroup: AnimationGroup
+    ): Promise<void> {
         if (babylonAnimationGroup.targetedAnimations.length == 0) {
             return Promise.resolve();
         }

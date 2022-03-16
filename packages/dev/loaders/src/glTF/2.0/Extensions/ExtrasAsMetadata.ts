@@ -1,12 +1,12 @@
-import { Nullable } from "babylonjs/types";
-import { TransformNode } from "babylonjs/Meshes/transformNode";
-import { Camera } from "babylonjs/Cameras/camera";
+import { Nullable } from "core/types";
+import { TransformNode } from "core/Meshes/transformNode";
+import { Camera } from "core/Cameras/camera";
 
 import { IProperty } from "babylonjs-gltf2interface";
 import { INode, ICamera, IMaterial } from "../glTFLoaderInterfaces";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
-import { Material } from "babylonjs/Materials/material";
+import { Material } from "core/Materials/material";
 
 const NAME = "ExtrasAsMetadata";
 
@@ -30,10 +30,7 @@ export class ExtrasAsMetadata implements IGLTFLoaderExtension {
 
     private _loader: GLTFLoader;
 
-    private _assignExtras(
-        babylonObject: ObjectWithMetadata,
-        gltfProp: IProperty
-    ): void {
+    private _assignExtras(babylonObject: ObjectWithMetadata, gltfProp: IProperty): void {
         if (gltfProp.extras && Object.keys(gltfProp.extras).length > 0) {
             const metadata = (babylonObject.metadata = babylonObject.metadata || {});
             const gltf = (metadata.gltf = metadata.gltf || {});
@@ -52,54 +49,27 @@ export class ExtrasAsMetadata implements IGLTFLoaderExtension {
     }
 
     /** @hidden */
-    public loadNodeAsync(
-        context: string,
-        node: INode,
-        assign: (babylonTransformNode: TransformNode) => void
-    ): Nullable<Promise<TransformNode>> {
-        return this._loader.loadNodeAsync(
-            context,
-            node,
-            (babylonTransformNode): void => {
-                this._assignExtras(babylonTransformNode, node);
-                assign(babylonTransformNode);
-            }
-        );
+    public loadNodeAsync(context: string, node: INode, assign: (babylonTransformNode: TransformNode) => void): Nullable<Promise<TransformNode>> {
+        return this._loader.loadNodeAsync(context, node, (babylonTransformNode): void => {
+            this._assignExtras(babylonTransformNode, node);
+            assign(babylonTransformNode);
+        });
     }
 
     /** @hidden */
-    public loadCameraAsync(
-        context: string,
-        camera: ICamera,
-        assign: (babylonCamera: Camera) => void
-    ): Nullable<Promise<Camera>> {
-        return this._loader.loadCameraAsync(
-            context,
-            camera,
-            (babylonCamera): void => {
-                this._assignExtras(babylonCamera, camera);
-                assign(babylonCamera);
-            }
-        );
+    public loadCameraAsync(context: string, camera: ICamera, assign: (babylonCamera: Camera) => void): Nullable<Promise<Camera>> {
+        return this._loader.loadCameraAsync(context, camera, (babylonCamera): void => {
+            this._assignExtras(babylonCamera, camera);
+            assign(babylonCamera);
+        });
     }
 
     /** @hidden */
-    public createMaterial(
-        context: string,
-        material: IMaterial,
-        babylonDrawMode: number
-    ): Nullable<Material> {
-        const babylonMaterial = this._loader.createMaterial(
-            context,
-            material,
-            babylonDrawMode
-        );
+    public createMaterial(context: string, material: IMaterial, babylonDrawMode: number): Nullable<Material> {
+        const babylonMaterial = this._loader.createMaterial(context, material, babylonDrawMode);
         this._assignExtras(babylonMaterial, material);
         return babylonMaterial;
     }
 }
 
-GLTFLoader.RegisterExtension(
-    NAME,
-    (loader): IGLTFLoaderExtension => new ExtrasAsMetadata(loader)
-);
+GLTFLoader.RegisterExtension(NAME, (loader): IGLTFLoaderExtension => new ExtrasAsMetadata(loader));

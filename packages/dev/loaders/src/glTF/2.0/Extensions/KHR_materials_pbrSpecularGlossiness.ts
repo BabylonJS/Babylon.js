@@ -1,12 +1,12 @@
-import { Nullable } from "babylonjs/types";
-import { Color3 } from "babylonjs/Maths/math.color";
-import { PBRMaterial } from "babylonjs/Materials/PBR/pbrMaterial";
-import { Material } from "babylonjs/Materials/material";
+import { Nullable } from "core/types";
+import { Color3 } from "core/Maths/math.color";
+import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
+import { Material } from "core/Materials/material";
 
 import { IMaterial } from "../glTFLoaderInterfaces";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
-import { IKHRMaterialsPbrSpecularGlossiness } from 'babylonjs-gltf2interface';
+import { IKHRMaterialsPbrSpecularGlossiness } from "babylonjs-gltf2interface";
 
 const NAME = "KHR_materials_pbrSpecularGlossiness";
 
@@ -49,7 +49,7 @@ export class KHR_materials_pbrSpecularGlossiness implements IGLTFLoaderExtension
             promises.push(this._loader.loadMaterialBasePropertiesAsync(context, material, babylonMaterial));
             promises.push(this._loadSpecularGlossinessPropertiesAsync(extensionContext, material, extension, babylonMaterial));
             this._loader.loadMaterialAlphaProperties(context, material, babylonMaterial);
-            return Promise.all(promises).then(() => { });
+            return Promise.all(promises).then(() => {});
         });
     }
 
@@ -66,8 +66,7 @@ export class KHR_materials_pbrSpecularGlossiness implements IGLTFLoaderExtension
         if (properties.diffuseFactor) {
             babylonMaterial.albedoColor = Color3.FromArray(properties.diffuseFactor);
             babylonMaterial.alpha = properties.diffuseFactor[3];
-        }
-        else {
+        } else {
             babylonMaterial.albedoColor = Color3.White();
         }
 
@@ -75,23 +74,27 @@ export class KHR_materials_pbrSpecularGlossiness implements IGLTFLoaderExtension
         babylonMaterial.microSurface = properties.glossinessFactor == undefined ? 1 : properties.glossinessFactor;
 
         if (properties.diffuseTexture) {
-            promises.push(this._loader.loadTextureInfoAsync(`${context}/diffuseTexture`, properties.diffuseTexture, (texture) => {
-                texture.name = `${babylonMaterial.name} (Diffuse)`;
-                babylonMaterial.albedoTexture = texture;
-            }));
+            promises.push(
+                this._loader.loadTextureInfoAsync(`${context}/diffuseTexture`, properties.diffuseTexture, (texture) => {
+                    texture.name = `${babylonMaterial.name} (Diffuse)`;
+                    babylonMaterial.albedoTexture = texture;
+                })
+            );
         }
 
         if (properties.specularGlossinessTexture) {
-            promises.push(this._loader.loadTextureInfoAsync(`${context}/specularGlossinessTexture`, properties.specularGlossinessTexture, (texture) => {
-                texture.name = `${babylonMaterial.name} (Specular Glossiness)`;
-                babylonMaterial.reflectivityTexture = texture;
-            }));
+            promises.push(
+                this._loader.loadTextureInfoAsync(`${context}/specularGlossinessTexture`, properties.specularGlossinessTexture, (texture) => {
+                    texture.name = `${babylonMaterial.name} (Specular Glossiness)`;
+                    babylonMaterial.reflectivityTexture = texture;
+                })
+            );
 
             babylonMaterial.reflectivityTexture.hasAlpha = true;
             babylonMaterial.useMicroSurfaceFromReflectivityMapAlpha = true;
         }
 
-        return Promise.all(promises).then(() => { });
+        return Promise.all(promises).then(() => {});
     }
 }
 

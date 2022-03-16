@@ -1,9 +1,9 @@
-import { Nullable } from "babylonjs/types";
-import { Scalar } from "babylonjs/Maths/math.scalar";
-import { SphericalHarmonics, SphericalPolynomial } from "babylonjs/Maths/sphericalPolynomial";
-import { Quaternion, Matrix } from "babylonjs/Maths/math.vector";
-import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
-import { RawCubeTexture } from "babylonjs/Materials/Textures/rawCubeTexture";
+import { Nullable } from "core/types";
+import { Scalar } from "core/Maths/math.scalar";
+import { SphericalHarmonics, SphericalPolynomial } from "core/Maths/sphericalPolynomial";
+import { Quaternion, Matrix } from "core/Maths/math.vector";
+import { BaseTexture } from "core/Materials/Textures/baseTexture";
+import { RawCubeTexture } from "core/Materials/Textures/rawCubeTexture";
 
 import { IEXTLightsImageBased_LightReferenceImageBased, IEXTLightsImageBased_LightImageBased, IEXTLightsImageBased } from "babylonjs-gltf2interface";
 import { IScene } from "../glTFLoaderInterfaces";
@@ -68,13 +68,15 @@ export class EXT_lights_image_based implements IGLTFLoaderExtension {
             this._loader.logOpen(`${extensionContext}`);
 
             const light = ArrayItem.Get(`${extensionContext}/light`, this._lights, extension.light);
-            promises.push(this._loadLightAsync(`/extensions/${this.name}/lights/${extension.light}`, light).then((texture) => {
-                this._loader.babylonScene.environmentTexture = texture;
-            }));
+            promises.push(
+                this._loadLightAsync(`/extensions/${this.name}/lights/${extension.light}`, light).then((texture) => {
+                    this._loader.babylonScene.environmentTexture = texture;
+                })
+            );
 
             this._loader.logClose();
 
-            return Promise.all(promises).then(() => { });
+            return Promise.all(promises).then(() => {});
         });
     }
 
@@ -94,9 +96,11 @@ export class EXT_lights_image_based implements IGLTFLoaderExtension {
 
                     const index = faces[face];
                     const image = ArrayItem.Get(specularImageContext, this._loader.gltf.images, index);
-                    promises.push(this._loader.loadImageAsync(`/images/${index}`, image).then((data) => {
-                        imageData[mipmap][face] = data;
-                    }));
+                    promises.push(
+                        this._loader.loadImageAsync(`/images/${index}`, image).then((data) => {
+                            imageData[mipmap][face] = data;
+                        })
+                    );
 
                     this._loader.logClose();
                 }

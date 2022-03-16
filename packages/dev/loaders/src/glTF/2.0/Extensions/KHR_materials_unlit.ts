@@ -1,7 +1,7 @@
-import { Nullable } from "babylonjs/types";
-import { Color3 } from "babylonjs/Maths/math.color";
-import { PBRMaterial } from "babylonjs/Materials/PBR/pbrMaterial";
-import { Material } from "babylonjs/Materials/material";
+import { Nullable } from "core/types";
+import { Color3 } from "core/Maths/math.color";
+import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
+import { Material } from "core/Materials/material";
 
 import { IMaterial } from "../glTFLoaderInterfaces";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
@@ -61,16 +61,17 @@ export class KHR_materials_unlit implements IGLTFLoaderExtension {
             if (properties.baseColorFactor) {
                 babylonMaterial.albedoColor = Color3.FromArray(properties.baseColorFactor);
                 babylonMaterial.alpha = properties.baseColorFactor[3];
-            }
-            else {
+            } else {
                 babylonMaterial.albedoColor = Color3.White();
             }
 
             if (properties.baseColorTexture) {
-                promises.push(this._loader.loadTextureInfoAsync(`${context}/baseColorTexture`, properties.baseColorTexture, (texture) => {
-                    texture.name = `${babylonMaterial.name} (Base Color)`;
-                    babylonMaterial.albedoTexture = texture;
-                }));
+                promises.push(
+                    this._loader.loadTextureInfoAsync(`${context}/baseColorTexture`, properties.baseColorTexture, (texture) => {
+                        texture.name = `${babylonMaterial.name} (Base Color)`;
+                        babylonMaterial.albedoTexture = texture;
+                    })
+                );
             }
         }
 
@@ -81,7 +82,7 @@ export class KHR_materials_unlit implements IGLTFLoaderExtension {
 
         this._loader.loadMaterialAlphaProperties(context, material, babylonMaterial);
 
-        return Promise.all(promises).then(() => { });
+        return Promise.all(promises).then(() => {});
     }
 }
 
