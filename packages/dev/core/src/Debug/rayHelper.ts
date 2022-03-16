@@ -9,7 +9,6 @@ import { LinesMesh } from "../Meshes/linesMesh";
 import { CreateLines } from "../Meshes/Builders/linesBuilder";
 import { Observer } from "../Misc/observable";
 
-
 /**
  * As raycast might be hard to debug, the RayHelper can help rendering the different rays
  * in order to better appreciate the issue one might have.

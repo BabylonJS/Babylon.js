@@ -1,4 +1,4 @@
-import { VertexBuffer , Buffer } from "../Buffers/buffer";
+import { VertexBuffer, Buffer } from "../Buffers/buffer";
 import { ThinEngine } from "../Engines/thinEngine";
 import { Effect, IEffectCreationOptions } from "../Materials/effect";
 import { IGPUParticleSystemPlatform } from "./IGPUParticleSystemPlatform";

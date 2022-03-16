@@ -1,6 +1,6 @@
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
 import { WebXRSessionManager } from "../webXRSessionManager";
-import { WebXRFeatureName , WebXRFeaturesManager } from "../webXRFeaturesManager";
+import { WebXRFeatureName, WebXRFeaturesManager } from "../webXRFeaturesManager";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Mesh } from "../../Meshes/mesh";
 import { WebXRInput } from "../webXRInput";

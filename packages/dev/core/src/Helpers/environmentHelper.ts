@@ -17,8 +17,6 @@ import { CreatePlane } from "../Meshes/Builders/planeBuilder";
 import { CreateBox } from "../Meshes/Builders/boxBuilder";
 import { Plane } from "../Maths/math.plane";
 
-
-
 /**
  * Represents the different options available during the creation of
  * a Environment helper.

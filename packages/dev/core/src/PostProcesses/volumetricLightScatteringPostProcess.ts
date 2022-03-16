@@ -28,7 +28,6 @@ import { Viewport } from "../Maths/math.viewport";
 import { RegisterClass } from "../Misc/typeStore";
 import { DrawWrapper } from "../Materials/drawWrapper";
 
-
 declare type Engine = import("../Engines/engine").Engine;
 
 /**

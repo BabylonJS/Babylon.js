@@ -1,7 +1,6 @@
-import { DeepImmutable , Nullable } from "../types";
+import { DeepImmutable, Nullable } from "../types";
 import { serialize, serializeAsVector3, serializeAsQuaternion, SerializationHelper } from "../Misc/decorators";
 import { Observable } from "../Misc/observable";
-
 
 import { Camera } from "../Cameras/camera";
 import { Scene } from "../scene";

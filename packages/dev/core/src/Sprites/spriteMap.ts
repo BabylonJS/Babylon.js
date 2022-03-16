@@ -14,7 +14,6 @@ import { CreatePlane } from "../Meshes/Builders/planeBuilder";
 import "../Shaders/spriteMap.fragment";
 import "../Shaders/spriteMap.vertex";
 
-
 /**
  * Defines the basic options interface of a SpriteMap
  */

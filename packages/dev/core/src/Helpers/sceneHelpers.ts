@@ -20,7 +20,6 @@ import "../Materials/Textures/Loaders/ktxTextureLoader";
 import { CreateBox } from "../Meshes/Builders/boxBuilder";
 import { WebXRDefaultExperience, WebXRDefaultExperienceOptions } from "../XR/webXRDefaultExperience";
 
-
 /** @hidden */
 export var _forceSceneHelpersToBundle = true;
 

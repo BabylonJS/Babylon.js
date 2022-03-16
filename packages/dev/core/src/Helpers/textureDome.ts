@@ -9,7 +9,6 @@ import { Observer, Observable } from "../Misc/observable";
 import { Vector3 } from "../Maths/math.vector";
 import { Axis } from "../Maths/math";
 
-
 declare type Camera = import("../Cameras/camera").Camera;
 
 /**
