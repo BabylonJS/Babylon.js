@@ -3,7 +3,7 @@ import * as ReactDOM from "react-dom";
 import { GlobalState } from './globalState';
 import { GraphEditor } from './graphEditor';
 import { NodeMaterial } from "core/Materials/Node/nodeMaterial";
-import { Popup } from "../src/sharedComponents/popup";
+import { Popup } from "./sharedComponents/popup";
 import { SerializationTools } from './serializationTools';
 import { Observable } from 'core/Misc/observable';
 import { PreviewType } from './components/preview/previewType';
