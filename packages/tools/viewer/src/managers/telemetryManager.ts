@@ -1,5 +1,5 @@
-import { Observable } from "babylonjs/Misc/observable";
-import { Engine } from "babylonjs/Engines/engine";
+import { Observable } from "core/Misc/observable";
+import { Engine } from "core/Engines/engine";
 
 
 /**

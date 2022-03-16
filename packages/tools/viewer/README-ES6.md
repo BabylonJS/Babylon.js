@@ -6,21 +6,25 @@ Online docs: https://doc.babylonjs.com/extensions/the_babylon_viewer
 ## ES6/NPM usage
 
 Install the package using npm:
+
 ```
 npm install @babylonjs/viewer --save
 ```
 
 Then in JS/Typescript the viewer to be imported via:
+
 ```
 import * as BabylonViewer from '@babylonjs/viewer';
 ```
 
 Add a babylon element in an html file:
+
 ```
 <babylon id="babylon-viewer" camera.behaviors.auto-rotate="0"></babylon>
 ```
 
 And used to load models
+
 ```
 BabylonViewer.viewerManager.getViewerPromiseById('babylon-viewer').then(function (viewer) {
     // this will resolve only after the viewer with this specific ID is initialized

@@ -1,5 +1,5 @@
 import { ViewerConfiguration } from './../configuration';
-import { Tools } from 'babylonjs/Misc/tools';
+import { Tools } from 'core/Misc/tools';
 
 /**
  * The viewer's "extended" configuration.

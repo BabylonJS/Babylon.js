@@ -1,8 +1,8 @@
-import { GLTFFileLoader, GLTFLoaderAnimationStartMode } from "babylonjs-loaders/glTF/glTFFileLoader"
-import { ISceneLoaderPlugin, ISceneLoaderPluginAsync } from 'babylonjs/Loading/sceneLoader';
-import { Tools } from 'babylonjs/Misc/tools';
-import { SceneLoader } from 'babylonjs/Loading/sceneLoader';
-import { Tags } from 'babylonjs/Misc/tags';
+import { GLTFFileLoader, GLTFLoaderAnimationStartMode } from "loaders/glTF/glTFFileLoader"
+import { ISceneLoaderPlugin, ISceneLoaderPluginAsync } from 'core/Loading/sceneLoader';
+import { Tools } from 'core/Misc/tools';
+import { SceneLoader } from 'core/Loading/sceneLoader';
+import { Tags } from 'core/Misc/tags';
 
 import { ConfigurationContainer } from '../configuration/configurationContainer';
 import { IModelConfiguration } from '../configuration/interfaces/modelConfiguration';

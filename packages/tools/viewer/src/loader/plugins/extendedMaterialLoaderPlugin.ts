@@ -1,7 +1,7 @@
-import { Material } from 'babylonjs/Materials/material';
-import { PBRMaterial } from 'babylonjs/Materials/PBR/pbrMaterial';
+import { Material } from 'core/Materials/material';
+import { PBRMaterial } from 'core/Materials/PBR/pbrMaterial';
 import { ILoaderPlugin } from './loaderPlugin';
-import { Constants } from 'babylonjs/Engines/constants';
+import { Constants } from 'core/Engines/constants';
 
 /**
  * A (PBR) material will be extended using this function.

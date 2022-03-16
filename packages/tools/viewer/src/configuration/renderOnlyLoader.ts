@@ -3,10 +3,10 @@ import { ViewerConfiguration } from './configuration';
 import { processConfigurationCompatibility } from './configurationCompatibility';
 
 import { deepmerge } from '../helper/index';
-import { Tools } from 'babylonjs/Misc/tools';
+import { Tools } from 'core/Misc/tools';
 import { extendedConfiguration } from './types/extended';
 import { renderOnlyDefaultConfiguration } from './types/renderOnlyDefault';
-import { IFileRequest } from 'babylonjs/Misc/fileRequest';
+import { IFileRequest } from 'core/Misc/fileRequest';
 
 /**
  * The configuration loader will load the configuration object from any source and will use the defined mapper to

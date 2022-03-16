@@ -1,5 +1,5 @@
-import { DefaultRenderingPipeline } from 'babylonjs/PostProcesses/RenderPipeline/Pipelines/defaultRenderingPipeline';
-import { Scalar } from 'babylonjs/Maths/math.scalar';
+import { DefaultRenderingPipeline } from 'core/PostProcesses/RenderPipeline/Pipelines/defaultRenderingPipeline';
+import { Scalar } from 'core/Maths/math.scalar';
 import { SceneManager } from '../../managers/sceneManager';
 
 /**

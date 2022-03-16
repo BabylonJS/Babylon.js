@@ -1,4 +1,4 @@
-import { Tools } from 'babylonjs/Misc/tools';
+import { Tools } from 'core/Misc/tools';
 import { ViewerConfiguration } from './configuration';
 
 import { kebabToCamel } from '../helper/index';

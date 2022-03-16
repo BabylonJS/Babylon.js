@@ -1,5 +1,5 @@
-import { Vector3 } from 'babylonjs/Maths/math';
-import { Tools } from 'babylonjs/Misc/tools';
+import { Vector3 } from 'core/Maths/math';
+import { Tools } from 'core/Misc/tools';
 import { TextureCube, PixelFormat, PixelType } from './texture';
 
 /**

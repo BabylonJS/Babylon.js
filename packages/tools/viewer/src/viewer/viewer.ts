@@ -1,11 +1,11 @@
-import { Engine } from 'babylonjs/Engines/engine';
-import { ISceneLoaderPlugin, ISceneLoaderPluginAsync, ISceneLoaderProgressEvent, SceneLoader } from 'babylonjs/Loading/sceneLoader';
-import { Observable } from 'babylonjs/Misc/observable';
-import { Scene } from 'babylonjs/scene';
-import { RenderingManager } from 'babylonjs/Rendering/renderingManager';
-import { TargetCamera } from 'babylonjs/Cameras/targetCamera';
-import { Tools } from 'babylonjs/Misc/tools';
-import { Effect } from 'babylonjs/Materials/effect';
+import { Engine } from 'core/Engines/engine';
+import { ISceneLoaderPlugin, ISceneLoaderPluginAsync, ISceneLoaderProgressEvent, SceneLoader } from 'core/Loading/sceneLoader';
+import { Observable } from 'core/Misc/observable';
+import { Scene } from 'core/scene';
+import { RenderingManager } from 'core/Rendering/renderingManager';
+import { TargetCamera } from 'core/Cameras/targetCamera';
+import { Tools } from 'core/Misc/tools';
+import { Effect } from 'core/Materials/effect';
 import { processConfigurationCompatibility } from '../configuration/configurationCompatibility';
 import { ConfigurationContainer } from '../configuration/configurationContainer';
 import { viewerGlobals } from '../configuration/globals';
@@ -20,7 +20,7 @@ import { viewerManager } from './viewerManager';
 import { ViewerConfiguration } from '../configuration/configuration';
 import { IObserversConfiguration } from '../configuration/interfaces/observersConfiguration';
 import { IModelConfiguration } from '../configuration/interfaces/modelConfiguration';
-import { GLTFFileLoader } from 'babylonjs-loaders/glTF/glTFFileLoader';
+import { GLTFFileLoader } from 'loaders/glTF/glTFFileLoader';
 
 /**
  * The AbstractViewer is the center of Babylon's viewer.
