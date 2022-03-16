@@ -1,9 +1,9 @@
 import * as React from "react";
-import { Observable } from "babylonjs/Misc/observable";
+import { Observable } from "core/Misc/observable";
 import { PropertyChangedEvent } from "../../../propertyChangedEvent";
 import { CommonControlPropertyGridComponent } from "../../../tabs/propertyGrids/gui/commonControlPropertyGridComponent";
 import { LockObject } from "../../../tabs/propertyGrids/lockObject";
-import { RadioButton } from "babylonjs-gui/2D/controls/radioButton";
+import { RadioButton } from "gui/2D/controls/radioButton";
 import { LineContainerComponent } from "../../../lines/lineContainerComponent";
 import { FloatLineComponent } from "../../../lines/floatLineComponent";
 import { TextInputLineComponent } from "../../../lines/textInputLineComponent";
@@ -26,7 +26,11 @@ export class RadioButtonPropertyGridComponent extends React.Component<IRadioButt
 
         return (
             <div className="pane">
-                <CommonControlPropertyGridComponent lockObject={this.props.lockObject} controls={radioButtons} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <CommonControlPropertyGridComponent
+                    lockObject={this.props.lockObject}
+                    controls={radioButtons}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                />
                 <LineContainerComponent title="RADIO BUTTON">
                     <FloatLineComponent
                         lockObject={this.props.lockObject}
@@ -49,7 +53,12 @@ export class RadioButtonPropertyGridComponent extends React.Component<IRadioButt
                         propertyName="group"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
-                    <CheckBoxLineComponent label="Checked" target={makeTargetsProxy(radioButtons, this.props.onPropertyChangedObservable)} propertyName="isChecked" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <CheckBoxLineComponent
+                        label="Checked"
+                        target={makeTargetsProxy(radioButtons, this.props.onPropertyChangedObservable)}
+                        propertyName="isChecked"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
                 </LineContainerComponent>
             </div>
         );

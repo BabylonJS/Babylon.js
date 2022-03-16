@@ -1,13 +1,13 @@
 import * as React from "react";
-import { Vector3 } from "babylonjs/Maths/math.vector";
-import { Observable } from "babylonjs/Misc/observable";
+import { Vector3 } from "core/Maths/math.vector";
+import { Observable } from "core/Misc/observable";
 
 import { NumericInputComponent } from "../lines/numericInputComponent";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { PropertyChangedEvent } from "../propertyChangedEvent";
 import { SliderLineComponent } from "../lines/sliderLineComponent";
-import { Tools } from "babylonjs/Misc/tools";
+import { Tools } from "core/Misc/tools";
 
 interface IVector3LineComponentProps {
     label: string;

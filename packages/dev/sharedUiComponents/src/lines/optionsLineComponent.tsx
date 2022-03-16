@@ -1,7 +1,7 @@
 import * as React from "react";
-import { Observable } from "babylonjs/Misc/observable";
+import { Observable } from "core/Misc/observable";
 import { PropertyChangedEvent } from "../propertyChangedEvent";
-import { IInspectableOptions } from "babylonjs/Misc/iInspectable";
+import { IInspectableOptions } from "core/Misc/iInspectable";
 
 export const Null_Value = Number.MAX_SAFE_INTEGER;
 

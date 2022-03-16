@@ -1,6 +1,6 @@
 import * as React from "react";
-import { Vector4 } from "babylonjs/Maths/math.vector";
-import { Observable } from "babylonjs/Misc/observable";
+import { Vector4 } from "core/Maths/math.vector";
+import { Observable } from "core/Misc/observable";
 
 import { NumericInputComponent } from "./numericInputComponent";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
