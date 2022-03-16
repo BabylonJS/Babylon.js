@@ -1,18 +1,18 @@
 import * as React from "react";
-import { Observable } from "babylonjs/Misc/observable";
-import { IShadowLight } from "babylonjs/Lights/shadowLight";
+import { Observable } from "core/Misc/observable";
+import { IShadowLight } from "core/Lights/shadowLight";
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
-import { LineContainerComponent } from "../../../../../sharedUiComponents/lines/lineContainerComponent";
-import { CheckBoxLineComponent } from "../../../../../sharedUiComponents/lines/checkBoxLineComponent";
-import { FloatLineComponent } from "../../../../../sharedUiComponents/lines/floatLineComponent";
-import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
+import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
+import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
+import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
+import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { GlobalState } from "../../../../globalState";
-import { OptionsLineComponent } from "../../../../../sharedUiComponents/lines/optionsLineComponent";
-import { ShadowGenerator } from "babylonjs/Lights/Shadows/shadowGenerator";
-import { CascadedShadowGenerator } from "babylonjs/Lights/Shadows/cascadedShadowGenerator";
-import { SliderLineComponent } from "../../../../../sharedUiComponents/lines/sliderLineComponent";
-import { ButtonLineComponent } from "../../../../../sharedUiComponents/lines/buttonLineComponent";
-import { DirectionalLight } from "babylonjs/Lights/directionalLight";
+import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
+import { ShadowGenerator } from "core/Lights/Shadows/shadowGenerator";
+import { CascadedShadowGenerator } from "core/Lights/Shadows/cascadedShadowGenerator";
+import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
+import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
+import { DirectionalLight } from "core/Lights/directionalLight";
 
 interface ICommonShadowLightPropertyGridComponentProps {
     globalState: GlobalState;

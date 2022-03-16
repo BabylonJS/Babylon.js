@@ -1,21 +1,21 @@
 import * as React from "react";
 
-import { Observable } from "babylonjs/Misc/observable";
+import { Observable } from "core/Misc/observable";
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
-import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
-import { LineContainerComponent } from "../../../../../sharedUiComponents/lines/lineContainerComponent";
+import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import { GlobalState } from "../../../../globalState";
-import { TextInputLineComponent } from "../../../../../sharedUiComponents/lines/textInputLineComponent";
-import { TextLineComponent } from "../../../../../sharedUiComponents/lines/textLineComponent";
-import { Sprite } from "babylonjs/Sprites/sprite";
-import { CheckBoxLineComponent } from "../../../../../sharedUiComponents/lines/checkBoxLineComponent";
-import { Vector3LineComponent } from "../../../../../sharedUiComponents/lines/vector3LineComponent";
-import { FloatLineComponent } from "../../../../../sharedUiComponents/lines/floatLineComponent";
-import { SliderLineComponent } from "../../../../../sharedUiComponents/lines/sliderLineComponent";
-import { ButtonLineComponent } from "../../../../../sharedUiComponents/lines/buttonLineComponent";
+import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
+import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
+import { Sprite } from "core/Sprites/sprite";
+import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
+import { Vector3LineComponent } from "shared-ui-components/lines/vector3LineComponent";
+import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
+import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
+import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
 import { TextureHelper } from "../../../../../textureHelper";
-import { Nullable } from "babylonjs/types";
-import { Color4LineComponent } from "../../../../../sharedUiComponents/lines/color4LineComponent";
+import { Nullable } from "core/types";
+import { Color4LineComponent } from "shared-ui-components/lines/color4LineComponent";
 
 interface ISpritePropertyGridComponentProps {
     globalState: GlobalState;

@@ -1,14 +1,13 @@
-import * as React from "react";
 import { PaneComponent, IPaneComponentProps } from "../paneComponent";
-import { LineContainerComponent } from "../../../sharedUiComponents/lines/lineContainerComponent";
-import { CheckBoxLineComponent } from "../../../sharedUiComponents/lines/checkBoxLineComponent";
+import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
+import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
 import { RenderGridPropertyGridComponent } from "./propertyGrids/renderGridPropertyGridComponent";
 
-import { PhysicsViewer } from "babylonjs/Debug/physicsViewer";
-import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
-import { Mesh } from "babylonjs/Meshes/mesh";
+import { PhysicsViewer } from "core/Debug/physicsViewer";
+import { StandardMaterial } from "core/Materials/standardMaterial";
+import { Mesh } from "core/Meshes/mesh";
 
-import "babylonjs/Physics/physicsEngineComponent";
+import "core/Physics/physicsEngineComponent";
 
 export class DebugTabComponent extends PaneComponent {
     private _physicsViewersEnabled = false;

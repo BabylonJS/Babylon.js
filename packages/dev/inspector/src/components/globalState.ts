@@ -1,17 +1,17 @@
-import { GLTFLoaderAnimationStartMode, GLTFLoaderCoordinateSystemMode } from "babylonjs-loaders/glTF/index";
+import { GLTFLoaderAnimationStartMode, GLTFLoaderCoordinateSystemMode } from "loaders/glTF/index";
 import { IGLTFValidationResults } from "babylonjs-gltf2interface";
 
-import { Nullable } from "babylonjs/types";
-import { Observable, Observer } from "babylonjs/Misc/observable";
-import { ISceneLoaderPlugin, ISceneLoaderPluginAsync } from "babylonjs/Loading/sceneLoader";
-import { Scene } from "babylonjs/scene";
-import { Light } from "babylonjs/Lights/light";
-import { Camera } from "babylonjs/Cameras/camera";
-import { LightGizmo } from "babylonjs/Gizmos/lightGizmo";
-import { CameraGizmo } from "babylonjs/Gizmos/cameraGizmo";
+import { Nullable } from "core/types";
+import { Observable, Observer } from "core/Misc/observable";
+import { ISceneLoaderPlugin, ISceneLoaderPluginAsync } from "core/Loading/sceneLoader";
+import { Scene } from "core/scene";
+import { Light } from "core/Lights/light";
+import { Camera } from "core/Cameras/camera";
+import { LightGizmo } from "core/Gizmos/lightGizmo";
+import { CameraGizmo } from "core/Gizmos/cameraGizmo";
 import { PropertyChangedEvent } from "./propertyChangedEvent";
 import { ReplayRecorder } from "./replayRecorder";
-import { DataStorage } from "babylonjs/Misc/dataStorage";
+import { DataStorage } from "core/Misc/dataStorage";
 
 export class GlobalState {
     public onSelectionChangedObservable: Observable<any>;
@@ -26,7 +26,7 @@ export class GlobalState {
     public validationResults: Nullable<IGLTFValidationResults> = null;
     public onValidationResultsUpdatedObservable = new Observable<Nullable<IGLTFValidationResults>>();
 
-    public onExtensionLoadedObservable: Observable<import("babylonjs-loaders/glTF/index").IGLTFLoaderExtension>;
+    public onExtensionLoadedObservable: Observable<import("loaders/glTF/index").IGLTFLoaderExtension>;
 
     public glTFLoaderExtensionDefaults: { [name: string]: { [key: string]: any } } = {
         MSFT_lod: { enabled: true, maxLODsToLoad: 10 },
@@ -58,11 +58,11 @@ export class GlobalState {
     public glTFLoaderDefaults: { [key: string]: any } = {
         alwaysComputeBoundingBox: false,
         alwaysComputeSkeletonRootNode: false,
-        animationStartMode: typeof GLTFLoaderAnimationStartMode !== 'undefined' ? GLTFLoaderAnimationStartMode.FIRST : 1,
+        animationStartMode: typeof GLTFLoaderAnimationStartMode !== "undefined" ? GLTFLoaderAnimationStartMode.FIRST : 1,
         capturePerformanceCounters: false,
         compileMaterials: false,
         compileShadowGenerators: false,
-        coordinateSystemMode: typeof GLTFLoaderCoordinateSystemMode !== 'undefined' ? GLTFLoaderCoordinateSystemMode.AUTO : 0,
+        coordinateSystemMode: typeof GLTFLoaderCoordinateSystemMode !== "undefined" ? GLTFLoaderCoordinateSystemMode.AUTO : 0,
         createInstances: true,
         loadAllMaterials: false,
         loggingEnabled: false,
@@ -72,7 +72,7 @@ export class GlobalState {
         useSRGBBuffers: true,
     };
 
-    public glTFLoaderExtensions: { [key: string]: import("babylonjs-loaders/glTF/index").IGLTFLoaderExtension } = {};
+    public glTFLoaderExtensions: { [key: string]: import("loaders/glTF/index").IGLTFLoaderExtension } = {};
 
     public blockMutationUpdates = false;
     public selectedLineContainerTitles: Array<string> = [];
@@ -120,7 +120,7 @@ export class GlobalState {
         });
     }
 
-    public prepareGLTFPlugin(loader: import("babylonjs-loaders/glTF/index").GLTFFileLoader) {
+    public prepareGLTFPlugin(loader: import("loaders/glTF/index").GLTFFileLoader) {
         this.glTFLoaderExtensions = {};
         var loaderState = this.glTFLoaderDefaults;
         if (loaderState !== undefined) {
@@ -129,7 +129,7 @@ export class GlobalState {
             }
         }
 
-        loader.onExtensionLoadedObservable.add((extension: import("babylonjs-loaders/glTF/index").IGLTFLoaderExtension) => {
+        loader.onExtensionLoadedObservable.add((extension: import("loaders/glTF/index").IGLTFLoaderExtension) => {
             var extensionState = this.glTFLoaderExtensionDefaults[extension.name];
             if (extensionState !== undefined) {
                 for (const key in extensionState) {

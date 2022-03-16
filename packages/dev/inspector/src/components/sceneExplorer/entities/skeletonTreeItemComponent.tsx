@@ -1,9 +1,9 @@
-import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
+import { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
 import { faSkull } from "@fortawesome/free-solid-svg-icons";
 import { TreeItemLabelComponent } from "../treeItemLabelComponent";
 import { ExtensionsComponent } from "../extensionsComponent";
 import * as React from "react";
-import { Skeleton } from "babylonjs/Bones/skeleton";
+import { Skeleton } from "core/Bones/skeleton";
 
 interface ISkeletonTreeItemComponentProps {
     skeleton: Skeleton;

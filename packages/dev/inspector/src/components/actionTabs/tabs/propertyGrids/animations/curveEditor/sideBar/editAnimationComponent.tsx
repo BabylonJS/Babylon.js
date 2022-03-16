@@ -1,9 +1,9 @@
 import * as React from "react";
 import { GlobalState } from "../../../../../../globalState";
 import { Context } from "../context";
-import { Animation } from "babylonjs/Animations/animation";
-import { Nullable } from "babylonjs/types";
-import { Observer } from "babylonjs/Misc/observable";
+import { Animation } from "core/Animations/animation";
+import { Nullable } from "core/types";
+import { Observer } from "core/Misc/observable";
 
 interface IEditAnimationComponentProps {
     globalState: GlobalState;

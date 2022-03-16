@@ -1,9 +1,9 @@
-import { Nullable } from "babylonjs/types";
+import { Nullable } from "core/types";
 import * as React from "react";
 import { GlobalState } from "../../../../../../globalState";
 import { Context, IActiveAnimationChangedOptions } from "../context";
-import { Animation } from "babylonjs/Animations/animation";
-import { Observer } from "babylonjs/Misc/observable";
+import { Animation } from "core/Animations/animation";
+import { Observer } from "core/Misc/observable";
 
 const tickDistance = 25; // x distance between consecutive ticks
 
@@ -116,7 +116,7 @@ export class RangeFrameBarComponent extends React.Component<IRangeFrameBarCompon
 
         let range = to - from;
         let convertRatio = range / this._viewWidth;
-        const dist = tickDistance; 
+        const dist = tickDistance;
         const offset = Math.max(Math.floor(dist * convertRatio), 1);
 
         let steps = [];

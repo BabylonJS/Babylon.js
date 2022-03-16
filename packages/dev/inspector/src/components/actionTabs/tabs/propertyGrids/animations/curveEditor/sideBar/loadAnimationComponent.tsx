@@ -1,8 +1,8 @@
-import { Tools } from "babylonjs/Misc/tools";
+import { Tools } from "core/Misc/tools";
 import * as React from "react";
 import { GlobalState } from "../../../../../../globalState";
 import { Context } from "../context";
-import { Animation } from "babylonjs/Animations/animation";
+import { Animation } from "core/Animations/animation";
 
 interface ILoadAnimationComponentProps {
     globalState: GlobalState;

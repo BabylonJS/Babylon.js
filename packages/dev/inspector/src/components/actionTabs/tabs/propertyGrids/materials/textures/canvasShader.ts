@@ -109,10 +109,10 @@ export const canvasShader = {
                         gl_FragColor = vec4(val, val, val, 1.0) * 0.7 + gl_FragColor * 0.3;
                     }
                 }
-            }`
+            }`,
     },
     options: {
-        attributes: ['position', 'uv'],
-        uniforms: ['worldViewProjection', 'textureSampler', 'r', 'g', 'b', 'a', 'x1', 'y1', 'x2', 'y2', 'w', 'h', 'time', 'showGrid']
-    }
-}
+        attributes: ["position", "uv"],
+        uniforms: ["worldViewProjection", "textureSampler", "r", "g", "b", "a", "x1", "y1", "x2", "y2", "w", "h", "time", "showGrid"],
+    },
+};

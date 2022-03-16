@@ -1,23 +1,23 @@
 import * as React from "react";
 
-import { TransformNode } from "babylonjs/Meshes/transformNode";
-import { Observable } from "babylonjs/Misc/observable";
+import { TransformNode } from "core/Meshes/transformNode";
+import { Observable } from "core/Misc/observable";
 
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
-import { LineContainerComponent } from "../../../../../sharedUiComponents/lines/lineContainerComponent";
-import { CheckBoxLineComponent } from "../../../../../sharedUiComponents/lines/checkBoxLineComponent";
-import { Vector3LineComponent } from "../../../../../sharedUiComponents/lines/vector3LineComponent";
-import { TextLineComponent } from "../../../../../sharedUiComponents/lines/textLineComponent";
+import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
+import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
+import { Vector3LineComponent } from "shared-ui-components/lines/vector3LineComponent";
+import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
 import { QuaternionLineComponent } from "../../../lines/quaternionLineComponent";
-import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
+import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { GlobalState } from "../../../../globalState";
 import { CustomPropertyGridComponent } from "../customPropertyGridComponent";
-import { ButtonLineComponent } from "../../../../../sharedUiComponents/lines/buttonLineComponent";
-import { TextInputLineComponent } from "../../../../../sharedUiComponents/lines/textInputLineComponent";
+import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
+import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 import { AnimationGridComponent } from "../animations/animationPropertyGridComponent";
 import { CommonPropertyGridComponent } from "../commonPropertyGridComponent";
 import { VariantsPropertyGridComponent } from "../variantsPropertyGridComponent";
-import { Mesh } from "babylonjs/Meshes/mesh";
+import { Mesh } from "core/Meshes/mesh";
 
 interface ITransformNodePropertyGridComponentProps {
     globalState: GlobalState;

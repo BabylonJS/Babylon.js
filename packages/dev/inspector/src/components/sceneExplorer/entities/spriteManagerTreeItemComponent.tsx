@@ -1,10 +1,10 @@
-import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
+import { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
 
 import { faAddressBook } from "@fortawesome/free-solid-svg-icons";
 import { TreeItemLabelComponent } from "../treeItemLabelComponent";
 import { ExtensionsComponent } from "../extensionsComponent";
 import * as React from "react";
-import { SpriteManager } from "babylonjs/Sprites/spriteManager";
+import { SpriteManager } from "core/Sprites/spriteManager";
 
 interface ISpriteManagerTreeItemComponentProps {
     spriteManager: SpriteManager;

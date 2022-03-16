@@ -1,16 +1,16 @@
 import * as React from "react";
 
-import { Observable } from "babylonjs/Misc/observable";
-import { BackgroundMaterial } from "babylonjs/Materials/Background/backgroundMaterial";
+import { Observable } from "core/Misc/observable";
+import { BackgroundMaterial } from "core/Materials/Background/backgroundMaterial";
 
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
-import { LineContainerComponent } from "../../../../../sharedUiComponents/lines/lineContainerComponent";
-import { Color3LineComponent } from "../../../../../sharedUiComponents/lines/color3LineComponent";
-import { CheckBoxLineComponent } from "../../../../../sharedUiComponents/lines/checkBoxLineComponent";
-import { SliderLineComponent } from "../../../../../sharedUiComponents/lines/sliderLineComponent";
+import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
+import { Color3LineComponent } from "shared-ui-components/lines/color3LineComponent";
+import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
+import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
 import { CommonMaterialPropertyGridComponent } from "./commonMaterialPropertyGridComponent";
 import { TextureLinkLineComponent } from "../../../lines/textureLinkLineComponent";
-import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
+import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { GlobalState } from "../../../../globalState";
 
 interface IBackgroundMaterialPropertyGridComponentProps {

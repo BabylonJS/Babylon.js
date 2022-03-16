@@ -1,9 +1,9 @@
-import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
+import { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
 import { faSun } from "@fortawesome/free-solid-svg-icons";
 import { TreeItemLabelComponent } from "../treeItemLabelComponent";
 import { ExtensionsComponent } from "../extensionsComponent";
 import * as React from "react";
-import { EffectLayer } from "babylonjs/Layers/effectLayer";
+import { EffectLayer } from "core/Layers/effectLayer";
 
 interface IEffectLayerItemComponenttProps {
     layer: EffectLayer;

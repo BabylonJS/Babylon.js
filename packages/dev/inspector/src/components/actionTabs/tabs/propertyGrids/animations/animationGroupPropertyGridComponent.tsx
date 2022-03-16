@@ -1,18 +1,18 @@
 import * as React from "react";
 
-import { Nullable } from "babylonjs/types";
-import { Observable, Observer } from "babylonjs/Misc/observable";
-import { AnimationGroup } from "babylonjs/Animations/animationGroup";
-import { Scene } from "babylonjs/scene";
+import { Nullable } from "core/types";
+import { Observable, Observer } from "core/Misc/observable";
+import { AnimationGroup } from "core/Animations/animationGroup";
+import { Scene } from "core/scene";
 
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
-import { ButtonLineComponent } from "../../../../../sharedUiComponents/lines/buttonLineComponent";
-import { LineContainerComponent } from "../../../../../sharedUiComponents/lines/lineContainerComponent";
-import { TextLineComponent } from "../../../../../sharedUiComponents/lines/textLineComponent";
-import { SliderLineComponent } from "../../../../../sharedUiComponents/lines/sliderLineComponent";
-import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
+import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
+import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
+import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
+import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
+import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { GlobalState } from "../../../../globalState";
-import { TextInputLineComponent } from "../../../../../sharedUiComponents/lines/textInputLineComponent";
+import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 import { Context } from "./curveEditor/context";
 import { AnimationCurveEditorComponent } from "./curveEditor/animationCurveEditorComponent";
 

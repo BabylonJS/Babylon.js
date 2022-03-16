@@ -1,23 +1,23 @@
 import * as React from "react";
 
-import { Observable } from "babylonjs/Misc/observable";
-import { PBRMaterial } from "babylonjs/Materials/PBR/pbrMaterial";
-import { Constants } from "babylonjs/Engines/constants";
+import { Observable } from "core/Misc/observable";
+import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
+import { Constants } from "core/Engines/constants";
 
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
-import { LineContainerComponent } from "../../../../../sharedUiComponents/lines/lineContainerComponent";
-import { Color3LineComponent } from "../../../../../sharedUiComponents/lines/color3LineComponent";
-import { CheckBoxLineComponent } from "../../../../../sharedUiComponents/lines/checkBoxLineComponent";
-import { SliderLineComponent } from "../../../../../sharedUiComponents/lines/sliderLineComponent";
-import { OptionsLineComponent } from "../../../../../sharedUiComponents/lines/optionsLineComponent";
+import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
+import { Color3LineComponent } from "shared-ui-components/lines/color3LineComponent";
+import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
+import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
+import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
 import { CommonMaterialPropertyGridComponent } from "./commonMaterialPropertyGridComponent";
 import { TextureLinkLineComponent } from "../../../lines/textureLinkLineComponent";
-import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
+import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { GlobalState } from "../../../../globalState";
-import { Vector2LineComponent } from "../../../../../sharedUiComponents/lines/vector2LineComponent";
+import { Vector2LineComponent } from "shared-ui-components/lines/vector2LineComponent";
 
-import "babylonjs/Rendering/prePassRendererSceneComponent";
-import "babylonjs/Rendering/subSurfaceSceneComponent";
+import "core/Rendering/prePassRendererSceneComponent";
+import "core/Rendering/subSurfaceSceneComponent";
 
 interface IPBRMaterialPropertyGridComponentProps {
     globalState: GlobalState;

@@ -1,20 +1,20 @@
 import * as React from "react";
 
-import { Observable } from "babylonjs/Misc/observable";
-import { DefaultRenderingPipeline } from "babylonjs/PostProcesses/RenderPipeline/Pipelines/defaultRenderingPipeline";
+import { Observable } from "core/Misc/observable";
+import { DefaultRenderingPipeline } from "core/PostProcesses/RenderPipeline/Pipelines/defaultRenderingPipeline";
 
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
-import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
+import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { CommonRenderingPipelinePropertyGridComponent } from "./commonRenderingPipelinePropertyGridComponent";
-import { SliderLineComponent } from "../../../../../sharedUiComponents/lines/sliderLineComponent";
-import { LineContainerComponent } from "../../../../../sharedUiComponents/lines/lineContainerComponent";
-import { CheckBoxLineComponent } from "../../../../../sharedUiComponents/lines/checkBoxLineComponent";
-import { OptionsLineComponent } from "../../../../../sharedUiComponents/lines/optionsLineComponent";
-import { ImageProcessingConfiguration } from "babylonjs/Materials/imageProcessingConfiguration";
-import { Color3LineComponent } from "../../../../../sharedUiComponents/lines/color3LineComponent";
+import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
+import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
+import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
+import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
+import { ImageProcessingConfiguration } from "core/Materials/imageProcessingConfiguration";
+import { Color3LineComponent } from "shared-ui-components/lines/color3LineComponent";
 import { GlobalState } from "../../../../globalState";
-import { ButtonLineComponent } from "../../../../../sharedUiComponents/lines/buttonLineComponent";
-import { Vector2LineComponent } from "../../../../../sharedUiComponents/lines/vector2LineComponent";
+import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
+import { Vector2LineComponent } from "shared-ui-components/lines/vector2LineComponent";
 
 interface IDefaultRenderingPipelinePropertyGridComponentProps {
     globalState: GlobalState;

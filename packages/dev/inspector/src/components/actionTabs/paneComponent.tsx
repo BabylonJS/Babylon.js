@@ -1,7 +1,7 @@
 import * as React from "react";
 import { IconDefinition } from "@fortawesome/free-solid-svg-icons";
-import { Observable } from "babylonjs/Misc/observable";
-import { Scene } from "babylonjs/scene";
+import { Observable } from "core/Misc/observable";
+import { Scene } from "core/scene";
 import { PropertyChangedEvent } from "../propertyChangedEvent";
 import { GlobalState } from "../../components/globalState";
 

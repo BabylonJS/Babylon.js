@@ -1,16 +1,16 @@
 import * as React from "react";
 
-import { Nullable } from "babylonjs/types";
-import { Color3 } from "babylonjs/Maths/math.color";
-import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
-import { Texture } from "babylonjs/Materials/Textures/texture";
-import { UtilityLayerRenderer } from "babylonjs/Rendering/utilityLayerRenderer";
-import { Scene } from "babylonjs/scene";
-import { GridMaterial } from "babylonjs-materials/grid/gridMaterial";
+import { Nullable } from "core/types";
+import { Color3 } from "core/Maths/math.color";
+import { AbstractMesh } from "core/Meshes/abstractMesh";
+import { Texture } from "core/Materials/Textures/texture";
+import { UtilityLayerRenderer } from "core/Rendering/utilityLayerRenderer";
+import { Scene } from "core/scene";
+import { GridMaterial } from "materials/grid/gridMaterial";
 
-import { CheckBoxLineComponent } from "../../../../sharedUiComponents/lines/checkBoxLineComponent";
+import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
 import { GlobalState } from "../../../globalState";
-import { CreateGround } from "babylonjs/Meshes/Builders/groundBuilder";
+import { CreateGround } from "core/Meshes/Builders/groundBuilder";
 
 interface IRenderGridPropertyGridComponentProps {
     globalState: GlobalState;

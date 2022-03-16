@@ -1,25 +1,25 @@
 import * as React from "react";
 
-import { Observable } from "babylonjs/Misc/observable";
-import { NodeMaterial } from "babylonjs/Materials/Node/nodeMaterial";
+import { Observable } from "core/Misc/observable";
+import { NodeMaterial } from "core/Materials/Node/nodeMaterial";
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
-import { LineContainerComponent } from "../../../../../sharedUiComponents/lines/lineContainerComponent";
+import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import { CommonMaterialPropertyGridComponent } from "./commonMaterialPropertyGridComponent";
-import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
+import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { GlobalState } from "../../../../globalState";
-import { ButtonLineComponent } from "../../../../../sharedUiComponents/lines/buttonLineComponent";
-import { CheckBoxLineComponent } from "../../../../../sharedUiComponents/lines/checkBoxLineComponent";
-import { FloatLineComponent } from "../../../../../sharedUiComponents/lines/floatLineComponent";
-import { Color3LineComponent } from "../../../../../sharedUiComponents/lines/color3LineComponent";
-import { Vector3LineComponent } from "../../../../../sharedUiComponents/lines/vector3LineComponent";
-import { Vector4LineComponent } from "../../../../../sharedUiComponents/lines/vector4LineComponent";
-import { Vector2LineComponent } from "../../../../../sharedUiComponents/lines/vector2LineComponent";
+import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
+import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
+import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
+import { Color3LineComponent } from "shared-ui-components/lines/color3LineComponent";
+import { Vector3LineComponent } from "shared-ui-components/lines/vector3LineComponent";
+import { Vector4LineComponent } from "shared-ui-components/lines/vector4LineComponent";
+import { Vector2LineComponent } from "shared-ui-components/lines/vector2LineComponent";
 import { TextureLinkLineComponent } from "../../../lines/textureLinkLineComponent";
-import { SliderLineComponent } from "../../../../../sharedUiComponents/lines/sliderLineComponent";
-import { NodeMaterialBlockConnectionPointTypes } from "babylonjs/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes";
-import { InputBlock } from "babylonjs/Materials/Node/Blocks/Input/inputBlock";
+import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
+import { NodeMaterialBlockConnectionPointTypes } from "core/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes";
+import { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
 import { GradientPropertyTabComponent } from "../../gradientNodePropertyComponent";
-import { Color4LineComponent } from "../../../../../sharedUiComponents/lines/color4LineComponent";
+import { Color4LineComponent } from "shared-ui-components/lines/color4LineComponent";
 
 interface INodeMaterialPropertyGridComponentProps {
     globalState: GlobalState;

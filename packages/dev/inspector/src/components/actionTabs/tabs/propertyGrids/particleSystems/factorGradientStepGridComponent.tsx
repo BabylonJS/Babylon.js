@@ -2,10 +2,10 @@ import * as React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
 import { GlobalState } from "../../../../globalState";
-import { FactorGradient } from "babylonjs/Misc/gradients";
-import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
-import { IParticleSystem } from "babylonjs/Particles/IParticleSystem";
-import { ParticleSystem } from "babylonjs/Particles/particleSystem";
+import { FactorGradient } from "core/Misc/gradients";
+import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import { IParticleSystem } from "core/Particles/IParticleSystem";
+import { ParticleSystem } from "core/Particles/particleSystem";
 
 interface IFactorGradientStepGridComponent {
     globalState: GlobalState;

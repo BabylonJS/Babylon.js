@@ -1,11 +1,11 @@
-import { PerformanceViewerCollector } from "babylonjs/Misc/PerformanceViewer/performanceViewerCollector";
-import { Observable } from "babylonjs/Misc/observable";
+import { PerformanceViewerCollector } from "core/Misc/PerformanceViewer/performanceViewerCollector";
+import { Observable } from "core/Misc/observable";
 import * as React from "react";
 import { useEffect, useRef } from "react";
 import { CanvasGraphService } from "./canvasGraphService";
 import { IPerfLayoutSize, IVisibleRangeChangedObservableProps } from "./graphSupportingTypes";
-import { IPerfMetadata } from "babylonjs/Misc/interfaces/iPerfViewer";
-import { Scene } from "babylonjs/scene";
+import { IPerfMetadata } from "core/Misc/interfaces/iPerfViewer";
+import { Scene } from "core/scene";
 
 interface ICanvasGraphComponentProps {
     id: string;
@@ -14,7 +14,7 @@ interface ICanvasGraphComponentProps {
     layoutObservable?: Observable<IPerfLayoutSize>;
     returnToPlayheadObservable?: Observable<void>;
     onVisibleRangeChangedObservable?: Observable<IVisibleRangeChangedObservableProps>;
-    initialGraphSize?: {width: number, height: number};
+    initialGraphSize?: { width: number; height: number };
 }
 
 export const CanvasGraphComponent: React.FC<ICanvasGraphComponentProps> = (props: ICanvasGraphComponentProps) => {

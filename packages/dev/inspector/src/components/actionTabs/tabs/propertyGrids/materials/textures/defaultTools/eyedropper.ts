@@ -1,11 +1,11 @@
-import { IToolParameters, IToolData } from '../textureEditorComponent';
-import { PointerEventTypes, PointerInfo } from 'babylonjs/Events/pointerEvents';
-import { Nullable } from 'babylonjs/types'
-import { Observer } from 'babylonjs/Misc/observable';
-import { Color3 } from 'babylonjs/Maths/math.color';
+import { IToolParameters, IToolData } from "../textureEditorComponent";
+import { PointerEventTypes, PointerInfo } from "core/Events/pointerEvents";
+import { Nullable } from "core/types";
+import { Observer } from "core/Misc/observable";
+import { Color3 } from "core/Maths/math.color";
 
 export const Eyedropper: IToolData = {
-    name: 'Eyedropper',
+    name: "Eyedropper",
     type: class {
         getParameters: () => IToolParameters;
         pointerObserver: Nullable<Observer<PointerInfo>>;
@@ -17,19 +17,19 @@ export const Eyedropper: IToolData = {
 
         pick(pointerInfo: PointerInfo) {
             const { canvas2D, setMetadata, getMouseCoordinates } = this.getParameters();
-            const ctx = canvas2D.getContext('2d');
+            const ctx = canvas2D.getContext("2d");
             const { x, y } = getMouseCoordinates(pointerInfo);
             const pixel = ctx!.getImageData(x, y, 1, 1).data;
             setMetadata({
                 color: Color3.FromInts(pixel[0], pixel[1], pixel[2]).toHexString(),
-                alpha: pixel[3] / 255
+                alpha: pixel[3] / 255,
             });
         }
 
         setup() {
             this.pointerObserver = this.getParameters().scene.onPointerObservable.add((pointerInfo) => {
                 if (pointerInfo.pickInfo?.hit) {
-                    if (pointerInfo.type === PointerEventTypes.POINTERDOWN && (pointerInfo.event.buttons === 1) && this.getParameters().interactionEnabled()) {
+                    if (pointerInfo.type === PointerEventTypes.POINTERDOWN && pointerInfo.event.buttons === 1 && this.getParameters().interactionEnabled()) {
                         this.isPicking = true;
                         this.pick(pointerInfo);
                     }
@@ -57,5 +57,5 @@ export const Eyedropper: IToolData = {
     MzNMMTIsMjhsLjktMy41OWExLjIxLDEuMjEsMCwwLDEsLjMzLS41OGw2LjA3LTYuMDcsMi45NCwyLjk0Wm05LjIxLTcuMzgtLjkuOWMtLjE5LjItLjM0LjItLjU0LDBsLTQuNC00LjRhLjQuNCwwLDAsMSwwLS41NGwuOS0uOWEuNDMuNDMsMCwwLDEsLjI3LS4xMS4z
     OS4zOSwwLDAsMSwuMjcuMTFsNC40LDQuNEEuMzguMzgsMCwwLDEsMjUuMzYsMTkuNDFabTMuMzgtNS45M2EzLjcsMy43LDAsMCwxLTEsMS43LDExLjY3LDExLjY3LDAsMCwxLTIuMzUsMS42MkwyMy4yLDE0LjU5YTExLjY3LDExLjY3LDAsMCwxLDEuNjItMi4zNSwz
     LjcsMy43LDAsMCwxLDEuNy0xLDEuODMsMS44MywwLDAsMSwyLjIyLDIuMjJaIiBzdHlsZT0iZmlsbDojZmZmIi8+PC9zdmc+`,
-    cursor: `iVBORw0KGgoAAAANSUhEUgAAABUAAAAVCAYAAACpF6WWAAAABmJLR0QA/wD/AP+gvaeTAAAByklEQVQ4jbWUv4saQRTHd+4s/BuCYRH1n7BQEhCRuyJ3RQgpRVt/tFvYSAjLxMPiWIJ1OA6OKwKBdCGBkIS4pFs76xgXhOlyyconzSrrojub4l618+a9z/u+mTdrGPdgIk0QwDZBCG3OUerqepYeCgigAbyJ+a+AEyB9lTDxAfBhPp9jWRZh+wB0u11msxnAJyCXSmkI/DIejx9Vq1Ujm83u7OdyOaPRaBi2bVeAr8BDnUIBfJRSUi6XWSwWa+B1VClw6ft+UKlUsG0b4DNw+G6AU8/zME2T5XIZAE9C/xYark983/9rmubmKM6SoNedTofRaARwqenqQkpJr9cDuI3uiYiSvbaZS4Dod1J8JrJIUoUQYgs+FLuplYk79lQ2hBAipvSggH2Vbvr9PlJKgFea2JeO49BqtQDeJgWee55HPp9ntVr9AR6H/vjtV5VSd8Vikel0CvA0CXoEfBsOh9RqNZRSd8CL2JwOlVK/6/X65rVNgWPdEeTX6/XPwWBAqVRiMpnsPFPHcSgUCliWRRAEv4BCIjAKBr67rkuz2dyBttttXNcF+AEUUwEj4GPgGfAu1v574DmQ0UI0BXYuSmepf9L/NZv3Yf8AKtG4imEra4UAAAAASUVORK5CYII=`
+    cursor: `iVBORw0KGgoAAAANSUhEUgAAABUAAAAVCAYAAACpF6WWAAAABmJLR0QA/wD/AP+gvaeTAAAByklEQVQ4jbWUv4saQRTHd+4s/BuCYRH1n7BQEhCRuyJ3RQgpRVt/tFvYSAjLxMPiWIJ1OA6OKwKBdCGBkIS4pFs76xgXhOlyyconzSrrojub4l618+a9z/u+mTdrGPdgIk0QwDZBCG3OUerqepYeCgigAbyJ+a+AEyB9lTDxAfBhPp9jWRZh+wB0u11msxnAJyCXSmkI/DIejx9Vq1Ujm83u7OdyOaPRaBi2bVeAr8BDnUIBfJRSUi6XWSwWa+B1VClw6ft+UKlUsG0b4DNw+G6AU8/zME2T5XIZAE9C/xYark983/9rmubmKM6SoNedTofRaARwqenqQkpJr9cDuI3uiYiSvbaZS4Dod1J8JrJIUoUQYgs+FLuplYk79lQ2hBAipvSggH2Vbvr9PlJKgFea2JeO49BqtQDeJgWee55HPp9ntVr9AR6H/vjtV5VSd8Vikel0CvA0CXoEfBsOh9RqNZRSd8CL2JwOlVK/6/X65rVNgWPdEeTX6/XPwWBAqVRiMpnsPFPHcSgUCliWRRAEv4BCIjAKBr67rkuz2dyBttttXNcF+AEUUwEj4GPgGfAu1v574DmQ0UI0BXYuSmepf9L/NZv3Yf8AKtG4imEra4UAAAAASUVORK5CYII=`,
 };

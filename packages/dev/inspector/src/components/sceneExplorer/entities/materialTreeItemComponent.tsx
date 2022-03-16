@@ -1,11 +1,11 @@
-import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
-import { Material } from "babylonjs/Materials/material";
+import { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
+import { Material } from "core/Materials/material";
 import { faBrush, faPen } from "@fortawesome/free-solid-svg-icons";
 import { TreeItemLabelComponent } from "../treeItemLabelComponent";
 import { ExtensionsComponent } from "../extensionsComponent";
 import * as React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { NodeMaterial } from "babylonjs/Materials/Node/nodeMaterial";
+import { NodeMaterial } from "core/Materials/Node/nodeMaterial";
 
 interface IMaterialTreeItemComponentProps {
     material: Material | NodeMaterial;

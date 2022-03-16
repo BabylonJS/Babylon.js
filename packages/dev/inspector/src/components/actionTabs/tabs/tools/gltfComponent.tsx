@@ -1,16 +1,16 @@
 import * as React from "react";
-import { Scene } from "babylonjs/scene";
-import { LineContainerComponent } from "../../../../sharedUiComponents/lines/lineContainerComponent";
-import { CheckBoxLineComponent } from "../../../../sharedUiComponents/lines/checkBoxLineComponent";
+import { Scene } from "core/scene";
+import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
+import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
 import { GlobalState } from "../../../globalState";
-import { FloatLineComponent } from "../../../../sharedUiComponents/lines/floatLineComponent";
-import { OptionsLineComponent } from "../../../../sharedUiComponents/lines/optionsLineComponent";
-import { MessageLineComponent } from "../../../../sharedUiComponents/lines/messageLineComponent";
+import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
+import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
+import { MessageLineComponent } from "shared-ui-components/lines/messageLineComponent";
 import { faCheck, faTimesCircle } from "@fortawesome/free-solid-svg-icons";
-import { TextLineComponent } from "../../../../sharedUiComponents/lines/textLineComponent";
-import { GLTFLoaderCoordinateSystemMode, GLTFLoaderAnimationStartMode } from "babylonjs-loaders/glTF/index";
-import { Nullable } from "babylonjs/types";
-import { Observer } from "babylonjs/Misc/observable";
+import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
+import { GLTFLoaderCoordinateSystemMode, GLTFLoaderAnimationStartMode } from "loaders/glTF/index";
+import { Nullable } from "core/types";
+import { Observer } from "core/Misc/observable";
 import { IGLTFValidationResults } from "babylonjs-gltf2interface";
 
 interface IGLTFComponentProps {

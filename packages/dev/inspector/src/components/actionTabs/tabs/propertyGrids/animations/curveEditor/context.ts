@@ -1,19 +1,18 @@
-import { Nullable } from "babylonjs/types";
-import { Animation } from "babylonjs/Animations/animation";
-import { Observable } from "babylonjs/Misc/observable";
+import { Nullable } from "core/types";
+import { Animation } from "core/Animations/animation";
+import { Observable } from "core/Misc/observable";
 import { KeyPointComponent } from "./graph/keyPoint";
-import { Scene } from "babylonjs/scene";
-import { IAnimatable } from "babylonjs/Animations/animatable.interface";
-import { AnimationGroup, TargetedAnimation } from "babylonjs/Animations/animationGroup";
-import { Animatable } from "babylonjs/Animations/animatable";
-import { AnimationKeyInterpolation } from "babylonjs/Animations/animationKey";
-
+import { Scene } from "core/scene";
+import { IAnimatable } from "core/Animations/animatable.interface";
+import { AnimationGroup, TargetedAnimation } from "core/Animations/animationGroup";
+import { Animatable } from "core/Animations/animatable";
+import { AnimationKeyInterpolation } from "core/Animations/animationKey";
 
 export interface IActiveAnimationChangedOptions {
     evaluateKeys?: boolean;
     frame?: boolean;
     range?: boolean;
-};
+}
 export class Context {
     title: string;
     animations: Nullable<Animation[] | TargetedAnimation[]>;
@@ -104,10 +103,10 @@ export class Context {
 
         const animation = this.useTargetAnimations ? (this.animations[0] as TargetedAnimation).animation : (this.animations[0] as Animation);
         const keys = animation.getKeys();
-        
+
         this.referenceMinFrame = 0;
         this.referenceMaxFrame = keys[keys.length - 1].frame;
-        
+
         if (!this.useExistingPlayRange) {
             this.fromKey = this.referenceMinFrame;
             this.toKey = this.referenceMaxFrame;
@@ -317,9 +316,9 @@ export class Context {
     }
 
     public hasActiveQuaternionAnimationKeyPoints() {
-        const activeAnimData = this.activeKeyPoints?.map(keyPointComponent => keyPointComponent.props.curve.animation.dataType);
-        const quaternionAnimData = activeAnimData?.filter(type => (type === Animation.ANIMATIONTYPE_QUATERNION));
+        const activeAnimData = this.activeKeyPoints?.map((keyPointComponent) => keyPointComponent.props.curve.animation.dataType);
+        const quaternionAnimData = activeAnimData?.filter((type) => type === Animation.ANIMATIONTYPE_QUATERNION);
         const hasActiveQuaternionAnimation = (quaternionAnimData?.length || 0) > 0;
         return hasActiveQuaternionAnimation;
-    }   
+    }
 }

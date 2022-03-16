@@ -1,6 +1,6 @@
-import { Observer } from "babylonjs/Misc/observable";
-import { Scene } from "babylonjs/scene";
-import { Nullable } from "babylonjs/types";
+import { Observer } from "core/Misc/observable";
+import { Scene } from "core/scene";
+import { Nullable } from "core/types";
 import * as React from "react";
 import { GlobalState } from "../../../../../../globalState";
 import { Context, IActiveAnimationChangedOptions } from "../context";
@@ -98,10 +98,7 @@ export class PlayHeadComponent extends React.Component<IPlayHeadComponentProps, 
         let minFrame = this.props.context.referenceMinFrame;
         let maxFrame = this.props.context.referenceMaxFrame;
 
-        return Math.max(
-            ((pixel / this._viewScale - this._offsetX) / this._GraphAbsoluteWidth) * (maxFrame - minFrame) + minFrame,
-            keys[0].frame
-        );
+        return Math.max(((pixel / this._viewScale - this._offsetX) / this._GraphAbsoluteWidth) * (maxFrame - minFrame) + minFrame, keys[0].frame);
     }
 
     componentWillUnmount() {

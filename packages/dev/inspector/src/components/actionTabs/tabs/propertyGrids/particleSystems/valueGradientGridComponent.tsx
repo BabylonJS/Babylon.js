@@ -1,14 +1,14 @@
 import * as React from "react";
 import { GlobalState } from "../../../../globalState";
-import { IValueGradient, FactorGradient, ColorGradient, Color3Gradient } from "babylonjs/Misc/gradients";
-import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
-import { ButtonLineComponent } from "../../../../../sharedUiComponents/lines/buttonLineComponent";
+import { IValueGradient, FactorGradient, ColorGradient, Color3Gradient } from "core/Misc/gradients";
+import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
 import { FactorGradientStepGridComponent } from "./factorGradientStepGridComponent";
-import { Nullable } from "babylonjs/types";
+import { Nullable } from "core/types";
 import { ColorGradientStepGridComponent } from "./colorGradientStepGridComponent";
-import { Color4, Color3 } from "babylonjs/Maths/math.color";
-import { LinkButtonComponent } from "../../../../../sharedUiComponents/lines/linkButtonComponent";
-import { IParticleSystem } from "babylonjs/Particles/IParticleSystem";
+import { Color4, Color3 } from "core/Maths/math.color";
+import { LinkButtonComponent } from "shared-ui-components/lines/linkButtonComponent";
+import { IParticleSystem } from "core/Particles/IParticleSystem";
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
 
 export enum GradientGridMode {

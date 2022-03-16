@@ -2,12 +2,12 @@ import * as React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
 import { GlobalState } from "../../../../globalState";
-import { ColorGradient, Color3Gradient } from "babylonjs/Misc/gradients";
-import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
-import { Color3, Color4 } from "babylonjs/Maths/math.color";
-import { IParticleSystem } from "babylonjs/Particles/IParticleSystem";
-import { ParticleSystem } from "babylonjs/Particles/particleSystem";
-import { ColorPickerLineComponent } from "../../../../../sharedUiComponents/lines/colorPickerComponent";
+import { ColorGradient, Color3Gradient } from "core/Misc/gradients";
+import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import { Color3, Color4 } from "core/Maths/math.color";
+import { IParticleSystem } from "core/Particles/IParticleSystem";
+import { ParticleSystem } from "core/Particles/particleSystem";
+import { ColorPickerLineComponent } from "shared-ui-components/lines/colorPickerComponent";
 
 interface IColorGradientStepGridComponent {
     globalState: GlobalState;

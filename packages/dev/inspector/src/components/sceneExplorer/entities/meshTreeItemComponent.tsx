@@ -1,5 +1,5 @@
-import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
-import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
+import { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
+import { AbstractMesh } from "core/Meshes/abstractMesh";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCube } from "@fortawesome/free-solid-svg-icons";
@@ -9,7 +9,7 @@ import { ExtensionsComponent } from "../extensionsComponent";
 import * as React from "react";
 import { GlobalState } from "../../globalState";
 
-import "babylonjs/Rendering/boundingBoxRenderer";
+import "core/Rendering/boundingBoxRenderer";
 
 interface IMeshTreeItemComponentProps {
     mesh: AbstractMesh;

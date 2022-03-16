@@ -1,5 +1,5 @@
-import { Nullable } from "babylonjs/types";
-import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
+import { Nullable } from "core/types";
+import { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
 
 import { TreeItemSpecializedComponent } from "./treeItemSpecializedComponent";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";

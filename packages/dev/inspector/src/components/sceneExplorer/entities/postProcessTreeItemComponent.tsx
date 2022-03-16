@@ -1,5 +1,5 @@
-import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
-import { PostProcess } from "babylonjs/PostProcesses/postProcess";
+import { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
+import { PostProcess } from "core/PostProcesses/postProcess";
 
 import { faMagic } from "@fortawesome/free-solid-svg-icons";
 import { TreeItemLabelComponent } from "../treeItemLabelComponent";

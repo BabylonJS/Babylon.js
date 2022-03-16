@@ -1,25 +1,25 @@
 import * as React from "react";
 
-import { Observable } from "babylonjs/Misc/observable";
-import { Material } from "babylonjs/Materials/material";
-import { PBRMaterial } from "babylonjs/Materials/PBR/pbrMaterial";
-import { Constants } from "babylonjs/Engines/constants";
-import { Engine } from "babylonjs/Engines/engine";
+import { Observable } from "core/Misc/observable";
+import { Material } from "core/Materials/material";
+import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
+import { Constants } from "core/Engines/constants";
+import { Engine } from "core/Engines/engine";
 
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
-import { CheckBoxLineComponent } from "../../../../../sharedUiComponents/lines/checkBoxLineComponent";
-import { SliderLineComponent } from "../../../../../sharedUiComponents/lines/sliderLineComponent";
-import { LineContainerComponent } from "../../../../../sharedUiComponents/lines/lineContainerComponent";
-import { TextLineComponent } from "../../../../../sharedUiComponents/lines/textLineComponent";
-import { OptionsLineComponent, Null_Value } from "../../../../../sharedUiComponents/lines/optionsLineComponent";
-import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
+import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
+import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
+import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
+import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
+import { OptionsLineComponent, Null_Value } from "shared-ui-components/lines/optionsLineComponent";
+import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { GlobalState } from "../../../../globalState";
 import { CustomPropertyGridComponent } from "../customPropertyGridComponent";
-import { ButtonLineComponent } from "../../../../../sharedUiComponents/lines/buttonLineComponent";
-import { TextInputLineComponent } from "../../../../../sharedUiComponents/lines/textInputLineComponent";
+import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
+import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 import { AnimationGridComponent } from "../animations/animationPropertyGridComponent";
-import { HexLineComponent } from "../../../../../sharedUiComponents/lines/hexLineComponent";
-import { FloatLineComponent } from "../../../../../sharedUiComponents/lines/floatLineComponent";
+import { HexLineComponent } from "shared-ui-components/lines/hexLineComponent";
+import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 
 interface ICommonMaterialPropertyGridComponentProps {
     globalState: GlobalState;

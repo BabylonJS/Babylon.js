@@ -1,10 +1,10 @@
 import * as React from "react";
 
-import { Nullable } from "babylonjs/types";
-import { Observer } from "babylonjs/Misc/observable";
-import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
-import { Scene } from "babylonjs/scene";
-import { EngineStore } from "babylonjs/Engines/engineStore";
+import { Nullable } from "core/types";
+import { Observer } from "core/Misc/observable";
+import { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
+import { Scene } from "core/scene";
+import { EngineStore } from "core/Engines/engineStore";
 
 import { TreeItemComponent } from "./treeItemComponent";
 import Resizable from "re-resizable";
@@ -12,27 +12,27 @@ import { HeaderComponent } from "../headerComponent";
 import { SceneTreeItemComponent } from "./entities/sceneTreeItemComponent";
 import { Tools } from "../../tools";
 import { GlobalState } from "../../components/globalState";
-import { DefaultRenderingPipeline } from "babylonjs/PostProcesses/RenderPipeline/Pipelines/defaultRenderingPipeline";
-import { Vector3 } from "babylonjs/Maths/math";
-import { PointLight } from "babylonjs/Lights/pointLight";
-import { FreeCamera } from "babylonjs/Cameras/freeCamera";
-import { DirectionalLight } from "babylonjs/Lights/directionalLight";
-import { SSAORenderingPipeline } from "babylonjs/PostProcesses/RenderPipeline/Pipelines/ssaoRenderingPipeline";
-import { NodeMaterial } from "babylonjs/Materials/Node/nodeMaterial";
-import { ParticleHelper } from "babylonjs/Particles/particleHelper";
-import { GPUParticleSystem } from "babylonjs/Particles/gpuParticleSystem";
-import { SSAO2RenderingPipeline } from "babylonjs/PostProcesses/RenderPipeline/Pipelines/ssao2RenderingPipeline";
-import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
-import { PBRMaterial } from "babylonjs/Materials/PBR/pbrMaterial";
-import { SpriteManager } from "babylonjs/Sprites/spriteManager";
-import { TargetCamera } from "babylonjs/Cameras/targetCamera";
+import { DefaultRenderingPipeline } from "core/PostProcesses/RenderPipeline/Pipelines/defaultRenderingPipeline";
+import { Vector3 } from "core/Maths/math";
+import { PointLight } from "core/Lights/pointLight";
+import { FreeCamera } from "core/Cameras/freeCamera";
+import { DirectionalLight } from "core/Lights/directionalLight";
+import { SSAORenderingPipeline } from "core/PostProcesses/RenderPipeline/Pipelines/ssaoRenderingPipeline";
+import { NodeMaterial } from "core/Materials/Node/nodeMaterial";
+import { ParticleHelper } from "core/Particles/particleHelper";
+import { GPUParticleSystem } from "core/Particles/gpuParticleSystem";
+import { SSAO2RenderingPipeline } from "core/PostProcesses/RenderPipeline/Pipelines/ssao2RenderingPipeline";
+import { StandardMaterial } from "core/Materials/standardMaterial";
+import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
+import { SpriteManager } from "core/Sprites/spriteManager";
+import { TargetCamera } from "core/Cameras/targetCamera";
 
 // side effects
-import "babylonjs/Sprites/spriteSceneComponent";
-import "babylonjs/Audio/audioSceneComponent";
-import "babylonjs/PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent";
+import "core/Sprites/spriteSceneComponent";
+import "core/Audio/audioSceneComponent";
+import "core/PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent";
 
-require("./sceneExplorer.scss");
+import "./sceneExplorer.scss";
 
 interface ISceneExplorerFilterComponentProps {
     onFilter: (filter: string) => void;

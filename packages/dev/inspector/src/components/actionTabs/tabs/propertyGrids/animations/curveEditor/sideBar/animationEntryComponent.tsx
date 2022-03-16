@@ -1,17 +1,17 @@
 import * as React from "react";
 import { GlobalState } from "../../../../../../globalState";
 import { Context, IActiveAnimationChangedOptions } from "../context";
-import { Animation } from "babylonjs/Animations/animation";
+import { Animation } from "core/Animations/animation";
 import { ActionButtonComponent } from "../controls/actionButtonComponent";
-import { Nullable } from "babylonjs/types";
-import { Observer } from "babylonjs/Misc/observable";
+import { Nullable } from "core/types";
+import { Observer } from "core/Misc/observable";
 import { AnimationSubEntryComponent } from "./animationSubEntryComponent";
 
-const gearIcon = require("../assets/animationOptionsIcon.svg");
-const deleteIcon = require("../assets/closeWindowIcon.svg");
-const bulletIcon = require("../assets/animationBulletIcon.svg");
-const selectedIcon = require("../assets/keySelectedIcon.svg");
-const chevronIcon = require("../assets/animationTriangleIcon.svg");
+import gearIcon from "../assets/animationOptionsIcon.svg";
+import deleteIcon from "../assets/closeWindowIcon.svg";
+import bulletIcon from "../assets/animationBulletIcon.svg";
+import selectedIcon from "../assets/keySelectedIcon.svg";
+import chevronIcon from "../assets/animationTriangleIcon.svg";
 
 interface IAnimationEntryComponentProps {
     globalState: GlobalState;

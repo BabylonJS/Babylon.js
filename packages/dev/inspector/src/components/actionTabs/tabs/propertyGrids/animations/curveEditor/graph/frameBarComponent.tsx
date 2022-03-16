@@ -1,8 +1,8 @@
-import { Nullable } from "babylonjs/types";
+import { Nullable } from "core/types";
 import * as React from "react";
 import { GlobalState } from "../../../../../../globalState";
 import { Context, IActiveAnimationChangedOptions } from "../context";
-import { Observer } from "babylonjs/Misc/observable";
+import { Observer } from "core/Misc/observable";
 
 // x distance between consecutive ticks on the frame
 const baseTickDistance = 25;
@@ -76,7 +76,7 @@ export class FrameBarComponent extends React.Component<IFrameBarComponentProps, 
 
         let range = maxFrame - minFrame;
         let convertRatio = range / this._GraphAbsoluteWidth;
-        const dist = Math.max(baseTickDistance * this._viewScale, minTickDistance) ; // x distance between consecutive ticks
+        const dist = Math.max(baseTickDistance * this._viewScale, minTickDistance); // x distance between consecutive ticks
         let offset = Math.floor(dist * convertRatio);
 
         let steps = [];

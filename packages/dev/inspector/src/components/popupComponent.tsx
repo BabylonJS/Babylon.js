@@ -40,7 +40,7 @@ export class PopupComponent extends React.Component<IPopupComponentProps, { isCo
         if (this._window) {
             this._window.close();
         }
-    }
+    };
 
     openPopup() {
         const { title, size, onClose, onOpen } = this.props;

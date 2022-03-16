@@ -1,11 +1,11 @@
 import * as React from "react";
 import { GlobalState } from "../../../../../../globalState";
 import { Context } from "../context";
-import { Animation } from "babylonjs/Animations/animation";
-import { Quaternion, Vector2, Vector3 } from "babylonjs/Maths/math.vector";
-import { IAnimationKey } from "babylonjs/Animations/animationKey";
-import { Color3, Color4 } from "babylonjs/Maths/math.color";
-import { TargetedAnimation } from "babylonjs/Animations/animationGroup";
+import { Animation } from "core/Animations/animation";
+import { Quaternion, Vector2, Vector3 } from "core/Maths/math.vector";
+import { IAnimationKey } from "core/Animations/animationKey";
+import { Color3, Color4 } from "core/Maths/math.color";
+import { TargetedAnimation } from "core/Animations/animationGroup";
 
 interface IAddAnimationComponentProps {
     globalState: GlobalState;
@@ -164,14 +164,14 @@ export class AddAnimationComponent extends React.Component<IAddAnimationComponen
             frame: minFrame,
             value: defaultValue0,
             inTangent: defaultInTangent0,
-            outTangent: defaultOutTangent0
+            outTangent: defaultOutTangent0,
         });
 
         keys.push({
             frame: maxFrame,
             value: defaultValue1,
             inTangent: defaultInTangent1,
-            outTangent: defaultOutTangent1
+            outTangent: defaultOutTangent1,
         });
 
         animation.setKeys(keys);

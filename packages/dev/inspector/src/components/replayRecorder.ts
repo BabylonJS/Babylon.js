@@ -1,6 +1,6 @@
-import { SceneRecorder } from 'babylonjs/Misc/sceneRecorder';
-import { Scene } from 'babylonjs/scene';
-import { Tools } from 'babylonjs/Misc/tools';
+import { SceneRecorder } from "core/Misc/sceneRecorder";
+import { Scene } from "core/scene";
+import { Tools } from "core/Misc/tools";
 
 export class ReplayRecorder {
     private _sceneRecorder = new SceneRecorder();

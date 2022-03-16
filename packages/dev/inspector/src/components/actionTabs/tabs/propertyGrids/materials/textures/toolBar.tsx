@@ -1,7 +1,7 @@
 import * as React from "react";
 import { IToolData, IToolType, IMetadata } from "./textureEditorComponent";
-import { Color3, Color4 } from "babylonjs/Maths/math.color";
-import { ColorPicker } from "../../../../../../sharedUiComponents/colorPicker/colorPicker";
+import { Color3, Color4 } from "core/Maths/math.color";
+import { ColorPicker } from "shared-ui-components/colorPicker/colorPicker";
 
 export interface ITool extends IToolData {
     instance: IToolType;

@@ -1,12 +1,12 @@
 import * as React from "react";
 import { GlobalState } from "../../../../../../globalState";
 import { Context, IActiveAnimationChangedOptions } from "../context";
-import { Animation } from "babylonjs/Animations/animation";
-import { Nullable } from "babylonjs/types";
-import { Observer } from "babylonjs/Misc/observable";
+import { Animation } from "core/Animations/animation";
+import { Nullable } from "core/types";
+import { Observer } from "core/Misc/observable";
 import { SelectionState } from "../graph/keyPoint";
 
-const selectedIcon = require("../assets/keySelectedIcon.svg");
+import selectedIcon from "../assets/keySelectedIcon.svg";
 
 interface IAnimationSubEntryComponentProps {
     globalState: GlobalState;

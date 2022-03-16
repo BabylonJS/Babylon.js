@@ -1,8 +1,8 @@
-import { Nullable } from "babylonjs/types";
-import { Observer } from "babylonjs/Misc/observable";
-import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
-import { Camera } from "babylonjs/Cameras/camera";
-import { Scene } from "babylonjs/scene";
+import { Nullable } from "core/types";
+import { Observer } from "core/Misc/observable";
+import { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
+import { Camera } from "core/Cameras/camera";
+import { Scene } from "core/scene";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faVideo, faCamera, faEye } from "@fortawesome/free-solid-svg-icons";

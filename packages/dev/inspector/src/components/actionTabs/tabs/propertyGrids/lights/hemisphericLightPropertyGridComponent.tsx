@@ -1,12 +1,12 @@
 import * as React from "react";
-import { Observable } from "babylonjs/Misc/observable";
-import { HemisphericLight } from "babylonjs/Lights/hemisphericLight";
+import { Observable } from "core/Misc/observable";
+import { HemisphericLight } from "core/Lights/hemisphericLight";
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { CommonLightPropertyGridComponent } from "./commonLightPropertyGridComponent";
-import { LineContainerComponent } from "../../../../../sharedUiComponents/lines/lineContainerComponent";
-import { Color3LineComponent } from "../../../../../sharedUiComponents/lines/color3LineComponent";
-import { Vector3LineComponent } from "../../../../../sharedUiComponents/lines/vector3LineComponent";
-import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
+import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
+import { Color3LineComponent } from "shared-ui-components/lines/color3LineComponent";
+import { Vector3LineComponent } from "shared-ui-components/lines/vector3LineComponent";
+import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { GlobalState } from "../../../../globalState";
 
 interface IHemisphericLightPropertyGridComponentProps {

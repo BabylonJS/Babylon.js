@@ -1,14 +1,14 @@
 import * as React from "react";
 
-import { Observable } from "babylonjs/Misc/observable";
+import { Observable } from "core/Misc/observable";
 import { GlobalState } from "../../../../globalState";
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
-import { LockObject } from "../../../../../sharedUiComponents/tabs/propertyGrids/lockObject";
-import { Vector3LineComponent } from "../../../../../sharedUiComponents/lines/vector3LineComponent";
-import { MeshParticleEmitter } from "babylonjs/Particles/EmitterTypes/meshParticleEmitter";
-import { CheckBoxLineComponent } from "../../../../../sharedUiComponents/lines/checkBoxLineComponent";
+import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import { Vector3LineComponent } from "shared-ui-components/lines/vector3LineComponent";
+import { MeshParticleEmitter } from "core/Particles/EmitterTypes/meshParticleEmitter";
+import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
 import { MeshPickerComponent } from "../../../lines/meshPickerComponent";
-import { Scene } from "babylonjs/scene";
+import { Scene } from "core/scene";
 
 interface IMeshEmitterGridComponentProps {
     globalState: GlobalState;

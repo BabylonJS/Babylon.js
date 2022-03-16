@@ -1,6 +1,6 @@
 import { faObjectGroup, faHighlighter, faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
-import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
-import { Control } from "babylonjs-gui/2D/controls/control";
+import { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
+import { Control } from "gui/2D/controls/control";
 import { TreeItemLabelComponent } from "../../treeItemLabelComponent";
 import { ExtensionsComponent } from "../../extensionsComponent";
 import * as React from "react";

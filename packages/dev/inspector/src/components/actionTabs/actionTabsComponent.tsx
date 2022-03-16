@@ -1,8 +1,8 @@
 import * as React from "react";
-import { Nullable } from "babylonjs/types";
-import { Observer } from "babylonjs/Misc/observable";
-import { Scene } from "babylonjs/scene";
-import { DebugLayerTab } from "babylonjs/Debug/debugLayer";
+import { Nullable } from "core/types";
+import { Observer } from "core/Misc/observable";
+import { Scene } from "core/scene";
+import { DebugLayerTab } from "core/Debug/debugLayer";
 import { TabsComponent } from "./tabsComponent";
 import { faFileAlt, faWrench, faBug, faChartBar, faCog } from "@fortawesome/free-solid-svg-icons";
 import { StatisticsTabComponent } from "./tabs/statisticsTabComponent";
@@ -14,7 +14,7 @@ import { ToolsTabComponent } from "./tabs/toolsTabComponent";
 import { GlobalState } from "../../components/globalState";
 import { SettingsTabComponent } from "./tabs/settingsTabComponent";
 
-require("./actionTabs.scss");
+import "./actionTabs.scss";
 
 interface IActionTabsComponentProps {
     scene?: Scene;

@@ -1,6 +1,6 @@
-import { Animation } from "babylonjs/Animations/animation";
-import { AnimationKeyInterpolation } from "babylonjs/Animations/animationKey";
-import { Observable } from "babylonjs/Misc/observable";
+import { Animation } from "core/Animations/animation";
+import { AnimationKeyInterpolation } from "core/Animations/animationKey";
+import { Observable } from "core/Misc/observable";
 
 export interface KeyEntry {
     frame: number;
@@ -21,10 +21,17 @@ export class Curve {
     public tangentBuilder?: () => any;
     public setDefaultInTangent?: (keyId: number) => any;
     public setDefaultOutTangent?: (keyId: number) => any;
-    
+
     public static readonly TangentLength = 50;
-    
-    public constructor(color: string, animation: Animation, property?: string, tangentBuilder?: () => any, setDefaultInTangent?: (keyId: number) => any, setDefaultOutTangent?: (keyId: number) => any) {
+
+    public constructor(
+        color: string,
+        animation: Animation,
+        property?: string,
+        tangentBuilder?: () => any,
+        setDefaultInTangent?: (keyId: number) => any,
+        setDefaultOutTangent?: (keyId: number) => any
+    ) {
         this.color = color;
         this.animation = animation;
         this.property = property;
@@ -33,7 +40,7 @@ export class Curve {
         this.setDefaultOutTangent = setDefaultOutTangent;
     }
 
-    public getPathData(convertX: (x: number) => number, convertY: (y: number) => number,) {
+    public getPathData(convertX: (x: number) => number, convertY: (y: number) => number) {
         const keys = this.keys;
         if (keys.length < 2) {
             return "";
@@ -51,13 +58,15 @@ export class Curve {
             const frameDist = currentFrame - prevFrame;
             const prevInterpolation = keys[keyIndex - 1].interpolation;
 
-            if (prevInterpolation === AnimationKeyInterpolation.STEP) { // Draw a stepped curve
+            if (prevInterpolation === AnimationKeyInterpolation.STEP) {
+                // Draw a stepped curve
                 pathData += `L ${convertX(currentFrame)} ${convertY(prevValue)}`;
                 pathData += `L ${convertX(currentFrame)} ${convertY(currentValue)}`;
                 continue;
             }
 
-            if (outTangent === undefined && inTangent === undefined && dataType !== Animation.ANIMATIONTYPE_QUATERNION) { // Draw a straight line
+            if (outTangent === undefined && inTangent === undefined && dataType !== Animation.ANIMATIONTYPE_QUATERNION) {
+                // Draw a straight line
                 pathData += ` L${convertX(currentFrame)} ${convertY(currentValue)}`;
                 continue;
             }
@@ -158,7 +167,7 @@ export class Curve {
         if (this.hasDefinedInTangent(keyIndex)) {
             keys[keyIndex].inTangent = this.evaluateInTangent(keyIndex);
         }
-        
+
         if (this.property) {
             if (!animationKeys[keyIndex].inTangent) {
                 animationKeys[keyIndex].inTangent = this.tangentBuilder!();
@@ -191,7 +200,7 @@ export class Curve {
     public updateInTangentFromControlPoint(keyId: number, slope: number) {
         const keys = this.keys;
         keys[keyId].inTangent = slope;
-        
+
         let animationKeys = this.animation.getKeys();
         if (this.property) {
             if (!animationKeys[keyId].inTangent) {
@@ -241,7 +250,6 @@ export class Curve {
 
         this.onDataUpdatedObservable.notifyObservers();
     }
-
 
     public updateKeyFrame(keyId: number, frame: number) {
         const originalKey = this.animation.getKeys()[keyId];

@@ -1,10 +1,10 @@
-import { TargetedAnimation } from "babylonjs/Animations/animationGroup";
+import { TargetedAnimation } from "core/Animations/animationGroup";
 import * as React from "react";
 import { GlobalState } from "../../../../../../globalState";
 import { Context } from "../context";
-import { Animation } from "babylonjs/Animations/animation";
+import { Animation } from "core/Animations/animation";
 
-const handleIcon = require("../assets/scrollbarHandleIcon.svg");
+import handleIcon from "../assets/scrollbarHandleIcon.svg";
 
 interface IRangeSelectorComponentProps {
     globalState: GlobalState;

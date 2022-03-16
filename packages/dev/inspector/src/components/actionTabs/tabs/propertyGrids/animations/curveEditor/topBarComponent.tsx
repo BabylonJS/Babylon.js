@@ -1,21 +1,21 @@
-import { Observer } from "babylonjs/Misc/observable";
-import { Nullable } from "babylonjs/types";
+import { Observer } from "core/Misc/observable";
+import { Nullable } from "core/types";
 import * as React from "react";
 import { GlobalState } from "../../../../../globalState";
 import { Context, IActiveAnimationChangedOptions } from "./context";
 import { ActionButtonComponent } from "./controls/actionButtonComponent";
 import { TextInputComponent } from "./controls/textInputComponent";
 
-require("./scss/topBar.scss");
+import "./scss/topBar.scss";
 
-const logoIcon = require("./assets/babylonLogo.svg");
-const frameIcon = require("./assets/frameIcon.svg");
-const newKeyIcon = require("./assets/newKeyIcon.svg");
-const flatTangentIcon = require("./assets/flatTangentIcon.svg");
-const linearTangentIcon = require("./assets/linearTangentIcon.svg");
-const breakTangentIcon = require("./assets/breakTangentIcon.svg");
-const unifyTangentIcon = require("./assets/unifyTangentIcon.svg");
-const stepTangentIcon = require("./assets/stepTangentIcon.svg");
+import logoIcon from "./assets/babylonLogo.svg";
+import frameIcon from "./assets/frameIcon.svg";
+import newKeyIcon from "./assets/newKeyIcon.svg";
+import flatTangentIcon from "./assets/flatTangentIcon.svg";
+import linearTangentIcon from "./assets/linearTangentIcon.svg";
+import breakTangentIcon from "./assets/breakTangentIcon.svg";
+import unifyTangentIcon from "./assets/unifyTangentIcon.svg";
+import stepTangentIcon from "./assets/stepTangentIcon.svg";
 
 interface ITopBarComponentProps {
     globalState: GlobalState;
@@ -54,14 +54,19 @@ export class TopBarComponent extends React.Component<ITopBarComponentProps, ITop
 
         this.onActiveKeyPointChanged = this.props.context.onActiveKeyPointChanged.add(() => {
             const numKeys = this.props.context.activeKeyPoints?.length || 0;
-            const numAnims = new Set(this.props.context.activeKeyPoints?.map(keyPointComponent => keyPointComponent.props.curve.animation.uniqueId)).size;
-            
+            const numAnims = new Set(this.props.context.activeKeyPoints?.map((keyPointComponent) => keyPointComponent.props.curve.animation.uniqueId)).size;
+
             const frameControlEnabled = (numKeys === 1 && numAnims === 1) || (numKeys > 1 && numAnims > 1);
             const valueControlEnabled = numKeys > 0;
 
             const hasActiveQuaternionAnimation = this.props.context.hasActiveQuaternionAnimationKeyPoints();
-            
-            this.setState({ keyFrameValue: "", keyValue: "", frameControlEnabled: frameControlEnabled && !hasActiveQuaternionAnimation, valueControlEnabled: valueControlEnabled && !hasActiveQuaternionAnimation });
+
+            this.setState({
+                keyFrameValue: "",
+                keyValue: "",
+                frameControlEnabled: frameControlEnabled && !hasActiveQuaternionAnimation,
+                valueControlEnabled: valueControlEnabled && !hasActiveQuaternionAnimation,
+            });
         });
     }
 
