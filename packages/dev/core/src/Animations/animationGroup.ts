@@ -7,7 +7,6 @@ import { Observable } from "../Misc/observable";
 import { Nullable } from "../types";
 import { EngineStore } from "../Engines/engineStore";
 
-
 import { AbstractScene } from "../abstractScene";
 import { Tags } from "../Misc/tags";
 

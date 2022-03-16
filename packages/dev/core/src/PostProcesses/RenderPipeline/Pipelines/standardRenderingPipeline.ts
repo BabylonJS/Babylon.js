@@ -12,7 +12,7 @@ import { PostProcessRenderPipeline } from "../../../PostProcesses/RenderPipeline
 import { PostProcessRenderEffect } from "../../../PostProcesses/RenderPipeline/postProcessRenderEffect";
 import { BlurPostProcess } from "../../../PostProcesses/blurPostProcess";
 import { FxaaPostProcess } from "../../../PostProcesses/fxaaPostProcess";
-import { IDisposable , Scene } from "../../../scene";
+import { IDisposable, Scene } from "../../../scene";
 import { SpotLight } from "../../../Lights/spotLight";
 import { DirectionalLight } from "../../../Lights/directionalLight";
 import { GeometryBufferRenderer } from "../../../Rendering/geometryBufferRenderer";

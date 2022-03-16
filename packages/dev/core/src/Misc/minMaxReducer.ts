@@ -2,7 +2,7 @@ import { Nullable } from "../types";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { Camera } from "../Cameras/camera";
 import { Constants } from "../Engines/constants";
-import { Observer , Observable } from "./observable";
+import { Observer, Observable } from "./observable";
 import { Effect } from "../Materials/effect";
 import { PostProcess } from "../PostProcesses/postProcess";
 import { PostProcessManager } from "../PostProcesses/postProcessManager";

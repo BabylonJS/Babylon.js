@@ -3,7 +3,7 @@ import { FactorGradient, ColorGradient, Color3Gradient, GradientHelper } from ".
 import { Observable, Observer } from "../Misc/observable";
 import { Vector3, Matrix, TmpVectors, Vector4 } from "../Maths/math.vector";
 import { Scalar } from "../Maths/math.scalar";
-import { VertexBuffer , Buffer } from "../Buffers/buffer";
+import { VertexBuffer, Buffer } from "../Buffers/buffer";
 
 import { Effect } from "../Materials/effect";
 import { ImageProcessingConfiguration } from "../Materials/imageProcessingConfiguration";

@@ -3,7 +3,7 @@ import { StorageBuffer } from "../Buffers/storageBuffer";
 import { ComputeShader } from "../Compute/computeShader";
 import { UniformBuffer } from "../Materials/uniformBuffer";
 import { IGPUParticleSystemPlatform } from "./IGPUParticleSystemPlatform";
-import { Buffer , VertexBuffer } from "../Buffers/buffer";
+import { Buffer, VertexBuffer } from "../Buffers/buffer";
 import { GPUParticleSystem } from "./gpuParticleSystem";
 
 import { DataArray } from "../types";

@@ -8,7 +8,7 @@ import { ImageProcessingConfiguration } from "../../../Materials/imageProcessing
 import { Texture } from "../../../Materials/Textures/texture";
 import { Engine } from "../../../Engines/engine";
 import { Constants } from "../../../Engines/constants";
-import { IDisposable , Scene } from "../../../scene";
+import { IDisposable, Scene } from "../../../scene";
 import { GlowLayer } from "../../../Layers/glowLayer";
 
 import { PostProcess } from "../../../PostProcesses/postProcess";

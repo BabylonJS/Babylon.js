@@ -7,7 +7,7 @@ import { Color3, Color4 } from "../../Maths/math.color";
 import { Mesh } from "../../Meshes/mesh";
 import { Engine } from "../../Engines/engine";
 import { NodeMaterialBuildState } from "./nodeMaterialBuildState";
-import { IEffectCreationOptions , Effect } from "../effect";
+import { IEffectCreationOptions, Effect } from "../effect";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Observable, Observer } from "../../Misc/observable";
 import { NodeMaterialBlockTargets } from "./Enums/nodeMaterialBlockTargets";

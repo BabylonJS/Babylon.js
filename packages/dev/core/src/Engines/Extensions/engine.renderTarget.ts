@@ -1,6 +1,6 @@
 import { InternalTexture, InternalTextureSource } from "../../Materials/Textures/internalTexture";
 import { Logger } from "../../Misc/logger";
-import { RenderTargetCreationOptions, DepthTextureCreationOptions , TextureSize } from "../../Materials/Textures/textureCreationOptions";
+import { RenderTargetCreationOptions, DepthTextureCreationOptions, TextureSize } from "../../Materials/Textures/textureCreationOptions";
 import { ThinEngine } from "../thinEngine";
 import { Nullable } from "../../types";
 import { RenderTargetWrapper } from "../renderTargetWrapper";

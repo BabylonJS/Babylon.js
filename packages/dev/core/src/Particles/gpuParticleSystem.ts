@@ -4,7 +4,7 @@ import { Observable } from "../Misc/observable";
 import { Vector3, Matrix, TmpVectors } from "../Maths/math.vector";
 import { Color4, Color3, TmpColors } from "../Maths/math.color";
 import { Scalar } from "../Maths/math.scalar";
-import { VertexBuffer , Buffer } from "../Buffers/buffer";
+import { VertexBuffer, Buffer } from "../Buffers/buffer";
 
 import { IParticleSystem } from "./IParticleSystem";
 import { BaseParticleSystem } from "./baseParticleSystem";

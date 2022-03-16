@@ -1,4 +1,4 @@
-import { Buffer , VertexBuffer } from "../Buffers/buffer";
+import { Buffer, VertexBuffer } from "../Buffers/buffer";
 
 import { DataBuffer } from "../Buffers/dataBuffer";
 import { Effect } from "../Materials/effect";

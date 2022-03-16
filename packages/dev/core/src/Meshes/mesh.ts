@@ -11,7 +11,7 @@ import { Quaternion, Matrix, Vector3, Vector2 } from "../Maths/math.vector";
 import { Color3 } from "../Maths/math.color";
 import { Engine } from "../Engines/engine";
 import { Node } from "../node";
-import { VertexBuffer , Buffer } from "../Buffers/buffer";
+import { VertexBuffer, Buffer } from "../Buffers/buffer";
 import { VertexData, IGetSetVerticesData } from "./mesh.vertexData";
 
 import { Geometry } from "./geometry";
@@ -2306,7 +2306,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         // Bind
-        const fillMode = scene.forcePointsCloud ? Material.PointFillMode : scene.forceWireframe ? Material.WireFrameFillMode : this._internalMeshDataInfo._effectiveMaterial.fillMode;
+        const fillMode = scene.forcePointsCloud
+            ? Material.PointFillMode
+            : scene.forceWireframe
+            ? Material.WireFrameFillMode
+            : this._internalMeshDataInfo._effectiveMaterial.fillMode;
 
         if (this._internalMeshDataInfo._onBeforeBindObservable) {
             this._internalMeshDataInfo._onBeforeBindObservable.notifyObservers(this);

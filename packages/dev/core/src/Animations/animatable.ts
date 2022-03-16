@@ -1208,7 +1208,8 @@ Bone.prototype.copyAnimationRange = function (
     const parentScalingReqd = rescaleAsRequired && sourceParent && sourceBoneLength && this.length && sourceBoneLength !== this.length;
     const parentRatio = parentScalingReqd && parent && sourceParent ? parent.length / sourceParent.length : 1;
 
-    const dimensionsScalingReqd = rescaleAsRequired && !parent && skelDimensionsRatio && (skelDimensionsRatio.x !== 1 || skelDimensionsRatio.y !== 1 || skelDimensionsRatio.z !== 1);
+    const dimensionsScalingReqd =
+        rescaleAsRequired && !parent && skelDimensionsRatio && (skelDimensionsRatio.x !== 1 || skelDimensionsRatio.y !== 1 || skelDimensionsRatio.z !== 1);
 
     const destKeys = this.animations[0].getKeys();
 
