@@ -1,12 +1,12 @@
-import { HDRCubeTexture } from 'babylonjs/Materials/Textures/hdrCubeTexture';
-import { CubeTexture } from 'babylonjs/Materials/Textures/cubeTexture';
-import { Scene } from 'babylonjs/scene';
+import { HDRCubeTexture } from 'core/Materials/Textures/hdrCubeTexture';
+import { CubeTexture } from 'core/Materials/Textures/cubeTexture';
+import { Scene } from 'core/scene';
 import { LocalStorageHelper } from './localStorageHelper';
 import { GlobalState } from '../globalState';
-import { StandardMaterial } from 'babylonjs/Materials/standardMaterial';
-import { PBRMaterial } from 'babylonjs/Materials/PBR/pbrMaterial';
-import { Texture } from 'babylonjs/Materials/Textures/texture';
-import { EngineStore } from 'babylonjs/Engines/engineStore';
+import { StandardMaterial } from 'core/Materials/standardMaterial';
+import { PBRMaterial } from 'core/Materials/PBR/pbrMaterial';
+import { Texture } from 'core/Materials/Textures/texture';
+import { EngineStore } from 'core/Engines/engineStore';
 
 export class EnvironmentTools {
     public static SkyboxPath = "";

@@ -1,13 +1,13 @@
 import * as React from "react";
 import { GlobalState } from "../globalState";
 
-import { Engine } from "babylonjs/Engines/engine";
-import { StringTools } from "babylonjs/Misc/stringTools";
-import { SceneLoader } from "babylonjs/Loading/sceneLoader";
-import { Logger } from "babylonjs/Misc/logger";
+import { Engine } from "core/Engines/engine";
+import { StringTools } from "core/Misc/stringTools";
+import { SceneLoader } from "core/Loading/sceneLoader";
+import { Logger } from "core/Misc/logger";
 
 // use the same scss as renderingZone
-require("../scss/renderingZone.scss");
+import "../scss/renderingZone.scss";
 
 class Reflector {
     private static readonly SERVER_PREFIX = "$$";

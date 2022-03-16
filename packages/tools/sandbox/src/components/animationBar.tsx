@@ -1,15 +1,15 @@
 import * as React from "react";
 import { GlobalState } from "../globalState";
 import { DropUpButton } from "./dropUpButton";
-import { Scene } from "babylonjs/scene";
-import { Observer } from "babylonjs/Misc/observable";
-import { Nullable } from "babylonjs/types";
-import { AnimationGroup } from "babylonjs/Animations/animationGroup";
+import { Scene } from "core/scene";
+import { Observer } from "core/Misc/observable";
+import { Nullable } from "core/types";
+import { AnimationGroup } from "core/Animations/animationGroup";
 
-var iconPlay = require("../img/icon-play.svg");
-var iconPause = require("../img/icon-pause.svg");
+import iconPlay from "../img/icon-play.svg";
+import iconPause from "../img/icon-pause.svg";
 
-require("../scss/animationBar.scss");
+import "../scss/animationBar.scss";
 
 interface IAnimationBarProps {
     globalState: GlobalState;

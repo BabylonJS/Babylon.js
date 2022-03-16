@@ -5,17 +5,17 @@ import { DropUpButton } from "./dropUpButton";
 import { EnvironmentTools } from "../tools/environmentTools";
 import { FooterFileButton } from "./footerFileButton";
 import { AnimationBar } from "./animationBar";
-import { Nullable } from "babylonjs/types";
-import { KHR_materials_variants } from "babylonjs-loaders/glTF/2.0/Extensions/KHR_materials_variants";
-import { Mesh } from "babylonjs/Meshes/mesh";
+import { Nullable } from "core/types";
+import { KHR_materials_variants } from "loaders/glTF/2.0/Extensions/KHR_materials_variants";
+import { Mesh } from "core/Meshes/mesh";
 
-require("../scss/footer.scss");
-var babylonIdentity = require("../img/babylon-identity.svg");
-var iconEdit = require("../img/icon-edit.svg");
-var iconOpen = require("../img/icon-open.svg");
-var iconIBL = require("../img/icon-ibl.svg");
-var iconCameras = require("../img/icon-cameras.svg");
-var iconVariants = require("../img/icon-variants.svg");
+import "../scss/footer.scss";
+import babylonIdentity from "../img/babylon-identity.svg";
+import iconEdit from "../img/icon-edit.svg";
+import iconOpen from "../img/icon-open.svg";
+import iconIBL from "../img/icon-ibl.svg";
+import iconCameras from "../img/icon-cameras.svg";
+import iconVariants from "../img/icon-variants.svg";
 
 interface IFooterProps {
     globalState: GlobalState;
