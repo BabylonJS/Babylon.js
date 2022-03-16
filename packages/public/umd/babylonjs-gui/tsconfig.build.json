@@ -1,0 +1,13 @@
+{
+    "extends": "../../../../tsconfig.build.json",
+
+    "compilerOptions": {
+        "outDir": "./dist",
+        "rootDir": "./src",
+        "declaration": false,
+        "paths": {
+            "gui/*": ["lts/gui/dist/*"],
+        }
+    },
+    "include": ["./src/**/*"]
+}

@@ -1,0 +1,5 @@
+{
+    "declarationLibs": ["@tools/ktx2decoder"],
+    "devPackageName": "ktx2decoder",
+    "filename": "babylon.ktx2Decoder.module.d.ts"
+}

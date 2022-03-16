@@ -1,443 +1,248 @@
 {
-    "version": "2.0.0",
-    "configurations": [    
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
         {
-            "name": "Launch Node Material Editor (Chrome)",
-            "type": "chrome",
+            /*
+            Launch the playground to be use to test changes in dev packages
+            */
+            "type": "pwa-chrome",
             "request": "launch",
-            "url": "http://localhost:1338/nodeEditor/public/index-local.html",
-            "webRoot": "${workspaceRoot}/",
-            "sourceMaps": true,
-            "preLaunchTask": "run",
-            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
-            "runtimeArgs": [
-                "--enable-unsafe-es3-apis"
-            ]
-        },           
-        {
-            "name": "Launch Node Material Editor (Edge)",
-            "type": "edge",
-            "version": "dev",
-            "request": "launch",
-            "url": "http://localhost:1338/nodeEditor/public/index-local.html",
-            "webRoot": "${workspaceRoot}/",
-            "sourceMaps": true,
-            "preLaunchTask": "run",
-            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
-            "runtimeArgs": [
-                "--enable-unsafe-es3-apis"
-            ]
-        },               
-        {
-            "name": "Launch Node Material Editor (Edge) - Direct",
-            "type": "edge",
-            "version": "dev",
-            "request": "launch",
-            "url": "http://localhost:1338/nodeEditor/public/index-local.html",
-            "webRoot": "${workspaceRoot}/",
-            "sourceMaps": true,
-            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
-            "runtimeArgs": [
-                "--enable-unsafe-es3-apis"
-            ]
-        }, 
-        {
-            "name": "Launch GUI Editor (Chrome)",
-            "type": "chrome",
-            "request": "launch",
-            "url": "http://localhost:1338/guiEditor/public/index-local.html",
-            "webRoot": "${workspaceRoot}/",
-            "sourceMaps": true,
-            "preLaunchTask": "run",
-            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
-            "runtimeArgs": [
-                "--enable-unsafe-es3-apis"
-            ]
-        },     
-        {
-            "name": "Launch GUI Editor (Edge - Direct)",
-            "type": "edge",
-            "version": "dev",
-            "request": "launch",
-            "url": "http://localhost:1338/guiEditor/public/index-local.html",
-            "webRoot": "${workspaceRoot}/",
-            "sourceMaps": true,
-            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
-            "runtimeArgs": [
-                "--enable-unsafe-es3-apis"
-            ]
-        },   
-        {
-            "name": "Launch Viewer (Chrome)",
-            "type": "chrome",
-            "request": "launch",
-            "url": "http://localhost:9000/basicExample.html",
-            "webRoot": "${workspaceRoot}/Viewer/",
-            "sourceMaps": true,
-            "preLaunchTask": "serve-viewer",
-            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
-            "runtimeArgs": [
-                "--enable-unsafe-es3-apis"
-            ]
+            "name": "Run and Watch Dev Server (Dev)",
+            "url": "http://localhost:1337",
+            "outFiles": ["!**/node_modules/**"],
+            "webRoot": "${workspaceFolder}",
+            "preLaunchTask": "CDN Serve and watch (Dev)"
         },
         {
-            "name": "Launch sandbox (Chrome)",
-            "type": "chrome",
+            /*
+            Launch the playground to be use to test changes in dev packages
+            */
+            "type": "pwa-chrome",
             "request": "launch",
-            "url": "http://localhost:1338/sandbox/public/index-local.html",
-            "webRoot": "${workspaceRoot}/",
-            "sourceMaps": true,
-            "preLaunchTask": "run",
-            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
-            "runtimeArgs": [
-                "--enable-unsafe-es3-apis"
-            ]
+            "name": "Run and Watch Dev Server - SSL (Dev)",
+            "url": "https://localhost:1337",
+            "outFiles": ["!**/node_modules/**"],
+            "webRoot": "${workspaceFolder}",
+            "preLaunchTask": "CDN Serve and watch (Dev)"
         },
         {
-            "name": "Launch sandbox (Edge)",
-            "type": "edge",
-            "version": "dev",
+            /*
+            Launch the playground to be use to test changes in dev packages
+            */
+            "type": "pwa-chrome",
             "request": "launch",
-            "url": "http://localhost:1338/sandbox/public/index-local.html",
-            "webRoot": "${workspaceRoot}/",
-            "sourceMaps": true,
-            "preLaunchTask": "run",
-            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
-            "runtimeArgs": [
-                "--enable-unsafe-es3-apis"
-            ]
+            "name": "Dev Host development (chrome)",
+            "url": "http://localhost:1338",
+            "webRoot": "${workspaceFolder}",
+            "preLaunchTask": "Run Dev host (Dev)"
         },
         {
-            "name": "Launch sandbox (Edge) - Direct",
-            "type": "edge",
-            "version": "dev",
+            /*
+            Launch the playground to be use to test changes in dev packages
+            */
+            "type": "pwa-chrome",
             "request": "launch",
-            "url": "http://localhost:1338/sandbox/public/index-local.html",
-            "webRoot": "${workspaceRoot}/",
-            "sourceMaps": true,
-            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
-            "runtimeArgs": [
-                "--enable-unsafe-es3-apis"
-            ]
+            "name": "Dev Host development - SSL (chrome)",
+            "url": "https://localhost:1338",
+            "webRoot": "${workspaceFolder}",
+            "preLaunchTask": "Run Dev host (Dev)",
+            "env": {
+                "ENABLE_HTTPS": "true"
+            }
         },
         {
-            "name": "Launch playground (Chrome)",
-            "type": "chrome",
+            /*
+            Playground development - meant for development of the playground
+            It doesn't set any source code watchers!
+            */
+            "type": "pwa-chrome",
             "request": "launch",
-            "url": "http://localhost:1338/Playground/index-local.html",
-            "webRoot": "${workspaceRoot}/",
-            "sourceMaps": true,
-            "preLaunchTask": "run",
-            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
-            "runtimeArgs": [
-                "--enable-unsafe-es3-apis"
-            ]
+            "name": "Playground development (chrome)",
+            "url": "http://localhost:1338",
+            "webRoot": "${workspaceFolder}",
+            "preLaunchTask": "Playground Serve (Dev)"
         },
         {
-            "name": "Launch playground (Chrome Canary)",
-            "type": "chrome",
+            /*
+            Launch the playground to be use to test changes in dev packages
+            */
+            "type": "pwa-chrome",
             "request": "launch",
-            "url": "http://localhost:1338/Playground/index-local.html",
-            "webRoot": "${workspaceRoot}/",
-            "sourceMaps": true,
-            "preLaunchTask": "run",
-            "userDataDir": "${workspaceRoot}/.tempChromeCanaryProfileForDebug",
-            "runtimeExecutable": "C:/Users/alexis/AppData/Local/Google/Chrome SxS/Application/Chrome.exe",
-            "runtimeArgs": [
-                "--enable-unsafe-es3-apis"
-            ]
-        },
-        { 
-            "name": "Launch playground (Edge)",
-            "type": "edge",
-            "version": "dev",
-            "request": "launch",
-            "url": "http://localhost:1338/Playground/index-local.html",
-            "webRoot": "${workspaceRoot}/",
-            "sourceMaps": true,
-            "preLaunchTask": "run",
-            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
-            "runtimeArgs": [
-                "--enable-unsafe-es3-apis"
-            ]
-        },        
-        {
-            "name": "Launch playground (Edge) - Direct",
-            "type": "edge",
-            "version": "dev",
-            "request": "launch",
-            "url": "http://localhost:1338/Playground/index-local.html",
-            "webRoot": "${workspaceRoot}/",
-            "sourceMaps": true,
-            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
-            "runtimeArgs": [
-                "--enable-unsafe-es3-apis"
-            ]
+            "name": "Launch Playground (chrome)",
+            "url": "http://localhost:1338",
+            "webRoot": "${workspaceFolder}",
+            "preLaunchTask": "Playground Serve for core (Dev)"
         },
         {
-            "name": "Launch playground (Chrome+WebGL 1.0 forced)",
-            "type": "chrome",
+            /*
+            Playground development - meant for development of the playground
+            It doesn't set any source code watchers!
+            */
+            "type": "pwa-chrome",
             "request": "launch",
-            "url": "http://localhost:1338/Playground/index-local.html",
-            "webRoot": "${workspaceRoot}/",
-            "sourceMaps": true,
-            "preLaunchTask": "run",
-            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
-            "runtimeArgs": [
-                "--disable-es3-apis"
-            ]
+            "name": "Sandbox development (chrome)",
+            "url": "http://localhost:1338",
+            "webRoot": "${workspaceFolder}",
+            "preLaunchTask": "Sandbox Serve (Dev)"
         },
         {
-            "name": "Launch playground (Chrome+SSL+Public address)",
-            "type": "chrome",
+            /*
+            Launch the playground to be use to test changes in dev packages
+            */
+            "type": "pwa-chrome",
             "request": "launch",
-            "url": "https://localhost:1338/Playground/index-local.html",
-            "webRoot": "${workspaceRoot}/",
-            "sourceMaps": true,
-            "preLaunchTask": "start-public-ssl",
-            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
-            "runtimeArgs": [
-                "--disable-es3-apis"
-            ]
+            "name": "Launch Sandbox (chrome)",
+            "url": "http://localhost:1338",
+            "webRoot": "${workspaceFolder}",
+            "preLaunchTask": "Sandbox Serve for core (Dev)"
         },
         {
-            "name": "Launch Materials Library (Chrome)",
-            "type": "chrome",
+            "type": "pwa-chrome",
             "request": "launch",
-            "url": "http://localhost:1338/materialsLibrary/index.html",
-            "webRoot": "${workspaceRoot}/",
-            "sourceMaps": true,
-            "preLaunchTask": "run",
-            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
-            "runtimeArgs": [
-                "--enable-unsafe-es3-apis"
-            ]
+            "name": "GUI Editor development (chrome)",
+            "url": "http://localhost:1338",
+            "webRoot": "${workspaceFolder}",
+            "preLaunchTask": "GUI Editor Serve (Dev)"
         },
         {
-            "name": "Launch Post Processes Library (Chrome)",
-            "type": "chrome",
+            /*
+            Launch the playground to be use to test changes in dev packages
+            */
+            "type": "pwa-chrome",
             "request": "launch",
-            "url": "http://localhost:1338/postProcessLibrary/index.html",
-            "webRoot": "${workspaceRoot}/",
-            "sourceMaps": true,
-            "preLaunchTask": "run",
-            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
-            "runtimeArgs": [
-                "--enable-unsafe-es3-apis"
-            ]
+            "name": "Launch GUI Editor (chrome)",
+            "url": "http://localhost:1338",
+            "webRoot": "${workspaceFolder}",
+            "preLaunchTask": "GUI Editor Serve for core (Dev)"
         },
         {
-            "name": "Launch Procedural Textures Library (Chrome)",
-            "type": "chrome",
+            "type": "pwa-chrome",
             "request": "launch",
-            "url": "http://localhost:1338/proceduralTexturesLibrary/index.html",
-            "webRoot": "${workspaceRoot}/",
-            "sourceMaps": true,
-            "preLaunchTask": "run",
-            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
-            "runtimeArgs": [
-                "--enable-unsafe-es3-apis"
-            ]
+            "name": "Node Editor development (chrome)",
+            "url": "http://localhost:1338",
+            "webRoot": "${workspaceFolder}",
+            "preLaunchTask": "Node Editor Serve (Dev)"
         },
         {
-            "name": "Launch Inspector (Chrome)",
-            "type": "chrome",
+            /*
+            Launch the playground to be use to test changes in dev packages
+            */
+            "type": "pwa-chrome",
             "request": "launch",
-            "url": "http://localhost:1338/inspector/index.html",
-            "webRoot": "${workspaceRoot}/",
-            "sourceMaps": true,
-            "preLaunchTask": "run",
-            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
-            "runtimeArgs": [
-                "--enable-unsafe-es3-apis"
-            ]
+            "name": "Launch Node Editor (chrome)",
+            "url": "http://localhost:1338",
+            "webRoot": "${workspaceFolder}",
+            "preLaunchTask": "Node Editor Serve for core (Dev)"
         },
         {
-            "name": "Launch Local Dev (Chrome)",
-            "type": "chrome",
+            /*
+            Launch the playground to be use to test changes in dev packages
+            */
+            "type": "pwa-chrome",
             "request": "launch",
-            "url": "http://localhost:1338/localDev/index.html",
-            "webRoot": "${workspaceRoot}/",
-            "sourceMaps": true,
-            "preLaunchTask": "run",
-            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
-            "runtimeArgs": [
-                "--enable-unsafe-es3-apis"
-            ]
-        },        
-        {
-            "name": "Launch Local Dev (Chrome Canary)",
-            "type": "chrome",
-            "request": "launch",
-            "url": "http://localhost:1338/localDevWebGPU/index.html",
-            "webRoot": "${workspaceRoot}/",
-            "sourceMaps": true,
-            "preLaunchTask": "run",
-            "userDataDir": "${workspaceRoot}/.tempChromeCanaryProfileForDebug",
-            "runtimeExecutable": "C:/Users/alexis/AppData/Local/Google/Chrome SxS/Application/Chrome.exe",
-            "runtimeArgs": [
-                "--enable-unsafe-es3-apis",
-                "--enable-unsafe-webgpu"
-            ]
-        },        
-        {
-            "name": "Launch Local Dev (Edge)",
-            "type": "edge",
-            "version": "dev",
-            "request": "launch",
-            "url": "http://localhost:1338/localDev/index.html",
-            "webRoot": "${workspaceRoot}/",
-            "sourceMaps": true,
-            "preLaunchTask": "run",
-            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
-            "runtimeArgs": [
-                "--enable-unsafe-es3-apis"
-            ]
-        },   
-        {
-            "name": "Launch Local Dev (Edge) - Direct",
-            "type": "edge",
-            "version": "dev",
-            "request": "launch",
-            "url": "http://localhost:1338/localDev/index.html",
-            "webRoot": "${workspaceRoot}/",
-            "sourceMaps": true,
-            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
-            "runtimeArgs": [
-                "--enable-unsafe-es3-apis"
-            ]
+            "name": "Run and Watch Dev host (Dev)",
+            "url": "http://localhost:1338",
+            "outFiles": ["!**/node_modules/**"],
+            "webRoot": "${workspaceFolder}",
+            "preLaunchTask": "Run and Watch Dev host (Dev)"
         },
         {
-            "name": "Launch Local Dev - Worker mode (Chrome)",
-            "type": "chrome",
+            /*
+            Launch the playground to be use to test changes in dev packages
+            */
+            "type": "pwa-chrome",
             "request": "launch",
-            "url": "http://localhost:1338/localDev/index-worker.html",
-            "webRoot": "${workspaceRoot}/",
-            "sourceMaps": true,
-            "preLaunchTask": "run",
-            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
-            "runtimeArgs": [
-                "--enable-unsafe-es3-apis"
-            ]
+            "name": "Run and Watch Dev host - SSL (Dev)",
+            "url": "https://localhost:1338",
+            "outFiles": ["!**/node_modules/**"],
+            "webRoot": "${workspaceFolder}",
+            "preLaunchTask": "Run and Watch Dev host (Dev)"
         },
         {
-            "name": "Launch Local Dev - Views mode (Chrome)",
-            "type": "chrome",
+            /*
+            Launch tests
+            https://jestjs.io/docs/troubleshooting#debugging-in-vs-code
+            */
+            "type": "node",
             "request": "launch",
-            "url": "http://localhost:1338/localDev/index-views.html",
-            "webRoot": "${workspaceRoot}/",
-            "sourceMaps": true,
-            "preLaunchTask": "run",
-            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
-            "runtimeArgs": [
-                "--enable-unsafe-es3-apis"
-            ]
+            "name": "Run and Debug unit tests (Dev)",
+            "runtimeArgs": ["--inspect-brk", "${workspaceRoot}/node_modules/jest/bin/jest.js", "--runInBand", "--selectProjects", "unit"],
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",
+            "port": 9229,
+            // "outFiles": ["${workspaceRoot}/**/dist/**/*"], // debugging sources
+            // "envFile": "${workspaceRoot}/.env",
+            "preLaunchTask": "Build (Dev)"
         },
         {
-            "name": "Launch Build Validation (Chrome)",
-            "type": "chrome",
+            /*
+            Launch tests
+            https://jestjs.io/docs/troubleshooting#debugging-in-vs-code
+            */
+            "type": "node",
             "request": "launch",
-            "url": "http://localhost:1338/tests/validation/index.html",
-            "webRoot": "${workspaceRoot}/",
-            "sourceMaps": true,
-            "preLaunchTask": "run",
-            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
-            "runtimeArgs": [
-                "--enable-unsafe-es3-apis"
-            ]
+            "name": "Run validation tests - WebGL2 (Dev)",
+            "runtimeArgs": ["--inspect-brk", "${workspaceRoot}/node_modules/jest/bin/jest.js", "--runInBand", "--selectProjects", "visualization", "-i", "webgl2"],
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",
+            "port": 9229,
+            // "outFiles": ["${workspaceRoot}/**/dist/**/*"], // debugging sources
+            // "envFile": "${workspaceRoot}/.env",
+            "preLaunchTask": "CDN Serve (Dev)"
         },
         {
-            "name": "Launch Build Validation (Edge)",
-            "type": "edge",
-            "version": "dev",
+            /*
+            Launch tests
+            https://jestjs.io/docs/troubleshooting#debugging-in-vs-code
+            */
+            "type": "node",
             "request": "launch",
-            "url": "http://localhost:1338/tests/validation/index.html",
-            "webRoot": "${workspaceRoot}/",
-            "sourceMaps": true,
-            "preLaunchTask": "run",
-            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
-            "runtimeArgs": [
-                "--enable-unsafe-es3-apis"
-            ]
+            "name": "Run validation tests - WebGL1 (Dev)",
+            "runtimeArgs": ["--inspect-brk", "${workspaceRoot}/node_modules/jest/bin/jest.js", "--runInBand", "--selectProjects", "visualization", "-i", "webgl1"],
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",
+            "port": 9229,
+            // "outFiles": ["${workspaceRoot}/**/dist/**/*"], // debugging sources
+            // "envFile": "${workspaceRoot}/.env",
+            "preLaunchTask": "CDN Serve (Dev)"
         },
         {
-            "name": "Launch Build Validation (Edge) - Direct",
-            "type": "edge",
-            "version": "dev",
+            /*
+            Launch tests
+            https://jestjs.io/docs/troubleshooting#debugging-in-vs-code
+            */
+            "type": "node",
             "request": "launch",
-            "url": "http://localhost:1338/tests/validation/index.html",
-            "webRoot": "${workspaceRoot}/",
-            "sourceMaps": true,
-            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
-            "runtimeArgs": [
-                "--enable-unsafe-es3-apis"
-            ]
+            "name": "Run validation tests - WebGPU (Dev)",
+            "runtimeArgs": ["--inspect-brk", "${workspaceRoot}/node_modules/jest/bin/jest.js", "--runInBand", "--selectProjects", "visualization", "-i", "webgpu"],
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",
+            "port": 9229,
+            "env": {
+                "TEST_ENGINE": "webgpu"
+            },
+            // "outFiles": ["${workspaceRoot}/**/dist/**/*"], // debugging sources
+            // "envFile": "${workspaceRoot}/.env",
+            "preLaunchTask": "CDN Serve (Dev)"
         },
         {
-            "name": "Launch WebGPU Build Validation (Edge) - Direct",
-            "type": "edge",
-            "version": "canary",
+            /*
+            Launch tests
+            https://jestjs.io/docs/troubleshooting#debugging-in-vs-code
+            */
+            "type": "node",
             "request": "launch",
-            "url": "http://localhost:1338/tests/validation/?engine=webgpu",
-            "webRoot": "${workspaceRoot}/",
-            "sourceMaps": true,
-            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
-            "runtimeArgs": [
-                "--enable-unsafe-es3-apis",
-                "--enable-unsafe-webgpu"
-            ]
-        },
-        {
-            "name": "Launch memory checks (Chrome)",
-            "type": "chrome",
-            "request": "launch",
-            "url": "http://localhost:1338/tests/memoryChecks/index.html",
-            "webRoot": "${workspaceRoot}/",
-            "sourceMaps": true,
-            "preLaunchTask": "run",
-            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
-            "runtimeArgs": [
-                "--enable-unsafe-es3-apis"
-            ]
-        },
-        {
-            "name": "Launch reflector (Chrome)",
-            "type": "chrome",
-            "request": "launch",
-            "url": "http://localhost:1338/sandbox/public/index-local.html?reflector=true",
-            "webRoot": "${workspaceRoot}/",
-            "sourceMaps": true,
-            "preLaunchTask": "run",
-            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
-            "runtimeArgs": [
-                "--enable-unsafe-es3-apis"
-            ]
-        },
-        {
-            "name": "Launch sandbox for 3D Commerce (Chrome)",
-            "type": "chrome",
-            "request": "launch",
-            "url": "http://localhost:1338/sandbox/public/index-local.html?3dcommerce=true",
-            "webRoot": "${workspaceRoot}/",
-            "sourceMaps": true,
-            "preLaunchTask": "run",
-            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
-            "runtimeArgs": [
-                "--enable-unsafe-es3-apis"
-            ]
-        },
-        {
-            "name": "Launch 3D Commerce Viewer Certification (Chrome)",
-            "type": "chrome",
-            "request": "launch",
-            "url": "http://localhost:1338/tests/certification/index.html",
-            "webRoot": "${workspaceRoot}/",
-            "sourceMaps": true,
-            "preLaunchTask": "run",
-            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
-            "runtimeArgs": [
-                "--enable-unsafe-es3-apis"
-            ]
+            "name": "Run and Debug integration tests (Dev)",
+            "runtimeArgs": ["--inspect-brk", "${workspaceRoot}/node_modules/jest/bin/jest.js", "--runInBand", "--selectProjects", "integration"],
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",
+            "port": 9229,
+            // "outFiles": ["${workspaceRoot}/**/dist/**/*"], // debugging sources
+            // "envFile": "${workspaceRoot}/.env",
+            "preLaunchTask": "CDN Serve Prod (Dev)"
         }
     ]
 }

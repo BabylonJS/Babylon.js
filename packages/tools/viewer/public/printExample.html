@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="ie=edge">
+        <title>BabylonJS Viewer - 3D Print usage</title>
+        <style>
+            babylon {
+                width: 800px;
+                height: 500px;
+            }
+        </style>
+    </head>
+
+    <body>
+        <babylon templates.nav-bar.params.hide-print="false">
+            <model url="https://playground.babylonjs.com/scenes/BoomBox.glb">
+            </model>
+        </babylon>
+        <script src="viewer.js"></script>
+    </body>
+
+</html>

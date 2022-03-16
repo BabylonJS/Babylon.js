@@ -1,0 +1,288 @@
+import { Nullable } from "core/types";
+import { Tools } from "core/Misc/tools";
+import { VertexBuffer } from "core/Buffers/buffer";
+import { Skeleton } from "core/Bones/skeleton";
+import { IParticleSystem } from "core/Particles/IParticleSystem";
+import { AbstractMesh } from "core/Meshes/abstractMesh";
+import { Mesh } from "core/Meshes/mesh";
+import { SceneLoader, ISceneLoaderPlugin, ISceneLoaderPluginExtensions } from "core/Loading/sceneLoader";
+import { AssetContainer } from "core/assetContainer";
+import { Scene } from "core/scene";
+
+/**
+ * STL file type loader.
+ * This is a babylon scene loader plugin.
+ */
+export class STLFileLoader implements ISceneLoaderPlugin {
+    /** @hidden */
+    public solidPattern = /solid (\S*)([\S\s]*?)endsolid[ ]*(\S*)/g;
+
+    /** @hidden */
+    public facetsPattern = /facet([\s\S]*?)endfacet/g;
+    /** @hidden */
+    public normalPattern =
+        /normal[\s]+([\-+]?[0-9]+\.?[0-9]*([eE][\-+]?[0-9]+)?)+[\s]+([\-+]?[0-9]*\.?[0-9]+([eE][\-+]?[0-9]+)?)+[\s]+([\-+]?[0-9]*\.?[0-9]+([eE][\-+]?[0-9]+)?)+/g;
+    /** @hidden */
+    public vertexPattern =
+        /vertex[\s]+([\-+]?[0-9]+\.?[0-9]*([eE][\-+]?[0-9]+)?)+[\s]+([\-+]?[0-9]*\.?[0-9]+([eE][\-+]?[0-9]+)?)+[\s]+([\-+]?[0-9]*\.?[0-9]+([eE][\-+]?[0-9]+)?)+/g;
+
+    /**
+     * Defines the name of the plugin.
+     */
+    public name = "stl";
+
+    /**
+     * Defines the extensions the stl loader is able to load.
+     * force data to come in as an ArrayBuffer
+     * we'll convert to string if it looks like it's an ASCII .stl
+     */
+    public extensions: ISceneLoaderPluginExtensions = {
+        ".stl": { isBinary: true },
+    };
+
+    /**
+     * Defines if Y and Z axes are swapped or not when loading an STL file.
+     * The default is false to maintain backward compatibility. When set to
+     * true, coordinates from the STL file are used without change.
+     */
+    public static DO_NOT_ALTER_FILE_COORDINATES = false;
+
+    /**
+     * Import meshes into a scene.
+     * @param meshesNames An array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
+     * @param scene The scene to import into
+     * @param data The data to import
+     * @param rootUrl The root url for scene and resources
+     * @param meshes The meshes array to import into
+     * @param particleSystems The particle systems array to import into
+     * @param skeletons The skeletons array to import into
+     * @param onError The callback when import fails
+     * @returns True if successful or false otherwise
+     */
+    public importMesh(
+        meshesNames: any,
+        scene: Scene,
+        data: any,
+        rootUrl: string,
+        meshes: Nullable<AbstractMesh[]>,
+        particleSystems: Nullable<IParticleSystem[]>,
+        skeletons: Nullable<Skeleton[]>
+    ): boolean {
+        let matches;
+
+        if (typeof data !== "string") {
+            if (this._isBinary(data)) {
+                // binary .stl
+                var babylonMesh = new Mesh("stlmesh", scene);
+                this._parseBinary(babylonMesh, data);
+                if (meshes) {
+                    meshes.push(babylonMesh);
+                }
+                return true;
+            }
+
+            // ASCII .stl
+
+            // convert to string
+            const array_buffer = new Uint8Array(data);
+            let str = "";
+            for (let i = 0; i < data.byteLength; i++) {
+                str += String.fromCharCode(array_buffer[i]); // implicitly assumes little-endian
+            }
+            data = str;
+        }
+
+        //if arrived here, data is a string, containing the STLA data.
+
+        while ((matches = this.solidPattern.exec(data))) {
+            let meshName = matches[1];
+            const meshNameFromEnd = matches[3];
+            if (meshName != meshNameFromEnd) {
+                Tools.Error("Error in STL, solid name != endsolid name");
+                return false;
+            }
+
+            // check meshesNames
+            if (meshesNames && meshName) {
+                if (meshesNames instanceof Array) {
+                    if (!meshesNames.indexOf(meshName)) {
+                        continue;
+                    }
+                } else {
+                    if (meshName !== meshesNames) {
+                        continue;
+                    }
+                }
+            }
+
+            // stl mesh name can be empty as well
+            meshName = meshName || "stlmesh";
+
+            var babylonMesh = new Mesh(meshName, scene);
+            this._parseASCII(babylonMesh, matches[2]);
+            if (meshes) {
+                meshes.push(babylonMesh);
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Load into a scene.
+     * @param scene The scene to load into
+     * @param data The data to import
+     * @param rootUrl The root url for scene and resources
+     * @param onError The callback when import fails
+     * @returns true if successful or false otherwise
+     */
+    public load(scene: Scene, data: any, rootUrl: string): boolean {
+        const result = this.importMesh(null, scene, data, rootUrl, null, null, null);
+        return result;
+    }
+
+    /**
+     * Load into an asset container.
+     * @param scene The scene to load into
+     * @param data The data to import
+     * @param rootUrl The root url for scene and resources
+     * @param onError The callback when import fails
+     * @returns The loaded asset container
+     */
+    public loadAssetContainer(scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void): AssetContainer {
+        const container = new AssetContainer(scene);
+        scene._blockEntityCollection = true;
+        this.importMesh(null, scene, data, rootUrl, container.meshes, null, null);
+        scene._blockEntityCollection = false;
+        return container;
+    }
+
+    private _isBinary(data: any) {
+        // check if file size is correct for binary stl
+        let faceSize, nFaces, reader;
+        reader = new DataView(data);
+
+        // A Binary STL header is 80 bytes, if the data size is not great than
+        // that then it's not a binary STL.
+        if (reader.byteLength <= 80) {
+            return false;
+        }
+
+        faceSize = (32 / 8) * 3 + (32 / 8) * 3 * 3 + 16 / 8;
+        nFaces = reader.getUint32(80, true);
+
+        if (80 + 32 / 8 + nFaces * faceSize === reader.byteLength) {
+            return true;
+        }
+
+        // check characters higher than ASCII to confirm binary
+        const fileLength = reader.byteLength;
+        for (let index = 0; index < fileLength; index++) {
+            if (reader.getUint8(index) > 127) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private _parseBinary(mesh: Mesh, data: ArrayBuffer) {
+        const reader = new DataView(data);
+        const faces = reader.getUint32(80, true);
+
+        const dataOffset = 84;
+        const faceLength = 12 * 4 + 2;
+
+        let offset = 0;
+
+        const positions = new Float32Array(faces * 3 * 3);
+        const normals = new Float32Array(faces * 3 * 3);
+        const indices = new Uint32Array(faces * 3);
+        let indicesCount = 0;
+
+        for (let face = 0; face < faces; face++) {
+            const start = dataOffset + face * faceLength;
+            const normalX = reader.getFloat32(start, true);
+            const normalY = reader.getFloat32(start + 4, true);
+            const normalZ = reader.getFloat32(start + 8, true);
+
+            for (let i = 1; i <= 3; i++) {
+                const vertexstart = start + i * 12;
+
+                // ordering is intentional to match ascii import
+                positions[offset] = reader.getFloat32(vertexstart, true);
+                normals[offset] = normalX;
+
+                if (!STLFileLoader.DO_NOT_ALTER_FILE_COORDINATES) {
+                    positions[offset + 2] = reader.getFloat32(vertexstart + 4, true);
+                    positions[offset + 1] = reader.getFloat32(vertexstart + 8, true);
+
+                    normals[offset + 2] = normalY;
+                    normals[offset + 1] = normalZ;
+                } else {
+                    positions[offset + 1] = reader.getFloat32(vertexstart + 4, true);
+                    positions[offset + 2] = reader.getFloat32(vertexstart + 8, true);
+
+                    normals[offset + 1] = normalY;
+                    normals[offset + 2] = normalZ;
+                }
+
+                offset += 3;
+            }
+            indices[indicesCount] = indicesCount++;
+            indices[indicesCount] = indicesCount++;
+            indices[indicesCount] = indicesCount++;
+        }
+
+        mesh.setVerticesData(VertexBuffer.PositionKind, positions);
+        mesh.setVerticesData(VertexBuffer.NormalKind, normals);
+        mesh.setIndices(indices);
+        mesh.computeWorldMatrix(true);
+    }
+
+    private _parseASCII(mesh: Mesh, solidData: string) {
+        const positions = [];
+        const normals = [];
+        const indices = [];
+        let indicesCount = 0;
+
+        //load facets, ignoring loop as the standard doesn't define it can contain more than vertices
+        let matches;
+        while ((matches = this.facetsPattern.exec(solidData))) {
+            const facet = matches[1];
+            //one normal per face
+            const normalMatches = this.normalPattern.exec(facet);
+            this.normalPattern.lastIndex = 0;
+            if (!normalMatches) {
+                continue;
+            }
+            const normal = [Number(normalMatches[1]), Number(normalMatches[5]), Number(normalMatches[3])];
+
+            var vertexMatch;
+            while ((vertexMatch = this.vertexPattern.exec(facet))) {
+                if (!STLFileLoader.DO_NOT_ALTER_FILE_COORDINATES) {
+                    positions.push(Number(vertexMatch[1]), Number(vertexMatch[5]), Number(vertexMatch[3]));
+                    normals.push(normal[0], normal[1], normal[2]);
+                } else {
+                    positions.push(Number(vertexMatch[1]), Number(vertexMatch[3]), Number(vertexMatch[5]));
+
+                    // Flipping the second and third component because inverted
+                    // when normal was declared.
+                    normals.push(normal[0], normal[2], normal[1]);
+                }
+            }
+            indices.push(indicesCount++, indicesCount++, indicesCount++);
+            this.vertexPattern.lastIndex = 0;
+        }
+
+        this.facetsPattern.lastIndex = 0;
+        mesh.setVerticesData(VertexBuffer.PositionKind, positions);
+        mesh.setVerticesData(VertexBuffer.NormalKind, normals);
+        mesh.setIndices(indices);
+        mesh.computeWorldMatrix(true);
+    }
+}
+
+if (SceneLoader) {
+    SceneLoader.RegisterPlugin(new STLFileLoader());
+}

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Babylon-Ready HTML</title>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, user-scalable=no" />
+
+        <style>
+            html,
+            body {
+                width: 100%;
+                height: 100%;
+                padding: 0;
+                margin: 0;
+            }
+
+            #wrapper {
+                width: 100%;
+                height: 100%;
+                display: flex;
+                overflow: hidden;
+            }
+
+            canvas {
+                width: 100%;
+                height: 100%;
+            }
+
+            #inspector {
+                width: 25%;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div id="wrapper">
+            <canvas id="babylon-canvas"></canvas>
+        </div>
+        <!-- Dependencies -->
+        <script src="ammo.js"></script>
+        <script src="recast.js"></script>
+        <script src="cannon.js"></script>
+        <script src="Oimo.js"></script>
+        <script src="earcut.min.js"></script>
+        <script src="babylon.js"></script>
+        <script src="gui/babylon.gui.min.js"></script>
+        <script src="inspector/babylon.inspector.bundle.js"></script>
+        <script src="nodeEditor/babylon.nodeEditor.js"></script>
+        <script src="guiEditor/babylon.guiEditor.js"></script>
+        <script src="materialsLibrary/babylonjs.materials.min.js"></script>
+        <script src="proceduralTexturesLibrary/babylonjs.proceduralTextures.min.js"></script>
+        <script src="postProcessesLibrary/babylonjs.postProcess.min.js"></script>
+        <script src="loaders/babylonjs.loaders.min.js"></script>
+        <script src="serializers/babylonjs.serializers.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sourcemapped-stacktrace@1.1.11/dist/sourcemapped-stacktrace.min.js"></script>
+    </body>
+</html>
