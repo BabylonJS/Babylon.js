@@ -1,6 +1,6 @@
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
-import { IKHRXmpJsonLd_Gltf, IKHRXmpJsonLd_Node } from 'babylonjs-gltf2interface';
+import { IKHRXmpJsonLd_Gltf, IKHRXmpJsonLd_Node } from "babylonjs-gltf2interface";
 
 const NAME = "KHR_xmp_json_ld";
 
@@ -45,8 +45,8 @@ export class KHR_xmp_json_ld implements IGLTFLoaderExtension {
             return;
         }
 
-        const xmp_gltf = (this._loader.gltf.extensions?.KHR_xmp_json_ld as IKHRXmpJsonLd_Gltf);
-        const xmp_node = (this._loader.gltf.asset?.extensions?.KHR_xmp_json_ld as IKHRXmpJsonLd_Node);
+        const xmp_gltf = this._loader.gltf.extensions?.KHR_xmp_json_ld as IKHRXmpJsonLd_Gltf;
+        const xmp_node = this._loader.gltf.asset?.extensions?.KHR_xmp_json_ld as IKHRXmpJsonLd_Node;
         if (xmp_gltf && xmp_node) {
             const packet = +xmp_node.packet;
             if (xmp_gltf.packets && packet < xmp_gltf.packets.length) {

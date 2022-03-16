@@ -1,12 +1,12 @@
-import { Nullable } from "babylonjs/types";
-import { PBRMaterial } from "babylonjs/Materials/PBR/pbrMaterial";
-import { Material } from "babylonjs/Materials/material";
+import { Nullable } from "core/types";
+import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
+import { Material } from "core/Materials/material";
 
 import { IMaterial, ITextureInfo } from "../glTFLoaderInterfaces";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
-import { Color3 } from 'babylonjs/Maths/math.color';
-import { IKHRMaterialsSpecular } from 'babylonjs-gltf2interface';
+import { Color3 } from "core/Maths/math.color";
+import { IKHRMaterialsSpecular } from "babylonjs-gltf2interface";
 
 const NAME = "KHR_materials_specular";
 
@@ -48,7 +48,7 @@ export class KHR_materials_specular implements IGLTFLoaderExtension {
             const promises = new Array<Promise<any>>();
             promises.push(this._loader.loadMaterialPropertiesAsync(context, material, babylonMaterial));
             promises.push(this._loadSpecularPropertiesAsync(extensionContext, extension, babylonMaterial));
-            return Promise.all(promises).then(() => { });
+            return Promise.all(promises).then(() => {});
         });
     }
 
@@ -69,21 +69,25 @@ export class KHR_materials_specular implements IGLTFLoaderExtension {
 
         if (properties.specularTexture) {
             (properties.specularTexture as ITextureInfo).nonColorData = true;
-            promises.push(this._loader.loadTextureInfoAsync(`${context}/specularTexture`, properties.specularTexture, (texture) => {
-                texture.name = `${babylonMaterial.name} (Specular F0 Strength)`;
-                babylonMaterial.metallicReflectanceTexture = texture;
-                babylonMaterial.useOnlyMetallicFromMetallicReflectanceTexture = true;
-            }));
+            promises.push(
+                this._loader.loadTextureInfoAsync(`${context}/specularTexture`, properties.specularTexture, (texture) => {
+                    texture.name = `${babylonMaterial.name} (Specular F0 Strength)`;
+                    babylonMaterial.metallicReflectanceTexture = texture;
+                    babylonMaterial.useOnlyMetallicFromMetallicReflectanceTexture = true;
+                })
+            );
         }
 
         if (properties.specularColorTexture) {
-            promises.push(this._loader.loadTextureInfoAsync(`${context}/specularColorTexture`, properties.specularColorTexture, (texture) => {
-                texture.name = `${babylonMaterial.name} (Specular F0 Color)`;
-                babylonMaterial.reflectanceTexture = texture;
-            }));
+            promises.push(
+                this._loader.loadTextureInfoAsync(`${context}/specularColorTexture`, properties.specularColorTexture, (texture) => {
+                    texture.name = `${babylonMaterial.name} (Specular F0 Color)`;
+                    babylonMaterial.reflectanceTexture = texture;
+                })
+            );
         }
 
-        return Promise.all(promises).then(() => { });
+        return Promise.all(promises).then(() => {});
     }
 }
 

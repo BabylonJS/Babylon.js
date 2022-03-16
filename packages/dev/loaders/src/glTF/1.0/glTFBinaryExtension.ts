@@ -1,10 +1,10 @@
 import { GLTFLoaderExtension } from "./glTFLoader";
 import { GLTFUtils } from "./glTFLoaderUtils";
-import { Scene } from "babylonjs/scene";
+import { Scene } from "core/scene";
 import { IGLTFLoaderData } from "../glTFFileLoader";
 import { IGLTFRuntime, IGLTFTexture, IGLTFImage, IGLTFBufferView, EComponentType, IGLTFShader } from "./glTFLoaderInterfaces";
 import { GLTFLoader, GLTFLoaderBase } from "./glTFLoader";
-import { IDataBuffer } from 'babylonjs/Misc/dataReader';
+import { IDataBuffer } from "core/Misc/dataReader";
 
 const BinaryExtensionBufferName = "binary_glTF";
 

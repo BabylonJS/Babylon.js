@@ -1,11 +1,11 @@
-import { Nullable } from "babylonjs/types";
-import { PBRMaterial } from "babylonjs/Materials/PBR/pbrMaterial";
-import { Material } from "babylonjs/Materials/material";
-import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
+import { Nullable } from "core/types";
+import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
+import { Material } from "core/Materials/material";
+import { BaseTexture } from "core/Materials/Textures/baseTexture";
 import { IMaterial, ITextureInfo } from "../glTFLoaderInterfaces";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
-import { IKHRMaterialsTranslucency } from 'babylonjs-gltf2interface';
+import { IKHRMaterialsTranslucency } from "babylonjs-gltf2interface";
 
 const NAME = "KHR_materials_translucency";
 
@@ -52,7 +52,7 @@ export class KHR_materials_translucency implements IGLTFLoaderExtension {
             promises.push(this._loader.loadMaterialBasePropertiesAsync(context, material, babylonMaterial));
             promises.push(this._loader.loadMaterialPropertiesAsync(context, material, babylonMaterial));
             promises.push(this._loadTranslucentPropertiesAsync(extensionContext, material, babylonMaterial, extension));
-            return Promise.all(promises).then(() => { });
+            return Promise.all(promises).then(() => {});
         });
     }
 
@@ -84,10 +84,9 @@ export class KHR_materials_translucency implements IGLTFLoaderExtension {
 
         if (extension.translucencyTexture) {
             (extension.translucencyTexture as ITextureInfo).nonColorData = true;
-            return this._loader.loadTextureInfoAsync(`${context}/translucencyTexture`, extension.translucencyTexture)
-                .then((texture: BaseTexture) => {
-                    pbrMaterial.subSurface.translucencyIntensityTexture = texture;
-                });
+            return this._loader.loadTextureInfoAsync(`${context}/translucencyTexture`, extension.translucencyTexture).then((texture: BaseTexture) => {
+                pbrMaterial.subSurface.translucencyIntensityTexture = texture;
+            });
         } else {
             return Promise.resolve();
         }

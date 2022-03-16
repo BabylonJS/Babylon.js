@@ -1,11 +1,11 @@
-import { Nullable } from "babylonjs/types";
-import { Vector3 } from "babylonjs/Maths/math.vector";
-import { Color3 } from 'babylonjs/Maths/math.color';
-import { DirectionalLight } from "babylonjs/Lights/directionalLight";
-import { PointLight } from "babylonjs/Lights/pointLight";
-import { SpotLight } from "babylonjs/Lights/spotLight";
-import { Light } from "babylonjs/Lights/light";
-import { TransformNode } from "babylonjs/Meshes/transformNode";
+import { Nullable } from "core/types";
+import { Vector3 } from "core/Maths/math.vector";
+import { Color3 } from "core/Maths/math.color";
+import { DirectionalLight } from "core/Lights/directionalLight";
+import { PointLight } from "core/Lights/pointLight";
+import { SpotLight } from "core/Lights/spotLight";
+import { Light } from "core/Lights/light";
+import { TransformNode } from "core/Meshes/transformNode";
 
 import { IKHRLightsPunctual_LightType, IKHRLightsPunctual_LightReference, IKHRLightsPunctual_Light, IKHRLightsPunctual } from "babylonjs-gltf2interface";
 import { INode } from "../glTFLoaderInterfaces";

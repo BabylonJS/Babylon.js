@@ -1,10 +1,10 @@
-import { Nullable } from "babylonjs/types";
-import { Observable } from "babylonjs/Misc/observable";
-import { Deferred } from "babylonjs/Misc/deferred";
-import { Material } from "babylonjs/Materials/material";
-import { TransformNode } from "babylonjs/Meshes/transformNode";
-import { Mesh } from "babylonjs/Meshes/mesh";
-import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
+import { Nullable } from "core/types";
+import { Observable } from "core/Misc/observable";
+import { Deferred } from "core/Misc/deferred";
+import { Material } from "core/Materials/material";
+import { TransformNode } from "core/Meshes/transformNode";
+import { Mesh } from "core/Meshes/mesh";
+import { BaseTexture } from "core/Materials/Textures/baseTexture";
 import { INode, IMaterial, IBuffer, IScene } from "../glTFLoaderInterfaces";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader, ArrayItem } from "../glTFLoader";
@@ -197,7 +197,13 @@ export class MSFT_lod implements IGLTFLoaderExtension {
     }
 
     /** @hidden */
-    public _loadMaterialAsync(context: string, material: IMaterial, babylonMesh: Nullable<Mesh>, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Nullable<Promise<Material>> {
+    public _loadMaterialAsync(
+        context: string,
+        material: IMaterial,
+        babylonMesh: Nullable<Mesh>,
+        babylonDrawMode: number,
+        assign: (babylonMaterial: Material) => void
+    ): Nullable<Promise<Material>> {
         // Don't load material LODs if already loading a node LOD.
         if (this._nodeIndexLOD) {
             return null;
@@ -216,24 +222,26 @@ export class MSFT_lod implements IGLTFLoaderExtension {
                     this._materialIndexLOD = indexLOD;
                 }
 
-                const promise = this._loader._loadMaterialAsync(`/materials/${materialLOD.index}`, materialLOD, babylonMesh, babylonDrawMode, (babylonMaterial) => {
-                    if (indexLOD === 0) {
-                        assign(babylonMaterial);
-                    }
-                }).then((babylonMaterial) => {
-                    if (indexLOD !== 0) {
-                        assign(babylonMaterial);
-
-                        // TODO: should not rely on _data
-                        const previousDataLOD = materialLODs[indexLOD - 1]._data!;
-                        if (previousDataLOD[babylonDrawMode]) {
-                            this._disposeMaterials([previousDataLOD[babylonDrawMode].babylonMaterial]);
-                            delete previousDataLOD[babylonDrawMode];
+                const promise = this._loader
+                    ._loadMaterialAsync(`/materials/${materialLOD.index}`, materialLOD, babylonMesh, babylonDrawMode, (babylonMaterial) => {
+                        if (indexLOD === 0) {
+                            assign(babylonMaterial);
                         }
-                    }
+                    })
+                    .then((babylonMaterial) => {
+                        if (indexLOD !== 0) {
+                            assign(babylonMaterial);
 
-                    return babylonMaterial;
-                });
+                            // TODO: should not rely on _data
+                            const previousDataLOD = materialLODs[indexLOD - 1]._data!;
+                            if (previousDataLOD[babylonDrawMode]) {
+                                this._disposeMaterials([previousDataLOD[babylonDrawMode].babylonMaterial]);
+                                delete previousDataLOD[babylonDrawMode];
+                            }
+                        }
+
+                        return babylonMaterial;
+                    });
 
                 this._materialPromiseLODs[indexLOD] = this._materialPromiseLODs[indexLOD] || [];
 
@@ -314,11 +322,14 @@ export class MSFT_lod implements IGLTFLoaderExtension {
         const bufferLOD = bufferLODs[indexLOD];
         if (bufferLOD) {
             this._loader.log(`Loading buffer range [${bufferLOD.start}-${bufferLOD.end}]`);
-            this._loader.bin!.readAsync(bufferLOD.start, bufferLOD.end - bufferLOD.start + 1).then((data) => {
-                bufferLOD.loaded.resolve(data);
-            }, (error) => {
-                bufferLOD.loaded.reject(error);
-            });
+            this._loader.bin!.readAsync(bufferLOD.start, bufferLOD.end - bufferLOD.start + 1).then(
+                (data) => {
+                    bufferLOD.loaded.resolve(data);
+                },
+                (error) => {
+                    bufferLOD.loaded.reject(error);
+                }
+            );
         }
     }
 

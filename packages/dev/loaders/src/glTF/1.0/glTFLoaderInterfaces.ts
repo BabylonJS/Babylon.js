@@ -1,27 +1,27 @@
-import { AssetContainer } from "babylonjs/assetContainer";
-import { Bone } from "babylonjs/Bones/bone";
-import { Skeleton } from "babylonjs/Bones/skeleton";
-import { Texture } from "babylonjs/Materials/Textures/texture";
-import { Node } from "babylonjs/node";
-import { Scene } from "babylonjs/scene";
-import { Nullable } from "babylonjs/types";
+import { AssetContainer } from "core/assetContainer";
+import { Bone } from "core/Bones/bone";
+import { Skeleton } from "core/Bones/skeleton";
+import { Texture } from "core/Materials/Textures/texture";
+import { Node } from "core/node";
+import { Scene } from "core/scene";
+import { Nullable } from "core/types";
 
 /**
-* Enums
-* @hidden
-*/
+ * Enums
+ * @hidden
+ */
 export enum EComponentType {
     BYTE = 5120,
     UNSIGNED_BYTE = 5121,
     SHORT = 5122,
     UNSIGNED_SHORT = 5123,
-    FLOAT = 5126
+    FLOAT = 5126,
 }
 
 /** @hidden */
 export enum EShaderType {
     FRAGMENT = 35632,
-    VERTEX = 35633
+    VERTEX = 35633,
 }
 
 /** @hidden */
@@ -46,14 +46,14 @@ export enum EParameterType {
     FLOAT_MAT2 = 35674,
     FLOAT_MAT3 = 35675,
     FLOAT_MAT4 = 35676,
-    SAMPLER_2D = 35678
+    SAMPLER_2D = 35678,
 }
 
 /** @hidden */
 export enum ETextureWrapMode {
     CLAMP_TO_EDGE = 33071,
     MIRRORED_REPEAT = 33648,
-    REPEAT = 10497
+    REPEAT = 10497,
 }
 
 /** @hidden */
@@ -63,7 +63,7 @@ export enum ETextureFilterType {
     NEAREST_MIPMAP_NEAREST = 9984,
     LINEAR_MIPMAP_NEAREST = 9985,
     NEAREST_MIPMAP_LINEAR = 9986,
-    LINEAR_MIPMAP_LINEAR = 9987
+    LINEAR_MIPMAP_LINEAR = 9987,
 }
 
 /** @hidden */
@@ -72,14 +72,14 @@ export enum ETextureFormat {
     RGB = 6407,
     RGBA = 6408,
     LUMINANCE = 6409,
-    LUMINANCE_ALPHA = 6410
+    LUMINANCE_ALPHA = 6410,
 }
 
 /** @hidden */
 export enum ECullingType {
     FRONT = 1028,
     BACK = 1029,
-    FRONT_AND_BACK = 1032
+    FRONT_AND_BACK = 1032,
 }
 
 /** @hidden */
@@ -98,7 +98,7 @@ export enum EBlendingFunction {
     ONE_MINUS_CONSTANT_COLOR = 32770,
     CONSTANT_ALPHA = 32771,
     ONE_MINUS_CONSTANT_ALPHA = 32772,
-    SRC_ALPHA_SATURATE = 776
+    SRC_ALPHA_SATURATE = 776,
 }
 
 /** @hidden */
