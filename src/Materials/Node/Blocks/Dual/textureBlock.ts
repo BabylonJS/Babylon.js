@@ -327,8 +327,13 @@ export class TextureBlock extends NodeMaterialBlock {
             return;
         }
 
-        defines.setValue(this._linearDefineName, this.convertToGammaSpace, true);
-        defines.setValue(this._gammaDefineName, this.convertToLinearSpace, true);
+        const toGamma = this.convertToGammaSpace && this.texture && !this.texture.gammaSpace;
+        const toLinear = this.convertToLinearSpace && this.texture && this.texture.gammaSpace;
+
+        // Not a bug... Name defines the texture space not the required conversion
+        defines.setValue(this._linearDefineName, toGamma, true);
+        defines.setValue(this._gammaDefineName, toLinear, true);
+
         if (this._isMixed) {
             if (!this.texture.getTextureMatrix().isIdentityAs3x2()) {
                 defines.setValue(this._defineName, true);
@@ -439,19 +444,15 @@ export class TextureBlock extends NodeMaterialBlock {
 
     private _generateConversionCode(state: NodeMaterialBuildState, output: NodeMaterialConnectionPoint, swizzle: string): void {
         if (swizzle !== 'a') { // no conversion if the output is "a" (alpha)
-            if (!this.texture || !this.texture.gammaSpace) {
-                state.compilationString += `#ifdef ${this._linearDefineName}
-                    ${output.associatedVariableName} = toGammaSpace(${output.associatedVariableName});
-                    #endif
-                `;
-            }
+            state.compilationString += `#ifdef ${this._linearDefineName}
+                ${output.associatedVariableName} = toGammaSpace(${output.associatedVariableName});
+                #endif
+            `;
 
-            if (!this.texture || this.texture.gammaSpace) {
-                state.compilationString += `#ifdef ${this._gammaDefineName}
-                    ${output.associatedVariableName} = toLinearSpace(${output.associatedVariableName});
-                    #endif
-                `;
-            }
+            state.compilationString += `#ifdef ${this._gammaDefineName}
+                ${output.associatedVariableName} = toLinearSpace(${output.associatedVariableName});
+                #endif
+            `;
         }
     }
 

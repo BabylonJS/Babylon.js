@@ -1299,20 +1299,18 @@ export class NodeMaterial extends PushMaterial {
         let sharedData = this._sharedData;
 
         if (mustRebind) {
-            if (effect) {
-                // Bindable blocks
-                for (var block of sharedData.bindableBlocks) {
-                    block.bind(effect, this, mesh, subMesh);
-                }
+            // Bindable blocks
+            for (var block of sharedData.bindableBlocks) {
+                block.bind(effect, this, mesh, subMesh);
+            }
 
-                for (var block of sharedData.forcedBindableBlocks) {
-                    block.bind(effect, this, mesh, subMesh);
-                }
+            for (var block of sharedData.forcedBindableBlocks) {
+                block.bind(effect, this, mesh, subMesh);
+            }
 
-                // Connection points
-                for (var inputBlock of sharedData.inputBlocks) {
-                    inputBlock._transmit(effect, scene, this);
-                }
+            // Connection points
+            for (var inputBlock of sharedData.inputBlocks) {
+                inputBlock._transmit(effect, scene, this);
             }
         } else if (!this.isFrozen) {
             for (var block of sharedData.forcedBindableBlocks) {
