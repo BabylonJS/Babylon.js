@@ -1,5 +1,5 @@
-import { Tools } from "babylonjs/Misc/tools";
-import { Matrix, TmpVectors, Vector3 } from "babylonjs/Maths/math.vector";
+import { Tools } from "core/Misc/tools";
+import { Matrix, TmpVectors, Vector3 } from "core/Maths/math.vector";
 
 import { Container3D } from "./container3D";
 
@@ -73,9 +73,9 @@ export class StackPanel3D extends Container3D {
         }
 
         if (this._isVertical) {
-            height += (controlCount - 1) * this.margin / 2;
+            height += ((controlCount - 1) * this.margin) / 2;
         } else {
-            width += (controlCount - 1) * this.margin / 2;
+            width += ((controlCount - 1) * this.margin) / 2;
         }
 
         // Arrange
@@ -104,7 +104,7 @@ export class StackPanel3D extends Container3D {
                 offset += extendSize.x * 2;
             }
 
-            offset += (controlCount > 0 ? this.margin : 0);
+            offset += controlCount > 0 ? this.margin : 0;
         }
     }
 }

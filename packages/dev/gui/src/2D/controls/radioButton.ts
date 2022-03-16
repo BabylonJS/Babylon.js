@@ -1,13 +1,13 @@
-import { Observable } from "babylonjs/Misc/observable";
-import { Vector2 } from "babylonjs/Maths/math.vector";
+import { Observable } from "core/Misc/observable";
+import { Vector2 } from "core/Maths/math.vector";
 
 import { Control } from "./control";
 import { StackPanel } from "./stackPanel";
 import { TextBlock } from "./textBlock";
-import { RegisterClass } from 'babylonjs/Misc/typeStore';
-import { PointerInfoBase } from 'babylonjs/Events/pointerEvents';
-import { serialize } from 'babylonjs/Misc/decorators';
-import { ICanvasRenderingContext } from "babylonjs/Engines/ICanvas";
+import { RegisterClass } from "core/Misc/typeStore";
+import { PointerInfoBase } from "core/Events/pointerEvents";
+import { serialize } from "core/Misc/decorators";
+import { ICanvasRenderingContext } from "core/Engines/ICanvas";
 
 /**
  * Class used to create radio button controls
@@ -98,7 +98,7 @@ export class RadioButton extends Control {
                 if ((<any>control).group === undefined) {
                     return;
                 }
-                var childRadio = (<RadioButton>control);
+                var childRadio = <RadioButton>control;
                 if (childRadio.group === this.group) {
                     childRadio.isChecked = false;
                 }
@@ -135,8 +135,13 @@ export class RadioButton extends Control {
         }
 
         // Outer
-        Control.drawEllipse(this._currentMeasure.left + this._currentMeasure.width / 2, this._currentMeasure.top + this._currentMeasure.height / 2,
-            this._currentMeasure.width / 2 - this._thickness / 2, this._currentMeasure.height / 2 - this._thickness / 2, context);
+        Control.drawEllipse(
+            this._currentMeasure.left + this._currentMeasure.width / 2,
+            this._currentMeasure.top + this._currentMeasure.height / 2,
+            this._currentMeasure.width / 2 - this._thickness / 2,
+            this._currentMeasure.height / 2 - this._thickness / 2,
+            context
+        );
 
         context.fillStyle = this._isEnabled ? this._background : this._disabledColor;
         context.fill();
@@ -158,8 +163,13 @@ export class RadioButton extends Control {
             let offsetWidth = actualWidth * this._checkSizeRatio;
             let offseHeight = actualHeight * this._checkSizeRatio;
 
-            Control.drawEllipse(this._currentMeasure.left + this._currentMeasure.width / 2, this._currentMeasure.top + this._currentMeasure.height / 2,
-                offsetWidth / 2 - this._thickness / 2, offseHeight / 2 - this._thickness / 2, context);
+            Control.drawEllipse(
+                this._currentMeasure.left + this._currentMeasure.width / 2,
+                this._currentMeasure.top + this._currentMeasure.height / 2,
+                offsetWidth / 2 - this._thickness / 2,
+                offseHeight / 2 - this._thickness / 2,
+                context
+            );
 
             context.fill();
         }

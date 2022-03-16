@@ -1,16 +1,16 @@
-import { Nullable } from "babylonjs/types";
-import { Logger } from "babylonjs/Misc/logger";
+import { Nullable } from "core/types";
+import { Logger } from "core/Misc/logger";
 
 import { Control } from "./control";
 import { Measure } from "../measure";
 import { AdvancedDynamicTexture } from "../advancedDynamicTexture";
-import { RegisterClass } from 'babylonjs/Misc/typeStore';
-import { PointerInfoBase } from 'babylonjs/Events/pointerEvents';
-import { serialize } from 'babylonjs/Misc/decorators';
-import { ICanvasRenderingContext } from 'babylonjs/Engines/ICanvas';
-import { DynamicTexture } from "babylonjs/Materials/Textures/dynamicTexture";
-import { Texture } from "babylonjs/Materials/Textures/texture";
-import { Constants } from 'babylonjs/Engines/constants';
+import { RegisterClass } from "core/Misc/typeStore";
+import { PointerInfoBase } from "core/Events/pointerEvents";
+import { serialize } from "core/Misc/decorators";
+import { ICanvasRenderingContext } from "core/Engines/ICanvas";
+import { DynamicTexture } from "core/Materials/Textures/dynamicTexture";
+import { Texture } from "core/Materials/Textures/texture";
+import { Constants } from "core/Engines/constants";
 
 /**
  * Root class for 2D containers
@@ -340,8 +340,15 @@ export class Container extends Control {
                     this._intermediateTexture = null;
                 }
                 if (!this._intermediateTexture) {
-                    this._intermediateTexture = new DynamicTexture('', { width: this._currentMeasure.width, height: this._currentMeasure.height },
-                        this._host.getScene(), false, Texture.NEAREST_SAMPLINGMODE, Constants.TEXTUREFORMAT_RGBA, false);
+                    this._intermediateTexture = new DynamicTexture(
+                        "",
+                        { width: this._currentMeasure.width, height: this._currentMeasure.height },
+                        this._host.getScene(),
+                        false,
+                        Texture.NEAREST_SAMPLINGMODE,
+                        Constants.TEXTUREFORMAT_RGBA,
+                        false
+                    );
                     this._intermediateTexture.hasAlpha = true;
                 } else {
                     this._intermediateTexture.scaleTo(this._currentMeasure.width, this._currentMeasure.height);
@@ -381,7 +388,6 @@ export class Container extends Control {
                     child._tempParentMeasure.copyFrom(this._measureForChildren);
 
                     if (child._layout(this._measureForChildren, context)) {
-
                         if (this.adaptWidthToChildren && child._width.isPixel) {
                             computedWidth = Math.max(computedWidth, child._currentMeasure.width + child._paddingLeftInPixels + child._paddingRightInPixels);
                         }
@@ -411,8 +417,7 @@ export class Container extends Control {
                 this._postMeasure();
             }
             rebuildCount++;
-        }
-        while (this._rebuildLayout && rebuildCount < this.maxLayoutCycle);
+        } while (this._rebuildLayout && rebuildCount < this.maxLayoutCycle);
 
         if (rebuildCount >= 3 && this.logLayoutCycleErrors) {
             Logger.Error(`Layout cycle detected in GUI (Container name=${this.name}, uniqueId=${this.uniqueId})`);
@@ -539,9 +544,9 @@ export class Container extends Control {
     }
 
     /**
-    * Serializes the current control
-    * @param serializationObject defined the JSON serialized object
-    */
+     * Serializes the current control
+     * @param serializationObject defined the JSON serialized object
+     */
     public serialize(serializationObject: any) {
         super.serialize(serializationObject);
         if (!this.children.length) {

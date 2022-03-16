@@ -1,14 +1,14 @@
-import { Nullable } from "babylonjs/types";
+import { Nullable } from "core/types";
 
 import { Container } from "./container";
 import { ValueAndUnit } from "../valueAndUnit";
 import { Control } from "./control";
 import { Measure } from "../measure";
-import { Tools } from 'babylonjs/Misc/tools';
-import { RegisterClass } from 'babylonjs/Misc/typeStore';
-import { ICanvasRenderingContext } from "babylonjs/Engines/ICanvas";
+import { Tools } from "core/Misc/tools";
+import { RegisterClass } from "core/Misc/typeStore";
+import { ICanvasRenderingContext } from "core/Engines/ICanvas";
 import { AdvancedDynamicTexture } from "../advancedDynamicTexture";
-import { Observer } from "babylonjs/Misc/observable";
+import { Observer } from "core/Misc/observable";
 
 /**
  * Class used to create a 2D grid container
@@ -469,7 +469,6 @@ export class Grid extends Container {
         super._renderHighlightSpecific(context);
 
         this._getGridDefinitions((lefts: number[], tops: number[], widths: number[], heights: number[]) => {
-
             // Columns
             for (var index = 0; index < lefts.length; index++) {
                 const left = this._currentMeasure.left + lefts[index] + widths[index];
@@ -528,7 +527,6 @@ export class Grid extends Container {
             let cd = this.getColumnDefinition(i);
             let childSerializationObject = { value: cd?.getValue(this.host), unit: cd?.unit };
             serializationObject.columns.push(childSerializationObject);
-
         }
         for (let i = 0; i < this.rowCount; ++i) {
             let rd = this.getRowDefinition(i);

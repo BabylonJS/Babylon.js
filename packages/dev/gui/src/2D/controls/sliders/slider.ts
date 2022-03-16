@@ -1,9 +1,9 @@
 import { BaseSlider } from "./baseSlider";
-import { RegisterClass } from 'babylonjs/Misc/typeStore';
-import { Nullable } from 'babylonjs/types';
-import { Measure } from '../../measure';
-import { serialize } from "babylonjs/Misc/decorators";
-import { ICanvasRenderingContext } from "babylonjs/Engines/ICanvas";
+import { RegisterClass } from "core/Misc/typeStore";
+import { Nullable } from "core/types";
+import { Measure } from "../../measure";
+import { serialize } from "core/Misc/decorators";
+import { ICanvasRenderingContext } from "core/Engines/ICanvas";
 
 /**
  * Class used to create slider controls
@@ -116,15 +116,13 @@ export class Slider extends BaseSlider {
 
         if (this.isThumbClamped && this.isThumbCircle) {
             if (this.isVertical) {
-                top += (this._effectiveThumbThickness / 2);
-            }
-            else {
-                left += (this._effectiveThumbThickness / 2);
+                top += this._effectiveThumbThickness / 2;
+            } else {
+                left += this._effectiveThumbThickness / 2;
             }
 
             radius = this._backgroundBoxThickness / 2;
-        }
-        else {
+        } else {
             radius = (this._effectiveThumbThickness - this._effectiveBarOffset) / 2;
         }
 
@@ -145,28 +143,23 @@ export class Slider extends BaseSlider {
                     context.arc(left + this._backgroundBoxThickness / 2, top, radius, Math.PI, 2 * Math.PI);
                     context.fill();
                     context.fillRect(left, top, width, height);
-                }
-                else {
+                } else {
                     context.fillRect(left, top, width, height + this._effectiveThumbThickness);
                 }
-            }
-            else {
+            } else {
                 context.fillRect(left, top, width, height);
             }
-        }
-        else {
+        } else {
             if (this.isThumbClamped) {
                 if (this.isThumbCircle) {
                     context.beginPath();
-                    context.arc(left + this._backgroundBoxLength, top + (this._backgroundBoxThickness / 2), radius, 0, 2 * Math.PI);
+                    context.arc(left + this._backgroundBoxLength, top + this._backgroundBoxThickness / 2, radius, 0, 2 * Math.PI);
                     context.fill();
                     context.fillRect(left, top, width, height);
-                }
-                else {
+                } else {
                     context.fillRect(left, top, width + this._effectiveThumbThickness, height);
                 }
-            }
-            else {
+            } else {
                 context.fillRect(left, top, width, height);
             }
         }
@@ -187,28 +180,23 @@ export class Slider extends BaseSlider {
                         context.arc(left + this._backgroundBoxThickness / 2, top + this._backgroundBoxLength, radius, 0, 2 * Math.PI);
                         context.fill();
                         context.fillRect(left, top + thumbPosition, width, height - thumbPosition);
-                    }
-                    else {
+                    } else {
                         context.fillRect(left, top + thumbPosition, width, height - thumbPosition + this._effectiveThumbThickness);
                     }
-                }
-                else {
+                } else {
                     context.fillRect(left, top + thumbPosition, width, height - thumbPosition);
                 }
-            }
-            else {
+            } else {
                 if (this.isThumbClamped) {
                     if (this.isThumbCircle) {
                         context.beginPath();
                         context.arc(left, top + this._backgroundBoxThickness / 2, radius, 0, 2 * Math.PI);
                         context.fill();
                         context.fillRect(left, top, thumbPosition, height);
-                    }
-                    else {
+                    } else {
                         context.fillRect(left, top, thumbPosition, height);
                     }
-                }
-                else {
+                } else {
                     context.fillRect(left, top, thumbPosition, height);
                 }
             }
@@ -227,9 +215,8 @@ export class Slider extends BaseSlider {
                 context.beginPath();
                 if (this.isVertical) {
                     context.arc(left + this._backgroundBoxThickness / 2, top + thumbPosition, radius, 0, 2 * Math.PI);
-                }
-                else {
-                    context.arc(left + thumbPosition, top + (this._backgroundBoxThickness / 2), radius, 0, 2 * Math.PI);
+                } else {
+                    context.arc(left + thumbPosition, top + this._backgroundBoxThickness / 2, radius, 0, 2 * Math.PI);
                 }
                 context.fill();
                 if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
@@ -239,12 +226,10 @@ export class Slider extends BaseSlider {
                 }
                 context.strokeStyle = this._borderColor;
                 context.stroke();
-            }
-            else {
+            } else {
                 if (this.isVertical) {
                     context.fillRect(left - this._effectiveBarOffset, this._currentMeasure.top + thumbPosition, this._currentMeasure.width, this._effectiveThumbThickness);
-                }
-                else {
+                } else {
                     context.fillRect(this._currentMeasure.left + thumbPosition, this._currentMeasure.top, this._effectiveThumbThickness, this._currentMeasure.height);
                 }
                 if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
@@ -255,8 +240,7 @@ export class Slider extends BaseSlider {
                 context.strokeStyle = this._borderColor;
                 if (this.isVertical) {
                     context.strokeRect(left - this._effectiveBarOffset, this._currentMeasure.top + thumbPosition, this._currentMeasure.width, this._effectiveThumbThickness);
-                }
-                else {
+                } else {
                     context.strokeRect(this._currentMeasure.left + thumbPosition, this._currentMeasure.top, this._effectiveThumbThickness, this._currentMeasure.height);
                 }
             }

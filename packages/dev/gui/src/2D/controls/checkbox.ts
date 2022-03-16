@@ -1,15 +1,15 @@
-import { Observable } from "babylonjs/Misc/observable";
-import { Vector2 } from "babylonjs/Maths/math.vector";
+import { Observable } from "core/Misc/observable";
+import { Vector2 } from "core/Maths/math.vector";
 
 import { Control } from "./control";
 import { StackPanel } from "./stackPanel";
 import { TextBlock } from "./textBlock";
-import { RegisterClass } from 'babylonjs/Misc/typeStore';
-import { Nullable } from 'babylonjs/types';
-import { Measure } from '../measure';
-import { PointerInfoBase } from 'babylonjs/Events/pointerEvents';
-import { serialize } from 'babylonjs/Misc/decorators';
-import { ICanvasRenderingContext } from 'babylonjs/Engines/ICanvas';
+import { RegisterClass } from "core/Misc/typeStore";
+import { Nullable } from "core/types";
+import { Measure } from "../measure";
+import { PointerInfoBase } from "core/Events/pointerEvents";
+import { serialize } from "core/Misc/decorators";
+import { ICanvasRenderingContext } from "core/Engines/ICanvas";
 
 /**
  * Class used to represent a 2D checkbox
@@ -131,7 +131,12 @@ export class Checkbox extends Control {
             let offsetWidth = actualWidth * this._checkSizeRatio;
             let offseHeight = actualHeight * this._checkSizeRatio;
 
-            context.fillRect(this._currentMeasure.left + this._thickness / 2 + (actualWidth - offsetWidth) / 2, this._currentMeasure.top + this._thickness / 2 + (actualHeight - offseHeight) / 2, offsetWidth, offseHeight);
+            context.fillRect(
+                this._currentMeasure.left + this._thickness / 2 + (actualWidth - offsetWidth) / 2,
+                this._currentMeasure.top + this._thickness / 2 + (actualHeight - offseHeight) / 2,
+                offsetWidth,
+                offseHeight
+            );
         }
 
         context.strokeStyle = this.color;

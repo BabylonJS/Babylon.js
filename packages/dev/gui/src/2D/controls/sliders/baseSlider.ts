@@ -1,10 +1,10 @@
-import { Observable } from "babylonjs/Misc/observable";
-import { Vector2 } from "babylonjs/Maths/math.vector";
+import { Observable } from "core/Misc/observable";
+import { Vector2 } from "core/Maths/math.vector";
 
 import { Control } from "../control";
 import { ValueAndUnit } from "../../valueAndUnit";
-import { PointerInfoBase } from 'babylonjs/Events/pointerEvents';
-import { serialize } from "babylonjs/Misc/decorators";
+import { PointerInfoBase } from "core/Events/pointerEvents";
+import { serialize } from "core/Misc/decorators";
 
 /**
  * Class used to create slider controls
@@ -217,16 +217,14 @@ export class BaseSlider extends Control {
             case "circle":
                 if (this._thumbWidth.isPixel) {
                     thumbThickness = Math.max(this._thumbWidth.getValue(this._host), this._backgroundBoxThickness);
-                }
-                else {
+                } else {
                     thumbThickness = this._backgroundBoxThickness * this._thumbWidth.getValue(this._host);
                 }
                 break;
             case "rectangle":
                 if (this._thumbWidth.isPixel) {
                     thumbThickness = Math.min(this._thumbWidth.getValue(this._host), this._backgroundBoxThickness);
-                }
-                else {
+                } else {
                     thumbThickness = this._backgroundBoxThickness * this._thumbWidth.getValue(this._host);
                 }
         }
@@ -249,33 +247,30 @@ export class BaseSlider extends Control {
             this._backgroundBoxLength -= this._effectiveThumbThickness;
         }
         //throw error when height is less than width for vertical slider
-        if ((this.isVertical && this._currentMeasure.height < this._currentMeasure.width)) {
+        if (this.isVertical && this._currentMeasure.height < this._currentMeasure.width) {
             console.error("Height should be greater than width");
             return;
         }
         if (this._barOffset.isPixel) {
             this._effectiveBarOffset = Math.min(this._barOffset.getValue(this._host), this._backgroundBoxThickness);
-        }
-        else {
+        } else {
             this._effectiveBarOffset = this._backgroundBoxThickness * this._barOffset.getValue(this._host);
         }
 
-        this._backgroundBoxThickness -= (this._effectiveBarOffset * 2);
+        this._backgroundBoxThickness -= this._effectiveBarOffset * 2;
 
         if (this.isVertical) {
             this._renderLeft += this._effectiveBarOffset;
             if (!this.isThumbClamped && this.displayThumb) {
-                this._renderTop += (this._effectiveThumbThickness / 2);
+                this._renderTop += this._effectiveThumbThickness / 2;
             }
 
             this._renderHeight = this._backgroundBoxLength;
             this._renderWidth = this._backgroundBoxThickness;
-
-        }
-        else {
+        } else {
             this._renderTop += this._effectiveBarOffset;
             if (!this.isThumbClamped && this.displayThumb) {
-                this._renderLeft += (this._effectiveThumbThickness / 2);
+                this._renderLeft += this._effectiveThumbThickness / 2;
             }
             this._renderHeight = this._backgroundBoxThickness;
             this._renderWidth = this._backgroundBoxLength;
@@ -295,9 +290,8 @@ export class BaseSlider extends Control {
 
         let value: number;
         if (this._isVertical) {
-            value = this._minimum + (1 - ((y - this._currentMeasure.top) / this._currentMeasure.height)) * (this._maximum - this._minimum);
-        }
-        else {
+            value = this._minimum + (1 - (y - this._currentMeasure.top) / this._currentMeasure.height) * (this._maximum - this._minimum);
+        } else {
             value = this._minimum + ((x - this._currentMeasure.left) / this._currentMeasure.width) * (this._maximum - this._minimum);
         }
         this.value = this._step ? Math.round(value / this._step) * this._step : value;
@@ -344,5 +338,4 @@ export class BaseSlider extends Control {
         this._forcePointerUp();
         super._onCanvasBlur();
     }
-
 }

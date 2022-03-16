@@ -9,7 +9,7 @@ import { Container } from "./container";
 
 /** Class used to create a RadioGroup
  * which contains groups of radio buttons
-*/
+ */
 export class SelectorGroup {
     private _groupPanel = new StackPanel();
     private _selectors: StackPanel[] = new Array();
@@ -21,8 +21,8 @@ export class SelectorGroup {
      */
     constructor(
         /** name of SelectorGroup */
-        public name: string) {
-
+        public name: string
+    ) {
         this._groupPanel.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
         this._groupPanel.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
         this._groupHeader = this._addGroupHeader(name);
@@ -74,8 +74,8 @@ export class SelectorGroup {
     }
 
     /** Removes the selector at the given position
-    * @param selectorNb the position of the selector within the group
-   */
+     * @param selectorNb the position of the selector within the group
+     */
     public removeSelector(selectorNb: number) {
         if (selectorNb < 0 || selectorNb >= this._selectors.length) {
             return;
@@ -83,19 +83,18 @@ export class SelectorGroup {
         this._groupPanel.removeControl(this._selectors[selectorNb]);
         this._selectors.splice(selectorNb, 1);
     }
-
 }
 
 /** Class used to create a CheckboxGroup
  * which contains groups of checkbox buttons
-*/
+ */
 export class CheckboxGroup extends SelectorGroup {
     /** Adds a checkbox as a control
      * @param text is the label for the selector
      * @param func is the function called when the Selector is checked
      * @param checked is true when Selector is checked
      */
-    public addCheckbox(text: string, func = (s: boolean) => { }, checked: boolean = false): void {
+    public addCheckbox(text: string, func = (s: boolean) => {}, checked: boolean = false): void {
         var checked = checked || false;
         var button = new Checkbox();
         button.width = "20px";
@@ -146,7 +145,7 @@ export class CheckboxGroup extends SelectorGroup {
 
 /** Class used to create a RadioGroup
  * which contains groups of radio buttons
-*/
+ */
 export class RadioGroup extends SelectorGroup {
     private _selectNb = 0;
 
@@ -155,7 +154,7 @@ export class RadioGroup extends SelectorGroup {
      * @param func is the function called when the Selector is checked
      * @param checked is true when Selector is checked
      */
-    public addRadio(label: string, func = (n: number) => { }, checked = false): void {
+    public addRadio(label: string, func = (n: number) => {}, checked = false): void {
         var nb = this._selectNb++;
         var button = new RadioButton();
         button.name = label;
@@ -209,7 +208,7 @@ export class RadioGroup extends SelectorGroup {
 
 /** Class used to create a SliderGroup
  * which contains groups of slider buttons
-*/
+ */
 export class SliderGroup extends SelectorGroup {
     /**
      * Adds a slider to the SelectorGroup
@@ -221,7 +220,17 @@ export class SliderGroup extends SelectorGroup {
      * @param value is the start value for the Slider between min and max
      * @param onValueChange is the function used to format the value displayed, eg radians to degrees
      */
-    public addSlider(label: string, func = (v: number) => { }, unit: string = "Units", min: number = 0, max: number = 0, value: number = 0, onValueChange = (v: number) => { return v | 0; }): void {
+    public addSlider(
+        label: string,
+        func = (v: number) => {},
+        unit: string = "Units",
+        min: number = 0,
+        max: number = 0,
+        value: number = 0,
+        onValueChange = (v: number) => {
+            return v | 0;
+        }
+    ): void {
         var button = new Slider();
         button.name = unit;
         button.value = value;
@@ -258,7 +267,8 @@ export class SliderGroup extends SelectorGroup {
     /** @hidden */
     public _setSelectorLabel(selectorNb: number, label: string) {
         this.selectors[selectorNb].children[0].name = label;
-        (<TextBlock>this.selectors[selectorNb].children[0]).text = label + ": " + (<Slider>this.selectors[selectorNb].children[1]).value + " " + this.selectors[selectorNb].children[1].name;
+        (<TextBlock>this.selectors[selectorNb].children[0]).text =
+            label + ": " + (<Slider>this.selectors[selectorNb].children[1]).value + " " + this.selectors[selectorNb].children[1].name;
     }
 
     /** @hidden */
@@ -279,7 +289,7 @@ export class SliderGroup extends SelectorGroup {
 
 /** Class used to hold the controls for the checkboxes, radio buttons and sliders
  * @see https://doc.babylonjs.com/how_to/selector
-*/
+ */
 export class SelectionPanel extends Rectangle {
     private _panel: StackPanel;
     private _buttonColor: string = "#364249";
@@ -293,15 +303,16 @@ export class SelectionPanel extends Rectangle {
     private _bars: any[] = new Array();
 
     /**
-    * Creates a new SelectionPanel
-    * @param name of SelectionPanel
-    * @param groups is an array of SelectionGroups
-    */
+     * Creates a new SelectionPanel
+     * @param name of SelectionPanel
+     * @param groups is an array of SelectionGroups
+     */
     constructor(
         /** name of SelectionPanel */
         public name: string,
         /** an array of SelectionGroups */
-        public groups: SelectorGroup[] = []) {
+        public groups: SelectorGroup[] = []
+    ) {
         super(name);
         this._groups = groups;
         this.thickness = 2;
@@ -341,7 +352,6 @@ export class SelectionPanel extends Rectangle {
         }
         this._headerColor = color;
         this._setHeaderColor();
-
     }
 
     private _setHeaderColor() {
@@ -362,7 +372,6 @@ export class SelectionPanel extends Rectangle {
 
         this._buttonColor = color;
         this._setbuttonColor();
-
     }
 
     private _setbuttonColor() {
@@ -406,7 +415,6 @@ export class SelectionPanel extends Rectangle {
 
         this._buttonBackground = color;
         this._setButtonBackground();
-
     }
 
     private _setButtonBackground() {
@@ -578,7 +586,7 @@ export class SelectionPanel extends Rectangle {
      * @param func is the function called when the Selector is checked
      * @param checked is true when Selector is checked
      */
-    public addToGroupCheckbox(groupNb: number, label: string, func = () => { }, checked: boolean = false): void {
+    public addToGroupCheckbox(groupNb: number, label: string, func = () => {}, checked: boolean = false): void {
         if (groupNb < 0 || groupNb >= this._groups.length) {
             return;
         }
@@ -592,7 +600,7 @@ export class SelectionPanel extends Rectangle {
      * @param func is the function called when the Selector is checked
      * @param checked is true when Selector is checked
      */
-    public addToGroupRadio(groupNb: number, label: string, func = () => { }, checked: boolean = false): void {
+    public addToGroupRadio(groupNb: number, label: string, func = () => {}, checked: boolean = false): void {
         if (groupNb < 0 || groupNb >= this._groups.length) {
             return;
         }
@@ -611,12 +619,22 @@ export class SelectionPanel extends Rectangle {
      * @param value is the start value for the Slider between min and max
      * @param onVal is the function used to format the value displayed, eg radians to degrees
      */
-    public addToGroupSlider(groupNb: number, label: string, func = () => { }, unit: string = "Units", min: number = 0, max: number = 0, value: number = 0, onVal = (v: number) => { return v | 0; }): void {
+    public addToGroupSlider(
+        groupNb: number,
+        label: string,
+        func = () => {},
+        unit: string = "Units",
+        min: number = 0,
+        max: number = 0,
+        value: number = 0,
+        onVal = (v: number) => {
+            return v | 0;
+        }
+    ): void {
         if (groupNb < 0 || groupNb >= this._groups.length) {
             return;
         }
         var group = this._groups[groupNb];
         (<SliderGroup>group).addSlider(label, func, unit, min, max, value, onVal);
     }
-
 }

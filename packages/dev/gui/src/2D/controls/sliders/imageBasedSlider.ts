@@ -1,10 +1,10 @@
 import { BaseSlider } from "./baseSlider";
 import { Measure } from "../../measure";
 import { Image } from "../image";
-import { RegisterClass } from 'babylonjs/Misc/typeStore';
-import { Nullable } from 'babylonjs/types';
-import { serialize } from "babylonjs/Misc/decorators";
-import { ICanvasRenderingContext } from "babylonjs/Engines/ICanvas";
+import { RegisterClass } from "core/Misc/typeStore";
+import { Nullable } from "core/types";
+import { serialize } from "core/Misc/decorators";
+import { ICanvasRenderingContext } from "core/Engines/ICanvas";
 import { AdvancedDynamicTexture } from "../../advancedDynamicTexture";
 
 /**
@@ -142,8 +142,7 @@ export class ImageBasedSlider extends BaseSlider {
             } else {
                 if (this.isThumbClamped && this.displayThumb) {
                     this._tempMeasure.copyFromFloats(left, top, thumbPosition + this._effectiveThumbThickness / 2, height);
-                }
-                else {
+                } else {
                     this._tempMeasure.copyFromFloats(left, top, thumbPosition, height);
                 }
             }
@@ -154,7 +153,12 @@ export class ImageBasedSlider extends BaseSlider {
         // Thumb
         if (this.displayThumb) {
             if (this.isVertical) {
-                this._tempMeasure.copyFromFloats(left - this._effectiveBarOffset, this._currentMeasure.top + thumbPosition, this._currentMeasure.width, this._effectiveThumbThickness);
+                this._tempMeasure.copyFromFloats(
+                    left - this._effectiveBarOffset,
+                    this._currentMeasure.top + thumbPosition,
+                    this._currentMeasure.width,
+                    this._effectiveThumbThickness
+                );
             } else {
                 this._tempMeasure.copyFromFloats(this._currentMeasure.left + thumbPosition, this._currentMeasure.top, this._effectiveThumbThickness, this._currentMeasure.height);
             }
@@ -167,9 +171,9 @@ export class ImageBasedSlider extends BaseSlider {
     }
 
     /**
-    * Serializes the current control
-    * @param serializationObject defined the JSON serialized object
-    */
+     * Serializes the current control
+     * @param serializationObject defined the JSON serialized object
+     */
     public serialize(serializationObject: any) {
         super.serialize(serializationObject);
         let backgroundImage = {};

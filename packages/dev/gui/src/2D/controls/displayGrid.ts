@@ -1,9 +1,9 @@
 import { Control } from "./control";
-import { RegisterClass } from 'babylonjs/Misc/typeStore';
-import { Nullable } from 'babylonjs/types';
-import { Measure } from '../measure';
-import { serialize } from 'babylonjs/Misc/decorators';
-import { ICanvasRenderingContext } from "babylonjs/Engines/ICanvas";
+import { RegisterClass } from "core/Misc/typeStore";
+import { Nullable } from "core/types";
+import { Measure } from "../measure";
+import { serialize } from "core/Misc/decorators";
+import { ICanvasRenderingContext } from "core/Engines/ICanvas";
 
 /** Class used to render a grid  */
 export class DisplayGrid extends Control {
@@ -166,7 +166,6 @@ export class DisplayGrid extends Control {
         this._applyStates(context);
 
         if (this._isEnabled) {
-
             if (this._background) {
                 context.fillStyle = this._background;
                 context.fillRect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);

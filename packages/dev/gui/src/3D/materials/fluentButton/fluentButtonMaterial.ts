@@ -1,22 +1,22 @@
-import { Nullable } from "babylonjs/types";
-import { serializeAsColor4, serializeAsVector3, serialize, SerializationHelper } from "babylonjs/Misc/decorators";
-import { Matrix, Vector3, Vector4 } from "babylonjs/Maths/math.vector";
-import { IAnimatable } from "babylonjs/Animations/animatable.interface";
-import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
-import { Texture } from "babylonjs/Materials/Textures/texture";
-import { MaterialDefines } from "babylonjs/Materials/materialDefines";
-import { MaterialHelper } from "babylonjs/Materials/materialHelper";
-import { IEffectCreationOptions } from "babylonjs/Materials/effect";
-import { PushMaterial } from "babylonjs/Materials/pushMaterial";
-import { VertexBuffer } from "babylonjs/Buffers/buffer";
-import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
-import { SubMesh } from "babylonjs/Meshes/subMesh";
-import { Mesh } from "babylonjs/Meshes/mesh";
-import { Scene } from "babylonjs/scene";
-import { RegisterClass } from "babylonjs/Misc/typeStore";
-import { Color3, Color4 } from "babylonjs/Maths/math.color";
-import { EffectFallbacks } from "babylonjs/Materials/effectFallbacks";
-import { Constants } from "babylonjs/Engines/constants";
+import { Nullable } from "core/types";
+import { serializeAsColor4, serializeAsVector3, serialize, SerializationHelper } from "core/Misc/decorators";
+import { Matrix, Vector3, Vector4 } from "core/Maths/math.vector";
+import { IAnimatable } from "core/Animations/animatable.interface";
+import { BaseTexture } from "core/Materials/Textures/baseTexture";
+import { Texture } from "core/Materials/Textures/texture";
+import { MaterialDefines } from "core/Materials/materialDefines";
+import { MaterialHelper } from "core/Materials/materialHelper";
+import { IEffectCreationOptions } from "core/Materials/effect";
+import { PushMaterial } from "core/Materials/pushMaterial";
+import { VertexBuffer } from "core/Buffers/buffer";
+import { AbstractMesh } from "core/Meshes/abstractMesh";
+import { SubMesh } from "core/Meshes/subMesh";
+import { Mesh } from "core/Meshes/mesh";
+import { Scene } from "core/scene";
+import { RegisterClass } from "core/Misc/typeStore";
+import { Color3, Color4 } from "core/Maths/math.color";
+import { EffectFallbacks } from "core/Materials/effectFallbacks";
+import { Constants } from "core/Engines/constants";
 
 import "./shaders/fluentButton.fragment";
 import "./shaders/fluentButton.vertex";
@@ -359,7 +359,9 @@ export class FluentButtonMaterial extends PushMaterial {
             var join = defines.toString();
 
             var uniforms = [
-                "world", "viewProjection", "cameraPosition",
+                "world",
+                "viewProjection",
+                "cameraPosition",
 
                 "_Edge_Width_",
                 "_Edge_Color_",
@@ -407,7 +409,7 @@ export class FluentButtonMaterial extends PushMaterial {
                 "Global_Left_Thumb_Tip_Position",
                 "Global_Right_Thumb_Tip_Position",
                 "Global_Left_Index_Tip_Proximity",
-                "Global_Right_Index_Tip_Proximity"
+                "Global_Right_Index_Tip_Proximity",
             ];
             var samplers: string[] = ["_Blob_Texture_"];
             var uniformBuffers = new Array<string>();
@@ -417,21 +419,28 @@ export class FluentButtonMaterial extends PushMaterial {
                 uniformBuffersNames: uniformBuffers,
                 samplers: samplers,
                 defines: defines,
-                maxSimultaneousLights: 4
+                maxSimultaneousLights: 4,
             });
 
-            subMesh.setEffect(scene.getEngine().createEffect(shaderName,
-                <IEffectCreationOptions>{
-                    attributes: attribs,
-                    uniformsNames: uniforms,
-                    uniformBuffersNames: uniformBuffers,
-                    samplers: samplers,
-                    defines: join,
-                    fallbacks: fallbacks,
-                    onCompiled: this.onCompiled,
-                    onError: this.onError,
-                    indexParameters: { maxSimultaneousLights: 4 }
-                }, engine), defines, this._materialContext);
+            subMesh.setEffect(
+                scene.getEngine().createEffect(
+                    shaderName,
+                    <IEffectCreationOptions>{
+                        attributes: attribs,
+                        uniformsNames: uniforms,
+                        uniformBuffersNames: uniformBuffers,
+                        samplers: samplers,
+                        defines: join,
+                        fallbacks: fallbacks,
+                        onCompiled: this.onCompiled,
+                        onError: this.onError,
+                        indexParameters: { maxSimultaneousLights: 4 },
+                    },
+                    engine
+                ),
+                defines,
+                this._materialContext
+            );
         }
         if (!subMesh.effect || !subMesh.effect.isReady()) {
             return false;
@@ -521,18 +530,14 @@ export class FluentButtonMaterial extends PushMaterial {
         this._activeEffect.setFloat("Use_Global_Left_Index", 1.0);
         this._activeEffect.setFloat("Use_Global_Right_Index", 1.0);
 
-        this._activeEffect.setVector4("Global_Left_Index_Tip_Position",
-            new Vector4(
-                this.globalLeftIndexTipPosition.x,
-                this.globalLeftIndexTipPosition.y,
-                this.globalLeftIndexTipPosition.z,
-                1.0));
-        this._activeEffect.setVector4("Global_Right_Index_Tip_Position",
-            new Vector4(
-                this.globalRightIndexTipPosition.x,
-                this.globalRightIndexTipPosition.y,
-                this.globalRightIndexTipPosition.z,
-                1.0));
+        this._activeEffect.setVector4(
+            "Global_Left_Index_Tip_Position",
+            new Vector4(this.globalLeftIndexTipPosition.x, this.globalLeftIndexTipPosition.y, this.globalLeftIndexTipPosition.z, 1.0)
+        );
+        this._activeEffect.setVector4(
+            "Global_Right_Index_Tip_Position",
+            new Vector4(this.globalRightIndexTipPosition.x, this.globalRightIndexTipPosition.y, this.globalRightIndexTipPosition.z, 1.0)
+        );
 
         this._afterBind(mesh, this._activeEffect);
     }

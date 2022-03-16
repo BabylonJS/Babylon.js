@@ -1,7 +1,7 @@
-import { TransformNode } from "babylonjs/Meshes/transformNode";
-import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
-import { Mesh } from "babylonjs/Meshes/mesh";
-import { Scene } from "babylonjs/scene";
+import { TransformNode } from "core/Meshes/transformNode";
+import { AbstractMesh } from "core/Meshes/abstractMesh";
+import { Mesh } from "core/Meshes/mesh";
+import { Scene } from "core/scene";
 
 import { TouchButton3D } from "./touchButton3D";
 
@@ -69,6 +69,5 @@ export class TouchMeshButton3D extends TouchButton3D {
         return this._currentMesh;
     }
 
-    protected _affectMaterial(mesh: AbstractMesh) {
-    }
+    protected _affectMaterial(mesh: AbstractMesh) {}
 }

@@ -1,11 +1,11 @@
-import { TransformNode } from "babylonjs/Meshes/transformNode";
-import { Mesh } from "babylonjs/Meshes/mesh";
-import { CreateBox } from "babylonjs/Meshes/Builders/boxBuilder";
-import { Scene } from "babylonjs/scene";
+import { TransformNode } from "core/Meshes/transformNode";
+import { Mesh } from "core/Meshes/mesh";
+import { CreateBox } from "core/Meshes/Builders/boxBuilder";
+import { Scene } from "core/scene";
 import { FluentBackplateMaterial } from "../materials/fluentBackplate/fluentBackplateMaterial";
 import { Control3D } from "./control3D";
-import { SceneLoader } from "babylonjs/Loading/sceneLoader";
-import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
+import { SceneLoader } from "core/Loading/sceneLoader";
+import { AbstractMesh } from "core/Meshes/abstractMesh";
 
 /**
  * Class used to create a holographic backplate in 3D
@@ -19,7 +19,7 @@ export class HolographicBackplate extends Control3D {
     /**
      * File name for the button model.
      */
-    public static MODEL_FILENAME: string = 'mrtk-fluent-backplate.glb';
+    public static MODEL_FILENAME: string = "mrtk-fluent-backplate.glb";
 
     private _model: AbstractMesh;
     private _material: FluentBackplateMaterial;
@@ -62,29 +62,28 @@ export class HolographicBackplate extends Control3D {
 
     // Mesh association
     protected _createNode(scene: Scene): TransformNode {
-        const collisionMesh = CreateBox((this.name ?? "HolographicBackplate") + "_CollisionMesh", {
-            width: 1.0,
-            height: 1.0,
-            depth: 1.0,
-        }, scene);
+        const collisionMesh = CreateBox(
+            (this.name ?? "HolographicBackplate") + "_CollisionMesh",
+            {
+                width: 1.0,
+                height: 1.0,
+                depth: 1.0,
+            },
+            scene
+        );
         collisionMesh.isPickable = true;
         collisionMesh.visibility = 0;
 
-        SceneLoader.ImportMeshAsync(
-            undefined,
-            HolographicBackplate.MODEL_BASE_URL,
-            HolographicBackplate.MODEL_FILENAME,
-            scene)
-            .then((result) => {
-                var importedModel = result.meshes[1];
-                importedModel.name = `${this.name}_frontPlate`;
-                importedModel.isPickable = false;
-                importedModel.parent = collisionMesh;
-                if (!!this._material) {
-                    importedModel.material = this._material;
-                }
-                this._model = importedModel;
-            });
+        SceneLoader.ImportMeshAsync(undefined, HolographicBackplate.MODEL_BASE_URL, HolographicBackplate.MODEL_FILENAME, scene).then((result) => {
+            var importedModel = result.meshes[1];
+            importedModel.name = `${this.name}_frontPlate`;
+            importedModel.isPickable = false;
+            importedModel.parent = collisionMesh;
+            if (!!this._material) {
+                importedModel.material = this._material;
+            }
+            this._model = importedModel;
+        });
 
         return collisionMesh;
     }

@@ -1,8 +1,8 @@
 import { Container } from "./container";
 import { Measure } from "../measure";
-import { RegisterClass } from 'babylonjs/Misc/typeStore';
-import { serialize } from 'babylonjs/Misc/decorators';
-import { ICanvasRenderingContext } from "babylonjs/Engines/ICanvas";
+import { RegisterClass } from "core/Misc/typeStore";
+import { serialize } from "core/Misc/decorators";
+import { ICanvasRenderingContext } from "core/Engines/ICanvas";
 
 /** Class used to create rectangle container */
 export class Rectangle extends Container {
@@ -95,7 +95,6 @@ export class Rectangle extends Container {
         }
 
         if (this._thickness) {
-
             if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
                 context.shadowBlur = 0;
                 context.shadowOffsetX = 0;
@@ -111,8 +110,12 @@ export class Rectangle extends Container {
                 this._drawRoundedRect(context, this._thickness / 2);
                 context.stroke();
             } else {
-                context.strokeRect(this._currentMeasure.left + this._thickness / 2, this._currentMeasure.top + this._thickness / 2,
-                    this._currentMeasure.width - this._thickness, this._currentMeasure.height - this._thickness);
+                context.strokeRect(
+                    this._currentMeasure.left + this._thickness / 2,
+                    this._currentMeasure.top + this._thickness / 2,
+                    this._currentMeasure.width - this._thickness,
+                    this._currentMeasure.height - this._thickness
+                );
             }
         }
 

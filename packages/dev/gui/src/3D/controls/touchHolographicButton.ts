@@ -1,13 +1,13 @@
-import { Nullable } from "babylonjs/types";
-import { Observer } from "babylonjs/Misc/observable";
-import { Vector3 } from "babylonjs/Maths/math.vector";
-import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
-import { TransformNode } from "babylonjs/Meshes/transformNode";
-import { Mesh } from "babylonjs/Meshes/mesh";
-import { CreatePlane } from "babylonjs/Meshes/Builders/planeBuilder";
-import { CreateBox } from "babylonjs/Meshes/Builders/boxBuilder";
-import { FadeInOutBehavior } from "babylonjs/Behaviors/Meshes/fadeInOutBehavior";
-import { Scene } from "babylonjs/scene";
+import { Nullable } from "core/types";
+import { Observer } from "core/Misc/observable";
+import { Vector3 } from "core/Maths/math.vector";
+import { StandardMaterial } from "core/Materials/standardMaterial";
+import { TransformNode } from "core/Meshes/transformNode";
+import { Mesh } from "core/Meshes/mesh";
+import { CreatePlane } from "core/Meshes/Builders/planeBuilder";
+import { CreateBox } from "core/Meshes/Builders/boxBuilder";
+import { FadeInOutBehavior } from "core/Behaviors/Meshes/fadeInOutBehavior";
+import { Scene } from "core/scene";
 import { FluentMaterial } from "../materials/fluent/fluentMaterial";
 import { FluentButtonMaterial } from "../materials/fluentButton/fluentButtonMaterial";
 import { StackPanel } from "../../2D/controls/stackPanel";
@@ -15,12 +15,12 @@ import { Image } from "../../2D/controls/image";
 import { TextBlock } from "../../2D/controls/textBlock";
 import { AdvancedDynamicTexture } from "../../2D/advancedDynamicTexture";
 import { Control3D } from "./control3D";
-import { Color3 } from "babylonjs/Maths/math.color";
+import { Color3 } from "core/Maths/math.color";
 import { TouchButton3D } from "./touchButton3D";
-import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
-import { SceneLoader } from "babylonjs/Loading/sceneLoader";
-import { DomManagement } from "babylonjs/Misc/domManagement";
-import { Scalar } from "babylonjs/Maths/math.scalar";
+import { AbstractMesh } from "core/Meshes/abstractMesh";
+import { SceneLoader } from "core/Loading/sceneLoader";
+import { DomManagement } from "core/Misc/domManagement";
+import { Scalar } from "core/Maths/math.scalar";
 
 /**
  * Class used to create a holographic button in 3D
@@ -225,8 +225,7 @@ export class TouchHolographicButton extends TouchButton3D {
         if (this.mesh && !!this._backMaterial) {
             if (isVisible && !this._isBackplateVisible) {
                 this._backPlate.visibility = 1;
-            }
-            else if (!isVisible && this._isBackplateVisible) {
+            } else if (!isVisible && this._isBackplateVisible) {
                 this._backPlate.visibility = 0;
             }
         }
@@ -256,8 +255,8 @@ export class TouchHolographicButton extends TouchButton3D {
         this.pointerDownAnimation = () => {
             if (this._frontPlate && !this.isActiveNearInteraction) {
                 this._frontPlate.scaling.z = this._frontPlateDepth * 0.2;
-                this._frontPlate.position = Vector3.Forward(this._frontPlate._scene.useRightHandedSystem).scale((this._frontPlateDepth - (0.2 * this._frontPlateDepth)) / 2);
-                this._textPlate.position = Vector3.Forward(this._textPlate._scene.useRightHandedSystem).scale(-(this._backPlateDepth + (0.2 * this._frontPlateDepth)) / 2);
+                this._frontPlate.position = Vector3.Forward(this._frontPlate._scene.useRightHandedSystem).scale((this._frontPlateDepth - 0.2 * this._frontPlateDepth) / 2);
+                this._textPlate.position = Vector3.Forward(this._textPlate._scene.useRightHandedSystem).scale(-(this._backPlateDepth + 0.2 * this._frontPlateDepth) / 2);
             }
         };
         this.pointerUpAnimation = () => {
@@ -273,7 +272,7 @@ export class TouchHolographicButton extends TouchButton3D {
                 const scale = Vector3.Zero();
                 if (this._backPlate.getWorldMatrix().decompose(scale, undefined, undefined)) {
                     let interactionHeight = this._getInteractionHeight(position, this._backPlate.getAbsolutePosition()) / scale.z;
-                    interactionHeight = Scalar.Clamp(interactionHeight - (this._backPlateDepth / 2), 0.2 * this._frontPlateDepth, this._frontPlateDepth);
+                    interactionHeight = Scalar.Clamp(interactionHeight - this._backPlateDepth / 2, 0.2 * this._frontPlateDepth, this._frontPlateDepth);
 
                     this._frontPlate.scaling.z = interactionHeight;
                     this._frontPlate.position = Vector3.Forward(this._frontPlate._scene.useRightHandedSystem).scale((this._frontPlateDepth - interactionHeight) / 2);
@@ -324,42 +323,45 @@ export class TouchHolographicButton extends TouchButton3D {
     // Mesh association
     protected _createNode(scene: Scene): TransformNode {
         this.name = this.name ?? "TouchHolographicButton";
-        const collisionMesh = CreateBox(`${this.name}_collisionMesh`, {
-            width: 1.0,
-            height: 1.0,
-            depth: this._frontPlateDepth,
-        }, scene);
+        const collisionMesh = CreateBox(
+            `${this.name}_collisionMesh`,
+            {
+                width: 1.0,
+                height: 1.0,
+                depth: this._frontPlateDepth,
+            },
+            scene
+        );
         collisionMesh.isPickable = true;
         collisionMesh.isNearPickable = true;
         collisionMesh.visibility = 0;
         collisionMesh.position = Vector3.Forward(scene.useRightHandedSystem).scale(-this._frontPlateDepth / 2);
 
-        SceneLoader.ImportMeshAsync(
-            undefined,
-            TouchHolographicButton.MODEL_BASE_URL,
-            TouchHolographicButton.MODEL_FILENAME,
-            scene)
-            .then((result) => {
-                let alphaMesh = CreateBox("${this.name}_alphaMesh", {
+        SceneLoader.ImportMeshAsync(undefined, TouchHolographicButton.MODEL_BASE_URL, TouchHolographicButton.MODEL_FILENAME, scene).then((result) => {
+            let alphaMesh = CreateBox(
+                "${this.name}_alphaMesh",
+                {
                     width: 1.0,
                     height: 1.0,
                     depth: 1.0,
-                }, scene);
-                alphaMesh.isPickable = false;
-                alphaMesh.material = new StandardMaterial("${this.name}_alphaMesh_material", scene);
-                alphaMesh.material.alpha = 0.15;
+                },
+                scene
+            );
+            alphaMesh.isPickable = false;
+            alphaMesh.material = new StandardMaterial("${this.name}_alphaMesh_material", scene);
+            alphaMesh.material.alpha = 0.15;
 
-                var importedFrontPlate = result.meshes[1];
-                importedFrontPlate.name = `${this.name}_frontPlate`;
-                importedFrontPlate.isPickable = false;
-                importedFrontPlate.scaling.z = this._frontPlateDepth;
-                alphaMesh.parent = importedFrontPlate;
-                importedFrontPlate.parent = collisionMesh;
-                if (!!this._frontMaterial) {
-                    importedFrontPlate.material = this._frontMaterial;
-                }
-                this._frontPlate = importedFrontPlate;
-            });
+            var importedFrontPlate = result.meshes[1];
+            importedFrontPlate.name = `${this.name}_frontPlate`;
+            importedFrontPlate.isPickable = false;
+            importedFrontPlate.scaling.z = this._frontPlateDepth;
+            alphaMesh.parent = importedFrontPlate;
+            importedFrontPlate.parent = collisionMesh;
+            if (!!this._frontMaterial) {
+                importedFrontPlate.material = this._frontMaterial;
+            }
+            this._frontPlate = importedFrontPlate;
+        });
 
         this._backPlate = CreateBox(
             `${this.name}_backPlate`,
@@ -417,8 +419,7 @@ export class TouchHolographicButton extends TouchButton3D {
         if (this._backMaterial) {
             if (newState) {
                 this._backMaterial.albedoColor = this._backplateToggledColor;
-            }
-            else {
+            } else {
                 this._backMaterial.albedoColor = this._backplateColor;
             }
         }

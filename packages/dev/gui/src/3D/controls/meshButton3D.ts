@@ -1,7 +1,7 @@
-import { TransformNode } from "babylonjs/Meshes/transformNode";
-import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
-import { Mesh } from "babylonjs/Meshes/mesh";
-import { Scene } from "babylonjs/scene";
+import { TransformNode } from "core/Meshes/transformNode";
+import { AbstractMesh } from "core/Meshes/abstractMesh";
+import { Mesh } from "core/Meshes/mesh";
+import { Scene } from "core/scene";
 
 import { Button3D } from "./button3D";
 
@@ -66,6 +66,5 @@ export class MeshButton3D extends Button3D {
         return this._currentMesh;
     }
 
-    protected _affectMaterial(mesh: AbstractMesh) {
-    }
+    protected _affectMaterial(mesh: AbstractMesh) {}
 }

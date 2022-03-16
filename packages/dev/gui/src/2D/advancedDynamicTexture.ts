@@ -1,32 +1,32 @@
-import { Nullable } from "babylonjs/types";
-import { Observable, Observer } from "babylonjs/Misc/observable";
-import { Vector2, Vector3, Matrix } from "babylonjs/Maths/math.vector";
-import { Tools } from "babylonjs/Misc/tools";
-import { PointerInfoPre, PointerInfo, PointerEventTypes, PointerInfoBase } from "babylonjs/Events/pointerEvents";
-import { ClipboardEventTypes, ClipboardInfo } from "babylonjs/Events/clipboardEvents";
-import { KeyboardInfoPre, KeyboardEventTypes } from "babylonjs/Events/keyboardEvents";
-import { Camera } from "babylonjs/Cameras/camera";
-import { Texture } from "babylonjs/Materials/Textures/texture";
-import { DynamicTexture } from "babylonjs/Materials/Textures/dynamicTexture";
-import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
-import { Layer } from "babylonjs/Layers/layer";
-import { Engine } from "babylonjs/Engines/engine";
-import { Scene } from "babylonjs/scene";
+import { Nullable } from "core/types";
+import { Observable, Observer } from "core/Misc/observable";
+import { Vector2, Vector3, Matrix } from "core/Maths/math.vector";
+import { Tools } from "core/Misc/tools";
+import { PointerInfoPre, PointerInfo, PointerEventTypes, PointerInfoBase } from "core/Events/pointerEvents";
+import { ClipboardEventTypes, ClipboardInfo } from "core/Events/clipboardEvents";
+import { KeyboardInfoPre, KeyboardEventTypes } from "core/Events/keyboardEvents";
+import { Camera } from "core/Cameras/camera";
+import { Texture } from "core/Materials/Textures/texture";
+import { DynamicTexture } from "core/Materials/Textures/dynamicTexture";
+import { AbstractMesh } from "core/Meshes/abstractMesh";
+import { Layer } from "core/Layers/layer";
+import { Engine } from "core/Engines/engine";
+import { Scene } from "core/scene";
 
 import { Container } from "./controls/container";
 import { Control } from "./controls/control";
 import { IFocusableControl } from "./controls/focusableControl";
 import { Style } from "./style";
 import { Measure } from "./measure";
-import { Constants } from "babylonjs/Engines/constants";
-import { Viewport } from "babylonjs/Maths/math.viewport";
-import { Color3 } from "babylonjs/Maths/math.color";
-import { WebRequest } from "babylonjs/Misc/webRequest";
-import { IPointerEvent, IWheelEvent } from "babylonjs/Events/deviceInputEvents";
-import { RandomGUID } from "babylonjs/Misc/guid";
-import { GetClass } from "babylonjs/Misc/typeStore";
+import { Constants } from "core/Engines/constants";
+import { Viewport } from "core/Maths/math.viewport";
+import { Color3 } from "core/Maths/math.color";
+import { WebRequest } from "core/Misc/webRequest";
+import { IPointerEvent, IWheelEvent } from "core/Events/deviceInputEvents";
+import { RandomGUID } from "core/Misc/guid";
+import { GetClass } from "core/Misc/typeStore";
 
-declare type StandardMaterial = import("babylonjs/Materials/standardMaterial").StandardMaterial;
+declare type StandardMaterial = import("core/Materials/standardMaterial").StandardMaterial;
 
 /**
  * Class used to create texture to support 2D GUI elements
@@ -999,29 +999,26 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             }
         });
         mesh.enablePointerMoveEvents = supportPointerMove;
-        this._attachPickingToSceneRender(scene, () => {
-            const pointerId = this._defaultMousePointerId;
-            const pick = scene?.pick(scene.pointerX, scene.pointerY);
-            if (pick && pick.hit && pick.pickedMesh === mesh) {
-                var uv = pick.getTextureCoordinates();
-                if (uv) {
-                    let size = this.getSize();
-                    this._doPicking(
-                        uv.x * size.width,
-                        (this.applyYInversionOnUpdate ? 1.0 - uv.y : uv.y) * size.height,
-                        null,
-                        PointerEventTypes.POINTERMOVE,
-                        pointerId,
-                        0,
-                    );
+        this._attachPickingToSceneRender(
+            scene,
+            () => {
+                const pointerId = this._defaultMousePointerId;
+                const pick = scene?.pick(scene.pointerX, scene.pointerY);
+                if (pick && pick.hit && pick.pickedMesh === mesh) {
+                    var uv = pick.getTextureCoordinates();
+                    if (uv) {
+                        let size = this.getSize();
+                        this._doPicking(uv.x * size.width, (this.applyYInversionOnUpdate ? 1.0 - uv.y : uv.y) * size.height, null, PointerEventTypes.POINTERMOVE, pointerId, 0);
+                    }
+                } else {
+                    if (this._lastControlOver[pointerId]) {
+                        this._lastControlOver[pointerId]._onPointerOut(this._lastControlOver[pointerId], null, true);
+                    }
+                    delete this._lastControlOver[pointerId];
                 }
-            } else {
-                if (this._lastControlOver[pointerId]) {
-                    this._lastControlOver[pointerId]._onPointerOut(this._lastControlOver[pointerId], null, true);
-                }
-                delete this._lastControlOver[pointerId];
-            }
-        }, true);
+            },
+            true
+        );
         this._attachToOnPointerOut(scene);
         this._attachToOnBlur(scene);
     }
@@ -1210,13 +1207,15 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      * @param materialSetupCallback defines a custom way of creating and seting up the material on the mesh
      * @returns a new AdvancedDynamicTexture
      */
-    public static CreateForMesh(mesh: AbstractMesh,
+    public static CreateForMesh(
+        mesh: AbstractMesh,
         width = 1024,
         height = 1024,
         supportPointerMove = true,
         onlyAlphaTesting = false,
         invertY?: boolean,
-        materialSetupCallback: (mesh: AbstractMesh, uniqueId: string, texture: AdvancedDynamicTexture, onlyAlphaTesting: boolean) => void = this._CreateMaterial): AdvancedDynamicTexture {
+        materialSetupCallback: (mesh: AbstractMesh, uniqueId: string, texture: AdvancedDynamicTexture, onlyAlphaTesting: boolean) => void = this._CreateMaterial
+    ): AdvancedDynamicTexture {
         // use a unique ID in name so serialization will work even if you create two ADTs for a single mesh
         const uniqueId = RandomGUID();
         const result = new AdvancedDynamicTexture(

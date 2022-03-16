@@ -1,18 +1,18 @@
-import { Nullable } from "babylonjs/types";
-import { serializeAsColor4, serializeAsVector3, serializeAsTexture, serialize, expandToProperty, serializeAsColor3, SerializationHelper } from "babylonjs/Misc/decorators";
-import { Vector3, Matrix, TmpVectors } from "babylonjs/Maths/math.vector";
-import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
-import { MaterialDefines } from "babylonjs/Materials/materialDefines";
-import { IEffectCreationOptions } from "babylonjs/Materials/effect";
-import { MaterialHelper } from "babylonjs/Materials/materialHelper";
-import { PushMaterial } from "babylonjs/Materials/pushMaterial";
-import { VertexBuffer } from "babylonjs/Buffers/buffer";
-import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
-import { SubMesh } from "babylonjs/Meshes/subMesh";
-import { Mesh } from "babylonjs/Meshes/mesh";
-import { Scene } from "babylonjs/scene";
-import { RegisterClass } from "babylonjs/Misc/typeStore";
-import { Color3, Color4 } from "babylonjs/Maths/math.color";
+import { Nullable } from "core/types";
+import { serializeAsColor4, serializeAsVector3, serializeAsTexture, serialize, expandToProperty, serializeAsColor3, SerializationHelper } from "core/Misc/decorators";
+import { Vector3, Matrix, TmpVectors } from "core/Maths/math.vector";
+import { BaseTexture } from "core/Materials/Textures/baseTexture";
+import { MaterialDefines } from "core/Materials/materialDefines";
+import { IEffectCreationOptions } from "core/Materials/effect";
+import { MaterialHelper } from "core/Materials/materialHelper";
+import { PushMaterial } from "core/Materials/pushMaterial";
+import { VertexBuffer } from "core/Buffers/buffer";
+import { AbstractMesh } from "core/Meshes/abstractMesh";
+import { SubMesh } from "core/Meshes/subMesh";
+import { Mesh } from "core/Meshes/mesh";
+import { Scene } from "core/scene";
+import { RegisterClass } from "core/Misc/typeStore";
+import { Color3, Color4 } from "core/Maths/math.color";
 
 import "./shaders/fluent.vertex";
 import "./shaders/fluent.fragment";
@@ -34,7 +34,6 @@ export class FluentMaterialDefines extends MaterialDefines {
  * Class used to render controls with fluent desgin
  */
 export class FluentMaterial extends PushMaterial {
-
     /**
      * Gets or sets inner glow intensity. A value of 0 means no glow (default is 0.5)
      */
@@ -180,8 +179,19 @@ export class FluentMaterial extends PushMaterial {
 
             var shaderName = "fluent";
 
-            var uniforms = ["world", "viewProjection", "innerGlowColor", "albedoColor", "borderWidth", "edgeSmoothingValue", "scaleFactor", "borderMinValue",
-                "hoverColor", "hoverPosition", "hoverRadius", "textureMatrix"
+            var uniforms = [
+                "world",
+                "viewProjection",
+                "innerGlowColor",
+                "albedoColor",
+                "borderWidth",
+                "edgeSmoothingValue",
+                "scaleFactor",
+                "borderMinValue",
+                "hoverColor",
+                "hoverPosition",
+                "hoverRadius",
+                "textureMatrix",
             ];
 
             var samplers = ["albedoSampler"];
@@ -192,23 +202,29 @@ export class FluentMaterial extends PushMaterial {
                 uniformBuffersNames: uniformBuffers,
                 samplers: samplers,
                 defines: defines,
-                maxSimultaneousLights: 4
+                maxSimultaneousLights: 4,
             });
 
             var join = defines.toString();
-            subMesh.setEffect(scene.getEngine().createEffect(shaderName,
-                <IEffectCreationOptions>{
-                    attributes: attribs,
-                    uniformsNames: uniforms,
-                    uniformBuffersNames: uniformBuffers,
-                    samplers: samplers,
-                    defines: join,
-                    fallbacks: null,
-                    onCompiled: this.onCompiled,
-                    onError: this.onError,
-                    indexParameters: { maxSimultaneousLights: 4 }
-                }, engine), defines, this._materialContext);
-
+            subMesh.setEffect(
+                scene.getEngine().createEffect(
+                    shaderName,
+                    <IEffectCreationOptions>{
+                        attributes: attribs,
+                        uniformsNames: uniforms,
+                        uniformBuffersNames: uniformBuffers,
+                        samplers: samplers,
+                        defines: join,
+                        fallbacks: null,
+                        onCompiled: this.onCompiled,
+                        onError: this.onError,
+                        indexParameters: { maxSimultaneousLights: 4 },
+                    },
+                    engine
+                ),
+                defines,
+                this._materialContext
+            );
         }
 
         if (!subMesh.effect || !subMesh.effect.isReady()) {

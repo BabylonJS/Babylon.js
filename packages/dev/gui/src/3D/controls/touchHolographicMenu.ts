@@ -1,16 +1,16 @@
-import { Scene } from "babylonjs/scene";
-import { Vector3 } from "babylonjs/Maths/math.vector";
-import { TransformNode } from "babylonjs/Meshes/transformNode";
-import { Nullable } from "babylonjs/types";
+import { Scene } from "core/scene";
+import { Vector3 } from "core/Maths/math.vector";
+import { TransformNode } from "core/Meshes/transformNode";
+import { Nullable } from "core/types";
 import { Control3D } from "./control3D";
 import { VolumeBasedPanel } from "./volumeBasedPanel";
-import { Mesh } from "babylonjs/Meshes/mesh";
-import { CreateBox } from "babylonjs/Meshes/Builders/boxBuilder";
-import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
+import { Mesh } from "core/Meshes/mesh";
+import { CreateBox } from "core/Meshes/Builders/boxBuilder";
+import { AbstractMesh } from "core/Meshes/abstractMesh";
 import { FluentMaterial } from "../materials/fluent/fluentMaterial";
-import { Color3 } from "babylonjs/Maths/math.color";
-import { Observer } from "babylonjs/Misc/observable";
-import { Logger } from "babylonjs/Misc/logger";
+import { Color3 } from "core/Maths/math.color";
+import { Observer } from "core/Misc/observable";
+import { Logger } from "core/Misc/logger";
 import { Container3D } from "./container3D";
 import { TouchHolographicButton } from "./touchHolographicButton";
 

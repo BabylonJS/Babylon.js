@@ -1,12 +1,12 @@
-import { Tools } from "babylonjs/Misc/tools";
+import { Tools } from "core/Misc/tools";
 
 import { Container } from "./container";
 import { Measure } from "../measure";
 import { Control } from "./control";
-import { RegisterClass } from 'babylonjs/Misc/typeStore';
-import { serialize } from 'babylonjs/Misc/decorators';
+import { RegisterClass } from "core/Misc/typeStore";
+import { serialize } from "core/Misc/decorators";
 import { AdvancedDynamicTexture } from "../advancedDynamicTexture";
-import { ICanvasRenderingContext } from "babylonjs/Engines/ICanvas";
+import { ICanvasRenderingContext } from "core/Engines/ICanvas";
 
 /**
  * Class used to create a 2D stack panel container
@@ -42,19 +42,19 @@ export class StackPanel extends Container {
     /**
      * Gets or sets the spacing (in pixels) between each child.
      */
-     @serialize()
-     public get spacing(): number {
-         return this._spacing;
-     }
+    @serialize()
+    public get spacing(): number {
+        return this._spacing;
+    }
 
-     public set spacing(value: number) {
-         if (this._spacing === value) {
-             return;
-         }
+    public set spacing(value: number) {
+        if (this._spacing === value) {
+            return;
+        }
 
-         this._spacing = value;
-         this._markAsDirty();
-     }
+        this._spacing = value;
+        this._markAsDirty();
+    }
 
     /**
      * Gets or sets panel width.
@@ -196,12 +196,14 @@ export class StackPanel extends Container {
         let panelWidthChanged = false;
         let panelHeightChanged = false;
 
-        if (!this._manualHeight && this._isVertical) { // do not specify height if strictly defined by user
+        if (!this._manualHeight && this._isVertical) {
+            // do not specify height if strictly defined by user
             let previousHeight = this.height;
             this.height = stackHeight + "px";
             panelHeightChanged = previousHeight !== this.height || !this._height.ignoreAdaptiveScaling;
         }
-        if (!this._manualWidth && !this._isVertical) { // do not specify width if strictly defined by user
+        if (!this._manualWidth && !this._isVertical) {
+            // do not specify width if strictly defined by user
             let previousWidth = this.width;
             this.width = stackWidth + "px";
             panelWidthChanged = previousWidth !== this.width || !this._width.ignoreAdaptiveScaling;
@@ -241,6 +243,5 @@ export class StackPanel extends Container {
 
         super._parseFromContent(serializedObject, host);
     }
-
 }
 RegisterClass("BABYLON.GUI.StackPanel", StackPanel);

@@ -1,12 +1,12 @@
-import { Scene } from "babylonjs/scene";
-import { CreateBox } from "babylonjs/Meshes/Builders/boxBuilder";
-import { TransformNode } from "babylonjs/Meshes/transformNode";
-import { Vector3 } from "babylonjs/Maths/math.vector";
+import { Scene } from "core/scene";
+import { CreateBox } from "core/Meshes/Builders/boxBuilder";
+import { TransformNode } from "core/Meshes/transformNode";
+import { Vector3 } from "core/Maths/math.vector";
 import { HandleMaterial } from "../materials/handle/handleMaterial";
 import { SlateGizmo } from "./slateGizmo";
-import { BaseSixDofDragBehavior } from "babylonjs/Behaviors/Meshes/baseSixDofDragBehavior";
-import { Nullable } from "babylonjs/types";
-import { Observer } from "babylonjs/Misc/observable";
+import { BaseSixDofDragBehavior } from "core/Behaviors/Meshes/baseSixDofDragBehavior";
+import { Nullable } from "core/types";
+import { Observer } from "core/Misc/observable";
 
 /**
  * State of the handle regarding user interaction

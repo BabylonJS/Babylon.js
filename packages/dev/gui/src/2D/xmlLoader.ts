@@ -1,28 +1,28 @@
-import { GetClass } from 'babylonjs/Misc/typeStore';
-import { Nullable } from 'babylonjs/types';
+import { GetClass } from "core/Misc/typeStore";
+import { Nullable } from "core/types";
 
 const XmlLoaderError = "XmlLoader Exception : XML file is malformed or corrupted.";
 
 /**
-* Class used to load GUI via XML.
-*/
+ * Class used to load GUI via XML.
+ */
 export class XmlLoader {
     private _nodes: any = {};
 
     private _nodeTypes: any = {
         element: 1,
         attribute: 2,
-        text: 3
+        text: 3,
     };
 
     private _isLoaded: boolean = false;
 
     private _objectAttributes: any = {
-        "textHorizontalAlignment": 1,
-        "textVerticalAlignment": 2,
-        "horizontalAlignment": 3,
-        "verticalAlignment": 4,
-        "stretch": 5,
+        textHorizontalAlignment: 1,
+        textVerticalAlignment: 2,
+        horizontalAlignment: 3,
+        verticalAlignment: 4,
+        stretch: 5,
     };
 
     private _rootNode: any;
@@ -30,9 +30,9 @@ export class XmlLoader {
     private _parentClass: any;
 
     /**
-    * Create a new xml loader
-    * @param parentClass Sets the class context. Used when the loader is instanced inside a class and not in a global context
-    */
+     * Create a new xml loader
+     * @param parentClass Sets the class context. Used when the loader is instanced inside a class and not in a global context
+     */
     constructor(parentClass: any = null) {
         if (parentClass) {
             this._parentClass = parentClass;
@@ -40,7 +40,6 @@ export class XmlLoader {
     }
 
     private _getChainElement(attributeValue: any): any {
-
         let element: any = window;
 
         if (this._parentClass) {
@@ -62,7 +61,6 @@ export class XmlLoader {
     }
 
     private _createGuiElement(node: any, parent: any, linkParent: boolean = true): void {
-
         try {
             let className = GetClass("BABYLON.GUI." + node.nodeName);
             let guiNode = new className();
@@ -72,13 +70,11 @@ export class XmlLoader {
             }
 
             for (let i = 0; i < node.attributes.length; i++) {
-
                 if (node.attributes[i].name.toLowerCase().includes("datasource")) {
                     continue;
                 }
 
                 if (node.attributes[i].name.toLowerCase().includes("observable")) {
-
                     let element = this._getChainElement(node.attributes[i].value);
                     guiNode[node.attributes[i].name].add(element);
 
@@ -94,7 +90,7 @@ export class XmlLoader {
                     guiNode[node.attributes[i].name] = element;
                 } else if (!this._objectAttributes[node.attributes[i].name]) {
                     if (node.attributes[i].value == "true" || node.attributes[i].value == "false") {
-                        guiNode[node.attributes[i].name] = (node.attributes[i].value == 'true');
+                        guiNode[node.attributes[i].name] = node.attributes[i].value == "true";
                     } else {
                         guiNode[node.attributes[i].name] = !isNaN(Number(node.attributes[i].value)) ? Number(node.attributes[i].value) : node.attributes[i].value;
                     }
@@ -119,7 +115,6 @@ export class XmlLoader {
                 throw "XmlLoader Exception : Duplicate ID, every element should have an unique ID attribute";
             }
             return guiNode;
-
         } catch (exception) {
             throw "XmlLoader Exception : Error parsing Control " + node.nodeName + "," + exception + ".";
         }
@@ -200,7 +195,6 @@ export class XmlLoader {
     }
 
     private _parseElement(node: any, guiNode: any, parent: any): void {
-
         if (node.firstChild) {
             this._parseXml(node.firstChild, guiNode);
         }
@@ -223,7 +217,6 @@ export class XmlLoader {
     }
 
     private _parseElementsFromSource(node: any, guiNode: any, parent: any): void {
-
         let dataSource = node.attributes.getNamedItem("dataSource").value;
 
         if (!dataSource.includes(" in ")) {
@@ -266,7 +259,6 @@ export class XmlLoader {
     }
 
     private _parseXml(node: any, parent: any, generated: boolean = false): void {
-
         if (node.nodeType != this._nodeTypes.element) {
             if (node.nextSibling) {
                 this._parseXml(node.nextSibling, parent, generated);
@@ -296,7 +288,7 @@ export class XmlLoader {
     /**
      * Gets if the loading has finished.
      * @returns whether the loading has finished or not
-    */
+     */
     public isLoaded(): boolean {
         return this._isLoaded;
     }
@@ -305,7 +297,7 @@ export class XmlLoader {
      * Gets a loaded node / control by id.
      * @param id the Controls id set in the xml
      * @returns element of type Control
-    */
+     */
     public getNodeById(id: string): any {
         return this._nodes[id];
     }
@@ -313,13 +305,13 @@ export class XmlLoader {
     /**
      * Gets all loaded nodes / controls
      * @returns Array of controls
-    */
+     */
     public getNodes(): any {
         return this._nodes;
     }
     /**
      * Disposes the loaded layout
-    */
+     */
     public dispose(): void {
         if (this._rootNode) {
             this._rootNode.dispose();
@@ -336,7 +328,6 @@ export class XmlLoader {
      * @param onError defines the callback called on layout load failure.
      */
     public loadLayout(xmlFile: any, rootNode: any, onSuccess: Nullable<() => void> = null, onError: Nullable<(error: string) => void> = null): void {
-
         let xhttp = new XMLHttpRequest();
         xhttp.onload = () => {
             if (xhttp.readyState === 4 && xhttp.status === 200) {
@@ -344,8 +335,7 @@ export class XmlLoader {
                     if (onError) {
                         onError(XmlLoaderError);
                         return;
-                    }
-                    else {
+                    } else {
                         throw XmlLoaderError;
                     }
                 }
@@ -376,7 +366,6 @@ export class XmlLoader {
      * @returns Promise
      */
     public async loadLayoutAsync(xmlFile: any, rootNode: any): Promise<any> {
-
         return new Promise((resolve: any, reject: any) => {
             this.loadLayout(xmlFile, rootNode, resolve, reject);
         });

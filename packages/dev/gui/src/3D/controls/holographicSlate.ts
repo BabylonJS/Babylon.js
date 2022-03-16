@@ -8,22 +8,22 @@ import { DefaultBehavior } from "../behaviors/defaultBehavior";
 import { SlateGizmo } from "../gizmos/slateGizmo";
 import { FluentMaterial } from "../materials/fluent/fluentMaterial";
 import { FluentBackplateMaterial } from "../materials/fluentBackplate/fluentBackplateMaterial";
-import { PointerDragBehavior } from "babylonjs/Behaviors/Meshes/pointerDragBehavior";
-import { Texture } from "babylonjs/Materials/Textures/texture";
-import { Vector4 } from "babylonjs/Maths/math";
-import { Epsilon } from "babylonjs/Maths/math.constants";
-import { Scalar } from "babylonjs/Maths/math.scalar";
-import { Matrix, Quaternion, Vector2, Vector3 } from "babylonjs/Maths/math.vector";
-import { Viewport } from "babylonjs/Maths/math.viewport";
-import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
-import { CreateBox } from "babylonjs/Meshes/Builders/boxBuilder";
-import { CreatePlane } from "babylonjs/Meshes/Builders/planeBuilder";
-import { TransformNode } from "babylonjs/Meshes/transformNode";
-import { Mesh } from "babylonjs/Meshes/mesh";
-import { VertexData } from "babylonjs/Meshes/mesh.vertexData";
-import { Observer } from "babylonjs/Misc/observable";
-import { Scene } from "babylonjs/scene";
-import { Nullable } from "babylonjs/types";
+import { PointerDragBehavior } from "core/Behaviors/Meshes/pointerDragBehavior";
+import { Texture } from "core/Materials/Textures/texture";
+import { Vector4 } from "core/Maths/math";
+import { Epsilon } from "core/Maths/math.constants";
+import { Scalar } from "core/Maths/math.scalar";
+import { Matrix, Quaternion, Vector2, Vector3 } from "core/Maths/math.vector";
+import { Viewport } from "core/Maths/math.viewport";
+import { AbstractMesh } from "core/Meshes/abstractMesh";
+import { CreateBox } from "core/Meshes/Builders/boxBuilder";
+import { CreatePlane } from "core/Meshes/Builders/planeBuilder";
+import { TransformNode } from "core/Meshes/transformNode";
+import { Mesh } from "core/Meshes/mesh";
+import { VertexData } from "core/Meshes/mesh.vertexData";
+import { Observer } from "core/Misc/observable";
+import { Scene } from "core/scene";
+import { Nullable } from "core/types";
 
 /**
  * Class used to create a holographic slate
@@ -105,8 +105,7 @@ export class HolographicSlate extends ContentDisplay3D {
             if (minRatio > newRatio) {
                 // We just need to make sure the x-val is greater than the min
                 scale = this.minDimensions.x / value.x;
-            }
-            else {
+            } else {
                 // We just need to make sure the y-val is greater than the min
                 scale = this.minDimensions.y / value.y;
             }
@@ -218,36 +217,31 @@ export class HolographicSlate extends ContentDisplay3D {
         if (followButton && closeButton && titleBar) {
             closeButton.scaling.setAll(this.titleBarHeight);
             followButton.scaling.setAll(this.titleBarHeight);
-            closeButton.position
-                .copyFromFloats(
-                    this.dimensions.x - this.titleBarHeight / 2,
-                    -this.titleBarHeight / 2,
-                    0
-                )
-                .addInPlace(this.origin);
-            followButton.position
-                .copyFromFloats(
-                    this.dimensions.x - (3 * this.titleBarHeight) / 2,
-                    -this.titleBarHeight / 2,
-                    0
-                )
-                .addInPlace(this.origin);
+            closeButton.position.copyFromFloats(this.dimensions.x - this.titleBarHeight / 2, -this.titleBarHeight / 2, 0).addInPlace(this.origin);
+            followButton.position.copyFromFloats(this.dimensions.x - (3 * this.titleBarHeight) / 2, -this.titleBarHeight / 2, 0).addInPlace(this.origin);
 
             const contentPlateHeight = this.dimensions.y - this.titleBarHeight - this.titleBarMargin;
             const rightHandScene = contentPlate.getScene().useRightHandedSystem;
 
             titleBar.scaling.set(this.dimensions.x, this.titleBarHeight, Epsilon);
-            titleBarTitle.scaling.set(this.dimensions.x - (2 * this.titleBarHeight), this.titleBarHeight, Epsilon);
+            titleBarTitle.scaling.set(this.dimensions.x - 2 * this.titleBarHeight, this.titleBarHeight, Epsilon);
             contentPlate.scaling.copyFromFloats(this.dimensions.x, contentPlateHeight, Epsilon);
             backPlate.scaling.copyFromFloats(this.dimensions.x, contentPlateHeight, Epsilon);
 
             titleBar.position.copyFromFloats(this.dimensions.x / 2, -(this.titleBarHeight / 2), 0).addInPlace(this.origin);
-            titleBarTitle.position.copyFromFloats((this.dimensions.x / 2) - this.titleBarHeight, -(this.titleBarHeight / 2), rightHandScene ? Epsilon : -Epsilon).addInPlace(this.origin);
+            titleBarTitle.position
+                .copyFromFloats(this.dimensions.x / 2 - this.titleBarHeight, -(this.titleBarHeight / 2), rightHandScene ? Epsilon : -Epsilon)
+                .addInPlace(this.origin);
             contentPlate.position.copyFromFloats(this.dimensions.x / 2, -(this.titleBarHeight + this.titleBarMargin + contentPlateHeight / 2), 0).addInPlace(this.origin);
-            backPlate.position.copyFromFloats(this.dimensions.x / 2, -(this.titleBarHeight + this.titleBarMargin + contentPlateHeight / 2), rightHandScene ? -Epsilon : Epsilon).addInPlace(this.origin);
+            backPlate.position
+                .copyFromFloats(this.dimensions.x / 2, -(this.titleBarHeight + this.titleBarMargin + contentPlateHeight / 2), rightHandScene ? -Epsilon : Epsilon)
+                .addInPlace(this.origin);
 
             // Update the title's AdvancedDynamicTexture scale to avoid visual stretching
-            this._titleTextComponent.host.scaleTo(HolographicSlate.DEFAULT_TEXT_RESOLUTION_Y * titleBarTitle.scaling.x / titleBarTitle.scaling.y, HolographicSlate.DEFAULT_TEXT_RESOLUTION_Y);
+            this._titleTextComponent.host.scaleTo(
+                (HolographicSlate.DEFAULT_TEXT_RESOLUTION_Y * titleBarTitle.scaling.x) / titleBarTitle.scaling.y,
+                HolographicSlate.DEFAULT_TEXT_RESOLUTION_Y
+            );
 
             const aspectRatio = this.dimensions.x / contentPlateHeight;
             this._contentViewport.width = this._contentScaleRatio;
@@ -320,8 +314,7 @@ export class HolographicSlate extends ContentDisplay3D {
             const faceUV = new Vector4(0, 0, 1, 1);
             this._contentPlate = CreatePlane("contentPlate_" + this.name, { size: 1, sideOrientation: VertexData.BACKSIDE, frontUVs: faceUV }, scene);
             this._backPlate = CreatePlane("backPlate_" + this.name, { size: 1, sideOrientation: VertexData.FRONTSIDE }, scene);
-        }
-        else {
+        } else {
             const faceUV = new Vector4(0, 0, 1, 1);
             this._contentPlate = CreatePlane("contentPlate_" + this.name, { size: 1, sideOrientation: VertexData.FRONTSIDE, frontUVs: faceUV }, scene);
             this._backPlate = CreatePlane("backPlate_" + this.name, { size: 1, sideOrientation: VertexData.BACKSIDE }, scene);

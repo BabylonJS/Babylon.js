@@ -1,11 +1,11 @@
-import { Nullable } from "babylonjs/types";
-import { Observable } from "babylonjs/Misc/observable";
-import { Vector2 } from "babylonjs/Maths/math.vector";
+import { Nullable } from "core/types";
+import { Observable } from "core/Misc/observable";
+import { Vector2 } from "core/Maths/math.vector";
 
 import { Rectangle } from "./rectangle";
 import { Control } from "./control";
-import { RegisterClass } from "babylonjs/Misc/typeStore";
-import { PointerInfoBase } from "babylonjs/Events/pointerEvents";
+import { RegisterClass } from "core/Misc/typeStore";
+import { PointerInfoBase } from "core/Events/pointerEvents";
 
 /**
  * Class used to create toggle buttons
@@ -246,7 +246,6 @@ export class ToggleButton extends Rectangle {
 
     /** @hidden */
     public _onPointerOut(target: Control, pi: PointerInfoBase, force = false): void {
-
         if (!this.isReadOnly) {
             if (this._isActive) {
                 if (this.pointerOutActiveAnimation) {

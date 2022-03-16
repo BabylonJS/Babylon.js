@@ -1,12 +1,12 @@
-import { Nullable } from "babylonjs/types";
-import { Vector2 } from "babylonjs/Maths/math.vector";
+import { Nullable } from "core/types";
+import { Vector2 } from "core/Maths/math.vector";
 
 import { Rectangle } from "./rectangle";
 import { Control } from "./control";
 import { TextBlock } from "./textBlock";
 import { Image } from "./image";
-import { RegisterClass } from 'babylonjs/Misc/typeStore';
-import { PointerInfoBase } from 'babylonjs/Events/pointerEvents';
+import { RegisterClass } from "core/Misc/typeStore";
+import { PointerInfoBase } from "core/Events/pointerEvents";
 import { AdvancedDynamicTexture } from "../advancedDynamicTexture";
 
 /**
@@ -165,9 +165,9 @@ export class Button extends Rectangle {
     }
 
     /**
-    * Serializes the current button
-    * @param serializationObject defines the JSON serialized object
-    */
+     * Serializes the current button
+     * @param serializationObject defines the JSON serialized object
+     */
     public serialize(serializationObject: any) {
         super.serialize(serializationObject);
 

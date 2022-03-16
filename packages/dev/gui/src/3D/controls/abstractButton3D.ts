@@ -1,5 +1,5 @@
-import { TransformNode } from "babylonjs/Meshes/transformNode";
-import { Scene } from "babylonjs/scene";
+import { TransformNode } from "core/Meshes/transformNode";
+import { Scene } from "core/scene";
 import { ContentDisplay3D } from "./contentDisplay3D";
 
 /**

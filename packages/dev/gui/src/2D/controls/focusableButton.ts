@@ -1,13 +1,13 @@
-import { Nullable } from "babylonjs/types";
-import { Vector2 } from "babylonjs/Maths/math.vector";
+import { Nullable } from "core/types";
+import { Vector2 } from "core/Maths/math.vector";
 
 import { Button } from "./button";
 import { Control } from "./control";
-import { RegisterClass } from 'babylonjs/Misc/typeStore';
-import { PointerInfoBase } from 'babylonjs/Events/pointerEvents';
+import { RegisterClass } from "core/Misc/typeStore";
+import { PointerInfoBase } from "core/Events/pointerEvents";
 import { IFocusableControl } from "./focusableControl";
-import { Observable } from 'babylonjs/Misc/observable';
-import { IKeyboardEvent } from "babylonjs/Events/deviceInputEvents";
+import { Observable } from "core/Misc/observable";
+import { IKeyboardEvent } from "core/Events/deviceInputEvents";
 
 /**
  * Class used to create a focusable button that can easily handle keyboard events

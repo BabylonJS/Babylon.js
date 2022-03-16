@@ -1,10 +1,10 @@
-import { Vector2 } from "babylonjs/Maths/math.vector";
+import { Vector2 } from "core/Maths/math.vector";
 import { BaseSlider } from "./baseSlider";
 import { Control } from "../control";
 import { Measure } from "../../measure";
-import { PointerInfoBase } from 'babylonjs/Events/pointerEvents';
-import { serialize } from "babylonjs/Misc/decorators";
-import { ICanvasRenderingContext } from "babylonjs/Engines/ICanvas";
+import { PointerInfoBase } from "core/Events/pointerEvents";
+import { serialize } from "core/Misc/decorators";
+import { ICanvasRenderingContext } from "core/Engines/ICanvas";
 
 /**
  * Class used to create slider controls
@@ -60,8 +60,7 @@ export class ScrollBar extends BaseSlider {
         var thumbThickness = 0;
         if (this._thumbWidth.isPixel) {
             thumbThickness = this._thumbWidth.getValue(this._host);
-        }
-        else {
+        } else {
             thumbThickness = this._backgroundBoxThickness * this._thumbWidth.getValue(this._host);
         }
         return thumbThickness;
@@ -88,8 +87,7 @@ export class ScrollBar extends BaseSlider {
             this._tempMeasure.top = this._currentMeasure.top + thumbPosition;
             this._tempMeasure.width = this._currentMeasure.width;
             this._tempMeasure.height = this._effectiveThumbThickness;
-        }
-        else {
+        } else {
             this._tempMeasure.left = this._currentMeasure.left + thumbPosition;
             this._tempMeasure.top = this._currentMeasure.top;
             this._tempMeasure.width = this._effectiveThumbThickness;
@@ -119,11 +117,15 @@ export class ScrollBar extends BaseSlider {
             this._originY = y;
 
             // Check if move is required
-            if (x < this._tempMeasure.left || x > this._tempMeasure.left + this._tempMeasure.width || y < this._tempMeasure.top || y > this._tempMeasure.top + this._tempMeasure.height) {
+            if (
+                x < this._tempMeasure.left ||
+                x > this._tempMeasure.left + this._tempMeasure.width ||
+                y < this._tempMeasure.top ||
+                y > this._tempMeasure.top + this._tempMeasure.height
+            ) {
                 if (this.isVertical) {
-                    this.value = this.minimum + (1 - ((y - this._currentMeasure.top) / this._currentMeasure.height)) * (this.maximum - this.minimum);
-                }
-                else {
+                    this.value = this.minimum + (1 - (y - this._currentMeasure.top) / this._currentMeasure.height) * (this.maximum - this.minimum);
+                } else {
                     this.value = this.minimum + ((x - this._currentMeasure.left) / this._currentMeasure.width) * (this.maximum - this.minimum);
                 }
             }
@@ -133,8 +135,7 @@ export class ScrollBar extends BaseSlider {
         let delta = 0;
         if (this.isVertical) {
             delta = -((y - this._originY) / (this._currentMeasure.height - this._effectiveThumbThickness));
-        }
-        else {
+        } else {
             delta = (x - this._originX) / (this._currentMeasure.width - this._effectiveThumbThickness);
         }
 

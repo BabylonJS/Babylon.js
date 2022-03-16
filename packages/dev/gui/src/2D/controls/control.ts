@@ -1,11 +1,11 @@
-import { Nullable } from "babylonjs/types";
-import { Observable, Observer } from "babylonjs/Misc/observable";
-import { Vector2, Vector3, Matrix } from "babylonjs/Maths/math.vector";
-import { PointerEventTypes, PointerInfoBase } from "babylonjs/Events/pointerEvents";
-import { Logger } from "babylonjs/Misc/logger";
-import { Tools } from "babylonjs/Misc/tools";
-import { TransformNode } from "babylonjs/Meshes/transformNode";
-import { Scene } from "babylonjs/scene";
+import { Nullable } from "core/types";
+import { Observable, Observer } from "core/Misc/observable";
+import { Vector2, Vector3, Matrix } from "core/Maths/math.vector";
+import { PointerEventTypes, PointerInfoBase } from "core/Events/pointerEvents";
+import { Logger } from "core/Misc/logger";
+import { Tools } from "core/Misc/tools";
+import { TransformNode } from "core/Meshes/transformNode";
+import { Scene } from "core/scene";
 
 import { Container } from "./container";
 import { AdvancedDynamicTexture } from "../advancedDynamicTexture";
@@ -13,10 +13,10 @@ import { ValueAndUnit } from "../valueAndUnit";
 import { Measure } from "../measure";
 import { Style } from "../style";
 import { Matrix2D, Vector2WithInfo } from "../math2D";
-import { RegisterClass } from "babylonjs/Misc/typeStore";
-import { SerializationHelper, serialize } from "babylonjs/Misc/decorators";
-import { ICanvasRenderingContext } from "babylonjs/Engines/ICanvas";
-import { EngineStore } from "babylonjs/Engines/engineStore";
+import { RegisterClass } from "core/Misc/typeStore";
+import { SerializationHelper, serialize } from "core/Misc/decorators";
+import { ICanvasRenderingContext } from "core/Engines/ICanvas";
+import { EngineStore } from "core/Engines/engineStore";
 
 /**
  * Root class used for all 2D controls
@@ -1191,7 +1191,7 @@ export class Control {
     constructor(
         /** defines the name of the control */
         public name?: string
-    ) { }
+    ) {}
 
     /** @hidden */
     protected _getTypeName(): string {
@@ -2142,10 +2142,19 @@ export class Control {
     }
 
     /** @hidden */
-    public _onCanvasBlur(): void { }
+    public _onCanvasBlur(): void {}
 
     /** @hidden */
-    public _processObservables(type: number, x: number, y: number, pi: Nullable<PointerInfoBase>, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean {
+    public _processObservables(
+        type: number,
+        x: number,
+        y: number,
+        pi: Nullable<PointerInfoBase>,
+        pointerId: number,
+        buttonIndex: number,
+        deltaX?: number,
+        deltaY?: number
+    ): boolean {
         if (!this._isEnabled) {
             return false;
         }
@@ -2364,7 +2373,7 @@ export class Control {
      * @ignore
      * @hidden
      */
-    public static AddHeader: (control: Control, text: string, size: string | number, options: { isHorizontal: boolean; controlFirst: boolean }) => any = () => { };
+    public static AddHeader: (control: Control, text: string, size: string | number, options: { isHorizontal: boolean; controlFirst: boolean }) => any = () => {};
 
     /** @hidden */
     protected static drawEllipse(x: number, y: number, width: number, height: number, context: ICanvasRenderingContext): void {

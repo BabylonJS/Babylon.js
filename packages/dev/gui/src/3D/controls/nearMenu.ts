@@ -1,13 +1,13 @@
-import { Scene } from "babylonjs/scene";
-import { TransformNode } from "babylonjs/Meshes/transformNode";
-import { Nullable } from "babylonjs/types";
-import { Mesh } from "babylonjs/Meshes/mesh";
+import { Scene } from "core/scene";
+import { TransformNode } from "core/Meshes/transformNode";
+import { Nullable } from "core/types";
+import { Mesh } from "core/Meshes/mesh";
 import { TouchHolographicButton } from "./touchHolographicButton";
 import { DefaultBehavior } from "../behaviors/defaultBehavior";
 import { TouchHolographicMenu } from "./touchHolographicMenu";
-import { Observer } from "babylonjs/Misc/observable";
-import { Vector3 } from "babylonjs/Maths/math.vector";
-import { PickingInfo } from "babylonjs/Collisions/pickingInfo";
+import { Observer } from "core/Misc/observable";
+import { Vector3 } from "core/Maths/math.vector";
+import { PickingInfo } from "core/Collisions/pickingInfo";
 
 /**
  * NearMenu that displays buttons and follows the camera
@@ -70,7 +70,9 @@ export class NearMenu extends TouchHolographicMenu {
         control.parent = this;
         control._host = this._host;
         control.isToggleButton = true;
-        control.onToggleObservable.add((newState) => { this.isPinned = newState; });
+        control.onToggleObservable.add((newState) => {
+            this.isPinned = newState;
+        });
 
         if (this._host.utilityLayer) {
             control._prepareNode(this._host.utilityLayer.utilityLayerScene);

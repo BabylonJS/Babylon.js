@@ -1,19 +1,18 @@
-import { Nullable } from "babylonjs/types";
-import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
+import { Nullable } from "core/types";
+import { AbstractMesh } from "core/Meshes/abstractMesh";
 
 import { Control } from "./control";
 import { MultiLinePoint } from "../multiLinePoint";
 import { Measure } from "../measure";
-import { RegisterClass } from 'babylonjs/Misc/typeStore';
-import { Vector3 } from "babylonjs/Maths/math.vector";
-import { serialize } from 'babylonjs/Misc/decorators';
-import { ICanvasRenderingContext } from "babylonjs/Engines/ICanvas";
+import { RegisterClass } from "core/Misc/typeStore";
+import { Vector3 } from "core/Maths/math.vector";
+import { serialize } from "core/Misc/decorators";
+import { ICanvasRenderingContext } from "core/Engines/ICanvas";
 
 /**
  * Class used to create multi line control
  */
 export class MultiLine extends Control {
-
     private _lineWidth: number = 1;
     private _dash: number[];
     private _points: Nullable<MultiLinePoint>[];
@@ -70,14 +69,14 @@ export class MultiLine extends Control {
     /** Function called when a point is updated */
     public onPointUpdate = (): void => {
         this._markAsDirty();
-    }
+    };
 
     /**
      * Adds new points to the point collection
      * @param items defines the list of items (mesh, control or 2d coordiantes) to add
      * @returns the list of created MultiLinePoint
      */
-    public add(...items: (AbstractMesh | Control | { x: string | number, y: string | number })[]): MultiLinePoint[] {
+    public add(...items: (AbstractMesh | Control | { x: string | number; y: string | number })[]): MultiLinePoint[] {
         return items.map((item) => this.push(item));
     }
 
@@ -86,18 +85,18 @@ export class MultiLine extends Control {
      * @param item defines the item (mesh, control or 2d coordiantes) to add
      * @returns the created MultiLinePoint
      */
-    public push(item?: (AbstractMesh | Control | { x: string | number, y: string | number })): MultiLinePoint {
+    public push(item?: AbstractMesh | Control | { x: string | number; y: string | number }): MultiLinePoint {
         var point: MultiLinePoint = this.getAt(this._points.length);
 
-        if (item == null) { return point; }
+        if (item == null) {
+            return point;
+        }
 
         if (item instanceof AbstractMesh) {
             point.mesh = item;
-        }
-        else if (item instanceof Control) {
+        } else if (item instanceof Control) {
             point.control = item;
-        }
-        else if (item.x != null && item.y != null) {
+        } else if (item.x != null && item.y != null) {
             point.x = item.x;
             point.y = item.y;
         }
@@ -118,8 +117,7 @@ export class MultiLine extends Control {
             if (index === -1) {
                 return;
             }
-        }
-        else {
+        } else {
             index = value;
         }
 
@@ -148,7 +146,9 @@ export class MultiLine extends Control {
      */
     public resetLinks(): void {
         this._points.forEach((point) => {
-            if (point != null) { point.resetLinks(); }
+            if (point != null) {
+                point.resetLinks();
+            }
         });
     }
 
@@ -208,8 +208,7 @@ export class MultiLine extends Control {
                 context.moveTo(point._point.x, point._point.y);
 
                 first = false;
-            }
-            else {
+            } else {
                 if (point._point.z < 1 && previousPoint.z < 1) {
                     context.lineTo(point._point.x, point._point.y);
                 } else {
@@ -237,16 +236,32 @@ export class MultiLine extends Control {
 
             point.translate();
 
-            if (this._minX == null || point._point.x < this._minX) { this._minX = point._point.x; }
-            if (this._minY == null || point._point.y < this._minY) { this._minY = point._point.y; }
-            if (this._maxX == null || point._point.x > this._maxX) { this._maxX = point._point.x; }
-            if (this._maxY == null || point._point.y > this._maxY) { this._maxY = point._point.y; }
+            if (this._minX == null || point._point.x < this._minX) {
+                this._minX = point._point.x;
+            }
+            if (this._minY == null || point._point.y < this._minY) {
+                this._minY = point._point.y;
+            }
+            if (this._maxX == null || point._point.x > this._maxX) {
+                this._maxX = point._point.x;
+            }
+            if (this._maxY == null || point._point.y > this._maxY) {
+                this._maxY = point._point.y;
+            }
         });
 
-        if (this._minX == null) { this._minX = 0; }
-        if (this._minY == null) { this._minY = 0; }
-        if (this._maxX == null) { this._maxX = 0; }
-        if (this._maxY == null) { this._maxY = 0; }
+        if (this._minX == null) {
+            this._minX = 0;
+        }
+        if (this._minY == null) {
+            this._minY = 0;
+        }
+        if (this._maxX == null) {
+            this._maxX = 0;
+        }
+        if (this._maxY == null) {
+            this._maxY = 0;
+        }
     }
 
     public _measure(): void {

@@ -1,11 +1,11 @@
-import { Tools } from "babylonjs/Misc/tools";
-import { Matrix, TmpVectors, Vector3 } from "babylonjs/Maths/math.vector";
-import { float } from "babylonjs/types";
+import { Tools } from "core/Misc/tools";
+import { Matrix, TmpVectors, Vector3 } from "core/Maths/math.vector";
+import { float } from "core/types";
 
 import { VolumeBasedPanel } from "./volumeBasedPanel";
 import { Control3D } from "./control3D";
 import { Container3D } from "./container3D";
-import { Axis, Space } from 'babylonjs/Maths/math.axis';
+import { Axis, Space } from "core/Maths/math.axis";
 
 /**
  * Class used to create a container panel deployed on the surface of a sphere
@@ -60,7 +60,7 @@ export class SpherePanel extends VolumeBasedPanel {
     private _sphericalMapping(source: Vector3) {
         let newPos = new Vector3(0, 0, this._radius);
 
-        let xAngle = (source.y / this._radius);
+        let xAngle = source.y / this._radius;
         let yAngle = -(source.x / this._radius);
 
         Matrix.RotationYawPitchRollToRef(yAngle, xAngle, 0, TmpVectors.Matrix[0]);

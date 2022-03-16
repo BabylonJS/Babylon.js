@@ -1,19 +1,9 @@
 import { Matrix2D } from "./math2D";
-import { Vector2 } from "babylonjs/Maths/math.vector";
+import { Vector2 } from "core/Maths/math.vector";
 
-let tmpRect = [
-    new Vector2(0, 0),
-    new Vector2(0, 0),
-    new Vector2(0, 0),
-    new Vector2(0, 0),
-];
+let tmpRect = [new Vector2(0, 0), new Vector2(0, 0), new Vector2(0, 0), new Vector2(0, 0)];
 
-let tmpRect2 = [
-    new Vector2(0, 0),
-    new Vector2(0, 0),
-    new Vector2(0, 0),
-    new Vector2(0, 0),
-];
+let tmpRect2 = [new Vector2(0, 0), new Vector2(0, 0), new Vector2(0, 0), new Vector2(0, 0)];
 
 let tmpV1 = new Vector2(0, 0);
 let tmpV2 = new Vector2(0, 0);
@@ -37,9 +27,8 @@ export class Measure {
         /** defines width dimension  */
         public width: number,
         /** defines height dimension */
-        public height: number) {
-
-    }
+        public height: number
+    ) {}
 
     /**
      * Copy from another measure
@@ -127,12 +116,11 @@ export class Measure {
         this.addAndTransformToRef(transform, 0, 0, 0, 0, result);
     }
     /**
- * Check equality between this measure and another one
- * @param other defines the other measures
- * @returns true if both measures are equals
- */
+     * Check equality between this measure and another one
+     * @param other defines the other measures
+     * @returns true if both measures are equals
+     */
     public isEqualsTo(other: Measure): boolean {
-
         if (this.left !== other.left) {
             return false;
         }

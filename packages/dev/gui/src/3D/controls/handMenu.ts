@@ -1,10 +1,10 @@
-import { Scene } from "babylonjs/scene";
-import { TransformNode } from "babylonjs/Meshes/transformNode";
-import { Nullable } from "babylonjs/types";
-import { Mesh } from "babylonjs/Meshes/mesh";
+import { Scene } from "core/scene";
+import { TransformNode } from "core/Meshes/transformNode";
+import { Nullable } from "core/types";
+import { Mesh } from "core/Meshes/mesh";
 import { TouchHolographicMenu } from "./touchHolographicMenu";
-import { HandConstraintBehavior } from "babylonjs/Behaviors/Meshes/handConstraintBehavior";
-import { WebXRExperienceHelper } from "babylonjs/XR/webXRExperienceHelper";
+import { HandConstraintBehavior } from "core/Behaviors/Meshes/handConstraintBehavior";
+import { WebXRExperienceHelper } from "core/XR/webXRExperienceHelper";
 
 /**
  * Hand menu that displays buttons and floats around the hand.
