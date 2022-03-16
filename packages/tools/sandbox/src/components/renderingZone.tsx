@@ -1,22 +1,22 @@
 import * as React from "react";
 import { GlobalState } from "../globalState";
 
-import { Engine } from "babylonjs/Engines/engine";
-import { WebGPUEngine } from "babylonjs/Engines/webgpuEngine";
-import { SceneLoader } from "babylonjs/Loading/sceneLoader";
-import { GLTFFileLoader } from "babylonjs-loaders/glTF/glTFFileLoader";
-import { Scene } from "babylonjs/scene";
-import { Vector3 } from "babylonjs/Maths/math.vector";
-import { ArcRotateCamera } from "babylonjs/Cameras/arcRotateCamera";
-import { FramingBehavior } from "babylonjs/Behaviors/Cameras/framingBehavior";
+import { Engine } from "core/Engines/engine";
+import { WebGPUEngine } from "core/Engines/webgpuEngine";
+import { SceneLoader } from "core/Loading/sceneLoader";
+import { GLTFFileLoader } from "loaders/glTF/glTFFileLoader";
+import { Scene } from "core/scene";
+import { Vector3 } from "core/Maths/math.vector";
+import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
+import { FramingBehavior } from "core/Behaviors/Cameras/framingBehavior";
 import { EnvironmentTools } from "../tools/environmentTools";
-import { Tools } from "babylonjs/Misc/tools";
-import { FilesInput } from "babylonjs/Misc/filesInput";
-import { Animation } from "babylonjs/Animations/animation";
+import { Tools } from "core/Misc/tools";
+import { FilesInput } from "core/Misc/filesInput";
+import { Animation } from "core/Animations/animation";
 import { PBRBaseMaterial, PBRMaterial, StringTools, Texture } from "babylonjs";
-import { CreatePlane } from "babylonjs/Meshes/Builders/planeBuilder";
+import { CreatePlane } from "core/Meshes/Builders/planeBuilder";
 
-require("../scss/renderingZone.scss");
+import "../scss/renderingZone.scss";
 
 function isTextureAsset(name: string): boolean {
     var queryStringIndex = name.indexOf("?");
@@ -376,7 +376,7 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
                 loader.transparencyAsCoverage = this.props.globalState.commerceMode;
                 loader.validate = true;
 
-                loader.onExtensionLoadedObservable.add((extension: import("babylonjs-loaders/glTF/index").IGLTFLoaderExtension) => {
+                loader.onExtensionLoadedObservable.add((extension: import("loaders/glTF/index").IGLTFLoaderExtension) => {
                     this.props.globalState.glTFLoaderExtensions[extension.name] = extension;
                 });
 

@@ -1,6 +1,6 @@
-import { Observable } from 'babylonjs/Misc/observable';
-import { Scene } from 'babylonjs/scene';
-import { FilesInput } from 'babylonjs/Misc/filesInput';
+import { Observable } from 'core/Misc/observable';
+import { Scene } from 'core/scene';
+import { FilesInput } from 'core/Misc/filesInput';
 
 export class GlobalState {
     public currentScene: Scene;
@@ -9,7 +9,7 @@ export class GlobalState {
     public onEnvironmentChanged = new Observable<string>();
     public onRequestClickInterceptor = new Observable<void>();
     public onClickInterceptorClicked = new Observable<void>();
-    public glTFLoaderExtensions: { [key: string]: import("babylonjs-loaders/glTF/index").IGLTFLoaderExtension } = {};
+    public glTFLoaderExtensions: { [key: string]: import("loaders/glTF/index").IGLTFLoaderExtension } = {};
 
     public filesInput: FilesInput;
     public isDebugLayerEnabled = false;

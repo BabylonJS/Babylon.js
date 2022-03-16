@@ -1,10 +1,10 @@
 import * as React from "react";
 import { GlobalState } from "../globalState";
-import { Nullable } from "babylonjs/types";
-import { Observer } from "babylonjs/Misc/observable";
+import { Nullable } from "core/types";
+import { Observer } from "core/Misc/observable";
 
-var iconUp = require("../img/icon-up.svg");
-var iconDown = require("../img/icon-down.svg");
+import iconUp from "../img/icon-up.svg";
+import iconDown from "../img/icon-down.svg";
 
 interface IDropUpButtonProps {
     globalState: GlobalState;
