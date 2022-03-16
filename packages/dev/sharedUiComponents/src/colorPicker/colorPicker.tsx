@@ -247,10 +247,15 @@ export class ColorPicker extends React.Component<IColorPickerProps, IColorPicker
                     <div className="color-picker-hex-label">Hex</div>
                     <div className="color-picker-hex-value">
                         <HexColor
-                            expectedLength={6}
+                            expectedLength={hasAlpha ? 8 : 6}
                             value={colorHex}
                             onChange={(value) => {
-                                this.setState({ color: Color3.FromHexString(value) });
+                                if (hasAlpha) {
+                                    const color4 = Color4.FromHexString(value);
+                                    this.setState({color: new Color3(color4.r, color4.g, color4.b), alpha: color4.a});
+                                } else {
+                                    this.setState({ color: Color3.FromHexString(value) });
+                                }
                             }}
                         />
                     </div>
