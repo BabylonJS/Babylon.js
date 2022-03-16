@@ -1,0 +1,27 @@
+<style>
+    @font-face {
+        font-family: 'babylon';
+        src: url('{{babylonFont}}') format('woff');
+        font-weight: normal;
+        font-style: normal;
+    }
+
+    .icon {
+        font-family: "babylon";
+    }
+</style>
+
+{{#if fillScreen}}
+<style>
+    html,
+    body {
+        width: 100%;
+        height: 100%;
+
+        margin: 0;
+        padding: 0;
+    }
+</style>
+{{/if}}
+
+<fill-container></fill-container>
