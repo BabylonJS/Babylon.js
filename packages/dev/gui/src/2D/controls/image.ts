@@ -227,14 +227,14 @@ export class Image extends Control {
     }
 
     /**
-     * Gets the image width
+     * @returns the image width
      */
     public get imageWidth(): number {
         return this._imageWidth;
     }
 
     /**
-     * Gets the image height
+     * @returns the image height
      */
     public get imageHeight(): number {
         return this._imageHeight;
@@ -265,7 +265,7 @@ export class Image extends Control {
         return this._isSVG;
     }
 
-    /** Gets the status of the SVG attributes computation (sourceLeft, sourceTop, sourceWidth, sourceHeight) */
+    /** @returns the status of the SVG attributes computation (sourceLeft, sourceTop, sourceWidth, sourceHeight) */
     public get svgAttributesComputationCompleted(): boolean {
         return this._svgAttributesComputationCompleted;
     }
@@ -492,7 +492,7 @@ export class Image extends Control {
     }
 
     /**
-     * Gets the image source url
+     * @returns the image source url
      */
     @serialize()
     public get source() {

@@ -27,7 +27,7 @@ export interface IAction {
     triggerOptions: any;
 
     /**
-     * Gets the trigger parameters
+     * @returns the trigger parameters
      * @returns the trigger parameters
      */
     getTriggerParameter(): any;
@@ -122,7 +122,7 @@ export class Action implements IAction {
     public _prepare(): void {}
 
     /**
-     * Gets the trigger parameter
+     * @returns the trigger parameter
      * @returns the trigger parameter
      */
     public getTriggerParameter(): any {

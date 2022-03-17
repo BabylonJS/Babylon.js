@@ -24,7 +24,7 @@ export class ShaderCodeInliner {
     /** @returns the debug mode */
     public debug: boolean = false;
 
-    /** Gets the code after the inlining process */
+    /** @returns the code after the inlining process */
     public get code(): string {
         return this._sourceCode;
     }

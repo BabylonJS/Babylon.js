@@ -267,7 +267,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
     public renderPassId: number;
     private _renderPassIds: number[];
     /**
-     * Gets the render pass ids used by the render target texture. For a single render target the array length will be 1, for a cube texture it will be 6 and for
+     * @returns the render pass ids used by the render target texture. For a single render target the array length will be 1, for a cube texture it will be 6 and for
      * a 2D texture array it will return an array of ids the size of the 2D texture array
      */
     public get renderPassIds(): readonly number[] {
@@ -275,7 +275,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
     }
 
     /**
-     * Gets the current value of the refreshId counter
+     * @returns the current value of the refreshId counter
      */
     public get currentRefreshId() {
         return this._currentRefreshId;
@@ -309,7 +309,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
     }
 
     /**
-     * Gets the render target wrapper associated with this render target
+     * @returns the render target wrapper associated with this render target
      */
     public get renderTarget(): Nullable<RenderTargetWrapper> {
         return this._renderTarget;
@@ -624,7 +624,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
     }
 
     /**
-     * Gets the actual render size of the texture.
+     * @returns the actual render size of the texture.
      * @returns the width of the render size
      */
     public getRenderSize(): number {
@@ -632,7 +632,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
     }
 
     /**
-     * Gets the actual render width of the texture.
+     * @returns the actual render width of the texture.
      * @returns the width of the render size
      */
     public getRenderWidth(): number {
@@ -644,7 +644,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
     }
 
     /**
-     * Gets the actual render height of the texture.
+     * @returns the actual render height of the texture.
      * @returns the height of the render size
      */
     public getRenderHeight(): number {
@@ -656,7 +656,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
     }
 
     /**
-     * Gets the actual number of layers of the texture.
+     * @returns the actual number of layers of the texture.
      * @returns the number of layers
      */
     public getRenderLayers(): number {
@@ -1353,7 +1353,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
     }
 
     /**
-     * Gets the number of views the corresponding to the texture (eg. a MultiviewRenderTarget will have > 1)
+     * @returns the number of views the corresponding to the texture (eg. a MultiviewRenderTarget will have > 1)
      * @returns the view count
      */
     public getViewCount() {

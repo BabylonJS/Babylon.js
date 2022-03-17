@@ -37,7 +37,7 @@ export class WorleyNoise3DBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the current class name
+     * @returns the current class name
      * @returns the class name
      */
     public getClassName() {
@@ -45,35 +45,35 @@ export class WorleyNoise3DBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the seed input component
+     * @returns the seed input component
      */
     public get seed(): NodeMaterialConnectionPoint {
         return this._inputs[0];
     }
 
     /**
-     * Gets the jitter input component
+     * @returns the jitter input component
      */
     public get jitter(): NodeMaterialConnectionPoint {
         return this._inputs[1];
     }
 
     /**
-     * Gets the output component
+     * @returns the output component
      */
     public get output(): NodeMaterialConnectionPoint {
         return this._outputs[0];
     }
 
     /**
-     * Gets the x component
+     * @returns the x component
      */
     public get x(): NodeMaterialConnectionPoint {
         return this._outputs[1];
     }
 
     /**
-     * Gets the y component
+     * @returns the y component
      */
     public get y(): NodeMaterialConnectionPoint {
         return this._outputs[2];

@@ -29,7 +29,7 @@ export class ColorSplitterBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the current class name
+     * @returns the current class name
      * @returns the class name
      */
     public getClassName() {
@@ -37,47 +37,47 @@ export class ColorSplitterBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the rgba component (input)
+     * @returns the rgba component (input)
      */
     public get rgba(): NodeMaterialConnectionPoint {
         return this._inputs[0];
     }
 
     /**
-     * Gets the rgb component (input)
+     * @returns the rgb component (input)
      */
     public get rgbIn(): NodeMaterialConnectionPoint {
         return this._inputs[1];
     }
 
     /**
-     * Gets the rgb component (output)
+     * @returns the rgb component (output)
      */
     public get rgbOut(): NodeMaterialConnectionPoint {
         return this._outputs[0];
     }
 
     /**
-     * Gets the r component (output)
+     * @returns the r component (output)
      */
     public get r(): NodeMaterialConnectionPoint {
         return this._outputs[1];
     }
 
     /**
-     * Gets the g component (output)
+     * @returns the g component (output)
      */
     public get g(): NodeMaterialConnectionPoint {
         return this._outputs[2];
     }
     /**
-     * Gets the b component (output)
+     * @returns the b component (output)
      */
     public get b(): NodeMaterialConnectionPoint {
         return this._outputs[3];
     }
     /**
-     * Gets the a component (output)
+     * @returns the a component (output)
      */
     public get a(): NodeMaterialConnectionPoint {
         return this._outputs[4];

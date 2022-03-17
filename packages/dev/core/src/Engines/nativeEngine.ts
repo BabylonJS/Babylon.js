@@ -1382,7 +1382,7 @@ export class NativeEngine extends Engine {
     }
 
     /**
-     * Gets the client rect of native canvas.  Needed for InputManager.
+     * @returns the client rect of native canvas.  Needed for InputManager.
      * @returns a client rectangle
      */
     public getInputElementClientRect(): Nullable<DOMRect> {
@@ -1414,7 +1414,7 @@ export class NativeEngine extends Engine {
     }
 
     /**
-     * Gets the current value of the zOffset Factor
+     * @returns the current value of the zOffset Factor
      * @returns the current zOffset Factor state
      */
     public getZOffset(): number {
@@ -1435,7 +1435,7 @@ export class NativeEngine extends Engine {
     }
 
     /**
-     * Gets the current value of the zOffset Units
+     * @returns the current value of the zOffset Units
      * @returns the current zOffset Units state
      */
     public getZOffsetUnits(): number {
@@ -1598,7 +1598,7 @@ export class NativeEngine extends Engine {
     }
 
     /**
-     * Gets the current stencil operation when stencil passes
+     * @returns the current stencil operation when stencil passes
      * @returns a number defining stencil operation to use when stencil passes
      */
     public getStencilOperationPass(): number {
@@ -1668,7 +1668,7 @@ export class NativeEngine extends Engine {
     }
 
     /**
-     * Gets the current stencil mask
+     * @returns the current stencil mask
      * @returns a number defining the new stencil mask to use
      */
     public getStencilMask(): number {
@@ -1676,7 +1676,7 @@ export class NativeEngine extends Engine {
     }
 
     /**
-     * Gets the current stencil function
+     * @returns the current stencil function
      * @returns a number defining the stencil function to use
      */
     public getStencilFunction(): number {
@@ -1684,7 +1684,7 @@ export class NativeEngine extends Engine {
     }
 
     /**
-     * Gets the current stencil reference value
+     * @returns the current stencil reference value
      * @returns a number defining the stencil reference value to use
      */
     public getStencilFunctionReference(): number {
@@ -1692,7 +1692,7 @@ export class NativeEngine extends Engine {
     }
 
     /**
-     * Gets the current stencil mask
+     * @returns the current stencil mask
      * @returns a number defining the stencil mask to use
      */
     public getStencilFunctionMask(): number {
@@ -1700,7 +1700,7 @@ export class NativeEngine extends Engine {
     }
 
     /**
-     * Gets the current stencil operation when stencil fails
+     * @returns the current stencil operation when stencil fails
      * @returns a number defining stencil operation to use when stencil fails
      */
     public getStencilOperationFail(): number {
@@ -1708,7 +1708,7 @@ export class NativeEngine extends Engine {
     }
 
     /**
-     * Gets the current stencil operation when depth fails
+     * @returns the current stencil operation when depth fails
      * @returns a number defining stencil operation to use when depth fails
      */
     public getStencilOperationDepthFail(): number {
@@ -1751,7 +1751,7 @@ export class NativeEngine extends Engine {
     }
 
     /**
-     * Gets the current alpha mode
+     * @returns the current alpha mode
      * @see https://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered
      * @returns the current alpha mode
      */

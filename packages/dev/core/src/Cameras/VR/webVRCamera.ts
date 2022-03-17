@@ -339,7 +339,7 @@ export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
     protected _setRigMode = setWebVRRigMode.bind(null, this);
 
     /**
-     * Gets the device distance from the ground in meters.
+     * @returns the device distance from the ground in meters.
      * @returns the distance in meters from the vrDevice to ground in device space. If standing matrix is not supported for the vrDevice 0 is returned.
      */
     public deviceDistanceToRoomGround(): number {
@@ -662,7 +662,7 @@ export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
 
     /**
      * @hidden
-     * Gets the view matrix of this camera (Always set to identity as left and right eye cameras contain the actual view matrix)
+     * @returns the view matrix of this camera (Always set to identity as left and right eye cameras contain the actual view matrix)
      * @returns an identity matrix
      */
     public _getViewMatrix(): Matrix {

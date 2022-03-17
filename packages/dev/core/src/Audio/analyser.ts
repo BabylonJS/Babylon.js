@@ -85,7 +85,7 @@ export class Analyser {
     }
 
     /**
-     * Gets the current frequency data as a byte array
+     * @returns the current frequency data as a byte array
      * @see https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode/getByteFrequencyData
      * @returns a Uint8Array
      */
@@ -99,7 +99,7 @@ export class Analyser {
     }
 
     /**
-     * Gets the current waveform as a byte array
+     * @returns the current waveform as a byte array
      * @see https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode/getByteTimeDomainData
      * @returns a Uint8Array
      */
@@ -113,7 +113,7 @@ export class Analyser {
     }
 
     /**
-     * Gets the current frequency data as a float array
+     * @returns the current frequency data as a float array
      * @see https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode/getByteFrequencyData
      * @returns a Float32Array
      */

@@ -35,11 +35,11 @@ export class Geometry implements IGetSetVerticesData {
      */
     public uniqueId: number;
     /**
-     * Gets the delay loading state of the geometry (none by default which means not delayed)
+     * @returns the delay loading state of the geometry (none by default which means not delayed)
      */
     public delayLoadState = Constants.DELAYLOADSTATE_NONE;
     /**
-     * Gets the file containing the data to load when running in delay load state
+     * @returns the file containing the data to load when running in delay load state
      */
     public delayLoadingFile: Nullable<string>;
     /**
@@ -168,14 +168,14 @@ export class Geometry implements IGetSetVerticesData {
     }
 
     /**
-     * Gets the current extend of the geometry
+     * @returns the current extend of the geometry
      */
     public get extend(): { minimum: Vector3; maximum: Vector3 } {
         return this._extend;
     }
 
     /**
-     * Gets the hosting scene
+     * @returns the hosting scene
      * @returns the hosting Scene
      */
     public getScene(): Scene {
@@ -183,7 +183,7 @@ export class Geometry implements IGetSetVerticesData {
     }
 
     /**
-     * Gets the hosting engine
+     * @returns the hosting engine
      * @returns the hosting Engine
      */
     public getEngine(): Engine {
@@ -591,7 +591,7 @@ export class Geometry implements IGetSetVerticesData {
     }
 
     /**
-     * Gets the index buffer array
+     * @returns the index buffer array
      * @param copyWhenShared defines if the returned array must be cloned upon returning it if the current geometry is shared between multiple meshes
      * @param forceCopy defines a boolean indicating that the returned array must be cloned upon returning it
      * @returns the index buffer array
@@ -609,7 +609,7 @@ export class Geometry implements IGetSetVerticesData {
     }
 
     /**
-     * Gets the index buffer
+     * @returns the index buffer
      * @returns the index buffer
      */
     public getIndexBuffer(): Nullable<DataBuffer> {

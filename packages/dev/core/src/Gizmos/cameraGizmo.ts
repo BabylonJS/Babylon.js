@@ -106,7 +106,7 @@ export class CameraGizmo extends Gizmo {
     }
 
     /**
-     * Gets the material used to render the camera gizmo
+     * @returns the material used to render the camera gizmo
      */
     public get material() {
         return this._material;

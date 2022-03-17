@@ -473,7 +473,7 @@ export class Effect implements IDisposable {
     }
 
     /**
-     * Gets the index of a uniform variable.
+     * @returns the index of a uniform variable.
      * @param uniformName of the uniform to look up.
      * @returns the index.
      */
@@ -623,7 +623,7 @@ export class Effect implements IDisposable {
     }
 
     /**
-     * Gets the vertex shader source code of this effect
+     * @returns the vertex shader source code of this effect
      */
     public get vertexSourceCode(): string {
         return this._vertexSourceCodeOverride && this._fragmentSourceCodeOverride
@@ -632,7 +632,7 @@ export class Effect implements IDisposable {
     }
 
     /**
-     * Gets the fragment shader source code of this effect
+     * @returns the fragment shader source code of this effect
      */
     public get fragmentSourceCode(): string {
         return this._vertexSourceCodeOverride && this._fragmentSourceCodeOverride
@@ -641,14 +641,14 @@ export class Effect implements IDisposable {
     }
 
     /**
-     * Gets the vertex shader source code before it has been processed by the preprocessor
+     * @returns the vertex shader source code before it has been processed by the preprocessor
      */
     public get rawVertexSourceCode(): string {
         return this._rawVertexSourceCode;
     }
 
     /**
-     * Gets the fragment shader source code before it has been processed by the preprocessor
+     * @returns the fragment shader source code before it has been processed by the preprocessor
      */
     public get rawFragmentSourceCode(): string {
         return this._rawFragmentSourceCode;

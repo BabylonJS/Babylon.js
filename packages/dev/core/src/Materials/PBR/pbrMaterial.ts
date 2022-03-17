@@ -620,7 +620,7 @@ export class PBRMaterial extends PBRBaseMaterial {
     public unlit = false;
 
     /**
-     * Gets the image processing configuration used either in this material.
+     * @returns the image processing configuration used either in this material.
      */
     public get imageProcessingConfiguration(): ImageProcessingConfiguration {
         return this._imageProcessingConfiguration;
@@ -695,7 +695,7 @@ export class PBRMaterial extends PBRBaseMaterial {
     }
 
     /**
-     * Gets The camera contrast used on this material.
+     * @returns the camera contrast used on this material.
      */
     public get cameraContrast(): number {
         return this._imageProcessingConfiguration.contrast;
@@ -709,7 +709,7 @@ export class PBRMaterial extends PBRBaseMaterial {
     }
 
     /**
-     * Gets the Color Grading 2D Lookup Texture.
+     * @returns the Color Grading 2D Lookup Texture.
      */
     public get cameraColorGradingTexture(): Nullable<BaseTexture> {
         return this._imageProcessingConfiguration.colorGradingTexture;

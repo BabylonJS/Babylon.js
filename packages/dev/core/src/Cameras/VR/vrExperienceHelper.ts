@@ -2409,7 +2409,7 @@ export class VRExperienceHelper {
     }
 
     /**
-     * Gets the name of the VRExperienceHelper class
+     * @returns the name of the VRExperienceHelper class
      * @returns "VRExperienceHelper"
      */
     public getClassName(): string {

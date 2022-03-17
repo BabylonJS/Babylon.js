@@ -60,7 +60,7 @@ export class LightBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the current class name
+     * @returns the current class name
      * @returns the class name
      */
     public getClassName() {
@@ -68,77 +68,77 @@ export class LightBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the world position input component
+     * @returns the world position input component
      */
     public get worldPosition(): NodeMaterialConnectionPoint {
         return this._inputs[0];
     }
 
     /**
-     * Gets the world normal input component
+     * @returns the world normal input component
      */
     public get worldNormal(): NodeMaterialConnectionPoint {
         return this._inputs[1];
     }
 
     /**
-     * Gets the camera (or eye) position component
+     * @returns the camera (or eye) position component
      */
     public get cameraPosition(): NodeMaterialConnectionPoint {
         return this._inputs[2];
     }
 
     /**
-     * Gets the glossiness component
+     * @returns the glossiness component
      */
     public get glossiness(): NodeMaterialConnectionPoint {
         return this._inputs[3];
     }
 
     /**
-     * Gets the glossiness power component
+     * @returns the glossiness power component
      */
     public get glossPower(): NodeMaterialConnectionPoint {
         return this._inputs[4];
     }
 
     /**
-     * Gets the diffuse color component
+     * @returns the diffuse color component
      */
     public get diffuseColor(): NodeMaterialConnectionPoint {
         return this._inputs[5];
     }
 
     /**
-     * Gets the specular color component
+     * @returns the specular color component
      */
     public get specularColor(): NodeMaterialConnectionPoint {
         return this._inputs[6];
     }
 
     /**
-     * Gets the view matrix component
+     * @returns the view matrix component
      */
     public get view(): NodeMaterialConnectionPoint {
         return this._inputs[7];
     }
 
     /**
-     * Gets the diffuse output component
+     * @returns the diffuse output component
      */
     public get diffuseOutput(): NodeMaterialConnectionPoint {
         return this._outputs[0];
     }
 
     /**
-     * Gets the specular output component
+     * @returns the specular output component
      */
     public get specularOutput(): NodeMaterialConnectionPoint {
         return this._outputs[1];
     }
 
     /**
-     * Gets the shadow output component
+     * @returns the shadow output component
      */
     public get shadow(): NodeMaterialConnectionPoint {
         return this._outputs[2];

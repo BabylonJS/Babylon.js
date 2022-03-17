@@ -207,7 +207,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     public cullingStrategy = AbstractMesh.CULLINGSTRATEGY_BOUNDINGSPHERE_ONLY;
 
     /**
-     * Gets the number of facets in the mesh
+     * @returns the number of facets in the mesh
      * @see https://doc.babylonjs.com/how_to/how_to_use_facetdata#what-is-a-mesh-facet
      */
     public get facetNb(): number {
@@ -476,7 +476,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     }
 
     /**
-     * Gets the material used to render the mesh in a specific render pass
+     * @returns the material used to render the mesh in a specific render pass
      * @param renderPassId render pass id
      * @returns material used for the render pass. If no specific material is used for this render pass, undefined is returned (meaning mesh.material is used for this pass)
      */
@@ -738,7 +738,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     /** @hidden */
     public _lightSources = new Array<Light>();
 
-    /** Gets the list of lights affecting that mesh */
+    /** @returns the list of lights affecting that mesh */
     public get lightSources(): Light[] {
         return this._lightSources;
     }
@@ -843,7 +843,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     }
 
     /**
-     * Gets the mesh uniform buffer.
+     * @returns the mesh uniform buffer.
      * @returns the uniform buffer of the mesh.
      */
     public getMeshUniformBuffer(): UniformBuffer {
@@ -1294,7 +1294,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     }
 
     /**
-     * Gets the current world matrix
+     * @returns the current world matrix
      * @returns a Matrix
      */
     public getWorldMatrix(): Matrix {

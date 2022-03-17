@@ -35,7 +35,7 @@ export class ThinSprite {
         return this._animationStarted;
     }
 
-    /** Gets the initial key for the animation (setting it will restart the animation)  */
+    /** @returns the initial key for the animation (setting it will restart the animation)  */
     public get fromIndex() {
         return this._fromIndex;
     }

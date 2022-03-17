@@ -28,12 +28,12 @@ export class SelectorGroup {
         this._groupHeader = this._addGroupHeader(name);
     }
 
-    /** Gets the groupPanel of the SelectorGroup  */
+    /** @returns the groupPanel of the SelectorGroup  */
     public get groupPanel(): StackPanel {
         return this._groupPanel;
     }
 
-    /** Gets the selectors array */
+    /** @returns the selectors array */
     public get selectors(): StackPanel[] {
         return this._selectors;
     }
@@ -390,7 +390,7 @@ export class SelectionPanel extends Rectangle {
         return "SelectionPanel";
     }
 
-    /** Gets the (stack) panel of the SelectionPanel  */
+    /** @returns the (stack) panel of the SelectionPanel  */
     public get panel(): StackPanel {
         return this._panel;
     }

@@ -68,7 +68,7 @@ export interface IShadowGenerator {
     /** Gets or set the id of the shadow generator. It will be the one from the light if not defined */
     id: string;
     /**
-     * Gets the main RTT containing the shadow map (usually storing depth from the light point of view).
+     * @returns the main RTT containing the shadow map (usually storing depth from the light point of view).
      * @returns The render target texture if present otherwise, null
      */
     getShadowMap(): Nullable<RenderTargetTexture>;
@@ -97,7 +97,7 @@ export interface IShadowGenerator {
      */
     bindShadowLight(lightIndex: string, effect: Effect): void;
     /**
-     * Gets the transformation matrix used to project the meshes into the map from the light point of view.
+     * @returns the transformation matrix used to project the meshes into the map from the light point of view.
      * (eq to shadow projection matrix * light transform matrix)
      * @returns The transform matrix used to create the shadow map
      */
@@ -251,7 +251,7 @@ export class ShadowGenerator implements IShadowGenerator {
 
     protected _bias = 0.00005;
     /**
-     * Gets the bias: offset applied on the depth preventing acnea (in light direction).
+     * @returns the bias: offset applied on the depth preventing acnea (in light direction).
      */
     public get bias(): number {
         return this._bias;
@@ -265,7 +265,7 @@ export class ShadowGenerator implements IShadowGenerator {
 
     protected _normalBias = 0;
     /**
-     * Gets the normalBias: offset applied on the depth preventing acnea (along side the normal direction and proportional to the light/normal angle).
+     * @returns the normalBias: offset applied on the depth preventing acnea (along side the normal direction and proportional to the light/normal angle).
      */
     public get normalBias(): number {
         return this._normalBias;
@@ -279,7 +279,7 @@ export class ShadowGenerator implements IShadowGenerator {
 
     protected _blurBoxOffset = 1;
     /**
-     * Gets the blur box offset: offset applied during the blur pass.
+     * @returns the blur box offset: offset applied during the blur pass.
      * Only useful if useKernelBlur = false
      */
     public get blurBoxOffset(): number {
@@ -300,7 +300,7 @@ export class ShadowGenerator implements IShadowGenerator {
 
     protected _blurScale = 2;
     /**
-     * Gets the blur scale: scale of the blurred texture compared to the main shadow map.
+     * @returns the blur scale: scale of the blurred texture compared to the main shadow map.
      * 2 means half of the size.
      */
     public get blurScale(): number {
@@ -321,7 +321,7 @@ export class ShadowGenerator implements IShadowGenerator {
 
     protected _blurKernel = 1;
     /**
-     * Gets the blur kernel: kernel size of the blur pass.
+     * @returns the blur kernel: kernel size of the blur pass.
      * Only useful if useKernelBlur = true
      */
     public get blurKernel(): number {
@@ -363,7 +363,7 @@ export class ShadowGenerator implements IShadowGenerator {
 
     protected _depthScale: number;
     /**
-     * Gets the depth scale used in ESM mode.
+     * @returns the depth scale used in ESM mode.
      */
     public get depthScale(): number {
         return this._depthScale !== undefined ? this._depthScale : this._light.getDepthScale();
@@ -382,7 +382,7 @@ export class ShadowGenerator implements IShadowGenerator {
 
     protected _filter = ShadowGenerator.FILTER_NONE;
     /**
-     * Gets the current mode of the shadow generator (normal, PCF, ESM...).
+     * @returns the current mode of the shadow generator (normal, PCF, ESM...).
      * The returned value is a number equal to one of the available mode defined in ShadowMap.FILTER_x like _FILTER_NONE
      */
     public get filter(): number {
@@ -544,7 +544,7 @@ export class ShadowGenerator implements IShadowGenerator {
 
     protected _filteringQuality = ShadowGenerator.QUALITY_HIGH;
     /**
-     * Gets the PCF or PCSS Quality.
+     * @returns the PCF or PCSS Quality.
      * Only valid if usePercentageCloserFiltering or usePercentageCloserFiltering is true.
      */
     public get filteringQuality(): number {
@@ -586,7 +586,7 @@ export class ShadowGenerator implements IShadowGenerator {
 
     protected _contactHardeningLightSizeUVRatio = 0.1;
     /**
-     * Gets the Light Size (in shadow map uv unit) used in PCSS to determine the blocker search area and the penumbra size.
+     * @returns the Light Size (in shadow map uv unit) used in PCSS to determine the blocker search area and the penumbra size.
      * Using a ratio helps keeping shape stability independently of the map size.
      *
      * It does not account for the light projection as it was having too much
@@ -679,7 +679,7 @@ export class ShadowGenerator implements IShadowGenerator {
     protected _shadowMap2: Nullable<RenderTargetTexture>;
 
     /**
-     * Gets the main RTT containing the shadow map (usually storing depth from the light point of view).
+     * @returns the main RTT containing the shadow map (usually storing depth from the light point of view).
      * @returns The render target texture if present otherwise, null
      */
     public getShadowMap(): Nullable<RenderTargetTexture> {
@@ -687,7 +687,7 @@ export class ShadowGenerator implements IShadowGenerator {
     }
 
     /**
-     * Gets the RTT used during rendering (can be a blurred version of the shadow map or the shadow map itself).
+     * @returns the RTT used during rendering (can be a blurred version of the shadow map or the shadow map itself).
      * @returns The render target texture if the shadow map is present otherwise, null
      */
     public getShadowMapForRendering(): Nullable<RenderTargetTexture> {
@@ -699,7 +699,7 @@ export class ShadowGenerator implements IShadowGenerator {
     }
 
     /**
-     * Gets the class name of that object
+     * @returns the class name of that object
      * @returns "ShadowGenerator"
      */
     public getClassName(): string {
@@ -1750,7 +1750,7 @@ export class ShadowGenerator implements IShadowGenerator {
     }
 
     /**
-     * Gets the transformation matrix used to project the meshes into the map from the light point of view.
+     * @returns the transformation matrix used to project the meshes into the map from the light point of view.
      * (eq to shadow projection matrix * light transform matrix)
      * @returns The transform matrix used to create the shadow map
      */

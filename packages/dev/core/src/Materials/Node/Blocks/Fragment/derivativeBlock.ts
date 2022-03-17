@@ -25,7 +25,7 @@ export class DerivativeBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the current class name
+     * @returns the current class name
      * @returns the class name
      */
     public getClassName() {
@@ -33,21 +33,21 @@ export class DerivativeBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the input component
+     * @returns the input component
      */
     public get input(): NodeMaterialConnectionPoint {
         return this._inputs[0];
     }
 
     /**
-     * Gets the derivative output on x
+     * @returns the derivative output on x
      */
     public get dx(): NodeMaterialConnectionPoint {
         return this._outputs[0];
     }
 
     /**
-     * Gets the derivative output on y
+     * @returns the derivative output on y
      */
     public get dy(): NodeMaterialConnectionPoint {
         return this._outputs[1];

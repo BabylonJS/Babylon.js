@@ -213,35 +213,35 @@ export interface ICrowd {
     getAgentPosition(index: number): Vector3;
 
     /**
-     * Gets the agent position result in world space
+     * @returns the agent position result in world space
      * @param index agent index returned by addAgent
      * @param result output world space position
      */
     getAgentPositionToRef(index: number, result: Vector3): void;
 
     /**
-     * Gets the agent velocity in world space
+     * @returns the agent velocity in world space
      * @param index agent index returned by addAgent
      * @returns world space velocity
      */
     getAgentVelocity(index: number): Vector3;
 
     /**
-     * Gets the agent velocity result in world space
+     * @returns the agent velocity result in world space
      * @param index agent index returned by addAgent
      * @param result output world space velocity
      */
     getAgentVelocityToRef(index: number, result: Vector3): void;
 
     /**
-     * Gets the agent next target point on the path
+     * @returns the agent next target point on the path
      * @param index agent index returned by addAgent
      * @returns world space position
      */
     getAgentNextTargetPath(index: number): Vector3;
 
     /**
-     * Gets the agent state
+     * @returns the agent state
      * @param index agent index returned by addAgent
      * @returns agent state
      */
@@ -255,7 +255,7 @@ export interface ICrowd {
     overOffmeshConnection(index: number): boolean;
 
     /**
-     * Gets the agent next target point on the path
+     * @returns the agent next target point on the path
      * @param index agent index returned by addAgent
      * @param result output world space position
      */

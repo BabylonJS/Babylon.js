@@ -50,7 +50,7 @@ export class VectorMergerBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the current class name
+     * @returns the current class name
      * @returns the class name
      */
     public getClassName() {
@@ -58,91 +58,91 @@ export class VectorMergerBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the xyzw component (input)
+     * @returns the xyzw component (input)
      */
     public get xyzwIn(): NodeMaterialConnectionPoint {
         return this._inputs[0];
     }
 
     /**
-     * Gets the xyz component (input)
+     * @returns the xyz component (input)
      */
     public get xyzIn(): NodeMaterialConnectionPoint {
         return this._inputs[1];
     }
 
     /**
-     * Gets the xy component (input)
+     * @returns the xy component (input)
      */
     public get xyIn(): NodeMaterialConnectionPoint {
         return this._inputs[2];
     }
 
     /**
-     * Gets the zw component (input)
+     * @returns the zw component (input)
      */
     public get zwIn(): NodeMaterialConnectionPoint {
         return this._inputs[3];
     }
 
     /**
-     * Gets the x component (input)
+     * @returns the x component (input)
      */
     public get x(): NodeMaterialConnectionPoint {
         return this._inputs[4];
     }
 
     /**
-     * Gets the y component (input)
+     * @returns the y component (input)
      */
     public get y(): NodeMaterialConnectionPoint {
         return this._inputs[5];
     }
 
     /**
-     * Gets the z component (input)
+     * @returns the z component (input)
      */
     public get z(): NodeMaterialConnectionPoint {
         return this._inputs[6];
     }
 
     /**
-     * Gets the w component (input)
+     * @returns the w component (input)
      */
     public get w(): NodeMaterialConnectionPoint {
         return this._inputs[7];
     }
 
     /**
-     * Gets the xyzw component (output)
+     * @returns the xyzw component (output)
      */
     public get xyzw(): NodeMaterialConnectionPoint {
         return this._outputs[0];
     }
 
     /**
-     * Gets the xyz component (output)
+     * @returns the xyz component (output)
      */
     public get xyzOut(): NodeMaterialConnectionPoint {
         return this._outputs[1];
     }
 
     /**
-     * Gets the xy component (output)
+     * @returns the xy component (output)
      */
     public get xyOut(): NodeMaterialConnectionPoint {
         return this._outputs[2];
     }
 
     /**
-     * Gets the zw component (output)
+     * @returns the zw component (output)
      */
     public get zwOut(): NodeMaterialConnectionPoint {
         return this._outputs[3];
     }
 
     /**
-     * Gets the xy component (output)
+     * @returns the xy component (output)
      * @deprecated Please use xyOut instead.
      */
     public get xy(): NodeMaterialConnectionPoint {
@@ -150,7 +150,7 @@ export class VectorMergerBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the xyz component (output)
+     * @returns the xyz component (output)
      * @deprecated Please use xyzOut instead.
      */
     public get xyz(): NodeMaterialConnectionPoint {

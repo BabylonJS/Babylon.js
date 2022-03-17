@@ -29,7 +29,7 @@ export class TwirlBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the current class name
+     * @returns the current class name
      * @returns the class name
      */
     public getClassName() {
@@ -37,49 +37,49 @@ export class TwirlBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the input component
+     * @returns the input component
      */
     public get input(): NodeMaterialConnectionPoint {
         return this._inputs[0];
     }
 
     /**
-     * Gets the strength component
+     * @returns the strength component
      */
     public get strength(): NodeMaterialConnectionPoint {
         return this._inputs[1];
     }
 
     /**
-     * Gets the center component
+     * @returns the center component
      */
     public get center(): NodeMaterialConnectionPoint {
         return this._inputs[2];
     }
 
     /**
-     * Gets the offset component
+     * @returns the offset component
      */
     public get offset(): NodeMaterialConnectionPoint {
         return this._inputs[3];
     }
 
     /**
-     * Gets the output component
+     * @returns the output component
      */
     public get output(): NodeMaterialConnectionPoint {
         return this._outputs[0];
     }
 
     /**
-     * Gets the x output component
+     * @returns the x output component
      */
     public get x(): NodeMaterialConnectionPoint {
         return this._outputs[1];
     }
 
     /**
-     * Gets the y output component
+     * @returns the y output component
      */
     public get y(): NodeMaterialConnectionPoint {
         return this._outputs[2];

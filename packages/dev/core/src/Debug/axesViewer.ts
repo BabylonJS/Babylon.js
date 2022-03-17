@@ -19,7 +19,7 @@ export class AxesViewer {
     private _instanced = false;
 
     /**
-     * Gets the hosting scene
+     * @returns the hosting scene
      */
     public scene: Nullable<Scene> = null;
 
@@ -28,17 +28,17 @@ export class AxesViewer {
      */
     public scaleLines = 1;
 
-    /** Gets the node hierarchy used to render x-axis */
+    /** @returns the node hierarchy used to render x-axis */
     public get xAxis(): TransformNode {
         return this._xAxis;
     }
 
-    /** Gets the node hierarchy used to render y-axis */
+    /** @returns the node hierarchy used to render y-axis */
     public get yAxis(): TransformNode {
         return this._yAxis;
     }
 
-    /** Gets the node hierarchy used to render z-axis */
+    /** @returns the node hierarchy used to render z-axis */
     public get zAxis(): TransformNode {
         return this._zAxis;
     }

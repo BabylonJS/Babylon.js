@@ -38,7 +38,7 @@ export class MultiviewRenderTarget extends RenderTargetTexture {
     }
 
     /**
-     * Gets the number of views the corresponding to the texture (eg. a MultiviewRenderTarget will have > 1)
+     * @returns the number of views the corresponding to the texture (eg. a MultiviewRenderTarget will have > 1)
      * @returns the view count
      */
     public getViewCount() {

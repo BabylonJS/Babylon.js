@@ -55,7 +55,7 @@ export class AnisotropyBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the current class name
+     * @returns the current class name
      * @returns the class name
      */
     public getClassName() {
@@ -63,35 +63,35 @@ export class AnisotropyBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the intensity input component
+     * @returns the intensity input component
      */
     public get intensity(): NodeMaterialConnectionPoint {
         return this._inputs[0];
     }
 
     /**
-     * Gets the direction input component
+     * @returns the direction input component
      */
     public get direction(): NodeMaterialConnectionPoint {
         return this._inputs[1];
     }
 
     /**
-     * Gets the uv input component
+     * @returns the uv input component
      */
     public get uv(): NodeMaterialConnectionPoint {
         return this._inputs[2];
     }
 
     /**
-     * Gets the worldTangent input component
+     * @returns the worldTangent input component
      */
     public get worldTangent(): NodeMaterialConnectionPoint {
         return this._inputs[3];
     }
 
     /**
-     * Gets the anisotropy object output component
+     * @returns the anisotropy object output component
      */
     public get anisotropy(): NodeMaterialConnectionPoint {
         return this._outputs[0];
@@ -141,7 +141,7 @@ export class AnisotropyBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the main code of the block (fragment side)
+     * @returns the main code of the block (fragment side)
      * @param state current state of the node material building
      * @param generateTBNSpace if true, the code needed to create the TBN coordinate space is generated
      * @returns the shader code

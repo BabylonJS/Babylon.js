@@ -47,7 +47,7 @@ export class BlurPostProcess extends PostProcess {
     }
 
     /**
-     * Gets the length in pixels of the blur sample region
+     * @returns the length in pixels of the blur sample region
      */
     public get kernel(): number {
         return this._idealKernel;

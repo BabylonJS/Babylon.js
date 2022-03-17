@@ -230,7 +230,7 @@ export class HighlightLayer extends EffectLayer {
     }
 
     /**
-     * Gets the horizontal size of the blur.
+     * @returns the horizontal size of the blur.
      */
     @serialize()
     public get blurHorizontalSize(): number {
@@ -238,7 +238,7 @@ export class HighlightLayer extends EffectLayer {
     }
 
     /**
-     * Gets the vertical size of the blur.
+     * @returns the vertical size of the blur.
      */
     @serialize()
     public get blurVerticalSize(): number {
@@ -819,7 +819,7 @@ export class HighlightLayer extends EffectLayer {
     }
 
     /**
-     * Gets the class name of the effect layer
+     * @returns the class name of the effect layer
      * @returns the string with the class name of the effect layer
      */
     public getClassName(): string {

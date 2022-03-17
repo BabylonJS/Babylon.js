@@ -49,14 +49,14 @@ export class ScrollViewer extends Rectangle {
     private _oldWindowContentsHeight: number = 0;
 
     /**
-     * Gets the horizontal scrollbar
+     * @returns the horizontal scrollbar
      */
     public get horizontalBar(): ScrollBar | ImageScrollBar {
         return this._horizontalBar;
     }
 
     /**
-     * Gets the vertical scrollbar
+     * @returns the vertical scrollbar
      */
     public get verticalBar(): ScrollBar | ImageScrollBar {
         return this._verticalBar;
@@ -87,7 +87,7 @@ export class ScrollViewer extends Rectangle {
         return this;
     }
 
-    /** Gets the list of children */
+    /** @returns the list of children */
     public get children(): Control[] {
         return this._window.children;
     }
@@ -111,12 +111,12 @@ export class ScrollViewer extends Rectangle {
         this._window.freezeControls = value;
     }
 
-    /** Gets the bucket width */
+    /** @returns the bucket width */
     public get bucketWidth(): number {
         return this._window.bucketWidth;
     }
 
-    /** Gets the bucket height */
+    /** @returns the bucket height */
     public get bucketHeight(): number {
         return this._window.bucketHeight;
     }

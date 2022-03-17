@@ -22,7 +22,7 @@ export class ElbowBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the current class name
+     * @returns the current class name
      * @returns the class name
      */
     public getClassName() {
@@ -30,14 +30,14 @@ export class ElbowBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the input component
+     * @returns the input component
      */
     public get input(): NodeMaterialConnectionPoint {
         return this._inputs[0];
     }
 
     /**
-     * Gets the output component
+     * @returns the output component
      */
     public get output(): NodeMaterialConnectionPoint {
         return this._outputs[0];

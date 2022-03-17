@@ -22,7 +22,7 @@ export class ArcRotateCameraPointersInput extends BaseCameraPointersInput {
     public static MinimumRadiusForPinch: number = 0.001;
 
     /**
-     * Gets the class name of the current input.
+     * @returns the class name of the current input.
      * @returns the class name
      */
     public getClassName(): string {

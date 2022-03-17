@@ -129,7 +129,7 @@ export class Collider {
     }
 
     /**
-     * Gets the plane normal used to compute the sliding response (in local space)
+     * @returns the plane normal used to compute the sliding response (in local space)
      */
     public get slidePlaneNormal(): Vector3 {
         return this._slidePlaneNormal;

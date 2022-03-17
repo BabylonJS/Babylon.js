@@ -118,39 +118,39 @@ export interface IPhysicsEnabledObject {
      */
     computeWorldMatrix(force: boolean): Matrix;
     /**
-     * Gets the world matrix
+     * @returns the world matrix
      * @returns A world matrix
      */
     getWorldMatrix?(): Matrix;
     /**
-     * Gets the child meshes
+     * @returns the child meshes
      * @param directDescendantsOnly Specifies if only direct-descendants should be obtained
      * @returns An array of abstract meshes
      */
     getChildMeshes?(directDescendantsOnly?: boolean): Array<AbstractMesh>;
     /**
-     * Gets the vertex data
+     * @returns the vertex data
      * @param kind The type of vertex data
      * @returns A nullable array of numbers, or a float32 array
      */
     getVerticesData(kind: string): Nullable<Array<number> | Float32Array>;
     /**
-     * Gets the indices from the mesh
+     * @returns the indices from the mesh
      * @returns A nullable array of index arrays
      */
     getIndices?(): Nullable<IndicesArray>;
     /**
-     * Gets the scene from the mesh
+     * @returns the scene from the mesh
      * @returns the indices array or null
      */
     getScene?(): Scene;
     /**
-     * Gets the absolute position from the mesh
+     * @returns the absolute position from the mesh
      * @returns the absolute position
      */
     getAbsolutePosition(): Vector3;
     /**
-     * Gets the absolute pivot point from the mesh
+     * @returns the absolute pivot point from the mesh
      * @returns the absolute pivot point
      */
     getAbsolutePivotPoint(): Vector3;
@@ -177,7 +177,7 @@ export interface IPhysicsEnabledObject {
      */
     setAbsolutePosition(absolutePosition: Vector3): TransformNode;
     /**
-     * Gets the class name of the mesh
+     * @returns the class name of the mesh
      * @returns The class name
      */
     getClassName(): string;
@@ -250,7 +250,7 @@ export class PhysicsImpostor {
     }
 
     /**
-     * Gets the mass of the physics imposter
+     * @returns the mass of the physics imposter
      */
     get mass(): number {
         return this._physicsEngine ? this._physicsEngine.getPhysicsPlugin().getBodyMass(this) : 0;
@@ -261,7 +261,7 @@ export class PhysicsImpostor {
     }
 
     /**
-     * Gets the coefficient of friction
+     * @returns the coefficient of friction
      */
     get friction(): number {
         return this._physicsEngine ? this._physicsEngine.getPhysicsPlugin().getBodyFriction(this) : 0;
@@ -278,7 +278,7 @@ export class PhysicsImpostor {
     }
 
     /**
-     * Gets the coefficient of restitution
+     * @returns the coefficient of restitution
      */
     get restitution(): number {
         return this._physicsEngine ? this._physicsEngine.getPhysicsPlugin().getBodyRestitution(this) : 0;
@@ -295,7 +295,7 @@ export class PhysicsImpostor {
     }
 
     /**
-     * Gets the pressure of a soft body; only supported by the AmmoJSPlugin
+     * @returns the pressure of a soft body; only supported by the AmmoJSPlugin
      */
     get pressure(): number {
         if (!this._physicsEngine) {
@@ -323,7 +323,7 @@ export class PhysicsImpostor {
     }
 
     /**
-     * Gets the stiffness of a soft body; only supported by the AmmoJSPlugin
+     * @returns the stiffness of a soft body; only supported by the AmmoJSPlugin
      */
     get stiffness(): number {
         if (!this._physicsEngine) {
@@ -351,7 +351,7 @@ export class PhysicsImpostor {
     }
 
     /**
-     * Gets the velocityIterations of a soft body; only supported by the AmmoJSPlugin
+     * @returns the velocityIterations of a soft body; only supported by the AmmoJSPlugin
      */
     get velocityIterations(): number {
         if (!this._physicsEngine) {
@@ -379,7 +379,7 @@ export class PhysicsImpostor {
     }
 
     /**
-     * Gets the positionIterations of a soft body; only supported by the AmmoJSPlugin
+     * @returns the positionIterations of a soft body; only supported by the AmmoJSPlugin
      */
     get positionIterations(): number {
         if (!this._physicsEngine) {
@@ -567,7 +567,7 @@ export class PhysicsImpostor {
     }*/
 
     /**
-     * Gets the body that holds this impostor. Either its own, or its parent.
+     * @returns the body that holds this impostor. Either its own, or its parent.
      */
     public get physicsBody(): any {
         return this._parent && !this._options.ignoreParent ? this._parent.physicsBody : this._physicsBody;
@@ -607,7 +607,7 @@ export class PhysicsImpostor {
     }
 
     /**
-     * Gets the object extend size
+     * @returns the object extend size
      * @returns the object extend size
      */
     public getObjectExtendSize(): Vector3 {
@@ -638,7 +638,7 @@ export class PhysicsImpostor {
     }
 
     /**
-     * Gets the object center
+     * @returns the object center
      * @returns The object center
      */
     public getObjectCenter(): Vector3 {
@@ -683,7 +683,7 @@ export class PhysicsImpostor {
     }
 
     /**
-     * Gets the linear velocity
+     * @returns the linear velocity
      * @returns  linear velocity or null
      */
     public getLinearVelocity(): Nullable<Vector3> {
@@ -701,7 +701,7 @@ export class PhysicsImpostor {
     }
 
     /**
-     * Gets the angular velocity
+     * @returns the angular velocity
      * @returns angular velocity or null
      */
     public getAngularVelocity(): Nullable<Vector3> {
@@ -1126,7 +1126,7 @@ export class PhysicsImpostor {
     }
 
     /**
-     * Gets the box size of the physics imposter and stores the result in the input parameter
+     * @returns the box size of the physics imposter and stores the result in the input parameter
      * @param result Stores the box size
      * @returns The physics imposter
      */
@@ -1139,7 +1139,7 @@ export class PhysicsImpostor {
     }
 
     /**
-     * Gets the radius of the physics imposter
+     * @returns the radius of the physics imposter
      * @returns Radius of the physics imposter
      */
     public getRadius(): number {

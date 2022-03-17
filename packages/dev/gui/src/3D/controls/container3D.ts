@@ -11,12 +11,12 @@ export class Container3D extends Control3D {
     private _blockLayout = false;
 
     /**
-     * Gets the list of child controls
+     * @returns the list of child controls
      */
     protected _children = new Array<Control3D>();
 
     /**
-     * Gets the list of child controls
+     * @returns the list of child controls
      */
     public get children(): Array<Control3D> {
         return this._children;

@@ -324,11 +324,11 @@ interface IRegisteredPlugin {
  */
 interface IFileInfo {
     /**
-     * Gets the file url
+     * @returns the file url
      */
     url: string;
     /**
-     * Gets the root url
+     * @returns the root url
      */
     rootUrl: string;
     /**
@@ -336,7 +336,7 @@ interface IFileInfo {
      */
     name: string;
     /**
-     * Gets the file
+     * @returns the file
      */
     file: Nullable<File>;
 }
@@ -423,7 +423,7 @@ export class SceneLoader {
     private static _showingLoadingScreen = false;
 
     /**
-     * Gets the default plugin (used to load Babylon files)
+     * @returns the default plugin (used to load Babylon files)
      * @returns the .babylon plugin
      */
     public static GetDefaultPlugin(): IRegisteredPlugin {

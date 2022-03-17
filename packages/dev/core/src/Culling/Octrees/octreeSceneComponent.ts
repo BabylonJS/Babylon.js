@@ -20,7 +20,7 @@ declare module "../../scene" {
         _selectionOctree: Octree<AbstractMesh>;
 
         /**
-         * Gets the octree used to boost mesh selection (picking)
+         * @returns the octree used to boost mesh selection (picking)
          * @see https://doc.babylonjs.com/how_to/optimizing_your_scene_with_octrees
          */
         selectionOctree: Octree<AbstractMesh>;

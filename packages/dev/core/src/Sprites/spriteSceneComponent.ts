@@ -89,7 +89,7 @@ declare module "../scene" {
         setPointerOverSprite(sprite: Nullable<Sprite>): void;
 
         /**
-         * Gets the sprite under the pointer
+         * @returns the sprite under the pointer
          * @returns a Sprite or null if no sprite is under the pointer
          */
         getPointerOverSprite(): Nullable<Sprite>;

@@ -99,7 +99,7 @@ export class CubeTexture extends BaseTexture {
     protected _forcedExtension: Nullable<string> = null;
 
     /**
-     * Gets the forced extension (if any)
+     * @returns the forced extension (if any)
      */
     public get forcedExtension(): Nullable<string> {
         return this._forcedExtension;

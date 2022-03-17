@@ -172,7 +172,7 @@ export class GroupModelAnimation implements IModelAnimation {
     }
 
     /**
-     * Gets the speed ratio to use for all animations
+     * @returns the speed ratio to use for all animations
      */
     public get speedRatio(): number {
         return this._animationGroup.speedRatio;

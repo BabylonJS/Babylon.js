@@ -107,7 +107,7 @@ export class FactorGradient implements IValueGradient {
  */
 export class GradientHelper {
     /**
-     * Gets the current gradient from an array of IValueGradient
+     * @returns the current gradient from an array of IValueGradient
      * @param ratio defines the current ratio to get
      * @param gradients defines the array of IValueGradient
      * @param updateFunc defines the callback function used to get the final value from the selected gradients

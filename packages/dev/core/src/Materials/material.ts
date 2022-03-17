@@ -308,7 +308,7 @@ export class Material implements IAnimatable {
     }
 
     /**
-     * Gets the alpha value of the material
+     * @returns the alpha value of the material
      */
     public get alpha(): number {
         return this._alpha;
@@ -332,7 +332,7 @@ export class Material implements IAnimatable {
     }
 
     /**
-     * Gets the culling state
+     * @returns the culling state
      */
     public get backFaceCulling(): boolean {
         return this._backFaceCulling;
@@ -356,7 +356,7 @@ export class Material implements IAnimatable {
     }
 
     /**
-     * Gets the type of faces that should be culled
+     * @returns the type of faces that should be culled
      */
     public get cullBackFaces(): boolean {
         return this._cullBackFaces;
@@ -513,7 +513,7 @@ export class Material implements IAnimatable {
     }
 
     /**
-     * Gets the value of the alpha mode
+     * @returns the value of the alpha mode
      */
     public get alphaMode(): number {
         return this._alphaMode;
@@ -539,7 +539,7 @@ export class Material implements IAnimatable {
     }
 
     /**
-     * Gets the depth pre-pass value
+     * @returns the depth pre-pass value
      */
     public get needDepthPrePass(): boolean {
         return this._needDepthPrePass;
@@ -600,7 +600,7 @@ export class Material implements IAnimatable {
     }
 
     /**
-     * Gets the value of the fog enabled state
+     * @returns the value of the fog enabled state
      */
     public get fogEnabled(): boolean {
         return this._fogEnabled;
@@ -644,7 +644,7 @@ export class Material implements IAnimatable {
     }
 
     /**
-     * Gets the value specifying if point clouds are enabled
+     * @returns the value specifying if point clouds are enabled
      */
     @serialize()
     public get pointsCloud(): boolean {
@@ -665,7 +665,7 @@ export class Material implements IAnimatable {
     }
 
     /**
-     * Gets the material fill mode
+     * @returns the material fill mode
      */
     @serialize()
     public get fillMode(): number {
@@ -862,7 +862,7 @@ export class Material implements IAnimatable {
     }
 
     /**
-     * Gets the class name of the material
+     * @returns the class name of the material
      * @returns a string with the class name of the material
      */
     public getClassName(): string {
@@ -949,7 +949,7 @@ export class Material implements IAnimatable {
     protected _transparencyMode: Nullable<number> = null;
 
     /**
-     * Gets the current transparency mode.
+     * @returns the current transparency mode.
      */
     @serialize()
     public get transparencyMode(): Nullable<number> {
@@ -1032,7 +1032,7 @@ export class Material implements IAnimatable {
     }
 
     /**
-     * Gets the texture used for the alpha test
+     * @returns the texture used for the alpha test
      * @returns the texture to use for alpha testing
      */
     public getAlphaTestTexture(): Nullable<BaseTexture> {
@@ -1238,7 +1238,7 @@ export class Material implements IAnimatable {
     }
 
     /**
-     * Gets the active textures from the material
+     * @returns the active textures from the material
      * @returns an array of textures
      */
     public getActiveTextures(): BaseTexture[] {
@@ -1269,7 +1269,7 @@ export class Material implements IAnimatable {
     }
 
     /**
-     * Gets the meshes bound to the material
+     * @returns the meshes bound to the material
      * @returns an array of meshes bound to the material
      */
     public getBindedMeshes(): AbstractMesh[] {

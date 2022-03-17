@@ -171,7 +171,7 @@ export class VirtualKeyboard extends StackPanel {
     private _connectedInputTexts: ConnectedInputText[] = [];
     private _onKeyPressObserver: Nullable<Observer<string>> = null;
 
-    /** Gets the input text control currently attached to the keyboard */
+    /** @returns the input text control currently attached to the keyboard */
     public get connectedInputText(): Nullable<InputText> {
         return this._currentlyConnectedInputText;
     }

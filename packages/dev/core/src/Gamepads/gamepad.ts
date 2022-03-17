@@ -164,7 +164,7 @@ export class Gamepad {
     }
 
     /**
-     * Gets the left joystick
+     * @returns the left joystick
      */
     public get leftStick(): StickValues {
         return this._leftStick;
@@ -179,7 +179,7 @@ export class Gamepad {
         this._leftStick = newValues;
     }
     /**
-     * Gets the right joystick
+     * @returns the right joystick
      */
     public get rightStick(): StickValues {
         return this._rightStick;

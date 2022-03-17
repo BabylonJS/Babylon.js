@@ -49,7 +49,7 @@ export class ImageSourceBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the sampler name associated with this image source
+     * @returns the sampler name associated with this image source
      */
     public get samplerName(): string {
         return this._samplerName;
@@ -87,7 +87,7 @@ export class ImageSourceBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the current class name
+     * @returns the current class name
      * @returns the class name
      */
     public getClassName() {
@@ -95,7 +95,7 @@ export class ImageSourceBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the output component
+     * @returns the output component
      */
     public get source(): NodeMaterialConnectionPoint {
         return this._outputs[0];

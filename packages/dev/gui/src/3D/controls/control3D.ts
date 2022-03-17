@@ -110,7 +110,7 @@ export class Control3D implements IDisposable, IBehaviorAware<Control3D> {
     private _behaviors = new Array<Behavior<Control3D>>();
 
     /**
-     * Gets the list of attached behaviors
+     * @returns the list of attached behaviors
      * @see https://doc.babylonjs.com/features/behaviour
      */
     public get behaviors(): Behavior<Control3D>[] {
@@ -227,14 +227,14 @@ export class Control3D implements IDisposable, IBehaviorAware<Control3D> {
     }
 
     /**
-     * Gets the transform node used by this control
+     * @returns the transform node used by this control
      */
     public get node(): Nullable<TransformNode> {
         return this._node;
     }
 
     /**
-     * Gets the mesh used to render this control
+     * @returns the mesh used to render this control
      */
     public get mesh(): Nullable<AbstractMesh> {
         if (this._node instanceof AbstractMesh) {

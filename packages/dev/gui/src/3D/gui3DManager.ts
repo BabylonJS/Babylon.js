@@ -51,7 +51,7 @@ export class GUI3DManager implements IDisposable {
     /** @hidden */
     public _touchSharedMaterials: { [key: string]: Material } = {};
 
-    /** Gets the hosting scene */
+    /** @returns the hosting scene */
     public get scene(): Scene {
         return this._scene;
     }
@@ -61,7 +61,7 @@ export class GUI3DManager implements IDisposable {
         return this._utilityLayer;
     }
 
-    /** Gets the scaling for all UI elements owned by this manager */
+    /** @returns the scaling for all UI elements owned by this manager */
     public get controlScaling() {
         return this._customControlScaling;
     }
@@ -198,7 +198,7 @@ export class GUI3DManager implements IDisposable {
     }
 
     /**
-     * Gets the root container
+     * @returns the root container
      */
     public get rootContainer(): Container3D {
         return this._rootContainer;

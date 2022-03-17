@@ -105,14 +105,14 @@ export class MorphTargetManager implements IDisposable {
     }
 
     /**
-     * Gets the unique ID of this manager
+     * @returns the unique ID of this manager
      */
     public get uniqueId(): number {
         return this._uniqueId;
     }
 
     /**
-     * Gets the number of vertices handled by this manager
+     * @returns the number of vertices handled by this manager
      */
     public get vertexCount(): number {
         return this._vertexCount;
@@ -140,21 +140,21 @@ export class MorphTargetManager implements IDisposable {
     }
 
     /**
-     * Gets the number of targets stored in this manager
+     * @returns the number of targets stored in this manager
      */
     public get numTargets(): number {
         return this._targets.length;
     }
 
     /**
-     * Gets the number of influencers (ie. the number of targets with influences > 0)
+     * @returns the number of influencers (ie. the number of targets with influences > 0)
      */
     public get numInfluencers(): number {
         return this._activeTargets.length;
     }
 
     /**
-     * Gets the list of influences (one per target)
+     * @returns the list of influences (one per target)
      */
     public get influences(): Float32Array {
         return this._influences;
@@ -181,7 +181,7 @@ export class MorphTargetManager implements IDisposable {
     }
 
     /**
-     * Gets the active target at specified index. An active target is a target with an influence > 0
+     * @returns the active target at specified index. An active target is a target with an influence > 0
      * @param index defines the index to check
      * @returns the requested target
      */
@@ -190,7 +190,7 @@ export class MorphTargetManager implements IDisposable {
     }
 
     /**
-     * Gets the target at specified index
+     * @returns the target at specified index
      * @param index defines the index to check
      * @returns the requested target
      */

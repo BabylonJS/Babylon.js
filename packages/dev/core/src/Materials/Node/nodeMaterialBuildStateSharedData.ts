@@ -15,17 +15,17 @@ import { Immutable } from "../../types";
  */
 export class NodeMaterialBuildStateSharedData {
     /**
-     * Gets the list of emitted varyings
+     * @returns the list of emitted varyings
      */
     public temps = new Array<string>();
 
     /**
-     * Gets the list of emitted varyings
+     * @returns the list of emitted varyings
      */
     public varyings = new Array<string>();
 
     /**
-     * Gets the varying declaration string
+     * @returns the varying declaration string
      */
     public varyingDeclaration = "";
 
@@ -80,7 +80,7 @@ export class NodeMaterialBuildStateSharedData {
     public blockingBlocks = new Array<NodeMaterialBlock>();
 
     /**
-     * Gets the list of animated inputs
+     * @returns the list of animated inputs
      */
     public animatedInputs = new Array<InputBlock>();
 
@@ -105,7 +105,7 @@ export class NodeMaterialBuildStateSharedData {
     public scene: Scene;
 
     /**
-     * Gets the compilation hints emitted at compilation time
+     * @returns the compilation hints emitted at compilation time
      */
     public hints = {
         needWorldViewMatrix: false,

@@ -33,7 +33,7 @@ export class CloudBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the current class name
+     * @returns the current class name
      * @returns the class name
      */
     public getClassName() {
@@ -41,42 +41,42 @@ export class CloudBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the seed input component
+     * @returns the seed input component
      */
     public get seed(): NodeMaterialConnectionPoint {
         return this._inputs[0];
     }
 
     /**
-     * Gets the chaos input component
+     * @returns the chaos input component
      */
     public get chaos(): NodeMaterialConnectionPoint {
         return this._inputs[1];
     }
 
     /**
-     * Gets the offset X input component
+     * @returns the offset X input component
      */
     public get offsetX(): NodeMaterialConnectionPoint {
         return this._inputs[2];
     }
 
     /**
-     * Gets the offset Y input component
+     * @returns the offset Y input component
      */
     public get offsetY(): NodeMaterialConnectionPoint {
         return this._inputs[3];
     }
 
     /**
-     * Gets the offset Z input component
+     * @returns the offset Z input component
      */
     public get offsetZ(): NodeMaterialConnectionPoint {
         return this._inputs[4];
     }
 
     /**
-     * Gets the output component
+     * @returns the output component
      */
     public get output(): NodeMaterialConnectionPoint {
         return this._outputs[0];

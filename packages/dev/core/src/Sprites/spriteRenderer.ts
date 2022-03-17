@@ -64,7 +64,7 @@ export class SpriteRenderer {
     public fogEnabled = true;
 
     /**
-     * Gets the capacity of the manager
+     * @returns the capacity of the manager
      */
     public get capacity() {
         return this._capacity;

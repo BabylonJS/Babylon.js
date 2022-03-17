@@ -73,7 +73,7 @@ declare module "../../Engines/engine" {
         isVRDevicePresent(): boolean;
 
         /**
-         * Gets the current webVR device
+         * @returns the current webVR device
          * @returns the current webVR device (or null)
          */
         getVRDevice(): any;

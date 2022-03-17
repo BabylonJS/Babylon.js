@@ -31,7 +31,7 @@ export class ParticleSystemSet implements IDisposable {
     private _emitterNodeIsOwned = true;
 
     /**
-     * Gets the particle system list
+     * @returns the particle system list
      */
     public systems = new Array<IParticleSystem>();
 

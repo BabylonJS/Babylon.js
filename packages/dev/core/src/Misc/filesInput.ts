@@ -108,7 +108,7 @@ export class FilesInput {
         }
     }
 
-    /** Gets the current list of files to load */
+    /** @returns the current list of files to load */
     public get filesToLoad() {
         return this._filesToLoad;
     }

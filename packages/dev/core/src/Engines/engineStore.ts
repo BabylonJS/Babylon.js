@@ -8,14 +8,14 @@ declare type Scene = import("../scene").Scene;
  * during the life time of the application.
  */
 export class EngineStore {
-    /** Gets the list of created engines */
+    /** @returns the list of created engines */
     public static Instances = new Array<Engine>();
 
     /** @hidden */
     public static _LastCreatedScene: Nullable<Scene> = null;
 
     /**
-     * Gets the latest created engine
+     * @returns the latest created engine
      */
     public static get LastCreatedEngine(): Nullable<Engine> {
         if (this.Instances.length === 0) {
@@ -26,7 +26,7 @@ export class EngineStore {
     }
 
     /**
-     * Gets the latest created scene
+     * @returns the latest created scene
      */
     public static get LastCreatedScene(): Nullable<Scene> {
         return this._LastCreatedScene;

@@ -235,18 +235,18 @@ export class CascadedShadowGenerator extends ShadowGenerator {
         this._breaksAreDirty = true;
     }
 
-    /** Gets the minimal distance used in the cascade break computation */
+    /** @returns the minimal distance used in the cascade break computation */
     public get minDistance(): number {
         return this._minDistance;
     }
 
-    /** Gets the maximal distance used in the cascade break computation */
+    /** @returns the maximal distance used in the cascade break computation */
     public get maxDistance(): number {
         return this._maxDistance;
     }
 
     /**
-     * Gets the class name of that object
+     * @returns the class name of that object
      * @returns "CascadedShadowGenerator"
      */
     public getClassName(): string {
@@ -290,7 +290,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
 
     private _shadowMaxZ: number;
     /**
-     * Gets the shadow max z distance. It's the limit beyond which shadows are not displayed.
+     * @returns the shadow max z distance. It's the limit beyond which shadows are not displayed.
      * It defaults to camera.maxZ
      */
     public get shadowMaxZ(): number {
@@ -385,7 +385,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
     }
 
     /**
-     * Gets the view matrix corresponding to a given cascade
+     * @returns the view matrix corresponding to a given cascade
      * @param cascadeNum cascade to retrieve the view matrix from
      * @returns the cascade view matrix
      */
@@ -394,7 +394,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
     }
 
     /**
-     * Gets the projection matrix corresponding to a given cascade
+     * @returns the projection matrix corresponding to a given cascade
      * @param cascadeNum cascade to retrieve the projection matrix from
      * @returns the cascade projection matrix
      */
@@ -403,7 +403,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
     }
 
     /**
-     * Gets the transformation matrix corresponding to a given cascade
+     * @returns the transformation matrix corresponding to a given cascade
      * @param cascadeNum cascade to retrieve the transformation matrix from
      * @returns the cascade transformation matrix
      */
@@ -981,7 +981,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
     }
 
     /**
-     * Gets the transformation matrix of the first cascade used to project the meshes into the map from the light point of view.
+     * @returns the transformation matrix of the first cascade used to project the meshes into the map from the light point of view.
      * (eq to view projection * shadow projection matrices)
      * @returns The transform matrix used to create the shadow map
      */

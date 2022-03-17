@@ -31,7 +31,7 @@ export class VirtualJoysticksCamera extends FreeCamera {
     }
 
     /**
-     * Gets the current object class name.
+     * @returns the current object class name.
      * @returns the class name
      */
     public getClassName(): string {

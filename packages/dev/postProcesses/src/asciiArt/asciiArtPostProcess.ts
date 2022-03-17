@@ -25,7 +25,7 @@ export class AsciiArtFontTexture extends BaseTexture {
     private _charSize: number;
 
     /**
-     * Gets the size of one char in the texture (each char fits in size * size space in the texture).
+     * @returns the size of one char in the texture (each char fits in size * size space in the texture).
      */
     public get charSize(): number {
         return this._charSize;
@@ -91,7 +91,7 @@ export class AsciiArtFontTexture extends BaseTexture {
     }
 
     /**
-     * Gets the max char width of a font.
+     * @returns the max char width of a font.
      * @param font the font to use, use the W3C CSS notation
      * @returns the max char width
      */
@@ -106,7 +106,7 @@ export class AsciiArtFontTexture extends BaseTexture {
 
     // More info here: https://videlais.com/2014/03/16/the-many-and-varied-problems-with-measuring-font-height-for-html5-canvas/
     /**
-     * Gets the max char height of a font.
+     * @returns the max char height of a font.
      * @param font the font to use, use the W3C CSS notation
      * @returns the max char height
      */

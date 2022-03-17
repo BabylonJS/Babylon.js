@@ -54,7 +54,7 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
     }
 
     /**
-     * Gets the list of available variant names for this asset.
+     * @returns the list of available variant names for this asset.
      * @param rootMesh The glTF root mesh
      * @returns the list of all the variant names for this model
      */
@@ -68,7 +68,7 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
     }
 
     /**
-     * Gets the list of available variant names for this asset.
+     * @returns the list of available variant names for this asset.
      * @param rootMesh The glTF root mesh
      * @returns the list of all the variant names for this model
      */
@@ -142,7 +142,7 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
     }
 
     /**
-     * Gets the last selected variant name(s) or null if original.
+     * @returns the last selected variant name(s) or null if original.
      * @param rootMesh The glTF root mesh
      * @returns The selected variant name(s).
      */
@@ -156,7 +156,7 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
     }
 
     /**
-     * Gets the last selected variant name(s) or null if original.
+     * @returns the last selected variant name(s) or null if original.
      * @param rootMesh The glTF root mesh
      * @returns The selected variant name(s).
      */

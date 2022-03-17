@@ -67,7 +67,7 @@ export class MaterialHelper {
     }
 
     /**
-     * Gets the current status of the fog (should it be enabled?)
+     * @returns the current status of the fog (should it be enabled?)
      * @param mesh defines the mesh to evaluate for fog support
      * @param scene defines the hosting scene
      * @returns true if fog must be enabled

@@ -114,7 +114,7 @@ export class ValueAndUnit {
     }
 
     /**
-     * Gets the value accordingly to its unit
+     * @returns the value accordingly to its unit
      * @param host  defines the root host
      * @returns the value
      */

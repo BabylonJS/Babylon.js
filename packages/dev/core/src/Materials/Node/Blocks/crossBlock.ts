@@ -30,7 +30,7 @@ export class CrossBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the current class name
+     * @returns the current class name
      * @returns the class name
      */
     public getClassName() {
@@ -38,21 +38,21 @@ export class CrossBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the left operand input component
+     * @returns the left operand input component
      */
     public get left(): NodeMaterialConnectionPoint {
         return this._inputs[0];
     }
 
     /**
-     * Gets the right operand input component
+     * @returns the right operand input component
      */
     public get right(): NodeMaterialConnectionPoint {
         return this._inputs[1];
     }
 
     /**
-     * Gets the output component
+     * @returns the output component
      */
     public get output(): NodeMaterialConnectionPoint {
         return this._outputs[0];

@@ -60,7 +60,7 @@ export class Tags {
     }
 
     /**
-     * Gets the tags available on a given object
+     * @returns the tags available on a given object
      * @param obj defines the object to use
      * @param asString defines if the tags must be returned as a string instead of an array of strings
      * @returns the tags

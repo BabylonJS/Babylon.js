@@ -143,7 +143,7 @@ export class StringDictionary<T> {
     }
 
     /**
-     * Gets the current count
+     * @returns the current count
      */
     public get count() {
         return this._count;

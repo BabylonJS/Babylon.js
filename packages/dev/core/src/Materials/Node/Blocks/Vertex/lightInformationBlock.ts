@@ -40,7 +40,7 @@ export class LightInformationBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the current class name
+     * @returns the current class name
      * @returns the class name
      */
     public getClassName() {
@@ -48,28 +48,28 @@ export class LightInformationBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the world position input component
+     * @returns the world position input component
      */
     public get worldPosition(): NodeMaterialConnectionPoint {
         return this._inputs[0];
     }
 
     /**
-     * Gets the direction output component
+     * @returns the direction output component
      */
     public get direction(): NodeMaterialConnectionPoint {
         return this._outputs[0];
     }
 
     /**
-     * Gets the direction output component
+     * @returns the direction output component
      */
     public get color(): NodeMaterialConnectionPoint {
         return this._outputs[1];
     }
 
     /**
-     * Gets the direction output component
+     * @returns the direction output component
      */
     public get intensity(): NodeMaterialConnectionPoint {
         return this._outputs[2];

@@ -37,7 +37,7 @@ export class Skeleton implements IAnimatable {
     public needInitialSkinMatrix = false;
 
     /**
-     * Gets the list of animations attached to this skeleton
+     * @returns the list of animations attached to this skeleton
      */
     public animations: Array<Animation>;
 
@@ -122,7 +122,7 @@ export class Skeleton implements IAnimatable {
     }
 
     /**
-     * Gets the unique ID of this skeleton
+     * @returns the unique ID of this skeleton
      */
     public get uniqueId(): number {
         return this._uniqueId;
@@ -156,7 +156,7 @@ export class Skeleton implements IAnimatable {
     }
 
     /**
-     * Gets the current object class name.
+     * @returns the current object class name.
      * @returns the class name
      */
     public getClassName(): string {
@@ -173,7 +173,7 @@ export class Skeleton implements IAnimatable {
 
     // Members
     /**
-     * Gets the list of transform matrices to send to shaders (one matrix per bone)
+     * @returns the list of transform matrices to send to shaders (one matrix per bone)
      * @param mesh defines the mesh to use to get the root matrix (if needInitialSkinMatrix === true)
      * @returns a Float32Array containing matrices data
      */
@@ -194,7 +194,7 @@ export class Skeleton implements IAnimatable {
     }
 
     /**
-     * Gets the list of transform matrices to send to shaders inside a texture (one matrix per bone)
+     * @returns the list of transform matrices to send to shaders inside a texture (one matrix per bone)
      * @param mesh defines the mesh to use to get the root matrix (if needInitialSkinMatrix === true)
      * @returns a raw texture containing the data
      */
@@ -207,7 +207,7 @@ export class Skeleton implements IAnimatable {
     }
 
     /**
-     * Gets the current hosting scene
+     * @returns the current hosting scene
      * @returns a scene object
      */
     public getScene(): Scene {
@@ -295,7 +295,7 @@ export class Skeleton implements IAnimatable {
     }
 
     /**
-     * Gets the list of all animation ranges defined on this skeleton
+     * @returns the list of all animation ranges defined on this skeleton
      * @returns an array
      */
     public getAnimationRanges(): Nullable<AnimationRange>[] {
@@ -607,7 +607,7 @@ export class Skeleton implements IAnimatable {
     }
 
     /**
-     * Gets the list of animatables currently running for this skeleton
+     * @returns the list of animatables currently running for this skeleton
      * @returns an array of animatables
      */
     public getAnimatables(): IAnimatable[] {
@@ -845,7 +845,7 @@ export class Skeleton implements IAnimatable {
     }
 
     /**
-     * Gets the root pose matrix
+     * @returns the root pose matrix
      * @returns a matrix
      */
     public getPoseMatrix(): Nullable<Matrix> {

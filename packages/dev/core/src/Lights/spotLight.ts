@@ -45,7 +45,7 @@ export class SpotLight extends ShadowLight {
     private _lightAngleOffset: number;
 
     /**
-     * Gets the cone angle of the spot light in Radians.
+     * @returns the cone angle of the spot light in Radians.
      */
     @serialize()
     public get angle(): number {
@@ -113,7 +113,7 @@ export class SpotLight extends ShadowLight {
 
     protected _projectionTextureLightNear: number = 1e-6;
     /**
-     * Gets the near clip of the Spotlight for texture projection.
+     * @returns the near clip of the Spotlight for texture projection.
      */
     @serialize()
     public get projectionTextureLightNear(): number {
@@ -129,7 +129,7 @@ export class SpotLight extends ShadowLight {
 
     protected _projectionTextureLightFar: number = 1000.0;
     /**
-     * Gets the far clip of the Spotlight for texture projection.
+     * @returns the far clip of the Spotlight for texture projection.
      */
     @serialize()
     public get projectionTextureLightFar(): number {
@@ -145,7 +145,7 @@ export class SpotLight extends ShadowLight {
 
     protected _projectionTextureUpDirection: Vector3 = Vector3.Up();
     /**
-     * Gets the Up vector of the Spotlight for texture projection.
+     * @returns the Up vector of the Spotlight for texture projection.
      */
     @serialize()
     public get projectionTextureUpDirection(): Vector3 {
@@ -163,7 +163,7 @@ export class SpotLight extends ShadowLight {
     private _projectionTexture: Nullable<BaseTexture>;
 
     /**
-     * Gets the projection texture of the light.
+     * @returns the projection texture of the light.
      */
     public get projectionTexture(): Nullable<BaseTexture> {
         return this._projectionTexture;
@@ -440,7 +440,7 @@ export class SpotLight extends ShadowLight {
     }
 
     /**
-     * Gets the minZ used for shadow according to both the scene and the light.
+     * @returns the minZ used for shadow according to both the scene and the light.
      * @param activeCamera The camera we are returning the min for
      * @returns the depth min z
      */
@@ -452,7 +452,7 @@ export class SpotLight extends ShadowLight {
     }
 
     /**
-     * Gets the maxZ used for shadow according to both the scene and the light.
+     * @returns the maxZ used for shadow according to both the scene and the light.
      * @param activeCamera The camera we are returning the max for
      * @returns the depth max z
      */

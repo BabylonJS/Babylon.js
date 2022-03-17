@@ -61,7 +61,7 @@ export class ParticleTextureBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the current class name
+     * @returns the current class name
      * @returns the class name
      */
     public getClassName() {
@@ -69,49 +69,49 @@ export class ParticleTextureBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the uv input component
+     * @returns the uv input component
      */
     public get uv(): NodeMaterialConnectionPoint {
         return this._inputs[0];
     }
 
     /**
-     * Gets the rgba output component
+     * @returns the rgba output component
      */
     public get rgba(): NodeMaterialConnectionPoint {
         return this._outputs[0];
     }
 
     /**
-     * Gets the rgb output component
+     * @returns the rgb output component
      */
     public get rgb(): NodeMaterialConnectionPoint {
         return this._outputs[1];
     }
 
     /**
-     * Gets the r output component
+     * @returns the r output component
      */
     public get r(): NodeMaterialConnectionPoint {
         return this._outputs[2];
     }
 
     /**
-     * Gets the g output component
+     * @returns the g output component
      */
     public get g(): NodeMaterialConnectionPoint {
         return this._outputs[3];
     }
 
     /**
-     * Gets the b output component
+     * @returns the b output component
      */
     public get b(): NodeMaterialConnectionPoint {
         return this._outputs[4];
     }
 
     /**
-     * Gets the a output component
+     * @returns the a output component
      */
     public get a(): NodeMaterialConnectionPoint {
         return this._outputs[5];

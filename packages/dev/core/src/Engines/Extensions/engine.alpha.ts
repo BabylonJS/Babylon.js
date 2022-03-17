@@ -21,7 +21,7 @@ declare module "../../Engines/thinEngine" {
         setAlphaMode(mode: number, noDepthWriteChange?: boolean): void;
 
         /**
-         * Gets the current alpha mode
+         * @returns the current alpha mode
          * @see https://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered
          * @returns the current alpha mode
          */
@@ -34,7 +34,7 @@ declare module "../../Engines/thinEngine" {
         setAlphaEquation(equation: number): void;
 
         /**
-         * Gets the current alpha equation.
+         * @returns the current alpha equation.
          * @returns the current alpha equation
          */
         getAlphaEquation(): number;

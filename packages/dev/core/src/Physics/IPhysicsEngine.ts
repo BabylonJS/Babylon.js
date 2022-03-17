@@ -73,7 +73,7 @@ export interface IPhysicsEnginePlugin {
  */
 export interface IPhysicsEngine {
     /**
-     * Gets the gravity vector used by the simulation
+     * @returns the gravity vector used by the simulation
      */
     gravity: Vector3;
 
@@ -118,7 +118,7 @@ export interface IPhysicsEngine {
     dispose(): void;
 
     /**
-     * Gets the name of the current physics plugin
+     * @returns the name of the current physics plugin
      * @returns the name of the plugin
      */
     getPhysicsPluginName(): string;
@@ -154,26 +154,26 @@ export interface IPhysicsEngine {
     removeJoint(mainImpostor: PhysicsImpostor, connectedImpostor: PhysicsImpostor, joint: PhysicsJoint): void;
 
     /**
-     * Gets the current plugin used to run the simulation
+     * @returns the current plugin used to run the simulation
      * @returns current plugin
      */
     getPhysicsPlugin(): IPhysicsEnginePlugin;
 
     /**
-     * Gets the list of physic impostors
+     * @returns the list of physic impostors
      * @returns an array of PhysicsImpostor
      */
     getImpostors(): Array<PhysicsImpostor>;
 
     /**
-     * Gets the impostor for a physics enabled object
+     * @returns the impostor for a physics enabled object
      * @param object defines the object impersonated by the impostor
      * @returns the PhysicsImpostor or null if not found
      */
     getImpostorForPhysicsObject(object: IPhysicsEnabledObject): Nullable<PhysicsImpostor>;
 
     /**
-     * Gets the impostor for a physics body object
+     * @returns the impostor for a physics body object
      * @param body defines physics body used by the impostor
      * @returns the PhysicsImpostor or null if not found
      */

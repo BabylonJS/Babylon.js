@@ -435,12 +435,12 @@ export class WebGPUEngine extends Engine {
         return true;
     }
 
-    /** Gets the supported extensions by the WebGPU adapter */
+    /** @returns the supported extensions by the WebGPU adapter */
     public get supportedExtensions(): Immutable<GPUFeatureName[]> {
         return this._adapterSupportedExtensions;
     }
 
-    /** Gets the currently enabled extensions on the WebGPU device */
+    /** @returns the currently enabled extensions on the WebGPU device */
     public get enabledExtensions(): Immutable<GPUFeatureName[]> {
         return this._deviceEnabledExtensions;
     }
@@ -1788,7 +1788,7 @@ export class WebGPUEngine extends Engine {
     }
 
     /**
-     * Gets the list of active attributes for a given WebGPU program
+     * @returns the list of active attributes for a given WebGPU program
      * @param pipelineContext defines the pipeline context to use
      * @param attributesNames defines the list of attribute names to get
      * @returns an array of indices indicating the offset of each attribute
@@ -3417,7 +3417,7 @@ export class WebGPUEngine extends Engine {
     //------------------------------------------------------------------------------
 
     /**
-     * Gets the current render width
+     * @returns the current render width
      * @param useScreen defines if screen size must be used (or the current render target if any)
      * @returns a number defining the current render width
      */
@@ -3430,7 +3430,7 @@ export class WebGPUEngine extends Engine {
     }
 
     /**
-     * Gets the current render height
+     * @returns the current render height
      * @param useScreen defines if screen size must be used (or the current render target if any)
      * @returns a number defining the current render height
      */
@@ -3443,7 +3443,7 @@ export class WebGPUEngine extends Engine {
     }
 
     /**
-     * Gets the HTML canvas attached with the current WebGPU context
+     * @returns the HTML canvas attached with the current WebGPU context
      * @returns a HTML canvas
      */
     public getRenderingCanvas(): Nullable<HTMLCanvasElement> {

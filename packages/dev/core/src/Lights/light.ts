@@ -163,7 +163,7 @@ export abstract class Light extends Node implements ISortableLight {
 
     private _intensityMode: number = Light.INTENSITYMODE_AUTOMATIC;
     /**
-     * Gets the photometric scale used to interpret the intensity.
+     * @returns the photometric scale used to interpret the intensity.
      * This is only relevant with PBR Materials where the light intensity can be defined in a physical way.
      */
     @serialize()
@@ -181,7 +181,7 @@ export abstract class Light extends Node implements ISortableLight {
 
     private _radius = 0.00001;
     /**
-     * Gets the light radius used by PBR Materials to simulate soft area lights.
+     * @returns the light radius used by PBR Materials to simulate soft area lights.
      */
     @serialize()
     public get radius(): number {
@@ -228,7 +228,7 @@ export abstract class Light extends Node implements ISortableLight {
 
     private _includedOnlyMeshes: AbstractMesh[];
     /**
-     * Gets the only meshes impacted by this light.
+     * @returns the only meshes impacted by this light.
      */
     public get includedOnlyMeshes(): AbstractMesh[] {
         return this._includedOnlyMeshes;
@@ -243,7 +243,7 @@ export abstract class Light extends Node implements ISortableLight {
 
     private _excludedMeshes: AbstractMesh[];
     /**
-     * Gets the meshes not impacted by this light.
+     * @returns the meshes not impacted by this light.
      */
     public get excludedMeshes(): AbstractMesh[] {
         return this._excludedMeshes;
@@ -259,7 +259,7 @@ export abstract class Light extends Node implements ISortableLight {
     @serialize("excludeWithLayerMask")
     private _excludeWithLayerMask = 0;
     /**
-     * Gets the layer id use to find what meshes are not impacted by the light.
+     * @returns the layer id use to find what meshes are not impacted by the light.
      * Inactive if 0
      */
     public get excludeWithLayerMask(): number {
@@ -277,7 +277,7 @@ export abstract class Light extends Node implements ISortableLight {
     @serialize("includeOnlyWithLayerMask")
     private _includeOnlyWithLayerMask = 0;
     /**
-     * Gets the layer id use to find what meshes are impacted by the light.
+     * @returns the layer id use to find what meshes are impacted by the light.
      * Inactive if 0
      */
     public get includeOnlyWithLayerMask(): number {
@@ -295,7 +295,7 @@ export abstract class Light extends Node implements ISortableLight {
     @serialize("lightmapMode")
     private _lightmapMode = 0;
     /**
-     * Gets the lightmap mode of this light (should be one of the constants defined by Light.LIGHTMAP_x)
+     * @returns the lightmap mode of this light (should be one of the constants defined by Light.LIGHTMAP_x)
      */
     public get lightmapMode(): number {
         return this._lightmapMode;

@@ -33,7 +33,7 @@ export class InstancesBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the current class name
+     * @returns the current class name
      * @returns the class name
      */
     public getClassName() {
@@ -41,49 +41,49 @@ export class InstancesBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the first world row input component
+     * @returns the first world row input component
      */
     public get world0(): NodeMaterialConnectionPoint {
         return this._inputs[0];
     }
 
     /**
-     * Gets the second world row input component
+     * @returns the second world row input component
      */
     public get world1(): NodeMaterialConnectionPoint {
         return this._inputs[1];
     }
 
     /**
-     * Gets the third world row input component
+     * @returns the third world row input component
      */
     public get world2(): NodeMaterialConnectionPoint {
         return this._inputs[2];
     }
 
     /**
-     * Gets the forth world row input component
+     * @returns the forth world row input component
      */
     public get world3(): NodeMaterialConnectionPoint {
         return this._inputs[3];
     }
 
     /**
-     * Gets the world input component
+     * @returns the world input component
      */
     public get world(): NodeMaterialConnectionPoint {
         return this._inputs[4];
     }
 
     /**
-     * Gets the output component
+     * @returns the output component
      */
     public get output(): NodeMaterialConnectionPoint {
         return this._outputs[0];
     }
 
     /**
-     * Gets the instanceID component
+     * @returns the instanceID component
      */
     public get instanceID(): NodeMaterialConnectionPoint {
         return this._outputs[1];

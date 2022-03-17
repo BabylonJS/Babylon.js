@@ -42,7 +42,7 @@ export class RemapBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the current class name
+     * @returns the current class name
      * @returns the class name
      */
     public getClassName() {
@@ -50,42 +50,42 @@ export class RemapBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the input component
+     * @returns the input component
      */
     public get input(): NodeMaterialConnectionPoint {
         return this._inputs[0];
     }
 
     /**
-     * Gets the source min input component
+     * @returns the source min input component
      */
     public get sourceMin(): NodeMaterialConnectionPoint {
         return this._inputs[1];
     }
 
     /**
-     * Gets the source max input component
+     * @returns the source max input component
      */
     public get sourceMax(): NodeMaterialConnectionPoint {
         return this._inputs[2];
     }
 
     /**
-     * Gets the target min input component
+     * @returns the target min input component
      */
     public get targetMin(): NodeMaterialConnectionPoint {
         return this._inputs[3];
     }
 
     /**
-     * Gets the target max input component
+     * @returns the target max input component
      */
     public get targetMax(): NodeMaterialConnectionPoint {
         return this._inputs[4];
     }
 
     /**
-     * Gets the output component
+     * @returns the output component
      */
     public get output(): NodeMaterialConnectionPoint {
         return this._outputs[0];

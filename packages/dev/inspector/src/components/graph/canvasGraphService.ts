@@ -679,7 +679,7 @@ export class CanvasGraphService {
     }
 
     /**
-     * Gets the min and max as a single object from an array of numbers.
+     * @returns the min and max as a single object from an array of numbers.
      *
      * @param items the array of numbers to get the min and max for.
      * @param bounds
@@ -1069,7 +1069,7 @@ export class CanvasGraphService {
     }
 
     /**
-     * Gets the number from a pixel position given the minimum and maximum value in range, and the starting pixel and the ending pixel.
+     * @returns the number from a pixel position given the minimum and maximum value in range, and the starting pixel and the ending pixel.
      *
      * @param pixel current pixel position we want to get the number for.
      * @param minMax the minimum and maximum number in the range.

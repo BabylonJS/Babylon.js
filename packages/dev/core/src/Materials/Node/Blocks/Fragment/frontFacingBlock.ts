@@ -19,7 +19,7 @@ export class FrontFacingBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the current class name
+     * @returns the current class name
      * @returns the class name
      */
     public getClassName() {
@@ -27,7 +27,7 @@ export class FrontFacingBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the output component
+     * @returns the output component
      */
     public get output(): NodeMaterialConnectionPoint {
         return this._outputs[0];

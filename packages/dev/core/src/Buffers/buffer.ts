@@ -17,7 +17,7 @@ export class Buffer {
     private _isAlreadyOwned = false;
 
     /**
-     * Gets the byte stride.
+     * @returns the byte stride.
      */
     public readonly byteStride: number;
 
@@ -129,7 +129,7 @@ export class Buffer {
     }
 
     /**
-     * Gets the stride in float32 units (i.e. byte stride / 4).
+     * @returns the stride in float32 units (i.e. byte stride / 4).
      * May not be an integer if the byte stride is not divisible by 4.
      * @returns the stride in float32 units
      * @deprecated Please use byteStride instead.
@@ -311,12 +311,12 @@ export class VertexBuffer {
     }
 
     /**
-     * Gets the byte stride.
+     * @returns the byte stride.
      */
     public readonly byteStride: number;
 
     /**
-     * Gets the byte offset.
+     * @returns the byte offset.
      */
     public readonly byteOffset: number;
 
@@ -326,12 +326,12 @@ export class VertexBuffer {
     public readonly normalized: boolean;
 
     /**
-     * Gets the data type of each component in the array.
+     * @returns the data type of each component in the array.
      */
     public readonly type: number;
 
     /**
-     * Gets the unique id of this vertex buffer
+     * @returns the unique id of this vertex buffer
      */
     public readonly uniqueId: number;
 
@@ -536,7 +536,7 @@ export class VertexBuffer {
     }
 
     /**
-     * Gets the stride in float32 units (i.e. byte stride / 4).
+     * @returns the stride in float32 units (i.e. byte stride / 4).
      * May not be an integer if the byte stride is not divisible by 4.
      * @returns the stride in float32 units
      * @deprecated Please use byteStride instead.
@@ -719,7 +719,7 @@ export class VertexBuffer {
     }
 
     /**
-     * Gets the byte length of the given type.
+     * @returns the byte length of the given type.
      * @param type the type
      * @returns the number of bytes
      */

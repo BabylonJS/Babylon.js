@@ -247,7 +247,7 @@ export class EnvironmentHelper {
 
     private _rootMesh: Mesh;
     /**
-     * Gets the root mesh created by the helper.
+     * @returns the root mesh created by the helper.
      */
     public get rootMesh(): Mesh {
         return this._rootMesh;
@@ -255,7 +255,7 @@ export class EnvironmentHelper {
 
     private _skybox: Nullable<Mesh>;
     /**
-     * Gets the skybox created by the helper.
+     * @returns the skybox created by the helper.
      */
     public get skybox(): Nullable<Mesh> {
         return this._skybox;
@@ -263,7 +263,7 @@ export class EnvironmentHelper {
 
     private _skyboxTexture: Nullable<BaseTexture>;
     /**
-     * Gets the skybox texture created by the helper.
+     * @returns the skybox texture created by the helper.
      */
     public get skyboxTexture(): Nullable<BaseTexture> {
         return this._skyboxTexture;
@@ -271,7 +271,7 @@ export class EnvironmentHelper {
 
     private _skyboxMaterial: Nullable<BackgroundMaterial>;
     /**
-     * Gets the skybox material created by the helper.
+     * @returns the skybox material created by the helper.
      */
     public get skyboxMaterial(): Nullable<BackgroundMaterial> {
         return this._skyboxMaterial;
@@ -279,7 +279,7 @@ export class EnvironmentHelper {
 
     private _ground: Nullable<Mesh>;
     /**
-     * Gets the ground mesh created by the helper.
+     * @returns the ground mesh created by the helper.
      */
     public get ground(): Nullable<Mesh> {
         return this._ground;
@@ -287,7 +287,7 @@ export class EnvironmentHelper {
 
     private _groundTexture: Nullable<BaseTexture>;
     /**
-     * Gets the ground texture created by the helper.
+     * @returns the ground texture created by the helper.
      */
     public get groundTexture(): Nullable<BaseTexture> {
         return this._groundTexture;
@@ -295,14 +295,14 @@ export class EnvironmentHelper {
 
     private _groundMirror: Nullable<MirrorTexture>;
     /**
-     * Gets the ground mirror created by the helper.
+     * @returns the ground mirror created by the helper.
      */
     public get groundMirror(): Nullable<MirrorTexture> {
         return this._groundMirror;
     }
 
     /**
-     * Gets the ground mirror render list to helps pushing the meshes
+     * @returns the ground mirror render list to helps pushing the meshes
      * you wish in the ground reflection.
      */
     public get groundMirrorRenderList(): Nullable<AbstractMesh[]> {
@@ -314,7 +314,7 @@ export class EnvironmentHelper {
 
     private _groundMaterial: Nullable<BackgroundMaterial>;
     /**
-     * Gets the ground material created by the helper.
+     * @returns the ground material created by the helper.
      */
     public get groundMaterial(): Nullable<BackgroundMaterial> {
         return this._groundMaterial;

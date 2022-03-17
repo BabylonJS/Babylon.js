@@ -21,7 +21,7 @@ declare module "../scene" {
         _physicsTimeAccumulator: number;
 
         /**
-         * Gets the current physics engine
+         * @returns the current physics engine
          * @returns a IPhysicsEngine or null if none attached
          */
         getPhysicsEngine(): Nullable<IPhysicsEngine>;
@@ -64,7 +64,7 @@ declare module "../scene" {
 }
 
 /**
- * Gets the current physics engine
+ * @returns the current physics engine
  * @returns a IPhysicsEngine or null if none attached
  */
 Scene.prototype.getPhysicsEngine = function (): Nullable<IPhysicsEngine> {
@@ -167,7 +167,7 @@ declare module "../Meshes/abstractMesh" {
         physicsImpostor: Nullable<PhysicsImpostor>;
 
         /**
-         * Gets the current physics impostor
+         * @returns the current physics impostor
          * @see https://doc.babylonjs.com/features/physics_engine
          * @returns a physics impostor or null
          */
@@ -226,7 +226,7 @@ Object.defineProperty(AbstractMesh.prototype, "physicsImpostor", {
 });
 
 /**
- * Gets the current physics impostor
+ * @returns the current physics impostor
  * @see https://doc.babylonjs.com/features/physics_engine
  * @returns a physics impostor or null
  */

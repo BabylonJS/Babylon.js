@@ -33,7 +33,7 @@ declare type PostProcess = import("../PostProcesses/postProcess").PostProcess;
  * Defines the interface used by display changed events
  */
 export interface IDisplayChangedEventArgs {
-    /** Gets the vrDisplay object (if any) */
+    /** @returns the vrDisplay object (if any) */
     vrDisplay: Nullable<any>;
     /** Gets a boolean indicating if webVR is supported */
     vrSupported: boolean;
@@ -271,20 +271,20 @@ export class Engine extends ThinEngine {
         return ThinEngine.Version;
     }
 
-    /** Gets the list of created engines */
+    /** @returns the list of created engines */
     public static get Instances(): Engine[] {
         return EngineStore.Instances;
     }
 
     /**
-     * Gets the latest created engine
+     * @returns the latest created engine
      */
     public static get LastCreatedEngine(): Nullable<Engine> {
         return EngineStore.LastCreatedEngine;
     }
 
     /**
-     * Gets the latest created scene
+     * @returns the latest created scene
      */
     public static get LastCreatedScene(): Nullable<Scene> {
         return EngineStore.LastCreatedScene;
@@ -393,7 +393,7 @@ export class Engine extends ThinEngine {
     public disableManifestCheck = false;
 
     /**
-     * Gets the list of created scenes
+     * @returns the list of created scenes
      */
     public scenes = new Array<Scene>();
 
@@ -406,7 +406,7 @@ export class Engine extends ThinEngine {
     public onNewSceneAddedObservable = new Observable<Scene>();
 
     /**
-     * Gets the list of created postprocesses
+     * @returns the list of created postprocesses
      */
     public postProcesses = new Array<PostProcess>();
 
@@ -463,7 +463,7 @@ export class Engine extends ThinEngine {
     public onAfterShaderCompilationObservable = new Observable<Engine>();
 
     /**
-     * Gets the audio engine
+     * @returns the audio engine
      * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music
      * @ignorenaming
      */
@@ -515,7 +515,7 @@ export class Engine extends ThinEngine {
 
     private _performanceMonitor = new PerformanceMonitor();
     /**
-     * Gets the performance monitor attached to this engine
+     * @returns the performance monitor attached to this engine
      * @see https://doc.babylonjs.com/how_to/optimizing_your_scene#engineinstrumentation
      */
     public get performanceMonitor(): PerformanceMonitor {
@@ -551,7 +551,7 @@ export class Engine extends ThinEngine {
     // Events
 
     /**
-     * Gets the HTML element used to attach event listeners
+     * @returns the HTML element used to attach event listeners
      * @returns a HTML element
      */
     public getInputElement(): Nullable<HTMLElement> {
@@ -732,7 +732,7 @@ export class Engine extends ThinEngine {
     }
 
     /**
-     * Gets the client rect of the HTML canvas attached with the current webGL context
+     * @returns the client rect of the HTML canvas attached with the current webGL context
      * @returns a client rectangle
      */
     public getRenderingCanvasClientRect(): Nullable<ClientRect> {
@@ -743,7 +743,7 @@ export class Engine extends ThinEngine {
     }
 
     /**
-     * Gets the client rect of the HTML element used for events
+     * @returns the client rect of the HTML element used for events
      * @returns a client rectangle
      */
     public getInputElementClientRect(): Nullable<ClientRect> {
@@ -763,7 +763,7 @@ export class Engine extends ThinEngine {
     }
 
     /**
-     * Gets the max steps when engine is running in deterministic lock step
+     * @returns the max steps when engine is running in deterministic lock step
      * @see https://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
      * @returns the max steps
      */
@@ -846,7 +846,7 @@ export class Engine extends ThinEngine {
     }
 
     /**
-     * Gets the current stencil mask
+     * @returns the current stencil mask
      * @returns a number defining the new stencil mask to use
      */
     public getStencilMask(): number {
@@ -862,7 +862,7 @@ export class Engine extends ThinEngine {
     }
 
     /**
-     * Gets the current stencil function
+     * @returns the current stencil function
      * @returns a number defining the stencil function to use
      */
     public getStencilFunction(): number {
@@ -870,7 +870,7 @@ export class Engine extends ThinEngine {
     }
 
     /**
-     * Gets the current stencil reference value
+     * @returns the current stencil reference value
      * @returns a number defining the stencil reference value to use
      */
     public getStencilFunctionReference(): number {
@@ -878,7 +878,7 @@ export class Engine extends ThinEngine {
     }
 
     /**
-     * Gets the current stencil mask
+     * @returns the current stencil mask
      * @returns a number defining the stencil mask to use
      */
     public getStencilFunctionMask(): number {
@@ -910,7 +910,7 @@ export class Engine extends ThinEngine {
     }
 
     /**
-     * Gets the current stencil operation when stencil fails
+     * @returns the current stencil operation when stencil fails
      * @returns a number defining stencil operation to use when stencil fails
      */
     public getStencilOperationFail(): number {
@@ -918,7 +918,7 @@ export class Engine extends ThinEngine {
     }
 
     /**
-     * Gets the current stencil operation when depth fails
+     * @returns the current stencil operation when depth fails
      * @returns a number defining stencil operation to use when depth fails
      */
     public getStencilOperationDepthFail(): number {
@@ -926,7 +926,7 @@ export class Engine extends ThinEngine {
     }
 
     /**
-     * Gets the current stencil operation when stencil passes
+     * @returns the current stencil operation when stencil passes
      * @returns a number defining stencil operation to use when stencil passes
      */
     public getStencilOperationPass(): number {
@@ -982,7 +982,7 @@ export class Engine extends ThinEngine {
     }
 
     /**
-     * Gets the current depth function
+     * @returns the current depth function
      * @returns a number defining the depth function
      */
     public getDepthFunction(): Nullable<number> {
@@ -1195,7 +1195,7 @@ export class Engine extends ThinEngine {
     }
 
     /**
-     * Gets the source code of the vertex shader associated with a specific webGL program
+     * @returns the source code of the vertex shader associated with a specific webGL program
      * @param program defines the program to use
      * @returns a string containing the source code of the vertex shader associated with the program
      */
@@ -1210,7 +1210,7 @@ export class Engine extends ThinEngine {
     }
 
     /**
-     * Gets the source code of the fragment shader associated with a specific webGL program
+     * @returns the source code of the fragment shader associated with a specific webGL program
      * @param program defines the program to use
      * @returns a string containing the source code of the fragment shader associated with the program
      */
@@ -1578,7 +1578,7 @@ export class Engine extends ThinEngine {
 
     private _renderPassNames: string[] = ["main"];
     /**
-     * Gets the names of the render passes that are currently created
+     * @returns the names of the render passes that are currently created
      * @returns list of the render pass names
      */
     public getRenderPassNames(): string[] {
@@ -1586,7 +1586,7 @@ export class Engine extends ThinEngine {
     }
 
     /**
-     * Gets the name of the current render pass
+     * @returns the name of the current render pass
      * @returns name of the current render pass
      */
     public getCurrentRenderPassName(): string {
@@ -1687,7 +1687,7 @@ export class Engine extends ThinEngine {
     // FPS
 
     /**
-     * Gets the current framerate
+     * @returns the current framerate
      * @returns a number representing the framerate
      */
     public getFps(): number {
@@ -1695,7 +1695,7 @@ export class Engine extends ThinEngine {
     }
 
     /**
-     * Gets the time spent between current and previous frame
+     * @returns the time spent between current and previous frame
      * @returns a number representing the delta time in ms
      */
     public getDeltaTime(): number {
@@ -1987,7 +1987,7 @@ export class Engine extends ThinEngine {
     }
 
     /**
-     * Gets the current loading screen object
+     * @returns the current loading screen object
      * @see https://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
      */
     public get loadingScreen(): ILoadingScreen {

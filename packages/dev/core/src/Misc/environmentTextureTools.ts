@@ -155,7 +155,7 @@ export interface CreateEnvTextureOptions {
 const _MagicBytes = [0x86, 0x16, 0x87, 0x96, 0xf6, 0xd6, 0x96, 0x36];
 
 /**
- * Gets the environment info from an env file.
+ * @returns the environment info from an env file.
  * @param data The array buffer containing the .env bytes.
  * @returns the environment file info (the json header) if successfully parsed, normalized to the latest supported version.
  */
@@ -802,7 +802,7 @@ export function _UpdateRGBDAsync(
  */
 export const EnvironmentTextureTools = {
     /**
-     * Gets the environment info from an env file.
+     * @returns the environment info from an env file.
      * @param data The array buffer containing the .env bytes.
      * @returns the environment file info (the json header) if successfully parsed, normalized to the latest supported version.
      */

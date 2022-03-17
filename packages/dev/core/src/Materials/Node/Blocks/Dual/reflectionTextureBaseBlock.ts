@@ -104,7 +104,7 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the current class name
+     * @returns the current class name
      * @returns the class name
      */
     public getClassName() {
@@ -112,32 +112,32 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the world position input component
+     * @returns the world position input component
      */
     public abstract get position(): NodeMaterialConnectionPoint;
 
     /**
-     * Gets the world position input component
+     * @returns the world position input component
      */
     public abstract get worldPosition(): NodeMaterialConnectionPoint;
 
     /**
-     * Gets the world normal input component
+     * @returns the world normal input component
      */
     public abstract get worldNormal(): NodeMaterialConnectionPoint;
 
     /**
-     * Gets the world input component
+     * @returns the world input component
      */
     public abstract get world(): NodeMaterialConnectionPoint;
 
     /**
-     * Gets the camera (or eye) position component
+     * @returns the camera (or eye) position component
      */
     public abstract get cameraPosition(): NodeMaterialConnectionPoint;
 
     /**
-     * Gets the view input component
+     * @returns the view input component
      */
     public abstract get view(): NodeMaterialConnectionPoint;
 
@@ -235,7 +235,7 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the code to inject in the vertex shader
+     * @returns the code to inject in the vertex shader
      * @param state current state of the node material building
      * @returns the shader code
      */

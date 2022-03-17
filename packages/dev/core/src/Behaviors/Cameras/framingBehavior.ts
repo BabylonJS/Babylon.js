@@ -18,7 +18,7 @@ import { Animation } from "../../Animations/animation";
  */
 export class FramingBehavior implements Behavior<ArcRotateCamera> {
     /**
-     * Gets the name of the behavior.
+     * @returns the name of the behavior.
      */
     public get name(): string {
         return "Framing";
@@ -70,7 +70,7 @@ export class FramingBehavior implements Behavior<ArcRotateCamera> {
     }
 
     /**
-     * Gets the scale applied to the radius
+     * @returns the scale applied to the radius
      */
     public get radiusScale(): number {
         return this._radiusScale;
@@ -84,7 +84,7 @@ export class FramingBehavior implements Behavior<ArcRotateCamera> {
     }
 
     /**
-     * Gets the scale to apply on Y axis to position camera focus. 0.5 by default which means the center of the bounding box.
+     * @returns the scale to apply on Y axis to position camera focus. 0.5 by default which means the center of the bounding box.
      */
     public get positionScale(): number {
         return this._positionScale;
@@ -99,7 +99,7 @@ export class FramingBehavior implements Behavior<ArcRotateCamera> {
     }
 
     /**
-     * Gets the angle above/below the horizontal plane to return to when the return to default elevation idle
+     * @returns the angle above/below the horizontal plane to return to when the return to default elevation idle
      * behaviour is triggered, in radians.
      */
     public get defaultElevation() {
@@ -115,7 +115,7 @@ export class FramingBehavior implements Behavior<ArcRotateCamera> {
     }
 
     /**
-     * Gets the time (in milliseconds) taken to return to the default beta position.
+     * @returns the time (in milliseconds) taken to return to the default beta position.
      * Negative value indicates camera should not return to default.
      */
     public get elevationReturnTime(): number {
@@ -130,7 +130,7 @@ export class FramingBehavior implements Behavior<ArcRotateCamera> {
     }
 
     /**
-     * Gets the delay (in milliseconds) taken before the camera returns to the default beta position.
+     * @returns the delay (in milliseconds) taken before the camera returns to the default beta position.
      */
     public get elevationReturnWaitTime(): number {
         return this._elevationReturnWaitTime;
@@ -144,7 +144,7 @@ export class FramingBehavior implements Behavior<ArcRotateCamera> {
     }
 
     /**
-     * Gets the flag that indicates if user zooming should stop animation.
+     * @returns the flag that indicates if user zooming should stop animation.
      */
     public get zoomStopsAnimation(): boolean {
         return this._zoomStopsAnimation;
@@ -158,7 +158,7 @@ export class FramingBehavior implements Behavior<ArcRotateCamera> {
     }
 
     /**
-     * Gets the transition time when framing the mesh, in milliseconds
+     * @returns the transition time when framing the mesh, in milliseconds
      */
     public get framingTime() {
         return this._framingTime;

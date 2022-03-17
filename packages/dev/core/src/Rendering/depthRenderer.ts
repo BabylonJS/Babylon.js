@@ -453,7 +453,7 @@ export class DepthRenderer {
     }
 
     /**
-     * Gets the texture which the depth map will be written to.
+     * @returns the texture which the depth map will be written to.
      * @returns The depth map texture
      */
     public getDepthMap(): RenderTargetTexture {

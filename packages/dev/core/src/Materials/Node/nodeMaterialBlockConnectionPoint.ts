@@ -97,7 +97,7 @@ export class NodeMaterialConnectionPoint {
     /** @hidden */
     public _enforceAssociatedVariableName = false;
 
-    /** Gets the direction of the point */
+    /** @returns the direction of the point */
     public get direction() {
         return this._direction;
     }
@@ -292,7 +292,7 @@ export class NodeMaterialConnectionPoint {
         return this._endpoints.map((e) => e.ownerBlock);
     }
 
-    /** Gets the list of connected endpoints */
+    /** @returns the list of connected endpoints */
     public get endpoints() {
         return this._endpoints;
     }
@@ -399,7 +399,7 @@ export class NodeMaterialConnectionPoint {
     }
 
     /**
-     * Gets the current class name e.g. "NodeMaterialConnectionPoint"
+     * @returns the current class name e.g. "NodeMaterialConnectionPoint"
      * @returns the class name
      */
     public getClassName(): string {

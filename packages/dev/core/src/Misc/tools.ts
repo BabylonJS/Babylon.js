@@ -297,7 +297,7 @@ export class Tools {
     }
 
     /**
-     * Gets the pointer prefix to use
+     * @returns the pointer prefix to use
      * @param engine defines the engine we are finding the prefix for
      * @returns "pointer" if touch is enabled. Else returns "mouse"
      */
@@ -1261,7 +1261,7 @@ export class Tools {
     }
 
     /**
-     * Gets the first element of an array satisfying a given predicate
+     * @returns the first element of an array satisfying a given predicate
      * @param array defines the array to browse
      * @param predicate defines the predicate to use
      * @returns null if not found or the element

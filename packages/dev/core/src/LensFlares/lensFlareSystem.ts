@@ -49,7 +49,7 @@ export class LensFlareSystem {
      */
     public layerMask: number = 0x0fffffff;
 
-    /** Gets the scene */
+    /** @returns the scene */
     public get scene() {
         return this._scene;
     }

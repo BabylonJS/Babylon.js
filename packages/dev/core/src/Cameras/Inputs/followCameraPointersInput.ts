@@ -16,7 +16,7 @@ export class FollowCameraPointersInput extends BaseCameraPointersInput {
     public camera: FollowCamera;
 
     /**
-     * Gets the class name of the current input.
+     * @returns the class name of the current input.
      * @returns the class name
      */
     public getClassName(): string {

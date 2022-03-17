@@ -24,7 +24,7 @@ export class VoronoiNoiseBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the current class name
+     * @returns the current class name
      * @returns the class name
      */
     public getClassName() {
@@ -32,35 +32,35 @@ export class VoronoiNoiseBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the seed input component
+     * @returns the seed input component
      */
     public get seed(): NodeMaterialConnectionPoint {
         return this._inputs[0];
     }
 
     /**
-     * Gets the offset input component
+     * @returns the offset input component
      */
     public get offset(): NodeMaterialConnectionPoint {
         return this._inputs[1];
     }
 
     /**
-     * Gets the density input component
+     * @returns the density input component
      */
     public get density(): NodeMaterialConnectionPoint {
         return this._inputs[2];
     }
 
     /**
-     * Gets the output component
+     * @returns the output component
      */
     public get output(): NodeMaterialConnectionPoint {
         return this._outputs[0];
     }
 
     /**
-     * Gets the output component
+     * @returns the output component
      */
     public get cells(): NodeMaterialConnectionPoint {
         return this._outputs[1];

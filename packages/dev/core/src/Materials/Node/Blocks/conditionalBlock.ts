@@ -59,7 +59,7 @@ export class ConditionalBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the current class name
+     * @returns the current class name
      * @returns the class name
      */
     public getClassName() {
@@ -67,35 +67,35 @@ export class ConditionalBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the first operand component
+     * @returns the first operand component
      */
     public get a(): NodeMaterialConnectionPoint {
         return this._inputs[0];
     }
 
     /**
-     * Gets the second operand component
+     * @returns the second operand component
      */
     public get b(): NodeMaterialConnectionPoint {
         return this._inputs[1];
     }
 
     /**
-     * Gets the value to return if condition is true
+     * @returns the value to return if condition is true
      */
     public get true(): NodeMaterialConnectionPoint {
         return this._inputs[2];
     }
 
     /**
-     * Gets the value to return if condition is false
+     * @returns the value to return if condition is false
      */
     public get false(): NodeMaterialConnectionPoint {
         return this._inputs[3];
     }
 
     /**
-     * Gets the output component
+     * @returns the output component
      */
     public get output(): NodeMaterialConnectionPoint {
         return this._outputs[0];

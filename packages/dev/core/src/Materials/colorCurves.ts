@@ -34,7 +34,7 @@ export class ColorCurves {
     private _globalExposure = 0;
 
     /**
-     * Gets the global Hue value.
+     * @returns the global Hue value.
      * The hue value is a standard HSB hue in the range [0,360] where 0=red, 120=green and 240=blue. The default value is 30 degrees (orange).
      */
     public get globalHue(): number {
@@ -49,7 +49,7 @@ export class ColorCurves {
         this._dirty = true;
     }
     /**
-     * Gets the global Density value.
+     * @returns the global Density value.
      * The density value is in range [-100,+100] where 0 means the color filter has no effect and +100 means the color filter has maximum effect.
      * Values less than zero provide a filter of opposite hue.
      */
@@ -66,7 +66,7 @@ export class ColorCurves {
         this._dirty = true;
     }
     /**
-     * Gets the global Saturation value.
+     * @returns the global Saturation value.
      * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase saturation and negative values decrease saturation.
      */
     public get globalSaturation(): number {
@@ -82,7 +82,7 @@ export class ColorCurves {
     }
 
     /**
-     * Gets the global Exposure value.
+     * @returns the global Exposure value.
      * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase exposure and negative values decrease exposure.
      */
     public get globalExposure(): number {
@@ -110,7 +110,7 @@ export class ColorCurves {
     private _highlightsExposure = 0;
 
     /**
-     * Gets the highlights Hue value.
+     * @returns the highlights Hue value.
      * The hue value is a standard HSB hue in the range [0,360] where 0=red, 120=green and 240=blue. The default value is 30 degrees (orange).
      */
     public get highlightsHue(): number {
@@ -125,7 +125,7 @@ export class ColorCurves {
         this._dirty = true;
     }
     /**
-     * Gets the highlights Density value.
+     * @returns the highlights Density value.
      * The density value is in range [-100,+100] where 0 means the color filter has no effect and +100 means the color filter has maximum effect.
      * Values less than zero provide a filter of opposite hue.
      */
@@ -142,7 +142,7 @@ export class ColorCurves {
         this._dirty = true;
     }
     /**
-     * Gets the highlights Saturation value.
+     * @returns the highlights Saturation value.
      * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase saturation and negative values decrease saturation.
      */
     public get highlightsSaturation(): number {
@@ -157,7 +157,7 @@ export class ColorCurves {
         this._dirty = true;
     }
     /**
-     * Gets the highlights Exposure value.
+     * @returns the highlights Exposure value.
      * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase exposure and negative values decrease exposure.
      */
     public get highlightsExposure(): number {
@@ -185,7 +185,7 @@ export class ColorCurves {
     private _midtonesExposure = 0;
 
     /**
-     * Gets the midtones Hue value.
+     * @returns the midtones Hue value.
      * The hue value is a standard HSB hue in the range [0,360] where 0=red, 120=green and 240=blue. The default value is 30 degrees (orange).
      */
     public get midtonesHue(): number {
@@ -200,7 +200,7 @@ export class ColorCurves {
         this._dirty = true;
     }
     /**
-     * Gets the midtones Density value.
+     * @returns the midtones Density value.
      * The density value is in range [-100,+100] where 0 means the color filter has no effect and +100 means the color filter has maximum effect.
      * Values less than zero provide a filter of opposite hue.
      */
@@ -217,7 +217,7 @@ export class ColorCurves {
         this._dirty = true;
     }
     /**
-     * Gets the midtones Saturation value.
+     * @returns the midtones Saturation value.
      * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase saturation and negative values decrease saturation.
      */
     public get midtonesSaturation(): number {
@@ -232,7 +232,7 @@ export class ColorCurves {
         this._dirty = true;
     }
     /**
-     * Gets the midtones Exposure value.
+     * @returns the midtones Exposure value.
      * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase exposure and negative values decrease exposure.
      */
     public get midtonesExposure(): number {
@@ -253,7 +253,7 @@ export class ColorCurves {
     private _shadowsExposure = 0;
 
     /**
-     * Gets the shadows Hue value.
+     * @returns the shadows Hue value.
      * The hue value is a standard HSB hue in the range [0,360] where 0=red, 120=green and 240=blue. The default value is 30 degrees (orange).
      */
     public get shadowsHue(): number {
@@ -268,7 +268,7 @@ export class ColorCurves {
         this._dirty = true;
     }
     /**
-     * Gets the shadows Density value.
+     * @returns the shadows Density value.
      * The density value is in range [-100,+100] where 0 means the color filter has no effect and +100 means the color filter has maximum effect.
      * Values less than zero provide a filter of opposite hue.
      */
@@ -285,7 +285,7 @@ export class ColorCurves {
         this._dirty = true;
     }
     /**
-     * Gets the shadows Saturation value.
+     * @returns the shadows Saturation value.
      * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase saturation and negative values decrease saturation.
      */
     public get shadowsSaturation(): number {
@@ -300,7 +300,7 @@ export class ColorCurves {
         this._dirty = true;
     }
     /**
-     * Gets the shadows Exposure value.
+     * @returns the shadows Exposure value.
      * This is an adjustment value in the range [-100,+100], where the default value of 0.0 makes no adjustment, positive values increase exposure and negative values decrease exposure.
      */
     public get shadowsExposure(): number {

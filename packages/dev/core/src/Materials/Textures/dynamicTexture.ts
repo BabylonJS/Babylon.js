@@ -82,7 +82,7 @@ export class DynamicTexture extends Texture {
     }
 
     /**
-     * Gets the current state of canRescale
+     * @returns the current state of canRescale
      */
     public get canRescale(): boolean {
         return true;
@@ -125,7 +125,7 @@ export class DynamicTexture extends Texture {
     }
 
     /**
-     * Gets the context of the canvas used by the texture
+     * @returns the context of the canvas used by the texture
      * @returns the canvas context of the dynamic texture
      */
     public getContext(): ICanvasRenderingContext {

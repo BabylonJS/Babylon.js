@@ -478,7 +478,7 @@ export class BackgroundMaterial extends PushMaterial {
     }
 
     /**
-     * Gets the image processing configuration used either in this material.
+     * @returns the image processing configuration used either in this material.
      */
     public get imageProcessingConfiguration(): Nullable<ImageProcessingConfiguration> {
         return this._imageProcessingConfiguration;
@@ -553,7 +553,7 @@ export class BackgroundMaterial extends PushMaterial {
     }
 
     /**
-     * Gets The camera contrast used on this material.
+     * @returns the camera contrast used on this material.
      */
     public get cameraContrast(): float {
         return this._imageProcessingConfiguration.contrast;
@@ -567,7 +567,7 @@ export class BackgroundMaterial extends PushMaterial {
     }
 
     /**
-     * Gets the Color Grading 2D Lookup Texture.
+     * @returns the Color Grading 2D Lookup Texture.
      */
     public get cameraColorGradingTexture(): Nullable<BaseTexture> {
         return this._imageProcessingConfiguration.colorGradingTexture;
@@ -1253,7 +1253,7 @@ export class BackgroundMaterial extends PushMaterial {
     }
 
     /**
-     * Gets the class name of the material
+     * @returns the class name of the material
      * @returns "BackgroundMaterial"
      */
     public getClassName(): string {

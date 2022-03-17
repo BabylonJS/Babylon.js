@@ -273,13 +273,13 @@ export interface IParticleSystem {
     defaultProjectionMatrix: Matrix;
 
     /**
-     * Gets the maximum number of particles active at the same time.
+     * @returns the maximum number of particles active at the same time.
      * @returns The max number of active particles.
      */
     getCapacity(): number;
 
     /**
-     * Gets the number of particles active at the same time.
+     * @returns the number of particles active at the same time.
      * @returns The number of active particles.
      */
     getActiveCount(): number;
@@ -366,7 +366,7 @@ export interface IParticleSystem {
      */
     getClassName(): string;
     /**
-     * Gets the custom effect used to render the particles
+     * @returns the custom effect used to render the particles
      * @param blendMode Blend mode for which the effect should be retrieved
      * @returns The effect
      */
@@ -396,7 +396,7 @@ export interface IParticleSystem {
      */
     onBeforeDrawParticlesObservable: Observable<Nullable<Effect>>;
     /**
-     * Gets the name of the particle vertex shader
+     * @returns the name of the particle vertex shader
      */
     vertexShaderName: string;
 
@@ -429,19 +429,19 @@ export interface IParticleSystem {
      */
     removeSizeGradient(gradient: number): IParticleSystem;
     /**
-     * Gets the current list of color gradients.
+     * @returns the current list of color gradients.
      * You must use addColorGradient and removeColorGradient to update this list
      * @returns the list of color gradients
      */
     getColorGradients(): Nullable<Array<ColorGradient>>;
     /**
-     * Gets the current list of size gradients.
+     * @returns the current list of size gradients.
      * You must use addSizeGradient and removeSizeGradient to update this list
      * @returns the list of size gradients
      */
     getSizeGradients(): Nullable<Array<FactorGradient>>;
     /**
-     * Gets the current list of angular speed gradients.
+     * @returns the current list of angular speed gradients.
      * You must use addAngularSpeedGradient and removeAngularSpeedGradient to update this list
      * @returns the list of angular speed gradients
      */
@@ -461,7 +461,7 @@ export interface IParticleSystem {
      */
     removeAngularSpeedGradient(gradient: number): IParticleSystem;
     /**
-     * Gets the current list of velocity gradients.
+     * @returns the current list of velocity gradients.
      * You must use addVelocityGradient and removeVelocityGradient to update this list
      * @returns the list of velocity gradients
      */
@@ -481,7 +481,7 @@ export interface IParticleSystem {
      */
     removeVelocityGradient(gradient: number): IParticleSystem;
     /**
-     * Gets the current list of limit velocity gradients.
+     * @returns the current list of limit velocity gradients.
      * You must use addLimitVelocityGradient and removeLimitVelocityGradient to update this list
      * @returns the list of limit velocity gradients
      */
@@ -515,7 +515,7 @@ export interface IParticleSystem {
      */
     removeDragGradient(gradient: number): IParticleSystem;
     /**
-     * Gets the current list of drag gradients.
+     * @returns the current list of drag gradients.
      * You must use addDragGradient and removeDragGradient to update this list
      * @returns the list of drag gradients
      */
@@ -535,7 +535,7 @@ export interface IParticleSystem {
      */
     removeEmitRateGradient(gradient: number): IParticleSystem;
     /**
-     * Gets the current list of emit rate gradients.
+     * @returns the current list of emit rate gradients.
      * You must use addEmitRateGradient and removeEmitRateGradient to update this list
      * @returns the list of emit rate gradients
      */
@@ -556,7 +556,7 @@ export interface IParticleSystem {
      */
     removeStartSizeGradient(gradient: number): IParticleSystem;
     /**
-     * Gets the current list of start size gradients.
+     * @returns the current list of start size gradients.
      * You must use addStartSizeGradient and removeStartSizeGradient to update this list
      * @returns the list of start size gradients
      */
@@ -577,14 +577,14 @@ export interface IParticleSystem {
      */
     removeLifeTimeGradient(gradient: number): IParticleSystem;
     /**
-     * Gets the current list of life time gradients.
+     * @returns the current list of life time gradients.
      * You must use addLifeTimeGradient and removeLifeTimeGradient to update this list
      * @returns the list of life time gradients
      */
     getLifeTimeGradients(): Nullable<Array<FactorGradient>>;
 
     /**
-     * Gets the current list of color gradients.
+     * @returns the current list of color gradients.
      * You must use addColorGradient and removeColorGradient to update this list
      * @returns the list of color gradients
      */
@@ -598,7 +598,7 @@ export interface IParticleSystem {
      */
     addRampGradient(gradient: number, color: Color3): IParticleSystem;
     /**
-     * Gets the current list of ramp gradients.
+     * @returns the current list of ramp gradients.
      * You must use addRampGradient and removeRampGradient to update this list
      * @returns the list of ramp gradients
      */
@@ -618,7 +618,7 @@ export interface IParticleSystem {
      */
     addColorRemapGradient(gradient: number, min: number, max: number): IParticleSystem;
     /**
-     * Gets the current list of color remap gradients.
+     * @returns the current list of color remap gradients.
      * You must use addColorRemapGradient and removeColorRemapGradient to update this list
      * @returns the list of color remap gradients
      */
@@ -633,7 +633,7 @@ export interface IParticleSystem {
      */
     addAlphaRemapGradient(gradient: number, min: number, max: number): IParticleSystem;
     /**
-     * Gets the current list of alpha remap gradients.
+     * @returns the current list of alpha remap gradients.
      * You must use addAlphaRemapGradient and removeAlphaRemapGradient to update this list
      * @returns the list of alpha remap gradients
      */

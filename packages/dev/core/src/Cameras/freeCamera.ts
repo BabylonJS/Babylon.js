@@ -52,7 +52,7 @@ export class FreeCamera extends TargetCamera {
     public inputs: FreeCameraInputsManager;
 
     /**
-     * Gets the input sensibility for a mouse input. (default is 2000.0)
+     * @returns the input sensibility for a mouse input. (default is 2000.0)
      * Higher values reduce sensitivity.
      */
     public get angularSensibility(): number {
@@ -403,7 +403,7 @@ export class FreeCamera extends TargetCamera {
     }
 
     /**
-     * Gets the current object class name.
+     * @returns the current object class name.
      * @returns the class name
      */
     public getClassName(): string {

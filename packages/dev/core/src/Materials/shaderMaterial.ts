@@ -170,7 +170,7 @@ export class ShaderMaterial extends PushMaterial {
     }
 
     /**
-     * Gets the shader path used to define the shader code
+     * @returns the shader path used to define the shader code
      * It can be modified to trigger a new compilation
      */
     public get shaderPath(): any {
@@ -186,7 +186,7 @@ export class ShaderMaterial extends PushMaterial {
     }
 
     /**
-     * Gets the options used to compile the shader.
+     * @returns the options used to compile the shader.
      * They can be modified to trigger a new compilation
      */
     public get options(): IShaderMaterialOptions {
@@ -194,7 +194,7 @@ export class ShaderMaterial extends PushMaterial {
     }
 
     /**
-     * Gets the current class name of the material e.g. "ShaderMaterial"
+     * @returns the current class name of the material e.g. "ShaderMaterial"
      * Mainly use in serialization.
      * @returns the class name
      */
@@ -1112,7 +1112,7 @@ export class ShaderMaterial extends PushMaterial {
     }
 
     /**
-     * Gets the active textures from the material
+     * @returns the active textures from the material
      * @returns an array of textures
      */
     public getActiveTextures(): BaseTexture[] {

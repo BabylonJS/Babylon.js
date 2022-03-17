@@ -36,7 +36,7 @@ export class DirectionalLight extends ShadowLight {
 
     private _shadowOrthoScale = 0.1;
     /**
-     * Gets the shadow projection scale against the optimal computed one.
+     * @returns the shadow projection scale against the optimal computed one.
      * 0.1 by default which means that the projection window is increase by 10% from the optimal size.
      * This does not impact in fixed frustum size (shadowFrustumSize being set)
      */
@@ -314,7 +314,7 @@ export class DirectionalLight extends ShadowLight {
     }
 
     /**
-     * Gets the minZ used for shadow according to both the scene and the light.
+     * @returns the minZ used for shadow according to both the scene and the light.
      *
      * Values are fixed on directional lights as it relies on an ortho projection hence the need to convert being
      * -1 and 1 to 0 and 1 doing (depth + min) / (min + max) -> (depth + 1) / (1 + 1) -> (depth * 0.5) + 0.5.
@@ -328,7 +328,7 @@ export class DirectionalLight extends ShadowLight {
     }
 
     /**
-     * Gets the maxZ used for shadow according to both the scene and the light.
+     * @returns the maxZ used for shadow according to both the scene and the light.
      *
      * Values are fixed on directional lights as it relies on an ortho projection hence the need to convert being
      * -1 and 1 to 0 and 1 doing (depth + min) / (min + max) -> (depth + 1) / (1 + 1) -> (depth * 0.5) + 0.5.

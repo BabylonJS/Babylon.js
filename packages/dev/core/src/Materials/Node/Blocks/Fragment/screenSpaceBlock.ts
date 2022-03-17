@@ -29,7 +29,7 @@ export class ScreenSpaceBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the current class name
+     * @returns the current class name
      * @returns the class name
      */
     public getClassName() {
@@ -37,35 +37,35 @@ export class ScreenSpaceBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the vector input
+     * @returns the vector input
      */
     public get vector(): NodeMaterialConnectionPoint {
         return this._inputs[0];
     }
 
     /**
-     * Gets the worldViewProjection transform input
+     * @returns the worldViewProjection transform input
      */
     public get worldViewProjection(): NodeMaterialConnectionPoint {
         return this._inputs[1];
     }
 
     /**
-     * Gets the output component
+     * @returns the output component
      */
     public get output(): NodeMaterialConnectionPoint {
         return this._outputs[0];
     }
 
     /**
-     * Gets the x output component
+     * @returns the x output component
      */
     public get x(): NodeMaterialConnectionPoint {
         return this._outputs[1];
     }
 
     /**
-     * Gets the y output component
+     * @returns the y output component
      */
     public get y(): NodeMaterialConnectionPoint {
         return this._outputs[2];

@@ -31,7 +31,7 @@ export class ShaderStore {
     public static IncludesShadersStoreWGSL: { [key: string]: string } = {};
 
     /**
-     * Gets the shaders repository path for a given shader language
+     * @returns the shaders repository path for a given shader language
      * @param shaderLanguage the shader language
      * @returns the path to the shaders repository
      */
@@ -40,7 +40,7 @@ export class ShaderStore {
     }
 
     /**
-     * Gets the shaders store of a given shader language
+     * @returns the shaders store of a given shader language
      * @param shaderLanguage the shader language
      * @returns the shaders store
      */
@@ -49,7 +49,7 @@ export class ShaderStore {
     }
 
     /**
-     * Gets the include shaders store of a given shader language
+     * @returns the include shaders store of a given shader language
      * @param shaderLanguage the shader language
      * @returns the include shaders store
      */

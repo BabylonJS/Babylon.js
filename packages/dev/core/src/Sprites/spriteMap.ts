@@ -314,7 +314,7 @@ export class SpriteMap implements ISpriteMap {
     }
 
     /**
-     * Gets the UV location of the mouse over the SpriteMap.
+     * @returns the UV location of the mouse over the SpriteMap.
      * @returns Vector2 the UV position of the mouse interaction
      */
     public getMousePosition(): Vector2 {

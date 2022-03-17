@@ -14,7 +14,7 @@ export class DepthReducer extends MinMaxReducer {
     private _depthRendererId: string;
 
     /**
-     * Gets the depth renderer used for the computation.
+     * @returns the depth renderer used for the computation.
      * Note that the result is null if you provide your own renderer when calling setDepthRenderer.
      */
     public get depthRenderer(): Nullable<DepthRenderer> {

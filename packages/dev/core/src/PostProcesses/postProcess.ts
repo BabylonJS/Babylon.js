@@ -64,7 +64,7 @@ export class PostProcess {
     public height = -1;
 
     /**
-     * Gets the node material used to create this postprocess (null if the postprocess was manually created)
+     * @returns the node material used to create this postprocess (null if the postprocess was manually created)
      */
     public nodeMaterialSource: Nullable<NodeMaterial> = null;
 
@@ -335,7 +335,7 @@ export class PostProcess {
     }
 
     /**
-     * Gets the camera which post process is applied to.
+     * @returns the camera which post process is applied to.
      * @returns The camera the post process is applied to.
      */
     public getCamera(): Camera {
@@ -343,7 +343,7 @@ export class PostProcess {
     }
 
     /**
-     * Gets the texel size of the postprocess.
+     * @returns the texel size of the postprocess.
      * See https://en.wikipedia.org/wiki/Texel_(graphics)
      */
     public get texelSize(): Vector2 {
@@ -438,7 +438,7 @@ export class PostProcess {
     }
 
     /**
-     * Gets the engine which this post process belongs to.
+     * @returns the engine which this post process belongs to.
      * @returns The engine the post process was enabled with.
      */
     public getEngine(): Engine {

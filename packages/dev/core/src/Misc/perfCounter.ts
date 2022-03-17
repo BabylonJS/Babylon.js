@@ -50,14 +50,14 @@ export class PerfCounter {
     }
 
     /**
-     * Gets the accumulated total
+     * @returns the accumulated total
      */
     public get total(): number {
         return this._totalAccumulated;
     }
 
     /**
-     * Gets the total value count
+     * @returns the total value count
      */
     public get count(): number {
         return this._totalValueCount;

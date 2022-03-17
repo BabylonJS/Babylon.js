@@ -22,31 +22,31 @@ export class Grid extends Container {
     private _childControls = new Array<Control>();
 
     /**
-     * Gets the number of columns
+     * @returns the number of columns
      */
     public get columnCount(): number {
         return this._columnDefinitions.length;
     }
 
     /**
-     * Gets the number of rows
+     * @returns the number of rows
      */
     public get rowCount(): number {
         return this._rowDefinitions.length;
     }
 
-    /** Gets the list of children */
+    /** @returns the list of children */
     public get children(): Control[] {
         return this._childControls;
     }
 
-    /** Gets the list of cells (e.g. the containers) */
+    /** @returns the list of cells (e.g. the containers) */
     public get cells(): { [key: string]: Container } {
         return this._cells;
     }
 
     /**
-     * Gets the definition of a specific row
+     * @returns the definition of a specific row
      * @param index defines the index of the row
      * @returns the row definition
      */
@@ -59,7 +59,7 @@ export class Grid extends Container {
     }
 
     /**
-     * Gets the definition of a specific column
+     * @returns the definition of a specific column
      * @param index defines the index of the column
      * @returns the column definition
      */
@@ -152,7 +152,7 @@ export class Grid extends Container {
     }
 
     /**
-     * Gets the list of children stored in a specific cell
+     * @returns the list of children stored in a specific cell
      * @param row defines the row to check
      * @param column defines the column to check
      * @returns the list of controls

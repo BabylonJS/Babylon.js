@@ -107,7 +107,7 @@ export class DualShockPad extends Gamepad {
     }
 
     /**
-     * Gets the left trigger value
+     * @returns the left trigger value
      */
     public get leftTrigger(): number {
         return this._leftTrigger;
@@ -123,7 +123,7 @@ export class DualShockPad extends Gamepad {
     }
 
     /**
-     * Gets the right trigger value
+     * @returns the right trigger value
      */
     public get rightTrigger(): number {
         return this._rightTrigger;
@@ -211,7 +211,7 @@ export class DualShockPad extends Gamepad {
     }
 
     /**
-     * Gets the value of the `Cross` button
+     * @returns the value of the `Cross` button
      */
     public get buttonCross(): number {
         return this._buttonCross;
@@ -224,7 +224,7 @@ export class DualShockPad extends Gamepad {
     }
 
     /**
-     * Gets the value of the `Circle` button
+     * @returns the value of the `Circle` button
      */
     public get buttonCircle(): number {
         return this._buttonCircle;
@@ -237,7 +237,7 @@ export class DualShockPad extends Gamepad {
     }
 
     /**
-     * Gets the value of the `Square` button
+     * @returns the value of the `Square` button
      */
     public get buttonSquare(): number {
         return this._buttonSquare;
@@ -250,7 +250,7 @@ export class DualShockPad extends Gamepad {
     }
 
     /**
-     * Gets the value of the `Triangle` button
+     * @returns the value of the `Triangle` button
      */
     public get buttonTriangle(): number {
         return this._buttonTriangle;
@@ -263,7 +263,7 @@ export class DualShockPad extends Gamepad {
     }
 
     /**
-     * Gets the value of the `Options` button
+     * @returns the value of the `Options` button
      */
     public get buttonOptions(): number {
         return this._buttonOptions;
@@ -276,7 +276,7 @@ export class DualShockPad extends Gamepad {
     }
 
     /**
-     * Gets the value of the `Share` button
+     * @returns the value of the `Share` button
      */
     public get buttonShare(): number {
         return this._buttonShare;
@@ -289,7 +289,7 @@ export class DualShockPad extends Gamepad {
     }
 
     /**
-     * Gets the value of the `L1` button
+     * @returns the value of the `L1` button
      */
     public get buttonL1(): number {
         return this._buttonL1;
@@ -302,7 +302,7 @@ export class DualShockPad extends Gamepad {
     }
 
     /**
-     * Gets the value of the `R1` button
+     * @returns the value of the `R1` button
      */
     public get buttonR1(): number {
         return this._buttonR1;
@@ -315,7 +315,7 @@ export class DualShockPad extends Gamepad {
     }
 
     /**
-     * Gets the value of the Left joystick
+     * @returns the value of the Left joystick
      */
     public get buttonLeftStick(): number {
         return this._buttonLeftStick;
@@ -328,7 +328,7 @@ export class DualShockPad extends Gamepad {
     }
 
     /**
-     * Gets the value of the Right joystick
+     * @returns the value of the Right joystick
      */
     public get buttonRightStick(): number {
         return this._buttonRightStick;
@@ -341,7 +341,7 @@ export class DualShockPad extends Gamepad {
     }
 
     /**
-     * Gets the value of D-pad up
+     * @returns the value of D-pad up
      */
     public get dPadUp(): number {
         return this._dPadUp;
@@ -354,7 +354,7 @@ export class DualShockPad extends Gamepad {
     }
 
     /**
-     * Gets the value of D-pad down
+     * @returns the value of D-pad down
      */
     public get dPadDown(): number {
         return this._dPadDown;
@@ -367,7 +367,7 @@ export class DualShockPad extends Gamepad {
     }
 
     /**
-     * Gets the value of D-pad left
+     * @returns the value of D-pad left
      */
     public get dPadLeft(): number {
         return this._dPadLeft;
@@ -380,7 +380,7 @@ export class DualShockPad extends Gamepad {
     }
 
     /**
-     * Gets the value of D-pad right
+     * @returns the value of D-pad right
      */
     public get dPadRight(): number {
         return this._dPadRight;

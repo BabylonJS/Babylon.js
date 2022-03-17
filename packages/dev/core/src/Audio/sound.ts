@@ -951,7 +951,7 @@ export class Sound {
     }
 
     /**
-     * Gets the volume of the sound.
+     * @returns the volume of the sound.
      * @returns the volume of the sound
      */
     public getVolume(): number {
@@ -1054,7 +1054,7 @@ export class Sound {
     }
 
     /**
-     * Gets the current underlying audio buffer containing the data
+     * @returns the current underlying audio buffer containing the data
      * @returns the audio buffer
      */
     public getAudioBuffer(): Nullable<AudioBuffer> {
@@ -1062,7 +1062,7 @@ export class Sound {
     }
 
     /**
-     * Gets the WebAudio AudioBufferSourceNode, lets you keep track of and stop instances of this Sound.
+     * @returns the WebAudio AudioBufferSourceNode, lets you keep track of and stop instances of this Sound.
      * @returns the source node
      */
     public getSoundSource(): Nullable<AudioBufferSourceNode> {
@@ -1070,7 +1070,7 @@ export class Sound {
     }
 
     /**
-     * Gets the WebAudio GainNode, gives you precise control over the gain of instances of this Sound.
+     * @returns the WebAudio GainNode, gives you precise control over the gain of instances of this Sound.
      * @returns the gain node
      */
     public getSoundGain(): Nullable<GainNode> {

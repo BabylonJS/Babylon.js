@@ -134,7 +134,7 @@ export class LightGizmo extends Gizmo {
     }
 
     /**
-     * Gets the material used to render the light gizmo
+     * @returns the material used to render the light gizmo
      */
     public get material() {
         return this._material;

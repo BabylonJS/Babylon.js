@@ -14,7 +14,7 @@ declare module "../scene" {
         _gamepadManager: Nullable<GamepadManager>;
 
         /**
-         * Gets the gamepad manager associated with the scene
+         * @returns the gamepad manager associated with the scene
          * @see https://doc.babylonjs.com/how_to/how_to_use_gamepads
          */
         gamepadManager: GamepadManager;

@@ -226,7 +226,7 @@ export class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateC
     }
 
     /**
-     * Gets the class name of the current input.
+     * @returns the class name of the current input.
      * @returns the class name
      */
     public getClassName(): string {

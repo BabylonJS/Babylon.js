@@ -6,7 +6,7 @@ import { Nullable } from "../../types";
  */
 export class TextureSampler {
     /**
-     * Gets the sampling mode of the texture
+     * @returns the sampling mode of the texture
      */
     public samplingMode: number = -1;
 

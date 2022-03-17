@@ -309,7 +309,7 @@ export class RenderingManager {
     }
 
     /**
-     * Gets the current auto clear configuration for one rendering group of the rendering
+     * @returns the current auto clear configuration for one rendering group of the rendering
      * manager.
      * @param index the rendering group index to get the information for
      * @returns The auto clear setup for the requested rendering group

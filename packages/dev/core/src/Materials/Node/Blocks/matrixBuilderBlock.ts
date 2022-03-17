@@ -27,7 +27,7 @@ export class MatrixBuilderBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the current class name
+     * @returns the current class name
      * @returns the class name
      */
     public getClassName() {
@@ -35,35 +35,35 @@ export class MatrixBuilderBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the row0 vector
+     * @returns the row0 vector
      */
     public get row0(): NodeMaterialConnectionPoint {
         return this._inputs[0];
     }
 
     /**
-     * Gets the row1 vector
+     * @returns the row1 vector
      */
     public get row1(): NodeMaterialConnectionPoint {
         return this._inputs[1];
     }
 
     /**
-     * Gets the row2 vector
+     * @returns the row2 vector
      */
     public get row2(): NodeMaterialConnectionPoint {
         return this._inputs[2];
     }
 
     /**
-     * Gets the row3 vector
+     * @returns the row3 vector
      */
     public get row3(): NodeMaterialConnectionPoint {
         return this._inputs[3];
     }
 
     /**
-     * Gets the output component
+     * @returns the output component
      */
     public get output(): NodeMaterialConnectionPoint {
         return this._outputs[0];

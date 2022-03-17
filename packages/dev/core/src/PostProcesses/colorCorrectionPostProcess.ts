@@ -30,7 +30,7 @@ export class ColorCorrectionPostProcess extends PostProcess {
     private _colorTableTexture: Texture;
 
     /**
-     * Gets the color table url used to create the LUT texture
+     * @returns the color table url used to create the LUT texture
      */
     @serialize()
     public colorTableUrl: string;

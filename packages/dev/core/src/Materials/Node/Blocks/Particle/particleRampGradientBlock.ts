@@ -24,7 +24,7 @@ export class ParticleRampGradientBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the current class name
+     * @returns the current class name
      * @returns the class name
      */
     public getClassName() {
@@ -32,14 +32,14 @@ export class ParticleRampGradientBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the color input component
+     * @returns the color input component
      */
     public get color(): NodeMaterialConnectionPoint {
         return this._inputs[0];
     }
 
     /**
-     * Gets the rampColor output component
+     * @returns the rampColor output component
      */
     public get rampColor(): NodeMaterialConnectionPoint {
         return this._outputs[0];

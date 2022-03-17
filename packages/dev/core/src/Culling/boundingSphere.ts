@@ -8,7 +8,7 @@ import { Plane } from "../Maths/math.plane";
  */
 export class BoundingSphere {
     /**
-     * Gets the center of the bounding sphere in local space
+     * @returns the center of the bounding sphere in local space
      */
     public readonly center = Vector3.Zero();
     /**
@@ -16,7 +16,7 @@ export class BoundingSphere {
      */
     public radius: number;
     /**
-     * Gets the center of the bounding sphere in world space
+     * @returns the center of the bounding sphere in world space
      */
     public readonly centerWorld = Vector3.Zero();
     /**
@@ -24,11 +24,11 @@ export class BoundingSphere {
      */
     public radiusWorld: number;
     /**
-     * Gets the minimum vector in local space
+     * @returns the minimum vector in local space
      */
     public readonly minimum = Vector3.Zero();
     /**
-     * Gets the maximum vector in local space
+     * @returns the maximum vector in local space
      */
     public readonly maximum = Vector3.Zero();
 
@@ -81,7 +81,7 @@ export class BoundingSphere {
     }
 
     /**
-     * Gets the world matrix of the bounding box
+     * @returns the world matrix of the bounding box
      * @returns a matrix
      */
     public getWorldMatrix(): DeepImmutable<Matrix> {

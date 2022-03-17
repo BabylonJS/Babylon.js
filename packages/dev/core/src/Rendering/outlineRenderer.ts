@@ -17,7 +17,7 @@ declare module "../scene" {
         _outlineRenderer: OutlineRenderer;
 
         /**
-         * Gets the outline renderer associated with the scene
+         * @returns the outline renderer associated with the scene
          * @returns a OutlineRenderer
          */
         getOutlineRenderer(): OutlineRenderer;
@@ -25,7 +25,7 @@ declare module "../scene" {
 }
 
 /**
- * Gets the outline renderer associated with the scene
+ * @returns the outline renderer associated with the scene
  * @returns a OutlineRenderer
  */
 Scene.prototype.getOutlineRenderer = function (): OutlineRenderer {

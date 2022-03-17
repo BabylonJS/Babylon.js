@@ -44,9 +44,9 @@ export interface EngineCapabilities {
     textureFloat: boolean;
     /** Defines if vertex array objects are supported */
     vertexArrayObject: boolean;
-    /** Gets the webgl extension for anisotropic filtering (null if not supported) */
+    /** @returns the webgl extension for anisotropic filtering (null if not supported) */
     textureAnisotropicFilterExtension?: EXT_texture_filter_anisotropic;
-    /** Gets the maximum level of anisotropy supported */
+    /** @returns the maximum level of anisotropy supported */
     maxAnisotropy: number;
     /** Defines if instancing is supported */
     instancedArrays: boolean;

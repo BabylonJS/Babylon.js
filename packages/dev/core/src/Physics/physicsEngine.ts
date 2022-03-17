@@ -22,7 +22,7 @@ export class PhysicsEngine implements IPhysicsEngine {
     private _uniqueIdCounter = 0;
 
     /**
-     * Gets the gravity vector used by the simulation
+     * @returns the gravity vector used by the simulation
      */
     public gravity: Vector3;
 
@@ -105,7 +105,7 @@ export class PhysicsEngine implements IPhysicsEngine {
     }
 
     /**
-     * Gets the name of the current physics plugin
+     * @returns the name of the current physics plugin
      * @returns the name of the plugin
      */
     public getPhysicsPluginName(): string {
@@ -197,7 +197,7 @@ export class PhysicsEngine implements IPhysicsEngine {
     }
 
     /**
-     * Gets the current plugin used to run the simulation
+     * @returns the current plugin used to run the simulation
      * @returns current plugin
      */
     public getPhysicsPlugin(): IPhysicsEnginePlugin {
@@ -205,7 +205,7 @@ export class PhysicsEngine implements IPhysicsEngine {
     }
 
     /**
-     * Gets the list of physic impostors
+     * @returns the list of physic impostors
      * @returns an array of PhysicsImpostor
      */
     public getImpostors(): Array<PhysicsImpostor> {
@@ -213,7 +213,7 @@ export class PhysicsEngine implements IPhysicsEngine {
     }
 
     /**
-     * Gets the impostor for a physics enabled object
+     * @returns the impostor for a physics enabled object
      * @param object defines the object impersonated by the impostor
      * @returns the PhysicsImpostor or null if not found
      */
@@ -228,7 +228,7 @@ export class PhysicsEngine implements IPhysicsEngine {
     }
 
     /**
-     * Gets the impostor for a physics body object
+     * @returns the impostor for a physics body object
      * @param body defines physics body used by the impostor
      * @returns the PhysicsImpostor or null if not found
      */

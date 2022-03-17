@@ -94,7 +94,7 @@ declare module "core/scene" {
          */
         getGeometryByID(id: string): Nullable<Geometry>;
         /**
-         * Gets the first added mesh found of a given Id
+         * @returns the first added mesh found of a given Id
          * @param id defines the Id to search for
          * @returns the mesh found or null if not found at all
          * @deprecated Please use getMeshById instead
@@ -122,7 +122,7 @@ declare module "core/scene" {
          */
         getMeshesByID(id: string): Array<AbstractMesh>;
         /**
-         * Gets the first added transform node found of a given Id
+         * @returns the first added transform node found of a given Id
          * @param id defines the Id to search for
          * @returns the found transform node or null if not found at all.
          * @deprecated Please use getTransformNodeById instead

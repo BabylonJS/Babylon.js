@@ -127,7 +127,7 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
     private _options: { dragAxis?: Vector3; dragPlaneNormal?: Vector3 };
 
     /**
-     * Gets the options used by the behavior
+     * @returns the options used by the behavior
      */
     public get options(): { dragAxis?: Vector3; dragPlaneNormal?: Vector3 } {
         return this._options;

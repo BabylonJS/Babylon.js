@@ -508,7 +508,7 @@ export class WindowsMotionController extends WebVRController {
     }
 
     /**
-     * Gets the ray of the controller in the direction the controller is pointing
+     * @returns the ray of the controller in the direction the controller is pointing
      * @param length the length the resulting ray should be
      * @returns a ray in the direction the controller is pointing
      */

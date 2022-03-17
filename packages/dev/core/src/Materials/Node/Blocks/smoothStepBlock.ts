@@ -24,7 +24,7 @@ export class SmoothStepBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the current class name
+     * @returns the current class name
      * @returns the class name
      */
     public getClassName() {
@@ -32,28 +32,28 @@ export class SmoothStepBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the value operand input component
+     * @returns the value operand input component
      */
     public get value(): NodeMaterialConnectionPoint {
         return this._inputs[0];
     }
 
     /**
-     * Gets the first edge operand input component
+     * @returns the first edge operand input component
      */
     public get edge0(): NodeMaterialConnectionPoint {
         return this._inputs[1];
     }
 
     /**
-     * Gets the second edge operand input component
+     * @returns the second edge operand input component
      */
     public get edge1(): NodeMaterialConnectionPoint {
         return this._inputs[2];
     }
 
     /**
-     * Gets the output component
+     * @returns the output component
      */
     public get output(): NodeMaterialConnectionPoint {
         return this._outputs[0];

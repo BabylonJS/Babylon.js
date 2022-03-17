@@ -563,7 +563,7 @@ export class StandardMaterial extends PushMaterial {
     protected _imageProcessingConfiguration: ImageProcessingConfiguration;
 
     /**
-     * Gets the image processing configuration used either in this material.
+     * @returns the image processing configuration used either in this material.
      */
     public get imageProcessingConfiguration(): ImageProcessingConfiguration {
         return this._imageProcessingConfiguration;
@@ -684,7 +684,7 @@ export class StandardMaterial extends PushMaterial {
     }
 
     /**
-     * Gets The camera contrast used on this material.
+     * @returns the camera contrast used on this material.
      */
     public get cameraContrast(): number {
         return this._imageProcessingConfiguration.contrast;
@@ -698,7 +698,7 @@ export class StandardMaterial extends PushMaterial {
     }
 
     /**
-     * Gets the Color Grading 2D Lookup Texture.
+     * @returns the Color Grading 2D Lookup Texture.
      */
     public get cameraColorGradingTexture(): Nullable<BaseTexture> {
         return this._imageProcessingConfiguration.colorGradingTexture;
@@ -798,7 +798,7 @@ export class StandardMaterial extends PushMaterial {
     }
 
     /**
-     * Gets the current class name of the material e.g. "StandardMaterial"
+     * @returns the current class name of the material e.g. "StandardMaterial"
      * Mainly use in serialization.
      * @returns the class name
      */
@@ -1824,7 +1824,7 @@ export class StandardMaterial extends PushMaterial {
     }
 
     /**
-     * Gets the active textures from the material
+     * @returns the active textures from the material
      * @returns an array of textures
      */
     public getActiveTextures(): BaseTexture[] {

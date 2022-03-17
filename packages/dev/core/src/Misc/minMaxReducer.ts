@@ -45,7 +45,7 @@ export class MinMaxReducer {
     }
 
     /**
-     * Gets the texture used to read the values from.
+     * @returns the texture used to read the values from.
      */
     public get sourceTexture(): Nullable<RenderTargetTexture> {
         return this._sourceTexture;
@@ -184,7 +184,7 @@ export class MinMaxReducer {
     protected _activated = false;
 
     /**
-     * Gets the activation status of the reducer
+     * @returns the activation status of the reducer
      */
     public get activated(): boolean {
         return this._activated;

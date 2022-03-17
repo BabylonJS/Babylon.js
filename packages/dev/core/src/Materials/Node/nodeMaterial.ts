@@ -235,7 +235,7 @@ export class NodeMaterial extends PushMaterial {
     protected _imageProcessingConfiguration: ImageProcessingConfiguration;
 
     /**
-     * Gets the image processing configuration used either in this material.
+     * @returns the image processing configuration used either in this material.
      */
     public get imageProcessingConfiguration(): ImageProcessingConfiguration {
         return this._imageProcessingConfiguration;
@@ -310,7 +310,7 @@ export class NodeMaterial extends PushMaterial {
     }
 
     /**
-     * Gets the current class name of the material e.g. "NodeMaterial"
+     * @returns the current class name of the material e.g. "NodeMaterial"
      * @returns the class name
      */
     public getClassName(): string {
@@ -403,7 +403,7 @@ export class NodeMaterial extends PushMaterial {
     }
 
     /**
-     * Gets the list of input blocks attached to this material
+     * @returns the list of input blocks attached to this material
      * @returns an array of InputBlocks
      */
     public getInputBlocks() {
@@ -1411,7 +1411,7 @@ export class NodeMaterial extends PushMaterial {
     }
 
     /**
-     * Gets the active textures from the material
+     * @returns the active textures from the material
      * @returns an array of textures
      */
     public getActiveTextures(): BaseTexture[] {
@@ -1425,7 +1425,7 @@ export class NodeMaterial extends PushMaterial {
     }
 
     /**
-     * Gets the list of texture blocks
+     * @returns the list of texture blocks
      * @returns an array of texture blocks
      */
     public getTextureBlocks(): (TextureBlock | ReflectionTextureBaseBlock | RefractionBlock | CurrentScreenBlock | ParticleTextureBlock | ImageSourceBlock)[] {

@@ -26,7 +26,7 @@ export class ParticleBlendMultiplyBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the current class name
+     * @returns the current class name
      * @returns the class name
      */
     public getClassName() {
@@ -34,28 +34,28 @@ export class ParticleBlendMultiplyBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the color input component
+     * @returns the color input component
      */
     public get color(): NodeMaterialConnectionPoint {
         return this._inputs[0];
     }
 
     /**
-     * Gets the alphaTexture input component
+     * @returns the alphaTexture input component
      */
     public get alphaTexture(): NodeMaterialConnectionPoint {
         return this._inputs[1];
     }
 
     /**
-     * Gets the alphaColor input component
+     * @returns the alphaColor input component
      */
     public get alphaColor(): NodeMaterialConnectionPoint {
         return this._inputs[2];
     }
 
     /**
-     * Gets the blendColor output component
+     * @returns the blendColor output component
      */
     public get blendColor(): NodeMaterialConnectionPoint {
         return this._outputs[0];

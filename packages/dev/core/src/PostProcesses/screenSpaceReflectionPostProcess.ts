@@ -208,7 +208,7 @@ export class ScreenSpaceReflectionPostProcess extends PostProcess {
     }
 
     /**
-     * Gets the number of samples taken while computing reflections. More samples count is high,
+     * @returns the number of samples taken while computing reflections. More samples count is high,
      * more the post-process wil require GPU power and can generate a drop in FPS. Basically in interval [25, 100].
      */
     @serialize()
@@ -230,7 +230,7 @@ export class ScreenSpaceReflectionPostProcess extends PostProcess {
     }
 
     /**
-     * Gets the number of samples taken while smoothing reflections. More samples count is high,
+     * @returns the number of samples taken while smoothing reflections. More samples count is high,
      * more the post-process will require GPU power and can generate a drop in FPS.
      * Default value (5.0) work pretty well in all cases but can be adjusted.
      */

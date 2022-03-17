@@ -134,7 +134,7 @@ export abstract class BaseCameraMouseWheelInput implements ICameraInput<Camera> 
     }
 
     /**
-     * Gets the class name of the current input.
+     * @returns the class name of the current input.
      * @returns the class name
      */
     public getClassName(): string {

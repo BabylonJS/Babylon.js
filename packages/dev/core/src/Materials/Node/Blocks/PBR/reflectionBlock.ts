@@ -84,7 +84,7 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
     }
 
     /**
-     * Gets the current class name
+     * @returns the current class name
      * @returns the class name
      */
     public getClassName() {
@@ -92,56 +92,56 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
     }
 
     /**
-     * Gets the position input component
+     * @returns the position input component
      */
     public get position(): NodeMaterialConnectionPoint {
         return this._inputs[0];
     }
 
     /**
-     * Gets the world position input component
+     * @returns the world position input component
      */
     public get worldPosition(): NodeMaterialConnectionPoint {
         return this.worldPositionConnectionPoint;
     }
 
     /**
-     * Gets the world normal input component
+     * @returns the world normal input component
      */
     public get worldNormal(): NodeMaterialConnectionPoint {
         return this.worldNormalConnectionPoint;
     }
 
     /**
-     * Gets the world input component
+     * @returns the world input component
      */
     public get world(): NodeMaterialConnectionPoint {
         return this._inputs[1];
     }
 
     /**
-     * Gets the camera (or eye) position component
+     * @returns the camera (or eye) position component
      */
     public get cameraPosition(): NodeMaterialConnectionPoint {
         return this.cameraPositionConnectionPoint;
     }
 
     /**
-     * Gets the view input component
+     * @returns the view input component
      */
     public get view(): NodeMaterialConnectionPoint {
         return this.viewConnectionPoint;
     }
 
     /**
-     * Gets the color input component
+     * @returns the color input component
      */
     public get color(): NodeMaterialConnectionPoint {
         return this._inputs[2];
     }
 
     /**
-     * Gets the reflection object output component
+     * @returns the reflection object output component
      */
     public get reflection(): NodeMaterialConnectionPoint {
         return this._outputs[0];
@@ -155,7 +155,7 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
     }
 
     /**
-     * Gets the reflection color (either the name of the variable if the color input is connected, else a default value)
+     * @returns the reflection color (either the name of the variable if the color input is connected, else a default value)
      */
     public get reflectionColor(): string {
         return this.color.isConnected ? this.color.associatedVariableName : "vec3(1., 1., 1.)";
@@ -252,7 +252,7 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
     }
 
     /**
-     * Gets the code to inject in the vertex shader
+     * @returns the code to inject in the vertex shader
      * @param state current state of the node material building
      * @returns the shader code
      */
@@ -304,7 +304,7 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
     }
 
     /**
-     * Gets the main code of the block (fragment side)
+     * @returns the main code of the block (fragment side)
      * @param state current state of the node material building
      * @param normalVarName name of the existing variable corresponding to the normal
      * @returns the shader code

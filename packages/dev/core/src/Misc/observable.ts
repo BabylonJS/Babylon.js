@@ -182,7 +182,7 @@ export class Observable<T> {
     }
 
     /**
-     * Gets the list of observers
+     * @returns the list of observers
      */
     public get observers(): Array<Observer<T>> {
         return this._observers;

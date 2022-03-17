@@ -50,7 +50,7 @@ export class TransformBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the current class name
+     * @returns the current class name
      * @returns the class name
      */
     public getClassName() {
@@ -58,28 +58,28 @@ export class TransformBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the vector input
+     * @returns the vector input
      */
     public get vector(): NodeMaterialConnectionPoint {
         return this._inputs[0];
     }
 
     /**
-     * Gets the output component
+     * @returns the output component
      */
     public get output(): NodeMaterialConnectionPoint {
         return this._outputs[0];
     }
 
     /**
-     * Gets the xyz output component
+     * @returns the xyz output component
      */
     public get xyz(): NodeMaterialConnectionPoint {
         return this._outputs[1];
     }
 
     /**
-     * Gets the matrix transform input
+     * @returns the matrix transform input
      */
     public get transform(): NodeMaterialConnectionPoint {
         return this._inputs[1];

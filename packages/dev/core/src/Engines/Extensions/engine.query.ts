@@ -55,7 +55,7 @@ declare module "../../Engines/engine" {
         isQueryResultAvailable(query: OcclusionQuery): boolean;
 
         /**
-         * Gets the value of a given query
+         * @returns the value of a given query
          * @param query defines the query to check
          * @returns the value of the query
          */

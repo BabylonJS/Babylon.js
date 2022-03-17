@@ -43,7 +43,7 @@ export class FogBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the current class name
+     * @returns the current class name
      * @returns the class name
      */
     public getClassName() {
@@ -51,35 +51,35 @@ export class FogBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the world position input component
+     * @returns the world position input component
      */
     public get worldPosition(): NodeMaterialConnectionPoint {
         return this._inputs[0];
     }
 
     /**
-     * Gets the view input component
+     * @returns the view input component
      */
     public get view(): NodeMaterialConnectionPoint {
         return this._inputs[1];
     }
 
     /**
-     * Gets the color input component
+     * @returns the color input component
      */
     public get input(): NodeMaterialConnectionPoint {
         return this._inputs[2];
     }
 
     /**
-     * Gets the fog color input component
+     * @returns the fog color input component
      */
     public get fogColor(): NodeMaterialConnectionPoint {
         return this._inputs[3];
     }
 
     /**
-     * Gets the output component
+     * @returns the output component
      */
     public get output(): NodeMaterialConnectionPoint {
         return this._outputs[0];

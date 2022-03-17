@@ -386,7 +386,7 @@ export class SkyMaterial extends PushMaterial {
     }
 
     /**
-     * Gets the current class name of the material e.g. "SkyMaterial"
+     * @returns the current class name of the material e.g. "SkyMaterial"
      * Mainly use in serialization.
      * @returns the class name
      */

@@ -107,7 +107,7 @@ export abstract class AbstractScene {
     }
 
     /**
-     * Gets the list of root nodes (ie. nodes with no parent)
+     * @returns the list of root nodes (ie. nodes with no parent)
      */
     public rootNodes = new Array<Node>();
 

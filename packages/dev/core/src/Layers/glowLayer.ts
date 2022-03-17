@@ -127,7 +127,7 @@ export class GlowLayer extends EffectLayer {
     }
 
     /**
-     * Gets the kernel size of the blur.
+     * @returns the kernel size of the blur.
      */
     @serialize()
     public get blurKernelSize(): number {
@@ -142,7 +142,7 @@ export class GlowLayer extends EffectLayer {
     }
 
     /**
-     * Gets the glow intensity.
+     * @returns the glow intensity.
      */
     @serialize()
     public get intensity(): number {
@@ -612,7 +612,7 @@ export class GlowLayer extends EffectLayer {
     }
 
     /**
-     * Gets the class name of the effect layer
+     * @returns the class name of the effect layer
      * @returns the string with the class name of the effect layer
      */
     public getClassName(): string {

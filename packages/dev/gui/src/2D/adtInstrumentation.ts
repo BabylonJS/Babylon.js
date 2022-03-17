@@ -24,14 +24,14 @@ export class AdvancedDynamicTextureInstrumentation implements IDisposable {
     // Properties
 
     /**
-     * Gets the perf counter used to capture render time
+     * @returns the perf counter used to capture render time
      */
     public get renderTimeCounter(): PerfCounter {
         return this._renderTime;
     }
 
     /**
-     * Gets the perf counter used to capture layout time
+     * @returns the perf counter used to capture layout time
      */
     public get layoutTimeCounter(): PerfCounter {
         return this._layoutTime;

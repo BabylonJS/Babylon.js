@@ -27,7 +27,7 @@ export class PathCursor {
     constructor(private path: Path2) {}
 
     /**
-     * Gets the cursor point on the path
+     * @returns the cursor point on the path
      * @returns A point on the path cursor at the cursor location
      */
     public getPoint(): Vector3 {

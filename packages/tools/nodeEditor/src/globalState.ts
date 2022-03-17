@@ -70,7 +70,7 @@ export class GlobalState {
     storeEditorData: (serializationObject: any, frame?: Nullable<GraphFrame>) => void;
     _mode: NodeMaterialModes;
 
-    /** Gets the mode */
+    /** @returns the mode */
     public get mode(): NodeMaterialModes {
         return this._mode;
     }

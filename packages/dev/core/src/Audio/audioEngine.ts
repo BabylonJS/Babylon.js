@@ -304,7 +304,7 @@ export class AudioEngine implements IAudioEngine {
     }
 
     /**
-     * Gets the global volume sets on the master gain.
+     * @returns the global volume sets on the master gain.
      * @returns the global volume if set or -1 otherwise
      */
     public getGlobalVolume(): number {

@@ -185,7 +185,7 @@ export class ImageProcessingConfiguration {
     @serialize()
     public _exposure = 1.0;
     /**
-     * Gets the Exposure used in the effect.
+     * @returns the Exposure used in the effect.
      */
     public get exposure(): number {
         return this._exposure;
@@ -225,7 +225,7 @@ export class ImageProcessingConfiguration {
     @serialize()
     private _toneMappingType = ImageProcessingConfiguration.TONEMAPPING_STANDARD;
     /**
-     * Gets the type of tone mapping effect.
+     * @returns the type of tone mapping effect.
      */
     public get toneMappingType(): number {
         return this._toneMappingType;
@@ -245,7 +245,7 @@ export class ImageProcessingConfiguration {
     @serialize()
     protected _contrast = 1.0;
     /**
-     * Gets the contrast used in the effect.
+     * @returns the contrast used in the effect.
      */
     public get contrast(): number {
         return this._contrast;
@@ -302,7 +302,7 @@ export class ImageProcessingConfiguration {
     @serialize()
     private _vignetteBlendMode = ImageProcessingConfiguration.VIGNETTEMODE_MULTIPLY;
     /**
-     * Gets the vignette blend mode allowing different kind of effect.
+     * @returns the vignette blend mode allowing different kind of effect.
      */
     public get vignetteBlendMode(): number {
         return this._vignetteBlendMode;
@@ -416,7 +416,7 @@ export class ImageProcessingConfiguration {
     }
 
     /**
-     * Gets the current class name.
+     * @returns the current class name.
      * @returns "ImageProcessingConfiguration"
      */
     public getClassName(): string {

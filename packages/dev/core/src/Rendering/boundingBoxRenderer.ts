@@ -34,7 +34,7 @@ declare module "../scene" {
         forceShowBoundingBoxes: boolean;
 
         /**
-         * Gets the bounding box renderer associated with the scene
+         * @returns the bounding box renderer associated with the scene
          * @returns a BoundingBoxRenderer
          */
         getBoundingBoxRenderer(): BoundingBoxRenderer;

@@ -188,7 +188,7 @@ export class MTLFileLoader {
     }
 
     /**
-     * Gets the texture for the material.
+     * @returns the texture for the material.
      *
      * If the material is imported from input file,
      * We sanitize the url to ensure it takes the textre from aside the material.

@@ -29,7 +29,7 @@ export class RefractBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the current class name
+     * @returns the current class name
      * @returns the class name
      */
     public getClassName() {
@@ -37,28 +37,28 @@ export class RefractBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the incident component
+     * @returns the incident component
      */
     public get incident(): NodeMaterialConnectionPoint {
         return this._inputs[0];
     }
 
     /**
-     * Gets the normal component
+     * @returns the normal component
      */
     public get normal(): NodeMaterialConnectionPoint {
         return this._inputs[1];
     }
 
     /**
-     * Gets the index of refraction component
+     * @returns the index of refraction component
      */
     public get ior(): NodeMaterialConnectionPoint {
         return this._inputs[2];
     }
 
     /**
-     * Gets the output component
+     * @returns the output component
      */
     public get output(): NodeMaterialConnectionPoint {
         return this._outputs[0];

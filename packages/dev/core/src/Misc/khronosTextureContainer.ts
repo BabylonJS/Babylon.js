@@ -16,23 +16,23 @@ export class KhronosTextureContainer {
 
     // elements of the header
     /**
-     * Gets the openGL type
+     * @returns the openGL type
      */
     public glType: number;
     /**
-     * Gets the openGL type size
+     * @returns the openGL type size
      */
     public glTypeSize: number;
     /**
-     * Gets the openGL format
+     * @returns the openGL format
      */
     public glFormat: number;
     /**
-     * Gets the openGL internal format
+     * @returns the openGL internal format
      */
     public glInternalFormat: number;
     /**
-     * Gets the base internal format
+     * @returns the base internal format
      */
     public glBaseInternalFormat: number;
     /**
@@ -48,23 +48,23 @@ export class KhronosTextureContainer {
      */
     public pixelDepth: number;
     /**
-     * Gets the number of array elements
+     * @returns the number of array elements
      */
     public numberOfArrayElements: number;
     /**
-     * Gets the number of faces
+     * @returns the number of faces
      */
     public numberOfFaces: number;
     /**
-     * Gets the number of mipmap levels
+     * @returns the number of mipmap levels
      */
     public numberOfMipmapLevels: number;
     /**
-     * Gets the bytes of key value data
+     * @returns the bytes of key value data
      */
     public bytesOfKeyValueData: number;
     /**
-     * Gets the load type
+     * @returns the load type
      */
     public loadType: number;
     /**

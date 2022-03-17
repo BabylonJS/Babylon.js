@@ -51,7 +51,7 @@ export interface IShadowLight extends Light {
     computeTransformedInformation(): boolean;
 
     /**
-     * Gets the scene the light belongs to.
+     * @returns the scene the light belongs to.
      * @returns The scene
      */
     getScene(): Scene;
@@ -72,7 +72,7 @@ export interface IShadowLight extends Light {
     setShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): IShadowLight;
 
     /**
-     * Gets the current depth scale used in ESM.
+     * @returns the current depth scale used in ESM.
      * @returns The scale
      */
     getDepthScale(): number;
@@ -102,14 +102,14 @@ export interface IShadowLight extends Light {
     getShadowDirection(faceIndex?: number): Vector3;
 
     /**
-     * Gets the minZ used for shadow according to both the scene and the light.
+     * @returns the minZ used for shadow according to both the scene and the light.
      * @param activeCamera The camera we are returning the min for
      * @returns the depth min z
      */
     getDepthMinZ(activeCamera: Camera): number;
 
     /**
-     * Gets the maxZ used for shadow according to both the scene and the light.
+     * @returns the maxZ used for shadow according to both the scene and the light.
      * @param activeCamera The camera we are returning the max for
      * @returns the depth max z
      */
@@ -165,7 +165,7 @@ export abstract class ShadowLight extends Light implements IShadowLight {
 
     protected _shadowMinZ: number;
     /**
-     * Gets the shadow projection clipping minimum z value.
+     * @returns the shadow projection clipping minimum z value.
      */
     @serialize()
     public get shadowMinZ(): number {
@@ -188,7 +188,7 @@ export abstract class ShadowLight extends Light implements IShadowLight {
         return this._shadowMaxZ;
     }
     /**
-     * Gets the shadow projection clipping maximum z value.
+     * @returns the shadow projection clipping maximum z value.
      */
     public set shadowMaxZ(value: number) {
         this._shadowMaxZ = value;
@@ -354,7 +354,7 @@ export abstract class ShadowLight extends Light implements IShadowLight {
     }
 
     /**
-     * Gets the minZ used for shadow according to both the scene and the light.
+     * @returns the minZ used for shadow according to both the scene and the light.
      * @param activeCamera The camera we are returning the min for
      * @returns the depth min z
      */
@@ -363,7 +363,7 @@ export abstract class ShadowLight extends Light implements IShadowLight {
     }
 
     /**
-     * Gets the maxZ used for shadow according to both the scene and the light.
+     * @returns the maxZ used for shadow according to both the scene and the light.
      * @param activeCamera The camera we are returning the max for
      * @returns the depth max z
      */

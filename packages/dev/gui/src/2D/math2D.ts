@@ -22,7 +22,7 @@ export class Vector2WithInfo extends Vector2 {
 
 /** Class used to provide 2D matrix features */
 export class Matrix2D {
-    /** Gets the internal array of 6 floats used to store matrix data */
+    /** @returns the internal array of 6 floats used to store matrix data */
     public m = new Float32Array(6);
 
     /**

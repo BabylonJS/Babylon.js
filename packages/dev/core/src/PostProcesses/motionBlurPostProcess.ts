@@ -39,7 +39,7 @@ export class MotionBlurPostProcess extends PostProcess {
     public motionStrength: number = 1;
 
     /**
-     * Gets the number of iterations are used for motion blur quality. Default value is equal to 32
+     * @returns the number of iterations are used for motion blur quality. Default value is equal to 32
      */
     @serialize()
     public get motionBlurSamples(): number {

@@ -39,7 +39,7 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the current class name
+     * @returns the current class name
      * @returns the class name
      */
     public getClassName() {
@@ -47,56 +47,56 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the position input component
+     * @returns the position input component
      */
     public get position(): NodeMaterialConnectionPoint {
         return this._inputs[0];
     }
 
     /**
-     * Gets the normal input component
+     * @returns the normal input component
      */
     public get normal(): NodeMaterialConnectionPoint {
         return this._inputs[1];
     }
 
     /**
-     * Gets the tangent input component
+     * @returns the tangent input component
      */
     public get tangent(): NodeMaterialConnectionPoint {
         return this._inputs[2];
     }
 
     /**
-     * Gets the tangent input component
+     * @returns the tangent input component
      */
     public get uv(): NodeMaterialConnectionPoint {
         return this._inputs[3];
     }
 
     /**
-     * Gets the position output component
+     * @returns the position output component
      */
     public get positionOutput(): NodeMaterialConnectionPoint {
         return this._outputs[0];
     }
 
     /**
-     * Gets the normal output component
+     * @returns the normal output component
      */
     public get normalOutput(): NodeMaterialConnectionPoint {
         return this._outputs[1];
     }
 
     /**
-     * Gets the tangent output component
+     * @returns the tangent output component
      */
     public get tangentOutput(): NodeMaterialConnectionPoint {
         return this._outputs[2];
     }
 
     /**
-     * Gets the tangent output component
+     * @returns the tangent output component
      */
     public get uvOutput(): NodeMaterialConnectionPoint {
         return this._outputs[3];

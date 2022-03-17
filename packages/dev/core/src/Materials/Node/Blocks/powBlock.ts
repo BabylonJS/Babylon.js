@@ -24,7 +24,7 @@ export class PowBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the current class name
+     * @returns the current class name
      * @returns the class name
      */
     public getClassName() {
@@ -32,21 +32,21 @@ export class PowBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the value operand input component
+     * @returns the value operand input component
      */
     public get value(): NodeMaterialConnectionPoint {
         return this._inputs[0];
     }
 
     /**
-     * Gets the power operand input component
+     * @returns the power operand input component
      */
     public get power(): NodeMaterialConnectionPoint {
         return this._inputs[1];
     }
 
     /**
-     * Gets the output component
+     * @returns the output component
      */
     public get output(): NodeMaterialConnectionPoint {
         return this._outputs[0];

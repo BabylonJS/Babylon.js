@@ -72,7 +72,7 @@ export class UniversalCamera extends TouchCamera {
     }
 
     /**
-     * Gets the current object class name.
+     * @returns the current object class name.
      * @returns the class name
      */
     public getClassName(): string {

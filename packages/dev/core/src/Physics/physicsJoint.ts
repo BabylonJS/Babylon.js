@@ -60,7 +60,7 @@ export class PhysicsJoint {
     }
 
     /**
-     * Gets the physics joint
+     * @returns the physics joint
      */
     public get physicsJoint(): any {
         return this._physicsJoint;

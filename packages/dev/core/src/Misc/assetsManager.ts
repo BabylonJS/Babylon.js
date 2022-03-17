@@ -73,14 +73,14 @@ export abstract class AbstractAssetTask {
     }
 
     /**
-     * Gets the current state of the task
+     * @returns the current state of the task
      */
     public get taskState(): AssetTaskState {
         return this._taskState;
     }
 
     /**
-     * Gets the current error object (if task is in error)
+     * @returns the current error object (if task is in error)
      */
     public get errorObject(): { message?: string; exception?: any } {
         return this._errorObject;
@@ -228,19 +228,19 @@ export class ContainerAssetTask extends AbstractAssetTask {
      */
     public loadedContainer: AssetContainer;
     /**
-     * Gets the list of loaded meshes
+     * @returns the list of loaded meshes
      */
     public loadedMeshes: Array<AbstractMesh>;
     /**
-     * Gets the list of loaded particle systems
+     * @returns the list of loaded particle systems
      */
     public loadedParticleSystems: Array<IParticleSystem>;
     /**
-     * Gets the list of loaded skeletons
+     * @returns the list of loaded skeletons
      */
     public loadedSkeletons: Array<Skeleton>;
     /**
-     * Gets the list of loaded animation groups
+     * @returns the list of loaded animation groups
      */
     public loadedAnimationGroups: Array<AnimationGroup>;
 
@@ -314,19 +314,19 @@ export class ContainerAssetTask extends AbstractAssetTask {
  */
 export class MeshAssetTask extends AbstractAssetTask {
     /**
-     * Gets the list of loaded meshes
+     * @returns the list of loaded meshes
      */
     public loadedMeshes: Array<AbstractMesh>;
     /**
-     * Gets the list of loaded particle systems
+     * @returns the list of loaded particle systems
      */
     public loadedParticleSystems: Array<IParticleSystem>;
     /**
-     * Gets the list of loaded skeletons
+     * @returns the list of loaded skeletons
      */
     public loadedSkeletons: Array<Skeleton>;
     /**
-     * Gets the list of loaded animation groups
+     * @returns the list of loaded animation groups
      */
     public loadedAnimationGroups: Array<AnimationGroup>;
 
@@ -400,7 +400,7 @@ export class MeshAssetTask extends AbstractAssetTask {
  */
 export class TextFileAssetTask extends AbstractAssetTask {
     /**
-     * Gets the loaded text string
+     * @returns the loaded text string
      */
     public text: string;
 
@@ -462,7 +462,7 @@ export class TextFileAssetTask extends AbstractAssetTask {
  */
 export class BinaryFileAssetTask extends AbstractAssetTask {
     /**
-     * Gets the lodaded data (as an array buffer)
+     * @returns the lodaded data (as an array buffer)
      */
     public data: ArrayBuffer;
 
@@ -523,7 +523,7 @@ export class BinaryFileAssetTask extends AbstractAssetTask {
  */
 export class ImageAssetTask extends AbstractAssetTask {
     /**
-     * Gets the loaded images
+     * @returns the loaded images
      */
     public image: HTMLImageElement;
 
@@ -583,7 +583,7 @@ export class ImageAssetTask extends AbstractAssetTask {
  */
 export interface ITextureAssetTask<TEX extends BaseTexture> {
     /**
-     * Gets the loaded texture
+     * @returns the loaded texture
      */
     texture: TEX;
 }
@@ -593,7 +593,7 @@ export interface ITextureAssetTask<TEX extends BaseTexture> {
  */
 export class TextureAssetTask extends AbstractAssetTask implements ITextureAssetTask<Texture> {
     /**
-     * Gets the loaded texture
+     * @returns the loaded texture
      */
     public texture: Texture;
 
@@ -663,7 +663,7 @@ export class TextureAssetTask extends AbstractAssetTask implements ITextureAsset
  */
 export class CubeTextureAssetTask extends AbstractAssetTask implements ITextureAssetTask<CubeTexture> {
     /**
-     * Gets the loaded texture
+     * @returns the loaded texture
      */
     public texture: CubeTexture;
 
@@ -738,7 +738,7 @@ export class CubeTextureAssetTask extends AbstractAssetTask implements ITextureA
  */
 export class HDRCubeTextureAssetTask extends AbstractAssetTask implements ITextureAssetTask<HDRCubeTexture> {
     /**
-     * Gets the loaded texture
+     * @returns the loaded texture
      */
     public texture: HDRCubeTexture;
 
@@ -818,7 +818,7 @@ export class HDRCubeTextureAssetTask extends AbstractAssetTask implements ITextu
  */
 export class EquiRectangularCubeTextureAssetTask extends AbstractAssetTask implements ITextureAssetTask<EquiRectangularCubeTexture> {
     /**
-     * Gets the loaded texture
+     * @returns the loaded texture
      */
     public texture: EquiRectangularCubeTexture;
 

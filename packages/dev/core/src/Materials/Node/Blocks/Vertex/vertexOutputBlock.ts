@@ -23,7 +23,7 @@ export class VertexOutputBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the current class name
+     * @returns the current class name
      * @returns the class name
      */
     public getClassName() {
@@ -31,7 +31,7 @@ export class VertexOutputBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the vector input component
+     * @returns the vector input component
      */
     public get vector(): NodeMaterialConnectionPoint {
         return this._inputs[0];

@@ -11,7 +11,7 @@ export class RawTexture2DArray extends Texture {
     private _depth: number;
 
     /**
-     * Gets the number of layers of the texture
+     * @returns the number of layers of the texture
      */
     public get depth() {
         return this._depth;

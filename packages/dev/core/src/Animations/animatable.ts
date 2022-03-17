@@ -46,14 +46,14 @@ export class Animatable {
     public onAnimationLoopObservable = new Observable<Animatable>();
 
     /**
-     * Gets the root Animatable used to synchronize and normalize animations
+     * @returns the root Animatable used to synchronize and normalize animations
      */
     public get syncRoot(): Nullable<Animatable> {
         return this._syncRoot;
     }
 
     /**
-     * Gets the current frame of the first RuntimeAnimation
+     * @returns the current frame of the first RuntimeAnimation
      * Used to synchronize Animatables
      */
     public get masterFrame(): number {
@@ -162,7 +162,7 @@ export class Animatable {
     }
 
     /**
-     * Gets the list of runtime animations
+     * @returns the list of runtime animations
      * @returns an array of RuntimeAnimation
      */
     public getAnimations(): RuntimeAnimation[] {
@@ -191,7 +191,7 @@ export class Animatable {
     }
 
     /**
-     * Gets the source animation for a specific property
+     * @returns the source animation for a specific property
      * @param property defines the property to look for
      * @returns null or the source animation for the given property
      */
@@ -208,7 +208,7 @@ export class Animatable {
     }
 
     /**
-     * Gets the runtime animation for a specific property
+     * @returns the runtime animation for a specific property
      * @param property defines the property to look for
      * @returns null or the runtime animation for the given property
      */
@@ -614,7 +614,7 @@ declare module "../scene" {
         ): Animatable[];
 
         /**
-         * Gets the animatable associated with a specific target
+         * @returns the animatable associated with a specific target
          * @param target defines the target of the animatable
          * @returns the required animatable if found
          */
@@ -633,7 +633,7 @@ declare module "../scene" {
         stopAllAnimations(): void;
 
         /**
-         * Gets the current delta time used by animation engine
+         * @returns the current delta time used by animation engine
          */
         deltaTime: number;
     }

@@ -16,7 +16,7 @@ const _ORIGIN_UL = 0x02;
 const _ORIGIN_UR = 0x03;
 
 /**
- * Gets the header of a TGA file
+ * @returns the header of a TGA file
  * @param data defines the TGA data
  * @returns the header
  */
@@ -477,7 +477,7 @@ function _getImageDataGrey16bits(
  */
 export const TGATools = {
     /**
-     * Gets the header of a TGA file
+     * @returns the header of a TGA file
      * @param data defines the TGA data
      * @returns the header
      */

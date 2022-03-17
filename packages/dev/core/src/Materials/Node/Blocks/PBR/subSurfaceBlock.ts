@@ -57,7 +57,7 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the current class name
+     * @returns the current class name
      * @returns the class name
      */
     public getClassName() {
@@ -65,42 +65,42 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the thickness component
+     * @returns the thickness component
      */
     public get thickness(): NodeMaterialConnectionPoint {
         return this._inputs[0];
     }
 
     /**
-     * Gets the tint color input component
+     * @returns the tint color input component
      */
     public get tintColor(): NodeMaterialConnectionPoint {
         return this._inputs[1];
     }
 
     /**
-     * Gets the translucency intensity input component
+     * @returns the translucency intensity input component
      */
     public get translucencyIntensity(): NodeMaterialConnectionPoint {
         return this._inputs[2];
     }
 
     /**
-     * Gets the translucency diffusion distance input component
+     * @returns the translucency diffusion distance input component
      */
     public get translucencyDiffusionDist(): NodeMaterialConnectionPoint {
         return this._inputs[3];
     }
 
     /**
-     * Gets the refraction object parameters
+     * @returns the refraction object parameters
      */
     public get refraction(): NodeMaterialConnectionPoint {
         return this._inputs[4];
     }
 
     /**
-     * Gets the sub surface object output component
+     * @returns the sub surface object output component
      */
     public get subsurface(): NodeMaterialConnectionPoint {
         return this._outputs[0];
@@ -129,7 +129,7 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the main code of the block (fragment side)
+     * @returns the main code of the block (fragment side)
      * @param state current state of the node material building
      * @param ssBlock instance of a SubSurfaceBlock or null if the code must be generated without an active sub surface module
      * @param reflectionBlock instance of a ReflectionBlock null if the code must be generated without an active reflection module

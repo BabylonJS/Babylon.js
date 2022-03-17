@@ -129,7 +129,7 @@ export class _GLTFMaterialExporter {
     }
 
     /**
-     * Gets the materials from a Babylon scene and converts them to glTF materials
+     * @returns the materials from a Babylon scene and converts them to glTF materials
      * @param scene babylonjs scene
      * @param exportMaterials
      * @param mimeType texture mime type

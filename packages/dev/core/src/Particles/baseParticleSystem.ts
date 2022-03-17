@@ -361,7 +361,7 @@ export class BaseParticleSystem {
     public startDelay = 0;
 
     /**
-     * Gets the current list of drag gradients.
+     * @returns the current list of drag gradients.
      * You must use addDragGradient and removeDragGradient to update this list
      * @returns the list of drag gradients
      */
@@ -373,7 +373,7 @@ export class BaseParticleSystem {
     public limitVelocityDamping = 0.4;
 
     /**
-     * Gets the current list of limit velocity gradients.
+     * @returns the current list of limit velocity gradients.
      * You must use addLimitVelocityGradient and removeLimitVelocityGradient to update this list
      * @returns the list of limit velocity gradients
      */
@@ -382,7 +382,7 @@ export class BaseParticleSystem {
     }
 
     /**
-     * Gets the current list of color gradients.
+     * @returns the current list of color gradients.
      * You must use addColorGradient and removeColorGradient to update this list
      * @returns the list of color gradients
      */
@@ -391,7 +391,7 @@ export class BaseParticleSystem {
     }
 
     /**
-     * Gets the current list of size gradients.
+     * @returns the current list of size gradients.
      * You must use addSizeGradient and removeSizeGradient to update this list
      * @returns the list of size gradients
      */
@@ -400,7 +400,7 @@ export class BaseParticleSystem {
     }
 
     /**
-     * Gets the current list of color remap gradients.
+     * @returns the current list of color remap gradients.
      * You must use addColorRemapGradient and removeColorRemapGradient to update this list
      * @returns the list of color remap gradients
      */
@@ -409,7 +409,7 @@ export class BaseParticleSystem {
     }
 
     /**
-     * Gets the current list of alpha remap gradients.
+     * @returns the current list of alpha remap gradients.
      * You must use addAlphaRemapGradient and removeAlphaRemapGradient to update this list
      * @returns the list of alpha remap gradients
      */
@@ -418,7 +418,7 @@ export class BaseParticleSystem {
     }
 
     /**
-     * Gets the current list of life time gradients.
+     * @returns the current list of life time gradients.
      * You must use addLifeTimeGradient and removeLifeTimeGradient to update this list
      * @returns the list of life time gradients
      */
@@ -427,7 +427,7 @@ export class BaseParticleSystem {
     }
 
     /**
-     * Gets the current list of angular speed gradients.
+     * @returns the current list of angular speed gradients.
      * You must use addAngularSpeedGradient and removeAngularSpeedGradient to update this list
      * @returns the list of angular speed gradients
      */
@@ -436,7 +436,7 @@ export class BaseParticleSystem {
     }
 
     /**
-     * Gets the current list of velocity gradients.
+     * @returns the current list of velocity gradients.
      * You must use addVelocityGradient and removeVelocityGradient to update this list
      * @returns the list of velocity gradients
      */
@@ -445,7 +445,7 @@ export class BaseParticleSystem {
     }
 
     /**
-     * Gets the current list of start size gradients.
+     * @returns the current list of start size gradients.
      * You must use addStartSizeGradient and removeStartSizeGradient to update this list
      * @returns the list of start size gradients
      */
@@ -454,7 +454,7 @@ export class BaseParticleSystem {
     }
 
     /**
-     * Gets the current list of emit rate gradients.
+     * @returns the current list of emit rate gradients.
      * You must use addEmitRateGradient and removeEmitRateGradient to update this list
      * @returns the list of emit rate gradients
      */
@@ -619,7 +619,7 @@ export class BaseParticleSystem {
     protected _imageProcessingConfiguration: Nullable<ImageProcessingConfiguration>;
 
     /**
-     * Gets the image processing configuration used either in this material.
+     * @returns the image processing configuration used either in this material.
      */
     public get imageProcessingConfiguration(): Nullable<ImageProcessingConfiguration> {
         return this._imageProcessingConfiguration;

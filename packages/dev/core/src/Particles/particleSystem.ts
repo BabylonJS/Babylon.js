@@ -208,14 +208,14 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
     //end of Sub-emitter
 
     /**
-     * Gets the current list of active particles
+     * @returns the current list of active particles
      */
     public get particles(): Particle[] {
         return this._particles;
     }
 
     /**
-     * Gets the number of particles active at the same time.
+     * @returns the number of particles active at the same time.
      * @returns The number of active particles.
      */
     public getActiveCount() {
@@ -239,7 +239,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
     }
 
     /**
-     * Gets the custom effect used to render the particles
+     * @returns the custom effect used to render the particles
      * @param blendMode Blend mode for which the effect should be retrieved
      * @returns The effect
      */
@@ -279,21 +279,21 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
     }
 
     /**
-     * Gets the name of the particle vertex shader
+     * @returns the name of the particle vertex shader
      */
     public get vertexShaderName(): string {
         return "particles";
     }
 
     /**
-     * Gets the vertex buffers used by the particle system
+     * @returns the vertex buffers used by the particle system
      */
     public get vertexBuffers(): Immutable<{ [key: string]: VertexBuffer }> {
         return this._vertexBuffers;
     }
 
     /**
-     * Gets the index buffer used by the particle system (or null if no index buffer is used (if _useInstancing=true))
+     * @returns the index buffer used by the particle system (or null if no index buffer is used (if _useInstancing=true))
      */
     public get indexBuffer(): Nullable<DataBuffer> {
         return this._indexBuffer;
@@ -907,7 +907,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
     }
 
     /**
-     * Gets the current list of ramp gradients.
+     * @returns the current list of ramp gradients.
      * You must use addRampGradient and removeRampGradient to update this list
      * @returns the list of ramp gradients
      */
@@ -1164,7 +1164,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
     }
 
     /**
-     * Gets the maximum number of particles active at the same time.
+     * @returns the maximum number of particles active at the same time.
      * @returns The max number of active particles.
      */
     public getCapacity(): number {

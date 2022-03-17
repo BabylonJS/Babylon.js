@@ -267,7 +267,7 @@ export class Path2 {
         return this;
     }
     /**
-     * Gets the sum of the distance between each sequential point in the path
+     * @returns the sum of the distance between each sequential point in the path
      * @returns the Path2 total length (float).
      */
     public length(): number {
@@ -282,7 +282,7 @@ export class Path2 {
     }
 
     /**
-     * Gets the points which construct the path
+     * @returns the points which construct the path
      * @returns the Path2 internal array of points.
      */
     public getPoints(): Vector2[] {

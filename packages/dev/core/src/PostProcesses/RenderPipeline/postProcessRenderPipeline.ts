@@ -38,7 +38,7 @@ export class PostProcessRenderPipeline {
         return this._name;
     }
 
-    /** Gets the list of attached cameras */
+    /** @returns the list of attached cameras */
     public get cameras() {
         return this._cameras;
     }
@@ -58,7 +58,7 @@ export class PostProcessRenderPipeline {
     }
 
     /**
-     * Gets the class name
+     * @returns the class name
      * @returns "PostProcessRenderPipeline"
      */
     public getClassName(): string {

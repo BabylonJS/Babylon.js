@@ -340,11 +340,11 @@ export class SkeletonViewer {
 
     private _boneIndices: Set<number>;
 
-    /** Gets the Scene. */
+    /** @returns the Scene. */
     get scene(): Scene {
         return this._scene;
     }
-    /** Gets the utilityLayer. */
+    /** @returns the utilityLayer. */
     get utilityLayer(): Nullable<UtilityLayerRenderer> {
         return this._utilityLayer;
     }
@@ -356,7 +356,7 @@ export class SkeletonViewer {
     set ready(value: boolean) {
         this._ready = value;
     }
-    /** Gets the debugMesh */
+    /** @returns the debugMesh */
     get debugMesh(): Nullable<AbstractMesh> | Nullable<LinesMesh> {
         return this._debugMesh;
     }
@@ -364,7 +364,7 @@ export class SkeletonViewer {
     set debugMesh(value: Nullable<AbstractMesh> | Nullable<LinesMesh>) {
         this._debugMesh = value as any;
     }
-    /** Gets the displayMode */
+    /** @returns the displayMode */
     get displayMode(): number {
         return this.options.displayMode || SkeletonViewer.DISPLAY_LINES;
     }

@@ -398,7 +398,7 @@ export class Vector2 {
     // Properties
 
     /**
-     * Gets the length of the vector
+     * @returns the length of the vector
      * @returns the vector length (float)
      */
     public length(): number {
@@ -406,7 +406,7 @@ export class Vector2 {
     }
 
     /**
-     * Gets the vector squared length
+     * @returns the vector squared length
      * @returns the vector squared length (float)
      */
     public lengthSquared(): number {
@@ -617,7 +617,7 @@ export class Vector2 {
     }
 
     /**
-     * Gets the dot product of the vector "left" and the vector "right"
+     * @returns the dot product of the vector "left" and the vector "right"
      * @param left defines first vector
      * @param right defines second vector
      * @returns the dot product (float)
@@ -721,7 +721,7 @@ export class Vector2 {
     }
 
     /**
-     * Gets the distance between the vectors "value1" and "value2"
+     * @returns the distance between the vectors "value1" and "value2"
      * @param value1 defines first vector
      * @param value2 defines second vector
      * @returns the distance between vectors
@@ -753,7 +753,7 @@ export class Vector2 {
     }
 
     /**
-     * Gets the center of the vectors "value1" and "value2" and stores the result in the vector "ref"
+     * @returns the center of the vectors "value1" and "value2" and stores the result in the vector "ref"
      * @param value1 defines first vector
      * @param value2 defines second vector
      * @param ref defines third vector
@@ -764,7 +764,7 @@ export class Vector2 {
     }
 
     /**
-     * Gets the shortest distance (float) between the point "p" and the segment defined by the two points "segA" and "segB".
+     * @returns the shortest distance (float) between the point "p" and the segment defined by the two points "segA" and "segB".
      * @param p defines the middle point
      * @param segA defines one point of the segment
      * @param segB defines the other point of the segment
@@ -859,7 +859,7 @@ export class Vector3 {
     }
 
     /**
-     * Gets the class name
+     * @returns the class name
      * @returns the string "Vector3"
      */
     public getClassName(): string {
@@ -1353,7 +1353,7 @@ export class Vector3 {
 
     // Properties
     /**
-     * Gets the length of the Vector3
+     * @returns the length of the Vector3
      * @returns the length of the Vector3
      */
     public length(): number {
@@ -1361,7 +1361,7 @@ export class Vector3 {
     }
 
     /**
-     * Gets the squared length of the Vector3
+     * @returns the squared length of the Vector3
      * @returns squared length of the Vector3
      */
     public lengthSquared(): number {
@@ -2301,7 +2301,7 @@ export class Vector3 {
     }
 
     /**
-     * Gets the minimal coordinate values between two Vector3
+     * @returns the minimal coordinate values between two Vector3
      * @param left defines the first operand
      * @param right defines the second operand
      * @returns the new Vector3
@@ -2313,7 +2313,7 @@ export class Vector3 {
     }
 
     /**
-     * Gets the maximal coordinate values between two Vector3
+     * @returns the maximal coordinate values between two Vector3
      * @param left defines the first operand
      * @param right defines the second operand
      * @returns the new Vector3
@@ -2516,7 +2516,7 @@ export class Vector3 {
     }
 
     /**
-     * Gets the center of the vectors "value1" and "value2" and stores the result in the vector "ref"
+     * @returns the center of the vectors "value1" and "value2" and stores the result in the vector "ref"
      * @param value1 defines first vector
      * @param value2 defines second vector
      * @param ref defines third vector
@@ -3239,7 +3239,7 @@ export class Vector4 {
     }
 
     /**
-     * Gets the center of the vectors "value1" and "value2" and stores the result in the vector "ref"
+     * @returns the center of the vectors "value1" and "value2" and stores the result in the vector "ref"
      * @param value1 defines first vector
      * @param value2 defines second vector
      * @param ref defines third vector
@@ -3441,7 +3441,7 @@ export class Quaternion {
     }
 
     /**
-     * Gets the class name of the quaternion
+     * @returns the class name of the quaternion
      * @returns the string "Quaternion"
      */
     public getClassName(): string {
@@ -4340,7 +4340,7 @@ export class Quaternion {
  */
 export class Matrix {
     /**
-     * Gets the precision of matrix computations
+     * @returns the precision of matrix computations
      */
     public static get Use64Bits(): boolean {
         return PerformanceConfigurator.MatrixUse64Bits;
@@ -4354,7 +4354,7 @@ export class Matrix {
     private _isIdentity3x2 = true;
     private _isIdentity3x2Dirty = true;
     /**
-     * Gets the update flag of the matrix which is an unique number for the matrix.
+     * @returns the update flag of the matrix which is an unique number for the matrix.
      * It will be incremented every time the matrix data change.
      * You can use it to speed the comparison between two versions of the same matrix.
      */
@@ -4363,7 +4363,7 @@ export class Matrix {
     private readonly _m: Float32Array | Array<number>;
 
     /**
-     * Gets the internal data of the matrix
+     * @returns the internal data of the matrix
      */
     public get m(): DeepImmutable<Float32Array | Array<number>> {
         return this._m;
@@ -4466,7 +4466,7 @@ export class Matrix {
     }
 
     /**
-     * Gets the determinant of the matrix
+     * @returns the determinant of the matrix
      * @returns the matrix determinant
      */
     public determinant(): number {
@@ -4758,7 +4758,7 @@ export class Matrix {
     }
 
     /**
-     * Gets the translation value of the current matrix
+     * @returns the translation value of the current matrix
      * @returns a new Vector3 as the extracted translation from the matrix
      */
     public getTranslation(): Vector3 {
@@ -4985,7 +4985,7 @@ export class Matrix {
     }
 
     /**
-     * Gets the hash code of the current matrix
+     * @returns the hash code of the current matrix
      * @returns the hash code
      */
     public getHashCode(): number {

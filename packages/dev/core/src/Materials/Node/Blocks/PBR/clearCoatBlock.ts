@@ -71,7 +71,7 @@ export class ClearCoatBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the current class name
+     * @returns the current class name
      * @returns the class name
      */
     public getClassName() {
@@ -79,70 +79,70 @@ export class ClearCoatBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the intensity input component
+     * @returns the intensity input component
      */
     public get intensity(): NodeMaterialConnectionPoint {
         return this._inputs[0];
     }
 
     /**
-     * Gets the roughness input component
+     * @returns the roughness input component
      */
     public get roughness(): NodeMaterialConnectionPoint {
         return this._inputs[1];
     }
 
     /**
-     * Gets the ior input component
+     * @returns the ior input component
      */
     public get indexOfRefraction(): NodeMaterialConnectionPoint {
         return this._inputs[2];
     }
 
     /**
-     * Gets the bump texture input component
+     * @returns the bump texture input component
      */
     public get normalMapColor(): NodeMaterialConnectionPoint {
         return this._inputs[3];
     }
 
     /**
-     * Gets the uv input component
+     * @returns the uv input component
      */
     public get uv(): NodeMaterialConnectionPoint {
         return this._inputs[4];
     }
 
     /**
-     * Gets the tint color input component
+     * @returns the tint color input component
      */
     public get tintColor(): NodeMaterialConnectionPoint {
         return this._inputs[5];
     }
 
     /**
-     * Gets the tint "at distance" input component
+     * @returns the tint "at distance" input component
      */
     public get tintAtDistance(): NodeMaterialConnectionPoint {
         return this._inputs[6];
     }
 
     /**
-     * Gets the tint thickness input component
+     * @returns the tint thickness input component
      */
     public get tintThickness(): NodeMaterialConnectionPoint {
         return this._inputs[7];
     }
 
     /**
-     * Gets the world tangent input component
+     * @returns the world tangent input component
      */
     public get worldTangent(): NodeMaterialConnectionPoint {
         return this._inputs[8];
     }
 
     /**
-     * Gets the clear coat object output component
+     * @returns the clear coat object output component
      */
     public get clearcoat(): NodeMaterialConnectionPoint {
         return this._outputs[0];
@@ -221,7 +221,7 @@ export class ClearCoatBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the main code of the block (fragment side)
+     * @returns the main code of the block (fragment side)
      * @param state current state of the node material building
      * @param ccBlock instance of a ClearCoatBlock or null if the code must be generated without an active clear coat module
      * @param reflectionBlock instance of a ReflectionBlock null if the code must be generated without an active reflection module

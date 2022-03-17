@@ -45,7 +45,7 @@ export class ColorMergerBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the current class name
+     * @returns the current class name
      * @returns the class name
      */
     public getClassName() {
@@ -53,56 +53,56 @@ export class ColorMergerBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the rgb component (input)
+     * @returns the rgb component (input)
      */
     public get rgbIn(): NodeMaterialConnectionPoint {
         return this._inputs[0];
     }
 
     /**
-     * Gets the r component (input)
+     * @returns the r component (input)
      */
     public get r(): NodeMaterialConnectionPoint {
         return this._inputs[1];
     }
 
     /**
-     * Gets the g component (input)
+     * @returns the g component (input)
      */
     public get g(): NodeMaterialConnectionPoint {
         return this._inputs[2];
     }
 
     /**
-     * Gets the b component (input)
+     * @returns the b component (input)
      */
     public get b(): NodeMaterialConnectionPoint {
         return this._inputs[3];
     }
 
     /**
-     * Gets the a component (input)
+     * @returns the a component (input)
      */
     public get a(): NodeMaterialConnectionPoint {
         return this._inputs[4];
     }
 
     /**
-     * Gets the rgba component (output)
+     * @returns the rgba component (output)
      */
     public get rgba(): NodeMaterialConnectionPoint {
         return this._outputs[0];
     }
 
     /**
-     * Gets the rgb component (output)
+     * @returns the rgb component (output)
      */
     public get rgbOut(): NodeMaterialConnectionPoint {
         return this._outputs[1];
     }
 
     /**
-     * Gets the rgb component (output)
+     * @returns the rgb component (output)
      * @deprecated Please use rgbOut instead.
      */
     public get rgb(): NodeMaterialConnectionPoint {

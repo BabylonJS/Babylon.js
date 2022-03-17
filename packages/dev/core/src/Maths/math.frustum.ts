@@ -7,7 +7,7 @@ import { Plane } from "./math.plane";
  */
 export class Frustum {
     /**
-     * Gets the planes representing the frustum
+     * @returns the planes representing the frustum
      * @param transform matrix to be applied to the returned planes
      * @returns a new array of 6 Frustum planes computed by the given transformation matrix.
      */
@@ -21,7 +21,7 @@ export class Frustum {
     }
 
     /**
-     * Gets the near frustum plane transformed by the transform matrix
+     * @returns the near frustum plane transformed by the transform matrix
      * @param transform transformation matrix to be applied to the resulting frustum plane
      * @param frustumPlane the resuling frustum plane
      */
@@ -35,7 +35,7 @@ export class Frustum {
     }
 
     /**
-     * Gets the far frustum plane transformed by the transform matrix
+     * @returns the far frustum plane transformed by the transform matrix
      * @param transform transformation matrix to be applied to the resulting frustum plane
      * @param frustumPlane the resuling frustum plane
      */
@@ -49,7 +49,7 @@ export class Frustum {
     }
 
     /**
-     * Gets the left frustum plane transformed by the transform matrix
+     * @returns the left frustum plane transformed by the transform matrix
      * @param transform transformation matrix to be applied to the resulting frustum plane
      * @param frustumPlane the resuling frustum plane
      */
@@ -63,7 +63,7 @@ export class Frustum {
     }
 
     /**
-     * Gets the right frustum plane transformed by the transform matrix
+     * @returns the right frustum plane transformed by the transform matrix
      * @param transform transformation matrix to be applied to the resulting frustum plane
      * @param frustumPlane the resuling frustum plane
      */
@@ -77,7 +77,7 @@ export class Frustum {
     }
 
     /**
-     * Gets the top frustum plane transformed by the transform matrix
+     * @returns the top frustum plane transformed by the transform matrix
      * @param transform transformation matrix to be applied to the resulting frustum plane
      * @param frustumPlane the resuling frustum plane
      */
@@ -91,7 +91,7 @@ export class Frustum {
     }
 
     /**
-     * Gets the bottom frustum plane transformed by the transform matrix
+     * @returns the bottom frustum plane transformed by the transform matrix
      * @param transform transformation matrix to be applied to the resulting frustum plane
      * @param frustumPlane the resuling frustum plane
      */

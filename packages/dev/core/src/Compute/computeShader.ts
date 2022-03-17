@@ -56,7 +56,7 @@ export class ComputeShader {
     private _contextIsDirty = false;
 
     /**
-     * Gets the unique id of the compute shader
+     * @returns the unique id of the compute shader
      */
     public readonly uniqueId: number;
 
@@ -125,7 +125,7 @@ export class ComputeShader {
     }
 
     /**
-     * Gets the current class name of the material e.g. "ComputeShader"
+     * @returns the current class name of the material e.g. "ComputeShader"
      * Mainly use in serialization.
      * @returns the class name
      */

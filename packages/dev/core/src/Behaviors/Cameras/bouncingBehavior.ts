@@ -14,7 +14,7 @@ import { Animation } from "../../Animations/animation";
  */
 export class BouncingBehavior implements Behavior<ArcRotateCamera> {
     /**
-     * Gets the name of the behavior.
+     * @returns the name of the behavior.
      */
     public get name(): string {
         return "Bouncing";

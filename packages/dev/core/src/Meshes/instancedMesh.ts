@@ -81,7 +81,7 @@ export class InstancedMesh extends AbstractMesh {
         return "InstancedMesh";
     }
 
-    /** Gets the list of lights affecting that mesh */
+    /** @returns the list of lights affecting that mesh */
     public get lightSources(): Light[] {
         return this._sourceMesh._lightSources;
     }

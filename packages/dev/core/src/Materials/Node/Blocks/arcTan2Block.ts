@@ -21,7 +21,7 @@ export class ArcTan2Block extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the current class name
+     * @returns the current class name
      * @returns the class name
      */
     public getClassName() {
@@ -29,21 +29,21 @@ export class ArcTan2Block extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the x operand input component
+     * @returns the x operand input component
      */
     public get x(): NodeMaterialConnectionPoint {
         return this._inputs[0];
     }
 
     /**
-     * Gets the y operand input component
+     * @returns the y operand input component
      */
     public get y(): NodeMaterialConnectionPoint {
         return this._inputs[1];
     }
 
     /**
-     * Gets the output component
+     * @returns the output component
      */
     public get output(): NodeMaterialConnectionPoint {
         return this._outputs[0];

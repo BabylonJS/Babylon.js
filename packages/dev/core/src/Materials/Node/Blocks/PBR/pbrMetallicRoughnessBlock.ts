@@ -392,7 +392,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the current class name
+     * @returns the current class name
      * @returns the class name
      */
     public getClassName() {
@@ -400,210 +400,210 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the world position input component
+     * @returns the world position input component
      */
     public get worldPosition(): NodeMaterialConnectionPoint {
         return this._inputs[0];
     }
 
     /**
-     * Gets the world normal input component
+     * @returns the world normal input component
      */
     public get worldNormal(): NodeMaterialConnectionPoint {
         return this._inputs[1];
     }
 
     /**
-     * Gets the view matrix parameter
+     * @returns the view matrix parameter
      */
     public get view(): NodeMaterialConnectionPoint {
         return this._inputs[2];
     }
 
     /**
-     * Gets the camera position input component
+     * @returns the camera position input component
      */
     public get cameraPosition(): NodeMaterialConnectionPoint {
         return this._inputs[3];
     }
 
     /**
-     * Gets the perturbed normal input component
+     * @returns the perturbed normal input component
      */
     public get perturbedNormal(): NodeMaterialConnectionPoint {
         return this._inputs[4];
     }
 
     /**
-     * Gets the base color input component
+     * @returns the base color input component
      */
     public get baseColor(): NodeMaterialConnectionPoint {
         return this._inputs[5];
     }
 
     /**
-     * Gets the metallic input component
+     * @returns the metallic input component
      */
     public get metallic(): NodeMaterialConnectionPoint {
         return this._inputs[6];
     }
 
     /**
-     * Gets the roughness input component
+     * @returns the roughness input component
      */
     public get roughness(): NodeMaterialConnectionPoint {
         return this._inputs[7];
     }
 
     /**
-     * Gets the ambient occlusion input component
+     * @returns the ambient occlusion input component
      */
     public get ambientOcc(): NodeMaterialConnectionPoint {
         return this._inputs[8];
     }
 
     /**
-     * Gets the opacity input component
+     * @returns the opacity input component
      */
     public get opacity(): NodeMaterialConnectionPoint {
         return this._inputs[9];
     }
 
     /**
-     * Gets the index of refraction input component
+     * @returns the index of refraction input component
      */
     public get indexOfRefraction(): NodeMaterialConnectionPoint {
         return this._inputs[10];
     }
 
     /**
-     * Gets the ambient color input component
+     * @returns the ambient color input component
      */
     public get ambientColor(): NodeMaterialConnectionPoint {
         return this._inputs[11];
     }
 
     /**
-     * Gets the reflection object parameters
+     * @returns the reflection object parameters
      */
     public get reflection(): NodeMaterialConnectionPoint {
         return this._inputs[12];
     }
 
     /**
-     * Gets the clear coat object parameters
+     * @returns the clear coat object parameters
      */
     public get clearcoat(): NodeMaterialConnectionPoint {
         return this._inputs[13];
     }
 
     /**
-     * Gets the sheen object parameters
+     * @returns the sheen object parameters
      */
     public get sheen(): NodeMaterialConnectionPoint {
         return this._inputs[14];
     }
 
     /**
-     * Gets the sub surface object parameters
+     * @returns the sub surface object parameters
      */
     public get subsurface(): NodeMaterialConnectionPoint {
         return this._inputs[15];
     }
 
     /**
-     * Gets the anisotropy object parameters
+     * @returns the anisotropy object parameters
      */
     public get anisotropy(): NodeMaterialConnectionPoint {
         return this._inputs[16];
     }
 
     /**
-     * Gets the ambient output component
+     * @returns the ambient output component
      */
     public get ambientClr(): NodeMaterialConnectionPoint {
         return this._outputs[0];
     }
 
     /**
-     * Gets the diffuse output component
+     * @returns the diffuse output component
      */
     public get diffuseDir(): NodeMaterialConnectionPoint {
         return this._outputs[1];
     }
 
     /**
-     * Gets the specular output component
+     * @returns the specular output component
      */
     public get specularDir(): NodeMaterialConnectionPoint {
         return this._outputs[2];
     }
 
     /**
-     * Gets the clear coat output component
+     * @returns the clear coat output component
      */
     public get clearcoatDir(): NodeMaterialConnectionPoint {
         return this._outputs[3];
     }
 
     /**
-     * Gets the sheen output component
+     * @returns the sheen output component
      */
     public get sheenDir(): NodeMaterialConnectionPoint {
         return this._outputs[4];
     }
 
     /**
-     * Gets the indirect diffuse output component
+     * @returns the indirect diffuse output component
      */
     public get diffuseInd(): NodeMaterialConnectionPoint {
         return this._outputs[5];
     }
 
     /**
-     * Gets the indirect specular output component
+     * @returns the indirect specular output component
      */
     public get specularInd(): NodeMaterialConnectionPoint {
         return this._outputs[6];
     }
 
     /**
-     * Gets the indirect clear coat output component
+     * @returns the indirect clear coat output component
      */
     public get clearcoatInd(): NodeMaterialConnectionPoint {
         return this._outputs[7];
     }
 
     /**
-     * Gets the indirect sheen output component
+     * @returns the indirect sheen output component
      */
     public get sheenInd(): NodeMaterialConnectionPoint {
         return this._outputs[8];
     }
 
     /**
-     * Gets the refraction output component
+     * @returns the refraction output component
      */
     public get refraction(): NodeMaterialConnectionPoint {
         return this._outputs[9];
     }
 
     /**
-     * Gets the global lighting output component
+     * @returns the global lighting output component
      */
     public get lighting(): NodeMaterialConnectionPoint {
         return this._outputs[10];
     }
 
     /**
-     * Gets the shadow output component
+     * @returns the shadow output component
      */
     public get shadow(): NodeMaterialConnectionPoint {
         return this._outputs[11];
     }
 
     /**
-     * Gets the alpha output component
+     * @returns the alpha output component
      */
     public get alpha(): NodeMaterialConnectionPoint {
         return this._outputs[12];

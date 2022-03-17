@@ -146,7 +146,7 @@ export class FlyCameraKeyboardInput implements ICameraInput<FlyCamera> {
     }
 
     /**
-     * Gets the class name of the current intput.
+     * @returns the class name of the current intput.
      * @returns the class name
      */
     public getClassName(): string {

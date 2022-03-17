@@ -64,7 +64,7 @@ export class PickingInfo {
     public gripTransform: Nullable<TransformNode> = null;
 
     /**
-     * Gets the normal corresponding to the face the pick collided with
+     * @returns the normal corresponding to the face the pick collided with
      * @param useWorldCoordinates If the resulting normal should be relative to the world (default: false)
      * @param useVerticesNormals If the vertices normals should be used to calculate the normal instead of the normal map
      * @returns The normal corresponding to the face the pick collided with
@@ -129,7 +129,7 @@ export class PickingInfo {
     }
 
     /**
-     * Gets the texture coordinates of where the pick occurred
+     * @returns the texture coordinates of where the pick occurred
      * @returns the vector containing the coordinates of the texture
      */
     public getTextureCoordinates(): Nullable<Vector2> {

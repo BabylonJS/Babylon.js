@@ -63,7 +63,7 @@ declare module "./mesh" {
         thinInstanceSetBuffer(kind: string, buffer: Nullable<Float32Array>, stride?: number, staticBuffer?: boolean): void;
 
         /**
-         * Gets the list of world matrices
+         * @returns the list of world matrices
          * @returns an array containing all the world matrices from the thin instances
          */
         thinInstanceGetWorldMatrices(): Matrix[];

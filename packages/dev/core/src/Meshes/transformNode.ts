@@ -1295,7 +1295,7 @@ export class TransformNode extends Node {
     }
 
     /**
-     * Gets the position of the current mesh in camera space
+     * @returns the position of the current mesh in camera space
      * @param camera defines the camera to use
      * @returns a position
      */

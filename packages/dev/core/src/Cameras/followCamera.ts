@@ -230,7 +230,7 @@ export class FollowCamera extends TargetCamera {
     }
 
     /**
-     * Gets the camera class name.
+     * @returns the camera class name.
      * @returns the class name
      */
     public getClassName(): string {

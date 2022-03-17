@@ -75,7 +75,7 @@ export class DeviceOrientationCamera extends FreeCamera {
     }
 
     /**
-     * Gets the current instance class name ("DeviceOrientationCamera").
+     * @returns the current instance class name ("DeviceOrientationCamera").
      * This helps avoiding instanceof at run time.
      * @returns the class name
      */

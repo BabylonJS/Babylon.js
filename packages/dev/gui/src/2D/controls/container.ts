@@ -111,7 +111,7 @@ export class Container extends Control {
         this._markAsDirty();
     }
 
-    /** Gets the list of children */
+    /** @returns the list of children */
     public get children(): Control[] {
         return this._children;
     }

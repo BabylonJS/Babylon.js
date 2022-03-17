@@ -24,7 +24,7 @@ export class Rotate2dBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the current class name
+     * @returns the current class name
      * @returns the class name
      */
     public getClassName() {
@@ -32,21 +32,21 @@ export class Rotate2dBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the input vector
+     * @returns the input vector
      */
     public get input(): NodeMaterialConnectionPoint {
         return this._inputs[0];
     }
 
     /**
-     * Gets the input angle
+     * @returns the input angle
      */
     public get angle(): NodeMaterialConnectionPoint {
         return this._inputs[1];
     }
 
     /**
-     * Gets the output component
+     * @returns the output component
      */
     public get output(): NodeMaterialConnectionPoint {
         return this._outputs[0];

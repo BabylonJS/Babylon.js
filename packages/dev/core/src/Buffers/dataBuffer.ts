@@ -16,14 +16,14 @@ export class DataBuffer {
     public is32Bits: boolean = false;
 
     /**
-     * Gets the underlying buffer
+     * @returns the underlying buffer
      */
     public get underlyingResource(): any {
         return null;
     }
 
     /**
-     * Gets the unique id of this buffer
+     * @returns the unique id of this buffer
      */
     public readonly uniqueId: number;
 

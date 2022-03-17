@@ -23,7 +23,7 @@ export class FreeCameraMouseWheelInput extends BaseCameraMouseWheelInput {
     public camera: FreeCamera;
 
     /**
-     * Gets the class name of the current input.
+     * @returns the class name of the current input.
      * @returns the class name
      */
     public getClassName(): string {

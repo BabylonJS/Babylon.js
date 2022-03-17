@@ -30,7 +30,7 @@ export class GradientBlockColorStep {
     private _color: Color3;
 
     /**
-     * Gets the color associated with this step
+     * @returns the color associated with this step
      */
     public get color(): Color3 {
         return this._color;
@@ -88,7 +88,7 @@ export class GradientBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the current class name
+     * @returns the current class name
      * @returns the class name
      */
     public getClassName() {
@@ -96,14 +96,14 @@ export class GradientBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the gradient input component
+     * @returns the gradient input component
      */
     public get gradient(): NodeMaterialConnectionPoint {
         return this._inputs[0];
     }
 
     /**
-     * Gets the output component
+     * @returns the output component
      */
     public get output(): NodeMaterialConnectionPoint {
         return this._outputs[0];

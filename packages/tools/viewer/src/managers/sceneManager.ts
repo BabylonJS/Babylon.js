@@ -1431,7 +1431,7 @@ export class SceneManager {
     }
 
     /**
-     * Gets the shadow map blur kernel according to the light configuration.
+     * @returns the shadow map blur kernel according to the light configuration.
      * @param light The light used to generate the shadows
      * @param bufferSize The size of the shadow map
      * @returns the kernel blur size

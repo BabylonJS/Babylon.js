@@ -114,7 +114,7 @@ export class TargetCamera extends Camera {
     }
 
     /**
-     * Gets the position in front of the camera at a given distance.
+     * @returns the position in front of the camera at a given distance.
      * @param distance The distance from the camera we want the position to be
      * @returns the position
      */
@@ -563,7 +563,7 @@ export class TargetCamera extends Camera {
     }
 
     /**
-     * Gets the current object class name.
+     * @returns the current object class name.
      * @returns the class name
      */
     public getClassName(): string {

@@ -207,7 +207,7 @@ export class BoundingInfo implements ICullable {
     }
 
     /**
-     * Gets the world distance between the min and max points of the bounding box
+     * @returns the world distance between the min and max points of the bounding box
      */
     public get diagonalLength(): number {
         const boundingBox = this.boundingBox;

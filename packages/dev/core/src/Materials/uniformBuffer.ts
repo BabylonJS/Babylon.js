@@ -538,7 +538,7 @@ export class UniformBuffer {
         return this._bufferIndex;
     }
 
-    /** Gets the name of this buffer */
+    /** @returns the name of this buffer */
     public get name(): string {
         return this._name;
     }

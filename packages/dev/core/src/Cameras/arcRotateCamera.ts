@@ -554,7 +554,7 @@ export class ArcRotateCamera extends TargetCamera {
     private _bouncingBehavior: Nullable<BouncingBehavior>;
 
     /**
-     * Gets the bouncing behavior of the camera if it has been enabled.
+     * @returns the bouncing behavior of the camera if it has been enabled.
      * @see https://doc.babylonjs.com/how_to/camera_behaviors#bouncing-behavior
      */
     public get bouncingBehavior(): Nullable<BouncingBehavior> {
@@ -586,7 +586,7 @@ export class ArcRotateCamera extends TargetCamera {
     private _framingBehavior: Nullable<FramingBehavior>;
 
     /**
-     * Gets the framing behavior of the camera if it has been enabled.
+     * @returns the framing behavior of the camera if it has been enabled.
      * @see https://doc.babylonjs.com/how_to/camera_behaviors#framing-behavior
      */
     public get framingBehavior(): Nullable<FramingBehavior> {
@@ -618,7 +618,7 @@ export class ArcRotateCamera extends TargetCamera {
     private _autoRotationBehavior: Nullable<AutoRotationBehavior>;
 
     /**
-     * Gets the auto rotation behavior of the camera if it has been enabled.
+     * @returns the auto rotation behavior of the camera if it has been enabled.
      * @see https://doc.babylonjs.com/how_to/camera_behaviors#autorotation-behavior
      */
     public get autoRotationBehavior(): Nullable<AutoRotationBehavior> {
@@ -1308,7 +1308,7 @@ export class ArcRotateCamera extends TargetCamera {
     }
 
     /**
-     * Gets the current object class name.
+     * @returns the current object class name.
      * @returns the class name
      */
     public getClassName(): string {

@@ -20,7 +20,7 @@ export class Sprite extends ThinSprite implements IAnimatable {
     public color: Color4;
     /** @returns a boolean indicating that this sprite should be disposed after animation ends */
     public disposeWhenFinishedAnimating: boolean;
-    /** Gets the list of attached animations */
+    /** @returns the list of attached animations */
     public animations: Nullable<Array<Animation>> = new Array<Animation>();
     /** @returns a boolean indicating if the sprite can be picked */
     public isPickable = false;
@@ -58,7 +58,7 @@ export class Sprite extends ThinSprite implements IAnimatable {
     public uniqueId: number;
 
     /**
-     * Gets the manager of this sprite
+     * @returns the manager of this sprite
      */
     public get manager() {
         return this._manager;

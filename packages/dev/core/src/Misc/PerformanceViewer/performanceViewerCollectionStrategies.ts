@@ -32,7 +32,7 @@ export type PerfStrategyInitialization = (scene: Scene) => IPerfViewerCollection
  */
 export class PerfCollectionStrategy {
     /**
-     * Gets the initializer for the strategy used for collection of fps metrics
+     * @returns the initializer for the strategy used for collection of fps metrics
      * @returns the initializer for the fps strategy
      */
     public static FpsStrategy(): PerfStrategyInitialization {
@@ -47,7 +47,7 @@ export class PerfCollectionStrategy {
     }
 
     /**
-     * Gets the initializer for the strategy used for collection of cpu utilization metrics.
+     * @returns the initializer for the strategy used for collection of cpu utilization metrics.
      * Needs the experimental compute pressure API.
      * @returns the initializer for the cpu utilization strategy
      */
@@ -66,7 +66,7 @@ export class PerfCollectionStrategy {
     }
 
     /**
-     * Gets the initializer for the strategy used for collection of total meshes metrics.
+     * @returns the initializer for the strategy used for collection of total meshes metrics.
      * @returns the initializer for the total meshes strategy
      */
     public static TotalMeshesStrategy(): PerfStrategyInitialization {
@@ -80,7 +80,7 @@ export class PerfCollectionStrategy {
     }
 
     /**
-     * Gets the initializer for the strategy used for collection of active meshes metrics.
+     * @returns the initializer for the strategy used for collection of active meshes metrics.
      * @returns the initializer for the active meshes strategy
      */
     public static ActiveMeshesStrategy(): PerfStrategyInitialization {
@@ -94,7 +94,7 @@ export class PerfCollectionStrategy {
     }
 
     /**
-     * Gets the initializer for the strategy used for collection of active indices metrics.
+     * @returns the initializer for the strategy used for collection of active indices metrics.
      * @returns the initializer for the active indices strategy
      */
     public static ActiveIndicesStrategy(): PerfStrategyInitialization {
@@ -108,7 +108,7 @@ export class PerfCollectionStrategy {
     }
 
     /**
-     * Gets the initializer for the strategy used for collection of active faces metrics.
+     * @returns the initializer for the strategy used for collection of active faces metrics.
      * @returns the initializer for the active faces strategy
      */
     public static ActiveFacesStrategy(): PerfStrategyInitialization {
@@ -122,7 +122,7 @@ export class PerfCollectionStrategy {
     }
 
     /**
-     * Gets the initializer for the strategy used for collection of active bones metrics.
+     * @returns the initializer for the strategy used for collection of active bones metrics.
      * @returns the initializer for the active bones strategy
      */
     public static ActiveBonesStrategy(): PerfStrategyInitialization {
@@ -136,7 +136,7 @@ export class PerfCollectionStrategy {
     }
 
     /**
-     * Gets the initializer for the strategy used for collection of active particles metrics.
+     * @returns the initializer for the strategy used for collection of active particles metrics.
      * @returns the initializer for the active particles strategy
      */
     public static ActiveParticlesStrategy(): PerfStrategyInitialization {
@@ -150,7 +150,7 @@ export class PerfCollectionStrategy {
     }
 
     /**
-     * Gets the initializer for the strategy used for collection of draw calls metrics.
+     * @returns the initializer for the strategy used for collection of draw calls metrics.
      * @returns the initializer for the draw calls strategy
      */
     public static DrawCallsStrategy(): PerfStrategyInitialization {
@@ -176,7 +176,7 @@ export class PerfCollectionStrategy {
     }
 
     /**
-     * Gets the initializer for the strategy used for collection of total lights metrics.
+     * @returns the initializer for the strategy used for collection of total lights metrics.
      * @returns the initializer for the total lights strategy
      */
     public static TotalLightsStrategy(): PerfStrategyInitialization {
@@ -190,7 +190,7 @@ export class PerfCollectionStrategy {
     }
 
     /**
-     * Gets the initializer for the strategy used for collection of total vertices metrics.
+     * @returns the initializer for the strategy used for collection of total vertices metrics.
      * @returns the initializer for the total vertices strategy
      */
     public static TotalVerticesStrategy(): PerfStrategyInitialization {
@@ -204,7 +204,7 @@ export class PerfCollectionStrategy {
     }
 
     /**
-     * Gets the initializer for the strategy used for collection of total materials metrics.
+     * @returns the initializer for the strategy used for collection of total materials metrics.
      * @returns the initializer for the total materials strategy
      */
     public static TotalMaterialsStrategy(): PerfStrategyInitialization {
@@ -218,7 +218,7 @@ export class PerfCollectionStrategy {
     }
 
     /**
-     * Gets the initializer for the strategy used for collection of total textures metrics.
+     * @returns the initializer for the strategy used for collection of total textures metrics.
      * @returns the initializer for the total textures strategy
      */
     public static TotalTexturesStrategy(): PerfStrategyInitialization {
@@ -232,7 +232,7 @@ export class PerfCollectionStrategy {
     }
 
     /**
-     * Gets the initializer for the strategy used for collection of absolute fps metrics.
+     * @returns the initializer for the strategy used for collection of absolute fps metrics.
      * @returns the initializer for the absolute fps strategy
      */
     public static AbsoluteFpsStrategy(): PerfStrategyInitialization {
@@ -251,7 +251,7 @@ export class PerfCollectionStrategy {
     }
 
     /**
-     * Gets the initializer for the strategy used for collection of meshes selection time metrics.
+     * @returns the initializer for the strategy used for collection of meshes selection time metrics.
      * @returns the initializer for the meshes selection time strategy
      */
     public static MeshesSelectionStrategy(): PerfStrategyInitialization {
@@ -278,7 +278,7 @@ export class PerfCollectionStrategy {
     }
 
     /**
-     * Gets the initializer for the strategy used for collection of render targets time metrics.
+     * @returns the initializer for the strategy used for collection of render targets time metrics.
      * @returns the initializer for the render targets time strategy
      */
     public static RenderTargetsStrategy(): PerfStrategyInitialization {
@@ -305,7 +305,7 @@ export class PerfCollectionStrategy {
     }
 
     /**
-     * Gets the initializer for the strategy used for collection of particles time metrics.
+     * @returns the initializer for the strategy used for collection of particles time metrics.
      * @returns the initializer for the particles time strategy
      */
     public static ParticlesStrategy(): PerfStrategyInitialization {
@@ -332,7 +332,7 @@ export class PerfCollectionStrategy {
     }
 
     /**
-     * Gets the initializer for the strategy used for collection of sprites time metrics.
+     * @returns the initializer for the strategy used for collection of sprites time metrics.
      * @returns the initializer for the sprites time strategy
      */
     public static SpritesStrategy(): PerfStrategyInitialization {
@@ -359,7 +359,7 @@ export class PerfCollectionStrategy {
     }
 
     /**
-     * Gets the initializer for the strategy used for collection of animations time metrics.
+     * @returns the initializer for the strategy used for collection of animations time metrics.
      * @returns the initializer for the animations time strategy
      */
     public static AnimationsStrategy(): PerfStrategyInitialization {
@@ -386,7 +386,7 @@ export class PerfCollectionStrategy {
     }
 
     /**
-     * Gets the initializer for the strategy used for collection of physics time metrics.
+     * @returns the initializer for the strategy used for collection of physics time metrics.
      * @returns the initializer for the physics time strategy
      */
     public static PhysicsStrategy(): PerfStrategyInitialization {
@@ -413,7 +413,7 @@ export class PerfCollectionStrategy {
     }
 
     /**
-     * Gets the initializer for the strategy used for collection of render time metrics.
+     * @returns the initializer for the strategy used for collection of render time metrics.
      * @returns the initializer for the render time strategy
      */
     public static RenderStrategy(): PerfStrategyInitialization {
@@ -440,7 +440,7 @@ export class PerfCollectionStrategy {
     }
 
     /**
-     * Gets the initializer for the strategy used for collection of total frame time metrics.
+     * @returns the initializer for the strategy used for collection of total frame time metrics.
      * @returns the initializer for the total frame time strategy
      */
     public static FrameTotalStrategy(): PerfStrategyInitialization {
@@ -467,7 +467,7 @@ export class PerfCollectionStrategy {
     }
 
     /**
-     * Gets the initializer for the strategy used for collection of inter-frame time metrics.
+     * @returns the initializer for the strategy used for collection of inter-frame time metrics.
      * @returns the initializer for the inter-frame time strategy
      */
     public static InterFrameStrategy(): PerfStrategyInitialization {
@@ -495,7 +495,7 @@ export class PerfCollectionStrategy {
     }
 
     /**
-     * Gets the initializer for the strategy used for collection of gpu frame time metrics.
+     * @returns the initializer for the strategy used for collection of gpu frame time metrics.
      * @returns the initializer for the gpu frame time strategy
      */
     public static GpuFrameTimeStrategy(): PerfStrategyInitialization {

@@ -463,7 +463,7 @@ export class MergeMeshesOptimization extends SceneOptimization {
  */
 export class SceneOptimizerOptions {
     /**
-     * Gets the list of optimizations to apply
+     * @returns the list of optimizations to apply
      */
     public optimizations = new Array<SceneOptimization>();
 
@@ -637,14 +637,14 @@ export class SceneOptimizer implements IDisposable {
     }
 
     /**
-     * Gets the current priority level (0 at start)
+     * @returns the current priority level (0 at start)
      */
     public get currentPriorityLevel(): number {
         return this._currentPriorityLevel;
     }
 
     /**
-     * Gets the current frame rate checked by the SceneOptimizer
+     * @returns the current frame rate checked by the SceneOptimizer
      */
     public get currentFrameRate(): number {
         return this._currentFrameRate;
@@ -679,7 +679,7 @@ export class SceneOptimizer implements IDisposable {
     }
 
     /**
-     * Gets the list of active optimizations
+     * @returns the list of active optimizations
      */
     public get optimizations(): SceneOptimization[] {
         return this._options.optimizations;

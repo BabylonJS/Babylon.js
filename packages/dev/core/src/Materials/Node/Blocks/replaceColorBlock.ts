@@ -34,7 +34,7 @@ export class ReplaceColorBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the current class name
+     * @returns the current class name
      * @returns the class name
      */
     public getClassName() {
@@ -42,35 +42,35 @@ export class ReplaceColorBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the value input component
+     * @returns the value input component
      */
     public get value(): NodeMaterialConnectionPoint {
         return this._inputs[0];
     }
 
     /**
-     * Gets the reference input component
+     * @returns the reference input component
      */
     public get reference(): NodeMaterialConnectionPoint {
         return this._inputs[1];
     }
 
     /**
-     * Gets the distance input component
+     * @returns the distance input component
      */
     public get distance(): NodeMaterialConnectionPoint {
         return this._inputs[2];
     }
 
     /**
-     * Gets the replacement input component
+     * @returns the replacement input component
      */
     public get replacement(): NodeMaterialConnectionPoint {
         return this._inputs[3];
     }
 
     /**
-     * Gets the output component
+     * @returns the output component
      */
     public get output(): NodeMaterialConnectionPoint {
         return this._outputs[0];

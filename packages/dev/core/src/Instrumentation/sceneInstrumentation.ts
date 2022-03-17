@@ -68,14 +68,14 @@ export class SceneInstrumentation implements IDisposable {
 
     // Properties
     /**
-     * Gets the perf counter used for active meshes evaluation time
+     * @returns the perf counter used for active meshes evaluation time
      */
     public get activeMeshesEvaluationTimeCounter(): PerfCounter {
         return this._activeMeshesEvaluationTime;
     }
 
     /**
-     * Gets the active meshes evaluation time capture status
+     * @returns the active meshes evaluation time capture status
      */
     public get captureActiveMeshesEvaluationTime(): boolean {
         return this._captureActiveMeshesEvaluationTime;
@@ -111,14 +111,14 @@ export class SceneInstrumentation implements IDisposable {
     }
 
     /**
-     * Gets the perf counter used for render targets render time
+     * @returns the perf counter used for render targets render time
      */
     public get renderTargetsRenderTimeCounter(): PerfCounter {
         return this._renderTargetsRenderTime;
     }
 
     /**
-     * Gets the render targets render time capture status
+     * @returns the render targets render time capture status
      */
     public get captureRenderTargetsRenderTime(): boolean {
         return this._captureRenderTargetsRenderTime;
@@ -154,14 +154,14 @@ export class SceneInstrumentation implements IDisposable {
     }
 
     /**
-     * Gets the perf counter used for particles render time
+     * @returns the perf counter used for particles render time
      */
     public get particlesRenderTimeCounter(): PerfCounter {
         return this._particlesRenderTime;
     }
 
     /**
-     * Gets the particles render time capture status
+     * @returns the particles render time capture status
      */
     public get captureParticlesRenderTime(): boolean {
         return this._captureParticlesRenderTime;
@@ -197,14 +197,14 @@ export class SceneInstrumentation implements IDisposable {
     }
 
     /**
-     * Gets the perf counter used for sprites render time
+     * @returns the perf counter used for sprites render time
      */
     public get spritesRenderTimeCounter(): PerfCounter {
         return this._spritesRenderTime;
     }
 
     /**
-     * Gets the sprites render time capture status
+     * @returns the sprites render time capture status
      */
     public get captureSpritesRenderTime(): boolean {
         return this._captureSpritesRenderTime;
@@ -244,14 +244,14 @@ export class SceneInstrumentation implements IDisposable {
     }
 
     /**
-     * Gets the perf counter used for physics time
+     * @returns the perf counter used for physics time
      */
     public get physicsTimeCounter(): PerfCounter {
         return this._physicsTime;
     }
 
     /**
-     * Gets the physics time capture status
+     * @returns the physics time capture status
      */
     public get capturePhysicsTime(): boolean {
         return this._capturePhysicsTime;
@@ -291,14 +291,14 @@ export class SceneInstrumentation implements IDisposable {
     }
 
     /**
-     * Gets the perf counter used for animations time
+     * @returns the perf counter used for animations time
      */
     public get animationsTimeCounter(): PerfCounter {
         return this._animationsTime;
     }
 
     /**
-     * Gets the animations time capture status
+     * @returns the animations time capture status
      */
     public get captureAnimationsTime(): boolean {
         return this._captureAnimationsTime;
@@ -325,14 +325,14 @@ export class SceneInstrumentation implements IDisposable {
     }
 
     /**
-     * Gets the perf counter used for frame time capture
+     * @returns the perf counter used for frame time capture
      */
     public get frameTimeCounter(): PerfCounter {
         return this._frameTime;
     }
 
     /**
-     * Gets the frame time capture status
+     * @returns the frame time capture status
      */
     public get captureFrameTime(): boolean {
         return this._captureFrameTime;
@@ -346,14 +346,14 @@ export class SceneInstrumentation implements IDisposable {
     }
 
     /**
-     * Gets the perf counter used for inter-frames time capture
+     * @returns the perf counter used for inter-frames time capture
      */
     public get interFrameTimeCounter(): PerfCounter {
         return this._interFrameTime;
     }
 
     /**
-     * Gets the inter-frames time capture status
+     * @returns the inter-frames time capture status
      */
     public get captureInterFrameTime(): boolean {
         return this._captureInterFrameTime;
@@ -367,14 +367,14 @@ export class SceneInstrumentation implements IDisposable {
     }
 
     /**
-     * Gets the perf counter used for render time capture
+     * @returns the perf counter used for render time capture
      */
     public get renderTimeCounter(): PerfCounter {
         return this._renderTime;
     }
 
     /**
-     * Gets the render time capture status
+     * @returns the render time capture status
      */
     public get captureRenderTime(): boolean {
         return this._captureRenderTime;
@@ -409,14 +409,14 @@ export class SceneInstrumentation implements IDisposable {
     }
 
     /**
-     * Gets the perf counter used for camera render time capture
+     * @returns the perf counter used for camera render time capture
      */
     public get cameraRenderTimeCounter(): PerfCounter {
         return this._cameraRenderTime;
     }
 
     /**
-     * Gets the camera render time capture status
+     * @returns the camera render time capture status
      */
     public get captureCameraRenderTime(): boolean {
         return this._captureCameraRenderTime;
@@ -451,7 +451,7 @@ export class SceneInstrumentation implements IDisposable {
     }
 
     /**
-     * Gets the perf counter used for draw calls
+     * @returns the perf counter used for draw calls
      */
     public get drawCallsCounter(): PerfCounter {
         return this.scene.getEngine()._drawCalls;

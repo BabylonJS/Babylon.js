@@ -36,7 +36,7 @@ export class PhotoDome extends TextureDome<Texture> {
     }
 
     /**
-     * Gets the current video mode for the video. It can be:
+     * @returns the current video mode for the video. It can be:
      * * TextureDome.MODE_MONOSCOPIC : Define the texture source as a Monoscopic panoramic 360.
      * * TextureDome.MODE_TOPBOTTOM  : Define the texture source as a Stereoscopic TopBottom/OverUnder panoramic 360.
      * * TextureDome.MODE_SIDEBYSIDE : Define the texture source as a Stereoscopic Side by Side panoramic 360.

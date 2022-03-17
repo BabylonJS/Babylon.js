@@ -63,7 +63,7 @@ export class SheenBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the current class name
+     * @returns the current class name
      * @returns the class name
      */
     public getClassName() {
@@ -71,28 +71,28 @@ export class SheenBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the intensity input component
+     * @returns the intensity input component
      */
     public get intensity(): NodeMaterialConnectionPoint {
         return this._inputs[0];
     }
 
     /**
-     * Gets the color input component
+     * @returns the color input component
      */
     public get color(): NodeMaterialConnectionPoint {
         return this._inputs[1];
     }
 
     /**
-     * Gets the roughness input component
+     * @returns the roughness input component
      */
     public get roughness(): NodeMaterialConnectionPoint {
         return this._inputs[2];
     }
 
     /**
-     * Gets the sheen object output component
+     * @returns the sheen object output component
      */
     public get sheen(): NodeMaterialConnectionPoint {
         return this._outputs[0];
@@ -109,7 +109,7 @@ export class SheenBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the main code of the block (fragment side)
+     * @returns the main code of the block (fragment side)
      * @param reflectionBlock instance of a ReflectionBlock null if the code must be generated without an active reflection module
      * @returns the shader code
      */

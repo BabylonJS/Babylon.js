@@ -89,7 +89,7 @@ export class FlyCamera extends TargetCamera {
     public inputs: FlyCameraInputsManager;
 
     /**
-     * Gets the input sensibility for mouse input.
+     * @returns the input sensibility for mouse input.
      * Higher values reduce sensitivity.
      */
     public get angularSensibility(): number {

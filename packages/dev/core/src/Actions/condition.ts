@@ -228,7 +228,7 @@ export class ValueCondition extends Condition {
     }
 
     /**
-     * Gets the name of the conditional operator for the ValueCondition
+     * @returns the name of the conditional operator for the ValueCondition
      * @param operator the conditional operator
      * @returns the name
      */

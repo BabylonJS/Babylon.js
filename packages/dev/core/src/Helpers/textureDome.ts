@@ -42,7 +42,7 @@ export abstract class TextureDome<T extends Texture> extends TransformNode {
     protected _texture: T;
 
     /**
-     * Gets the texture being displayed on the sphere
+     * @returns the texture being displayed on the sphere
      */
     public get texture(): T {
         return this._texture;
@@ -78,7 +78,7 @@ export abstract class TextureDome<T extends Texture> extends TransformNode {
      */
     protected _mesh: Mesh;
     /**
-     * Gets the mesh used for the dome.
+     * @returns the mesh used for the dome.
      */
     public get mesh(): Mesh {
         return this._mesh;

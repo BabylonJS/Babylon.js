@@ -25,7 +25,7 @@ export class ExternalTexture {
     }
 
     /**
-     * Gets the underlying texture object
+     * @returns the underlying texture object
      */
     public get underlyingResource(): any {
         return this._video;
@@ -42,7 +42,7 @@ export class ExternalTexture {
     public readonly type = Constants.TEXTURETYPE_UNDEFINED;
 
     /**
-     * Gets the unique id of this texture
+     * @returns the unique id of this texture
      */
     public readonly uniqueId: number;
 

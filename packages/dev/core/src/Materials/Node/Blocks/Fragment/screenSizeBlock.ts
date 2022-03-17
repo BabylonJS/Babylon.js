@@ -29,7 +29,7 @@ export class ScreenSizeBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the current class name
+     * @returns the current class name
      * @returns the class name
      */
     public getClassName() {
@@ -37,21 +37,21 @@ export class ScreenSizeBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the xy component
+     * @returns the xy component
      */
     public get xy(): NodeMaterialConnectionPoint {
         return this._outputs[0];
     }
 
     /**
-     * Gets the x component
+     * @returns the x component
      */
     public get x(): NodeMaterialConnectionPoint {
         return this._outputs[1];
     }
 
     /**
-     * Gets the y component
+     * @returns the y component
      */
     public get y(): NodeMaterialConnectionPoint {
         return this._outputs[2];

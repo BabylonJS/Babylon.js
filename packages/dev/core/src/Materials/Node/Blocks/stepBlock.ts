@@ -21,7 +21,7 @@ export class StepBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the current class name
+     * @returns the current class name
      * @returns the class name
      */
     public getClassName() {
@@ -29,21 +29,21 @@ export class StepBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the value operand input component
+     * @returns the value operand input component
      */
     public get value(): NodeMaterialConnectionPoint {
         return this._inputs[0];
     }
 
     /**
-     * Gets the edge operand input component
+     * @returns the edge operand input component
      */
     public get edge(): NodeMaterialConnectionPoint {
         return this._inputs[1];
     }
 
     /**
-     * Gets the output component
+     * @returns the output component
      */
     public get output(): NodeMaterialConnectionPoint {
         return this._outputs[0];

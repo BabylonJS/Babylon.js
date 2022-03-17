@@ -325,7 +325,7 @@ export class Node implements IBehaviorAware<Node> {
     }
 
     /**
-     * Gets the scene of the node
+     * @returns the scene of the node
      * @returns a scene
      */
     public getScene(): Scene {
@@ -333,7 +333,7 @@ export class Node implements IBehaviorAware<Node> {
     }
 
     /**
-     * Gets the engine of the node
+     * @returns the engine of the node
      * @returns a Engine
      */
     public getEngine(): Engine {
@@ -391,7 +391,7 @@ export class Node implements IBehaviorAware<Node> {
     }
 
     /**
-     * Gets the list of attached behaviors
+     * @returns the list of attached behaviors
      * @see https://doc.babylonjs.com/features/behaviour
      */
     public get behaviors(): Behavior<Node>[] {
@@ -795,7 +795,7 @@ export class Node implements IBehaviorAware<Node> {
     }
 
     /**
-     * Gets the list of all animation ranges defined on this node
+     * @returns the list of all animation ranges defined on this node
      * @returns an array
      */
     public getAnimationRanges(): Nullable<AnimationRange>[] {

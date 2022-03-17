@@ -21,14 +21,14 @@ export class EngineInstrumentation implements IDisposable {
 
     // Properties
     /**
-     * Gets the perf counter used for GPU frame time
+     * @returns the perf counter used for GPU frame time
      */
     public get gpuFrameTimeCounter(): PerfCounter {
         return this.engine.getGPUFrameTimeCounter();
     }
 
     /**
-     * Gets the GPU frame time capture status
+     * @returns the GPU frame time capture status
      */
     public get captureGPUFrameTime(): boolean {
         return this._captureGPUFrameTime;
@@ -47,14 +47,14 @@ export class EngineInstrumentation implements IDisposable {
     }
 
     /**
-     * Gets the perf counter used for shader compilation time
+     * @returns the perf counter used for shader compilation time
      */
     public get shaderCompilationTimeCounter(): PerfCounter {
         return this._shaderCompilationTime;
     }
 
     /**
-     * Gets the shader compilation time capture status
+     * @returns the shader compilation time capture status
      */
     public get captureShaderCompilationTime(): boolean {
         return this._captureShaderCompilationTime;

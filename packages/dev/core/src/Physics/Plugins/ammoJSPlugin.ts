@@ -147,7 +147,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
     }
 
     /**
-     * Gets the current timestep (only used if useDeltaForWorldStep is false in the constructor)
+     * @returns the current timestep (only used if useDeltaForWorldStep is false in the constructor)
      * @returns the current timestep in seconds
      */
     public getTimeStep(): number {
@@ -1190,7 +1190,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
     }
 
     /**
-     * gets the linear velocity
+     * @returns the linear velocity
      * @param impostor imposter to get linear velocity from
      * @returns linear velocity
      */
@@ -1209,7 +1209,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
     }
 
     /**
-     * gets the angular velocity
+     * @returns the angular velocity
      * @param impostor imposter to get angular velocity from
      * @returns angular velocity
      */
@@ -1242,7 +1242,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
     }
 
     /**
-     * Gets the mass of the physics body
+     * @returns the mass of the physics body
      * @param impostor imposter to get the mass from
      * @returns mass
      */
@@ -1518,7 +1518,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
     }
 
     /**
-     * Gets the radius of the impostor
+     * @returns the radius of the impostor
      * @param impostor impostor to get radius from
      * @returns the radius
      */
@@ -1528,7 +1528,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
     }
 
     /**
-     * Gets the box size of the impostor
+     * @returns the box size of the impostor
      * @param impostor impostor to get box size from
      * @param result the resulting box size
      */

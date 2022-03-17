@@ -368,7 +368,7 @@ export class ThinEngine {
     protected _audioDestination: Nullable<AudioDestinationNode | MediaStreamAudioDestinationNode>;
 
     /**
-     * Gets the options used for engine creation
+     * @returns the options used for engine creation
      * @returns EngineOptions object
      */
     public getCreationOptions() {
@@ -415,7 +415,7 @@ export class ThinEngine {
     protected _activeRenderLoops = new Array<() => void>();
 
     /**
-     * Gets the list of current active render loop functions
+     * @returns the list of current active render loop functions
      * @returns an array with the current render loop functions
      */
     public get activeRenderLoops(): Array<() => void> {
@@ -1448,7 +1448,7 @@ export class ThinEngine {
     }
 
     /**
-     * Gets the current hardware scaling level.
+     * @returns the current hardware scaling level.
      * By default the hardware scaling level is computed from the window device ratio.
      * if level = 1 then the engine will render at the exact resolution of the canvas. If level = 0.5 then the engine will render at twice the size of the canvas.
      * @returns a number indicating the current hardware scaling level
@@ -1458,7 +1458,7 @@ export class ThinEngine {
     }
 
     /**
-     * Gets the list of loaded textures
+     * @returns the list of loaded textures
      * @returns an array containing all loaded textures
      */
     public getLoadedTexturesCache(): InternalTexture[] {
@@ -1466,7 +1466,7 @@ export class ThinEngine {
     }
 
     /**
-     * Gets the object containing all engine capabilities
+     * @returns the object containing all engine capabilities
      * @returns the EngineCapabilities object
      */
     public getCaps(): EngineCapabilities {
@@ -1521,7 +1521,7 @@ export class ThinEngine {
     }
 
     /**
-     * Gets the HTML canvas attached with the current webGL context
+     * @returns the HTML canvas attached with the current webGL context
      * @returns a HTML canvas
      */
     public getRenderingCanvas(): Nullable<HTMLCanvasElement> {
@@ -1529,7 +1529,7 @@ export class ThinEngine {
     }
 
     /**
-     * Gets the audio context specified in engine initialization options
+     * @returns the audio context specified in engine initialization options
      * @returns an Audio Context
      */
     public getAudioContext(): Nullable<AudioContext> {
@@ -1537,7 +1537,7 @@ export class ThinEngine {
     }
 
     /**
-     * Gets the audio destination specified in engine initialization options
+     * @returns the audio destination specified in engine initialization options
      * @returns an audio destination node
      */
     public getAudioDestination(): Nullable<AudioDestinationNode | MediaStreamAudioDestinationNode> {
@@ -1561,7 +1561,7 @@ export class ThinEngine {
     }
 
     /**
-     * Gets the current render width
+     * @returns the current render width
      * @param useScreen defines if screen size must be used (or the current render target if any)
      * @returns a number defining the current render width
      */
@@ -1574,7 +1574,7 @@ export class ThinEngine {
     }
 
     /**
-     * Gets the current render height
+     * @returns the current render height
      * @param useScreen defines if screen size must be used (or the current render target if any)
      * @returns a number defining the current render height
      */
@@ -1873,7 +1873,7 @@ export class ThinEngine {
     }
 
     /**
-     * Gets the current value of the zOffset Factor
+     * @returns the current value of the zOffset Factor
      * @returns the current zOffset Factor state
      */
     public getZOffset(): number {
@@ -1890,7 +1890,7 @@ export class ThinEngine {
     }
 
     /**
-     * Gets the current value of the zOffset Units
+     * @returns the current value of the zOffset Units
      * @returns the current zOffset Units state
      */
     public getZOffsetUnits(): number {
@@ -3064,7 +3064,7 @@ export class ThinEngine {
     }
 
     /**
-     * Gets the list of webGL uniform locations associated with a specific program based on a list of uniform names
+     * @returns the list of webGL uniform locations associated with a specific program based on a list of uniform names
      * @param pipelineContext defines the pipeline context to use
      * @param uniformsNames defines the list of uniform names
      * @returns an array of webGL uniform locations
@@ -3081,7 +3081,7 @@ export class ThinEngine {
     }
 
     /**
-     * Gets the list of active attributes for a given webGL program
+     * @returns the list of active attributes for a given webGL program
      * @param pipelineContext defines the pipeline context to use
      * @param attributesNames defines the list of attribute names to get
      * @returns an array of indices indicating the offset of each attribute
@@ -3475,28 +3475,28 @@ export class ThinEngine {
     }
 
     /**
-     * Gets the depth culling state manager
+     * @returns the depth culling state manager
      */
     public get depthCullingState(): DepthCullingState {
         return this._depthCullingState;
     }
 
     /**
-     * Gets the alpha state manager
+     * @returns the alpha state manager
      */
     public get alphaState(): AlphaState {
         return this._alphaState;
     }
 
     /**
-     * Gets the stencil state manager
+     * @returns the stencil state manager
      */
     public get stencilState(): StencilState {
         return this._stencilState;
     }
 
     /**
-     * Gets the stencil state composer
+     * @returns the stencil state composer
      */
     public get stencilStateComposer(): StencilStateComposer {
         return this._stencilStateComposer;

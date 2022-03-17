@@ -15,7 +15,7 @@ export interface IAudioEngine extends IDisposable {
     readonly canUseWebAudio: boolean;
 
     /**
-     * Gets the current AudioContext if available.
+     * @returns the current AudioContext if available.
      */
     readonly audioContext: Nullable<AudioContext>;
 
@@ -74,7 +74,7 @@ export interface IAudioEngine extends IDisposable {
     unlock(): void;
 
     /**
-     * Gets the global volume sets on the master gain.
+     * @returns the global volume sets on the master gain.
      * @returns the global volume if set or -1 otherwise
      */
     getGlobalVolume(): number;

@@ -35,7 +35,7 @@ export class HolographicBackplate extends Control3D {
     }
 
     /**
-     * Gets the material used by the backplate
+     * @returns the material used by the backplate
      */
     public get material(): FluentBackplateMaterial {
         return this._material;

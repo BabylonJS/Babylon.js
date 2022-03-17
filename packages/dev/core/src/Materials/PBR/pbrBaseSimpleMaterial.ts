@@ -89,7 +89,7 @@ export abstract class PBRBaseSimpleMaterial extends PBRBaseMaterial {
     public alphaCutOff: number;
 
     /**
-     * Gets the current double sided mode.
+     * @returns the current double sided mode.
      */
     @serialize()
     public get doubleSided(): boolean {

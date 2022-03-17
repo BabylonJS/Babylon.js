@@ -322,14 +322,14 @@ export class ComputeEffect {
     }
 
     /**
-     * Gets the compute shader source code of this effect
+     * @returns the compute shader source code of this effect
      */
     public get computeSourceCode(): string {
         return this._computeSourceCodeOverride ? this._computeSourceCodeOverride : this._pipelineContext?._getComputeShaderCode() ?? this._computeSourceCode;
     }
 
     /**
-     * Gets the compute shader source code before it has been processed by the preprocessor
+     * @returns the compute shader source code before it has been processed by the preprocessor
      */
     public get rawComputeSourceCode(): string {
         return this._rawComputeSourceCode;

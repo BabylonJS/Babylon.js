@@ -32,7 +32,7 @@ export interface IExplorerExtensibilityGroup {
      */
     predicate: (entity: any) => boolean;
     /**
-     * Gets the list of options added to a type
+     * @returns the list of options added to a type
      */
     entries: IExplorerExtensibilityOption[];
 }
@@ -96,7 +96,7 @@ declare module "../scene" {
         _debugLayer: DebugLayer;
 
         /**
-         * Gets the debug layer (aka Inspector) associated with the scene
+         * @returns the debug layer (aka Inspector) associated with the scene
          * @see https://doc.babylonjs.com/features/playground_debuglayer
          */
         debugLayer: DebugLayer;

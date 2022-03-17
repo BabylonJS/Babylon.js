@@ -58,7 +58,7 @@ export class SceneDepthBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the current class name
+     * @returns the current class name
      * @returns the class name
      */
     public getClassName() {
@@ -66,14 +66,14 @@ export class SceneDepthBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the uv input component
+     * @returns the uv input component
      */
     public get uv(): NodeMaterialConnectionPoint {
         return this._inputs[0];
     }
 
     /**
-     * Gets the depth output component
+     * @returns the depth output component
      */
     public get depth(): NodeMaterialConnectionPoint {
         return this._outputs[0];

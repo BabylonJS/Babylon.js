@@ -100,7 +100,7 @@ export class MorphTarget implements IAnimatable {
     }
 
     /**
-     * Gets the unique ID of this manager
+     * @returns the unique ID of this manager
      */
     public get uniqueId(): number {
         return this._uniqueId;
@@ -149,7 +149,7 @@ export class MorphTarget implements IAnimatable {
     }
 
     /**
-     * Gets the position data stored in this target
+     * @returns the position data stored in this target
      * @returns a FloatArray containing the position data (or null if not present)
      */
     public getPositions(): Nullable<FloatArray> {
@@ -171,7 +171,7 @@ export class MorphTarget implements IAnimatable {
     }
 
     /**
-     * Gets the normal data stored in this target
+     * @returns the normal data stored in this target
      * @returns a FloatArray containing the normal data (or null if not present)
      */
     public getNormals(): Nullable<FloatArray> {
@@ -193,7 +193,7 @@ export class MorphTarget implements IAnimatable {
     }
 
     /**
-     * Gets the tangent data stored in this target
+     * @returns the tangent data stored in this target
      * @returns a FloatArray containing the tangent data (or null if not present)
      */
     public getTangents(): Nullable<FloatArray> {
@@ -215,7 +215,7 @@ export class MorphTarget implements IAnimatable {
     }
 
     /**
-     * Gets the texture coordinates data stored in this target
+     * @returns the texture coordinates data stored in this target
      * @returns a FloatArray containing the texture coordinates data (or null if not present)
      */
     public getUVs(): Nullable<FloatArray> {

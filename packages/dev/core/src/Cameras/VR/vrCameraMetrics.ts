@@ -65,14 +65,14 @@ export class VRCameraMetrics {
     public multiviewEnabled = false;
 
     /**
-     * Gets the rendering aspect ratio based on the provided resolutions.
+     * @returns the rendering aspect ratio based on the provided resolutions.
      */
     public get aspectRatio(): number {
         return this.hResolution / (2 * this.vResolution);
     }
 
     /**
-     * Gets the aspect ratio based on the FOV, scale factors, and real screen sizes.
+     * @returns the aspect ratio based on the FOV, scale factors, and real screen sizes.
      */
     public get aspectRatioFov(): number {
         return 2 * Math.atan((this.postProcessScaleFactor * this.vScreenSize) / (2 * this.eyeToScreenDistance));

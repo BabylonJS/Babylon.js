@@ -83,14 +83,14 @@ export class AdvancedDynamicTexture extends DynamicTexture {
 
     /** @hidden */
     public _numLayoutCalls = 0;
-    /** Gets the number of layout calls made the last time the ADT has been rendered */
+    /** @returns the number of layout calls made the last time the ADT has been rendered */
     public get numLayoutCalls(): number {
         return this._numLayoutCalls;
     }
 
     /** @hidden */
     public _numRenderCalls = 0;
-    /** Gets the number of render calls made the last time the ADT has been rendered */
+    /** @returns the number of render calls made the last time the ADT has been rendered */
     public get numRenderCalls(): number {
         return this._numRenderCalls;
     }
@@ -220,7 +220,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     }
 
     /**
-     * Gets the ratio used when in "ideal mode"
+     * @returns the ratio used when in "ideal mode"
      * @see https://doc.babylonjs.com/how_to/gui#adaptive-scaling
      * */
     public get idealRatio(): number {
@@ -253,13 +253,13 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     }
 
     /**
-     * Gets the underlying layer used to render the texture when in fullscreen mode
+     * @returns the underlying layer used to render the texture when in fullscreen mode
      */
     public get layer(): Nullable<Layer> {
         return this._layerToDispose;
     }
     /**
-     * Gets the root container control
+     * @returns the root container control
      */
     public get rootContainer(): Container {
         return this._rootContainer;

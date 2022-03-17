@@ -25,7 +25,7 @@ export class ViewDirectionBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the current class name
+     * @returns the current class name
      * @returns the class name
      */
     public getClassName() {
@@ -33,21 +33,21 @@ export class ViewDirectionBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the world position component
+     * @returns the world position component
      */
     public get worldPosition(): NodeMaterialConnectionPoint {
         return this._inputs[0];
     }
 
     /**
-     * Gets the camera position component
+     * @returns the camera position component
      */
     public get cameraPosition(): NodeMaterialConnectionPoint {
         return this._inputs[1];
     }
 
     /**
-     * Gets the output component
+     * @returns the output component
      */
     public get output(): NodeMaterialConnectionPoint {
         return this._outputs[0];

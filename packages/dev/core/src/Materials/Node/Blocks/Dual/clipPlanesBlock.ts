@@ -24,7 +24,7 @@ export class ClipPlanesBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the current class name
+     * @returns the current class name
      * @returns the class name
      */
     public getClassName() {
@@ -51,7 +51,7 @@ export class ClipPlanesBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the worldPosition input component
+     * @returns the worldPosition input component
      */
     public get worldPosition(): NodeMaterialConnectionPoint {
         return this._inputs[0];

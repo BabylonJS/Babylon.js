@@ -21,35 +21,35 @@ export class PhysicsRaycastResult {
     }
 
     /**
-     * Gets the distance from the hit
+     * @returns the distance from the hit
      */
     get hitDistance(): number {
         return this._hitDistance;
     }
 
     /**
-     * Gets the hit normal/direction in the world
+     * @returns the hit normal/direction in the world
      */
     get hitNormalWorld(): Vector3 {
         return this._hitNormalWorld;
     }
 
     /**
-     * Gets the hit point in the world
+     * @returns the hit point in the world
      */
     get hitPointWorld(): Vector3 {
         return this._hitPointWorld;
     }
 
     /**
-     * Gets the ray "start point" of the ray in the world
+     * @returns the ray "start point" of the ray in the world
      */
     get rayFromWorld(): Vector3 {
         return this._rayFromWorld;
     }
 
     /**
-     * Gets the ray "end point" of the ray in the world
+     * @returns the ray "end point" of the ray in the world
      */
     get rayToWorld(): Vector3 {
         return this._rayToWorld;

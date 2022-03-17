@@ -48,7 +48,7 @@ export class EasingFunction implements IEasingFunction {
         this._easingMode = n;
     }
     /**
-     * Gets the current easing mode.
+     * @returns the current easing mode.
      * @returns the easing mode
      */
     public getEasingMode(): number {

@@ -4,9 +4,9 @@ declare module BABYLON {
      * @class SceneManager - All rights reserved (c) 2020 Mackey Kinard
      */
     class SceneManager {
-        /** Gets the toolkit framework version number */
+        /** @returns the toolkit framework version number */
         static get Version(): string;
-        /** Gets the toolkit framework copyright notice */
+        /** @returns the toolkit framework copyright notice */
         static get Copyright(): string;
         /** Set the allow user input flag */
         static EnableUserInput: boolean;
@@ -26,7 +26,7 @@ declare module BABYLON {
         static VirtualJoystickEnabled: boolean;
         /** Is content running in a frame window */
         static IsFrameWindow(): boolean;
-        /** Gets the running status of the default audio context */
+        /** @returns the running status of the default audio context */
         static HasAudioContext(): boolean;
         /** Returns a Promise that resolves after the specfied time */
         static WaitForSeconds: (seconds: number) => Promise<void>;
@@ -154,9 +154,9 @@ declare module BABYLON {
         static AlertMessage(text: string, title?: string): any;
         /**  Gets the names query string from page url. */
         static GetQueryStringParam(name: string, url: string): string;
-        /** Gets the current engine WebGL version string info. */
+        /** @returns the current engine WebGL version string info. */
         static GetWebGLVersionString(scene: BABYLON.Scene): string;
-        /** Gets the current engine WebGL version number info. */
+        /** @returns the current engine WebGL version number info. */
         static GetWebGLVersionNumber(scene: BABYLON.Scene): number;
         /** Get the root url the last scene properties was loaded from */
         static GetRootUrl(scene: BABYLON.Scene): string;
@@ -208,25 +208,25 @@ declare module BABYLON {
         static ClearAssetContainers(scene: BABYLON.Scene): void;
         /** Set managed asset container. */
         static RegisterAssetContainer(scene: BABYLON.Scene, name: string, container: BABYLON.AssetContainer): void;
-        /** Gets the specified mesh by name from scene. */
+        /** @returns the specified mesh by name from scene. */
         static GetMesh(scene: BABYLON.Scene, name: string): BABYLON.Mesh;
-        /** Gets the specified mesh by id from scene. */
+        /** @returns the specified mesh by id from scene. */
         static GetMeshByID(scene: BABYLON.Scene, id: string): BABYLON.Mesh;
-        /** Gets the specified abstract mesh by name from scene. */
+        /** @returns the specified abstract mesh by name from scene. */
         static GetAbstractMesh(scene: BABYLON.Scene, name: string): BABYLON.AbstractMesh;
-        /** Gets the specified abstract mesh by id from scene. */
+        /** @returns the specified abstract mesh by id from scene. */
         static GetAbstractMeshByID(scene: BABYLON.Scene, id: string): BABYLON.AbstractMesh;
-        /** Gets the specified transform node by name from scene. */
+        /** @returns the specified transform node by name from scene. */
         static GetTransformNode(scene: BABYLON.Scene, name: string): BABYLON.TransformNode;
-        /** Gets the specified transform node by id from scene. */
+        /** @returns the specified transform node by id from scene. */
         static GetTransformNodeByID(scene: BABYLON.Scene, id: string): BABYLON.TransformNode;
-        /** Gets the transform node child detail mesh. */
+        /** @returns the transform node child detail mesh. */
         static GetTransformDetailMesh(transform: TransformNode): BABYLON.AbstractMesh;
-        /** Gets the transform node primitive meshes. */
+        /** @returns the transform node primitive meshes. */
         static GetPrimitiveMeshes(transform: TransformNode): BABYLON.AbstractMesh[];
-        /** Gets the specified transform node primary layer index. */
+        /** @returns the specified transform node primary layer index. */
         static GetTransformLayer(transform: BABYLON.TransformNode): number;
-        /** Gets the specified transform node primary tag name. */
+        /** @returns the specified transform node primary tag name. */
         static GetTransformTag(transform: BABYLON.TransformNode): string;
         /** Check if the transform has the specified query tag match */
         static HasTransformTags(transform: BABYLON.TransformNode, query: string): boolean;
@@ -298,9 +298,9 @@ declare module BABYLON {
         static GetPhysicsHeapSize(): number;
         /** Confiures ammo.js physcis engine advanced sweeping and collision detection options on the scene. */
         static ConfigurePhysicsEngine(scene: BABYLON.Scene, deltaWorldStep?: boolean, subTimeStep?: number, maxWorldSweep?: number, ccdEnabled?: boolean, ccdPenetration?: number, gravityLevel?: BABYLON.Vector3): void;
-        /** Gets the current ammo.js physics world. */
+        /** @returns the current ammo.js physics world. */
         static GetPhysicsEngine(scene: BABYLON.Scene): BABYLON.IPhysicsEngine;
-        /** Gets the current ammo.js physics world. */
+        /** @returns the current ammo.js physics world. */
         static GetPhysicsWorld(scene: BABYLON.Scene): any;
         private static TempVRayDest;
         private static TempVRayOrigin;
@@ -322,7 +322,7 @@ declare module BABYLON {
         static PhysicsShapecastToPoint(scene: BABYLON.Scene, btConvexShape: any, origin: BABYLON.Vector3, destination: BABYLON.Vector3, group?: number, mask?: number): BABYLON.Nullable<BABYLON.RaycastHitResult>;
         /** Creates a validated entity parent child physics impostor */
         static CreatePhysicsImpostor(scene: BABYLON.Scene, entity: BABYLON.AbstractMesh, type: number, options: BABYLON.PhysicsImpostorParameters, reparent?: boolean): void;
-        /** Gets the physics impostor type as a string. */
+        /** @returns the physics impostor type as a string. */
         static GetPhysicsImposterType(type: number): string;
         /** Creates a ammo.js physics box collision shape */
         static CreatePhysicsBoxShape(halfextents: BABYLON.Vector3): any;
@@ -347,13 +347,13 @@ declare module BABYLON {
         static OnNavMeshReadyObservable: Observable<Mesh>;
         /** Get recast total memory heap size */
         static GetRecastHeapSize(): number;
-        /** Gets the recast navigation plugin tools. (Singleton Instance) */
+        /** @returns the recast navigation plugin tools. (Singleton Instance) */
         static GetNavigationTools(): BABYLON.RecastJSPlugin;
-        /** Gets the recast navigation crowd interface. (Singleton Instance) */
+        /** @returns the recast navigation crowd interface. (Singleton Instance) */
         static GetCrowdInterface(scene: BABYLON.Scene): BABYLON.ICrowd;
         /** Has the recast baked navigation data. (Navigation Helper) */
         static HasNavigationData(): boolean;
-        /** Gets the current recast navigation mesh. (Navigation Helper) */
+        /** @returns the current recast navigation mesh. (Navigation Helper) */
         static GetNavigationMesh(): BABYLON.Mesh;
         /** Bake the recast navigation mesh from geometry. (Navigation Helper) */
         static BakeNavigationMesh(scene: BABYLON.Scene, meshes: BABYLON.Mesh[], properties: BABYLON.INavMeshParameters, debug?: boolean, color?: BABYLON.Color3, collisionMesh?: boolean): BABYLON.Mesh;
@@ -666,18 +666,18 @@ declare module BABYLON {
         private _registeredClassname;
         private _lateUpdateObserver;
         private _fixedUpdateObserver;
-        /** Gets the script component ready state */
+        /** @returns the script component ready state */
         isReady(): boolean;
-        /** Gets the current scene object */
+        /** @returns the current scene object */
         get scene(): BABYLON.Scene;
-        /** Gets the transform node entity */
+        /** @returns the transform node entity */
         get transform(): BABYLON.TransformNode;
         constructor(transform: BABYLON.TransformNode, scene: BABYLON.Scene, properties?: any);
-        /** Gets the script component class name */
+        /** @returns the script component class name */
         getClassName(): string;
         /** Sets the script component property bag value */
         protected setProperty(name: string, propertyValue: any): void;
-        /** Gets the script component property bag value */
+        /** @returns the script component property bag value */
         protected getProperty<T>(name: string, defaultValue?: T): T;
         /** Get the current time in seconds */
         getTime(): number;
@@ -687,13 +687,13 @@ declare module BABYLON {
         getDeltaSeconds(): number;
         /** Get the delta time animation ratio for 60 fps */
         getAnimationRatio(): number;
-        /** Gets the safe transform mesh entity */
+        /** @returns the safe transform mesh entity */
         getTransformMesh(): BABYLON.Mesh;
-        /** Gets the safe transform abstract mesh entity */
+        /** @returns the safe transform abstract mesh entity */
         getAbstractMesh(): BABYLON.AbstractMesh;
-        /** Gets the safe transform instanced mesh entity */
+        /** @returns the safe transform instanced mesh entity */
         getInstancedMesh(): BABYLON.InstancedMesh;
-        /** Gets the transform primitive meshes */
+        /** @returns the transform primitive meshes */
         getPrimitiveMeshes(): BABYLON.AbstractMesh[];
         /** Get the transform object metedata in the scene. */
         getMetadata(): any;
@@ -701,9 +701,9 @@ declare module BABYLON {
         getComponent<T extends BABYLON.ScriptComponent>(klass: string): T;
         /** Get all script components on the transform with the specfied class name. */
         getComponents<T extends BABYLON.ScriptComponent>(klass: string): T[];
-        /** Gets the attached transform light rig */
+        /** @returns the attached transform light rig */
         getLightRig(): BABYLON.Light;
-        /** Gets the attached transform camera rig */
+        /** @returns the attached transform camera rig */
         getCameraRig(): BABYLON.FreeCamera;
         /** Gets a script component transform primary tag name. */
         getTransformTag(): string;
@@ -1666,15 +1666,15 @@ declare module BABYLON {
         static ParseChildTransform(parent: BABYLON.TransformNode, source: BABYLON.IUnityTransform, defaultValue?: BABYLON.TransformNode): BABYLON.TransformNode;
         /** Sets the transform node abosulte position */
         static SetAbsolutePosition(transform: BABYLON.TransformNode, position: BABYLON.Vector3): void;
-        /** Gets the transform node abosulte position */
+        /** @returns the transform node abosulte position */
         static GetAbsolutePosition(transform: BABYLON.TransformNode | BABYLON.Camera, offsetPosition?: BABYLON.Vector3, computeMatrix?: boolean): BABYLON.Vector3;
-        /** Gets the transform node abosulte position */
+        /** @returns the transform node abosulte position */
         static GetAbsolutePositionToRef(transform: BABYLON.TransformNode | BABYLON.Camera, result: BABYLON.Vector3, offsetPosition?: BABYLON.Vector3, computeMatrix?: boolean): void;
         /** Sets the transform node abosulte Rotation */
         static SetAbsoluteRotation(transform: BABYLON.TransformNode, rotation: BABYLON.Quaternion): void;
-        /** Gets the transform node abosulte rotation */
+        /** @returns the transform node abosulte rotation */
         static GetAbsoluteRotation(transform: BABYLON.TransformNode): BABYLON.Quaternion;
-        /** Gets the transform node abosulte rotation */
+        /** @returns the transform node abosulte rotation */
         static GetAbsoluteRotationToRef(transform: BABYLON.TransformNode, result: BABYLON.Quaternion): void;
         /** Transforms position from local space to world space. (Using TransformCoordinates) */
         static TransformPoint(owner: BABYLON.TransformNode | BABYLON.Camera, position: BABYLON.Vector3, computeMatrix?: boolean): BABYLON.Vector3;
@@ -1698,17 +1698,17 @@ declare module BABYLON {
         static GetDirectionVector(owner: BABYLON.TransformNode | BABYLON.Camera, vector: BABYLON.Vector3): BABYLON.Vector3;
         /** Gets any direction vector of the owner in world space. */
         static GetDirectionVectorToRef(owner: BABYLON.TransformNode | BABYLON.Camera, vector: BABYLON.Vector3, result: BABYLON.Vector3): void;
-        /** Gets the blue axis of the owner in world space. */
+        /** @returns the blue axis of the owner in world space. */
         static GetForwardVector(owner: BABYLON.TransformNode | BABYLON.Camera): BABYLON.Vector3;
-        /** Gets the blue axis of the owner in world space. */
+        /** @returns the blue axis of the owner in world space. */
         static GetForwardVectorToRef(owner: BABYLON.TransformNode | BABYLON.Camera, result: BABYLON.Vector3): void;
-        /** Gets the red axis of the owner in world space. */
+        /** @returns the red axis of the owner in world space. */
         static GetRightVector(owner: BABYLON.TransformNode | BABYLON.Camera): BABYLON.Vector3;
-        /** Gets the red axis of the owner in world space. */
+        /** @returns the red axis of the owner in world space. */
         static GetRightVectorToRef(owner: BABYLON.TransformNode | BABYLON.Camera, result: BABYLON.Vector3): void;
-        /** Gets the green axis of the owner in world space. */
+        /** @returns the green axis of the owner in world space. */
         static GetUpVector(owner: BABYLON.TransformNode | BABYLON.Camera): BABYLON.Vector3;
-        /** Gets the green axis of the owner in world space. */
+        /** @returns the green axis of the owner in world space. */
         static GetUpVectorToRef(owner: BABYLON.TransformNode | BABYLON.Camera, result: BABYLON.Vector3): void;
         /** Blend float buffer values */
         static BlendFloatValue(source: number, value: number, weight: number): number;
@@ -1720,7 +1720,7 @@ declare module BABYLON {
         static BlendQuaternionValue(source: BABYLON.Quaternion, value: BABYLON.Quaternion, weight: number): void;
         /** Set animation target property */
         static SetAnimationTargetProperty(animation: BABYLON.Animation, property: string): void;
-        /** Gets the float "result" as the sampled key frame value for the specfied animation track. */
+        /** @returns the float "result" as the sampled key frame value for the specfied animation track. */
         static SampleAnimationFloat(animation: BABYLON.Animation, time: number, loopMode?: number): number;
         /** Set the passed vector2 "result" as the sampled key frame value for the specfied animation track. */
         static SampleAnimationVector2(animation: BABYLON.Animation, time: number, loopMode?: number): BABYLON.Vector2;
@@ -1732,7 +1732,7 @@ declare module BABYLON {
         static SampleAnimationMatrix(animation: BABYLON.Animation, time: number, loopMode?: number): BABYLON.Matrix;
         /** Creates a targeted float animation for tweening.  */
         static CreateTweenAnimation(name: string, targetProperty: string, startValue: number, endValue: number, frameRate?: number, loopMode?: number): BABYLON.Animation;
-        /** Gets the last key frame index value. */
+        /** @returns the last key frame index value. */
         static GetLastKeyFrameIndex(animation: BABYLON.Animation): number;
         /** Private internal frame interpolation helper */
         private static InterpolateAnimation;
@@ -1772,14 +1772,14 @@ declare module BABYLON {
         /** Parse scene component metadata. */
         static PostParseSceneComponents(scene: BABYLON.Scene, transforms: BABYLON.TransformNode[], preloadList: Array<BABYLON.ScriptComponent>, readyList: Array<BABYLON.ScriptComponent>): void;
         /**
-         * Gets the specified asset container mesh.
+         * @returns the specified asset container mesh.
          * @param container defines the asset container
          * @param meshName defines the mesh name to get
          * @returns the mesh from the container
          */
         static GetAssetContainerMesh(container: BABYLON.AssetContainer, meshName: string): BABYLON.Mesh;
         /**
-         * Gets the specified asset container transform node.
+         * @returns the specified asset container transform node.
          * @param container defines the asset container
          * @param nodeName defines the transform node name to get
          * @returns the transform node from the container

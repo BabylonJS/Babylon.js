@@ -20,7 +20,7 @@ export class DiscardBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the current class name
+     * @returns the current class name
      * @returns the class name
      */
     public getClassName() {
@@ -28,14 +28,14 @@ export class DiscardBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the color input component
+     * @returns the color input component
      */
     public get value(): NodeMaterialConnectionPoint {
         return this._inputs[0];
     }
 
     /**
-     * Gets the cutoff input component
+     * @returns the cutoff input component
      */
     public get cutoff(): NodeMaterialConnectionPoint {
         return this._inputs[1];

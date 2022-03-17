@@ -42,7 +42,7 @@ export interface ISpriteManager extends IDisposable {
     isPickable: boolean;
 
     /**
-     * Gets the hosting scene
+     * @returns the hosting scene
      */
     scene: Scene;
 
@@ -108,7 +108,7 @@ export class SpriteManager implements ISpriteManager {
     /** Snippet ID if the manager was created from the snippet server */
     public snippetId: string;
 
-    /** Gets the list of sprites */
+    /** @returns the list of sprites */
     public sprites = new Array<Sprite>();
     /** @returns the rendering group id (0 by default) */
     public renderingGroupId = 0;
@@ -138,21 +138,21 @@ export class SpriteManager implements ISpriteManager {
     public uniqueId: number;
 
     /**
-     * Gets the array of sprites
+     * @returns the array of sprites
      */
     public get children() {
         return this.sprites;
     }
 
     /**
-     * Gets the hosting scene
+     * @returns the hosting scene
      */
     public get scene() {
         return this._scene;
     }
 
     /**
-     * Gets the capacity of the manager
+     * @returns the capacity of the manager
      */
     public get capacity() {
         return this._spriteRenderer.capacity;

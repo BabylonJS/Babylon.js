@@ -26,7 +26,7 @@ export class FragCoordBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the current class name
+     * @returns the current class name
      * @returns the class name
      */
     public getClassName() {
@@ -34,49 +34,49 @@ export class FragCoordBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the xy component
+     * @returns the xy component
      */
     public get xy(): NodeMaterialConnectionPoint {
         return this._outputs[0];
     }
 
     /**
-     * Gets the xyz component
+     * @returns the xyz component
      */
     public get xyz(): NodeMaterialConnectionPoint {
         return this._outputs[1];
     }
 
     /**
-     * Gets the xyzw component
+     * @returns the xyzw component
      */
     public get xyzw(): NodeMaterialConnectionPoint {
         return this._outputs[2];
     }
 
     /**
-     * Gets the x component
+     * @returns the x component
      */
     public get x(): NodeMaterialConnectionPoint {
         return this._outputs[3];
     }
 
     /**
-     * Gets the y component
+     * @returns the y component
      */
     public get y(): NodeMaterialConnectionPoint {
         return this._outputs[4];
     }
 
     /**
-     * Gets the z component
+     * @returns the z component
      */
     public get z(): NodeMaterialConnectionPoint {
         return this._outputs[5];
     }
 
     /**
-     * Gets the w component
+     * @returns the w component
      */
     public get output(): NodeMaterialConnectionPoint {
         return this._outputs[6];

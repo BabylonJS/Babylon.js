@@ -11,36 +11,36 @@ export class NodeMaterialBuildState {
     /** @returns a boolean indicating if the current state can emit uniform buffers */
     public supportUniformBuffers = false;
     /**
-     * Gets the list of emitted attributes
+     * @returns the list of emitted attributes
      */
     public attributes = new Array<string>();
     /**
-     * Gets the list of emitted uniforms
+     * @returns the list of emitted uniforms
      */
     public uniforms = new Array<string>();
     /**
-     * Gets the list of emitted constants
+     * @returns the list of emitted constants
      */
     public constants = new Array<string>();
     /**
-     * Gets the list of emitted samplers
+     * @returns the list of emitted samplers
      */
     public samplers = new Array<string>();
     /**
-     * Gets the list of emitted functions
+     * @returns the list of emitted functions
      */
     public functions: { [key: string]: string } = {};
     /**
-     * Gets the list of emitted extensions
+     * @returns the list of emitted extensions
      */
     public extensions: { [key: string]: string } = {};
 
     /**
-     * Gets the target of the compilation state
+     * @returns the target of the compilation state
      */
     public target: NodeMaterialBlockTargets;
     /**
-     * Gets the list of emitted counters
+     * @returns the list of emitted counters
      */
     public counters: { [key: string]: number } = {};
 
@@ -70,7 +70,7 @@ export class NodeMaterialBuildState {
     public _builtCompilationString = "";
 
     /**
-     * Gets the emitted compilation strings
+     * @returns the emitted compilation strings
      */
     public compilationString = "";
 

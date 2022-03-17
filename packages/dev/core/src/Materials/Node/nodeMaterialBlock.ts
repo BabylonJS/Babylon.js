@@ -44,7 +44,7 @@ export class NodeMaterialBlock {
     public readonly _originalTargetIsNeutral: boolean;
 
     /**
-     * Gets the name of the block
+     * @returns the name of the block
      */
     public get name(): string {
         return this._name;
@@ -118,13 +118,13 @@ export class NodeMaterialBlock {
     }
 
     /**
-     * Gets the list of input points
+     * @returns the list of input points
      */
     public get inputs(): NodeMaterialConnectionPoint[] {
         return this._inputs;
     }
 
-    /** Gets the list of output points */
+    /** @returns the list of output points */
     public get outputs(): NodeMaterialConnectionPoint[] {
         return this._outputs;
     }
@@ -224,7 +224,7 @@ export class NodeMaterialBlock {
     }
 
     /**
-     * Gets the current class name e.g. "NodeMaterialBlock"
+     * @returns the current class name e.g. "NodeMaterialBlock"
      * @returns the class name
      */
     public getClassName() {
@@ -312,7 +312,7 @@ export class NodeMaterialBlock {
     }
 
     /**
-     * Gets the sibling of the given output
+     * @returns the sibling of the given output
      * @param current defines the current output
      * @returns the next output in the list or null
      */

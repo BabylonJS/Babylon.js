@@ -66,35 +66,35 @@ export interface IInspectableOptions {
  */
 export interface IInspectable {
     /**
-     * Gets the label to display
+     * @returns the label to display
      */
     label: string;
     /**
-     * Gets the name of the property to edit
+     * @returns the name of the property to edit
      */
     propertyName: string;
     /**
-     * Gets the type of the editor to use
+     * @returns the type of the editor to use
      */
     type: InspectableType;
     /**
-     * Gets the minimum value of the property when using in "slider" mode
+     * @returns the minimum value of the property when using in "slider" mode
      */
     min?: number;
     /**
-     * Gets the maximum value of the property when using in "slider" mode
+     * @returns the maximum value of the property when using in "slider" mode
      */
     max?: number;
     /**
-     * Gets the setp to use when using in "slider" mode
+     * @returns the setp to use when using in "slider" mode
      */
     step?: number;
     /**
-     * Gets the callback function when using "Button" mode
+     * @returns the callback function when using "Button" mode
      */
     callback?: () => void;
     /**
-     * Gets the list of options when using "Option" mode
+     * @returns the list of options when using "Option" mode
      */
     options?: [];
 }

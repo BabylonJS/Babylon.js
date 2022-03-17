@@ -37,7 +37,7 @@ export class RenderTargetWrapper {
     public _depthStencilTextureWithStencil: boolean = false;
 
     /**
-     * Gets the depth/stencil texture (if created by a createDepthStencilTexture() call)
+     * @returns the depth/stencil texture (if created by a createDepthStencilTexture() call)
      */
     public get depthStencilTexture() {
         return this._depthStencilTexture;
@@ -72,49 +72,49 @@ export class RenderTargetWrapper {
     }
 
     /**
-     * Gets the size of the render target wrapper (used for cubes, as width=height in this case)
+     * @returns the size of the render target wrapper (used for cubes, as width=height in this case)
      */
     public get size(): number {
         return this.width;
     }
 
     /**
-     * Gets the width of the render target wrapper
+     * @returns the width of the render target wrapper
      */
     public get width(): number {
         return (<{ width: number; height: number }>this._size).width || <number>this._size;
     }
 
     /**
-     * Gets the height of the render target wrapper
+     * @returns the height of the render target wrapper
      */
     public get height(): number {
         return (<{ width: number; height: number }>this._size).height || <number>this._size;
     }
 
     /**
-     * Gets the number of layers of the render target wrapper (only used if is2DArray is true)
+     * @returns the number of layers of the render target wrapper (only used if is2DArray is true)
      */
     public get layers(): number {
         return (<{ width: number; height: number; layers?: number }>this._size).layers || 0;
     }
 
     /**
-     * Gets the render texture. If this is a multi render target, gets the first texture
+     * @returns the render texture. If this is a multi render target, gets the first texture
      */
     public get texture(): Nullable<InternalTexture> {
         return this._textures?.[0] ?? null;
     }
 
     /**
-     * Gets the list of render textures. If we are not in a multi render target, the list will be null (use the texture getter instead)
+     * @returns the list of render textures. If we are not in a multi render target, the list will be null (use the texture getter instead)
      */
     public get textures(): Nullable<InternalTexture[]> {
         return this._textures;
     }
 
     /**
-     * Gets the sample count of the render target
+     * @returns the sample count of the render target
      */
     public get samples(): number {
         return this.texture?.samples ?? 1;

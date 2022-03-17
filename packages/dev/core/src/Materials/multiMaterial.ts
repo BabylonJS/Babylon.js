@@ -125,7 +125,7 @@ export class MultiMaterial extends Material {
     }
 
     /**
-     * Gets the current class name of the material e.g. "MultiMaterial"
+     * @returns the current class name of the material e.g. "MultiMaterial"
      * Mainly use in serialization.
      * @returns the class name
      */

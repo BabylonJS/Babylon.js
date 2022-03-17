@@ -26,7 +26,7 @@ export class ImageProcessingPostProcess extends PostProcess {
     protected _imageProcessingConfiguration: ImageProcessingConfiguration;
 
     /**
-     * Gets the image processing configuration used either in this material.
+     * @returns the image processing configuration used either in this material.
      */
     public get imageProcessingConfiguration(): ImageProcessingConfiguration {
         return this._imageProcessingConfiguration;
@@ -188,7 +188,7 @@ export class ImageProcessingPostProcess extends PostProcess {
     }
 
     /**
-     * Gets the type of tone mapping effect.
+     * @returns the type of tone mapping effect.
      */
     public get toneMappingType(): number {
         return this._imageProcessingConfiguration.toneMappingType;
@@ -294,7 +294,7 @@ export class ImageProcessingPostProcess extends PostProcess {
     }
 
     /**
-     * Gets the vignette blend mode allowing different kind of effect.
+     * @returns the vignette blend mode allowing different kind of effect.
      */
     public get vignetteBlendMode(): number {
         return this.imageProcessingConfiguration.vignetteBlendMode;

@@ -166,21 +166,21 @@ export class HolographicButton extends Button3D {
     }
 
     /**
-     * Gets the back material used by this button
+     * @returns the back material used by this button
      */
     public get backMaterial(): FluentMaterial {
         return this._backMaterial;
     }
 
     /**
-     * Gets the front material used by this button
+     * @returns the front material used by this button
      */
     public get frontMaterial(): FluentMaterial {
         return this._frontMaterial;
     }
 
     /**
-     * Gets the plate material used by this button
+     * @returns the plate material used by this button
      */
     public get plateMaterial(): StandardMaterial {
         return this._plateMaterial;

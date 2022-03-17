@@ -84,7 +84,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
     }
 
     /**
-     * Gets the number of textures in this MRT. This number can be different from `_textures.length` in case a depth texture is generated.
+     * @returns the number of textures in this MRT. This number can be different from `_textures.length` in case a depth texture is generated.
      */
     public get count(): number {
         return this._count;

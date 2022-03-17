@@ -22,13 +22,13 @@ export interface IWebXRRenderTargetTextureProvider extends IDisposable {
      */
     trySetViewportForView(viewport: Viewport, view: XRView): boolean;
     /**
-     * Gets the correct render target texture to be rendered this frame for this eye
+     * @returns the correct render target texture to be rendered this frame for this eye
      * @param eye the eye for which to get the render target
      * @returns the render target for the specified eye or null if not available
      */
     getRenderTargetTextureForEye(eye: XREye): Nullable<RenderTargetTexture>;
     /**
-     * Gets the correct render target texture to be rendered this frame for this view
+     * @returns the correct render target texture to be rendered this frame for this view
      * @param view the view for which to get the render target
      * @returns the render target for the specified view or null if not available
      */

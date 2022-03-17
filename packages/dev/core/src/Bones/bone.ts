@@ -20,11 +20,11 @@ export class Bone extends Node {
     private static _tmpMats: Matrix[] = ArrayTools.BuildArray(5, Matrix.Identity);
 
     /**
-     * Gets the list of child bones
+     * @returns the list of child bones
      */
     public children = new Array<Bone>();
 
-    /** Gets the animations associated with this bone */
+    /** @returns the animations associated with this bone */
     public animations = new Array<Animation>();
 
     /**
@@ -118,7 +118,7 @@ export class Bone extends Node {
     }
 
     /**
-     * Gets the current object class name.
+     * @returns the current object class name.
      * @returns the class name
      */
     public getClassName(): string {
@@ -128,7 +128,7 @@ export class Bone extends Node {
     // Members
 
     /**
-     * Gets the parent skeleton
+     * @returns the parent skeleton
      * @returns a skeleton
      */
     public getSkeleton(): Skeleton {
@@ -156,7 +156,7 @@ export class Bone extends Node {
     }
 
     /**
-     * Gets the node index in matrix array generated for rendering
+     * @returns the node index in matrix array generated for rendering
      * @returns the node index
      */
     public getIndex(): number {
@@ -198,7 +198,7 @@ export class Bone extends Node {
     }
 
     /**
-     * Gets the local matrix
+     * @returns the local matrix
      * @returns a matrix
      */
     public getLocalMatrix(): Matrix {
@@ -207,7 +207,7 @@ export class Bone extends Node {
     }
 
     /**
-     * Gets the base matrix (initial matrix which remains unchanged)
+     * @returns the base matrix (initial matrix which remains unchanged)
      * @returns the base matrix (as known as bind pose matrix)
      */
     public getBaseMatrix(): Matrix {
@@ -215,7 +215,7 @@ export class Bone extends Node {
     }
 
     /**
-     * Gets the rest pose matrix
+     * @returns the rest pose matrix
      * @returns a matrix
      */
     public getRestPose(): Matrix {
@@ -231,7 +231,7 @@ export class Bone extends Node {
     }
 
     /**
-     * Gets the bind pose matrix
+     * @returns the bind pose matrix
      * @returns the bind pose matrix
      * @deprecated Please use getBaseMatrix instead
      */
@@ -276,7 +276,7 @@ export class Bone extends Node {
     }
 
     /**
-     * Gets the inverse of the absolute transform matrix.
+     * @returns the inverse of the absolute transform matrix.
      * This matrix will be multiplied by local matrix to get the difference matrix (ie. the difference between original state and current state)
      * @returns a matrix
      */
@@ -285,7 +285,7 @@ export class Bone extends Node {
     }
 
     /**
-     * Gets the absolute transform matrix (ie base matrix * parent world matrix)
+     * @returns the absolute transform matrix (ie base matrix * parent world matrix)
      * @returns a matrix
      */
     public getAbsoluteTransform(): Matrix {
@@ -312,7 +312,7 @@ export class Bone extends Node {
     // Properties (matches TransformNode properties)
 
     /**
-     * Gets the node used to drive the bone's transformation
+     * @returns the node used to drive the bone's transformation
      * @returns a transform node or null
      */
     public getTransformNode() {
@@ -361,7 +361,7 @@ export class Bone extends Node {
     }
 
     /**
-     * Gets the animation properties override
+     * @returns the animation properties override
      */
     public get animationPropertiesOverride(): Nullable<AnimationPropertiesOverride> {
         return this._skeleton.animationPropertiesOverride;
@@ -615,7 +615,7 @@ export class Bone extends Node {
     }
 
     /**
-     * Gets the current scaling in local space
+     * @returns the current scaling in local space
      * @returns the current scaling vector
      */
     public getScale(): Vector3 {
@@ -624,7 +624,7 @@ export class Bone extends Node {
     }
 
     /**
-     * Gets the current scaling in local space and stores it in a target vector
+     * @returns the current scaling in local space and stores it in a target vector
      * @param result defines the target vector
      */
     public getScaleToRef(result: Vector3) {

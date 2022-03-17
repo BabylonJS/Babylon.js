@@ -218,19 +218,19 @@ export class ReflectionProbe {
     }
 
     /**
-     * Gets the hosting scene
+     * @returns the hosting scene
      * @returns a Scene
      */
     public getScene(): Scene {
         return this._scene;
     }
 
-    /** Gets the internal CubeTexture used to render to */
+    /** @returns the internal CubeTexture used to render to */
     public get cubeTexture(): RenderTargetTexture {
         return this._renderTargetTexture;
     }
 
-    /** Gets the list of meshes to render */
+    /** @returns the list of meshes to render */
     public get renderList(): Nullable<AbstractMesh[]> {
         return this._renderTargetTexture.renderList;
     }

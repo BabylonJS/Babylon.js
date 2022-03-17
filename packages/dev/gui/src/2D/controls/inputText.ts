@@ -88,7 +88,7 @@ export class InputText extends Control implements IFocusableControl {
         return this._maxWidth.toString(this._host);
     }
 
-    /** Gets the maximum width allowed by the control in pixels */
+    /** @returns the maximum width allowed by the control in pixels */
     public get maxWidthInPixels(): number {
         return this._maxWidth.getValueInPixel(this._host, this._cachedParentMeasure.width);
     }

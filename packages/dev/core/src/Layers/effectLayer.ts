@@ -104,7 +104,7 @@ export abstract class EffectLayer {
     public isEnabled: boolean = true;
 
     /**
-     * Gets the camera attached to the layer.
+     * @returns the camera attached to the layer.
      */
     @serializeAsCameraReference()
     public get camera(): Nullable<Camera> {
@@ -112,7 +112,7 @@ export abstract class EffectLayer {
     }
 
     /**
-     * Gets the rendering group id the layer should render in.
+     * @returns the rendering group id the layer should render in.
      */
     @serialize()
     public get renderingGroupId(): number {
@@ -164,7 +164,7 @@ export abstract class EffectLayer {
     public onSizeChangedObservable = new Observable<EffectLayer>();
 
     /**
-     * Gets the main texture where the effect is rendered
+     * @returns the main texture where the effect is rendered
      */
     public get mainTexture() {
         return this._mainTexture;
@@ -1054,7 +1054,7 @@ export abstract class EffectLayer {
     }
 
     /**
-     * Gets the class name of the effect layer
+     * @returns the class name of the effect layer
      * @returns the string with the class name of the effect layer
      */
     public getClassName(): string {

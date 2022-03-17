@@ -37,7 +37,7 @@ declare module "../../Engines/engine" {
         _onEngineViewChanged?: () => void;
 
         /**
-         * Gets the current engine view
+         * @returns the current engine view
          * @see https://doc.babylonjs.com/how_to/multi_canvases
          */
         activeView: Nullable<EngineView>;

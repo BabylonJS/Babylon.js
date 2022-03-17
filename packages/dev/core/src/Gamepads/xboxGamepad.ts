@@ -110,7 +110,7 @@ export class Xbox360Pad extends Gamepad {
     }
 
     /**
-     * Gets the left trigger value
+     * @returns the left trigger value
      */
     public get leftTrigger(): number {
         return this._leftTrigger;
@@ -126,7 +126,7 @@ export class Xbox360Pad extends Gamepad {
     }
 
     /**
-     * Gets the right trigger value
+     * @returns the right trigger value
      */
     public get rightTrigger(): number {
         return this._rightTrigger;
@@ -214,7 +214,7 @@ export class Xbox360Pad extends Gamepad {
     }
 
     /**
-     * Gets the value of the `A` button
+     * @returns the value of the `A` button
      */
     public get buttonA(): number {
         return this._buttonA;
@@ -227,7 +227,7 @@ export class Xbox360Pad extends Gamepad {
     }
 
     /**
-     * Gets the value of the `B` button
+     * @returns the value of the `B` button
      */
     public get buttonB(): number {
         return this._buttonB;
@@ -240,7 +240,7 @@ export class Xbox360Pad extends Gamepad {
     }
 
     /**
-     * Gets the value of the `X` button
+     * @returns the value of the `X` button
      */
     public get buttonX(): number {
         return this._buttonX;
@@ -253,7 +253,7 @@ export class Xbox360Pad extends Gamepad {
     }
 
     /**
-     * Gets the value of the `Y` button
+     * @returns the value of the `Y` button
      */
     public get buttonY(): number {
         return this._buttonY;
@@ -266,7 +266,7 @@ export class Xbox360Pad extends Gamepad {
     }
 
     /**
-     * Gets the value of the `Start` button
+     * @returns the value of the `Start` button
      */
     public get buttonStart(): number {
         return this._buttonStart;
@@ -279,7 +279,7 @@ export class Xbox360Pad extends Gamepad {
     }
 
     /**
-     * Gets the value of the `Back` button
+     * @returns the value of the `Back` button
      */
     public get buttonBack(): number {
         return this._buttonBack;
@@ -292,7 +292,7 @@ export class Xbox360Pad extends Gamepad {
     }
 
     /**
-     * Gets the value of the `Left` button
+     * @returns the value of the `Left` button
      */
     public get buttonLB(): number {
         return this._buttonLB;
@@ -305,7 +305,7 @@ export class Xbox360Pad extends Gamepad {
     }
 
     /**
-     * Gets the value of the `Right` button
+     * @returns the value of the `Right` button
      */
     public get buttonRB(): number {
         return this._buttonRB;
@@ -318,7 +318,7 @@ export class Xbox360Pad extends Gamepad {
     }
 
     /**
-     * Gets the value of the Left joystick
+     * @returns the value of the Left joystick
      */
     public get buttonLeftStick(): number {
         return this._buttonLeftStick;
@@ -331,7 +331,7 @@ export class Xbox360Pad extends Gamepad {
     }
 
     /**
-     * Gets the value of the Right joystick
+     * @returns the value of the Right joystick
      */
     public get buttonRightStick(): number {
         return this._buttonRightStick;
@@ -344,7 +344,7 @@ export class Xbox360Pad extends Gamepad {
     }
 
     /**
-     * Gets the value of D-pad up
+     * @returns the value of D-pad up
      */
     public get dPadUp(): number {
         return this._dPadUp;
@@ -357,7 +357,7 @@ export class Xbox360Pad extends Gamepad {
     }
 
     /**
-     * Gets the value of D-pad down
+     * @returns the value of D-pad down
      */
     public get dPadDown(): number {
         return this._dPadDown;
@@ -370,7 +370,7 @@ export class Xbox360Pad extends Gamepad {
     }
 
     /**
-     * Gets the value of D-pad left
+     * @returns the value of D-pad left
      */
     public get dPadLeft(): number {
         return this._dPadLeft;
@@ -383,7 +383,7 @@ export class Xbox360Pad extends Gamepad {
     }
 
     /**
-     * Gets the value of D-pad right
+     * @returns the value of D-pad right
      */
     public get dPadRight(): number {
         return this._dPadRight;

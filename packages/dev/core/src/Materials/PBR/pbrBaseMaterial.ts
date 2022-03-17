@@ -934,7 +934,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     }
 
     /**
-     * Gets the name of the material class.
+     * @returns the name of the material class.
      */
     public getClassName(): string {
         return "PBRBaseMaterial";
@@ -1007,7 +1007,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     }
 
     /**
-     * Gets the texture used for the alpha test.
+     * @returns the texture used for the alpha test.
      */
     public getAlphaTestTexture(): Nullable<BaseTexture> {
         return this._albedoTexture;

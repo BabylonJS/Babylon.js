@@ -38,7 +38,7 @@ export class ReflectionTextureBlock extends ReflectionTextureBaseBlock {
     }
 
     /**
-     * Gets the current class name
+     * @returns the current class name
      * @returns the class name
      */
     public getClassName() {
@@ -46,84 +46,84 @@ export class ReflectionTextureBlock extends ReflectionTextureBaseBlock {
     }
 
     /**
-     * Gets the world position input component
+     * @returns the world position input component
      */
     public get position(): NodeMaterialConnectionPoint {
         return this._inputs[0];
     }
 
     /**
-     * Gets the world position input component
+     * @returns the world position input component
      */
     public get worldPosition(): NodeMaterialConnectionPoint {
         return this._inputs[1];
     }
 
     /**
-     * Gets the world normal input component
+     * @returns the world normal input component
      */
     public get worldNormal(): NodeMaterialConnectionPoint {
         return this._inputs[2];
     }
 
     /**
-     * Gets the world input component
+     * @returns the world input component
      */
     public get world(): NodeMaterialConnectionPoint {
         return this._inputs[3];
     }
 
     /**
-     * Gets the camera (or eye) position component
+     * @returns the camera (or eye) position component
      */
     public get cameraPosition(): NodeMaterialConnectionPoint {
         return this._inputs[4];
     }
 
     /**
-     * Gets the view input component
+     * @returns the view input component
      */
     public get view(): NodeMaterialConnectionPoint {
         return this._inputs[5];
     }
 
     /**
-     * Gets the rgb output component
+     * @returns the rgb output component
      */
     public get rgb(): NodeMaterialConnectionPoint {
         return this._outputs[0];
     }
 
     /**
-     * Gets the rgba output component
+     * @returns the rgba output component
      */
     public get rgba(): NodeMaterialConnectionPoint {
         return this._outputs[1];
     }
 
     /**
-     * Gets the r output component
+     * @returns the r output component
      */
     public get r(): NodeMaterialConnectionPoint {
         return this._outputs[2];
     }
 
     /**
-     * Gets the g output component
+     * @returns the g output component
      */
     public get g(): NodeMaterialConnectionPoint {
         return this._outputs[3];
     }
 
     /**
-     * Gets the b output component
+     * @returns the b output component
      */
     public get b(): NodeMaterialConnectionPoint {
         return this._outputs[4];
     }
 
     /**
-     * Gets the a output component
+     * @returns the a output component
      */
     public get a(): NodeMaterialConnectionPoint {
         return this._outputs[5];

@@ -64,12 +64,12 @@ export class ShadowDepthWrapper {
     >; // key is (subMesh + shadowGenerator)
     private _meshes: Map<AbstractMesh, Nullable<Observer<Node>>>;
 
-    /** Gets the standalone status of the wrapper */
+    /** @returns the standalone status of the wrapper */
     public get standalone(): boolean {
         return this._options?.standalone ?? false;
     }
 
-    /** Gets the base material the wrapper is built upon */
+    /** @returns the base material the wrapper is built upon */
     public get baseMaterial(): Material {
         return this._baseMaterial;
     }
@@ -120,7 +120,7 @@ export class ShadowDepthWrapper {
     }
 
     /**
-     * Gets the effect to use to generate the depth map
+     * @returns the effect to use to generate the depth map
      * @param subMesh subMesh to get the effect for
      * @param shadowGenerator shadow generator to get the effect for
      * @param passIdForDrawWrapper Id of the pass for which the effect from the draw wrapper must be retrieved from

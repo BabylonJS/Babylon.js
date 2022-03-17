@@ -232,7 +232,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     public static INSTANCEDMESH_SORT_TRANSPARENT = false;
 
     /**
-     * Gets the default side orientation.
+     * @returns the default side orientation.
      * @param orientation the orientation to value to attempt to get
      * @returns the default orientation
      * @hidden
@@ -359,13 +359,13 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     // Members
 
     /**
-     * Gets the delay loading state of the mesh (when delay loading is turned on)
+     * @returns the delay loading state of the mesh (when delay loading is turned on)
      * @see https://doc.babylonjs.com/how_to/using_the_incremental_loading_system
      */
     public delayLoadState = Constants.DELAYLOADSTATE_NONE;
 
     /**
-     * Gets the list of instances created from this mesh
+     * @returns the list of instances created from this mesh
      * it is not supposed to be modified manually.
      * Note also that the order of the InstancedMesh wihin the array is not significant and might change.
      * @see https://doc.babylonjs.com/how_to/how_to_use_instances
@@ -373,7 +373,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     public instances = new Array<InstancedMesh>();
 
     /**
-     * Gets the file containing delay loading data for this mesh
+     * @returns the file containing delay loading data for this mesh
      */
     public delayLoadingFile: string;
 
@@ -435,14 +435,14 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     public ignoreCameraMaxZ = false;
 
     /**
-     * Gets the source mesh (the one used to clone this one from)
+     * @returns the source mesh (the one used to clone this one from)
      */
     public get source(): Nullable<Mesh> {
         return this._internalMeshDataInfo._source;
     }
 
     /**
-     * Gets the list of clones of this mesh
+     * @returns the list of clones of this mesh
      * The scene must have been constructed with useClonedMeshMap=true for this to work!
      * Note that useClonedMeshMap=true is the default setting
      */
@@ -464,12 +464,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
     }
 
-    /** Gets the array buffer used to store the instanced buffer used for instances' world matrices */
+    /** @returns the array buffer used to store the instanced buffer used for instances' world matrices */
     public get worldMatrixInstancedBuffer() {
         return this._instanceDataStorage.instancesData;
     }
 
-    /** Gets the array buffer used to store the instanced buffer used for instances' previous world matrices */
+    /** @returns the array buffer used to store the instanced buffer used for instances' previous world matrices */
     public get previousWorldMatrixInstancedBuffer() {
         return this._instanceDataStorage.instancesPreviousData;
     }
@@ -740,7 +740,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     /**
-     * Gets the class name
+     * @returns the class name
      * @returns the string "Mesh".
      */
     public getClassName(): string {
@@ -800,7 +800,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     /**
-     * Gets the list of MeshLODLevel associated with the current mesh
+     * @returns the list of MeshLODLevel associated with the current mesh
      * @returns an array of MeshLODLevel
      */
     public getLODLevels(): MeshLODLevel[] {
@@ -962,7 +962,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     /**
-     * Gets the mesh internal Geometry object
+     * @returns the mesh internal Geometry object
      */
     public get geometry(): Nullable<Geometry> {
         return this._geometry;

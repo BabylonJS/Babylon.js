@@ -24,7 +24,7 @@ import { EngineStore } from "core/Engines/engineStore";
  */
 export class Control {
     /**
-     * Gets or sets a boolean indicating if alpha must be an inherited value (false by default)
+     * @returns a boolean indicating if alpha must be an inherited value (false by default)
      */
     public static AllowAlphaInheritance = false;
 
@@ -33,7 +33,7 @@ export class Control {
     private _zIndex = 0;
     /** @hidden */
     public _host: AdvancedDynamicTexture;
-    /** Gets or sets the control parent */
+    /** @returns the control parent */
     public parent: Nullable<Container>;
     /** @hidden */
     public _currentMeasure = Measure.Empty();
@@ -124,12 +124,12 @@ export class Control {
     public _tag: any;
 
     /**
-     * Gets or sets the unique id of the node. Please note that this number will be updated when the control is added to a container
+     * @returns the unique id of the node. Please note that this number will be updated when the control is added to a container
      */
     public uniqueId: number;
 
     /**
-     * Gets or sets a boolean indicating if the control is readonly (default: false).
+     * @returns a boolean indicating if the control is readonly (default: false).
      * A readonly control will still raise pointer events but will not react to them
      */
     public get isReadOnly() {
@@ -141,44 +141,44 @@ export class Control {
     }
 
     /**
-     * Gets the transformed measure, that is the bounding box of the control after applying all transformations
+     * @returns the transformed measure, that is the bounding box of the control after applying all transformations
      */
     public get transformedMeasure(): Measure {
         return this._evaluatedMeasure;
     }
 
     /**
-     * Gets or sets an object used to store user defined information for the node
+     * @returns an object used to store user defined information for the node
      */
     @serialize()
     public metadata: any = null;
 
-    /** Gets or sets a boolean indicating if the control can be hit with pointer events */
+    /** @returns a boolean indicating if the control can be hit with pointer events */
     @serialize()
     public isHitTestVisible = true;
-    /** Gets or sets a boolean indicating if the control can block pointer events */
+    /** @returns a boolean indicating if the control can block pointer events */
     @serialize()
     public isPointerBlocker = false;
-    /** Gets or sets a boolean indicating if the control can be focusable */
+    /** @returns a boolean indicating if the control can be focusable */
     @serialize()
     public isFocusInvisible = false;
 
     /**
-     * Gets or sets a boolean indicating if the children are clipped to the current control bounds.
+     * @returns a boolean indicating if the children are clipped to the current control bounds.
      * Please note that not clipping children may generate issues with adt.useInvalidateRectOptimization so it is recommended to turn this optimization off if you want to use unclipped children
      */
     @serialize()
     public clipChildren = true;
 
     /**
-     * Gets or sets a boolean indicating that control content must be clipped
+     * @returns a boolean indicating that control content must be clipped
      * Please note that not clipping children may generate issues with adt.useInvalidateRectOptimization so it is recommended to turn this optimization off if you want to use unclipped children
      */
     @serialize()
     public clipContent = true;
 
     /**
-     * Gets or sets a boolean indicating that the current control should cache its rendering (useful when the control does not change often)
+     * @returns a boolean indicating that the current control should cache its rendering (useful when the control does not change often)
      */
     @serialize()
     public useBitmapCache = false;
@@ -186,7 +186,7 @@ export class Control {
     private _cacheData: Nullable<ImageData>;
 
     private _shadowOffsetX = 0;
-    /** Gets or sets a value indicating the offset to apply on X axis to render the shadow */
+    /** @returns a value indicating the offset to apply on X axis to render the shadow */
     @serialize()
     public get shadowOffsetX() {
         return this._shadowOffsetX;
@@ -202,7 +202,7 @@ export class Control {
     }
 
     private _shadowOffsetY = 0;
-    /** Gets or sets a value indicating the offset to apply on Y axis to render the shadow */
+    /** @returns a value indicating the offset to apply on Y axis to render the shadow */
     @serialize()
     public get shadowOffsetY() {
         return this._shadowOffsetY;
@@ -219,7 +219,7 @@ export class Control {
 
     private _shadowBlur = 0;
     private _previousShadowBlur = 0;
-    /** Gets or sets a value indicating the amount of blur to use to render the shadow */
+    /** @returns a value indicating the amount of blur to use to render the shadow */
     @serialize()
     public get shadowBlur() {
         return this._shadowBlur;
@@ -237,7 +237,7 @@ export class Control {
     }
 
     private _shadowColor = "black";
-    /** Gets or sets a value indicating the color of the shadow (black by default ie. "#000") */
+    /** @returns a value indicating the color of the shadow (black by default ie. "#000") */
     @serialize()
     public get shadowColor() {
         return this._shadowColor;
@@ -252,7 +252,7 @@ export class Control {
         this._markAsDirty();
     }
 
-    /** Gets or sets the cursor to use when the control is hovered */
+    /** @returns the cursor to use when the control is hovered */
     @serialize()
     public hoverCursor = "";
 
@@ -263,7 +263,7 @@ export class Control {
 
     // Properties
 
-    /** Gets the control type name */
+    /** @returns the control type name */
     public get typeName(): string {
         return this._getTypeName();
     }
@@ -331,13 +331,13 @@ export class Control {
     public onDisposeObservable = new Observable<Control>();
 
     /**
-     * Get the hosting AdvancedDynamicTexture
+     * @returns the hosting AdvancedDynamicTexture
      */
     public get host(): AdvancedDynamicTexture {
         return this._host;
     }
 
-    /** Gets or set information about font offsets (used to render and align text) */
+    /** @returns information about font offsets (used to render and align text) */
     @serialize()
     public get fontOffset(): { ascent: number; height: number; descent: number } {
         return this._fontOffset;
@@ -347,7 +347,7 @@ export class Control {
         this._fontOffset = offset;
     }
 
-    /** Gets or sets alpha value for the control (1 means opaque and 0 means entirely transparent) */
+    /** @returns alpha value for the control (1 means opaque and 0 means entirely transparent) */
     @serialize()
     public get alpha(): number {
         return this._alpha;
@@ -363,7 +363,7 @@ export class Control {
     }
 
     /**
-     * Gets or sets a number indicating size of stroke we want to highlight the control with (mostly for debugging purpose)
+     * @returns a number indicating size of stroke we want to highlight the control with (mostly for debugging purpose)
      */
     public get highlightLineWidth(): number {
         return this._highlightLineWidth;
@@ -379,7 +379,7 @@ export class Control {
     }
 
     /**
-     * Gets or sets a boolean indicating that we want to highlight the control (mostly for debugging purpose)
+     * @returns a boolean indicating that we want to highlight the control (mostly for debugging purpose)
      */
     public get isHighlighted(): boolean {
         return this._isHighlighted;
@@ -395,7 +395,7 @@ export class Control {
     }
 
     /**
-     * Gets or sets a string defining the color to use for highlighting this control
+     * @returns a string defining the color to use for highlighting this control
      */
     public get highlightColor(): string {
         return this._highlightColor;
@@ -410,7 +410,7 @@ export class Control {
         this._markAsDirty();
     }
 
-    /** Gets or sets a value indicating the scale factor on X axis (1 by default)
+    /** @returns a value indicating the scale factor on X axis (1 by default)
      * @see https://doc.babylonjs.com/how_to/gui#rotation-and-scaling
      */
     @serialize()
@@ -428,7 +428,7 @@ export class Control {
         this._markMatrixAsDirty();
     }
 
-    /** Gets or sets a value indicating the scale factor on Y axis (1 by default)
+    /** @returns a value indicating the scale factor on Y axis (1 by default)
      * @see https://doc.babylonjs.com/how_to/gui#rotation-and-scaling
      */
     @serialize()
@@ -446,7 +446,7 @@ export class Control {
         this._markMatrixAsDirty();
     }
 
-    /** Gets or sets the rotation angle (0 by default)
+    /** @returns the rotation angle (0 by default)
      * @see https://doc.babylonjs.com/how_to/gui#rotation-and-scaling
      */
     @serialize()
@@ -464,7 +464,7 @@ export class Control {
         this._markMatrixAsDirty();
     }
 
-    /** Gets or sets the transformation center on Y axis (0 by default)
+    /** @returns the transformation center on Y axis (0 by default)
      * @see https://doc.babylonjs.com/how_to/gui#rotation-and-scaling
      */
     @serialize()
@@ -482,7 +482,7 @@ export class Control {
         this._markMatrixAsDirty();
     }
 
-    /** Gets or sets the transformation center on X axis (0 by default)
+    /** @returns the transformation center on X axis (0 by default)
      * @see https://doc.babylonjs.com/how_to/gui#rotation-and-scaling
      */
     @serialize()
@@ -501,7 +501,7 @@ export class Control {
     }
 
     /**
-     * Gets or sets the horizontal alignment
+     * @returns the horizontal alignment
      * @see https://doc.babylonjs.com/how_to/gui#alignments
      */
     @serialize()
@@ -519,7 +519,7 @@ export class Control {
     }
 
     /**
-     * Gets or sets the vertical alignment
+     * @returns the vertical alignment
      * @see https://doc.babylonjs.com/how_to/gui#alignments
      */
     @serialize()
@@ -537,7 +537,7 @@ export class Control {
     }
 
     /**
-     * Gets or sets a fixed ratio for this control.
+     * @returns a fixed ratio for this control.
      * When different from 0, the ratio is used to compute the "second" dimension.
      * The first dimension used in the computation is the last one set (by setting width / widthInPixels or height / heightInPixels), and the
      * second dimension is computed as first dimension * fixedRatio
@@ -548,7 +548,7 @@ export class Control {
     private _fixedRatioMasterIsWidth = true;
 
     /**
-     * Gets or sets control width
+     * @returns control width
      * @see https://doc.babylonjs.com/how_to/gui#position-and-size
      */
     @serialize()
@@ -569,7 +569,7 @@ export class Control {
     }
 
     /**
-     * Gets or sets the control width in pixel
+     * @returns the control width in pixel
      * @see https://doc.babylonjs.com/how_to/gui#position-and-size
      */
     public get widthInPixels(): number {
@@ -585,7 +585,7 @@ export class Control {
     }
 
     /**
-     * Gets or sets control height
+     * @returns control height
      * @see https://doc.babylonjs.com/how_to/gui#position-and-size
      */
     @serialize()
@@ -606,7 +606,7 @@ export class Control {
     }
 
     /**
-     * Gets or sets control height in pixel
+     * @returns control height in pixel
      * @see https://doc.babylonjs.com/how_to/gui#position-and-size
      */
     public get heightInPixels(): number {
@@ -635,7 +635,7 @@ export class Control {
         this._resetFontCache();
     }
 
-    /** Gets or sets font style */
+    /** @returns font style */
     public get fontStyle(): string {
         return this._fontStyle;
     }
@@ -649,7 +649,7 @@ export class Control {
         this._resetFontCache();
     }
 
-    /** Gets or sets font weight */
+    /** @returns font weight */
     public get fontWeight(): string {
         return this._fontWeight;
     }
@@ -664,7 +664,7 @@ export class Control {
     }
 
     /**
-     * Gets or sets style
+     * @returns style
      * @see https://doc.babylonjs.com/how_to/gui#styles
      */
     @serialize()
@@ -696,7 +696,7 @@ export class Control {
         return this._fontSize.isPercentage;
     }
 
-    /** Gets or sets font size in pixels */
+    /** @returns font size in pixels */
     public get fontSizeInPixels(): number {
         const fontSizeToUse = this._style ? this._style._fontSize : this._fontSize;
 
@@ -714,7 +714,7 @@ export class Control {
         this.fontSize = value + "px";
     }
 
-    /** Gets or sets font size */
+    /** @returns font size */
     public get fontSize(): string | number {
         return this._fontSize.toString(this._host);
     }
@@ -730,7 +730,7 @@ export class Control {
         }
     }
 
-    /** Gets or sets foreground color */
+    /** @returns foreground color */
     @serialize()
     public get color(): string {
         return this._color;
@@ -745,7 +745,7 @@ export class Control {
         this._markAsDirty();
     }
 
-    /** Gets or sets z index which is used to reorder controls on the z axis */
+    /** @returns z index which is used to reorder controls on the z axis */
     @serialize()
     public get zIndex(): number {
         return this._zIndex;
@@ -763,7 +763,7 @@ export class Control {
         }
     }
 
-    /** Gets or sets a boolean indicating if the control can be rendered */
+    /** @returns a boolean indicating if the control can be rendered */
     @serialize()
     public get notRenderable(): boolean {
         return this._doNotRender;
@@ -778,7 +778,7 @@ export class Control {
         this._markAsDirty();
     }
 
-    /** Gets or sets a boolean indicating if the control is visible */
+    /** @returns a boolean indicating if the control is visible */
     @serialize()
     public get isVisible(): boolean {
         return this._isVisible;
@@ -799,14 +799,14 @@ export class Control {
     }
 
     /**
-     * Gets the current linked mesh (or null if none)
+     * @returns the current linked mesh (or null if none)
      */
     public get linkedMesh(): Nullable<TransformNode> {
         return this._linkedMesh;
     }
 
     /**
-     * Gets or sets a value indicating the padding should work like in CSS.
+     * @returns a value indicating the padding should work like in CSS.
      * Basically, it will add the padding amount on each side of the parent control for its children.
      */
     @serialize()
@@ -824,7 +824,7 @@ export class Control {
     }
 
     /**
-     * Gets or sets a value indicating the padding to use on the left of the control
+     * @returns a value indicating the padding to use on the left of the control
      * @see https://doc.babylonjs.com/how_to/gui#position-and-size
      */
     @serialize()
@@ -839,7 +839,7 @@ export class Control {
     }
 
     /**
-     * Gets or sets a value indicating the padding in pixels to use on the left of the control
+     * @returns a value indicating the padding in pixels to use on the left of the control
      * @see https://doc.babylonjs.com/how_to/gui#position-and-size
      */
     public get paddingLeftInPixels(): number {
@@ -863,7 +863,7 @@ export class Control {
     }
 
     /**
-     * Gets or sets a value indicating the padding to use on the right of the control
+     * @returns a value indicating the padding to use on the right of the control
      * @see https://doc.babylonjs.com/how_to/gui#position-and-size
      */
     @serialize()
@@ -878,7 +878,7 @@ export class Control {
     }
 
     /**
-     * Gets or sets a value indicating the padding in pixels to use on the right of the control
+     * @returns a value indicating the padding in pixels to use on the right of the control
      * @see https://doc.babylonjs.com/how_to/gui#position-and-size
      */
     public get paddingRightInPixels(): number {
@@ -902,7 +902,7 @@ export class Control {
     }
 
     /**
-     * Gets or sets a value indicating the padding to use on the top of the control
+     * @returns a value indicating the padding to use on the top of the control
      * @see https://doc.babylonjs.com/how_to/gui#position-and-size
      */
     @serialize()
@@ -917,7 +917,7 @@ export class Control {
     }
 
     /**
-     * Gets or sets a value indicating the padding in pixels to use on the top of the control
+     * @returns a value indicating the padding in pixels to use on the top of the control
      * @see https://doc.babylonjs.com/how_to/gui#position-and-size
      */
     public get paddingTopInPixels(): number {
@@ -941,7 +941,7 @@ export class Control {
     }
 
     /**
-     * Gets or sets a value indicating the padding to use on the bottom of the control
+     * @returns a value indicating the padding to use on the bottom of the control
      * @see https://doc.babylonjs.com/how_to/gui#position-and-size
      */
     @serialize()
@@ -956,7 +956,7 @@ export class Control {
     }
 
     /**
-     * Gets or sets a value indicating the padding in pixels to use on the bottom of the control
+     * @returns a value indicating the padding in pixels to use on the bottom of the control
      * @see https://doc.babylonjs.com/how_to/gui#position-and-size
      */
     public get paddingBottomInPixels(): number {
@@ -980,7 +980,7 @@ export class Control {
     }
 
     /**
-     * Gets or sets a value indicating the left coordinate of the control
+     * @returns a value indicating the left coordinate of the control
      * @see https://doc.babylonjs.com/how_to/gui#position-and-size
      */
     @serialize()
@@ -995,7 +995,7 @@ export class Control {
     }
 
     /**
-     * Gets or sets a value indicating the left coordinate in pixels of the control
+     * @returns a value indicating the left coordinate in pixels of the control
      * @see https://doc.babylonjs.com/how_to/gui#position-and-size
      */
     public get leftInPixels(): number {
@@ -1010,7 +1010,7 @@ export class Control {
     }
 
     /**
-     * Gets or sets a value indicating the top coordinate of the control
+     * @returns a value indicating the top coordinate of the control
      * @see https://doc.babylonjs.com/how_to/gui#position-and-size
      */
     @serialize()
@@ -1025,7 +1025,7 @@ export class Control {
     }
 
     /**
-     * Gets or sets a value indicating the top coordinate in pixels of the control
+     * @returns a value indicating the top coordinate in pixels of the control
      * @see https://doc.babylonjs.com/how_to/gui#position-and-size
      */
     public get topInPixels(): number {
@@ -1040,7 +1040,7 @@ export class Control {
     }
 
     /**
-     * Gets or sets a value indicating the offset on X axis to the linked mesh
+     * @returns a value indicating the offset on X axis to the linked mesh
      * @see https://doc.babylonjs.com/how_to/gui#tracking-positions
      */
     @serialize()
@@ -1055,7 +1055,7 @@ export class Control {
     }
 
     /**
-     * Gets or sets a value indicating the offset in pixels on X axis to the linked mesh
+     * @returns a value indicating the offset in pixels on X axis to the linked mesh
      * @see https://doc.babylonjs.com/how_to/gui#tracking-positions
      */
     public get linkOffsetXInPixels(): number {
@@ -1070,7 +1070,7 @@ export class Control {
     }
 
     /**
-     * Gets or sets a value indicating the offset on Y axis to the linked mesh
+     * @returns a value indicating the offset on Y axis to the linked mesh
      * @see https://doc.babylonjs.com/how_to/gui#tracking-positions
      */
     @serialize()
@@ -1085,7 +1085,7 @@ export class Control {
     }
 
     /**
-     * Gets or sets a value indicating the offset in pixels on Y axis to the linked mesh
+     * @returns a value indicating the offset in pixels on Y axis to the linked mesh
      * @see https://doc.babylonjs.com/how_to/gui#tracking-positions
      */
     public get linkOffsetYInPixels(): number {
@@ -1099,17 +1099,17 @@ export class Control {
         this.linkOffsetY = value + "px";
     }
 
-    /** Gets the center coordinate on X axis */
+    /** @returns the center coordinate on X axis */
     public get centerX(): number {
         return this._currentMeasure.left + this._currentMeasure.width / 2;
     }
 
-    /** Gets the center coordinate on Y axis */
+    /** @returns the center coordinate on Y axis */
     public get centerY(): number {
         return this._currentMeasure.top + this._currentMeasure.height / 2;
     }
 
-    /** Gets or sets if control is Enabled */
+    /** @returns if control is Enabled */
     @serialize()
     public get isEnabled(): boolean {
         return this._isEnabled;
@@ -1139,7 +1139,7 @@ export class Control {
         };
         recursivelyFirePointerOut(this);
     }
-    /** Gets or sets background color of control if it's disabled. Only applies to Button class. */
+    /** @returns background color of control if it's disabled. Only applies to Button class. */
     @serialize()
     public get disabledColor(): string {
         return this._disabledColor;
@@ -1153,7 +1153,7 @@ export class Control {
         this._disabledColor = value;
         this._markAsDirty();
     }
-    /** Gets or sets front color of control if it's disabled. Only applies to Checkbox class. */
+    /** @returns front color of control if it's disabled. Only applies to Checkbox class. */
     @serialize()
     public get disabledColorItem(): string {
         return this._disabledColorItem;
@@ -1199,7 +1199,7 @@ export class Control {
     }
 
     /**
-     * Gets the first ascendant in the hierarchy of the given type
+     * @returns the first ascendant in the hierarchy of the given type
      * @param className defines the required type
      * @returns the ascendant or null if not found
      */
@@ -1320,11 +1320,11 @@ export class Control {
 
     /**
      * Will store all controls that have this control as ascendant in a given array
-     * @param results defines the array where to store the descendants
+     * @param _results defines the array where to store the descendants
      * @param _directDescendantsOnly defines if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered
      * @param _predicate defines an optional predicate that will be called on every evaluated child, the predicate must return true for a given child to be part of the result, otherwise it will be ignored
      */
-    public getDescendantsToRef(results: Control[], _directDescendantsOnly: boolean = false, _predicate?: (control: Control) => boolean): void {
+    public getDescendantsToRef(_results: Control[], _directDescendantsOnly: boolean = false, _predicate?: (control: Control) => boolean): void {
         // Do nothing by default
     }
 
@@ -1907,28 +1907,28 @@ export class Control {
     }
 
     /**
-     * @param parentMeasure
-     * @param context
+     * @param _parentMeasure
+     * @param _context
      * @hidden
      */
-    protected _preMeasure(parentMeasure: Measure, context: ICanvasRenderingContext): void {
+    protected _preMeasure(_parentMeasure: Measure, _context: ICanvasRenderingContext): void {
         // Do nothing
     }
 
     /**
-     * @param parentMeasure
-     * @param context
+     * @param _parentMeasure
+     * @param _context
      * @hidden
      */
-    protected _additionalProcessing(parentMeasure: Measure, context: ICanvasRenderingContext): void {
+    protected _additionalProcessing(_parentMeasure: Measure, _context: ICanvasRenderingContext): void {
         // Do nothing
     }
 
     /**
-     * @param context
+     * @param _context
      * @hidden
      */
-    protected _clipForChildren(context: ICanvasRenderingContext): void {
+    protected _clipForChildren(_context: ICanvasRenderingContext): void {
         // DO nothing
     }
 
@@ -2024,11 +2024,11 @@ export class Control {
     }
 
     /**
-     * @param context
-     * @param invalidatedRectangle
+     * @param _context
+     * @param _invalidatedRectangle
      * @hidden
      */
-    public _draw(context: ICanvasRenderingContext, invalidatedRectangle?: Nullable<Measure>): void {
+    public _draw(_context: ICanvasRenderingContext, _invalidatedRectangle?: Nullable<Measure>): void {
         // Do nothing
     }
 
@@ -2355,10 +2355,10 @@ export class Control {
 
     /**
      * @param serializedObject
-     * @param host
+     * @param _host
      * @hidden
      */
-    public _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture) {
+    public _parseFromContent(serializedObject: any, _host: AdvancedDynamicTexture) {
         if (serializedObject.fontFamily) {
             this.fontFamily = serializedObject.fontFamily;
         }

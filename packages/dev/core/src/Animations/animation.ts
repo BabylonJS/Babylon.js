@@ -685,7 +685,7 @@ export class Animation {
     }
 
     /**
-     * Gets the animation range by name, or null if not defined
+     * @returns the animation range by name, or null if not defined
      * @param name Name of the animation range
      * @returns Nullable animation range
      */
@@ -694,7 +694,7 @@ export class Animation {
     }
 
     /**
-     * Gets the key frames from the animation
+     * @returns the key frames from the animation
      * @returns The key frames of the animation
      */
     public getKeys(): Array<IAnimationKey> {
@@ -702,7 +702,7 @@ export class Animation {
     }
 
     /**
-     * Gets the highest frame rate of the animation
+     * @returns the highest frame rate of the animation
      * @returns Highest frame rate of the animation
      */
     public getHighestFrame(): number {
@@ -717,7 +717,7 @@ export class Animation {
     }
 
     /**
-     * Gets the easing function of the animation
+     * @returns the easing function of the animation
      * @returns Easing function of the animation
      */
     public getEasingFunction(): Nullable<IEasingFunction> {

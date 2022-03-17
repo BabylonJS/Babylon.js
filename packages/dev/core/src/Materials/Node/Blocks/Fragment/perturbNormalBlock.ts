@@ -59,7 +59,7 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the current class name
+     * @returns the current class name
      * @returns the class name
      */
     public getClassName() {
@@ -67,77 +67,77 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the world position input component
+     * @returns the world position input component
      */
     public get worldPosition(): NodeMaterialConnectionPoint {
         return this._inputs[0];
     }
 
     /**
-     * Gets the world normal input component
+     * @returns the world normal input component
      */
     public get worldNormal(): NodeMaterialConnectionPoint {
         return this._inputs[1];
     }
 
     /**
-     * Gets the world tangent input component
+     * @returns the world tangent input component
      */
     public get worldTangent(): NodeMaterialConnectionPoint {
         return this._inputs[2];
     }
 
     /**
-     * Gets the uv input component
+     * @returns the uv input component
      */
     public get uv(): NodeMaterialConnectionPoint {
         return this._inputs[3];
     }
 
     /**
-     * Gets the normal map color input component
+     * @returns the normal map color input component
      */
     public get normalMapColor(): NodeMaterialConnectionPoint {
         return this._inputs[4];
     }
 
     /**
-     * Gets the strength input component
+     * @returns the strength input component
      */
     public get strength(): NodeMaterialConnectionPoint {
         return this._inputs[5];
     }
 
     /**
-     * Gets the view direction input component
+     * @returns the view direction input component
      */
     public get viewDirection(): NodeMaterialConnectionPoint {
         return this._inputs[6];
     }
 
     /**
-     * Gets the parallax scale input component
+     * @returns the parallax scale input component
      */
     public get parallaxScale(): NodeMaterialConnectionPoint {
         return this._inputs[7];
     }
 
     /**
-     * Gets the parallax height input component
+     * @returns the parallax height input component
      */
     public get parallaxHeight(): NodeMaterialConnectionPoint {
         return this._inputs[8];
     }
 
     /**
-     * Gets the output component
+     * @returns the output component
      */
     public get output(): NodeMaterialConnectionPoint {
         return this._outputs[0];
     }
 
     /**
-     * Gets the uv offset output component
+     * @returns the uv offset output component
      */
     public get uvOffset(): NodeMaterialConnectionPoint {
         return this._outputs[1];

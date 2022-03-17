@@ -737,7 +737,7 @@ export class SubMesh implements ICullable {
     }
 
     /**
-     * Gets the class name
+     * @returns the class name
      * @returns the string "SubMesh".
      */
     public getClassName(): string {

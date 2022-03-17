@@ -78,7 +78,7 @@ export class GoldbergMesh extends Mesh {
     };
 
     /**
-     * Gets the related Goldberg face from pole infos
+     * @returns the related Goldberg face from pole infos
      * @param poleOrShared Defines the pole index or the shared face index if the fromPole parameter is passed in
      * @param fromPole Defines an optional pole index to find the related info from
      * @returns the goldberg face number

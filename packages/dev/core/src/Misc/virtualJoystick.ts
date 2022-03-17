@@ -70,7 +70,7 @@ export class VirtualJoystick {
      */
     public reverseUpDown: boolean;
     /**
-     * Gets the offset value for the position (ie. the change of the position value)
+     * @returns the offset value for the position (ie. the change of the position value)
      */
     public deltaPosition: Vector3;
     /**

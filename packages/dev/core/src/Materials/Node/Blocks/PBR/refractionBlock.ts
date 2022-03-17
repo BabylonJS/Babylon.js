@@ -114,7 +114,7 @@ export class RefractionBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the current class name
+     * @returns the current class name
      * @returns the class name
      */
     public getClassName() {
@@ -122,35 +122,35 @@ export class RefractionBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the intensity input component
+     * @returns the intensity input component
      */
     public get intensity(): NodeMaterialConnectionPoint {
         return this._inputs[0];
     }
 
     /**
-     * Gets the tint at distance input component
+     * @returns the tint at distance input component
      */
     public get tintAtDistance(): NodeMaterialConnectionPoint {
         return this._inputs[1];
     }
 
     /**
-     * Gets the volume index of refraction input component
+     * @returns the volume index of refraction input component
      */
     public get volumeIndexOfRefraction(): NodeMaterialConnectionPoint {
         return this._inputs[2];
     }
 
     /**
-     * Gets the view input component
+     * @returns the view input component
      */
     public get view(): NodeMaterialConnectionPoint {
         return this.viewConnectionPoint;
     }
 
     /**
-     * Gets the refraction object output component
+     * @returns the refraction object output component
      */
     public get refraction(): NodeMaterialConnectionPoint {
         return this._outputs[0];
@@ -271,7 +271,7 @@ export class RefractionBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the main code of the block (fragment side)
+     * @returns the main code of the block (fragment side)
      * @param state current state of the node material building
      * @returns the shader code
      */

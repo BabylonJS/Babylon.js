@@ -154,7 +154,7 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
     public horizontalBlur: boolean = false;
 
     /**
-     * Gets the overall exposure used by the pipeline
+     * @returns the overall exposure used by the pipeline
      */
     @serialize()
     public get exposure(): number {

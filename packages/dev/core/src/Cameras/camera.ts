@@ -420,7 +420,7 @@ export class Camera extends Node {
     }
 
     /**
-     * Gets the class name of the camera.
+     * @returns the class name of the camera.
      * @returns the class name
      */
     public getClassName(): string {
@@ -458,14 +458,14 @@ export class Camera extends Node {
     }
 
     /**
-     * Gets the current world space position of the camera.
+     * @returns the current world space position of the camera.
      */
     public get globalPosition(): Vector3 {
         return this._globalPosition;
     }
 
     /**
-     * Gets the list of active meshes this frame (meshes no culled or excluded by lod s in the frame)
+     * @returns the list of active meshes this frame (meshes no culled or excluded by lod s in the frame)
      * @returns the active meshe list
      */
     public getActiveMeshes(): SmartArray<AbstractMesh> {
@@ -631,7 +631,7 @@ export class Camera extends Node {
     }
 
     /**
-     * Gets the post process used by the rig cameras
+     * @returns the post process used by the rig cameras
      */
     public get rigPostProcess(): Nullable<PostProcess> {
         return this._rigPostProcess;
@@ -727,7 +727,7 @@ export class Camera extends Node {
     }
 
     /**
-     * Gets the current world matrix of the camera
+     * @returns the current world matrix of the camera
      */
     public getWorldMatrix(): Matrix {
         if (this._isSynchronizedViewMatrix()) {
@@ -746,7 +746,7 @@ export class Camera extends Node {
     }
 
     /**
-     * Gets the current view matrix of the camera.
+     * @returns the current view matrix of the camera.
      * @param force forces the camera to recompute the matrix without looking at the cached state
      * @returns the view matrix
      */
@@ -799,7 +799,7 @@ export class Camera extends Node {
     }
 
     /**
-     * Gets the current projection matrix of the camera.
+     * @returns the current projection matrix of the camera.
      * @param force forces the camera to recompute the matrix without looking at the cached state
      * @returns the projection matrix
      */
@@ -898,7 +898,7 @@ export class Camera extends Node {
     }
 
     /**
-     * Gets the transformation matrix (ie. the multiplication of view by projection matrices)
+     * @returns the transformation matrix (ie. the multiplication of view by projection matrices)
      * @returns a Matrix
      */
     public getTransformationMatrix(): Matrix {
@@ -1052,7 +1052,7 @@ export class Camera extends Node {
     /** @hidden */
     public _isLeftCamera = false;
     /**
-     * Gets the left camera of a rig setup in case of Rigged Camera
+     * @returns the left camera of a rig setup in case of Rigged Camera
      */
     public get isLeftCamera(): boolean {
         return this._isLeftCamera;
@@ -1061,14 +1061,14 @@ export class Camera extends Node {
     /** @hidden */
     public _isRightCamera = false;
     /**
-     * Gets the right camera of a rig setup in case of Rigged Camera
+     * @returns the right camera of a rig setup in case of Rigged Camera
      */
     public get isRightCamera(): boolean {
         return this._isRightCamera;
     }
 
     /**
-     * Gets the left camera of a rig setup in case of Rigged Camera
+     * @returns the left camera of a rig setup in case of Rigged Camera
      */
     public get leftCamera(): Nullable<FreeCamera> {
         if (this._rigCameras.length < 1) {
@@ -1078,7 +1078,7 @@ export class Camera extends Node {
     }
 
     /**
-     * Gets the right camera of a rig setup in case of Rigged Camera
+     * @returns the right camera of a rig setup in case of Rigged Camera
      */
     public get rightCamera(): Nullable<FreeCamera> {
         if (this._rigCameras.length < 2) {
@@ -1088,7 +1088,7 @@ export class Camera extends Node {
     }
 
     /**
-     * Gets the left camera target of a rig setup in case of Rigged Camera
+     * @returns the left camera target of a rig setup in case of Rigged Camera
      * @returns the target position
      */
     public getLeftTarget(): Nullable<Vector3> {
@@ -1099,7 +1099,7 @@ export class Camera extends Node {
     }
 
     /**
-     * Gets the right camera target of a rig setup in case of Rigged Camera
+     * @returns the right camera target of a rig setup in case of Rigged Camera
      * @returns the target position
      */
     public getRightTarget(): Nullable<Vector3> {
@@ -1293,7 +1293,7 @@ export class Camera extends Node {
     }
 
     /**
-     * Gets the direction of the camera relative to a given local axis.
+     * @returns the direction of the camera relative to a given local axis.
      * @param localAxis Defines the reference axis to provide a relative direction.
      * @returns the direction
      */
@@ -1315,7 +1315,7 @@ export class Camera extends Node {
     }
 
     /**
-     * Gets the direction of the camera relative to a given local axis into a passed vector.
+     * @returns the direction of the camera relative to a given local axis into a passed vector.
      * @param localAxis Defines the reference axis to provide a relative direction.
      * @param result Defines the vector to store the result in
      */

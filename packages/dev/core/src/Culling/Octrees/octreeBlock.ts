@@ -20,12 +20,12 @@ export interface IOctreeContainer<T> {
  */
 export class OctreeBlock<T> {
     /**
-     * Gets the content of the current block
+     * @returns the content of the current block
      */
     public entries = new Array<T>();
 
     /**
-     * Gets the list of block children
+     * @returns the list of block children
      */
     public blocks: Array<OctreeBlock<T>>;
 
@@ -80,21 +80,21 @@ export class OctreeBlock<T> {
     // Property
 
     /**
-     * Gets the maximum capacity of this block (if capacity is reached the block will be split into sub blocks)
+     * @returns the maximum capacity of this block (if capacity is reached the block will be split into sub blocks)
      */
     public get capacity(): number {
         return this._capacity;
     }
 
     /**
-     * Gets the minimum vector (in world space) of the block's bounding box
+     * @returns the minimum vector (in world space) of the block's bounding box
      */
     public get minPoint(): Vector3 {
         return this._minPoint;
     }
 
     /**
-     * Gets the maximum vector (in world space) of the block's bounding box
+     * @returns the maximum vector (in world space) of the block's bounding box
      */
     public get maxPoint(): Vector3 {
         return this._maxPoint;

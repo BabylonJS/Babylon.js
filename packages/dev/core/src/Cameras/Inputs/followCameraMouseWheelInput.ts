@@ -133,7 +133,7 @@ export class FollowCameraMouseWheelInput implements ICameraInput<FollowCamera> {
     }
 
     /**
-     * Gets the class name of the current input.
+     * @returns the class name of the current input.
      * @returns the class name
      */
     public getClassName(): string {

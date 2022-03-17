@@ -10,13 +10,13 @@ import { Nullable } from "../types";
  * @see https://doc.babylonjs.com/how_to/how_to_use_actions
  */
 export abstract class AbstractActionManager implements IDisposable {
-    /** Gets the list of active triggers */
+    /** @returns the list of active triggers */
     public static Triggers: { [key: string]: number } = {};
 
-    /** Gets the cursor to use when hovering items */
+    /** @returns the cursor to use when hovering items */
     public hoverCursor: string = "";
 
-    /** Gets the list of actions */
+    /** @returns the list of actions */
     public actions = new Array<IAction>();
 
     /**

@@ -147,7 +147,7 @@ export class WebXRCamera extends FreeCamera {
     }
 
     /**
-     * Gets the current instance class name ("WebXRCamera").
+     * @returns the current instance class name ("WebXRCamera").
      * @returns the class name
      */
     public getClassName(): string {

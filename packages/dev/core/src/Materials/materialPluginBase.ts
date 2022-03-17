@@ -87,7 +87,7 @@ export class MaterialPluginBase {
     }
 
     /**
-     * Gets the current class name useful for serialization or dynamic coding.
+     * @returns the current class name useful for serialization or dynamic coding.
      * @returns The class name.
      */
     public getClassName(): string {
@@ -218,19 +218,19 @@ export class MaterialPluginBase {
     }
 
     /**
-     * Gets the samplers used by the plugin.
+     * @returns the samplers used by the plugin.
      * @param samplers list that the sampler names should be added to.
      */
     public getSamplers(samplers: string[]): void {}
 
     /**
-     * Gets the uniform buffers names added by the plugin.
+     * @returns the uniform buffers names added by the plugin.
      * @param ubos list that the ubo names should be added to.
      */
     public getUniformBuffersNames(ubos: string[]): void {}
 
     /**
-     * Gets the description of the uniforms to add to the ubo (if engine supports ubos) or to inject directly in the vertex/fragment shaders (if engine does not support ubos)
+     * @returns the description of the uniforms to add to the ubo (if engine supports ubos) or to inject directly in the vertex/fragment shaders (if engine does not support ubos)
      * @returns the description of the uniforms
      */
     public getUniforms(): { ubo?: Array<{ name: string; size: number; type: string }>; vertex?: string; fragment?: string } {

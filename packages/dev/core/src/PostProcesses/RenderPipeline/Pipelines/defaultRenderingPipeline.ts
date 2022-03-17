@@ -366,7 +366,7 @@ export class DefaultRenderingPipeline extends PostProcessRenderPipeline implemen
     }
 
     /**
-     * Gets the glow layer (or null if not defined)
+     * @returns the glow layer (or null if not defined)
      */
     public get glowLayer() {
         return this._glowLayer;

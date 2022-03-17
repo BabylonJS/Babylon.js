@@ -30,7 +30,7 @@ export class FresnelBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the current class name
+     * @returns the current class name
      * @returns the class name
      */
     public getClassName() {
@@ -38,35 +38,35 @@ export class FresnelBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the world normal input component
+     * @returns the world normal input component
      */
     public get worldNormal(): NodeMaterialConnectionPoint {
         return this._inputs[0];
     }
 
     /**
-     * Gets the view direction input component
+     * @returns the view direction input component
      */
     public get viewDirection(): NodeMaterialConnectionPoint {
         return this._inputs[1];
     }
 
     /**
-     * Gets the bias input component
+     * @returns the bias input component
      */
     public get bias(): NodeMaterialConnectionPoint {
         return this._inputs[2];
     }
 
     /**
-     * Gets the camera (or eye) position component
+     * @returns the camera (or eye) position component
      */
     public get power(): NodeMaterialConnectionPoint {
         return this._inputs[3];
     }
 
     /**
-     * Gets the fresnel output component
+     * @returns the fresnel output component
      */
     public get fresnel(): NodeMaterialConnectionPoint {
         return this._outputs[0];

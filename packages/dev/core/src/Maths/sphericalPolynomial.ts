@@ -299,7 +299,7 @@ export class SphericalHarmonics {
 
     // Keep for references.
     /**
-     * Gets the spherical harmonics from polynomial
+     * @returns the spherical harmonics from polynomial
      * @param polynomial the spherical polynomial
      * @returns the spherical harmonics
      */
@@ -457,7 +457,7 @@ export class SphericalPolynomial {
     }
 
     /**
-     * Gets the spherical polynomial from harmonics
+     * @returns the spherical polynomial from harmonics
      * @param harmonics the spherical harmonics
      * @returns the spherical polynomial
      */

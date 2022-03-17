@@ -31,7 +31,7 @@ export class RefractionPostProcess extends PostProcess {
     @serialize()
     public colorLevel: number;
 
-    /** Gets the url used to load the refraction texture */
+    /** @returns the url used to load the refraction texture */
     @serialize()
     public refractionTextureUrl: string;
 

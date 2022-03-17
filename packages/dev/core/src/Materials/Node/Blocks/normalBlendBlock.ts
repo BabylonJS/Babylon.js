@@ -29,7 +29,7 @@ export class NormalBlendBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the current class name
+     * @returns the current class name
      * @returns the class name
      */
     public getClassName() {
@@ -37,21 +37,21 @@ export class NormalBlendBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the first input component
+     * @returns the first input component
      */
     public get normalMap0(): NodeMaterialConnectionPoint {
         return this._inputs[0];
     }
 
     /**
-     * Gets the second input component
+     * @returns the second input component
      */
     public get normalMap1(): NodeMaterialConnectionPoint {
         return this._inputs[1];
     }
 
     /**
-     * Gets the output component
+     * @returns the output component
      */
     public get output(): NodeMaterialConnectionPoint {
         return this._outputs[0];

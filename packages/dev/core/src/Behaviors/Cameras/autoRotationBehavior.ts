@@ -12,7 +12,7 @@ import { PrecisionDate } from "../../Misc/precisionDate";
  */
 export class AutoRotationBehavior implements Behavior<ArcRotateCamera> {
     /**
-     * Gets the name of the behavior.
+     * @returns the name of the behavior.
      */
     public get name(): string {
         return "AutoRotation";
@@ -31,7 +31,7 @@ export class AutoRotationBehavior implements Behavior<ArcRotateCamera> {
     }
 
     /**
-     * Gets the flag that indicates if user zooming should stop animation.
+     * @returns the flag that indicates if user zooming should stop animation.
      */
     public get zoomStopsAnimation(): boolean {
         return this._zoomStopsAnimation;
@@ -45,7 +45,7 @@ export class AutoRotationBehavior implements Behavior<ArcRotateCamera> {
     }
 
     /**
-     * Gets the default speed at which the camera rotates around the model.
+     * @returns the default speed at which the camera rotates around the model.
      */
     public get idleRotationSpeed() {
         return this._idleRotationSpeed;
@@ -59,7 +59,7 @@ export class AutoRotationBehavior implements Behavior<ArcRotateCamera> {
     }
 
     /**
-     * Gets the time (milliseconds) to wait after user interaction before the camera starts rotating.
+     * @returns the time (milliseconds) to wait after user interaction before the camera starts rotating.
      */
     public get idleRotationWaitTime() {
         return this._idleRotationWaitTime;
@@ -73,7 +73,7 @@ export class AutoRotationBehavior implements Behavior<ArcRotateCamera> {
     }
 
     /**
-     * Gets the time (milliseconds) to take to spin up to the full idle rotation speed.
+     * @returns the time (milliseconds) to take to spin up to the full idle rotation speed.
      */
     public get idleRotationSpinupTime() {
         return this._idleRotationSpinupTime;

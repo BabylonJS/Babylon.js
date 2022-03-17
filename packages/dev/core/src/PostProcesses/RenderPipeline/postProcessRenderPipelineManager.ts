@@ -16,7 +16,7 @@ export class PostProcessRenderPipelineManager {
     }
 
     /**
-     * Gets the list of supported render pipelines
+     * @returns the list of supported render pipelines
      */
     public get supportedPipelines(): PostProcessRenderPipeline[] {
         const result = [];

@@ -70,7 +70,7 @@ export class NullEngine extends Engine {
     }
 
     /**
-     * Gets the max steps when engine is running in deterministic lock step
+     * @returns the max steps when engine is running in deterministic lock step
      * @see https://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
      * @returns the max steps
      */
@@ -79,7 +79,7 @@ export class NullEngine extends Engine {
     }
 
     /**
-     * Gets the current hardware scaling level.
+     * @returns the current hardware scaling level.
      * By default the hardware scaling level is computed from the window device ratio.
      * if level = 1 then the engine will render at the exact resolution of the canvas. If level = 0.5 then the engine will render at twice the size of the canvas.
      * @returns a number indicating the current hardware scaling level
@@ -227,7 +227,7 @@ export class NullEngine extends Engine {
     public clear(color: IColor4Like, backBuffer: boolean, depth: boolean, stencil: boolean = false): void {}
 
     /**
-     * Gets the current render width
+     * @returns the current render width
      * @param useScreen defines if screen size must be used (or the current render target if any)
      * @returns a number defining the current render width
      */
@@ -240,7 +240,7 @@ export class NullEngine extends Engine {
     }
 
     /**
-     * Gets the current render height
+     * @returns the current render height
      * @param useScreen defines if screen size must be used (or the current render target if any)
      * @returns a number defining the current render height
      */
@@ -269,7 +269,7 @@ export class NullEngine extends Engine {
     }
 
     /**
-     * Gets the list of webGL uniform locations associated with a specific program based on a list of uniform names
+     * @returns the list of webGL uniform locations associated with a specific program based on a list of uniform names
      * @param pipelineContext defines the pipeline context to use
      * @param uniformsNames defines the list of uniform names
      * @returns an array of webGL uniform locations
@@ -279,7 +279,7 @@ export class NullEngine extends Engine {
     }
 
     /**
-     * Gets the lsit of active attributes for a given webGL program
+     * @returns the lsit of active attributes for a given webGL program
      * @param pipelineContext defines the pipeline context to use
      * @param attributesNames defines the list of attribute names to get
      * @returns an array of indices indicating the offset of each attribute

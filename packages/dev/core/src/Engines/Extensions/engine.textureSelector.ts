@@ -10,12 +10,12 @@ declare module "../../Engines/engine" {
         _textureFormatInUse: string;
 
         /**
-         * Gets the list of texture formats supported
+         * @returns the list of texture formats supported
          */
         readonly texturesSupported: Array<string>;
 
         /**
-         * Gets the texture format in use
+         * @returns the texture format in use
          */
         readonly textureFormatInUse: Nullable<string>;
 

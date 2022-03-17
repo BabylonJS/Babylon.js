@@ -48,7 +48,7 @@ export class BonesBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the current class name
+     * @returns the current class name
      * @returns the class name
      */
     public getClassName() {
@@ -56,42 +56,42 @@ export class BonesBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the matrix indices input component
+     * @returns the matrix indices input component
      */
     public get matricesIndices(): NodeMaterialConnectionPoint {
         return this._inputs[0];
     }
 
     /**
-     * Gets the matrix weights input component
+     * @returns the matrix weights input component
      */
     public get matricesWeights(): NodeMaterialConnectionPoint {
         return this._inputs[1];
     }
 
     /**
-     * Gets the extra matrix indices input component
+     * @returns the extra matrix indices input component
      */
     public get matricesIndicesExtra(): NodeMaterialConnectionPoint {
         return this._inputs[2];
     }
 
     /**
-     * Gets the extra matrix weights input component
+     * @returns the extra matrix weights input component
      */
     public get matricesWeightsExtra(): NodeMaterialConnectionPoint {
         return this._inputs[3];
     }
 
     /**
-     * Gets the world input component
+     * @returns the world input component
      */
     public get world(): NodeMaterialConnectionPoint {
         return this._inputs[4];
     }
 
     /**
-     * Gets the output component
+     * @returns the output component
      */
     public get output(): NodeMaterialConnectionPoint {
         return this._outputs[0];

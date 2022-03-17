@@ -104,7 +104,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
     public onStoppedObservable = new Observable<IParticleSystem>();
 
     /**
-     * Gets the maximum number of particles active at the same time.
+     * @returns the maximum number of particles active at the same time.
      * @returns The max number of active particles.
      */
     public getCapacity(): number {
@@ -193,7 +193,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
     }
 
     /**
-     * Gets the number of particles active at the same time.
+     * @returns the number of particles active at the same time.
      * @returns The number of active particles.
      */
     public getActiveCount() {
@@ -253,7 +253,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
     }
 
     /**
-     * Gets the custom effect used to render the particles
+     * @returns the custom effect used to render the particles
      * @param blendMode Blend mode for which the effect should be retrieved
      * @returns The effect
      */
@@ -290,7 +290,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
     }
 
     /**
-     * Gets the name of the particle vertex shader
+     * @returns the name of the particle vertex shader
      */
     public get vertexShaderName(): string {
         return "gpuRenderParticles";

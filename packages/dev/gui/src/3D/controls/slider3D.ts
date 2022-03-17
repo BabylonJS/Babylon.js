@@ -67,7 +67,7 @@ export class Slider3D extends Control3D {
     }
 
     /**
-     * Gets the mesh used to render this control
+     * @returns the mesh used to render this control
      */
     public get mesh(): Nullable<AbstractMesh> {
         if (this.node) {
@@ -152,21 +152,21 @@ export class Slider3D extends Control3D {
     }
 
     /**
-     * Gets the slider bar material used by this control
+     * @returns the slider bar material used by this control
      */
     public get sliderBarMaterial(): MRDLSliderBarMaterial {
         return this._sliderBarMaterial;
     }
 
     /**
-     * Gets the slider thumb material used by this control
+     * @returns the slider thumb material used by this control
      */
     public get sliderThumbMaterial(): MRDLSliderThumbMaterial {
         return this._sliderThumbMaterial;
     }
 
     /**
-     * Gets the slider backplate material used by this control
+     * @returns the slider backplate material used by this control
      */
     public get sliderBackplateMaterial(): MRDLBackplateMaterial {
         return this._sliderBackplateMaterial;

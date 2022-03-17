@@ -116,7 +116,7 @@ namespace Levenshtein {
         }
 
         /**
-         * Gets the cost to substitute two characters. NOTE: this cost is
+         * @returns the cost to substitute two characters. NOTE: this cost is
          * required to be bi-directional, meaning it cannot matter which of
          * the provided characters is being removed and which is being inserted.
          * @param idx1 the first character index

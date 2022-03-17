@@ -48,7 +48,7 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
     public useLogarithmicDepth = false;
 
     /**
-     * Gets the current class name
+     * @returns the current class name
      * @returns the class name
      */
     public getClassName() {
@@ -65,21 +65,21 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the rgba input component
+     * @returns the rgba input component
      */
     public get rgba(): NodeMaterialConnectionPoint {
         return this._inputs[0];
     }
 
     /**
-     * Gets the rgb input component
+     * @returns the rgb input component
      */
     public get rgb(): NodeMaterialConnectionPoint {
         return this._inputs[1];
     }
 
     /**
-     * Gets the a input component
+     * @returns the a input component
      */
     public get a(): NodeMaterialConnectionPoint {
         return this._inputs[2];

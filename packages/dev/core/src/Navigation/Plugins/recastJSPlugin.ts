@@ -641,7 +641,7 @@ export class RecastJSCrowd implements ICrowd {
     }
 
     /**
-     * Gets the agent state
+     * @returns the agent state
      * @param index agent index returned by addAgent
      * @returns agent state
      */

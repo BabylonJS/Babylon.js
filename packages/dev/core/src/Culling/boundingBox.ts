@@ -14,47 +14,47 @@ declare type DrawWrapper = import("../Materials/drawWrapper").DrawWrapper;
  */
 export class BoundingBox implements ICullable {
     /**
-     * Gets the 8 vectors representing the bounding box in local space
+     * @returns the 8 vectors representing the bounding box in local space
      */
     public readonly vectors: Vector3[] = ArrayTools.BuildArray(8, Vector3.Zero);
     /**
-     * Gets the center of the bounding box in local space
+     * @returns the center of the bounding box in local space
      */
     public readonly center: Vector3 = Vector3.Zero();
     /**
-     * Gets the center of the bounding box in world space
+     * @returns the center of the bounding box in world space
      */
     public readonly centerWorld: Vector3 = Vector3.Zero();
     /**
-     * Gets the extend size in local space
+     * @returns the extend size in local space
      */
     public readonly extendSize: Vector3 = Vector3.Zero();
     /**
-     * Gets the extend size in world space
+     * @returns the extend size in world space
      */
     public readonly extendSizeWorld: Vector3 = Vector3.Zero();
     /**
-     * Gets the OBB (object bounding box) directions
+     * @returns the OBB (object bounding box) directions
      */
     public readonly directions: Vector3[] = ArrayTools.BuildArray(3, Vector3.Zero);
     /**
-     * Gets the 8 vectors representing the bounding box in world space
+     * @returns the 8 vectors representing the bounding box in world space
      */
     public readonly vectorsWorld: Vector3[] = ArrayTools.BuildArray(8, Vector3.Zero);
     /**
-     * Gets the minimum vector in world space
+     * @returns the minimum vector in world space
      */
     public readonly minimumWorld: Vector3 = Vector3.Zero();
     /**
-     * Gets the maximum vector in world space
+     * @returns the maximum vector in world space
      */
     public readonly maximumWorld: Vector3 = Vector3.Zero();
     /**
-     * Gets the minimum vector in local space
+     * @returns the minimum vector in local space
      */
     public readonly minimum: Vector3 = Vector3.Zero();
     /**
-     * Gets the maximum vector in local space
+     * @returns the maximum vector in local space
      */
     public readonly maximum: Vector3 = Vector3.Zero();
 
@@ -140,7 +140,7 @@ export class BoundingBox implements ICullable {
     }
 
     /**
-     * Gets the world matrix of the bounding box
+     * @returns the world matrix of the bounding box
      * @returns a matrix
      */
     public getWorldMatrix(): DeepImmutable<Matrix> {

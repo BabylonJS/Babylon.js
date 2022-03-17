@@ -124,7 +124,7 @@ export class InputManager {
     }
 
     /**
-     * Gets the mesh that is currently under the pointer
+     * @returns the mesh that is currently under the pointer
      */
     public get meshUnderPointer(): Nullable<AbstractMesh> {
         return this._pointerOverMesh;
@@ -140,7 +140,7 @@ export class InputManager {
     }
 
     /**
-     * Gets the pointer coordinates in 2D without any translation (ie. straight out of the pointer event)
+     * @returns the pointer coordinates in 2D without any translation (ie. straight out of the pointer event)
      */
     public get unTranslatedPointer(): Vector2 {
         return new Vector2(this._unTranslatedPointerX, this._unTranslatedPointerY);
@@ -968,7 +968,7 @@ export class InputManager {
     }
 
     /**
-     * Gets the mesh under the pointer
+     * @returns the mesh under the pointer
      * @returns a Mesh or null if no mesh is under the pointer
      */
     public getPointerOverMesh(): Nullable<AbstractMesh> {

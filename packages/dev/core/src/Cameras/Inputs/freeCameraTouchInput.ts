@@ -201,7 +201,7 @@ export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
     }
 
     /**
-     * Gets the class name of the current input.
+     * @returns the class name of the current input.
      * @returns the class name
      */
     public getClassName(): string {

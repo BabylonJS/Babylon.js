@@ -252,7 +252,7 @@ export class WebXRFeaturesManager implements IDisposable {
     }
 
     /**
-     * Gets the versions available for a specific feature
+     * @returns the versions available for a specific feature
      * @param featureName the name of the feature
      * @returns an array with the available versions
      */

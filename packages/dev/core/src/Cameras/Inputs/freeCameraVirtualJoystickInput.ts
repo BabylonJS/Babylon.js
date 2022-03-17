@@ -38,7 +38,7 @@ export class FreeCameraVirtualJoystickInput implements ICameraInput<FreeCamera> 
     private _rightjoystick: VirtualJoystick;
 
     /**
-     * Gets the left stick of the virtual joystick.
+     * @returns the left stick of the virtual joystick.
      * @returns The virtual Joystick
      */
     public getLeftJoystick(): VirtualJoystick {
@@ -46,7 +46,7 @@ export class FreeCameraVirtualJoystickInput implements ICameraInput<FreeCamera> 
     }
 
     /**
-     * Gets the right stick of the virtual joystick.
+     * @returns the right stick of the virtual joystick.
      * @returns The virtual Joystick
      */
     public getRightJoystick(): VirtualJoystick {
@@ -109,7 +109,7 @@ export class FreeCameraVirtualJoystickInput implements ICameraInput<FreeCamera> 
     }
 
     /**
-     * Gets the class name of the current input.
+     * @returns the class name of the current input.
      * @returns the class name
      */
     public getClassName(): string {

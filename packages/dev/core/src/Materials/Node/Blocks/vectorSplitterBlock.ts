@@ -32,7 +32,7 @@ export class VectorSplitterBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the current class name
+     * @returns the current class name
      * @returns the class name
      */
     public getClassName() {
@@ -40,70 +40,70 @@ export class VectorSplitterBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the xyzw component (input)
+     * @returns the xyzw component (input)
      */
     public get xyzw(): NodeMaterialConnectionPoint {
         return this._inputs[0];
     }
 
     /**
-     * Gets the xyz component (input)
+     * @returns the xyz component (input)
      */
     public get xyzIn(): NodeMaterialConnectionPoint {
         return this._inputs[1];
     }
 
     /**
-     * Gets the xy component (input)
+     * @returns the xy component (input)
      */
     public get xyIn(): NodeMaterialConnectionPoint {
         return this._inputs[2];
     }
 
     /**
-     * Gets the xyz component (output)
+     * @returns the xyz component (output)
      */
     public get xyzOut(): NodeMaterialConnectionPoint {
         return this._outputs[0];
     }
 
     /**
-     * Gets the xy component (output)
+     * @returns the xy component (output)
      */
     public get xyOut(): NodeMaterialConnectionPoint {
         return this._outputs[1];
     }
 
     /**
-     * Gets the zw component (output)
+     * @returns the zw component (output)
      */
     public get zw(): NodeMaterialConnectionPoint {
         return this._outputs[2];
     }
 
     /**
-     * Gets the x component (output)
+     * @returns the x component (output)
      */
     public get x(): NodeMaterialConnectionPoint {
         return this._outputs[3];
     }
 
     /**
-     * Gets the y component (output)
+     * @returns the y component (output)
      */
     public get y(): NodeMaterialConnectionPoint {
         return this._outputs[4];
     }
 
     /**
-     * Gets the z component (output)
+     * @returns the z component (output)
      */
     public get z(): NodeMaterialConnectionPoint {
         return this._outputs[5];
     }
 
     /**
-     * Gets the w component (output)
+     * @returns the w component (output)
      */
     public get w(): NodeMaterialConnectionPoint {
         return this._outputs[6];

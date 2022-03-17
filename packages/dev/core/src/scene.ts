@@ -387,7 +387,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     public reservedDataStore: any = null;
 
     /**
-     * Gets the name of the plugin used to load this scene (null by default)
+     * @returns the name of the plugin used to load this scene (null by default)
      */
     public loadingPluginName: string;
 
@@ -726,7 +726,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     public onPointerObservable = new Observable<PointerInfo>();
 
     /**
-     * Gets the pointer coordinates without any translation (ie. straight out of the pointer event)
+     * @returns the pointer coordinates without any translation (ie. straight out of the pointer event)
      */
     public get unTranslatedPointer(): Vector2 {
         return this._inputManager.unTranslatedPointer;
@@ -868,7 +868,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /**
-     * Gets the step Id used by deterministic lock step
+     * @returns the step Id used by deterministic lock step
      * @see https://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
      * @returns the step Id
      */
@@ -877,7 +877,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /**
-     * Gets the internal step used by deterministic lock step
+     * @returns the internal step used by deterministic lock step
      * @see https://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
      * @returns the internal step
      */
@@ -1119,7 +1119,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      */
     public postProcessesEnabled = true;
     /**
-     * Gets the current postprocess manager
+     * @returns the current postprocess manager
      */
     public postProcessManager: PostProcessManager;
 
@@ -1145,7 +1145,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     public useDelayedTextureLoading: boolean;
 
     /**
-     * Gets the list of meshes imported to the scene through SceneLoader
+     * @returns the list of meshes imported to the scene through SceneLoader
      */
     public importedMeshesFiles = new Array<String>();
 
@@ -1257,7 +1257,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /** @hidden */
     public _frustumPlanes: Plane[];
     /**
-     * Gets the list of frustum planes (built from the active camera)
+     * @returns the list of frustum planes (built from the active camera)
      */
     public get frustumPlanes(): Plane[] {
         return this._frustumPlanes;
@@ -1578,7 +1578,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /**
-     * Gets the mesh that is currently under the pointer
+     * @returns the mesh that is currently under the pointer
      */
     public get meshUnderPointer(): Nullable<AbstractMesh> {
         return this._inputManager.meshUnderPointer;
@@ -1607,7 +1607,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /**
-     * Gets the cached material (ie. the latest rendered one)
+     * @returns the cached material (ie. the latest rendered one)
      * @returns the cached material
      */
     public getCachedMaterial(): Nullable<Material> {
@@ -1615,7 +1615,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /**
-     * Gets the cached effect (ie. the latest rendered one)
+     * @returns the cached effect (ie. the latest rendered one)
      * @returns the cached effect
      */
     public getCachedEffect(): Nullable<Effect> {
@@ -1623,7 +1623,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /**
-     * Gets the cached visibility state (ie. the latest rendered one)
+     * @returns the cached visibility state (ie. the latest rendered one)
      * @returns the cached visibility state
      */
     public getCachedVisibility(): Nullable<number> {
@@ -1642,7 +1642,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /**
-     * Gets the engine associated with the scene
+     * @returns the engine associated with the scene
      * @returns an Engine
      */
     public getEngine(): Engine {
@@ -1650,7 +1650,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /**
-     * Gets the total number of vertices rendered per frame
+     * @returns the total number of vertices rendered per frame
      * @returns the total number of vertices rendered per frame
      */
     public getTotalVertices(): number {
@@ -1658,7 +1658,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /**
-     * Gets the performance counter for total vertices
+     * @returns the performance counter for total vertices
      * @see https://doc.babylonjs.com/how_to/optimizing_your_scene#instrumentation
      */
     public get totalVerticesPerfCounter(): PerfCounter {
@@ -1666,7 +1666,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /**
-     * Gets the total number of active indices rendered per frame (You can deduce the number of rendered triangles by dividing this number by 3)
+     * @returns the total number of active indices rendered per frame (You can deduce the number of rendered triangles by dividing this number by 3)
      * @returns the total number of active indices rendered per frame
      */
     public getActiveIndices(): number {
@@ -1674,7 +1674,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /**
-     * Gets the performance counter for active indices
+     * @returns the performance counter for active indices
      * @see https://doc.babylonjs.com/how_to/optimizing_your_scene#instrumentation
      */
     public get totalActiveIndicesPerfCounter(): PerfCounter {
@@ -1682,7 +1682,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /**
-     * Gets the total number of active particles rendered per frame
+     * @returns the total number of active particles rendered per frame
      * @returns the total number of active particles rendered per frame
      */
     public getActiveParticles(): number {
@@ -1690,7 +1690,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /**
-     * Gets the performance counter for active particles
+     * @returns the performance counter for active particles
      * @see https://doc.babylonjs.com/how_to/optimizing_your_scene#instrumentation
      */
     public get activeParticlesPerfCounter(): PerfCounter {
@@ -1698,7 +1698,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /**
-     * Gets the total number of active bones rendered per frame
+     * @returns the total number of active bones rendered per frame
      * @returns the total number of active bones rendered per frame
      */
     public getActiveBones(): number {
@@ -1706,7 +1706,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /**
-     * Gets the performance counter for active bones
+     * @returns the performance counter for active bones
      * @see https://doc.babylonjs.com/how_to/optimizing_your_scene#instrumentation
      */
     public get activeBonesPerfCounter(): PerfCounter {
@@ -1714,7 +1714,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /**
-     * Gets the array of active meshes
+     * @returns the array of active meshes
      * @returns an array of AbstractMesh
      */
     public getActiveMeshes(): SmartArray<AbstractMesh> {
@@ -1722,7 +1722,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /**
-     * Gets the animation ratio (which is 1.0 is the scene renders at 60fps and 2 if the scene renders at 30fps, etc.)
+     * @returns the animation ratio (which is 1.0 is the scene renders at 60fps and 2 if the scene renders at 30fps, etc.)
      * @returns a number
      */
     public getAnimationRatio(): number {
@@ -2122,7 +2122,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     // Matrix
 
     /**
-     * Gets the current view matrix
+     * @returns the current view matrix
      * @returns a Matrix
      */
     public getViewMatrix(): Matrix {
@@ -2130,7 +2130,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /**
-     * Gets the current projection matrix
+     * @returns the current projection matrix
      * @returns a Matrix
      */
     public getProjectionMatrix(): Matrix {
@@ -2138,7 +2138,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /**
-     * Gets the current transform matrix
+     * @returns the current transform matrix
      * @returns a Matrix made of View * Projection
      */
     public getTransformMatrix(): Matrix {
@@ -2186,7 +2186,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /**
-     * Gets the uniform buffer used to store scene data
+     * @returns the uniform buffer used to store scene data
      * @returns a UniformBuffer
      */
     public getSceneUniformBuffer(): UniformBuffer {
@@ -3102,7 +3102,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /**
-     * Gets the list of geometries attached to the scene
+     * @returns the list of geometries attached to the scene
      * @returns an array of Geometry
      */
     public getGeometries(): Geometry[] {
@@ -3110,7 +3110,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /**
-     * Gets the first added mesh found of a given Id
+     * @returns the first added mesh found of a given Id
      * @param id defines the Id to search for
      * @returns the mesh found or null if not found at all
      */
@@ -3136,7 +3136,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /**
-     * Gets the first added transform node found of a given Id
+     * @returns the first added transform node found of a given Id
      * @param id defines the Id to search for
      * @returns the found transform node or null if not found at all.
      */
@@ -4922,7 +4922,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /**
-     * Gets the mesh under the pointer
+     * @returns the mesh under the pointer
      * @returns a Mesh or null if no mesh is under the pointer
      */
     public getPointerOverMesh(): Nullable<AbstractMesh> {
@@ -5075,7 +5075,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /**
-     * Gets the current auto clear configuration for one rendering group of the rendering
+     * @returns the current auto clear configuration for one rendering group of the rendering
      * manager.
      * @param index the rendering group index to get the information for
      * @returns The auto clear setup for the requested rendering group

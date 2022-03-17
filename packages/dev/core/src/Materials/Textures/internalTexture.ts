@@ -100,7 +100,7 @@ export class InternalTexture extends TextureSampler {
      */
     public isMultiview: boolean = false;
     /**
-     * Gets the URL used to load this texture
+     * @returns the URL used to load this texture
      */
     public url: string = "";
     /** @hidden */
@@ -120,15 +120,15 @@ export class InternalTexture extends TextureSampler {
         this.generateMipMaps = value;
     }
     /**
-     * Gets the number of samples used by the texture (WebGL2+ only)
+     * @returns the number of samples used by the texture (WebGL2+ only)
      */
     public samples: number = 0;
     /**
-     * Gets the type of the texture (int, float...)
+     * @returns the type of the texture (int, float...)
      */
     public type: number = -1;
     /**
-     * Gets the format of the texture (RGB, RGBA...)
+     * @returns the format of the texture (RGB, RGBA...)
      */
     public format: number = -1;
     /**
@@ -150,27 +150,27 @@ export class InternalTexture extends TextureSampler {
         }
     > = null;
     /**
-     * Gets the width of the texture
+     * @returns the width of the texture
      */
     public width: number = 0;
     /**
-     * Gets the height of the texture
+     * @returns the height of the texture
      */
     public height: number = 0;
     /**
-     * Gets the depth of the texture
+     * @returns the depth of the texture
      */
     public depth: number = 0;
     /**
-     * Gets the initial width of the texture (It could be rescaled if the current system does not support non power of two textures)
+     * @returns the initial width of the texture (It could be rescaled if the current system does not support non power of two textures)
      */
     public baseWidth: number = 0;
     /**
-     * Gets the initial height of the texture (It could be rescaled if the current system does not support non power of two textures)
+     * @returns the initial height of the texture (It could be rescaled if the current system does not support non power of two textures)
      */
     public baseHeight: number = 0;
     /**
-     * Gets the initial depth of the texture (It could be rescaled if the current system does not support non power of two textures)
+     * @returns the initial depth of the texture (It could be rescaled if the current system does not support non power of two textures)
      */
     public baseDepth: number = 0;
     /**
@@ -257,13 +257,13 @@ export class InternalTexture extends TextureSampler {
     /** @hidden */
     public static _Counter = 0;
 
-    /** Gets the unique id of the internal texture */
+    /** @returns the unique id of the internal texture */
     public get uniqueId() {
         return this._uniqueId;
     }
 
     /**
-     * Gets the Engine the texture belongs to.
+     * @returns the Engine the texture belongs to.
      * @returns The babylon engine
      */
     public getEngine(): ThinEngine {
@@ -271,7 +271,7 @@ export class InternalTexture extends TextureSampler {
     }
 
     /**
-     * Gets the data source type of the texture
+     * @returns the data source type of the texture
      */
     public get source(): InternalTextureSource {
         return this._source;

@@ -17,7 +17,7 @@ export class ThinRenderTargetTexture extends ThinTexture implements IRenderTarge
     private _size: TextureSize;
 
     /**
-     * Gets the render target wrapper associated with this render target
+     * @returns the render target wrapper associated with this render target
      */
     public get renderTarget(): Nullable<RenderTargetWrapper> {
         return this._renderTarget;

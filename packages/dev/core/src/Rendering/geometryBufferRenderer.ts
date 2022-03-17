@@ -185,7 +185,7 @@ export class GeometryBufferRenderer {
     }
 
     /**
-     * Gets the render list (meshes to be rendered) used in the G buffer.
+     * @returns the render list (meshes to be rendered) used in the G buffer.
      */
     public get renderList() {
         return this._multiRenderTarget.renderList;
@@ -289,14 +289,14 @@ export class GeometryBufferRenderer {
     }
 
     /**
-     * Gets the scene associated with the buffer.
+     * @returns the scene associated with the buffer.
      */
     public get scene(): Scene {
         return this._scene;
     }
 
     /**
-     * Gets the ratio used by the buffer during its creation.
+     * @returns the ratio used by the buffer during its creation.
      * How big is the buffer related to the main canvas.
      */
     public get ratio(): number {
@@ -507,7 +507,7 @@ export class GeometryBufferRenderer {
     }
 
     /**
-     * Gets the current underlying G Buffer.
+     * @returns the current underlying G Buffer.
      * @returns the buffer
      */
     public getGBuffer(): MultiRenderTarget {
@@ -515,7 +515,7 @@ export class GeometryBufferRenderer {
     }
 
     /**
-     * Gets the number of samples used to render the buffer (anti aliasing).
+     * @returns the number of samples used to render the buffer (anti aliasing).
      */
     public get samples(): number {
         return this._multiRenderTarget.samples;
