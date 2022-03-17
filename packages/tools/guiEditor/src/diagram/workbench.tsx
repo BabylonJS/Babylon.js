@@ -168,10 +168,57 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         });
 
         globalState.onFitToWindowObservable.add(() => {
-            this._panningOffset = new Vector2(0, 0);
-            const xFactor = this._engine.getRenderWidth() / this.guiSize.width;
-            const yFactor = this._engine.getRenderHeight() / this.guiSize.height;
-            this._zoomFactor = Math.min(xFactor, yFactor) * 0.9;
+            if (globalState.selectedControls.length) {
+                let minX = Number.MAX_SAFE_INTEGER;
+                let minY = Number.MAX_SAFE_INTEGER;
+                
+                let maxX = -Number.MAX_SAFE_INTEGER;
+                let maxY = -Number.MAX_SAFE_INTEGER;
+
+                // Find bounding box of selected controls
+                for (let selectedControl of globalState.selectedControls) {
+                    let left : number, top : number, right : number, bottom : number;
+                    
+                    left = -selectedControl.widthInPixels / 2;
+                    top = -selectedControl.heightInPixels / 2;
+
+                    right = left! + selectedControl.widthInPixels;
+                    bottom = top! + selectedControl.heightInPixels;
+                    
+                    // Compute all four corners of the control in root space
+                    const leftTopRS = CoordinateHelper.nodeToRTTSpace(selectedControl, left, top, new Vector2(), undefined, this.trueRootContainer);
+                    const rightBottomRS = CoordinateHelper.nodeToRTTSpace(selectedControl, right, bottom, new Vector2(), undefined, this.trueRootContainer);
+                    const leftBottomRS = CoordinateHelper.nodeToRTTSpace(selectedControl, left, bottom, new Vector2(), undefined, this.trueRootContainer);
+                    const rightTopRS = CoordinateHelper.nodeToRTTSpace(selectedControl, right, top, new Vector2(), undefined, this.trueRootContainer);
+
+                    minX = Math.min(minX, leftTopRS.x, rightBottomRS.x, leftBottomRS.x, rightTopRS.x);
+                    minY = Math.min(minY, leftTopRS.y, rightBottomRS.y, leftBottomRS.y, rightTopRS.y);
+
+                    maxX = Math.max(maxX, leftTopRS.x, rightBottomRS.x, leftBottomRS.x, rightTopRS.x);
+                    maxY = Math.max(maxY, leftTopRS.y, rightBottomRS.y, leftBottomRS.y, rightTopRS.y);
+                }
+
+                // Find width and height of bounding box
+                const width = maxX - minX;
+                const height = maxY - minY;
+
+                // Calculate the offset on the center of the bounding box
+                const centerX = (minX + maxX) / 2;
+                const centerY = (minY + maxY) / 2;
+
+                this._panningOffset = new Vector2(-centerX, centerY);
+
+                // Calculate the zoom factors based on width and height
+                const xFactor = this._engine.getRenderWidth() / width;
+                const yFactor = this._engine.getRenderHeight() / height;
+                this._zoomFactor = Math.min(xFactor, yFactor) * 0.9;
+
+            } else {
+                this._panningOffset = new Vector2(0, 0);
+                const xFactor = this._engine.getRenderWidth() / this.guiSize.width;
+                const yFactor = this._engine.getRenderHeight() / this.guiSize.height;
+                this._zoomFactor = Math.min(xFactor, yFactor) * 0.9;
+            }
         });
 
         globalState.onOutlineChangedObservable.add(() => {
