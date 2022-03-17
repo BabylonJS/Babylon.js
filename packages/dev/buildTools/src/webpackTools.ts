@@ -61,15 +61,7 @@ export const getRules = (
             sideEffects: options.sideEffects,
             test: /\.js$/,
             enforce: "pre",
-            use: [
-                "source-map-loader",
-                {
-                    loader: "babel-loader",
-                    options: {
-                        presets: ["@babel/preset-env"],
-                    },
-                },
-            ],
+            use: ["source-map-loader"],
         },
     ];
     if (options.includeAssets) {

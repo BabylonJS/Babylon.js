@@ -3,6 +3,7 @@
 
     "compilerOptions": {
         "composite": true,
+        "target": "es5",
         "outDir": "./dist",
         "rootDir": "./generated",
     },
