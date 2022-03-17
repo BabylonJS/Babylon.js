@@ -34,7 +34,7 @@ const createScene = function (engine) {
 
     engine.displayLoadingUI();
 
-    BABYLON.SceneLoader.ImportMesh("", "./scenes/", "dummy3.babylon", scene, function (newMeshes, particleSystems, skeletons) {
+    BABYLON.SceneLoader.ImportMesh("", "https://playground.babylonjs.com/scenes/", "dummy3.babylon", scene, function (newMeshes, particleSystems, skeletons) {
         const skeleton = skeletons[0];
 
         shadowGenerator.addShadowCaster(scene.meshes[0], true);
