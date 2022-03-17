@@ -369,7 +369,6 @@ export class ThinEngine {
 
     /**
      * @returns the options used for engine creation
-     * @returns EngineOptions object
      */
     public getCreationOptions() {
         return this._creationOptions;
@@ -416,7 +415,6 @@ export class ThinEngine {
 
     /**
      * @returns the list of current active render loop functions
-     * @returns an array with the current render loop functions
      */
     public get activeRenderLoops(): Array<() => void> {
         return this._activeRenderLoops;
@@ -674,7 +672,7 @@ export class ThinEngine {
         return false;
     }
 
-    public set snapshotRendering(activate) {
+    public set snapshotRendering(_activate) {
         // WebGL engine does not support snapshot rendering
     }
 
@@ -1407,7 +1405,7 @@ export class ThinEngine {
      */
     public resetTextureCache() {
         for (const key in this._boundTexturesCache) {
-            if (!this._boundTexturesCache.hasOwnProperty(key)) {
+            if (!Object.prototype.hasOwnProperty.call(this._boundTexturesCache, key)) {
                 continue;
             }
             this._boundTexturesCache[key] = null;
@@ -1448,7 +1446,7 @@ export class ThinEngine {
     }
 
     /**
-     * @returns the current hardware scaling level.
+     * Gets the current hardware scaling level.
      * By default the hardware scaling level is computed from the window device ratio.
      * if level = 1 then the engine will render at the exact resolution of the canvas. If level = 0.5 then the engine will render at twice the size of the canvas.
      * @returns a number indicating the current hardware scaling level
@@ -1458,7 +1456,6 @@ export class ThinEngine {
     }
 
     /**
-     * @returns the list of loaded textures
      * @returns an array containing all loaded textures
      */
     public getLoadedTexturesCache(): InternalTexture[] {
@@ -1467,7 +1464,6 @@ export class ThinEngine {
 
     /**
      * @returns the object containing all engine capabilities
-     * @returns the EngineCapabilities object
      */
     public getCaps(): EngineCapabilities {
         return this._caps;
@@ -1522,7 +1518,6 @@ export class ThinEngine {
 
     /**
      * @returns the HTML canvas attached with the current webGL context
-     * @returns a HTML canvas
      */
     public getRenderingCanvas(): Nullable<HTMLCanvasElement> {
         return this._renderingCanvas;
@@ -1530,7 +1525,6 @@ export class ThinEngine {
 
     /**
      * @returns the audio context specified in engine initialization options
-     * @returns an Audio Context
      */
     public getAudioContext(): Nullable<AudioContext> {
         return this._audioContext;
@@ -1538,7 +1532,6 @@ export class ThinEngine {
 
     /**
      * @returns the audio destination specified in engine initialization options
-     * @returns an audio destination node
      */
     public getAudioDestination(): Nullable<AudioDestinationNode | MediaStreamAudioDestinationNode> {
         return this._audioDestination;
@@ -1561,7 +1554,7 @@ export class ThinEngine {
     }
 
     /**
-     * @returns the current render width
+     * Gets the current render width
      * @param useScreen defines if screen size must be used (or the current render target if any)
      * @returns a number defining the current render width
      */
@@ -1574,7 +1567,7 @@ export class ThinEngine {
     }
 
     /**
-     * @returns the current render height
+     * Gets the current render height
      * @param useScreen defines if screen size must be used (or the current render target if any)
      * @returns a number defining the current render height
      */
@@ -1590,6 +1583,7 @@ export class ThinEngine {
      * Can be used to override the current requestAnimationFrame requester.
      * @param bindedRenderFunction
      * @param requester
+     * @returns frame number
      * @hidden
      */
     protected _queueNewFrame(bindedRenderFunction: any, requester?: any): number {
@@ -1874,7 +1868,6 @@ export class ThinEngine {
 
     /**
      * @returns the current value of the zOffset Factor
-     * @returns the current zOffset Factor state
      */
     public getZOffset(): number {
         const zOffset = this._depthCullingState.zOffset;
@@ -1891,7 +1884,6 @@ export class ThinEngine {
 
     /**
      * @returns the current value of the zOffset Units
-     * @returns the current zOffset Units state
      */
     public getZOffsetUnits(): number {
         const zOffsetUnits = this._depthCullingState.zOffsetUnits;
@@ -2869,10 +2861,10 @@ export class ThinEngine {
 
     /**
      * Creates a new pipeline context
-     * @param shaderProcessingContext defines the shader processing context used during the processing if available
+     * @param _shaderProcessingContext defines the shader processing context used during the processing if available
      * @returns the new pipeline
      */
-    public createPipelineContext(shaderProcessingContext: Nullable<ShaderProcessingContext>): IPipelineContext {
+    public createPipelineContext(_shaderProcessingContext: Nullable<ShaderProcessingContext>): IPipelineContext {
         const pipelineContext = new WebGLPipelineContext();
         pipelineContext.engine = this;
 
@@ -2904,7 +2896,7 @@ export class ThinEngine {
         vertexShader: WebGLShader,
         fragmentShader: WebGLShader,
         context: WebGLRenderingContext,
-        transformFeedbackVaryings: Nullable<string[]> = null
+        _transformFeedbackVaryings: Nullable<string[]> = null
     ): WebGLProgram {
         const shaderProgram = context.createProgram();
         pipelineContext.program = shaderProgram;
@@ -2993,8 +2985,8 @@ export class ThinEngine {
      * @param vertexSourceCode
      * @param fragmentSourceCode
      * @param createAsRaw
-     * @param rawVertexSourceCode
-     * @param rawFragmentSourceCode
+     * @param _rawVertexSourceCode
+     * @param _rawFragmentSourceCode
      * @param rebuildRebind
      * @param defines
      * @param transformFeedbackVaryings
@@ -3006,8 +2998,8 @@ export class ThinEngine {
         vertexSourceCode: string,
         fragmentSourceCode: string,
         createAsRaw: boolean,
-        rawVertexSourceCode: string,
-        rawFragmentSourceCode: string,
+        _rawVertexSourceCode: string,
+        _rawFragmentSourceCode: string,
         rebuildRebind: any,
         defines: Nullable<string>,
         transformFeedbackVaryings: Nullable<string[]>,
@@ -3064,7 +3056,7 @@ export class ThinEngine {
     }
 
     /**
-     * @returns the list of webGL uniform locations associated with a specific program based on a list of uniform names
+     * Gets the list of webGL uniform locations associated with a specific program based on a list of uniform names
      * @param pipelineContext defines the pipeline context to use
      * @param uniformsNames defines the list of uniform names
      * @returns an array of webGL uniform locations
@@ -3081,7 +3073,6 @@ export class ThinEngine {
     }
 
     /**
-     * @returns the list of active attributes for a given webGL program
      * @param pipelineContext defines the pipeline context to use
      * @param attributesNames defines the list of attribute names to get
      * @returns an array of indices indicating the offset of each attribute
@@ -3681,14 +3672,14 @@ export class ThinEngine {
      * @hidden
      * @param size defines the size of the texture
      * @param options defines the options used to create the texture
-     * @param delayGPUTextureCreation true to delay the texture creation the first time it is really needed. false to create it right away
+     * @param _delayGPUTextureCreation true to delay the texture creation the first time it is really needed. false to create it right away
      * @param source source type of the texture
      * @returns a new internal texture
      */
     public _createInternalTexture(
         size: TextureSize,
         options: boolean | InternalTextureCreationOptions,
-        delayGPUTextureCreation = true,
+        _delayGPUTextureCreation = true,
         source = InternalTextureSource.Unknown
     ): InternalTexture {
         const fullOptions: InternalTextureCreationOptions = {};
@@ -4046,7 +4037,7 @@ export class ThinEngine {
      * @param forcedExtension defines the extension to use to pick the right loader
      * @param mimeType defines an optional mime type
      * @param loaderOptions options to be passed to the loader
-     * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
+     * @param _creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
      * @param useSRGBBuffer defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU).
      * @returns a InternalTexture for assignment back into BABYLON.Texture
      */
@@ -4064,7 +4055,7 @@ export class ThinEngine {
         forcedExtension: Nullable<string> = null,
         mimeType?: string,
         loaderOptions?: any,
-        creationFlags?: number,
+        _creationFlags?: number,
         useSRGBBuffer?: boolean
     ): InternalTexture {
         return this._createTextureBase(
@@ -4144,142 +4135,142 @@ export class ThinEngine {
 
     /**
      * Loads an image as an HTMLImageElement.
-     * @param input url string, ArrayBuffer, or Blob to load
-     * @param onLoad callback called when the image successfully loads
-     * @param onError callback called when the image fails to load
-     * @param offlineProvider offline provider for caching
-     * @param mimeType optional mime type
-     * @param imageBitmapOptions optional the options to use when creating an ImageBitmap
+     * @param _input url string, ArrayBuffer, or Blob to load
+     * @param _onLoad callback called when the image successfully loads
+     * @param _onError callback called when the image fails to load
+     * @param _offlineProvider offline provider for caching
+     * @param _mimeType optional mime type
+     * @param _imageBitmapOptions optional the options to use when creating an ImageBitmap
      * @returns the HTMLImageElement of the loaded image
      * @hidden
      */
     public static _FileToolsLoadImage(
-        input: string | ArrayBuffer | ArrayBufferView | Blob,
-        onLoad: (img: HTMLImageElement | ImageBitmap) => void,
-        onError: (message?: string, exception?: any) => void,
-        offlineProvider: Nullable<IOfflineProvider>,
-        mimeType?: string,
-        imageBitmapOptions?: ImageBitmapOptions
+        _input: string | ArrayBuffer | ArrayBufferView | Blob,
+        _onLoad: (img: HTMLImageElement | ImageBitmap) => void,
+        _onError: (message?: string, exception?: any) => void,
+        _offlineProvider: Nullable<IOfflineProvider>,
+        _mimeType?: string,
+        _imageBitmapOptions?: ImageBitmapOptions
     ): Nullable<HTMLImageElement> {
         throw _WarnImport("FileTools");
     }
 
     /**
-     * @param source
-     * @param destination
-     * @param scene
-     * @param internalFormat
-     * @param onComplete
+     * @param _source
+     * @param _destination
+     * @param _scene
+     * @param _internalFormat
+     * @param _onComplete
      * @hidden
      */
-    public _rescaleTexture(source: InternalTexture, destination: InternalTexture, scene: Nullable<any>, internalFormat: number, onComplete: () => void): void {}
+    public _rescaleTexture(_source: InternalTexture, _destination: InternalTexture, _scene: Nullable<any>, _internalFormat: number, _onComplete: () => void): void {}
 
     /**
      * Creates a raw texture
-     * @param data defines the data to store in the texture
-     * @param width defines the width of the texture
-     * @param height defines the height of the texture
-     * @param format defines the format of the data
-     * @param generateMipMaps defines if the engine should generate the mip levels
-     * @param invertY defines if data must be stored with Y axis inverted
-     * @param samplingMode defines the required sampling mode (Texture.NEAREST_SAMPLINGMODE by default)
-     * @param compression defines the compression used (null by default)
-     * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
+     * @param _data defines the data to store in the texture
+     * @param _width defines the width of the texture
+     * @param _height defines the height of the texture
+     * @param _format defines the format of the data
+     * @param _generateMipMaps defines if the engine should generate the mip levels
+     * @param _invertY defines if data must be stored with Y axis inverted
+     * @param _samplingMode defines the required sampling mode (Texture.NEAREST_SAMPLINGMODE by default)
+     * @param _compression defines the compression used (null by default)
+     * @param _type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
      * @returns the raw texture inside an InternalTexture
      */
     public createRawTexture(
-        data: Nullable<ArrayBufferView>,
-        width: number,
-        height: number,
-        format: number,
-        generateMipMaps: boolean,
-        invertY: boolean,
-        samplingMode: number,
-        compression: Nullable<string> = null,
-        type: number = Constants.TEXTURETYPE_UNSIGNED_INT
+        _data: Nullable<ArrayBufferView>,
+        _width: number,
+        _height: number,
+        _format: number,
+        _generateMipMaps: boolean,
+        _invertY: boolean,
+        _samplingMode: number,
+        _compression: Nullable<string> = null,
+        _type: number = Constants.TEXTURETYPE_UNSIGNED_INT
     ): InternalTexture {
         throw _WarnImport("Engine.RawTexture");
     }
 
     /**
      * Creates a new raw cube texture
-     * @param data defines the array of data to use to create each face
-     * @param size defines the size of the textures
-     * @param format defines the format of the data
-     * @param type defines the type of the data (like Engine.TEXTURETYPE_UNSIGNED_INT)
-     * @param generateMipMaps  defines if the engine should generate the mip levels
-     * @param invertY defines if data must be stored with Y axis inverted
-     * @param samplingMode defines the required sampling mode (like Texture.NEAREST_SAMPLINGMODE)
-     * @param compression defines the compression used (null by default)
+     * @param _data defines the array of data to use to create each face
+     * @param _size defines the size of the textures
+     * @param _format defines the format of the data
+     * @param _type defines the type of the data (like Engine.TEXTURETYPE_UNSIGNED_INT)
+     * @param _generateMipMaps  defines if the engine should generate the mip levels
+     * @param _invertY defines if data must be stored with Y axis inverted
+     * @param _samplingMode defines the required sampling mode (like Texture.NEAREST_SAMPLINGMODE)
+     * @param _compression defines the compression used (null by default)
      * @returns the cube texture as an InternalTexture
      */
     public createRawCubeTexture(
-        data: Nullable<ArrayBufferView[]>,
-        size: number,
-        format: number,
-        type: number,
-        generateMipMaps: boolean,
-        invertY: boolean,
-        samplingMode: number,
-        compression: Nullable<string> = null
+        _data: Nullable<ArrayBufferView[]>,
+        _size: number,
+        _format: number,
+        _type: number,
+        _generateMipMaps: boolean,
+        _invertY: boolean,
+        _samplingMode: number,
+        _compression: Nullable<string> = null
     ): InternalTexture {
         throw _WarnImport("Engine.RawTexture");
     }
 
     /**
      * Creates a new raw 3D texture
-     * @param data defines the data used to create the texture
-     * @param width defines the width of the texture
-     * @param height defines the height of the texture
-     * @param depth defines the depth of the texture
-     * @param format defines the format of the texture
-     * @param generateMipMaps defines if the engine must generate mip levels
-     * @param invertY defines if data must be stored with Y axis inverted
-     * @param samplingMode defines the required sampling mode (like Texture.NEAREST_SAMPLINGMODE)
-     * @param compression defines the compressed used (can be null)
-     * @param textureType defines the compressed used (can be null)
+     * @param _data defines the data used to create the texture
+     * @param _width defines the width of the texture
+     * @param _height defines the height of the texture
+     * @param _depth defines the depth of the texture
+     * @param _format defines the format of the texture
+     * @param _generateMipMaps defines if the engine must generate mip levels
+     * @param _invertY defines if data must be stored with Y axis inverted
+     * @param _samplingMode defines the required sampling mode (like Texture.NEAREST_SAMPLINGMODE)
+     * @param _compression defines the compressed used (can be null)
+     * @param _textureType defines the compressed used (can be null)
      * @returns a new raw 3D texture (stored in an InternalTexture)
      */
     public createRawTexture3D(
-        data: Nullable<ArrayBufferView>,
-        width: number,
-        height: number,
-        depth: number,
-        format: number,
-        generateMipMaps: boolean,
-        invertY: boolean,
-        samplingMode: number,
-        compression: Nullable<string> = null,
-        textureType = Constants.TEXTURETYPE_UNSIGNED_INT
+        _data: Nullable<ArrayBufferView>,
+        _width: number,
+        _height: number,
+        _depth: number,
+        _format: number,
+        _generateMipMaps: boolean,
+        _invertY: boolean,
+        _samplingMode: number,
+        _compression: Nullable<string> = null,
+        _textureType = Constants.TEXTURETYPE_UNSIGNED_INT
     ): InternalTexture {
         throw _WarnImport("Engine.RawTexture");
     }
 
     /**
      * Creates a new raw 2D array texture
-     * @param data defines the data used to create the texture
-     * @param width defines the width of the texture
-     * @param height defines the height of the texture
-     * @param depth defines the number of layers of the texture
-     * @param format defines the format of the texture
-     * @param generateMipMaps defines if the engine must generate mip levels
-     * @param invertY defines if data must be stored with Y axis inverted
-     * @param samplingMode defines the required sampling mode (like Texture.NEAREST_SAMPLINGMODE)
-     * @param compression defines the compressed used (can be null)
-     * @param textureType defines the compressed used (can be null)
+     * @param _data defines the data used to create the texture
+     * @param _width defines the width of the texture
+     * @param _height defines the height of the texture
+     * @param _depth defines the number of layers of the texture
+     * @param _format defines the format of the texture
+     * @param _generateMipMaps defines if the engine must generate mip levels
+     * @param _invertY defines if data must be stored with Y axis inverted
+     * @param _samplingMode defines the required sampling mode (like Texture.NEAREST_SAMPLINGMODE)
+     * @param _compression defines the compressed used (can be null)
+     * @param _textureType defines the compressed used (can be null)
      * @returns a new raw 2D array texture (stored in an InternalTexture)
      */
     public createRawTexture2DArray(
-        data: Nullable<ArrayBufferView>,
-        width: number,
-        height: number,
-        depth: number,
-        format: number,
-        generateMipMaps: boolean,
-        invertY: boolean,
-        samplingMode: number,
-        compression: Nullable<string> = null,
-        textureType = Constants.TEXTURETYPE_UNSIGNED_INT
+        _data: Nullable<ArrayBufferView>,
+        _width: number,
+        _height: number,
+        _depth: number,
+        _format: number,
+        _generateMipMaps: boolean,
+        _invertY: boolean,
+        _samplingMode: number,
+        _compression: Nullable<string> = null,
+        _textureType = Constants.TEXTURETYPE_UNSIGNED_INT
     ): InternalTexture {
         throw _WarnImport("Engine.RawTexture");
     }
@@ -4348,12 +4339,12 @@ export class ThinEngine {
 
     /**
      * Update the dimensions of a texture
-     * @param texture texture to update
-     * @param width new width of the texture
-     * @param height new height of the texture
-     * @param depth new depth of the texture
+     * @param _texture texture to update
+     * @param _width new width of the texture
+     * @param _height new height of the texture
+     * @param _depth new depth of the texture
      */
-    public updateTextureDimensions(texture: InternalTexture, width: number, height: number, depth: number = 1): void {}
+    public updateTextureDimensions(_texture: InternalTexture, _width: number, _height: number, _depth: number = 1): void {}
 
     /**
      * Update the sampling mode of a given texture
@@ -4384,7 +4375,7 @@ export class ThinEngine {
     /**
      * @param internalTexture
      * @param size
-     * @param generateStencil
+     * @param _generateStencil
      * @param bilinearFiltering
      * @param comparisonFunction
      * @param samples
@@ -4393,7 +4384,7 @@ export class ThinEngine {
     public _setupDepthStencilTexture(
         internalTexture: InternalTexture,
         size: number | { width: number; height: number; layers?: number },
-        generateStencil: boolean,
+        _generateStencil: boolean,
         bilinearFiltering: boolean,
         comparisonFunction: number,
         samples = 1
@@ -4875,10 +4866,10 @@ export class ThinEngine {
     /**
      * @param channel
      * @param texture
-     * @param name
+     * @param _name
      * @hidden
      */
-    public _bindTexture(channel: number, texture: Nullable<InternalTexture>, name: string): void {
+    public _bindTexture(channel: number, texture: Nullable<InternalTexture>, _name: string): void {
         if (channel === undefined) {
             return;
         }
@@ -4912,9 +4903,9 @@ export class ThinEngine {
      * @param channel The texture channel
      * @param uniform The uniform to set
      * @param texture The texture to apply
-     * @param name The name of the uniform in the effect
+     * @param _name The name of the uniform in the effect
      */
-    public setTexture(channel: number, uniform: Nullable<WebGLUniformLocation>, texture: Nullable<ThinTexture>, name: string): void {
+    public setTexture(channel: number, uniform: Nullable<WebGLUniformLocation>, texture: Nullable<ThinTexture>, _name: string): void {
         if (channel === undefined) {
             return;
         }
@@ -4947,7 +4938,7 @@ export class ThinEngine {
         return this._gl.REPEAT;
     }
 
-    protected _setTexture(channel: number, texture: Nullable<ThinTexture>, isPartOfTextureArray = false, depthStencilTexture = false, name = ""): boolean {
+    protected _setTexture(channel: number, texture: Nullable<ThinTexture>, isPartOfTextureArray = false, depthStencilTexture = false, _name = ""): boolean {
         // Not ready?
         if (!texture) {
             if (this._boundTexturesCache[channel] != null) {
@@ -5045,9 +5036,9 @@ export class ThinEngine {
      * @param channel defines the channel where the texture array must be set
      * @param uniform defines the associated uniform location
      * @param textures defines the array of textures to bind
-     * @param name name of the channel
+     * @param _name name of the channel
      */
-    public setTextureArray(channel: number, uniform: Nullable<WebGLUniformLocation>, textures: ThinTexture[], name: string): void {
+    public setTextureArray(channel: number, uniform: Nullable<WebGLUniformLocation>, textures: ThinTexture[], _name: string): void {
         if (channel === undefined || !uniform) {
             return;
         }
@@ -5256,7 +5247,9 @@ export class ThinEngine {
         const gl = this._gl;
 
         //clear existing errors
-        while (gl.getError() !== gl.NO_ERROR) {}
+        while (gl.getError() !== gl.NO_ERROR) {
+            // no-op
+        }
 
         let successful = true;
 
@@ -5297,7 +5290,9 @@ export class ThinEngine {
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
         //clear accumulated errors
-        while (!successful && gl.getError() !== gl.NO_ERROR) {}
+        while (!successful && gl.getError() !== gl.NO_ERROR) {
+            // no-op
+        }
 
         return successful;
     }
@@ -5628,22 +5623,22 @@ export class ThinEngine {
 
     /**
      * Loads a file from a url
-     * @param url url to load
-     * @param onSuccess callback called when the file successfully loads
-     * @param onProgress callback called while file is loading (if the server supports this mode)
-     * @param offlineProvider defines the offline provider for caching
-     * @param useArrayBuffer defines a boolean indicating that date must be returned as ArrayBuffer
-     * @param onError callback called when the file fails to load
+     * @param _url url to load
+     * @param _onSuccess callback called when the file successfully loads
+     * @param _onProgress callback called while file is loading (if the server supports this mode)
+     * @param _offlineProvider defines the offline provider for caching
+     * @param _useArrayBuffer defines a boolean indicating that date must be returned as ArrayBuffer
+     * @param _onError callback called when the file fails to load
      * @returns a file request object
      * @hidden
      */
     public static _FileToolsLoadFile(
-        url: string,
-        onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void,
-        onProgress?: (ev: ProgressEvent) => void,
-        offlineProvider?: IOfflineProvider,
-        useArrayBuffer?: boolean,
-        onError?: (request?: WebRequest, exception?: LoadFileError) => void
+        _url: string,
+        _onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void,
+        _onProgress?: (ev: ProgressEvent) => void,
+        _offlineProvider?: IOfflineProvider,
+        _useArrayBuffer?: boolean,
+        _onError?: (request?: WebRequest, exception?: LoadFileError) => void
     ): IFileRequest {
         throw _WarnImport("FileTools");
     }

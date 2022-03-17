@@ -85,7 +85,7 @@ function getModuleDeclaration(source: string, filename: string, config: IGenerat
             }
 
             // Replace Static Readonly declaration for UMD/ES6 TS Version compat
-            const regexlet = /(.*)readonly (.*) = (.*);/g;
+            const regexVar = /(.*)readonly (.*) = (.*);/g;
             match = regexVar.exec(line);
             if (match) {
                 const spaces = match[1];

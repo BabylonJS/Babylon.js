@@ -1199,7 +1199,7 @@ export class Control {
     }
 
     /**
-     * @returns the first ascendant in the hierarchy of the given type
+     * Gets the first ascendant in the hierarchy of the given type
      * @param className defines the required type
      * @returns the ascendant or null if not found
      */
@@ -2499,7 +2499,9 @@ export class Control {
      * @ignore
      * @hidden
      */
-    public static AddHeader: (control: Control, text: string, size: string | number, options: { isHorizontal: boolean; controlFirst: boolean }) => any = () => {};
+    public static AddHeader: (control: Control, text: string, size: string | number, options: { isHorizontal: boolean; controlFirst: boolean }) => any = () => {
+        // Do nothing.
+    };
 
     /**
      * @param x
