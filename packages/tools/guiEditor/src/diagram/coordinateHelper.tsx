@@ -159,15 +159,15 @@ export class CoordinateHelper {
     /**
      * Using the node's tree, calculate its world matrix and return it
      * @param node the node to calculate the matrix for
-     * @param useStoredValuesIfPossible used stored valued (cached when pointer down is clicked)
-     * @param storedValues
+     * @param storedValues used stored valued (cached when pointer down is clicked)
+     * @param stopAt stop looking when this node is found
      * @returns the world matrix for this node
      */
-    public static nodeToRTTWorldMatrix(node: Control, storedValues?: Rect): Matrix2D {
+     public static nodeToRTTWorldMatrix(node: Control, storedValues?: Rect, stopAt?: Control): Matrix2D {
         const listOfNodes = [node];
         let parent = node.parent;
         let child = node;
-        while (parent) {
+        while (parent && child !== stopAt) {
             if (parent.typeName === "Grid") {
                 const cellInfo = (parent as Grid).getChildCellInfo(child);
                 const cell = (parent as Grid).cells[cellInfo];
@@ -185,8 +185,8 @@ export class CoordinateHelper {
         }, this._matrixCache[2]);
     }
 
-    public static nodeToRTTSpace(node: Control, x: number, y: number, reference: Vector2 = new Vector2(), storedValues?: Rect) {
-        const worldMatrix = this.nodeToRTTWorldMatrix(node, storedValues);
+    public static nodeToRTTSpace(node: Control, x: number, y: number, reference: Vector2 = new Vector2(), storedValues?: Rect, stopAt?: Control) {
+        const worldMatrix = this.nodeToRTTWorldMatrix(node, storedValues, stopAt);
         worldMatrix.transformCoordinates(x, y, reference);
         // round
         reference.x = round(reference.x);
