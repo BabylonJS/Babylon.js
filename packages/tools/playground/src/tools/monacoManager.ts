@@ -91,7 +91,7 @@ export class MonacoManager {
             });
         });
 
-        globalState.onFontSizeChangedObservable.add((value) => {
+        globalState.onFontSizeChangedObservable.add(() => {
             this._editor?.updateOptions({
                 fontSize: parseInt(Utilities.ReadStringFromStore("font-size", "14")),
             });
@@ -238,12 +238,24 @@ class Playground {
             "https://preview.babylonjs.com/inspector/babylon.inspector.d.ts",
         ];
 
+        let snapshot = "";
+        // see if a snapshot should be used
+        if (window.location.search.indexOf("snapshot=") !== -1) {
+            snapshot = window.location.search.split("=")[1];
+            // cleanup, just in case
+            snapshot = snapshot.split("&")[0];
+            for (let index = 0; index < declarations.length; index++) {
+                declarations[index] = declarations[index].replace("https://preview.babylonjs.com", "https://babylonsnapshots.z22.web.core.windows.net/" + snapshot).replace(".d.ts", ".module.d.ts");
+            }
+        }
+
         // Local mode
         if (location.hostname === "localhost" && location.search.indexOf("dist") === -1) {
             for (let index = 0; index < declarations.length; index++) {
                 declarations[index] = declarations[index].replace("https://preview.babylonjs.com/", "//localhost:1337/");
             }
         }
+        
         declarations.push("https://preview.babylonjs.com/glTF2Interface/babylon.glTF2Interface.d.ts");
         declarations.push("https://assets.babylonjs.com/generated/Assets.d.ts");
 
