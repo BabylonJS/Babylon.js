@@ -23,13 +23,13 @@ import "../../../../Shaders/ShadersInclude/bumpFragment";
 export class PerturbNormalBlock extends NodeMaterialBlock {
     private _tangentSpaceParameterName = "";
 
-    /** Gets or sets a boolean indicating that normal should be inverted on X axis */
+    /** @returns a boolean indicating that normal should be inverted on X axis */
     @editableInPropertyPage("Invert X axis", PropertyTypeForEdition.Boolean, "PROPERTIES", { notifiers: { update: false } })
     public invertX = false;
-    /** Gets or sets a boolean indicating that normal should be inverted on Y axis */
+    /** @returns a boolean indicating that normal should be inverted on Y axis */
     @editableInPropertyPage("Invert Y axis", PropertyTypeForEdition.Boolean, "PROPERTIES", { notifiers: { update: false } })
     public invertY = false;
-    /** Gets or sets a boolean indicating that parallax occlusion should be enabled */
+    /** @returns a boolean indicating that parallax occlusion should be enabled */
     @editableInPropertyPage("Use parallax occlusion", PropertyTypeForEdition.Boolean)
     public useParallaxOcclusion = false;
 

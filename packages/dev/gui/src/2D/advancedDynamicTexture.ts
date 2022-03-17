@@ -125,15 +125,15 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      */
     public onEndRenderObservable = new Observable<AdvancedDynamicTexture>();
     /**
-     * Gets or sets a boolean defining if alpha is stored as premultiplied
+     * @returns a boolean defining if alpha is stored as premultiplied
      */
     public premulAlpha = false;
     /**
-     * Gets or sets a boolean indicating that the canvas must be reverted on Y when updating the texture
+     * @returns a boolean indicating that the canvas must be reverted on Y when updating the texture
      */
     public applyYInversionOnUpdate = true;
     /**
-     * Gets or sets a number used to scale rendering size (2 means that the texture will be twice bigger).
+     * @returns a number used to scale rendering size (2 means that the texture will be twice bigger).
      * Useful when you want more antialiasing
      */
     public get renderScale(): number {
@@ -146,7 +146,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         this._renderScale = value;
         this._onResize();
     }
-    /** Gets or sets the background color */
+    /** @returns the background color */
     public get background(): string {
         return this._background;
     }
@@ -158,7 +158,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         this.markAsDirty();
     }
     /**
-     * Gets or sets the ideal width used to design controls.
+     * @returns the ideal width used to design controls.
      * The GUI will then rescale everything accordingly
      * @see https://doc.babylonjs.com/how_to/gui#adaptive-scaling
      */
@@ -174,7 +174,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         this._rootContainer._markAllAsDirty();
     }
     /**
-     * Gets or sets the ideal height used to design controls.
+     * @returns the ideal height used to design controls.
      * The GUI will then rescale everything accordingly
      * @see https://doc.babylonjs.com/how_to/gui#adaptive-scaling
      */
@@ -190,7 +190,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         this._rootContainer._markAllAsDirty();
     }
     /**
-     * Gets or sets a boolean indicating if the smallest ideal value must be used if idealWidth and idealHeight are both set
+     * @returns a boolean indicating if the smallest ideal value must be used if idealWidth and idealHeight are both set
      * @see https://doc.babylonjs.com/how_to/gui#adaptive-scaling
      */
     public get useSmallestIdeal(): boolean {
@@ -205,7 +205,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         this._rootContainer._markAllAsDirty();
     }
     /**
-     * Gets or sets a boolean indicating if adaptive scaling must be used
+     * @returns a boolean indicating if adaptive scaling must be used
      * @see https://doc.babylonjs.com/how_to/gui#adaptive-scaling
      */
     public get renderAtIdealSize(): boolean {
@@ -305,7 +305,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     }
 
     /**
-     * Gets or sets the current focused control
+     * @returns the current focused control
      */
     public get focusedControl(): Nullable<IFocusableControl> {
         return this._focusedControl;
@@ -323,7 +323,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         this._focusedControl = control;
     }
     /**
-     * Gets or sets a boolean indicating if the texture must be rendered in background or foreground when in fullscreen mode
+     * @returns a boolean indicating if the texture must be rendered in background or foreground when in fullscreen mode
      */
     public get isForeground(): boolean {
         if (!this.layer) {
@@ -422,7 +422,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     private _useInvalidateRectOptimization = true;
 
     /**
-     * Gets or sets a boolean indicating if the InvalidateRect optimization should be turned on
+     * @returns a boolean indicating if the InvalidateRect optimization should be turned on
      */
     public get useInvalidateRectOptimization(): boolean {
         return this._useInvalidateRectOptimization;

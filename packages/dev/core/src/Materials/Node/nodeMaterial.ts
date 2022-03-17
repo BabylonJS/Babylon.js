@@ -162,7 +162,7 @@ export class NodeMaterial extends PushMaterial {
     /** Define the Url to load snippets */
     public static SnippetUrl = "https://snippet.babylonjs.com";
 
-    /** Gets or sets a boolean indicating that node materials should not deserialize textures from json / snippet content */
+    /** @returns a boolean indicating that node materials should not deserialize textures from json / snippet content */
     public static IgnoreTexturesAtLoadTime = false;
 
     private BJSNODEMATERIALEDITOR = this._getGlobalNodeMaterialEditor();
@@ -188,13 +188,13 @@ export class NodeMaterial extends PushMaterial {
     public snippetId: string;
 
     /**
-     * Gets or sets data used by visual editor
+     * @returns data used by visual editor
      * @see https://nme.babylonjs.com
      */
     public editorData: any = null;
 
     /**
-     * Gets or sets a boolean indicating that alpha value must be ignored (This will turn alpha blending off even if an alpha value is produced by the material)
+     * @returns a boolean indicating that alpha value must be ignored (This will turn alpha blending off even if an alpha value is produced by the material)
      */
     @serialize()
     public ignoreAlpha = false;
@@ -211,16 +211,16 @@ export class NodeMaterial extends PushMaterial {
     public onBuildObservable = new Observable<NodeMaterial>();
 
     /**
-     * Gets or sets the root nodes of the material vertex shader
+     * @returns the root nodes of the material vertex shader
      */
     public _vertexOutputNodes = new Array<NodeMaterialBlock>();
 
     /**
-     * Gets or sets the root nodes of the material fragment (pixel) shader
+     * @returns the root nodes of the material fragment (pixel) shader
      */
     public _fragmentOutputNodes = new Array<NodeMaterialBlock>();
 
-    /** Gets or sets options to control the node material overall behavior */
+    /** @returns options to control the node material overall behavior */
     public get options() {
         return this._options;
     }
@@ -266,7 +266,7 @@ export class NodeMaterial extends PushMaterial {
     public _mode: NodeMaterialModes = NodeMaterialModes.Material;
 
     /**
-     * Gets or sets the mode property
+     * @returns the mode property
      */
     public get mode(): NodeMaterialModes {
         return this._mode;
@@ -276,7 +276,7 @@ export class NodeMaterial extends PushMaterial {
         this._mode = value;
     }
 
-    /** Gets or sets the unique identifier used to identified the effect associated with the material */
+    /** @returns the unique identifier used to identified the effect associated with the material */
     public get buildId() {
         return this._buildId;
     }
@@ -538,7 +538,7 @@ export class NodeMaterial extends PushMaterial {
     }
 
     /**
-     * Gets or sets a boolean indicating that alpha blending must be enabled no matter what alpha value or alpha channel of the FragmentBlock are
+     * @returns a boolean indicating that alpha blending must be enabled no matter what alpha value or alpha channel of the FragmentBlock are
      */
     @serialize()
     public forceAlphaBlending = false;

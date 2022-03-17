@@ -14,7 +14,7 @@ export class ScrollBar extends BaseSlider {
     private _borderColor = "white";
     private _tempMeasure = new Measure(0, 0, 0, 0);
 
-    /** Gets or sets border color */
+    /** @returns border color */
     @serialize()
     public get borderColor(): string {
         return this._borderColor;
@@ -29,7 +29,7 @@ export class ScrollBar extends BaseSlider {
         this._markAsDirty();
     }
 
-    /** Gets or sets background color */
+    /** @returns background color */
     @serialize()
     public get background(): string {
         return this._background;

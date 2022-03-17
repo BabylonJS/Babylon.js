@@ -337,7 +337,7 @@ export class WebGPUEngine extends Engine {
     private _snapshotRendering: WebGPUSnapshotRendering;
 
     /**
-     * Gets or sets the snapshot rendering mode
+     * @returns the snapshot rendering mode
      */
     public get snapshotRenderingMode(): number {
         return this._snapshotRendering.mode;

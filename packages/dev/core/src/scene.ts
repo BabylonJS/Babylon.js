@@ -135,12 +135,12 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     public static readonly FOGMODE_LINEAR = 3;
 
     /**
-     * Gets or sets the minimum deltatime when deterministic lock step is enabled
+     * @returns the minimum deltatime when deterministic lock step is enabled
      * @see https://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
      */
     public static MinDeltaTime = 1.0;
     /**
-     * Gets or sets the maximum deltatime when deterministic lock step is enabled
+     * @returns the maximum deltatime when deterministic lock step is enabled
      * @see https://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
      */
     public static MaxDeltaTime = 1000.0;
@@ -178,11 +178,11 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     public _blockEntityCollection = false;
 
     /**
-     * Gets or sets a boolean that indicates if the scene must clear the render buffer before rendering a frame
+     * @returns a boolean that indicates if the scene must clear the render buffer before rendering a frame
      */
     public autoClear = true;
     /**
-     * Gets or sets a boolean that indicates if the scene must clear the depth and stencil buffers before rendering a frame
+     * @returns a boolean that indicates if the scene must clear the depth and stencil buffers before rendering a frame
      */
     public autoClearDepthAndStencil = true;
     /**
@@ -250,7 +250,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     private _forceWireframe = false;
     /**
-     * Gets or sets a boolean indicating if all rendering must be done in wireframe
+     * @returns a boolean indicating if all rendering must be done in wireframe
      */
     public set forceWireframe(value: boolean) {
         if (this._forceWireframe === value) {
@@ -265,7 +265,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     private _skipFrustumClipping = false;
     /**
-     * Gets or sets a boolean indicating if we should skip the frustum clipping part of the active meshes selection
+     * @returns a boolean indicating if we should skip the frustum clipping part of the active meshes selection
      */
     public set skipFrustumClipping(value: boolean) {
         if (this._skipFrustumClipping === value) {
@@ -279,7 +279,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     private _forcePointsCloud = false;
     /**
-     * Gets or sets a boolean indicating if all rendering must be done in point cloud
+     * @returns a boolean indicating if all rendering must be done in point cloud
      */
     public set forcePointsCloud(value: boolean) {
         if (this._forcePointsCloud === value) {
@@ -293,44 +293,44 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /**
-     * Gets or sets the active clipplane 1
+     * @returns the active clipplane 1
      */
     public clipPlane: Nullable<Plane>;
 
     /**
-     * Gets or sets the active clipplane 2
+     * @returns the active clipplane 2
      */
     public clipPlane2: Nullable<Plane>;
 
     /**
-     * Gets or sets the active clipplane 3
+     * @returns the active clipplane 3
      */
     public clipPlane3: Nullable<Plane>;
 
     /**
-     * Gets or sets the active clipplane 4
+     * @returns the active clipplane 4
      */
     public clipPlane4: Nullable<Plane>;
 
     /**
-     * Gets or sets the active clipplane 5
+     * @returns the active clipplane 5
      */
     public clipPlane5: Nullable<Plane>;
 
     /**
-     * Gets or sets the active clipplane 6
+     * @returns the active clipplane 6
      */
     public clipPlane6: Nullable<Plane>;
 
     /**
-     * Gets or sets a boolean indicating if animations are enabled
+     * @returns a boolean indicating if animations are enabled
      */
     public animationsEnabled = true;
 
     private _animationPropertiesOverride: Nullable<AnimationPropertiesOverride> = null;
 
     /**
-     * Gets or sets the animation properties override
+     * @returns the animation properties override
      */
     public get animationPropertiesOverride(): Nullable<AnimationPropertiesOverride> {
         return this._animationPropertiesOverride;
@@ -341,12 +341,12 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /**
-     * Gets or sets a boolean indicating if a constant deltatime has to be used
+     * @returns a boolean indicating if a constant deltatime has to be used
      * This is mostly useful for testing purposes when you do not want the animations to scale with the framerate
      */
     public useConstantAnimationDeltaTime = false;
     /**
-     * Gets or sets a boolean indicating if the scene must keep the meshUnderPointer property updated
+     * @returns a boolean indicating if the scene must keep the meshUnderPointer property updated
      * Please note that it requires to run a ray cast through the scene on every frame
      */
     public constantlyUpdateMeshUnderPointer = false;
@@ -377,7 +377,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     // Metadata
     /**
-     * Gets or sets user defined metadata
+     * @returns user defined metadata
      */
     public metadata: any = null;
 
@@ -671,7 +671,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     public onAnimationFileImportedObservable = new Observable<Scene>();
 
     /**
-     * Gets or sets a user defined funtion to select LOD from a mesh and a camera.
+     * @returns a user defined funtion to select LOD from a mesh and a camera.
      * By default this function is undefined and Babylon.js will select LOD based on distance to camera
      */
     public customLODSelector: (mesh: AbstractMesh, camera: Camera) => Nullable<AbstractMesh>;
@@ -683,20 +683,20 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     // Pointers
     /**
-     * Gets or sets a predicate used to select candidate meshes for a pointer down event
+     * @returns a predicate used to select candidate meshes for a pointer down event
      */
     public pointerDownPredicate: (Mesh: AbstractMesh) => boolean;
     /**
-     * Gets or sets a predicate used to select candidate meshes for a pointer up event
+     * @returns a predicate used to select candidate meshes for a pointer up event
      */
     public pointerUpPredicate: (Mesh: AbstractMesh) => boolean;
     /**
-     * Gets or sets a predicate used to select candidate meshes for a pointer move event
+     * @returns a predicate used to select candidate meshes for a pointer move event
      */
     public pointerMovePredicate: (Mesh: AbstractMesh) => boolean;
 
     /**
-     * Gets or sets a boolean indicating if the user want to entirely skip the picking phase when a pointer move event occurs.
+     * @returns a boolean indicating if the user want to entirely skip the picking phase when a pointer move event occurs.
      */
     public skipPointerMovePicking = false;
 
@@ -710,7 +710,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     public onPointerPick: (evt: IPointerEvent, pickInfo: PickingInfo) => void;
 
     /**
-     * Gets or sets a predicate used to select candidate faces for a pointer move event
+     * @returns a predicate used to select candidate faces for a pointer move event
      */
     public pointerMoveTrianglePredicate: ((p0: Vector3, p1: Vector3, p2: Vector3, ray: Ray) => boolean) | undefined;
 
@@ -733,7 +733,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /**
-     * Gets or sets the distance in pixel that you have to move to prevent some events. Default is 10 pixels
+     * @returns the distance in pixel that you have to move to prevent some events. Default is 10 pixels
      */
     public static get DragMovementThreshold() {
         return InputManager.DragMovementThreshold;
@@ -840,7 +840,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     private _useRightHandedSystem = false;
     /**
-     * Gets or sets a boolean indicating if the scene must use right-handed coordinates system
+     * @returns a boolean indicating if the scene must use right-handed coordinates system
      */
     public set useRightHandedSystem(value: boolean) {
         if (this._useRightHandedSystem === value) {
@@ -889,7 +889,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     private _fogEnabled = true;
     /**
-     * Gets or sets a boolean indicating if fog is enabled on this scene
+     * @returns a boolean indicating if fog is enabled on this scene
      * @see https://doc.babylonjs.com/babylon101/environment#fog
      * (Default is true)
      */
@@ -906,7 +906,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     private _fogMode = Scene.FOGMODE_NONE;
     /**
-     * Gets or sets the fog mode to use
+     * @returns the fog mode to use
      * @see https://doc.babylonjs.com/babylon101/environment#fog
      * | mode | value |
      * | --- | --- |
@@ -927,25 +927,25 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /**
-     * Gets or sets the fog color to use
+     * @returns the fog color to use
      * @see https://doc.babylonjs.com/babylon101/environment#fog
      * (Default is Color3(0.2, 0.2, 0.3))
      */
     public fogColor = new Color3(0.2, 0.2, 0.3);
     /**
-     * Gets or sets the fog density to use
+     * @returns the fog density to use
      * @see https://doc.babylonjs.com/babylon101/environment#fog
      * (Default is 0.1)
      */
     public fogDensity = 0.1;
     /**
-     * Gets or sets the fog start distance to use
+     * @returns the fog start distance to use
      * @see https://doc.babylonjs.com/babylon101/environment#fog
      * (Default is 0)
      */
     public fogStart = 0;
     /**
-     * Gets or sets the fog end distance to use
+     * @returns the fog end distance to use
      * @see https://doc.babylonjs.com/babylon101/environment#fog
      * (Default is 1000)
      */
@@ -966,7 +966,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     // Lights
     private _shadowsEnabled = true;
     /**
-     * Gets or sets a boolean indicating if shadows are enabled on this scene
+     * @returns a boolean indicating if shadows are enabled on this scene
      */
     public set shadowsEnabled(value: boolean) {
         if (this._shadowsEnabled === value) {
@@ -981,7 +981,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     private _lightsEnabled = true;
     /**
-     * Gets or sets a boolean indicating if lights are enabled on this scene
+     * @returns a boolean indicating if lights are enabled on this scene
      */
     public set lightsEnabled(value: boolean) {
         if (this._lightsEnabled === value) {
@@ -1000,7 +1000,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     /** @hidden */
     public _activeCamera: Nullable<Camera>;
-    /** Gets or sets the current active camera */
+    /** @returns the current active camera */
     public get activeCamera(): Nullable<Camera> {
         return this._activeCamera;
     }
@@ -1033,7 +1033,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     // Textures
     private _texturesEnabled = true;
     /**
-     * Gets or sets a boolean indicating if textures are enabled on this scene
+     * @returns a boolean indicating if textures are enabled on this scene
      */
     public set texturesEnabled(value: boolean) {
         if (this._texturesEnabled === value) {
@@ -1049,26 +1049,26 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     // Physics
     /**
-     * Gets or sets a boolean indicating if physic engines are enabled on this scene
+     * @returns a boolean indicating if physic engines are enabled on this scene
      */
     public physicsEnabled = true;
 
     // Particles
     /**
-     * Gets or sets a boolean indicating if particles are enabled on this scene
+     * @returns a boolean indicating if particles are enabled on this scene
      */
     public particlesEnabled = true;
 
     // Sprites
     /**
-     * Gets or sets a boolean indicating if sprites are enabled on this scene
+     * @returns a boolean indicating if sprites are enabled on this scene
      */
     public spritesEnabled = true;
 
     // Skeletons
     private _skeletonsEnabled = true;
     /**
-     * Gets or sets a boolean indicating if skeletons are enabled on this scene
+     * @returns a boolean indicating if skeletons are enabled on this scene
      */
     public set skeletonsEnabled(value: boolean) {
         if (this._skeletonsEnabled === value) {
@@ -1084,13 +1084,13 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     // Lens flares
     /**
-     * Gets or sets a boolean indicating if lens flares are enabled on this scene
+     * @returns a boolean indicating if lens flares are enabled on this scene
      */
     public lensFlaresEnabled = true;
 
     // Collisions
     /**
-     * Gets or sets a boolean indicating if collisions are enabled on this scene
+     * @returns a boolean indicating if collisions are enabled on this scene
      * @see https://doc.babylonjs.com/babylon101/cameras,_mesh_collisions_and_gravity
      */
     public collisionsEnabled = true;
@@ -1115,7 +1115,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     // Postprocesses
     /**
-     * Gets or sets a boolean indicating if postprocesses are enabled on this scene
+     * @returns a boolean indicating if postprocesses are enabled on this scene
      */
     public postProcessesEnabled = true;
     /**
@@ -1125,11 +1125,11 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     // Customs render targets
     /**
-     * Gets or sets a boolean indicating if render targets are enabled on this scene
+     * @returns a boolean indicating if render targets are enabled on this scene
      */
     public renderTargetsEnabled = true;
     /**
-     * Gets or sets a boolean indicating if next render targets must be dumped as image for debugging purposes
+     * @returns a boolean indicating if next render targets must be dumped as image for debugging purposes
      * We recommend not using it and instead rely on Spector.js: http://spector.babylonjs.com
      */
     public dumpNextRenderTargets = false;
@@ -1151,19 +1151,19 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     // Probes
     /**
-     * Gets or sets a boolean indicating if probes are enabled on this scene
+     * @returns a boolean indicating if probes are enabled on this scene
      */
     public probesEnabled = true;
 
     // Offline support
     /**
-     * Gets or sets the current offline provider to use to store scene data
+     * @returns the current offline provider to use to store scene data
      * @see https://doc.babylonjs.com/how_to/caching_resources_in_indexeddb
      */
     public offlineProvider: IOfflineProvider;
 
     /**
-     * Gets or sets the action manager associated with the scene
+     * @returns the action manager associated with the scene
      * @see https://doc.babylonjs.com/how_to/how_to_use_actions
      */
     public actionManager: AbstractActionManager;
@@ -1172,7 +1172,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     // Procedural textures
     /**
-     * Gets or sets a boolean indicating if procedural textures are enabled on this scene
+     * @returns a boolean indicating if procedural textures are enabled on this scene
      */
     public proceduralTexturesEnabled = true;
 
@@ -1197,7 +1197,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     public _animationTime: number = 0;
 
     /**
-     * Gets or sets a general scale for animation speed
+     * @returns a general scale for animation speed
      * @see https://www.babylonjs-playground.com/#IBU2W7#3
      */
     public animationTimeScale: number = 1;
@@ -1227,7 +1227,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     private _isDisposed = false;
 
     /**
-     * Gets or sets a boolean indicating that all submeshes of active meshes must be rendered
+     * @returns a boolean indicating that all submeshes of active meshes must be rendered
      * Use this boolean to avoid computing frustum clipping on submeshes (This could help when you are CPU bound)
      */
     public dispatchAllSubMeshesOfActiveMeshes: boolean = false;
@@ -1264,7 +1264,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /**
-     * Gets or sets a boolean indicating if lights must be sorted by priority (off by default)
+     * @returns a boolean indicating if lights must be sorted by priority (off by default)
      * This is useful if there are more lights that the maximum simulteanous authorized
      */
     public requireLightSorting = false;
@@ -1585,7 +1585,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /**
-     * Gets or sets the current on-screen X position of the pointer
+     * @returns the current on-screen X position of the pointer
      */
     public get pointerX(): number {
         return this._inputManager.pointerX;
@@ -1596,7 +1596,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /**
-     * Gets or sets the current on-screen Y position of the pointer
+     * @returns the current on-screen Y position of the pointer
      */
     public get pointerY(): number {
         return this._inputManager.pointerY;
@@ -3572,7 +3572,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     private _preventFreeActiveMeshesAndRenderingGroups = false;
 
-    /** Gets or sets a boolean blocking all the calls to freeActiveMeshes and freeRenderingGroups
+    /** @returns a boolean blocking all the calls to freeActiveMeshes and freeRenderingGroups
      * It can be used in order to prevent going through methods freeRenderingGroups and freeActiveMeshes several times to improve performance
      * when disposing several meshes in a row or a hierarchy of meshes.
      * When used, it is the responsability of the user to blockfreeActiveMeshesAndRenderingGroups back to false.
@@ -5086,7 +5086,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     private _blockMaterialDirtyMechanism = false;
 
-    /** Gets or sets a boolean blocking all the calls to markAllMaterialsAsDirty (ie. the materials won't be updated if they are out of sync) */
+    /** @returns a boolean blocking all the calls to markAllMaterialsAsDirty (ie. the materials won't be updated if they are out of sync) */
     public get blockMaterialDirtyMechanism(): boolean {
         return this._blockMaterialDirtyMechanism;
     }

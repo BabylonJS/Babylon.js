@@ -12,13 +12,13 @@ import { editableInPropertyPage, PropertyTypeForEdition } from "../nodeMaterialD
  */
 export class RemapBlock extends NodeMaterialBlock {
     /**
-     * Gets or sets the source range
+     * @returns the source range
      */
     @editableInPropertyPage("From", PropertyTypeForEdition.Vector2)
     public sourceRange = new Vector2(-1, 1);
 
     /**
-     * Gets or sets the target range
+     * @returns the target range
      */
     @editableInPropertyPage("To", PropertyTypeForEdition.Vector2)
     public targetRange = new Vector2(0, 1);

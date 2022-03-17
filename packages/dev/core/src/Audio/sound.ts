@@ -87,7 +87,7 @@ export class Sound {
      **/
     public onended: () => any;
     /**
-     * Gets or sets an object used to store user defined information for the sound.
+     * @returns an object used to store user defined information for the sound.
      */
     public metadata: any = null;
 

@@ -17,7 +17,7 @@ export interface IBakedVertexAnimationManager {
     texture: Nullable<BaseTexture>;
 
     /**
-     * Gets or sets a boolean indicating if the edgesRenderer is active
+     * @returns a boolean indicating if the edgesRenderer is active
      */
     isEnabled: boolean;
 

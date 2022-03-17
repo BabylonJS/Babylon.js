@@ -35,7 +35,7 @@ export class BaseSlider extends Control {
     /** Observable raised when the sldier value changes */
     public onValueChangedObservable = new Observable<number>();
 
-    /** Gets or sets a boolean indicating if the thumb must be rendered */
+    /** @returns a boolean indicating if the thumb must be rendered */
     @serialize()
     public get displayThumb(): boolean {
         return this._displayThumb;
@@ -50,7 +50,7 @@ export class BaseSlider extends Control {
         this._markAsDirty();
     }
 
-    /** Gets or sets a step to apply to values (0 by default) */
+    /** @returns a step to apply to values (0 by default) */
     @serialize()
     public get step(): number {
         return this._step;
@@ -65,7 +65,7 @@ export class BaseSlider extends Control {
         this._markAsDirty();
     }
 
-    /** Gets or sets main bar offset (ie. the margin applied to the value bar) */
+    /** @returns main bar offset (ie. the margin applied to the value bar) */
     @serialize()
     public get barOffset(): string | number {
         return this._barOffset.toString(this._host);
@@ -86,7 +86,7 @@ export class BaseSlider extends Control {
         }
     }
 
-    /** Gets or sets thumb width */
+    /** @returns thumb width */
     @serialize()
     public get thumbWidth(): string | number {
         return this._thumbWidth.toString(this._host);
@@ -107,7 +107,7 @@ export class BaseSlider extends Control {
         }
     }
 
-    /** Gets or sets minimum value */
+    /** @returns minimum value */
     @serialize()
     public get minimum(): number {
         return this._minimum;
@@ -124,7 +124,7 @@ export class BaseSlider extends Control {
         this.value = Math.max(Math.min(this.value, this._maximum), this._minimum);
     }
 
-    /** Gets or sets maximum value */
+    /** @returns maximum value */
     @serialize()
     public get maximum(): number {
         return this._maximum;
@@ -141,7 +141,7 @@ export class BaseSlider extends Control {
         this.value = Math.max(Math.min(this.value, this._maximum), this._minimum);
     }
 
-    /** Gets or sets current value */
+    /** @returns current value */
     @serialize()
     public get value(): number {
         return this._value;
@@ -174,7 +174,7 @@ export class BaseSlider extends Control {
         this._markAsDirty();
     }
 
-    /** Gets or sets a value indicating if the thumb can go over main bar extends */
+    /** @returns a value indicating if the thumb can go over main bar extends */
     @serialize()
     public get isThumbClamped(): boolean {
         return this._isThumbClamped;

@@ -24,7 +24,7 @@ export class AxesViewer {
     public scene: Nullable<Scene> = null;
 
     /**
-     * Gets or sets a number used to scale line length
+     * @returns a number used to scale line length
      */
     public scaleLines = 1;
 

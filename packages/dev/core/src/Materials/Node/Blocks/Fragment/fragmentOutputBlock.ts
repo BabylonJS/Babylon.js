@@ -35,15 +35,15 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
         this.rgb.acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Float);
     }
 
-    /** Gets or sets a boolean indicating if content needs to be converted to gamma space */
+    /** @returns a boolean indicating if content needs to be converted to gamma space */
     @editableInPropertyPage("Convert to gamma space", PropertyTypeForEdition.Boolean, "PROPERTIES", { notifiers: { update: true } })
     public convertToGammaSpace = false;
 
-    /** Gets or sets a boolean indicating if content needs to be converted to linear space */
+    /** @returns a boolean indicating if content needs to be converted to linear space */
     @editableInPropertyPage("Convert to linear space", PropertyTypeForEdition.Boolean, "PROPERTIES", { notifiers: { update: true } })
     public convertToLinearSpace = false;
 
-    /** Gets or sets a boolean indicating if logarithmic depth should be used */
+    /** @returns a boolean indicating if logarithmic depth should be used */
     @editableInPropertyPage("Use logarithmic depth", PropertyTypeForEdition.Boolean, "PROPERTIES")
     public useLogarithmicDepth = false;
 

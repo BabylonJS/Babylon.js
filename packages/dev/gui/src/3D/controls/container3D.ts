@@ -23,7 +23,7 @@ export class Container3D extends Control3D {
     }
 
     /**
-     * Gets or sets a boolean indicating if the layout must be blocked (default is false).
+     * @returns a boolean indicating if the layout must be blocked (default is false).
      * This is helpful to optimize layout operation when adding multiple children in a row
      */
     public get blockLayout(): boolean {

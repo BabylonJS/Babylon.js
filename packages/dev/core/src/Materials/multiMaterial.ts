@@ -18,7 +18,7 @@ export class MultiMaterial extends Material {
     public _waitingSubMaterialsUniqueIds: string[] = [];
 
     /**
-     * Gets or Sets the list of Materials used within the multi material.
+     * @returns the list of Materials used within the multi material.
      * They need to be ordered according to the submeshes order in the associated mesh
      */
     public get subMaterials(): Nullable<Material>[] {

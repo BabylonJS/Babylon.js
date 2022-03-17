@@ -40,7 +40,7 @@ declare module "../Meshes/abstractMesh" {
         /** @hidden (Backing field) */
         _renderOutline: boolean;
         /**
-         * Gets or sets a boolean indicating if the outline must be rendered as well
+         * @returns a boolean indicating if the outline must be rendered as well
          * @see https://www.babylonjs-playground.com/#10WJ5S#3
          */
         renderOutline: boolean;
@@ -48,7 +48,7 @@ declare module "../Meshes/abstractMesh" {
         /** @hidden (Backing field) */
         _renderOverlay: boolean;
         /**
-         * Gets or sets a boolean indicating if the overlay must be rendered as well
+         * @returns a boolean indicating if the overlay must be rendered as well
          * @see https://www.babylonjs-playground.com/#10WJ5S#2
          */
         renderOverlay: boolean;

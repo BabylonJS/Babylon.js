@@ -11,7 +11,7 @@ export class SceneLoaderFlags {
     private static _loggingLevel = Constants.SCENELOADER_NO_LOGGING;
 
     /**
-     * Gets or sets a boolean indicating if entire scene must be loaded even if scene contains incremental data
+     * @returns a boolean indicating if entire scene must be loaded even if scene contains incremental data
      */
     public static get ForceFullSceneLoadingForIncremental() {
         return SceneLoaderFlags._ForceFullSceneLoadingForIncremental;
@@ -22,7 +22,7 @@ export class SceneLoaderFlags {
     }
 
     /**
-     * Gets or sets a boolean indicating if loading screen must be displayed while loading a scene
+     * @returns a boolean indicating if loading screen must be displayed while loading a scene
      */
     public static get ShowLoadingScreen(): boolean {
         return SceneLoaderFlags._ShowLoadingScreen;

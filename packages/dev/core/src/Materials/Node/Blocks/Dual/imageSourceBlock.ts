@@ -20,7 +20,7 @@ export class ImageSourceBlock extends NodeMaterialBlock {
     private _samplerName: string;
     protected _texture: Nullable<Texture>;
     /**
-     * Gets or sets the texture associated with the node
+     * @returns the texture associated with the node
      */
     public get texture(): Nullable<Texture> {
         return this._texture;

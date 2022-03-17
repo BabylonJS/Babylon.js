@@ -67,12 +67,12 @@ export interface ITextureCreationOptions {
  */
 export class Texture extends BaseTexture {
     /**
-     * Gets or sets a general boolean used to indicate that textures containing direct data (buffers) must be saved as part of the serialization process
+     * @returns a general boolean used to indicate that textures containing direct data (buffers) must be saved as part of the serialization process
      */
     public static SerializeBuffers = true;
 
     /**
-     * Gets or sets a general boolean used to indicate that texture buffers must be saved as part of the serialization process.
+     * @returns a general boolean used to indicate that texture buffers must be saved as part of the serialization process.
      * If no buffer exists, one will be created as base64 string from the internal webgl data.
      */
     public static ForceSerializeBuffers = false;
@@ -176,7 +176,7 @@ export class Texture extends BaseTexture {
     public static readonly MIRROR_ADDRESSMODE = Constants.TEXTURE_MIRROR_ADDRESSMODE;
 
     /**
-     * Gets or sets a boolean which defines if the texture url must be build from the serialized URL instead of just using the name and loading them side by side with the scene file
+     * @returns a boolean which defines if the texture url must be build from the serialized URL instead of just using the name and loading them side by side with the scene file
      */
     public static UseSerializedUrlIfAny = false;
 

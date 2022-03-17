@@ -36,7 +36,7 @@ export class RefractionPostProcess extends PostProcess {
     public refractionTextureUrl: string;
 
     /**
-     * Gets or sets the refraction texture
+     * @returns the refraction texture
      * Please note that you are responsible for disposing the texture if you set it manually
      */
     public get refractionTexture(): Texture {

@@ -101,7 +101,7 @@ export class NodeMaterialBuildStateSharedData {
     /** Emit build activity */
     public verbose: boolean;
 
-    /** Gets or sets the hosting scene */
+    /** @returns the hosting scene */
     public scene: Scene;
 
     /**

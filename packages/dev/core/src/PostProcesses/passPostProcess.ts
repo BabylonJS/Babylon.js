@@ -82,7 +82,7 @@ export class PassCubePostProcess extends PostProcess {
     private _face = 0;
 
     /**
-     * Gets or sets the cube face to display.
+     * @returns the cube face to display.
      *  * 0 is +X
      *  * 1 is -X
      *  * 2 is +Y

@@ -99,7 +99,7 @@ export interface IModelAnimation {
      */
     speedRatio: number;
     /**
-     * Gets or sets the aimation's play mode.
+     * @returns the aimation's play mode.
      */
     playMode: AnimationPlayMode;
     /**

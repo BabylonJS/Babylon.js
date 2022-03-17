@@ -18,7 +18,7 @@ import { editableInPropertyPage, PropertyTypeForEdition } from "../nodeMaterialD
 //  Return vec2 value range of -1.0->1.0, F1-F2 respectivly
 
 export class WorleyNoise3DBlock extends NodeMaterialBlock {
-    /** Gets or sets a boolean indicating that normal should be inverted on X axis */
+    /** @returns a boolean indicating that normal should be inverted on X axis */
     @editableInPropertyPage("Use Manhattan Distance", PropertyTypeForEdition.Boolean, "PROPERTIES", { notifiers: { update: false } })
     public manhattanDistance = false;
 

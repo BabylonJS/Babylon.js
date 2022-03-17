@@ -158,13 +158,13 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
     private _rampGradientsTexture: Nullable<RawTexture>;
     private _useRampGradients = false;
 
-    /** Gets or sets a matrix to use to compute projection */
+    /** @returns a matrix to use to compute projection */
     public defaultProjectionMatrix: Matrix;
 
-    /** Gets or sets a matrix to use to compute view */
+    /** @returns a matrix to use to compute view */
     public defaultViewMatrix: Matrix;
 
-    /** Gets or sets a boolean indicating that ramp gradients must be used
+    /** @returns a boolean indicating that ramp gradients must be used
      * @see https://doc.babylonjs.com/babylon101/particles#ramp-gradients
      */
     public get useRampGradients(): boolean {

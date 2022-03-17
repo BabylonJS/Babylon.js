@@ -294,7 +294,7 @@ export class VertexBuffer {
     public static readonly FLOAT = 5126;
 
     /**
-     * Gets or sets the instance divisor when in instanced mode
+     * @returns the instance divisor when in instanced mode
      */
     public get instanceDivisor(): number {
         return this._instanceDivisor;

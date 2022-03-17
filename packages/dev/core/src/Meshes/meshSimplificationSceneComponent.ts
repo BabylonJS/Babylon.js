@@ -9,7 +9,7 @@ declare module "../scene" {
         _simplificationQueue: SimplificationQueue;
 
         /**
-         * Gets or sets the simplification queue attached to the scene
+         * @returns the simplification queue attached to the scene
          * @see https://doc.babylonjs.com/how_to/in-browser_mesh_simplification
          */
         simplificationQueue: SimplificationQueue;

@@ -808,7 +808,7 @@ export class Vector3 {
     /** @hidden */
     public _isDirty = true;
 
-    /** Gets or sets the x coordinate */
+    /** @returns the x coordinate */
     public get x() {
         return this._x;
     }
@@ -818,7 +818,7 @@ export class Vector3 {
         this._isDirty = true;
     }
 
-    /** Gets or sets the y coordinate */
+    /** @returns the y coordinate */
     public get y() {
         return this._y;
     }
@@ -828,7 +828,7 @@ export class Vector3 {
         this._isDirty = true;
     }
 
-    /** Gets or sets the z coordinate */
+    /** @returns the z coordinate */
     public get z() {
         return this._z;
     }
@@ -3379,7 +3379,7 @@ export class Quaternion {
     /** @hidden */
     public _isDirty = true;
 
-    /** Gets or sets the x coordinate */
+    /** @returns the x coordinate */
     public get x() {
         return this._x;
     }
@@ -3389,7 +3389,7 @@ export class Quaternion {
         this._isDirty = true;
     }
 
-    /** Gets or sets the y coordinate */
+    /** @returns the y coordinate */
     public get y() {
         return this._y;
     }
@@ -3399,7 +3399,7 @@ export class Quaternion {
         this._isDirty = true;
     }
 
-    /** Gets or sets the z coordinate */
+    /** @returns the z coordinate */
     public get z() {
         return this._z;
     }
@@ -3409,7 +3409,7 @@ export class Quaternion {
         this._isDirty = true;
     }
 
-    /** Gets or sets the w coordinate */
+    /** @returns the w coordinate */
     public get w() {
         return this._w;
     }

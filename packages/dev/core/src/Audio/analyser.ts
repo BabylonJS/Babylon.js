@@ -11,27 +11,27 @@ import { EngineStore } from "../Engines/engineStore";
  */
 export class Analyser {
     /**
-     * Gets or sets the smoothing
+     * @returns the smoothing
      * @ignorenaming
      */
     public SMOOTHING = 0.75;
     /**
-     * Gets or sets the FFT table size
+     * @returns the FFT table size
      * @ignorenaming
      */
     public FFT_SIZE = 512;
     /**
-     * Gets or sets the bar graph amplitude
+     * @returns the bar graph amplitude
      * @ignorenaming
      */
     public BARGRAPHAMPLITUDE = 256;
     /**
-     * Gets or sets the position of the debug canvas
+     * @returns the position of the debug canvas
      * @ignorenaming
      */
     public DEBUGCANVASPOS = { x: 20, y: 20 };
     /**
-     * Gets or sets the debug canvas size
+     * @returns the debug canvas size
      * @ignorenaming
      */
     public DEBUGCANVASSIZE = { width: 320, height: 200 };

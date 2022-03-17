@@ -25,7 +25,7 @@ export class ImageScrollBar extends BaseSlider {
     public num90RotationInVerticalMode = 1;
 
     /**
-     * Gets or sets the image used to render the background for horizontal bar
+     * @returns the image used to render the background for horizontal bar
      */
     public get backgroundImage(): Image {
         return this._backgroundBaseImage;
@@ -67,7 +67,7 @@ export class ImageScrollBar extends BaseSlider {
     }
 
     /**
-     * Gets or sets the image used to render the thumb
+     * @returns the image used to render the thumb
      */
     public get thumbImage(): Image {
         return this._thumbBaseImage;
@@ -109,7 +109,7 @@ export class ImageScrollBar extends BaseSlider {
     }
 
     /**
-     * Gets or sets the length of the thumb
+     * @returns the length of the thumb
      */
     public get thumbLength(): number {
         return this._thumbLength;
@@ -126,7 +126,7 @@ export class ImageScrollBar extends BaseSlider {
     }
 
     /**
-     * Gets or sets the height of the thumb
+     * @returns the height of the thumb
      */
     public get thumbHeight(): number {
         return this._thumbHeight;
@@ -143,7 +143,7 @@ export class ImageScrollBar extends BaseSlider {
     }
 
     /**
-     * Gets or sets the height of the bar image
+     * @returns the height of the bar image
      */
     public get barImageHeight(): number {
         return this._barImageHeight;

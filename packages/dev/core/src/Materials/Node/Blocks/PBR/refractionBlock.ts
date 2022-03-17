@@ -79,7 +79,7 @@ export class RefractionBlock extends NodeMaterialBlock {
     public useThicknessAsDepth: boolean = false;
 
     /**
-     * Gets or sets the texture associated with the node
+     * @returns the texture associated with the node
      */
     public texture: Nullable<BaseTexture>;
 

@@ -222,7 +222,7 @@ export function serializeAsCameraReference(sourceName?: string) {
  */
 export class SerializationHelper {
     /**
-     * Gets or sets a boolean to indicate if the UniqueId property should be serialized
+     * @returns a boolean to indicate if the UniqueId property should be serialized
      */
     public static AllowLoadingUniqueId = false;
 

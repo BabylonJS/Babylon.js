@@ -54,29 +54,29 @@ export class InputBlock extends NodeMaterialBlock {
     /** Gets or set a value indicating that this input can only get 0 and 1 values */
     public isBoolean: boolean = false;
 
-    /** Gets or sets a value used by the Node Material editor to determine how to configure the current value if it is a matrix */
+    /** @returns a value used by the Node Material editor to determine how to configure the current value if it is a matrix */
     public matrixMode: number = 0;
 
     /** @hidden */
     public _systemValue: Nullable<NodeMaterialSystemValues> = null;
 
-    /** Gets or sets a boolean indicating that the value of this input will not change after a build */
+    /** @returns a boolean indicating that the value of this input will not change after a build */
     public isConstant = false;
 
-    /** Gets or sets the group to use to display this block in the Inspector */
+    /** @returns the group to use to display this block in the Inspector */
     public groupInInspector = "";
 
     /** Gets an observable raised when the value is changed */
     public onValueChangedObservable = new Observable<InputBlock>();
 
-    /** Gets or sets a boolean indicating if content needs to be converted to gamma space (for color3/4 only) */
+    /** @returns a boolean indicating if content needs to be converted to gamma space (for color3/4 only) */
     public convertToGammaSpace = false;
 
-    /** Gets or sets a boolean indicating if content needs to be converted to linear space (for color3/4 only) */
+    /** @returns a boolean indicating if content needs to be converted to linear space (for color3/4 only) */
     public convertToLinearSpace = false;
 
     /**
-     * Gets or sets the connection point type (default is float)
+     * @returns the connection point type (default is float)
      */
     public get type(): NodeMaterialBlockConnectionPointTypes {
         if (this._type === NodeMaterialBlockConnectionPointTypes.AutoDetect) {
@@ -231,7 +231,7 @@ export class InputBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets or sets the value of that point.
+     * @returns the value of that point.
      * Please note that this value will be ignored if valueCallback is defined
      */
     public get value(): any {
@@ -255,7 +255,7 @@ export class InputBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets or sets a callback used to get the value of that point.
+     * @returns a callback used to get the value of that point.
      * Please note that setting this value will force the connection point to ignore the value property
      */
     public get valueCallback(): () => any {
@@ -268,7 +268,7 @@ export class InputBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets or sets the associated variable name in the shader
+     * @returns the associated variable name in the shader
      */
     public get associatedVariableName(): string {
         return this._associatedVariableName;
@@ -278,7 +278,7 @@ export class InputBlock extends NodeMaterialBlock {
         this._associatedVariableName = value;
     }
 
-    /** Gets or sets the type of animation applied to the input */
+    /** @returns the type of animation applied to the input */
     public get animationType() {
         return this._animationType;
     }
@@ -295,7 +295,7 @@ export class InputBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets or sets a boolean indicating that this connection point is coming from an uniform.
+     * @returns a boolean indicating that this connection point is coming from an uniform.
      * In this case the connection point name must be the name of the uniform to use.
      * Can only be set on inputs
      */
@@ -309,7 +309,7 @@ export class InputBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets or sets a boolean indicating that this connection point is coming from an attribute.
+     * @returns a boolean indicating that this connection point is coming from an attribute.
      * In this case the connection point name must be the name of the attribute to use
      * Can only be set on inputs
      */
@@ -323,7 +323,7 @@ export class InputBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets or sets a boolean indicating that this connection point is generating a varying variable.
+     * @returns a boolean indicating that this connection point is generating a varying variable.
      * Can only be set on exit points
      */
     public get isVarying(): boolean {
@@ -343,7 +343,7 @@ export class InputBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets or sets the current well known value or null if not defined as a system value
+     * @returns the current well known value or null if not defined as a system value
      */
     public get systemValue(): Nullable<NodeMaterialSystemValues> {
         return this._systemValue;

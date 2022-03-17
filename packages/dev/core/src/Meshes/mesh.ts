@@ -398,7 +398,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     public _delayLoadingFunction: (any: any, mesh: Mesh) => void;
 
     /**
-     * Gets or sets the forced number of instances to display.
+     * @returns the forced number of instances to display.
      * If 0 (default value), the number of instances is not forced and depends on the draw type
      * (regular / instance / thin instances mesh)
      */
@@ -429,7 +429,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     public overrideMaterialSideOrientation: Nullable<number> = null;
 
     /**
-     * Gets or sets a boolean indicating whether to render ignoring the active camera's max z setting. (false by default)
+     * @returns a boolean indicating whether to render ignoring the active camera's max z setting. (false by default)
      * Note this will reduce performance when set to true.
      */
     public ignoreCameraMaxZ = false;
@@ -451,7 +451,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     /**
-     * Gets or sets a boolean indicating that this mesh does not use index buffer
+     * @returns a boolean indicating that this mesh does not use index buffer
      */
     public get isUnIndexed(): boolean {
         return this._unIndexed;
@@ -474,7 +474,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         return this._instanceDataStorage.instancesPreviousData;
     }
 
-    /** Gets or sets a boolean indicating that the update of the instance buffer of the world matrices is manual */
+    /** @returns a boolean indicating that the update of the instance buffer of the world matrices is manual */
     public get manualUpdateOfWorldMatrixInstancedBuffer() {
         return this._instanceDataStorage.manualUpdate;
     }
@@ -483,7 +483,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         this._instanceDataStorage.manualUpdate = value;
     }
 
-    /** Gets or sets a boolean indicating that the update of the instance buffer of the world matrices is manual */
+    /** @returns a boolean indicating that the update of the instance buffer of the world matrices is manual */
     public get manualUpdateOfPreviousWorldMatrixInstancedBuffer() {
         return this._instanceDataStorage.previousManualUpdate;
     }

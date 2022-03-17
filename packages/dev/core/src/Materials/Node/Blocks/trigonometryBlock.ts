@@ -53,7 +53,7 @@ export enum TrigonometryBlockOperations {
  */
 export class TrigonometryBlock extends NodeMaterialBlock {
     /**
-     * Gets or sets the operation applied by the block
+     * @returns the operation applied by the block
      */
     public operation = TrigonometryBlockOperations.Cos;
 

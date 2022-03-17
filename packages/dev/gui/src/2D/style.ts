@@ -30,7 +30,7 @@ export class Style implements IDisposable {
     }
 
     /**
-     * Gets or sets the font size
+     * @returns the font size
      */
     public get fontSize(): string | number {
         return this._fontSize.toString(this._host);
@@ -47,7 +47,7 @@ export class Style implements IDisposable {
     }
 
     /**
-     * Gets or sets the font family
+     * @returns the font family
      */
     public get fontFamily(): string {
         return this._fontFamily;
@@ -63,7 +63,7 @@ export class Style implements IDisposable {
     }
 
     /**
-     * Gets or sets the font style
+     * @returns the font style
      */
     public get fontStyle(): string {
         return this._fontStyle;
@@ -78,7 +78,7 @@ export class Style implements IDisposable {
         this.onChangedObservable.notifyObservers(this);
     }
 
-    /** Gets or sets font weight */
+    /** @returns font weight */
     public get fontWeight(): string {
         return this._fontWeight;
     }

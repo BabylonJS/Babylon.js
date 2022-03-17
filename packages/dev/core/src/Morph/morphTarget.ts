@@ -17,7 +17,7 @@ declare type Animation = import("../Animations/animation").Animation;
  */
 export class MorphTarget implements IAnimatable {
     /**
-     * Gets or sets the list of animations
+     * @returns the list of animations
      */
     public animations = new Array<Animation>();
 
@@ -38,7 +38,7 @@ export class MorphTarget implements IAnimatable {
     public _onDataLayoutChanged = new Observable<void>();
 
     /**
-     * Gets or sets the influence of this target (ie. its weight in the overall morphing)
+     * @returns the influence of this target (ie. its weight in the overall morphing)
      */
     public get influence(): number {
         return this._influence;
@@ -58,7 +58,7 @@ export class MorphTarget implements IAnimatable {
     }
 
     /**
-     * Gets or sets the id of the morph Target
+     * @returns the id of the morph Target
      */
     @serialize()
     public id: string;
@@ -66,7 +66,7 @@ export class MorphTarget implements IAnimatable {
     private _animationPropertiesOverride: Nullable<AnimationPropertiesOverride> = null;
 
     /**
-     * Gets or sets the animation properties override
+     * @returns the animation properties override
      */
     public get animationPropertiesOverride(): Nullable<AnimationPropertiesOverride> {
         if (!this._animationPropertiesOverride && this._scene) {

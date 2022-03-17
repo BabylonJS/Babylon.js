@@ -11,10 +11,10 @@ import "../../../Shaders/noise.fragment";
  * Class used to generate noise procedural textures
  */
 export class NoiseProceduralTexture extends ProceduralTexture {
-    /** Gets or sets the start time (default is 0) */
+    /** @returns the start time (default is 0) */
     public time: number = 0.0;
 
-    /** Gets or sets a value between 0 and 1 indicating the overall brightness of the texture (default is 0.2) */
+    /** @returns a value between 0 and 1 indicating the overall brightness of the texture (default is 0.2) */
     public brightness = 0.2;
 
     /** Defines the number of octaves to process */
@@ -23,7 +23,7 @@ export class NoiseProceduralTexture extends ProceduralTexture {
     /** Defines the level of persistence (0.8 by default) */
     public persistence = 0.8;
 
-    /** Gets or sets animation speed factor (default is 1) */
+    /** @returns animation speed factor (default is 1) */
     public animationSpeedFactor = 1;
 
     /**

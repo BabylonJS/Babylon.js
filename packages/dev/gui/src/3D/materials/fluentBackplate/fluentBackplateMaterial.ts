@@ -53,19 +53,19 @@ export class FluentBackplateMaterial extends PushMaterial {
     private _iridescentMap: Texture;
 
     /**
-     * Gets or sets the corner radius on the backplate. Best to keep this value between 0.01 and 0.5. Default is 0.03.
+     * @returns the corner radius on the backplate. Best to keep this value between 0.01 and 0.5. Default is 0.03.
      */
     @serialize()
     public radius = 0.03;
 
     /**
-     * Gets or sets the line width of the backplate.
+     * @returns the line width of the backplate.
      */
     @serialize()
     public lineWidth = 0.01;
 
     /**
-     * Gets or sets whether to use absolute sizes when calculating effects on the backplate.
+     * @returns whether to use absolute sizes when calculating effects on the backplate.
      * Since desktop and VR/AR have different relative sizes, it's usually best to keep this false.
      */
     @serialize()
@@ -75,79 +75,79 @@ export class FluentBackplateMaterial extends PushMaterial {
     public _filterWidth = 1;
 
     /**
-     * Gets or sets the base color of the backplate.
+     * @returns the base color of the backplate.
      */
     @serialize()
     public baseColor = new Color4(0.0392157, 0.0666667, 0.207843, 1);
 
     /**
-     * Gets or sets the line color of the backplate.
+     * @returns the line color of the backplate.
      */
     @serialize()
     public lineColor = new Color4(0.14902, 0.133333, 0.384314, 1);
 
     /**
-     * Gets or sets the intensity of the fluent hover glow effect.
+     * @returns the intensity of the fluent hover glow effect.
      */
     @serialize()
     public blobIntensity = 0.98;
 
     /**
-     * Gets or sets the far size of the fluent hover glow effect.
+     * @returns the far size of the fluent hover glow effect.
      */
     @serialize()
     public blobFarSize = 0.04;
 
     /**
-     * Gets or sets the distance considered "near" to the backplate, which controls the size of the fluent hover glow effect (see blobNearSize).
+     * @returns the distance considered "near" to the backplate, which controls the size of the fluent hover glow effect (see blobNearSize).
      */
     @serialize()
     public blobNearDistance = 0;
 
     /**
-     * Gets or sets the distance considered "far" from the backplate, which controls the size of the fluent hover glow effect (see blobFarSize).
+     * @returns the distance considered "far" from the backplate, which controls the size of the fluent hover glow effect (see blobFarSize).
      */
     @serialize()
     public blobFarDistance = 0.08;
 
     /**
-     * Gets or sets the length of the fluent hover glow effect fade.
+     * @returns the length of the fluent hover glow effect fade.
      */
     @serialize()
     public blobFadeLength = 0.08;
 
     /**
-     * Gets or sets the size of the fluent hover glow effect when the left pointer is considered "near" to the backplate (see blobNearDistance).
+     * @returns the size of the fluent hover glow effect when the left pointer is considered "near" to the backplate (see blobNearDistance).
      */
     @serialize()
     public blobNearSize = 0.22;
 
     /**
-     * Gets or sets the progress of the fluent hover glow effect selection animation corresponding to the left pointer (0.0 - 1.0).
+     * @returns the progress of the fluent hover glow effect selection animation corresponding to the left pointer (0.0 - 1.0).
      */
     @serialize()
     public blobPulse = 0;
 
     /**
-     * Gets or sets the opacity of the fluent hover glow effect corresponding to the left pointer (0.0 - 1.0). Default is 0.
+     * @returns the opacity of the fluent hover glow effect corresponding to the left pointer (0.0 - 1.0). Default is 0.
      */
     @serialize()
     public blobFade = 0;
 
     /**
-     * Gets or sets the size of the fluent hover glow effect when the right pointer is considered "near" to the backplate (see blobNearDistance).
+     * @returns the size of the fluent hover glow effect when the right pointer is considered "near" to the backplate (see blobNearDistance).
      */
     @serialize()
     public blobNearSize2 = 0.22;
 
     /**
-     * Gets or sets the progress of the fluent hover glow effect selection animation corresponding to the right pointer (0.0 - 1.0).
+     * @returns the progress of the fluent hover glow effect selection animation corresponding to the right pointer (0.0 - 1.0).
      */
     @serialize()
     public blobPulse2 = 0;
 
     /**
-     * Gets or sets the opacity of the fluent hover glow effect corresponding to the right pointer (0.0 - 1.0). Default is 0.
+     * @returns the opacity of the fluent hover glow effect corresponding to the right pointer (0.0 - 1.0). Default is 0.
      */
     @serialize()
     public blobFade2 = 0;
@@ -156,13 +156,13 @@ export class FluentBackplateMaterial extends PushMaterial {
     public _rate = 0.135;
 
     /**
-     * Gets or sets the color of the highlights on the backplate line.
+     * @returns the color of the highlights on the backplate line.
      */
     @serialize()
     public highlightColor = new Color4(0.98, 0.98, 0.98, 1);
 
     /**
-     * Gets or sets the width of the highlights on the backplate line.
+     * @returns the width of the highlights on the backplate line.
      */
     @serialize()
     public highlightWidth = 0.25;
@@ -174,13 +174,13 @@ export class FluentBackplateMaterial extends PushMaterial {
     public _highlight = 1;
 
     /**
-     * Gets or sets the intensity of the iridescence effect.
+     * @returns the intensity of the iridescence effect.
      */
     @serialize()
     public iridescenceIntensity = 0;
 
     /**
-     * Gets or sets the intensity of the iridescence effect on the backplate edges.
+     * @returns the intensity of the iridescence effect on the backplate edges.
      */
     @serialize()
     public iridescenceEdgeIntensity = 1;
@@ -189,7 +189,7 @@ export class FluentBackplateMaterial extends PushMaterial {
     public _angle = -45;
 
     /**
-     * Gets or sets the opacity of the backplate (0.0 - 1.0).
+     * @returns the opacity of the backplate (0.0 - 1.0).
      */
     @serialize()
     public fadeOut = 1;
@@ -204,14 +204,14 @@ export class FluentBackplateMaterial extends PushMaterial {
     public _verticalOffset = 0;
 
     /**
-     * Gets or sets the world-space position of the tip of the left index finger.
+     * @returns the world-space position of the tip of the left index finger.
      */
     @serializeAsVector3()
     public globalLeftIndexTipPosition = Vector3.Zero();
     private _globalLeftIndexTipPosition4 = Vector4.Zero();
 
     /**
-     * Gets or sets the world-space position of the tip of the right index finger.
+     * @returns the world-space position of the tip of the right index finger.
      */
     @serializeAsVector3()
     public globalRightIndexTipPosition = Vector3.Zero();

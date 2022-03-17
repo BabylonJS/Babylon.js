@@ -62,11 +62,11 @@ interface VirtualJoystickCustomizations {
  */
 export class VirtualJoystick {
     /**
-     * Gets or sets a boolean indicating that left and right values must be inverted
+     * @returns a boolean indicating that left and right values must be inverted
      */
     public reverseLeftRight: boolean;
     /**
-     * Gets or sets a boolean indicating that up and down values must be inverted
+     * @returns a boolean indicating that up and down values must be inverted
      */
     public reverseUpDown: boolean;
     /**

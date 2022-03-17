@@ -36,7 +36,7 @@ import "../../Shaders/ShadersInclude/shadowMapFragmentSoftTransparentShadow";
  */
 export interface ICustomShaderOptions {
     /**
-     * Gets or sets the custom shader name to use
+     * @returns the custom shader name to use
      */
     shaderName: string;
 
@@ -221,10 +221,10 @@ export class ShadowGenerator implements IShadowGenerator {
     /** Gets or set the id of the shadow generator. It will be the one from the light if not defined */
     public id: string;
 
-    /** Gets or sets the custom shader name to use */
+    /** @returns the custom shader name to use */
     public customShaderOptions: ICustomShaderOptions;
 
-    /** Gets or sets a custom function to allow/disallow rendering a sub mesh in the shadow map */
+    /** @returns a custom function to allow/disallow rendering a sub mesh in the shadow map */
     public customAllowRendering: (subMesh: SubMesh) => boolean;
 
     /**
@@ -612,7 +612,7 @@ export class ShadowGenerator implements IShadowGenerator {
 
     protected _darkness = 0;
 
-    /** Gets or sets the actual darkness of a shadow */
+    /** @returns the actual darkness of a shadow */
     public get darkness() {
         return this._darkness;
     }
@@ -647,7 +647,7 @@ export class ShadowGenerator implements IShadowGenerator {
 
     protected _transparencyShadow = false;
 
-    /** Gets or sets the ability to have transparent shadow  */
+    /** @returns the ability to have transparent shadow  */
     public get transparencyShadow() {
         return this._transparencyShadow;
     }
@@ -816,7 +816,7 @@ export class ShadowGenerator implements IShadowGenerator {
     };
 
     /**
-     * Gets or sets the size of the texture what stores the shadows
+     * @returns the size of the texture what stores the shadows
      */
     public get mapSize(): number {
         return this._mapSize;

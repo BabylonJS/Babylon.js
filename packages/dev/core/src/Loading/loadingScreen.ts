@@ -14,11 +14,11 @@ export interface ILoadingScreen {
      */
     hideLoadingUI: () => void;
     /**
-     * Gets or sets the color to use for the background
+     * @returns the color to use for the background
      */
     loadingUIBackgroundColor: string;
     /**
-     * Gets or sets the text to display while loading
+     * @returns the text to display while loading
      */
     loadingUIText: string;
 }
@@ -32,10 +32,10 @@ export class DefaultLoadingScreen implements ILoadingScreen {
     private _loadingTextDiv: HTMLDivElement;
     private _style: Nullable<HTMLStyleElement>;
 
-    /** Gets or sets the logo url to use for the default loading screen */
+    /** @returns the logo url to use for the default loading screen */
     public static DefaultLogoUrl = "";
 
-    /** Gets or sets the spinner url to use for the default loading screen */
+    /** @returns the spinner url to use for the default loading screen */
     public static DefaultSpinnerUrl = "";
 
     /**
@@ -204,7 +204,7 @@ export class DefaultLoadingScreen implements ILoadingScreen {
     }
 
     /**
-     * Gets or sets the text to display while loading
+     * @returns the text to display while loading
      */
     public set loadingUIText(text: string) {
         this._loadingText = text;
@@ -219,7 +219,7 @@ export class DefaultLoadingScreen implements ILoadingScreen {
     }
 
     /**
-     * Gets or sets the color to use for the background
+     * @returns the color to use for the background
      */
     public get loadingUIBackgroundColor(): string {
         return this._loadingDivBackgroundColor;

@@ -15,7 +15,7 @@ export class CustomBlock extends NodeMaterialBlock {
     private _code: string;
 
     /**
-     * Gets or sets the options for this custom block
+     * @returns the options for this custom block
      */
     public get options() {
         return this._options;

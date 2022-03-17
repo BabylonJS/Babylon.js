@@ -38,7 +38,7 @@ export class MultiLine extends Control {
         this._points = [];
     }
 
-    /** Gets or sets dash pattern */
+    /** @returns dash pattern */
     @serialize()
     public get dash(): Array<number> {
         return this._dash;
@@ -152,7 +152,7 @@ export class MultiLine extends Control {
         });
     }
 
-    /** Gets or sets line width */
+    /** @returns line width */
     public get lineWidth(): number {
         return this._lineWidth;
     }

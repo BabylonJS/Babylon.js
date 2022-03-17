@@ -18,10 +18,10 @@ export class ShaderCodeInliner {
     private _functionDescr: IInlineFunctionDescr[];
     private _numMaxIterations: number;
 
-    /** Gets or sets the token used to mark the functions to inline */
+    /** @returns the token used to mark the functions to inline */
     public inlineToken: string;
 
-    /** Gets or sets the debug mode */
+    /** @returns the debug mode */
     public debug: boolean = false;
 
     /** Gets the code after the inlining process */

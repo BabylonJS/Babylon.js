@@ -23,7 +23,7 @@ export enum WaveBlockKind {
  */
 export class WaveBlock extends NodeMaterialBlock {
     /**
-     * Gets or sets the kibnd of wave to be applied by the block
+     * @returns the kibnd of wave to be applied by the block
      */
     public kind = WaveBlockKind.SawTooth;
 

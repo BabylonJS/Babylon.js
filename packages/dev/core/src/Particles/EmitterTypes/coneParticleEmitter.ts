@@ -16,22 +16,22 @@ export class ConeParticleEmitter implements IParticleEmitterType {
     private _height: number;
 
     /**
-     * Gets or sets a value indicating where on the radius the start position should be picked (1 = everywhere, 0 = only surface)
+     * @returns a value indicating where on the radius the start position should be picked (1 = everywhere, 0 = only surface)
      */
     public radiusRange = 1;
 
     /**
-     * Gets or sets a value indicating where on the height the start position should be picked (1 = everywhere, 0 = only surface)
+     * @returns a value indicating where on the height the start position should be picked (1 = everywhere, 0 = only surface)
      */
     public heightRange = 1;
 
     /**
-     * Gets or sets a value indicating if all the particles should be emitted from the spawn point only (the base of the cone)
+     * @returns a value indicating if all the particles should be emitted from the spawn point only (the base of the cone)
      */
     public emitFromSpawnPointOnly = false;
 
     /**
-     * Gets or sets the radius of the emission cone
+     * @returns the radius of the emission cone
      */
     public get radius(): number {
         return this._radius;
@@ -43,7 +43,7 @@ export class ConeParticleEmitter implements IParticleEmitterType {
     }
 
     /**
-     * Gets or sets the angle of the emission cone
+     * @returns the angle of the emission cone
      */
     public get angle(): number {
         return this._angle;

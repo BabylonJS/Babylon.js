@@ -17,7 +17,7 @@ declare module "../abstractScene" {
         _prePassRenderer: Nullable<PrePassRenderer>;
 
         /**
-         * Gets or Sets the current prepass renderer associated to the scene.
+         * @returns the current prepass renderer associated to the scene.
          */
         prePassRenderer: Nullable<PrePassRenderer>;
 

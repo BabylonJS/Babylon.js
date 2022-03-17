@@ -135,7 +135,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      */
     public isLocal = false;
 
-    /** Gets or sets a matrix to use to compute projection */
+    /** @returns a matrix to use to compute projection */
     public defaultProjectionMatrix: Matrix;
 
     /**
@@ -706,7 +706,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
     /**
      * Not supported by GPUParticleSystem
-     * Gets or sets a boolean indicating that ramp gradients must be used
+     * @returns a boolean indicating that ramp gradients must be used
      * @see https://doc.babylonjs.com/babylon101/particles#ramp-gradients
      */
     public get useRampGradients(): boolean {

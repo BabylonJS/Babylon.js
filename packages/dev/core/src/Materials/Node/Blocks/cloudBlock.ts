@@ -10,7 +10,7 @@ import { Scene } from "../../../scene";
  * block used to Generate Fractal Brownian Motion Clouds
  */
 export class CloudBlock extends NodeMaterialBlock {
-    /** Gets or sets the number of octaves */
+    /** @returns the number of octaves */
     @editableInPropertyPage("Octaves", PropertyTypeForEdition.Int)
     public octaves = 6.0;
 

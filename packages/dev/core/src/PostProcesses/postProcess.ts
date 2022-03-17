@@ -42,7 +42,7 @@ export class PostProcess {
     public _parentContainer: Nullable<AbstractScene> = null;
 
     /**
-     * Gets or sets the unique id of the post process
+     * @returns the unique id of the post process
      */
     @serialize()
     public uniqueId: number;

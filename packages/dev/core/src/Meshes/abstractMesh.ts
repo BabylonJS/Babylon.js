@@ -236,7 +236,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     }
 
     /**
-     * Gets or sets a boolean indicating that the facets must be depth sorted on next call to `updateFacetData()`.
+     * @returns a boolean indicating that the facets must be depth sorted on next call to `updateFacetData()`.
      * Works only for updatable meshes.
      * Doesn't work with multi-materials
      * @see https://doc.babylonjs.com/how_to/how_to_use_facetdata#facet-depth-sort
@@ -277,7 +277,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     }
 
     /**
-     * Gets or sets the morph target manager
+     * @returns the morph target manager
      * @see https://doc.babylonjs.com/how_to/how_to_use_morphtargets
      */
     public get morphTargetManager(): Nullable<MorphTargetManager> {
@@ -293,7 +293,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     }
 
     /**
-     * Gets or sets the baked vertex animation manager
+     * @returns the baked vertex animation manager
      * @see https://doc.babylonjs.com/divingDeeper/animation/baked_texture_animations
      */
     public get bakedVertexAnimationManager(): Nullable<IBakedVertexAnimationManager> {
@@ -359,7 +359,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     // Properties
 
     /**
-     * Gets or sets the orientation for POV movement & rotation
+     * @returns the orientation for POV movement & rotation
      */
     public definedFacingForward = true;
 
@@ -370,14 +370,14 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     public _renderingGroup: Nullable<RenderingGroup> = null;
 
     /**
-     * Gets or sets mesh visibility between 0 and 1 (default is 1)
+     * @returns mesh visibility between 0 and 1 (default is 1)
      */
     public get visibility(): number {
         return this._internalAbstractMeshDataInfo._visibility;
     }
 
     /**
-     * Gets or sets mesh visibility between 0 and 1 (default is 1)
+     * @returns mesh visibility between 0 and 1 (default is 1)
      */
     public set visibility(value: number) {
         if (this._internalAbstractMeshDataInfo._visibility === value) {
@@ -393,41 +393,41 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         }
     }
 
-    /** Gets or sets the alpha index used to sort transparent meshes
+    /** @returns the alpha index used to sort transparent meshes
      * @see https://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered#alpha-index
      */
     public alphaIndex = Number.MAX_VALUE;
 
     /**
-     * Gets or sets a boolean indicating if the mesh is visible (renderable). Default is true
+     * @returns a boolean indicating if the mesh is visible (renderable). Default is true
      */
     public isVisible = true;
 
     /**
-     * Gets or sets a boolean indicating if the mesh can be picked (by scene.pick for instance or through actions). Default is true
+     * @returns a boolean indicating if the mesh can be picked (by scene.pick for instance or through actions). Default is true
      */
     public isPickable = true;
 
     /**
-     * Gets or sets a boolean indicating if the mesh can be near picked. Default is false
+     * @returns a boolean indicating if the mesh can be near picked. Default is false
      */
     public isNearPickable = false;
 
     /**
-     * Gets or sets a boolean indicating if the mesh can be near grabbed. Default is false
+     * @returns a boolean indicating if the mesh can be near grabbed. Default is false
      */
     public isNearGrabbable = false;
 
-    /** Gets or sets a boolean indicating that bounding boxes of subMeshes must be rendered as well (false by default) */
+    /** @returns a boolean indicating that bounding boxes of subMeshes must be rendered as well (false by default) */
     public showSubMeshesBoundingBox = false;
 
-    /** Gets or sets a boolean indicating if the mesh must be considered as a ray blocker for lens flares (false by default)
+    /** @returns a boolean indicating if the mesh must be considered as a ray blocker for lens flares (false by default)
      * @see https://doc.babylonjs.com/how_to/how_to_use_lens_flares
      */
     public isBlocker = false;
 
     /**
-     * Gets or sets a boolean indicating that pointer move events must be supported on this mesh (false by default)
+     * @returns a boolean indicating that pointer move events must be supported on this mesh (false by default)
      */
     public enablePointerMoveEvents = false;
 
@@ -443,7 +443,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         this._internalAbstractMeshDataInfo._renderingGroupId = value;
     }
 
-    /** Gets or sets current material */
+    /** @returns current material */
     public get material(): Nullable<Material> {
         return this._internalAbstractMeshDataInfo._material;
     }
@@ -497,7 +497,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     }
 
     /**
-     * Gets or sets a boolean indicating that this mesh can receive realtime shadows
+     * @returns a boolean indicating that this mesh can receive realtime shadows
      * @see https://doc.babylonjs.com/babylon101/shadows
      */
     public get receiveShadows(): boolean {
@@ -522,7 +522,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     /** Defines alpha to use when rendering overlay */
     public overlayAlpha = 0.5;
 
-    /** Gets or sets a boolean indicating that this mesh contains vertex color data with alpha values */
+    /** @returns a boolean indicating that this mesh contains vertex color data with alpha values */
     public get hasVertexAlpha(): boolean {
         return this._internalAbstractMeshDataInfo._hasVertexAlpha;
     }
@@ -536,7 +536,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         this._markSubMeshesAsMiscDirty();
     }
 
-    /** Gets or sets a boolean indicating that this mesh needs to use vertex color data to render (if this kind of vertex data is available in the geometry) */
+    /** @returns a boolean indicating that this mesh needs to use vertex color data to render (if this kind of vertex data is available in the geometry) */
     public get useVertexColors(): boolean {
         return this._internalAbstractMeshDataInfo._useVertexColors;
     }
@@ -550,7 +550,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     }
 
     /**
-     * Gets or sets a boolean indicating that bone animations must be computed by the CPU (false by default)
+     * @returns a boolean indicating that bone animations must be computed by the CPU (false by default)
      */
     public get computeBonesUsingShaders(): boolean {
         return this._internalAbstractMeshDataInfo._computeBonesUsingShaders;
@@ -564,7 +564,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         this._markSubMeshesAsAttributesDirty();
     }
 
-    /** Gets or sets the number of allowed bone influences per vertex (4 by default) */
+    /** @returns the number of allowed bone influences per vertex (4 by default) */
     public get numBoneInfluencers(): number {
         return this._internalAbstractMeshDataInfo._numBoneInfluencers;
     }
@@ -577,7 +577,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         this._markSubMeshesAsAttributesDirty();
     }
 
-    /** Gets or sets a boolean indicating that this mesh will allow fog to be rendered on it (true by default) */
+    /** @returns a boolean indicating that this mesh will allow fog to be rendered on it (true by default) */
     public get applyFog(): boolean {
         return this._internalAbstractMeshDataInfo._applyFog;
     }
@@ -598,14 +598,14 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         this._internalAbstractMeshDataInfo._enableDistantPicking = value;
     }
 
-    /** Gets or sets a boolean indicating that internal octree (if available) can be used to boost submeshes selection (true by default) */
+    /** @returns a boolean indicating that internal octree (if available) can be used to boost submeshes selection (true by default) */
     public useOctreeForRenderingSelection = true;
-    /** Gets or sets a boolean indicating that internal octree (if available) can be used to boost submeshes picking (true by default) */
+    /** @returns a boolean indicating that internal octree (if available) can be used to boost submeshes picking (true by default) */
     public useOctreeForPicking = true;
-    /** Gets or sets a boolean indicating that internal octree (if available) can be used to boost submeshes collision (true by default) */
+    /** @returns a boolean indicating that internal octree (if available) can be used to boost submeshes collision (true by default) */
     public useOctreeForCollisions = true;
     /**
-     * Gets or sets the current layer mask (default is 0x0FFFFFFF)
+     * @returns the current layer mask (default is 0x0FFFFFFF)
      * @see https://doc.babylonjs.com/divingDeeper/cameras/layerMasksAndMultiCam
      */
     public get layerMask(): number {
@@ -627,29 +627,29 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     public alwaysSelectAsActiveMesh = false;
 
     /**
-     * Gets or sets a boolean indicating that the bounding info does not need to be kept in sync (for performance reason)
+     * @returns a boolean indicating that the bounding info does not need to be kept in sync (for performance reason)
      */
     public doNotSyncBoundingInfo = false;
 
     /**
-     * Gets or sets the current action manager
+     * @returns the current action manager
      * @see https://doc.babylonjs.com/how_to/how_to_use_actions
      */
     public actionManager: Nullable<AbstractActionManager> = null;
 
     /**
-     * Gets or sets the ellipsoid used to impersonate this mesh when using collision engine (default is (0.5, 1, 0.5))
+     * @returns the ellipsoid used to impersonate this mesh when using collision engine (default is (0.5, 1, 0.5))
      * @see https://doc.babylonjs.com/babylon101/cameras,_mesh_collisions_and_gravity
      */
     public ellipsoid = new Vector3(0.5, 1, 0.5);
     /**
-     * Gets or sets the ellipsoid offset used to impersonate this mesh when using collision engine (default is (0, 0, 0))
+     * @returns the ellipsoid offset used to impersonate this mesh when using collision engine (default is (0, 0, 0))
      * @see https://doc.babylonjs.com/babylon101/cameras,_mesh_collisions_and_gravity
      */
     public ellipsoidOffset = new Vector3(0, 0, 0);
 
     /**
-     * Gets or sets a collision mask used to mask collisions (default is -1).
+     * @returns a collision mask used to mask collisions (default is -1).
      * A collision between A and B will happen if A.collisionGroup & b.collisionMask !== 0
      */
     public get collisionMask(): number {
@@ -661,7 +661,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     }
 
     /**
-     * Gets or sets a collision response flag (default is true).
+     * @returns a collision response flag (default is true).
      * when collisionResponse is false, events are still triggered but colliding entity has no response
      * This helps creating trigger volume when user wants collision feedback events but not position/velocity
      * to respond to the collision.
@@ -674,7 +674,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         this._internalAbstractMeshDataInfo._meshCollisionData._collisionResponse = response;
     }
     /**
-     * Gets or sets the current collision group mask (-1 by default).
+     * @returns the current collision group mask (-1 by default).
      * A collision between A and B will happen if A.collisionGroup & b.collisionMask !== 0
      */
     public get collisionGroup(): number {
@@ -686,7 +686,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     }
 
     /**
-     * Gets or sets current surrounding meshes (null by default).
+     * @returns current surrounding meshes (null by default).
      *
      * By default collision detection is tested against every mesh in the scene.
      * It is possible to set surroundingMeshes to a defined list of meshes and then only these specified
@@ -724,7 +724,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     public _renderId = 0;
 
     /**
-     * Gets or sets the list of subMeshes
+     * @returns the list of subMeshes
      * @see https://doc.babylonjs.com/how_to/multi_materials
      */
     public subMeshes: SubMesh[];
@@ -767,7 +767,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     public _transformMatrixTexture: Nullable<RawTexture> = null;
 
     /**
-     * Gets or sets a skeleton to apply skinning transformations
+     * @returns a skeleton to apply skinning transformations
      * @see https://doc.babylonjs.com/how_to/how_to_use_bones_and_skeletons
      */
     public set skeleton(value: Nullable<Skeleton>) {
@@ -1057,7 +1057,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     }
 
     /**
-     * Gets or sets a Vector3 depicting the mesh scaling along each local axis X, Y, Z.  Default is (1.0, 1.0, 1.0)
+     * @returns a Vector3 depicting the mesh scaling along each local axis X, Y, Z.  Default is (1.0, 1.0, 1.0)
      */
     public get scaling(): Vector3 {
         return this._scaling;
@@ -1646,7 +1646,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     // Collisions
 
     /**
-     * Gets or sets a boolean indicating that this mesh can be used in the collision engine
+     * @returns a boolean indicating that this mesh can be used in the collision engine
      * @see https://doc.babylonjs.com/babylon101/cameras,_mesh_collisions_and_gravity
      */
     public get checkCollisions(): boolean {

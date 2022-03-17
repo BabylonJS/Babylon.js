@@ -47,7 +47,7 @@ export class DirectionalLightFrustumViewer {
 
     private _transparency = 0.3;
     /**
-     * Gets or sets the transparency of the frustum planes
+     * @returns the transparency of the frustum planes
      */
     public get transparency(): number {
         return this._transparency;

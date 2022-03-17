@@ -41,7 +41,7 @@ export class WebRequest implements IWebRequest {
     }
 
     /**
-     * Gets or sets a function to be called when loading progress changes
+     * @returns a function to be called when loading progress changes
      */
     public get onprogress(): ((this: XMLHttpRequest, ev: ProgressEvent) => any) | null {
         return this._xhr.onprogress;
@@ -94,7 +94,7 @@ export class WebRequest implements IWebRequest {
     }
 
     /**
-     * Gets or sets the expected response type
+     * @returns the expected response type
      */
     public get responseType(): XMLHttpRequestResponseType {
         return this._xhr.responseType;
@@ -105,7 +105,7 @@ export class WebRequest implements IWebRequest {
     }
 
     /**
-     * Gets or sets the timeout value in milliseconds
+     * @returns the timeout value in milliseconds
      */
     public get timeout(): number {
         return this._xhr.timeout;

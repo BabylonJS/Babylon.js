@@ -22,7 +22,7 @@ export class LightInformationBlock extends NodeMaterialBlock {
     private _forcePrepareDefines: boolean;
 
     /**
-     * Gets or sets the light associated with this block
+     * @returns the light associated with this block
      */
     public light: Nullable<Light>;
 

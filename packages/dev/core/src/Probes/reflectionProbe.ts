@@ -70,7 +70,7 @@ export class ReflectionProbe {
     private _sceneUBOs: UniformBuffer[];
     private _currentSceneUBO: UniformBuffer;
 
-    /** Gets or sets probe position (center of the cube map) */
+    /** @returns probe position (center of the cube map) */
     @serializeAsVector3()
     public position = Vector3.Zero();
 
@@ -199,7 +199,7 @@ export class ReflectionProbe {
         });
     }
 
-    /** Gets or sets the number of samples to use for multi-sampling (0 by default). Required WebGL2 */
+    /** @returns the number of samples to use for multi-sampling (0 by default). Required WebGL2 */
     public get samples(): number {
         return this._renderTargetTexture.samples;
     }
@@ -208,7 +208,7 @@ export class ReflectionProbe {
         this._renderTargetTexture.samples = value;
     }
 
-    /** Gets or sets the refresh rate to use (on every frame by default) */
+    /** @returns the refresh rate to use (on every frame by default) */
     public get refreshRate(): number {
         return this._renderTargetTexture.refreshRate;
     }

@@ -55,7 +55,7 @@ export class DeviceOrientationCamera extends FreeCamera {
     }
 
     /**
-     * Gets or sets a boolean indicating that pointer input must be disabled on first orientation sensor update (Default: true)
+     * @returns a boolean indicating that pointer input must be disabled on first orientation sensor update (Default: true)
      */
     public get disablePointerInputWhenUsingDeviceOrientation() {
         return this._disablePointerInputWhenUsingDeviceOrientation;

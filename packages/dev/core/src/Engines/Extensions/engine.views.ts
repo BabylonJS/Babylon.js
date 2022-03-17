@@ -26,7 +26,7 @@ declare module "../../Engines/engine" {
         _inputElement: Nullable<HTMLElement>;
 
         /**
-         * Gets or sets the  HTML element to use for attaching events
+         * @returns the  HTML element to use for attaching events
          */
         inputElement: Nullable<HTMLElement>;
 
@@ -42,7 +42,7 @@ declare module "../../Engines/engine" {
          */
         activeView: Nullable<EngineView>;
 
-        /** Gets or sets the list of views */
+        /** @returns the list of views */
         views: EngineView[];
 
         /**

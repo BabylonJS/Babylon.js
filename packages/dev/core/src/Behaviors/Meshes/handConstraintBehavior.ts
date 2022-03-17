@@ -146,7 +146,7 @@ export class HandConstraintBehavior implements Behavior<TransformNode> {
         this._zoneAxis[HandConstraintZone.BELOW_WRIST] = new Vector3(0, -1, 0);
     }
 
-    /** gets or sets behavior's name */
+    /** @returns behavior's name */
     public get name() {
         return "HandConstraint";
     }

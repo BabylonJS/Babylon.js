@@ -106,12 +106,12 @@ export class NodeMaterialConnectionPoint {
     public needDualDirectionValidation: boolean = false;
 
     /**
-     * Gets or sets the additional types supported by this connection point
+     * @returns the additional types supported by this connection point
      */
     public acceptedConnectionPointTypes = new Array<NodeMaterialBlockConnectionPointTypes>();
 
     /**
-     * Gets or sets the additional types excluded by this connection point
+     * @returns the additional types excluded by this connection point
      */
     public excludedConnectionPointTypes = new Array<NodeMaterialBlockConnectionPointTypes>();
 
@@ -121,7 +121,7 @@ export class NodeMaterialConnectionPoint {
     public onConnectionObservable = new Observable<NodeMaterialConnectionPoint>();
 
     /**
-     * Gets or sets the associated variable name in the shader
+     * @returns the associated variable name in the shader
      */
     public get associatedVariableName(): string {
         if (this._ownerBlock.isInput) {
@@ -148,7 +148,7 @@ export class NodeMaterialConnectionPoint {
     }
 
     /**
-     * Gets or sets the connection point type (default is float)
+     * @returns the connection point type (default is float)
      */
     public get type(): NodeMaterialBlockConnectionPointTypes {
         if (this._type === NodeMaterialBlockConnectionPointTypes.AutoDetect) {
@@ -184,32 +184,32 @@ export class NodeMaterialConnectionPoint {
     }
 
     /**
-     * Gets or sets the connection point name
+     * @returns the connection point name
      */
     public name: string;
 
     /**
-     * Gets or sets the connection point name
+     * @returns the connection point name
      */
     public displayName: string;
 
     /**
-     * Gets or sets a boolean indicating that this connection point can be omitted
+     * @returns a boolean indicating that this connection point can be omitted
      */
     public isOptional: boolean;
 
     /**
-     * Gets or sets a boolean indicating that this connection point is exposed on a frame
+     * @returns a boolean indicating that this connection point is exposed on a frame
      */
     public isExposedOnFrame: boolean = false;
 
     /**
-     * Gets or sets number indicating the position that the port is exposed to on a frame
+     * @returns number indicating the position that the port is exposed to on a frame
      */
     public exposedPortPosition: number = -1;
 
     /**
-     * Gets or sets a string indicating that this uniform must be defined under a #ifdef
+     * @returns a string indicating that this uniform must be defined under a #ifdef
      */
     public define: string;
 
@@ -218,7 +218,7 @@ export class NodeMaterialConnectionPoint {
 
     private _target: NodeMaterialBlockTargets = NodeMaterialBlockTargets.VertexAndFragment;
 
-    /** Gets or sets the target of that connection point */
+    /** @returns the target of that connection point */
     public get target(): NodeMaterialBlockTargets {
         if (!this._prioritizeVertex || !this._ownerBlock) {
             return this._target;

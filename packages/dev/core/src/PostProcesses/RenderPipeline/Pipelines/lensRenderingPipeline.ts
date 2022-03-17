@@ -187,7 +187,7 @@ export class LensRenderingPipeline extends PostProcessRenderPipeline {
     }
 
     /**
-     * Gets or sets the edge blur
+     * @returns the edge blur
      */
     public get edgeBlur(): number {
         return this._edgeBlur;
@@ -198,7 +198,7 @@ export class LensRenderingPipeline extends PostProcessRenderPipeline {
     }
 
     /**
-     * Gets or sets the grain amount
+     * @returns the grain amount
      */
     public get grainAmount(): number {
         return this._grainAmount;
@@ -209,7 +209,7 @@ export class LensRenderingPipeline extends PostProcessRenderPipeline {
     }
 
     /**
-     * Gets or sets the chromatic aberration amount
+     * @returns the chromatic aberration amount
      */
     public get chromaticAberration(): number {
         return this._chromaticAberration;
@@ -220,7 +220,7 @@ export class LensRenderingPipeline extends PostProcessRenderPipeline {
     }
 
     /**
-     * Gets or sets the depth of field aperture
+     * @returns the depth of field aperture
      */
     public get dofAperture(): number {
         return this._dofAperture;
@@ -231,7 +231,7 @@ export class LensRenderingPipeline extends PostProcessRenderPipeline {
     }
 
     /**
-     * Gets or sets the edge distortion
+     * @returns the edge distortion
      */
     public get edgeDistortion(): number {
         return this._distortion;
@@ -242,7 +242,7 @@ export class LensRenderingPipeline extends PostProcessRenderPipeline {
     }
 
     /**
-     * Gets or sets the depth of field distortion
+     * @returns the depth of field distortion
      */
     public get dofDistortion(): number {
         return this._dofDistance;
@@ -253,7 +253,7 @@ export class LensRenderingPipeline extends PostProcessRenderPipeline {
     }
 
     /**
-     * Gets or sets the darken out of focus amount
+     * @returns the darken out of focus amount
      */
     public get darkenOutOfFocus(): number {
         return this._dofDarken;
@@ -264,7 +264,7 @@ export class LensRenderingPipeline extends PostProcessRenderPipeline {
     }
 
     /**
-     * Gets or sets a boolean indicating if blur noise is enabled
+     * @returns a boolean indicating if blur noise is enabled
      */
     public get blurNoise(): boolean {
         return this._blurNoise;
@@ -275,7 +275,7 @@ export class LensRenderingPipeline extends PostProcessRenderPipeline {
     }
 
     /**
-     * Gets or sets a boolean indicating if pentagon bokeh is enabled
+     * @returns a boolean indicating if pentagon bokeh is enabled
      */
     public get pentagonBokeh(): boolean {
         return this._pentagonBokehIsEnabled;
@@ -290,7 +290,7 @@ export class LensRenderingPipeline extends PostProcessRenderPipeline {
     }
 
     /**
-     * Gets or sets the highlight grain amount
+     * @returns the highlight grain amount
      */
     public get highlightsGain(): number {
         return this._highlightsGain;
@@ -301,7 +301,7 @@ export class LensRenderingPipeline extends PostProcessRenderPipeline {
     }
 
     /**
-     * Gets or sets the highlight threshold
+     * @returns the highlight threshold
      */
     public get highlightsThreshold(): number {
         return this._highlightsThreshold;

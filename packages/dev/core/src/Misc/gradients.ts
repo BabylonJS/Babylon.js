@@ -3,7 +3,7 @@ import { Color3, Color4 } from "../Maths/math.color";
 /** Interface used by value gradients (color, factor, ...) */
 export interface IValueGradient {
     /**
-     * Gets or sets the gradient value (between 0 and 1)
+     * @returns the gradient value (between 0 and 1)
      */
     gradient: number;
 }
@@ -18,15 +18,15 @@ export class ColorGradient implements IValueGradient {
      */
     public constructor(
         /**
-         * Gets or sets the gradient value (between 0 and 1)
+         * @returns the gradient value (between 0 and 1)
          */
         public gradient: number,
         /**
-         * Gets or sets first associated color
+         * @returns first associated color
          */
         public color1: Color4,
         /**
-         * Gets or sets second associated color
+         * @returns second associated color
          */
         public color2?: Color4
     ) {}
@@ -55,11 +55,11 @@ export class Color3Gradient implements IValueGradient {
      */
     public constructor(
         /**
-         * Gets or sets the gradient value (between 0 and 1)
+         * @returns the gradient value (between 0 and 1)
          */
         public gradient: number,
         /**
-         * Gets or sets the associated color
+         * @returns the associated color
          */
         public color: Color3
     ) {}
@@ -75,15 +75,15 @@ export class FactorGradient implements IValueGradient {
      */
     public constructor(
         /**
-         * Gets or sets the gradient value (between 0 and 1)
+         * @returns the gradient value (between 0 and 1)
          */
         public gradient: number,
         /**
-         * Gets or sets first associated factor
+         * @returns first associated factor
          */
         public factor1: number,
         /**
-         * Gets or sets second associated factor
+         * @returns second associated factor
          */
         public factor2?: number
     ) {}

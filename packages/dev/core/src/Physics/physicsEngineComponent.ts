@@ -161,7 +161,7 @@ declare module "../Meshes/abstractMesh" {
         _physicsImpostor: Nullable<PhysicsImpostor>;
 
         /**
-         * Gets or sets impostor used for physic simulation
+         * @returns impostor used for physic simulation
          * @see https://doc.babylonjs.com/features/physics_engine
          */
         physicsImpostor: Nullable<PhysicsImpostor>;

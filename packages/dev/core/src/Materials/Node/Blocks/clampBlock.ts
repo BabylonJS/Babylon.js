@@ -11,10 +11,10 @@ import { editableInPropertyPage, PropertyTypeForEdition } from "../nodeMaterialD
  * Block used to clamp a float
  */
 export class ClampBlock extends NodeMaterialBlock {
-    /** Gets or sets the minimum range */
+    /** @returns the minimum range */
     @editableInPropertyPage("Minimum", PropertyTypeForEdition.Float)
     public minimum = 0.0;
-    /** Gets or sets the maximum range */
+    /** @returns the maximum range */
     @editableInPropertyPage("Maximum", PropertyTypeForEdition.Float)
     public maximum = 1.0;
 

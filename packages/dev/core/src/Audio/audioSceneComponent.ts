@@ -77,25 +77,25 @@ declare module "../scene" {
         getSoundByName(name: string): Nullable<Sound>;
 
         /**
-         * Gets or sets if audio support is enabled
+         * @returns if audio support is enabled
          * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music
          */
         audioEnabled: boolean;
 
         /**
-         * Gets or sets if audio will be output to headphones
+         * @returns if audio will be output to headphones
          * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music
          */
         headphone: boolean;
 
         /**
-         * Gets or sets custom audio listener position provider
+         * @returns custom audio listener position provider
          * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music
          */
         audioListenerPositionProvider: Nullable<() => Vector3>;
 
         /**
-         * Gets or sets a refresh rate when using 3D audio positioning
+         * @returns a refresh rate when using 3D audio positioning
          */
         audioPositioningRefreshRate: number;
     }
@@ -280,7 +280,7 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
     }
 
     /**
-     * Gets or sets a refresh rate when using 3D audio positioning
+     * @returns a refresh rate when using 3D audio positioning
      */
     public audioPositioningRefreshRate = 500;
 

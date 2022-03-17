@@ -43,28 +43,28 @@ export class VirtualKeyboard extends StackPanel {
     /** Observable raised when a key is pressed */
     public onKeyPressObservable = new Observable<string>();
 
-    /** Gets or sets default key button width */
+    /** @returns default key button width */
     public defaultButtonWidth = "40px";
-    /** Gets or sets default key button height */
+    /** @returns default key button height */
     public defaultButtonHeight = "40px";
 
-    /** Gets or sets default key button left padding */
+    /** @returns default key button left padding */
     public defaultButtonPaddingLeft = "2px";
-    /** Gets or sets default key button right padding */
+    /** @returns default key button right padding */
     public defaultButtonPaddingRight = "2px";
-    /** Gets or sets default key button top padding */
+    /** @returns default key button top padding */
     public defaultButtonPaddingTop = "2px";
-    /** Gets or sets default key button bottom padding */
+    /** @returns default key button bottom padding */
     public defaultButtonPaddingBottom = "2px";
 
-    /** Gets or sets default key button foreground color */
+    /** @returns default key button foreground color */
     public defaultButtonColor = "#DDD";
-    /** Gets or sets default key button background color */
+    /** @returns default key button background color */
     public defaultButtonBackground = "#070707";
 
-    /** Gets or sets shift button foreground color */
+    /** @returns shift button foreground color */
     public shiftButtonColor = "#7799FF";
-    /** Gets or sets shift button thickness*/
+    /** @returns shift button thickness*/
     public selectedShiftThickness = 1;
 
     /** Gets shift key state */

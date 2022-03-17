@@ -29,7 +29,7 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
     public static DEFAULT_ANISOTROPIC_FILTERING_LEVEL = 4;
 
     /**
-     * Gets or sets the unique id of the texture
+     * @returns the unique id of the texture
      */
     @serialize()
     public uniqueId: number;
@@ -41,7 +41,7 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
     public name: string;
 
     /**
-     * Gets or sets an object used to store user defined information.
+     * @returns an object used to store user defined information.
      */
     @serialize()
     public metadata: any = null;
@@ -301,7 +301,7 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
     }
 
     /**
-     * Gets or sets whether or not the texture contains RGBD data.
+     * @returns whether or not the texture contains RGBD data.
      */
     public get isRGBD(): boolean {
         return this._texture != null && this._texture._isRGBD;

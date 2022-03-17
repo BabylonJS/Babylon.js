@@ -322,7 +322,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
     }
 
     /**
-     * Gets or sets the center of the bounding box associated with the texture (when in cube mode)
+     * @returns the center of the bounding box associated with the texture (when in cube mode)
      * It must define where the camera used to render the texture is set
      */
     public boundingBoxPosition = Vector3.Zero();
@@ -330,7 +330,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
     private _boundingBoxSize: Vector3;
 
     /**
-     * Gets or sets the size of the bounding box associated with the texture (when in cube mode)
+     * @returns the size of the bounding box associated with the texture (when in cube mode)
      * When defined, the cubemap will switch to local mode
      * @see https://community.arm.com/graphics/b/blog/posts/reflections-based-on-local-cubemaps-in-unity
      * @example https://www.babylonjs-playground.com/#RNASML

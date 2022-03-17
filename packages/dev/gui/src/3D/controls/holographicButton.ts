@@ -134,7 +134,7 @@ export class HolographicButton extends Button3D {
     }
 
     /**
-     * Gets or sets text for the button
+     * @returns text for the button
      */
     public get text(): string {
         return this._text;
@@ -150,7 +150,7 @@ export class HolographicButton extends Button3D {
     }
 
     /**
-     * Gets or sets the image url for the button
+     * @returns the image url for the button
      */
     public get imageUrl(): string {
         return this._imageUrl;

@@ -70,7 +70,7 @@ export class Observer<T> {
     /** @hidden */
     public _willBeUnregistered = false;
     /**
-     * Gets or sets a property defining that the observer as to be unregistered after the next notification
+     * @returns a property defining that the observer as to be unregistered after the next notification
      */
     public unregisterOnNextCall = false;
 

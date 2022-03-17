@@ -47,19 +47,19 @@ export class MRDLBackplateMaterial extends PushMaterial {
     private _iridescentMapTexture: Texture;
 
     /**
-     * Gets or sets the corner radius on the backplate. If this value is changed, update the lineWidth to match.
+     * @returns the corner radius on the backplate. If this value is changed, update the lineWidth to match.
      */
     @serialize()
     public radius = 0.3;
 
     /**
-     * Gets or sets the line width of the backplate.
+     * @returns the line width of the backplate.
      */
     @serialize()
     public lineWidth = 0.003;
 
     /**
-     * Gets or sets whether to use absolute sizes when calculating effects on the backplate.
+     * @returns whether to use absolute sizes when calculating effects on the backplate.
      * Since desktop and VR/AR have different relative sizes, it's usually best to keep this false.
      */
     @serialize()
@@ -69,37 +69,37 @@ export class MRDLBackplateMaterial extends PushMaterial {
     public _filterWidth = 1;
 
     /**
-     * Gets or sets the base color of the backplate.
+     * @returns the base color of the backplate.
      */
     @serialize()
     public baseColor = new Color4(0, 0, 0, 1);
 
     /**
-     * Gets or sets the line color of the backplate.
+     * @returns the line color of the backplate.
      */
     @serialize()
     public lineColor = new Color4(0.2, 0.262745, 0.4, 1);
 
     /**
-     * Gets or sets the top left Radii Multiplier.
+     * @returns the top left Radii Multiplier.
      */
     @serialize()
     public radiusTopLeft = 1.0;
 
     /**
-     * Gets or sets the top left Radii Multiplier.
+     * @returns the top left Radii Multiplier.
      */
     @serialize()
     public radiusTopRight = 1.0;
 
     /**
-     * Gets or sets the top left Radii Multiplier.
+     * @returns the top left Radii Multiplier.
      */
     @serialize()
     public radiusBottomLeft = 1.0;
 
     /**
-     * Gets or sets the top left Radii Multiplier.
+     * @returns the top left Radii Multiplier.
      */
     @serialize()
     public radiusBottomRight = 1.0;
@@ -108,13 +108,13 @@ export class MRDLBackplateMaterial extends PushMaterial {
     public _rate = 0;
 
     /**
-     * Gets or sets the color of the highlights on the backplate line.
+     * @returns the color of the highlights on the backplate line.
      */
     @serialize()
     public highlightColor = new Color4(0.239216, 0.435294, 0.827451, 1);
 
     /**
-     * Gets or sets the width of the highlights on the backplate line.
+     * @returns the width of the highlights on the backplate line.
      */
     @serialize()
     public highlightWidth = 0;
@@ -126,19 +126,19 @@ export class MRDLBackplateMaterial extends PushMaterial {
     public _highlight = 1;
 
     /**
-     * Gets or sets the intensity of the iridescence effect.
+     * @returns the intensity of the iridescence effect.
      */
     @serialize()
     public iridescenceIntensity = 0.45;
 
     /**
-     * Gets or sets the intensity of the iridescence effect on the backplate edges.
+     * @returns the intensity of the iridescence effect on the backplate edges.
      */
     @serialize()
     public iridescenceEdgeIntensity = 1;
 
     /**
-     * Gets or sets the Tint of the iridescence effect on the backplate.
+     * @returns the Tint of the iridescence effect on the backplate.
      */
     @serialize()
     public iridescenceTint = new Color4(1, 1, 1, 1);
@@ -147,7 +147,7 @@ export class MRDLBackplateMaterial extends PushMaterial {
     public _angle = -45;
 
     /**
-     * Gets or sets the opacity of the backplate (0.0 - 1.0).
+     * @returns the opacity of the backplate (0.0 - 1.0).
      */
     @serialize()
     public fadeOut = 1;
@@ -162,49 +162,49 @@ export class MRDLBackplateMaterial extends PushMaterial {
     public _verticalOffset = 0;
 
     /**
-     * Gets or sets the gradient color effect on the backplate.
+     * @returns the gradient color effect on the backplate.
      */
     @serialize()
     public gradientColor = new Color4(0.74902, 0.74902, 0.74902, 1);
 
     /**
-     * Gets or sets the top left gradient color effect on the backplate.
+     * @returns the top left gradient color effect on the backplate.
      */
     @serialize()
     public topLeftGradientColor = new Color4(0.00784314, 0.294118, 0.580392, 1);
 
     /**
-     * Gets or sets the top right gradient color effect on the backplate.
+     * @returns the top right gradient color effect on the backplate.
      */
     @serialize()
     public topRightGradientColor = new Color4(0.305882, 0, 1, 1);
 
     /**
-     * Gets or sets the bottom left gradient color effect on the backplate.
+     * @returns the bottom left gradient color effect on the backplate.
      */
     @serialize()
     public bottomLeftGradientColor = new Color4(0.133333, 0.258824, 0.992157, 1);
 
     /**
-     * Gets or sets the bottom right gradient color effect on the backplate.
+     * @returns the bottom right gradient color effect on the backplate.
      */
     @serialize()
     public bottomRightGradientColor = new Color4(0.176471, 0.176471, 0.619608, 1);
 
     /**
-     * Gets or sets the edge width of the backplate.
+     * @returns the edge width of the backplate.
      */
     @serialize()
     public edgeWidth = 0.5;
 
     /**
-     * Gets or sets the edge width of the backplate.
+     * @returns the edge width of the backplate.
      */
     @serialize()
     public edgePower = 1;
 
     /**
-     * Gets or sets the edge width of the backplate.
+     * @returns the edge width of the backplate.
      */
     @serialize()
     public edgeLineGradientBlend = 0.5;

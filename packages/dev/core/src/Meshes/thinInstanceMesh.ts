@@ -6,7 +6,7 @@ import { Matrix, Vector3, TmpVectors } from "../Maths/math.vector";
 declare module "./mesh" {
     export interface Mesh {
         /**
-         * Gets or sets a boolean defining if we want picking to pick thin instances as well
+         * @returns a boolean defining if we want picking to pick thin instances as well
          */
         thinInstanceEnablePicking: boolean;
         /**

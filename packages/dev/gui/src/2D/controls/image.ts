@@ -66,7 +66,7 @@ export class Image extends Control {
     }
 
     /**
-     * Gets or sets a boolean indicating if pointers should only be validated on pixels with alpha > 0.
+     * @returns a boolean indicating if pointers should only be validated on pixels with alpha > 0.
      * Beware using this as this will comsume more memory as the image has to be stored twice
      */
     @serialize()
@@ -83,7 +83,7 @@ export class Image extends Control {
     }
 
     /**
-     * Gets or sets the left value for slicing (9-patch)
+     * @returns the left value for slicing (9-patch)
      */
     @serialize()
     public get sliceLeft(): number {
@@ -101,7 +101,7 @@ export class Image extends Control {
     }
 
     /**
-     * Gets or sets the right value for slicing (9-patch)
+     * @returns the right value for slicing (9-patch)
      */
     @serialize()
     public get sliceRight(): number {
@@ -119,7 +119,7 @@ export class Image extends Control {
     }
 
     /**
-     * Gets or sets the top value for slicing (9-patch)
+     * @returns the top value for slicing (9-patch)
      */
     @serialize()
     public get sliceTop(): number {
@@ -137,7 +137,7 @@ export class Image extends Control {
     }
 
     /**
-     * Gets or sets the bottom value for slicing (9-patch)
+     * @returns the bottom value for slicing (9-patch)
      */
     @serialize()
     public get sliceBottom(): number {
@@ -155,7 +155,7 @@ export class Image extends Control {
     }
 
     /**
-     * Gets or sets the left coordinate in the source image
+     * @returns the left coordinate in the source image
      */
     @serialize()
     public get sourceLeft(): number {
@@ -173,7 +173,7 @@ export class Image extends Control {
     }
 
     /**
-     * Gets or sets the top coordinate in the source image
+     * @returns the top coordinate in the source image
      */
     @serialize()
     public get sourceTop(): number {
@@ -191,7 +191,7 @@ export class Image extends Control {
     }
 
     /**
-     * Gets or sets the width to capture in the source image
+     * @returns the width to capture in the source image
      */
     @serialize()
     public get sourceWidth(): number {
@@ -209,7 +209,7 @@ export class Image extends Control {
     }
 
     /**
-     * Gets or sets the height to capture in the source image
+     * @returns the height to capture in the source image
      */
     @serialize()
     public get sourceHeight(): number {
@@ -241,7 +241,7 @@ export class Image extends Control {
     }
 
     /**
-     * Gets or sets a boolean indicating if nine patch slices (left, top, right, bottom) should be read from image data
+     * @returns a boolean indicating if nine patch slices (left, top, right, bottom) should be read from image data
      */
     @serialize()
     public get populateNinePatchSlicesFromImage(): boolean {
@@ -271,7 +271,7 @@ export class Image extends Control {
     }
 
     /**
-     * Gets or sets a boolean indicating if the image can force its container to adapt its size
+     * @returns a boolean indicating if the image can force its container to adapt its size
      * @see https://doc.babylonjs.com/how_to/gui#image
      */
     @serialize()
@@ -291,7 +291,7 @@ export class Image extends Control {
         }
     }
 
-    /** Gets or sets the streching mode used by the image */
+    /** @returns the streching mode used by the image */
     @serialize()
     public get stretch(): number {
         return this._stretch;
@@ -452,7 +452,7 @@ export class Image extends Control {
     }
 
     /**
-     * Gets or sets the internal DOM image used to render the control
+     * @returns the internal DOM image used to render the control
      */
     public set domImage(value: IImage) {
         this._domImage = value;
@@ -500,7 +500,7 @@ export class Image extends Control {
     }
 
     /**
-     * Gets or sets image source url
+     * @returns image source url
      */
     public set source(value: Nullable<string>) {
         if (this._source === value) {
@@ -625,7 +625,7 @@ export class Image extends Control {
     }
 
     /**
-     * Gets or sets the cell width to use when animation sheet is enabled
+     * @returns the cell width to use when animation sheet is enabled
      * @see https://doc.babylonjs.com/how_to/gui#image
      */
     @serialize()
@@ -642,7 +642,7 @@ export class Image extends Control {
     }
 
     /**
-     * Gets or sets the cell height to use when animation sheet is enabled
+     * @returns the cell height to use when animation sheet is enabled
      * @see https://doc.babylonjs.com/how_to/gui#image
      */
     @serialize()
@@ -659,7 +659,7 @@ export class Image extends Control {
     }
 
     /**
-     * Gets or sets the cell id to use (this will turn on the animation sheet mode)
+     * @returns the cell id to use (this will turn on the animation sheet mode)
      * @see https://doc.babylonjs.com/how_to/gui#image
      */
     @serialize()

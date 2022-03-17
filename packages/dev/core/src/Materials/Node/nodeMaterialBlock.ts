@@ -26,7 +26,7 @@ export class NodeMaterialBlock {
     private _name = "";
     protected _isUnique = false;
 
-    /** Gets or sets a boolean indicating that only one input can be connected at a time */
+    /** @returns a boolean indicating that only one input can be connected at a time */
     public inputsAreExclusive = false;
 
     /** @hidden */
@@ -62,12 +62,12 @@ export class NodeMaterialBlock {
     }
 
     /**
-     * Gets or sets the unique id of the node
+     * @returns the unique id of the node
      */
     public uniqueId: number;
 
     /**
-     * Gets or sets the comments associated with this block
+     * @returns the comments associated with this block
      */
     public comments: string = "";
 
@@ -93,7 +93,7 @@ export class NodeMaterialBlock {
     }
 
     /**
-     * Gets or sets the build Id
+     * @returns the build Id
      */
     public get buildId(): number {
         return this._buildId;
@@ -104,7 +104,7 @@ export class NodeMaterialBlock {
     }
 
     /**
-     * Gets or sets the target of the block
+     * @returns the target of the block
      */
     public get target() {
         return this._target;
@@ -159,10 +159,10 @@ export class NodeMaterialBlock {
         return null;
     }
 
-    /** Gets or sets a boolean indicating that this input can be edited in the Inspector (false by default) */
+    /** @returns a boolean indicating that this input can be edited in the Inspector (false by default) */
     public visibleInInspector = false;
 
-    /** Gets or sets a boolean indicating that this input can be edited from a collapsed frame */
+    /** @returns a boolean indicating that this input can be edited from a collapsed frame */
     public visibleOnFrame = false;
 
     /**

@@ -14,7 +14,7 @@ export class ContentDisplay3D extends Control3D {
     protected _contentScaleRatio = 2;
 
     /**
-     * Gets or sets the GUI 2D content used to display the button's facade
+     * @returns the GUI 2D content used to display the button's facade
      */
     public get content(): Control {
         return this._content;
@@ -49,7 +49,7 @@ export class ContentDisplay3D extends Control3D {
     }
 
     /**
-     * Gets or sets the texture resolution used to render content (512 by default)
+     * @returns the texture resolution used to render content (512 by default)
      */
     public get contentResolution(): number {
         return this._contentResolution;

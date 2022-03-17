@@ -38,7 +38,7 @@ export class TextureBlock extends NodeMaterialBlock {
 
     protected _texture: Nullable<Texture>;
     /**
-     * Gets or sets the texture associated with the node
+     * @returns the texture associated with the node
      */
     public get texture(): Nullable<Texture> {
         if (this.source.isConnected) {
@@ -88,7 +88,7 @@ export class TextureBlock extends NodeMaterialBlock {
 
     private _convertToGammaSpace = false;
     /**
-     * Gets or sets a boolean indicating if content needs to be converted to gamma space
+     * @returns a boolean indicating if content needs to be converted to gamma space
      */
     public set convertToGammaSpace(value: boolean) {
         if (value === this._convertToGammaSpace) {
@@ -109,7 +109,7 @@ export class TextureBlock extends NodeMaterialBlock {
 
     private _convertToLinearSpace = false;
     /**
-     * Gets or sets a boolean indicating if content needs to be converted to linear space
+     * @returns a boolean indicating if content needs to be converted to linear space
      */
     public set convertToLinearSpace(value: boolean) {
         if (value === this._convertToLinearSpace) {
@@ -129,7 +129,7 @@ export class TextureBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets or sets a boolean indicating if multiplication of texture with level should be disabled
+     * @returns a boolean indicating if multiplication of texture with level should be disabled
      */
     public disableLevelMultiplication = false;
 

@@ -7,25 +7,25 @@ import { Nullable } from "../types";
  * @see https://doc.babylonjs.com/babylon101/sprites
  */
 export class ThinSprite {
-    /** Gets or sets the cell index in the sprite sheet */
+    /** @returns the cell index in the sprite sheet */
     public cellIndex: number;
-    /** Gets or sets the cell reference in the sprite sheet, uses sprite's filename when added to sprite sheet */
+    /** @returns the cell reference in the sprite sheet, uses sprite's filename when added to sprite sheet */
     public cellRef: string;
-    /** Gets or sets the current world position */
+    /** @returns the current world position */
     public position: IVector3Like;
-    /** Gets or sets the main color */
+    /** @returns the main color */
     public color: IColor4Like;
-    /** Gets or sets the width */
+    /** @returns the width */
     public width = 1.0;
-    /** Gets or sets the height */
+    /** @returns the height */
     public height = 1.0;
-    /** Gets or sets rotation angle */
+    /** @returns rotation angle */
     public angle = 0;
-    /** Gets or sets a boolean indicating if UV coordinates should be inverted in U axis */
+    /** @returns a boolean indicating if UV coordinates should be inverted in U axis */
     public invertU = false;
-    /** Gets or sets a boolean indicating if UV coordinates should be inverted in B axis */
+    /** @returns a boolean indicating if UV coordinates should be inverted in B axis */
     public invertV = false;
-    /** Gets or sets a boolean indicating if the sprite is visible (renderable). Default is true */
+    /** @returns a boolean indicating if the sprite is visible (renderable). Default is true */
     public isVisible = true;
 
     /**
@@ -40,17 +40,17 @@ export class ThinSprite {
         return this._fromIndex;
     }
 
-    /** Gets or sets the end key for the animation (setting it will restart the animation)  */
+    /** @returns the end key for the animation (setting it will restart the animation)  */
     public get toIndex() {
         return this._toIndex;
     }
 
-    /** Gets or sets a boolean indicating if the animation is looping (setting it will restart the animation)  */
+    /** @returns a boolean indicating if the animation is looping (setting it will restart the animation)  */
     public get loopAnimation() {
         return this._loopAnimation;
     }
 
-    /** Gets or sets the delay between cell changes (setting it will restart the animation)  */
+    /** @returns the delay between cell changes (setting it will restart the animation)  */
     public get delay() {
         return Math.max(this._delay, 1);
     }

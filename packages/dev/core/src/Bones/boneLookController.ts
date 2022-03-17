@@ -81,7 +81,7 @@ export class BoneLookController {
     private _fowardAxis: Vector3 = Vector3.Forward();
 
     /**
-     * Gets or sets the minimum yaw angle that the bone can look to
+     * @returns the minimum yaw angle that the bone can look to
      */
     get minYaw(): number {
         return this._minYaw;
@@ -98,7 +98,7 @@ export class BoneLookController {
     }
 
     /**
-     * Gets or sets the maximum yaw angle that the bone can look to
+     * @returns the maximum yaw angle that the bone can look to
      */
     get maxYaw(): number {
         return this._maxYaw;
@@ -115,7 +115,7 @@ export class BoneLookController {
     }
 
     /**
-     * Gets or sets the minimum pitch angle that the bone can look to
+     * @returns the minimum pitch angle that the bone can look to
      */
     get minPitch(): number {
         return this._minPitch;
@@ -127,7 +127,7 @@ export class BoneLookController {
     }
 
     /**
-     * Gets or sets the maximum pitch angle that the bone can look to
+     * @returns the maximum pitch angle that the bone can look to
      */
     get maxPitch(): number {
         return this._maxPitch;

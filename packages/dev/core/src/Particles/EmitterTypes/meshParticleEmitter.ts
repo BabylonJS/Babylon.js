@@ -30,7 +30,7 @@ export class MeshParticleEmitter implements IParticleEmitterType {
     public direction2 = new Vector3(0, 1.0, 0);
 
     /**
-     * Gets or sets a boolean indicating that particle directions must be built from mesh face normals
+     * @returns a boolean indicating that particle directions must be built from mesh face normals
      */
     public useMeshNormalsForDirection = true;
 

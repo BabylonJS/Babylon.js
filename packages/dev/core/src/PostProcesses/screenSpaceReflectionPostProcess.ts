@@ -20,27 +20,27 @@ declare type Scene = import("../scene").Scene;
  */
 export class ScreenSpaceReflectionPostProcess extends PostProcess {
     /**
-     * Gets or sets a reflection threshold mainly used to adjust the reflection's height.
+     * @returns a reflection threshold mainly used to adjust the reflection's height.
      */
     @serialize()
     public threshold: number = 1.2;
     /**
-     * Gets or sets the current reflection strength. 1.0 is an ideal value but can be increased/decreased for particular results.
+     * @returns the current reflection strength. 1.0 is an ideal value but can be increased/decreased for particular results.
      */
     @serialize()
     public strength: number = 1;
     /**
-     * Gets or sets the falloff exponent used while computing fresnel. More the exponent is high, more the reflections will be discrete.
+     * @returns the falloff exponent used while computing fresnel. More the exponent is high, more the reflections will be discrete.
      */
     @serialize()
     public reflectionSpecularFalloffExponent: number = 3;
     /**
-     * Gets or sets the step size used to iterate until the effect finds the color of the reflection's pixel. Typically in interval [0.1, 1.0]
+     * @returns the step size used to iterate until the effect finds the color of the reflection's pixel. Typically in interval [0.1, 1.0]
      */
     @serialize()
     public step: number = 1.0;
     /**
-     * Gets or sets the factor applied when computing roughness. Default value is 0.2.
+     * @returns the factor applied when computing roughness. Default value is 0.2.
      */
     @serialize()
     public roughnessFactor: number = 0.2;

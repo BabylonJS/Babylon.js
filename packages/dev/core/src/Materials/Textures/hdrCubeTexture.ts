@@ -68,7 +68,7 @@ export class HDRCubeTexture extends BaseTexture {
     }
 
     /**
-     * Gets or sets the center of the bounding box associated with the cube texture
+     * @returns the center of the bounding box associated with the cube texture
      * It must define where the camera used to render the texture was set
      */
     public boundingBoxPosition = Vector3.Zero();
@@ -76,7 +76,7 @@ export class HDRCubeTexture extends BaseTexture {
     private _boundingBoxSize: Vector3;
 
     /**
-     * Gets or sets the size of the bounding box associated with the cube texture
+     * @returns the size of the bounding box associated with the cube texture
      * When defined, the cubemap will switch to local mode
      * @see https://community.arm.com/graphics/b/blog/posts/reflections-based-on-local-cubemaps-in-unity
      * @example https://www.babylonjs-playground.com/#RNASML

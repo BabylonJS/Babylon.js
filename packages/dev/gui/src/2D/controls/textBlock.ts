@@ -72,7 +72,7 @@ export class TextBlock extends Control {
     }
 
     /**
-     * Gets or sets an boolean indicating that the TextBlock will be resized to fit container
+     * @returns an boolean indicating that the TextBlock will be resized to fit container
      */
     @serialize()
     public get resizeToFit(): boolean {
@@ -80,7 +80,7 @@ export class TextBlock extends Control {
     }
 
     /**
-     * Gets or sets an boolean indicating that the TextBlock will be resized to fit container
+     * @returns an boolean indicating that the TextBlock will be resized to fit container
      */
     public set resizeToFit(value: boolean) {
         if (this._resizeToFit === value) {
@@ -97,7 +97,7 @@ export class TextBlock extends Control {
     }
 
     /**
-     * Gets or sets a boolean indicating if text must be wrapped
+     * @returns a boolean indicating if text must be wrapped
      */
     @serialize()
     public get textWrapping(): TextWrapping | boolean {
@@ -105,7 +105,7 @@ export class TextBlock extends Control {
     }
 
     /**
-     * Gets or sets a boolean indicating if text must be wrapped
+     * @returns a boolean indicating if text must be wrapped
      */
     public set textWrapping(value: TextWrapping | boolean) {
         if (this._textWrapping === value) {
@@ -116,7 +116,7 @@ export class TextBlock extends Control {
     }
 
     /**
-     * Gets or sets text to display
+     * @returns text to display
      */
     @serialize()
     public get text(): string {
@@ -124,7 +124,7 @@ export class TextBlock extends Control {
     }
 
     /**
-     * Gets or sets text to display
+     * @returns text to display
      */
     public set text(value: string) {
         if (this._text === value) {
@@ -137,7 +137,7 @@ export class TextBlock extends Control {
     }
 
     /**
-     * Gets or sets text horizontal alignment (BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER by default)
+     * @returns text horizontal alignment (BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER by default)
      */
     @serialize()
     public get textHorizontalAlignment(): number {
@@ -145,7 +145,7 @@ export class TextBlock extends Control {
     }
 
     /**
-     * Gets or sets text horizontal alignment (BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER by default)
+     * @returns text horizontal alignment (BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER by default)
      */
     public set textHorizontalAlignment(value: number) {
         if (this._textHorizontalAlignment === value) {
@@ -157,7 +157,7 @@ export class TextBlock extends Control {
     }
 
     /**
-     * Gets or sets text vertical alignment (BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER by default)
+     * @returns text vertical alignment (BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER by default)
      */
     @serialize()
     public get textVerticalAlignment(): number {
@@ -165,7 +165,7 @@ export class TextBlock extends Control {
     }
 
     /**
-     * Gets or sets text vertical alignment (BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER by default)
+     * @returns text vertical alignment (BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER by default)
      */
     public set textVerticalAlignment(value: number) {
         if (this._textVerticalAlignment === value) {
@@ -177,7 +177,7 @@ export class TextBlock extends Control {
     }
 
     /**
-     * Gets or sets line spacing value
+     * @returns line spacing value
      */
     @serialize()
     public set lineSpacing(value: string | number) {
@@ -187,14 +187,14 @@ export class TextBlock extends Control {
     }
 
     /**
-     * Gets or sets line spacing value
+     * @returns line spacing value
      */
     public get lineSpacing(): string | number {
         return this._lineSpacing.toString(this._host);
     }
 
     /**
-     * Gets or sets outlineWidth of the text to display
+     * @returns outlineWidth of the text to display
      */
     @serialize()
     public get outlineWidth(): number {
@@ -202,7 +202,7 @@ export class TextBlock extends Control {
     }
 
     /**
-     * Gets or sets outlineWidth of the text to display
+     * @returns outlineWidth of the text to display
      */
     public set outlineWidth(value: number) {
         if (this._outlineWidth === value) {
@@ -213,7 +213,7 @@ export class TextBlock extends Control {
     }
 
     /**
-     * Gets or sets a boolean indicating that text must have underline
+     * @returns a boolean indicating that text must have underline
      */
     @serialize()
     public get underline(): boolean {
@@ -221,7 +221,7 @@ export class TextBlock extends Control {
     }
 
     /**
-     * Gets or sets a boolean indicating that text must have underline
+     * @returns a boolean indicating that text must have underline
      */
     public set underline(value: boolean) {
         if (this._underline === value) {
@@ -232,7 +232,7 @@ export class TextBlock extends Control {
     }
 
     /**
-     * Gets or sets an boolean indicating that text must be crossed out
+     * @returns an boolean indicating that text must be crossed out
      */
     @serialize()
     public get lineThrough(): boolean {
@@ -240,7 +240,7 @@ export class TextBlock extends Control {
     }
 
     /**
-     * Gets or sets an boolean indicating that text must be crossed out
+     * @returns an boolean indicating that text must be crossed out
      */
     public set lineThrough(value: boolean) {
         if (this._lineThrough === value) {
@@ -251,7 +251,7 @@ export class TextBlock extends Control {
     }
 
     /**
-     * Gets or sets outlineColor of the text to display
+     * @returns outlineColor of the text to display
      */
     @serialize()
     public get outlineColor(): string {
@@ -259,7 +259,7 @@ export class TextBlock extends Control {
     }
 
     /**
-     * Gets or sets outlineColor of the text to display
+     * @returns outlineColor of the text to display
      */
     public set outlineColor(value: string) {
         if (this._outlineColor === value) {

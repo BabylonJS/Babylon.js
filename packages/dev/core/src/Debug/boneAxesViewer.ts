@@ -12,11 +12,11 @@ import { Axis } from "../Maths/math.axis";
  */
 export class BoneAxesViewer extends AxesViewer {
     /**
-     * Gets or sets the target mesh where to display the axes viewer
+     * @returns the target mesh where to display the axes viewer
      */
     public mesh: Nullable<Mesh>;
     /**
-     * Gets or sets the target bone where to display the axes viewer
+     * @returns the target bone where to display the axes viewer
      */
     public bone: Nullable<Bone>;
 

@@ -8,7 +8,7 @@ import { StartsWith } from "../../Misc/stringTools";
  * Class used to store node based material build state
  */
 export class NodeMaterialBuildState {
-    /** Gets or sets a boolean indicating if the current state can emit uniform buffers */
+    /** @returns a boolean indicating if the current state can emit uniform buffers */
     public supportUniformBuffers = false;
     /**
      * Gets the list of emitted attributes

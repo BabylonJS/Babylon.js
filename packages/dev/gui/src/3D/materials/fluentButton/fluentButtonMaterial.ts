@@ -45,81 +45,81 @@ export class FluentButtonMaterial extends PushMaterial {
     public static BLOB_TEXTURE_URL = "https://assets.babylonjs.com/meshes/MRTK/mrtk-fluent-button-blob.png";
 
     /**
-     * Gets or sets the width of the glowing edge, relative to the scale of the button.
+     * @returns the width of the glowing edge, relative to the scale of the button.
      * (Default is 4% of the height).
      */
     @serialize()
     public edgeWidth = 0.04;
 
     /**
-     * Gets or sets the color of the glowing edge.
+     * @returns the color of the glowing edge.
      */
     @serializeAsColor4()
     public edgeColor = new Color4(0.592157, 0.592157, 0.592157, 1.0);
 
     /**
-     * Gets or sets the maximum intensity of the proximity light.
+     * @returns the maximum intensity of the proximity light.
      */
     @serialize()
     public proximityMaxIntensity = 0.45;
 
     /**
-     * Gets or sets the maximum distance for the proximity light (Default is 16mm).
+     * @returns the maximum distance for the proximity light (Default is 16mm).
      */
     @serialize()
     public proximityFarDistance = 0.16;
 
     /**
-     * Gets or sets the radius of the proximity light when near to the surface.
+     * @returns the radius of the proximity light when near to the surface.
      */
     @serialize()
     public proximityNearRadius = 1.5;
 
     /**
-     * Gets or sets the anisotropy of the proximity light.
+     * @returns the anisotropy of the proximity light.
      */
     @serialize()
     public proximityAnisotropy = 1;
 
     /**
-     * Gets or sets the amount of fuzzing in the selection focus.
+     * @returns the amount of fuzzing in the selection focus.
      */
     @serialize()
     public selectionFuzz = 0.5;
 
     /**
-     * Gets or sets an override value to display the button as selected.
+     * @returns an override value to display the button as selected.
      */
     @serialize()
     public selected = 0;
 
     /**
-     * Gets or sets a value to manually fade the blob size.
+     * @returns a value to manually fade the blob size.
      */
     @serialize()
     public selectionFade = 0;
 
     /**
-     * Gets or sets a value to manually shrink the blob size as it fades (see selectionFade).
+     * @returns a value to manually shrink the blob size as it fades (see selectionFade).
      */
     @serialize()
     public selectionFadeSize = 0.3;
 
     /**
-     * Gets or sets the distance from the button the cursor should be for the button
+     * @returns the distance from the button the cursor should be for the button
      * to appear selected (Default is 8cm).
      */
     @serialize()
     public selectedDistance = 0.08;
 
     /**
-     * Gets or sets the fall-off distance for the selection fade (Default is 8cm).
+     * @returns the fall-off distance for the selection fade (Default is 8cm).
      */
     @serialize()
     public selectedFadeLength = 0.08;
 
     /**
-     * Gets or sets the intensity of the luminous blob (Ranges 0-1, default is 0.5).
+     * @returns the intensity of the luminous blob (Ranges 0-1, default is 0.5).
      */
     @serialize()
     public blobIntensity = 0.5;
@@ -149,119 +149,119 @@ export class FluentButtonMaterial extends PushMaterial {
     public blobFadeLength = 0.08;
 
     /**
-     * Gets or sets whether the blob corresponding to the left index finger is enabled.
+     * @returns whether the blob corresponding to the left index finger is enabled.
      */
     @serialize()
     public leftBlobEnable = true;
 
     /**
-     * Gets or sets the size of the left blob when the left pointer is considered near. See blobNearDistance. (Default is 2.5cm).
+     * @returns the size of the left blob when the left pointer is considered near. See blobNearDistance. (Default is 2.5cm).
      */
     @serialize()
     public leftBlobNearSize = 0.025;
 
     /**
-     * Gets or sets the progress of the pulse animation on the left blob (Ranges 0-1).
+     * @returns the progress of the pulse animation on the left blob (Ranges 0-1).
      */
     @serialize()
     public leftBlobPulse = 0;
 
     /**
-     * Gets or sets the fade factor on the left blob.
+     * @returns the fade factor on the left blob.
      */
     @serialize()
     public leftBlobFade = 1;
 
     /**
-     * Gets or sets the inner fade on the left blob;
+     * @returns the inner fade on the left blob;
      */
     @serialize()
     public leftBlobInnerFade = 0.01;
 
     /**
-     * Gets or sets whether the blob corresponding to the right index finger is enabled.
+     * @returns whether the blob corresponding to the right index finger is enabled.
      */
     @serialize()
     public rightBlobEnable = true;
 
     /**
-     * Gets or sets the size of the right blob when the right pointer is considered near. See blobNearDistance. (Default is 2.5cm).
+     * @returns the size of the right blob when the right pointer is considered near. See blobNearDistance. (Default is 2.5cm).
      */
     @serialize()
     public rightBlobNearSize = 0.025;
 
     /**
-     * Gets or sets the progress of the pulse animation on the right blob (Ranges 0-1).
+     * @returns the progress of the pulse animation on the right blob (Ranges 0-1).
      */
     @serialize()
     public rightBlobPulse = 0;
 
     /**
-     * Gets or sets the fade factor on the right blob.
+     * @returns the fade factor on the right blob.
      */
     @serialize()
     public rightBlobFade = 1;
 
     /**
-     * Gets or sets the inner fade on the right blob;
+     * @returns the inner fade on the right blob;
      */
     @serialize()
     public rightBlobInnerFade = 0.01;
 
     /**
-     * Gets or sets the direction of the active face before the world transform is applied.
+     * @returns the direction of the active face before the world transform is applied.
      * This should almost always be set to -z.
      */
     @serializeAsVector3()
     public activeFaceDir = new Vector3(0, 0, -1);
 
     /**
-     * Gets or sets the button's up direction before the world transform is applied.
+     * @returns the button's up direction before the world transform is applied.
      * This should almost always be set to +y.
      */
     @serializeAsVector3()
     public activeFaceUp = new Vector3(0, 1, 0);
 
     /**
-     * Gets or sets whether the edge fade effect is enabled.
+     * @returns whether the edge fade effect is enabled.
      */
     @serialize()
     public enableFade = true;
 
     /**
-     * Gets or sets a value corresponding to the width of the edge fade effect (Default 1.5).
+     * @returns a value corresponding to the width of the edge fade effect (Default 1.5).
      */
     @serialize()
     public fadeWidth = 1.5;
 
     /**
-     * Gets or sets whether the active face is smoothly interpolated.
+     * @returns whether the active face is smoothly interpolated.
      */
     @serialize()
     public smoothActiveFace = true;
 
     /**
-     * Gets or sets whether the frame of the fluent button model is visible.
+     * @returns whether the frame of the fluent button model is visible.
      * This is usually only enabled for debugging purposes.
      */
     @serialize()
     public showFrame = false;
 
     /**
-     * Gets or sets whether the blob color texture is used for the proximity
+     * @returns whether the blob color texture is used for the proximity
      * light effect. This is usually only disabled for debugging purposes.
      */
     @serialize()
     public useBlobTexture = true;
 
     /**
-     * Gets or sets the world-space position of the tip of the left index finger.
+     * @returns the world-space position of the tip of the left index finger.
      */
     @serializeAsVector3()
     public globalLeftIndexTipPosition = Vector3.Zero();
 
     /**
-     * Gets or sets the world-space position of the tip of the right index finger.
+     * @returns the world-space position of the tip of the right index finger.
      */
     @serializeAsVector3()
     public globalRightIndexTipPosition = Vector3.Zero();

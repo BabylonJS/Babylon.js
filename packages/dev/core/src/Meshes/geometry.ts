@@ -27,11 +27,11 @@ declare type Mesh = import("../Meshes/mesh").Mesh;
 export class Geometry implements IGetSetVerticesData {
     // Members
     /**
-     * Gets or sets the ID of the geometry
+     * @returns the ID of the geometry
      */
     public id: string;
     /**
-     * Gets or sets the unique ID of the geometry
+     * @returns the unique ID of the geometry
      */
     public uniqueId: number;
     /**

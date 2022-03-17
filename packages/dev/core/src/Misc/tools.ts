@@ -41,7 +41,7 @@ interface IColor4Like {
  */
 export class Tools {
     /**
-     * Gets or sets the base URL to use to load assets
+     * @returns the base URL to use to load assets
      */
     public static get BaseUrl() {
         return FileToolsOptions.BaseUrl;
@@ -65,7 +65,7 @@ export class Tools {
     public static CustomRequestHeaders = WebRequest.CustomRequestHeaders;
 
     /**
-     * Gets or sets the retry strategy to apply when an error happens while loading an asset
+     * @returns the retry strategy to apply when an error happens while loading an asset
      */
     public static get DefaultRetryStrategy() {
         return FileToolsOptions.DefaultRetryStrategy;
@@ -89,7 +89,7 @@ export class Tools {
     }
 
     /**
-     * Gets or sets a global variable indicating if fallback texture must be used when a texture cannot be loaded
+     * @returns a global variable indicating if fallback texture must be used when a texture cannot be loaded
      * @ignorenaming
      */
     public static get UseFallbackTexture() {
@@ -345,7 +345,7 @@ export class Tools {
     }
 
     /**
-     * Gets or sets a function used to pre-process url before using them to load assets
+     * @returns a function used to pre-process url before using them to load assets
      */
     public static get PreprocessUrl() {
         return FileToolsOptions.PreprocessUrl;

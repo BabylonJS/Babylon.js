@@ -60,12 +60,12 @@ export class ToggleButton extends Rectangle {
     public onIsActiveChangedObservable = new Observable<boolean>();
 
     /**
-     * Gets or sets a boolean indicating that the toggle button will let internal controls handle picking instead of doing it directly using its bounding info
+     * @returns a boolean indicating that the toggle button will let internal controls handle picking instead of doing it directly using its bounding info
      */
     public delegatePickingToChildren = false;
 
     private _group: string;
-    /** Gets or sets group name this toggle button belongs to */
+    /** @returns group name this toggle button belongs to */
     public get group(): string {
         return this._group;
     }
@@ -78,7 +78,7 @@ export class ToggleButton extends Rectangle {
     }
 
     private _isActive = false;
-    /** Gets or sets a boolean indicating if the toogle button is active or not */
+    /** @returns a boolean indicating if the toogle button is active or not */
     public get isActive(): boolean {
         return this._isActive;
     }

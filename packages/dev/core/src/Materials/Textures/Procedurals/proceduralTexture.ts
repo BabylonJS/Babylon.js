@@ -60,7 +60,7 @@ export class ProceduralTexture extends Texture {
     public onBeforeGenerationObservable = new Observable<ProceduralTexture>();
 
     /**
-     * Gets or sets the node material used to create this texture (null if the texture was manually created)
+     * @returns the node material used to create this texture (null if the texture was manually created)
      */
     public nodeMaterialSource: Nullable<NodeMaterial> = null;
 

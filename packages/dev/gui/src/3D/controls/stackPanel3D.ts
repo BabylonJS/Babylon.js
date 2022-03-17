@@ -10,7 +10,7 @@ export class StackPanel3D extends Container3D {
     private _isVertical = false;
 
     /**
-     * Gets or sets a boolean indicating if the stack panel is vertical or horizontal (horizontal by default)
+     * @returns a boolean indicating if the stack panel is vertical or horizontal (horizontal by default)
      */
     public get isVertical(): boolean {
         return this._isVertical;
@@ -29,7 +29,7 @@ export class StackPanel3D extends Container3D {
     }
 
     /**
-     * Gets or sets the distance between elements
+     * @returns the distance between elements
      */
     public margin = 0.1;
 

@@ -139,7 +139,7 @@ export class UtilityLayerRenderer implements IDisposable {
      */
     public onPointerOutObservable = new Observable<number>();
 
-    /** Gets or sets a predicate that will be used to indicate utility meshes present in the main scene */
+    /** @returns a predicate that will be used to indicate utility meshes present in the main scene */
     public mainSceneTrackerPredicate: (mesh: Nullable<AbstractMesh>) => boolean;
 
     private _afterRenderObserver: Nullable<Observer<Camera>>;

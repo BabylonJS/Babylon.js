@@ -237,7 +237,7 @@ export class ThinEngine {
     // Updatable statics so stick with vars here
 
     /**
-     * Gets or sets the epsilon value used by collision engine
+     * @returns the epsilon value used by collision engine
      */
     public static CollisionsEpsilon = 0.001;
 
@@ -263,7 +263,7 @@ export class ThinEngine {
     }
 
     /**
-     * Gets or sets a boolean that indicates if textures must be forced to power of 2 size even if not required
+     * @returns a boolean that indicates if textures must be forced to power of 2 size even if not required
      */
     public forcePOTTextures = false;
 
@@ -273,22 +273,22 @@ export class ThinEngine {
     public isFullscreen = false;
 
     /**
-     * Gets or sets a boolean indicating if back faces must be culled. If false, front faces are culled instead (true by default)
+     * @returns a boolean indicating if back faces must be culled. If false, front faces are culled instead (true by default)
      * If non null, this takes precedence over the value from the material
      */
     public cullBackFaces: Nullable<boolean> = null;
 
     /**
-     * Gets or sets a boolean indicating if the engine must keep rendering even if the window is not in foregroun
+     * @returns a boolean indicating if the engine must keep rendering even if the window is not in foregroun
      */
     public renderEvenInBackground = true;
 
     /**
-     * Gets or sets a boolean indicating that cache can be kept between frames
+     * @returns a boolean indicating that cache can be kept between frames
      */
     public preventCacheWipeBetweenFrames = false;
 
-    /** Gets or sets a boolean indicating if the engine should validate programs after compilation */
+    /** @returns a boolean indicating if the engine should validate programs after compilation */
     public validateShaderPrograms = false;
 
     private _useReverseDepthBuffer = false;
@@ -325,7 +325,7 @@ export class ThinEngine {
     public readonly hasOriginBottomLeft = true;
 
     /**
-     * Gets or sets a boolean indicating that uniform buffers must be disabled even if they are supported
+     * @returns a boolean indicating that uniform buffers must be disabled even if they are supported
      */
     public disableUniformBuffers = false;
 
@@ -2777,7 +2777,9 @@ export class ThinEngine {
     private _compileRawShader(source: string, type: string): WebGLShader {
         const gl = this._gl;
 
-        while (gl.getError() != gl.NO_ERROR) {}
+        while (gl.getError() != gl.NO_ERROR) {
+            // no-op
+        }
 
         const shader = gl.createShader(type === "vertex" ? gl.VERTEX_SHADER : gl.FRAGMENT_SHADER);
 
@@ -2798,6 +2800,7 @@ export class ThinEngine {
     /**
      * @param shader
      * @hidden
+     * @returns the shader source
      */
     public _getShaderSource(shader: WebGLShader): Nullable<string> {
         return this._gl.getShaderSource(shader);

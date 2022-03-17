@@ -940,13 +940,13 @@ export class AssetsManager {
     public onProgressObservable = new Observable<IAssetsProgressEvent>();
 
     /**
-     * Gets or sets a boolean defining if the AssetsManager should use the default loading screen
+     * @returns a boolean defining if the AssetsManager should use the default loading screen
      * @see https://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
      */
     public useDefaultLoadingScreen = true;
 
     /**
-     * Gets or sets a boolean defining if the AssetsManager should automatically hide the loading screen
+     * @returns a boolean defining if the AssetsManager should automatically hide the loading screen
      * when all assets have been downloaded.
      * If set to false, you need to manually call in hideLoadingUI() once your scene is ready.
      */

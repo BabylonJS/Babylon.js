@@ -13,7 +13,7 @@ export class ScatterPanel extends VolumeBasedPanel {
     private _iteration = 100.0;
 
     /**
-     * Gets or sets the number of iteration to use to scatter the controls (100 by default)
+     * @returns the number of iteration to use to scatter the controls (100 by default)
      */
     public get iteration(): float {
         return this._iteration;

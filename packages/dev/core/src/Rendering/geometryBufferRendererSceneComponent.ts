@@ -11,7 +11,7 @@ declare module "../scene" {
         _geometryBufferRenderer: Nullable<GeometryBufferRenderer>;
 
         /**
-         * Gets or Sets the current geometry buffer associated to the scene.
+         * @returns the current geometry buffer associated to the scene.
          */
         geometryBufferRenderer: Nullable<GeometryBufferRenderer>;
 

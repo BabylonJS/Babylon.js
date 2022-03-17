@@ -22,7 +22,7 @@ class ParticleSystemSetEmitterCreationOptions {
  */
 export class ParticleSystemSet implements IDisposable {
     /**
-     * Gets or sets base Assets URL
+     * @returns base Assets URL
      */
     public static BaseAssetsUrl = "https://assets.babylonjs.com/particles";
 
@@ -36,7 +36,7 @@ export class ParticleSystemSet implements IDisposable {
     public systems = new Array<IParticleSystem>();
 
     /**
-     * Gets or sets the emitter node used with this set
+     * @returns the emitter node used with this set
      */
     public get emitterNode(): Nullable<AbstractMesh | Vector3> {
         return this._emitterNode;

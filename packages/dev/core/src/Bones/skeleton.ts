@@ -73,7 +73,7 @@ export class Skeleton implements IAnimatable {
 
     private _useTextureToStoreBoneMatrices = true;
     /**
-     * Gets or sets a boolean indicating that bone matrices should be stored as a texture instead of using shader uniforms (default is true).
+     * @returns a boolean indicating that bone matrices should be stored as a texture instead of using shader uniforms (default is true).
      * Please note that this option is not available if the hardware does not support it
      */
     public get useTextureToStoreBoneMatrices(): boolean {
@@ -88,7 +88,7 @@ export class Skeleton implements IAnimatable {
     private _animationPropertiesOverride: Nullable<AnimationPropertiesOverride> = null;
 
     /**
-     * Gets or sets the animation properties override
+     * @returns the animation properties override
      */
     public get animationPropertiesOverride(): Nullable<AnimationPropertiesOverride> {
         if (!this._animationPropertiesOverride) {

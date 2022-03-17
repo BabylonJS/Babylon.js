@@ -37,7 +37,7 @@ export interface ISpriteManager extends IDisposable {
     layerMask: number;
 
     /**
-     * Gets or sets a boolean indicating if the mesh can be picked (by scene.pick for instance or through actions). Default is true
+     * @returns a boolean indicating if the mesh can be picked (by scene.pick for instance or through actions). Default is true
      */
     isPickable: boolean;
 
@@ -58,7 +58,7 @@ export interface ISpriteManager extends IDisposable {
     sprites: Array<Sprite>;
 
     /**
-     * Gets or sets the spritesheet texture
+     * @returns the spritesheet texture
      */
     texture: Texture;
 
@@ -110,11 +110,11 @@ export class SpriteManager implements ISpriteManager {
 
     /** Gets the list of sprites */
     public sprites = new Array<Sprite>();
-    /** Gets or sets the rendering group id (0 by default) */
+    /** @returns the rendering group id (0 by default) */
     public renderingGroupId = 0;
-    /** Gets or sets camera layer mask */
+    /** @returns camera layer mask */
     public layerMask: number = 0x0fffffff;
-    /** Gets or sets a boolean indicating if the sprites are pickable */
+    /** @returns a boolean indicating if the sprites are pickable */
     public isPickable = false;
 
     /**
@@ -133,7 +133,7 @@ export class SpriteManager implements ISpriteManager {
     }
 
     /**
-     * Gets or sets the unique id of the sprite
+     * @returns the unique id of the sprite
      */
     public uniqueId: number;
 
@@ -159,7 +159,7 @@ export class SpriteManager implements ISpriteManager {
     }
 
     /**
-     * Gets or sets the spritesheet texture
+     * @returns the spritesheet texture
      */
     public get texture(): Texture {
         return this._spriteRenderer.texture as Texture;
@@ -187,7 +187,7 @@ export class SpriteManager implements ISpriteManager {
         this._spriteRenderer.cellHeight = value;
     }
 
-    /** Gets or sets a boolean indicating if the manager must consider scene fog when rendering */
+    /** @returns a boolean indicating if the manager must consider scene fog when rendering */
     public get fogEnabled(): boolean {
         return this._spriteRenderer.fogEnabled;
     }

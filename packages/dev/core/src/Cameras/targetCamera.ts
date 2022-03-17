@@ -27,7 +27,7 @@ export class TargetCamera extends Camera {
      */
     public cameraRotation = new Vector2(0, 0);
 
-    /** Gets or sets a boolean indicating that the scaling of the parent hierarchy will not be taken in account by the camera */
+    /** @returns a boolean indicating that the scaling of the parent hierarchy will not be taken in account by the camera */
     public ignoreParentScaling = false;
 
     /**

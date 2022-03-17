@@ -32,7 +32,7 @@ export class Container extends Control {
     /** @hidden */
     protected _intermediateTexture: Nullable<DynamicTexture> = null;
 
-    /** Gets or sets boolean indicating if children should be rendered to an intermediate texture rather than directly to host, useful for alpha blending */
+    /** @returns boolean indicating if children should be rendered to an intermediate texture rather than directly to host, useful for alpha blending */
     @serialize()
     public get renderToIntermediateTexture(): boolean {
         return this._renderToIntermediateTexture;
@@ -46,17 +46,17 @@ export class Container extends Control {
     }
 
     /**
-     * Gets or sets a boolean indicating that layout cycle errors should be displayed on the console
+     * @returns a boolean indicating that layout cycle errors should be displayed on the console
      */
     public logLayoutCycleErrors = false;
 
     /**
-     * Gets or sets the number of layout cycles (a change involved by a control while evaluating the layout) allowed
+     * @returns the number of layout cycles (a change involved by a control while evaluating the layout) allowed
      */
     @serialize()
     public maxLayoutCycle = 3;
 
-    /** Gets or sets a boolean indicating if the container should try to adapt to its children height */
+    /** @returns a boolean indicating if the container should try to adapt to its children height */
     @serialize()
     public get adaptHeightToChildren(): boolean {
         return this._adaptHeightToChildren;
@@ -76,7 +76,7 @@ export class Container extends Control {
         this._markAsDirty();
     }
 
-    /** Gets or sets a boolean indicating if the container should try to adapt to its children width */
+    /** @returns a boolean indicating if the container should try to adapt to its children width */
     @serialize()
     public get adaptWidthToChildren(): boolean {
         return this._adaptWidthToChildren;
@@ -96,7 +96,7 @@ export class Container extends Control {
         this._markAsDirty();
     }
 
-    /** Gets or sets background color */
+    /** @returns background color */
     @serialize()
     public get background(): string {
         return this._background;

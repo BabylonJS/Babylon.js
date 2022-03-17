@@ -367,7 +367,7 @@ export class SceneLoader {
     public static readonly DETAILED_LOGGING = Constants.SCENELOADER_DETAILED_LOGGING;
 
     /**
-     * Gets or sets a boolean indicating if entire scene must be loaded even if scene contains incremental data
+     * @returns a boolean indicating if entire scene must be loaded even if scene contains incremental data
      */
     public static get ForceFullSceneLoadingForIncremental() {
         return SceneLoaderFlags.ForceFullSceneLoadingForIncremental;
@@ -378,7 +378,7 @@ export class SceneLoader {
     }
 
     /**
-     * Gets or sets a boolean indicating if loading screen must be displayed while loading a scene
+     * @returns a boolean indicating if loading screen must be displayed while loading a scene
      */
     public static get ShowLoadingScreen(): boolean {
         return SceneLoaderFlags.ShowLoadingScreen;

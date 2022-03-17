@@ -78,14 +78,14 @@ export const FileToolsOptions: {
     PreprocessUrl: (url: string) => string;
 } = {
     /**
-     * Gets or sets the retry strategy to apply when an error happens while loading an asset.
+     * @returns the retry strategy to apply when an error happens while loading an asset.
      * When defining this function, return the wait time before trying again or return -1 to
      * stop retrying and error out.
      */
     DefaultRetryStrategy: RetryStrategy.ExponentialBackoff(),
 
     /**
-     * Gets or sets the base URL to use to load assets
+     * @returns the base URL to use to load assets
      */
     BaseUrl: "",
 
@@ -97,7 +97,7 @@ export const FileToolsOptions: {
     CorsBehavior: "anonymous",
 
     /**
-     * Gets or sets a function used to pre-process url before using them to load assets
+     * @returns a function used to pre-process url before using them to load assets
      * @param url
      */
     PreprocessUrl: (url: string) => {

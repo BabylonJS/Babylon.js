@@ -14,7 +14,7 @@ export class CylinderPanel extends VolumeBasedPanel {
     private _radius = 5.0;
 
     /**
-     * Gets or sets the radius of the cylinder where to project controls (5 by default)
+     * @returns the radius of the cylinder where to project controls (5 by default)
      */
     public get radius(): float {
         return this._radius;

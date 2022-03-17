@@ -206,7 +206,7 @@ export class SpotLight extends ShadowLight {
 
     private _projectionTextureProjectionLightMatrix = Matrix.Zero();
     /**
-     * Gets or sets the light projection matrix as used by the projection texture
+     * @returns the light projection matrix as used by the projection texture
      */
     public get projectionTextureProjectionLightMatrix(): Matrix {
         return this._projectionTextureProjectionLightMatrix;

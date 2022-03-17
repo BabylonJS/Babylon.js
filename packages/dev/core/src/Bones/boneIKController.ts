@@ -14,41 +14,41 @@ export class BoneIKController {
     private static _tmpMats: Matrix[] = [Matrix.Identity(), Matrix.Identity()];
 
     /**
-     * Gets or sets the target TransformNode
+     * @returns the target TransformNode
      * Name kept as mesh for back compability
      */
     public targetMesh: TransformNode;
 
-    /** Gets or sets the mesh used as pole */
+    /** @returns the mesh used as pole */
     public poleTargetMesh: TransformNode;
 
     /**
-     * Gets or sets the bone used as pole
+     * @returns the bone used as pole
      */
     public poleTargetBone: Nullable<Bone>;
 
     /**
-     * Gets or sets the target position
+     * @returns the target position
      */
     public targetPosition = Vector3.Zero();
 
     /**
-     * Gets or sets the pole target position
+     * @returns the pole target position
      */
     public poleTargetPosition = Vector3.Zero();
 
     /**
-     * Gets or sets the pole target local offset
+     * @returns the pole target local offset
      */
     public poleTargetLocalOffset = Vector3.Zero();
 
     /**
-     * Gets or sets the pole angle
+     * @returns the pole angle
      */
     public poleAngle = 0;
 
     /**
-     * Gets or sets the TransformNode associated with the controller
+     * @returns the TransformNode associated with the controller
      * Name kept as mesh for back compability
      */
     public mesh: TransformNode;
@@ -77,7 +77,7 @@ export class BoneIKController {
     private _adjustRoll = 0;
 
     /**
-     * Gets or sets maximum allowed angle
+     * @returns maximum allowed angle
      */
     public get maxAngle(): number {
         return this._maxAngle;

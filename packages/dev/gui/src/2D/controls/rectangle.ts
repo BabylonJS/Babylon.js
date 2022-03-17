@@ -9,7 +9,7 @@ export class Rectangle extends Container {
     private _thickness = 1;
     private _cornerRadius = 0;
 
-    /** Gets or sets border thickness */
+    /** @returns border thickness */
     @serialize()
     public get thickness(): number {
         return this._thickness;
@@ -24,7 +24,7 @@ export class Rectangle extends Container {
         this._markAsDirty();
     }
 
-    /** Gets or sets the corner radius angle */
+    /** @returns the corner radius angle */
     @serialize()
     public get cornerRadius(): number {
         return this._cornerRadius;

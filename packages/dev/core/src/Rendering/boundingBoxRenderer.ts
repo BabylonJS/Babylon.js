@@ -29,7 +29,7 @@ declare module "../scene" {
         _forceShowBoundingBoxes: boolean;
 
         /**
-         * Gets or sets a boolean indicating if all bounding boxes must be rendered
+         * @returns a boolean indicating if all bounding boxes must be rendered
          */
         forceShowBoundingBoxes: boolean;
 
@@ -70,7 +70,7 @@ declare module "../Meshes/abstractMesh" {
         _showBoundingBox: boolean;
 
         /**
-         * Gets or sets a boolean indicating if the bounding box must be rendered as well (false by default)
+         * @returns a boolean indicating if the bounding box must be rendered as well (false by default)
          */
         showBoundingBox: boolean;
     }

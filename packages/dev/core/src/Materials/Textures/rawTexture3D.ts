@@ -24,7 +24,7 @@ export class RawTexture3D extends Texture {
         width: number,
         height: number,
         depth: number,
-        /** Gets or sets the texture format to use */
+        /** @returns the texture format to use */
         public format: number,
         scene: Scene,
         generateMipMaps: boolean = true,

@@ -385,7 +385,7 @@ declare module "../../Meshes/abstractMesh" {
         occlusionQueryAlgorithmType: number;
 
         /**
-         * Gets or sets whether the mesh is occluded or not, it is used also to set the initial state of the mesh to be occluded or not
+         * @returns whether the mesh is occluded or not, it is used also to set the initial state of the mesh to be occluded or not
          * @see https://doc.babylonjs.com/features/occlusionquery
          */
         isOccluded: boolean;

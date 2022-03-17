@@ -44,7 +44,7 @@ export class FreeCameraGamepadInput implements ICameraInput<FreeCamera> {
     private _yAxisScale = 1.0;
 
     /**
-     * Gets or sets a boolean indicating that Yaxis (for right stick) should be inverted
+     * @returns a boolean indicating that Yaxis (for right stick) should be inverted
      */
     public get invertYAxis() {
         return this._yAxisScale !== 1.0;

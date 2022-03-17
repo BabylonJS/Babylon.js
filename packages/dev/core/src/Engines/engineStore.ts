@@ -33,7 +33,7 @@ export class EngineStore {
     }
 
     /**
-     * Gets or sets a global variable indicating if fallback texture must be used when a texture cannot be loaded
+     * @returns a global variable indicating if fallback texture must be used when a texture cannot be loaded
      * @ignorenaming
      */
     public static UseFallbackTexture = true;

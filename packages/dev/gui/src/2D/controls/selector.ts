@@ -395,7 +395,7 @@ export class SelectionPanel extends Rectangle {
         return this._panel;
     }
 
-    /** Gets or sets the headerColor */
+    /** @returns the headerColor */
     public get headerColor(): string {
         return this._headerColor;
     }
@@ -414,7 +414,7 @@ export class SelectionPanel extends Rectangle {
         }
     }
 
-    /** Gets or sets the button color */
+    /** @returns the button color */
     public get buttonColor(): string {
         return this._buttonColor;
     }
@@ -436,7 +436,7 @@ export class SelectionPanel extends Rectangle {
         }
     }
 
-    /** Gets or sets the label color */
+    /** @returns the label color */
     public get labelColor(): string {
         return this._labelColor;
     }
@@ -457,7 +457,7 @@ export class SelectionPanel extends Rectangle {
         }
     }
 
-    /** Gets or sets the button background */
+    /** @returns the button background */
     public get buttonBackground(): string {
         return this._buttonBackground;
     }
@@ -479,7 +479,7 @@ export class SelectionPanel extends Rectangle {
         }
     }
 
-    /** Gets or sets the color of separator bar */
+    /** @returns the color of separator bar */
     public get barColor(): string {
         return this._barColor;
     }
@@ -499,7 +499,7 @@ export class SelectionPanel extends Rectangle {
         }
     }
 
-    /** Gets or sets the height of separator bar */
+    /** @returns the height of separator bar */
     public get barHeight(): string {
         return this._barHeight;
     }
@@ -519,7 +519,7 @@ export class SelectionPanel extends Rectangle {
         }
     }
 
-    /** Gets or sets the height of spacers*/
+    /** @returns the height of spacers*/
     public get spacerHeight(): string {
         return this._spacerHeight;
     }

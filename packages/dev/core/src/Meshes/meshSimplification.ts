@@ -27,11 +27,11 @@ export interface ISimplifier {
  */
 export interface ISimplificationSettings {
     /**
-     * Gets or sets the expected quality
+     * @returns the expected quality
      */
     quality: number;
     /**
-     * Gets or sets the distance when this optimized version should be used
+     * @returns the distance when this optimized version should be used
      */
     distance: number;
     /**
@@ -316,16 +316,16 @@ export class QuadraticErrorSimplification implements ISimplifier {
 
     private _reconstructedMesh: Mesh;
 
-    /** Gets or sets the number pf sync iterations */
+    /** @returns the number pf sync iterations */
     public syncIterations = 5000;
 
-    /** Gets or sets the aggressiveness of the simplifier */
+    /** @returns the aggressiveness of the simplifier */
     public aggressiveness: number;
 
-    /** Gets or sets the number of allowed iterations for decimation */
+    /** @returns the number of allowed iterations for decimation */
     public decimationIterations: number;
 
-    /** Gets or sets the espilon to use for bounding box computation */
+    /** @returns the espilon to use for bounding box computation */
     public boundingBoxEpsilon: number;
 
     /**

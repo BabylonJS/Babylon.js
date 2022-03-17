@@ -22,7 +22,7 @@ export class PhotoDome extends TextureDome<Texture> {
      */
     public static readonly MODE_SIDEBYSIDE = TextureDome.MODE_SIDEBYSIDE;
     /**
-     * Gets or sets the texture being displayed on the sphere
+     * @returns the texture being displayed on the sphere
      */
     public get photoTexture(): Texture {
         return this.texture;

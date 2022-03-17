@@ -25,17 +25,17 @@ export class CurrentScreenBlock extends NodeMaterialBlock {
     private _tempTextureRead: string;
 
     /**
-     * Gets or sets the texture associated with the node
+     * @returns the texture associated with the node
      */
     public texture: Nullable<BaseTexture>;
 
     /**
-     * Gets or sets a boolean indicating if content needs to be converted to gamma space
+     * @returns a boolean indicating if content needs to be converted to gamma space
      */
     public convertToGammaSpace = false;
 
     /**
-     * Gets or sets a boolean indicating if content needs to be converted to linear space
+     * @returns a boolean indicating if content needs to be converted to linear space
      */
     public convertToLinearSpace = false;
 

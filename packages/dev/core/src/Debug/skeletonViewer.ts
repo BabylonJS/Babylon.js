@@ -314,7 +314,7 @@ export class SkeletonViewer {
     /** If SkeletonViewer scene scope. */
     private _scene: Scene;
 
-    /** Gets or sets the color used to render the skeleton */
+    /** @returns the color used to render the skeleton */
     public color: Color3 = Color3.White();
 
     /** Array of the points of the skeleton fo the line view. */
@@ -480,7 +480,7 @@ export class SkeletonViewer {
         this._buildLocalAxes();
     }
 
-    /** Gets or sets a boolean indicating if the viewer is enabled */
+    /** @returns a boolean indicating if the viewer is enabled */
     public set isEnabled(value: boolean) {
         if (this.isEnabled === value) {
             return;

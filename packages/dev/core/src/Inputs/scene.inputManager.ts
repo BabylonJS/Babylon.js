@@ -147,7 +147,7 @@ export class InputManager {
     }
 
     /**
-     * Gets or sets the current on-screen X position of the pointer
+     * @returns the current on-screen X position of the pointer
      */
     public get pointerX(): number {
         return this._pointerX;
@@ -158,7 +158,7 @@ export class InputManager {
     }
 
     /**
-     * Gets or sets the current on-screen Y position of the pointer
+     * @returns the current on-screen Y position of the pointer
      */
     public get pointerY(): number {
         return this._pointerY;

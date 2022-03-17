@@ -150,7 +150,7 @@ export interface DDSInfo {
  */
 export class DDSTools {
     /**
-     * Gets or sets a boolean indicating that LOD info is stored in alpha channel (false by default)
+     * @returns a boolean indicating that LOD info is stored in alpha channel (false by default)
      */
     public static StoreLODInAlphaChannel = false;
 

@@ -46,7 +46,7 @@ export class SpriteRenderer {
     public blendMode = Constants.ALPHA_COMBINE;
 
     /**
-     * Gets or sets a boolean indicating if alpha mode is automatically
+     * @returns a boolean indicating if alpha mode is automatically
      * reset.
      */
     public autoResetAlpha = true;
@@ -59,7 +59,7 @@ export class SpriteRenderer {
     public disableDepthWrite: boolean = false;
 
     /**
-     * Gets or sets a boolean indicating if the manager must consider scene fog when rendering
+     * @returns a boolean indicating if the manager must consider scene fog when rendering
      */
     public fogEnabled = true;
 

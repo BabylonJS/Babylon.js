@@ -61,7 +61,7 @@ export class BaseParticleSystem {
     public animations: Animation[] = [];
 
     /**
-     * Gets or sets the unique id of the particle system
+     * @returns the unique id of the particle system
      */
     public uniqueId: number;
 
@@ -161,11 +161,11 @@ export class BaseParticleSystem {
     public maxScaleY = 1;
 
     /**
-     * Gets or sets the minimal initial rotation in radians.
+     * @returns the minimal initial rotation in radians.
      */
     public minInitialRotation = 0;
     /**
-     * Gets or sets the maximal initial rotation in radians.
+     * @returns the maximal initial rotation in radians.
      */
     public maxInitialRotation = 0;
 
@@ -204,7 +204,7 @@ export class BaseParticleSystem {
     private _noiseTexture: Nullable<ProceduralTexture>;
 
     /**
-     * Gets or sets a texture used to add random noise to particle positions
+     * @returns a texture used to add random noise to particle positions
      */
     public get noiseTexture(): Nullable<ProceduralTexture> {
         return this._noiseTexture;
@@ -219,7 +219,7 @@ export class BaseParticleSystem {
         this._reset();
     }
 
-    /** Gets or sets the strength to apply to the noise value (default is (10, 10, 10)) */
+    /** @returns the strength to apply to the noise value (default is (10, 10, 10)) */
     public noiseStrength = new Vector3(10, 10, 10);
 
     /**
@@ -238,10 +238,10 @@ export class BaseParticleSystem {
      */
     public forceDepthWrite = false;
 
-    /** Gets or sets a value indicating how many cycles (or frames) must be executed before first rendering (this value has to be set before starting the system). Default is 0 */
+    /** @returns a value indicating how many cycles (or frames) must be executed before first rendering (this value has to be set before starting the system). Default is 0 */
     public preWarmCycles = 0;
 
-    /** Gets or sets a value indicating the time step multiplier to use in pre-warm mode (default is 1) */
+    /** @returns a value indicating the time step multiplier to use in pre-warm mode (default is 1) */
     public preWarmStepOffset = 1;
 
     /**
@@ -273,39 +273,39 @@ export class BaseParticleSystem {
      */
     public spriteRandomStartCell = false;
 
-    /** Gets or sets a Vector2 used to move the pivot (by default (0,0)) */
+    /** @returns a Vector2 used to move the pivot (by default (0,0)) */
     public translationPivot = new Vector2(0, 0);
 
     /** @hidden */
     public _isAnimationSheetEnabled: boolean;
 
     /**
-     * Gets or sets a boolean indicating that hosted animations (in the system.animations array) must be started when system.start() is called
+     * @returns a boolean indicating that hosted animations (in the system.animations array) must be started when system.start() is called
      */
     public beginAnimationOnStart = false;
 
     /**
-     * Gets or sets the frame to start the animation from when beginAnimationOnStart is true
+     * @returns the frame to start the animation from when beginAnimationOnStart is true
      */
     public beginAnimationFrom = 0;
 
     /**
-     * Gets or sets the frame to end the animation on when beginAnimationOnStart is true
+     * @returns the frame to end the animation on when beginAnimationOnStart is true
      */
     public beginAnimationTo = 60;
 
     /**
-     * Gets or sets a boolean indicating if animations must loop when beginAnimationOnStart is true
+     * @returns a boolean indicating if animations must loop when beginAnimationOnStart is true
      */
     public beginAnimationLoop = false;
 
     /**
-     * Gets or sets a world offset applied to all particles
+     * @returns a world offset applied to all particles
      */
     public worldOffset = new Vector3(0, 0, 0);
 
     /**
-     * Gets or sets whether an animation sprite sheet is enabled or not on the particle system
+     * @returns whether an animation sprite sheet is enabled or not on the particle system
      */
     public get isAnimationSheetEnabled(): boolean {
         return this._isAnimationSheetEnabled;
@@ -369,7 +369,7 @@ export class BaseParticleSystem {
         return this._dragGradients;
     }
 
-    /** Gets or sets a value indicating the damping to apply if the limit velocity factor is reached */
+    /** @returns a value indicating the damping to apply if the limit velocity factor is reached */
     public limitVelocityDamping = 0.4;
 
     /**
@@ -564,7 +564,7 @@ export class BaseParticleSystem {
     /** @hidden */
     public _billboardMode = Constants.PARTICLES_BILLBOARDMODE_ALL;
     /**
-     * Gets or sets the billboard mode to use when isBillboardBased = true.
+     * @returns the billboard mode to use when isBillboardBased = true.
      * Value can be: ParticleSystem.BILLBOARDMODE_ALL, ParticleSystem.BILLBOARDMODE_Y, ParticleSystem.BILLBOARDMODE_STRETCHED
      */
     public get billboardMode(): number {
@@ -583,7 +583,7 @@ export class BaseParticleSystem {
     /** @hidden */
     public _isBillboardBased = true;
     /**
-     * Gets or sets a boolean indicating if the particles must be rendered as billboard or aligned with the direction
+     * @returns a boolean indicating if the particles must be rendered as billboard or aligned with the direction
      */
     public get isBillboardBased(): boolean {
         return this._isBillboardBased;

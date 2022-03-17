@@ -67,7 +67,7 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
 
     protected _texture: Nullable<BaseTexture>;
     /**
-     * Gets or sets the texture associated with the node
+     * @returns the texture associated with the node
      */
     public get texture(): Nullable<BaseTexture> {
         return this._texture;

@@ -25,7 +25,7 @@ export class Animatable {
     private _frameToSyncFromJump: Nullable<number> = 0;
 
     /**
-     * Gets or sets a boolean indicating if the animatable must be disposed and removed at the end of the animation.
+     * @returns a boolean indicating if the animatable must be disposed and removed at the end of the animation.
      * This will only apply for non looping animation (default is true)
      */
     public disposeOnEnd = true;
@@ -65,7 +65,7 @@ export class Animatable {
     }
 
     /**
-     * Gets or sets the animatable weight (-1.0 by default meaning not weighted)
+     * @returns the animatable weight (-1.0 by default meaning not weighted)
      */
     public get weight(): number {
         return this._weight;
@@ -83,7 +83,7 @@ export class Animatable {
     }
 
     /**
-     * Gets or sets the speed ratio to apply to the animatable (1.0 by default)
+     * @returns the speed ratio to apply to the animatable (1.0 by default)
      */
     public get speedRatio(): number {
         return this._speedRatio;

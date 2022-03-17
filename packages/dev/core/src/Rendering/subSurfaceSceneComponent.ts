@@ -25,7 +25,7 @@ declare module "../abstractScene" {
         _subSurfaceConfiguration: Nullable<SubSurfaceConfiguration>;
 
         /**
-         * Gets or Sets the current prepass renderer associated to the scene.
+         * @returns the current prepass renderer associated to the scene.
          */
         subSurfaceConfiguration: Nullable<SubSurfaceConfiguration>;
 

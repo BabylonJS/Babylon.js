@@ -31,7 +31,7 @@ export class ImageBasedSlider extends BaseSlider {
     }
 
     /**
-     * Gets or sets the image used to render the background
+     * @returns the image used to render the background
      */
     public get backgroundImage(): Image {
         return this._backgroundImage;
@@ -52,7 +52,7 @@ export class ImageBasedSlider extends BaseSlider {
     }
 
     /**
-     * Gets or sets the image used to render the value bar
+     * @returns the image used to render the value bar
      */
     public get valueBarImage(): Image {
         return this._valueBarImage;
@@ -73,7 +73,7 @@ export class ImageBasedSlider extends BaseSlider {
     }
 
     /**
-     * Gets or sets the image used to render the thumb
+     * @returns the image used to render the thumb
      */
     public get thumbImage(): Image {
         return this._thumbImage;

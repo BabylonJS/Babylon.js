@@ -390,12 +390,12 @@ export class VRExperienceHelper {
     private _onVRRequestPresentComplete: (success: boolean) => void;
 
     /**
-     * Gets or sets a boolean indicating that gaze can be enabled even if pointer lock is not engage (useful on iOS where fullscreen mode and pointer lock are not supported)
+     * @returns a boolean indicating that gaze can be enabled even if pointer lock is not engage (useful on iOS where fullscreen mode and pointer lock are not supported)
      */
     public enableGazeEvenWhenNoPointerLock = false;
 
     /**
-     * Gets or sets a boolean indicating that the VREXperienceHelper will exit VR if double tap is detected
+     * @returns a boolean indicating that the VREXperienceHelper will exit VR if double tap is detected
      */
     public exitVROnDoubleTap = true;
 

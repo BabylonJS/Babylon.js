@@ -219,7 +219,7 @@ export class Material implements IAnimatable {
     public shadowDepthWrapper: Nullable<ShadowDepthWrapper> = null;
 
     /**
-     * Gets or sets a boolean indicating that the material is allowed (if supported) to do shader hot swapping.
+     * @returns a boolean indicating that the material is allowed (if supported) to do shader hot swapping.
      * This means that the material can keep using a previous shader while a new one is being compiled.
      * This is mostly used when shader parallel compilation is supported (true by default)
      */
@@ -232,7 +232,7 @@ export class Material implements IAnimatable {
     public id: string;
 
     /**
-     * Gets or sets the unique id of the material
+     * @returns the unique id of the material
      */
     @serialize()
     public uniqueId: number;
@@ -247,7 +247,7 @@ export class Material implements IAnimatable {
     public name: string;
 
     /**
-     * Gets or sets user defined metadata
+     * @returns user defined metadata
      */
     @serialize()
     public metadata: any = null;

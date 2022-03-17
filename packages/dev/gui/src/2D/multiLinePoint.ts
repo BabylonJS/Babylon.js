@@ -40,7 +40,7 @@ export class MultiLinePoint {
         this._point = new Vector3(0, 0, 0);
     }
 
-    /** Gets or sets x coordinate */
+    /** @returns x coordinate */
     public get x(): string | number {
         return this._x.toString(this._multiLine._host);
     }
@@ -55,7 +55,7 @@ export class MultiLinePoint {
         }
     }
 
-    /** Gets or sets y coordinate */
+    /** @returns y coordinate */
     public get y(): string | number {
         return this._y.toString(this._multiLine._host);
     }
@@ -70,7 +70,7 @@ export class MultiLinePoint {
         }
     }
 
-    /** Gets or sets the control associated with this point */
+    /** @returns the control associated with this point */
     public get control(): Nullable<Control> {
         return this._control;
     }
@@ -95,7 +95,7 @@ export class MultiLinePoint {
         this._multiLine._markAsDirty();
     }
 
-    /** Gets or sets the mesh associated with this point */
+    /** @returns the mesh associated with this point */
     public get mesh(): Nullable<AbstractMesh> {
         return this._mesh;
     }

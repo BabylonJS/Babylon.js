@@ -6,32 +6,32 @@ import { Plane } from "../../Maths/math";
  */
 export interface IClipPlanesHolder {
     /**
-     * Gets or sets the active clipplane 1
+     * @returns the active clipplane 1
      */
     clipPlane: Nullable<Plane>;
 
     /**
-     * Gets or sets the active clipplane 2
+     * @returns the active clipplane 2
      */
     clipPlane2: Nullable<Plane>;
 
     /**
-     * Gets or sets the active clipplane 3
+     * @returns the active clipplane 3
      */
     clipPlane3: Nullable<Plane>;
 
     /**
-     * Gets or sets the active clipplane 4
+     * @returns the active clipplane 4
      */
     clipPlane4: Nullable<Plane>;
 
     /**
-     * Gets or sets the active clipplane 5
+     * @returns the active clipplane 5
      */
     clipPlane5: Nullable<Plane>;
 
     /**
-     * Gets or sets the active clipplane 6
+     * @returns the active clipplane 6
      */
     clipPlane6: Nullable<Plane>;
 }

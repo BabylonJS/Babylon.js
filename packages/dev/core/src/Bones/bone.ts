@@ -28,7 +28,7 @@ export class Bone extends Node {
     public animations = new Array<Animation>();
 
     /**
-     * Gets or sets bone length
+     * @returns bone length
      */
     public length: number;
 
@@ -319,7 +319,7 @@ export class Bone extends Node {
         return this._linkedTransformNode;
     }
 
-    /** Gets or sets current position (in local space) */
+    /** @returns current position (in local space) */
     public get position(): Vector3 {
         this._decompose();
         return this._localPosition;
@@ -332,7 +332,7 @@ export class Bone extends Node {
         this._markAsDirtyAndCompose();
     }
 
-    /** Gets or sets current rotation (in local space) */
+    /** @returns current rotation (in local space) */
     public get rotation(): Vector3 {
         return this.getRotation();
     }
@@ -341,7 +341,7 @@ export class Bone extends Node {
         this.setRotation(newRotation);
     }
 
-    /** Gets or sets current rotation quaternion (in local space) */
+    /** @returns current rotation quaternion (in local space) */
     public get rotationQuaternion() {
         this._decompose();
         return this._localRotation;
@@ -351,7 +351,7 @@ export class Bone extends Node {
         this.setRotationQuaternion(newRotation);
     }
 
-    /** Gets or sets current scaling (in local space) */
+    /** @returns current scaling (in local space) */
     public get scaling(): Vector3 {
         return this.getScale();
     }

@@ -42,7 +42,7 @@ export class ColorPicker extends Control {
      */
     public onValueChangedObservable = new Observable<Color3>();
 
-    /** Gets or sets the color of the color picker */
+    /** @returns the color of the color picker */
     @serialize()
     public get value(): Color3 {
         return this._value;
@@ -91,7 +91,7 @@ export class ColorPicker extends Control {
     }
 
     /**
-     * Gets or sets control width
+     * @returns control width
      * @see https://doc.babylonjs.com/how_to/gui#position-and-size
      */
     @serialize()
@@ -115,7 +115,7 @@ export class ColorPicker extends Control {
     }
 
     /**
-     * Gets or sets control height
+     * @returns control height
      * @see https://doc.babylonjs.com/how_to/gui#position-and-size
      */
     @serialize()
@@ -123,7 +123,7 @@ export class ColorPicker extends Control {
         return this._height.toString(this._host);
     }
 
-    /** Gets or sets control height */
+    /** @returns control height */
     public set height(value: string | number) {
         if (this._height.toString(this._host) === value) {
             return;
@@ -139,7 +139,7 @@ export class ColorPicker extends Control {
         }
     }
 
-    /** Gets or sets control size */
+    /** @returns control size */
     @serialize()
     public get size(): string | number {
         return this.width;

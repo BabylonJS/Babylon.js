@@ -43,7 +43,7 @@ export interface IParticleSystem {
      */
     emitter: Nullable<AbstractMesh | Vector3>;
     /**
-     * Gets or sets a boolean indicating if the particles must be rendered as billboard or aligned with the direction
+     * @returns a boolean indicating if the particles must be rendered as billboard or aligned with the direction
      */
     isBillboardBased: boolean;
     /**
@@ -152,11 +152,11 @@ export interface IParticleSystem {
      */
     maxAngularSpeed: number;
     /**
-     * Gets or sets the minimal initial rotation in radians.
+     * @returns the minimal initial rotation in radians.
      */
     minInitialRotation: number;
     /**
-     * Gets or sets the maximal initial rotation in radians.
+     * @returns the maximal initial rotation in radians.
      */
     maxInitialRotation: number;
     /**
@@ -169,11 +169,11 @@ export interface IParticleSystem {
      */
     startDelay: number;
     /**
-     * Gets or sets a value indicating how many cycles (or frames) must be executed before first rendering (this value has to be set before starting the system). Default is 0
+     * @returns a value indicating how many cycles (or frames) must be executed before first rendering (this value has to be set before starting the system). Default is 0
      */
     preWarmCycles: number;
     /**
-     * Gets or sets a value indicating the time step multiplier to use in pre-warm mode (default is 1)
+     * @returns a value indicating the time step multiplier to use in pre-warm mode (default is 1)
      */
     preWarmStepOffset: number;
 
@@ -207,47 +207,47 @@ export interface IParticleSystem {
     spriteRandomStartCell: boolean;
 
     /**
-     * Gets or sets a boolean indicating if a spritesheet is used to animate the particles texture
+     * @returns a boolean indicating if a spritesheet is used to animate the particles texture
      */
     isAnimationSheetEnabled: boolean;
 
-    /** Gets or sets a Vector2 used to move the pivot (by default (0,0)) */
+    /** @returns a Vector2 used to move the pivot (by default (0,0)) */
     translationPivot: Vector2;
 
     /**
-     * Gets or sets a texture used to add random noise to particle positions
+     * @returns a texture used to add random noise to particle positions
      */
     noiseTexture: Nullable<BaseTexture>;
 
-    /** Gets or sets the strength to apply to the noise value (default is (10, 10, 10)) */
+    /** @returns the strength to apply to the noise value (default is (10, 10, 10)) */
     noiseStrength: Vector3;
 
     /**
-     * Gets or sets the billboard mode to use when isBillboardBased = true.
+     * @returns the billboard mode to use when isBillboardBased = true.
      * Value can be: ParticleSystem.BILLBOARDMODE_ALL, ParticleSystem.BILLBOARDMODE_Y, ParticleSystem.BILLBOARDMODE_STRETCHED
      */
     billboardMode: number;
 
-    /** Gets or sets a value indicating the damping to apply if the limit velocity factor is reached */
+    /** @returns a value indicating the damping to apply if the limit velocity factor is reached */
     limitVelocityDamping: number;
 
     /**
-     * Gets or sets a boolean indicating that hosted animations (in the system.animations array) must be started when system.start() is called
+     * @returns a boolean indicating that hosted animations (in the system.animations array) must be started when system.start() is called
      */
     beginAnimationOnStart: boolean;
 
     /**
-     * Gets or sets the frame to start the animation from when beginAnimationOnStart is true
+     * @returns the frame to start the animation from when beginAnimationOnStart is true
      */
     beginAnimationFrom: number;
 
     /**
-     * Gets or sets the frame to end the animation on when beginAnimationOnStart is true
+     * @returns the frame to end the animation on when beginAnimationOnStart is true
      */
     beginAnimationTo: number;
 
     /**
-     * Gets or sets a boolean indicating if animations must loop when beginAnimationOnStart is true
+     * @returns a boolean indicating if animations must loop when beginAnimationOnStart is true
      */
     beginAnimationLoop: boolean;
 
@@ -269,7 +269,7 @@ export interface IParticleSystem {
     /** Snippet ID if the particle system was created from the snippet server */
     snippetId: string;
 
-    /** Gets or sets a matrix to use to compute projection */
+    /** @returns a matrix to use to compute projection */
     defaultProjectionMatrix: Matrix;
 
     /**
@@ -604,7 +604,7 @@ export interface IParticleSystem {
      */
     getRampGradients(): Nullable<Array<Color3Gradient>>;
 
-    /** Gets or sets a boolean indicating that ramp gradients must be used
+    /** @returns a boolean indicating that ramp gradients must be used
      * @see https://doc.babylonjs.com/babylon101/particles#ramp-gradients
      */
     useRampGradients: boolean;

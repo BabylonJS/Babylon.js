@@ -22,7 +22,7 @@ export class Line extends Control {
     private _connectedControl: Control;
     private _connectedControlDirtyObserver: Nullable<Observer<Control>>;
 
-    /** Gets or sets the dash pattern */
+    /** @returns the dash pattern */
     @serialize()
     public get dash(): Array<number> {
         return this._dash;
@@ -37,7 +37,7 @@ export class Line extends Control {
         this._markAsDirty();
     }
 
-    /** Gets or sets the control connected with the line end */
+    /** @returns the control connected with the line end */
     public get connectedControl(): Control {
         return this._connectedControl;
     }
@@ -60,7 +60,7 @@ export class Line extends Control {
         this._markAsDirty();
     }
 
-    /** Gets or sets start coordinates on X axis */
+    /** @returns start coordinates on X axis */
     @serialize()
     public get x1(): string | number {
         return this._x1.toString(this._host);
@@ -76,7 +76,7 @@ export class Line extends Control {
         }
     }
 
-    /** Gets or sets start coordinates on Y axis */
+    /** @returns start coordinates on Y axis */
     @serialize()
     public get y1(): string | number {
         return this._y1.toString(this._host);
@@ -92,7 +92,7 @@ export class Line extends Control {
         }
     }
 
-    /** Gets or sets end coordinates on X axis */
+    /** @returns end coordinates on X axis */
     @serialize()
     public get x2(): string | number {
         return this._x2.toString(this._host);
@@ -108,7 +108,7 @@ export class Line extends Control {
         }
     }
 
-    /** Gets or sets end coordinates on Y axis */
+    /** @returns end coordinates on Y axis */
     @serialize()
     public get y2(): string | number {
         return this._y2.toString(this._host);
@@ -124,7 +124,7 @@ export class Line extends Control {
         }
     }
 
-    /** Gets or sets line width */
+    /** @returns line width */
     @serialize()
     public get lineWidth(): number {
         return this._lineWidth;
@@ -139,12 +139,12 @@ export class Line extends Control {
         this._markAsDirty();
     }
 
-    /** Gets or sets horizontal alignment */
+    /** @returns horizontal alignment */
     public set horizontalAlignment(value: number) {
         return;
     }
 
-    /** Gets or sets vertical alignment */
+    /** @returns vertical alignment */
     public set verticalAlignment(value: number) {
         return;
     }

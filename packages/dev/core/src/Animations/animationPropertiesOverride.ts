@@ -5,17 +5,17 @@ import { Animation } from "../Animations/animation";
  */
 export class AnimationPropertiesOverride {
     /**
-     * Gets or sets a value indicating if animation blending must be used
+     * @returns a value indicating if animation blending must be used
      */
     public enableBlending = false;
 
     /**
-     * Gets or sets the blending speed to use when enableBlending is true
+     * @returns the blending speed to use when enableBlending is true
      */
     public blendingSpeed = 0.01;
 
     /**
-     * Gets or sets the default loop mode to use
+     * @returns the default loop mode to use
      */
     public loopMode = Animation.ANIMATIONLOOPMODE_CYCLE;
 }

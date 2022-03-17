@@ -10,7 +10,7 @@ import { PrecisionDate } from "./precisionDate";
  */
 export class PerfCounter {
     /**
-     * Gets or sets a global boolean to turn on and off all the counters
+     * @returns a global boolean to turn on and off all the counters
      */
     public static Enabled = true;
 

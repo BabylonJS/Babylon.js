@@ -9,7 +9,7 @@ import { ICanvasRenderingContext } from "core/Engines/ICanvas";
 export class Ellipse extends Container {
     private _thickness = 1;
 
-    /** Gets or sets border thickness */
+    /** @returns border thickness */
     @serialize()
     public get thickness(): number {
         return this._thickness;

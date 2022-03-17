@@ -340,14 +340,14 @@ export class MergeMeshesOptimization extends SceneOptimization {
     private static _UpdateSelectionTree = false;
 
     /**
-     * Gets or sets a boolean which defines if optimization octree has to be updated
+     * @returns a boolean which defines if optimization octree has to be updated
      */
     public static get UpdateSelectionTree(): boolean {
         return MergeMeshesOptimization._UpdateSelectionTree;
     }
 
     /**
-     * Gets or sets a boolean which defines if optimization octree has to be updated
+     * @returns a boolean which defines if optimization octree has to be updated
      */
     public static set UpdateSelectionTree(value: boolean) {
         MergeMeshesOptimization._UpdateSelectionTree = value;
@@ -651,28 +651,28 @@ export class SceneOptimizer implements IDisposable {
     }
 
     /**
-     * Gets or sets the current target frame rate (60 by default)
+     * @returns the current target frame rate (60 by default)
      */
     public get targetFrameRate(): number {
         return this._targetFrameRate;
     }
 
     /**
-     * Gets or sets the current target frame rate (60 by default)
+     * @returns the current target frame rate (60 by default)
      */
     public set targetFrameRate(value: number) {
         this._targetFrameRate = value;
     }
 
     /**
-     * Gets or sets the current interval between two checks (every 2000ms by default)
+     * @returns the current interval between two checks (every 2000ms by default)
      */
     public get trackerDuration(): number {
         return this._trackerDuration;
     }
 
     /**
-     * Gets or sets the current interval between two checks (every 2000ms by default)
+     * @returns the current interval between two checks (every 2000ms by default)
      */
     public set trackerDuration(value: number) {
         this._trackerDuration = value;

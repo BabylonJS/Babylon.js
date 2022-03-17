@@ -68,7 +68,7 @@ export class TransformNode extends Node {
     private _billboardMode = TransformNode.BILLBOARDMODE_NONE;
 
     /**
-     * Gets or sets the billboard mode. Default is 0.
+     * @returns the billboard mode. Default is 0.
      *
      * | Value | Type | Description |
      * | --- | --- | --- |
@@ -92,7 +92,7 @@ export class TransformNode extends Node {
 
     private _preserveParentRotationForBillboard = false;
     /**
-     * Gets or sets a boolean indicating that parent rotation should be preserved when using billboards.
+     * @returns a boolean indicating that parent rotation should be preserved when using billboards.
      * This could be useful for glTF objects where parent rotation helps converting from right handed to left handed
      */
     public get preserveParentRotationForBillboard() {
@@ -116,7 +116,7 @@ export class TransformNode extends Node {
     private _infiniteDistance = false;
 
     /**
-     * Gets or sets the distance of the object to max, often used by skybox
+     * @returns the distance of the object to max, often used by skybox
      */
     public get infiniteDistance() {
         return this._infiniteDistance;
@@ -131,14 +131,14 @@ export class TransformNode extends Node {
     }
 
     /**
-     * Gets or sets a boolean indicating that non uniform scaling (when at least one component is different from others) should be ignored.
+     * @returns a boolean indicating that non uniform scaling (when at least one component is different from others) should be ignored.
      * By default the system will update normals to compensate
      */
     @serialize()
     public ignoreNonUniformScaling = false;
 
     /**
-     * Gets or sets a boolean indicating that even if rotationQuaternion is defined, you can keep updating rotation property and Babylon.js will just mix both
+     * @returns a boolean indicating that even if rotationQuaternion is defined, you can keep updating rotation property and Babylon.js will just mix both
      */
     @serialize()
     public reIntegrateRotationIntoRotationQuaternion = false;
@@ -205,7 +205,7 @@ export class TransformNode extends Node {
     }
 
     /**
-     * Gets or sets the rotation property : a Vector3 defining the rotation value in radians around each local axis X, Y, Z  (default is (0.0, 0.0, 0.0)).
+     * @returns the rotation property : a Vector3 defining the rotation value in radians around each local axis X, Y, Z  (default is (0.0, 0.0, 0.0)).
      * If rotation quaternion is set, this Vector3 will be ignored and copy from the quaternion
      */
     public get rotation(): Vector3 {
@@ -219,7 +219,7 @@ export class TransformNode extends Node {
     }
 
     /**
-     * Gets or sets the scaling property : a Vector3 defining the node scaling along each local axis X, Y, Z (default is (0.0, 0.0, 0.0)).
+     * @returns the scaling property : a Vector3 defining the node scaling along each local axis X, Y, Z (default is (0.0, 0.0, 0.0)).
      */
     public get scaling(): Vector3 {
         return this._scaling;
@@ -231,7 +231,7 @@ export class TransformNode extends Node {
     }
 
     /**
-     * Gets or sets the rotation Quaternion property : this a Quaternion object defining the node rotation by using a unit quaternion (undefined by default, but can be null).
+     * @returns the rotation Quaternion property : this a Quaternion object defining the node rotation by using a unit quaternion (undefined by default, but can be null).
      * If set, only the rotationQuaternion is then used to compute the node rotation (ie. node.rotation will be ignored)
      */
     public get rotationQuaternion(): Nullable<Quaternion> {

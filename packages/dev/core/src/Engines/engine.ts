@@ -44,7 +44,7 @@ export interface IDisplayChangedEventArgs {
  */
 interface IViewportOwnerLike {
     /**
-     * Gets or sets the viewport
+     * @returns the viewport
      */
     viewport: IViewportLike;
 }
@@ -383,12 +383,12 @@ export class Engine extends ThinEngine {
     // Members
 
     /**
-     * Gets or sets a boolean to enable/disable IndexedDB support and avoid XHR on .manifest
+     * @returns a boolean to enable/disable IndexedDB support and avoid XHR on .manifest
      **/
     public enableOfflineSupport = false;
 
     /**
-     * Gets or sets a boolean to enable/disable checking manifest if IndexedDB support is enabled (js will always consider the database is up to date)
+     * @returns a boolean to enable/disable checking manifest if IndexedDB support is enabled (js will always consider the database is up to date)
      **/
     public disableManifestCheck = false;
 
@@ -505,7 +505,7 @@ export class Engine extends ThinEngine {
     /** @hidden */
     public _drawCalls = new PerfCounter();
 
-    /** Gets or sets the tab index to set to the rendering canvas. 1 is the minimum value to set to be able to capture keyboard events */
+    /** @returns the tab index to set to the rendering canvas. 1 is the minimum value to set to be able to capture keyboard events */
     public canvasTabIndex = 1;
 
     /**
@@ -1572,7 +1572,7 @@ export class Engine extends ThinEngine {
 
     protected static _RenderPassIdCounter = 0;
     /**
-     * Gets or sets the current render pass id
+     * @returns the current render pass id
      */
     public currentRenderPassId = Constants.RENDERPASS_MAIN;
 

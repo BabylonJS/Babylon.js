@@ -5,13 +5,13 @@ export class DataBuffer {
     private static _Counter = 0;
 
     /**
-     * Gets or sets the number of objects referencing this buffer
+     * @returns the number of objects referencing this buffer
      */
     public references: number = 0;
-    /** Gets or sets the size of the underlying buffer */
+    /** @returns the size of the underlying buffer */
     public capacity: number = 0;
     /**
-     * Gets or sets a boolean indicating if the buffer contains 32bits indices
+     * @returns a boolean indicating if the buffer contains 32bits indices
      */
     public is32Bits: boolean = false;
 

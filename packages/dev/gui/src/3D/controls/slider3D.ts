@@ -77,7 +77,7 @@ export class Slider3D extends Control3D {
         return null;
     }
 
-    /** Gets or sets minimum value */
+    /** @returns minimum value */
     public get minimum(): number {
         return this._minimum;
     }
@@ -91,7 +91,7 @@ export class Slider3D extends Control3D {
         this._value = Math.max(Math.min(this._value, this._maximum), this._minimum);
     }
 
-    /** Gets or sets maximum value */
+    /** @returns maximum value */
     public get maximum(): number {
         return this._maximum;
     }
@@ -105,7 +105,7 @@ export class Slider3D extends Control3D {
         this._value = Math.max(Math.min(this._value, this._maximum), this._minimum);
     }
 
-    /** Gets or sets step value */
+    /** @returns step value */
     public get step(): number {
         return this._step;
     }
@@ -118,7 +118,7 @@ export class Slider3D extends Control3D {
         this._step = Math.max(Math.min(value, this._maximum - this._minimum), SLIDER_STEP);
     }
 
-    /** Gets or sets current value */
+    /** @returns current value */
     public get value(): number {
         return this._value;
     }

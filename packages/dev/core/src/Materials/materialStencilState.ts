@@ -34,7 +34,7 @@ export class MaterialStencilState implements IStencilState {
 
     private _func: number;
     /**
-     * Gets or sets the stencil function
+     * @returns the stencil function
      */
     @serialize()
     public get func(): number {
@@ -47,7 +47,7 @@ export class MaterialStencilState implements IStencilState {
 
     private _funcRef: number;
     /**
-     * Gets or sets the stencil function reference
+     * @returns the stencil function reference
      */
     @serialize()
     public get funcRef(): number {
@@ -60,7 +60,7 @@ export class MaterialStencilState implements IStencilState {
 
     private _funcMask: number;
     /**
-     * Gets or sets the stencil function mask
+     * @returns the stencil function mask
      */
     @serialize()
     public get funcMask(): number {
@@ -73,7 +73,7 @@ export class MaterialStencilState implements IStencilState {
 
     private _opStencilFail: number;
     /**
-     * Gets or sets the operation when the stencil test fails
+     * @returns the operation when the stencil test fails
      */
     @serialize()
     public get opStencilFail(): number {
@@ -86,7 +86,7 @@ export class MaterialStencilState implements IStencilState {
 
     private _opDepthFail: number;
     /**
-     * Gets or sets the operation when the depth test fails
+     * @returns the operation when the depth test fails
      */
     @serialize()
     public get opDepthFail(): number {
@@ -99,7 +99,7 @@ export class MaterialStencilState implements IStencilState {
 
     private _opStencilDepthPass: number;
     /**
-     * Gets or sets the operation when the stencil+depth test succeeds
+     * @returns the operation when the stencil+depth test succeeds
      */
     @serialize()
     public get opStencilDepthPass(): number {
@@ -112,7 +112,7 @@ export class MaterialStencilState implements IStencilState {
 
     private _mask: number;
     /**
-     * Gets or sets the stencil mask
+     * @returns the stencil mask
      */
     @serialize()
     public get mask(): number {

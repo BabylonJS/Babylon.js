@@ -82,31 +82,31 @@ export class Node implements IBehaviorAware<Node> {
     private _nodeDataStorage = new _InternalNodeDataInfo();
 
     /**
-     * Gets or sets the name of the node
+     * @returns the name of the node
      */
     @serialize()
     public name: string;
 
     /**
-     * Gets or sets the id of the node
+     * @returns the id of the node
      */
     @serialize()
     public id: string;
 
     /**
-     * Gets or sets the unique id of the node
+     * @returns the unique id of the node
      */
     @serialize()
     public uniqueId: number;
 
     /**
-     * Gets or sets a string used to store user defined state for the node
+     * @returns a string used to store user defined state for the node
      */
     @serialize()
     public state = "";
 
     /**
-     * Gets or sets an object used to store user defined information for the node
+     * @returns an object used to store user defined information for the node
      */
     @serialize()
     public metadata: any = null;
@@ -123,7 +123,7 @@ export class Node implements IBehaviorAware<Node> {
     public inspectableCustomProperties: IInspectable[];
 
     /**
-     * Gets or sets a boolean used to define if the node must be serialized
+     * @returns a boolean used to define if the node must be serialized
      */
     public get doNotSerialize() {
         if (this._nodeDataStorage._doNotSerialize) {
@@ -189,7 +189,7 @@ export class Node implements IBehaviorAware<Node> {
     }
 
     /**
-     * Gets or sets the parent of the node (without keeping the current position in the scene)
+     * @returns the parent of the node (without keeping the current position in the scene)
      * @see https://doc.babylonjs.com/how_to/parenting
      */
     public set parent(parent: Nullable<Node>) {
@@ -257,7 +257,7 @@ export class Node implements IBehaviorAware<Node> {
     private _animationPropertiesOverride: Nullable<AnimationPropertiesOverride> = null;
 
     /**
-     * Gets or sets the animation properties override
+     * @returns the animation properties override
      */
     public get animationPropertiesOverride(): Nullable<AnimationPropertiesOverride> {
         if (!this._animationPropertiesOverride) {

@@ -19,12 +19,12 @@ export class StackPanel extends Container {
     private _spacing = 0;
 
     /**
-     * Gets or sets a boolean indicating that layout warnings should be ignored
+     * @returns a boolean indicating that layout warnings should be ignored
      */
     @serialize()
     public ignoreLayoutWarnings = false;
 
-    /** Gets or sets a boolean indicating if the stack panel is vertical or horizontal*/
+    /** @returns a boolean indicating if the stack panel is vertical or horizontal*/
     @serialize()
     public get isVertical(): boolean {
         return this._isVertical;
@@ -40,7 +40,7 @@ export class StackPanel extends Container {
     }
 
     /**
-     * Gets or sets the spacing (in pixels) between each child.
+     * @returns the spacing (in pixels) between each child.
      */
     @serialize()
     public get spacing(): number {
@@ -57,7 +57,7 @@ export class StackPanel extends Container {
     }
 
     /**
-     * Gets or sets panel width.
+     * @returns panel width.
      * This value should not be set when in horizontal mode as it will be computed automatically
      */
     @serialize()
@@ -80,7 +80,7 @@ export class StackPanel extends Container {
     }
 
     /**
-     * Gets or sets panel height.
+     * @returns panel height.
      * This value should not be set when in vertical mode as it will be computed automatically
      */
     @serialize()

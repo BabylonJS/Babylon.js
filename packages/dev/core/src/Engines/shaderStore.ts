@@ -5,7 +5,7 @@ import { ShaderLanguage } from "../Materials/shaderLanguage";
  */
 export class ShaderStore {
     /**
-     * Gets or sets the relative url used to load shaders if using the engine in non-minified mode
+     * @returns the relative url used to load shaders if using the engine in non-minified mode
      */
     public static ShadersRepository = "src/Shaders/";
     /**
@@ -18,7 +18,7 @@ export class ShaderStore {
     public static IncludesShadersStore: { [key: string]: string } = {};
 
     /**
-     * Gets or sets the relative url used to load shaders (WGSL) if using the engine in non-minified mode
+     * @returns the relative url used to load shaders (WGSL) if using the engine in non-minified mode
      */
     public static ShadersRepositoryWGSL = "src/ShadersWGSL/";
     /**

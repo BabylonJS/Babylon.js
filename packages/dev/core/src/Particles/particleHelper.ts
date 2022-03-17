@@ -16,7 +16,7 @@ import { WebRequest } from "../Misc/webRequest";
  */
 export class ParticleHelper {
     /**
-     * Gets or sets base Assets URL
+     * @returns base Assets URL
      */
     public static BaseAssetsUrl = ParticleSystemSet.BaseAssetsUrl;
 

@@ -36,7 +36,7 @@ export enum ConditionalBlockConditions {
  */
 export class ConditionalBlock extends NodeMaterialBlock {
     /**
-     * Gets or sets the condition applied by the block
+     * @returns the condition applied by the block
      */
     public condition = ConditionalBlockConditions.LessThan;
 

@@ -107,7 +107,7 @@ export class LightConstants {
  */
 export interface ISortableLight {
     /**
-     * Gets or sets whether or not the shadows are enabled for this light. This can help turning off/on shadow without detaching
+     * @returns whether or not the shadows are enabled for this light. This can help turning off/on shadow without detaching
      * the current shadow generator.
      */
     shadowEnabled: boolean;

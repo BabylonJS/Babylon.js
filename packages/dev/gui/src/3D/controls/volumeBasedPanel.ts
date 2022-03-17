@@ -19,12 +19,12 @@ export abstract class VolumeBasedPanel extends Container3D {
     protected _cellHeight: number;
 
     /**
-     * Gets or sets the distance between elements
+     * @returns the distance between elements
      */
     public margin = 0;
 
     /**
-     * Gets or sets the orientation to apply to all controls (BABYLON.Container3D.FaceOriginReversedOrientation by default)
+     * @returns the orientation to apply to all controls (BABYLON.Container3D.FaceOriginReversedOrientation by default)
      * | Value | Type                                | Description |
      * | ----- | ----------------------------------- | ----------- |
      * | 0     | UNSET_ORIENTATION                   |  Control rotation will remain unchanged |
@@ -50,7 +50,7 @@ export abstract class VolumeBasedPanel extends Container3D {
     }
 
     /**
-     * Gets or sets the number of columns requested (10 by default).
+     * @returns the number of columns requested (10 by default).
      * The panel will automatically compute the number of rows based on number of child controls.
      */
     public get columns(): int {
@@ -71,7 +71,7 @@ export abstract class VolumeBasedPanel extends Container3D {
     }
 
     /**
-     * Gets or sets a the number of rows requested.
+     * @returns a the number of rows requested.
      * The panel will automatically compute the number of columns based on number of child controls.
      */
     public get rows(): int {

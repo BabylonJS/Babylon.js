@@ -27,7 +27,7 @@ export class Control3D implements IDisposable, IBehaviorAware<Control3D> {
     /** @hidden */
     public _isScaledByManager = false;
 
-    /** Gets or sets the control position in world space */
+    /** @returns the control position in world space */
     public get position(): Vector3 {
         if (!this._node) {
             return Vector3.Zero();
@@ -44,7 +44,7 @@ export class Control3D implements IDisposable, IBehaviorAware<Control3D> {
         this._node.position = value;
     }
 
-    /** Gets or sets the control scaling in world space */
+    /** @returns the control scaling in world space */
     public get scaling(): Vector3 {
         if (!this._node) {
             return new Vector3(1, 1, 1);
@@ -102,7 +102,7 @@ export class Control3D implements IDisposable, IBehaviorAware<Control3D> {
     public onPointerEnterObservable = new Observable<Control3D>();
 
     /**
-     * Gets or sets the parent container
+     * @returns the parent container
      */
     public parent: Nullable<Container3D>;
 
@@ -180,7 +180,7 @@ export class Control3D implements IDisposable, IBehaviorAware<Control3D> {
         return null;
     }
 
-    /** Gets or sets a boolean indicating if the control is visible */
+    /** @returns a boolean indicating if the control is visible */
     public get isVisible(): boolean {
         return this._isVisible;
     }

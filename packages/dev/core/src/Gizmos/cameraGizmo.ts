@@ -52,7 +52,7 @@ export class CameraGizmo extends Gizmo {
     }
     private _camera: Nullable<Camera> = null;
 
-    /** Gets or sets a boolean indicating if frustum lines must be rendered (true by default)) */
+    /** @returns a boolean indicating if frustum lines must be rendered (true by default)) */
     public get displayFrustum() {
         return this._cameraLinesMesh.isEnabled();
     }

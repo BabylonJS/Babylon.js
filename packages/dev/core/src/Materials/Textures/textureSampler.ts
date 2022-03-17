@@ -69,7 +69,7 @@ export class TextureSampler {
     }
 
     /**
-     * Gets or sets the comparison function (Constants.LESS, Constants.EQUAL, etc). Set 0 to not use a comparison function
+     * @returns the comparison function (Constants.LESS, Constants.EQUAL, etc). Set 0 to not use a comparison function
      */
     public get comparisonFunction() {
         return this._comparisonFunction;

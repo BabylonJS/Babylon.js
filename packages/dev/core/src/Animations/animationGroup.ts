@@ -64,7 +64,7 @@ export class AnimationGroup implements IDisposable {
     public _parentContainer: Nullable<AbstractScene> = null;
 
     /**
-     * Gets or sets the unique id of the node
+     * @returns the unique id of the node
      */
     public uniqueId: number;
 
@@ -99,7 +99,7 @@ export class AnimationGroup implements IDisposable {
     public onAnimationGroupPlayObservable = new Observable<AnimationGroup>();
 
     /**
-     * Gets or sets an object used to store user defined information for the node
+     * @returns an object used to store user defined information for the node
      */
     public metadata: any = null;
 
@@ -139,7 +139,7 @@ export class AnimationGroup implements IDisposable {
     }
 
     /**
-     * Gets or sets the speed ratio to use for all animations
+     * @returns the speed ratio to use for all animations
      */
     public set speedRatio(value: number) {
         if (this._speedRatio === value) {

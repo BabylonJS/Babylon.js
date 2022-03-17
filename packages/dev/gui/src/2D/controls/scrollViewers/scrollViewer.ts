@@ -270,7 +270,7 @@ export class ScrollViewer extends Rectangle {
     }
 
     /**
-     * Gets or sets the mouse wheel precision
+     * @returns the mouse wheel precision
      * from 0 to 1 with a default value of 0.05
      * */
     public get wheelPrecision(): number {
@@ -293,7 +293,7 @@ export class ScrollViewer extends Rectangle {
         this._wheelPrecision = value;
     }
 
-    /** Gets or sets the scroll bar container background color */
+    /** @returns the scroll bar container background color */
     public get scrollBackground(): string {
         return this._horizontalBarSpace.background;
     }
@@ -306,7 +306,7 @@ export class ScrollViewer extends Rectangle {
         this._verticalBarSpace.background = color;
     }
 
-    /** Gets or sets the bar color */
+    /** @returns the bar color */
     public get barColor(): string {
         return this._barColor;
     }
@@ -321,7 +321,7 @@ export class ScrollViewer extends Rectangle {
         this._verticalBar.color = color;
     }
 
-    /** Gets or sets the bar image */
+    /** @returns the bar image */
     public get thumbImage(): Image {
         return this._barImage;
     }
@@ -338,7 +338,7 @@ export class ScrollViewer extends Rectangle {
         vb.thumbImage = value;
     }
 
-    /** Gets or sets the horizontal bar image */
+    /** @returns the horizontal bar image */
     public get horizontalThumbImage(): Image {
         return this._horizontalBarImage;
     }
@@ -353,7 +353,7 @@ export class ScrollViewer extends Rectangle {
         hb.thumbImage = value;
     }
 
-    /** Gets or sets the vertical bar image */
+    /** @returns the vertical bar image */
     public get verticalThumbImage(): Image {
         return this._verticalBarImage;
     }
@@ -368,7 +368,7 @@ export class ScrollViewer extends Rectangle {
         vb.thumbImage = value;
     }
 
-    /** Gets or sets the size of the bar */
+    /** @returns the size of the bar */
     public get barSize(): number {
         return this._barSize;
     }
@@ -389,7 +389,7 @@ export class ScrollViewer extends Rectangle {
         }
     }
 
-    /** Gets or sets the length of the thumb */
+    /** @returns the length of the thumb */
     public get thumbLength(): number {
         return this._thumbLength;
     }
@@ -412,7 +412,7 @@ export class ScrollViewer extends Rectangle {
         this._markAsDirty();
     }
 
-    /** Gets or sets the height of the thumb */
+    /** @returns the height of the thumb */
     public get thumbHeight(): number {
         return this._thumbHeight;
     }
@@ -435,7 +435,7 @@ export class ScrollViewer extends Rectangle {
         this._markAsDirty();
     }
 
-    /** Gets or sets the height of the bar image */
+    /** @returns the height of the bar image */
     public get barImageHeight(): number {
         return this._barImageHeight;
     }
@@ -458,7 +458,7 @@ export class ScrollViewer extends Rectangle {
         this._markAsDirty();
     }
 
-    /** Gets or sets the height of the horizontal bar image */
+    /** @returns the height of the horizontal bar image */
     public get horizontalBarImageHeight(): number {
         return this._horizontalBarImageHeight;
     }
@@ -479,7 +479,7 @@ export class ScrollViewer extends Rectangle {
         this._markAsDirty();
     }
 
-    /** Gets or sets the height of the vertical bar image */
+    /** @returns the height of the vertical bar image */
     public get verticalBarImageHeight(): number {
         return this._verticalBarImageHeight;
     }
@@ -500,7 +500,7 @@ export class ScrollViewer extends Rectangle {
         this._markAsDirty();
     }
 
-    /** Gets or sets the bar background */
+    /** @returns the bar background */
     public get barBackground(): string {
         return this._barBackground;
     }
@@ -518,7 +518,7 @@ export class ScrollViewer extends Rectangle {
         this._dragSpace.background = color;
     }
 
-    /** Gets or sets the bar background image */
+    /** @returns the bar background image */
     public get barImage(): Image {
         return this._barBackgroundImage;
     }
@@ -534,7 +534,7 @@ export class ScrollViewer extends Rectangle {
         vb.backgroundImage = value;
     }
 
-    /** Gets or sets the horizontal bar background image */
+    /** @returns the horizontal bar background image */
     public get horizontalBarImage(): Image {
         return this._horizontalBarBackgroundImage;
     }
@@ -548,7 +548,7 @@ export class ScrollViewer extends Rectangle {
         hb.backgroundImage = value;
     }
 
-    /** Gets or sets the vertical bar background image */
+    /** @returns the vertical bar background image */
     public get verticalBarImage(): Image {
         return this._verticalBarBackgroundImage;
     }

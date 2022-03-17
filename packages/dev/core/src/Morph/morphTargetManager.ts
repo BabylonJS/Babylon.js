@@ -44,22 +44,22 @@ export class MorphTargetManager implements IDisposable {
     public _targetStoreTexture: Nullable<RawTexture2DArray>;
 
     /**
-     * Gets or sets a boolean indicating if influencers must be optimized (eg. recompiling the shader if less influencers are used)
+     * @returns a boolean indicating if influencers must be optimized (eg. recompiling the shader if less influencers are used)
      */
     public optimizeInfluencers = true;
 
     /**
-     * Gets or sets a boolean indicating if normals must be morphed
+     * @returns a boolean indicating if normals must be morphed
      */
     public enableNormalMorphing = true;
 
     /**
-     * Gets or sets a boolean indicating if tangents must be morphed
+     * @returns a boolean indicating if tangents must be morphed
      */
     public enableTangentMorphing = true;
 
     /**
-     * Gets or sets a boolean indicating if UV must be morphed
+     * @returns a boolean indicating if UV must be morphed
      */
     public enableUVMorphing = true;
 
@@ -162,7 +162,7 @@ export class MorphTargetManager implements IDisposable {
 
     private _useTextureToStoreTargets = true;
     /**
-     * Gets or sets a boolean indicating that targets should be stored as a texture instead of using vertex attributes (default is true).
+     * @returns a boolean indicating that targets should be stored as a texture instead of using vertex attributes (default is true).
      * Please note that this option is not available if the hardware does not support it
      */
     public get useTextureToStoreTargets(): boolean {

@@ -49,381 +49,381 @@ export class MRDLSliderThumbMaterial extends PushMaterial {
     private _blueGradientTexture: Texture;
 
     /**
-     * Gets or sets the corner Radius on the slider thumb.
+     * @returns the corner Radius on the slider thumb.
      */
     @serialize()
     public radius = 0.157;
 
     /**
-     * Gets or sets the Bevel Front on the slider thumb.
+     * @returns the Bevel Front on the slider thumb.
      */
     @serialize()
     public bevelFront = 0.065;
 
     /**
-     * Gets or sets the Bevel Front Stretch on the slider thumb.
+     * @returns the Bevel Front Stretch on the slider thumb.
      */
     @serialize()
     public bevelFrontStretch = 0.077;
 
     /**
-     * Gets or sets the Bevel Back on the slider thumb.
+     * @returns the Bevel Back on the slider thumb.
      */
     @serialize()
     public bevelBack = 0.031;
 
     /**
-     * Gets or sets the Bevel Back Stretch on the slider thumb.
+     * @returns the Bevel Back Stretch on the slider thumb.
      */
     @serialize()
     public bevelBackStretch = 0;
 
     /**
-     * Gets or sets the top left Radii Multiplier.
+     * @returns the top left Radii Multiplier.
      */
     @serialize()
     public radiusTopLeft = 1.0;
 
     /**
-     * Gets or sets the top left Radii Multiplier.
+     * @returns the top left Radii Multiplier.
      */
     @serialize()
     public radiusTopRight = 1.0;
 
     /**
-     * Gets or sets the top left Radii Multiplier.
+     * @returns the top left Radii Multiplier.
      */
     @serialize()
     public radiusBottomLeft = 1.0;
 
     /**
-     * Gets or sets the top left Radii Multiplier.
+     * @returns the top left Radii Multiplier.
      */
     @serialize()
     public radiusBottomRight = 1.0;
 
     /**
-     * Gets or sets whether Bulge is enabled.
+     * @returns whether Bulge is enabled.
      * Default is false.
      */
     @serialize()
     public bulgeEnabled = false;
 
     /**
-     * Gets or sets the Bulge Height.
+     * @returns the Bulge Height.
      */
     @serialize()
     public bulgeHeight = -0.323;
 
     /**
-     * Gets or sets the Bulge Radius.
+     * @returns the Bulge Radius.
      */
     @serialize()
     public bulgeRadius = 0.73;
 
     /**
-     * Gets or sets the Sun Intensity.
+     * @returns the Sun Intensity.
      */
     @serialize()
     public sunIntensity = 2;
 
     /**
-     * Gets or sets the Sun Theta.
+     * @returns the Sun Theta.
      */
     @serialize()
     public sunTheta = 0.937;
 
     /**
-     * Gets or sets the Sun Phi.
+     * @returns the Sun Phi.
      */
     @serialize()
     public sunPhi = 0.555;
 
     /**
-     * Gets or sets the Indirect Diffuse.
+     * @returns the Indirect Diffuse.
      */
     @serialize()
     public indirectDiffuse = 1;
 
     /**
-     * Gets or sets the base albedo.
+     * @returns the base albedo.
      */
     @serialize()
     public albedo = new Color4(0.0117647, 0.505882, 0.996078, 1);
 
     /**
-     * Gets or sets the Specular value.
+     * @returns the Specular value.
      */
     @serialize()
     public specular = 0;
 
     /**
-     * Gets or sets the Shininess value.
+     * @returns the Shininess value.
      */
     @serialize()
     public shininess = 10;
 
     /**
-     * Gets or sets the Sharpness value.
+     * @returns the Sharpness value.
      */
     @serialize()
     public sharpness = 0;
 
     /**
-     * Gets or sets the Subsurface value.
+     * @returns the Subsurface value.
      */
     @serialize()
     public subsurface = 0.31;
 
     /**
-     * Gets or sets the left gradient color.
+     * @returns the left gradient color.
      */
     @serialize()
     public leftGradientColor = new Color4(0.0117647, 0.505882, 0.996078, 1);
 
     /**
-     * Gets or sets the right gradient color.
+     * @returns the right gradient color.
      */
     @serialize()
     public rightGradientColor = new Color4(0.0117647, 0.505882, 0.996078, 1);
 
     /**
-     * Gets or sets the reflection value.
+     * @returns the reflection value.
      */
     @serialize()
     public reflection = 0.749;
 
     /**
-     * Gets or sets the front reflect value.
+     * @returns the front reflect value.
      */
     @serialize()
     public frontReflect = 0;
 
     /**
-     * Gets or sets the edge reflect value.
+     * @returns the edge reflect value.
      */
     @serialize()
     public edgeReflect = 0.09;
 
     /**
-     * Gets or sets the power value.
+     * @returns the power value.
      */
     @serialize()
     public power = 8.1;
 
     /**
-     * Gets or sets the sky color.
+     * @returns the sky color.
      */
     @serialize()
     public skyColor = new Color4(0.0117647, 0.960784, 0.996078, 1);
 
     /**
-     * Gets or sets the horizon color.
+     * @returns the horizon color.
      */
     @serialize()
     public horizonColor = new Color4(0.0117647, 0.333333, 0.996078, 1);
 
     /**
-     * Gets or sets the ground color.
+     * @returns the ground color.
      */
     @serialize()
     public groundColor = new Color4(0, 0.254902, 0.996078, 1);
 
     /**
-     * Gets or sets the horizon power value.
+     * @returns the horizon power value.
      */
     @serialize()
     public horizonPower = 1;
 
     /**
-     * Gets or sets the finger occlusion width value.
+     * @returns the finger occlusion width value.
      */
     @serialize()
     public width = 0.02;
 
     /**
-     * Gets or sets the finger occlusion fuzz value.
+     * @returns the finger occlusion fuzz value.
      */
     @serialize()
     public fuzz = 0.5;
 
     /**
-     * Gets or sets the minimum finger occlusion fuzz value.
+     * @returns the minimum finger occlusion fuzz value.
      */
     @serialize()
     public minFuzz = 0.001;
 
     /**
-     * Gets or sets the finger occlusion clip fade value.
+     * @returns the finger occlusion clip fade value.
      */
     @serialize()
     public clipFade = 0.01;
 
     /**
-     * Gets or sets the hue shift value.
+     * @returns the hue shift value.
      */
     @serialize()
     public hueShift = 0;
 
     /**
-     * Gets or sets the saturation shift value.
+     * @returns the saturation shift value.
      */
     @serialize()
     public saturationShift = 0;
 
     /**
-     * Gets or sets the value shift.
+     * @returns the value shift.
      */
     @serialize()
     public valueShift = 0;
 
     /**
-     * Gets or sets the position of the hover glow effect.
+     * @returns the position of the hover glow effect.
      */
     @serialize()
     public blobPosition = new Vector3(0, 0, 0.1);
 
     /**
-     * Gets or sets the intensity of the hover glow effect.
+     * @returns the intensity of the hover glow effect.
      */
     @serialize()
     public blobIntensity = 0.5;
 
     /**
-     * Gets or sets the near size of the hover glow effect.
+     * @returns the near size of the hover glow effect.
      */
     @serialize()
     public blobNearSize = 0.01;
 
     /**
-     * Gets or sets the far size of the hover glow effect.
+     * @returns the far size of the hover glow effect.
      */
     @serialize()
     public blobFarSize = 0.03;
 
     /**
-     * Gets or sets the distance considered "near" to the mesh, which controls the size of the hover glow effect (see blobNearSize).
+     * @returns the distance considered "near" to the mesh, which controls the size of the hover glow effect (see blobNearSize).
      */
     @serialize()
     public blobNearDistance = 0;
 
     /**
-     * Gets or sets the distance considered "far" from the mesh, which controls the size of the hover glow effect (see blobFarSize).
+     * @returns the distance considered "far" from the mesh, which controls the size of the hover glow effect (see blobFarSize).
      */
     @serialize()
     public blobFarDistance = 0.08;
 
     /**
-     * Gets or sets the length of the hover glow effect fade.
+     * @returns the length of the hover glow effect fade.
      */
     @serialize()
     public blobFadeLength = 0.576;
 
     /**
-     * Gets or sets the progress of the hover glow effect selection animation corresponding to the left pointer (0.0 - 1.0).
+     * @returns the progress of the hover glow effect selection animation corresponding to the left pointer (0.0 - 1.0).
      */
     @serialize()
     public blobPulse = 0;
 
     /**
-     * Gets or sets the opacity of the hover glow effect corresponding to the left pointer (0.0 - 1.0). Default is 0.
+     * @returns the opacity of the hover glow effect corresponding to the left pointer (0.0 - 1.0). Default is 0.
      */
     @serialize()
     public blobFade = 1;
 
     /**
-     * Gets or sets the position of the hover glow effect.
+     * @returns the position of the hover glow effect.
      */
     @serialize()
     public blobPosition2 = new Vector3(0.2, 0, 0.1);
 
     /**
-     * Gets or sets the size of the hover glow effect when the right pointer is considered "near" to the mesh (see blobNearDistance).
+     * @returns the size of the hover glow effect when the right pointer is considered "near" to the mesh (see blobNearDistance).
      */
     @serialize()
     public blobNearSize2 = 0.01;
 
     /**
-     * Gets or sets the progress of the hover glow effect selection animation corresponding to the right pointer (0.0 - 1.0).
+     * @returns the progress of the hover glow effect selection animation corresponding to the right pointer (0.0 - 1.0).
      */
     @serialize()
     public blobPulse2 = 0;
 
     /**
-     * Gets or sets the opacity of the hover glow effect corresponding to the right pointer (0.0 - 1.0). Default is 1.
+     * @returns the opacity of the hover glow effect corresponding to the right pointer (0.0 - 1.0). Default is 1.
      */
     @serialize()
     public blobFade2 = 1;
 
     /**
-     * Gets or sets the texture of the hover glow effect.
+     * @returns the texture of the hover glow effect.
      */
     @serialize()
     public blobTexture = new Texture("", this.getScene());
 
     /**
-     * Gets or sets the finger position for left index.
+     * @returns the finger position for left index.
      */
     @serialize()
     public leftIndexPosition = new Vector3(0, 0, 1);
 
     /**
-     * Gets or sets the finger position for right index.
+     * @returns the finger position for right index.
      */
     @serialize()
     public rightIndexPosition = new Vector3(-1, -1, -1);
 
     /**
-     * Gets or sets the finger position for left index middle position.
+     * @returns the finger position for left index middle position.
      */
     @serialize()
     public leftIndexMiddlePosition = new Vector3(0, 0, 0);
 
     /**
-     * Gets or sets the finger position for right index middle position.
+     * @returns the finger position for right index middle position.
      */
     @serialize()
     public rightIndexMiddlePosition = new Vector3(0, 0, 0);
 
     /**
-     * Gets or sets the Decal Scle for XY.
+     * @returns the Decal Scle for XY.
      */
     @serialize()
     public decalScaleXY = new Vector2(1.5, 1.5);
 
     /**
-     * Gets or sets decalFrontOnly
+     * @returns decalFrontOnly
      * Default is true
      */
     @serialize()
     public decalFrontOnly = true;
 
     /**
-     * Gets or sets the Rim Light intensity.
+     * @returns the Rim Light intensity.
      */
     @serialize()
     public rimIntensity = 0.287;
 
     /**
-     * Gets or sets the Rim Light hue shift value.
+     * @returns the Rim Light hue shift value.
      */
     @serialize()
     public rimHueShift = 0;
 
     /**
-     * Gets or sets the Rim Light saturation shift value.
+     * @returns the Rim Light saturation shift value.
      */
     @serialize()
     public rimSaturationShift = 0;
 
     /**
-     * Gets or sets the Rim Light value shift.
+     * @returns the Rim Light value shift.
      */
     @serialize()
     public rimValueShift = -1;
 
     /**
-     * Gets or sets the intensity of the iridescence effect.
+     * @returns the intensity of the iridescence effect.
      */
     @serialize()
     public iridescenceIntensity = 0;

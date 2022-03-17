@@ -76,7 +76,7 @@ export class GeometryBufferRenderer {
      */
     public excludedSkinnedMeshesFromVelocity: AbstractMesh[] = [];
 
-    /** Gets or sets a boolean indicating if transparent meshes should be rendered */
+    /** @returns a boolean indicating if transparent meshes should be rendered */
     public renderTransparentMeshes = true;
 
     private _scene: Scene;

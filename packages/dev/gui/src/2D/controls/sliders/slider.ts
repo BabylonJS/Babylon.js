@@ -15,7 +15,7 @@ export class Slider extends BaseSlider {
     private _isThumbCircle = false;
     protected _displayValueBar = true;
 
-    /** Gets or sets a boolean indicating if the value bar must be rendered */
+    /** @returns a boolean indicating if the value bar must be rendered */
     @serialize()
     public get displayValueBar(): boolean {
         return this._displayValueBar;
@@ -30,7 +30,7 @@ export class Slider extends BaseSlider {
         this._markAsDirty();
     }
 
-    /** Gets or sets border color */
+    /** @returns border color */
     @serialize()
     public get borderColor(): string {
         return this._borderColor;
@@ -45,7 +45,7 @@ export class Slider extends BaseSlider {
         this._markAsDirty();
     }
 
-    /** Gets or sets background color */
+    /** @returns background color */
     @serialize()
     public get background(): string {
         return this._background;
@@ -60,7 +60,7 @@ export class Slider extends BaseSlider {
         this._markAsDirty();
     }
 
-    /** Gets or sets thumb's color */
+    /** @returns thumb's color */
     @serialize()
     public get thumbColor(): string {
         return this._thumbColor;
@@ -75,7 +75,7 @@ export class Slider extends BaseSlider {
         this._markAsDirty();
     }
 
-    /** Gets or sets a boolean indicating if the thumb should be round or square */
+    /** @returns a boolean indicating if the thumb should be round or square */
     @serialize()
     public get isThumbCircle(): boolean {
         return this._isThumbCircle;

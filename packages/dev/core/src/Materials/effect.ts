@@ -91,7 +91,7 @@ export interface IEffectCreationOptions {
  */
 export class Effect implements IDisposable {
     /**
-     * Gets or sets the relative url used to load shaders if using the engine in non-minified mode
+     * @returns the relative url used to load shaders if using the engine in non-minified mode
      */
     public static get ShadersRepository(): string {
         return EngineShaderStore.ShadersRepository;

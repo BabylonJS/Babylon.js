@@ -83,7 +83,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
     }
 
     /**
-     * Gets or sets the actual darkness of the soft shadows while using PCSS filtering (value between 0. and 1.)
+     * @returns the actual darkness of the soft shadows while using PCSS filtering (value between 0. and 1.)
      */
     public penumbraDarkness: number;
 
@@ -187,7 +187,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
     protected _shadowCastersBoundingInfo: BoundingInfo;
 
     /**
-     * Gets or sets the shadow casters bounding info.
+     * @returns the shadow casters bounding info.
      * If you provide your own shadow casters bounding info, first enable freezeShadowCastersBoundingInfo
      * so that the system won't overwrite the bounds you provide
      */
@@ -318,7 +318,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
     protected _debug: boolean;
 
     /**
-     * Gets or sets the debug flag.
+     * @returns the debug flag.
      * When enabled, the cascades are materialized by different colors on the screen.
      */
     public get debug(): boolean {
@@ -333,7 +333,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
     private _depthClamp: boolean;
 
     /**
-     * Gets or sets the depth clamping value.
+     * @returns the depth clamping value.
      *
      * When enabled, it improves the shadow quality because the near z plane of the light frustum don't need to be adjusted
      * to account for the shadow casters far away.
@@ -351,7 +351,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
     private _cascadeBlendPercentage: number;
 
     /**
-     * Gets or sets the percentage of blending between two cascades (value between 0. and 1.).
+     * @returns the percentage of blending between two cascades (value between 0. and 1.).
      * It defaults to 0.1 (10% blending).
      */
     public get cascadeBlendPercentage(): number {
@@ -433,7 +433,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
     private _autoCalcDepthBounds: boolean;
 
     /**
-     * Gets or sets the autoCalcDepthBounds property.
+     * @returns the autoCalcDepthBounds property.
      *
      * When enabled, a depth rendering pass is first performed (with an internally created depth renderer or with the one
      * you provide by calling setDepthRenderer). Then, a min/max reducing is applied on the depth map to compute the

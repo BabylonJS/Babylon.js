@@ -47,7 +47,7 @@ export class Animation {
     public static AllowMatrixDecomposeForInterpolation = true;
 
     /**
-     * Gets or sets the unique id of the animation (the uniqueness is solely among other animations)
+     * @returns the unique id of the animation (the uniqueness is solely among other animations)
      */
     public uniqueId: number;
 

@@ -14,21 +14,21 @@ declare type Animation = import("../Animations/animation").Animation;
  * @see https://doc.babylonjs.com/babylon101/sprites
  */
 export class Sprite extends ThinSprite implements IAnimatable {
-    /** Gets or sets the current world position */
+    /** @returns the current world position */
     public position: Vector3;
-    /** Gets or sets the main color */
+    /** @returns the main color */
     public color: Color4;
-    /** Gets or sets a boolean indicating that this sprite should be disposed after animation ends */
+    /** @returns a boolean indicating that this sprite should be disposed after animation ends */
     public disposeWhenFinishedAnimating: boolean;
     /** Gets the list of attached animations */
     public animations: Nullable<Array<Animation>> = new Array<Animation>();
-    /** Gets or sets a boolean indicating if the sprite can be picked */
+    /** @returns a boolean indicating if the sprite can be picked */
     public isPickable = false;
-    /** Gets or sets a boolean indicating that sprite texture alpha will be used for precise picking (false by default) */
+    /** @returns a boolean indicating that sprite texture alpha will be used for precise picking (false by default) */
     public useAlphaForPicking = false;
 
     /**
-     * Gets or sets the associated action manager
+     * @returns the associated action manager
      */
     public actionManager: Nullable<ActionManager>;
 
@@ -41,7 +41,7 @@ export class Sprite extends ThinSprite implements IAnimatable {
     private _onAnimationEnd: Nullable<() => void> = null;
 
     /**
-     * Gets or sets the sprite size
+     * @returns the sprite size
      */
     public get size(): number {
         return this.width;
@@ -53,7 +53,7 @@ export class Sprite extends ThinSprite implements IAnimatable {
     }
 
     /**
-     * Gets or sets the unique id of the sprite
+     * @returns the unique id of the sprite
      */
     public uniqueId: number;
 
@@ -91,7 +91,7 @@ export class Sprite extends ThinSprite implements IAnimatable {
         return "Sprite";
     }
 
-    /** Gets or sets the initial key for the animation (setting it will restart the animation)  */
+    /** @returns the initial key for the animation (setting it will restart the animation)  */
     public get fromIndex() {
         return this._fromIndex;
     }
@@ -99,7 +99,7 @@ export class Sprite extends ThinSprite implements IAnimatable {
         this.playAnimation(value, this._toIndex, this._loopAnimation, this._delay, this._onAnimationEnd);
     }
 
-    /** Gets or sets the end key for the animation (setting it will restart the animation)  */
+    /** @returns the end key for the animation (setting it will restart the animation)  */
     public get toIndex() {
         return this._toIndex;
     }
@@ -107,7 +107,7 @@ export class Sprite extends ThinSprite implements IAnimatable {
         this.playAnimation(this._fromIndex, value, this._loopAnimation, this._delay, this._onAnimationEnd);
     }
 
-    /** Gets or sets a boolean indicating if the animation is looping (setting it will restart the animation)  */
+    /** @returns a boolean indicating if the animation is looping (setting it will restart the animation)  */
     public get loopAnimation() {
         return this._loopAnimation;
     }
@@ -115,7 +115,7 @@ export class Sprite extends ThinSprite implements IAnimatable {
         this.playAnimation(this._fromIndex, this._toIndex, value, this._delay, this._onAnimationEnd);
     }
 
-    /** Gets or sets the delay between cell changes (setting it will restart the animation)  */
+    /** @returns the delay between cell changes (setting it will restart the animation)  */
     public get delay() {
         return Math.max(this._delay, 1);
     }

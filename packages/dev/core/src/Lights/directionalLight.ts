@@ -79,7 +79,7 @@ export class DirectionalLight extends ShadowLight {
     private _orthoBottom = Number.MAX_VALUE;
 
     /**
-     * Gets or sets the orthoLeft property used to build the light frustum
+     * @returns the orthoLeft property used to build the light frustum
      */
     public get orthoLeft(): number {
         return this._orthoLeft;
@@ -90,7 +90,7 @@ export class DirectionalLight extends ShadowLight {
     }
 
     /**
-     * Gets or sets the orthoRight property used to build the light frustum
+     * @returns the orthoRight property used to build the light frustum
      */
     public get orthoRight(): number {
         return this._orthoRight;
@@ -101,7 +101,7 @@ export class DirectionalLight extends ShadowLight {
     }
 
     /**
-     * Gets or sets the orthoTop property used to build the light frustum
+     * @returns the orthoTop property used to build the light frustum
      */
     public get orthoTop(): number {
         return this._orthoTop;
@@ -112,7 +112,7 @@ export class DirectionalLight extends ShadowLight {
     }
 
     /**
-     * Gets or sets the orthoBottom property used to build the light frustum
+     * @returns the orthoBottom property used to build the light frustum
      */
     public get orthoBottom(): number {
         return this._orthoBottom;

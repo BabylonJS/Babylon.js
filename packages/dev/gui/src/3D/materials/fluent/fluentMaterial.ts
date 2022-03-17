@@ -35,70 +35,70 @@ export class FluentMaterialDefines extends MaterialDefines {
  */
 export class FluentMaterial extends PushMaterial {
     /**
-     * Gets or sets inner glow intensity. A value of 0 means no glow (default is 0.5)
+     * @returns inner glow intensity. A value of 0 means no glow (default is 0.5)
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public innerGlowColorIntensity = 0.5;
 
     /**
-     * Gets or sets the inner glow color (white by default)
+     * @returns the inner glow color (white by default)
      */
     @serializeAsColor3()
     public innerGlowColor = new Color3(1.0, 1.0, 1.0);
 
     /**
-     * Gets or sets the albedo color (Default is Color3(0.3, 0.35, 0.4))
+     * @returns the albedo color (Default is Color3(0.3, 0.35, 0.4))
      */
     @serializeAsColor3()
     public albedoColor = new Color3(0.3, 0.35, 0.4);
 
     /**
-     * Gets or sets a boolean indicating if borders must be rendered (default is false)
+     * @returns a boolean indicating if borders must be rendered (default is false)
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public renderBorders = false;
 
     /**
-     * Gets or sets border width (default is 0.5)
+     * @returns border width (default is 0.5)
      */
     @serialize()
     public borderWidth = 0.5;
 
     /**
-     * Gets or sets a value indicating the smoothing value applied to border edges (0.02 by default)
+     * @returns a value indicating the smoothing value applied to border edges (0.02 by default)
      */
     @serialize()
     public edgeSmoothingValue = 0.02;
 
     /**
-     * Gets or sets the minimum value that can be applied to border width (default is 0.1)
+     * @returns the minimum value that can be applied to border width (default is 0.1)
      */
     @serialize()
     public borderMinValue = 0.1;
 
     /**
-     * Gets or sets a boolean indicating if hover light must be rendered (default is false)
+     * @returns a boolean indicating if hover light must be rendered (default is false)
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public renderHoverLight = false;
 
     /**
-     * Gets or sets the radius used to render the hover light (default is 1.0)
+     * @returns the radius used to render the hover light (default is 1.0)
      */
     @serialize()
     public hoverRadius = 0.01;
 
     /**
-     * Gets or sets the color used to render the hover light (default is Color4(0.3, 0.3, 0.3, 1.0))
+     * @returns the color used to render the hover light (default is Color4(0.3, 0.3, 0.3, 1.0))
      */
     @serializeAsColor4()
     public hoverColor = new Color4(0.3, 0.3, 0.3, 1.0);
 
     /**
-     * Gets or sets the hover light position in world space (default is Vector3.Zero())
+     * @returns the hover light position in world space (default is Vector3.Zero())
      */
     @serializeAsVector3()
     public hoverPosition = Vector3.Zero();
@@ -106,7 +106,7 @@ export class FluentMaterial extends PushMaterial {
     @serializeAsTexture("albedoTexture")
     private _albedoTexture: Nullable<BaseTexture>;
 
-    /** Gets or sets the texture to use for albedo color */
+    /** @returns the texture to use for albedo color */
     @expandToProperty("_markAllSubMeshesAsTexturesAndMiscDirty")
     public albedoTexture: Nullable<BaseTexture>;
 

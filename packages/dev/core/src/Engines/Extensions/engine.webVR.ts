@@ -89,7 +89,7 @@ declare module "../../Engines/engine" {
         _getVRDisplaysAsync(): Promise<IDisplayChangedEventArgs>;
 
         /**
-         * Gets or sets the presentation attributes used to configure VR rendering
+         * @returns the presentation attributes used to configure VR rendering
          */
         vrPresentationAttributes?: IVRPresentationAttributes;
 
