@@ -39,7 +39,11 @@
         },
         {
             "path": "packages/tools/guiEditor/tsconfig.build.json"
+        },
+        {
+            "path": "packages/tools/ktx2Decoder/tsconfig.build.json"
         }
+
     ],
     "include": []
 }
