@@ -151,7 +151,7 @@ export class BonesBlock extends NodeMaterialBlock {
         state.sharedData.blocksWithFallbacks.push(this);
 
         // Register for binding
-        state.sharedData.bindableBlocks.push(this);
+        state.sharedData.forcedBindableBlocks.push(this);
 
         // Register for defines
         state.sharedData.blocksWithDefines.push(this);
