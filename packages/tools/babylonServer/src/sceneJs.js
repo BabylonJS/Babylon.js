@@ -170,7 +170,9 @@ const runScene = async () => {
 
     // Register a render loop to repeatedly render the scene
     engine.runRenderLoop(function () {
-        scene.render();
+        if (scene.activeCamera || (scene.activeCameras && scene.activeCameras.length > 0)) {
+            scene.render();
+        }
     });
 
     // Watch for browser/canvas resize events
