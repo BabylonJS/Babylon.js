@@ -215,49 +215,26 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 // Find bounding box of selected controls
                 for (let selectedControl of globalState.selectedControls) {
                     let left : number, top : number, right : number, bottom : number;
-
-                    const parentControl = selectedControl.parent!;
                     
-                    switch (selectedControl.horizontalAlignment) {
-                        case Control.HORIZONTAL_ALIGNMENT_LEFT:
-                            left = selectedControl.leftInPixels - parentControl.widthInPixels / 2;
-                            break;
-                        case Control.HORIZONTAL_ALIGNMENT_CENTER:
-                            left = selectedControl.leftInPixels - selectedControl.widthInPixels / 2;
-                            break;
-                        case Control.HORIZONTAL_ALIGNMENT_RIGHT:
-                            left = parentControl.widthInPixels / 2 - selectedControl.leftInPixels - selectedControl.widthInPixels;
-                            break;
-                        default:
-                            left = selectedControl.leftInPixels;
-                            break;
-                    }
-                    
-                    switch(selectedControl.verticalAlignment) {
-                        case Control.VERTICAL_ALIGNMENT_TOP:
-                            top = parentControl.heightInPixels / 2 - selectedControl.topInPixels;                         
-                            break;
-                        case Control.VERTICAL_ALIGNMENT_CENTER:
-                            top = selectedControl.topInPixels - selectedControl.heightInPixels / 2;
-                            break;
-                        case Control.VERTICAL_ALIGNMENT_BOTTOM:
-                            top = selectedControl.topInPixels - selectedControl.heightInPixels - parentControl.heightInPixels / 2;
-                            break;
-                        default:
-                            top = selectedControl.topInPixels;
-                            break;
-                    }
+                    left = -selectedControl.widthInPixels / 2;
+                    top = -selectedControl.heightInPixels / 2;
 
                     right = left! + selectedControl.widthInPixels;
                     bottom = top! + selectedControl.heightInPixels;
+                    
+                    // Compute all four corners of the control in root space
+                    const leftTopRS = CoordinateHelper.nodeToRTTSpace(selectedControl, left, top, new Vector2(), undefined, this.trueRootContainer);
+                    const rightBottomRS = CoordinateHelper.nodeToRTTSpace(selectedControl, right, bottom, new Vector2(), undefined, this.trueRootContainer);
+                    const leftBottomRS = CoordinateHelper.nodeToRTTSpace(selectedControl, left, bottom, new Vector2(), undefined, this.trueRootContainer);
+                    const rightTopRS = CoordinateHelper.nodeToRTTSpace(selectedControl, right, top, new Vector2(), undefined, this.trueRootContainer);
 
-                    minX = Math.min(minX, left);
-                    minY = Math.min(minY, top);
+                    minX = Math.min(minX, leftTopRS.x, rightBottomRS.x, leftBottomRS.x, rightTopRS.x);
+                    minY = Math.min(minY, leftTopRS.y, rightBottomRS.y, leftBottomRS.y, rightTopRS.y);
 
-                    maxX = Math.max(maxX, right);
-                    maxY = Math.max(maxY, bottom);
+                    maxX = Math.max(maxX, leftTopRS.x, rightBottomRS.x, leftBottomRS.x, rightTopRS.x);
+                    maxY = Math.max(maxY, leftTopRS.y, rightBottomRS.y, leftBottomRS.y, rightTopRS.y);
                 }
-                
+
                 // Find width and height of bounding box
                 const width = maxX - minX;
                 const height = maxY - minY;
