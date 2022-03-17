@@ -50,7 +50,6 @@ export class ElbowBlock extends NodeMaterialBlock {
         let input = this._inputs[0];
         if (input.isConnected) {
             let block = input.connectedPoint!.ownerBlock;
-            
             // Return vertex if connected to an input node
             if (block.isInput) {
                 return NodeMaterialBlockTargets.Vertex;
