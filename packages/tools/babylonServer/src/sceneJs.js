@@ -34,7 +34,7 @@ const createScene = function (engine) {
 
     engine.displayLoadingUI();
 
-    BABYLON.SceneLoader.ImportMesh("", "./scenes/", "dummy3.babylon", scene, function (newMeshes, particleSystems, skeletons) {
+    BABYLON.SceneLoader.ImportMesh("", "https://playground.babylonjs.com/scenes/", "dummy3.babylon", scene, function (newMeshes, particleSystems, skeletons) {
         const skeleton = skeletons[0];
 
         shadowGenerator.addShadowCaster(scene.meshes[0], true);
@@ -170,7 +170,9 @@ const runScene = async () => {
 
     // Register a render loop to repeatedly render the scene
     engine.runRenderLoop(function () {
-        scene.render();
+        if (scene.activeCamera || (scene.activeCameras && scene.activeCameras.length > 0)) {
+            scene.render();
+        }
     });
 
     // Watch for browser/canvas resize events

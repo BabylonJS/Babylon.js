@@ -15,6 +15,20 @@ export const prepareSnapshot = () => {
         }
     });
 
+    // copy gltf2interface
+    {
+        const baseLocation = path.join(baseDirectory, "packages", "public");
+        const staticFiles = glob.sync(`${baseLocation}/glTF2Interface/*.*`);
+        for (const file of staticFiles) {
+            // ignore package.json files
+            if (path.basename(file) === "package.json") {
+                continue;
+            }
+            const relative = path.relative(baseLocation, file);
+            copyFile(file, path.join(snapshotDirectory, relative), false);
+        }
+    }
+
     // copy all static files
     const baseLocation = path.join(baseDirectory, "packages", "tools", "babylonServer", "public");
     const staticFiles = glob.sync(`${baseLocation}/**/*.*`);
